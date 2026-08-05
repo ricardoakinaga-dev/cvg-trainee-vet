@@ -240,11 +240,11 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 | Campo | Registro |
 |---|---|
-| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo revisado | `97dd3b7` — `docs: simplify mvp governance` |
+| Tag | `gate-d076-lean-mvp-governance-2026-08-05` |
 | Aprovador e responsável do MVP | MV. Ricardo Akinaga |
 | Controle clínico mantido | segundo MV antes da publicação de cada módulo clínico |
-| Validações | `PENDENTE` |
+| Validações | `git diff --cached --check`; 30 documentos Markdown; 66 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
 
 ---
 
