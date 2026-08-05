@@ -262,12 +262,12 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 | Campo | Registro |
 |---|---|
-| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo revisado | `889b1f0` — `docs: approve minimal internal data policy` |
+| Tag | `gate-d077-minimal-data-policy-2026-08-05` |
 | Aprovador e responsável por acesso | MV. Ricardo Akinaga |
 | Dados permitidos | nome/login profissional, progresso, tentativas, notas e logs mínimos de segurança |
 | Dados proibidos | prontuários, dados de tutores, gravações e casos reais identificáveis |
-| Validações | `PENDENTE` |
+| Validações | `git diff --cached --check`; 30 documentos Markdown; 65 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
 
 ---
 

@@ -121,6 +121,6 @@ Esta política aplica ao produto o princípio de usar somente os dados necessár
 |---|---|
 | Decisão | D-077 — Alternativa 1 |
 | Aprovador | MV. Ricardo Akinaga |
-| Commit do conteúdo | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo | `889b1f0` — `docs: approve minimal internal data policy` |
+| Tag | `gate-d077-minimal-data-policy-2026-08-05` |
 | B-05 | `FECHADO PARA O MVP INTERNO` |
