@@ -42,10 +42,10 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-021 | O sistema deve atribuir trilha personalizada por perfil | P0 | FATO INFORMADO |
 | RF-022 | O sistema deve manter núcleo obrigatório não dispensável | P0 | FATO INFORMADO |
 | RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e níveis | P1 | PROPOSTA |
-| RF-024 | O sistema deve gerenciar dispensa por domínio: **não aplicada no piloto**; regra futura | P2 | APROVADA (gate 2026-08-05) |
+| RF-024 | O sistema deve gerenciar dispensa por domínio: **não aplicada no piloto**; regra futura | P2 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-025 | O sistema deve controlar estados da trilha conforme vocabulário do anexo 0003 | P0 | PROPOSTA |
 | RF-026 | O sistema deve tratar prazos, afastamentos e acomodações | P1 | PENDENTE (D-016/D-018) |
-| RF-027 | O sistema deve exibir aviso explícito de que aprovação em prova, caso ou simulação digital não comprova competência prática nem desbloqueia autorização clínica | P0 | APROVADA (D-068, 2026-08-05) |
+| RF-027 | O sistema deve exibir aviso explícito de que aprovação em prova, caso ou simulação digital não comprova competência prática nem desbloqueia autorização clínica | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
 ## 4. Conteúdo
 
@@ -66,33 +66,33 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa e fonte, múltiplas tentativas | P0 | APROVADA (gate 2026-08-05) |
-| RF-041 | Quiz formativo: peso zero na nota somativa | P0 | APROVADA (gate 2026-08-05) |
-| RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário fictício e decisões registradas; casos derivados de atendimentos reais ficam bloqueados até B-05 | P0 | APROVADA (gate 2026-08-05; esclarecida por D-068) |
-| RF-043 | Caso clínico/simulação digital: feedback e debriefing formativo e/ou somativo; modalidade somativa participa com peso 30% | P1 | APROVADA (gate 2026-08-05; esclarecida por D-068) |
-| RF-044 | Prova somativa: gerada do banco conforme blueprint, com seleção aleatória | P0 | APROVADA (gate 2026-08-05) |
-| RF-045 | Prova somativa: tempo e janela definidos | P0 | APROVADA (gate 2026-08-05) |
-| RF-046 | Prova somativa: cálculo por objetivo e aplicação dos limiares (70% geral / 80% críticos) | P0 | APROVADA (gate 2026-08-05) |
-| RF-047 | Prova somativa: controle de tentativas (2 + remediação; intervalo mínimo de 7 dias; itens diferentes entre tentativas) | P0 | APROVADA (gate 2026-08-05) |
-| RF-048 | Remediação: identificação de lacunas, atribuição de reforço, quiz/caso equivalente, intervalo mínimo, nova prova com itens diferentes; 2ª reprovação → plano individual com mentor, sem punição | P0 | APROVADA (gate 2026-08-05) |
-| RF-049 | Retenção: avaliação em janela 30/60/90 dias com itens equivalentes | P1 | APROVADA (gate 2026-08-05) |
-| RF-050 | Autoavaliação de confiança: escala 1–5 ou 0–100, peso zero, mostrada separada | P2 | APROVADA (gate 2026-08-05) |
+| RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa e fonte, múltiplas tentativas | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-041 | Quiz formativo: peso zero na nota somativa | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário fictício e decisões registradas; casos derivados de atendimentos reais ficam bloqueados até B-05 | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
+| RF-043 | Caso clínico/simulação digital: feedback e debriefing formativo e/ou somativo; modalidade somativa participa com peso 30% | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
+| RF-044 | Prova somativa: gerada do banco conforme blueprint, com seleção aleatória | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-045 | Prova somativa: tempo e janela definidos | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-046 | Prova somativa: cálculo por objetivo e aplicação dos limiares (70% geral / 80% críticos) | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-047 | Prova somativa: controle de tentativas (2 + remediação; intervalo mínimo de 7 dias; itens diferentes entre tentativas) | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-048 | Remediação: identificação de lacunas, atribuição de reforço, quiz/caso equivalente, intervalo mínimo, nova prova com itens diferentes; 2ª reprovação → plano individual com mentor, sem punição | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-049 | Retenção: avaliação em janela 30/60/90 dias com itens equivalentes | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-050 | Autoavaliação de confiança: escala 1–5 ou 0–100, peso zero, mostrada separada | P2 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-051 | O sistema deve registrar toda tentativa de forma imutável | P0 | FATO INFORMADO |
-| RF-052 | O sistema deve identificar visualmente toda simulação como digital e classificar seu resultado apenas como conhecimento/raciocínio em cenário simulado | P0 | APROVADA (D-068, 2026-08-05) |
-| RF-053 | O sistema deve impedir que resultado de simulação digital atualize competência prática, nível de supervisão, permissão de procedimento ou autonomia clínica | P0 | APROVADA (D-068, 2026-08-05) |
-| RF-054 | O sistema não deve oferecer na primeira versão cadastro, agenda, checklist, upload ou aprovação de evidência de treinamento prático presencial ou procedimento real | P0 | APROVADA (D-068, 2026-08-05) |
-| RF-055 | O sistema deve limitar a remediação a conteúdo, quiz, caso/simulação e orientação digitais | P0 | APROVADA (D-068, 2026-08-05) |
+| RF-052 | O sistema deve identificar visualmente toda simulação como digital e classificar seu resultado apenas como conhecimento/raciocínio em cenário simulado | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
+| RF-053 | O sistema deve impedir que resultado de simulação digital atualize competência prática, nível de supervisão, permissão de procedimento ou autonomia clínica | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
+| RF-054 | O sistema não deve oferecer na primeira versão cadastro, agenda, checklist, upload ou aprovação de evidência de treinamento prático presencial ou procedimento real | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
+| RF-055 | O sistema deve limitar a remediação a conteúdo, quiz, caso/simulação e orientação digitais | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
 ## 6. Contestação e correção
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-060 | O sistema deve permitir contestação de questão/resultado com justificativa e protocolo | P0 | APROVADA (gate 2026-08-05) |
-| RF-061 | O sistema deve rotear a contestação a revisor independente | P0 | APROVADA (gate 2026-08-05) |
-| RF-062 | O sistema deve recalcular tentativas afetadas ao anular/alterar gabarito, preservando versão anterior | P0 | APROVADA (gate 2026-08-05) |
-| RF-063 | O sistema deve identificar e notificar usuários afetados por alteração de gabarito | P0 | APROVADA (gate 2026-08-05) |
-| RF-064 | O sistema deve registrar decisão e justificativa de cada contestação | P0 | APROVADA (gate 2026-08-05) |
-| RF-065 | O sistema deve controlar prazo de resposta da contestação: 7 dias úteis | P1 | APROVADA (gate 2026-08-05) |
+| RF-060 | O sistema deve permitir contestação de questão/resultado com justificativa e protocolo | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-061 | O sistema deve rotear a contestação a revisor independente | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-062 | O sistema deve recalcular tentativas afetadas ao anular/alterar gabarito, preservando versão anterior | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-063 | O sistema deve identificar e notificar usuários afetados por alteração de gabarito | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-064 | O sistema deve registrar decisão e justificativa de cada contestação | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-065 | O sistema deve controlar prazo de resposta da contestação: 7 dias úteis | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 
 ## 7. Painéis e métricas
 
@@ -118,7 +118,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-090 | Banco deve ser maior que a prova; seleção aleatória e embaralhamento de alternativas (banco ≥ 1,5× itens aplicados por tentativa; 10–15 itens por objetivo) | P0 | APROVADA (gate 2026-08-05) |
+| RF-090 | Banco deve ser maior que a prova; seleção aleatória e embaralhamento de alternativas (banco ≥ 1,5× itens aplicados por tentativa; 10–15 itens por objetivo) | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-091 | Cada item deve ter: objetivo, competência, nível, fonte/versão, dificuldade esperada, justificativas, autor, revisores, status, estatísticas, histórico | P0 | FATO INFORMADO (anexo 0003 §6) |
 | RF-092 | O sistema deve limitar exposição de respostas corretas após a prova | P1 | PROPOSTA |
 | RF-093 | O sistema deve registrar estatísticas observadas por item (dificuldade, discriminação, distratores, contestação) | P1 | PROPOSTA |
@@ -127,7 +127,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 ## 10. Requisitos não cobertos (pendências que impactam o PRD)
 
 - Blueprint e número de itens do diagnóstico (UC-001, B-07) — demais itens por objetivo definidos em 10–15 (RN-078);
-- Avaliadores e dupla correção de respostas construídas (D-063);
+- Avaliadores e dupla correção de respostas construídas (D-070);
 - Regra de repetição/atualização da linha de base;
 - Equivalência das formas de avaliação;
 - Política de certificação — resolvida: status de conclusão no piloto (RN-079);

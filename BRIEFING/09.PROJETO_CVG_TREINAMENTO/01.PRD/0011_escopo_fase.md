@@ -9,7 +9,7 @@
 
 ## 1. Escopo desta fase do projeto
 
-Esta fase entrega a **documentação de briefing do produto** (Discovery aprovado com condições + PRD). Não entrega sistema, conteúdo clínico ou avaliações reais.
+Esta fase mantém a **documentação de briefing do produto** como rascunho controlado. Discovery e PRD estão `REPROVADOS — EM CORREÇÃO`; não há autorização para SPEC, sistema, conteúdo clínico ou avaliações reais.
 
 ## 2. IN SCOPE (o que será construído no produto)
 
@@ -36,10 +36,10 @@ Esta fase entrega a **documentação de briefing do produto** (Discovery aprovad
 17. Papéis e permissões (matriz do 0006);
 18. Vocabulário de estados (anexo 0003: `NÃO_INICIADO`, `EM_ANDAMENTO`, `EM_AVALIAÇÃO`, `EM_REMEDIAÇÃO`, `APROVADO`, `REPROVADO`, `RESULTADO_EM_REVISÃO`, `CONCLUÍDO`, `VENCIDO`, `DISPENSADO_POR_DOMÍNIO`, `BLOQUEADO_POR_PRÉ_REQUISITO`).
 
-### Escopo clínico do piloto (APROVADO no gate 2026-08-05)
+### Escopo clínico do piloto (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05)
 
 - **Núcleo comum obrigatório** (anexo 0002, seção 5): segurança do paciente, responsabilidade profissional, comunicação, exame e história, medicina baseada em evidências, dor, fluidoterapia, segurança medicamentosa, antimicrobial stewardship, registro clínico e reconhecimento de emergência;
-- **Áreas clínicas:** **Emergência e Internação** (B-06 resolvido);
+- **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo patrocinador como insumo; revalidação formal pendente após B-03 (B-06);
 - Espécies: **cães e gatos** (D-022 resolvido);
 - Coorte: **10 a 15 veterinários** cobrindo os 3 turnos e os setores do piloto; número final conforme inventário (B-02); demais colaboradores entram em fases seguintes;
 - Duração do piloto: **12 semanas** (D-061 resolvido);
@@ -87,13 +87,13 @@ Esta fase entrega a **documentação de briefing do produto** (Discovery aprovad
 
 ## 6. Critérios de priorização para o piloto
 
-**PROPOSTA** — pontuar por: risco clínico, frequência, variabilidade de conduta, disponibilidade de fonte, disponibilidade de revisor, facilidade de medir, valor percebido e esforço de produção (anexo 0002, seção 13). A seleção final é do comitê clínico (`PENDENTE`, B-06).
+**PROPOSTA** — pontuar por: risco clínico, frequência, variabilidade de conduta, disponibilidade de fonte, disponibilidade de revisor, facilidade de medir, valor percebido e esforço de produção (anexo 0002, seção 13). Núcleo + Emergência + Internação foram confirmados pelo patrocinador como insumo (B-06); a revalidação formal dependerá do comitê clínico após B-03.
 
 ## 7. Faseamento da entrega (PROPOSTA)
 
 | Fase | Entrega | Condição |
 |---|---|---|
-| 0 | Briefing (Discovery + PRD) | gate 0090 PRD aprovado |
+| 0 | Corrigir e revalidar Briefing (Discovery + PRD) | gates 0090 Discovery e PRD aprovados, nessa ordem |
 | 1 | SPEC | PRD aprovado |
 | 2 | BUILD (MVP piloto) | SPEC aprovada |
 | 3 | Piloto controlado (coorte de 10–15, 12 semanas) | build funcional |

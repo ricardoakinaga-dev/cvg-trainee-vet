@@ -4,7 +4,8 @@
 **Data da revisão:** 2026-07-29  
 **Revisão da decisão:** 2026-08-05  
 **Resultado anterior:** `REPROVADO — NÃO AVANÇAR PARA PRD`  
-**Resultado atual:** `APROVADO COM CONDIÇÕES — AVANÇAR PARA PRD`
+**Decisão gerencial histórica:** o patrocinador autorizou a elaboração de um rascunho de PRD em 2026-08-05, sem eliminar B-01 a B-07
+**Resultado canônico atual:** `REPROVADO — EM CORREÇÃO; PRD FORMAL NÃO AUTORIZADO`
 
 ## Checklist obrigatório
 
@@ -37,7 +38,7 @@
 - [x] Escopo do problema definido;
 - [x] Fora de escopo definido;
 - [x] Limites da avaliação teórica definidos;
-- [ ] Áreas clínicas do piloto aprovadas;
+- [x] Áreas clínicas do piloto confirmadas pelo patrocinador — núcleo + Emergência + Internação (B-06);
 - [ ] Coorte piloto delimitada.
 
 ### Usuários
@@ -84,40 +85,42 @@
 | B-02 | público não dimensionado | impede recorte do piloto | inventário de usuários | PENDENTE | PENDENTE |
 | B-03 | responsáveis não nomeados | impede governança | indicar owners e comitê | direção CVG | PENDENTE |
 | B-04 | direitos de uso não verificados | risco legal | análise de licença | jurídico/gestão | PENDENTE |
-| B-05 | política de dados ausente | risco LGPD | definir finalidade e acesso | PENDENTE | PENDENTE |
-| B-06 | prioridades clínicas ausentes | escopo aberto | selecionar áreas do piloto | coordenação clínica | PENDENTE |
+| B-05 | política de dados sem validação LGPD | risco LGPD | validar finalidade, acesso e retenção | responsável LGPD | PENDENTE |
+| B-06 | áreas clínicas do piloto | escopo clínico | decisão registrada: núcleo + Emergência + Internação | coordenação clínica | FECHADO COMO INSUMO |
 | B-07 | baseline ausente | metas não calibradas | diagnóstico e coleta inicial | PENDENTE | PENDENTE |
 
 ## Decisão
 
-Segundo o Discovery Engine canônico, a ausência de qualquer item crítico impede o PRD. Em 2026-08-05, o patrocinador executivo **aprovou o avanço ao PRD sob condições explícitas**, registradas abaixo. A aprovação não elimina os bloqueios; converte-os em compromissos com prazo de resolução durante o PRD e o piloto, e o PRD deverá marcar como `PENDENTE` tudo o que depender deles.
+Segundo o Discovery Engine canônico, a ausência de qualquer item obrigatório reprova o gate. A autorização gerencial de 2026-08-05 permitiu apenas elaborar um rascunho controlado do PRD e preservar decisões do patrocinador como insumos; ela não substitui a aprovação canônica nem converte pendências em waiver. Pela Alternativa 1 aprovada, o gate permanece reprovado até todos os itens obrigatórios serem concluídos e revalidados.
 
 ```text
-STATUS: APROVADO COM CONDIÇÕES (2026-08-05)
-AÇÃO: INICIAR PRD, MANTENDO OS BLOQUEIOS B-01 A B-07 COMO COMPROMISSOS
-PRD: LIBERADO COM CONDIÇÕES
-SPEC: PROIBIDA ATÉ GATE 0090 PRD APROVADO
+STATUS: REPROVADO — EM CORREÇÃO (RECLASSIFICAÇÃO CANÔNICA, 2026-08-05)
+AÇÃO: FECHAR ITENS OBRIGATÓRIOS E REEXECUTAR 0090_DISCOVERY_VALIDATION
+PRD FORMAL: BLOQUEADO; ARTEFATOS EXISTENTES SÃO RASCUNHO CONTROLADO
+SPEC: PROIBIDA
 BUILD: PROIBIDO
 AUDIT: NÃO APLICÁVEL
 ```
 
-## Condições assumidas pelo patrocinador (2026-08-05)
+Enquanto o gate estiver reprovado, são permitidas somente correção documental, desenho de instrumentos, levantamentos estritamente agregados e anônimos, nomeações, verificação jurídica, validação LGPD e preparação do checkpoint. **B-05 deve ser validado antes de entrevistas ou inventários identificáveis, gravações, diagnóstico individual, acesso a prontuários/casos reais, indicadores vinculáveis e coleta da baseline B-07.** São proibidos PRD formal, SPEC, BUILD, arquitetura, código e qualquer produção de conteúdo clínico.
+
+## Compromissos históricos preservados como plano de correção (2026-08-05)
 
 | ID | Condição | Compromisso | Prazo-alvo |
 |---|---|---|---|
-| B-01 | fluxo atual desconhecido | mapear fluxo e práticas isoladas via entrevistas durante o PRD | antes do fim do PRD |
-| B-02 | público não dimensionado | inventário de usuários e definição da coorte piloto | antes do piloto |
-| B-03 | responsáveis não nomeados | nomear PO, coordenação educacional, comitê científico e responsável LGPD | antes do gate PRD |
-| B-04 | direitos de uso não verificados | análise jurídica das três obras; **conteúdo clínico derivado bloqueado até a resolução** | antes da produção de conteúdo |
-| B-05 | política de dados ausente | aprovar finalidade, acesso e retenção (LGPD) | antes do gate PRD |
-| B-06 | prioridades clínicas ausentes | selecionar áreas do piloto (proposta: emergência e internação) | no gate PRD |
-| B-07 | baseline ausente | aplicar diagnóstico inicial na coorte piloto | início do piloto |
+| B-01 | fluxo atual desconhecido | mapear fluxo e práticas isoladas via entrevistas | antes da nova submissão Discovery |
+| B-02 | público não dimensionado | inventário de usuários e definição da coorte piloto | antes da nova submissão Discovery |
+| B-03 | responsáveis não nomeados | nomear PO, coordenação educacional, comitê científico e responsável LGPD | antes da nova submissão Discovery |
+| B-04 | direitos de uso não verificados | análise jurídica das três obras; **conteúdo clínico derivado bloqueado até a resolução** | antes da nova submissão Discovery |
+| B-05 | política de dados sem validação formal | validar finalidade, acesso e retenção com responsável LGPD | antes da nova submissão Discovery |
+| B-06 | áreas clínicas do piloto | decisão confirmada: núcleo + Emergência + Internação | fechado como insumo; revalidar no gate |
+| B-07 | baseline ausente | aplicar diagnóstico inicial na coorte definida | antes da nova submissão Discovery |
 
 Regra de efeito: qualquer artefato do PRD cujo conteúdo dependa de um bloqueio não resolvido deverá declarar `PENDENTE` e referenciar o ID do bloqueio, sem inventar a informação.
 
-## Critério para nova submissão
+## Critério para nova submissão canônica
 
-Este gate foi aprovado com condições em 2026-08-05. Os itens abaixo são as condições que deverão estar satisfeitas **antes do gate PRD (0090_prd_validation.md)**, sob pena de reprovação do PRD:
+O gate somente poderá ser novamente submetido quando os itens abaixo estiverem satisfeitos e acompanhados de evidência. Não existe aprovação condicional nem waiver nesta alternativa:
 
 1. usuários tiverem sido entrevistados (B-01, B-02);
 2. o fluxo atual estiver validado (B-01);
@@ -125,16 +128,16 @@ Este gate foi aprovado com condições em 2026-08-05. Os itens abaixo são as co
 4. responsáveis estiverem nomeados (B-03);
 5. direitos e política de fontes estiverem decididos (B-04);
 6. política de dados estiver aprovada (B-05);
-7. houver baseline mínima (B-07).
+7. após a validação de B-05, houver baseline mínima (B-07).
 
 ## Aprovação humana
 
 | Papel | Nome | Decisão | Data |
 |---|---|---|---|
-| Patrocinador executivo | MV. Ricardo Akinaga — CEO | APROVADO COM CONDIÇÕES | 2026-08-05 |
+| Patrocinador executivo | MV. Ricardo Akinaga — CEO | RECLASSIFICAÇÃO CANÔNICA APROVADA; DECISÕES DE PRODUTO PRESERVADAS COMO INSUMOS | 2026-08-05 |
 | Product owner | PENDENTE | PENDENTE | PENDENTE |
 | Coordenação clínica/RT | PENDENTE | PENDENTE | PENDENTE |
 | Coordenação educacional | PENDENTE | PENDENTE | PENDENTE |
 | LGPD/segurança | PENDENTE | PENDENTE | PENDENTE |
 
-Registro da decisão do patrocinador: aprovação condicionada à execução dos compromissos B-01 a B-07 acima; o PRD deverá refletir as pendências sem inventar informações, e nenhuma decisão de conteúdo clínico será executada antes da resolução de B-04 e da nomeação de responsáveis (B-03).
+Registro vigente: B-01 a B-07 formam o plano de correção; o PRD existente é rascunho não autorizado para SPEC/BUILD, deverá refletir pendências sem inventar informações, e nenhuma decisão de conteúdo clínico será executada antes de B-04 e B-03. Após o fechamento, o gate Discovery deverá ser reexecutado integralmente.

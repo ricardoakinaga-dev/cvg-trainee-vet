@@ -112,7 +112,7 @@
 - **Médio:** pode avançar com mitigação registrada e monitoramento;
 - **Baixo:** registrar no backlog e revisar.
 
-## Riscos que bloqueiam o PRD aprovado
+## Riscos que mantêm Discovery e PRD reprovados
 
 1. Processo atual não validado;
 2. Responsáveis não nomeados;

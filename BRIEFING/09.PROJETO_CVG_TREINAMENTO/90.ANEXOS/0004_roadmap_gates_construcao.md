@@ -1,6 +1,6 @@
 # Anexo 0004 — Roadmap e Gates de Construção
 
-**Status:** sequência programada; PRD elaborado (2026-08-05); nenhuma fase de implementação foi iniciada
+**Status:** Discovery e PRD `REPROVADOS — EM CORREÇÃO`; PRD existente é rascunho controlado; SPEC/BUILD bloqueados
 
 ## 1. Pipeline oficial
 
@@ -41,23 +41,25 @@ Produzidos neste briefing:
 
 ### Estado
 
-`REPROVADO` (2026-07-29) → **`APROVADO COM CONDIÇÕES` (2026-08-05, patrocinador executivo)**. Fluxo, evidências e decisões pendentes convertidos em compromissos B-01 a B-07 (ver [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md)).
+**`REPROVADO — EM CORREÇÃO` (2026-08-05).** A autorização gerencial para elaborar um rascunho de PRD não substitui o gate canônico. B-01 a B-07 permanecem bloqueios obrigatórios (ver [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md)).
 
 ### Próximas atividades permitidas
 
-- PRD (já elaborado — gate 0090 aguardando aprovação humana);
-- Entrevistas;
-- Inventário;
-- Baseline;
+- Correção dos artefatos de Discovery e do rascunho de PRD;
+- Antes de B-05: desenho de instrumentos e levantamentos estritamente agregados/anônimos;
+- Após B-05: entrevistas/inventários identificáveis e baseline B-07, conforme a política validada;
 - Priorização do piloto;
 - Nomeação de responsáveis;
-- Decisão de fontes, licenças e dados.
+- Decisão de fontes, licenças e dados;
+- Reexecução do gate Discovery após todas as evidências.
+
+Não são permitidos: SPEC, preparação formal de SPEC, backlog de BUILD, arquitetura, código ou produção de conteúdo clínico.
 
 ## 3. Fase 1 — PRD
 
 ### Pré-condição
 
-`0090_discovery_validation.md` aprovado por humanos — **cumprida em 2026-08-05 (aprovação com condições)**.
+`0090_discovery_validation.md` aprovado canonicamente — **NÃO CUMPRIDA**. Os artefatos abaixo existem apenas como rascunho controlado para correção e futura submissão.
 
 ### Objetivo
 
@@ -72,7 +74,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 - `0014_requisitos_nao_funcionais_produto.md`; ✅
 - `0015_metricas_de_sucesso.md`; ✅
 - `0020_prd_master.md`; ✅
-- `0090_prd_validation.md`; ⏳ aguardando aprovação humana.
+- `0090_prd_validation.md`; ❌ reprovado — em correção.
 
 ### Conteúdo que o PRD deverá fechar
 
@@ -91,13 +93,13 @@ Materializar o comportamento do produto sem definir tecnologia.
 
 ### Gate
 
-Todos os campos aprovados; ausência bloqueia SPEC. **APROVADO COM CONDIÇÕES em 2026-08-05** (patrocinador); pendências para fechamento: B-01 (entrevistas), B-02 (inventário coorte), B-03 (nomeações), B-04 (verificação jurídica), B-07 (baseline).
+Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. As decisões do patrocinador permanecem como insumos, mas B-01, B-02, B-03, B-04, B-05, B-07 e requisitos pendentes exigem fechamento e nova execução do gate.
 
 ## 4. Fase 2 — SPEC
 
 ### Pré-condição
 
-PRD aprovado.
+Discovery e PRD aprovados canonicamente, em sequência, por commits identificados — **NÃO CUMPRIDA**.
 
 ### Objetivo
 

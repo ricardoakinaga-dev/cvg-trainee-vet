@@ -71,16 +71,16 @@ VALIDAÇÃO FINAL: PENDENTE
 ESTRUTURA DAS FONTES: VERIFICADA FISICAMENTE (TRATADO, ETTINGER, FOSSUM)
 CONSISTÊNCIA INTERNA: PARCIAL — D-040 A D-044 SINCRONIZADOS; OUTRAS CONTRADIÇÕES PERMANECEM
 FONTE CIRÚRGICA: INCORPORADA (FOSSUM — F-03)
-STATUS DECLARADO NOS GATES: DISCOVERY E PRD APROVADOS COM CONDIÇÕES
-CONFORMIDADE COM AS ENGINES CANÔNICAS: PENDENTE DE RESOLUÇÃO
+STATUS DOS GATES: DISCOVERY E PRD REPROVADOS — EM CORREÇÃO
+CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA; CHECKLISTS AINDA INCOMPLETOS
 PENDÊNCIAS DE GATE: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (NOMEAÇÕES),
-B-04 (VERIFICAÇÃO JURÍDICA), B-07 (BASELINE) — INALTERADAS
-SPEC/BUILD/AUDIT: NÃO INICIADOS
+B-04 (VERIFICAÇÃO JURÍDICA), B-05 (VALIDAÇÃO FORMAL LGPD), B-07 (BASELINE)
+SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
 ```
 
 ## 6. Correções encontradas na baseline
 
-1. `90.ANEXOS/0005_decisoes_pendentes.md` — D-040 a D-044 atualizados para refletir as decisões aprovadas no gate 2026-08-05;
+1. `90.ANEXOS/0005_decisoes_pendentes.md` — D-040 a D-044 atualizados para refletir decisões confirmadas pelo patrocinador em 2026-08-05, preservadas como insumos para a reexecução do gate;
 2. `90.ANEXOS/0001_governanca_fonte_conhecimento.md` — Fossum adicionado como F-03 (ficha, hierarquia, identificador, mapeamento macro, direitos autorais);
 3. `README.md` — seção de fontes clínicas atualizada com o Fossum.
 
@@ -92,6 +92,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 - B-02: inventário de usuários e delimitação da coorte;
 - B-03: nomeações (PO, coordenação educacional, comitê científico, LGPD);
 - B-04: verificação jurídica das três obras (Tratado, Ettinger e Fossum);
+- B-05: validação formal da política de dados pelo responsável LGPD;
 - B-07: baseline (diagnóstico inicial na coorte).
 
 ## 8. Controle de versão

@@ -2,8 +2,8 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo a decisão posterior D-068, e aplicadas ao PRD (RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-076 a RN-085; RF-027, RF-040 a RF-065, RF-090; UC-002/005/006/007/009/010/011; 0011 §2–§5; 0015; 0020; gate 0090). RN-023 e RN-074 permanecem pendentes.
-**Objetivo:** consolidar as decisões pendentes do gate `0090_prd_validation.md` com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery aprovado e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).  
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates. As decisões de produto não aprovam Discovery nem PRD. RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
+**Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
 ## 0. Decisão adicional de escopo — D-068
@@ -33,6 +33,18 @@ Qualquer inclusão futura desses elementos exige o `GATE-EXP-PRAT-01` antes de p
 | Resultado | `APROVADO — D-068 FECHADA` |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
+---
+
+## 0.1 Decisão de conformidade dos gates — D-069
+
+| Alternativa | Regra | Veredito |
+|---|---|---|
+| **1** | **Aplicar estritamente as engines canônicas: qualquer item obrigatório incompleto reprova o gate; decisões já confirmadas permanecem apenas como insumos** | **recomendada e selecionada — elimina a exceção informal e preserva a sequência Discovery → PRD → SPEC** |
+| 2 | Alterar as engines canônicas para permitir aprovação condicional mediante waiver | rejeitada — ampliaria a mudança para todos os projetos e exigiria nova governança canônica |
+| 3 | Manter estado gerencial aprovado e estado canônico reprovado em paralelo | rejeitada — aumenta ambiguidade operacional e risco de avanço indevido |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. Discovery e PRD ficam `REPROVADOS — EM CORREÇÃO`; o PRD existente é rascunho controlado; decisões D-* confirmadas permanecem como insumos; SPEC, inclusive preparação formal, e BUILD ficam bloqueados. Não existe waiver implícito ou aprovação automática após o fechamento das pendências: cada gate deve ser reexecutado, versionado e aprovado formalmente na ordem canônica.
 
 ---
 
@@ -264,13 +276,15 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 ## 6. Como fechar o gate
 
-✅ **Etapas 1 a 7 concluídas em 2026-08-05** (decisões confirmadas e aplicadas; registro da aprovação no `0090_prd_validation.md`).
+✅ **Decisões de produto confirmadas e aplicadas ao rascunho em 2026-08-05.** Isso não representa aprovação do gate.
 
 **Remanescentes para fechamento total:**
 1. Nomear responsáveis (B-03) — PO, coordenação educacional, comitê científico, LGPD/segurança;
 2. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
 3. Inventário de usuários/coorte (B-02);
 4. Concluir verificação jurídica das licenças (B-04);
-5. Aplicar diagnóstico inicial e coletar baseline (B-07).
+5. Obter validação formal da política de dados pelo responsável LGPD (B-05);
+6. Aplicar diagnóstico inicial e coletar baseline (B-07);
+7. Resolver os requisitos marcados como pendentes no PRD.
 
-Após isso, o gate `0090` passa a `APROVADO` e o próximo passo é a SPEC (02.ESPEC).
+Após isso, o Discovery deve ser reexecutado e aprovado; em seguida, o PRD deve ser reexecutado sobre um checkpoint Git identificado e submetido à aprovação humana. O status não muda automaticamente. A SPEC permanece bloqueada até ambas as aprovações formais.

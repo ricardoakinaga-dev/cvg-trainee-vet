@@ -93,7 +93,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Classificação |
 |---|---|---|
-| RNF-080 | O sistema não emite certificação de competência prática; provas, casos e simulações digitais não podem ser apresentados como evidência prática ou autonomia clínica | APROVADA (D-068, 2026-08-05) |
+| RNF-080 | O sistema não emite certificação de competência prática; provas, casos e simulações digitais não podem ser apresentados como evidência prática ou autonomia clínica | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RNF-081 | O sistema não substitui protocolos clínicos nem julgamento do RT | FATO INFORMADO |
 | RNF-082 | O sistema não reproduz as obras-fonte | FATO INFORMADO |
 | RNF-083 | O sistema não permite ranking público | FATO INFORMADO |

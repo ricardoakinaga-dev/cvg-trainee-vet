@@ -2,8 +2,10 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Objetivo:** instrumento de trabalho para resolver os bloqueios B-01 (fluxo atual), B-02 (público e coorte), B-06 (áreas do piloto) e B-07 (baseline) do gate Discovery, antes da aprovação do gate PRD (`0090_prd_validation.md`).  
+**Objetivo:** instrumento de trabalho para resolver os bloqueios B-01 (fluxo atual), B-02 (público e coorte), B-06 (áreas do piloto) e B-07 (baseline) antes da nova submissão do gate Discovery e, somente depois de sua aprovação, do gate PRD.
 **Uso:** entrevistador (PO ou coordenação educacional indicada) aplica e registra em formulário próprio; nenhuma informação nova é inventada — tudo o que não for confirmado permanece `PENDENTE`.
+
+> **Pré-condição LGPD (B-05):** até a validação formal da política de dados e a nomeação do responsável, este anexo pode ser usado apenas para desenhar instrumentos e obter informações estritamente agregadas e anônimas. Ficam bloqueados formulários individualizados, nomes, cargo/turno vinculáveis, gravações, diagnóstico individual, prontuários, casos reais e indicadores assistenciais vinculáveis. B-05 precede B-07.
 
 ---
 
@@ -21,7 +23,7 @@
 **Logística por entrevista:**
 - Duração: 30–45 min (A, B, C); 15–25 min (D);
 - Presencial ou remoto, conforme rotina de plantão (escala 12×36);
-- Gravação somente com consentimento registrado (LGPD); caso contrário, notas estruturadas;
+- Gravação bloqueada até B-05; depois, somente se a política validada permitir e houver base legal/consentimento aplicável;
 - Preencher um [Formulário de registro](#7-formulario-de-registro-de-entrevista) por entrevistado;
 - Após todas: consolidar em documento único e validar com os participantes (sessão de devolutiva).
 
@@ -61,7 +63,7 @@
 | B7 | Quais protocolos internos existem hoje? Onde estão documentados? | inventário de protocolos | D-025 |
 | B8 | Quais temas exigem reciclagem obrigatória? | regra de validade | D-026 |
 | B9 | Como uma divergência entre livro, protocolo interno e diretriz atual é tratada hoje? | processo de decisão clínica | D-025, anexo 0001 |
-| B10 | Há casos reais que poderiam virar casos clínicos teóricos (anonimizados)? | insumo de conteúdo | segurança |
+| B10 | Existem temas recorrentes que possam inspirar cenários totalmente fictícios, sem acessar ou registrar casos reais? | insumo de conteúdo seguro | segurança/B-05 |
 | B11 | Emergência e internação são boas áreas para o primeiro piloto? Quais seriam? | validação do piloto | B-06, D-020 |
 | B12 | Quais indicadores clínicos existem hoje que podem servir de contexto (sem correlação causal)? | baseline de indicadores | B-07, D-056 |
 | B13 | Qual é a composição da equipe (experiência, tempo de formação, tempo no CVG)? | segmentação | B-02 |
@@ -122,14 +124,14 @@ Para cada item, registrar: existe? qual? onde está? quem usa? serve de insumo?
 - [ ] Grupos de mensagem usados para treinamento;
 - [ ] Planilhas de presença/notas;
 - [ ] Sistema de RH (registro de treinamentos);
-- [ ] Sistema de gestão clínica/prontuário (para casos, com anonimização);
+- [ ] Existência de sistema de gestão clínica/prontuário, registrada somente de forma agregada; acesso ao sistema ou aos prontuários bloqueado por B-05;
 - [ ] Ferramentas de videoconferência;
 - [ ] Processo de aplicação de provas (formato, correção);
 - [ ] Registro de certificados;
 - [ ] Processo de revisão clínica (reuniões, atas);
 - [ ] Lista de cursos externos usados/patrocinados;
 - [ ] Protocolos internos documentados (levantar todos);
-- [ ] Indicadores assistenciais existentes (erros de medicação, complicações, retornos não programados, etc.).
+- [ ] Existência de categorias de indicadores assistenciais, sem valores ou vínculos individuais; coleta bloqueada por B-05.
 
 ---
 
@@ -192,7 +194,7 @@ O levantamento estará concluído quando:
 10. Todos os formulários classificados (`FATO INFORMADO` / `HIPÓTESE` / `PENDENTE`) e nenhuma informação inventada.
 
 **Resultado possível:**
-- Todos os itens resolvidos → gate PRD `0090` pode ser submetido à aprovação humana;
+- Todos os itens resolvidos → reexecutar primeiro o gate Discovery `0090`; somente se aprovado, atualizar e submeter o gate PRD `0090`;
 - Algum item permanece aberto → o gate fica `BLOQUEADO` com a pendência registrada, e o PRD segue marcando os campos afetados como `PENDENTE`.
 
 ---

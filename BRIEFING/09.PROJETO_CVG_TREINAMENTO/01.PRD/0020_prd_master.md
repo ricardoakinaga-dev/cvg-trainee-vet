@@ -4,8 +4,8 @@
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Fase:** PRD — consolidação  
 **Data:** 2026-08-05  
-**Status:** consolidado; aguardando gate humano `0090_prd_validation.md`  
-**Base:** Discovery aprovado com condições (2026-08-05)
+**Status:** rascunho consolidado em correção; gate PRD reprovado
+**Base:** Discovery `REPROVADO — EM CORREÇÃO` (2026-08-05)
 
 ---
 
@@ -72,8 +72,8 @@ contestações e alterações de gabarito → protocolo → revisor independente
 ### IN (piloto/MVP proposto)
 
 - Diagnóstico, trilha, conteúdo revisado, quizzes, casos e simulações digitais, prova, remediação, retenção, painéis, banco de questões, governança editorial, contestações, auditoria, papéis e permissões;
-- Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO no gate 2026-08-05);
-- Coorte: 10–15 veterinários (3 turnos); duração: 12 semanas; tempo protegido: 3 h/mês (APROVADOS no gate).
+- Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05);
+- Coorte proposta: 10–15 veterinários (3 turnos); duração: 12 semanas; tempo protegido: 3 h/mês — confirmados pelo patrocinador como insumos, sem aprovação do gate; inventário B-02 pendente.
 
 ### OUT
 
@@ -91,15 +91,15 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 |---|---|---|
 | Diagnóstico | obrigatório, formativo, não punitivo, define linha de base | FATO INFORMADO |
 | Trilha | personalizada, mas núcleo obrigatório não dispensável; dispensa não aplicada no piloto | FATO INFORMADO |
-| Limiares | 70% geral / 80% críticos | APROVADA (gate 2026-08-05) |
-| Composição | quiz 0% + caso 30% + prova 70% | APROVADA (gate 2026-08-05) |
-| Tentativas | 2 + remediação obrigatória; intervalo mínimo 7 dias; itens diferentes na 2ª | APROVADA (gate 2026-08-05) |
-| Retenção | itens equivalentes; não revoga conclusão; nunca substitui limiar absoluto | APROVADA (gate 2026-08-05) |
-| Fontes | legislação > protocolo CVG > diretriz > Ettinger 2024 > Fossum 2014 (cirurgia) > Tratado 2015; divergência = decisão humana documentada | APROVADA (gate 2026-08-05) |
-| Conteúdo | só publica após revisão humana; autor não publica o próprio; rastreabilidade completa; sínteses autorais curtas com citação, sem PDFs (B-04 em verificação) | FATO INFORMADO + APROVADA |
+| Limiares | 70% geral / 80% críticos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Composição | quiz 0% + caso 30% + prova 70% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Tentativas | 2 + remediação obrigatória; intervalo mínimo 7 dias; itens diferentes na 2ª | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Retenção | itens equivalentes; não revoga conclusão; nunca substitui limiar absoluto | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Fontes | legislação > protocolo CVG > diretriz > Ettinger 2024 > Fossum 2014 (cirurgia) > Tratado 2015; divergência = decisão humana documentada | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Conteúdo | fluxo proposto de revisão e rastreabilidade; nenhuma produção/publicação clínica até resolver B-04 e aprovar os gates | RASCUNHO/INSUMO — BLOQUEADO |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
-| Dados | mínimo necessário; sem ranking; RH proibido no piloto; retenção vínculo + 2 anos; dashboards mensais | APROVADA (gate 2026-08-05) |
-| Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA (D-068, 2026-08-05) |
+| Dados | mínimo necessário; sem ranking; RH proibido no piloto; retenção vínculo + 2 anos; dashboards mensais | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
 Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
@@ -130,22 +130,24 @@ Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOV
 - **Fossum** (FOS-2014, 4ª ed., Elsevier, 4 partes, 44 capítulos): referência cirúrgica (F-03);
 - Hierarquia e regras de divergência no [Anexo 0001](../90.ANEXOS/0001_governanca_fonte_conhecimento.md).
 
-## 12. Condições do gate Discovery (compromissos)
+## 12. Bloqueios obrigatórios dos gates
 
-B-01 entrevistas/fluxo → B-02 coorte/público → B-03 responsáveis → B-04 licenças (bloqueia conteúdo) → B-05 política de dados → B-06 áreas piloto → B-07 baseline.  
+B-01 entrevistas/fluxo → B-02 coorte/público → B-03 responsáveis → B-04 licenças (bloqueia conteúdo) → B-05 política de dados → B-06 áreas piloto → B-07 baseline. As decisões confirmadas neste rascunho não aprovam o gate; após o fechamento, Discovery e PRD devem ser reexecutados e aprovados formalmente.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
-## 13. Decisões humanas necessárias no gate PRD
+## 13. Decisões humanas e insumos para nova submissão do gate PRD
 
-1. Aprovação dos limiares, pesos e tentativas — ✅ **APROVADAS em 2026-08-05** (anexo 0008);
-2. Escopo do piloto: núcleo + emergência/internação — ✅ **APROVADO em 2026-08-05**;
+Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o gate enquanto existirem campos obrigatórios incompletos.
+
+1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
+2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
 3. Nomeação de responsáveis (B-03) — ⏳ **PENDENTE — definir na reunião de gate**;
-4. Política de dados (B-05) — ✅ **APROVADA em 2026-08-05** (RN-063 a RN-067);
-5. Política de certificação (D-049) — ✅ **APROVADA: status de conclusão no piloto**;
-6. Tratamento de reprovação recorrente (D-047) — ✅ **APROVADO: plano individual com mentor, sem punição**;
+4. Política de dados (B-05) — ⚠️ **REGRAS PRELIMINARES CONFIRMADAS PELO PATROCINADOR; VALIDAÇÃO FORMAL LGPD PENDENTE** (RN-063 a RN-067);
+5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
+6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 
-8. Verificação jurídica formal das licenças (B-04) — ⏳ **em andamento** (regra de uso aprovada em RN-046).
-9. Modalidade da primeira versão (D-068) — ✅ **APROVADA: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
+8. Verificação jurídica formal das licenças (B-04) — ⏳ **EM ANDAMENTO**; RN-046 é apenas insumo e não autoriza produção/publicação.
+9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 
 ## 14. Documentos do PRD
 

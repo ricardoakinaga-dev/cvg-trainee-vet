@@ -3,8 +3,8 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga  
 **Data:** 2026-07-29  
-**Atualização:** 2026-08-05 — gate aprovado com condições  
-**Status:** consolidado; gate aprovado com condições pelo patrocinador
+**Atualização:** 2026-08-05 — reclassificação canônica pela Alternativa 1
+**Status:** consolidado como rascunho; gate `REPROVADO — EM CORREÇÃO`
 
 ## 1. Visão geral
 
@@ -232,10 +232,10 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 ## 13. Resultado do Discovery
 
-O problema está recortado e os insumos estão organizados. A dor operacional e o fluxo atual ainda não foram validados com usuários, mas o patrocinador executivo aprovou o avanço ao PRD em 2026-08-05 com condições explícitas (bloqueios B-01 a B-07 de [0090 — Validation](0090_discovery_validation.md)), que devem ser resolvidas antes do gate do PRD.
+O problema está recortado e os insumos estão organizados, mas a dor operacional e o fluxo atual ainda não foram validados com usuários. A autorização gerencial de 2026-08-05 produziu um rascunho de PRD e decisões de produto úteis; não aprovou o gate canônico. B-01 a B-07 devem ser resolvidos e o Discovery reexecutado antes da submissão formal do PRD.
 
 ```text
-RESULTADO: APROVADO COM CONDIÇÕES (2026-08-05)
-MOTIVO: DECISÃO DO PATROCINADOR EXECUTIVO, COM COMPROMISSOS B-01 A B-07
-PRÓXIMA AÇÃO: PRD MANTENDO PENDÊNCIAS EXPLÍCITAS
+RESULTADO: REPROVADO — EM CORREÇÃO (2026-08-05)
+MOTIVO: ITENS OBRIGATÓRIOS INCOMPLETOS; ENGINES CANÔNICAS NÃO ADMITEM APROVAÇÃO CONDICIONAL
+PRÓXIMA AÇÃO: FECHAR B-01 A B-07, ATUALIZAR EVIDÊNCIAS E REEXECUTAR O GATE DISCOVERY
 ```

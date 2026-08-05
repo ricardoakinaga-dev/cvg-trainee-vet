@@ -1,7 +1,7 @@
 # Anexo 0006 — Matriz de Cobertura do Briefing
 
 **Objetivo:** demonstrar que todos os campos solicitados pelas engines foram preenchidos ou explicitamente marcados como pendentes.  
-**Atualização:** 2026-08-05 — PRD elaborado; Discovery aprovado com condições.
+**Atualização:** 2026-08-05 — Discovery e PRD reclassificados como `REPROVADOS — EM CORREÇÃO`; PRD é rascunho controlado.
 
 ## 1. Discovery
 
@@ -58,7 +58,7 @@
 
 | Requisito do solicitante | Documento | Situação |
 |---|---|---|
-| plataforma de treinamento digital, com casos e simulações digitais | 0000/0004/0009 + D-068 | modalidade aprovada; prática presencial excluída |
+| plataforma de treinamento digital, com casos e simulações digitais | 0000/0004/0009 + D-068 | modalidade confirmada pelo patrocinador como insumo; prática presencial excluída |
 | básico ao avançado | anexo 0002 | hipóteses para validar |
 | trilhas | anexo 0002 | perguntas e opções não aprovadas |
 | provas | anexo 0003 | alternativas para futuro PRD |
@@ -81,7 +81,7 @@
 | IN SCOPE | 01.PRD/0011 | preenchido (proposta) |
 | OUT OF SCOPE | 01.PRD/0011 | preenchido |
 | FUTURE SCOPE | 01.PRD/0011 | preenchido |
-| regras operacionais | 01.PRD/0012 | preenchidas — RN-001 a RN-075 |
+| regras operacionais | 01.PRD/0012 | rascunho preenchido — RN-001 a RN-085, com itens pendentes explícitos |
 | restrições | 01.PRD/0012 | preenchidas |
 | permissões de negócio | 01.PRD/0012 §8 | preenchidas |
 | validações obrigatórias | 01.PRD/0012 §9 | preenchidas |
@@ -90,7 +90,7 @@
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
 | consolidação | 01.PRD/0020 | preenchido |
-| gate | 01.PRD/0090 | aprovado com condições (2026-08-05) — decisões confirmadas; B-01/B-02/B-03/B-04/B-07 em fechamento |
+| gate | 01.PRD/0090 | reprovado — em correção; decisões do patrocinador preservadas como insumos; B-01/B-02/B-03/B-04/B-05/B-07 e requisitos pendentes bloqueiam nova submissão |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |
 
 ## 3. Campos que só podem ser fechados no PRD
@@ -98,14 +98,14 @@
 Registrados como decisões pendentes, sem antecipar tecnologia:
 
 - Casos de uso completos; ✅ fechado (como proposta)
-- IN/OUT/FUTURE aprovados; — aguardando gate
-- Regras definitivas; — propostas aguardando gate
+- IN/OUT/FUTURE documentados no rascunho; — aguardando correção e nova submissão dos gates
+- Regras definitivas; — decisões do patrocinador são insumos, gate reprovado
 - Requisitos funcionais; ✅ fechados (como proposta)
 - Requisitos não funcionais; ✅ fechados (como proposta)
 - Metas definitivas; — dependem de baseline (B-07)
-- Critério final de aprovação; — PROPOSTAS D-040 a D-044
-- Política de certificação; — PENDENTE (D-049)
-- Escopo do MVP; — proposta; áreas (B-06) e coorte (B-02) pendentes
+- Critério final de aprovação; — decisões D-040 a D-044 confirmadas como insumos; baseline/standard setting pendentes
+- Política de certificação; — decisão D-049 confirmada como insumo; gate reprovado
+- Escopo do MVP; — áreas B-06 confirmadas como insumo; inventário da coorte B-02 pendente
 - Política de acesso aos dados; — PENDENTE (B-05)
 
 ## 4. Campos que só podem ser fechados na SPEC
@@ -137,12 +137,12 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 ## 6. Resultado de cobertura
 
 ```text
-CAMPOS DE DISCOVERY: REGISTRADOS; DISCOVERY APROVADO COM CONDIÇÕES (2026-08-05)
+CAMPOS DE DISCOVERY: REGISTRADOS; GATE DISCOVERY REPROVADO — EM CORREÇÃO (2026-08-05)
 CAMPOS DESCONHECIDOS: REGISTRADOS COMO PENDENTES, SEM INVENÇÃO
 REQUISITOS DECLARADOS: MATERIALIZADOS NO PRD COMO PROPOSTA
 FONTES CLÍNICAS: REGISTRADAS E GOVERNADAS
 PROGRAMA/IMPLEMENTAÇÃO: NÃO CRIADO
-GATE DISCOVERY: APROVADO COM CONDIÇÕES (B-01 A B-07)
-PRD: APROVADO COM CONDIÇÕES (2026-08-05) — DECISÕES CONFIRMADAS
-SPEC/BUILD/AUDIT: NÃO INICIADOS
+GATE DISCOVERY: REPROVADO — B-01 A B-07 DEVEM SER FECHADOS E O GATE REEXECUTADO
+GATE PRD: REPROVADO — RASCUNHO CONTROLADO; DECISÕES CONFIRMADAS SÃO INSUMOS
+SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
 ```

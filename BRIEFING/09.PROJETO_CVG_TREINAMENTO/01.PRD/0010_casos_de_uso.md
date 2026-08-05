@@ -84,7 +84,7 @@
   4. O colaborador inicia o primeiro módulo elegível.
 - **Exceções:**
   - Lacuna em tema crítico: item adicionado ao núcleo obrigatório (não dispensável);
-  - Domínio comprovado em conteúdo obrigatório: dispensa **não aplicada no piloto** (APROVADO no gate 2026-08-05; reavaliar com dados — D-045).
+  - Domínio comprovado em conteúdo obrigatório: dispensa **não aplicada no piloto** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05; reavaliar com dados — D-045).
 - **Resultado esperado:** trilha atribuída e visível, com progressão condicionada a pré-requisitos.
 - **Observações:** personalização não pode dispensar automaticamente conteúdos obrigatórios nem temas críticos (`FATO INFORMADO` — ver 0001).
 
@@ -128,9 +128,9 @@
   2. O colaborador decide por etapa (priorização, diferenciais, exames, conduta);
   3. O sistema registra as decisões e fornece feedback;
   4. Quando somativo, o sistema calcula o resultado por rubrica/gabarito revisado.
-- **Exceções:** resposta construída — `PENDENTE` (D-063, avaliadores e dupla correção); interrupção preserva etapas concluídas.
+- **Exceções:** resposta construída — `PENDENTE` (D-070, avaliadores e dupla correção); interrupção preserva etapas concluídas.
 - **Resultado esperado:** evidência de conhecimento e raciocínio em cenário digital; peso na nota conforme regra de composição.
-- **Observações:** peso de 30% quando somativo, compondo o escore com prova 70% e quiz 0% (APROVADO no gate 2026-08-05, D-044). O resultado nunca comprova habilidade psicomotora, competência prática ou autonomia clínica (D-068).
+- **Observações:** peso de 30% quando somativo, compondo o escore com prova 70% e quiz 0% (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05, D-044). O resultado nunca comprova habilidade psicomotora, competência prática ou autonomia clínica (D-068).
 
 ### UC-006 — Realizar prova somativa
 
@@ -147,7 +147,7 @@
   - Limite de tentativas atingido: remediação obrigatória;
   - Questão anulada: recálculo das tentativas afetadas.
 - **Resultado esperado:** nota por objetivo, decisão de aprovação/reprovação e registro auditável.
-- **Observações:** limiar 70% geral e 80% críticos; 2 tentativas + remediação com intervalo mínimo de 7 dias (APROVADO no gate 2026-08-05, D-040 a D-043).
+- **Observações:** limiar 70% geral e 80% críticos; 2 tentativas + remediação com intervalo mínimo de 7 dias (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05, D-040 a D-043).
 
 ### UC-007 — Passar por remediação
 
@@ -160,7 +160,7 @@
   3. Respeita intervalo mínimo entre tentativas;
   4. Aplica nova prova com itens diferentes;
   5. Registra plano e desfecho.
-- **Exceções:** falhas repetidas (2ª reprovação): revisão humana — mentor + coordenação educacional montam plano individual de reforço; novo ciclo após plano; sem punição automática (APROVADO no gate 2026-08-05, D-047).
+- **Exceções:** falhas repetidas (2ª reprovação): revisão humana — mentor + coordenação educacional montam plano individual de reforço; novo ciclo após plano; sem punição automática (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05, D-047).
 - **Resultado esperado:** recuperação estruturada, sem exposição pública do resultado.
 - **Observações:** remediação nunca é punitiva; reforço documentado.
 
@@ -202,7 +202,7 @@
   3. Revisor independente avalia;
   4. Se anulada/alterada, o sistema recalcula tentativas afetadas e preserva versões anteriores;
   5. Usuários afetados são identificados e notificados.
-- **Exceções:** prazo de resposta: 7 dias úteis (APROVADO no gate 2026-08-05, D-046); contestação duplicada.
+- **Exceções:** prazo de resposta: 7 dias úteis (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05, D-046); contestação duplicada.
 - **Resultado esperado:** decisão auditável e recálculo correto.
 - **Observações:** nenhuma alteração silenciosa de nota (regra de governança).
 
@@ -360,7 +360,7 @@
 ## 6. Itens registrados como pendentes
 
 - Blueprint e quantidade de itens do diagnóstico (UC-001, B-07) — banco de itens por objetivo definido em 10–15 (RN-078);
-- Avaliadores e dupla correção de respostas construídas (UC-005, D-063);
+- Avaliadores e dupla correção de respostas construídas (UC-005, D-070);
 - Periodicidade dos dashboards — resolvida: mensal (RN-080);
 - Certificação interna — resolvida: status no piloto (RN-079);
 - Integrações e notificações externas (fora de escopo);

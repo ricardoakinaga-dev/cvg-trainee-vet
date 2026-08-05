@@ -4,11 +4,11 @@
 **Nome provisório do produto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Data de abertura:** 2026-07-29  
-**Fase atual:** PRD  
-**Status do gate Discovery:** `APROVADO COM CONDIÇÕES (2026-08-05)` — ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)  
-**Status do gate PRD:** `APROVADO COM CONDIÇÕES (2026-08-05)` — decisões confirmadas; aguardando fechamento de B-01, B-02 (inventário), B-03 (nomeações), B-04 (verificação jurídica) e B-07 (baseline) — ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)  
+**Fase atual:** correção dos gates Discovery e PRD
+**Status do gate Discovery:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — há itens obrigatórios incompletos; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
+**Status do gate PRD:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — o PRD existente é rascunho controlado; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
 **Status da auditoria documental:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`  
-**Modalidade aprovada (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
+**Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing; nenhuma implementação, aula, prova real ou código foi criado.
 
 ## 1. Finalidade deste diretório
@@ -35,7 +35,7 @@ DISCOVERY
 → MELHORIA CONTÍNUA
 ```
 
-Nesta etapa foi executado o **Discovery documental**, aprovado com condições pelo patrocinador em 2026-08-05 (bloqueios B-01 a B-07 assumidos como compromissos a resolver antes do gate PRD), e foi elaborado o **PRD** com as pendências explicitamente registradas. A decisão D-068 fixa a primeira versão como treinamento digital e autoriza simulações clínicas digitais apenas para conhecimento e raciocínio. Treinamento prático presencial, observação de trabalho real, habilidade psicomotora e autonomia clínica ficam fora do escopo e bloqueados pelo `GATE-EXP-PRAT-01`.
+Nesta etapa foram produzidos o **Discovery documental** e um **rascunho controlado do PRD**. Como ainda existem itens obrigatórios incompletos, ambos os gates estão `REPROVADOS — EM CORREÇÃO`. As decisões confirmadas pelo patrocinador, incluindo D-068, permanecem válidas como insumos para corrigir os documentos, mas não autorizam SPEC, BUILD, produção de conteúdo ou mudança de fase.
 
 ## 2. Regra de interpretação dos dados
 
@@ -100,16 +100,16 @@ Nenhum campo desconhecido foi apresentado como certeza.
 - Auditoria de um sistema inexistente;
 - Conteúdo derivado extensivamente do livro.
 
-## 4.1 Condições do gate Discovery (aprovado em 2026-08-05)
+## 4.1 Bloqueios obrigatórios para nova submissão dos gates
 
-O avanço ao PRD foi aprovado pelo patrocinador executivo com as seguintes condições, que devem ser satisfeitas antes do gate do PRD:
+A autorização gerencial histórica para elaborar o rascunho do PRD não substituiu os gates canônicos. Os itens abaixo devem ser fechados com evidência antes da nova submissão do Discovery e, depois, do PRD:
 
 1. mapear o fluxo atual e práticas isoladas via entrevistas (B-01);
 2. dimensionar o público e delimitar a coorte piloto (B-02);
 3. nomear PO, coordenação educacional, comitê científico e responsável LGPD (B-03);
 4. verificar licença e direitos de uso das três obras; produção de conteúdo clínico bloqueada até a resolução (B-04);
 5. aprovar política de dados e acesso (LGPD) (B-05);
-6. selecionar as áreas do piloto (B-06) — proposta registrada: núcleo comum + emergência e internação;
+6. revalidar formalmente as áreas do piloto (B-06), após B-03 — seleção confirmada pelo patrocinador como insumo: núcleo comum + emergência e internação;
 7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
 
 ## 4.2 Controle de versão obrigatório
@@ -151,7 +151,7 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 ## 6. Condição para avançar
 
-O PRD foi elaborado em 2026-08-05, com as pendências dos bloqueios B-01 a B-07 registradas explicitamente. A **SPEC somente poderá ser iniciada** depois de:
+O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abaixo não libera automaticamente a SPEC: primeiro será necessário reexecutar e aprovar formalmente os gates Discovery e PRD, com checkpoint Git identificado.
 
 1. entrevistar direção, coordenação clínica e uma amostra de veterinários;
 2. mapear o processo atual de treinamento;
@@ -160,4 +160,6 @@ O PRD foi elaborado em 2026-08-05, com as pendências dos bloqueios B-01 a B-07 
 5. nomear responsáveis de negócio, educação e revisão clínica;
 6. definir política de uso dos dados de desempenho;
 7. verificar licença e direitos de uso das três obras;
-8. aprovar formalmente `01.PRD/0090_prd_validation.md`.
+8. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
+
+Enquanto isso, são permitidas somente correção documental, desenho de instrumentos, levantamentos agregados/anônimos, nomeações, verificação jurídica, validação LGPD e sincronização dos rascunhos. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC — inclusive preparação formal —, BUILD, arquitetura, código e produção de conteúdo clínico permanecem proibidos.
