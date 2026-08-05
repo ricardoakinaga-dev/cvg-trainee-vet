@@ -16,16 +16,15 @@ surge uma necessidade de aprendizagem
 → não existe registro centralizado de progresso ou resultado
 ```
 
-O fluxo desejado preliminar, ainda sem regras de produto, é:
+O fluxo desejado pelo patrocinador em D-080 é:
 
 ```text
-Necessidade percebida de desenvolvimento contínuo
-→ avaliação diagnóstica individual
-→ linha de base e identificação de lacunas
-→ atribuição de trilha personalizada
-→ treinamento
-→ avaliações posteriores
-→ mensuração da evolução
+entrar
+→ diagnóstico curto e não punitivo
+→ trilha recomendada
+→ módulo breve com quiz e caso digital
+→ feedback imediato
+→ progresso visível e próximo passo
 ```
 
 Detalhes sobre cada prática informal podem ser levantados futuramente, mas não alteram o fluxo institucional confirmado.
@@ -108,13 +107,6 @@ Ainda não foram confirmadas. O mapeamento deve considerar:
 - Reprovação recorrente;
 - Conflito entre tratado, protocolo interno e diretriz atual.
 
-## Plano para mapear o fluxo real
+## Refinamento opcional
 
-1. Entrevistar patrocinador e direção clínica;
-2. Entrevistar coordenação/RT;
-3. Entrevistar de cinco a oito veterinários ou uma amostra proporcional;
-4. Inventariar ferramentas e materiais;
-5. Observar um ciclo real de treinamento, se existir;
-6. Registrar decisões, exceções, tempos e evidências;
-7. Validar o mapa com os participantes;
-8. Atualizar este documento antes do gate.
+O fluxo atual já está validado por D-078. Se surgir uma dúvida que afete o MVP, Ricardo pode esclarecê-la diretamente; não são exigidos entrevistas, inventário, amostragem ou observação formal.

@@ -103,7 +103,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 
 | ID | Regra | Classificação |
 |---|---|---|
-| RN-070 | Coorte piloto: 10 a 15 veterinários cobrindo os 3 turnos e os setores do piloto (número final conforme inventário B-02); demais colaboradores entram em fases seguintes | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RN-070 | Público inicial: aproximadamente 10 veterinários; todos participam da primeira aplicação, sem segmentação por setor ou turno | APROVADA PELO PATROCINADOR COMO INSUMO (D-079; B-02 FECHADO) |
 | RN-071 | Duração do piloto: 12 semanas | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-072 | Piloto digital cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -138,7 +138,7 @@ Por D-077, RN-063 a RN-067 e a [Política Mínima Interna de Dados](../90.ANEXOS
 
 **Confirmadas pelo patrocinador como insumos em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-075 a RN-085. Isso não aprova o gate. RN-023 e RN-074 permanecem pendentes.
 
-**Pendências remanescentes (dependem de levantamento/entrevistas):**
+**Pendências remanescentes:**
 
 1. RN-023 — domínio mínimo em componentes críticos (definir com dados do piloto);
 2. RN-074 — baseline (B-07);

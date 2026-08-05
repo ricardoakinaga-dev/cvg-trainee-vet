@@ -21,12 +21,13 @@
 - [x] Usuários secundários e operadores mapeados;
 - [x] Responsabilidades claras (matriz de acesso 0006 e matriz de responsabilidades em 0012 §8);
 - [x] Responsável do MVP nomeado — MV. Ricardo Akinaga acumula as funções por D-076; B-03 fechado;
-- [ ] Quantidade e perfil da coorte — parâmetros confirmados pelo patrocinador como insumos (10–15, 3 turnos); inventário e revalidação formal pendentes (B-02).
+- [x] Público/coorte confirmado por D-079: aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação obrigatória (B-02 fechado).
 
 ### FLUXOS
 
 - [x] Fluxo principal definido (jornada do colaborador, 0020 §4);
-- [ ] Exceções completamente definidas — há políticas pendentes de afastamento, acessibilidade e reprovação recorrente;
+- [x] Jornada prática e fluida confirmada por D-080: uma próxima ação clara, módulos breves, feedback imediato e progresso visível;
+- [ ] Exceções completamente definidas — afastamento e acessibilidade permanecem pendentes;
 - [x] Fluxo atual real validado por D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado.
 
 ### ESCOPO
@@ -36,7 +37,7 @@
 - [x] FUTURE SCOPE registrado (0011 §4);
 - [x] Modalidade digital e fronteira das simulações confirmadas pelo patrocinador como insumos (D-068); prática presencial bloqueada pelo `GATE-EXP-PRAT-01`;
 - [x] Áreas clínicas do piloto confirmadas pelo responsável do MVP — núcleo + Emergência + Internação (B-06);
-- [ ] Coorte piloto delimitada (B-02 — inventário).
+- [x] Coorte inicial delimitada: aproximadamente 10 veterinários, abrangendo toda a equipe (D-079).
 
 ### REGRAS
 
@@ -70,12 +71,12 @@
 | ID | Condição | Impacto | Owner recomendado | Status |
 |---|---|---|---|---|
 | B-01 | fluxo atual do treinamento | estabelecer ponto de partida | MV. Ricardo Akinaga | FECHADO POR D-078 — aprendizado informal, sem trilha, avaliação ou registro centralizado |
-| B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
+| B-02 | público e coorte | dimensionar a primeira aplicação | MV. Ricardo Akinaga | FECHADO POR D-079 — aproximadamente 10 veterinários; todos participam |
 | B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076 — MV. Ricardo Akinaga; segundo MV somente por módulo antes da publicação |
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | MV. Ricardo Akinaga | FECHADO POR D-077 — somente nome/login profissional, progresso, tentativas, notas e logs mínimos; dados clínicos reais e de tutores proibidos |
 | B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
-| B-07 | baseline ausente | metas não calibradas | coord. educacional | PENDENTE — aplicar diagnóstico na coorte |
+| B-07 | baseline ausente | metas não calibradas | MV. Ricardo Akinaga | PENDENTE — definir e aplicar diagnóstico curto |
 
 ## Decisões humanas preservadas como insumos (confirmadas em 2026-08-05 — ver anexo 0008)
 
@@ -85,7 +86,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 2. Composição quiz 0% + caso 30% + prova 70% (D-044) — ✅ corrige inconsistência RN-020/RN-022
 3. Tentativas 2 + remediação, intervalo mínimo 7 dias (D-042/D-043) — ✅
 4. Núcleo + Emergência/Internação no piloto (D-020) — ✅
-5. Piloto 12 semanas, coorte 10–15, 3 h/mês (D-061/D-060/D-016) — ✅
+5. Piloto 12 semanas, aproximadamente 10 veterinários e 3 h/mês (D-079/D-061/D-016) — ✅
 6. Certificação: status de conclusão no piloto (D-049) — ✅
 7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
 8. Política de dados: D-077 aprovou o mínimo necessário e fechou B-05; prontuários, tutores, gravações e casos reais identificáveis permanecem proibidos — ✅
@@ -100,7 +101,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 
 ```text
 STATUS: REPROVADO — EM CORREÇÃO (RECLASSIFICAÇÃO CANÔNICA, 2026-08-05)
-AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-02 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
+AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
 SPEC: PROIBIDA, INCLUSIVE PREPARAÇÃO FORMAL
 BUILD: PROIBIDO
 ```
@@ -108,7 +109,7 @@ BUILD: PROIBIDO
 ### Ações permitidas enquanto o gate estiver reprovado
 
 - Corrigir documentos e sincronizar decisões já confirmadas;
-- Executar entrevistas, inventários e baseline B-07 somente com os dados permitidos pela política D-077 e sem gravações;
+- Executar o diagnóstico B-07 somente com os dados permitidos pela política D-077;
 - Resolver regras, requisitos, exceções e critérios marcados como pendentes;
 - Preparar evidências e checkpoint Git para nova submissão dos gates.
 

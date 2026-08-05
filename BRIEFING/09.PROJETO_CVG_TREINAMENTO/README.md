@@ -11,6 +11,8 @@
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing; nenhuma implementação, aula, prova real ou código foi criado.
 
+**Princípio de produto (D-080):** o colaborador deve encontrar uma jornada curta e óbvia: entrar, receber uma recomendação, concluir módulos breves com casos digitais, obter feedback imediato e acompanhar o próprio progresso. Controles administrativos não devem criar etapas desnecessárias para quem está aprendendo.
+
 ## 1. Finalidade deste diretório
 
 Este diretório materializa o briefing do projeto sem alterar os arquivos canônicos existentes em `BRIEFING/00.DiSCOVERY` a `BRIEFING/08.RUNTIME`.
@@ -83,7 +85,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 4. [Roadmap e gates](90.ANEXOS/0004_roadmap_gates_construcao.md)
 5. [Decisões pendentes](90.ANEXOS/0005_decisoes_pendentes.md)
 6. [Matriz de cobertura](90.ANEXOS/0006_matriz_cobertura_briefing.md)
-7. [Roteiro de entrevistas e levantamento operacional](90.ANEXOS/0007_roteiro_entrevistas.md)
+7. [Perguntas opcionais de validação](90.ANEXOS/0007_roteiro_entrevistas.md)
 8. [Decisões do gate PRD — opções e recomendação](90.ANEXOS/0008_decisoes_gate_prd.md)
 9. [Validação da documentação — baseline em auditoria](90.ANEXOS/0009_validacao_documentacao.md)
 10. [Controle de versão e evidências dos gates](90.ANEXOS/0010_controle_versao_gates.md)
@@ -106,12 +108,12 @@ Nenhum campo desconhecido foi apresentado como certeza.
 A autorização gerencial histórica para elaborar o rascunho do PRD não substituiu os gates canônicos. Os itens abaixo devem ser fechados com evidência antes da nova submissão do Discovery e, depois, do PRD:
 
 1. B-01 concluído por D-078: aprendizado atual informal, sem trilha, avaliação ou registro centralizado;
-2. dimensionar o público e delimitar a coorte piloto (B-02);
+2. B-02 concluído por D-079: aproximadamente 10 veterinários, todos participam da primeira aplicação, sem inventário ou segmentação obrigatória;
 3. B-03 concluído por D-076: Ricardo concentra as responsabilidades do MVP; outro MV revisa cada módulo clínico antes da publicação;
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
-7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
+7. estabelecer baseline mínima com um diagnóstico inicial curto (B-07).
 
 ## 4.2 Controle de versão obrigatório
 
@@ -156,13 +158,12 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abaixo não libera automaticamente a SPEC: primeiro será necessário reexecutar e aprovar formalmente os gates Discovery e PRD, com checkpoint Git identificado.
 
-1. dimensionar o público e confirmar a coorte piloto;
-2. levantar uma linha de base;
-3. resolver os requisitos ainda pendentes;
-4. aplicar a política mínima D-077 nos levantamentos e no futuro sistema;
-5. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
+1. definir e aplicar um diagnóstico inicial curto para a linha de base (B-07);
+2. resolver somente os requisitos que afetem segurança ou uso do MVP;
+3. aplicar a política mínima D-077 no diagnóstico e no futuro sistema;
+4. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
 
-Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. Entrevistas, inventário e baseline devem respeitar D-077; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
+Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. O diagnóstico deve respeitar D-077; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
 
 **Política mínima de dados (D-077):** o Anexo 0011 está aprovado para o MVP e B-05 está fechado. O programa usa apenas dados de identificação/login profissional, progresso, tentativas, notas e segurança. Ricardo controla o acesso; os dados são mantidos durante o vínculo + 2 anos.
 

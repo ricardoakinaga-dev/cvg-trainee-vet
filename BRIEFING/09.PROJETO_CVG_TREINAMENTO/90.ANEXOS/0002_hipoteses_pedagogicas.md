@@ -1,7 +1,7 @@
 # Anexo 0002 — Hipóteses Pedagógicas para Validação
 
 **Status:** conjunto de hipóteses não aprovado para o futuro PRD; não constitui arquitetura de trilha  
-**Restrição:** nenhum nível, módulo, ordem, carga ou critério descrito neste anexo foi adotado. As opções existem apenas para orientar entrevistas e decisões futuras.
+**Restrição:** nenhum nível, módulo, ordem, carga ou critério descrito neste anexo foi adotado. As opções servem apenas para decisões futuras.
 
 ## 1. Princípios candidatos
 
@@ -18,23 +18,9 @@
 
 ## 2. Público
 
-### Confirmado
+### Confirmado por D-079
 
-Médicos-veterinários colaboradores do CVG.
-
-### Segmentação a levantar
-
-- Quantidade total;
-- Tempo de formação;
-- Tempo no CVG;
-- Área de atuação;
-- Especialidade;
-- Turno e unidade;
-- Exposição a emergências;
-- Função assistencial;
-- Perfil de liderança/preceptoria;
-- Necessidade de onboarding;
-- Necessidades de acessibilidade.
+Aproximadamente 10 médicos-veterinários do CVG; todos participam da primeira aplicação. Não haverá segmentação por perfil, setor ou turno no MVP. Necessidades concretas de acessibilidade poderão ser tratadas individualmente.
 
 ## 3. Diagnóstico inicial
 

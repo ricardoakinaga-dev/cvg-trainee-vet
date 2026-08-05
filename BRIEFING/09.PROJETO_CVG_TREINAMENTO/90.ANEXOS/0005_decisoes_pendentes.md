@@ -2,9 +2,9 @@
 
 **Objetivo:** transformar lacunas em perguntas acionáveis, com owner e gate.  
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
-**Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem pendentes as decisões que dependem de levantamento, entrevistas, validações e nomeações.
+**Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem somente as decisões ainda marcadas como pendentes.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-078. D-078 confirma o processo atual e fecha B-01.
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-080. D-078 confirma o processo atual, D-079 fecha o público/coorte e D-080 fixa a jornada simples do colaborador.
 
 ## 1. Identidade e governança
 
@@ -22,15 +22,15 @@
 
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
-| D-010 | Quantos veterinários participarão? | gestão/coordenação | Discovery | pendente |
-| D-011 | Quais áreas, turnos e unidades? | coordenação | Discovery | parcialmente resolvida — unidade, setores, atendimento 24 horas e escala 12 × 36 informados; abrangência da primeira fase pendente |
-| D-012 | Qual a distribuição de experiência? | gestão | Discovery | pendente |
+| D-010 | Quantos veterinários participarão? | gestão/coordenação | Discovery | resolvida por D-079 — aproximadamente 10; todos participam |
+| D-011 | Quais áreas, turnos e unidades? | coordenação | Discovery | resolvida para o MVP por D-079 — uma equipe CVG, sem segmentação por setor ou turno |
+| D-012 | Qual a distribuição de experiência? | gestão | Discovery | dispensada no MVP por D-079; o diagnóstico B-07 orientará a recomendação individual |
 | D-013 | Como o treinamento ocorre hoje? | MV. Ricardo Akinaga | Discovery | resolvida por D-078 — aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-014 | Quais ferramentas são usadas? | operação | Discovery | parcialmente resolvida — não há sistema de treinamento; ferramentas auxiliares pendentes |
 | D-015 | Quais lacunas já são conhecidas? | coord. clínica | Discovery | pendente |
 | D-016 | Quanto tempo protegido será oferecido? | direção | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 3 h/mês (RN-076) |
-| D-017 | Quais restrições de dispositivo/conectividade? | usuários/TI | PRD | pendente (levantamento/entrevistas) |
-| D-018 | Quais necessidades de acessibilidade? | RH/usuários | PRD | pendente (levantamento/entrevistas) |
+| D-017 | Quais restrições de dispositivo/conectividade? | MV. Ricardo Akinaga | PRD | confirmar apenas se afetar o MVP |
+| D-018 | Quais necessidades de acessibilidade? | MV. Ricardo Akinaga | PRD | confirmar apenas se houver necessidade concreta |
 
 ## 3. Escopo clínico
 
@@ -41,7 +41,7 @@
 | D-022 | O foco inicial será cães, gatos ou ambos? | coord. clínica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): cães e gatos (RN-077) |
 | D-023 | Quais conteúdos são eletivos? | coord. educacional | PRD | pendente (detalhamento do conteúdo no piloto) |
 | D-024 | Quais competências definem básico/intermediário/avançado? | comitê | PRD | pendente (blueprint com comitê) |
-| D-025 | Quais protocolos internos prevalecem? | RT | PRD | pendente (inventário de protocolos — anexo 0007) |
+| D-025 | Quais protocolos internos prevalecem? | MV. Ricardo Akinaga | PRD | informar somente os protocolos relevantes para cada módulo |
 | D-026 | Quais temas exigem reciclagem obrigatória? | RT | PRD | pendente (validade por tipo em RN-047) |
 
 ## 4. Fontes e direitos
@@ -91,7 +91,7 @@
 
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
-| D-060 | Qual coorte piloto? | coordenação | Discovery | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 veterinários, 3 turnos (RN-070); inventário pendente (B-02) |
+| D-060 | Qual coorte piloto? | coordenação | Discovery | substituída por D-079: aproximadamente 10 veterinários, todos participam; sem inventário ou segmentação obrigatória |
 | D-061 | Qual duração? | PO | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 12 semanas (RN-071) |
 | D-062 | Quantos módulos? | PO/comitê | PRD | pendente |
 | D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 itens (RN-078) |
@@ -110,21 +110,14 @@
 | D-076 | Qual governança organizacional é proporcional ao MVP interno? | patrocinador | governança/B-03 | aprovada (2026-08-05): Alternativa 1, Ricardo concentra as responsabilidades; outro MV revisa cada módulo clínico antes da publicação; sem comitês ou suplentes; B-03 fechado para o MVP |
 | D-077 | Qual política de dados é proporcional ao MVP interno? | patrocinador | dados/B-05 | aprovada (2026-08-05): Alternativa 1, somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos; B-05 fechado para o MVP |
 | D-078 | Como funciona atualmente o treinamento veterinário no CVG? | patrocinador | Discovery/B-01 | confirmada (2026-08-05): não existe treinamento padronizado; o aprendizado é informal, conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
+| D-079 | Qual é o público da primeira aplicação? | patrocinador | Discovery/B-02 | aprovada (2026-08-05): aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação por setor, turno ou perfil; B-02 fechado |
+| D-080 | Qual princípio deve orientar a experiência do colaborador? | patrocinador | PRD/usabilidade | aprovada (2026-08-05): jornada prática e fluida, com módulos breves, casos digitais, feedback imediato, progresso visível e uma próxima ação clara; controles administrativos ficam nos bastidores |
 
-## 8. Perguntas para a primeira reunião
+## 8. Próximas perguntas úteis
 
-1. Quantos veterinários existem e como estão distribuídos?
-2. Como treinamentos são realizados hoje?
-3. Quais três lacunas mais preocupam a direção clínica?
-4. Quais temas têm maior risco e frequência?
-5. Há tempo protegido?
-6. Quem será dono do produto?
-7. Quem aprovará conteúdo?
-8. Quem poderá ver notas individuais?
-9. A finalidade é desenvolvimento, conformidade, certificação interna ou combinação?
-10. Quais direitos de uso das obras estão disponíveis?
-11. Quais protocolos internos existem?
-12. Qual coorte e duração do piloto?
+1. Qual formato curto será usado no diagnóstico inicial?
+2. Qual será o primeiro módulo?
+3. Há alguma restrição real de dispositivo ou acessibilidade?
 
 ## 9. Regra de fechamento
 

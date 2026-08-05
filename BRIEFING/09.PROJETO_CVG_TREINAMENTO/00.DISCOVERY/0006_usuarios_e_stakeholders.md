@@ -1,11 +1,13 @@
 # 0006 — Usuários e Stakeholders
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
-**Status:** governança enxuta aprovada por D-076; B-03 fechado para o MVP interno
+**Status:** governança enxuta aprovada por D-076; público confirmado por D-079; B-02/B-03 fechados
 
 ## Usuário primário
 
 ### Médico-veterinário colaborador
+
+**Público informado:** aproximadamente 10 médicos-veterinários. Todos participam da primeira aplicação; não é necessário segmentar por setor ou turno nesta fase.
 
 **Objetivos:**
 
@@ -119,21 +121,9 @@ B-03 fica `FECHADO PARA O MVP INTERNO` por D-076. D-071 e D-072 permanecem apena
 - Fornecedores de cursos;
 - CFMV/CRMV e autoridades, quando aplicável.
 
-## Segmentações necessárias
+## Dimensionamento do público
 
-As segmentações abaixo podem ser levantadas de forma agregada para planejar a coorte, mas não entram no cadastro individual do MVP sem nova decisão de Ricardo e atualização do [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md).
-
-- Experiência profissional;
-- Tempo no CVG;
-- Função;
-- Área ou especialidade;
-- Unidade;
-- Turno;
-- Nível atual;
-- Necessidade de onboarding;
-- Necessidade de reciclagem;
-- Acessibilidade;
-- Tipo de vínculo.
+Por D-079, o público é de aproximadamente 10 veterinários e todos participam da primeira aplicação. Nomes, distribuição por turno, setor, experiência ou outros perfis não são necessários para fechar B-02 nem devem ser registrados no Git.
 
 ## Matriz resumida de acesso
 

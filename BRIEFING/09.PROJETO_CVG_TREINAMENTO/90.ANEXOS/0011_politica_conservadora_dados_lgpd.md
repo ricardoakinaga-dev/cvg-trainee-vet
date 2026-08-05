@@ -100,7 +100,7 @@ Suspeita de acesso indevido, vazamento ou perda de dados deve ser comunicada ime
 
 B-05 fica fechado para o MVP interno. Quando a plataforma estiver implementada com os controles da seção 6 e o aviso da seção 7, ficam autorizados somente os dados listados na seção 1.
 
-Entrevistas, inventário da coorte, diagnóstico e baseline podem usar dados identificados dentro desse limite. Continuam proibidos gravações, prontuários, dados de tutores e casos reais identificáveis.
+O diagnóstico e a baseline podem usar dados identificados dentro desse limite. Continuam proibidos gravações, prontuários, dados de tutores e casos reais identificáveis.
 
 ## 10. Controle de mudança
 

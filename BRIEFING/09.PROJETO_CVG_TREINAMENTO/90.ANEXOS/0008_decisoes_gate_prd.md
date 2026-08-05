@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03, D-077 fechou B-05 e D-078 fechou B-01. Os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes desses itens.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03, D-077 fechou B-05, D-078 fechou B-01, D-079 fechou B-02 e D-080 definiu a jornada simples do colaborador. Os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes desses itens.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -293,6 +293,50 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ---
 
+## 0.10 Público da primeira aplicação — D-079
+
+| Alternativa | Tratamento | Veredito |
+|---|---|---|
+| **1** | **Aproximadamente 10 veterinários; todos participam; sem inventário ou segmentação** | **selecionada — suficiente para um treinamento interno** |
+| 2 | Escolher um subgrupo para o piloto | cria exclusão sem necessidade para uma equipe pequena |
+| 3 | Catalogar nomes, setores, turnos e perfis antes do piloto | coleta e trabalho sem utilidade para o MVP |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. O número serve somente para dimensionar a aplicação. B-02 está fechado; não haverá entrevistas, inventário nominal nem segmentação obrigatória.
+
+### Evidência do checkpoint D-079
+
+| Campo | Registro |
+|---|---|
+| Alternativa aprovada | Alternativa 1 |
+| Commit do conteúdo revisado | `PENDENTE_APOS_COMMIT` |
+| Tag do gate | `gate-d079-simple-pilot-audience-2026-08-05` |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Validações | `git diff --check`; links Markdown relativos; unicidade de IDs; varredura de segredos; PDFs não versionados |
+| Resultado | `APROVADO — D-079/B-02 FECHADOS` |
+
+## 0.11 Jornada simples do colaborador — D-080
+
+| Alternativa | Experiência | Veredito |
+|---|---|---|
+| **1** | **Uma próxima ação clara, módulos breves, casos digitais, feedback imediato e progresso visível** | **selecionada — prática e fluida** |
+| 2 | Exibir todas as funções, provas, métricas e regras no painel principal | aumenta carga cognitiva |
+| 3 | Reproduzir no colaborador as etapas administrativas do programa | burocrático e inadequado ao uso diário |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. Os controles necessários continuam nos bastidores; o colaborador vê somente o que precisa fazer agora, o feedback e o progresso.
+
+### Evidência do checkpoint D-080
+
+| Campo | Registro |
+|---|---|
+| Diretriz aprovada | jornada prática e fluida |
+| Commit do conteúdo revisado | `PENDENTE_APOS_COMMIT` |
+| Tag do gate | `gate-d080-simple-learner-journey-2026-08-05` |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Validações | `git diff --check`; links Markdown relativos; unicidade de IDs; varredura de segredos; PDFs não versionados |
+| Resultado | `APROVADO — D-080 REGISTRADA` |
+
+---
+
 ## 1. Avaliação (D-040 a D-044, D-063)
 
 ### D-040 — Limiar geral de aprovação
@@ -405,7 +449,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ---
 
-## 3. Piloto (B-02, B-06, D-060, D-061, D-016)
+## 3. Piloto (B-02, B-06, D-079, D-061, D-016)
 
 ### B-06 / D-020 — Áreas do piloto
 
@@ -417,15 +461,15 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 **Recomendação: Opção A** (confirma proposta do PRD e anexo 0002 §13).
 
-### B-02 / D-060 — Coorte piloto
+### B-02 / D-079 — Público da primeira aplicação
 
-| Opção | Coorte | Veredito |
+| Opção | Público | Veredito |
 |---|---|---|
-| A | Até 10 veterinários (se houver mais: amostra estratificada por setor/turno) | conservador; amostra pequena para psicometria |
-| **B** | **10 a 15 veterinários cobrindo os 3 turnos e os setores do piloto** | **recomendado — volume viável para autoria/revisão e dados úteis** |
-| C | Todos os veterinários | escopo alto; sobrecarrega produção de conteúdo |
+| **A** | **Aproximadamente 10 veterinários; todos participam** | **selecionada — equipe pequena e escopo direto** |
+| B | Subgrupo dos veterinários | desnecessário nesta escala |
+| C | Todos, mas segmentados por setor/turno/perfil | complexidade sem benefício para o MVP |
 
-**Recomendação: 10 a 15 veterinários** (número final depende do inventário B-02). Como é um sistema de treinamento da própria equipe, o acesso da plataforma é para a equipe inteira, mas o **piloto formal de conteúdo é limitado à coorte**; os demais entram em fases seguintes.
+**Decisão: aproximadamente 10 veterinários, com participação de toda a equipe.** B-02 está fechado sem inventário nominal ou segmentação.
 
 ### D-061 — Duração do piloto
 
@@ -498,13 +542,15 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Reprovação recorrente | plano individual com mentor; sem punição |
 | Certificação | status no piloto; certificado na expansão |
 | Áreas do piloto | núcleo + emergência + internação |
-| Coorte | 10–15 veterinários (3 turnos) |
+| Público | aproximadamente 10 veterinários; todos participam; sem segmentação |
 | Duração | 12 semanas |
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
 | Dados/B-05 | D-077: política mínima aprovada; somente identificação/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores e casos reais identificáveis proibidos |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
 | Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |
 | Processo atual/B-01 | D-078: aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
+| Público/B-02 | D-079: aproximadamente 10 veterinários; todos participam; B-02 fechado sem inventário |
+| Experiência do colaborador | D-080: uma próxima ação clara, módulos breves, casos digitais, feedback imediato e progresso visível |
 
 ---
 
@@ -513,9 +559,8 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 ✅ **Decisões de produto confirmadas e aplicadas ao rascunho em 2026-08-05.** Isso não representa aprovação do gate.
 
 **Remanescentes para fechamento total:**
-1. Inventário de usuários/coorte (B-02);
-2. Manter os controles operacionais de fontes definidos em D-075;
-3. Aplicar diagnóstico inicial e coletar baseline (B-07), respeitando D-077;
-4. Resolver os requisitos marcados como pendentes no PRD.
+1. Aplicar diagnóstico inicial e coletar baseline (B-07), respeitando D-077;
+2. Resolver somente os requisitos pendentes necessários ao MVP;
+3. Reexecutar os gates na sequência prevista.
 
 Após isso, o Discovery deve ser reexecutado e aprovado; em seguida, o PRD deve ser reexecutado sobre um checkpoint Git identificado e submetido à aprovação humana. O status não muda automaticamente. A SPEC permanece bloqueada até ambas as aprovações formais.

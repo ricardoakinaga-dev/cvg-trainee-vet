@@ -15,8 +15,9 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-001 | O sistema deve responder adequadamente durante avaliações em horários de pico do hospital (24h, escala 12×36) | HIPÓTESE |
 | RNF-002 | Interação de estudo e quiz deve ser fluida em dispositivos móveis e computadores | PROPOSTA |
-| RNF-003 | O número de usuários simultâneos é desconhecido; deve ser dimensionado após inventário (B-02) | PENDENTE |
+| RNF-003 | O MVP deve atender com folga a equipe informada de aproximadamente 10 veterinários | PROPOSTA; B-02 FECHADO POR D-079 |
 | RNF-004 | Não deve haver perda de resposta por lentidão durante avaliação; política de tolerância definida no piloto | PROPOSTA |
+| RNF-005 | A jornada do colaborador deve priorizar linguagem simples, uma próxima ação clara e nenhum acesso a telas administrativas | APROVADA PELO PATROCINADOR (D-080) |
 
 ## 2. Confiabilidade
 

@@ -96,8 +96,8 @@
 
 - Necessidade de conciliar fonte nacional de 2015 com referência internacional de 2024 e normas brasileiras vigentes;
 - Ausência de baseline;
-- Participantes ainda não entrevistados para preferências e restrições, sem reabrir B-01;
-- Quantidade e perfil de veterinários desconhecidos;
+- Preferências de dispositivo e acessibilidade podem ser confirmadas somente se afetarem o MVP;
+- Público aproximado de 10 veterinários confirmado; perfis individuais não são necessários no MVP;
 - Plataforma e simulações digitais não medem habilidade psicomotora, competência prática ou autonomia clínica;
 - Correlação educacional não prova causalidade clínica;
 - Metas iniciais ainda não calibradas.
@@ -111,8 +111,7 @@
 
 ## Riscos que mantêm Discovery e PRD reprovados
 
-1. Público e coorte ainda não dimensionados (B-02);
-2. Baseline ainda não coletada (B-07);
-3. Restrições de dispositivo, conectividade e acessibilidade ainda não confirmadas;
-4. Requisitos e exceções do PRD ainda incompletos;
-5. Protocolos internos ainda não inventariados.
+1. Baseline ainda não coletada (B-07);
+2. Restrições de dispositivo, conectividade e acessibilidade ainda não confirmadas;
+3. Requisitos e exceções do PRD ainda incompletos;
+4. Protocolos internos ainda não inventariados.

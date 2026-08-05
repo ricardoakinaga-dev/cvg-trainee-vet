@@ -122,19 +122,13 @@ A personalização não deverá dispensar automaticamente conteúdos institucion
 5. Existência do *Ettinger’s Textbook of Veterinary Internal Medicine*, 9ª edição, publicado em 2024, indicado como fonte atualizada;
 6. Existência do documento anterior `sistema_treinamento_veterinarios_cvg.md`, com diretrizes gerais de treinamento contínuo.
 7. Confirmação de MV. Ricardo Akinaga, responsável por todas as áreas do MVP, de que o aprendizado atual é informal e não possui trilha, avaliação ou registro centralizado (D-078).
+8. Público de aproximadamente 10 veterinários, todos participantes da primeira aplicação (D-079).
 
 ### Ausentes
 
-- Entrevistas com usuários;
-- Detalhes opcionais sobre práticas informais e ferramentas auxiliares, sem bloquear B-01;
-- Quantidade e perfil dos veterinários;
-- Avaliações ou treinamentos existentes;
-- Taxas atuais de adesão e conclusão;
+- Linha de base do diagnóstico curto (B-07);
 - Levantamento de lacunas clínicas;
-- Indicadores assistenciais relacionados;
-- Custos atuais;
-- Pesquisa de percepção;
-- Inventário de protocolos internos.
+- Protocolos internos relevantes para cada módulo.
 
 ## Respostas às perguntas obrigatórias
 
@@ -160,10 +154,4 @@ Primariamente os veterinários colaboradores; secundariamente coordenação clí
 
 ## Critério de validação da dor
 
-A dor será considerada validada quando houver:
-
-- Entrevistas com direção/coordenação e amostra representativa de veterinários;
-- Inventário do processo e das ferramentas atuais;
-- Pelo menos uma linha de base educacional;
-- Priorização de lacunas por risco, frequência e impacto;
-- Confirmação de que o problema não pode ser resolvido apenas com ajuste de processo sem produto.
+A dor está validada pela descrição direta do processo atual em D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado. B-01 está fechado. O diagnóstico curto B-07 medirá o ponto de partida educacional, sem exigir entrevistas ou inventário.

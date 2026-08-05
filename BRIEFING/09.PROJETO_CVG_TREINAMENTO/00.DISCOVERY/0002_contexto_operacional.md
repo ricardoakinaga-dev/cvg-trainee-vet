@@ -18,23 +18,17 @@
 - **Funcionamento:** atendimento 24 horas;
 - **Regime de trabalho informado:** escala 12 × 36.
 
-**PENDENTE:** confirmar se todos os médicos-veterinários desses setores participarão da primeira fase, se existem outras escalas ou vínculos e como o treinamento será acomodado entre plantões.
+**CONFIRMADO — D-079:** o público é de aproximadamente 10 médicos-veterinários e todos participam da primeira aplicação. Setor, turno e tipo de vínculo não serão usados para segmentar o MVP.
 
 ## Etapas do fluxo afetadas
 
-1. Identificação de necessidades de aprendizagem;
-2. Nivelamento inicial;
-3. Definição e atribuição de trilha;
-4. Consumo de conteúdo teórico;
-5. Prática de recuperação por quizzes;
-6. Avaliação formativa;
-7. Avaliação somativa;
-8. Remediação;
-9. Medição de retenção;
-10. Progressão entre níveis;
-11. Acompanhamento por gestor ou mentor;
-12. Revisão e atualização do conteúdo;
-13. Auditoria de notas, tentativas e decisões.
+1. Entrada e diagnóstico curto;
+2. Recomendação da trilha;
+3. Módulos digitais breves;
+4. Quiz e caso/simulação digital;
+5. Feedback imediato;
+6. Progresso e revisão direcionada;
+7. Atualização segura do conteúdo pela coordenação.
 
 Os itens acima representam o **fluxo desejado declarado**, não o fluxo atual confirmado.
 
@@ -94,7 +88,7 @@ Exemplos de práticas que podem ocorrer, sem necessidade de inventário para fec
 - Dispositivos disponíveis;
 - Conectividade;
 - Acessibilidade;
-- Número de usuários simultâneos;
+- Uso simultâneo de uma equipe de aproximadamente 10 veterinários;
 - Uso em celular e computador;
 - Confidencialidade dos resultados;
 - Separação entre desenvolvimento e decisão disciplinar;

@@ -41,7 +41,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 - **Núcleo comum obrigatório** (anexo 0002, seção 5): segurança do paciente, responsabilidade profissional, comunicação, exame e história, medicina baseada em evidências, dor, fluidoterapia, segurança medicamentosa, antimicrobial stewardship, registro clínico e reconhecimento de emergência;
 - **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo responsável do MVP (B-06);
 - Espécies: **cães e gatos** (D-022 resolvido);
-- Coorte: **10 a 15 veterinários** cobrindo os 3 turnos e os setores do piloto; número final conforme inventário (B-02); demais colaboradores entram em fases seguintes;
+- Público/coorte: **aproximadamente 10 veterinários**, com participação de toda a equipe; sem segmentação obrigatória por setor ou turno (D-079/B-02 fechado);
 - Duração do piloto: **12 semanas** (D-061 resolvido);
 - Tempo protegido: **3 h/mês por veterinário**; decomposição entre microlearning e atividades digitais de caso será reconciliada no item de carga (D-016 resolvido quanto ao total);
 - Banco de questões: **10 a 15 itens por objetivo** (D-063 resolvido).
@@ -96,6 +96,6 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 | 0 | Corrigir e revalidar Briefing (Discovery + PRD) | gates 0090 Discovery e PRD aprovados, nessa ordem |
 | 1 | SPEC | PRD aprovado |
 | 2 | BUILD (MVP piloto) | SPEC aprovada |
-| 3 | Piloto controlado (coorte de 10–15, 12 semanas) | build funcional |
+| 3 | Piloto controlado (aproximadamente 10 veterinários, 12 semanas) | build funcional |
 | 4 | AUDIT | piloto em operação |
 | 5 | Melhoria contínua e expansão | decisão do patrocinador |

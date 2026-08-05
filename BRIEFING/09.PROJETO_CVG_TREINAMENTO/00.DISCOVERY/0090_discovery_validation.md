@@ -40,15 +40,15 @@
 - [x] Fora de escopo definido;
 - [x] Limites da avaliação teórica definidos;
 - [x] Áreas clínicas do piloto confirmadas pelo patrocinador — núcleo + Emergência + Internação (B-06);
-- [ ] Coorte piloto delimitada.
+- [x] Público/coorte delimitado por D-079: aproximadamente 10 veterinários; todos participam da primeira aplicação.
 
 ### Usuários
 
 - [x] Usuário primário definido;
 - [x] Usuários secundários propostos;
 - [x] Impactados indiretos mapeados;
-- [ ] Quantidade e perfis levantados;
-- [ ] Usuários entrevistados;
+- [x] Quantidade informada: aproximadamente 10 veterinários; segmentação individual dispensada por D-079;
+- [x] Público confirmado pelo responsável do MVP; entrevistas permanecem opcionais;
 - [x] Decisor do MVP nomeado — MV. Ricardo Akinaga acumula as responsabilidades por D-076; B-03 fechado.
 
 ### Hipótese de valor
@@ -82,7 +82,7 @@
 | ID | Bloqueio | Impacto | Ação necessária | Responsável | Prazo |
 |---|---|---|---|---|---|
 | B-01 | fluxo atual do treinamento | estabelecer ponto de partida | descrição confirmada por Ricardo em D-078 | MV. Ricardo Akinaga | FECHADO — aprendizado informal, sem trilha, avaliação ou registro centralizado |
-| B-02 | público não dimensionado | impede recorte do piloto | inventário de usuários | PENDENTE | PENDENTE |
+| B-02 | público e coorte | dimensionar a primeira aplicação | confirmação direta de Ricardo | MV. Ricardo Akinaga | FECHADO POR D-079 — aproximadamente 10 veterinários; todos participam |
 | B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | aplicar D-076; segundo MV somente antes da publicação de cada módulo clínico | MV. Ricardo Akinaga | FECHADO PARA O MVP INTERNO |
 | B-04 | uso das fontes no MVP interno | risco controlado | aplicar D-075: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo | patrocinador | FECHADO PARA O MVP INTERNO |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | aplicar o Anexo 0011 | MV. Ricardo Akinaga | FECHADO POR D-077 — dados do treinamento permitidos; prontuários, tutores, gravações e casos reais identificáveis proibidos |
@@ -102,7 +102,7 @@ BUILD: PROIBIDO
 AUDIT: NÃO APLICÁVEL
 ```
 
-Enquanto o gate estiver reprovado, são permitidas correção documental e preparação de conteúdo original em rascunho, sem publicar o programa. **Por D-077, entrevistas, inventário e baseline podem tratar apenas os dados mínimos do treinamento; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos.** PRD formal, SPEC, BUILD, arquitetura, código e publicação continuam sujeitos aos gates aplicáveis.
+Enquanto o gate estiver reprovado, são permitidas correção documental e preparação de conteúdo original em rascunho, sem publicar o programa. **Por D-077, o diagnóstico pode tratar apenas os dados mínimos do treinamento; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos.** PRD formal, SPEC, BUILD, arquitetura, código e publicação continuam sujeitos aos gates aplicáveis.
 
 Por D-076, MV. Ricardo Akinaga é o responsável efetivo pelo MVP e pode decidir e aprovar os documentos sobre commits identificados.
 
@@ -111,12 +111,12 @@ Por D-076, MV. Ricardo Akinaga é o responsável efetivo pelo MVP e pode decidir
 | ID | Condição | Compromisso | Prazo-alvo |
 |---|---|---|---|
 | B-01 | fluxo atual validado por D-078 | manter a descrição como ponto de partida; detalhes informais são opcionais | concluído |
-| B-02 | público não dimensionado | inventário de usuários e definição da coorte piloto | antes da nova submissão Discovery |
+| B-02 | público/coorte confirmado por D-079 | aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação obrigatória | concluído |
 | B-03 | responsável do MVP | Ricardo nomeado por D-076; segundo MV será identificado por módulo antes da publicação | concluído |
 | B-04 | governança de fontes recalibrada por D-075 | fechado para o MVP interno; D-033 permanece separada e não bloqueia a autoria manual | concluído |
 | B-05 | fechado por D-077 | aplicar a política mínima interna; nenhuma ampliação de dados sem nova decisão | controle contínuo |
 | B-06 | áreas clínicas do piloto | decisão confirmada: núcleo + Emergência + Internação | fechado como insumo; revalidar no gate |
-| B-07 | baseline ausente | aplicar diagnóstico inicial na coorte definida | antes da nova submissão Discovery |
+| B-07 | baseline ausente | definir e aplicar diagnóstico inicial curto | antes da nova submissão Discovery |
 
 Regra de efeito: qualquer artefato do PRD cujo conteúdo dependa de um bloqueio não resolvido deverá declarar `PENDENTE` e referenciar o ID do bloqueio, sem inventar a informação.
 
@@ -125,8 +125,8 @@ Regra de efeito: qualquer artefato do PRD cujo conteúdo dependa de um bloqueio 
 O gate somente poderá ser novamente submetido quando os itens abaixo estiverem satisfeitos e acompanhados de evidência. Não existe aprovação condicional nem waiver nesta alternativa:
 
 1. o fluxo atual validado em D-078 for preservado (B-01 fechado);
-2. quantidade, perfil e restrições dos participantes forem levantados (B-02 e checklist de usuários);
-3. a coorte e as áreas piloto estiverem definidas (B-02, B-06);
+2. o público/coorte de aproximadamente 10 veterinários for preservado (B-02 fechado);
+3. as áreas piloto continuarem definidas (B-06);
 4. responsável do MVP estiver registrado (B-03 — concluído);
 5. direitos e política de fontes estiverem decididos (B-04);
 6. política mínima de dados D-077 for respeitada (B-05 fechado);
@@ -139,4 +139,4 @@ O gate somente poderá ser novamente submetido quando os itens abaixo estiverem 
 | Responsável pelo MVP interno | MV. Ricardo Akinaga | patrocinador, produto, coordenação clínica/educacional, operação, dados, segurança e aprovação dos gates documentais | 2026-08-05 |
 | Revisor de conteúdo clínico | outro MV escolhido por módulo | exigido somente antes da publicação do módulo | POR MÓDULO |
 
-Registro vigente: B-01, B-03, B-04 e B-05 estão fechados por D-078, D-076, D-075 e D-077. O gate Discovery continua pendente pelos demais itens.
+Registro vigente: B-01, B-02, B-03, B-04 e B-05 estão fechados por D-078, D-079, D-076, D-075 e D-077. O gate Discovery continua pendente pelos demais itens.

@@ -11,37 +11,35 @@
 
 ## 1. Visão geral
 
-O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para médicos-veterinários do CVG, com progressão básico → intermediário → avançado, avaliação diagnóstica inicial obrigatória, trilha personalizada, quizzes, casos e simulações clínicas digitais, provas, remediação, avaliação de retenção e métricas individuais e gerenciais, com conteúdo rastreável e revisado por humanos.
+O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina diagnóstico curto, trilha recomendada, módulos breves, quizzes, casos/simulações digitais, feedback imediato e progresso visível. O conteúdo é original do CVG e revisado por humanos.
 
 O produto **não** oferece treinamento prático presencial associado à plataforma, não avalia habilidade psicomotora ou competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos. Resultados de casos ou simulações digitais representam apenas conhecimento e raciocínio em cenário simulado (D-068).
 
 ## 2. Problema
 
-O CVG precisa garantir desenvolvimento teórico progressivo e mensurável dos veterinários. Não há processo institucional validado conectando diagnóstico inicial → linha de base → trilha → aprendizagem → avaliação → remediação → retenção → progressão → acompanhamento. Dimensões de medição: ativação, progresso, conclusão, domínio, ganho, retenção, recuperação, atraso, abandono, qualidade dos itens e governança do conteúdo.
+Hoje o aprendizado é informal e depende da disponibilidade dos profissionais. O produto deve dar ao colaborador um próximo passo claro, permitir prática digital com feedback e mostrar a evolução sem transformar o treinamento em burocracia.
 
 Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 
 ## 3. Usuários
 
 - **Primário:** médico-veterinário colaborador;
-- **Secundários:** mentor/preceptor, autor/instrutor, revisor clínico, revisor pedagógico, gestor educacional, gestor clínico, gestão de pessoas (restrito);
-- **Operadores:** administrador, auditor/compliance;
-- **Responsável pelo MVP:** MV. Ricardo Akinaga acumula patrocínio, produto, coordenação clínica/educacional, operação, dados, segurança e gates documentais por D-076; outro MV revisa cada módulo clínico antes da publicação; B-03 fechado.
+- **Responsável pelo MVP:** MV. Ricardo Akinaga administra o programa, produz/aprova conteúdos e responde pelos gates documentais;
+- **Revisor:** outro médico-veterinário faz a segunda conferência de cada módulo clínico antes da publicação;
+- **Apoio opcional:** mentor ou suporte técnico, somente quando Ricardo autorizar;
 
 ## 4. Fluxos principais
 
 ### 4.1 Jornada do colaborador
 
 ```text
-diagnóstico inicial obrigatório
-→ linha de base por competência
-→ trilha personalizada (núcleo obrigatório + reforços)
-→ unidade de conteúdo
-→ quiz formativo (feedback)
-→ caso clínico/simulação digital
-→ prova somativa
-→ aprovação? → retenção (30/60/90 dias) → progressão
-→ reprovação? → remediação → nova tentativa
+entrar
+→ fazer um diagnóstico curto, sem aprovação ou reprovação
+→ receber uma trilha recomendada
+→ concluir módulos de 8–15 minutos
+→ praticar com quiz e caso/simulação digital
+→ receber feedback imediato
+→ acompanhar o progresso e revisar apenas o necessário
 ```
 
 ### 4.2 Governança editorial
@@ -71,9 +69,10 @@ contestações e alterações de gabarito → protocolo → revisor independente
 
 ### IN (piloto/MVP proposto)
 
-- Diagnóstico, trilha, conteúdo revisado, quizzes, casos e simulações digitais, prova, remediação, retenção, painéis, banco de questões, governança editorial, contestações, auditoria, papéis e permissões;
+- Jornada do colaborador: diagnóstico curto, trilha recomendada, módulos breves, quizzes, casos/simulações digitais, feedback e progresso;
+- Bastidores mínimos: login, publicação com segunda conferência veterinária, controle de acesso e registro de alterações sensíveis;
 - Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05);
-- Coorte proposta: 10–15 veterinários (3 turnos); duração: 12 semanas; tempo protegido: 3 h/mês — confirmados pelo patrocinador como insumos, sem aprovação do gate; inventário B-02 pendente.
+- Público/coorte: aproximadamente 10 veterinários, com participação de toda a equipe; duração: 12 semanas; tempo protegido: 3 h/mês (D-079; B-02 fechado).
 
 ### OUT
 
@@ -105,7 +104,7 @@ Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
 ## 7. Requisitos funcionais (resumo)
 
-P0: autenticação, diagnóstico, trilha, conteúdo com governança, quizzes, casos e simulações digitais, prova, remediação, retenção, contestações, painéis, auditoria, banco de questões, permissões e bloqueio de inferência/registro de competência prática.
+P0 do colaborador: entrar, fazer o diagnóstico curto, ver a trilha, concluir módulos, responder quizzes/casos com feedback imediato e acompanhar o progresso. Controles de publicação, permissão e registro ficam nos bastidores.
 Detalhes em [0013 — Requisitos funcionais](0013_requisitos_funcionais.md).
 
 ## 8. Requisitos não funcionais (resumo)
@@ -134,7 +133,7 @@ As identificações abaixo pertencem à governança interna e não serão exibid
 
 ## 12. Bloqueios obrigatórios dos gates
 
-B-03, B-04 e B-05 estão fechados por D-076, D-075 e D-077. Entrevistas, inventário da coorte e baseline podem usar somente os dados permitidos pela política mínima. Depois do fechamento dos demais bloqueios, Discovery e PRD devem ser reexecutados.
+B-01, B-02, B-03, B-04 e B-05 estão fechados por D-078, D-079, D-076, D-075 e D-077. A baseline pode usar somente os dados permitidos pela política mínima. Depois do fechamento dos demais bloqueios, Discovery e PRD devem ser reexecutados.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
 ## 13. Decisões humanas e insumos para nova submissão do gate PRD
@@ -147,7 +146,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 4. Política de dados (B-05) — ✅ **POLÍTICA MÍNIMA INTERNA APROVADA POR D-077; B-05 FECHADO** (RN-063 a RN-067 e Anexo 0011);
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
-7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 
+7. Público (B-02) — ✅ **FECHADO POR D-079: aproximadamente 10 veterinários, todos participam**; baseline B-07 continua pendente.
 8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 

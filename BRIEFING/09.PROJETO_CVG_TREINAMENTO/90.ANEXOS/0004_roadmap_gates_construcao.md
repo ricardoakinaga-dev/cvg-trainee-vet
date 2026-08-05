@@ -41,12 +41,12 @@ Produzidos neste briefing:
 
 ### Estado
 
-**`REPROVADO — EM CORREÇÃO` (2026-08-05).** A autorização gerencial para elaborar um rascunho de PRD não substitui o gate canônico. B-01 foi fechado por D-078; os demais itens incompletos permanecem no [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
+**`REPROVADO — EM CORREÇÃO` (2026-08-05).** A autorização gerencial para elaborar um rascunho de PRD não substitui o gate canônico. B-01 e B-02 foram fechados por D-078 e D-079; os demais itens incompletos permanecem no [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
 ### Próximas atividades permitidas
 
 - Correção dos artefatos de Discovery e do rascunho de PRD;
-- Entrevistas, inventários e baseline B-07 dentro do conjunto mínimo de dados aprovado por D-077, sem gravações, prontuários, tutores ou casos reais identificáveis;
+- Definição da baseline B-07 dentro do conjunto mínimo de dados aprovado por D-077, sem gravações, prontuários, tutores ou casos reais identificáveis;
 - Priorização do piloto;
 - Nomeação de responsáveis;
 - Decisão de fontes, licenças e dados;
@@ -93,7 +93,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 
 ### Gate
 
-Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-01/B-03/B-04/B-05 foram fechados por D-078/D-076/D-075/D-077; B-02, B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
+Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-01/B-02/B-03/B-04/B-05 foram fechados por D-078/D-079/D-076/D-075/D-077; B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
 
 ## 4. Fase 2 — SPEC
 

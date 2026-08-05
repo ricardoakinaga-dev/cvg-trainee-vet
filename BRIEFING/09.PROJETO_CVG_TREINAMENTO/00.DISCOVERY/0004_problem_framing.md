@@ -69,7 +69,7 @@ As metas numéricas definitivas dependerão de uma linha de base.
 
 Para a primeira fase futura, recomenda-se resolver:
 
-> Como atribuir uma trilha digital inicial a um grupo piloto de veterinários, medir o que sabiam antes, desenvolver raciocínio por conteúdo, casos e simulações digitais, acompanhar aprendizagem e retenção, oferecer remediação e fornecer visão segura da evolução, com conteúdo rastreável e revisado?
+> Como oferecer aos veterinários do CVG uma trilha digital curta, clara e agradável, com casos, feedback imediato e progresso visível, mantendo o conteúdo clinicamente revisado?
 
 ## Declaração de não solução antecipada
 

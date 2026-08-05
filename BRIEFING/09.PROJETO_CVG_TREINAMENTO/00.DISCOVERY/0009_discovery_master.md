@@ -14,18 +14,15 @@ Nesta etapa, somente o briefing foi produzido. As engines canônicas foram prese
 
 ## 2. Problema definido
 
-O CVG precisa assegurar desenvolvimento teórico progressivo e mensurável, mas ainda não há, dentro das informações coletadas, um processo institucional validado que conecte:
+O CVG precisa transformar o aprendizado informal em uma experiência digital simples e acompanhável:
 
 ```text
-diagnóstico inicial obrigatório
-→ linha de base individual
-→ trilha personalizada
-→ aprendizagem
-→ avaliação
-→ remediação
-→ retenção
-→ progressão
-→ acompanhamento
+entrar
+→ fazer um diagnóstico curto, sem aprovação ou reprovação
+→ receber uma trilha recomendada
+→ concluir módulos breves com quiz e caso digital
+→ receber feedback imediato
+→ acompanhar o progresso e revisar apenas o necessário
 ```
 
 O problema será medido por ativação, progresso, conclusão, domínio, ganho de conhecimento, retenção, recuperação, atraso, abandono, qualidade dos itens e governança do conteúdo.
@@ -38,6 +35,7 @@ O problema será medido por ativação, progresso, conclusão, domínio, ganho d
 - Unidade física: Centro Veterinário Guarapiranga, Avenida Guarapiranga, 1993 — Vila Socorro, São Paulo/SP;
 - Setores informados: Clínica Médica, Internação, Cirurgia, Laboratório de Análises Clínicas e Ultrassonografia;
 - Operação informada: atendimento 24 horas, com escala 12 × 36;
+- Público: aproximadamente 10 veterinários; todos participam da primeira aplicação (D-079);
 - Não existe atualmente sistema de treinamento, método alternativo definido ou processo definido de revisão clínica;
 - Modalidade inicial aprovada em D-068: treinamento integralmente digital, com casos e simulações digitais;
 - Progressão: básico, intermediário e avançado;
@@ -45,30 +43,24 @@ O problema será medido por ativação, progresso, conclusão, domínio, ganho d
 - Personalização inicial da trilha conforme conhecimentos e lacunas identificados;
 - Avaliações posteriores: quizzes, provas e outras formas;
 - Necessidade de métricas individuais;
+- Áreas iniciais: núcleo comum, Emergência e Internação;
+- Responsável pelo MVP: MV. Ricardo Akinaga; outro MV confere cada módulo antes da publicação;
+- Tempo protegido: 3 horas por mês;
+- Políticas mínimas de fontes e dados definidas por D-075 e D-077;
 - Fonte nacional: *Tratado de Medicina Interna de Cães e Gatos*, 1ª edição, 2015;
 - Fonte atualizada: *Ettinger’s Textbook of Veterinary Internal Medicine*, 9ª edição, 2024;
 - Nenhuma implementação autorizada nesta etapa.
 
 ### Desconhecido
 
-- Quantidade e perfil dos usuários;
-- Eventuais práticas isoladas do processo atual;
-- Ferramentas auxiliares atualmente utilizadas;
-- Lacunas prioritárias;
-- Áreas do piloto;
-- Tempo protegido;
-- Responsáveis;
-- Política de dados;
-- Licença das obras;
-- Orçamento e prazo;
-- Protocolos internos;
-- Linha de base.
+- Formato e conteúdo do diagnóstico curto (B-07);
+- Primeiro módulo a ser produzido;
+- Restrição real de dispositivo ou acessibilidade, se houver;
+- Protocolos internos relevantes para cada módulo.
 
 ## 4. Fluxo atual
 
-Foi informado que o CVG não possui sistema de treinamento, método alternativo definido nem processo definido de revisão clínica. O fluxo real de eventuais atividades isoladas de capacitação, entretanto, ainda não foi mapeado.
-
-Esse mapeamento restante continua sendo um dos bloqueios do Discovery.
+**FATO INFORMADO — D-078:** o CVG não possui treinamento veterinário padronizado. O aprendizado ocorre informalmente, conforme a disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado. Esse registro fecha B-01; mapear atividades isoladas é opcional.
 
 ## 5. Recorte do problema
 
@@ -219,23 +211,17 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 ## 12. Dependências
 
-1. Entrevistas;
-2. Fluxo atual;
-3. Público e baseline;
-4. Comitê e owners;
-5. Direitos de uso;
-6. Política de dados;
-7. Áreas piloto;
-8. Protocolos internos;
-9. Tempo protegido;
-10. Aprovação formal do Discovery.
+1. Definir e aplicar o diagnóstico curto para a baseline (B-07);
+2. Confirmar somente restrições reais de dispositivo ou acessibilidade;
+3. Informar os protocolos internos relevantes quando cada módulo for criado;
+4. Reexecutar e aprovar formalmente o gate Discovery.
 
 ## 13. Resultado do Discovery
 
-O problema está recortado e o fluxo atual foi confirmado pelo responsável do MVP em D-078: aprendizado informal, dependente da disponibilidade dos profissionais e sem trilha, avaliação ou registro centralizado. B-01 está fechado. O Discovery continua em correção por B-02, B-07 e outros itens ainda incompletos.
+O problema está recortado; D-078 fechou B-01 e D-079 confirmou o público de aproximadamente 10 veterinários, fechando B-02 sem inventário nominal ou segmentação. O Discovery continua em correção por B-07 e outros itens ainda incompletos.
 
 ```text
 RESULTADO: REPROVADO — EM CORREÇÃO (2026-08-05)
 MOTIVO: ITENS OBRIGATÓRIOS INCOMPLETOS; ENGINES CANÔNICAS NÃO ADMITEM APROVAÇÃO CONDICIONAL
-PRÓXIMA AÇÃO: FECHAR B-02, B-07 E DEMAIS ITENS PENDENTES, ATUALIZAR EVIDÊNCIAS E REEXECUTAR O GATE DISCOVERY
+PRÓXIMA AÇÃO: FECHAR B-07 E DEMAIS ITENS PENDENTES, ATUALIZAR EVIDÊNCIAS E REEXECUTAR O GATE DISCOVERY
 ```

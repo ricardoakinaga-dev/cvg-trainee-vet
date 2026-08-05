@@ -15,15 +15,20 @@
 | Ator | Papel | Tipo |
 |---|---|---|
 | Colaborador | médico-veterinário que realiza a trilha | primário |
-| Mentor/preceptor | acompanha lacunas autorizadas e orienta reforço | secundário |
-| Autor/instrutor | propõe módulos, objetivos, casos e questões | secundário |
-| Revisor clínico | valida correção científica e atualidade | secundário |
-| Revisor pedagógico | valida alinhamento pedagógico dos itens | secundário |
-| Gestor educacional | define trilhas, coortes, prazos e regras aprovadas | secundário |
-| Gestor clínico | prioriza áreas e aprova critérios de domínio | secundário |
-| Administrador | gere usuários, papéis e publicação | operador |
-| Auditor/compliance | consulta trilhas de auditoria | operador |
-| Gestão de pessoas | acesso restrito, conforme finalidade aprovada | secundário (restrito) |
+| MV. Ricardo Akinaga | administra o programa, cria/aprova conteúdo e acompanha o piloto | responsável |
+| Segundo MV | confere cada módulo clínico antes da publicação | revisor por módulo |
+| Mentor ou suporte | apoia apenas quando Ricardo autorizar | opcional |
+
+---
+
+## 1.1 Jornada principal do colaborador
+
+```text
+entrar → diagnóstico curto → trilha recomendada → módulo breve
+→ quiz/caso digital → feedback imediato → progresso → próximo passo
+```
+
+O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso existem para apoiar essa jornada e não devem aparecer como burocracia para o colaborador (D-080).
 
 ---
 
@@ -59,10 +64,10 @@
 ### UC-001 — Realizar avaliação diagnóstica inicial
 
 - **Ator:** Colaborador.
-- **Objetivo:** estabelecer a linha de base individual de conhecimento e identificar lacunas por tema e competência.
+- **Objetivo:** identificar rapidamente os temas que precisam de reforço e recomendar por onde começar.
 - **Gatilho:** entrada no programa (novo colaborador) ou decisão da coordenação (colaborador ativo).
 - **Fluxo principal:**
-  1. O colaborador acessa a avaliação diagnóstica obrigatória;
+  1. O colaborador acessa um diagnóstico inicial curto e sem reprovação;
   2. O sistema apresenta questões organizadas por competência e casos curtos;
   3. O colaborador responde e finaliza;
   4. O sistema registra a linha de base e o perfil de domínio por competência;
