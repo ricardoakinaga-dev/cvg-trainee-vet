@@ -149,17 +149,17 @@ A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 pe
 |---|---|
 | Fase e bloqueio afetados | correção documental; preparação de B-05 |
 | Alternativa aprovada | Alternativa 1 — rascunho conservador, sem dados identificáveis |
-| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag do checkpoint | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo revisado | `9d6f70c` — `docs: draft conservative data policy` |
+| Tag do checkpoint | `gate-d073-conservative-data-policy-2026-08-05` |
 | Artefatos incluídos | política 0011 e documentos de decisão, requisitos, gates, roadmap, matriz, validação e README sincronizados |
-| Revisores | `PENDENTE — qualidade documental + segurança/compliance independentes` |
-| Validações | `PENDENTE` |
+| Revisores | mapeamento documental + arquitetura de governança; revisão independente de qualidade sem achados; revisão de segurança com 3 achados médios corrigidos e revalidados |
+| Validações | `git diff --cached --check`; 66 links Markdown relativos sem quebra; nenhuma definição RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado |
 | Aprovador da alternativa | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-073 APROVADA — ALTERNATIVA 1`, em 2026-08-05; B-05 continua parcial |
 | Pendências e riscos residuais | responsável independente, parecer, agentes, bases legais, retenção, direitos, contratos, incidentes, risco e controles |
 | Próximo passo autorizado | submeter o rascunho ao responsável LGPD/segurança depois de sua nomeação; nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada |
 
-O registro do commit e da tag será acrescentado somente depois das revisões e validações. Esse registro posterior não transformará o rascunho em política aprovada.
+Este registro documental posterior não altera o conteúdo revisado identificado pelo commit e pela tag acima e não transforma o rascunho em política aprovada.
 
 ---
 
