@@ -29,7 +29,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 10. Avaliação de retenção (janelas 30/60/90 dias);
 11. Painel individual de progresso, domínio, retenção e confiança;
 12. Painel gerencial agregado (escopo autorizado);
-13. Gestão de conteúdo: autoria, revisão clínica, revisão pedagógica, aprovação, publicação, versionamento, validade e retirada;
+13. Gestão de conteúdo: autoria, segunda conferência por outro MV, revisão pedagógica opcional, aprovação, publicação, versionamento, validade e retirada;
 14. Banco de questões com blueprint e rastreabilidade;
 15. Contestação de questão/resultado com recálculo auditável;
 16. Trilha de auditoria completa;
@@ -39,7 +39,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 ### Escopo clínico do piloto (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05)
 
 - **Núcleo comum obrigatório** (anexo 0002, seção 5): segurança do paciente, responsabilidade profissional, comunicação, exame e história, medicina baseada em evidências, dor, fluidoterapia, segurança medicamentosa, antimicrobial stewardship, registro clínico e reconhecimento de emergência;
-- **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo patrocinador como insumo; revalidação formal pendente após B-03 (B-06);
+- **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo responsável do MVP (B-06);
 - Espécies: **cães e gatos** (D-022 resolvido);
 - Coorte: **10 a 15 veterinários** cobrindo os 3 turnos e os setores do piloto; número final conforme inventário (B-02); demais colaboradores entram em fases seguintes;
 - Duração do piloto: **12 semanas** (D-061 resolvido);
@@ -87,7 +87,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 
 ## 6. Critérios de priorização para o piloto
 
-**PROPOSTA** — pontuar por: risco clínico, frequência, variabilidade de conduta, disponibilidade de fonte, disponibilidade de revisor, facilidade de medir, valor percebido e esforço de produção (anexo 0002, seção 13). Núcleo + Emergência + Internação foram confirmados pelo patrocinador como insumo (B-06); a revalidação formal dependerá do comitê clínico após B-03.
+**PROPOSTA** — pontuar por: risco clínico, frequência, variabilidade de conduta, disponibilidade de fonte, disponibilidade de revisor, facilidade de medir, valor percebido e esforço de produção (anexo 0002, seção 13). Núcleo + Emergência + Internação foram confirmados por Ricardo para o MVP (B-06).
 
 ## 7. Faseamento da entrega (PROPOSTA)
 

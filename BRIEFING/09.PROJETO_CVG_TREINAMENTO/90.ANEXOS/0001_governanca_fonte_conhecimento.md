@@ -50,7 +50,7 @@
 - **Estrutura:** quatro partes — 1. Princípios Cirúrgicos Gerais, 2. Cirurgia do Tecido Mole, 3. Ortopedia, 4. Neurocirurgia — com capítulos de 1 a 44;
 - **ISBN:** 978-85-352-6991-8.
 
-**Papel proposto:** referência cirúrgica para a trilha de cirurgia e para conteúdos de emergência/internação relacionados a procedimentos (ex.: feridas, drenos, contenção de hemorragia, cuidados perioperatórios). A entrada no escopo do piloto depende de decisão do comitê clínico (B-06).
+**Papel proposto:** referência cirúrgica para a trilha de cirurgia e para conteúdos de emergência/internação relacionados a procedimentos (ex.: feridas, drenos, contenção de hemorragia, cuidados perioperatórios). A entrada no escopo é decidida pelo responsável do MVP.
 
 ## 2. Hierarquia de autoridade
 
@@ -58,7 +58,7 @@ A expressão “fonte da verdade” será operacionalizada desta forma:
 
 1. **Legislação, regulação, bula e alerta sanitário vigentes**;
 2. **Protocolos internos do CVG aprovados e vigentes**;
-3. **Diretrizes e consensos atuais selecionados pelo comitê clínico**;
+3. **Diretrizes e consensos atuais selecionados pelo responsável do MVP**;
 4. **Ettinger, 9ª edição, 2024**;
 5. **Fossum, 4ª edição, 2014** (temas cirúrgicos e perioperatórios);
 6. **Tratado brasileiro, 1ª edição, 2015**.
@@ -100,8 +100,8 @@ Cada unidade futura de conteúdo deverá possuir, em registro interno restrito e
 | fontes complementares | quando aplicável |
 | protocolo CVG relacionado | quando aplicável |
 | autor | sim |
-| revisor clínico | sim |
-| revisor pedagógico | sim |
+| segundo MV revisor | sim, antes da publicação |
+| revisor pedagógico | opcional |
 | versão | sim |
 | data de corte científico | sim |
 | validade | sim |
@@ -245,8 +245,8 @@ seleção do tema
 → blueprint
 → pesquisa nas fontes
 → autoria
-→ revisão clínica
-→ revisão pedagógica
+→ segunda conferência por outro MV
+→ revisão pedagógica, quando útil
 → checagem de direitos
 → aprovação
 → publicação
@@ -274,11 +274,7 @@ Proposta:
 
 | Função | Responsabilidade | Nome |
 |---|---|---|
-| Responsável clínico/RT | segurança clínica, critérios e presidência técnica | `VAGO — BLOQUEIA B-03` |
-| Comitê científico | hierarquia de fontes e divergências; RT + clínico de Emergência + clínico de Internação/Medicina Interna | `NÃO INSTALADO — BLOQUEIA B-03` |
-| Especialista da área | correção clínica independente de material próprio | `VAGO — BLOQUEIA B-03` |
-| Revisor pedagógico | qualidade educacional independente de material próprio | `VAGO — BLOQUEIA B-03` |
-| Gestor de conteúdo | versão e calendário | PENDENTE |
-| Auditor | rastreabilidade | PENDENTE |
+| Responsável do MVP | escopo, fontes, coordenação, versão e publicação | MV. Ricardo Akinaga |
+| Segundo MV por módulo | conferência clínica antes da publicação | identificar na versão do módulo |
 
-O modelo de governança foi confirmado como insumo em D-071, mas os nomes e aceites permanecem pendentes. B-04 não bloqueia mais autoria manual; publicação e avanço de fase continuam sujeitos aos gates gerais aplicáveis.
+D-076 fecha B-03 para o MVP interno. B-04 não bloqueia autoria manual; cada módulo clínico recebe uma segunda conferência veterinária antes da publicação.

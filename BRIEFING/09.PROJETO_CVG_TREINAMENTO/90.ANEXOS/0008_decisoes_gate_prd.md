@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 simplificou a governança das fontes para o sistema interno do CVG e fechou B-04 nesse escopo. B-05 e os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes de B-04.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04 e D-076 fechou B-03 para o MVP interno. B-05 e os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes de B-03/B-04.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -60,13 +60,15 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-069 APROVADA — ALTERNATIVA 1`, em 2026-08-05; isso não aprova Discovery nem PRD |
 | Pendências e riscos residuais | registro histórico do checkpoint D-069; a menção a B-04 foi posteriormente superada por D-075 |
-| Próximo passo autorizado | tratar B-03 e demais correções documentais; reexecutar Discovery e depois PRD; SPEC e BUILD permanecem proibidos |
+| Próximo passo autorizado | registro histórico do checkpoint D-069; B-03 foi posteriormente fechado por D-076 |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
 
 ---
 
 ## 0.2 Decisão de governança — D-071
+
+> **Histórico:** modelo substituído por D-076 para o MVP interno.
 
 | Alternativa | Modelo | Veredito |
 |---|---|---|
@@ -76,7 +78,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 **Decisão do patrocinador em 2026-08-05:** Alternativa 1. Ricardo permanece exclusivamente como patrocinador executivo nesta matriz. PO, responsável clínico/RT, coordenação educacional e responsável LGPD/segurança devem ser pessoas distintas. O comitê científico será formado pelo RT e por dois clínicos, um de Emergência e um de Internação/Medicina Interna. Autor ou preparador deverá se abster de revisar, votar ou aprovar o próprio trabalho, inclusive em decisão colegiada; silêncio nunca equivale a parecer ou aprovação.
 
-O modelo, as autoridades, os impedimentos, as suplências e a matriz dos gates estão definidos no documento `00.DISCOVERY/0006_usuarios_e_stakeholders.md`. Como apenas o patrocinador possui nome confirmado, B-03 fica `PARCIAL — MODELO APROVADO; NOMEAÇÕES PENDENTES`. Nenhuma cadeira será preenchida por inferência, e nenhuma função vaga poderá assinar gate.
+Este parágrafo registrava o estado do checkpoint D-071, no qual B-03 ainda estava parcial por falta de nomeações. A decisão D-076 substituiu esse modelo e fechou B-03 para o MVP interno; portanto, as exigências de cadeiras segregadas, suplências e nomeações não são regras vigentes.
 
 ### Evidência do checkpoint D-071
 
@@ -92,13 +94,15 @@ O modelo, as autoridades, os impedimentos, as suplências e a matriz dos gates e
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-071 APROVADA — ALTERNATIVA 1`, em 2026-08-05; aprova o modelo, não as nomeações nem os gates |
 | Pendências e riscos residuais | titulares, suplentes, qualificações, aceites, conflitos, atos de instalação e mandatos; representantes de usuários do futuro parecer Discovery serão definidos em B-01/B-02 |
-| Próximo passo autorizado | obter e registrar as nomeações de B-03; B-06 somente será revalidado depois; Discovery/PRD, SPEC e BUILD não avançam |
+| Próximo passo autorizado | registro histórico; substituído por D-076 |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
 
 ---
 
 ## 0.3 Decisão de coordenação interina — D-072
+
+> **Histórico:** coordenação interina substituída pela responsabilidade efetiva definida em D-076.
 
 | Alternativa | Tratamento transitório | Veredito |
 |---|---|---|
@@ -108,13 +112,13 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 **Decisão do patrocinador em 2026-08-05:** Alternativa 1. MV. Ricardo Akinaga responderá provisoriamente pela coordenação das frentes, fila de pendências, reuniões, solicitação de evidências e consolidação administrativa dos rascunhos. Essa atribuição não o nomeia PO, RT, coordenação educacional, comitê científico ou LGPD/segurança e não lhe permite emitir parecer independente ou assinar por essas funções. Contribuição material de Ricardo em um artefato gera impedimento persistente para sua assinatura como patrocinador naquela versão/commit e exige suplente da cadeira do patrocinador formalmente nomeado, aceito e não impedido.
 
-B-03 permanece `PARCIAL`; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO`; SPEC e BUILD continuam bloqueados. A equipe pode avançar na resolução dos demais itens B-01 a B-07 conforme suas dependências, sem tratar esse trabalho como mudança de fase ou aprovação de gate. A atribuição interina termina automaticamente com o fechamento de B-03 ou por decisão anterior do patrocinador.
+Este era o estado do checkpoint D-072. D-076 posteriormente fechou B-03 e tornou Ricardo responsável efetivo pelo MVP.
 
 ### Evidência do checkpoint D-072
 
 | Campo | Registro |
 |---|---|
-| Fase e bloqueio afetados | plano de correção de Discovery/PRD; B-03 permanece parcial |
+| Fase e bloqueio afetados | registro histórico; B-03 posteriormente fechado por D-076 |
 | Alternativa aprovada | Alternativa 1 — patrocinador e coordenador geral interino das correções, sem cadeira adicional |
 | Commit do conteúdo revisado | `f11315e` — `docs: assign interim correction coordinator` |
 | Tag do checkpoint | `gate-d072-interim-coordination-2026-08-05` |
@@ -124,7 +128,7 @@ B-03 permanece `PARCIAL`; Discovery e PRD permanecem `REPROVADOS — EM CORREÇ�
 | Segregação | Ricardo forneceu a decisão empresarial; a redação e a consolidação documental foram executadas pela auditoria, sem assinatura de Ricardo em cadeira independente |
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-072 APROVADA — ALTERNATIVA 1`, em 2026-08-05; coordenação operacional sem aprovação de gate |
-| Pendências e riscos residuais | todas as cadeiras independentes de B-03 permanecem vagas; contribuição material futura de Ricardo gera impedimento para assinatura do respectivo commit como patrocinador |
+| Pendências e riscos residuais | registro histórico; substituído por D-076 |
 | Próximo passo autorizado | registro histórico do checkpoint D-072; a dependência de B-04 foi posteriormente removida por D-075 |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
@@ -133,15 +137,17 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 ## 0.4 Decisão de preparação da política de dados — D-073
 
+> **Atualização D-076:** Ricardo substitui o responsável independente no modelo vigente do MVP. B-05 continua parcial apenas porque a política mínima ainda não foi aprovada.
+
 | Alternativa | Tratamento de B-05 | Veredito |
 |---|---|---|
 | **1** | **Preparar política conservadora sem autorizar dados pessoais; permitir apenas agregados efetivamente anonimizados; manter B-05 pendente de validação independente** | **recomendada e selecionada — permite amadurecer o documento sem antecipar base legal, retenção ou aprovação** |
 | 2 | Suspender toda preparação de B-05 até nomear o responsável independente | mais conservadora operacionalmente, mas adia o inventário de decisões e controles |
 | 3 | Aplicar imediatamente as regras preliminares do patrocinador e coletar dados do piloto | rejeitada — confundiria insumo empresarial com validação LGPD e liberaria tratamento sem governança completa |
 
-**Decisão do patrocinador em 2026-08-05:** Alternativa 1. Foi preparado o [Anexo 0011 — Política Conservadora de Dados e LGPD](0011_politica_conservadora_dados_lgpd.md), identificado como rascunho não aprovado. Até B-05 ser formalmente validado, o programa não pode coletar ou acessar dados pessoais de participantes, pacientes ou tutores, casos reais, prontuários, gravações, resultados individuais ou baseline. Somente dados estritamente agregados e efetivamente anonimizados podem ser usados nas correções. Permanecem preservados apenas os registros profissionais mínimos de governança já autorizados por D-071/D-072.
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. Foi preparado o [Anexo 0011 — Política Conservadora de Dados e LGPD](0011_politica_conservadora_dados_lgpd.md), identificado como rascunho não aprovado. Até B-05 ser aprovado por Ricardo, o programa não pode coletar ou acessar dados pessoais de participantes, pacientes ou tutores, casos reais, prontuários, gravações, resultados individuais ou baseline.
 
-A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 permanecem insumos do patrocinador, não regras vigentes. Controlador, operadores, bases legais, retenção, canal dos titulares, contratos, transferências, incidentes e eventual relatório de impacto exigem validação independente. A decisão D-073 prepara B-05, mas não o fecha e não altera os gates.
+A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 permanecem insumos, não regras vigentes. D-073 prepara B-05, mas não o fecha.
 
 ### Evidência do checkpoint D-073
 
@@ -156,8 +162,8 @@ A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 pe
 | Validações | `git diff --cached --check`; 66 links Markdown relativos sem quebra; nenhuma definição RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado |
 | Aprovador da alternativa | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-073 APROVADA — ALTERNATIVA 1`, em 2026-08-05; B-05 continua parcial |
-| Pendências e riscos residuais | responsável independente, parecer, agentes, bases legais, retenção, direitos, contratos, incidentes, risco e controles |
-| Próximo passo autorizado | submeter o rascunho ao responsável LGPD/segurança depois de sua nomeação; nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada |
+| Pendências e riscos residuais | simplificação e aprovação operacional da política mínima por Ricardo antes do piloto |
+| Próximo passo autorizado | Ricardo revisar e aprovar B-05; nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada |
 
 Este registro documental posterior não altera o conteúdo revisado identificado pelo commit e pela tag acima e não transforma o rascunho em política aprovada.
 
@@ -217,6 +223,28 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Escopo | sistema digital interno do Centro Veterinário Guarapiranga |
 | Controles mantidos | conteúdo original; PDFs fora da plataforma/Git; sem material copiado; referência simples por módulo |
 | Validações | auditoria direta do diff; `git diff --cached --check`; 66 links relativos válidos; zero IDs duplicados; zero segredos detectados; nenhum PDF alterado ou rastreado |
+
+---
+
+## 0.7 Governança enxuta do MVP interno — D-076
+
+| Alternativa | Modelo | Veredito |
+|---|---|---|
+| **1** | **Ricardo concentra as responsabilidades; outro MV revisa cada módulo clínico antes da publicação; sem comitês ou suplentes** | **recomendada e selecionada — simples e com segunda conferência clínica** |
+| 2 | Ricardo cria, revisa e publica tudo sozinho | não selecionada — elimina a segunda conferência clínica |
+| 3 | Manter D-071/D-072, com cargos segregados, comitês e suplentes | rejeitada — desproporcional ao MVP interno |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. MV. Ricardo Akinaga responde por patrocínio, produto, coordenação clínica/educacional, operação, dados, segurança e gates documentais. Não são exigidos comitês, suplentes ou cargos separados. Outro médico-veterinário deve revisar cada módulo clínico antes da publicação e ser registrado na versão. B-03 fica `FECHADO PARA O MVP INTERNO`.
+
+### Evidência do checkpoint D-076
+
+| Campo | Registro |
+|---|---|
+| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Aprovador e responsável do MVP | MV. Ricardo Akinaga |
+| Controle clínico mantido | segundo MV antes da publicação de cada módulo clínico |
+| Validações | `PENDENTE` |
 
 ---
 
@@ -378,20 +406,9 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ## 4. Dados e governança (B-03, B-04, B-05, D-051 a D-055)
 
-### B-03 — Modelo aprovado; nomeações pendentes (D-071)
+### B-03 — Governança do MVP interno
 
-| Papel | Opção recomendada | Observação |
-|---|---|---|
-| Patrocinador executivo | MV. Ricardo Akinaga (CEO) | já nomeado |
-| Coordenador geral interino | **MV. Ricardo Akinaga** | ativo por D-072; organiza correções, sem cadeira, parecer independente ou assinatura de gate |
-| Product owner | **pessoa distinta do patrocinador e da coordenação educacional** | `VAGO — BLOQUEIA B-03` |
-| Responsável clínico/RT | **médico-veterinário formalmente autorizado** | `VAGO — BLOQUEIA B-03` |
-| Coordenação educacional | **pessoa distinta do PO** | `VAGO — BLOQUEIA B-03` |
-| Comitê científico | **RT + 2 clínicos (Emergência e Internação/Medicina Interna)** | `NÃO INSTALADO — BLOQUEIA B-03` |
-| LGPD/segurança | **responsável interno ou externo distinto das demais funções de gate** | `VAGO — BLOQUEIA B-03` |
-| Comitê de governança | **titulares acima, conforme matriz do documento 0006** | `NÃO INSTALADO — BLOQUEIA B-03` |
-
-**Decisão:** o modelo foi confirmado como insumo por D-071. Sem titulares, suplentes, aceites e declarações de conflito, B-03 permanece `PARCIAL` e os comitês não podem operar.
+**Estado após D-076:** `FECHADO PARA O MVP INTERNO`. MV. Ricardo Akinaga concentra as responsabilidades e aprova os gates documentais sobre commits identificados. Não existem cadeiras, comitês ou suplentes pendentes. A segunda conferência por outro MV é requisito do módulo clínico antes da publicação, não uma vaga de governança.
 
 ### B-04 — Direitos de uso das obras
 
@@ -441,8 +458,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
 | Dados | D-073: nenhum dado pessoal de participante/paciente/tutor antes de B-05; RH proibido; acesso, retenção `vínculo + 2 anos`, correção e dashboards são propostas a validar |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
-| Governança e nomeações | modelo mínimo segregado D-071 confirmado; titulares, suplentes, aceites e instalação dos comitês pendentes (B-03) |
-| Coordenação interina | MV. Ricardo Akinaga coordena as correções por D-072, sem preencher cadeiras ou assinar gates |
+| Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |
 
 ---
 
@@ -451,12 +467,11 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 ✅ **Decisões de produto confirmadas e aplicadas ao rascunho em 2026-08-05.** Isso não representa aprovação do gate.
 
 **Remanescentes para fechamento total:**
-1. Concluir B-03 — nomear titulares/suplentes de PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança; registrar aceites/conflitos e instalar os comitês;
-2. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
-3. Inventário de usuários/coorte (B-02);
-4. Manter os quatro controles operacionais de fontes definidos em D-075;
-5. Obter validação formal da política de dados pelo responsável LGPD (B-05);
-6. Aplicar diagnóstico inicial e coletar baseline (B-07);
-7. Resolver os requisitos marcados como pendentes no PRD.
+1. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
+2. Inventário de usuários/coorte (B-02);
+3. Manter os controles operacionais de fontes definidos em D-075;
+4. Simplificar e aprovar a política de dados mínima antes do piloto (B-05);
+5. Aplicar diagnóstico inicial e coletar baseline (B-07);
+6. Resolver os requisitos marcados como pendentes no PRD.
 
 Após isso, o Discovery deve ser reexecutado e aprovado; em seguida, o PRD deve ser reexecutado sobre um checkpoint Git identificado e submetido à aprovação humana. O status não muda automaticamente. A SPEC permanece bloqueada até ambas as aprovações formais.

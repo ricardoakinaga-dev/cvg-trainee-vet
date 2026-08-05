@@ -4,9 +4,9 @@
 **Data do rascunho:** 2026-08-05
 **Decisão associada:** D-073 — Alternativa 1
 **Status:** `RASCUNHO CONSERVADOR — NÃO APROVADO`
-**Bloqueio:** B-05 permanece `PARCIAL — VALIDAÇÃO FORMAL LGPD PENDENTE`
+**Bloqueio:** B-05 permanece `PARCIAL — APROVAÇÃO OPERACIONAL PENDENTE`
 
-> Este documento é uma proposta de governança e não constitui parecer jurídico. Ele não autoriza novo tratamento de dados pessoais para Discovery, piloto ou plataforma, não escolhe base legal e não substitui a nomeação, o aceite e o parecer do responsável LGPD/segurança independente. Os registros nominais de governança preexistentes têm limite próprio na seção 4.1.
+> Este documento é um rascunho operacional e não autoriza novo tratamento de dados pessoais para Discovery, piloto ou plataforma. Por D-076, MV. Ricardo Akinaga é o responsável por dados e segurança no MVP e aprovará a versão mínima antes do piloto.
 
 ## 1. Decisão conservadora vigente antes de B-05
 
@@ -17,9 +17,9 @@ Até a aprovação formal de B-05:
 3. todos os casos, personagens, respostas e simulações devem ser integralmente fictícios;
 4. não podem ser iniciados cadastro individual, diagnóstico, prova, trilha personalizada, painel individual, baseline B-07 ou integração com sistemas do CVG;
 5. nenhum dado pode ser usado para RH, punição, decisão disciplinar, ranking ou inferência de competência prática;
-6. o trabalho autorizado limita-se a correção documental, desenho de instrumentos vazios, levantamento agregado efetivamente anônimo e preparação das decisões que o responsável independente deverá validar.
+6. o trabalho autorizado limita-se a correção documental, desenho de instrumentos vazios, levantamento agregado efetivamente anônimo e preparação da política mínima que Ricardo deverá aprovar.
 
-Os registros profissionais mínimos de governança já autorizados em D-071/D-072 — nome, função, aceite e conflito dos responsáveis — continuam controlados pelo documento 0006 e não autorizam ampliar o tratamento para participantes, pacientes ou tutores.
+O registro profissional de MV. Ricardo Akinaga como responsável do MVP por D-076 não autoriza ampliar o tratamento para participantes, pacientes ou tutores.
 
 Dados pseudonimizados, identificadores substituídos por códigos ou tabelas com chave separada continuam tratados como dados pessoais nesta política. A remoção de nome, isoladamente, não prova anonimização.
 
@@ -53,15 +53,14 @@ Qualquer versão futura deverá demonstrar finalidade específica, adequação, 
 |---|---|---|
 | Controlador | `CANDIDATO: Centro Veterinário Guarapiranga — A CONFIRMAR FORMALMENTE` | confirmar a pessoa jurídica que toma as decisões sobre o tratamento |
 | Operadores | `NÃO DEFINIDOS` | inventariar plataforma, hospedagem, comunicação, suporte, analytics e demais fornecedores |
-| Encarregado/canal | `VAGO` | nomeação formal, aceite, divulgação do canal e suplência, quando aplicável |
-| Responsável LGPD/segurança do gate | `VAGO — BLOQUEIA B-03/B-05` | titular e suplente independentes, com aceite e declaração de conflitos |
-| Patrocinador/coordenador interino | MV. Ricardo Akinaga | coordena o rascunho por D-072; não emite o parecer independente de B-05 |
+| Encarregado/canal | `PENDENTE, SE APLICÁVEL` | definir na política mínima antes do piloto |
+| Responsável por dados e segurança do MVP | MV. Ricardo Akinaga | definido por D-076; aprova B-05 sobre commit identificado |
 
-Quem redigir, especificar ou implementar controles de B-05 deve se declarar impedido e se abster integralmente da revisão, do voto e da aprovação do próprio trabalho. O parecer deve ser emitido por pessoa elegível e identificar a versão e o commit examinados.
+Ricardo pode preparar e aprovar B-05 no modelo enxuto do MVP. A decisão deve identificar a versão e o commit examinados.
 
 ### 4.1 Registro nominal mínimo de governança preexistente
 
-O repositório já contém o nome e a função profissional informados pelo patrocinador em D-071/D-072. D-073 não amplia nem regulariza retroativamente esse tratamento. Até a validação independente:
+O repositório contém o nome e a função profissional informados em D-076. D-073 não amplia esse tratamento. Até B-05 ser aprovado:
 
 - a finalidade fica limitada a responsabilidade, impedimento e evidência de decisão do projeto;
 - somente nome profissional, papel, estado do aceite/conflito, data e referência ao ato/commit podem ser registrados;
@@ -69,7 +68,7 @@ O repositório já contém o nome e a função profissional informados pelo patr
 - o acesso fica limitado aos participantes autorizados do repositório, sem reutilização para treinamento, avaliação ou RH;
 - base legal, aviso, prazo de retenção e descarte permanecem `PENDENTES DE VALIDAÇÃO` e deverão ser incluídos no inventário de B-05;
 - nova nomeação exige informação prévia sobre esse registro mínimo e não autoriza anexar a ata integral ou documentos pessoais;
-- se a validação independente determinar redução ou substituição, o repositório deverá ser corrigido por processo seguro e auditável.
+- qualquer correção necessária será registrada por processo seguro e auditável.
 
 ## 5. Inventário preliminar de tratamentos
 
@@ -175,7 +174,7 @@ Hospedagem, analytics, e-mail, mensageria, suporte, IA e integrações permanece
 A futura SPEC deverá transformar em controles verificáveis, no mínimo:
 
 - autenticação forte e MFA para funções privilegiadas;
-- menor privilégio, segregação de funções e revisão periódica de acessos;
+- menor privilégio e revisão periódica de acessos;
 - criptografia em trânsito e em repouso, com gestão separada de chaves;
 - proibição de segredos no Git e uso de gestor de segredos/variáveis protegidas;
 - separação entre produção, teste e desenvolvimento, sem dados pessoais reais fora de produção;
@@ -192,7 +191,7 @@ Este item define objetivos de controle, não arquitetura, tecnologia ou autoriza
 Antes da operação deverá existir fluxo aprovado para:
 
 1. detectar, conter e preservar evidências sem ampliar a exposição;
-2. comunicar imediatamente o incidente ao controlador e ao responsável LGPD/segurança;
+2. comunicar imediatamente o incidente ao controlador e a MV. Ricardo Akinaga, responsável por dados e segurança do MVP;
 3. registrar natureza, titulares, dados, medidas, riscos, linha do tempo e decisões;
 4. avaliar risco ou dano relevante aos titulares;
 5. quando aplicável, comunicar ANPD e titulares no prazo regulatório vigente;
@@ -202,7 +201,7 @@ Na data deste rascunho, a orientação oficial baseada na Resolução CD/ANPD n�
 
 ## 14. Registros, risco e relatório de impacto
 
-Antes de B-05 ser aprovado, o responsável independente deverá validar:
+Antes de B-05 ser aprovado, Ricardo deverá validar:
 
 - registro das operações de tratamento;
 - inventário de riscos por finalidade e titular;
@@ -215,7 +214,7 @@ Antes de B-05 ser aprovado, o responsável independente deverá validar:
 
 B-05 somente poderá mudar para `FECHADO` quando houver, no mesmo checkpoint Git:
 
-- [ ] responsável LGPD/segurança independente e suplente nomeados, aceitos e sem conflito;
+- [x] responsável por dados e segurança do MVP definido por D-076;
 - [ ] controlador e todos os operadores confirmados;
 - [ ] inventário completo de dados, titulares, finalidades, fluxos e compartilhamentos;
 - [ ] base legal validada separadamente para cada finalidade e categoria de dado;
@@ -226,9 +225,8 @@ B-05 somente poderá mudar para `FECHADO` quando houver, no mesmo checkpoint Git
 - [ ] fornecedores, contratos, suboperadores e transferências avaliados;
 - [ ] análise de risco concluída e decisão sobre relatório de impacto registrada;
 - [ ] regras de anonimização e teste de reidentificação aprovados;
-- [ ] parecer independente explícito sobre a versão/commit;
+- [ ] aprovação explícita de Ricardo sobre a versão/commit;
 - [ ] checkpoint Git validado, sem segredos ou dados pessoais indevidos;
-- [ ] aprovações previstas na matriz de governança registradas.
 
 Fechar B-05 não aprova Discovery, PRD, SPEC ou BUILD. Depois do fechamento, qualquer coleta deve respeitar exatamente o escopo aprovado; B-07 continua dependendo de instrumento e coorte próprios.
 
@@ -246,10 +244,10 @@ Consultadas em 2026-08-05:
 | Item | Estado |
 |---|---|
 | Rascunho conservador | elaborado por decisão D-073 |
-| Autorização para dados pessoais do Discovery, piloto ou plataforma | `NÃO AUTORIZADA`; preservados apenas os registros mínimos de governança D-071/D-072 |
+| Autorização para dados pessoais do Discovery, piloto ou plataforma | `NÃO AUTORIZADA`; preservado apenas o registro profissional de D-076 |
 | Autorização para casos reais | `NÃO AUTORIZADA` |
 | Base legal | `PENDENTE DE VALIDAÇÃO` |
 | Retenção definitiva | `PENDENTE DE VALIDAÇÃO` |
-| Responsável independente | `VAGO` |
-| Parecer jurídico/LGPD | `PENDENTE` |
+| Responsável do MVP por dados e segurança | MV. Ricardo Akinaga — D-076 |
+| Aprovação operacional de B-05 | `PENDENTE` |
 | B-05 | `PARCIAL — NÃO FECHADO` |

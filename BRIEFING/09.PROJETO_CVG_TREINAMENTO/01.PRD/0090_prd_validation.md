@@ -20,7 +20,7 @@
 - [x] Usuário primário definido (colaborador);
 - [x] Usuários secundários e operadores mapeados;
 - [x] Responsabilidades claras (matriz de acesso 0006 e matriz de responsabilidades em 0012 §8);
-- [ ] Nomes nomeados — modelo segregado aprovado como insumo em D-071; PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança ainda sem titulares/suplentes e aceites (B-03);
+- [x] Responsável do MVP nomeado — MV. Ricardo Akinaga acumula as funções por D-076; B-03 fechado;
 - [ ] Quantidade e perfil da coorte — parâmetros confirmados pelo patrocinador como insumos (10–15, 3 turnos); inventário e revalidação formal pendentes (B-02).
 
 ### FLUXOS
@@ -35,12 +35,12 @@
 - [x] OUT OF SCOPE definido (0011 §3);
 - [x] FUTURE SCOPE registrado (0011 §4);
 - [x] Modalidade digital e fronteira das simulações confirmadas pelo patrocinador como insumos (D-068); prática presencial bloqueada pelo `GATE-EXP-PRAT-01`;
-- [ ] Áreas clínicas do piloto confirmadas pelo patrocinador como insumo — núcleo + Emergência + Internação; revalidação formal pendente após B-03 (B-06);
+- [x] Áreas clínicas do piloto confirmadas pelo responsável do MVP — núcleo + Emergência + Internação (B-06);
 - [ ] Coorte piloto delimitada (B-02 — inventário).
 
 ### REGRAS
 
-- [ ] Regras principais completamente definidas — RN-015, RN-023, RN-074, RN-075 e nomeações permanecem pendentes;
+- [ ] Regras principais completamente definidas — RN-015, RN-023, RN-074 e pontos de conteúdo permanecem pendentes;
 - [x] Restrições claras (segurança clínica, fontes, LGPD, não punição);
 - [x] Propostas do gate confirmadas pelo patrocinador em 2026-08-05 (incluindo D-068: RN-018, RN-081 a RN-085 e RF-027/RF-052 a RF-055 — ver anexo 0008).
 
@@ -61,7 +61,7 @@
 
 - [x] Riscos listados (0007);
 - [x] Hipóteses registradas (0007, H-01 a H-10);
-- [ ] Owners e prazos de mitigação aprovados (B-03).
+- [x] Owner do MVP aprovado por D-076; prazos específicos continuam no plano de trabalho.
 
 ---
 
@@ -71,10 +71,10 @@
 |---|---|---|---|---|
 | B-01 | fluxo atual não validado com usuários | reduz confiança do desenho | PO + coord. clínica | PENDENTE — roteiro pronto (anexo 0007) |
 | B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
-| B-03 | modelo aprovado, responsáveis não nomeados | governança incompleta | direção | PARCIAL — Ricardo coordena correções por D-072, sem preencher D-071; titulares, suplentes, aceites e comitês pendentes |
+| B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076 — MV. Ricardo Akinaga; segundo MV somente por módulo antes da publicação |
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
-| B-05 | política de dados sem validação do responsável LGPD | risco LGPD | responsável LGPD | PARCIAL — rascunho conservador D-073/Anexo 0011 elaborado; nenhuma coleta pessoal de participante, paciente ou tutor autorizada; validação formal pendente |
-| B-06 | áreas do piloto | escopo clínico | coordenação clínica | CONFIRMADO PELO PATROCINADOR COMO INSUMO — núcleo + Emergência + Internação; revalidação formal pendente após B-03 |
+| B-05 | política de dados ainda não aprovada | risco de privacidade | MV. Ricardo Akinaga | PARCIAL — nenhuma coleta pessoal de participante, paciente ou tutor autorizada |
+| B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
 | B-07 | baseline ausente | metas não calibradas | coord. educacional | PENDENTE — aplicar diagnóstico na coorte |
 
 ## Decisões humanas preservadas como insumos (confirmadas em 2026-08-05 — ver anexo 0008)
@@ -100,7 +100,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 
 ```text
 STATUS: REPROVADO — EM CORREÇÃO (RECLASSIFICAÇÃO CANÔNICA, 2026-08-05)
-AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-01, B-02, B-03, B-05 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
+AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-01, B-02, B-05 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
 SPEC: PROIBIDA, INCLUSIVE PREPARAÇÃO FORMAL
 BUILD: PROIBIDO
 ```
@@ -108,12 +108,12 @@ BUILD: PROIBIDO
 ### Ações permitidas enquanto o gate estiver reprovado
 
 - Corrigir documentos e sincronizar decisões já confirmadas;
-- Antes de B-05: desenhar instrumentos, fazer levantamentos estritamente agregados e efetivamente anonimizados, sem campos/células vinculáveis ou grupos pequenos reidentificáveis, nomear responsáveis e concluir verificação jurídica;
+- Antes de B-05: desenhar instrumentos e fazer levantamentos estritamente agregados e efetivamente anonimizados;
 - Depois de B-05: executar entrevistas/inventários identificáveis e coletar a baseline B-07 conforme a política validada;
 - Resolver regras, requisitos, exceções e critérios marcados como pendentes;
 - Preparar evidências e checkpoint Git para nova submissão dos gates.
 
-MV. Ricardo Akinaga pode coordenar essas atividades como responsável geral interino por D-072, mas não pode emitir parecer independente, assinar por cadeira vaga nem converter correção em aprovação de gate.
+MV. Ricardo Akinaga coordena e aprova essas atividades como responsável do MVP por D-076.
 
 ### Ações proibidas
 
@@ -127,13 +127,10 @@ MV. Ricardo Akinaga pode coordenar essas atividades como responsável geral inte
 
 | Papel | Nome | Decisão | Data |
 |---|---|---|---|
-| Patrocinador executivo | MV. Ricardo Akinaga — CEO | RECLASSIFICAÇÃO CANÔNICA APROVADA; DECISÕES DE PRODUTO PRESERVADAS COMO INSUMOS | 2026-08-05 |
-| Product owner | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
-| Coordenação clínica/RT | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
-| Coordenação educacional | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
-| LGPD/segurança | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
+| Responsável pelo MVP interno | MV. Ricardo Akinaga | patrocinador, produto, coordenação clínica/educacional, operação, dados, segurança e aprovação dos gates documentais | 2026-08-05 |
+| Revisor de conteúdo clínico | outro MV escolhido por módulo | exigido somente antes da publicação daquele módulo | POR MÓDULO |
 
-O registro nominal completo, incluindo comitê científico, suplentes, qualificações, impedimentos e ato de instalação, é controlado pelo documento Discovery 0006.
+O modelo enxuto e a regra de segunda conferência estão no documento Discovery 0006.
 
 ## Próximo passo após fechamento dos compromissos
 

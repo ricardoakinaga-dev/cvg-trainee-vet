@@ -57,8 +57,8 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-031 | Cada módulo deve registrar internamente a obra e o capítulo/seção consultados, sem exibir esses metadados ao aluno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | PROPOSTA |
 | RF-033 | O sistema deve registrar conclusão de unidades e progresso | P0 | FATO INFORMADO |
-| RF-034 | O sistema deve suportar workflow de autoria → revisão clínica → revisão pedagógica → aprovação → publicação | P0 | FATO INFORMADO |
-| RF-035 | O sistema deve impedir que autor publique o próprio conteúdo | P0 | FATO INFORMADO |
+| RF-034 | O sistema deve suportar autoria → segunda conferência por outro MV → aprovação de Ricardo → publicação | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RF-035 | O sistema deve impedir a publicação de módulo clínico sem o registro da segunda conferência veterinária | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
 | RF-036 | O sistema deve versionar todo conteúdo e manter histórico | P0 | FATO INFORMADO |
 | RF-037 | O sistema deve registrar data de corte científico e próxima revisão | P1 | PROPOSTA |
 | RF-038 | O sistema não deve armazenar, distribuir ou exibir os PDFs; eventual OCR, indexação, embeddings, RAG ou envio dos arquivos a IA depende de decisão futura D-033, sem bloquear conteúdo original produzido manualmente | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |

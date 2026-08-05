@@ -18,10 +18,10 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-003 | Acesso segue o princípio do mínimo necessário; matriz de acesso do 0006 é a referência | PROPOSTA |
 | RN-004 | Gestão de pessoas vê somente dados autorizados por finalidade aprovada; nunca respostas detalhadas automáticas | PROPOSTA |
 | RN-005 | Administrador não altera silenciosamente notas, gabaritos ou histórico | FATO INFORMADO |
-| RN-006 | O modelo mínimo segregado segue D-071 e o documento 0006; cada função exige titular, suplente, autoridade, aceite e declaração de conflito | APROVADA PELO PATROCINADOR COMO INSUMO (D-071); nomeações `PENDENTE` (B-03) |
-| RN-007 | Patrocinador, PO, responsável clínico/RT, coordenação educacional e responsável LGPD/segurança devem ser pessoas distintas; uma pessoa não assina duas funções no mesmo gate | APROVADA PELO PATROCINADOR COMO INSUMO (D-071) |
-| RN-008 | Autor ou preparador deve se abster totalmente de revisar, votar ou aprovar o próprio artefato, inclusive em colegiado; conflito exige registro e suplente não impedido | APROVADA PELO PATROCINADOR COMO INSUMO (D-071) |
-| RN-009 | Vaga, ausência, recusa, parecer obrigatório ausente ou reprovado e falta de assinatura obrigatória mantêm o gate bloqueado; silêncio não é aprovação e o patrocinador não concede waiver contra checklist canônico | APROVADA PELO PATROCINADOR COMO INSUMO (D-071) |
+| RN-006 | MV. Ricardo Akinaga acumula patrocínio, produto, coordenação educacional/clínica, operação, dados e segurança no MVP interno | APROVADA PELO PATROCINADOR COMO INSUMO (D-076); B-03 FECHADO PARA O MVP |
+| RN-007 | Não são exigidos comitês, suplentes ou cargos segregados no MVP; as decisões são registradas por commit Git | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RN-008 | Módulo clínico exige revisão de outro médico-veterinário antes da publicação; o revisor é escolhido por módulo e identificado na versão | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RN-009 | Ricardo aprova os gates documentais do MVP sobre commits identificados; ausência de revisor clínico bloqueia somente a publicação do módulo correspondente | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
 
 ## 2. Regras da jornada de aprendizagem
 
@@ -65,8 +65,8 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-040 | Cada módulo registra internamente objetivo, competência, nível, obra e capítulo/seção consultados, autor, revisor, versão e data de revisão; esses dados não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RN-041 | Hierarquia de fontes: legislação/bula > protocolo CVG > diretriz atual > Ettinger 2024 > Fossum 2014 (temas cirúrgicos) > Tratado 2015 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05 — atualizada 2026-08-05: inclusão do Fossum, F-03) |
 | RN-042 | Divergências entre fontes seguem fluxo com `conflict_id` e decisão humana documentada; críticas nunca resolvidas por IA | FATO INFORMADO |
-| RN-043 | Conteúdo só é publicado após revisão clínica + pedagógica independentes e aprovação | FATO INFORMADO |
-| RN-044 | Autor não publica o próprio conteúdo | FATO INFORMADO |
+| RN-043 | Conteúdo clínico só é publicado após revisão de outro médico-veterinário | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RN-044 | Ricardo pode criar e aprovar o fluxo do conteúdo; a segunda conferência clínica permanece obrigatória antes da publicação | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
 | RN-045 | Não copiar texto, página, tabela, figura ou imagem das obras; todo material de treinamento deve ter redação própria do CVG | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RN-046 | No MVP interno, as obras podem ser consultadas manualmente pela equipe; os PDFs ficam fora da plataforma e do Git; registra-se apenas obra e capítulo/seção por módulo; automação dos PDFs permanece pendente em D-033 sem bloquear a autoria manual | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05); B-04 FECHADO PARA O MVP INTERNO |
 | RN-047 | Validade por tipo de conteúdo: crítico 6 meses, clínico geral 12, fundamentos 24; alerta = revisão imediata | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -108,7 +108,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-072 | Piloto digital cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-074 | Baseline coletada no início do piloto (perfil, conhecimento, engajamento, indicadores selecionados) | PENDENTE (B-07) |
-| RN-075 | Conteúdo do piloto revisado por clínico + pedagógico | FATO INFORMADO |
+| RN-075 | Módulo clínico revisado por outro MV antes da publicação; revisão pedagógica é opcional no MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
 | RN-076 | Tempo protegido: 3 h/mês por veterinário; decomposição entre microlearning e atividades digitais de casos será reconciliada no item de carga | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; composição pendente de reconciliação) |
 | RN-077 | Espécies do piloto: cães e gatos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-078 | Banco do piloto: 10 a 15 itens por objetivo de aprendizagem | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -120,22 +120,19 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-084 | A primeira versão não agenda, associa, registra nem avalia treinamento prático presencial ou observação de atividade clínica real | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RN-085 | Qualquer escopo prático presencial futuro permanece `BLOQUEADO_POR_GATE` até aprovação do `GATE-EXP-PRAT-01` e não pode originar UC, RF, SPEC, backlog ou BUILD antes disso | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
-## 8. Matriz de responsabilidades resumida (MODELO APROVADO COMO INSUMO; NOMES PENDENTES)
+## 8. Matriz de responsabilidades resumida (D-076)
 
 | Decisão | Responsável | Status da nomeação |
 |---|---|---|
-| Patrocínio e orçamento | patrocinador executivo — MV. Ricardo Akinaga | nomeado |
-| Coordenação temporária das correções | coordenador geral interino — MV. Ricardo Akinaga | ativo por D-072; sem cadeira, parecer independente ou voto de gate |
-| Escopo e prioridade | product owner distinto do patrocinador e da coordenação educacional | `VAGO — BLOQUEIA B-03` |
-| Critério clínico | responsável clínico/RT | `VAGO — BLOQUEIA B-03` |
-| Conteúdo e fonte | comitê científico: RT + clínico de Emergência + clínico de Internação/Medicina Interna | `VAGO — BLOQUEIA B-03` |
-| Modelo pedagógico | coordenador educacional distinto do PO | `VAGO — BLOQUEIA B-03` |
-| Dados, LGPD e segurança nesta fase | responsável LGPD/segurança | `VAGO — BLOQUEIA B-03` |
-| Aprovação dos gates | comitê de governança conforme 0006/D-071 | `NÃO INSTALADO — BLOQUEIA B-03` |
+| Patrocínio, produto e prioridade | MV. Ricardo Akinaga | ativo |
+| Coordenação educacional e clínica | MV. Ricardo Akinaga | ativo |
+| Operação, dados e segurança do MVP | MV. Ricardo Akinaga | ativo |
+| Aprovação dos gates documentais | MV. Ricardo Akinaga, sobre commit identificado | ativo |
+| Segunda conferência clínica | outro médico-veterinário escolhido por módulo | exigido somente antes da publicação daquele módulo |
 
-D-072 permite ao patrocinador coordenar operacionalmente todas as frentes de correção enquanto as vagas persistirem, mas não altera RN-006 a RN-009, não preenche nenhuma função independente e não autoriza autoaprovação ou mudança de fase.
+D-076 substitui D-071/D-072 quanto ao modelo vigente e fecha B-03 para o MVP interno.
 
-Por D-073, RN-063 a RN-067 são somente entradas para a futura validação. Até B-05 ser aprovado, nenhum dado pessoal de participante, paciente ou tutor pode ser tratado para Discovery, piloto ou plataforma; somente agregados efetivamente anonimizados são permitidos conforme o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md). Registros profissionais mínimos de governança seguem D-071/D-072.
+Por D-073, RN-063 a RN-067 são somente entradas para a futura validação. Até B-05 ser aprovado, nenhum dado pessoal de participante, paciente ou tutor pode ser tratado para Discovery, piloto ou plataforma; somente agregados efetivamente anonimizados são permitidos conforme o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md).
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 
@@ -145,6 +142,5 @@ Por D-073, RN-063 a RN-067 são somente entradas para a futura validação. Até
 
 1. RN-023 — domínio mínimo em componentes críticos (definir com dados do piloto);
 2. RN-074 — baseline (B-07);
-3. RN-075 — complemento: confirmar nomes dos revisores clínico/pedagógico (B-03);
-4. Nomeações da seção 8 (B-03);
-5. Definição futura sobre processamento automatizado dos PDFs (D-033; não bloqueia o MVP manual).
+3. Identificar o segundo médico-veterinário em cada módulo somente antes de sua publicação;
+4. Definição futura sobre processamento automatizado dos PDFs (D-033; não bloqueia o MVP manual).

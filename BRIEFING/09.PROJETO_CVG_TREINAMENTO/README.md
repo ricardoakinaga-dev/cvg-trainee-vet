@@ -107,10 +107,10 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 
 1. mapear o fluxo atual e práticas isoladas via entrevistas (B-01);
 2. dimensionar o público e delimitar a coorte piloto (B-02);
-3. concluir B-03: o modelo de governança mínima segregada foi aprovado como insumo (D-071), mas ainda é obrigatório nomear titulares/suplentes, registrar aceites e conflitos e instalar os comitês;
+3. B-03 concluído por D-076: Ricardo concentra as responsabilidades do MVP; outro MV revisa cada módulo clínico antes da publicação;
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. aprovar formalmente o rascunho conservador de dados e acesso do [Anexo 0011](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md); até lá, nenhuma coleta pessoal de participante, paciente ou tutor é autorizada (B-05/D-073);
-6. revalidar formalmente as áreas do piloto (B-06), após B-03 — seleção confirmada pelo patrocinador como insumo: núcleo comum + emergência e internação;
+6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
 7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
 
 ## 4.2 Controle de versão obrigatório
@@ -123,7 +123,7 @@ Os PDFs-fonte não serão versionados no Git. Sua integridade será controlada p
 
 ## 5. Fontes clínicas principais
 
-> **Registro interno de governança:** os nomes, responsáveis editoriais, editoras, edições e arquivos abaixo não serão exibidos ao aluno. Por D-074, a experiência educacional mostrará somente conteúdo institucional autoral do CVG, versão, data de corte e estado de revisão; a proveniência completa permanecerá restrita ao workflow interno.
+> **Registro interno:** os dados das obras abaixo não serão exibidos ao aluno. Por D-075, cada módulo mantém somente a referência interna simples à obra e ao capítulo/seção consultados.
 
 **Obra:** *Tratado de Medicina Interna de Cães e Gatos*  
 **Organizadores:** Márcia Marques Jericó, João Pedro de Andrade Neto e Márcia Mery Kogika  
@@ -160,10 +160,8 @@ O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abai
 2. mapear o processo atual de treinamento;
 3. levantar uma linha de base;
 4. confirmar público, áreas prioritárias e coorte piloto;
-5. nomear responsáveis de negócio, educação e revisão clínica;
-6. definir política de uso dos dados de desempenho;
-7. verificar licença e direitos de uso das três obras;
-8. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
+5. definir a política mínima de uso dos dados de desempenho;
+6. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
 
 Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
 
@@ -171,4 +169,4 @@ Enquanto isso, são permitidas correção documental e preparação de rascunhos
 
 **Política de fontes (D-075):** governança enxuta para uso interno: consulta manual, conteúdo original CVG, PDFs fora da plataforma/Git e referência simples por módulo. B-04 está fechado; automação dos PDFs fica fora do MVP em D-033.
 
-**Coordenação transitória (D-072):** MV. Ricardo Akinaga coordena todas as frentes de correção enquanto B-03 permanece parcial. Essa responsabilidade operacional não preenche as cadeiras independentes, não permite autoaprovação e não autoriza mudança de fase. Os demais bloqueios podem ser tratados em paralelo ou na ordem de dependência documentada.
+**Governança do MVP (D-076):** MV. Ricardo Akinaga responde pelas frentes do MVP e pelos gates documentais. Não há comitês ou suplentes obrigatórios; outro MV faz a segunda conferência antes da publicação de cada módulo clínico.

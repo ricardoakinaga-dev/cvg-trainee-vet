@@ -4,7 +4,7 @@
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
 **Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem pendentes as decisões que dependem de levantamento, entrevistas, validações e nomeações.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-075. D-075 recalibra D-074 para governança enxuta e proporcional ao treinamento interno do CVG.
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-076. D-075 simplifica fontes e D-076 simplifica a governança do MVP interno.
 
 ## 1. Identidade e governança
 
@@ -12,11 +12,11 @@
 |---|---|---|---|---|
 | D-001 | Qual será o nome oficial do produto? | patrocinador | PRD | proposta — "Sistema CVG de Treinamento Veterinário" (nome provisório, registro no README) |
 | D-002 | Quem é o patrocinador executivo? | direção | Discovery | resolvida — MV. Ricardo Akinaga, CEO |
-| D-003 | Quem será o product owner? | direção | Discovery | parcialmente resolvida por D-071: deve ser pessoa distinta do patrocinador e da coordenação educacional; nome, suplente e aceite pendentes (B-03) |
-| D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | parcialmente resolvida por D-071: 1 titular distinto do PO + suplente; nomes e aceites pendentes (B-03) |
-| D-005 | Quem compõe o comitê científico? | RT/direção clínica | Discovery | parcialmente resolvida por D-071: RT + clínico de Emergência + clínico de Internação/Medicina Interna; nomes, suplentes e aceites pendentes (B-03) |
-| D-006 | Quem responde por LGPD e segurança? | direção | Discovery | parcialmente resolvida por D-071: 1 responsável interno ou externo + suplente; nomes e aceites pendentes (B-03) |
-| D-007 | Quem aprova cada gate? | patrocinador | Discovery | matriz de aprovação definida por D-071; comitê não instalado enquanto houver função vaga (B-03) |
+| D-003 | Quem será o product owner? | direção | Discovery | resolvida por D-076 — MV. Ricardo Akinaga no MVP interno |
+| D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | resolvida por D-076 — MV. Ricardo Akinaga no MVP interno |
+| D-005 | Quem revisa conteúdo clínico? | coordenação clínica | publicação do módulo | resolvida por D-076 — outro médico-veterinário escolhido e registrado por módulo; sem comitê permanente |
+| D-006 | Quem responde por dados e segurança? | direção | Discovery | resolvida para o MVP por D-076 — MV. Ricardo Akinaga; B-05 continua definindo o que poderá ser coletado |
+| D-007 | Quem aprova cada gate? | patrocinador | Discovery | resolvida por D-076 — MV. Ricardo Akinaga, com decisão registrada sobre commit identificado |
 
 ## 2. Público e operação atual
 
@@ -102,11 +102,12 @@
 | D-068 | Qual é a modalidade da primeira versão e a fronteira das simulações? | patrocinador/PO | PRD/SPEC | aprovada (2026-08-05): treinamento integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` |
 | D-069 | Como tratar gates com itens obrigatórios incompletos? | patrocinador/governança | Discovery/PRD | aprovada (2026-08-05): aplicar estritamente as engines; gates reprovados até checklist completo, reexecução, checkpoint Git e aprovação formal; sem waiver implícito |
 | D-070 | Quem avalia respostas construídas e haverá dupla correção? | coord. pedagógica/comitê clínico | PRD | pendente — bloqueia definição completa de UC-005 e requisitos de avaliação |
-| D-071 | Qual modelo de governança deve resolver B-03? | patrocinador | Discovery/PRD | aprovada como insumo (2026-08-05): Alternativa 1, governança mínima segregada; B-03 permanece parcial até nomeações, suplências, aceites e instalação dos comitês |
-| D-072 | Como coordenar o trabalho enquanto as cadeiras de B-03 permanecem vagas? | patrocinador | plano de correção | aprovada (2026-08-05): MV. Ricardo Akinaga atua como coordenador geral interino, sem ocupar cadeiras independentes nem assinar gates; demais correções podem continuar, mas B-03 e os gates permanecem bloqueados |
-| D-073 | Como preparar B-05 enquanto o responsável LGPD independente permanece vago? | patrocinador/responsável LGPD | plano de correção/B-05 | aprovada como diretriz de preparação (2026-08-05): Alternativa 1, rascunho conservador sem coleta identificável; B-05 permanece parcial até validação formal independente |
+| D-071 | Qual modelo de governança deve resolver B-03? | patrocinador | Discovery/PRD | substituída por D-076 quanto ao modelo vigente; preservada como histórico |
+| D-072 | Como coordenar o trabalho enquanto as cadeiras de B-03 permanecem vagas? | patrocinador | plano de correção | substituída por D-076; não há mais cadeiras vagas no modelo do MVP |
+| D-073 | Como preparar B-05 antes da política mínima? | patrocinador | plano de correção/B-05 | rascunho conservador preparado; por D-076, Ricardo é o responsável e B-05 permanece parcial somente até sua aprovação operacional |
 | D-074 | Como usar as obras como consulta/validação técnica sem expor referências ao aluno? | patrocinador | fontes | substituída por D-075 quanto ao nível de controle; mantida a separação entre aluno e referência interna |
 | D-075 | Qual governança de fontes é proporcional a um treinamento digital exclusivamente interno do CVG? | patrocinador | fontes/B-04 | aprovada (2026-08-05): Alternativa 1, consulta manual interna, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; B-04 fechado para o MVP interno; D-033 não bloqueante |
+| D-076 | Qual governança organizacional é proporcional ao MVP interno? | patrocinador | governança/B-03 | aprovada (2026-08-05): Alternativa 1, Ricardo concentra as responsabilidades; outro MV revisa cada módulo clínico antes da publicação; sem comitês ou suplentes; B-03 fechado para o MVP |
 
 ## 8. Perguntas para a primeira reunião
 

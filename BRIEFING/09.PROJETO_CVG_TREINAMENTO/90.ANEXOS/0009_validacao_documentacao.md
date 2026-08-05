@@ -73,7 +73,7 @@ CONSISTÊNCIA INTERNA: PARCIAL — D-040 A D-044 SINCRONIZADOS; OUTRAS CONTRADI�
 FONTE CIRÚRGICA: INCORPORADA (FOSSUM — F-03)
 STATUS DOS GATES: DISCOVERY E PRD REPROVADOS — EM CORREÇÃO
 CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA; CHECKLISTS AINDA INCOMPLETOS
-PENDÊNCIAS DE GATE: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (MODELO D-071; COORDENAÇÃO INTERINA D-072; NOMEAÇÕES/ACEITES PENDENTES),
+SITUAÇÃO DOS ITENS: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (FECHADO PARA O MVP INTERNO POR D-076),
 B-04 (FECHADO PARA O MVP INTERNO POR D-075), B-05 (RASCUNHO D-073 PREPARADO; VALIDAÇÃO FORMAL LGPD PENDENTE), B-07 (BASELINE)
 SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
 ```
@@ -90,9 +90,9 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 
 - B-01: fluxo atual via entrevistas (roteiro pronto — anexo 0007);
 - B-02: inventário de usuários e delimitação da coorte;
-- B-03: Ricardo coordena operacionalmente as correções por D-072, sem preencher cadeiras; concluir nomeações, suplências, aceites, conflitos e instalação dos comitês conforme D-071/0006;
+- B-03: fechado por D-076; Ricardo concentra as responsabilidades e outro MV revisa cada módulo clínico antes da publicação;
 - B-04: fechado por D-075 para o MVP interno; manter consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; D-033 é futura e não bloqueante;
-- B-05: validar formalmente o rascunho conservador do Anexo 0011 pelo responsável LGPD independente; até lá, nenhuma coleta pessoal de participante, paciente ou tutor está autorizada;
+- B-05: Ricardo deve simplificar e aprovar a política mínima do Anexo 0011 antes do piloto; até lá, nenhuma coleta pessoal de participante, paciente ou tutor está autorizada;
 - B-07: baseline (diagnóstico inicial na coorte).
 
 ## 8. Controle de versão

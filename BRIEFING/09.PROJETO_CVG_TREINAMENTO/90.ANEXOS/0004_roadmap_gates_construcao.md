@@ -94,7 +94,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 
 ### Gate
 
-Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-04 foi fechado por D-075; B-01, B-02, B-03, B-05, B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
+Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-03/B-04 foram fechados por D-076/D-075; B-01, B-02, B-05, B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
 
 ## 4. Fase 2 — SPEC
 
@@ -301,16 +301,14 @@ Condições mínimas para abertura: evidência do piloto digital; PRD revisado c
 
 | Gate | Quem prepara | Quem revisa | Quem aprova |
 |---|---|---|---|
-| Discovery | product owner | usuários, RT, coordenação educacional e LGPD/segurança, com parecer explícito sobre o commit | patrocinador + RT + coordenação educacional + LGPD/segurança; PO presta contas e se abstém da aprovação do artefato que preparou |
-| PRD | product owner | RT, coordenação educacional e LGPD/segurança, com parecer explícito sobre o commit | patrocinador + RT + coordenação educacional + LGPD/segurança; PO presta contas e se abstém da aprovação do artefato que preparou |
-| SPEC | arquitetura/engenharia | segurança, dados, produto | comitê técnico |
-| Build phase | time de build | reviewer, TDD, segurança | líder técnico de software, a nomear antes da fase |
-| Conteúdo | autor | clínico + pedagógico | comitê científico |
-| Piloto | produto/operação | usuários e auditor | patrocinador |
-| Audit | auditor independente | owners | comitê de governança |
-| Expansão prática (`GATE-EXP-PRAT-01`) | PO + coordenação educacional | RT/coordenação clínica + LGPD/segurança | patrocinador + comitê de governança |
+| Discovery | MV. Ricardo Akinaga | evidências do levantamento | MV. Ricardo Akinaga sobre commit identificado |
+| PRD | MV. Ricardo Akinaga | consistência com Discovery | MV. Ricardo Akinaga sobre commit identificado |
+| SPEC/Build | responsável técnico da implementação, quando a fase abrir | testes e segurança aplicáveis | MV. Ricardo Akinaga |
+| Conteúdo clínico | autor | outro médico-veterinário escolhido por módulo | MV. Ricardo Akinaga após a segunda conferência |
+| Piloto/Audit | MV. Ricardo Akinaga | resultados e problemas observados | MV. Ricardo Akinaga |
+| Expansão prática (`GATE-EXP-PRAT-01`) | MV. Ricardo Akinaga | análise específica futura | decisão futura registrada |
 
-Modelo segregado aprovado como insumo em D-071. Patrocinador executivo nomeado (MV. Ricardo Akinaga — CEO), que também coordena operacionalmente as correções por D-072, sem cadeira ou assinatura adicional; PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança permanecem `VAGOS — BLOQUEIAM B-03`. A composição, os impedimentos e os aceites obrigatórios estão no documento 0006. Outros itens de correção podem prosseguir conforme suas dependências, mas nenhum gate ou fase avança por causa da coordenação interina.
+D-076 define a governança enxuta do MVP e fecha B-03. Não há cargos, comitês ou suplentes pendentes; a única segunda conferência obrigatória é clínica, por outro MV, antes da publicação de cada módulo.
 
 ## 9. Estado e persistência futuros
 

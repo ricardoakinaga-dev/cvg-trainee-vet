@@ -44,7 +44,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-031 | Proteção do banco de questões contra vazamento e compartilhamento | PROPOSTA (D-048) |
 | RNF-032 | Dados pessoais e de desempenho somente podem ser tratados após B-05, conforme finalidade e base legal validadas | PENDENTE (B-05/D-073) |
 | RNF-033 | Antes de B-05, casos clínicos são exclusivamente fictícios; uso futuro de caso real depende de anonimização e revisão formal | PENDENTE (B-05/D-073) |
-| RNF-034 | Segregação de responsabilidades: autor não revisa o próprio conteúdo; administrador não altera notas silenciosamente | FATO INFORMADO |
+| RNF-034 | Módulo clínico exige segunda conferência de outro MV; alteração de nota nunca ocorre silenciosamente | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
 | RNF-035 | Nenhuma decisão crítica clínica automatizada por IA sem revisão humana | FATO INFORMADO |
 | RNF-036 | Alteração de gabarito/nota exige justificativa e fluxo formal | PROPOSTA |
 

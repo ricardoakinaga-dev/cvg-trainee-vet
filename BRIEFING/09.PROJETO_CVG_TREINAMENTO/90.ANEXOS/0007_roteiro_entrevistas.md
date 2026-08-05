@@ -3,7 +3,7 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
 **Objetivo:** instrumento de trabalho para resolver os bloqueios B-01 (fluxo atual), B-02 (público e coorte), B-06 (áreas do piloto) e B-07 (baseline) antes da nova submissão do gate Discovery e, somente depois de sua aprovação, do gate PRD.
-**Uso:** entrevistador formal futuro (PO ou coordenação educacional indicada) aplica e registra em formulário próprio. Enquanto essas cadeiras estiverem vagas, MV. Ricardo Akinaga pode organizar agenda e instrumentos como coordenador geral interino (D-072), mas não emitir parecer independente nem validar sozinho os resultados; nenhuma informação nova é inventada — tudo o que não for confirmado permanece `PENDENTE`.
+**Uso:** MV. Ricardo Akinaga aplica ou delega as entrevistas e registra os resultados. Nenhuma informação nova é inventada; tudo o que não for confirmado permanece `PENDENTE`.
 
 > **Pré-condição LGPD (B-05):** até a validação formal da política de dados e a nomeação do responsável, este anexo pode ser usado apenas para desenhar instrumentos e obter informações estritamente agregadas e efetivamente anonimizadas, sem campos/células vinculáveis ou grupos pequenos reidentificáveis. Ficam bloqueados formulários individualizados, nomes, cargo/turno vinculáveis, gravações, diagnóstico individual, prontuários, casos reais e indicadores assistenciais vinculáveis. B-05 precede B-07.
 
@@ -13,9 +13,9 @@
 
 | Grupo | Papel | Objetivo da entrevista | Bloqueios atendidos |
 |---|---|---|---|
-| A — Direção / patrocinador | MV. Ricardo Akinaga (CEO) | finalidade do programa, orçamento, tempo protegido, política de uso dos dados | B-02, B-03, B-05, B-06 |
+| A — Direção / patrocinador | MV. Ricardo Akinaga (CEO) | finalidade do programa, orçamento, tempo protegido, política de uso dos dados | B-02, B-05, B-06 |
 | B — Coordenação clínica / RT | coordenação clínica ou responsável técnico | fluxo atual, lacunas clínicas, protocolos, áreas do piloto, temas críticos | B-01, B-06, B-07 |
-| C — Coordenação educacional | quem hoje organiza capacitação (ou candidato ao papel) | processo atual de treinamento, materiais, avaliações, carga, registros | B-01, B-03, B-07 |
+| C — Coordenação educacional | MV. Ricardo Akinaga ou pessoa delegada | processo atual de treinamento, materiais, avaliações, carga, registros | B-01, B-07 |
 | D — Veterinários colaboradores | amostra de 5 a 8 ou proporcional por área/turno | como estudam hoje, tempo disponível, dispositivos, motivação, percepção de lacunas | B-01, B-02, B-07 |
 
 **Ordem sugerida:** A → B → C → D (a direção fornece o contexto que orienta as demais; a coordenação prepara as perguntas específicas para os veterinários).
@@ -39,7 +39,7 @@
 | A2 | Quantos veterinários o CVG tem hoje, em quais setores e turnos? | dimensionamento | B-02 |
 | A3 | Como os treinamentos são realizados hoje? Existe algo além do que já sabemos (que não há sistema)? | fluxo real | B-01 |
 | A4 | Há tempo protegido para estudo? Quanto por semana/mês por veterinário? | carga viável | D-016 |
-| A5 | Quais são os titulares e suplentes de PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança, e onde estão registrados seus aceites e conflitos? | nomeações conforme D-071/0006 | B-03 |
+| A5 | Quem poderá atuar como segundo MV revisor de cada módulo clínico quando o conteúdo estiver pronto? | revisão por módulo conforme D-076 | publicação de conteúdo |
 | A6 | Quem poderá ver resultados individuais? Gestão de pessoas pode usar para RH? | política de acesso | D-051, D-052 |
 | A7 | Os PDFs permanecem restritos à equipe, fora da plataforma/Git, e o conteúdo está sendo redigido pelo CVG? | controle operacional | D-075 |
 | A8 | Qual orçamento e prazo desejado para o piloto? | viabilidade | D-065, D-066 |
@@ -56,7 +56,7 @@
 |---|---|---|---|
 | B1 | Descreva o fluxo real de capacitação hoje, do início ao fim: quem faz o quê? | mapa do fluxo | B-01 |
 | B2 | Como os temas de treinamento são escolhidos hoje? | critérios atuais | B-01 |
-| B3 | Quem cria ou seleciona materiais? Quem aprova? | papéis reais | B-01, B-03 |
+| B3 | Quem cria ou seleciona materiais atualmente? | fluxo real | B-01 |
 | B4 | Como presença, conclusão e nota são registradas hoje? | ferramentas/registros | B-01 |
 | B5 | Quais três lacunas clínicas mais preocupam a coordenação? | priorização de conteúdo | B-06 |
 | B6 | Quais temas têm maior risco e frequência na operação? | escopo do piloto | B-06 |
@@ -171,7 +171,7 @@ LINKS PARA DECISÕES: D-___, B-___
 | Quantidade e perfil dos veterinários (segmentação) | `00.DISCOVERY/0006_usuarios_e_stakeholders.md` | B-02 |
 | Lacunas prioritárias e áreas do piloto confirmadas | `00.DISCOVERY/0005_hipotese_de_valor.md`, `01.PRD/0011` | B-06 |
 | Linha de base mínima (perfil, conhecimento, engajamento, indicadores) | `01.PRD/0015_metricas_de_sucesso.md` | B-07 |
-| Nomeações de responsáveis | `00.DISCOVERY/0006`, `01.PRD/0012 §8` | B-03 |
+| Responsável do MVP | `00.DISCOVERY/0006`, `01.PRD/0012 §8` | D-076/B-03 fechado |
 | Política de dados definida | `01.PRD/0014`, `0012` | B-05 |
 | Controles internos das fontes | `90.ANEXOS/0001` | D-075 |
 | Respostas das 12 perguntas de `0005_decisoes_pendentes.md §8` | `90.ANEXOS/0005` | geral |
@@ -187,7 +187,7 @@ O levantamento estará concluído quando:
 3. Público dimensionado e perfil segmentado (B-02);
 4. Lacunas priorizadas por risco/frequência e áreas do piloto confirmadas (B-06);
 5. Baseline mínima levantada (B-07);
-6. Responsáveis nomeados (B-03);
+6. Responsável do MVP registrado (B-03 fechado por D-076);
 7. Política de dados aprovada (B-05);
 8. Controles internos de fontes confirmados (D-075);
 9. Mapa validado com os participantes (sessão de devolutiva);

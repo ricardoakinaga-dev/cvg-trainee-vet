@@ -44,12 +44,12 @@
 | UC-011 | Acompanhar lacunas da equipe (autorizado) | Mentor |
 | UC-012 | Criar e submeter conteúdo | Autor |
 | UC-013 | Revisar conteúdo | Revisor clínico / pedagógico |
-| UC-014 | Aprovar e publicar conteúdo | Gestor educacional / comitê |
+| UC-014 | Aprovar e publicar conteúdo | MV. Ricardo Akinaga, após segunda conferência clínica |
 | UC-015 | Gerir usuários, papéis e configurações | Administrador |
 | UC-016 | Acompanhar métricas do programa | Gestor educacional / clínico |
 | UC-017 | Consultar trilha de auditoria | Auditor |
 | UC-018 | Tratar contestação | Revisor independente |
-| UC-019 | Retirar conteúdo por risco clínico | Revisor clínico / comitê |
+| UC-019 | Retirar conteúdo por risco clínico | MV. Ricardo Akinaga / segundo MV |
 | UC-020 | Gerenciar revisão e validade do conteúdo | Gestor educacional |
 
 ---
@@ -230,14 +230,14 @@
 - **Fluxo principal:**
   1. O autor cria a unidade/item no rascunho;
   2. Registra internamente objetivo, competência, nível, obra e capítulo/seção consultados e versão, sem exposição ao aluno;
-  3. Submete à revisão independente (não pode publicar o próprio conteúdo).
+  3. Submete o módulo clínico à segunda conferência de outro médico-veterinário.
 - **Exceções:** tentativa de copiar texto, tabela, figura ou imagem da obra — submissão bloqueada; conteúdo exigindo alerta clínico — campo obrigatório.
 - **Resultado esperado:** item em revisão com metadados completos.
 - **Observações:** rastreabilidade mínima `100%` para itens ativos (métrica).
 
 ### UC-013 — Revisar conteúdo
 
-- **Ator:** Revisor clínico (correção/atualidade) e revisor pedagógico (alinhamento).
+- **Ator:** outro médico-veterinário escolhido para revisar o módulo.
 - **Objetivo:** garantir correção científica, atualidade e qualidade pedagógica.
 - **Pré-condições:** conteúdo original submetido por UC-012.
 - **Gatilho:** submissão do autor.
@@ -248,11 +248,11 @@
   4. Divergências entre fontes seguem a regra de conflito (anexo 0001).
 - **Exceções:** cópia de material da obra — item devolvido; divergência crítica — encaminhada a revisor clínico.
 - **Resultado esperado:** conteúdo aprovado com data de corte e validade.
-- **Observações:** revisor clínico e pedagógico são independentes do autor.
+- **Observações:** registrar nome, CRMV, data e resultado da segunda conferência.
 
 ### UC-014 — Aprovar e publicar conteúdo
 
-- **Ator:** Gestor educacional (comitê, conforme segregação).
+- **Ator:** MV. Ricardo Akinaga.
 - **Objetivo:** liberar conteúdo aprovado para a trilha.
 - **Gatilho:** revisões concluídas.
 - **Fluxo principal:**
@@ -319,12 +319,12 @@
 
 ### UC-019 — Retirar conteúdo por risco clínico
 
-- **Ator:** Revisor clínico / comitê.
+- **Ator:** MV. Ricardo Akinaga, com consulta a outro MV quando necessário.
 - **Objetivo:** remover ou bloquear conteúdo com risco.
 - **Gatilho:** alerta regulatório, erro identificado ou divergência crítica.
 - **Fluxo principal:**
   1. O revisor sinaliza o risco;
-  2. O comitê decide (crítico: decisão em até 24h — anexo 0001);
+  2. Ricardo decide (crítico: decisão em até 24h — anexo 0001);
   3. O sistema bloqueia o conteúdo e registra itens afetados e usuários expostos;
   4. Ação corretiva é registrada.
 - **Exceções:** decisão tardia em caso crítico — não conformidade.
