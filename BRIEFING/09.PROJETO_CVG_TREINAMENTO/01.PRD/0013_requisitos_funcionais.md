@@ -5,7 +5,7 @@
 **Data:** 2026-08-05  
 **Regra:** nenhuma tecnologia definida; requisitos descrevem capacidades do produto.
 
-> **Precondição transversal de dados:** RFs que envolvam identificação, respostas, notas, personalização, painéis, logs ou auditoria permanecem desenho futuro. Sua execução depende de B-05 aprovado; D-073/[Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) não autoriza coleta pessoal.
+> **Regra transversal de dados:** B-05 foi fechado por D-077. RFs que envolvam identificação, respostas, notas, personalização, painéis, logs ou auditoria devem respeitar estritamente o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md). Prontuários, dados de tutores, gravações e casos reais identificáveis são proibidos.
 
 Legenda de prioridade: P0 (crítico para o piloto), P1 (alta), P2 (média), P3 (baixa).  
 Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
@@ -17,12 +17,12 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
 | RF-001 | O sistema deve autenticar usuários individualmente | P0 | FATO INFORMADO |
-| RF-002 | O sistema deve identificar o vínculo do colaborador (função, área, turno, unidade) | P0 | FATO INFORMADO |
+| RF-002 | O sistema deve identificar o colaborador por nome, identificador interno e login/e-mail profissional; função, área, turno e unidade não entram no cadastro do MVP | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RF-003 | O sistema deve atribuir papéis e permissões conforme a matriz de acesso | P0 | PROPOSTA |
 | RF-004 | O sistema deve registrar quem criou/alterou cada dado relevante (responsável e data) | P0 | FATO INFORMADO |
 | RF-005 | O sistema deve bloquear contas compartilhadas | P1 | PROPOSTA |
 | RF-006 | O sistema deve suportar desativação de usuários sem excluir histórico | P1 | PROPOSTA |
-| RF-007 | O sistema deve registrar finalidade e base legal validada para cada tratamento; quando consentimento for aplicável, deve registrar sua prova e revogação | P1 | PENDENTE (B-05/D-073) |
+| RF-007 | Antes do primeiro cadastro real, o sistema deve apresentar aviso simples com finalidade, dados, acesso, retenção e base legal aplicável | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 
 ## 2. Avaliação diagnóstica e linha de base
 
@@ -70,7 +70,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|---|
 | RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa técnico-clínica e múltiplas tentativas; referência bibliográfica completa somente no workflow interno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
 | RF-041 | Quiz formativo: peso zero na nota somativa | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário fictício e decisões registradas; casos derivados de atendimentos reais ficam bloqueados até B-05 | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
+| RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário integralmente fictício e decisões registradas; casos reais identificáveis são proibidos no MVP | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068/D-077) |
 | RF-043 | Caso clínico/simulação digital: feedback e debriefing formativo e/ou somativo; modalidade somativa participa com peso 30% | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RF-044 | Prova somativa: gerada do banco conforme blueprint, com seleção aleatória | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-045 | Prova somativa: tempo e janela definidos | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |

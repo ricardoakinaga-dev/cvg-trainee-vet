@@ -84,7 +84,7 @@
 | B-02 | público não dimensionado | impede recorte do piloto | inventário de usuários | PENDENTE | PENDENTE |
 | B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | aplicar D-076; segundo MV somente antes da publicação de cada módulo clínico | MV. Ricardo Akinaga | FECHADO PARA O MVP INTERNO |
 | B-04 | uso das fontes no MVP interno | risco controlado | aplicar D-075: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo | patrocinador | FECHADO PARA O MVP INTERNO |
-| B-05 | política de dados ainda não aprovada | risco de privacidade | simplificar e aprovar o mínimo necessário antes do piloto | MV. Ricardo Akinaga | PARCIAL — nenhuma coleta pessoal de participante, paciente ou tutor autorizada |
+| B-05 | política mínima interna de dados | limitar coleta e acesso | aplicar o Anexo 0011 | MV. Ricardo Akinaga | FECHADO POR D-077 — dados do treinamento permitidos; prontuários, tutores, gravações e casos reais identificáveis proibidos |
 | B-06 | áreas clínicas do piloto | escopo clínico | decisão registrada: núcleo + Emergência + Internação | coordenação clínica | FECHADO COMO INSUMO |
 | B-07 | baseline ausente | metas não calibradas | diagnóstico e coleta inicial | PENDENTE | PENDENTE |
 
@@ -101,7 +101,7 @@ BUILD: PROIBIDO
 AUDIT: NÃO APLICÁVEL
 ```
 
-Enquanto o gate estiver reprovado, são permitidas correção documental e preparação de conteúdo original em rascunho, sem publicar o programa. **B-05 deve ser validado antes de entrevistas ou inventários identificáveis, gravações, diagnóstico individual, acesso a prontuários/casos reais, indicadores vinculáveis e coleta da baseline B-07.** PRD formal, SPEC, BUILD, arquitetura, código e publicação continuam sujeitos aos gates aplicáveis.
+Enquanto o gate estiver reprovado, são permitidas correção documental e preparação de conteúdo original em rascunho, sem publicar o programa. **Por D-077, entrevistas, inventário e baseline podem tratar apenas os dados mínimos do treinamento; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos.** PRD formal, SPEC, BUILD, arquitetura, código e publicação continuam sujeitos aos gates aplicáveis.
 
 Por D-076, MV. Ricardo Akinaga é o responsável efetivo pelo MVP e pode decidir e aprovar os documentos sobre commits identificados.
 
@@ -113,7 +113,7 @@ Por D-076, MV. Ricardo Akinaga é o responsável efetivo pelo MVP e pode decidir
 | B-02 | público não dimensionado | inventário de usuários e definição da coorte piloto | antes da nova submissão Discovery |
 | B-03 | responsável do MVP | Ricardo nomeado por D-076; segundo MV será identificado por módulo antes da publicação | concluído |
 | B-04 | governança de fontes recalibrada por D-075 | fechado para o MVP interno; D-033 permanece separada e não bloqueia a autoria manual | concluído |
-| B-05 | rascunho conservador D-073 elaborado, sem aprovação | Ricardo deve simplificar e aprovar a política mínima; nenhuma coleta pessoal de participante, paciente ou tutor até lá | antes da nova submissão Discovery |
+| B-05 | fechado por D-077 | aplicar a política mínima interna; nenhuma ampliação de dados sem nova decisão | controle contínuo |
 | B-06 | áreas clínicas do piloto | decisão confirmada: núcleo + Emergência + Internação | fechado como insumo; revalidar no gate |
 | B-07 | baseline ausente | aplicar diagnóstico inicial na coorte definida | antes da nova submissão Discovery |
 
@@ -128,8 +128,8 @@ O gate somente poderá ser novamente submetido quando os itens abaixo estiverem 
 3. a coorte e as áreas piloto estiverem definidas (B-02, B-06);
 4. responsável do MVP estiver registrado (B-03 — concluído);
 5. direitos e política de fontes estiverem decididos (B-04);
-6. política de dados estiver aprovada (B-05);
-7. após a validação de B-05, houver baseline mínima (B-07).
+6. política mínima de dados D-077 for respeitada (B-05 fechado);
+7. houver baseline mínima (B-07).
 
 ## Aprovação humana
 
@@ -138,4 +138,4 @@ O gate somente poderá ser novamente submetido quando os itens abaixo estiverem 
 | Responsável pelo MVP interno | MV. Ricardo Akinaga | patrocinador, produto, coordenação clínica/educacional, operação, dados, segurança e aprovação dos gates documentais | 2026-08-05 |
 | Revisor de conteúdo clínico | outro MV escolhido por módulo | exigido somente antes da publicação do módulo | POR MÓDULO |
 
-Registro vigente: B-03 e B-04 estão fechados para o MVP interno por D-076 e D-075. O gate Discovery continua pendente pelos demais itens.
+Registro vigente: B-03, B-04 e B-05 estão fechados para o MVP interno por D-076, D-075 e D-077. O gate Discovery continua pendente pelos demais itens.

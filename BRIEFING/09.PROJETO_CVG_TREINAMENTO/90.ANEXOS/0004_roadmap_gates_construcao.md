@@ -46,8 +46,7 @@ Produzidos neste briefing:
 ### Próximas atividades permitidas
 
 - Correção dos artefatos de Discovery e do rascunho de PRD;
-- Antes de B-05: desenho de instrumentos e levantamentos estritamente agregados e efetivamente anonimizados, sem campos/células vinculáveis ou grupos pequenos reidentificáveis;
-- Após B-05: entrevistas/inventários identificáveis e baseline B-07, conforme a política validada;
+- Entrevistas, inventários e baseline B-07 dentro do conjunto mínimo de dados aprovado por D-077, sem gravações, prontuários, tutores ou casos reais identificáveis;
 - Priorização do piloto;
 - Nomeação de responsáveis;
 - Decisão de fontes, licenças e dados;
@@ -89,12 +88,12 @@ Materializar o comportamento do produto sem definir tecnologia.
 - Governança editorial; ✅
 - Fontes; ✅ D-075: governança enxuta para uso interno, B-04 fechado; automação dos PDFs permanece fora do MVP em D-033
 - Métricas; ✅ (proposta; baseline B-07)
-- Privacidade; ⏳ rascunho conservador D-073/Anexo 0011 preparado, sem coleta pessoal de participante, paciente ou tutor autorizada; B-05 ainda pendente
+- Privacidade; ✅ D-077/Anexo 0011: política mínima aprovada e B-05 fechado
 - Exceções. ✅
 
 ### Gate
 
-Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-03/B-04 foram fechados por D-076/D-075; B-01, B-02, B-05, B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
+Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-03/B-04/B-05 foram fechados por D-076/D-075/D-077; B-01, B-02, B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
 
 ## 4. Fase 2 — SPEC
 

@@ -5,7 +5,7 @@
 **Objetivo:** instrumento de trabalho para resolver os bloqueios B-01 (fluxo atual), B-02 (público e coorte), B-06 (áreas do piloto) e B-07 (baseline) antes da nova submissão do gate Discovery e, somente depois de sua aprovação, do gate PRD.
 **Uso:** MV. Ricardo Akinaga aplica ou delega as entrevistas e registra os resultados. Nenhuma informação nova é inventada; tudo o que não for confirmado permanece `PENDENTE`.
 
-> **Pré-condição LGPD (B-05):** até a validação formal da política de dados e a nomeação do responsável, este anexo pode ser usado apenas para desenhar instrumentos e obter informações estritamente agregadas e efetivamente anonimizadas, sem campos/células vinculáveis ou grupos pequenos reidentificáveis. Ficam bloqueados formulários individualizados, nomes, cargo/turno vinculáveis, gravações, diagnóstico individual, prontuários, casos reais e indicadores assistenciais vinculáveis. B-05 precede B-07.
+> **Política de dados (D-077/B-05):** entrevistas e inventários devem registrar resultados consolidados sempre que possível. Gravações, prontuários, dados de tutores e casos reais identificáveis são proibidos. Nome/login profissional e dados do treinamento seguem o Anexo 0011.
 
 ---
 
@@ -23,7 +23,7 @@
 **Logística por entrevista:**
 - Duração: 30–45 min (A, B, C); 15–25 min (D);
 - Presencial ou remoto, conforme rotina de plantão (escala 12×36);
-- Gravação bloqueada até B-05; depois, somente se a política validada permitir e houver base legal/consentimento aplicável;
+- Não gravar entrevistas no MVP;
 - Preencher um [Formulário de registro](#7-formulario-de-registro-de-entrevista) por entrevistado;
 - Após todas: consolidar em documento único e validar com os participantes (sessão de devolutiva).
 
@@ -124,14 +124,14 @@ Para cada item, registrar: existe? qual? onde está? quem usa? serve de insumo?
 - [ ] Grupos de mensagem usados para treinamento;
 - [ ] Planilhas de presença/notas;
 - [ ] Sistema de RH (registro de treinamentos);
-- [ ] Existência de sistema de gestão clínica/prontuário, registrada somente de forma agregada; acesso ao sistema ou aos prontuários bloqueado por B-05;
+- [ ] Existência de sistema de gestão clínica/prontuário, registrada somente de forma agregada; acesso ao sistema ou aos prontuários proibido por D-077;
 - [ ] Ferramentas de videoconferência;
 - [ ] Processo de aplicação de provas (formato, correção);
 - [ ] Registro de certificados;
 - [ ] Processo de revisão clínica (reuniões, atas);
 - [ ] Lista de cursos externos usados/patrocinados;
 - [ ] Protocolos internos documentados (levantar todos);
-- [ ] Existência de categorias de indicadores assistenciais, sem valores ou vínculos individuais; coleta bloqueada por B-05.
+- [ ] Existência de categorias de indicadores assistenciais, sem valores ou vínculos individuais.
 
 ---
 
@@ -172,7 +172,7 @@ LINKS PARA DECISÕES: D-___, B-___
 | Lacunas prioritárias e áreas do piloto confirmadas | `00.DISCOVERY/0005_hipotese_de_valor.md`, `01.PRD/0011` | B-06 |
 | Linha de base mínima (perfil, conhecimento, engajamento, indicadores) | `01.PRD/0015_metricas_de_sucesso.md` | B-07 |
 | Responsável do MVP | `00.DISCOVERY/0006`, `01.PRD/0012 §8` | D-076/B-03 fechado |
-| Política de dados definida | `01.PRD/0014`, `0012` | B-05 |
+| Política de dados definida | `01.PRD/0014`, `0012`, Anexo 0011 | B-05 fechado por D-077 |
 | Controles internos das fontes | `90.ANEXOS/0001` | D-075 |
 | Respostas das 12 perguntas de `0005_decisoes_pendentes.md §8` | `90.ANEXOS/0005` | geral |
 
@@ -188,7 +188,7 @@ O levantamento estará concluído quando:
 4. Lacunas priorizadas por risco/frequência e áreas do piloto confirmadas (B-06);
 5. Baseline mínima levantada (B-07);
 6. Responsável do MVP registrado (B-03 fechado por D-076);
-7. Política de dados aprovada (B-05);
+7. Política mínima de dados D-077 respeitada (B-05 fechado);
 8. Controles internos de fontes confirmados (D-075);
 9. Mapa validado com os participantes (sessão de devolutiva);
 10. Todos os formulários classificados (`FATO INFORMADO` / `HIPÓTESE` / `PENDENTE`) e nenhuma informação inventada.
@@ -203,7 +203,7 @@ O levantamento estará concluído quando:
 
 - [ ] Agendar entrevistas cobrindo os turnos da escala 12×36 (incluir finais de semana/plantões noturnos, se necessário);
 - [ ] Enviar pauta prévia e garantir ambiente privado;
-- [ ] Cumprir a finalidade, a base legal, o aviso e os registros definidos na política aprovada; obter consentimento somente quando ele for a base aplicável (atividade bloqueada até B-05);
+- [ ] Cumprir a política D-077: consolidar respostas, não gravar e não registrar prontuários, tutores ou casos reais identificáveis;
 - [ ] Aplicar formulário individual;
 - [ ] Consolidar e classificar respostas;
 - [ ] Sessão de devolutiva com os participantes para validar o mapa do fluxo;

@@ -79,10 +79,10 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 1. O produto é **integralmente digital** na primeira versão e avalia conhecimento e raciocínio em cenários digitais simulados — nunca habilidade psicomotora, competência prática ou autonomia clínica;
 2. Aprovação em conteúdo, prova, caso ou simulação digital **não autoriza** procedimentos ou autonomia (`FATO INFORMADO`, D-068);
 3. Conteúdo clínico somente publicado após revisão humana (`FATO INFORMADO`);
-4. No piloto, casos clínicos usarão somente dados fictícios; casos derivados de atendimentos reais ficam bloqueados até B-05 aprovar anonimização e revisão de privacidade;
+4. No piloto, casos clínicos e simulações usarão somente dados fictícios; prontuários, dados de tutores e casos reais identificáveis são proibidos por D-077;
 5. Resultados usados para desenvolvimento, priorização e reforço — nunca punição automática (`HIPÓTESE` validada como diretriz);
 6. Divergências entre fontes seguem hierarquia do anexo 0001 (legislação > protocolo CVG > diretriz > Ettinger > Tratado);
-7. Dados pessoais e de desempenho permanecem bloqueados; o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) é `RASCUNHO CONSERVADOR — NÃO APROVADO`, e B-05 continua pendente (D-051 a D-053/D-073).
+7. A [Política Mínima Interna de Dados](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) foi aprovada por D-077; B-05 está fechado e somente nome/login profissional, progresso, tentativas, notas e logs mínimos podem ser tratados.
 8. Qualquer prática presencial futura exige aprovação do `GATE-EXP-PRAT-01` antes de gerar UC, RF, SPEC, backlog ou BUILD.
 
 ## 6. Critérios de priorização para o piloto

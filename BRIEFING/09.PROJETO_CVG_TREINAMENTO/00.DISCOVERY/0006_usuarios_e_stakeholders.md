@@ -18,14 +18,12 @@
 
 **Dados necessários:**
 
-> **Inventário futuro, não autorização de coleta:** os itens abaixo somente poderão ser tratados após a aprovação de B-05. Até lá, D-073/Anexo 0011 permite apenas agregados efetivamente anonimizados; os registros mínimos de nomeação e aceite da governança seguem a seção própria deste documento.
+Por D-077/B-05, a plataforma pode tratar somente:
 
-- Identificação profissional;
-- Vínculo, função e área;
-- Trilha e prazos;
-- Progresso, respostas, tentativas e notas;
-- Feedback e histórico;
-- Acomodações de acessibilidade, quando aplicável.
+- nome, identificador interno e login/e-mail profissional;
+- módulos atribuídos, progresso, conclusões e datas;
+- tentativas, itens/respostas aplicados, notas, remediação e contestações;
+- logs mínimos de acesso e auditoria.
 
 **Limite:** resultado de conteúdo, prova, caso ou simulação digital não equivale a competência prática nem autonomia clínica.
 
@@ -123,7 +121,7 @@ B-03 fica `FECHADO PARA O MVP INTERNO` por D-076. D-071 e D-072 permanecem apena
 
 ## Segmentações necessárias
 
-As segmentações abaixo são candidatas para a futura política. Nenhuma segmentação individual ou combinação reidentificável pode ser coletada antes de B-05; em relatórios agregados, grupos pequenos devem ser suprimidos ou combinados conforme o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md).
+As segmentações abaixo podem ser levantadas de forma agregada para planejar a coorte, mas não entram no cadastro individual do MVP sem nova decisão de Ricardo e atualização do [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md).
 
 - Experiência profissional;
 - Tempo no CVG;
@@ -137,16 +135,14 @@ As segmentações abaixo são candidatas para a futura política. Nenhuma segmen
 - Acessibilidade;
 - Tipo de vínculo.
 
-## Matriz resumida de acesso recomendada
+## Matriz resumida de acesso
 
-| Papel | Próprio progresso | Progresso da equipe | Criar | Revisar | Publicar | Alterar nota | Auditar |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Colaborador | sim | não | não | não | não | não | própria contestação |
-| Mentor | autorizado | autorizados | não | feedback | não | não | limitado |
-| Autor | próprio | não | sim | não aprova o próprio | não | não | conteúdo próprio |
-| Revisor clínico | não necessário | não | comentários | sim | não | não | versões |
-| Gestor educacional | sim, se necessário | sim | estrutura | sim | conforme necessidade | somente fluxo formal | sim |
-| Administrador | metadados técnicos necessários; sem leitura rotineira de conteúdo pessoal | somente por acesso excepcional, autorizado, temporário e auditado | não clínico | não clínico | somente aprovado | não silenciosamente | eventos técnicos necessários |
-| Auditor | leitura | leitura autorizada | não | não | não | não | sim |
+| Papel | Acesso aos dados do treinamento |
+|---|---|
+| Colaborador | seus próprios dados, progresso, tentativas, notas e contestações |
+| MV. Ricardo Akinaga | dados necessários para administrar o treinamento e auditar resultados |
+| Mentor autorizado por Ricardo | lacunas e plano de remediação somente dos participantes atribuídos |
+| Administrador técnico delegado | acesso excepcional, temporário e registrado para suporte |
+| Demais gestores | somente indicadores agregados autorizados por Ricardo |
 
-Essa matriz é uma proposta e deverá ser validada em B-05 antes de ser detalhada no PRD aprovado. Auditoria e suporte não recebem acesso irrestrito: finalidade, escopo, prazo e registro são obrigatórios.
+B-05 está fechado por D-077. Qualquer ampliação dessa matriz exige nova decisão antes do acesso.

@@ -84,15 +84,14 @@ O piloto será considerado **bem-sucedido** quando:
 
 ## 7. Dados que precisam existir para calcular as métricas
 
-Esta lista é um inventário futuro mínimo a validar, não uma autorização de coleta. Métricas pessoais, perfil, respostas, notas, logs e baseline dependem de B-05 aprovado; antes disso, D-073/[Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) permite somente saídas agregadas e efetivamente anonimizadas.
+Esta lista respeita a política mínima aprovada por D-077/B-05. A plataforma não deve acrescentar campos de perfil ou segmentação individual apenas para produzir métricas.
 
-- Perfil do colaborador (função, área, turno, data de entrada);
 - Resultados do diagnóstico e das avaliações (item, resposta, horário, tentativa, versão da regra);
 - Progresso e conclusões de unidades/módulos;
 - Eventos de remediação e retenção;
 - Metadados de conteúdo (versão, validade, revisores, data de corte);
 - Eventos de auditoria (aprovações, alterações, retiradas, contestações);
-- População elegível por KPI e exclusões (afastados, desligados, dispensados, transferidos).
+- Quantidade agregada de participantes elegíveis por KPI e exclusões, sem novos campos individuais na plataforma.
 
 ## 8. Metas que dependem de baseline (não definidas)
 

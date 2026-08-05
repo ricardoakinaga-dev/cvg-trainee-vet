@@ -47,7 +47,7 @@
 ### REQUISITOS
 
 - [ ] Requisitos funcionais completos para o MVP proposto — existem requisitos e decisões pendentes (0013 §10);
-- [ ] Requisitos não funcionais completamente definidos — acessibilidade, política formal de dados e exceções ainda possuem pendências;
+- [ ] Requisitos não funcionais completamente definidos — acessibilidade e exceções ainda possuem pendências; política mínima de dados aprovada por D-077;
 - [ ] Pendências registradas: blueprint/itens do diagnóstico, avaliadores de resposta construída, equivalência, acessibilidade (0013 §10).
 
 ### MÉTRICAS
@@ -73,7 +73,7 @@
 | B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
 | B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076 — MV. Ricardo Akinaga; segundo MV somente por módulo antes da publicação |
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
-| B-05 | política de dados ainda não aprovada | risco de privacidade | MV. Ricardo Akinaga | PARCIAL — nenhuma coleta pessoal de participante, paciente ou tutor autorizada |
+| B-05 | política mínima interna de dados | limitar coleta e acesso | MV. Ricardo Akinaga | FECHADO POR D-077 — somente nome/login profissional, progresso, tentativas, notas e logs mínimos; dados clínicos reais e de tutores proibidos |
 | B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
 | B-07 | baseline ausente | metas não calibradas | coord. educacional | PENDENTE — aplicar diagnóstico na coorte |
 
@@ -88,7 +88,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 5. Piloto 12 semanas, coorte 10–15, 3 h/mês (D-061/D-060/D-016) — ✅
 6. Certificação: status de conclusão no piloto (D-049) — ✅
 7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
-8. Política de dados: rascunho conservador D-073 elaborado; regras de acesso/retenção continuam insumos inaplicáveis e nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada (B-05) — ⚠️
+8. Política de dados: D-077 aprovou o mínimo necessário e fechou B-05; prontuários, tutores, gravações e casos reais identificáveis permanecem proibidos — ✅
 9. Contestação em 7 dias úteis (D-046) — ✅
 10. Dispensa por domínio: não no piloto (D-045) — ✅
 11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
@@ -100,7 +100,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 
 ```text
 STATUS: REPROVADO — EM CORREÇÃO (RECLASSIFICAÇÃO CANÔNICA, 2026-08-05)
-AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-01, B-02, B-05 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
+AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-01, B-02 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
 SPEC: PROIBIDA, INCLUSIVE PREPARAÇÃO FORMAL
 BUILD: PROIBIDO
 ```
@@ -108,8 +108,7 @@ BUILD: PROIBIDO
 ### Ações permitidas enquanto o gate estiver reprovado
 
 - Corrigir documentos e sincronizar decisões já confirmadas;
-- Antes de B-05: desenhar instrumentos e fazer levantamentos estritamente agregados e efetivamente anonimizados;
-- Depois de B-05: executar entrevistas/inventários identificáveis e coletar a baseline B-07 conforme a política validada;
+- Executar entrevistas, inventários e baseline B-07 somente com os dados permitidos pela política D-077 e sem gravações;
 - Resolver regras, requisitos, exceções e critérios marcados como pendentes;
 - Preparar evidências e checkpoint Git para nova submissão dos gates.
 
@@ -120,7 +119,7 @@ MV. Ricardo Akinaga coordena e aprova essas atividades como responsável do MVP 
 - Iniciar SPEC ou sua preparação formal;
 - Criar backlog de BUILD, arquitetura, banco, API, telas ou código;
 - Publicar o programa ou iniciar BUILD enquanto os gates aplicáveis permanecerem abertos; rascunhos de conteúdo original são permitidos;
-- Coletar ou acessar, antes de B-05, dados pessoais, gravações, diagnóstico individual, prontuários, casos reais ou indicadores vinculáveis;
+- Coletar dados além do escopo de D-077, especialmente gravações, prontuários, dados de tutores ou casos reais identificáveis;
 - Tratar qualquer decisão individual do patrocinador como aprovação automática de fase.
 
 ## Aprovação humana

@@ -87,7 +87,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 8. [Decisões do gate PRD — opções e recomendação](90.ANEXOS/0008_decisoes_gate_prd.md)
 9. [Validação da documentação — baseline em auditoria](90.ANEXOS/0009_validacao_documentacao.md)
 10. [Controle de versão e evidências dos gates](90.ANEXOS/0010_controle_versao_gates.md)
-11. [Política conservadora de dados e LGPD — rascunho não aprovado](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md)
+11. [Política mínima interna de dados — aprovada para o MVP](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md)
 
 ## 4. O que não foi criado
 
@@ -109,7 +109,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 2. dimensionar o público e delimitar a coorte piloto (B-02);
 3. B-03 concluído por D-076: Ricardo concentra as responsabilidades do MVP; outro MV revisa cada módulo clínico antes da publicação;
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
-5. aprovar formalmente o rascunho conservador de dados e acesso do [Anexo 0011](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md); até lá, nenhuma coleta pessoal de participante, paciente ou tutor é autorizada (B-05/D-073);
+5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
 7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
 
@@ -160,12 +160,12 @@ O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abai
 2. mapear o processo atual de treinamento;
 3. levantar uma linha de base;
 4. confirmar público, áreas prioritárias e coorte piloto;
-5. definir a política mínima de uso dos dados de desempenho;
+5. aplicar a política mínima D-077 nos levantamentos e no futuro sistema;
 6. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
 
-Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
+Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. Entrevistas, inventário e baseline devem respeitar D-077; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
 
-**Política transitória de dados (D-073):** o Anexo 0011 é um rascunho conservador não aprovado. Ele permite preparar B-05, mas não libera cadastro, coleta, acesso a caso real, gravação, resultado individual ou baseline. A proposta `vínculo + 2 anos` e a matriz de acesso são insumos a validar, não regras vigentes.
+**Política mínima de dados (D-077):** o Anexo 0011 está aprovado para o MVP e B-05 está fechado. O programa usa apenas dados de identificação/login profissional, progresso, tentativas, notas e segurança. Ricardo controla o acesso; os dados são mantidos durante o vínculo + 2 anos.
 
 **Política de fontes (D-075):** governança enxuta para uso interno: consulta manual, conteúdo original CVG, PDFs fora da plataforma/Git e referência simples por módulo. B-04 está fechado; automação dos PDFs fica fora do MVP em D-033.
 

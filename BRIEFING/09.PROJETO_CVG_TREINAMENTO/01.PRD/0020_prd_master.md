@@ -98,7 +98,7 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Fontes | D-075: consulta manual interna, PDFs fora da plataforma/Git e referência simples por módulo | APROVADA PELO PATROCINADOR COMO INSUMO; B-04 FECHADO PARA O MVP INTERNO |
 | Conteúdo | rascunhos originais podem ser preparados; publicação do programa depende dos gates gerais, não de B-04 | RASCUNHO/INSUMO |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
-| Dados | antes de B-05: nenhum dado pessoal de participante/paciente/tutor; somente agregados efetivamente anonimizados; RH proibido; `vínculo + 2 anos` permanece proposta a validar | RASCUNHO CONSERVADOR D-073 — B-05 PENDENTE |
+| Dados | somente nome/login profissional, progresso, tentativas, notas e logs mínimos; RH, prontuários, dados de tutores, gravações e casos reais identificáveis proibidos; retenção durante o vínculo + 2 anos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077; B-05 FECHADO) |
 | Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
 Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
@@ -120,7 +120,7 @@ Detalhes em [0015 — Métricas de sucesso](0015_metricas_de_sucesso.md).
 
 ## 10. Riscos e hipóteses
 
-Riscos críticos: conteúdo incorreto/desatualizado, confusão entre teoria e autonomia clínica, cópia ou distribuição indevida dos PDFs, uso inadequado de dados (B-05), IA sem revisão e alteração não auditada de notas. Riscos altos: tempo protegido, adesão, escopo, revisores, métricas punitivas, banco frágil e conteúdo sem manutenção.
+Riscos críticos: conteúdo incorreto/desatualizado, confusão entre teoria e autonomia clínica, cópia ou distribuição indevida dos PDFs, violação da política mínima de dados, IA sem revisão e alteração não auditada de notas. Riscos altos: tempo protegido, adesão, escopo, revisores, métricas punitivas, banco frágil e conteúdo sem manutenção.
 Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOVERY/0007_riscos_e_hipoteses.md).
 
 ## 11. Fontes de conhecimento
@@ -134,7 +134,7 @@ As identificações abaixo pertencem à governança interna e não serão exibid
 
 ## 12. Bloqueios obrigatórios dos gates
 
-B-03 e B-04 estão fechados por D-076 e D-075. Dependências restantes: B-05 antes de entrevistas ou inventários identificáveis e antes de B-07. Depois do fechamento dos demais bloqueios, Discovery e PRD devem ser reexecutados.
+B-03, B-04 e B-05 estão fechados por D-076, D-075 e D-077. Entrevistas, inventário da coorte e baseline podem usar somente os dados permitidos pela política mínima. Depois do fechamento dos demais bloqueios, Discovery e PRD devem ser reexecutados.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
 ## 13. Decisões humanas e insumos para nova submissão do gate PRD
@@ -144,7 +144,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
 3. Governança (B-03) — ✅ **FECHADO PARA O MVP INTERNO POR D-076 — Ricardo concentra as responsabilidades; segundo MV por módulo antes da publicação**;
-4. Política de dados (B-05) — ⚠️ **RASCUNHO CONSERVADOR PREPARADO POR D-073; NENHUMA COLETA PESSOAL AUTORIZADA; VALIDAÇÃO FORMAL LGPD PENDENTE** (RN-063 a RN-067 e Anexo 0011);
+4. Política de dados (B-05) — ✅ **POLÍTICA MÍNIMA INTERNA APROVADA POR D-077; B-05 FECHADO** (RN-063 a RN-067 e Anexo 0011);
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 

@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04 e D-076 fechou B-03 para o MVP interno. B-05 e os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes de B-03/B-04.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03 e D-077 fechou B-05 para o MVP interno. Os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes de B-03/B-04/B-05.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -14,7 +14,7 @@
 | 2 | Treinamento digital somente expositivo e avaliativo, sem simulações | menor complexidade, porém reduz aplicação e tomada de decisão em cenários |
 | 3 | Programa híbrido, com treinamento digital e prática presencial associada | fora da primeira versão; exige estrutura, avaliadores, segurança clínica e LGPD adicionais |
 
-**Decisão do patrocinador em 2026-08-05:** a primeira versão será integralmente digital. Poderá conter conteúdo, casos fictícios e simulações clínicas digitais, inclusive cenários progressivos ou ramificados, decisões registradas e debriefing digital. Casos derivados de atendimentos reais permanecem bloqueados até B-05 aprovar anonimização e revisão de privacidade.
+**Decisão do patrocinador em 2026-08-05:** a primeira versão será integralmente digital. Poderá conter conteúdo, casos fictícios e simulações clínicas digitais, inclusive cenários progressivos ou ramificados, decisões registradas e debriefing digital. Por D-077, prontuários, dados de tutores e casos reais identificáveis são proibidos no MVP.
 
 Ficam fora da primeira versão: treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes, cadáveres, manequins, equipamentos ou materiais físicos, avaliação psicomotora, registro de nível de supervisão, certificação prática e concessão de autonomia clínica. Resultado digital nunca será tratado como evidência prática.
 
@@ -137,7 +137,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 ## 0.4 Decisão de preparação da política de dados — D-073
 
-> **Atualização D-076:** Ricardo substitui o responsável independente no modelo vigente do MVP. B-05 continua parcial apenas porque a política mínima ainda não foi aprovada.
+> **Histórico:** D-077 substituiu este estado transitório, aprovou a política mínima e fechou B-05 para o MVP interno.
 
 | Alternativa | Tratamento de B-05 | Veredito |
 |---|---|---|
@@ -147,7 +147,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 **Decisão do patrocinador em 2026-08-05:** Alternativa 1. Foi preparado o [Anexo 0011 — Política Conservadora de Dados e LGPD](0011_politica_conservadora_dados_lgpd.md), identificado como rascunho não aprovado. Até B-05 ser aprovado por Ricardo, o programa não pode coletar ou acessar dados pessoais de participantes, pacientes ou tutores, casos reais, prontuários, gravações, resultados individuais ou baseline.
 
-A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 permanecem insumos, não regras vigentes. D-073 prepara B-05, mas não o fecha.
+Naquele checkpoint, a retenção `vínculo + 2 anos` e RN-063 a RN-067 ainda não eram regras vigentes. D-077 posteriormente aprovou esses pontos no modelo enxuto e fechou B-05.
 
 ### Evidência do checkpoint D-073
 
@@ -165,7 +165,7 @@ A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 pe
 | Pendências e riscos residuais | simplificação e aprovação operacional da política mínima por Ricardo antes do piloto |
 | Próximo passo autorizado | Ricardo revisar e aprovar B-05; nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada |
 
-Este registro documental posterior não altera o conteúdo revisado identificado pelo commit e pela tag acima e não transforma o rascunho em política aprovada.
+Este registro preserva o checkpoint histórico. A regra vigente é D-077.
 
 ---
 
@@ -245,6 +245,29 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Aprovador e responsável do MVP | MV. Ricardo Akinaga |
 | Controle clínico mantido | segundo MV antes da publicação de cada módulo clínico |
 | Validações | `git diff --cached --check`; 30 documentos Markdown; 66 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
+
+---
+
+## 0.8 Política mínima interna de dados — D-077
+
+| Alternativa | Modelo | Veredito |
+|---|---|---|
+| **1** | **Guardar somente nome/login, progresso, tentativas e notas; proibir prontuários, dados de tutores e casos reais identificáveis; Ricardo controla o acesso** | **recomendada e selecionada — permite operar o treinamento sem ampliar a coleta** |
+| 2 | Guardar apenas login e conclusão, sem histórico detalhado de tentativas e notas | não selecionada — impede remediação e acompanhamento do aprendizado |
+| 3 | Permitir dados detalhados e casos clínicos reais anonimizados desde o MVP | rejeitada — amplia risco e controles sem necessidade inicial |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. O [Anexo 0011 — Política Mínima Interna de Dados](0011_politica_conservadora_dados_lgpd.md) foi aprovado. B-05 fica `FECHADO PARA O MVP INTERNO`. O sistema pode tratar somente identificação/login profissional, progresso, tentativas, notas e logs mínimos de segurança. Casos e simulações permanecem fictícios; prontuários, dados de tutores, gravações e casos reais identificáveis continuam proibidos.
+
+### Evidência do checkpoint D-077
+
+| Campo | Registro |
+|---|---|
+| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Aprovador e responsável por acesso | MV. Ricardo Akinaga |
+| Dados permitidos | nome/login profissional, progresso, tentativas, notas e logs mínimos de segurança |
+| Dados proibidos | prontuários, dados de tutores, gravações e casos reais identificáveis |
+| Validações | `PENDENTE` |
 
 ---
 
@@ -416,13 +439,13 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ### B-05 / D-051 a D-054 — Política de dados
 
-**Estado após D-073:** `PARCIAL — RASCUNHO CONSERVADOR ELABORADO; VALIDAÇÃO FORMAL PENDENTE`. As linhas abaixo são insumos para a futura validação, não autorização de tratamento. Até o fechamento de B-05, prevalece o bloqueio integral de dados pessoais do Anexo 0011.
+**Estado após D-077:** `FECHADO PARA O MVP INTERNO`. Vale a política mínima do Anexo 0011.
 
 | Decisão | Opção recomendada |
 |---|---|
-| Quem vê resultados individuais | **colaborador (tudo que é seu); mentor (lacunas dos mentorados); gestor educacional (agregado + individual autorizado); gestão de pessoas (somente status de conclusão/conformidade); direção (agregado)** |
-| Uso em RH | **proibido no piloto; qualquer uso futuro exige política formal aprovada** (RN-066) |
-| Retenção dos dados | **proposta empresarial: enquanto durar o vínculo + 2 anos; prazo não validado e inaplicável até parecer LGPD por finalidade/categoria** |
+| Quem vê resultados individuais | **participante vê os próprios dados; Ricardo acessa o necessário; mentor autorizado vê somente lacunas/remediação dos participantes atribuídos; suporte delegado tem acesso excepcional e registrado** |
+| Uso em RH | **proibido no MVP; qualquer uso futuro exige nova decisão e atualização da política** (RN-066) |
+| Retenção dos dados | **durante o vínculo com o CVG + 2 anos; depois eliminar ou anonimizar, ressalvadas obrigações aplicáveis** |
 | Correção manual de nota | **somente via fluxo formal: justificativa + aprovação + versão + auditoria** (RN-067) |
 | Dashboards | **mensais para gestão; tempo real apenas para o próprio colaborador** (D-055) |
 
@@ -456,7 +479,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Coorte | 10–15 veterinários (3 turnos) |
 | Duração | 12 semanas |
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
-| Dados | D-073: nenhum dado pessoal de participante/paciente/tutor antes de B-05; RH proibido; acesso, retenção `vínculo + 2 anos`, correção e dashboards são propostas a validar |
+| Dados/B-05 | D-077: política mínima aprovada; somente identificação/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores e casos reais identificáveis proibidos |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
 | Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |
 
@@ -470,8 +493,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 1. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
 2. Inventário de usuários/coorte (B-02);
 3. Manter os controles operacionais de fontes definidos em D-075;
-4. Simplificar e aprovar a política de dados mínima antes do piloto (B-05);
-5. Aplicar diagnóstico inicial e coletar baseline (B-07);
-6. Resolver os requisitos marcados como pendentes no PRD.
+4. Aplicar diagnóstico inicial e coletar baseline (B-07), respeitando D-077;
+5. Resolver os requisitos marcados como pendentes no PRD.
 
 Após isso, o Discovery deve ser reexecutado e aprovado; em seguida, o PRD deve ser reexecutado sobre um checkpoint Git identificado e submetido à aprovação humana. O status não muda automaticamente. A SPEC permanece bloqueada até ambas as aprovações formais.

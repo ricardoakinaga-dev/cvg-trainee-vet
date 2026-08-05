@@ -6,7 +6,7 @@
 **Classificação:** os campos seguem as regras do briefing — `FATO INFORMADO`, `EVIDÊNCIA DOCUMENTAL`, `HIPÓTESE`, `PROPOSTA`, `PENDENTE`  
 **Regra:** nenhuma tecnologia é definida aqui; os fluxos são de produto.
 
-> **Precondição transversal de dados:** casos de uso que envolvam identificação, perfil, respostas, notas, painéis, logs ou auditoria descrevem comportamento futuro e não autorizam coleta. Sua execução depende da aprovação de B-05. Antes disso, prevalece D-073/[Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md): nenhum dado pessoal de participante, paciente ou tutor; somente agregados efetivamente anonimizados e casos integralmente fictícios.
+> **Regra transversal de dados:** B-05 foi fechado por D-077. Casos de uso que envolvam identificação, respostas, notas, painéis, logs ou auditoria devem respeitar o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md). O MVP permite somente os dados mínimos do treinamento e proíbe prontuários, dados de tutores, gravações e casos reais identificáveis.
 
 ---
 

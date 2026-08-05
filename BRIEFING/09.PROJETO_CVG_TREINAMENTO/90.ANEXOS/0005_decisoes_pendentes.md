@@ -15,7 +15,7 @@
 | D-003 | Quem será o product owner? | direção | Discovery | resolvida por D-076 — MV. Ricardo Akinaga no MVP interno |
 | D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | resolvida por D-076 — MV. Ricardo Akinaga no MVP interno |
 | D-005 | Quem revisa conteúdo clínico? | coordenação clínica | publicação do módulo | resolvida por D-076 — outro médico-veterinário escolhido e registrado por módulo; sem comitê permanente |
-| D-006 | Quem responde por dados e segurança? | direção | Discovery | resolvida para o MVP por D-076 — MV. Ricardo Akinaga; B-05 continua definindo o que poderá ser coletado |
+| D-006 | Quem responde por dados e segurança? | direção | Discovery | resolvida para o MVP por D-076 — MV. Ricardo Akinaga; D-077/B-05 define o conjunto mínimo permitido |
 | D-007 | Quem aprova cada gate? | patrocinador | Discovery | resolvida por D-076 — MV. Ricardo Akinaga, com decisão registrada sobre commit identificado |
 
 ## 2. Público e operação atual
@@ -79,9 +79,9 @@
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
 | D-050 | Quais metas finais após baseline? | patrocinador/PO | PRD | provisórias (calibrar no piloto — B-07) |
-| D-051 | Quem vê resultados individuais? | LGPD/direção | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): RN-064 |
-| D-052 | Resultados podem ser usados em RH? | direção/LGPD | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): proibido no piloto (RN-066) |
-| D-053 | Qual retenção dos dados? | LGPD | PRD | proposta empresarial confirmada pelo patrocinador (2026-08-05): vínculo + 2 anos; prazo definitivo pendente de validação LGPD por finalidade/categoria (D-073/RN-065) |
+| D-051 | Quem vê resultados individuais? | Ricardo | PRD | resolvida por D-077: participante vê os próprios dados; Ricardo acessa o necessário; suporte delegado somente de forma excepcional e registrada |
+| D-052 | Resultados podem ser usados em RH? | Ricardo | PRD | resolvida por D-077: proibido no MVP; ampliação exige nova decisão |
+| D-053 | Qual retenção dos dados? | Ricardo | PRD | resolvida por D-077: durante o vínculo com o CVG + 2 anos; depois eliminar ou anonimizar, ressalvadas obrigações aplicáveis |
 | D-054 | Qual política para correção manual de nota? | governança | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): fluxo formal (RN-067) |
 | D-055 | Qual periodicidade dos dashboards? | gestão | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): mensal; individual em tempo real (RN-080) |
 | D-056 | Quais indicadores clínicos serão apenas correlacionados? | coord. clínica | piloto | pendente |
@@ -104,10 +104,11 @@
 | D-070 | Quem avalia respostas construídas e haverá dupla correção? | coord. pedagógica/comitê clínico | PRD | pendente — bloqueia definição completa de UC-005 e requisitos de avaliação |
 | D-071 | Qual modelo de governança deve resolver B-03? | patrocinador | Discovery/PRD | substituída por D-076 quanto ao modelo vigente; preservada como histórico |
 | D-072 | Como coordenar o trabalho enquanto as cadeiras de B-03 permanecem vagas? | patrocinador | plano de correção | substituída por D-076; não há mais cadeiras vagas no modelo do MVP |
-| D-073 | Como preparar B-05 antes da política mínima? | patrocinador | plano de correção/B-05 | rascunho conservador preparado; por D-076, Ricardo é o responsável e B-05 permanece parcial somente até sua aprovação operacional |
+| D-073 | Como preparar B-05 antes da política mínima? | patrocinador | plano de correção/B-05 | registro histórico; substituído por D-077 |
 | D-074 | Como usar as obras como consulta/validação técnica sem expor referências ao aluno? | patrocinador | fontes | substituída por D-075 quanto ao nível de controle; mantida a separação entre aluno e referência interna |
 | D-075 | Qual governança de fontes é proporcional a um treinamento digital exclusivamente interno do CVG? | patrocinador | fontes/B-04 | aprovada (2026-08-05): Alternativa 1, consulta manual interna, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; B-04 fechado para o MVP interno; D-033 não bloqueante |
 | D-076 | Qual governança organizacional é proporcional ao MVP interno? | patrocinador | governança/B-03 | aprovada (2026-08-05): Alternativa 1, Ricardo concentra as responsabilidades; outro MV revisa cada módulo clínico antes da publicação; sem comitês ou suplentes; B-03 fechado para o MVP |
+| D-077 | Qual política de dados é proporcional ao MVP interno? | patrocinador | dados/B-05 | aprovada (2026-08-05): Alternativa 1, somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos; B-05 fechado para o MVP |
 
 ## 8. Perguntas para a primeira reunião
 

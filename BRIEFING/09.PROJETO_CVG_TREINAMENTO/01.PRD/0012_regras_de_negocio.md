@@ -14,7 +14,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | ID | Regra | Classificação |
 |---|---|---|
 | RN-001 | Todo usuário é identificado individualmente; contas compartilhadas são proibidas | FATO INFORMADO |
-| RN-002 | Cada colaborador possui exatamente um vínculo ativo por período; vínculo define áreas e trilhas elegíveis | HIPÓTESE |
+| RN-002 | Cada colaborador possui uma conta ativa por período; Ricardo atribui os módulos/trilhas sem exigir função, área, turno ou unidade no cadastro do MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RN-003 | Acesso segue o princípio do mínimo necessário; matriz de acesso do 0006 é a referência | PROPOSTA |
 | RN-004 | Gestão de pessoas vê somente dados autorizados por finalidade aprovada; nunca respostas detalhadas automáticas | PROPOSTA |
 | RN-005 | Administrador não altera silenciosamente notas, gabaritos ou histórico | FATO INFORMADO |
@@ -92,11 +92,11 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-060 | Não usar nota isolada como avaliação total do colaborador | FATO INFORMADO |
 | RN-061 | Não fazer ranking público; não comparar áreas com dificuldade diferente sem ajuste | FATO INFORMADO |
 | RN-062 | Separar desenvolvimento de disciplina | FATO INFORMADO |
-| RN-063 | Colaborador vê os dados utilizados sobre si | INSUMO DO PATROCINADOR — INAPLICÁVEL ATÉ B-05 (D-073) |
-| RN-064 | Acesso restrito ao mínimo necessário: colaborador (próprio); mentor (lacunas dos mentorados); gestor educacional (agregado + individual autorizado); gestão de pessoas (somente status de conclusão); direção (agregado) | INSUMO DO PATROCINADOR — MATRIZ CANDIDATA; INAPLICÁVEL ATÉ B-05 (D-073) |
-| RN-065 | Proposta empresarial de retenção: enquanto durar o vínculo + 2 anos; o prazo deve ser validado por finalidade/categoria e não autoriza coleta ou guarda antes de B-05 | INSUMO DO PATROCINADOR — RETENÇÃO DEFINITIVA PENDENTE (D-073) |
-| RN-066 | Uso de resultados em RH: proibido no piloto; qualquer uso futuro exige política formal aprovada | INSUMO DO PATROCINADOR — PROIBIÇÃO VIGENTE NO RASCUNHO (D-073) |
-| RN-067 | Correção manual de nota exige fluxo formal: justificativa + aprovação + versão + auditoria | INSUMO DO PATROCINADOR — INAPLICÁVEL ATÉ B-05 (D-073) |
+| RN-063 | Colaborador vê os próprios dados, progresso, tentativas, notas e contestações | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RN-064 | Acesso restrito ao mínimo necessário: colaborador acessa os próprios dados; Ricardo acessa o necessário; mentor autorizado acessa somente lacunas/remediação dos participantes atribuídos; suporte delegado é excepcional e registrado; demais gestores recebem somente agregados | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RN-065 | Dados permitidos são mantidos durante o vínculo com o CVG + 2 anos; depois devem ser eliminados ou anonimizados, ressalvadas obrigações aplicáveis | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RN-066 | Uso de resultados em RH, punição automática ou ranking público é proibido no MVP; ampliação exige nova decisão e atualização da política | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RN-067 | Correção manual de nota exige justificativa, aprovação, versão e registro de auditoria | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RN-068 | Não atribuir causalidade clínica sem desenho adequado | FATO INFORMADO |
 
 ## 7. Regras do piloto
@@ -132,11 +132,11 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 
 D-076 substitui D-071/D-072 quanto ao modelo vigente e fecha B-03 para o MVP interno.
 
-Por D-073, RN-063 a RN-067 são somente entradas para a futura validação. Até B-05 ser aprovado, nenhum dado pessoal de participante, paciente ou tutor pode ser tratado para Discovery, piloto ou plataforma; somente agregados efetivamente anonimizados são permitidos conforme o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md).
+Por D-077, RN-063 a RN-067 e a [Política Mínima Interna de Dados](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) estão aprovadas como insumo do MVP. B-05 está fechado. Prontuários, dados de tutores, gravações e casos reais identificáveis continuam proibidos.
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 
-**Confirmadas pelo patrocinador como insumos em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-076 a RN-085. Isso não aprova o gate. RN-023, RN-074, as nomeações de RN-006 e o complemento de RN-075 permanecem pendentes.
+**Confirmadas pelo patrocinador como insumos em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-075 a RN-085. Isso não aprova o gate. RN-023 e RN-074 permanecem pendentes.
 
 **Pendências remanescentes (dependem de levantamento/entrevistas):**
 

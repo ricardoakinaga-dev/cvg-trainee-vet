@@ -82,13 +82,11 @@
 
 ## Dependências externas
 
-- Licença das três obras;
-- Comitê científico;
+- Controles internos de consulta das obras definidos por D-075;
 - Protocolos internos;
 - Fontes clínicas atualizadas;
-- Responsável por LGPD;
-- Responsável por segurança;
-- Dados de RH e perfis;
+- MV. Ricardo Akinaga como responsável pelo MVP, dados e segurança;
+- aplicação da política mínima D-077;
 - Tempo protegido;
 - Orçamento;
 - Decisão sobre integrações futuras;

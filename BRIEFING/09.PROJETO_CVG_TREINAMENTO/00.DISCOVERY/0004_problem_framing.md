@@ -61,7 +61,7 @@ As metas numéricas definitivas dependerão de uma linha de base.
 - Resultados devem ser usados prioritariamente para desenvolvimento;
 - Conteúdo clínico somente será publicado após revisão humana;
 - O tratado não será reproduzido extensivamente;
-- A primeira versão usará somente casos fictícios; casos derivados de atendimentos reais permanecem bloqueados até aprovação da política LGPD, com processo de anonimização e revisão de privacidade;
+- A primeira versão usará somente casos fictícios; prontuários, dados de tutores e casos reais identificáveis são proibidos por D-077;
 - Conteúdo sujeito a atualização será comparado ao Ettinger de 2024 e, nos temas críticos, a fontes ainda mais recentes e vigentes;
 - Nenhuma das obras será reproduzida extensivamente sem autorização.
 

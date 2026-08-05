@@ -51,16 +51,10 @@ Os itens acima representam o **fluxo desejado declarado**, não o fluxo atual co
 - Product owner;
 - Coordenador educacional;
 - Diretor/coordenação clínica;
-- Responsável técnico;
-- Comitê científico;
-- Autor/instrutor;
-- Revisor clínico;
-- Revisor pedagógico;
-- Mentor/preceptor;
-- Gestor de pessoas;
-- Administrador da plataforma;
-- Auditor/compliance;
-- Responsável por LGPD e segurança.
+- MV. Ricardo Akinaga, responsável pelas frentes do MVP;
+- outro médico-veterinário, escolhido por módulo para a segunda revisão clínica;
+- participantes do treinamento;
+- eventual administrador técnico delegado, com acesso limitado e registrado.
 
 ## Ferramentas atuais
 
