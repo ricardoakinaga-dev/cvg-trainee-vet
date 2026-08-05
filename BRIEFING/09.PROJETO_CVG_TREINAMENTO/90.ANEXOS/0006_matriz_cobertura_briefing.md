@@ -90,7 +90,7 @@
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
 | consolidação | 01.PRD/0020 | preenchido |
-| gate | 01.PRD/0090 | reprovado — em correção; decisões do patrocinador preservadas como insumos; B-03 possui modelo segregado D-071, mas nomeações/aceites continuam pendentes; B-01/B-02/B-03/B-04/B-05/B-07 e requisitos pendentes bloqueiam nova submissão |
+| gate | 01.PRD/0090 | reprovado — em correção; D-072 permite coordenação operacional por Ricardo, sem preencher o modelo D-071; B-01/B-02/B-03/B-04/B-05/B-07 e requisitos pendentes continuam bloqueando nova submissão |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |
 
 ## 3. Campos que só podem ser fechados no PRD

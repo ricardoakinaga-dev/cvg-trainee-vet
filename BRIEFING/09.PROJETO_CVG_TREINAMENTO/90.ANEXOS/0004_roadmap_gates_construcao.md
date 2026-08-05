@@ -46,7 +46,7 @@ Produzidos neste briefing:
 ### Próximas atividades permitidas
 
 - Correção dos artefatos de Discovery e do rascunho de PRD;
-- Antes de B-05: desenho de instrumentos e levantamentos estritamente agregados/anônimos;
+- Antes de B-05: desenho de instrumentos e levantamentos estritamente agregados e efetivamente anonimizados, sem campos/células vinculáveis ou grupos pequenos reidentificáveis;
 - Após B-05: entrevistas/inventários identificáveis e baseline B-07, conforme a política validada;
 - Priorização do piloto;
 - Nomeação de responsáveis;
@@ -309,7 +309,7 @@ Condições mínimas para abertura: evidência do piloto digital; PRD revisado c
 | Audit | auditor independente | owners | comitê de governança |
 | Expansão prática (`GATE-EXP-PRAT-01`) | PO + coordenação educacional | RT/coordenação clínica + LGPD/segurança | patrocinador + comitê de governança |
 
-Modelo segregado aprovado como insumo em D-071. Patrocinador executivo nomeado (MV. Ricardo Akinaga — CEO); PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança permanecem `VAGOS — BLOQUEIAM B-03`. A composição, os impedimentos e os aceites obrigatórios estão no documento 0006.
+Modelo segregado aprovado como insumo em D-071. Patrocinador executivo nomeado (MV. Ricardo Akinaga — CEO), que também coordena operacionalmente as correções por D-072, sem cadeira ou assinatura adicional; PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança permanecem `VAGOS — BLOQUEIAM B-03`. A composição, os impedimentos e os aceites obrigatórios estão no documento 0006. Outros itens de correção podem prosseguir conforme suas dependências, mas nenhum gate ou fase avança por causa da coordenação interina.
 
 ## 9. Estado e persistência futuros
 

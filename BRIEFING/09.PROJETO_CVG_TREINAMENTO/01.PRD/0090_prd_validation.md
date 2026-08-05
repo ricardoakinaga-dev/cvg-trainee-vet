@@ -71,7 +71,7 @@
 |---|---|---|---|---|
 | B-01 | fluxo atual não validado com usuários | reduz confiança do desenho | PO + coord. clínica | PENDENTE — roteiro pronto (anexo 0007) |
 | B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
-| B-03 | modelo aprovado, responsáveis não nomeados | governança incompleta | direção | PARCIAL — D-071/0006 definem estrutura; titulares, suplentes, aceites e instalação dos comitês pendentes |
+| B-03 | modelo aprovado, responsáveis não nomeados | governança incompleta | direção | PARCIAL — Ricardo coordena correções por D-072, sem preencher D-071; titulares, suplentes, aceites e comitês pendentes |
 | B-04 | licença das obras não verificada | bloqueia produção de conteúdo | jurídico/gestão | PARCIAL — RN-046 confirmada pelo patrocinador como insumo, sem autorizar produção ou publicação de conteúdo; verificação jurídica pendente |
 | B-05 | política de dados sem validação do responsável LGPD | risco LGPD | responsável LGPD | PARCIAL — regras preliminares confirmadas pelo patrocinador; validação formal pendente |
 | B-06 | áreas do piloto | escopo clínico | coordenação clínica | CONFIRMADO PELO PATROCINADOR COMO INSUMO — núcleo + Emergência + Internação; revalidação formal pendente após B-03 |
@@ -107,10 +107,12 @@ BUILD: PROIBIDO
 ### Ações permitidas enquanto o gate estiver reprovado
 
 - Corrigir documentos e sincronizar decisões já confirmadas;
-- Antes de B-05: desenhar instrumentos, fazer levantamentos estritamente agregados/anônimos, nomear responsáveis e concluir verificação jurídica;
+- Antes de B-05: desenhar instrumentos, fazer levantamentos estritamente agregados e efetivamente anonimizados, sem campos/células vinculáveis ou grupos pequenos reidentificáveis, nomear responsáveis e concluir verificação jurídica;
 - Depois de B-05: executar entrevistas/inventários identificáveis e coletar a baseline B-07 conforme a política validada;
 - Resolver regras, requisitos, exceções e critérios marcados como pendentes;
 - Preparar evidências e checkpoint Git para nova submissão dos gates.
+
+MV. Ricardo Akinaga pode coordenar essas atividades como responsável geral interino por D-072, mas não pode emitir parecer independente, assinar por cadeira vaga nem converter correção em aprovação de gate.
 
 ### Ações proibidas
 

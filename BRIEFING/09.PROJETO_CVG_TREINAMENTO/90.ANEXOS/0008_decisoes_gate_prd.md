@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates e D-071 aprovou o modelo de governança segregada, sem preencher as vagas de B-03. As decisões de produto e governança não aprovam Discovery nem PRD. RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates, D-071 aprovou o modelo de governança segregada e D-072 definiu coordenação geral interina sem preencher as vagas de B-03. As decisões de produto e governança não aprovam Discovery nem PRD. RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -95,6 +95,20 @@ O modelo, as autoridades, os impedimentos, as suplências e a matriz dos gates e
 | Próximo passo autorizado | obter e registrar as nomeações de B-03; B-06 somente será revalidado depois; Discovery/PRD, SPEC e BUILD não avançam |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
+---
+
+## 0.3 Decisão de coordenação interina — D-072
+
+| Alternativa | Tratamento transitório | Veredito |
+|---|---|---|
+| **1** | **MV. Ricardo Akinaga atua como patrocinador e coordenador geral interino das correções; cadeiras independentes permanecem vagas e gates bloqueados** | **recomendada e selecionada — documenta a responsabilidade operacional sem criar autoaprovação** |
+| 2 | Ricardo acumula formalmente PO, RT, coordenação educacional e LGPD/segurança | rejeitada — viola a segregação D-071 e não cria parecer independente |
+| 3 | Ricardo coordena e revisores externos independentes ocupam imediatamente as cadeiras formais | não selecionada nesta etapa — permitiria futura regularização, mas exige nomes, aceites e possíveis custos |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. MV. Ricardo Akinaga responderá provisoriamente pela coordenação das frentes, fila de pendências, reuniões, solicitação de evidências e consolidação administrativa dos rascunhos. Essa atribuição não o nomeia PO, RT, coordenação educacional, comitê científico ou LGPD/segurança e não lhe permite emitir parecer independente ou assinar por essas funções. Contribuição material de Ricardo em um artefato gera impedimento persistente para sua assinatura como patrocinador naquela versão/commit e exige suplente da cadeira do patrocinador formalmente nomeado, aceito e não impedido.
+
+B-03 permanece `PARCIAL`; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO`; SPEC e BUILD continuam bloqueados. A equipe pode avançar na resolução dos demais itens B-01 a B-07 conforme suas dependências, sem tratar esse trabalho como mudança de fase ou aprovação de gate. A atribuição interina termina automaticamente com o fechamento de B-03 ou por decisão anterior do patrocinador.
 
 ---
 
@@ -261,6 +275,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Papel | Opção recomendada | Observação |
 |---|---|---|
 | Patrocinador executivo | MV. Ricardo Akinaga (CEO) | já nomeado |
+| Coordenador geral interino | **MV. Ricardo Akinaga** | ativo por D-072; organiza correções, sem cadeira, parecer independente ou assinatura de gate |
 | Product owner | **pessoa distinta do patrocinador e da coordenação educacional** | `VAGO — BLOQUEIA B-03` |
 | Responsável clínico/RT | **médico-veterinário formalmente autorizado** | `VAGO — BLOQUEIA B-03` |
 | Coordenação educacional | **pessoa distinta do PO** | `VAGO — BLOQUEIA B-03` |
@@ -323,6 +338,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Dados | mínimo necessário; RH proibido; retenção vínculo + 2 anos; correção formal; dashboards mensais |
 | Licenças | sínteses autorais curtas + checagem de direitos; sem PDFs |
 | Governança e nomeações | modelo mínimo segregado D-071 confirmado; titulares, suplentes, aceites e instalação dos comitês pendentes (B-03) |
+| Coordenação interina | MV. Ricardo Akinaga coordena as correções por D-072, sem preencher cadeiras ou assinar gates |
 
 ---
 

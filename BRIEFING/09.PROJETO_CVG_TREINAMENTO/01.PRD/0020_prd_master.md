@@ -26,7 +26,7 @@ Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 - **Primário:** médico-veterinário colaborador;
 - **Secundários:** mentor/preceptor, autor/instrutor, revisor clínico, revisor pedagógico, gestor educacional, gestor clínico, gestão de pessoas (restrito);
 - **Operadores:** administrador, auditor/compliance;
-- **Decisores:** modelo de governança mínima segregada confirmado como insumo (D-071); patrocinador nomeado: MV. Ricardo Akinaga — CEO; PO, coordenação clínica/RT, coordenação educacional, comitê científico e LGPD/segurança estão `VAGOS — BLOQUEIAM B-03`.
+- **Decisores:** modelo de governança mínima segregada confirmado como insumo (D-071); patrocinador e coordenador geral interino das correções: MV. Ricardo Akinaga — CEO (D-072), sem cadeira ou assinatura adicional; PO, coordenação clínica/RT, coordenação educacional, comitê científico e LGPD/segurança estão `VAGOS — BLOQUEIAM B-03`.
 
 ## 4. Fluxos principais
 
@@ -132,7 +132,7 @@ Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOV
 
 ## 12. Bloqueios obrigatórios dos gates
 
-B-01 entrevistas/fluxo → B-02 coorte/público → B-03 responsáveis → B-04 licenças (bloqueia conteúdo) → B-05 política de dados → B-06 áreas piloto → B-07 baseline. As decisões confirmadas neste rascunho não aprovam o gate; após o fechamento, Discovery e PRD devem ser reexecutados e aprovados formalmente.
+B-01, B-02, B-04 e a preparação de B-05 podem avançar sem aguardar o fechamento de B-03. A aprovação formal de B-05 exige antes a nomeação e o aceite do responsável LGPD independente previsto em D-006, mesmo que as demais cadeiras de B-03 continuem vagas. Dependências obrigatórias: B-05 aprovado antes de entrevistas ou inventários identificáveis e antes de B-07; B-03 antes da revalidação formal de B-06; B-04 antes de conteúdo clínico. Todos os bloqueios devem estar fechados antes da nova submissão dos gates. As decisões confirmadas neste rascunho não aprovam o gate; depois do fechamento, Discovery e PRD devem ser reexecutados e aprovados formalmente.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
 ## 13. Decisões humanas e insumos para nova submissão do gate PRD
@@ -141,7 +141,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
-3. Governança e nomeação de responsáveis (B-03) — ⏳ **PARCIAL — modelo D-071 aprovado como insumo; titulares, suplentes, aceites e comitês pendentes**;
+3. Governança e nomeação de responsáveis (B-03) — ⏳ **PARCIAL — Ricardo coordena as correções por D-072, sem preencher o modelo D-071; titulares, suplentes, aceites e comitês pendentes**;
 4. Política de dados (B-05) — ⚠️ **REGRAS PRELIMINARES CONFIRMADAS PELO PATROCINADOR; VALIDAÇÃO FORMAL LGPD PENDENTE** (RN-063 a RN-067);
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;

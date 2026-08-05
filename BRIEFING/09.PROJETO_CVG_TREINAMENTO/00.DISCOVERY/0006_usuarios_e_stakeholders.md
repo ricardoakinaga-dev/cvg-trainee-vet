@@ -96,6 +96,7 @@ Papéis que precisam ser nomeados:
 | Decisão | Papel recomendado | Nome |
 |---|---|---|
 | Patrocínio e orçamento | patrocinador executivo | MV. Ricardo Akinaga — CEO |
+| Coordenação operacional temporária das correções | coordenador geral interino, sem cadeira ou assinatura de gate | MV. Ricardo Akinaga — D-072 |
 | Escopo, prioridade e rastreabilidade | product owner, distinto do patrocinador e da coordenação educacional | `VAGO — BLOQUEIA B-03` |
 | Segurança clínica e critério clínico | responsável clínico/RT | `VAGO — BLOQUEIA B-03` |
 | Modelo pedagógico e operação educacional | coordenador educacional, distinto do PO | `VAGO — BLOQUEIA B-03` |
@@ -112,6 +113,7 @@ A Alternativa 1 foi selecionada pelo patrocinador em 2026-08-05. A decisão apro
 | Função | Titular | Suplente | Aceite e início | Estado |
 |---|---|---|---|---|
 | Patrocinador executivo | MV. Ricardo Akinaga — CEO | `VAGO` | patrocinador confirmado em 2026-08-05; suplência pendente | `PARCIAL` |
+| Coordenador geral interino das correções | MV. Ricardo Akinaga | não aplicável; ausência pausa a coordenação | aceite do patrocinador em 2026-08-05 | `ATIVO — SEM CADEIRA OU VOTO DE GATE` |
 | Product owner | `VAGO` | `VAGO` | `PENDENTE` | `VAGO — BLOQUEIA B-03` |
 | Responsável clínico/RT | `VAGO` | `VAGO` | `PENDENTE` | `VAGO — BLOQUEIA B-03` |
 | Coordenação educacional | `VAGO` | `VAGO` | `PENDENTE` | `VAGO — BLOQUEIA B-03` |
@@ -124,6 +126,18 @@ Cada nomeação exige nome profissional completo, função institucional, qualif
 Qualificações mínimas: o responsável clínico/RT e os revisores clínicos devem ter registro profissional ativo quando aplicável e competência documentada nas áreas sob sua responsabilidade; a coordenação educacional deve demonstrar competência em desenho educacional e avaliação de adultos; o responsável LGPD/segurança deve demonstrar competência em privacidade, proteção de dados e segurança da informação, além de autoridade institucional para bloquear tratamento inadequado. Titulares e suplentes obedecem aos mesmos requisitos.
 
 O comitê de governança não cria uma nova cadeira: é composto pelo patrocinador, PO, responsável clínico/RT, coordenação educacional e responsável LGPD/segurança. Sua instalação exige identificador interno do ato, data de início e mandato; na ausência de prazo menor, o mandato termina com a decisão de encerramento do piloto. O quórum de cada gate corresponde a todas as assinaturas exigidas na matriz abaixo, sem decisão por maioria; impedimento exige suplente e nunca reduz o quórum.
+
+### Coordenação geral interina (D-072)
+
+Enquanto as cadeiras formais permanecerem vagas, MV. Ricardo Akinaga atuará como coordenador geral interino das frentes de correção. Essa função operacional é externa à matriz de assinaturas e termina automaticamente quando B-03 for fechado ou por decisão anterior do patrocinador.
+
+**Pode:** organizar a fila de pendências, convocar reuniões, solicitar evidências, consolidar administrativamente e sincronizar rascunhos, acompanhar prazos e coordenar trabalhos que usem somente dados estritamente agregados e efetivamente anonimizados, sem campos/células vinculáveis ou grupos pequenos reidentificáveis.
+
+**Não pode:** assinar como PO, responsável clínico/RT, coordenação educacional, comitê científico ou LGPD/segurança; emitir parecer independente nessas funções; validar B-04, B-05, B-06 ou B-07 sozinho; fechar B-03; aprovar Discovery/PRD; iniciar SPEC, BUILD, arquitetura, código ou produção de conteúdo clínico.
+
+Se Ricardo contribuir materialmente para o conteúdo de um artefato, será registrado como autor/preparador e ficará impedido de assiná-lo também como patrocinador. O impedimento permanece vinculado à versão e ao commit mesmo após o término de D-072; a aprovação exigirá suplente da cadeira do patrocinador formalmente nomeado, aceito e não impedido, sem redução do quórum. Enquanto esse suplente não existir, o gate permanece bloqueado.
+
+O trabalho pode continuar nos demais itens de correção sem aguardar as nomeações, respeitando suas dependências: B-05 antes de coleta identificável e baseline; B-04 antes de conteúdo clínico; B-03 antes de B-06 formal e antes da nova submissão dos gates. Avanço de correção não significa avanço de fase.
 
 ### Segregação e impedimentos
 

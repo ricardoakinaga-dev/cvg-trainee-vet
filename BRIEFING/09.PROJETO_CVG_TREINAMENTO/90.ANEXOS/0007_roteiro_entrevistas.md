@@ -3,9 +3,9 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
 **Objetivo:** instrumento de trabalho para resolver os bloqueios B-01 (fluxo atual), B-02 (público e coorte), B-06 (áreas do piloto) e B-07 (baseline) antes da nova submissão do gate Discovery e, somente depois de sua aprovação, do gate PRD.
-**Uso:** entrevistador (PO ou coordenação educacional indicada) aplica e registra em formulário próprio; nenhuma informação nova é inventada — tudo o que não for confirmado permanece `PENDENTE`.
+**Uso:** entrevistador formal futuro (PO ou coordenação educacional indicada) aplica e registra em formulário próprio. Enquanto essas cadeiras estiverem vagas, MV. Ricardo Akinaga pode organizar agenda e instrumentos como coordenador geral interino (D-072), mas não emitir parecer independente nem validar sozinho os resultados; nenhuma informação nova é inventada — tudo o que não for confirmado permanece `PENDENTE`.
 
-> **Pré-condição LGPD (B-05):** até a validação formal da política de dados e a nomeação do responsável, este anexo pode ser usado apenas para desenhar instrumentos e obter informações estritamente agregadas e anônimas. Ficam bloqueados formulários individualizados, nomes, cargo/turno vinculáveis, gravações, diagnóstico individual, prontuários, casos reais e indicadores assistenciais vinculáveis. B-05 precede B-07.
+> **Pré-condição LGPD (B-05):** até a validação formal da política de dados e a nomeação do responsável, este anexo pode ser usado apenas para desenhar instrumentos e obter informações estritamente agregadas e efetivamente anonimizadas, sem campos/células vinculáveis ou grupos pequenos reidentificáveis. Ficam bloqueados formulários individualizados, nomes, cargo/turno vinculáveis, gravações, diagnóstico individual, prontuários, casos reais e indicadores assistenciais vinculáveis. B-05 precede B-07.
 
 ---
 

@@ -125,12 +125,15 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | Decisão | Responsável | Status da nomeação |
 |---|---|---|
 | Patrocínio e orçamento | patrocinador executivo — MV. Ricardo Akinaga | nomeado |
+| Coordenação temporária das correções | coordenador geral interino — MV. Ricardo Akinaga | ativo por D-072; sem cadeira, parecer independente ou voto de gate |
 | Escopo e prioridade | product owner distinto do patrocinador e da coordenação educacional | `VAGO — BLOQUEIA B-03` |
 | Critério clínico | responsável clínico/RT | `VAGO — BLOQUEIA B-03` |
 | Conteúdo e fonte | comitê científico: RT + clínico de Emergência + clínico de Internação/Medicina Interna | `VAGO — BLOQUEIA B-03` |
 | Modelo pedagógico | coordenador educacional distinto do PO | `VAGO — BLOQUEIA B-03` |
 | Dados, LGPD e segurança nesta fase | responsável LGPD/segurança | `VAGO — BLOQUEIA B-03` |
 | Aprovação dos gates | comitê de governança conforme 0006/D-071 | `NÃO INSTALADO — BLOQUEIA B-03` |
+
+D-072 permite ao patrocinador coordenar operacionalmente todas as frentes de correção enquanto as vagas persistirem, mas não altera RN-006 a RN-009, não preenche nenhuma função independente e não autoriza autoaprovação ou mudança de fase.
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 
