@@ -18,9 +18,9 @@ O CVG precisa transformar o aprendizado informal em uma experiência digital sim
 
 ```text
 entrar
-→ fazer um diagnóstico curto, sem aprovação ou reprovação
+→ fazer um diagnóstico amplo fracionado, sem aprovação ou reprovação
 → receber uma trilha recomendada
-→ concluir módulos breves com quiz e caso digital
+→ concluir unidades breves dentro de módulos completos, com questões e casos digitais
 → receber feedback imediato
 → acompanhar o progresso e revisar apenas o necessário
 ```
@@ -53,7 +53,7 @@ O problema será medido por ativação, progresso, conclusão, domínio, ganho d
 
 ### Desconhecido
 
-- Formato e conteúdo do diagnóstico curto (B-07);
+- Produção, validação e aplicação do diagnóstico de 120 itens proposto no PRD 0016 (B-07);
 - Primeiro módulo a ser produzido;
 - Restrição real de dispositivo ou acessibilidade, se houver;
 - Protocolos internos relevantes para cada módulo.
@@ -211,7 +211,7 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 ## 12. Dependências
 
-1. Definir e aplicar o diagnóstico curto para a baseline (B-07);
+1. Validar o blueprint, produzir e aplicar o diagnóstico de 120 itens para a baseline (B-07);
 2. Confirmar somente restrições reais de dispositivo ou acessibilidade;
 3. Informar os protocolos internos relevantes quando cada módulo for criado;
 4. Reexecutar e aprovar formalmente o gate Discovery.

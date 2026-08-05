@@ -318,7 +318,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 | Alternativa | Experiência | Veredito |
 |---|---|---|
-| **1** | **Uma próxima ação clara, módulos breves, casos digitais, feedback imediato e progresso visível** | **selecionada — prática e fluida** |
+| **1** | **Uma próxima ação clara, unidades breves dentro de módulos completos, casos digitais, feedback imediato e progresso visível** | **selecionada — prática e fluida; redação refinada pelo PRD 0016** |
 | 2 | Exibir todas as funções, provas, métricas e regras no painel principal | aumenta carga cognitiva |
 | 3 | Reproduzir no colaborador as etapas administrativas do programa | burocrático e inadequado ao uso diário |
 
@@ -473,15 +473,19 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ### D-061 — Duração do piloto
 
+> **Registro histórico reaberto:** esta escolha antecedeu a matriz curricular V2. A recomendação atual é 14 semanas para preservar dois ciclos semanais por módulo; a decisão final está na D-081.
+
 | Opção | Duração | Veredito |
 |---|---|---|
 | A | 8 semanas | apertado para diagnóstico + módulos + retenção |
 | **B** | **10 a 12 semanas** | **recomendado — cabe diagnóstico, 2–3 módulos, prova, remediação e 1 janela de retenção (30 dias)** |
 | C | 16 semanas | posterga a decisão de expansão |
 
-**Recomendação: 12 semanas** (alinhado ao piloto de 90 dias do `sistema_treinamento_veterinarios_cvg.md` §7).
+**Recomendação histórica:** 12 semanas. **Situação atual:** reaberta pela D-081; proposta V2 de 14 semanas.
 
 ### D-016 — Tempo protegido
+
+> **Registro histórico reaberto:** esta comparação foi feita antes da matriz curricular clínica. O PRD 0016 demonstrou que 3 h/mês não comportam casos, prática, avaliação e revisão; a decisão vigente está na D-081.
 
 | Opção | Carga | Veredito |
 |---|---|---|
@@ -489,7 +493,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | **B** | **3 h/mês (≈ 45 min/semana: microlearning 10 min/dia + 1 round de 30–45 min quinzenal)** | **recomendado — dentro da faixa 2–4 h/mês e compatível com 12×36** |
 | C | 4 h/mês | máximo da faixa; depende de escala |
 
-**Recomendação: 3 h/mês protegidas**, com microlearning diário de 10 minutos.
+**Recomendação histórica:** 3 h/mês protegidas. **Situação atual:** insuficiente e pendente de substituição pela D-081.
 
 ---
 
@@ -543,14 +547,14 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Certificação | status no piloto; certificado na expansão |
 | Áreas do piloto | núcleo + emergência + internação |
 | Público | aproximadamente 10 veterinários; todos participam; sem segmentação |
-| Duração | 12 semanas |
-| Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
+| Duração | decisão histórica de 12 semanas reaberta; proposta V2 de 14 semanas na D-081 |
+| Tempo protegido | decisão histórica de 3 h/mês reaberta; nova proposta no PRD 0016 e seleção pendente na D-081 |
 | Dados/B-05 | D-077: política mínima aprovada; somente identificação/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores e casos reais identificáveis proibidos |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
 | Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |
 | Processo atual/B-01 | D-078: aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | Público/B-02 | D-079: aproximadamente 10 veterinários; todos participam; B-02 fechado sem inventário |
-| Experiência do colaborador | D-080: uma próxima ação clara, módulos breves, casos digitais, feedback imediato e progresso visível |
+| Experiência do colaborador | D-080: uma próxima ação clara, unidades breves dentro de módulos completos, casos digitais, feedback imediato e progresso visível |
 
 ---
 

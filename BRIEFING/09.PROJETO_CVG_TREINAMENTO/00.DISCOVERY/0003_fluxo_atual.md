@@ -20,9 +20,9 @@ O fluxo desejado pelo patrocinador em D-080 é:
 
 ```text
 entrar
-→ diagnóstico curto e não punitivo
+→ diagnóstico amplo fracionado e não punitivo
 → trilha recomendada
-→ módulo breve com quiz e caso digital
+→ unidades breves dentro de módulo completo, com questões e casos digitais
 → feedback imediato
 → progresso visível e próximo passo
 ```

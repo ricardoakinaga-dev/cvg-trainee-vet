@@ -4,7 +4,7 @@
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
 **Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem somente as decisões ainda marcadas como pendentes.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-080. D-078 confirma o processo atual, D-079 fecha o público/coorte e D-080 fixa a jornada simples do colaborador.
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-082. D-078 confirma o processo atual, D-079 fecha o público/coorte, D-080 fixa a jornada simples do colaborador e D-081 concentra a escolha curricular imediata: carga/cadência.
 
 ## 1. Identidade e governança
 
@@ -28,7 +28,7 @@
 | D-013 | Como o treinamento ocorre hoje? | MV. Ricardo Akinaga | Discovery | resolvida por D-078 — aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-014 | Quais ferramentas são usadas? | operação | Discovery | parcialmente resolvida — não há sistema de treinamento; ferramentas auxiliares pendentes |
 | D-015 | Quais lacunas já são conhecidas? | coord. clínica | Discovery | pendente |
-| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 3 h/mês (RN-076) |
+| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | decisão histórica de 3 h/mês reaberta: insuficiente para a matriz curricular V2; substituição concentrada na D-081 |
 | D-017 | Quais restrições de dispositivo/conectividade? | MV. Ricardo Akinaga | PRD | confirmar apenas se afetar o MVP |
 | D-018 | Quais necessidades de acessibilidade? | MV. Ricardo Akinaga | PRD | confirmar apenas se houver necessidade concreta |
 
@@ -40,7 +40,7 @@
 | D-021 | Qual é o núcleo obrigatório? | comitê clínico | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): núcleo comum obrigatório (0011 §2) |
 | D-022 | O foco inicial será cães, gatos ou ambos? | coord. clínica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): cães e gatos (RN-077) |
 | D-023 | Quais conteúdos são eletivos? | coord. educacional | PRD | pendente (detalhamento do conteúdo no piloto) |
-| D-024 | Quais competências definem básico/intermediário/avançado? | comitê | PRD | pendente (blueprint com comitê) |
+| D-024 | Quais competências definem básico/intermediário/avançado? | patrocinador/clínica | PRD | resolvida para o MVP pela V2: sem rótulos formais de nível; a complexidade progride dentro das trilhas; taxonomia fica para expansão |
 | D-025 | Quais protocolos internos prevalecem? | MV. Ricardo Akinaga | PRD | informar somente os protocolos relevantes para cada módulo |
 | D-026 | Quais temas exigem reciclagem obrigatória? | RT | PRD | pendente (validade por tipo em RN-047) |
 
@@ -92,8 +92,8 @@
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
 | D-060 | Qual coorte piloto? | coordenação | Discovery | substituída por D-079: aproximadamente 10 veterinários, todos participam; sem inventário ou segmentação obrigatória |
-| D-061 | Qual duração? | PO | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 12 semanas (RN-071) |
-| D-062 | Quantos módulos? | PO/comitê | PRD | pendente |
+| D-061 | Qual duração? | PO | PRD | decisão histórica de 12 semanas reaberta: comprime o piloto V2; substituição concentrada na D-081 |
+| D-062 | Quantos módulos? | PO/comitê | PRD | proposta definida no PRD 0016 V2: 16 módulos; aguarda validação clínica junto com a D-081 |
 | D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 itens (RN-078) |
 | D-064 | Qual critério de continuar/pausar? | patrocinador | PRD | conceito definido |
 | D-065 | Qual orçamento? | patrocinador | Discovery/PRD | pendente |
@@ -111,13 +111,15 @@
 | D-077 | Qual política de dados é proporcional ao MVP interno? | patrocinador | dados/B-05 | aprovada (2026-08-05): Alternativa 1, somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos; B-05 fechado para o MVP |
 | D-078 | Como funciona atualmente o treinamento veterinário no CVG? | patrocinador | Discovery/B-01 | confirmada (2026-08-05): não existe treinamento padronizado; o aprendizado é informal, conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-079 | Qual é o público da primeira aplicação? | patrocinador | Discovery/B-02 | aprovada (2026-08-05): aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação por setor, turno ou perfil; B-02 fechado |
-| D-080 | Qual princípio deve orientar a experiência do colaborador? | patrocinador | PRD/usabilidade | aprovada (2026-08-05): jornada prática e fluida, com módulos breves, casos digitais, feedback imediato, progresso visível e uma próxima ação clara; controles administrativos ficam nos bastidores |
+| D-080 | Qual princípio deve orientar a experiência do colaborador? | patrocinador | PRD/usabilidade | aprovada (2026-08-05) e refinada sem mudar o princípio: jornada prática e fluida, com unidades breves dentro de módulos completos, casos digitais, feedback imediato, progresso visível e uma próxima ação clara; controles administrativos ficam nos bastidores |
+| D-081 | Qual carga/cadência deve executar a matriz curricular clínica V2? | patrocinador | PRD/conteúdo | pendente — proposta recomendada: ciclo completo de 34 semanas e faixa preliminar de 90–115 h; piloto de 14 semanas e 30–40 h; substitui 12 semanas/3 h por mês após confirmação |
+| D-082 | Erro crítico remediado deve ser condição adicional de conclusão além de 70% geral/80% críticos? | patrocinador/clínica | PRD/avaliação | pendente — no PRD 0016 o erro aciona feedback e remediação, mas ainda não reprova isoladamente |
 
 ## 8. Próximas perguntas úteis
 
-1. Qual formato curto será usado no diagnóstico inicial?
-2. Qual será o primeiro módulo?
-3. Há alguma restrição real de dispositivo ou acessibilidade?
+1. Qual alternativa de carga/cadência da D-081 será adotada?
+2. Há alguma restrição real de dispositivo ou acessibilidade?
+3. Quem será o segundo MV revisor do primeiro módulo quando ele estiver pronto?
 
 ## 9. Regra de fechamento
 

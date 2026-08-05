@@ -24,7 +24,7 @@
 ## 1.1 Jornada principal do colaborador
 
 ```text
-entrar → diagnóstico curto → trilha recomendada → módulo breve
+entrar → diagnóstico amplo fracionado → trilha recomendada → unidade breve dentro de módulo completo
 → quiz/caso digital → feedback imediato → progresso → próximo passo
 ```
 
@@ -67,7 +67,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 - **Objetivo:** identificar rapidamente os temas que precisam de reforço e recomendar por onde começar.
 - **Gatilho:** entrada no programa (novo colaborador) ou decisão da coordenação (colaborador ativo).
 - **Fluxo principal:**
-  1. O colaborador acessa um diagnóstico inicial curto e sem reprovação;
+  1. O colaborador acessa um diagnóstico inicial amplo, dividido em três sessões e sem reprovação;
   2. O sistema apresenta questões organizadas por competência e casos curtos;
   3. O colaborador responde e finaliza;
   4. O sistema registra a linha de base e o perfil de domínio por competência;

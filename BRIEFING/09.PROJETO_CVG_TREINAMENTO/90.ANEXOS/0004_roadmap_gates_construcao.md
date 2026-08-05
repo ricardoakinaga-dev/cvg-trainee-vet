@@ -204,7 +204,7 @@ PENDENTE.
 - Conteúdo revisado;
 - Banco suficiente;
 - Diagnóstico, aprendizagem, prova, remediação e retenção;
-- Duração entre 8 e 12 semanas.
+- Duração recomendada pela matriz V2: 14 semanas; a faixa histórica de 8–12 semanas foi reaberta na D-081.
 
 ### Linha de base
 

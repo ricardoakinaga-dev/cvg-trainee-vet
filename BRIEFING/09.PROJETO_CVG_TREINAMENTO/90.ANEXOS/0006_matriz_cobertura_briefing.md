@@ -59,7 +59,7 @@
 | Requisito do solicitante | Documento | Situação |
 |---|---|---|
 | plataforma de treinamento digital, com casos e simulações digitais | 0000/0004/0009 + D-068 | modalidade confirmada pelo patrocinador como insumo; prática presencial excluída |
-| básico ao avançado | anexo 0002 | hipóteses para validar |
+| básico ao avançado | PRD 0016 + anexo 0002 | progressão de complexidade dentro das trilhas; sem rótulos formais no MVP |
 | trilhas | anexo 0002 | perguntas e opções não aprovadas |
 | provas | anexo 0003 | alternativas para futuro PRD |
 | quizzes | anexo 0003 | alternativa formativa não aprovada |
@@ -71,7 +71,7 @@
 | fonte cirúrgica | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
 | validação da documentação | anexo 0009 | verificações físicas e de consistência registradas — 2026-08-05 |
 | sequência de construção | anexo 0004 | roadmap com gates |
-| não criar programa | README | escopo respeitado |
+| programa ainda não executado | README + PRD 0016 | matriz curricular criada; aulas, casos e questões completas ainda não produzidos |
 
 ## 2.1 Cobertura do PRD
 
@@ -89,6 +89,7 @@
 | requisitos não funcionais | 01.PRD/0014 | preenchidos — RNF-001 a RNF-084 |
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
+| programa curricular, módulos, casos e blueprint | 01.PRD/0016 | proposta V2 preenchida; carga/cadência aguarda D-081 |
 | consolidação | 01.PRD/0020 | preenchido |
 | gate | 01.PRD/0090 | reprovado — em correção; B-01/B-02/B-03/B-04/B-05 fechados por D-078/D-079/D-076/D-075/D-077; B-07 e requisitos pendentes continuam bloqueando nova submissão |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |

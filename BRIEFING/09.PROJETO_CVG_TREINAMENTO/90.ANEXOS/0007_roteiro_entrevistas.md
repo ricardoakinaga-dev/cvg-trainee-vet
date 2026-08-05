@@ -11,7 +11,7 @@ Este anexo serve apenas se Ricardo quiser esclarecer uma pendência real do MVP.
 ## Perguntas ainda úteis
 
 1. Quais temas devem entrar primeiro no diagnóstico e nos módulos?
-2. Quantas perguntas cabem em um diagnóstico inicial curto?
+2. O diagnóstico proposto de 120 itens em três sessões é viável na rotina?
 3. O colaborador usará mais celular ou computador?
 4. Existe alguma necessidade de acessibilidade que o MVP precise atender?
 5. Quais protocolos internos precisam prevalecer sobre o conteúdo geral?

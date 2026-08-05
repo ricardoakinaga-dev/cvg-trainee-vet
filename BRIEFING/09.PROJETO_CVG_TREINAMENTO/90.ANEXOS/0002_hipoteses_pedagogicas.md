@@ -1,7 +1,7 @@
 # Anexo 0002 — Hipóteses Pedagógicas para Validação
 
-**Status:** conjunto de hipóteses não aprovado para o futuro PRD; não constitui arquitetura de trilha  
-**Restrição:** nenhum nível, módulo, ordem, carga ou critério descrito neste anexo foi adotado. As opções servem apenas para decisões futuras.
+**Status:** registro histórico de hipóteses; a proposta curricular vigente está no [PRD 0016](../01.PRD/0016_programa_curricular_clinico.md)
+**Regra de leitura:** quando houver conflito, o PRD 0016 substitui este anexo. A carga/cadência final ainda depende da D-081.
 
 ## 1. Princípios candidatos
 
@@ -65,7 +65,7 @@ Mapear conhecimento prévio sem caráter punitivo, por tema e competência, ante
 
 ## 4. Hipóteses de níveis da jornada
 
-As descrições abaixo são rascunhos de entrevista. O Discovery deverá validar se três níveis são adequados, e o PRD futuro deverá definir perfis de entrada/saída e critérios.
+As descrições abaixo são registro histórico. O MVP V2 não cria três níveis de usuário: a complexidade aumenta dentro das trilhas e dos casos. Uma taxonomia formal poderá ser reavaliada na expansão.
 
 ### Nível 1 — Básico
 
@@ -194,7 +194,7 @@ Possibilidades futuras:
 - Especialidades;
 - Liderança/preceptoria.
 
-**PENDENTE:** selecionar quais existem e quais entram no piloto.
+**CONFIRMADO:** núcleo comum, Emergência e Internação compõem o escopo clínico. A organização executável em 16 módulos está no PRD 0016.
 
 ## 6. Campos a decidir para um futuro módulo
 
@@ -204,7 +204,7 @@ O PRD deverá decidir se os seguintes campos são necessários; esta lista ainda
 |---|---|
 | `module_id` | identificador estável |
 | título | nome claro |
-| nível | básico, intermediário ou avançado |
+| nível | não usado no MVP; possível metadado futuro de complexidade |
 | trilha | vínculo curricular |
 | perfil de entrada | pré-requisitos |
 | perfil de saída | desempenho esperado |
@@ -255,23 +255,19 @@ O futuro PRD deverá decidir:
 - Como um limiar será estabelecido com validade;
 - Quando a remediação é acionada;
 - Se haverá dispensa por domínio;
-- Quais dependências existem entre níveis;
+- Quais dependências existem entre módulos e trilhas;
 - Quando uma conclusão vence;
 - Como deixar explícito que desbloqueio teórico não concede permissão clínica.
 
-## 9. Hipóteses de carga e ritmo
+## 9. Proposta vigente de carga e ritmo
 
-Sem conhecer escala e rotina, não é possível fixar carga definitiva.
+- Unidade técnica: 10–15 minutos;
+- Módulo completo: 4–6 horas distribuídas em duas semanas;
+- Ciclo completo: 34 semanas e faixa preliminar de 90–115 horas;
+- Piloto recomendado: 14 semanas e faixa preliminar de 30–40 horas;
+- Revisão: espaçada e cumulativa, com intervalo adaptado ao acerto ou erro.
 
-Faixas apenas para entrevistas e teste de viabilidade:
-
-- Unidade de aprendizagem: 8 a 15 minutos;
-- Módulo: 45 a 120 minutos totais;
-- Carga protegida: alvo de 2 a 4 horas por mês;
-- Prazo por módulo: 2 a 4 semanas;
-- Janela de retenção: 30, 60 e/ou 90 dias.
-
-Esses parâmetros são propostas e devem ser testados.
+A antiga referência de 2–4 horas por mês foi rejeitada por insuficiência diante do escopo. A D-081 selecionará a cadência final antes da execução.
 
 ## 10. Hipótese de conteúdo obrigatório versus eletivo
 
@@ -326,7 +322,7 @@ Pontuar cada tema por:
 - Valor percebido;
 - Esforço de produção.
 
-Temas para discussão, não aprovados:
+Temas selecionados para o piloto curricular V2:
 
 - Fundamentos de consulta e raciocínio;
 - Fluidoterapia;
@@ -334,4 +330,4 @@ Temas para discussão, não aprovados:
 - Dor e analgesia;
 - Reconhecimento e estabilização inicial de emergência.
 
-Nenhuma dessas áreas foi aprovada.
+O piloto executa NC-01, NC-03, EM-01 e IN-01, seguido de caso integrador, conforme o PRD 0016.

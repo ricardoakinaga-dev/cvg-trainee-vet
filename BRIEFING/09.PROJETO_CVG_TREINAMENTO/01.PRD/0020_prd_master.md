@@ -11,7 +11,7 @@
 
 ## 1. Visão geral
 
-O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina diagnóstico curto, trilha recomendada, módulos breves, quizzes, casos/simulações digitais, feedback imediato e progresso visível. O conteúdo é original do CVG e revisado por humanos.
+O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina diagnóstico amplo fracionado, trilha recomendada, unidades técnicas curtas dentro de módulos completos, casos/simulações digitais, recuperação ativa, feedback imediato, remediação e progresso visível. O conteúdo é original do CVG e revisado por humanos.
 
 O produto **não** oferece treinamento prático presencial associado à plataforma, não avalia habilidade psicomotora ou competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos. Resultados de casos ou simulações digitais representam apenas conhecimento e raciocínio em cenário simulado (D-068).
 
@@ -34,10 +34,10 @@ Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 
 ```text
 entrar
-→ fazer um diagnóstico curto, sem aprovação ou reprovação
+→ fazer um diagnóstico de 120 itens em três sessões, sem aprovação ou reprovação
 → receber uma trilha recomendada
-→ concluir módulos de 8–15 minutos
-→ praticar com quiz e caso/simulação digital
+→ estudar unidades de 10–15 minutos dentro de módulos de 4–6 horas
+→ praticar com questões e casos/simulações digitais contrastantes
 → receber feedback imediato
 → acompanhar o progresso e revisar apenas o necessário
 ```
@@ -69,10 +69,11 @@ contestações e alterações de gabarito → protocolo → revisor independente
 
 ### IN (piloto/MVP proposto)
 
-- Jornada do colaborador: diagnóstico curto, trilha recomendada, módulos breves, quizzes, casos/simulações digitais, feedback e progresso;
+- Jornada do colaborador: diagnóstico amplo fracionado, trilha recomendada, unidades breves, módulos completos, questões, casos/simulações digitais, feedback, remediação e progresso;
 - Bastidores mínimos: login, publicação com segunda conferência veterinária, controle de acesso e registro de alterações sensíveis;
 - Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05);
-- Público/coorte: aproximadamente 10 veterinários, com participação de toda a equipe; duração: 12 semanas; tempo protegido: 3 h/mês (D-079; B-02 fechado).
+- Público/coorte: aproximadamente 10 veterinários, com participação de toda a equipe (D-079; B-02 fechado);
+- Matriz curricular V2: ciclo completo de 34 semanas e faixa preliminar de 90–115 horas; piloto recomendado de 14 semanas com cinco módulos/partes curriculares, caso integrador e 30–40 horas. A duração de 12 semanas e a carga de 3 h/mês precisam ser substituídas na D-081 antes da execução.
 
 ### OUT
 
@@ -104,8 +105,10 @@ Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
 ## 7. Requisitos funcionais (resumo)
 
-P0 do colaborador: entrar, fazer o diagnóstico curto, ver a trilha, concluir módulos, responder quizzes/casos com feedback imediato e acompanhar o progresso. Controles de publicação, permissão e registro ficam nos bastidores.
+P0 do colaborador: entrar, fazer o diagnóstico fracionado, ver a trilha, concluir unidades e módulos, resolver questões/casos com feedback imediato, revisar lacunas e acompanhar o progresso. Controles de publicação, permissão e registro ficam nos bastidores.
 Detalhes em [0013 — Requisitos funcionais](0013_requisitos_funcionais.md).
+
+O conteúdo, a sequência, a carga, os casos e o blueprint de avaliação estão no [0016 — Programa curricular clínico](0016_programa_curricular_clinico.md).
 
 ## 8. Requisitos não funcionais (resumo)
 
@@ -149,6 +152,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 7. Público (B-02) — ✅ **FECHADO POR D-079: aproximadamente 10 veterinários, todos participam**; baseline B-07 continua pendente.
 8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
+10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016**; carga/cadência final aguarda seleção na D-081.
 
 ## 14. Documentos do PRD
 
@@ -160,12 +164,13 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 | 0013 | [Requisitos funcionais](0013_requisitos_funcionais.md) |
 | 0014 | [Requisitos não funcionais](0014_requisitos_nao_funcionais_produto.md) |
 | 0015 | [Métricas de sucesso](0015_metricas_de_sucesso.md) |
+| 0016 | [Programa curricular clínico](0016_programa_curricular_clinico.md) |
 | 0020 | Este documento |
 | 0090 | [Validação (gate)](0090_prd_validation.md) |
 
 ## 15. Não feito nesta fase
 
-- Nenhuma SPEC, BUILD, código, teste, tela, questão real, aula ou conteúdo clínico;
+- Nenhuma SPEC, BUILD, código, teste, tela, questão ou aula clínica completa; a matriz curricular e os blueprints estão definidos no PRD 0016;
 - Nenhuma decisão técnica (arquitetura, banco, API, framework);
 - Nenhum conteúdo derivado das obras;
 - Nenhuma integração.

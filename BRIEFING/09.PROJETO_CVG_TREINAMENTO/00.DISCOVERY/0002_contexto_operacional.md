@@ -22,7 +22,7 @@
 
 ## Etapas do fluxo afetadas
 
-1. Entrada e diagnóstico curto;
+1. Entrada e diagnóstico amplo fracionado;
 2. Recomendação da trilha;
 3. Módulos digitais breves;
 4. Quiz e caso/simulação digital;

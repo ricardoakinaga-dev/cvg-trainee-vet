@@ -28,7 +28,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-010 | O sistema deve apresentar um diagnóstico inicial curto antes da trilha, sem aprovação ou reprovação | P0 | FATO INFORMADO; formato final pendente em B-07 |
+| RF-010 | O sistema deve apresentar um diagnóstico inicial amplo e fracionado antes da trilha, sem aprovação ou reprovação | P0 | PROPOSTA 0016: 120 itens em três sessões; blueprint clínico ainda deve ser validado em B-07 |
 | RF-011 | O diagnóstico deve ser composto por questões organizadas por competência e casos curtos | P0 | FATO INFORMADO |
 | RF-012 | O sistema deve calcular perfil por tema e competência, sem depender de nota global única | P0 | FATO INFORMADO |
 | RF-013 | O diagnóstico deve ser não punitivo: sem reprovação nem nota pública | P0 | FATO INFORMADO |
@@ -40,10 +40,10 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-020 | O sistema deve organizar a jornada em níveis (básico, intermediário, avançado) | P0 | FATO INFORMADO |
+| RF-020 | O sistema deve permitir configurar as trilhas Núcleo Clínico, Emergência e Internação e publicar inicialmente somente os módulos autorizados do piloto; os 16 módulos formam o ciclo completo | P0 | PROPOSTA CURRICULAR V2 |
 | RF-021 | O sistema deve atribuir trilha personalizada por perfil | P0 | FATO INFORMADO |
 | RF-022 | O sistema deve manter núcleo obrigatório não dispensável | P0 | FATO INFORMADO |
-| RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e níveis | P1 | PROPOSTA |
+| RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e trilhas | P1 | PROPOSTA CURRICULAR V2 |
 | RF-024 | O sistema deve gerenciar dispensa por domínio: **não aplicada no piloto**; regra futura | P2 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-025 | O sistema deve controlar estados da trilha conforme vocabulário do anexo 0003 | P0 | PROPOSTA |
 | RF-026 | O sistema deve tratar prazos, afastamentos e acomodações | P1 | PENDENTE (D-016/D-018) |
@@ -54,7 +54,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-030 | O sistema deve exibir conteúdo em unidades curtas (8–15 min alvo) | P1 | PROPOSTA |
+| RF-030 | O sistema deve exibir conteúdo em unidades curtas (10–15 min alvo) dentro de módulos clínicos completos de 4–6 horas | P1 | PROPOSTA CURRICULAR V2 |
 | RF-031 | Cada módulo deve registrar internamente a obra e o capítulo/seção consultados, sem exibir esses metadados ao aluno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | PROPOSTA |
 | RF-033 | O sistema deve registrar conclusão de unidades e progresso | P0 | FATO INFORMADO |
@@ -86,6 +86,9 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-054 | O sistema não deve oferecer na primeira versão cadastro, agenda, checklist, upload ou aprovação de evidência de treinamento prático presencial ou procedimento real | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-055 | O sistema deve limitar a remediação a conteúdo, quiz, caso/simulação e orientação digitais | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-056 | Em atividade autocorrigível, o sistema deve dar feedback imediato; se houver revisão humana, deve mostrar imediatamente o status e a próxima ação | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
+| RF-057 | Casos digitais devem suportar ramificações, estado persistente, consequências, exames seriados, radiografias, POCUS e ECG | P0 | PROPOSTA CURRICULAR V2 |
+| RF-058 | Atividades devem suportar cálculo de dose/infusão e resposta construída por rubrica para registro e passagem de caso | P0 | PROPOSTA CURRICULAR V2; correção humana depende da D-070 |
+| RF-059 | O sistema deve suportar formas equivalentes, revisão espaçada, retomada da atividade e resultado por objetivo, competência e trilha | P0 | PROPOSTA CURRICULAR V2 |
 
 ## 6. Contestação e correção
 
@@ -130,7 +133,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 ## 10. Requisitos não cobertos (pendências que impactam o PRD)
 
-- Blueprint e número de itens do diagnóstico (UC-001, B-07) — demais itens por objetivo definidos em 10–15 (RN-078);
+- Validação clínica da matriz detalhada e do blueprint de 120 itens do diagnóstico (UC-001, B-07) — demais itens por objetivo definidos em 10–15 (RN-078);
 - Avaliadores e dupla correção de respostas construídas (D-070);
 - Regra de repetição/atualização da linha de base;
 - Equivalência das formas de avaliação;

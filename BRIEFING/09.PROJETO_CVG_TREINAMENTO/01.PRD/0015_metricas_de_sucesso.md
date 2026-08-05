@@ -10,7 +10,7 @@
 ## 1. Níveis de sucesso
 
 1. **Aprendizagem:** domínio, ganho e retenção;
-2. **Conhecimento e raciocínio digital:** progressão de níveis, domínio por objetivo e desempenho em casos/simulações digitais;
+2. **Conhecimento e raciocínio digital:** progressão de complexidade, domínio por objetivo e desempenho em casos/simulações digitais;
 3. **Engajamento e adesão:** ativação, conclusão, abandono;
 4. **Governança de conteúdo:** validade, rastreabilidade e revisão;
 5. **Operação e cultura:** carga sustentável, segurança psicológica, ausência de uso punitivo.

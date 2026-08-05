@@ -26,7 +26,7 @@
 ### FLUXOS
 
 - [x] Fluxo principal definido (jornada do colaborador, 0020 §4);
-- [x] Jornada prática e fluida confirmada por D-080: uma próxima ação clara, módulos breves, feedback imediato e progresso visível;
+- [x] Jornada prática e fluida confirmada por D-080: uma próxima ação clara, unidades breves dentro de módulos completos, feedback imediato e progresso visível;
 - [ ] Exceções completamente definidas — afastamento e acessibilidade permanecem pendentes;
 - [x] Fluxo atual real validado por D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado.
 
@@ -38,6 +38,8 @@
 - [x] Modalidade digital e fronteira das simulações confirmadas pelo patrocinador como insumos (D-068); prática presencial bloqueada pelo `GATE-EXP-PRAT-01`;
 - [x] Áreas clínicas do piloto confirmadas pelo responsável do MVP — núcleo + Emergência + Internação (B-06);
 - [x] Coorte inicial delimitada: aproximadamente 10 veterinários, abrangendo toda a equipe (D-079).
+- [x] Programa curricular clínico V2 definido no PRD 0016: 16 módulos, 128 casos digitais-base e banco de 1.440 itens;
+- [ ] Carga/cadência final do programa e do piloto aguardam a seleção da D-081.
 
 ### REGRAS
 
@@ -49,7 +51,7 @@
 
 - [ ] Requisitos funcionais completos para o MVP proposto — existem requisitos e decisões pendentes (0013 §10);
 - [ ] Requisitos não funcionais completamente definidos — acessibilidade e exceções ainda possuem pendências; política mínima de dados aprovada por D-077;
-- [ ] Pendências registradas: blueprint/itens do diagnóstico, avaliadores de resposta construída, equivalência, acessibilidade (0013 §10).
+- [ ] Pendências registradas: validação clínica do blueprint detalhado, avaliadores de resposta construída, equivalência, acessibilidade, carga/cadência (D-081) e efeito do erro crítico na conclusão (D-082).
 
 ### MÉTRICAS
 
@@ -76,7 +78,7 @@
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | MV. Ricardo Akinaga | FECHADO POR D-077 — somente nome/login profissional, progresso, tentativas, notas e logs mínimos; dados clínicos reais e de tutores proibidos |
 | B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
-| B-07 | baseline ausente | metas não calibradas | MV. Ricardo Akinaga | PENDENTE — definir e aplicar diagnóstico curto |
+| B-07 | baseline ausente | metas não calibradas | MV. Ricardo Akinaga | PROPOSTA DEFINIDA — 120 itens em três sessões; falta validar blueprint, produzir e aplicar |
 
 ## Decisões humanas preservadas como insumos (confirmadas em 2026-08-05 — ver anexo 0008)
 
@@ -86,7 +88,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 2. Composição quiz 0% + caso 30% + prova 70% (D-044) — ✅ corrige inconsistência RN-020/RN-022
 3. Tentativas 2 + remediação, intervalo mínimo 7 dias (D-042/D-043) — ✅
 4. Núcleo + Emergência/Internação no piloto (D-020) — ✅
-5. Piloto 12 semanas, aproximadamente 10 veterinários e 3 h/mês (D-079/D-061/D-016) — ✅
+5. Aproximadamente 10 veterinários — ✅; duração antiga de 12 semanas e carga de 3 h/mês foram consideradas insuficientes pela matriz V2 e aguardam substituição na D-081.
 6. Certificação: status de conclusão no piloto (D-049) — ✅
 7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
 8. Política de dados: D-077 aprovou o mínimo necessário e fechou B-05; prontuários, tutores, gravações e casos reais identificáveis permanecem proibidos — ✅
@@ -94,6 +96,8 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 10. Dispensa por domínio: não no piloto (D-045) — ✅
 11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
 12. Fontes: D-075 aprovou governança enxuta para o sistema interno; B-04 fechado; D-033 futura e não bloqueante — ✅
+13. Programa curricular: matriz V2 definida no PRD 0016; falta selecionar carga/cadência na D-081 — 🟡
+14. Erro crítico: aciona feedback/remediação; seu efeito adicional na conclusão aguarda D-082 — 🟡
 
 ---
 

@@ -9,9 +9,9 @@
 **Status do gate PRD:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — o PRD existente é rascunho controlado; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
 **Status da auditoria documental:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`  
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
-**Escopo desta entrega:** documentação de briefing; nenhuma implementação, aula, prova real ou código foi criado.
+**Escopo desta entrega:** documentação de briefing e matriz curricular clínica V2; nenhuma implementação, aula, prova real ou código foi criado.
 
-**Princípio de produto (D-080):** o colaborador deve encontrar uma jornada curta e óbvia: entrar, receber uma recomendação, concluir módulos breves com casos digitais, obter feedback imediato e acompanhar o próprio progresso. Controles administrativos não devem criar etapas desnecessárias para quem está aprendendo.
+**Princípio de produto (D-080):** o colaborador deve encontrar uma jornada clara e óbvia: entrar, receber uma recomendação, estudar unidades breves dentro de módulos clínicos completos, resolver casos digitais, obter feedback imediato e acompanhar o próprio progresso. Controles administrativos não devem criar etapas desnecessárias para quem está aprendendo.
 
 ## 1. Finalidade deste diretório
 
@@ -74,8 +74,9 @@ Nenhum campo desconhecido foi apresentado como certeza.
 4. [0013 — Requisitos funcionais](01.PRD/0013_requisitos_funcionais.md)
 5. [0014 — Requisitos não funcionais](01.PRD/0014_requisitos_nao_funcionais_produto.md)
 6. [0015 — Métricas de sucesso](01.PRD/0015_metricas_de_sucesso.md)
-7. [0020 — PRD Master](01.PRD/0020_prd_master.md)
-8. [0090 — Validação do PRD](01.PRD/0090_prd_validation.md)
+7. [0016 — Programa curricular clínico](01.PRD/0016_programa_curricular_clinico.md)
+8. [0020 — PRD Master](01.PRD/0020_prd_master.md)
+9. [0090 — Validação do PRD](01.PRD/0090_prd_validation.md)
 
 ### Anexos preparatórios, ainda não aprovados como PRD
 
@@ -95,8 +96,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 
 - Código, aplicação, site ou plataforma;
 - Banco de dados, API, arquitetura técnica ou stack;
-- Aulas, resumos clínicos ou materiais didáticos;
-- Questões reais, quizzes reais ou provas reais;
+- Aulas, casos e questões clínicas completas — a matriz curricular V2 já está definida no PRD 0016, mas o conteúdo real ainda será produzido;
 - Certificados;
 - Protótipos de telas;
 - SPEC, backlog de BUILD ou sprints;
@@ -113,7 +113,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
-7. estabelecer baseline mínima com um diagnóstico inicial curto (B-07).
+7. validar e produzir o diagnóstico inicial amplo proposto no PRD 0016: 120 itens em três sessões de 40 (B-07).
 
 ## 4.2 Controle de versão obrigatório
 
@@ -158,7 +158,7 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abaixo não libera automaticamente a SPEC: primeiro será necessário reexecutar e aprovar formalmente os gates Discovery e PRD, com checkpoint Git identificado.
 
-1. definir e aplicar um diagnóstico inicial curto para a linha de base (B-07);
+1. validar o blueprint e produzir o diagnóstico inicial de 120 itens, em três sessões, para a linha de base (B-07);
 2. resolver somente os requisitos que afetem segurança ou uso do MVP;
 3. aplicar a política mínima D-077 no diagnóstico e no futuro sistema;
 4. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.

@@ -116,7 +116,7 @@ Por D-076, MV. Ricardo Akinaga é o responsável efetivo pelo MVP e pode decidir
 | B-04 | governança de fontes recalibrada por D-075 | fechado para o MVP interno; D-033 permanece separada e não bloqueia a autoria manual | concluído |
 | B-05 | fechado por D-077 | aplicar a política mínima interna; nenhuma ampliação de dados sem nova decisão | controle contínuo |
 | B-06 | áreas clínicas do piloto | decisão confirmada: núcleo + Emergência + Internação | fechado como insumo; revalidar no gate |
-| B-07 | baseline ausente | definir e aplicar diagnóstico inicial curto | antes da nova submissão Discovery |
+| B-07 | baseline ausente | validar, produzir e aplicar diagnóstico de 120 itens em três sessões | antes da nova submissão Discovery |
 
 Regra de efeito: qualquer artefato do PRD cujo conteúdo dependa de um bloqueio não resolvido deverá declarar `PENDENTE` e referenciar o ID do bloqueio, sem inventar a informação.
 

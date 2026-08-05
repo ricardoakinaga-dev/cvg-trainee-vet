@@ -42,9 +42,15 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 - **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo responsável do MVP (B-06);
 - Espécies: **cães e gatos** (D-022 resolvido);
 - Público/coorte: **aproximadamente 10 veterinários**, com participação de toda a equipe; sem segmentação obrigatória por setor ou turno (D-079/B-02 fechado);
-- Duração do piloto: **12 semanas** (D-061 resolvido);
-- Tempo protegido: **3 h/mês por veterinário**; decomposição entre microlearning e atividades digitais de caso será reconciliada no item de carga (D-016 resolvido quanto ao total);
+- Duração histórica do piloto: **12 semanas** (D-061); a matriz V2 recomenda 14 semanas e reabre a decisão na D-081 para evitar módulos comprimidos;
+- Carga antiga: **3 h/mês por veterinário** (D-016); a pesquisa e a matriz curricular V2 demonstraram que esse total é insuficiente para o escopo clínico aprovado e ele precisa ser substituído na D-081;
 - Banco de questões: **10 a 15 itens por objetivo** (D-063 resolvido).
+
+### Programa curricular clínico V2 — proposta para validação
+
+O [PRD 0016](0016_programa_curricular_clinico.md) transforma o escopo em um treinamento executável: ciclo completo de 34 semanas e faixa preliminar de 90–115 horas, com 16 módulos, 128 casos digitais-base, diagnóstico de 120 itens e banco inicial de 1.440 itens. O piloto recomendado de 14 semanas testa cinco módulos/partes curriculares e um caso integrador em 30–40 horas; não pretende condensar o ciclo completo.
+
+Uma unidade técnica dura 10–15 minutos. Um módulo completo inclui conteúdo, casos, prática, avaliação, remediação e revisão e exige de quatro a seis horas distribuídas em duas semanas.
 
 ## 3. OUT OF SCOPE (o que NÃO será construído)
 
@@ -96,6 +102,6 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 | 0 | Corrigir e revalidar Briefing (Discovery + PRD) | gates 0090 Discovery e PRD aprovados, nessa ordem |
 | 1 | SPEC | PRD aprovado |
 | 2 | BUILD (MVP piloto) | SPEC aprovada |
-| 3 | Piloto controlado (aproximadamente 10 veterinários, 12 semanas) | build funcional |
+| 3 | Piloto controlado (aproximadamente 10 veterinários; proposta de 14 semanas) | build funcional e D-081 confirmada |
 | 4 | AUDIT | piloto em operação |
 | 5 | Melhoria contínua e expansão | decisão do patrocinador |

@@ -1,7 +1,7 @@
 # Anexo 0003 — Hipóteses de Avaliações e Catálogo de Métricas
 
-**Status:** conjunto de hipóteses não aprovado para o futuro PRD  
-**Objetivo:** registrar alternativas, perguntas e métricas candidatas sem definir regras de produto nem criar questões reais.
+**Status:** registro histórico; quantidades da proposta curricular vigente estão no [PRD 0016](../01.PRD/0016_programa_curricular_clinico.md)
+**Objetivo:** preservar as decisões de avaliação e indicar o blueprint proposto, sem criar questões reais.
 
 Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autoriza progressão até passar por validação de conteúdo, validade da avaliação, confiabilidade e standard setting.
 
@@ -13,18 +13,19 @@ Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autor
 - **Finalidade:** linha de base, nivelamento, identificação de lacunas e personalização inicial da trilha;
 - **Caráter:** formativo, não punitivo;
 - **Formato:** questões por competência e casos curtos;
+- **Quantidade proposta:** 120 itens em três sessões de 40, cobrindo núcleo clínico, emergência, internação e integração;
 - **Resultado:** perfil por tema e competência, sem depender apenas de uma nota global;
 - **Feedback:** visão de lacunas e direcionamento de estudo, sem expor banco completo;
 - **Periodicidade e tentativas:** pendentes; deverão preservar a comparabilidade da linha de base;
 - **Consequência:** atribuição de trilha e reforços personalizados ou possível dispensa, conforme regras ainda não aprovadas;
 - **Nota mínima:** não se aplica como aprovação;
 - **Comparação futura:** usar avaliações equivalentes para medir ganho sem repetir simplesmente os mesmos itens;
-- **Decisões pendentes:** blueprint, regra de dispensa, periodicidade, equivalência, acessibilidade e acesso aos resultados.
+- **Decisões pendentes:** validação clínica do blueprint detalhado, periodicidade, equivalência, acessibilidade e acesso aos resultados.
 
 ### A-02 — Quiz formativo
 
 - **Finalidade:** recuperação ativa e feedback;
-- **Quantidade:** pendente de blueprint e carga do objetivo;
+- **Quantidade proposta:** 20 itens formativos por módulo;
 - **Dificuldade:** básica a intermediária;
 - **Feedback ao aluno:** imediato, com justificativa técnico-clínica; fonte completa somente no workflow interno restrito (D-074);
 - **Tentativas:** múltiplas para aprendizagem;
@@ -40,14 +41,14 @@ Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autor
 - **Feedback:** após cada decisão ou ao final, conforme objetivo;
 - **Peso:** pendente; o PRD deve decidir se o caso será formativo ou somativo;
 - **Correção:** gabarito ou rubrica revisados;
-- **Quantidade:** pendente do blueprint;
+- **Quantidade proposta:** seis casos de aprendizagem por módulo (dois resolvidos e quatro de prática), além de dois casos inéditos na avaliação; todos com variantes ou ramificações;
 - **Quando houver resposta construída:** definir avaliadores, treinamento de correção, dupla correção amostral ou integral, concordância interavaliador, tratamento de crédito parcial e recurso.
 
 ### A-04 — Prova somativa de módulo
 
 - **Finalidade:** verificar domínio antes da progressão;
 - **Formato:** questões selecionadas por blueprint;
-- **Quantidade:** definida pelo blueprint, precisão desejada e viabilidade;
+- **Quantidade proposta:** banco único de 90 itens por módulo, dos quais 25 ainda não vistos entram em cada forma de avaliação, mais dois casos inéditos; avaliação final com pelo menos 100 itens e quatro casos integrados, dividida em três sessões;
 - **Limiar:** definido por standard setting referenciado a critério, não por percentual arbitrário;
 - **Conteúdo crítico:** pode exigir padrão mais alto, desde que justificado e aprovado;
 - **Tentativas:** quantidade, intervalo e consequência são decisões pendentes;

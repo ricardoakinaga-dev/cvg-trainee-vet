@@ -126,7 +126,7 @@ A personalização não deverá dispensar automaticamente conteúdos institucion
 
 ### Ausentes
 
-- Linha de base do diagnóstico curto (B-07);
+- Linha de base do diagnóstico amplo fracionado proposto no PRD 0016 (B-07);
 - Levantamento de lacunas clínicas;
 - Protocolos internos relevantes para cada módulo.
 
@@ -154,4 +154,4 @@ Primariamente os veterinários colaboradores; secundariamente coordenação clí
 
 ## Critério de validação da dor
 
-A dor está validada pela descrição direta do processo atual em D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado. B-01 está fechado. O diagnóstico curto B-07 medirá o ponto de partida educacional, sem exigir entrevistas ou inventário.
+A dor está validada pela descrição direta do processo atual em D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado. B-01 está fechado. O diagnóstico fracionado B-07 medirá o ponto de partida educacional, sem exigir entrevistas ou inventário.

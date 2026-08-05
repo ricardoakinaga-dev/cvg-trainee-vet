@@ -55,7 +55,7 @@ Esta verificação preserva achados e correções já presentes na baseline, mas
 |---|---|---|
 | Treinamento por competências | 12 competências locais → núcleo comum e trilhas (anexo 0002) | ✅ |
 | Avaliação diagnóstica antes do treinamento | RN-010 a RN-013 | ✅ |
-| Microlearning espaçado | unidade 8–15 min; tempo protegido 3 h/mês; retenção 30/60/90 dias | ✅ |
+| Microlearning espaçado | registro histórico substituído pelo PRD 0016: unidade 10–15 min dentro de módulo de 4–6 h; cadência final pendente na D-081 | ⚠️ REABERTO |
 | Simulação/prática deliberada | simulação digital incluída para conhecimento/raciocínio; prática presencial excluída e bloqueada pelo `GATE-EXP-PRAT-01` | ✅ |
 | Mentoria e feedback | papéis de mentor/preceptor; plano individual em reprovação recorrente | ✅ |
 | Casos digitais estruturados | atividade digital de caso incluída; formato síncrono ou assíncrono ainda não decidido | ✅ com pendência de formato |
@@ -93,7 +93,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 - B-03: fechado por D-076; Ricardo concentra as responsabilidades e outro MV revisa cada módulo clínico antes da publicação;
 - B-04: fechado por D-075 para o MVP interno; manter consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; D-033 é futura e não bloqueante;
 - B-05: fechado por D-077; aplicar o Anexo 0011 e não coletar prontuários, dados de tutores, gravações ou casos reais identificáveis;
-- B-07: baseline (diagnóstico inicial curto).
+- B-07: validar, produzir e aplicar o diagnóstico de 120 itens em três sessões proposto no PRD 0016.
 
 ## 8. Controle de versão
 
