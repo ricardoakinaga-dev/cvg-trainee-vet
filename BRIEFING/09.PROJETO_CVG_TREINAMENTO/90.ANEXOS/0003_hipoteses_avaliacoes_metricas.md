@@ -126,7 +126,7 @@ Separar:
 4. Retenção;
 5. Consistência;
 6. Confiança;
-7. Competência prática futura, quando existir.
+7. Desempenho em casos e simulações digitais, separado de competência prática.
 
 ## 3. Vocabulário candidato de acompanhamento
 
@@ -285,7 +285,7 @@ Item com distrator inoperante, contestação recorrente ou anulação deverá se
 - Permitir correção e contestação;
 - Registrar a finalidade;
 - Definir período de retenção;
-- Não inferir competência prática;
+- Não inferir competência prática, habilidade psicomotora, nível de supervisão ou autonomia a partir de provas, casos ou simulações digitais;
 - Não atribuir causalidade clínica sem desenho adequado.
 
 ### População, exceções e dados faltantes

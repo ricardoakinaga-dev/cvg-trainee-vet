@@ -4,7 +4,7 @@
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
 **Atualização 2026-08-05 (gate):** patrocinador confirmou as decisões D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061, D-063 (ver anexo 0008) — registradas como `aprovada (gate 2026-08-05)`. Permanecem pendentes as decisões que dependem de levantamento/entrevistas e nomeações.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com o gate (ver anexo 0009); incluída a decisão D-067 (licença do Fossum — F-03).
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com o gate (ver anexo 0009); incluídas D-067 (licença do Fossum — F-03) e D-068 (modalidade da primeira versão).
 
 ## 1. Identidade e governança
 
@@ -99,6 +99,7 @@
 | D-065 | Qual orçamento? | patrocinador | Discovery/PRD | pendente |
 | D-066 | Qual prazo desejado? | patrocinador | PRD | pendente |
 | D-067 | Há licença para uso institucional do Fossum (cirurgia)? | jurídico | conteúdo | pendente (B-04) |
+| D-068 | Qual é a modalidade da primeira versão e a fronteira das simulações? | patrocinador/PO | PRD/SPEC | aprovada (2026-08-05): treinamento integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` |
 
 ## 8. Perguntas para a primeira reunião
 

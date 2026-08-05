@@ -31,9 +31,9 @@
 |---|---|---|
 | UC-001 | Realizar avaliação diagnóstica inicial | Colaborador |
 | UC-002 | Receber trilha personalizada | Colaborador |
-| UC-003 | Consumir conteúdo teórico | Colaborador |
+| UC-003 | Consumir conteúdo digital | Colaborador |
 | UC-004 | Realizar quiz formativo | Colaborador |
-| UC-005 | Realizar caso clínico | Colaborador |
+| UC-005 | Realizar caso clínico ou simulação digital | Colaborador |
 | UC-006 | Realizar prova somativa | Colaborador |
 | UC-007 | Passar por remediação | Colaborador |
 | UC-008 | Realizar avaliação de retenção | Colaborador |
@@ -88,7 +88,7 @@
 - **Resultado esperado:** trilha atribuída e visível, com progressão condicionada a pré-requisitos.
 - **Observações:** personalização não pode dispensar automaticamente conteúdos obrigatórios nem temas críticos (`FATO INFORMADO` — ver 0001).
 
-### UC-003 — Consumir conteúdo teórico
+### UC-003 — Consumir conteúdo digital
 
 - **Ator:** Colaborador.
 - **Objetivo:** estudar unidades curtas de conteúdo revisado e rastreável.
@@ -118,19 +118,19 @@
 - **Resultado esperado:** feedback de aprendizagem; múltiplas tentativas permitidas; peso zero na decisão somativa (`PROPOSTA`).
 - **Observações:** variação de ordem e seleção aleatória (`PROPOSTA` — integridade).
 
-### UC-005 — Realizar caso clínico
+### UC-005 — Realizar caso clínico ou simulação digital
 
 - **Ator:** Colaborador.
-- **Objetivo:** avaliar aplicação e raciocínio clínico em cenário teórico progressivo.
+- **Objetivo:** avaliar conhecimento e raciocínio clínico em cenário digital progressivo, sem avaliar execução prática.
 - **Gatilho:** módulo em andamento (caso formativo e/ou somativo conforme regra aprovada).
 - **Fluxo principal:**
-  1. O sistema apresenta dados clínicos em etapas;
+  1. O sistema identifica a atividade como simulação digital e apresenta dados clínicos fictícios em etapas;
   2. O colaborador decide por etapa (priorização, diferenciais, exames, conduta);
   3. O sistema registra as decisões e fornece feedback;
   4. Quando somativo, o sistema calcula o resultado por rubrica/gabarito revisado.
 - **Exceções:** resposta construída — `PENDENTE` (D-063, avaliadores e dupla correção); interrupção preserva etapas concluídas.
-- **Resultado esperado:** evidência de raciocínio; peso na nota conforme regra de composição.
-- **Observações:** peso de 30% quando somativo, compondo o escore com prova 70% e quiz 0% (APROVADO no gate 2026-08-05, D-044).
+- **Resultado esperado:** evidência de conhecimento e raciocínio em cenário digital; peso na nota conforme regra de composição.
+- **Observações:** peso de 30% quando somativo, compondo o escore com prova 70% e quiz 0% (APROVADO no gate 2026-08-05, D-044). O resultado nunca comprova habilidade psicomotora, competência prática ou autonomia clínica (D-068).
 
 ### UC-006 — Realizar prova somativa
 
@@ -185,11 +185,11 @@
 - **Gatilho:** consulta voluntária.
 - **Fluxo principal:**
   1. O colaborador acessa o painel individual;
-  2. O sistema apresenta progresso, conhecimento, aplicação, retenção e consistência;
+  2. O sistema apresenta progresso, conhecimento, desempenho em cenários digitais, retenção e consistência;
   3. O colaborador vê recomendações de estudo.
 - **Exceções:** resultado em revisão: exibido como `RESULTADO_EM_REVISÃO` (vocabulário anexo 0003).
 - **Resultado esperado:** transparência do desenvolvimento; sem ranking público.
-- **Observações:** separação explícita entre teórico e competência prática.
+- **Observações:** separação explícita entre desempenho digital e competência prática.
 
 ### UC-010 — Contestar questão ou resultado
 
@@ -214,7 +214,7 @@
 - **Fluxo principal:**
   1. O mentor acessa somente os colaboradores autorizados;
   2. Visualiza lacunas e recomendações;
-  3. Registra feedback e plano de reforço.
+  3. Registra feedback e plano de reforço digital, sem observação ou validação de prática.
 - **Exceções:** acesso negado a quem não tem autorização.
 - **Resultado esperado:** orientação baseada em evidência, sem exposição indevida.
 - **Observações:** limite de visibilidade conforme matriz de acesso (0006).
@@ -344,7 +344,7 @@
 
 ## 4. Casos de uso fora do escopo desta fase
 
-- Avaliação de competência prática observada (futuro — registrada em dimensão separada);
+- Treinamento prático presencial, observação de trabalho real e registro de evidência prática (`FUTURE — BLOQUEADO POR GATE-EXP-PRAT-01`);
 - Integrações com sistemas externos (futuro);
 - Emissão de certificados formais (decisão `PENDENTE`, D-049);
 - Notificações externas (e-mail/SMS) — decisão `PENDENTE`.

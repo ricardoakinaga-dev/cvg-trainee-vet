@@ -8,7 +8,7 @@
 
 ## 1. Visão geral
 
-O CVG pretende criar uma plataforma de formação teórica contínua para médicos-veterinários, com progressão do básico ao avançado, trilhas, quizzes, provas, casos e métricas de evolução.
+O CVG pretende criar uma plataforma de treinamento clínico digital contínuo para médicos-veterinários, com progressão do básico ao avançado, trilhas, quizzes, provas, casos, simulações digitais e métricas de evolução educacional.
 
 Nesta etapa, somente o briefing foi produzido. As engines canônicas foram preservadas e nenhum elemento do programa foi implementado.
 
@@ -39,7 +39,7 @@ O problema será medido por ativação, progresso, conclusão, domínio, ganho d
 - Setores informados: Clínica Médica, Internação, Cirurgia, Laboratório de Análises Clínicas e Ultrassonografia;
 - Operação informada: atendimento 24 horas, com escala 12 × 36;
 - Não existe atualmente sistema de treinamento, método alternativo definido ou processo definido de revisão clínica;
-- Modalidade inicial: treinamento teórico em plataforma;
+- Modalidade inicial aprovada em D-068: treinamento integralmente digital, com casos e simulações digitais;
 - Progressão: básico, intermediário e avançado;
 - Avaliação diagnóstica obrigatória antes do treinamento, para estabelecer a linha de base individual;
 - Personalização inicial da trilha conforme conhecimentos e lacunas identificados;
@@ -81,10 +81,12 @@ Esse mapeamento restante continua sendo um dos bloqueios do Discovery.
 - Governança científica;
 - Rastreabilidade;
 - Visibilidade individual e gerencial autorizada.
+- Simulações digitais para avaliar conhecimento, raciocínio, priorização, decisão e comunicação simulada.
 
 ### Fora deste recorte
 
 - Competência prática;
+- Treinamento prático presencial associado à plataforma, observação de trabalho real e avaliação psicomotora;
 - Autonomia clínica;
 - Avaliação trabalhista completa;
 - Código e arquitetura;
@@ -169,7 +171,7 @@ Nenhum item abaixo foi adotado como regra do programa. Sem criar aulas, esta seq
 3. Nível intermediário por sistemas e problemas frequentes;
 4. Nível avançado com casos complexos e integração;
 5. Avaliações formativas ao longo do módulo;
-6. Casos clínicos teóricos;
+6. Casos clínicos e simulações digitais;
 7. Prova somativa;
 8. Hipótese de remediação;
 9. Avaliação de retenção em 30, 60 e/ou 90 dias;
@@ -184,13 +186,13 @@ Nenhum item abaixo foi aprovado como modelo de avaliação:
 
 - Diagnóstico sem caráter punitivo;
 - Quizzes com feedback;
-- Casos clínicos progressivos;
+- Casos clínicos e simulações digitais progressivas;
 - Prova final;
 - Avaliação de retenção;
 - Autoavaliação de confiança separada da nota;
 - Hipótese de remediação após desempenho insuficiente;
 - Banco de itens com rastreabilidade e análise de qualidade;
-- Competência prática separada.
+- Competência prática não inferida nem registrada na primeira versão; expansão futura bloqueada pelo `GATE-EXP-PRAT-01`.
 
 Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliacoes_metricas.md).
 

@@ -10,7 +10,7 @@
 ## 1. Níveis de sucesso
 
 1. **Aprendizagem:** domínio, ganho e retenção;
-2. **Competência teórica:** progressão de níveis e domínio por competência;
+2. **Conhecimento e raciocínio digital:** progressão de níveis, domínio por objetivo e desempenho em casos/simulações digitais;
 3. **Engajamento e adesão:** ativação, conclusão, abandono;
 4. **Governança de conteúdo:** validade, rastreabilidade e revisão;
 5. **Operação e cultura:** carga sustentável, segurança psicológica, ausência de uso punitivo.
@@ -79,7 +79,7 @@ O piloto será considerado **bem-sucedido** quando:
 6. Restringir acesso ao mínimo necessário;
 7. Permitir correção e contestação;
 8. Registrar finalidade, retenção e descarte (B-05);
-9. Não inferir competência prática;
+9. Não inferir competência prática, habilidade psicomotora ou autonomia a partir de qualquer métrica digital;
 10. Não atribuir causalidade clínica sem desenho adequado.
 
 ## 7. Dados que precisam existir para calcular as métricas

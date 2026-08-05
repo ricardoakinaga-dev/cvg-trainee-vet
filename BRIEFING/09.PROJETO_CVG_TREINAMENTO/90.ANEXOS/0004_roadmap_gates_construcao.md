@@ -195,6 +195,7 @@ PENDENTE.
 
 ### Escopo recomendado
 
+- Modalidade integralmente digital, conforme D-068;
 - Um núcleo comum;
 - Uma ou duas áreas clínicas;
 - Número limitado de módulos;
@@ -257,7 +258,7 @@ Sistema funcional em ambiente definido e versão identificada.
 - Logs;
 - Métricas;
 - Testes;
-- Observação real;
+- Observação da operação digital e da usabilidade;
 - Dados de tentativas;
 - Histórico de versões;
 - Aprovações;
@@ -289,6 +290,12 @@ Antes de qualquer aprovação ou avanço de fase, é obrigatório:
 
 A ausência desse checkpoint reprova o gate, independentemente da completude narrativa dos documentos. Regras e evidências obrigatórias estão no [Anexo 0010](0010_controle_versao_gates.md).
 
+### 8.2 `GATE-EXP-PRAT-01` — inclusão de treinamento ou evidência prática
+
+Até a aprovação deste gate, treinamento prático presencial associado à plataforma, observação de trabalho real, avaliação psicomotora, registro de nível de supervisão e concessão de autonomia permanecem `FUTURE — BLOQUEADO POR GATE-EXP-PRAT-01` e não podem gerar UC, RF, SPEC, backlog ou BUILD.
+
+Condições mínimas para abertura: evidência do piloto digital; PRD revisado com dimensão prática separada; modelo de competência e avaliadores; análise de segurança clínica e responsabilidade profissional; política LGPD para pacientes, tutores, imagens e gravações; recursos e protocolos aprovados; SPEC de impacto; aprovação do patrocinador, RT/coordenação clínica, coordenação educacional e LGPD/segurança; checkpoint Git conforme o Anexo 0010.
+
 | Gate | Quem prepara | Quem revisa | Quem aprova |
 |---|---|---|---|
 | Discovery | product/discovery | usuários e coordenação | patrocinador + PO |
@@ -298,6 +305,7 @@ A ausência desse checkpoint reprova o gate, independentemente da completude nar
 | Conteúdo | autor | clínico + pedagógico | comitê científico |
 | Piloto | produto/operação | usuários e auditor | patrocinador |
 | Audit | auditor independente | owners | comitê de governança |
+| Expansão prática (`GATE-EXP-PRAT-01`) | PO + coordenação educacional | RT/coordenação clínica + LGPD/segurança | patrocinador + comitê de governança |
 
 Nomes: patrocinador executivo nomeado (MV. Ricardo Akinaga — CEO); demais `PENDENTE` (B-03).
 

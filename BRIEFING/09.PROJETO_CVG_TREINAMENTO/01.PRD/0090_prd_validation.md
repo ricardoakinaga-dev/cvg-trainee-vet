@@ -33,14 +33,15 @@
 - [x] IN SCOPE claro (0011 §2);
 - [x] OUT OF SCOPE definido (0011 §3);
 - [x] FUTURE SCOPE registrado (0011 §4);
+- [x] Modalidade digital e fronteira das simulações aprovadas (D-068); prática presencial bloqueada pelo `GATE-EXP-PRAT-01`;
 - [x] Áreas clínicas do piloto aprovadas — núcleo + Emergência + Internação (B-06 resolvido em 2026-08-05);
 - [ ] Coorte piloto delimitada (B-02 — inventário).
 
 ### REGRAS
 
-- [x] Regras principais definidas (0012, RN-001 a RN-080);
+- [x] Regras principais definidas (0012, RN-001 a RN-085);
 - [x] Restrições claras (segurança clínica, fontes, LGPD, não punição);
-- [x] Propostas do gate confirmadas pelo patrocinador em 2026-08-05 (RN-016/017, RN-020 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073, RN-076 a RN-080 — ver anexo 0008).
+- [x] Propostas do gate confirmadas pelo patrocinador em 2026-08-05 (incluindo D-068: RN-018, RN-081 a RN-085 e RF-027/RF-052 a RF-055 — ver anexo 0008).
 
 ### REQUISITOS
 
@@ -87,6 +88,7 @@
 8. Política de dados: acesso mínimo necessário, RH proibido, retenção vínculo + 2 anos (D-051/D-052/D-053) — ✅
 9. Contestação em 7 dias úteis (D-046) — ✅
 10. Dispensa por domínio: não no piloto (D-045) — ✅
+11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
 
 ---
 

@@ -13,7 +13,7 @@
 6. Feedback explicativo;
 7. Remediação antes de nova tentativa;
 8. Retenção medida separadamente;
-9. Competência prática separada da teoria;
+9. Simulações digitais separadas de competência prática e autonomia;
 10. Conteúdo rastreável e revisado.
 
 ## 2. Público
@@ -304,20 +304,13 @@ Esses parâmetros são propostas e devem ser testados.
 - Aprofundamentos;
 - Preparação para trilhas futuras.
 
-## 11. Limite a validar para avaliação prática
+## 11. Fronteira entre simulação digital e prática
 
-Fora do escore teórico inicial.
+**DECISÃO APROVADA — D-068:** casos e simulações digitais fazem parte da primeira versão e avaliam somente conhecimento, raciocínio, priorização, decisão e comunicação simulada.
 
-No futuro, a plataforma poderá registrar evidência externa de:
+A primeira versão não organizará, registrará nem avaliará observação direta, procedimento real, simulação física/presencial, checklist de habilidade, número de procedimentos, grau de supervisão ou autonomia clínica.
 
-- Observação direta;
-- Discussão de caso;
-- Simulação;
-- Checklist;
-- Feedback de mentor;
-- Nível de supervisão.
-
-Essa evidência deverá aparecer em dimensão separada e nunca ser inferida da prova teórica.
+Qualquer expansão para treinamento ou evidência prática é `FUTURE — BLOQUEADO POR GATE-EXP-PRAT-01`. Se esse gate vier a ser aprovado, a dimensão prática deverá permanecer separada dos resultados digitais e nunca ser inferida de prova, caso ou simulação digital.
 
 ## 12. Perguntas sobre certificação interna
 

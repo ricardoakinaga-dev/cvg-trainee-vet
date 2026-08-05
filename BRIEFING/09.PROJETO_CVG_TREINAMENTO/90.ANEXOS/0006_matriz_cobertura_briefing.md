@@ -58,7 +58,7 @@
 
 | Requisito do solicitante | Documento | Situação |
 |---|---|---|
-| plataforma teórica | 0000/0004 | intenção registrada |
+| plataforma de treinamento digital, com casos e simulações digitais | 0000/0004/0009 + D-068 | modalidade aprovada; prática presencial excluída |
 | básico ao avançado | anexo 0002 | hipóteses para validar |
 | trilhas | anexo 0002 | perguntas e opções não aprovadas |
 | provas | anexo 0003 | alternativas para futuro PRD |

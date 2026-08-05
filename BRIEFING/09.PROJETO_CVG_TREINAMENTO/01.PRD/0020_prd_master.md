@@ -11,9 +11,9 @@
 
 ## 1. Visão geral
 
-O Sistema CVG de Treinamento Veterinário é uma plataforma de **formação teórica contínua** para médicos-veterinários do CVG, com progressão básico → intermediário → avançado, avaliação diagnóstica inicial obrigatória, trilha personalizada, quizzes, casos clínicos, provas, remediação, avaliação de retenção e métricas individuais e gerenciais, com conteúdo rastreável e revisado por humanos.
+O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para médicos-veterinários do CVG, com progressão básico → intermediário → avançado, avaliação diagnóstica inicial obrigatória, trilha personalizada, quizzes, casos e simulações clínicas digitais, provas, remediação, avaliação de retenção e métricas individuais e gerenciais, com conteúdo rastreável e revisado por humanos.
 
-O produto **não** avalia competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos.
+O produto **não** oferece treinamento prático presencial associado à plataforma, não avalia habilidade psicomotora ou competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos. Resultados de casos ou simulações digitais representam apenas conhecimento e raciocínio em cenário simulado (D-068).
 
 ## 2. Problema
 
@@ -38,7 +38,7 @@ diagnóstico inicial obrigatório
 → trilha personalizada (núcleo obrigatório + reforços)
 → unidade de conteúdo
 → quiz formativo (feedback)
-→ caso clínico
+→ caso clínico/simulação digital
 → prova somativa
 → aprovação? → retenção (30/60/90 dias) → progressão
 → reprovação? → remediação → nova tentativa
@@ -71,17 +71,17 @@ contestações e alterações de gabarito → protocolo → revisor independente
 
 ### IN (piloto/MVP proposto)
 
-- Diagnóstico, trilha, conteúdo revisado, quizzes, casos, prova, remediação, retenção, painéis, banco de questões, governança editorial, contestações, auditoria, papéis e permissões;
+- Diagnóstico, trilha, conteúdo revisado, quizzes, casos e simulações digitais, prova, remediação, retenção, painéis, banco de questões, governança editorial, contestações, auditoria, papéis e permissões;
 - Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO no gate 2026-08-05);
 - Coorte: 10–15 veterinários (3 turnos); duração: 12 semanas; tempo protegido: 3 h/mês (APROVADOS no gate).
 
 ### OUT
 
-- Competência prática, autonomia, certificação formal, integrações externas, decisões disciplinares, reprodução das obras, ranking público, IA sem revisão humana.
+- Treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes/manequins/equipamentos, habilidade psicomotora, competência prática, nível de supervisão, autonomia, certificação formal, integrações externas, decisões disciplinares, reprodução das obras, ranking público e IA sem revisão humana.
 
 ### FUTURE
 
-- Trilhas por função, nível avançado, evidência prática em dimensão separada, certificação interna, reciclagem programada, integrações, notificações.
+- Trilhas por função, nível avançado, certificação interna, reciclagem programada, integrações e notificações. Qualquer treinamento ou evidência prática: `FUTURE — BLOQUEADO POR GATE-EXP-PRAT-01`.
 
 Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 
@@ -99,12 +99,13 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Conteúdo | só publica após revisão humana; autor não publica o próprio; rastreabilidade completa; sínteses autorais curtas com citação, sem PDFs (B-04 em verificação) | FATO INFORMADO + APROVADA |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
 | Dados | mínimo necessário; sem ranking; RH proibido no piloto; retenção vínculo + 2 anos; dashboards mensais | APROVADA (gate 2026-08-05) |
+| Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA (D-068, 2026-08-05) |
 
 Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
 ## 7. Requisitos funcionais (resumo)
 
-P0: autenticação, diagnóstico, trilha, conteúdo com governança, quizzes, casos, prova, remediação, retenção, contestações, painéis, auditoria, banco de questões, permissões.  
+P0: autenticação, diagnóstico, trilha, conteúdo com governança, quizzes, casos e simulações digitais, prova, remediação, retenção, contestações, painéis, auditoria, banco de questões, permissões e bloqueio de inferência/registro de competência prática.
 Detalhes em [0013 — Requisitos funcionais](0013_requisitos_funcionais.md).
 
 ## 8. Requisitos não funcionais (resumo)
@@ -144,6 +145,7 @@ Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_valid
 6. Tratamento de reprovação recorrente (D-047) — ✅ **APROVADO: plano individual com mentor, sem punição**;
 7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 
 8. Verificação jurídica formal das licenças (B-04) — ⏳ **em andamento** (regra de uso aprovada em RN-046).
+9. Modalidade da primeira versão (D-068) — ✅ **APROVADA: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 
 ## 14. Documentos do PRD
 

@@ -32,15 +32,15 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-015 | Progressão segue o vocabulário de estados do anexo 0003; distinção `APROVADO` × `CONCLUÍDO` a definir no gate | PENDENTE |
 | RN-016 | Módulo só é desbloqueado quando pré-requisitos são atendidos | APROVADA (gate 2026-08-05) |
 | RN-017 | Dispensa por domínio comprovado: **não aplicada no piloto**; reavaliar com dados após o piloto | APROVADA (gate 2026-08-05) |
-| RN-018 | Aprovação teórica não confere autonomia clínica nem autoriza procedimentos | FATO INFORMADO |
+| RN-018 | Aprovação em conteúdo, prova, caso ou simulação digital não comprova competência prática, não confere autonomia clínica nem autoriza procedimentos | APROVADA (D-068, 2026-08-05) |
 
 ## 3. Regras de avaliação
 
 | ID | Regra | Classificação |
 |---|---|---|
 | RN-020 | Quizzes formativos têm peso zero na decisão somativa | APROVADA (gate 2026-08-05) |
-| RN-021 | Caso clínico formativo tem peso zero; caso somativo participa da composição | APROVADA (gate 2026-08-05) |
-| RN-022 | Composição do escore do módulo: quiz 0% + caso somativo 30% + prova somativa 70% | APROVADA (gate 2026-08-05 — corrige proposta anterior 20/30/50, alinhada a RN-020) |
+| RN-021 | Caso clínico ou simulação digital formativa tem peso zero; a modalidade somativa participa da composição | APROVADA (gate 2026-08-05; esclarecida por D-068) |
+| RN-022 | Composição do escore do módulo: quiz 0% + caso/simulação digital somativa 30% + prova somativa 70% | APROVADA (gate 2026-08-05 — corrige proposta anterior 20/30/50, alinhada a RN-020) |
 | RN-023 | A média ponderada do módulo exige domínio mínimo em componentes críticos, quando definidos | PENDENTE |
 | RN-024 | Limiar geral de aprovação: 70% | APROVADA (gate 2026-08-05) |
 | RN-025 | Limiar para temas críticos: 80% | APROVADA (gate 2026-08-05) |
@@ -52,7 +52,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-031 | Retenção relativa nunca substitui o limiar absoluto de domínio | APROVADA (gate 2026-08-05) |
 | RN-032 | Retenção baixa não revoga automaticamente conclusão anterior | APROVADA (gate 2026-08-05) |
 | RN-033 | Autoavaliação de confiança tem peso zero na nota e é mostrada separadamente | APROVADA (gate 2026-08-05) |
-| RN-034 | Falhas repetidas (2ª reprovação): revisão humana — mentor + coordenação educacional montam plano individual de reforço; sem punição automática | APROVADA (gate 2026-08-05) |
+| RN-034 | Falhas repetidas (2ª reprovação): revisão humana — mentor + coordenação educacional montam plano individual de reforço digital; sem punição automática nem validação prática | APROVADA (gate 2026-08-05; esclarecida por D-068) |
 | RN-035 | Aprovação/notas usam standard setting validado, não percentual arbitrário | APROVADA (gate 2026-08-05 — limiares provisórios 70%/80% até standard setting) |
 
 ## 4. Regras de conteúdo e fontes
@@ -102,15 +102,20 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 |---|---|---|
 | RN-070 | Coorte piloto: 10 a 15 veterinários cobrindo os 3 turnos e os setores do piloto (número final conforme inventário B-02); demais colaboradores entram em fases seguintes | APROVADA (gate 2026-08-05) |
 | RN-071 | Duração do piloto: 12 semanas | APROVADA (gate 2026-08-05) |
-| RN-072 | Piloto cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, avaliação, remediação e retenção | APROVADA (gate 2026-08-05) |
+| RN-072 | Piloto digital cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção | APROVADA (gate 2026-08-05; esclarecida por D-068) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA (gate 2026-08-05) |
 | RN-074 | Baseline coletada no início do piloto (perfil, conhecimento, engajamento, indicadores selecionados) | PENDENTE (B-07) |
 | RN-075 | Conteúdo do piloto revisado por clínico + pedagógico | FATO INFORMADO |
-| RN-076 | Tempo protegido: 3 h/mês por veterinário (microlearning diário ≈10 min + round clínico quinzenal 30–45 min) | APROVADA (gate 2026-08-05) |
+| RN-076 | Tempo protegido: 3 h/mês por veterinário; decomposição entre microlearning e atividades digitais de casos será reconciliada no item de carga | APROVADA (gate 2026-08-05; composição pendente de reconciliação) |
 | RN-077 | Espécies do piloto: cães e gatos | APROVADA (gate 2026-08-05) |
 | RN-078 | Banco do piloto: 10 a 15 itens por objetivo de aprendizagem | APROVADA (gate 2026-08-05) |
 | RN-079 | Certificação no piloto: somente status de conclusão e histórico; certificado formal avaliado na expansão | APROVADA (gate 2026-08-05) |
 | RN-080 | Dashboards: mensais para gestão; painel individual em tempo real | APROVADA (gate 2026-08-05) |
+| RN-081 | Toda atividade da primeira versão é entregue por meio digital; a adoção de encontros síncronos, áudio, vídeo, chat ou gravação não foi decidida e exige requisito e análise LGPD próprios | APROVADA (D-068, 2026-08-05) |
+| RN-082 | Simulação digital representa situação clínica e produz somente evidência de conhecimento, raciocínio, priorização, decisão ou comunicação simulada | APROVADA (D-068, 2026-08-05) |
+| RN-083 | Resultado digital nunca atualiza competência prática, habilidade psicomotora, nível de supervisão, autorização de procedimento ou autonomia clínica | APROVADA (D-068, 2026-08-05) |
+| RN-084 | A primeira versão não agenda, associa, registra nem avalia treinamento prático presencial ou observação de atividade clínica real | APROVADA (D-068, 2026-08-05) |
+| RN-085 | Qualquer escopo prático presencial futuro permanece `BLOQUEADO_POR_GATE` até aprovação do `GATE-EXP-PRAT-01` e não pode originar UC, RF, SPEC, backlog ou BUILD antes disso | APROVADA (D-068, 2026-08-05) |
 
 ## 8. Matriz de responsabilidades resumida (PROPOSTA)
 
@@ -127,7 +132,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 
 ## 9. Regras aprovadas no gate e pendências remanescentes
 
-**Aprovadas pelo patrocinador em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-016/017, RN-020 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073, RN-076 a RN-080.
+**Aprovadas pelo patrocinador em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-076 a RN-085. RN-023, RN-074 e as nomeações complementares de RN-075 permanecem pendentes.
 
 **Pendências remanescentes (dependem de levantamento/entrevistas):**
 

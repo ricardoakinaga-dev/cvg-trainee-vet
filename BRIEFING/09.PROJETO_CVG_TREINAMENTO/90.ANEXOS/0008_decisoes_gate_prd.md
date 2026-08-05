@@ -2,9 +2,23 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO — todas as recomendações confirmadas pelo patrocinador em 2026-08-05** e aplicadas ao PRD (RN-016/017, RN-020 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073, RN-076 a RN-080; RF-040 a RF-065, RF-090; UC-002/005/006/007/010; 0011 §2/§3; 0015; 0020; gate 0090).  
+**Status:** **DECIDIDO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo a decisão posterior D-068, e aplicadas ao PRD (RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-076 a RN-085; RF-027, RF-040 a RF-065, RF-090; UC-002/005/006/007/009/010/011; 0011 §2–§5; 0015; 0020; gate 0090). RN-023 e RN-074 permanecem pendentes.
 **Objetivo:** consolidar as decisões pendentes do gate `0090_prd_validation.md` com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery aprovado e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).  
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
+
+## 0. Decisão adicional de escopo — D-068
+
+| Alternativa | Modalidade | Veredito |
+|---|---|---|
+| **1** | **Treinamento integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma** | **recomendada e selecionada — permite treinar raciocínio sem confundir resultado digital com competência prática** |
+| 2 | Treinamento digital somente expositivo e avaliativo, sem simulações | menor complexidade, porém reduz aplicação e tomada de decisão em cenários |
+| 3 | Programa híbrido, com treinamento digital e prática presencial associada | fora da primeira versão; exige estrutura, avaliadores, segurança clínica e LGPD adicionais |
+
+**Decisão do patrocinador em 2026-08-05:** a primeira versão será integralmente digital. Poderá conter conteúdo, casos fictícios e simulações clínicas digitais, inclusive cenários progressivos ou ramificados, decisões registradas e debriefing digital. Casos derivados de atendimentos reais permanecem bloqueados até B-05 aprovar anonimização e revisão de privacidade.
+
+Ficam fora da primeira versão: treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes, cadáveres, manequins, equipamentos ou materiais físicos, avaliação psicomotora, registro de nível de supervisão, certificação prática e concessão de autonomia clínica. Resultado digital nunca será tratado como evidência prática.
+
+Qualquer inclusão futura desses elementos exige o `GATE-EXP-PRAT-01` antes de produzir caso de uso, requisito, SPEC, backlog ou BUILD. Efeito: RN-018/RN-081 a RN-085; RF-027/RF-042/RF-043/RF-052 a RF-055; UC-005/UC-009/UC-011; escopo 0011 e PRD Master 0020.
 
 ---
 
@@ -214,6 +228,7 @@
 
 | Decisão | Recomendação |
 |---|---|
+| Modalidade (D-068) | Alternativa 1: integralmente digital, com simulações digitais; sem prática presencial associada |
 | Limiar geral / crítico | 70% / 80% |
 | Composição | quiz 0% + caso 30% + prova 70% (corrige inconsistência) |
 | Tentativas / intervalo | 2 + remediação / 7 dias |
@@ -226,7 +241,7 @@
 | Áreas do piloto | núcleo + emergência + internação |
 | Coorte | 10–15 veterinários (3 turnos) |
 | Duração | 12 semanas |
-| Tempo protegido | 3 h/mês |
+| Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
 | Dados | mínimo necessário; RH proibido; retenção vínculo + 2 anos; correção formal; dashboards mensais |
 | Licenças | sínteses autorais curtas + checagem de direitos; sem PDFs |
 | Nomeações | definir na reunião de gate (B-03) |

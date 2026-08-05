@@ -45,7 +45,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-024 | O sistema deve gerenciar dispensa por domínio: **não aplicada no piloto**; regra futura | P2 | APROVADA (gate 2026-08-05) |
 | RF-025 | O sistema deve controlar estados da trilha conforme vocabulário do anexo 0003 | P0 | PROPOSTA |
 | RF-026 | O sistema deve tratar prazos, afastamentos e acomodações | P1 | PENDENTE (D-016/D-018) |
-| RF-027 | O sistema deve registrar que aprovação teórica não desbloqueia autorização clínica (aviso explícito) | P0 | FATO INFORMADO |
+| RF-027 | O sistema deve exibir aviso explícito de que aprovação em prova, caso ou simulação digital não comprova competência prática nem desbloqueia autorização clínica | P0 | APROVADA (D-068, 2026-08-05) |
 
 ## 4. Conteúdo
 
@@ -68,8 +68,8 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|---|
 | RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa e fonte, múltiplas tentativas | P0 | APROVADA (gate 2026-08-05) |
 | RF-041 | Quiz formativo: peso zero na nota somativa | P0 | APROVADA (gate 2026-08-05) |
-| RF-042 | Caso clínico: apresentação progressiva em etapas com decisões registradas | P0 | APROVADA (gate 2026-08-05) |
-| RF-043 | Caso clínico: feedback formativo e/ou somativo; caso somativo participa com peso 30% | P1 | APROVADA (gate 2026-08-05) |
+| RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário fictício e decisões registradas; casos derivados de atendimentos reais ficam bloqueados até B-05 | P0 | APROVADA (gate 2026-08-05; esclarecida por D-068) |
+| RF-043 | Caso clínico/simulação digital: feedback e debriefing formativo e/ou somativo; modalidade somativa participa com peso 30% | P1 | APROVADA (gate 2026-08-05; esclarecida por D-068) |
 | RF-044 | Prova somativa: gerada do banco conforme blueprint, com seleção aleatória | P0 | APROVADA (gate 2026-08-05) |
 | RF-045 | Prova somativa: tempo e janela definidos | P0 | APROVADA (gate 2026-08-05) |
 | RF-046 | Prova somativa: cálculo por objetivo e aplicação dos limiares (70% geral / 80% críticos) | P0 | APROVADA (gate 2026-08-05) |
@@ -78,6 +78,10 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-049 | Retenção: avaliação em janela 30/60/90 dias com itens equivalentes | P1 | APROVADA (gate 2026-08-05) |
 | RF-050 | Autoavaliação de confiança: escala 1–5 ou 0–100, peso zero, mostrada separada | P2 | APROVADA (gate 2026-08-05) |
 | RF-051 | O sistema deve registrar toda tentativa de forma imutável | P0 | FATO INFORMADO |
+| RF-052 | O sistema deve identificar visualmente toda simulação como digital e classificar seu resultado apenas como conhecimento/raciocínio em cenário simulado | P0 | APROVADA (D-068, 2026-08-05) |
+| RF-053 | O sistema deve impedir que resultado de simulação digital atualize competência prática, nível de supervisão, permissão de procedimento ou autonomia clínica | P0 | APROVADA (D-068, 2026-08-05) |
+| RF-054 | O sistema não deve oferecer na primeira versão cadastro, agenda, checklist, upload ou aprovação de evidência de treinamento prático presencial ou procedimento real | P0 | APROVADA (D-068, 2026-08-05) |
+| RF-055 | O sistema deve limitar a remediação a conteúdo, quiz, caso/simulação e orientação digitais | P0 | APROVADA (D-068, 2026-08-05) |
 
 ## 6. Contestação e correção
 
@@ -96,7 +100,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|---|
 | RF-070 | Painel do colaborador: progresso, domínio por competência, retenção, consistência, confiança, histórico | P0 | PROPOSTA |
 | RF-071 | Painel do colaborador: recomendações de estudo | P1 | PROPOSTA |
-| RF-072 | Painel do mentor: lacunas autorizadas da equipe e plano de reforço | P1 | PROPOSTA |
+| RF-072 | Painel do mentor: lacunas autorizadas da equipe e plano de reforço digital, sem registro ou validação de prática | P1 | PROPOSTA |
 | RF-073 | Painel gerencial: ativação, progresso, conclusão, abandono, lacunas, retenção, validade de conteúdo | P0 | PROPOSTA |
 | RF-074 | O sistema deve restringir painéis por papel e escopo | P0 | FATO INFORMADO |
 | RF-075 | O sistema não deve exibir ranking público | P0 | FATO INFORMADO |

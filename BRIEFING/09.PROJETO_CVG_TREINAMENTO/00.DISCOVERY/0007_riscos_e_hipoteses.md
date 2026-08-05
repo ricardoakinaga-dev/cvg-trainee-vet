@@ -36,7 +36,7 @@
 |---|---|---:|---|
 | R-08 | Conteúdo de 2015 usado sem atualização | crítica | confronto com Ettinger 2024 e fontes vigentes |
 | R-09 | Erro em dose, fármaco ou protocolo | crítica | dupla revisão e retirada emergencial |
-| R-10 | Confundir aprovação teórica com autonomia clínica | crítica | separação explícita e avaliação prática |
+| R-10 | Confundir aprovação em conteúdo, caso ou simulação digital com competência prática ou autonomia clínica | crítica | aviso explícito, métricas separadas e bloqueio de funcionalidades práticas pelo `GATE-EXP-PRAT-01` |
 | R-11 | Questão clinicamente ambígua | alta | blueprint e revisão independente |
 | R-12 | IA introduzir conteúdo incorreto | crítica | IA apenas como apoio; aprovação humana |
 | R-13 | Protocolo CVG divergir da fonte | alta | registro de decisão e versão |
@@ -101,7 +101,7 @@
 - Ausência de usuários entrevistados;
 - Ausência de fluxo atual;
 - Quantidade e perfil de veterinários desconhecidos;
-- Plataforma teórica não mede competência prática;
+- Plataforma e simulações digitais não medem habilidade psicomotora, competência prática ou autonomia clínica;
 - Correlação educacional não prova causalidade clínica;
 - Metas iniciais ainda não calibradas.
 

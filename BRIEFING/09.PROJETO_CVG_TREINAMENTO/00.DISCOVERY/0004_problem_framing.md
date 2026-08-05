@@ -5,7 +5,7 @@
 
 ## Definição clara do problema
 
-O CVG precisa garantir que seus médicos-veterinários desenvolvam conhecimento teórico de maneira progressiva, do básico ao avançado, e que o domínio, a retenção e as lacunas possam ser acompanhados ao longo do tempo. Entretanto, o briefing atual ainda não define um processo institucional validado que conecte diagnóstico inicial, trilhas, avaliações, remediação, progressão e métricas com governança clínica e rastreabilidade da fonte.
+O CVG precisa garantir que seus médicos-veterinários desenvolvam conhecimento e raciocínio clínico de maneira progressiva por treinamento digital, do básico ao avançado, e que o domínio, a retenção e as lacunas possam ser acompanhados ao longo do tempo. Entretanto, o briefing atual ainda não define um processo institucional validado que conecte diagnóstico inicial, trilhas, avaliações, remediação, progressão e métricas com governança clínica e rastreabilidade da fonte.
 
 ## Formulação mensurável
 
@@ -27,7 +27,8 @@ As metas numéricas definitivas dependerão de uma linha de base.
 
 ## Escopo do problema
 
-- Formação teórica contínua de médicos-veterinários do CVG;
+- Formação clínica digital contínua de médicos-veterinários do CVG;
+- Casos e simulações digitais de raciocínio, decisão, priorização e comunicação simulada;
 - Organização do conhecimento em níveis e trilhas;
 - Avaliação diagnóstica, formativa, somativa e de retenção;
 - Acompanhamento individual e agregado;
@@ -43,6 +44,7 @@ As metas numéricas definitivas dependerão de uma linha de base.
 - Produção de aulas;
 - Criação de provas reais;
 - Certificação de competência prática;
+- Treinamento prático presencial associado à plataforma, observação de trabalho real e avaliação psicomotora;
 - Mudança de protocolos clínicos;
 - Substituição do julgamento clínico;
 - Avaliação de desempenho trabalhista completa;
@@ -52,13 +54,14 @@ As metas numéricas definitivas dependerão de uma linha de base.
 
 ## Limites da solução futura
 
-- A plataforma avaliará conhecimento teórico e raciocínio em cenários simulados;
-- Aprovação teórica não autoriza automaticamente procedimentos ou autonomia clínica;
-- Competência prática exigirá observação no trabalho e validação separada;
+- A plataforma avaliará conhecimento e raciocínio somente em cenários digitais simulados;
+- Aprovação em prova, caso ou simulação digital não autoriza procedimentos nem autonomia clínica;
+- A primeira versão não organizará, registrará ou avaliará prática presencial, execução em pacientes, manequins ou equipamentos, nem observação do trabalho real;
+- Qualquer escopo prático futuro ficará bloqueado até aprovação do `GATE-EXP-PRAT-01`;
 - Resultados devem ser usados prioritariamente para desenvolvimento;
 - Conteúdo clínico somente será publicado após revisão humana;
 - O tratado não será reproduzido extensivamente;
-- Dados de pacientes e tutores deverão ser anonimizados;
+- A primeira versão usará somente casos fictícios; casos derivados de atendimentos reais permanecem bloqueados até aprovação da política LGPD, com processo de anonimização e revisão de privacidade;
 - Conteúdo sujeito a atualização será comparado ao Ettinger de 2024 e, nos temas críticos, a fontes ainda mais recentes e vigentes;
 - Nenhuma das obras será reproduzida extensivamente sem autorização.
 
@@ -66,13 +69,12 @@ As metas numéricas definitivas dependerão de uma linha de base.
 
 Para a primeira fase futura, recomenda-se resolver:
 
-> Como atribuir uma trilha teórica inicial a um grupo piloto de veterinários, medir o que sabiam antes, acompanhar aprendizagem e retenção, oferecer remediação e fornecer visão segura da evolução, com conteúdo rastreável e revisado?
+> Como atribuir uma trilha digital inicial a um grupo piloto de veterinários, medir o que sabiam antes, desenvolver raciocínio por conteúdo, casos e simulações digitais, acompanhar aprendizagem e retenção, oferecer remediação e fornecer visão segura da evolução, com conteúdo rastreável e revisado?
 
 ## Declaração de não solução antecipada
 
-Embora o solicitante tenha indicado uma plataforma, o Discovery ainda deve validar:
+O patrocinador confirmou a plataforma digital na decisão D-068. O Discovery ainda deve validar:
 
-- Se a plataforma é necessária para todas as partes do problema;
 - Quais processos devem ser ajustados antes da tecnologia;
 - Qual recorte oferece maior valor;
 - Quais áreas entram no piloto;

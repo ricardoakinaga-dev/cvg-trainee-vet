@@ -6,7 +6,7 @@
 
 ## Origem da ideia
 
-**FATO INFORMADO:** O Centro Veterinário Guarapiranga deseja criar um sistema de treinamento contínuo para seus colaboradores médicos-veterinários. Os colaboradores acessarão uma plataforma para realizar treinamentos teóricos organizados do nível básico ao avançado.
+**FATO INFORMADO:** O Centro Veterinário Guarapiranga deseja criar um sistema de treinamento contínuo para seus colaboradores médicos-veterinários. Os colaboradores acessarão uma plataforma integralmente digital para realizar treinamentos organizados do nível básico ao avançado, incluindo casos e simulações clínicas digitais.
 
 ## Tipo de gatilho
 
@@ -20,7 +20,7 @@
 O solicitante definiu as seguintes intenções:
 
 - Acesso dos médicos-veterinários a uma plataforma;
-- Treinamentos predominantemente teóricos;
+- Treinamento digital, com conteúdo, casos e simulações digitais;
 - Progressão do básico ao avançado;
 - Trilhas de aprendizagem;
 - Provas, quizzes e múltiplas formas de avaliação;
@@ -34,6 +34,8 @@ O solicitante definiu as seguintes intenções:
 ## Descrição livre da percepção
 
 **FATO INFORMADO:** O CVG precisa de um sistema que torne o desenvolvimento teórico dos veterinários progressivo, verificável e mensurável.
+
+**DECISÃO DO PATROCINADOR — D-068 (2026-08-05):** a primeira versão não incluirá treinamento prático presencial associado à plataforma, observação de trabalho real, avaliação psicomotora, certificação prática ou concessão de autonomia clínica. Qualquer expansão desse tipo exige o `GATE-EXP-PRAT-01`.
 
 **HIPÓTESE A VALIDAR:** Hoje os treinamentos podem ocorrer de forma não padronizada, sem uma visão consolidada de domínio por tema, retenção e necessidades de reforço. Essa hipótese não pode ser tratada como fato até a realização das entrevistas e do levantamento operacional.
 

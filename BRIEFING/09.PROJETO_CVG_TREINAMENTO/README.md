@@ -8,6 +8,7 @@
 **Status do gate Discovery:** `APROVADO COM CONDIÇÕES (2026-08-05)` — ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)  
 **Status do gate PRD:** `APROVADO COM CONDIÇÕES (2026-08-05)` — decisões confirmadas; aguardando fechamento de B-01, B-02 (inventário), B-03 (nomeações), B-04 (verificação jurídica) e B-07 (baseline) — ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)  
 **Status da auditoria documental:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`  
+**Modalidade aprovada (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing; nenhuma implementação, aula, prova real ou código foi criado.
 
 ## 1. Finalidade deste diretório
@@ -34,7 +35,7 @@ DISCOVERY
 → MELHORIA CONTÍNUA
 ```
 
-Nesta etapa foi executado o **Discovery documental**, aprovado com condições pelo patrocinador em 2026-08-05 (bloqueios B-01 a B-07 assumidos como compromissos a resolver antes do gate PRD), e foi elaborado o **PRD** com as pendências explicitamente registradas. Os requisitos declarados pelo solicitante sobre trilhas, avaliações e métricas foram registrados como insumos de produto nos anexos; o PRD os materializa como proposta, ainda não aprovado como contrato de produto.
+Nesta etapa foi executado o **Discovery documental**, aprovado com condições pelo patrocinador em 2026-08-05 (bloqueios B-01 a B-07 assumidos como compromissos a resolver antes do gate PRD), e foi elaborado o **PRD** com as pendências explicitamente registradas. A decisão D-068 fixa a primeira versão como treinamento digital e autoriza simulações clínicas digitais apenas para conhecimento e raciocínio. Treinamento prático presencial, observação de trabalho real, habilidade psicomotora e autonomia clínica ficam fora do escopo e bloqueados pelo `GATE-EXP-PRAT-01`.
 
 ## 2. Regra de interpretação dos dados
 

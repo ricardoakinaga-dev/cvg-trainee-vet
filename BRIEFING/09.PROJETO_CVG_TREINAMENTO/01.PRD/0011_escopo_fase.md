@@ -21,9 +21,9 @@ Esta fase entrega a **documentação de briefing do produto** (Discovery aprovad
 2. Avaliação diagnóstica inicial obrigatória, formativa e não punitiva;
 3. Linha de base individual por tema e competência;
 4. Atribuição de trilha personalizada (núcleo obrigatório + reforços por lacuna);
-5. Consumo de conteúdo teórico em unidades curtas e revisadas;
+5. Consumo de conteúdo digital em unidades curtas e revisadas;
 6. Quizzes formativos com feedback imediato;
-7. Casos clínicos teóricos (formativos; somativos conforme regra aprovada);
+7. Casos clínicos e simulações digitais, lineares ou ramificados, com decisões registradas e debriefing (formativos; somativos conforme regra aprovada);
 8. Prova somativa por módulo;
 9. Remediação estruturada após desempenho insuficiente;
 10. Avaliação de retenção (janelas 30/60/90 dias);
@@ -43,27 +43,29 @@ Esta fase entrega a **documentação de briefing do produto** (Discovery aprovad
 - Espécies: **cães e gatos** (D-022 resolvido);
 - Coorte: **10 a 15 veterinários** cobrindo os 3 turnos e os setores do piloto; número final conforme inventário (B-02); demais colaboradores entram em fases seguintes;
 - Duração do piloto: **12 semanas** (D-061 resolvido);
-- Tempo protegido: **3 h/mês por veterinário** (≈10 min/dia + round quinzenal de 30–45 min) (D-016 resolvido);
+- Tempo protegido: **3 h/mês por veterinário**; decomposição entre microlearning e atividades digitais de caso será reconciliada no item de carga (D-016 resolvido quanto ao total);
 - Banco de questões: **10 a 15 itens por objetivo** (D-063 resolvido).
 
 ## 3. OUT OF SCOPE (o que NÃO será construído)
 
 1. Avaliação de competência prática, autonomia clínica ou autorização de procedimentos;
-2. Certificação formal (diplomas ou equivalentes profissionais) — decisão: somente status de conclusão no piloto (RN-079);
-3. Emissão de diplomas ou equivalentes profissionais;
-4. Integração com sistema de prontuário, RH, financeiro ou qualquer sistema externo (fase futura);
-5. Avaliação trabalhista, decisões disciplinares ou uso de notas para sanções (uso em RH proibido no piloto — RN-066);
-6. Reprodução dos livros-fonte (capítulos, tabelas, figuras ou trechos extensos) — proibida (anexo 0001); uso no piloto restrito a sínteses autorais curtas com citação (RN-046);
-7. Publicação dos PDFs das obras na plataforma;
-8. Mineração/geração automática de conteúdo por IA sem revisão humana — IA somente como apoio (`FATO INFORMADO` — regra de segurança);
-9. Notificações externas (e-mail/SMS) — `PENDENTE`;
-10. Gamificação, ranking público ou comparativos entre colaboradores;
+2. Treinamento prático presencial associado à plataforma, prática em pacientes, cadáveres, manequins, equipamentos ou materiais físicos;
+3. Observação direta do trabalho, envio de vídeo de procedimento real, checklist de execução prática ou registro de nível de supervisão;
+4. Certificação formal (diplomas ou equivalentes profissionais) — decisão: somente status de conclusão no piloto (RN-079);
+5. Emissão de diplomas ou equivalentes profissionais;
+6. Integração com sistema de prontuário, RH, financeiro ou qualquer sistema externo (fase futura);
+7. Avaliação trabalhista, decisões disciplinares ou uso de notas para sanções (uso em RH proibido no piloto — RN-066);
+8. Reprodução dos livros-fonte (capítulos, tabelas, figuras ou trechos extensos) — proibida (anexo 0001); uso no piloto restrito a sínteses autorais curtas com citação (RN-046);
+9. Publicação dos PDFs das obras na plataforma;
+10. Mineração/geração automática de conteúdo por IA sem revisão humana — IA somente como apoio (`FATO INFORMADO` — regra de segurança);
+11. Notificações externas (e-mail/SMS) — `PENDENTE`;
+12. Gamificação, ranking público ou comparativos entre colaboradores;
 
 ## 4. FUTURE SCOPE (possíveis expansões)
 
 1. Trilhas por função/área (felinos, anestesia e dor, diagnóstico, clínica geral, especialidades);
 2. Nível avançado com casos complexos e integração;
-3. Registro de evidência prática (observação direta, simulação, checklist, feedback de mentor) em dimensão separada;
+3. Organização ou registro de treinamento prático presencial e evidência prática em dimensão separada — `FUTURE — BLOQUEADO POR GATE-EXP-PRAT-01`;
 4. Certificação interna com validade, se aprovada;
 5. Reciclagem obrigatória programada por validade do conteúdo;
 6. Integrações com sistemas de gestão;
@@ -74,13 +76,14 @@ Esta fase entrega a **documentação de briefing do produto** (Discovery aprovad
 
 ## 5. Limites e regras de fronteira
 
-1. O produto avalia **conhecimento teórico e raciocínio em cenários simulados** — nunca autonomia clínica;
-2. Aprovação teórica **não autoriza** procedimentos ou autonomia (`FATO INFORMADO`);
+1. O produto é **integralmente digital** na primeira versão e avalia conhecimento e raciocínio em cenários digitais simulados — nunca habilidade psicomotora, competência prática ou autonomia clínica;
+2. Aprovação em conteúdo, prova, caso ou simulação digital **não autoriza** procedimentos ou autonomia (`FATO INFORMADO`, D-068);
 3. Conteúdo clínico somente publicado após revisão humana (`FATO INFORMADO`);
-4. Casos clínicos usarão dados anonimizados ou fictícios (`FATO INFORMADO` — segurança);
+4. No piloto, casos clínicos usarão somente dados fictícios; casos derivados de atendimentos reais ficam bloqueados até B-05 aprovar anonimização e revisão de privacidade;
 5. Resultados usados para desenvolvimento, priorização e reforço — nunca punição automática (`HIPÓTESE` validada como diretriz);
 6. Divergências entre fontes seguem hierarquia do anexo 0001 (legislação > protocolo CVG > diretriz > Ettinger > Tratado);
 7. Dados pessoais e de desempenho tratados conforme LGPD — política `PENDENTE` (B-05, D-051 a D-053).
+8. Qualquer prática presencial futura exige aprovação do `GATE-EXP-PRAT-01` antes de gerar UC, RF, SPEC, backlog ou BUILD.
 
 ## 6. Critérios de priorização para o piloto
 

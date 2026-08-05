@@ -56,12 +56,12 @@ Esta verificação preserva achados e correções já presentes na baseline, mas
 | Treinamento por competências | 12 competências locais → núcleo comum e trilhas (anexo 0002) | ✅ |
 | Avaliação diagnóstica antes do treinamento | RN-010 a RN-013 | ✅ |
 | Microlearning espaçado | unidade 8–15 min; tempo protegido 3 h/mês; retenção 30/60/90 dias | ✅ |
-| Simulação/prática deliberada | fora do escopo teórico; dimensão prática futura registrada | ✅ |
+| Simulação/prática deliberada | simulação digital incluída para conhecimento/raciocínio; prática presencial excluída e bloqueada pelo `GATE-EXP-PRAT-01` | ✅ |
 | Mentoria e feedback | papéis de mentor/preceptor; plano individual em reprovação recorrente | ✅ |
-| Rounds clínicos | round quinzenal 30–45 min incluído no tempo protegido | ✅ |
-| Reuniões de melhoria sem culpabilização | cultura justa: sem punição, sem ranking público | ✅ |
-| Avaliação por resultados (não só presença) | KPIs de aprendizagem, competência, comportamento e resultados | ✅ |
-| 5 níveis de supervisão (CBVE) | competência prática fora do escopo; registrada como dimensão futura | ✅ |
+| Casos digitais estruturados | atividade digital de caso incluída; formato síncrono ou assíncrono ainda não decidido | ✅ com pendência de formato |
+| Reuniões de melhoria sem culpabilização | referência organizacional externa à plataforma inicial; sujeita a LGPD | ✅ como referência externa |
+| Avaliação por resultados (não só presença) | painel inicial restrito a KPIs educacionais digitais; comportamento e resultados assistenciais ficam externos | ✅ |
+| 5 níveis de supervisão (CBVE) | referencial externo ao produto; não registrados nem avaliados na primeira versão | ✅ |
 
 ## 5. Resultado provisório
 

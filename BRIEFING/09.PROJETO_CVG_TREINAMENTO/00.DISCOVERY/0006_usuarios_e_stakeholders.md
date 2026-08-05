@@ -25,7 +25,7 @@
 - Feedback e histórico;
 - Acomodações de acessibilidade, quando aplicável.
 
-**Limite:** o resultado teórico não equivale a competência prática.
+**Limite:** resultado de conteúdo, prova, caso ou simulação digital não equivale a competência prática nem autonomia clínica.
 
 ## Usuários secundários
 
@@ -34,7 +34,7 @@
 - Acompanhar lacunas autorizadas;
 - Orientar plano de reforço;
 - Registrar feedback;
-- Futuramente, validar atividades práticas fora do escore teórico.
+- Qualquer atividade ou evidência prática futura permanece fora da primeira versão e bloqueada pelo `GATE-EXP-PRAT-01`.
 
 ### Autor ou instrutor
 
