@@ -308,10 +308,10 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Campo | Registro |
 |---|---|
 | Alternativa aprovada | Alternativa 1 |
-| Commit do conteúdo revisado | `PENDENTE_APOS_COMMIT` |
+| Commit do conteúdo revisado | `7111ad5` — `docs: simplify pilot audience and learner journey` |
 | Tag do gate | `gate-d079-simple-pilot-audience-2026-08-05` |
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
-| Validações | `git diff --check`; links Markdown relativos; unicidade de IDs; varredura de segredos; PDFs não versionados |
+| Validações | `git diff --cached --check`; 30 documentos Markdown; 64 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
 | Resultado | `APROVADO — D-079/B-02 FECHADOS` |
 
 ## 0.11 Jornada simples do colaborador — D-080
@@ -329,10 +329,10 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Campo | Registro |
 |---|---|
 | Diretriz aprovada | jornada prática e fluida |
-| Commit do conteúdo revisado | `PENDENTE_APOS_COMMIT` |
+| Commit do conteúdo revisado | `7111ad5` — `docs: simplify pilot audience and learner journey` |
 | Tag do gate | `gate-d080-simple-learner-journey-2026-08-05` |
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
-| Validações | `git diff --check`; links Markdown relativos; unicidade de IDs; varredura de segredos; PDFs não versionados |
+| Validações | `git diff --cached --check`; 30 documentos Markdown; 64 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
 | Resultado | `APROVADO — D-080 REGISTRADA` |
 
 ---
