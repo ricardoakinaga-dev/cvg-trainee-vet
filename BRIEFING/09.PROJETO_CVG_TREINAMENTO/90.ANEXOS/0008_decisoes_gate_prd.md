@@ -181,17 +181,17 @@ D-074 não autoriza citação direta, reprodução, adaptação da expressão do
 |---|---|
 | Fase e bloqueio afetados | correção documental; preparação de B-04 |
 | Alternativa aprovada | Alternativa 1 — apresentação institucional + proveniência interna restrita |
-| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag do checkpoint | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo revisado | `6c9592e` — `docs: define internal source traceability` |
+| Tag do checkpoint | `gate-d074-source-traceability-2026-08-05` |
 | Artefatos incluídos | governança das fontes, decisões, escopo, casos de uso, regras, requisitos, gates, consolidação, matriz, validação e README |
-| Revisores | `PENDENTE — qualidade documental + segurança/compliance independentes` |
-| Validações | `PENDENTE` |
+| Revisores | revisão independente de qualidade: 2 achados médios e 2 baixos corrigidos; revisão independente de segurança/compliance: 1 achado médio corrigido; revalidações sem achado crítico, alto ou médio |
+| Validações | `git diff --cached --check`; 66 links Markdown relativos sem quebra; nenhuma definição UC/RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado ou rastreado |
 | Aprovador da alternativa | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-074 APROVADA — ALTERNATIVA 1`, em 2026-08-05; B-04 continua parcial |
 | Pendências e riscos residuais | legitimidade das cópias; titular/termos; consulta institucional; material autoral; processamento automatizado; owner e parecer jurídico |
 | Próximo passo autorizado | concluir a verificação jurídica de B-04; nenhuma produção ou publicação clínica foi autorizada |
 
-O registro do commit e da tag será acrescentado somente depois das revisões e validações. Esse registro posterior não fechará B-04.
+Este registro documental posterior não altera o conteúdo revisado identificado pelo commit e pela tag acima e não fecha B-04.
 
 ---
 
