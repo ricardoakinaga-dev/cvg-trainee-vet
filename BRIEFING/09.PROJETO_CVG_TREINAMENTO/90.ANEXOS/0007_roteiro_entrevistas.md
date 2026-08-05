@@ -203,7 +203,7 @@ O levantamento estará concluído quando:
 
 - [ ] Agendar entrevistas cobrindo os turnos da escala 12×36 (incluir finais de semana/plantões noturnos, se necessário);
 - [ ] Enviar pauta prévia e garantir ambiente privado;
-- [ ] Obter consentimento de registro (LGPD);
+- [ ] Cumprir a finalidade, a base legal, o aviso e os registros definidos na política aprovada; obter consentimento somente quando ele for a base aplicável (atividade bloqueada até B-05);
 - [ ] Aplicar formulário individual;
 - [ ] Consolidar e classificar respostas;
 - [ ] Sessão de devolutiva com os participantes para validar o mapa do fluxo;

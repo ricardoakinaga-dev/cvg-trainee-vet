@@ -98,7 +98,7 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Fontes | legislação > protocolo CVG > diretriz > Ettinger 2024 > Fossum 2014 (cirurgia) > Tratado 2015; divergência = decisão humana documentada | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Conteúdo | fluxo proposto de revisão e rastreabilidade; nenhuma produção/publicação clínica até resolver B-04 e aprovar os gates | RASCUNHO/INSUMO — BLOQUEADO |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
-| Dados | mínimo necessário; sem ranking; RH proibido no piloto; retenção vínculo + 2 anos; dashboards mensais | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Dados | antes de B-05: nenhum dado pessoal de participante/paciente/tutor; somente agregados efetivamente anonimizados; RH proibido; `vínculo + 2 anos` permanece proposta a validar | RASCUNHO CONSERVADOR D-073 — B-05 PENDENTE |
 | Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
 Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
@@ -142,7 +142,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
 3. Governança e nomeação de responsáveis (B-03) — ⏳ **PARCIAL — Ricardo coordena as correções por D-072, sem preencher o modelo D-071; titulares, suplentes, aceites e comitês pendentes**;
-4. Política de dados (B-05) — ⚠️ **REGRAS PRELIMINARES CONFIRMADAS PELO PATROCINADOR; VALIDAÇÃO FORMAL LGPD PENDENTE** (RN-063 a RN-067);
+4. Política de dados (B-05) — ⚠️ **RASCUNHO CONSERVADOR PREPARADO POR D-073; NENHUMA COLETA PESSOAL AUTORIZADA; VALIDAÇÃO FORMAL LGPD PENDENTE** (RN-063 a RN-067 e Anexo 0011);
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 

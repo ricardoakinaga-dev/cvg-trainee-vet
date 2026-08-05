@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates, D-071 aprovou o modelo de governança segregada e D-072 definiu coordenação geral interina sem preencher as vagas de B-03. As decisões de produto e governança não aprovam Discovery nem PRD. RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates, D-071 aprovou o modelo de governança segregada, D-072 definiu coordenação geral interina sem preencher as vagas de B-03 e D-073 autorizou somente a preparação de um rascunho conservador de dados. As decisões de produto e governança não aprovam Discovery nem PRD. B-05 continua parcial; RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -128,6 +128,38 @@ B-03 permanece `PARCIAL`; Discovery e PRD permanecem `REPROVADOS — EM CORREÇ�
 | Próximo passo autorizado | preparar os demais itens de correção conforme dependências; B-05 antes de dados identificáveis/B-07, B-04 antes de conteúdo e B-03 antes de B-06 formal e dos gates |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
+---
+
+## 0.4 Decisão de preparação da política de dados — D-073
+
+| Alternativa | Tratamento de B-05 | Veredito |
+|---|---|---|
+| **1** | **Preparar política conservadora sem autorizar dados pessoais; permitir apenas agregados efetivamente anonimizados; manter B-05 pendente de validação independente** | **recomendada e selecionada — permite amadurecer o documento sem antecipar base legal, retenção ou aprovação** |
+| 2 | Suspender toda preparação de B-05 até nomear o responsável independente | mais conservadora operacionalmente, mas adia o inventário de decisões e controles |
+| 3 | Aplicar imediatamente as regras preliminares do patrocinador e coletar dados do piloto | rejeitada — confundiria insumo empresarial com validação LGPD e liberaria tratamento sem governança completa |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. Foi preparado o [Anexo 0011 — Política Conservadora de Dados e LGPD](0011_politica_conservadora_dados_lgpd.md), identificado como rascunho não aprovado. Até B-05 ser formalmente validado, o programa não pode coletar ou acessar dados pessoais de participantes, pacientes ou tutores, casos reais, prontuários, gravações, resultados individuais ou baseline. Somente dados estritamente agregados e efetivamente anonimizados podem ser usados nas correções. Permanecem preservados apenas os registros profissionais mínimos de governança já autorizados por D-071/D-072.
+
+A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 permanecem insumos do patrocinador, não regras vigentes. Controlador, operadores, bases legais, retenção, canal dos titulares, contratos, transferências, incidentes e eventual relatório de impacto exigem validação independente. A decisão D-073 prepara B-05, mas não o fecha e não altera os gates.
+
+### Evidência do checkpoint D-073
+
+| Campo | Registro |
+|---|---|
+| Fase e bloqueio afetados | correção documental; preparação de B-05 |
+| Alternativa aprovada | Alternativa 1 — rascunho conservador, sem dados identificáveis |
+| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Tag do checkpoint | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Artefatos incluídos | política 0011 e documentos de decisão, requisitos, gates, roadmap, matriz, validação e README sincronizados |
+| Revisores | `PENDENTE — qualidade documental + segurança/compliance independentes` |
+| Validações | `PENDENTE` |
+| Aprovador da alternativa | MV. Ricardo Akinaga — patrocinador executivo |
+| Decisão e data | `D-073 APROVADA — ALTERNATIVA 1`, em 2026-08-05; B-05 continua parcial |
+| Pendências e riscos residuais | responsável independente, parecer, agentes, bases legais, retenção, direitos, contratos, incidentes, risco e controles |
+| Próximo passo autorizado | submeter o rascunho ao responsável LGPD/segurança depois de sua nomeação; nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada |
+
+O registro do commit e da tag será acrescentado somente depois das revisões e validações. Esse registro posterior não transformará o rascunho em política aprovada.
 
 ---
 
@@ -316,11 +348,13 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 ### B-05 / D-051 a D-054 — Política de dados
 
+**Estado após D-073:** `PARCIAL — RASCUNHO CONSERVADOR ELABORADO; VALIDAÇÃO FORMAL PENDENTE`. As linhas abaixo são insumos para a futura validação, não autorização de tratamento. Até o fechamento de B-05, prevalece o bloqueio integral de dados pessoais do Anexo 0011.
+
 | Decisão | Opção recomendada |
 |---|---|
 | Quem vê resultados individuais | **colaborador (tudo que é seu); mentor (lacunas dos mentorados); gestor educacional (agregado + individual autorizado); gestão de pessoas (somente status de conclusão/conformidade); direção (agregado)** |
 | Uso em RH | **proibido no piloto; qualquer uso futuro exige política formal aprovada** (RN-066) |
-| Retenção dos dados | **enquanto durar o vínculo + 2 anos; descarte auditável; ajuste conforme jurídico/LGPD** |
+| Retenção dos dados | **proposta empresarial: enquanto durar o vínculo + 2 anos; prazo não validado e inaplicável até parecer LGPD por finalidade/categoria** |
 | Correção manual de nota | **somente via fluxo formal: justificativa + aprovação + versão + auditoria** (RN-067) |
 | Dashboards | **mensais para gestão; tempo real apenas para o próprio colaborador** (D-055) |
 
@@ -354,7 +388,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Coorte | 10–15 veterinários (3 turnos) |
 | Duração | 12 semanas |
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
-| Dados | mínimo necessário; RH proibido; retenção vínculo + 2 anos; correção formal; dashboards mensais |
+| Dados | D-073: nenhum dado pessoal de participante/paciente/tutor antes de B-05; RH proibido; acesso, retenção `vínculo + 2 anos`, correção e dashboards são propostas a validar |
 | Licenças | sínteses autorais curtas + checagem de direitos; sem PDFs |
 | Governança e nomeações | modelo mínimo segregado D-071 confirmado; titulares, suplentes, aceites e instalação dos comitês pendentes (B-03) |
 | Coordenação interina | MV. Ricardo Akinaga coordena as correções por D-072, sem preencher cadeiras ou assinar gates |

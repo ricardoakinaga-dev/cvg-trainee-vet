@@ -42,8 +42,8 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-030 | Acesso por papéis e escopos; mínimo necessário | FATO INFORMADO |
 | RNF-031 | Proteção do banco de questões contra vazamento e compartilhamento | PROPOSTA (D-048) |
-| RNF-032 | Dados pessoais e de desempenho tratados conforme LGPD; finalidade registrada | FATO INFORMADO |
-| RNF-033 | Casos clínicos usam dados anonimizados ou fictícios | FATO INFORMADO |
+| RNF-032 | Dados pessoais e de desempenho somente podem ser tratados após B-05, conforme finalidade e base legal validadas | PENDENTE (B-05/D-073) |
+| RNF-033 | Antes de B-05, casos clínicos são exclusivamente fictícios; uso futuro de caso real depende de anonimização e revisão formal | PENDENTE (B-05/D-073) |
 | RNF-034 | Segregação de responsabilidades: autor não revisa o próprio conteúdo; administrador não altera notas silenciosamente | FATO INFORMADO |
 | RNF-035 | Nenhuma decisão crítica clínica automatizada por IA sem revisão humana | FATO INFORMADO |
 | RNF-036 | Alteração de gabarito/nota exige justificativa e fluxo formal | PROPOSTA |
@@ -71,12 +71,14 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Classificação |
 |---|---|---|
-| RNF-060 | Minimização de dados pessoais coletados | PROPOSTA |
-| RNF-061 | Registro de finalidade e consentimento | PENDENTE (B-05) |
-| RNF-062 | Retenção e descarte definidos e auditáveis | PENDENTE (D-053) |
-| RNF-063 | Acesso de gestores restrito ao necessário; respostas detalhadas protegidas | PROPOSTA |
-| RNF-064 | Uso de resultados em RH sujeito a política aprovada | PENDENTE (D-052) |
-| RNF-065 | Direito do titular: acesso, correção e contestação dos próprios dados | PROPOSTA |
+| RNF-060 | Antes de B-05 não há coleta pessoal; depois, somente o mínimo validado para cada finalidade | PENDENTE (B-05/D-073) |
+| RNF-061 | Registro de finalidade e base legal; registro de consentimento e revogação somente quando essa base for aplicável | PENDENTE (B-05/D-073) |
+| RNF-062 | Retenção e descarte definidos por finalidade/categoria e auditáveis; `vínculo + 2 anos` é proposta não validada | PENDENTE (B-05/D-073) |
+| RNF-063 | Acesso de gestores restrito ao necessário; respostas detalhadas protegidas | PENDENTE (B-05/D-073) |
+| RNF-064 | Uso de resultados em RH proibido no piloto; mudança futura exige nova política formal e gate | INSUMO DO PATROCINADOR (D-052/D-073) |
+| RNF-065 | Direito do titular: acesso, correção e contestação dos próprios dados | PENDENTE (B-05/D-073) |
+
+O [Anexo 0011 — Política Conservadora de Dados e LGPD](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) controla a preparação de B-05. Ele é rascunho não aprovado e não autoriza coleta pessoal, SPEC ou BUILD.
 
 ## 8. Exceções e tratamento de falhas (produto)
 

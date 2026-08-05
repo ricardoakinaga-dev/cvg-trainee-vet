@@ -87,6 +87,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 8. [Decisões do gate PRD — opções e recomendação](90.ANEXOS/0008_decisoes_gate_prd.md)
 9. [Validação da documentação — baseline em auditoria](90.ANEXOS/0009_validacao_documentacao.md)
 10. [Controle de versão e evidências dos gates](90.ANEXOS/0010_controle_versao_gates.md)
+11. [Política conservadora de dados e LGPD — rascunho não aprovado](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md)
 
 ## 4. O que não foi criado
 
@@ -108,7 +109,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 2. dimensionar o público e delimitar a coorte piloto (B-02);
 3. concluir B-03: o modelo de governança mínima segregada foi aprovado como insumo (D-071), mas ainda é obrigatório nomear titulares/suplentes, registrar aceites e conflitos e instalar os comitês;
 4. verificar licença e direitos de uso das três obras; produção de conteúdo clínico bloqueada até a resolução (B-04);
-5. aprovar política de dados e acesso (LGPD) (B-05);
+5. aprovar formalmente o rascunho conservador de dados e acesso do [Anexo 0011](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md); até lá, nenhuma coleta pessoal de participante, paciente ou tutor é autorizada (B-05/D-073);
 6. revalidar formalmente as áreas do piloto (B-06), após B-03 — seleção confirmada pelo patrocinador como insumo: núcleo comum + emergência e internação;
 7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
 
@@ -163,5 +164,7 @@ O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abai
 8. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
 
 Enquanto isso, são permitidas somente correção documental, desenho de instrumentos, levantamentos estritamente agregados e efetivamente anonimizados — sem campos/células vinculáveis ou grupos pequenos reidentificáveis —, nomeações, verificação jurídica, validação LGPD e sincronização dos rascunhos. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC — inclusive preparação formal —, BUILD, arquitetura, código e produção de conteúdo clínico permanecem proibidos.
+
+**Política transitória de dados (D-073):** o Anexo 0011 é um rascunho conservador não aprovado. Ele permite preparar B-05, mas não libera cadastro, coleta, acesso a caso real, gravação, resultado individual ou baseline. A proposta `vínculo + 2 anos` e a matriz de acesso são insumos a validar, não regras vigentes.
 
 **Coordenação transitória (D-072):** MV. Ricardo Akinaga coordena todas as frentes de correção enquanto B-03 permanece parcial. Essa responsabilidade operacional não preenche as cadeiras independentes, não permite autoaprovação e não autoriza mudança de fase. Os demais bloqueios podem ser tratados em paralelo ou na ordem de dependência documentada.

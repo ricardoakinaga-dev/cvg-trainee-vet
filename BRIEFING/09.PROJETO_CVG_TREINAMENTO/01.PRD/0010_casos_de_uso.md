@@ -6,6 +6,8 @@
 **Classificação:** os campos seguem as regras do briefing — `FATO INFORMADO`, `EVIDÊNCIA DOCUMENTAL`, `HIPÓTESE`, `PROPOSTA`, `PENDENTE`  
 **Regra:** nenhuma tecnologia é definida aqui; os fluxos são de produto.
 
+> **Precondição transversal de dados:** casos de uso que envolvam identificação, perfil, respostas, notas, painéis, logs ou auditoria descrevem comportamento futuro e não autorizam coleta. Sua execução depende da aprovação de B-05. Antes disso, prevalece D-073/[Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md): nenhum dado pessoal de participante, paciente ou tutor; somente agregados efetivamente anonimizados e casos integralmente fictícios.
+
 ---
 
 ## 1. Visão geral dos atores

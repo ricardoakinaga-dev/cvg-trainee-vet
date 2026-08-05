@@ -5,6 +5,8 @@
 **Data:** 2026-08-05  
 **Regra:** nenhuma tecnologia definida; requisitos descrevem capacidades do produto.
 
+> **Precondição transversal de dados:** RFs que envolvam identificação, respostas, notas, personalização, painéis, logs ou auditoria permanecem desenho futuro. Sua execução depende de B-05 aprovado; D-073/[Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) não autoriza coleta pessoal.
+
 Legenda de prioridade: P0 (crítico para o piloto), P1 (alta), P2 (média), P3 (baixa).  
 Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
@@ -20,7 +22,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-004 | O sistema deve registrar quem criou/alterou cada dado relevante (responsável e data) | P0 | FATO INFORMADO |
 | RF-005 | O sistema deve bloquear contas compartilhadas | P1 | PROPOSTA |
 | RF-006 | O sistema deve suportar desativação de usuários sem excluir histórico | P1 | PROPOSTA |
-| RF-007 | O sistema deve registrar consentimento e finalidade de uso dos dados (LGPD) | P1 | PENDENTE (B-05) |
+| RF-007 | O sistema deve registrar finalidade e base legal validada para cada tratamento; quando consentimento for aplicável, deve registrar sua prova e revogação | P1 | PENDENTE (B-05/D-073) |
 
 ## 2. Avaliação diagnóstica e linha de base
 

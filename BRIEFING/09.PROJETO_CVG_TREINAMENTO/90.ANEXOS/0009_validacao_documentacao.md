@@ -74,7 +74,7 @@ FONTE CIRÚRGICA: INCORPORADA (FOSSUM — F-03)
 STATUS DOS GATES: DISCOVERY E PRD REPROVADOS — EM CORREÇÃO
 CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA; CHECKLISTS AINDA INCOMPLETOS
 PENDÊNCIAS DE GATE: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (MODELO D-071; COORDENAÇÃO INTERINA D-072; NOMEAÇÕES/ACEITES PENDENTES),
-B-04 (VERIFICAÇÃO JURÍDICA), B-05 (VALIDAÇÃO FORMAL LGPD), B-07 (BASELINE)
+B-04 (VERIFICAÇÃO JURÍDICA), B-05 (RASCUNHO D-073 PREPARADO; VALIDAÇÃO FORMAL LGPD PENDENTE), B-07 (BASELINE)
 SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
 ```
 
@@ -92,7 +92,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 - B-02: inventário de usuários e delimitação da coorte;
 - B-03: Ricardo coordena operacionalmente as correções por D-072, sem preencher cadeiras; concluir nomeações, suplências, aceites, conflitos e instalação dos comitês conforme D-071/0006;
 - B-04: verificação jurídica das três obras (Tratado, Ettinger e Fossum);
-- B-05: validação formal da política de dados pelo responsável LGPD;
+- B-05: validar formalmente o rascunho conservador do Anexo 0011 pelo responsável LGPD independente; até lá, nenhuma coleta pessoal de participante, paciente ou tutor está autorizada;
 - B-07: baseline (diagnóstico inicial na coorte).
 
 ## 8. Controle de versão

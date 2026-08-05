@@ -4,7 +4,7 @@
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
 **Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem pendentes as decisões que dependem de levantamento, entrevistas, validações e nomeações.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 (licença do Fossum — F-03), D-068 (modalidade da primeira versão), D-069 (conformidade estrita dos gates), D-070 (avaliação de respostas construídas), D-071 (modelo de governança mínima segregada) e D-072 (coordenação geral interina das correções).
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 (licença do Fossum — F-03), D-068 (modalidade da primeira versão), D-069 (conformidade estrita dos gates), D-070 (avaliação de respostas construídas), D-071 (modelo de governança mínima segregada), D-072 (coordenação geral interina das correções) e D-073 (rascunho conservador de dados/LGPD).
 
 ## 1. Identidade e governança
 
@@ -81,7 +81,7 @@
 | D-050 | Quais metas finais após baseline? | patrocinador/PO | PRD | provisórias (calibrar no piloto — B-07) |
 | D-051 | Quem vê resultados individuais? | LGPD/direção | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): RN-064 |
 | D-052 | Resultados podem ser usados em RH? | direção/LGPD | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): proibido no piloto (RN-066) |
-| D-053 | Qual retenção dos dados? | LGPD | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): vínculo + 2 anos (RN-065) |
+| D-053 | Qual retenção dos dados? | LGPD | PRD | proposta empresarial confirmada pelo patrocinador (2026-08-05): vínculo + 2 anos; prazo definitivo pendente de validação LGPD por finalidade/categoria (D-073/RN-065) |
 | D-054 | Qual política para correção manual de nota? | governança | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): fluxo formal (RN-067) |
 | D-055 | Qual periodicidade dos dashboards? | gestão | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): mensal; individual em tempo real (RN-080) |
 | D-056 | Quais indicadores clínicos serão apenas correlacionados? | coord. clínica | piloto | pendente |
@@ -104,6 +104,7 @@
 | D-070 | Quem avalia respostas construídas e haverá dupla correção? | coord. pedagógica/comitê clínico | PRD | pendente — bloqueia definição completa de UC-005 e requisitos de avaliação |
 | D-071 | Qual modelo de governança deve resolver B-03? | patrocinador | Discovery/PRD | aprovada como insumo (2026-08-05): Alternativa 1, governança mínima segregada; B-03 permanece parcial até nomeações, suplências, aceites e instalação dos comitês |
 | D-072 | Como coordenar o trabalho enquanto as cadeiras de B-03 permanecem vagas? | patrocinador | plano de correção | aprovada (2026-08-05): MV. Ricardo Akinaga atua como coordenador geral interino, sem ocupar cadeiras independentes nem assinar gates; demais correções podem continuar, mas B-03 e os gates permanecem bloqueados |
+| D-073 | Como preparar B-05 enquanto o responsável LGPD independente permanece vago? | patrocinador/responsável LGPD | plano de correção/B-05 | aprovada como diretriz de preparação (2026-08-05): Alternativa 1, rascunho conservador sem coleta identificável; B-05 permanece parcial até validação formal independente |
 
 ## 8. Perguntas para a primeira reunião
 

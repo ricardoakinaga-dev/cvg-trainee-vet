@@ -73,7 +73,7 @@
 | B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
 | B-03 | modelo aprovado, responsáveis não nomeados | governança incompleta | direção | PARCIAL — Ricardo coordena correções por D-072, sem preencher D-071; titulares, suplentes, aceites e comitês pendentes |
 | B-04 | licença das obras não verificada | bloqueia produção de conteúdo | jurídico/gestão | PARCIAL — RN-046 confirmada pelo patrocinador como insumo, sem autorizar produção ou publicação de conteúdo; verificação jurídica pendente |
-| B-05 | política de dados sem validação do responsável LGPD | risco LGPD | responsável LGPD | PARCIAL — regras preliminares confirmadas pelo patrocinador; validação formal pendente |
+| B-05 | política de dados sem validação do responsável LGPD | risco LGPD | responsável LGPD | PARCIAL — rascunho conservador D-073/Anexo 0011 elaborado; nenhuma coleta pessoal de participante, paciente ou tutor autorizada; validação formal pendente |
 | B-06 | áreas do piloto | escopo clínico | coordenação clínica | CONFIRMADO PELO PATROCINADOR COMO INSUMO — núcleo + Emergência + Internação; revalidação formal pendente após B-03 |
 | B-07 | baseline ausente | metas não calibradas | coord. educacional | PENDENTE — aplicar diagnóstico na coorte |
 
@@ -88,7 +88,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 5. Piloto 12 semanas, coorte 10–15, 3 h/mês (D-061/D-060/D-016) — ✅
 6. Certificação: status de conclusão no piloto (D-049) — ✅
 7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
-8. Política de dados: regras preliminares de acesso/retenção confirmadas pelo patrocinador, mas inaplicáveis até validação formal LGPD (B-05) — ⚠️
+8. Política de dados: rascunho conservador D-073 elaborado; regras de acesso/retenção continuam insumos inaplicáveis e nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada (B-05) — ⚠️
 9. Contestação em 7 dias úteis (D-046) — ✅
 10. Dispensa por domínio: não no piloto (D-045) — ✅
 11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅

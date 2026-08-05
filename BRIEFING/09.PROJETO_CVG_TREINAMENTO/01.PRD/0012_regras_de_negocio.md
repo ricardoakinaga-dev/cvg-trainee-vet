@@ -92,11 +92,11 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-060 | Não usar nota isolada como avaliação total do colaborador | FATO INFORMADO |
 | RN-061 | Não fazer ranking público; não comparar áreas com dificuldade diferente sem ajuste | FATO INFORMADO |
 | RN-062 | Separar desenvolvimento de disciplina | FATO INFORMADO |
-| RN-063 | Colaborador vê os dados utilizados sobre si | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RN-064 | Acesso restrito ao mínimo necessário: colaborador (próprio); mentor (lacunas dos mentorados); gestor educacional (agregado + individual autorizado); gestão de pessoas (somente status de conclusão); direção (agregado) | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RN-065 | Retenção dos dados: enquanto durar o vínculo + 2 anos; descarte auditável; ajustes conforme jurídico/LGPD | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RN-066 | Uso de resultados em RH: proibido no piloto; qualquer uso futuro exige política formal aprovada | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RN-067 | Correção manual de nota exige fluxo formal: justificativa + aprovação + versão + auditoria | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RN-063 | Colaborador vê os dados utilizados sobre si | INSUMO DO PATROCINADOR — INAPLICÁVEL ATÉ B-05 (D-073) |
+| RN-064 | Acesso restrito ao mínimo necessário: colaborador (próprio); mentor (lacunas dos mentorados); gestor educacional (agregado + individual autorizado); gestão de pessoas (somente status de conclusão); direção (agregado) | INSUMO DO PATROCINADOR — MATRIZ CANDIDATA; INAPLICÁVEL ATÉ B-05 (D-073) |
+| RN-065 | Proposta empresarial de retenção: enquanto durar o vínculo + 2 anos; o prazo deve ser validado por finalidade/categoria e não autoriza coleta ou guarda antes de B-05 | INSUMO DO PATROCINADOR — RETENÇÃO DEFINITIVA PENDENTE (D-073) |
+| RN-066 | Uso de resultados em RH: proibido no piloto; qualquer uso futuro exige política formal aprovada | INSUMO DO PATROCINADOR — PROIBIÇÃO VIGENTE NO RASCUNHO (D-073) |
+| RN-067 | Correção manual de nota exige fluxo formal: justificativa + aprovação + versão + auditoria | INSUMO DO PATROCINADOR — INAPLICÁVEL ATÉ B-05 (D-073) |
 | RN-068 | Não atribuir causalidade clínica sem desenho adequado | FATO INFORMADO |
 
 ## 7. Regras do piloto
@@ -134,6 +134,8 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | Aprovação dos gates | comitê de governança conforme 0006/D-071 | `NÃO INSTALADO — BLOQUEIA B-03` |
 
 D-072 permite ao patrocinador coordenar operacionalmente todas as frentes de correção enquanto as vagas persistirem, mas não altera RN-006 a RN-009, não preenche nenhuma função independente e não autoriza autoaprovação ou mudança de fase.
+
+Por D-073, RN-063 a RN-067 são somente entradas para a futura validação. Até B-05 ser aprovado, nenhum dado pessoal de participante, paciente ou tutor pode ser tratado para Discovery, piloto ou plataforma; somente agregados efetivamente anonimizados são permitidos conforme o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md). Registros profissionais mínimos de governança seguem D-071/D-072.
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 

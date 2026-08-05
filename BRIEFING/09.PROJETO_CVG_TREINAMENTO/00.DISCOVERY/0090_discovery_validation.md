@@ -85,7 +85,7 @@
 | B-02 | público não dimensionado | impede recorte do piloto | inventário de usuários | PENDENTE | PENDENTE |
 | B-03 | governança incompleta | impede aprovações segregadas | nomear titulares/suplentes, registrar aceites e instalar comitês conforme D-071/0006 | direção CVG | PARCIAL — Ricardo coordena correções interinamente por D-072, sem preencher vagas ou assinar gates |
 | B-04 | direitos de uso não verificados | risco legal | análise de licença | jurídico/gestão | PENDENTE |
-| B-05 | política de dados sem validação LGPD | risco LGPD | validar finalidade, acesso e retenção | responsável LGPD | PENDENTE |
+| B-05 | política de dados sem validação LGPD | risco LGPD | validar o rascunho conservador D-073/Anexo 0011, incluindo agentes, finalidades, bases, acesso, retenção, direitos e incidentes | responsável LGPD | PARCIAL — nenhuma coleta pessoal de participante, paciente ou tutor autorizada |
 | B-06 | áreas clínicas do piloto | escopo clínico | decisão registrada: núcleo + Emergência + Internação | coordenação clínica | FECHADO COMO INSUMO |
 | B-07 | baseline ausente | metas não calibradas | diagnóstico e coleta inicial | PENDENTE | PENDENTE |
 
@@ -114,7 +114,7 @@ Por D-072, MV. Ricardo Akinaga coordena operacionalmente essas correções enqua
 | B-02 | público não dimensionado | inventário de usuários e definição da coorte piloto | antes da nova submissão Discovery |
 | B-03 | modelo aprovado, responsáveis não nomeados | coordenação geral interina por Ricardo (D-072) sem efeito de nomeação; nomear titulares e suplentes formais, registrar aceites/conflitos e instalar comitês conforme D-071/0006 | antes da nova submissão Discovery |
 | B-04 | direitos de uso não verificados | análise jurídica das três obras; **conteúdo clínico derivado bloqueado até a resolução** | antes da nova submissão Discovery |
-| B-05 | política de dados sem validação formal | validar finalidade, acesso e retenção com responsável LGPD | antes da nova submissão Discovery |
+| B-05 | rascunho conservador D-073 elaborado, sem validação formal | validar integralmente o Anexo 0011 com responsável LGPD independente; nenhuma coleta pessoal de participante, paciente ou tutor até lá | antes da nova submissão Discovery |
 | B-06 | áreas clínicas do piloto | decisão confirmada: núcleo + Emergência + Internação | fechado como insumo; revalidar no gate |
 | B-07 | baseline ausente | aplicar diagnóstico inicial na coorte definida | antes da nova submissão Discovery |
 

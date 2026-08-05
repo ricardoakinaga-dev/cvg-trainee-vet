@@ -88,7 +88,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 - Contestação; ✅
 - Governança editorial; ✅
 - Métricas; ✅ (proposta; baseline B-07)
-- Privacidade; ⏳ política B-05
+- Privacidade; ⏳ rascunho conservador D-073/Anexo 0011 preparado, sem coleta pessoal de participante, paciente ou tutor autorizada; B-05 ainda pendente
 - Exceções. ✅
 
 ### Gate

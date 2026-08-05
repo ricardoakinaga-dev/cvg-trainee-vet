@@ -90,7 +90,7 @@
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
 | consolidação | 01.PRD/0020 | preenchido |
-| gate | 01.PRD/0090 | reprovado — em correção; D-072 permite coordenação operacional por Ricardo, sem preencher o modelo D-071; B-01/B-02/B-03/B-04/B-05/B-07 e requisitos pendentes continuam bloqueando nova submissão |
+| gate | 01.PRD/0090 | reprovado — em correção; D-072 permite coordenação operacional por Ricardo e D-073 prepara B-05 sem autorizar coleta; B-01/B-02/B-03/B-04/B-05/B-07 e requisitos pendentes continuam bloqueando nova submissão |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |
 
 ## 3. Campos que só podem ser fechados no PRD
@@ -106,7 +106,7 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 - Critério final de aprovação; — decisões D-040 a D-044 confirmadas como insumos; baseline/standard setting pendentes
 - Política de certificação; — decisão D-049 confirmada como insumo; gate reprovado
 - Escopo do MVP; — áreas B-06 confirmadas como insumo; inventário da coorte B-02 pendente
-- Política de acesso aos dados; — PENDENTE (B-05)
+- Política de acesso aos dados; — PARCIAL (D-073/Anexo 0011: rascunho conservador; B-05 sem validação formal)
 
 ## 4. Campos que só podem ser fechados na SPEC
 

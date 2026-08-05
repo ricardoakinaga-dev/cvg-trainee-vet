@@ -18,6 +18,8 @@
 
 **Dados necessários:**
 
+> **Inventário futuro, não autorização de coleta:** os itens abaixo somente poderão ser tratados após a aprovação de B-05. Até lá, D-073/Anexo 0011 permite apenas agregados efetivamente anonimizados; os registros mínimos de nomeação e aceite da governança seguem a seção própria deste documento.
+
 - Identificação profissional;
 - Vínculo, função e área;
 - Trilha e prazos;
@@ -178,6 +180,8 @@ B-03 permanece `PARCIAL — MODELO APROVADO; NOMEAÇÕES PENDENTES` até que tod
 
 ## Segmentações necessárias
 
+As segmentações abaixo são candidatas para a futura política. Nenhuma segmentação individual ou combinação reidentificável pode ser coletada antes de B-05; em relatórios agregados, grupos pequenos devem ser suprimidos ou combinados conforme o [Anexo 0011](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md).
+
 - Experiência profissional;
 - Tempo no CVG;
 - Função;
@@ -199,7 +203,7 @@ B-03 permanece `PARCIAL — MODELO APROVADO; NOMEAÇÕES PENDENTES` até que tod
 | Autor | próprio | não | sim | não aprova o próprio | não | não | conteúdo próprio |
 | Revisor clínico | não necessário | não | comentários | sim | não | não | versões |
 | Gestor educacional | sim, se necessário | sim | estrutura | sim | conforme segregação | somente fluxo formal | sim |
-| Administrador | técnico | conforme regra | não clínico | não clínico | somente aprovado | não silenciosamente | sim |
+| Administrador | metadados técnicos necessários; sem leitura rotineira de conteúdo pessoal | somente por acesso excepcional, autorizado, temporário e auditado | não clínico | não clínico | somente aprovado | não silenciosamente | eventos técnicos necessários |
 | Auditor | leitura | leitura autorizada | não | não | não | não | sim |
 
-Essa matriz é uma proposta e deverá ser detalhada no PRD.
+Essa matriz é uma proposta e deverá ser validada em B-05 antes de ser detalhada no PRD aprovado. Auditoria e suporte não recebem acesso irrestrito: finalidade, escopo, prazo e registro são obrigatórios.
