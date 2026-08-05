@@ -285,11 +285,11 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 | Campo | Registro |
 |---|---|
-| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo revisado | `53789b6` — `docs: validate current training flow` |
+| Tag | `gate-d078-current-training-flow-2026-08-05` |
 | Informante e aprovador | MV. Ricardo Akinaga |
 | Resultado | B-01 fechado; fluxo atual informal e sem trilha, avaliação ou registro centralizado |
-| Validações | `PENDENTE` |
+| Validações | `git diff --cached --check`; 30 documentos Markdown; 65 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
 
 ---
 
