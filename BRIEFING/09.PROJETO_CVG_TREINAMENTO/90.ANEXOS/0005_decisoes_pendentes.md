@@ -1,0 +1,128 @@
+# Anexo 0005 — Decisões Pendentes
+
+**Objetivo:** transformar lacunas em perguntas acionáveis, com owner e gate.  
+**Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
+**Atualização 2026-08-05 (gate):** patrocinador confirmou as decisões D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061, D-063 (ver anexo 0008) — registradas como `aprovada (gate 2026-08-05)`. Permanecem pendentes as decisões que dependem de levantamento/entrevistas e nomeações.
+
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com o gate (ver anexo 0009); incluída a decisão D-067 (licença do Fossum — F-03).
+
+## 1. Identidade e governança
+
+| ID | Pergunta/decisão | Owner recomendado | Bloqueia | Status |
+|---|---|---|---|---|
+| D-001 | Qual será o nome oficial do produto? | patrocinador | PRD | proposta — "Sistema CVG de Treinamento Veterinário" (nome provisório, registro no README) |
+| D-002 | Quem é o patrocinador executivo? | direção | Discovery | resolvida — MV. Ricardo Akinaga, CEO |
+| D-003 | Quem será o product owner? | direção | Discovery | pendente (B-03) |
+| D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | pendente (B-03) |
+| D-005 | Quem compõe o comitê científico? | RT/direção clínica | Discovery | pendente (B-03) |
+| D-006 | Quem responde por LGPD e segurança? | direção | Discovery | pendente (B-03) |
+| D-007 | Quem aprova cada gate? | patrocinador | Discovery | pendente — patrocinador aprovou Discovery; comitê de governança pendente |
+
+## 2. Público e operação atual
+
+| ID | Pergunta/decisão | Owner | Bloqueia | Status |
+|---|---|---|---|---|
+| D-010 | Quantos veterinários participarão? | gestão/coordenação | Discovery | pendente |
+| D-011 | Quais áreas, turnos e unidades? | coordenação | Discovery | parcialmente resolvida — unidade, setores, atendimento 24 horas e escala 12 × 36 informados; abrangência da primeira fase pendente |
+| D-012 | Qual a distribuição de experiência? | gestão | Discovery | pendente |
+| D-013 | Como o treinamento ocorre hoje? | coord. educacional | Discovery | parcialmente resolvida — não há método definido nem revisão clínica estruturada; práticas isoladas pendentes |
+| D-014 | Quais ferramentas são usadas? | operação | Discovery | parcialmente resolvida — não há sistema de treinamento; ferramentas auxiliares pendentes |
+| D-015 | Quais lacunas já são conhecidas? | coord. clínica | Discovery | pendente |
+| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | aprovada (gate 2026-08-05): 3 h/mês (RN-076) |
+| D-017 | Quais restrições de dispositivo/conectividade? | usuários/TI | PRD | pendente (levantamento/entrevistas) |
+| D-018 | Quais necessidades de acessibilidade? | RH/usuários | PRD | pendente (levantamento/entrevistas) |
+
+## 3. Escopo clínico
+
+| ID | Pergunta/decisão | Owner | Bloqueia | Status |
+|---|---|---|---|---|
+| D-020 | Quais áreas entram no piloto? | comitê clínico | Discovery | proposta no PRD: núcleo comum + emergência e internação; confirmação pendente (B-06) |
+| D-021 | Qual é o núcleo obrigatório? | comitê clínico | PRD | aprovada (gate 2026-08-05): núcleo comum obrigatório (0011 §2) |
+| D-022 | O foco inicial será cães, gatos ou ambos? | coord. clínica | PRD | aprovada (gate 2026-08-05): cães e gatos (RN-077) |
+| D-023 | Quais conteúdos são eletivos? | coord. educacional | PRD | pendente (detalhamento do conteúdo no piloto) |
+| D-024 | Quais competências definem básico/intermediário/avançado? | comitê | PRD | pendente (blueprint com comitê) |
+| D-025 | Quais protocolos internos prevalecem? | RT | PRD | pendente (inventário de protocolos — anexo 0007) |
+| D-026 | Quais temas exigem reciclagem obrigatória? | RT | PRD | pendente (validade por tipo em RN-047) |
+
+## 4. Fontes e direitos
+
+| ID | Pergunta/decisão | Owner | Bloqueia | Status |
+|---|---|---|---|---|
+| D-030 | Há licença para uso institucional do tratado? | jurídico | conteúdo | pendente |
+| D-031 | Há licença para uso institucional do Ettinger? | jurídico | conteúdo | pendente |
+| D-032 | É permitido criar material derivado? | jurídico | conteúdo | pendente |
+| D-033 | Os PDFs podem ser processados por ferramentas automatizadas? | jurídico/segurança | SPEC/conteúdo | pendente |
+| D-034 | Quais fontes atuais complementares são obrigatórias? | comitê | PRD | pendente |
+| D-035 | Qual a validade por tipo de conteúdo? | comitê | PRD | aprovada (gate 2026-08-05): 6/12/24 meses (RN-047) |
+| D-036 | Qual SLA de correção clínica? | comitê | PRD | aprovada (gate 2026-08-05): retirada emergencial 24h/3 dias úteis (RN-048) |
+
+## 5. Avaliação
+
+| ID | Pergunta/decisão | Owner | Bloqueia | Status |
+|---|---|---|---|---|
+| D-037 | Quais competências e temas compõem o blueprint do diagnóstico inicial? | comitê clínico/pedagógico | PRD | pendente |
+| D-038 | Como o resultado diagnóstico determinará a trilha personalizada? | coord. educacional/clínica | PRD | requisito confirmado; regra pendente |
+| D-039 | Quais conteúdos obrigatórios não poderão ser dispensados pelo diagnóstico? | RT/comitê clínico | PRD | pendente |
+| D-040 | Qual limiar geral de aprovação? | comitê clínico/pedagógico | PRD | aprovada (gate 2026-08-05): 70% (RN-024; standard setting definitivo após baseline) |
+| D-041 | Qual limiar para temas críticos? | comitê | PRD | aprovada (gate 2026-08-05): 80% (RN-025) |
+| D-042 | Quantas tentativas? | coord. educacional | PRD | aprovada (gate 2026-08-05): 2 + remediação obrigatória (RN-026) |
+| D-043 | Qual intervalo entre tentativas? | coord. educacional | PRD | aprovada (gate 2026-08-05): mínimo 7 dias (RN-027) |
+| D-044 | Quais pesos de quiz, caso e prova? | coord. educacional | PRD | aprovada (gate 2026-08-05): quiz 0% + caso somativo 30% + prova somativa 70% (RN-022 — corrige a proposta anterior 20/30/50) |
+| D-045 | Haverá dispensa por domínio? | coord. clínica | PRD | aprovada (gate 2026-08-05): não no piloto (RN-017) |
+| D-046 | Qual regra de contestação? | comitê | PRD | aprovada (gate 2026-08-05): 7 dias úteis, revisor independente (RN-053) |
+| D-047 | Qual consequência de reprovação recorrente? | direção clínica | PRD | aprovada (gate 2026-08-05): plano individual com mentor, sem punição (RN-034) |
+| D-048 | Como proteger o banco de questões? | produto/segurança | SPEC | pendente |
+| D-049 | Haverá certificação interna? | direção | PRD | aprovada (gate 2026-08-05): status de conclusão no piloto (RN-079) |
+
+## 6. Métricas e uso
+
+| ID | Pergunta/decisão | Owner | Bloqueia | Status |
+|---|---|---|---|---|
+| D-050 | Quais metas finais após baseline? | patrocinador/PO | PRD | provisórias (calibrar no piloto — B-07) |
+| D-051 | Quem vê resultados individuais? | LGPD/direção | PRD | aprovada (gate 2026-08-05): RN-064 |
+| D-052 | Resultados podem ser usados em RH? | direção/LGPD | PRD | aprovada (gate 2026-08-05): proibido no piloto (RN-066) |
+| D-053 | Qual retenção dos dados? | LGPD | PRD | aprovada (gate 2026-08-05): vínculo + 2 anos (RN-065) |
+| D-054 | Qual política para correção manual de nota? | governança | PRD | aprovada (gate 2026-08-05): fluxo formal (RN-067) |
+| D-055 | Qual periodicidade dos dashboards? | gestão | PRD | aprovada (gate 2026-08-05): mensal; individual em tempo real (RN-080) |
+| D-056 | Quais indicadores clínicos serão apenas correlacionados? | coord. clínica | piloto | pendente |
+| D-057 | Qual fórmula de score do programa? | produto/auditoria | PRD | pendente |
+
+## 7. MVP e piloto
+
+| ID | Pergunta/decisão | Owner | Bloqueia | Status |
+|---|---|---|---|---|
+| D-060 | Qual coorte piloto? | coordenação | Discovery | aprovada (gate 2026-08-05): 10–15 veterinários, 3 turnos (RN-070); inventário pendente (B-02) |
+| D-061 | Qual duração? | PO | PRD | aprovada (gate 2026-08-05): 12 semanas (RN-071) |
+| D-062 | Quantos módulos? | PO/comitê | PRD | pendente |
+| D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | aprovada (gate 2026-08-05): 10–15 itens (RN-078) |
+| D-064 | Qual critério de continuar/pausar? | patrocinador | PRD | conceito definido |
+| D-065 | Qual orçamento? | patrocinador | Discovery/PRD | pendente |
+| D-066 | Qual prazo desejado? | patrocinador | PRD | pendente |
+| D-067 | Há licença para uso institucional do Fossum (cirurgia)? | jurídico | conteúdo | pendente (B-04) |
+
+## 8. Perguntas para a primeira reunião
+
+1. Quantos veterinários existem e como estão distribuídos?
+2. Como treinamentos são realizados hoje?
+3. Quais três lacunas mais preocupam a direção clínica?
+4. Quais temas têm maior risco e frequência?
+5. Há tempo protegido?
+6. Quem será dono do produto?
+7. Quem aprovará conteúdo?
+8. Quem poderá ver notas individuais?
+9. A finalidade é desenvolvimento, conformidade, certificação interna ou combinação?
+10. Quais direitos de uso das obras estão disponíveis?
+11. Quais protocolos internos existem?
+12. Qual coorte e duração do piloto?
+
+## 9. Regra de fechamento
+
+Uma decisão somente muda de `pendente` para `aprovada` quando tiver:
+
+- Decisão clara;
+- Responsável;
+- Data;
+- Justificativa;
+- Artefatos afetados;
+- Validade;
+- Registro do aprovador.

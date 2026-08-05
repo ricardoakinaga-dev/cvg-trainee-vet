@@ -1,0 +1,98 @@
+# 0011 — Escopo da Fase
+
+**Projeto:** Sistema CVG de Treinamento Veterinário  
+**Fase:** PRD — Definição de produto  
+**Data:** 2026-08-05  
+**Classificação:** `FATO INFORMADO` / `EVIDÊNCIA DOCUMENTAL` / `HIPÓTESE` / `PROPOSTA` / `PENDENTE`
+
+---
+
+## 1. Escopo desta fase do projeto
+
+Esta fase entrega a **documentação de briefing do produto** (Discovery aprovado com condições + PRD). Não entrega sistema, conteúdo clínico ou avaliações reais.
+
+## 2. IN SCOPE (o que será construído no produto)
+
+**Proposta consolidada a partir dos insumos informados e das hipóteses aprovadas para discussão:**
+
+### Núcleo do produto (MVP sugerido)
+
+1. Cadastro e autenticação de médicos-veterinários colaboradores;
+2. Avaliação diagnóstica inicial obrigatória, formativa e não punitiva;
+3. Linha de base individual por tema e competência;
+4. Atribuição de trilha personalizada (núcleo obrigatório + reforços por lacuna);
+5. Consumo de conteúdo teórico em unidades curtas e revisadas;
+6. Quizzes formativos com feedback imediato;
+7. Casos clínicos teóricos (formativos; somativos conforme regra aprovada);
+8. Prova somativa por módulo;
+9. Remediação estruturada após desempenho insuficiente;
+10. Avaliação de retenção (janelas 30/60/90 dias);
+11. Painel individual de progresso, domínio, retenção e confiança;
+12. Painel gerencial agregado (escopo autorizado);
+13. Gestão de conteúdo: autoria, revisão clínica, revisão pedagógica, aprovação, publicação, versionamento, validade e retirada;
+14. Banco de questões com blueprint e rastreabilidade;
+15. Contestação de questão/resultado com recálculo auditável;
+16. Trilha de auditoria completa;
+17. Papéis e permissões (matriz do 0006);
+18. Vocabulário de estados (anexo 0003: `NÃO_INICIADO`, `EM_ANDAMENTO`, `EM_AVALIAÇÃO`, `EM_REMEDIAÇÃO`, `APROVADO`, `REPROVADO`, `RESULTADO_EM_REVISÃO`, `CONCLUÍDO`, `VENCIDO`, `DISPENSADO_POR_DOMÍNIO`, `BLOQUEADO_POR_PRÉ_REQUISITO`).
+
+### Escopo clínico do piloto (APROVADO no gate 2026-08-05)
+
+- **Núcleo comum obrigatório** (anexo 0002, seção 5): segurança do paciente, responsabilidade profissional, comunicação, exame e história, medicina baseada em evidências, dor, fluidoterapia, segurança medicamentosa, antimicrobial stewardship, registro clínico e reconhecimento de emergência;
+- **Áreas clínicas:** **Emergência e Internação** (B-06 resolvido);
+- Espécies: **cães e gatos** (D-022 resolvido);
+- Coorte: **10 a 15 veterinários** cobrindo os 3 turnos e os setores do piloto; número final conforme inventário (B-02); demais colaboradores entram em fases seguintes;
+- Duração do piloto: **12 semanas** (D-061 resolvido);
+- Tempo protegido: **3 h/mês por veterinário** (≈10 min/dia + round quinzenal de 30–45 min) (D-016 resolvido);
+- Banco de questões: **10 a 15 itens por objetivo** (D-063 resolvido).
+
+## 3. OUT OF SCOPE (o que NÃO será construído)
+
+1. Avaliação de competência prática, autonomia clínica ou autorização de procedimentos;
+2. Certificação formal (diplomas ou equivalentes profissionais) — decisão: somente status de conclusão no piloto (RN-079);
+3. Emissão de diplomas ou equivalentes profissionais;
+4. Integração com sistema de prontuário, RH, financeiro ou qualquer sistema externo (fase futura);
+5. Avaliação trabalhista, decisões disciplinares ou uso de notas para sanções (uso em RH proibido no piloto — RN-066);
+6. Reprodução dos livros-fonte (capítulos, tabelas, figuras ou trechos extensos) — proibida (anexo 0001); uso no piloto restrito a sínteses autorais curtas com citação (RN-046);
+7. Publicação dos PDFs das obras na plataforma;
+8. Mineração/geração automática de conteúdo por IA sem revisão humana — IA somente como apoio (`FATO INFORMADO` — regra de segurança);
+9. Notificações externas (e-mail/SMS) — `PENDENTE`;
+10. Gamificação, ranking público ou comparativos entre colaboradores;
+
+## 4. FUTURE SCOPE (possíveis expansões)
+
+1. Trilhas por função/área (felinos, anestesia e dor, diagnóstico, clínica geral, especialidades);
+2. Nível avançado com casos complexos e integração;
+3. Registro de evidência prática (observação direta, simulação, checklist, feedback de mentor) em dimensão separada;
+4. Certificação interna com validade, se aprovada;
+5. Reciclagem obrigatória programada por validade do conteúdo;
+6. Integrações com sistemas de gestão;
+7. Notificações e lembretes externos;
+8. Análise psicométrica avançada do banco de questões (quando a amostra permitir);
+9. Módulo de liderança/preceptoria;
+10. Inclusão de outros públicos (técnicos, recepção, auxiliares) — sujeito a nova decisão de escopo.
+
+## 5. Limites e regras de fronteira
+
+1. O produto avalia **conhecimento teórico e raciocínio em cenários simulados** — nunca autonomia clínica;
+2. Aprovação teórica **não autoriza** procedimentos ou autonomia (`FATO INFORMADO`);
+3. Conteúdo clínico somente publicado após revisão humana (`FATO INFORMADO`);
+4. Casos clínicos usarão dados anonimizados ou fictícios (`FATO INFORMADO` — segurança);
+5. Resultados usados para desenvolvimento, priorização e reforço — nunca punição automática (`HIPÓTESE` validada como diretriz);
+6. Divergências entre fontes seguem hierarquia do anexo 0001 (legislação > protocolo CVG > diretriz > Ettinger > Tratado);
+7. Dados pessoais e de desempenho tratados conforme LGPD — política `PENDENTE` (B-05, D-051 a D-053).
+
+## 6. Critérios de priorização para o piloto
+
+**PROPOSTA** — pontuar por: risco clínico, frequência, variabilidade de conduta, disponibilidade de fonte, disponibilidade de revisor, facilidade de medir, valor percebido e esforço de produção (anexo 0002, seção 13). A seleção final é do comitê clínico (`PENDENTE`, B-06).
+
+## 7. Faseamento da entrega (PROPOSTA)
+
+| Fase | Entrega | Condição |
+|---|---|---|
+| 0 | Briefing (Discovery + PRD) | gate 0090 PRD aprovado |
+| 1 | SPEC | PRD aprovado |
+| 2 | BUILD (MVP piloto) | SPEC aprovada |
+| 3 | Piloto controlado (coorte de 10–15, 12 semanas) | build funcional |
+| 4 | AUDIT | piloto em operação |
+| 5 | Melhoria contínua e expansão | decisão do patrocinador |

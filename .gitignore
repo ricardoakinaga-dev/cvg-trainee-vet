@@ -1,0 +1,10 @@
+# Licensed and large reference sources
+/*.pdf
+
+# Local extraction and analysis artifacts
+*.tmp
+
+# Editor and operating-system artifacts
+.DS_Store
+Thumbs.db
+*~
