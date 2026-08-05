@@ -20,6 +20,20 @@ Ficam fora da primeira versão: treinamento prático presencial associado à pla
 
 Qualquer inclusão futura desses elementos exige o `GATE-EXP-PRAT-01` antes de produzir caso de uso, requisito, SPEC, backlog ou BUILD. Efeito: RN-018/RN-081 a RN-085; RF-027/RF-042/RF-043/RF-052 a RF-055; UC-005/UC-009/UC-011; escopo 0011 e PRD Master 0020.
 
+### Evidência do checkpoint D-068
+
+| Campo | Registro |
+|---|---|
+| Alternativa aprovada | Alternativa 1 |
+| Commit do conteúdo revisado | `c570d62` — `docs: define digital-only training scope` |
+| Tag do gate | `gate-d068-digital-scope-2026-08-05` |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Revisões | coerência documental + segurança/compliance |
+| Validações | `git diff --check`; links Markdown relativos; unicidade de RN/RF/D; varredura de segredos; PDFs não versionados |
+| Resultado | `APROVADO — D-068 FECHADA` |
+
+Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
 ---
 
 ## 1. Avaliação (D-040 a D-044, D-063)
