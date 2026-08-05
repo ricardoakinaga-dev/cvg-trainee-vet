@@ -121,3 +121,18 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 [ ] aprovação humana registrada
 [ ] fase seguinte explicitamente autorizada
 ```
+
+## 8. Checkpoint da matriz curricular clínica V2
+
+| Campo | Registro |
+|---|---|
+| Fase | correção documental do PRD; não aprova o gate nem inicia SPEC/BUILD |
+| Commit de conteúdo revisado | `7285249` — `docs: define evidence-based clinical curriculum` |
+| Artefato principal | `01.PRD/0016_programa_curricular_clinico.md` |
+| Escopo | 16 módulos, 96 objetivos, 128 casos digitais-base, banco de 1.440 itens, diagnóstico de 120 itens, piloto e ciclo completo |
+| Revisões | revisão clínica veterinária e revisão geral de qualidade; nenhum bloqueador estrutural restante |
+| Validações | `git diff --check`; 31 Markdown com links locais válidos; 16 módulos/objetivos/erros críticos conferidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
+| Pendências | D-070 (correção de resposta construída), D-081 (carga/cadência) e D-082 (efeito do erro crítico na conclusão) |
+| Responsável pela validação humana | MV. Ricardo Akinaga |
+| Próximo passo proposto | decidir D-081 entre três cadências; depois tratar D-082, item por item |
+| Tag do checkpoint | `checkpoint-curriculum-v2-2026-08-05` |
