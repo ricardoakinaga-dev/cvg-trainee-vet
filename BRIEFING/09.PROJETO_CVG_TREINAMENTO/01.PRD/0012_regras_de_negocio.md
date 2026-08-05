@@ -18,7 +18,10 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-003 | Acesso segue o princípio do mínimo necessário; matriz de acesso do 0006 é a referência | PROPOSTA |
 | RN-004 | Gestão de pessoas vê somente dados autorizados por finalidade aprovada; nunca respostas detalhadas automáticas | PROPOSTA |
 | RN-005 | Administrador não altera silenciosamente notas, gabaritos ou histórico | FATO INFORMADO |
-| RN-006 | Papéis são nomeados pelo comitê de governança; nomeações atuais `PENDENTE` (B-03) | PENDENTE |
+| RN-006 | O modelo mínimo segregado segue D-071 e o documento 0006; cada função exige titular, suplente, autoridade, aceite e declaração de conflito | APROVADA PELO PATROCINADOR COMO INSUMO (D-071); nomeações `PENDENTE` (B-03) |
+| RN-007 | Patrocinador, PO, responsável clínico/RT, coordenação educacional e responsável LGPD/segurança devem ser pessoas distintas; uma pessoa não assina duas funções no mesmo gate | APROVADA PELO PATROCINADOR COMO INSUMO (D-071) |
+| RN-008 | Autor ou preparador deve se abster totalmente de revisar, votar ou aprovar o próprio artefato, inclusive em colegiado; conflito exige registro e suplente não impedido | APROVADA PELO PATROCINADOR COMO INSUMO (D-071) |
+| RN-009 | Vaga, ausência, recusa, parecer obrigatório ausente ou reprovado e falta de assinatura obrigatória mantêm o gate bloqueado; silêncio não é aprovação e o patrocinador não concede waiver contra checklist canônico | APROVADA PELO PATROCINADOR COMO INSUMO (D-071) |
 
 ## 2. Regras da jornada de aprendizagem
 
@@ -117,22 +120,21 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-084 | A primeira versão não agenda, associa, registra nem avalia treinamento prático presencial ou observação de atividade clínica real | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RN-085 | Qualquer escopo prático presencial futuro permanece `BLOQUEADO_POR_GATE` até aprovação do `GATE-EXP-PRAT-01` e não pode originar UC, RF, SPEC, backlog ou BUILD antes disso | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 
-## 8. Matriz de responsabilidades resumida (PROPOSTA)
+## 8. Matriz de responsabilidades resumida (MODELO APROVADO COMO INSUMO; NOMES PENDENTES)
 
 | Decisão | Responsável | Status da nomeação |
 |---|---|---|
 | Patrocínio e orçamento | patrocinador executivo — MV. Ricardo Akinaga | nomeado |
-| Escopo e prioridade | product owner | PENDENTE |
-| Critério clínico | diretor/coordenação clínica ou RT | PENDENTE |
-| Conteúdo e fonte | comitê científico | PENDENTE |
-| Modelo pedagógico | coordenador educacional | PENDENTE |
-| Dados e LGPD | encarregado/responsável | PENDENTE |
-| Segurança | responsável de segurança | PENDENTE |
-| Aprovação dos gates | comitê de governança | PENDENTE |
+| Escopo e prioridade | product owner distinto do patrocinador e da coordenação educacional | `VAGO — BLOQUEIA B-03` |
+| Critério clínico | responsável clínico/RT | `VAGO — BLOQUEIA B-03` |
+| Conteúdo e fonte | comitê científico: RT + clínico de Emergência + clínico de Internação/Medicina Interna | `VAGO — BLOQUEIA B-03` |
+| Modelo pedagógico | coordenador educacional distinto do PO | `VAGO — BLOQUEIA B-03` |
+| Dados, LGPD e segurança nesta fase | responsável LGPD/segurança | `VAGO — BLOQUEIA B-03` |
+| Aprovação dos gates | comitê de governança conforme 0006/D-071 | `NÃO INSTALADO — BLOQUEIA B-03` |
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 
-**Confirmadas pelo patrocinador como insumos em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-076 a RN-085. Isso não aprova o gate. RN-023, RN-074 e as nomeações complementares de RN-075 permanecem pendentes.
+**Confirmadas pelo patrocinador como insumos em 2026-08-05** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-076 a RN-085. Isso não aprova o gate. RN-023, RN-074, as nomeações de RN-006 e o complemento de RN-075 permanecem pendentes.
 
 **Pendências remanescentes (dependem de levantamento/entrevistas):**
 

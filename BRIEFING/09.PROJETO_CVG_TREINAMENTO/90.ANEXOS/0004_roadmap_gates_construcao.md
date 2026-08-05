@@ -300,16 +300,16 @@ Condições mínimas para abertura: evidência do piloto digital; PRD revisado c
 
 | Gate | Quem prepara | Quem revisa | Quem aprova |
 |---|---|---|---|
-| Discovery | product/discovery | usuários e coordenação | patrocinador + PO |
-| PRD | product owner | clínico, educacional, LGPD | comitê |
+| Discovery | product owner | usuários, RT, coordenação educacional e LGPD/segurança, com parecer explícito sobre o commit | patrocinador + RT + coordenação educacional + LGPD/segurança; PO presta contas e se abstém da aprovação do artefato que preparou |
+| PRD | product owner | RT, coordenação educacional e LGPD/segurança, com parecer explícito sobre o commit | patrocinador + RT + coordenação educacional + LGPD/segurança; PO presta contas e se abstém da aprovação do artefato que preparou |
 | SPEC | arquitetura/engenharia | segurança, dados, produto | comitê técnico |
-| Build phase | time de build | reviewer, TDD, segurança | responsável técnico |
+| Build phase | time de build | reviewer, TDD, segurança | líder técnico de software, a nomear antes da fase |
 | Conteúdo | autor | clínico + pedagógico | comitê científico |
 | Piloto | produto/operação | usuários e auditor | patrocinador |
 | Audit | auditor independente | owners | comitê de governança |
 | Expansão prática (`GATE-EXP-PRAT-01`) | PO + coordenação educacional | RT/coordenação clínica + LGPD/segurança | patrocinador + comitê de governança |
 
-Nomes: patrocinador executivo nomeado (MV. Ricardo Akinaga — CEO); demais `PENDENTE` (B-03).
+Modelo segregado aprovado como insumo em D-071. Patrocinador executivo nomeado (MV. Ricardo Akinaga — CEO); PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança permanecem `VAGOS — BLOQUEIAM B-03`. A composição, os impedimentos e os aceites obrigatórios estão no documento 0006.
 
 ## 9. Estado e persistência futuros
 

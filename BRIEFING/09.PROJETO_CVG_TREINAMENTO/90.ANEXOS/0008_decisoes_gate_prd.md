@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates. As decisões de produto não aprovam Discovery nem PRD. RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates e D-071 aprovou o modelo de governança segregada, sem preencher as vagas de B-03. As decisões de produto e governança não aprovam Discovery nem PRD. RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -63,6 +63,20 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Próximo passo autorizado | tratar B-03 e demais correções documentais; reexecutar Discovery e depois PRD; SPEC e BUILD permanecem proibidos |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
+---
+
+## 0.2 Decisão de governança — D-071
+
+| Alternativa | Modelo | Veredito |
+|---|---|---|
+| **1** | **Governança mínima segregada: patrocinador, PO, responsável clínico/RT, coordenação educacional, comitê científico e responsável LGPD/segurança com autoridades e impedimentos definidos** | **recomendada e selecionada — distribui responsabilidade e impede revisão, voto ou aprovação do próprio trabalho** |
+| 2 | Governança centralizada temporária, com o patrocinador acumulando PO | rejeitada — concentra decisões e contraria a segregação escolhida |
+| 3 | Governança compartilhada com especialistas externos para educação, ciência e LGPD | rejeitada como modelo padrão — pode apoiar funções específicas, mas aumenta custo e coordenação |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. Ricardo permanece exclusivamente como patrocinador executivo nesta matriz. PO, responsável clínico/RT, coordenação educacional e responsável LGPD/segurança devem ser pessoas distintas. O comitê científico será formado pelo RT e por dois clínicos, um de Emergência e um de Internação/Medicina Interna. Autor ou preparador deverá se abster de revisar, votar ou aprovar o próprio trabalho, inclusive em decisão colegiada; silêncio nunca equivale a parecer ou aprovação.
+
+O modelo, as autoridades, os impedimentos, as suplências e a matriz dos gates estão definidos no documento `00.DISCOVERY/0006_usuarios_e_stakeholders.md`. Como apenas o patrocinador possui nome confirmado, B-03 fica `PARCIAL — MODELO APROVADO; NOMEAÇÕES PENDENTES`. Nenhuma cadeira será preenchida por inferência, e nenhuma função vaga poderá assinar gate.
 
 ---
 
@@ -224,17 +238,19 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 ## 4. Dados e governança (B-03, B-04, B-05, D-051 a D-055)
 
-### B-03 — Nomeações
+### B-03 — Modelo aprovado; nomeações pendentes (D-071)
 
 | Papel | Opção recomendada | Observação |
 |---|---|---|
 | Patrocinador executivo | MV. Ricardo Akinaga (CEO) | já nomeado |
-| Product owner | **Ricardo (ou gestor educacional indicado)** | decide escopo/prioridade |
-| Coordenação educacional | **indicar 1 responsável pelo programa** | opera o piloto |
-| Comitê científico | **RT + 2 clínicos (um por área do piloto)** | aprova conteúdo e divergências |
-| LGPD/segurança | **indicar responsável (pode ser suporte externo)** | aprova política de dados |
+| Product owner | **pessoa distinta do patrocinador e da coordenação educacional** | `VAGO — BLOQUEIA B-03` |
+| Responsável clínico/RT | **médico-veterinário formalmente autorizado** | `VAGO — BLOQUEIA B-03` |
+| Coordenação educacional | **pessoa distinta do PO** | `VAGO — BLOQUEIA B-03` |
+| Comitê científico | **RT + 2 clínicos (Emergência e Internação/Medicina Interna)** | `NÃO INSTALADO — BLOQUEIA B-03` |
+| LGPD/segurança | **responsável interno ou externo distinto das demais funções de gate** | `VAGO — BLOQUEIA B-03` |
+| Comitê de governança | **titulares acima, conforme matriz do documento 0006** | `NÃO INSTALADO — BLOQUEIA B-03` |
 
-**Recomendação:** nomear na reunião de gate; sem nomeação, B-03 permanece `PENDENTE`.
+**Decisão:** o modelo foi confirmado como insumo por D-071. Sem titulares, suplentes, aceites e declarações de conflito, B-03 permanece `PARCIAL` e os comitês não podem operar.
 
 ### B-04 — Direitos de uso das obras
 
@@ -288,7 +304,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
 | Dados | mínimo necessário; RH proibido; retenção vínculo + 2 anos; correção formal; dashboards mensais |
 | Licenças | sínteses autorais curtas + checagem de direitos; sem PDFs |
-| Nomeações | definir na reunião de gate (B-03) |
+| Governança e nomeações | modelo mínimo segregado D-071 confirmado; titulares, suplentes, aceites e instalação dos comitês pendentes (B-03) |
 
 ---
 
@@ -297,7 +313,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 ✅ **Decisões de produto confirmadas e aplicadas ao rascunho em 2026-08-05.** Isso não representa aprovação do gate.
 
 **Remanescentes para fechamento total:**
-1. Nomear responsáveis (B-03) — PO, coordenação educacional, comitê científico, LGPD/segurança;
+1. Concluir B-03 — nomear titulares/suplentes de PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança; registrar aceites/conflitos e instalar os comitês;
 2. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
 3. Inventário de usuários/coorte (B-02);
 4. Concluir verificação jurídica das licenças (B-04);

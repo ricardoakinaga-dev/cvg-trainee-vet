@@ -4,7 +4,7 @@
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
 **Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem pendentes as decisões que dependem de levantamento, entrevistas, validações e nomeações.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 (licença do Fossum — F-03), D-068 (modalidade da primeira versão) e D-069 (conformidade estrita dos gates).
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 (licença do Fossum — F-03), D-068 (modalidade da primeira versão), D-069 (conformidade estrita dos gates), D-070 (avaliação de respostas construídas) e D-071 (modelo de governança mínima segregada).
 
 ## 1. Identidade e governança
 
@@ -12,11 +12,11 @@
 |---|---|---|---|---|
 | D-001 | Qual será o nome oficial do produto? | patrocinador | PRD | proposta — "Sistema CVG de Treinamento Veterinário" (nome provisório, registro no README) |
 | D-002 | Quem é o patrocinador executivo? | direção | Discovery | resolvida — MV. Ricardo Akinaga, CEO |
-| D-003 | Quem será o product owner? | direção | Discovery | pendente (B-03) |
-| D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | pendente (B-03) |
-| D-005 | Quem compõe o comitê científico? | RT/direção clínica | Discovery | pendente (B-03) |
-| D-006 | Quem responde por LGPD e segurança? | direção | Discovery | pendente (B-03) |
-| D-007 | Quem aprova cada gate? | patrocinador | Discovery | pendente — D-069 fixa o critério estrito; comitê de governança e demais aprovadores dependem de B-03 |
+| D-003 | Quem será o product owner? | direção | Discovery | parcialmente resolvida por D-071: deve ser pessoa distinta do patrocinador e da coordenação educacional; nome, suplente e aceite pendentes (B-03) |
+| D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | parcialmente resolvida por D-071: 1 titular distinto do PO + suplente; nomes e aceites pendentes (B-03) |
+| D-005 | Quem compõe o comitê científico? | RT/direção clínica | Discovery | parcialmente resolvida por D-071: RT + clínico de Emergência + clínico de Internação/Medicina Interna; nomes, suplentes e aceites pendentes (B-03) |
+| D-006 | Quem responde por LGPD e segurança? | direção | Discovery | parcialmente resolvida por D-071: 1 responsável interno ou externo + suplente; nomes e aceites pendentes (B-03) |
+| D-007 | Quem aprova cada gate? | patrocinador | Discovery | matriz de aprovação definida por D-071; comitê não instalado enquanto houver função vaga (B-03) |
 
 ## 2. Público e operação atual
 
@@ -102,6 +102,7 @@
 | D-068 | Qual é a modalidade da primeira versão e a fronteira das simulações? | patrocinador/PO | PRD/SPEC | aprovada (2026-08-05): treinamento integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` |
 | D-069 | Como tratar gates com itens obrigatórios incompletos? | patrocinador/governança | Discovery/PRD | aprovada (2026-08-05): aplicar estritamente as engines; gates reprovados até checklist completo, reexecução, checkpoint Git e aprovação formal; sem waiver implícito |
 | D-070 | Quem avalia respostas construídas e haverá dupla correção? | coord. pedagógica/comitê clínico | PRD | pendente — bloqueia definição completa de UC-005 e requisitos de avaliação |
+| D-071 | Qual modelo de governança deve resolver B-03? | patrocinador | Discovery/PRD | aprovada como insumo (2026-08-05): Alternativa 1, governança mínima segregada; B-03 permanece parcial até nomeações, suplências, aceites e instalação dos comitês |
 
 ## 8. Perguntas para a primeira reunião
 

@@ -20,7 +20,7 @@
 - [x] Usuário primário definido (colaborador);
 - [x] Usuários secundários e operadores mapeados;
 - [x] Responsabilidades claras (matriz de acesso 0006 e matriz de responsabilidades em 0012 §8);
-- [ ] Nomes nomeados — PO, coordenação educacional, comitê científico, LGPD/segurança (B-03);
+- [ ] Nomes nomeados — modelo segregado aprovado como insumo em D-071; PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança ainda sem titulares/suplentes e aceites (B-03);
 - [ ] Quantidade e perfil da coorte — parâmetros confirmados pelo patrocinador como insumos (10–15, 3 turnos); inventário e revalidação formal pendentes (B-02).
 
 ### FLUXOS
@@ -71,7 +71,7 @@
 |---|---|---|---|---|
 | B-01 | fluxo atual não validado com usuários | reduz confiança do desenho | PO + coord. clínica | PENDENTE — roteiro pronto (anexo 0007) |
 | B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
-| B-03 | responsáveis não nomeados | governança incompleta | direção | PENDENTE — definir na reunião de gate |
+| B-03 | modelo aprovado, responsáveis não nomeados | governança incompleta | direção | PARCIAL — D-071/0006 definem estrutura; titulares, suplentes, aceites e instalação dos comitês pendentes |
 | B-04 | licença das obras não verificada | bloqueia produção de conteúdo | jurídico/gestão | PARCIAL — RN-046 confirmada pelo patrocinador como insumo, sem autorizar produção ou publicação de conteúdo; verificação jurídica pendente |
 | B-05 | política de dados sem validação do responsável LGPD | risco LGPD | responsável LGPD | PARCIAL — regras preliminares confirmadas pelo patrocinador; validação formal pendente |
 | B-06 | áreas do piloto | escopo clínico | coordenação clínica | CONFIRMADO PELO PATROCINADOR COMO INSUMO — núcleo + Emergência + Internação; revalidação formal pendente após B-03 |
@@ -125,10 +125,12 @@ BUILD: PROIBIDO
 | Papel | Nome | Decisão | Data |
 |---|---|---|---|
 | Patrocinador executivo | MV. Ricardo Akinaga — CEO | RECLASSIFICAÇÃO CANÔNICA APROVADA; DECISÕES DE PRODUTO PRESERVADAS COMO INSUMOS | 2026-08-05 |
-| Product owner | PENDENTE (B-03) | PENDENTE | PENDENTE |
-| Coordenação clínica/RT | PENDENTE (B-03) | PENDENTE | PENDENTE |
-| Coordenação educacional | PENDENTE (B-03) | PENDENTE | PENDENTE |
-| LGPD/segurança | PENDENTE (B-03) | PENDENTE | PENDENTE |
+| Product owner | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
+| Coordenação clínica/RT | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
+| Coordenação educacional | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
+| LGPD/segurança | `VAGO — BLOQUEIA B-03` | modelo/autoridade definidos em D-071; aceite pendente | PENDENTE |
+
+O registro nominal completo, incluindo comitê científico, suplentes, qualificações, impedimentos e ato de instalação, é controlado pelo documento Discovery 0006.
 
 ## Próximo passo após fechamento dos compromissos
 

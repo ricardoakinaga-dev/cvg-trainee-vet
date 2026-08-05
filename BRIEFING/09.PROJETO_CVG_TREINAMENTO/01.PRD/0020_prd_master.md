@@ -26,7 +26,7 @@ Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 - **Primário:** médico-veterinário colaborador;
 - **Secundários:** mentor/preceptor, autor/instrutor, revisor clínico, revisor pedagógico, gestor educacional, gestor clínico, gestão de pessoas (restrito);
 - **Operadores:** administrador, auditor/compliance;
-- **Decisores:** patrocinador (nomeado: MV. Ricardo Akinaga — CEO); PO, coordenação clínica/RT, coordenação educacional, LGPD/segurança — **PENDENTE (B-03)**.
+- **Decisores:** modelo de governança mínima segregada confirmado como insumo (D-071); patrocinador nomeado: MV. Ricardo Akinaga — CEO; PO, coordenação clínica/RT, coordenação educacional, comitê científico e LGPD/segurança estão `VAGOS — BLOQUEIAM B-03`.
 
 ## 4. Fluxos principais
 
@@ -141,7 +141,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
-3. Nomeação de responsáveis (B-03) — ⏳ **PENDENTE — definir na reunião de gate**;
+3. Governança e nomeação de responsáveis (B-03) — ⏳ **PARCIAL — modelo D-071 aprovado como insumo; titulares, suplentes, aceites e comitês pendentes**;
 4. Política de dados (B-05) — ⚠️ **REGRAS PRELIMINARES CONFIRMADAS PELO PATROCINADOR; VALIDAÇÃO FORMAL LGPD PENDENTE** (RN-063 a RN-067);
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;

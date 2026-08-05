@@ -39,7 +39,7 @@
 | A2 | Quantos veterinários o CVG tem hoje, em quais setores e turnos? | dimensionamento | B-02 |
 | A3 | Como os treinamentos são realizados hoje? Existe algo além do que já sabemos (que não há sistema)? | fluxo real | B-01 |
 | A4 | Há tempo protegido para estudo? Quanto por semana/mês por veterinário? | carga viável | D-016 |
-| A5 | Quem deve ser product owner? Quem coordena educação? Quem compõe o comitê científico? | nomeações | B-03 |
+| A5 | Quais são os titulares e suplentes de PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança, e onde estão registrados seus aceites e conflitos? | nomeações conforme D-071/0006 | B-03 |
 | A6 | Quem poderá ver resultados individuais? Gestão de pessoas pode usar para RH? | política de acesso | D-051, D-052 |
 | A7 | Há licença institucional das três obras (Tratado, Ettinger e Fossum) ou condição de uso definida? | direitos | B-04 |
 | A8 | Qual orçamento e prazo desejado para o piloto? | viabilidade | D-065, D-066 |

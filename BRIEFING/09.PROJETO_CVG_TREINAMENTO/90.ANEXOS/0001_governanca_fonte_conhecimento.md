@@ -251,10 +251,12 @@ Proposta:
 
 | Função | Responsabilidade | Nome |
 |---|---|---|
-| Comitê científico | hierarquia de fontes e divergências | PENDENTE |
-| Especialista da área | correção clínica | PENDENTE |
-| Revisor pedagógico | qualidade educacional | PENDENTE |
+| Responsável clínico/RT | segurança clínica, critérios e presidência técnica | `VAGO — BLOQUEIA B-03` |
+| Comitê científico | hierarquia de fontes e divergências; RT + clínico de Emergência + clínico de Internação/Medicina Interna | `NÃO INSTALADO — BLOQUEIA B-03` |
+| Especialista da área | correção clínica independente de material próprio | `VAGO — BLOQUEIA B-03` |
+| Revisor pedagógico | qualidade educacional independente de material próprio | `VAGO — BLOQUEIA B-03` |
 | Jurídico/licenças | direitos autorais | PENDENTE |
 | Gestor de conteúdo | versão e calendário | PENDENTE |
 | Auditor | rastreabilidade | PENDENTE |
 
+O modelo de governança foi confirmado como insumo em D-071, mas os nomes e aceites permanecem pendentes. Autor ou preparador deve se abster totalmente da revisão, votação e aprovação do próprio ativo; conflito exige registro e suplente não impedido. Nenhum conteúdo clínico pode ser produzido ou publicado antes de B-04 e dos gates aplicáveis.

@@ -106,7 +106,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 
 1. mapear o fluxo atual e práticas isoladas via entrevistas (B-01);
 2. dimensionar o público e delimitar a coorte piloto (B-02);
-3. nomear PO, coordenação educacional, comitê científico e responsável LGPD (B-03);
+3. concluir B-03: o modelo de governança mínima segregada foi aprovado como insumo (D-071), mas ainda é obrigatório nomear titulares/suplentes, registrar aceites e conflitos e instalar os comitês;
 4. verificar licença e direitos de uso das três obras; produção de conteúdo clínico bloqueada até a resolução (B-04);
 5. aprovar política de dados e acesso (LGPD) (B-05);
 6. revalidar formalmente as áreas do piloto (B-06), após B-03 — seleção confirmada pelo patrocinador como insumo: núcleo comum + emergência e internação;

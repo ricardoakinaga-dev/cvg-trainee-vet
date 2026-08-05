@@ -73,7 +73,7 @@ CONSISTÊNCIA INTERNA: PARCIAL — D-040 A D-044 SINCRONIZADOS; OUTRAS CONTRADI�
 FONTE CIRÚRGICA: INCORPORADA (FOSSUM — F-03)
 STATUS DOS GATES: DISCOVERY E PRD REPROVADOS — EM CORREÇÃO
 CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA; CHECKLISTS AINDA INCOMPLETOS
-PENDÊNCIAS DE GATE: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (NOMEAÇÕES),
+PENDÊNCIAS DE GATE: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (MODELO D-071 APROVADO; NOMEAÇÕES/ACEITES PENDENTES),
 B-04 (VERIFICAÇÃO JURÍDICA), B-05 (VALIDAÇÃO FORMAL LGPD), B-07 (BASELINE)
 SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
 ```
@@ -90,7 +90,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 
 - B-01: fluxo atual via entrevistas (roteiro pronto — anexo 0007);
 - B-02: inventário de usuários e delimitação da coorte;
-- B-03: nomeações (PO, coordenação educacional, comitê científico, LGPD);
+- B-03: concluir nomeações, suplências, aceites, conflitos e instalação dos comitês conforme o modelo segregado D-071/0006;
 - B-04: verificação jurídica das três obras (Tratado, Ettinger e Fossum);
 - B-05: validação formal da política de dados pelo responsável LGPD;
 - B-07: baseline (diagnóstico inicial na coorte).
