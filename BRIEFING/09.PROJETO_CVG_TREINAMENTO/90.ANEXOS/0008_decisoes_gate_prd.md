@@ -78,6 +78,24 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 O modelo, as autoridades, os impedimentos, as suplências e a matriz dos gates estão definidos no documento `00.DISCOVERY/0006_usuarios_e_stakeholders.md`. Como apenas o patrocinador possui nome confirmado, B-03 fica `PARCIAL — MODELO APROVADO; NOMEAÇÕES PENDENTES`. Nenhuma cadeira será preenchida por inferência, e nenhuma função vaga poderá assinar gate.
 
+### Evidência do checkpoint D-071
+
+| Campo | Registro |
+|---|---|
+| Fase e bloqueio afetados | correção de Discovery/PRD; B-03 — governança e nomeações |
+| Alternativa aprovada | Alternativa 1 — governança mínima segregada |
+| Commit do conteúdo revisado | `415fb2c` — `docs: define segregated governance model` |
+| Tag do checkpoint | `gate-d071-governance-model-2026-08-05` |
+| Artefatos incluídos | stakeholders e registro de nomeações; regras; gates; PRD Master; governança de fontes; roadmap; decisões; matriz, roteiro, validação e README |
+| Revisores | mapeamento documental + arquitetura de governança + revisão independente de qualidade + segurança/compliance |
+| Validações | `git diff --check`; 56 links Markdown relativos sem quebra; nenhuma definição RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Decisão e data | `D-071 APROVADA — ALTERNATIVA 1`, em 2026-08-05; aprova o modelo, não as nomeações nem os gates |
+| Pendências e riscos residuais | titulares, suplentes, qualificações, aceites, conflitos, atos de instalação e mandatos; representantes de usuários do futuro parecer Discovery serão definidos em B-01/B-02 |
+| Próximo passo autorizado | obter e registrar as nomeações de B-03; B-06 somente será revalidado depois; Discovery/PRD, SPEC e BUILD não avançam |
+
+Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
 ---
 
 ## 1. Avaliação (D-040 a D-044, D-063)
