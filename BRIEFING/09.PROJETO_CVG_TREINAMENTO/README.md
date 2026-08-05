@@ -105,7 +105,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 
 A autorização gerencial histórica para elaborar o rascunho do PRD não substituiu os gates canônicos. Os itens abaixo devem ser fechados com evidência antes da nova submissão do Discovery e, depois, do PRD:
 
-1. mapear o fluxo atual e práticas isoladas via entrevistas (B-01);
+1. B-01 concluído por D-078: aprendizado atual informal, sem trilha, avaliação ou registro centralizado;
 2. dimensionar o público e delimitar a coorte piloto (B-02);
 3. B-03 concluído por D-076: Ricardo concentra as responsabilidades do MVP; outro MV revisa cada módulo clínico antes da publicação;
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
@@ -156,12 +156,11 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abaixo não libera automaticamente a SPEC: primeiro será necessário reexecutar e aprovar formalmente os gates Discovery e PRD, com checkpoint Git identificado.
 
-1. entrevistar direção, coordenação clínica e uma amostra de veterinários;
-2. mapear o processo atual de treinamento;
-3. levantar uma linha de base;
-4. confirmar público, áreas prioritárias e coorte piloto;
-5. aplicar a política mínima D-077 nos levantamentos e no futuro sistema;
-6. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
+1. dimensionar o público e confirmar a coorte piloto;
+2. levantar uma linha de base;
+3. resolver os requisitos ainda pendentes;
+4. aplicar a política mínima D-077 nos levantamentos e no futuro sistema;
+5. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
 
 Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. Entrevistas, inventário e baseline devem respeitar D-077; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
 

@@ -121,11 +121,12 @@ A personalização não deverá dispensar automaticamente conteúdos institucion
 4. Existência do tratado brasileiro local indicado como fonte curricular principal;
 5. Existência do *Ettinger’s Textbook of Veterinary Internal Medicine*, 9ª edição, publicado em 2024, indicado como fonte atualizada;
 6. Existência do documento anterior `sistema_treinamento_veterinarios_cvg.md`, com diretrizes gerais de treinamento contínuo.
+7. Confirmação de MV. Ricardo Akinaga, responsável por todas as áreas do MVP, de que o aprendizado atual é informal e não possui trilha, avaliação ou registro centralizado (D-078).
 
 ### Ausentes
 
 - Entrevistas com usuários;
-- Dados do processo atual;
+- Detalhes opcionais sobre práticas informais e ferramentas auxiliares, sem bloquear B-01;
 - Quantidade e perfil dos veterinários;
 - Avaliações ou treinamentos existentes;
 - Taxas atuais de adesão e conclusão;

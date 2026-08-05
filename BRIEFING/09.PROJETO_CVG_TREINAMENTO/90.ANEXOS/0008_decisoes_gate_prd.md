@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03 e D-077 fechou B-05 para o MVP interno. Os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes de B-03/B-04/B-05.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03, D-077 fechou B-05 e D-078 fechou B-01. Os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes desses itens.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -271,6 +271,28 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ---
 
+## 0.9 Validação do processo atual — D-078
+
+| Alternativa | Forma de validação | Veredito |
+|---|---|---|
+| **1** | **Declaração direta de Ricardo, responsável por todas as áreas do MVP** | **recomendada e selecionada — suficiente para registrar o ponto de partida do programa interno** |
+| 2 | Declaração de Ricardo confirmada por outro veterinário | não selecionada — conferência adicional opcional |
+| 3 | Entrevistar três veterinários, um por turno | não selecionada — pode aprofundar preferências, mas não é necessária para descrever a inexistência de processo padronizado |
+
+**Confirmação do patrocinador em 2026-08-05:** o CVG não possui treinamento veterinário padronizado. O aprendizado ocorre informalmente, conforme a disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado. Essa descrição é adotada como fluxo atual oficial e fecha B-01. Entrevistas futuras podem aprofundar preferências e restrições, mas não reabrem B-01 salvo evidência contraditória.
+
+### Evidência do checkpoint D-078
+
+| Campo | Registro |
+|---|---|
+| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Informante e aprovador | MV. Ricardo Akinaga |
+| Resultado | B-01 fechado; fluxo atual informal e sem trilha, avaliação ou registro centralizado |
+| Validações | `PENDENTE` |
+
+---
+
 ## 1. Avaliação (D-040 a D-044, D-063)
 
 ### D-040 — Limiar geral de aprovação
@@ -482,6 +504,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Dados/B-05 | D-077: política mínima aprovada; somente identificação/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores e casos reais identificáveis proibidos |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
 | Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |
+| Processo atual/B-01 | D-078: aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 
 ---
 
@@ -490,10 +513,9 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 ✅ **Decisões de produto confirmadas e aplicadas ao rascunho em 2026-08-05.** Isso não representa aprovação do gate.
 
 **Remanescentes para fechamento total:**
-1. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
-2. Inventário de usuários/coorte (B-02);
-3. Manter os controles operacionais de fontes definidos em D-075;
-4. Aplicar diagnóstico inicial e coletar baseline (B-07), respeitando D-077;
-5. Resolver os requisitos marcados como pendentes no PRD.
+1. Inventário de usuários/coorte (B-02);
+2. Manter os controles operacionais de fontes definidos em D-075;
+3. Aplicar diagnóstico inicial e coletar baseline (B-07), respeitando D-077;
+4. Resolver os requisitos marcados como pendentes no PRD.
 
 Após isso, o Discovery deve ser reexecutado e aprovado; em seguida, o PRD deve ser reexecutado sobre um checkpoint Git identificado e submetido à aprovação humana. O status não muda automaticamente. A SPEC permanece bloqueada até ambas as aprovações formais.

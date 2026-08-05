@@ -44,23 +44,18 @@ Os itens acima representam o **fluxo desejado declarado**, não o fluxo atual co
 
 - Médico-veterinário colaborador;
 - Centro Veterinário Guarapiranga como organização patrocinadora;
-- MV. Ricardo Akinaga, CEO, como patrocinador e solicitante do briefing.
+- MV. Ricardo Akinaga como responsável pelas frentes do MVP;
+- outro médico-veterinário, escolhido por módulo para a segunda revisão clínica.
 
-### Propostos, sujeitos a validação
+### Eventual apoio operacional
 
-- Product owner;
-- Coordenador educacional;
-- Diretor/coordenação clínica;
-- MV. Ricardo Akinaga, responsável pelas frentes do MVP;
-- outro médico-veterinário, escolhido por módulo para a segunda revisão clínica;
-- participantes do treinamento;
 - eventual administrador técnico delegado, com acesso limitado e registrado.
 
 ## Ferramentas atuais
 
-**FATO INFORMADO:** o CVG não possui atualmente um sistema de treinamento.
+**FATO INFORMADO (D-078):** o CVG não possui sistema nem registro centralizado de treinamento. Ferramentas auxiliares eventualmente usadas em situações informais não formam um processo institucional.
 
-Ainda é necessário levantar quais ferramentas auxiliares existem e se poderão apoiar ou integrar o processo futuro:
+O inventário das ferramentas abaixo é opcional para integração futura e não bloqueia B-01:
 
 - Armazenamento de materiais;
 - Ferramentas de videoconferência;
@@ -74,30 +69,15 @@ Ainda é necessário levantar quais ferramentas auxiliares existem e se poderão
 
 ## Processo atual
 
-**FATO INFORMADO:** não existe atualmente um processo definido de revisão clínica.
+**FATO INFORMADO PELO RESPONSÁVEL — D-078:** o CVG não possui treinamento veterinário padronizado. O aprendizado ocorre informalmente, conforme a disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado.
 
-**PENDENTE:** o restante do processo de capacitação ainda não foi mapeado. É necessário confirmar se existem atividades isoladas e como elas funcionam, mesmo sem um sistema ou método institucional.
-
-Perguntas obrigatórias para o levantamento:
-
-1. Como são escolhidos os temas?
-2. Quem cria ou seleciona os materiais?
-3. Quem aprova o conteúdo?
-4. Como o treinamento é comunicado?
-5. Há tempo protegido?
-6. Como presença, conclusão e nota são registradas?
-7. Existem provas, quizzes ou estudo de casos?
-8. Como ocorre a recuperação?
-9. Como são tratadas contestações?
-10. Como o gestor conhece a evolução?
-11. O que acontece quando um conteúdo fica desatualizado?
-12. Como novos veterinários são nivelados?
+B-01 está fechado com essa descrição. Detalhar conversas, materiais ou atividades isoladas é opcional e poderá apoiar melhorias futuras, mas não muda o diagnóstico institucional.
 
 ## Workaround existente
 
-**FATO INFORMADO:** não existe atualmente um método definido que funcione como alternativa ao sistema de treinamento.
+**FATO INFORMADO (D-078):** o aprendizado informal conforme a disponibilidade dos profissionais é o mecanismo existente. Ele não constitui trilha ou processo padronizado.
 
-As práticas informais abaixo ainda precisam ser investigadas; não estão sendo consideradas como existentes:
+Exemplos de práticas que podem ocorrer, sem necessidade de inventário para fechar B-01:
 
 - Conversas e discussões informais;
 - Cursos externos;

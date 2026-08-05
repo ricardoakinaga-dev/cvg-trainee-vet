@@ -2,10 +2,12 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Objetivo:** instrumento de trabalho para resolver os bloqueios B-01 (fluxo atual), B-02 (público e coorte), B-06 (áreas do piloto) e B-07 (baseline) antes da nova submissão do gate Discovery e, somente depois de sua aprovação, do gate PRD.
+**Objetivo:** instrumento opcional para aprofundar o fluxo atual e instrumento de trabalho para B-02 (público e coorte) e B-07 (baseline). B-01 foi fechado por D-078 com a confirmação direta de Ricardo.
 **Uso:** MV. Ricardo Akinaga aplica ou delega as entrevistas e registra os resultados. Nenhuma informação nova é inventada; tudo o que não for confirmado permanece `PENDENTE`.
 
 > **Política de dados (D-077/B-05):** entrevistas e inventários devem registrar resultados consolidados sempre que possível. Gravações, prontuários, dados de tutores e casos reais identificáveis são proibidos. Nome/login profissional e dados do treinamento seguem o Anexo 0011.
+
+> **B-01 fechado:** perguntas relacionadas a B-01 servem somente para refinamento e não são obrigatórias para manter a decisão D-078.
 
 ---
 
@@ -13,12 +15,10 @@
 
 | Grupo | Papel | Objetivo da entrevista | Bloqueios atendidos |
 |---|---|---|---|
-| A — Direção / patrocinador | MV. Ricardo Akinaga (CEO) | finalidade do programa, orçamento, tempo protegido, política de uso dos dados | B-02, B-05, B-06 |
-| B — Coordenação clínica / RT | coordenação clínica ou responsável técnico | fluxo atual, lacunas clínicas, protocolos, áreas do piloto, temas críticos | B-01, B-06, B-07 |
-| C — Coordenação educacional | MV. Ricardo Akinaga ou pessoa delegada | processo atual de treinamento, materiais, avaliações, carga, registros | B-01, B-07 |
-| D — Veterinários colaboradores | amostra de 5 a 8 ou proporcional por área/turno | como estudam hoje, tempo disponível, dispositivos, motivação, percepção de lacunas | B-01, B-02, B-07 |
+| A/B/C — Direção e coordenações | MV. Ricardo Akinaga | finalidade, coorte, lacunas, protocolos, carga e baseline | B-02, B-06, B-07 |
+| D — Veterinários colaboradores | amostra opcional, dimensionada com B-02 | preferências, tempo disponível, dispositivos e percepção de lacunas | B-02, B-07 |
 
-**Ordem sugerida:** A → B → C → D (a direção fornece o contexto que orienta as demais; a coordenação prepara as perguntas específicas para os veterinários).
+As perguntas A, B e C podem ser respondidas por Ricardo em uma única sessão. A amostra D é opcional para refinamento e poderá ser dimensionada junto com B-02.
 
 **Logística por entrevista:**
 - Duração: 30–45 min (A, B, C); 15–25 min (D);
@@ -166,8 +166,8 @@ LINKS PARA DECISÕES: D-___, B-___
 
 | Saída | Documento que atualiza | Gate afetado |
 |---|---|---|
-| Mapa do fluxo atual validado (etapas, atores, ferramentas, gargalos, exceções) | `00.DISCOVERY/0003_fluxo_atual.md` | B-01 |
-| Inventário de ferramentas e materiais | `00.DISCOVERY/0002_contexto_operacional.md` | B-01 |
+| Mapa institucional do fluxo atual | `00.DISCOVERY/0003_fluxo_atual.md` | concluído por D-078/B-01 |
+| Detalhes de ferramentas e práticas informais | `00.DISCOVERY/0002_contexto_operacional.md` | refinamento opcional |
 | Quantidade e perfil dos veterinários (segmentação) | `00.DISCOVERY/0006_usuarios_e_stakeholders.md` | B-02 |
 | Lacunas prioritárias e áreas do piloto confirmadas | `00.DISCOVERY/0005_hipotese_de_valor.md`, `01.PRD/0011` | B-06 |
 | Linha de base mínima (perfil, conhecimento, engajamento, indicadores) | `01.PRD/0015_metricas_de_sucesso.md` | B-07 |
@@ -180,18 +180,15 @@ LINKS PARA DECISÕES: D-___, B-___
 
 ## 9. Critérios de fechamento (o que comprova o fim do levantamento)
 
-O levantamento estará concluído quando:
+O levantamento necessário para os bloqueios restantes estará concluído quando:
 
-1. Fluxo atual desenhado, com etapas, atores, ferramentas, gargalos, falhas e exceções validados por pelo menos direção + coordenação + amostra de veterinários;
-2. Inventário de ferramentas e materiais concluído (seção 6);
-3. Público dimensionado e perfil segmentado (B-02);
-4. Lacunas priorizadas por risco/frequência e áreas do piloto confirmadas (B-06);
-5. Baseline mínima levantada (B-07);
-6. Responsável do MVP registrado (B-03 fechado por D-076);
-7. Política mínima de dados D-077 respeitada (B-05 fechado);
-8. Controles internos de fontes confirmados (D-075);
-9. Mapa validado com os participantes (sessão de devolutiva);
-10. Todos os formulários classificados (`FATO INFORMADO` / `HIPÓTESE` / `PENDENTE`) e nenhuma informação inventada.
+1. a descrição de D-078 for preservada como fluxo atual (B-01 fechado);
+2. o público e a coorte estiverem dimensionados (B-02);
+3. a baseline mínima estiver levantada (B-07);
+4. as áreas do piloto continuarem confirmadas (B-06);
+5. a política D-077 e os controles de fontes D-075 forem respeitados.
+
+Entrevistas, inventário de ferramentas e sessão de devolutiva são opcionais para refinamento.
 
 **Resultado possível:**
 - Todos os itens resolvidos → reexecutar primeiro o gate Discovery `0090`; somente se aprovado, atualizar e submeter o gate PRD `0090`;

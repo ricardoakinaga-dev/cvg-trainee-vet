@@ -73,7 +73,7 @@ CONSISTÊNCIA INTERNA: PARCIAL — D-040 A D-044 SINCRONIZADOS; OUTRAS CONTRADI�
 FONTE CIRÚRGICA: INCORPORADA (FOSSUM — F-03)
 STATUS DOS GATES: DISCOVERY E PRD REPROVADOS — EM CORREÇÃO
 CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA; CHECKLISTS AINDA INCOMPLETOS
-SITUAÇÃO DOS ITENS: B-01 (ENTREVISTAS), B-02 (INVENTÁRIO), B-03 (FECHADO PARA O MVP INTERNO POR D-076),
+SITUAÇÃO DOS ITENS: B-01 (FECHADO POR D-078), B-02 (INVENTÁRIO), B-03 (FECHADO PARA O MVP INTERNO POR D-076),
 B-04 (FECHADO POR D-075), B-05 (FECHADO PARA O MVP INTERNO POR D-077), B-07 (BASELINE)
 SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
 ```
@@ -88,7 +88,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 
 ## 7. Itens pendentes e controles contínuos
 
-- B-01: fluxo atual via entrevistas (roteiro pronto — anexo 0007);
+- B-01: fechado por D-078 — aprendizado informal, sem trilha, avaliação ou registro centralizado;
 - B-02: inventário de usuários e delimitação da coorte;
 - B-03: fechado por D-076; Ricardo concentra as responsabilidades e outro MV revisa cada módulo clínico antes da publicação;
 - B-04: fechado por D-075 para o MVP interno; manter consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; D-033 é futura e não bloqueante;

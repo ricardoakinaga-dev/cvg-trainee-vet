@@ -4,7 +4,7 @@
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
 **Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem pendentes as decisões que dependem de levantamento, entrevistas, validações e nomeações.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-076. D-075 simplifica fontes e D-076 simplifica a governança do MVP interno.
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-078. D-078 confirma o processo atual e fecha B-01.
 
 ## 1. Identidade e governança
 
@@ -25,7 +25,7 @@
 | D-010 | Quantos veterinários participarão? | gestão/coordenação | Discovery | pendente |
 | D-011 | Quais áreas, turnos e unidades? | coordenação | Discovery | parcialmente resolvida — unidade, setores, atendimento 24 horas e escala 12 × 36 informados; abrangência da primeira fase pendente |
 | D-012 | Qual a distribuição de experiência? | gestão | Discovery | pendente |
-| D-013 | Como o treinamento ocorre hoje? | coord. educacional | Discovery | parcialmente resolvida — não há método definido nem revisão clínica estruturada; práticas isoladas pendentes |
+| D-013 | Como o treinamento ocorre hoje? | MV. Ricardo Akinaga | Discovery | resolvida por D-078 — aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-014 | Quais ferramentas são usadas? | operação | Discovery | parcialmente resolvida — não há sistema de treinamento; ferramentas auxiliares pendentes |
 | D-015 | Quais lacunas já são conhecidas? | coord. clínica | Discovery | pendente |
 | D-016 | Quanto tempo protegido será oferecido? | direção | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 3 h/mês (RN-076) |
@@ -109,6 +109,7 @@
 | D-075 | Qual governança de fontes é proporcional a um treinamento digital exclusivamente interno do CVG? | patrocinador | fontes/B-04 | aprovada (2026-08-05): Alternativa 1, consulta manual interna, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; B-04 fechado para o MVP interno; D-033 não bloqueante |
 | D-076 | Qual governança organizacional é proporcional ao MVP interno? | patrocinador | governança/B-03 | aprovada (2026-08-05): Alternativa 1, Ricardo concentra as responsabilidades; outro MV revisa cada módulo clínico antes da publicação; sem comitês ou suplentes; B-03 fechado para o MVP |
 | D-077 | Qual política de dados é proporcional ao MVP interno? | patrocinador | dados/B-05 | aprovada (2026-08-05): Alternativa 1, somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos; B-05 fechado para o MVP |
+| D-078 | Como funciona atualmente o treinamento veterinário no CVG? | patrocinador | Discovery/B-01 | confirmada (2026-08-05): não existe treinamento padronizado; o aprendizado é informal, conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 
 ## 8. Perguntas para a primeira reunião
 

@@ -232,10 +232,10 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 ## 13. Resultado do Discovery
 
-O problema está recortado e os insumos estão organizados, mas a dor operacional e o fluxo atual ainda não foram validados com usuários. A autorização gerencial de 2026-08-05 produziu um rascunho de PRD e decisões de produto úteis; não aprovou o gate canônico. B-01 a B-07 devem ser resolvidos e o Discovery reexecutado antes da submissão formal do PRD.
+O problema está recortado e o fluxo atual foi confirmado pelo responsável do MVP em D-078: aprendizado informal, dependente da disponibilidade dos profissionais e sem trilha, avaliação ou registro centralizado. B-01 está fechado. O Discovery continua em correção por B-02, B-07 e outros itens ainda incompletos.
 
 ```text
 RESULTADO: REPROVADO — EM CORREÇÃO (2026-08-05)
 MOTIVO: ITENS OBRIGATÓRIOS INCOMPLETOS; ENGINES CANÔNICAS NÃO ADMITEM APROVAÇÃO CONDICIONAL
-PRÓXIMA AÇÃO: FECHAR B-01 A B-07, ATUALIZAR EVIDÊNCIAS E REEXECUTAR O GATE DISCOVERY
+PRÓXIMA AÇÃO: FECHAR B-02, B-07 E DEMAIS ITENS PENDENTES, ATUALIZAR EVIDÊNCIAS E REEXECUTAR O GATE DISCOVERY
 ```

@@ -37,7 +37,7 @@ O solicitante definiu as seguintes intenções:
 
 **DECISÃO DO PATROCINADOR — D-068 (2026-08-05):** a primeira versão não incluirá treinamento prático presencial associado à plataforma, observação de trabalho real, avaliação psicomotora, certificação prática ou concessão de autonomia clínica. Qualquer expansão desse tipo exige o `GATE-EXP-PRAT-01`.
 
-**HIPÓTESE A VALIDAR:** Hoje os treinamentos podem ocorrer de forma não padronizada, sem uma visão consolidada de domínio por tema, retenção e necessidades de reforço. Essa hipótese não pode ser tratada como fato até a realização das entrevistas e do levantamento operacional.
+**FATO INFORMADO PELO RESPONSÁVEL — D-078 (2026-08-05):** o CVG não possui treinamento veterinário padronizado. O aprendizado ocorre informalmente, conforme a disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado.
 
 ## Quem identificou
 

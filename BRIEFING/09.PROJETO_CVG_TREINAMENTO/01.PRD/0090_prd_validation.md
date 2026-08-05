@@ -13,7 +13,7 @@
 
 - [x] Problema claramente definido (0009 Discovery Master §2);
 - [x] Impacto mensurável (dimensões em 0004 e anexo 0003);
-- [ ] Dor operacional validada com usuários (B-01);
+- [x] Dor operacional e processo atual confirmados por MV. Ricardo Akinaga, responsável por todas as áreas do MVP (D-078/B-01);
 
 ### USUÁRIOS
 
@@ -27,7 +27,7 @@
 
 - [x] Fluxo principal definido (jornada do colaborador, 0020 §4);
 - [ ] Exceções completamente definidas — há políticas pendentes de afastamento, acessibilidade e reprovação recorrente;
-- [ ] Fluxo atual real validado (B-01, compromisso — roteiro no anexo 0007).
+- [x] Fluxo atual real validado por D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado.
 
 ### ESCOPO
 
@@ -69,7 +69,7 @@
 
 | ID | Condição | Impacto | Owner recomendado | Status |
 |---|---|---|---|---|
-| B-01 | fluxo atual não validado com usuários | reduz confiança do desenho | PO + coord. clínica | PENDENTE — roteiro pronto (anexo 0007) |
+| B-01 | fluxo atual do treinamento | estabelecer ponto de partida | MV. Ricardo Akinaga | FECHADO POR D-078 — aprendizado informal, sem trilha, avaliação ou registro centralizado |
 | B-02 | coorte e público não dimensionados | piloto não delimitável | gestão | PARCIAL — parâmetros confirmados pelo patrocinador como insumos; inventário e revalidação formal pendentes |
 | B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076 — MV. Ricardo Akinaga; segundo MV somente por módulo antes da publicação |
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
@@ -100,7 +100,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 
 ```text
 STATUS: REPROVADO — EM CORREÇÃO (RECLASSIFICAÇÃO CANÔNICA, 2026-08-05)
-AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-01, B-02 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
+AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-02 E B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
 SPEC: PROIBIDA, INCLUSIVE PREPARAÇÃO FORMAL
 BUILD: PROIBIDO
 ```

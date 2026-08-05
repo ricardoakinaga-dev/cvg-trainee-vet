@@ -7,7 +7,7 @@
 
 | ID | Hipótese | Como validar |
 |---|---|---|
-| H-01 | O processo atual não permite medir evolução com consistência | entrevistas e inventário |
+| H-01 | O processo atual não permite medir evolução com consistência | CONFIRMADA POR D-078: não há avaliação nem registro centralizado |
 | H-02 | Os veterinários valorizam uma trilha progressiva | pesquisa e piloto |
 | H-03 | Existe tempo protegido suficiente | análise de escala e liderança |
 | H-04 | O conhecimento pode ser organizado em três níveis úteis | painel clínico e blueprint |
@@ -26,9 +26,9 @@
 | R-02 | Baixa adesão | alta | comunicação, utilidade percebida e piloto |
 | R-03 | Escopo excessivo | alta | coorte e áreas limitadas no MVP |
 | R-04 | Sobrecarga de autores/revisores | alta | calendário, papéis e SLA |
-| R-05 | Processo atual não mapeado | alta | entrevistas antes do PRD |
+| R-05 | Aprendizado atual informal e dependente da disponibilidade individual | alta | implantar trilha, avaliação e registro centralizado no futuro sistema |
 | R-06 | Métrica sem ação associada | média | owner e regra de ação por KPI |
-| R-07 | Dependência de uma pessoa | alta | comitê e documentação |
+| R-07 | Dependência de uma pessoa | alta | documentação e segunda revisão clínica por módulo |
 
 ## Riscos clínicos
 
@@ -96,8 +96,7 @@
 
 - Necessidade de conciliar fonte nacional de 2015 com referência internacional de 2024 e normas brasileiras vigentes;
 - Ausência de baseline;
-- Ausência de usuários entrevistados;
-- Ausência de fluxo atual;
+- Participantes ainda não entrevistados para preferências e restrições, sem reabrir B-01;
 - Quantidade e perfil de veterinários desconhecidos;
 - Plataforma e simulações digitais não medem habilidade psicomotora, competência prática ou autonomia clínica;
 - Correlação educacional não prova causalidade clínica;
@@ -112,9 +111,8 @@
 
 ## Riscos que mantêm Discovery e PRD reprovados
 
-1. Processo atual não validado;
-2. Responsáveis não nomeados;
-3. Direitos de uso das três obras não verificados;
-4. Política de dados não definida;
-5. Público e piloto não delimitados;
-6. Escopo clínico inicial não priorizado.
+1. Público e coorte ainda não dimensionados (B-02);
+2. Baseline ainda não coletada (B-07);
+3. Restrições de dispositivo, conectividade e acessibilidade ainda não confirmadas;
+4. Requisitos e exceções do PRD ainda incompletos;
+5. Protocolos internos ainda não inventariados.
