@@ -135,11 +135,11 @@ Enquanto as cadeiras formais permanecerem vagas, MV. Ricardo Akinaga atuará com
 
 **Pode:** organizar a fila de pendências, convocar reuniões, solicitar evidências, consolidar administrativamente e sincronizar rascunhos, acompanhar prazos e coordenar trabalhos que usem somente dados estritamente agregados e efetivamente anonimizados, sem campos/células vinculáveis ou grupos pequenos reidentificáveis.
 
-**Não pode:** assinar como PO, responsável clínico/RT, coordenação educacional, comitê científico ou LGPD/segurança; emitir parecer independente nessas funções; validar B-04, B-05, B-06 ou B-07 sozinho; fechar B-03; aprovar Discovery/PRD; iniciar SPEC, BUILD, arquitetura, código ou produção de conteúdo clínico.
+**Não pode:** assinar como PO, responsável clínico/RT, coordenação educacional, comitê científico ou LGPD/segurança; emitir parecer independente nessas funções; validar B-05, B-06 ou B-07 sozinho; fechar B-03; aprovar Discovery/PRD; iniciar SPEC, BUILD, arquitetura, código ou publicar o programa antes dos gates aplicáveis. Pode coordenar rascunhos de conteúdo original sob D-075.
 
 Se Ricardo contribuir materialmente para o conteúdo de um artefato, será registrado como autor/preparador e ficará impedido de assiná-lo também como patrocinador. O impedimento permanece vinculado à versão e ao commit mesmo após o término de D-072; a aprovação exigirá suplente da cadeira do patrocinador formalmente nomeado, aceito e não impedido, sem redução do quórum. Enquanto esse suplente não existir, o gate permanece bloqueado.
 
-O trabalho pode continuar nos demais itens de correção sem aguardar as nomeações, respeitando suas dependências: B-05 antes de coleta identificável e baseline; B-04 antes de conteúdo clínico; B-03 antes de B-06 formal e antes da nova submissão dos gates. Avanço de correção não significa avanço de fase.
+O trabalho pode continuar nos demais itens de correção sem aguardar as nomeações. B-04 está fechado por D-075; B-05 continua anterior à coleta identificável e baseline; B-03 continua anterior a B-06 formal e à nova submissão dos gates.
 
 ### Segregação e impedimentos
 
@@ -158,7 +158,7 @@ O trabalho pode continuar nos demais itens de correção sem aguardar as nomeaç
 |---|---|---|---|
 | Discovery | PO | usuários, RT, coordenação educacional e LGPD/segurança, todos com parecer explícito sobre o commit | patrocinador + RT + coordenação educacional + LGPD/segurança; PO presta contas e se abstém da aprovação do artefato que preparou |
 | PRD | PO | RT, coordenação educacional e LGPD/segurança, todos com parecer explícito sobre o commit | patrocinador + RT + coordenação educacional + LGPD/segurança; PO presta contas e se abstém da aprovação do artefato que preparou |
-| Conteúdo clínico | autor | revisor clínico + revisor pedagógico independentes | comitê científico, somente após B-04 e os gates aplicáveis |
+| Conteúdo clínico | autor | revisor clínico + revisor pedagógico independentes | comitê científico para publicação; rascunhos originais permitidos por D-075 |
 
 SPEC e BUILD continuam bloqueados. Seus aprovadores técnicos deverão ser nomeados antes da abertura dessas fases, sem confundir o RT veterinário com o futuro líder técnico de software.
 Antes que qualquer controle técnico de segurança seja desenhado ou implementado, deverá ser nomeado revisor de segurança independente; o responsável conjunto LGPD/segurança desta fase não poderá validar sozinho controle que tenha especificado ou implementado.

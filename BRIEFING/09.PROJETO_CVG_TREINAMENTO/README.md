@@ -108,7 +108,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 1. mapear o fluxo atual e práticas isoladas via entrevistas (B-01);
 2. dimensionar o público e delimitar a coorte piloto (B-02);
 3. concluir B-03: o modelo de governança mínima segregada foi aprovado como insumo (D-071), mas ainda é obrigatório nomear titulares/suplentes, registrar aceites e conflitos e instalar os comitês;
-4. concluir B-04: D-074 definiu consulta/validação técnica, conteúdo autoral CVG sem referências visíveis e proveniência interna; ainda é obrigatório verificar legitimidade das cópias, consulta institucional e processamento automatizado; conteúdo clínico segue bloqueado;
+4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. aprovar formalmente o rascunho conservador de dados e acesso do [Anexo 0011](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md); até lá, nenhuma coleta pessoal de participante, paciente ou tutor é autorizada (B-05/D-073);
 6. revalidar formalmente as áreas do piloto (B-06), após B-03 — seleção confirmada pelo patrocinador como insumo: núcleo comum + emergência e internação;
 7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
@@ -150,7 +150,7 @@ O Ettinger será a **fonte clínica atualizada de referência** para complementa
 **Arquivo local:** `Fossum.Cirurgia de Pequenos Animais_ 4ª Edição-ilovepdf-compressed.pdf`  
 **Estrutura verificada:** quatro partes (princípios cirúrgicos gerais, cirurgia do tecido mole, ortopedia e neurocirurgia) e capítulos de 1 a 44; o arquivo PDF possui 5.008 páginas.
 
-O Fossum será a **referência cirúrgica complementar** para a trilha de cirurgia e para conteúdos perioperatórios de emergência/internação, na hierarquia definida no [Anexo 0001](90.ANEXOS/0001_governanca_fonte_conhecimento.md) (F-03), sujeito à mesma verificação de direitos de uso (B-04).
+O Fossum será a **referência cirúrgica complementar** para a trilha de cirurgia e para conteúdos perioperatórios de emergência/internação, na hierarquia definida no [Anexo 0001](90.ANEXOS/0001_governanca_fonte_conhecimento.md) (F-03), sob os controles internos simples de D-075.
 
 ## 6. Condição para avançar
 
@@ -165,10 +165,10 @@ O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abai
 7. verificar licença e direitos de uso das três obras;
 8. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
 
-Enquanto isso, são permitidas somente correção documental, desenho de instrumentos, levantamentos estritamente agregados e efetivamente anonimizados — sem campos/células vinculáveis ou grupos pequenos reidentificáveis —, nomeações, verificação jurídica, validação LGPD e sincronização dos rascunhos. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC — inclusive preparação formal —, BUILD, arquitetura, código e produção de conteúdo clínico permanecem proibidos.
+Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
 
 **Política transitória de dados (D-073):** o Anexo 0011 é um rascunho conservador não aprovado. Ele permite preparar B-05, mas não libera cadastro, coleta, acesso a caso real, gravação, resultado individual ou baseline. A proposta `vínculo + 2 anos` e a matriz de acesso são insumos a validar, não regras vigentes.
 
-**Política de fontes (D-074):** livros somente para consulta e validação técnica; aluno sem nomes/metadados das obras; rastreabilidade completa e restrita no workflow interno; PDFs, reprodução e processamento automatizado bloqueados. B-04 permanece parcial e nenhuma produção clínica foi autorizada.
+**Política de fontes (D-075):** governança enxuta para uso interno: consulta manual, conteúdo original CVG, PDFs fora da plataforma/Git e referência simples por módulo. B-04 está fechado; automação dos PDFs fica fora do MVP em D-033.
 
 **Coordenação transitória (D-072):** MV. Ricardo Akinaga coordena todas as frentes de correção enquanto B-03 permanece parcial. Essa responsabilidade operacional não preenche as cadeiras independentes, não permite autoaprovação e não autoriza mudança de fase. Os demais bloqueios podem ser tratados em paralelo ou na ordem de dependência documentada.

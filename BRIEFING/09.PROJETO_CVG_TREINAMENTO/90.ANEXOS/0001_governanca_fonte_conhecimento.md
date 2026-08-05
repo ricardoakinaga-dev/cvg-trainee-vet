@@ -1,7 +1,7 @@
 # Anexo 0001 — Governança das Fontes de Conhecimento
 
-**Status:** rascunho controlado; D-074/Alternativa 1 aprovada como diretriz de uso, sem fechar B-04
-**Objetivo:** definir como as fontes serão usadas sem produzir conteúdo nesta etapa.
+**Status:** governança enxuta aprovada para o MVP interno por D-075; B-04 fechado nesse escopo
+**Objetivo:** definir o uso simples e seguro das fontes no treinamento interno do CVG.
 
 > **Classificação:** os títulos, autores, editoras, ISBNs, arquivos, capítulos e páginas deste anexo são metadados internos de governança. Eles não integram a experiência do aluno. Na camada educacional, as obras serão usadas somente para consulta e validação técnica; o aluno verá conteúdo institucional autoral do CVG e informações de revisão/atualização.
 
@@ -89,19 +89,15 @@ Cada unidade futura de conteúdo deverá possuir, em registro interno restrito e
 | Campo | Obrigatório |
 |---|---:|
 | `content_id` | sim |
-| `claim_id` e afirmação técnica validada | sim, para cada afirmação verificável |
 | título | sim |
 | objetivo de aprendizagem | sim |
 | competência | sim |
 | nível | sim |
 | fonte principal | sim |
 | edição/ano | sim |
-| volume | sim |
-| parte ou seção | sim |
-| capítulo | sim |
-| páginas | sim |
+| capítulo ou seção de apoio | sim, por módulo |
+| páginas | opcional |
 | fontes complementares | quando aplicável |
-| vínculo `claim_id` → fonte/capítulo/páginas | sim |
 | protocolo CVG relacionado | quando aplicável |
 | autor | sim |
 | revisor clínico | sim |
@@ -203,62 +199,44 @@ Esse mapeamento não representa módulos prontos.
 
 ## 7. Direitos autorais
 
-### Regras
+### Regras proporcionais ao uso interno
 
-- Usar as obras somente como consulta e validação técnica no fluxo interno;
-- Não reproduzir nem adaptar a expressão dos livros: texto, tradução, sequência expositiva distintiva, capítulos, tabelas, figuras, diagramas, imagens ou trechos;
-- Não publicar, anexar, transmitir ou disponibilizar os PDFs na plataforma;
-- Criar do zero textos, tabelas, esquemas, ilustrações, casos e questões institucionais do CVG;
-- Manter a referência completa somente no registro interno restrito, usando F-01/F-02/F-03 no workflow;
-- Não exibir ao aluno nomes de obras, autores, editoras, ISBNs, arquivos ou avisos de direitos autorais das obras consultadas;
-- Não usar citação direta nessa modalidade. Se uma citação se tornar necessária, ela fica fora de D-074 e exige revisão jurídica e atribuição aplicável antes do uso;
-- Confirmar a legitimidade das cópias e o alcance permitido para consulta institucional;
-- Bloquear extração, indexação, OCR, embeddings, mineração de texto, envio a serviço externo, treinamento de IA ou outro processamento automatizado até D-033/B-04;
-- Restringir o acesso aos arquivos-fonte e registrar origem, permissão, responsável e decisão jurídica.
+- Usar as obras como consulta manual e validação técnica pela equipe do CVG;
+- Criar textos, tabelas, esquemas, casos, simulações e questões com redação própria do CVG;
+- Não copiar páginas, trechos, tabelas, figuras, imagens ou a redação das obras;
+- Não publicar, anexar, transmitir ou disponibilizar os PDFs na plataforma ou no Git;
+- Registrar internamente apenas a obra e o capítulo/seção usados em cada módulo;
+- Não exibir ao aluno os metadados das obras consultadas;
+- Manter os arquivos-fonte em acesso local restrito;
+- Tratar OCR, indexação, embeddings, RAG ou envio dos PDFs a serviços de IA como decisão futura separada (D-033), sem bloquear a autoria manual do treinamento.
 
-O Ettinger declara proteção inclusive para mineração de texto e treinamento de IA. A utilização em fluxos automatizados ou geração de conteúdo exige verificação jurídica e contratual.
-
-O Fossum possui proteção expressa de direitos autorais (© 2015 Elsevier Editora Ltda; copyright original © 2013 Mosby/Elsevier). Aplica-se a mesma regra: verificação jurídica antes de qualquer uso institucional, material derivado ou processamento automatizado (B-04).
-
-### 7.1 Regra de separação aprovada em D-074
+### 7.1 Regra de separação simplificada por D-075
 
 | Camada | O que registra ou exibe | Acesso |
 |---|---|---|
 | Experiência do aluno | conteúdo institucional CVG; justificativa técnico-clínica; versão, data de corte e estado de revisão | aluno e papéis educacionais autorizados |
-| Workflow editorial interno | código F-01/F-02/F-03, edição, volume, parte/seção, capítulo, páginas, afirmação validada, autor e revisores | autores, revisores, comitê, auditor e jurídico conforme necessidade |
-| Registro de direitos | titular/editora, origem e legitimidade da cópia, permissões, restrições, parecer, validade e evidência | jurídico/licenças e auditoria autorizada |
-| Arquivo-fonte | PDF local fora do Git e fora da plataforma | somente pessoas formalmente autorizadas; processamento automatizado bloqueado |
+| Registro interno do módulo | código F-01/F-02/F-03, edição e capítulo/seção consultados, autor e revisor | equipe responsável pelo treinamento |
+| Arquivo-fonte | PDF local fora do Git e fora da plataforma | equipe interna autorizada; automação depende de D-033 |
 
-O requisito de não mostrar nomes ou informações de direitos autorais ao aluno não permite apagar a proveniência interna. A rastreabilidade é obrigatória para demonstrar qual informação foi consultada, qual revisor a validou, que versão estava vigente e como divergências foram resolvidas.
+O aluno recebe o conteúdo institucional do CVG. A equipe mantém uma referência simples por módulo para facilitar revisões e atualizações.
 
 A separação deve existir na projeção completa, não apenas visualmente: tela, API/payload, exportação, arquivo baixável, analytics e log acessível ao aluno não podem revelar os metadados restritos. Isso não remove termos gerais da plataforma, alertas clínico-regulatórios ou informações legalmente obrigatórias.
 
-Antes da aprovação editorial, autor e revisores deverão confirmar que o ativo:
+Antes da publicação interna, autor e revisor confirmam somente que o material:
 
 1. foi redigido integralmente em formulação própria do CVG;
-2. não reproduz nem reconstrói substancialmente texto, tabela, figura, diagrama ou organização distintiva da obra;
-3. possui mapa interno entre afirmações técnicas e fontes consultadas;
-4. passou por revisão clínica e pedagógica independentes;
-5. não contém metadados ou arquivos-fonte visíveis ao aluno;
-6. recebeu a checagem de direitos exigida para a modalidade de uso.
+2. não copia texto, tabela, figura ou imagem da obra;
+3. registra a obra e o capítulo/seção consultados;
+4. passou por revisão clínica;
+5. não disponibiliza o PDF ao aluno.
 
-### 7.2 Estado e critérios de fechamento de B-04
+### 7.2 Estado de B-04 no MVP interno
 
-D-074 aprova o desenho do workflow, mas B-04 permanece `PARCIAL`. Nenhuma produção ou publicação de conteúdo clínico foi autorizada.
+B-04 fica `FECHADO PARA O MVP INTERNO` por D-075. Consulta manual das obras e criação de conteúdo original do CVG não dependem de parecer jurídico, contato com editoras ou licença editorial adicional como gate do produto.
 
-B-04 somente poderá ser fechado quando houver:
+Permanecem somente quatro controles operacionais: acesso interno, PDFs fora da plataforma e do Git, proibição de copiar material das obras e referência simples por módulo. D-033 continua pendente apenas para eventual processamento automatizado dos PDFs e não bloqueia o MVP ou a autoria manual.
 
-- [ ] origem e legitimidade de cada uma das três cópias verificadas;
-- [ ] pessoa jurídica/titular e termos aplicáveis identificados para F-01, F-02 e F-03;
-- [ ] parecer jurídico sobre consulta institucional e criação de conteúdo autoral a partir de conhecimento validado;
-- [ ] decisão expressa sobre extração, OCR, indexação, embeddings, IA e demais processamentos automatizados;
-- [ ] matriz de acesso aos PDFs e registro de direitos aprovados;
-- [ ] checklist de originalidade, rastreabilidade interna e separação da interface aprovado;
-- [ ] teste documental com ativo totalmente fictício demonstra trilha interna completa e projeção do aluno sem vazamento de metadados, sem consultar as obras para produzir o teste;
-- [ ] responsável jurídico/licenças identificado e parecer registrado sobre commit específico;
-- [ ] checkpoint Git validado, sem PDFs, segredos ou material protegido reproduzido.
-
-Fechar B-04 não aprova Discovery, PRD, SPEC, BUILD nem conteúdo clínico. Os gates aplicáveis e a governança editorial continuam obrigatórios.
+O fechamento de B-04 remove apenas o bloqueio de fontes. Os demais gates da construção continuam com seus próprios requisitos.
 
 ## 8. Ciclo editorial proposto
 
@@ -300,8 +278,7 @@ Proposta:
 | Comitê científico | hierarquia de fontes e divergências; RT + clínico de Emergência + clínico de Internação/Medicina Interna | `NÃO INSTALADO — BLOQUEIA B-03` |
 | Especialista da área | correção clínica independente de material próprio | `VAGO — BLOQUEIA B-03` |
 | Revisor pedagógico | qualidade educacional independente de material próprio | `VAGO — BLOQUEIA B-03` |
-| Jurídico/licenças | direitos autorais | PENDENTE |
 | Gestor de conteúdo | versão e calendário | PENDENTE |
 | Auditor | rastreabilidade | PENDENTE |
 
-O modelo de governança foi confirmado como insumo em D-071, mas os nomes e aceites permanecem pendentes. Autor ou preparador deve se abster totalmente da revisão, votação e aprovação do próprio ativo; conflito exige registro e suplente não impedido. Nenhum conteúdo clínico pode ser produzido ou publicado antes de B-04 e dos gates aplicáveis.
+O modelo de governança foi confirmado como insumo em D-071, mas os nomes e aceites permanecem pendentes. B-04 não bloqueia mais autoria manual; publicação e avanço de fase continuam sujeitos aos gates gerais aplicáveis.

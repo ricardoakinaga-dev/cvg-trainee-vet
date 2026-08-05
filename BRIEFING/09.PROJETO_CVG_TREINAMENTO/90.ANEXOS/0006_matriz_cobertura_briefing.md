@@ -66,9 +66,9 @@
 | outras avaliações | anexo 0003 | catálogo de possibilidades |
 | medir evolução | anexo 0003 | KPIs candidatos |
 | remediação | anexos 0002/0003 | hipótese de fluxo |
-| fonte brasileira | anexo 0001 + D-074 | registrada internamente para consulta/validação; identificação não exibida ao aluno; B-04 parcial |
-| fonte atualizada | anexo 0001 + D-074 | registrada internamente para consulta/validação; identificação não exibida ao aluno; B-04 parcial |
-| fonte cirúrgica | anexo 0001 + D-074 | F-03 registrada internamente para consulta/validação; identificação não exibida ao aluno; B-04 parcial |
+| fonte brasileira | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
+| fonte atualizada | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
+| fonte cirúrgica | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
 | validação da documentação | anexo 0009 | verificações físicas e de consistência registradas — 2026-08-05 |
 | sequência de construção | anexo 0004 | roadmap com gates |
 | não criar programa | README | escopo respeitado |
@@ -90,7 +90,7 @@
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
 | consolidação | 01.PRD/0020 | preenchido |
-| gate | 01.PRD/0090 | reprovado — em correção; D-072 permite coordenação operacional, D-073 prepara B-05 e D-074 prepara B-04 sem autorizar dados ou conteúdo; B-01/B-02/B-03/B-04/B-05/B-07 e requisitos pendentes continuam bloqueando nova submissão |
+| gate | 01.PRD/0090 | reprovado — em correção; B-04 fechado por D-075; B-01/B-02/B-03/B-05/B-07 e requisitos pendentes continuam bloqueando nova submissão |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |
 
 ## 3. Campos que só podem ser fechados no PRD
@@ -140,7 +140,7 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 CAMPOS DE DISCOVERY: REGISTRADOS; GATE DISCOVERY REPROVADO — EM CORREÇÃO (2026-08-05)
 CAMPOS DESCONHECIDOS: REGISTRADOS COMO PENDENTES, SEM INVENÇÃO
 REQUISITOS DECLARADOS: MATERIALIZADOS NO PRD COMO PROPOSTA
-FONTES CLÍNICAS: WORKFLOW D-074 REGISTRADO; PROVENIÊNCIA INTERNA RESTRITA; B-04 PARCIAL
+FONTES CLÍNICAS: GOVERNANÇA ENXUTA D-075 REGISTRADA; B-04 FECHADO PARA O MVP INTERNO
 PROGRAMA/IMPLEMENTAÇÃO: NÃO CRIADO
 GATE DISCOVERY: REPROVADO — B-01 A B-07 DEVEM SER FECHADOS E O GATE REEXECUTADO
 GATE PRD: REPROVADO — RASCUNHO CONTROLADO; DECISÕES CONFIRMADAS SÃO INSUMOS

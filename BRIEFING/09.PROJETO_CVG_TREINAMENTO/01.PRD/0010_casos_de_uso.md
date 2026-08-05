@@ -225,13 +225,13 @@
 
 - **Ator:** Autor/instrutor.
 - **Objetivo:** propor módulos, objetivos, casos e questões com rastreabilidade.
-- **Pré-condições:** B-04 fechado e gates anteriores aprovados sobre commits identificados.
+- **Pré-condições:** tema definido e fonte interna selecionada; B-04 já está fechado para consulta manual no MVP interno por D-075.
 - **Gatilho:** demanda de trilha ou lacuna identificada.
 - **Fluxo principal:**
   1. O autor cria a unidade/item no rascunho;
-  2. Preenche no workflow interno restrito a rastreabilidade (objetivo, competência, nível, `claim_id`, afirmação validada, fonte, edição, capítulo, páginas e versão), sem exposição ao aluno;
+  2. Registra internamente objetivo, competência, nível, obra e capítulo/seção consultados e versão, sem exposição ao aluno;
   3. Submete à revisão independente (não pode publicar o próprio conteúdo).
-- **Exceções:** B-04 ou gate anterior aberto — autoria clínica bloqueada; conteúdo exigindo alerta clínico — campo obrigatório.
+- **Exceções:** tentativa de copiar texto, tabela, figura ou imagem da obra — submissão bloqueada; conteúdo exigindo alerta clínico — campo obrigatório.
 - **Resultado esperado:** item em revisão com metadados completos.
 - **Observações:** rastreabilidade mínima `100%` para itens ativos (métrica).
 
@@ -239,14 +239,14 @@
 
 - **Ator:** Revisor clínico (correção/atualidade) e revisor pedagógico (alinhamento).
 - **Objetivo:** garantir correção científica, atualidade e qualidade pedagógica.
-- **Pré-condições:** B-04 fechado, gates anteriores aprovados e conteúdo submetido por UC-012.
+- **Pré-condições:** conteúdo original submetido por UC-012.
 - **Gatilho:** submissão do autor.
 - **Fluxo principal:**
   1. O revisor analisa conteúdo/questão;
-  2. Verifica, no workflow interno restrito, fonte, edição, capítulo, páginas, atualidade e originalidade da redação/estrutura CVG;
+  2. Verifica a correção clínica, a atualidade, a redação própria do CVG e a referência interna por obra/capítulo;
   3. Aprova, solicita ajustes ou rejeita;
   4. Divergências entre fontes seguem a regra de conflito (anexo 0001).
-- **Exceções:** B-04 ou gate anterior aberto — revisão clínica bloqueada; divergência crítica — nunca resolvida automaticamente por IA; encaminhada a especialista.
+- **Exceções:** cópia de material da obra — item devolvido; divergência crítica — encaminhada a revisor clínico.
 - **Resultado esperado:** conteúdo aprovado com data de corte e validade.
 - **Observações:** revisor clínico e pedagógico são independentes do autor.
 
@@ -256,11 +256,11 @@
 - **Objetivo:** liberar conteúdo aprovado para a trilha.
 - **Gatilho:** revisões concluídas.
 - **Fluxo principal:**
-  1. O gestor verifica aprovações, checagem de originalidade, estado de B-04 e separação entre metadados internos e projeção do aluno;
+  1. O gestor verifica aprovações, redação original e separação entre a referência interna e a visão do aluno;
   2. Confirma que tela, payload, exportação e log acessíveis ao aluno não contêm metadados restritos das obras;
   3. Agenda a publicação;
   4. O sistema publica e registra versão e data.
-- **Exceções:** B-04 pendente, similaridade/reprodução detectada ou metadado de fonte exposto — publicação bloqueada.
+- **Exceções:** cópia/reprodução detectada, PDF anexado ou metadado interno exposto — publicação bloqueada.
 - **Resultado esperado:** conteúdo ativo, versionado e rastreável.
 - **Observações:** publicação só de conteúdo aprovado; alterações sempre versionadas.
 

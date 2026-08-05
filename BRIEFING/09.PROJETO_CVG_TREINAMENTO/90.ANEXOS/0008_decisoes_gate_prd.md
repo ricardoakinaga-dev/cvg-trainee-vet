@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates, D-071 aprovou o modelo de governança segregada, D-072 definiu coordenação geral interina sem preencher as vagas de B-03, D-073 autorizou somente a preparação de um rascunho conservador de dados e D-074 definiu a separação entre conteúdo autoral visível e rastreabilidade interna das fontes. As decisões de produto e governança não aprovam Discovery nem PRD. B-04 e B-05 continuam parciais; RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 simplificou a governança das fontes para o sistema interno do CVG e fechou B-04 nesse escopo. B-05 e os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes de B-04.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -59,7 +59,7 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 | Validações | `git diff --check`; 56 links Markdown relativos sem quebra; nenhuma definição RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado |
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-069 APROVADA — ALTERNATIVA 1`, em 2026-08-05; isso não aprova Discovery nem PRD |
-| Pendências e riscos residuais | B-01 a B-07 e requisitos explicitamente pendentes; B-05 precede coleta identificável e baseline; B-04 bloqueia conteúdo clínico |
+| Pendências e riscos residuais | registro histórico do checkpoint D-069; a menção a B-04 foi posteriormente superada por D-075 |
 | Próximo passo autorizado | tratar B-03 e demais correções documentais; reexecutar Discovery e depois PRD; SPEC e BUILD permanecem proibidos |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
@@ -125,7 +125,7 @@ B-03 permanece `PARCIAL`; Discovery e PRD permanecem `REPROVADOS — EM CORREÇ�
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
 | Decisão e data | `D-072 APROVADA — ALTERNATIVA 1`, em 2026-08-05; coordenação operacional sem aprovação de gate |
 | Pendências e riscos residuais | todas as cadeiras independentes de B-03 permanecem vagas; contribuição material futura de Ricardo gera impedimento para assinatura do respectivo commit como patrocinador |
-| Próximo passo autorizado | preparar os demais itens de correção conforme dependências; B-05 antes de dados identificáveis/B-07, B-04 antes de conteúdo e B-03 antes de B-06 formal e dos gates |
+| Próximo passo autorizado | registro histórico do checkpoint D-072; a dependência de B-04 foi posteriormente removida por D-075 |
 
 Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
 
@@ -165,6 +165,8 @@ Este registro documental posterior não altera o conteúdo revisado identificado
 
 ## 0.5 Decisão de apresentação e rastreabilidade das fontes — D-074
 
+> **Histórico:** o desenho abaixo foi posteriormente simplificado por D-075. Permanecem válidos apenas a separação da visão do aluno, a redação própria e a proibição de colocar PDFs na plataforma/Git.
+
 | Alternativa | Modelo | Veredito |
 |---|---|---|
 | **1** | **Obras usadas somente para consulta e validação técnica; conteúdo integralmente autoral do CVG; aluno não vê nomes ou metadados das obras; workflow interno mantém rastreabilidade completa por F-01/F-02/F-03** | **recomendada e selecionada — atende à apresentação institucional sem perder auditabilidade clínica** |
@@ -173,7 +175,7 @@ Este registro documental posterior não altera o conteúdo revisado identificado
 
 **Decisão do patrocinador em 2026-08-05:** Alternativa 1. A experiência do aluno apresentará apenas conteúdo institucional autoral do CVG, justificativa técnico-clínica, versão e estado de revisão. Nomes de obras, autores, editoras, ISBNs, arquivos e avisos de direitos autorais das obras consultadas não serão exibidos. O workflow interno restrito manterá fonte, edição, capítulo, páginas, afirmação validada, autores e revisores.
 
-D-074 não autoriza citação direta, reprodução, adaptação da expressão dos livros, acesso dos alunos aos PDFs ou processamento automatizado. Textos, tabelas, esquemas, ilustrações, casos e questões devem ser criações originais do CVG. B-04 permanece `PARCIAL` até verificação jurídica da origem/legitimidade das cópias, consulta institucional e processamento automatizado. Nenhum conteúdo clínico foi liberado.
+D-074 registrou controles mais rigorosos e manteve B-04 parcial naquele checkpoint. Esse estado foi substituído por D-075; não representa a regra vigente.
 
 ### Evidência do checkpoint D-074
 
@@ -187,11 +189,34 @@ D-074 não autoriza citação direta, reprodução, adaptação da expressão do
 | Revisores | revisão independente de qualidade: 2 achados médios e 2 baixos corrigidos; revisão independente de segurança/compliance: 1 achado médio corrigido; revalidações sem achado crítico, alto ou médio |
 | Validações | `git diff --cached --check`; 66 links Markdown relativos sem quebra; nenhuma definição UC/RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado ou rastreado |
 | Aprovador da alternativa | MV. Ricardo Akinaga — patrocinador executivo |
-| Decisão e data | `D-074 APROVADA — ALTERNATIVA 1`, em 2026-08-05; B-04 continua parcial |
-| Pendências e riscos residuais | legitimidade das cópias; titular/termos; consulta institucional; material autoral; processamento automatizado; owner e parecer jurídico |
-| Próximo passo autorizado | concluir a verificação jurídica de B-04; nenhuma produção ou publicação clínica foi autorizada |
+| Decisão e data | registro histórico D-074; estado substituído por D-075 |
+| Pendências e riscos residuais | registro histórico; controles vigentes estão em D-075 |
+| Próximo passo autorizado | substituído por D-075 |
 
-Este registro documental posterior não altera o conteúdo revisado identificado pelo commit e pela tag acima e não fecha B-04.
+Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vigente é D-075, que fecha B-04 para o MVP interno.
+
+---
+
+## 0.6 Recalibração para treinamento interno — D-075
+
+| Alternativa | Modelo | Veredito |
+|---|---|---|
+| **1** | **Governança enxuta: consulta manual interna, conteúdo original CVG, PDFs fora da plataforma/Git e obra + capítulo/seção registrados por módulo** | **recomendada e selecionada — proporcional ao uso interno** |
+| 2 | Controle mínimo, sem referência por módulo | não selecionada — dificulta atualização clínica |
+| 3 | Manter D-074 integral, com rastreabilidade por afirmação e validação jurídica como gate | rejeitada — burocracia incompatível com o MVP interno |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. B-04 fica `FECHADO PARA O MVP INTERNO`. A equipe pode consultar manualmente as obras e produzir conteúdo original. Não é exigido `claim_id`, parecer jurídico ou contato com editora como condição do produto. D-033 permanece aberta somente para uma futura automação dos PDFs e não bloqueia o trabalho manual.
+
+### Evidência do checkpoint D-075
+
+| Campo | Registro |
+|---|---|
+| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Escopo | sistema digital interno do Centro Veterinário Guarapiranga |
+| Controles mantidos | conteúdo original; PDFs fora da plataforma/Git; sem material copiado; referência simples por módulo |
+| Validações | `PENDENTE` |
 
 ---
 
@@ -370,9 +395,7 @@ Este registro documental posterior não altera o conteúdo revisado identificado
 
 ### B-04 — Direitos de uso das obras
 
-**Estado após D-074:** `PARCIAL — WORKFLOW DEFINIDO; VERIFICAÇÃO JURÍDICA PENDENTE`. Obras somente para consulta e validação técnica; conteúdo visível integralmente autoral do CVG, sem nomes/metadados das obras; proveniência completa preservada no backoffice por F-01/F-02/F-03. A regra anterior de “sínteses com citação” foi substituída por D-074.
-
-RF-038 permanece bloqueante. B-04 exige verificar origem/legitimidade das cópias, titular e termos, consulta institucional, criação autoral e qualquer processamento automatizado. PDFs, reprodução e conteúdo clínico continuam proibidos até a resolução e os gates aplicáveis.
+**Estado após D-075:** `FECHADO PARA O MVP INTERNO`. As obras podem ser consultadas manualmente; o CVG produz material próprio; os PDFs não entram na plataforma nem no Git; cada módulo registra apenas obra e capítulo/seção. D-033 continua aberta somente para eventual automação dos arquivos.
 
 ### B-05 / D-051 a D-054 — Política de dados
 
@@ -417,7 +440,7 @@ RF-038 permanece bloqueante. B-04 exige verificar origem/legitimidade das cópia
 | Duração | 12 semanas |
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
 | Dados | D-073: nenhum dado pessoal de participante/paciente/tutor antes de B-05; RH proibido; acesso, retenção `vínculo + 2 anos`, correção e dashboards são propostas a validar |
-| Fontes/B-04 | D-074: consulta e validação técnica; conteúdo autoral CVG sem referências visíveis; rastreabilidade interna; verificação jurídica ainda pendente |
+| Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
 | Governança e nomeações | modelo mínimo segregado D-071 confirmado; titulares, suplentes, aceites e instalação dos comitês pendentes (B-03) |
 | Coordenação interina | MV. Ricardo Akinaga coordena as correções por D-072, sem preencher cadeiras ou assinar gates |
 
@@ -431,7 +454,7 @@ RF-038 permanece bloqueante. B-04 exige verificar origem/legitimidade das cópia
 1. Concluir B-03 — nomear titulares/suplentes de PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança; registrar aceites/conflitos e instalar os comitês;
 2. Aplicar entrevistas/levantamento do anexo 0007 (B-01);
 3. Inventário de usuários/coorte (B-02);
-4. Concluir verificação jurídica das licenças (B-04);
+4. Manter os quatro controles operacionais de fontes definidos em D-075;
 5. Obter validação formal da política de dados pelo responsável LGPD (B-05);
 6. Aplicar diagnóstico inicial e coletar baseline (B-07);
 7. Resolver os requisitos marcados como pendentes no PRD.

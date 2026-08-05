@@ -62,7 +62,7 @@ O piloto será considerado **bem-sucedido** quando:
 ## 5. Critérios de insucesso / pausa (anexo 0004 §6)
 
 - Erro clínico crítico no conteúdo;
-- Licença não resolvida (B-04);
+- PDF ou material copiado das obras detectado na plataforma;
 - Falha de privacidade (B-05);
 - Inconsistência de notas ou gabaritos não resolvida;
 - Uso punitivo indevido de resultados;

@@ -41,7 +41,7 @@
 | A4 | Há tempo protegido para estudo? Quanto por semana/mês por veterinário? | carga viável | D-016 |
 | A5 | Quais são os titulares e suplentes de PO, responsável clínico/RT, coordenação educacional, comitê científico e LGPD/segurança, e onde estão registrados seus aceites e conflitos? | nomeações conforme D-071/0006 | B-03 |
 | A6 | Quem poderá ver resultados individuais? Gestão de pessoas pode usar para RH? | política de acesso | D-051, D-052 |
-| A7 | Há licença institucional das três obras (Tratado, Ettinger e Fossum) ou condição de uso definida? | direitos | B-04 |
+| A7 | Os PDFs permanecem restritos à equipe, fora da plataforma/Git, e o conteúdo está sendo redigido pelo CVG? | controle operacional | D-075 |
 | A8 | Qual orçamento e prazo desejado para o piloto? | viabilidade | D-065, D-066 |
 | A9 | Qual coorte e duração do piloto prefere? | recorte do piloto | D-060, D-061 |
 | A10 | Quais três lacunas mais preocupam a direção? | prioridades | B-06 |
@@ -173,7 +173,7 @@ LINKS PARA DECISÕES: D-___, B-___
 | Linha de base mínima (perfil, conhecimento, engajamento, indicadores) | `01.PRD/0015_metricas_de_sucesso.md` | B-07 |
 | Nomeações de responsáveis | `00.DISCOVERY/0006`, `01.PRD/0012 §8` | B-03 |
 | Política de dados definida | `01.PRD/0014`, `0012` | B-05 |
-| Situação de licenças | `90.ANEXOS/0001` | B-04 |
+| Controles internos das fontes | `90.ANEXOS/0001` | D-075 |
 | Respostas das 12 perguntas de `0005_decisoes_pendentes.md §8` | `90.ANEXOS/0005` | geral |
 
 ---
@@ -189,7 +189,7 @@ O levantamento estará concluído quando:
 5. Baseline mínima levantada (B-07);
 6. Responsáveis nomeados (B-03);
 7. Política de dados aprovada (B-05);
-8. Situação de licenças verificada (B-04);
+8. Controles internos de fontes confirmados (D-075);
 9. Mapa validado com os participantes (sessão de devolutiva);
 10. Todos os formulários classificados (`FATO INFORMADO` / `HIPÓTESE` / `PENDENTE`) e nenhuma informação inventada.
 

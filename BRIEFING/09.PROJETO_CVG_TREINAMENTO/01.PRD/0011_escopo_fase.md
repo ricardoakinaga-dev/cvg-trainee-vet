@@ -55,9 +55,9 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 5. Emissão de diplomas ou equivalentes profissionais;
 6. Integração com sistema de prontuário, RH, financeiro ou qualquer sistema externo (fase futura);
 7. Avaliação trabalhista, decisões disciplinares ou uso de notas para sanções (uso em RH proibido no piloto — RN-066);
-8. Reprodução ou adaptação da expressão dos livros-fonte — incluindo texto, tradução, capítulos, tabelas, figuras, diagramas ou estrutura distintiva — proibida; obras somente para consulta/validação interna, com conteúdo original CVG e rastreabilidade restrita (D-074/RN-046);
+8. Cópia de texto, página, tabela, figura ou imagem dos livros-fonte — proibida; obras usadas para consulta manual interna, com conteúdo original CVG e referência simples por módulo (D-075/RN-046);
 9. Publicação dos PDFs das obras na plataforma;
-10. Processamento automatizado das obras — incluindo extração, OCR, indexação, embeddings, RAG, envio a IA ou geração assistida mesmo com revisão humana — bloqueado até decisão formal D-033/B-04; IA geral fora das obras continua sujeita aos demais gates e à revisão humana;
+10. Processamento automatizado dos PDFs — OCR, indexação, embeddings, RAG ou envio dos arquivos a IA — fora do MVP e pendente em D-033; isso não bloqueia consulta e autoria manuais;
 11. Notificações externas (e-mail/SMS) — `PENDENTE`;
 12. Gamificação, ranking público ou comparativos entre colaboradores;
 

@@ -225,7 +225,7 @@ O PRD deverá decidir se os seguintes campos são necessários; esta lista ainda
 | objetivo geral | resultado do módulo |
 | objetivos específicos | verbos observáveis |
 | competências | capacidades relacionadas |
-| fontes | rastreabilidade completa |
+| fontes | obra e capítulo/seção consultados por módulo |
 | conteúdo essencial | tópicos, sem excesso |
 | casos teóricos | aplicação |
 | atividades formativas | quizzes e exercícios |

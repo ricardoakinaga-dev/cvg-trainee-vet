@@ -87,14 +87,14 @@ Materializar o comportamento do produto sem definir tecnologia.
 - Aprovação, recuperação e retenção; ✅ (proposta)
 - Contestação; ✅
 - Governança editorial; ✅
-- Fontes e direitos; ⏳ workflow D-074 definido: conteúdo institucional independente para o aluno e proveniência completa apenas no ambiente interno restrito; B-04 permanece parcial, sem produção clínica ou processamento automatizado autorizado
+- Fontes; ✅ D-075: governança enxuta para uso interno, B-04 fechado; automação dos PDFs permanece fora do MVP em D-033
 - Métricas; ✅ (proposta; baseline B-07)
 - Privacidade; ⏳ rascunho conservador D-073/Anexo 0011 preparado, sem coleta pessoal de participante, paciente ou tutor autorizada; B-05 ainda pendente
 - Exceções. ✅
 
 ### Gate
 
-Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. As decisões do patrocinador permanecem como insumos, mas B-01, B-02, B-03, B-04, B-05, B-07 e requisitos pendentes exigem fechamento e nova execução do gate.
+Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-04 foi fechado por D-075; B-01, B-02, B-03, B-05, B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
 
 ## 4. Fase 2 — SPEC
 

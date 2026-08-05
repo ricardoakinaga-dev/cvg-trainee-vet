@@ -62,13 +62,13 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 
 | ID | Regra | Classificação |
 |---|---|---|
-| RN-040 | Toda unidade/item possui rastreabilidade interna restrita: objetivo, competência, nível, `claim_id`, afirmação validada, fonte, edição, volume, parte/seção, capítulo, páginas, versão, data de corte e validade; cada afirmação verificável é vinculada à fonte e os metadados das obras não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
+| RN-040 | Cada módulo registra internamente objetivo, competência, nível, obra e capítulo/seção consultados, autor, revisor, versão e data de revisão; esses dados não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RN-041 | Hierarquia de fontes: legislação/bula > protocolo CVG > diretriz atual > Ettinger 2024 > Fossum 2014 (temas cirúrgicos) > Tratado 2015 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05 — atualizada 2026-08-05: inclusão do Fossum, F-03) |
 | RN-042 | Divergências entre fontes seguem fluxo com `conflict_id` e decisão humana documentada; críticas nunca resolvidas por IA | FATO INFORMADO |
 | RN-043 | Conteúdo só é publicado após revisão clínica + pedagógica independentes e aprovação | FATO INFORMADO |
 | RN-044 | Autor não publica o próprio conteúdo | FATO INFORMADO |
-| RN-045 | Não copiar, traduzir, transcrever, parafrasear de forma próxima nem adaptar texto, sequência/estrutura distintiva, capítulo, tabela, figura, diagrama, ilustração, caso, questão ou exemplo das obras; cada ativo visível deve ser criação original do CVG | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
-| RN-046 | Obras usadas somente para consulta e validação técnica; conteúdo visível integralmente autoral do CVG, sem nomes/metadados das obras; fonte, edição, capítulo, páginas e revisores preservados apenas no workflow interno; PDFs, reprodução e processamento automatizado bloqueados até B-04 | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05); B-04 PARCIAL |
+| RN-045 | Não copiar texto, página, tabela, figura ou imagem das obras; todo material de treinamento deve ter redação própria do CVG | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
+| RN-046 | No MVP interno, as obras podem ser consultadas manualmente pela equipe; os PDFs ficam fora da plataforma e do Git; registra-se apenas obra e capítulo/seção por módulo; automação dos PDFs permanece pendente em D-033 sem bloquear a autoria manual | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05); B-04 FECHADO PARA O MVP INTERNO |
 | RN-047 | Validade por tipo de conteúdo: crítico 6 meses, clínico geral 12, fundamentos 24; alerta = revisão imediata | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-048 | Retirada emergencial: crítico até 24h, alto até 3 dias úteis; registra afetados e ação corretiva | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-049 | Conteúdo vencido não é exibido como ativo | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -147,4 +147,4 @@ Por D-073, RN-063 a RN-067 são somente entradas para a futura validação. Até
 2. RN-074 — baseline (B-07);
 3. RN-075 — complemento: confirmar nomes dos revisores clínico/pedagógico (B-03);
 4. Nomeações da seção 8 (B-03);
-5. Verificação jurídica formal das licenças (B-04 — regra de uso já aprovada em RN-046).
+5. Definição futura sobre processamento automatizado dos PDFs (D-033; não bloqueia o MVP manual).

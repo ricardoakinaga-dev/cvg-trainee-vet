@@ -53,7 +53,7 @@ seleção do tema
 → autoria
 → revisão clínica
 → revisão pedagógica
-→ checagem de direitos (B-04)
+→ checagem simples: conteúdo original e PDF ausente
 → aprovação
 → publicação
 → monitoramento
@@ -77,7 +77,7 @@ contestações e alterações de gabarito → protocolo → revisor independente
 
 ### OUT
 
-- Treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes/manequins/equipamentos, habilidade psicomotora, competência prática, nível de supervisão, autonomia, certificação formal, integrações externas, decisões disciplinares, reprodução das obras e ranking público. Qualquer processamento automatizado das obras, inclusive IA com revisão humana, permanece bloqueado até D-033/B-04.
+- Treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes/manequins/equipamentos, habilidade psicomotora, competência prática, nível de supervisão, autonomia, certificação formal, integrações externas, decisões disciplinares, cópia/distribuição das obras e ranking público. Processamento automatizado dos PDFs fica fora do MVP e será decidido em D-033.
 
 ### FUTURE
 
@@ -95,8 +95,8 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Composição | quiz 0% + caso 30% + prova 70% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Tentativas | 2 + remediação obrigatória; intervalo mínimo 7 dias; itens diferentes na 2ª | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Retenção | itens equivalentes; não revoga conclusão; nunca substitui limiar absoluto | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| Fontes | hierarquia clínica mantida; D-074: obras somente para consulta/validação, conteúdo visível autoral CVG sem nomes/metadados das obras, proveniência completa no workflow interno | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05); B-04 PARCIAL |
-| Conteúdo | fluxo proposto de revisão e rastreabilidade; nenhuma produção/publicação clínica até resolver B-04 e aprovar os gates | RASCUNHO/INSUMO — BLOQUEADO |
+| Fontes | D-075: consulta manual interna, PDFs fora da plataforma/Git e referência simples por módulo | APROVADA PELO PATROCINADOR COMO INSUMO; B-04 FECHADO PARA O MVP INTERNO |
+| Conteúdo | rascunhos originais podem ser preparados; publicação do programa depende dos gates gerais, não de B-04 | RASCUNHO/INSUMO |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
 | Dados | antes de B-05: nenhum dado pessoal de participante/paciente/tutor; somente agregados efetivamente anonimizados; RH proibido; `vínculo + 2 anos` permanece proposta a validar | RASCUNHO CONSERVADOR D-073 — B-05 PENDENTE |
 | Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
@@ -110,7 +110,7 @@ Detalhes em [0013 — Requisitos funcionais](0013_requisitos_funcionais.md).
 
 ## 8. Requisitos não funcionais (resumo)
 
-Performance para uso assíncrono em escala 12×36; confiabilidade sem perda de respostas; rastreabilidade completa; segurança por papéis + LGPD; governança editorial; acessibilidade (PENDENTE); exceções (afastamento, interrupção, anulação, retirada, reprovação recorrente).  
+Performance para uso assíncrono em escala 12×36; confiabilidade sem perda de respostas; referência simples das fontes por módulo; segurança por papéis + LGPD; governança editorial; acessibilidade (PENDENTE); exceções (afastamento, interrupção, anulação, retirada, reprovação recorrente).
 Detalhes em [0014 — Requisitos não funcionais](0014_requisitos_nao_funcionais_produto.md).
 
 ## 9. Métricas de sucesso
@@ -120,7 +120,7 @@ Detalhes em [0015 — Métricas de sucesso](0015_metricas_de_sucesso.md).
 
 ## 10. Riscos e hipóteses
 
-Riscos críticos: conteúdo incorreto/desatualizado, confusão entre teoria e autonomia clínica, direitos autorais (B-04), uso inadequado de dados (B-05), IA sem revisão, alteração não auditada de notas. Riscos altos: tempo protegido, adesão, escopo, revisores, métricas punitivas, banco frágil, conteúdo sem manutenção.  
+Riscos críticos: conteúdo incorreto/desatualizado, confusão entre teoria e autonomia clínica, cópia ou distribuição indevida dos PDFs, uso inadequado de dados (B-05), IA sem revisão e alteração não auditada de notas. Riscos altos: tempo protegido, adesão, escopo, revisores, métricas punitivas, banco frágil e conteúdo sem manutenção.
 Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOVERY/0007_riscos_e_hipoteses.md).
 
 ## 11. Fontes de conhecimento
@@ -134,7 +134,7 @@ As identificações abaixo pertencem à governança interna e não serão exibid
 
 ## 12. Bloqueios obrigatórios dos gates
 
-B-01, B-02, B-04 e a preparação de B-05 podem avançar sem aguardar o fechamento de B-03. A aprovação formal de B-05 exige antes a nomeação e o aceite do responsável LGPD independente previsto em D-006, mesmo que as demais cadeiras de B-03 continuem vagas. Dependências obrigatórias: B-05 aprovado antes de entrevistas ou inventários identificáveis e antes de B-07; B-03 antes da revalidação formal de B-06; B-04 antes de conteúdo clínico. Todos os bloqueios devem estar fechados antes da nova submissão dos gates. As decisões confirmadas neste rascunho não aprovam o gate; depois do fechamento, Discovery e PRD devem ser reexecutados e aprovados formalmente.
+B-04 está fechado por D-075. A aprovação formal de B-05 exige antes a nomeação e o aceite do responsável LGPD previsto em D-006. Dependências restantes: B-05 antes de entrevistas ou inventários identificáveis e antes de B-07; B-03 antes da revalidação formal de B-06. Depois do fechamento dos demais bloqueios, Discovery e PRD devem ser reexecutados.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
 ## 13. Decisões humanas e insumos para nova submissão do gate PRD
@@ -148,7 +148,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 
-8. Verificação jurídica formal (B-04) — ⏳ **PARCIAL: D-074 DEFINIU O WORKFLOW; LEGITIMIDADE DAS CÓPIAS, CONSULTA INSTITUCIONAL E PROCESSAMENTO AUTOMATIZADO PENDENTES**; nenhum conteúdo foi autorizado.
+8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 
 ## 14. Documentos do PRD
