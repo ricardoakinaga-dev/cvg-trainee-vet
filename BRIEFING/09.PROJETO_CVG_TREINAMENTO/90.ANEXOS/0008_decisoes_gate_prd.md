@@ -211,12 +211,12 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 | Campo | Registro |
 |---|---|
-| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
-| Tag | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Commit do conteúdo revisado | `05d6aa6` — `docs: simplify internal source governance` |
+| Tag | `gate-d075-lean-source-governance-2026-08-05` |
 | Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
 | Escopo | sistema digital interno do Centro Veterinário Guarapiranga |
 | Controles mantidos | conteúdo original; PDFs fora da plataforma/Git; sem material copiado; referência simples por módulo |
-| Validações | `PENDENTE` |
+| Validações | auditoria direta do diff; `git diff --cached --check`; 66 links relativos válidos; zero IDs duplicados; zero segredos detectados; nenhum PDF alterado ou rastreado |
 
 ---
 
