@@ -33,7 +33,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-020 | Toda ação sensível (aprovação, publicação, alteração de nota/gabarito, permissão, retirada) deve gerar trilha de auditoria com responsável e data | FATO INFORMADO |
 | RNF-021 | Decisões de aprovação devem ser reproduzíveis: conteúdo, itens aplicados, respostas, horário, tentativa, regra, cálculo, resultado, alterações | FATO INFORMADO |
-| RNF-022 | Conteúdo deve ser rastreável até fonte, edição, volume, parte/seção, capítulo e páginas | FATO INFORMADO |
+| RNF-022 | Conteúdo deve ser rastreável internamente até fonte, edição, volume, parte/seção, capítulo e páginas; esses metadados não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
 | RNF-023 | Versões de conteúdo, prova e gabarito devem ser preservadas | FATO INFORMADO |
 
 ## 4. Segurança operacional
@@ -97,7 +97,7 @@ O [Anexo 0011 — Política Conservadora de Dados e LGPD](../90.ANEXOS/0011_poli
 |---|---|---|
 | RNF-080 | O sistema não emite certificação de competência prática; provas, casos e simulações digitais não podem ser apresentados como evidência prática ou autonomia clínica | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RNF-081 | O sistema não substitui protocolos clínicos nem julgamento do RT | FATO INFORMADO |
-| RNF-082 | O sistema não reproduz as obras-fonte | FATO INFORMADO |
+| RNF-082 | O sistema não reproduz nem adapta a expressão das obras-fonte e não expõe PDFs ou metadados bibliográficos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
 | RNF-083 | O sistema não permite ranking público | FATO INFORMADO |
 | RNF-084 | Decisões automatizadas com impacto relevante exigem transparência e revisão humana | PROPOSTA |
 

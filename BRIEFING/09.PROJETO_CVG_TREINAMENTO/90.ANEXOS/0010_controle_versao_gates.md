@@ -85,6 +85,8 @@ Um status documental não é evidência suficiente sem referência ao commit que
 
 Os PDFs não serão armazenados no Git por tamanho, licenciamento e restrição de redistribuição. Sua integridade será controlada por nome, metadados, quantidade de páginas e SHA-256.
 
+Por D-074, esses metadados e hashes são controles internos e não integram a experiência do aluno. Nenhum trecho, página, imagem, tabela, dump, OCR, embedding ou outro derivado do arquivo-fonte pode ser commitado. O cálculo local e offline de SHA-256, sem extração ou transmissão de conteúdo, é a única exceção técnica autorizada para controle de integridade; qualquer outro processamento automatizado permanece bloqueado até D-033/B-04.
+
 | Fonte local | SHA-256 verificado em 2026-08-05 |
 |---|---|
 | `Ettinger's Textbook of Veterinary Internal Medicine, 9th Edition (VetBooks.ir).pdf` | `429d0fbf568664c9e01d984cd272bc54195bf8d2aa54ce7caa902f28859875b8` |

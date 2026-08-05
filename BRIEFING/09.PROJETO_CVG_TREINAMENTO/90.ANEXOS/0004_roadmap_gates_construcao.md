@@ -87,6 +87,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 - Aprovação, recuperação e retenção; ✅ (proposta)
 - Contestação; ✅
 - Governança editorial; ✅
+- Fontes e direitos; ⏳ workflow D-074 definido: conteúdo institucional independente para o aluno e proveniência completa apenas no ambiente interno restrito; B-04 permanece parcial, sem produção clínica ou processamento automatizado autorizado
 - Métricas; ✅ (proposta; baseline B-07)
 - Privacidade; ⏳ rascunho conservador D-073/Anexo 0011 preparado, sem coleta pessoal de participante, paciente ou tutor autorizada; B-05 ainda pendente
 - Exceções. ✅

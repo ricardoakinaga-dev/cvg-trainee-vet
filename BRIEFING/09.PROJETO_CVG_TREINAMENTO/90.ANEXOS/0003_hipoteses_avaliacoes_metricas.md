@@ -26,7 +26,7 @@ Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autor
 - **Finalidade:** recuperação ativa e feedback;
 - **Quantidade:** pendente de blueprint e carga do objetivo;
 - **Dificuldade:** básica a intermediária;
-- **Feedback:** imediato, com justificativa e fonte;
+- **Feedback ao aluno:** imediato, com justificativa técnico-clínica; fonte completa somente no workflow interno restrito (D-074);
 - **Tentativas:** múltiplas para aprendizagem;
 - **Peso:** zero na decisão somativa enquanto for classificado como formativo;
 - **Consequência:** recomendar revisão, não punir;

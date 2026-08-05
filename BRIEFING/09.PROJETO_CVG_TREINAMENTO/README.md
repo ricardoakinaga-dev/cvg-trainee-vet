@@ -108,7 +108,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 1. mapear o fluxo atual e práticas isoladas via entrevistas (B-01);
 2. dimensionar o público e delimitar a coorte piloto (B-02);
 3. concluir B-03: o modelo de governança mínima segregada foi aprovado como insumo (D-071), mas ainda é obrigatório nomear titulares/suplentes, registrar aceites e conflitos e instalar os comitês;
-4. verificar licença e direitos de uso das três obras; produção de conteúdo clínico bloqueada até a resolução (B-04);
+4. concluir B-04: D-074 definiu consulta/validação técnica, conteúdo autoral CVG sem referências visíveis e proveniência interna; ainda é obrigatório verificar legitimidade das cópias, consulta institucional e processamento automatizado; conteúdo clínico segue bloqueado;
 5. aprovar formalmente o rascunho conservador de dados e acesso do [Anexo 0011](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md); até lá, nenhuma coleta pessoal de participante, paciente ou tutor é autorizada (B-05/D-073);
 6. revalidar formalmente as áreas do piloto (B-06), após B-03 — seleção confirmada pelo patrocinador como insumo: núcleo comum + emergência e internação;
 7. estabelecer baseline mínima com o diagnóstico inicial na coorte piloto (B-07).
@@ -122,6 +122,8 @@ Todo avanço de fase exige checkpoint Git, revisão do diff, validações aplic�
 Os PDFs-fonte não serão versionados no Git. Sua integridade será controlada por hashes SHA-256, conforme o [Anexo 0010](90.ANEXOS/0010_controle_versao_gates.md).
 
 ## 5. Fontes clínicas principais
+
+> **Registro interno de governança:** os nomes, responsáveis editoriais, editoras, edições e arquivos abaixo não serão exibidos ao aluno. Por D-074, a experiência educacional mostrará somente conteúdo institucional autoral do CVG, versão, data de corte e estado de revisão; a proveniência completa permanecerá restrita ao workflow interno.
 
 **Obra:** *Tratado de Medicina Interna de Cães e Gatos*  
 **Organizadores:** Márcia Marques Jericó, João Pedro de Andrade Neto e Márcia Mery Kogika  
@@ -166,5 +168,7 @@ O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abai
 Enquanto isso, são permitidas somente correção documental, desenho de instrumentos, levantamentos estritamente agregados e efetivamente anonimizados — sem campos/células vinculáveis ou grupos pequenos reidentificáveis —, nomeações, verificação jurídica, validação LGPD e sincronização dos rascunhos. Entrevistas ou inventários identificáveis, gravações, diagnóstico individual e baseline B-07 somente podem começar após B-05. SPEC — inclusive preparação formal —, BUILD, arquitetura, código e produção de conteúdo clínico permanecem proibidos.
 
 **Política transitória de dados (D-073):** o Anexo 0011 é um rascunho conservador não aprovado. Ele permite preparar B-05, mas não libera cadastro, coleta, acesso a caso real, gravação, resultado individual ou baseline. A proposta `vínculo + 2 anos` e a matriz de acesso são insumos a validar, não regras vigentes.
+
+**Política de fontes (D-074):** livros somente para consulta e validação técnica; aluno sem nomes/metadados das obras; rastreabilidade completa e restrita no workflow interno; PDFs, reprodução e processamento automatizado bloqueados. B-04 permanece parcial e nenhuma produção clínica foi autorizada.
 
 **Coordenação transitória (D-072):** MV. Ricardo Akinaga coordena todas as frentes de correção enquanto B-03 permanece parcial. Essa responsabilidade operacional não preenche as cadeiras independentes, não permite autoaprovação e não autoriza mudança de fase. Os demais bloqueios podem ser tratados em paralelo ou na ordem de dependência documentada.

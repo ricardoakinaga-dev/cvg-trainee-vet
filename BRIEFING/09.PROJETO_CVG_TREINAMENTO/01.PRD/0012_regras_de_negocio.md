@@ -62,13 +62,13 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 
 | ID | Regra | Classificação |
 |---|---|---|
-| RN-040 | Toda unidade/item possui rastreabilidade completa: objetivo, competência, nível, fonte, edição, volume, parte/seção, capítulo, páginas, versão, data de corte, validade | FATO INFORMADO (anexo 0001) |
+| RN-040 | Toda unidade/item possui rastreabilidade interna restrita: objetivo, competência, nível, `claim_id`, afirmação validada, fonte, edição, volume, parte/seção, capítulo, páginas, versão, data de corte e validade; cada afirmação verificável é vinculada à fonte e os metadados das obras não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
 | RN-041 | Hierarquia de fontes: legislação/bula > protocolo CVG > diretriz atual > Ettinger 2024 > Fossum 2014 (temas cirúrgicos) > Tratado 2015 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05 — atualizada 2026-08-05: inclusão do Fossum, F-03) |
 | RN-042 | Divergências entre fontes seguem fluxo com `conflict_id` e decisão humana documentada; críticas nunca resolvidas por IA | FATO INFORMADO |
 | RN-043 | Conteúdo só é publicado após revisão clínica + pedagógica independentes e aprovação | FATO INFORMADO |
 | RN-044 | Autor não publica o próprio conteúdo | FATO INFORMADO |
-| RN-045 | Não reproduzir trechos extensos, tabelas, figuras ou capítulos das obras | FATO INFORMADO |
-| RN-046 | Uso das obras no piloto: sínteses autorais curtas com citação (fonte, capítulo, páginas); PDFs não publicados; cada item marcado como "direitos verificados" no workflow editorial; verificação jurídica em andamento (B-04) | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RN-045 | Não copiar, traduzir, transcrever, parafrasear de forma próxima nem adaptar texto, sequência/estrutura distintiva, capítulo, tabela, figura, diagrama, ilustração, caso, questão ou exemplo das obras; cada ativo visível deve ser criação original do CVG | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
+| RN-046 | Obras usadas somente para consulta e validação técnica; conteúdo visível integralmente autoral do CVG, sem nomes/metadados das obras; fonte, edição, capítulo, páginas e revisores preservados apenas no workflow interno; PDFs, reprodução e processamento automatizado bloqueados até B-04 | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05); B-04 PARCIAL |
 | RN-047 | Validade por tipo de conteúdo: crítico 6 meses, clínico geral 12, fundamentos 24; alerta = revisão imediata | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-048 | Retirada emergencial: crítico até 24h, alto até 3 dias úteis; registra afetados e ação corretiva | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-049 | Conteúdo vencido não é exibido como ativo | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |

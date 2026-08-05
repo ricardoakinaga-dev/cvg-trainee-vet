@@ -77,7 +77,7 @@ contestações e alterações de gabarito → protocolo → revisor independente
 
 ### OUT
 
-- Treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes/manequins/equipamentos, habilidade psicomotora, competência prática, nível de supervisão, autonomia, certificação formal, integrações externas, decisões disciplinares, reprodução das obras, ranking público e IA sem revisão humana.
+- Treinamento prático presencial associado à plataforma, observação de trabalho real, prática em pacientes/manequins/equipamentos, habilidade psicomotora, competência prática, nível de supervisão, autonomia, certificação formal, integrações externas, decisões disciplinares, reprodução das obras e ranking público. Qualquer processamento automatizado das obras, inclusive IA com revisão humana, permanece bloqueado até D-033/B-04.
 
 ### FUTURE
 
@@ -95,7 +95,7 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Composição | quiz 0% + caso 30% + prova 70% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Tentativas | 2 + remediação obrigatória; intervalo mínimo 7 dias; itens diferentes na 2ª | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Retenção | itens equivalentes; não revoga conclusão; nunca substitui limiar absoluto | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| Fontes | legislação > protocolo CVG > diretriz > Ettinger 2024 > Fossum 2014 (cirurgia) > Tratado 2015; divergência = decisão humana documentada | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| Fontes | hierarquia clínica mantida; D-074: obras somente para consulta/validação, conteúdo visível autoral CVG sem nomes/metadados das obras, proveniência completa no workflow interno | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05); B-04 PARCIAL |
 | Conteúdo | fluxo proposto de revisão e rastreabilidade; nenhuma produção/publicação clínica até resolver B-04 e aprovar os gates | RASCUNHO/INSUMO — BLOQUEADO |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
 | Dados | antes de B-05: nenhum dado pessoal de participante/paciente/tutor; somente agregados efetivamente anonimizados; RH proibido; `vínculo + 2 anos` permanece proposta a validar | RASCUNHO CONSERVADOR D-073 — B-05 PENDENTE |
@@ -125,6 +125,8 @@ Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOV
 
 ## 11. Fontes de conhecimento
 
+As identificações abaixo pertencem à governança interna e não serão exibidas ao aluno. Na experiência educacional, a apresentação será `Conteúdo técnico CVG`, com versão, data de corte e estado de revisão.
+
 - **Tratado brasileiro** (TMI-CG-2015, 1ª ed., Roca, 2 vol., 23 partes, 264 capítulos): base curricular em português;
 - **Ettinger** (ETT-2024, 9ª ed., Elsevier, 2 vol., 22 seções, 331 capítulos): referência atualizada;
 - **Fossum** (FOS-2014, 4ª ed., Elsevier, 4 partes, 44 capítulos): referência cirúrgica (F-03);
@@ -146,7 +148,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Calendário de baseline e coorte (B-02/B-07) — ⏳ **PENDENTE — inventário de usuários e aplicação do diagnóstico**. 
-8. Verificação jurídica formal das licenças (B-04) — ⏳ **EM ANDAMENTO**; RN-046 é apenas insumo e não autoriza produção/publicação.
+8. Verificação jurídica formal (B-04) — ⏳ **PARCIAL: D-074 DEFINIU O WORKFLOW; LEGITIMIDADE DAS CÓPIAS, CONSULTA INSTITUCIONAL E PROCESSAMENTO AUTOMATIZADO PENDENTES**; nenhum conteúdo foi autorizado.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 
 ## 14. Documentos do PRD

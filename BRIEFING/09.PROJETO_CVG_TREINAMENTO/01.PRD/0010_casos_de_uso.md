@@ -97,7 +97,7 @@
 - **Gatilho:** módulo desbloqueado na trilha.
 - **Fluxo principal:**
   1. O colaborador abre a unidade de aprendizagem;
-  2. O sistema apresenta o conteúdo autorizado (sínteses autorais, sem reprodução extensiva das obras);
+  2. O sistema apresenta conteúdo institucional integralmente autoral do CVG, sem reprodução/adaptação das obras nem metadados bibliográficos visíveis;
   3. O colaborador conclui a unidade;
   4. O sistema registra a conclusão e desbloqueia a próxima etapa conforme pré-requisitos.
 - **Exceções:**
@@ -114,7 +114,7 @@
 - **Fluxo principal:**
   1. O sistema seleciona itens do banco por objetivo;
   2. O colaborador responde;
-  3. O sistema corrige e apresenta feedback com justificativa e fonte;
+  3. O sistema corrige e apresenta feedback com justificativa técnico-clínica; a fonte completa permanece somente no workflow interno;
   4. O sistema recomenda revisão quando o desempenho indica lacuna.
 - **Exceções:** questão contestada/anulada: recálculo da sessão conforme regra.
 - **Resultado esperado:** feedback de aprendizagem; múltiplas tentativas permitidas; peso zero na decisão somativa (`PROPOSTA`).
@@ -225,12 +225,13 @@
 
 - **Ator:** Autor/instrutor.
 - **Objetivo:** propor módulos, objetivos, casos e questões com rastreabilidade.
+- **Pré-condições:** B-04 fechado e gates anteriores aprovados sobre commits identificados.
 - **Gatilho:** demanda de trilha ou lacuna identificada.
 - **Fluxo principal:**
   1. O autor cria a unidade/item no rascunho;
-  2. Preenche rastreabilidade (objetivo, competência, nível, fonte, versão);
+  2. Preenche no workflow interno restrito a rastreabilidade (objetivo, competência, nível, `claim_id`, afirmação validada, fonte, edição, capítulo, páginas e versão), sem exposição ao aluno;
   3. Submete à revisão independente (não pode publicar o próprio conteúdo).
-- **Exceções:** conteúdo exigindo alerta clínico — campo obrigatório.
+- **Exceções:** B-04 ou gate anterior aberto — autoria clínica bloqueada; conteúdo exigindo alerta clínico — campo obrigatório.
 - **Resultado esperado:** item em revisão com metadados completos.
 - **Observações:** rastreabilidade mínima `100%` para itens ativos (métrica).
 
@@ -238,13 +239,14 @@
 
 - **Ator:** Revisor clínico (correção/atualidade) e revisor pedagógico (alinhamento).
 - **Objetivo:** garantir correção científica, atualidade e qualidade pedagógica.
+- **Pré-condições:** B-04 fechado, gates anteriores aprovados e conteúdo submetido por UC-012.
 - **Gatilho:** submissão do autor.
 - **Fluxo principal:**
   1. O revisor analisa conteúdo/questão;
-  2. Verifica fonte, edição, capítulo e atualidade;
+  2. Verifica, no workflow interno restrito, fonte, edição, capítulo, páginas, atualidade e originalidade da redação/estrutura CVG;
   3. Aprova, solicita ajustes ou rejeita;
   4. Divergências entre fontes seguem a regra de conflito (anexo 0001).
-- **Exceções:** divergência crítica — nunca resolvida automaticamente por IA; encaminhada a especialista.
+- **Exceções:** B-04 ou gate anterior aberto — revisão clínica bloqueada; divergência crítica — nunca resolvida automaticamente por IA; encaminhada a especialista.
 - **Resultado esperado:** conteúdo aprovado com data de corte e validade.
 - **Observações:** revisor clínico e pedagógico são independentes do autor.
 
@@ -254,10 +256,11 @@
 - **Objetivo:** liberar conteúdo aprovado para a trilha.
 - **Gatilho:** revisões concluídas.
 - **Fluxo principal:**
-  1. O gestor verifica aprovações e licenças;
-  2. Agenda a publicação;
-  3. O sistema publica e registra versão e data.
-- **Exceções:** licença de fonte pendente — publicação bloqueada (B-04).
+  1. O gestor verifica aprovações, checagem de originalidade, estado de B-04 e separação entre metadados internos e projeção do aluno;
+  2. Confirma que tela, payload, exportação e log acessíveis ao aluno não contêm metadados restritos das obras;
+  3. Agenda a publicação;
+  4. O sistema publica e registra versão e data.
+- **Exceções:** B-04 pendente, similaridade/reprodução detectada ou metadado de fonte exposto — publicação bloqueada.
 - **Resultado esperado:** conteúdo ativo, versionado e rastreável.
 - **Observações:** publicação só de conteúdo aprovado; alterações sempre versionadas.
 

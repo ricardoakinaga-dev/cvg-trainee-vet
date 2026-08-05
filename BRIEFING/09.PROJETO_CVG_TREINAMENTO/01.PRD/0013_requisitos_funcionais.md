@@ -54,21 +54,21 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
 | RF-030 | O sistema deve exibir conteúdo em unidades curtas (8–15 min alvo) | P1 | PROPOSTA |
-| RF-031 | O sistema deve marcar cada unidade com rastreabilidade completa (fonte, versão, validade) | P0 | FATO INFORMADO |
+| RF-031 | O workflow interno deve vincular cada `claim_id`/afirmação verificável à fonte, edição, capítulo, páginas, versão e validade, sem expor ao aluno nomes/metadados das obras consultadas | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
 | RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | PROPOSTA |
 | RF-033 | O sistema deve registrar conclusão de unidades e progresso | P0 | FATO INFORMADO |
 | RF-034 | O sistema deve suportar workflow de autoria → revisão clínica → revisão pedagógica → aprovação → publicação | P0 | FATO INFORMADO |
 | RF-035 | O sistema deve impedir que autor publique o próprio conteúdo | P0 | FATO INFORMADO |
 | RF-036 | O sistema deve versionar todo conteúdo e manter histórico | P0 | FATO INFORMADO |
 | RF-037 | O sistema deve registrar data de corte científico e próxima revisão | P1 | PROPOSTA |
-| RF-038 | O sistema deve bloquear publicação clínica derivada até resolução de licença (B-04) | P0 | CONDIÇÃO DE GATE |
+| RF-038 | O sistema deve bloquear produção/publicação clínica e processamento automatizado das obras até verificação jurídica completa de B-04 | P0 | CONDIÇÃO DE GATE (D-074) |
 | RF-039 | O sistema deve suportar retirada emergencial com registro de afetados | P0 | PROPOSTA |
 
 ## 5. Avaliações
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa e fonte, múltiplas tentativas | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
+| RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa técnico-clínica e múltiplas tentativas; referência bibliográfica completa somente no workflow interno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
 | RF-041 | Quiz formativo: peso zero na nota somativa | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário fictício e decisões registradas; casos derivados de atendimentos reais ficam bloqueados até B-05 | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RF-043 | Caso clínico/simulação digital: feedback e debriefing formativo e/ou somativo; modalidade somativa participa com peso 30% | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |

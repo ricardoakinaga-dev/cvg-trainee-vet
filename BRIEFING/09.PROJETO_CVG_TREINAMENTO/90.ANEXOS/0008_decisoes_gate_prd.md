@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates, D-071 aprovou o modelo de governança segregada, D-072 definiu coordenação geral interina sem preencher as vagas de B-03 e D-073 autorizou somente a preparação de um rascunho conservador de dados. As decisões de produto e governança não aprovam Discovery nem PRD. B-05 continua parcial; RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
+**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**, incluindo D-068; D-069 fixou a conformidade estrita dos gates, D-071 aprovou o modelo de governança segregada, D-072 definiu coordenação geral interina sem preencher as vagas de B-03, D-073 autorizou somente a preparação de um rascunho conservador de dados e D-074 definiu a separação entre conteúdo autoral visível e rastreabilidade interna das fontes. As decisões de produto e governança não aprovam Discovery nem PRD. B-04 e B-05 continuam parciais; RN-015, RN-023, RN-074, o complemento de RN-075 e RF/RNF explicitamente pendentes continuam abertos; ambos os gates estão `REPROVADOS — EM CORREÇÃO`.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 
@@ -160,6 +160,38 @@ A proposta de retenção `vínculo + 2 anos` e as permissões RN-063 a RN-067 pe
 | Próximo passo autorizado | submeter o rascunho ao responsável LGPD/segurança depois de sua nomeação; nenhuma coleta pessoal de participante, paciente ou tutor foi autorizada |
 
 Este registro documental posterior não altera o conteúdo revisado identificado pelo commit e pela tag acima e não transforma o rascunho em política aprovada.
+
+---
+
+## 0.5 Decisão de apresentação e rastreabilidade das fontes — D-074
+
+| Alternativa | Modelo | Veredito |
+|---|---|---|
+| **1** | **Obras usadas somente para consulta e validação técnica; conteúdo integralmente autoral do CVG; aluno não vê nomes ou metadados das obras; workflow interno mantém rastreabilidade completa por F-01/F-02/F-03** | **recomendada e selecionada — atende à apresentação institucional sem perder auditabilidade clínica** |
+| 2 | Exibir bibliografia geral ao final de cada módulo, sem citação no corpo | não selecionada — preserva transparência pública, mas contraria a apresentação solicitada |
+| 3 | Não manter nomes ou referências nem para o aluno nem internamente | rejeitada — elimina proveniência, revisão de divergências e evidência de validação |
+
+**Decisão do patrocinador em 2026-08-05:** Alternativa 1. A experiência do aluno apresentará apenas conteúdo institucional autoral do CVG, justificativa técnico-clínica, versão e estado de revisão. Nomes de obras, autores, editoras, ISBNs, arquivos e avisos de direitos autorais das obras consultadas não serão exibidos. O workflow interno restrito manterá fonte, edição, capítulo, páginas, afirmação validada, autores e revisores.
+
+D-074 não autoriza citação direta, reprodução, adaptação da expressão dos livros, acesso dos alunos aos PDFs ou processamento automatizado. Textos, tabelas, esquemas, ilustrações, casos e questões devem ser criações originais do CVG. B-04 permanece `PARCIAL` até verificação jurídica da origem/legitimidade das cópias, consulta institucional e processamento automatizado. Nenhum conteúdo clínico foi liberado.
+
+### Evidência do checkpoint D-074
+
+| Campo | Registro |
+|---|---|
+| Fase e bloqueio afetados | correção documental; preparação de B-04 |
+| Alternativa aprovada | Alternativa 1 — apresentação institucional + proveniência interna restrita |
+| Commit do conteúdo revisado | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Tag do checkpoint | `A REGISTRAR APÓS VALIDAÇÃO` |
+| Artefatos incluídos | governança das fontes, decisões, escopo, casos de uso, regras, requisitos, gates, consolidação, matriz, validação e README |
+| Revisores | `PENDENTE — qualidade documental + segurança/compliance independentes` |
+| Validações | `PENDENTE` |
+| Aprovador da alternativa | MV. Ricardo Akinaga — patrocinador executivo |
+| Decisão e data | `D-074 APROVADA — ALTERNATIVA 1`, em 2026-08-05; B-04 continua parcial |
+| Pendências e riscos residuais | legitimidade das cópias; titular/termos; consulta institucional; material autoral; processamento automatizado; owner e parecer jurídico |
+| Próximo passo autorizado | concluir a verificação jurídica de B-04; nenhuma produção ou publicação clínica foi autorizada |
+
+O registro do commit e da tag será acrescentado somente depois das revisões e validações. Esse registro posterior não fechará B-04.
 
 ---
 
@@ -338,13 +370,9 @@ Este registro documental posterior não altera o conteúdo revisado identificado
 
 ### B-04 — Direitos de uso das obras
 
-| Opção | Regra | Veredito |
-|---|---|---|
-| **A** | **Não publicar PDFs nem reproduzir trechos extensos; conteúdo do piloto como sínteses autorais curtas com citação (fonte, capítulo, páginas); obter autorização institucional por escrito antes de qualquer uso mais amplo; marcar cada item como "direitos verificados" no workflow editorial** | **recomendado — seguro e viável** |
-| B | Aguardar contrato de licença para produzir qualquer conteúdo | atrasa o piloto; alternativa conservadora |
-| C | Usar livremente com base em citação | risco jurídico — não recomendado |
+**Estado após D-074:** `PARCIAL — WORKFLOW DEFINIDO; VERIFICAÇÃO JURÍDICA PENDENTE`. Obras somente para consulta e validação técnica; conteúdo visível integralmente autoral do CVG, sem nomes/metadados das obras; proveniência completa preservada no backoffice por F-01/F-02/F-03. A regra anterior de “sínteses com citação” foi substituída por D-074.
 
-**Recomendação: Opção A.** RF-038 permanece: publicação clínica derivada só após checagem de direitos (anexo 0001 §7).
+RF-038 permanece bloqueante. B-04 exige verificar origem/legitimidade das cópias, titular e termos, consulta institucional, criação autoral e qualquer processamento automatizado. PDFs, reprodução e conteúdo clínico continuam proibidos até a resolução e os gates aplicáveis.
 
 ### B-05 / D-051 a D-054 — Política de dados
 
@@ -389,7 +417,7 @@ Este registro documental posterior não altera o conteúdo revisado identificado
 | Duração | 12 semanas |
 | Tempo protegido | 3 h/mês; composição das atividades digitais ainda será reconciliada |
 | Dados | D-073: nenhum dado pessoal de participante/paciente/tutor antes de B-05; RH proibido; acesso, retenção `vínculo + 2 anos`, correção e dashboards são propostas a validar |
-| Licenças | sínteses autorais curtas + checagem de direitos; sem PDFs |
+| Fontes/B-04 | D-074: consulta e validação técnica; conteúdo autoral CVG sem referências visíveis; rastreabilidade interna; verificação jurídica ainda pendente |
 | Governança e nomeações | modelo mínimo segregado D-071 confirmado; titulares, suplentes, aceites e instalação dos comitês pendentes (B-03) |
 | Coordenação interina | MV. Ricardo Akinaga coordena as correções por D-072, sem preencher cadeiras ou assinar gates |
 
