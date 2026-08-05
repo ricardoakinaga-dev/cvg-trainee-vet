@@ -110,6 +110,25 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 B-03 permanece `PARCIAL`; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO`; SPEC e BUILD continuam bloqueados. A equipe pode avançar na resolução dos demais itens B-01 a B-07 conforme suas dependências, sem tratar esse trabalho como mudança de fase ou aprovação de gate. A atribuição interina termina automaticamente com o fechamento de B-03 ou por decisão anterior do patrocinador.
 
+### Evidência do checkpoint D-072
+
+| Campo | Registro |
+|---|---|
+| Fase e bloqueio afetados | plano de correção de Discovery/PRD; B-03 permanece parcial |
+| Alternativa aprovada | Alternativa 1 — patrocinador e coordenador geral interino das correções, sem cadeira adicional |
+| Commit do conteúdo revisado | `f11315e` — `docs: assign interim correction coordinator` |
+| Tag do checkpoint | `gate-d072-interim-coordination-2026-08-05` |
+| Artefatos incluídos | stakeholders/governança; gates; regras; PRD Master; roadmap; decisões; matriz, roteiro, validação e README |
+| Revisores | mapeamento documental + revisão independente de qualidade + segurança/compliance |
+| Validações | `git diff --check`; 56 links Markdown relativos sem quebra; nenhuma definição RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos e dados pessoais desnecessários sem achados; nenhum PDF alterado |
+| Segregação | Ricardo forneceu a decisão empresarial; a redação e a consolidação documental foram executadas pela auditoria, sem assinatura de Ricardo em cadeira independente |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Decisão e data | `D-072 APROVADA — ALTERNATIVA 1`, em 2026-08-05; coordenação operacional sem aprovação de gate |
+| Pendências e riscos residuais | todas as cadeiras independentes de B-03 permanecem vagas; contribuição material futura de Ricardo gera impedimento para assinatura do respectivo commit como patrocinador |
+| Próximo passo autorizado | preparar os demais itens de correção conforme dependências; B-05 antes de dados identificáveis/B-07, B-04 antes de conteúdo e B-03 antes de B-06 formal e dos gates |
+
+Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
 ---
 
 ## 1. Avaliação (D-040 a D-044, D-063)
