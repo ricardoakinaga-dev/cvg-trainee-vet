@@ -46,6 +46,24 @@ Este registro documental posterior não altera o conteúdo aprovado identificado
 
 **Decisão do patrocinador em 2026-08-05:** Alternativa 1. Discovery e PRD ficam `REPROVADOS — EM CORREÇÃO`; o PRD existente é rascunho controlado; decisões D-* confirmadas permanecem como insumos; SPEC, inclusive preparação formal, e BUILD ficam bloqueados. Não existe waiver implícito ou aprovação automática após o fechamento das pendências: cada gate deve ser reexecutado, versionado e aprovado formalmente na ordem canônica.
 
+### Evidência do checkpoint D-069
+
+| Campo | Registro |
+|---|---|
+| Fase e gates afetados | correção de Discovery e PRD; decisão de conformidade D-069 |
+| Alternativa aprovada | Alternativa 1 |
+| Commit do conteúdo revisado | `d96e14f` — `docs: enforce strict canonical gates` |
+| Tag do checkpoint | `gate-d069-strict-gates-2026-08-05` |
+| Artefatos incluídos | gates e masters de Discovery/PRD; escopo, regras e requisitos afetados; README; roadmap, matriz, decisões, roteiro e validação documental |
+| Revisores | auditoria de coerência documental + revisão independente de qualidade + revisão de segurança/compliance |
+| Validações | `git diff --check`; 56 links Markdown relativos sem quebra; nenhuma definição RN/RF/RNF/D duplicada no mesmo artefato; varredura de segredos sem achados; nenhum PDF alterado |
+| Aprovador | MV. Ricardo Akinaga — patrocinador executivo |
+| Decisão e data | `D-069 APROVADA — ALTERNATIVA 1`, em 2026-08-05; isso não aprova Discovery nem PRD |
+| Pendências e riscos residuais | B-01 a B-07 e requisitos explicitamente pendentes; B-05 precede coleta identificável e baseline; B-04 bloqueia conteúdo clínico |
+| Próximo passo autorizado | tratar B-03 e demais correções documentais; reexecutar Discovery e depois PRD; SPEC e BUILD permanecem proibidos |
+
+Este registro documental posterior não altera o conteúdo aprovado identificado pelo commit e pela tag acima.
+
 ---
 
 ## 1. Avaliação (D-040 a D-044, D-063)
