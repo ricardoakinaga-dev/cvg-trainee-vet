@@ -22,7 +22,30 @@ Cada avanço exige, nesta ordem:
 
 Se qualquer condição falhar, o gate permanece `BLOQUEADO` ou `AGUARDANDO_APROVAÇÃO_HUMANA`.
 
-## 2. Convenção de commits
+## 2. Proibição de segredos no Git
+
+É terminantemente proibido commitar, em qualquer branch ou tag:
+
+- Chaves de API, tokens de acesso ou tokens de sessão;
+- Senhas, credenciais de banco de dados ou strings de conexão com segredo;
+- Chaves privadas, certificados privados ou arquivos de assinatura;
+- Arquivos `.env` reais, cofres exportados ou arquivos de credenciais;
+- Dados pessoais, clínicos ou corporativos usados como segredo de autenticação;
+- Segredos ofuscados, codificados ou criptografados junto com a chave de recuperação.
+
+Valores de exemplo somente podem ser versionados quando forem inequivocamente fictícios, sem acesso a qualquer ambiente real. Arquivos de exemplo devem usar nomes como `.env.example` e placeholders como `CHANGE_ME`.
+
+Se um segredo for identificado antes do commit, o commit fica bloqueado. Se for identificado depois do commit, o trabalho deve parar para:
+
+1. Revogar ou rotacionar imediatamente o segredo;
+2. Remover o segredo dos arquivos e, quando necessário, do histórico Git;
+3. Verificar logs, branches, tags e sistemas externos para exposição equivalente;
+4. Registrar o incidente sem reproduzir o valor secreto;
+5. Reexecutar a varredura antes de liberar o gate.
+
+O `.gitignore` é apenas uma barreira auxiliar e não substitui a revisão do diff nem a varredura de segredos.
+
+## 3. Convenção de commits
 
 Formato obrigatório:
 
@@ -42,7 +65,7 @@ Tipos previstos:
 
 Commits de gate não podem misturar alterações não relacionadas. É proibido usar `--no-verify` para contornar validações.
 
-## 3. Evidência mínima por gate
+## 4. Evidência mínima por gate
 
 | Campo | Obrigatório |
 |---|---:|
@@ -58,7 +81,7 @@ Commits de gate não podem misturar alterações não relacionadas. É proibido 
 
 Um status documental não é evidência suficiente sem referência ao commit que o sustenta.
 
-## 4. Política para as fontes técnicas
+## 5. Política para as fontes técnicas
 
 Os PDFs não serão armazenados no Git por tamanho, licenciamento e restrição de redistribuição. Sua integridade será controlada por nome, metadados, quantidade de páginas e SHA-256.
 
@@ -71,7 +94,7 @@ Os PDFs não serão armazenados no Git por tamanho, licenciamento e restrição 
 
 Qualquer alteração de hash exige interrupção da produção de conteúdo dependente, nova verificação da fonte e registro de decisão.
 
-## 5. Baseline inicial
+## 6. Baseline inicial
 
 O estado encontrado em 2026-08-05 será preservado como baseline técnica de auditoria. Essa baseline:
 
@@ -81,7 +104,7 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 - Deve receber tag local de baseline após revisão e commit;
 - Não autoriza SPEC, BUILD ou produção de conteúdo clínico.
 
-## 6. Checklist de transição
+## 7. Checklist de transição
 
 ```text
 [ ] artefatos da fase completos
@@ -96,4 +119,3 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 [ ] aprovação humana registrada
 [ ] fase seguinte explicitamente autorizada
 ```
-

@@ -282,7 +282,7 @@ Antes de qualquer aprovação ou avanço de fase, é obrigatório:
 
 1. Revisar o `git diff` da fase;
 2. Executar validações e testes aplicáveis;
-3. Verificar segredos, dados pessoais e direitos autorais;
+3. Verificar segredos, dados pessoais e direitos autorais; chaves, senhas, tokens e credenciais são terminantemente proibidos no Git;
 4. Criar commit convencional com escopo único;
 5. Registrar o commit, o revisor, o aprovador e a decisão no artefato do gate;
 6. Manter a fase seguinte bloqueada até a aprovação humana do commit registrado.

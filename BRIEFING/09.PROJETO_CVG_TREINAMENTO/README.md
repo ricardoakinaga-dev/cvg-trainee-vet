@@ -115,6 +115,8 @@ O avanço ao PRD foi aprovado pelo patrocinador executivo com as seguintes condi
 
 Todo avanço de fase exige checkpoint Git, revisão do diff, validações aplicáveis, commit convencional e registro do commit no documento do gate. A aprovação humana somente será válida para o conteúdo exato identificado pelo commit revisado.
 
+É terminantemente proibido commitar chaves, senhas, tokens, credenciais, certificados privados ou qualquer outro segredo. A detecção de um segredo bloqueia o gate e exige remoção segura e rotação antes da continuidade.
+
 Os PDFs-fonte não serão versionados no Git. Sua integridade será controlada por hashes SHA-256, conforme o [Anexo 0010](90.ANEXOS/0010_controle_versao_gates.md).
 
 ## 5. Fontes clínicas principais

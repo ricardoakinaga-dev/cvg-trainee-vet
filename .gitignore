@@ -4,6 +4,20 @@
 # Local extraction and analysis artifacts
 *.tmp
 
+# Secrets and local credentials — never commit
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+secrets.yaml
+secrets.yml
+
 # Editor and operating-system artifacts
 .DS_Store
 Thumbs.db
