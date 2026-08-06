@@ -163,3 +163,16 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
 | Próximo item | D-062 — ordem de produção/validação dos módulos |
 | Tag | `gate-d082-educational-remediation-2026-08-06` |
+
+## 11. Checkpoint D-062 — ordem de produção curricular
+
+| Campo | Registro |
+|---|---|
+| Decisão | Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-06 |
+| Primeira onda | NC-01 → NC-02 → NC-03 → ponte NC-04/NC-05 + EM-01 → ponte NC-04/NC-05 + IN-01 → caso integrador |
+| Expansão | produzir os demais módulos em ondas após corrigir o formato com o piloto |
+| Proporcionalidade | não exige produzir os 16 módulos antes de iniciar o piloto autorizado |
+| Commit de conteúdo | `796feb5` — `docs: approve integrated pilot production order` |
+| Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
+| Próximo item | D-070 — correção simples de respostas construídas |
+| Tag | `gate-d062-integrated-pilot-order-2026-08-06` |
