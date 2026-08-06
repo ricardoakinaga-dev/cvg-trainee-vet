@@ -93,7 +93,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 - B-03: fechado por D-076; Ricardo concentra as responsabilidades e outro MV revisa cada módulo clínico antes da publicação;
 - B-04: fechado por D-075 para o MVP interno; manter consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; D-033 é futura e não bloqueante;
 - B-05: fechado por D-077; aplicar o Anexo 0011 e não coletar prontuários, dados de tutores, gravações ou casos reais identificáveis;
-- B-07: validar, produzir e aplicar o diagnóstico de 120 itens em três sessões proposto no PRD 0016.
+- B-07: validar o blueprint criado no Anexo 0012, produzir e aplicar o diagnóstico de 120 itens em três sessões proposto no PRD 0016.
 
 ## 8. Controle de versão
 

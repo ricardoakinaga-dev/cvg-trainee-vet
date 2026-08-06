@@ -87,7 +87,7 @@
 | B-04 | uso das fontes no MVP interno | risco controlado | aplicar D-075: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo | patrocinador | FECHADO PARA O MVP INTERNO |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | aplicar o Anexo 0011 | MV. Ricardo Akinaga | FECHADO POR D-077 — dados do treinamento permitidos; prontuários, tutores, gravações e casos reais identificáveis proibidos |
 | B-06 | áreas clínicas do piloto | escopo clínico | decisão registrada: núcleo + Emergência + Internação | coordenação clínica | FECHADO COMO INSUMO |
-| B-07 | baseline ausente | metas não calibradas | diagnóstico e coleta inicial | PENDENTE | PENDENTE |
+| B-07 | baseline ausente | metas não calibradas | blueprint, produção, revisão e aplicação do diagnóstico | PENDENTE — blueprint de trabalho criado no Anexo 0012; itens e aplicação ainda pendentes | PENDENTE |
 
 ## Decisão
 
@@ -131,6 +131,8 @@ O gate somente poderá ser novamente submetido quando os itens abaixo estiverem 
 5. direitos e política de fontes estiverem decididos (B-04);
 6. política mínima de dados D-077 for respeitada (B-05 fechado);
 7. houver baseline mínima (B-07).
+
+O Anexo 0012 registra somente o blueprint de trabalho. Ele não substitui a validação clínica, a produção dos itens, a aplicação à coorte ou a evidência de baseline exigidas para fechar B-07.
 
 ## Aprovação humana
 

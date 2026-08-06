@@ -91,6 +91,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 9. [Validação da documentação — baseline em auditoria](90.ANEXOS/0009_validacao_documentacao.md)
 10. [Controle de versão e evidências dos gates](90.ANEXOS/0010_controle_versao_gates.md)
 11. [Política mínima interna de dados — aprovada para o MVP](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md)
+12. [Blueprint do diagnóstico inicial B-07 — rascunho](90.ANEXOS/0012_blueprint_diagnostico_b07.md)
 
 ## 4. O que não foi criado
 
@@ -113,7 +114,7 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
-7. validar e produzir o diagnóstico inicial amplo proposto no PRD 0016: 120 itens em três sessões de 40 (B-07).
+7. validar e produzir o diagnóstico inicial amplo proposto no PRD 0016: 120 itens em três sessões de 40 (B-07). O blueprint de trabalho está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md); a produção, revisão e aplicação ainda estão pendentes.
 
 ## 4.2 Controle de versão obrigatório
 
@@ -158,7 +159,7 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abaixo não libera automaticamente a SPEC: primeiro será necessário reexecutar e aprovar formalmente os gates Discovery e PRD, com checkpoint Git identificado.
 
-1. validar o blueprint e produzir o diagnóstico inicial de 120 itens, em três sessões, para a linha de base (B-07);
+1. validar o blueprint do [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md), produzir e aplicar o diagnóstico inicial de 120 itens, em três sessões, para a linha de base (B-07);
 2. resolver somente os requisitos que afetem segurança ou uso do MVP;
 3. aplicar a política mínima D-077 no diagnóstico e no futuro sistema;
 4. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.

@@ -135,7 +135,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 ## 10. Requisitos não cobertos (pendências que impactam o PRD)
 
-- Validação clínica da matriz detalhada e do blueprint de 120 itens do diagnóstico (UC-001, B-07) — demais itens por objetivo definidos em 10–15 (RN-078);
+- Validação clínica da matriz detalhada e do blueprint de 120 itens do diagnóstico (UC-001, B-07) — rascunho operacional no Anexo 0012; demais itens por objetivo definidos em 10–15 (RN-078);
 - Qualidade da correção estruturada deve ser verificada no piloto; D-070 permite migrar a atividade afetada para correção humana se surgirem lacunas ou erros repetidos;
 - Regra de repetição/atualização da linha de base;
 - Equivalência das formas de avaliação;

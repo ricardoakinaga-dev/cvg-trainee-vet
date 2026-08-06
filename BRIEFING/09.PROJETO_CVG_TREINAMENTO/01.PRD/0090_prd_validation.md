@@ -80,7 +80,7 @@
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | MV. Ricardo Akinaga | FECHADO POR D-077 — somente nome/login profissional, progresso, tentativas, notas e logs mínimos; dados clínicos reais e de tutores proibidos |
 | B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
-| B-07 | baseline ausente | metas não calibradas | MV. Ricardo Akinaga | PROPOSTA DEFINIDA — 120 itens em três sessões; falta validar blueprint, produzir e aplicar |
+| B-07 | baseline ausente | metas não calibradas | MV. Ricardo Akinaga | EM ELABORAÇÃO — blueprint de trabalho no Anexo 0012; falta revisão clínica, produção, teste e aplicação |
 
 ## Decisões humanas preservadas como insumos (confirmadas em 2026-08-05 — ver anexo 0008)
 
@@ -116,6 +116,7 @@ BUILD: PROIBIDO
 
 - Corrigir documentos e sincronizar decisões já confirmadas;
 - Executar o diagnóstico B-07 somente com os dados permitidos pela política D-077;
+- Usar o Anexo 0012 como rascunho de cobertura, sem tratá-lo como aprovação do blueprint ou da baseline;
 - Resolver regras, requisitos, exceções e critérios marcados como pendentes;
 - Preparar evidências e checkpoint Git para nova submissão dos gates.
 

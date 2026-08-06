@@ -60,7 +60,7 @@
 
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
-| D-037 | Quais competências e temas compõem o blueprint do diagnóstico inicial? | comitê clínico/pedagógico | PRD | pendente |
+| D-037 | Quais competências e temas compõem o blueprint do diagnóstico inicial? | comitê clínico/pedagógico | PRD | rascunho no Anexo 0012; validação clínica e pedagógica ainda pendentes |
 | D-038 | Como o resultado diagnóstico determinará a trilha personalizada? | coord. educacional/clínica | PRD | requisito confirmado; regra pendente |
 | D-039 | Quais conteúdos obrigatórios não poderão ser dispensados pelo diagnóstico? | RT/comitê clínico | PRD | pendente |
 | D-040 | Qual limiar geral de aprovação? | comitê clínico/pedagógico | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 70% (RN-024; standard setting definitivo após baseline) |
@@ -117,7 +117,7 @@
 
 ## 8. Próximas perguntas úteis
 
-1. Como organizar o blueprint das 120 questões diagnósticas (B-07)?
+1. Como validar clinicamente o blueprint do Anexo 0012 e transformá-lo nos 120 itens diagnósticos (B-07)?
 2. Há alguma restrição real de dispositivo ou acessibilidade?
 3. Quem será o segundo MV revisor do primeiro módulo quando ele estiver pronto?
 
