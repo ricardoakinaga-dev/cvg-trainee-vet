@@ -217,3 +217,19 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Efeito no checkpoint B-07.1 | a exigência histórica de segundo MV registrada na seção 13 foi substituída por D-083; B-07 continua aberto por falta de produção, pré-voo e aplicação |
 | Próximo item | confirmar carga/cadência V3 e produzir a fatia vertical do Mês 2 antes da produção em escala |
 | Tag | não criada — não é aprovação de gate |
+
+## 15. Checkpoint D-087 — fatia vertical do Mês 2 v0.1.0
+
+| Campo | Registro |
+|---|---|
+| Decisão de origem | patrocinador aprovou 149 horas, SLA de cinco dias úteis e autoria da fatia vertical em 2026-08-06 |
+| Artefatos | Anexos 0014 a 0017: critérios, participante, facilitador e pré-voo |
+| Conteúdo | quatro sessões/360 min; dois casos fictícios; 31 itens objetivos/estruturados; duas respostas abertas; rubricas e remediação |
+| Fontes | Ettinger caps. 90–96, 119–124 e 131; Tratado e Fossum com localizadores; AAHA 2024, RECOVER 2024, WSAVA 2022 e AVHTM/TRACS |
+| Testes | ciclo RED por ausência dos artefatos; GREEN estrutural com IDs correspondentes, separação de gabaritos, links locais, ausência de segredos e nenhum PDF rastreado |
+| Revisão | primeira passagem: 0 crítico, 2 altos e 4 médios; todos corrigidos; segunda passagem: PASS sem novo achado crítico/alto |
+| Commit de conteúdo | `91cb9e7` — `docs: add emergency module vertical slice` |
+| Estado | `READY_FOR_CLINICAL_REVIEW`; bloqueado para aplicação |
+| Próxima decisão | Ricardo aprovar, ajustar ou rejeitar a v0.1.0 para ensaio controlado e cronometrado |
+| Efeito nos gates | não fecha B-07, Discovery ou PRD; não autoriza SPEC/BUILD nem produção em escala |
+| Tag | não criada — aprovação clínica ainda pendente |

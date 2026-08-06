@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fatia vertical M02 v0.1.0 produzida com quatro sessões, dois casos, 31 itens estruturados, duas respostas abertas, rubricas, fontes e pré-voo; revisão independente final retornou PASS
+- last_completed_action: commit 91cb9e7 registrou a fatia vertical M02 v0.1.0 com quatro sessões, dois casos, 31 itens estruturados, duas respostas abertas, rubricas, fontes e pré-voo; revisão independente final retornou PASS
 - next_action: Ricardo revisar clinicamente os Anexos 0015 e 0016 e decidir se a v0.1.0 pode seguir para ensaio controlado e cronometrado
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T08:02:59-03:00
+- last_update: 2026-08-06T08:05:06-03:00
 
 ## REGRAS DE USO
 

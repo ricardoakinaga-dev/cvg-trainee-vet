@@ -310,7 +310,7 @@ Registrada a aprovação de 149 horas, SLA de cinco dias úteis e autoria do Mê
 
 ### RESULT
 
-Versão 0.1.0 com quatro sessões/360 minutos, dois casos fictícios, 31 itens objetivos/estruturados e duas respostas abertas. Testes estruturais passaram. Uma revisão independente identificou dois achados altos e quatro médios; todos foram corrigidos e a confirmação final retornou PASS sem novo achado crítico/alto. Commit: PENDENTE DE CHECKPOINT.
+Versão 0.1.0 com quatro sessões/360 minutos, dois casos fictícios, 31 itens objetivos/estruturados e duas respostas abertas. Testes estruturais passaram. Uma revisão independente identificou dois achados altos e quatro médios; todos foram corrigidos e a confirmação final retornou PASS sem novo achado crítico/alto. Commit de conteúdo: `91cb9e7`.
 
 ### DECISIONS
 
