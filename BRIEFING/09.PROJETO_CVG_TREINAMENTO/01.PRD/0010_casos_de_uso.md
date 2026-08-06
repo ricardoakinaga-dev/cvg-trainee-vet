@@ -15,8 +15,7 @@
 | Ator | Papel | Tipo |
 |---|---|---|
 | Colaborador | médico-veterinário que realiza a trilha | primário |
-| MV. Ricardo Akinaga | administra o programa, cria/aprova conteúdo e acompanha o piloto | responsável |
-| Segundo MV | confere cada módulo clínico antes da publicação | revisor por módulo |
+| MV. Ricardo Akinaga | administra o programa, cria/revisa/aprova conteúdo e acompanha o piloto | responsável e aprovador clínico |
 | Mentor ou suporte | apoia apenas quando Ricardo autorizar | opcional |
 
 ---
@@ -24,8 +23,8 @@
 ## 1.1 Jornada principal do colaborador
 
 ```text
-entrar → diagnóstico amplo fracionado → trilha recomendada → unidade breve dentro de módulo completo
-→ quiz/caso digital → feedback imediato → progresso → próximo passo
+entrar → diagnóstico amplo fracionado → plano individual → módulo mensal em quatro sessões
+→ ativar → pesquisar → decidir em caso fictício → receber feedback → refletir → próximo passo
 ```
 
 O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso existem para apoiar essa jornada e não devem aparecer como burocracia para o colaborador (D-080).
@@ -49,12 +48,12 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 | UC-011 | Acompanhar lacunas da equipe (autorizado) | Mentor |
 | UC-012 | Criar e submeter conteúdo | Autor |
 | UC-013 | Revisar conteúdo | Revisor clínico / pedagógico |
-| UC-014 | Aprovar e publicar conteúdo | MV. Ricardo Akinaga, após segunda conferência clínica |
+| UC-014 | Aprovar e publicar conteúdo | MV. Ricardo Akinaga |
 | UC-015 | Gerir usuários, papéis e configurações | Administrador |
 | UC-016 | Acompanhar métricas do programa | Gestor educacional / clínico |
 | UC-017 | Consultar trilha de auditoria | Auditor |
 | UC-018 | Tratar contestação | Revisor independente |
-| UC-019 | Retirar conteúdo por risco clínico | MV. Ricardo Akinaga / segundo MV |
+| UC-019 | Retirar conteúdo por risco clínico | MV. Ricardo Akinaga |
 | UC-020 | Gerenciar revisão e validade do conteúdo | Gestor educacional |
 
 ---
@@ -235,14 +234,14 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 - **Fluxo principal:**
   1. O autor cria a unidade/item no rascunho;
   2. Registra internamente objetivo, competência, nível, obra e capítulo/seção consultados e versão, sem exposição ao aluno;
-  3. Submete o módulo clínico à segunda conferência de outro médico-veterinário.
+  3. Submete o módulo à revisão clínica e aprovação humana de Ricardo, com fonte, versão, data de corte e rubrica/gabarito.
 - **Exceções:** tentativa de copiar texto, tabela, figura ou imagem da obra — submissão bloqueada; conteúdo exigindo alerta clínico — campo obrigatório.
 - **Resultado esperado:** item em revisão com metadados completos.
 - **Observações:** rastreabilidade mínima `100%` para itens ativos (métrica).
 
 ### UC-013 — Revisar conteúdo
 
-- **Ator:** outro médico-veterinário escolhido para revisar o módulo.
+- **Ator:** MV. Ricardo Akinaga; revisão adicional por outro profissional é opcional.
 - **Objetivo:** garantir correção científica, atualidade e qualidade pedagógica.
 - **Pré-condições:** conteúdo original submetido por UC-012.
 - **Gatilho:** submissão do autor.
@@ -253,13 +252,13 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
   4. Divergências entre fontes seguem a regra de conflito (anexo 0001).
 - **Exceções:** cópia de material da obra — item devolvido; divergência crítica — encaminhada a revisor clínico.
 - **Resultado esperado:** conteúdo aprovado com data de corte e validade.
-- **Observações:** registrar nome, CRMV, data e resultado da segunda conferência.
+- **Observações:** registrar aprovador, CRMV, data, fontes, data de corte e resultado da revisão.
 
 ### UC-014 — Aprovar e publicar conteúdo
 
 - **Ator:** MV. Ricardo Akinaga.
 - **Objetivo:** liberar conteúdo aprovado para a trilha.
-- **Gatilho:** revisões concluídas.
+- **Gatilho:** revisão clínica de Ricardo concluída.
 - **Fluxo principal:**
   1. O gestor verifica aprovações, redação original e separação entre a referência interna e a visão do aluno;
   2. Confirma que tela, payload, exportação e log acessíveis ao aluno não contêm metadados restritos das obras;
@@ -324,7 +323,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 
 ### UC-019 — Retirar conteúdo por risco clínico
 
-- **Ator:** MV. Ricardo Akinaga, com consulta a outro MV quando necessário.
+- **Ator:** MV. Ricardo Akinaga, com consulta adicional opcional quando julgar necessário.
 - **Objetivo:** remover ou bloquear conteúdo com risco.
 - **Gatilho:** alerta regulatório, erro identificado ou divergência crítica.
 - **Fluxo principal:**

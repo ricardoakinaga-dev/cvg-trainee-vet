@@ -126,7 +126,7 @@ A personalização não deverá dispensar automaticamente conteúdos institucion
 
 ### Ausentes
 
-- Linha de base do diagnóstico amplo fracionado proposto no PRD 0016 (B-07);
+- Linha de base do diagnóstico amplo fracionado incorporado ao primeiro mês do PRD 0017 (B-07);
 - Levantamento de lacunas clínicas;
 - Protocolos internos relevantes para cada módulo.
 

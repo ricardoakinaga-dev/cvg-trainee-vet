@@ -75,8 +75,9 @@ Nenhum campo desconhecido foi apresentado como certeza.
 5. [0014 — Requisitos não funcionais](01.PRD/0014_requisitos_nao_funcionais_produto.md)
 6. [0015 — Métricas de sucesso](01.PRD/0015_metricas_de_sucesso.md)
 7. [0016 — Programa curricular clínico](01.PRD/0016_programa_curricular_clinico.md)
-8. [0020 — PRD Master](01.PRD/0020_prd_master.md)
-9. [0090 — Validação do PRD](01.PRD/0090_prd_validation.md)
+8. [0017 — Programa curricular de 24 meses](01.PRD/0017_programa_curricular_24_meses.md)
+9. [0020 — PRD Master](01.PRD/0020_prd_master.md)
+10. [0090 — Validação do PRD](01.PRD/0090_prd_validation.md)
 
 ### Anexos preparatórios, ainda não aprovados como PRD
 
@@ -92,12 +93,13 @@ Nenhum campo desconhecido foi apresentado como certeza.
 10. [Controle de versão e evidências dos gates](90.ANEXOS/0010_controle_versao_gates.md)
 11. [Política mínima interna de dados — aprovada para o MVP](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md)
 12. [Blueprint do diagnóstico inicial B-07 — rascunho](90.ANEXOS/0012_blueprint_diagnostico_b07.md)
+13. [Pesquisa de melhores práticas da trilha de 24 meses](90.ANEXOS/0013_pesquisa_melhores_praticas_trilha_24_meses.md)
 
 ## 4. O que não foi criado
 
 - Código, aplicação, site ou plataforma;
 - Banco de dados, API, arquitetura técnica ou stack;
-- Aulas, casos e questões clínicas completas — a matriz curricular V2 já está definida no PRD 0016, mas o conteúdo real ainda será produzido;
+- Aulas, casos e questões clínicas completas — a trilha V3 está definida no PRD 0017, mas o conteúdo real ainda será produzido;
 - Certificados;
 - Protótipos de telas;
 - SPEC, backlog de BUILD ou sprints;
@@ -110,11 +112,11 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 
 1. B-01 concluído por D-078: aprendizado atual informal, sem trilha, avaliação ou registro centralizado;
 2. B-02 concluído por D-079: aproximadamente 10 veterinários, todos participam da primeira aplicação, sem inventário ou segmentação obrigatória;
-3. B-03 concluído por D-076: Ricardo concentra as responsabilidades do MVP; outro MV revisa cada módulo clínico antes da publicação;
+3. B-03 concluído por D-076 e atualizado por D-083: Ricardo concentra as responsabilidades do MVP e é o único aprovador clínico obrigatório; revisão adicional é opcional;
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
-7. validar e produzir o diagnóstico inicial amplo proposto no PRD 0016: 120 itens em três sessões de 40 (B-07). O blueprint de trabalho está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md); a produção, revisão e aplicação ainda estão pendentes.
+7. alinhar e produzir o diagnóstico inicial amplo dentro da trilha V3: 120 itens em três sessões de 40 no primeiro mês (B-07). O blueprint está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md); a trilha completa está no [PRD 0017](01.PRD/0017_programa_curricular_24_meses.md).
 
 ## 4.2 Controle de versão obrigatório
 
@@ -144,7 +146,7 @@ O tratado será a **fonte curricular canônica primária** para delimitar temas 
 **Arquivo local:** `Ettinger's Textbook of Veterinary Internal Medicine, 9th Edition (VetBooks.ir).pdf`  
 **Estrutura verificada:** dois volumes, 22 seções e 331 capítulos; o arquivo PDF possui 2.801 páginas.
 
-O Ettinger será a **fonte clínica atualizada de referência** para complementar e revisar o tratado brasileiro. Quando houver divergência, o conteúdo não será escolhido automaticamente: um revisor clínico deverá avaliar data, contexto brasileiro, protocolo interno, diretrizes atuais e segurança, registrando a decisão.
+O Ettinger será a **fonte clínica atualizada de referência** para complementar e revisar o tratado brasileiro. Quando houver divergência, o conteúdo não será escolhido automaticamente: Ricardo deverá avaliar data, contexto brasileiro, protocolo interno, diretrizes atuais e segurança, registrando a decisão.
 
 **Obra cirúrgica:** *Cirurgia de Pequenos Animais*  
 **Autora:** Theresa Welch Fossum  
@@ -170,4 +172,4 @@ Enquanto isso, são permitidas correção documental e preparação de rascunhos
 
 **Política de fontes (D-075):** governança enxuta para uso interno: consulta manual, conteúdo original CVG, PDFs fora da plataforma/Git e referência simples por módulo. B-04 está fechado; automação dos PDFs fica fora do MVP em D-033.
 
-**Governança do MVP (D-076):** MV. Ricardo Akinaga responde pelas frentes do MVP e pelos gates documentais. Não há comitês ou suplentes obrigatórios; outro MV faz a segunda conferência antes da publicação de cada módulo clínico.
+**Governança do MVP (D-076/D-083):** MV. Ricardo Akinaga responde pelas frentes do MVP, pelos gates documentais e pela aprovação clínica. Não há comitês, suplentes ou segunda conferência veterinária obrigatória; revisão adicional permanece opcional.

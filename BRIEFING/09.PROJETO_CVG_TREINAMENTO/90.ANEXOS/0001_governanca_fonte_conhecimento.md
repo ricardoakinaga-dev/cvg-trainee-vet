@@ -100,7 +100,7 @@ Cada unidade futura de conteúdo deverá possuir, em registro interno restrito e
 | fontes complementares | quando aplicável |
 | protocolo CVG relacionado | quando aplicável |
 | autor | sim |
-| segundo MV revisor | sim, antes da publicação |
+| aprovador clínico | sim — MV. Ricardo Akinaga no MVP interno |
 | revisor pedagógico | opcional |
 | versão | sim |
 | data de corte científico | sim |
@@ -245,8 +245,8 @@ seleção do tema
 → blueprint
 → pesquisa nas fontes
 → autoria
-→ segunda conferência por outro MV
-→ revisão pedagógica, quando útil
+→ revisão clínica e aprovação de Ricardo
+→ revisão adicional ou pedagógica, quando útil
 → checagem de direitos
 → aprovação
 → publicação
@@ -275,6 +275,6 @@ Proposta:
 | Função | Responsabilidade | Nome |
 |---|---|---|
 | Responsável do MVP | escopo, fontes, coordenação, versão e publicação | MV. Ricardo Akinaga |
-| Segundo MV por módulo | conferência clínica antes da publicação | identificar na versão do módulo |
+| Aprovador clínico do MVP | revisão e aprovação antes da publicação | MV. Ricardo Akinaga; registrar na versão |
 
-D-076 fecha B-03 para o MVP interno. B-04 não bloqueia autoria manual; cada módulo clínico recebe uma segunda conferência veterinária antes da publicação.
+D-076 fecha B-03 para o MVP interno e D-083 atualiza a governança: B-04 não bloqueia autoria manual; cada módulo clínico recebe revisão e aprovação humana de Ricardo antes da publicação, sem segunda conferência obrigatória.

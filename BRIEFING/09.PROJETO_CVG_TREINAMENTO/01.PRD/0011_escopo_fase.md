@@ -29,7 +29,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 10. Avaliação de retenção (janelas 30/60/90 dias);
 11. Painel individual de progresso, domínio, retenção e confiança;
 12. Painel gerencial agregado (escopo autorizado);
-13. Gestão de conteúdo: autoria, segunda conferência por outro MV, revisão pedagógica opcional, aprovação, publicação, versionamento, validade e retirada;
+13. Gestão de conteúdo: autoria, revisão e aprovação clínica de Ricardo, revisão adicional opcional, publicação, versionamento, validade e retirada;
 14. Banco de questões com blueprint e rastreabilidade;
 15. Contestação de questão/resultado com recálculo auditável;
 16. Trilha de auditoria completa;
@@ -42,15 +42,15 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 - **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo responsável do MVP (B-06);
 - Espécies: **cães e gatos** (D-022 resolvido);
 - Público/coorte: **aproximadamente 10 veterinários**, com participação de toda a equipe; sem segmentação obrigatória por setor ou turno (D-079/B-02 fechado);
-- Duração do piloto: **14 semanas**, confirmada por D-081; substitui a decisão histórica D-061 de 12 semanas;
-- Carga protegida do piloto: **30–40 horas**, aproximadamente 2–3 horas por semana, confirmada por D-081; substitui a decisão histórica D-016 de 3 h/mês;
+- Duração da trilha: **24 meses**, divididos em duas partes, confirmada como direção por D-084; substitui a cadência de D-081;
+- Carga planejada: **149 horas**, média aproximada de 1 h 30 min por semana, conforme D-084/D-085;
 - Banco de questões: **10 a 15 itens por objetivo** (D-063 resolvido).
 
-### Programa curricular clínico V2 — proposta para validação
+### Programa curricular clínico V3 — proposta para validação
 
-O [PRD 0016](0016_programa_curricular_clinico.md) transforma o escopo em um treinamento executável: ciclo completo de 34 semanas e faixa preliminar de 90–115 horas, com 16 módulos, 128 casos digitais-base, diagnóstico de 120 itens e banco inicial de 1.440 itens. O piloto aprovado em D-062 segue NC-01 → NC-02 → NC-03 → ponte NC-04/NC-05 + EM-01 → ponte NC-04/NC-05 + IN-01 → caso integrador, em 14 semanas e 30–40 horas; não pretende condensar o ciclo completo.
+O [PRD 0017](0017_programa_curricular_24_meses.md) transforma o escopo em um treinamento executável: 24 meses, duas partes, 24 módulos mensais, 96 sessões e 149 horas. O primeiro mês contém o diagnóstico e o plano individual; os meses 2 a 12 desenvolvem clínica médica, emergência e internação; os meses 13 a 24 desenvolvem cirurgia, especialidades e integração.
 
-Uma unidade técnica dura 10–15 minutos. Um módulo completo inclui conteúdo, casos, prática, avaliação, remediação e revisão e exige de quatro a seis horas distribuídas em duas semanas.
+Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesquisa aberta, caso progressivo e debriefing/retenção. Os meses integradores possuem oito horas.
 
 ## 3. OUT OF SCOPE (o que NÃO será construído)
 
@@ -102,6 +102,6 @@ Uma unidade técnica dura 10–15 minutos. Um módulo completo inclui conteúdo,
 | 0 | Corrigir e revalidar Briefing (Discovery + PRD) | gates 0090 Discovery e PRD aprovados, nessa ordem |
 | 1 | SPEC | PRD aprovado |
 | 2 | BUILD (MVP piloto) | SPEC aprovada |
-| 3 | Piloto controlado (aproximadamente 10 veterinários; 14 semanas e 30–40 horas) | build funcional e gates aplicáveis aprovados |
-| 4 | AUDIT | piloto em operação |
+| 3 | Fatia vertical e primeira aplicação controlada (aproximadamente 10 veterinários) | build funcional, conteúdo aprovado e gates aplicáveis aprovados |
+| 4 | AUDIT | fatia vertical/primeira aplicação em operação |
 | 5 | Melhoria contínua e expansão | decisão do patrocinador |

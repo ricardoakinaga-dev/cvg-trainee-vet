@@ -59,7 +59,7 @@
 | Requisito do solicitante | Documento | Situação |
 |---|---|---|
 | plataforma de treinamento digital, com casos e simulações digitais | 0000/0004/0009 + D-068 | modalidade confirmada pelo patrocinador como insumo; prática presencial excluída |
-| básico ao avançado | PRD 0016 + anexo 0002 | progressão de complexidade dentro das trilhas; sem rótulos formais no MVP |
+| básico ao avançado | PRD 0017 + anexo 0002 | progressão de complexidade ao longo de 24 meses; sem rótulos formais no MVP |
 | trilhas | anexo 0002 | perguntas e opções não aprovadas |
 | provas | anexo 0003 | alternativas para futuro PRD |
 | quizzes | anexo 0003 | alternativa formativa não aprovada |
@@ -71,7 +71,7 @@
 | fonte cirúrgica | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
 | validação da documentação | anexo 0009 | verificações físicas e de consistência registradas — 2026-08-05 |
 | sequência de construção | anexo 0004 | roadmap com gates |
-| programa ainda não executado | README + PRD 0016 | matriz curricular criada; aulas, casos e questões completas ainda não produzidos |
+| programa ainda não executado | README + PRD 0017 | trilha V3 criada; aulas, casos e questões completas ainda não produzidos |
 
 ## 2.1 Cobertura do PRD
 

@@ -246,6 +246,8 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Controle clínico mantido | segundo MV antes da publicação de cada módulo clínico |
 | Validações | `git diff --cached --check`; 30 documentos Markdown; 66 links relativos sem quebra; nenhum ID duplicado nos 5 artefatos com definições; varredura de segredos sem achados; nenhum PDF alterado ou versionado |
 
+**Atualização D-083 — 2026-08-06:** por nova decisão expressa do patrocinador, a segunda conferência de outro MV deixa de ser obrigatória. Ricardo permanece como responsável e passa a ser também o único aprovador clínico obrigatório. A decisão D-076 é preservada acima como histórico do checkpoint original.
+
 ---
 
 ## 0.8 Política mínima interna de dados — D-077
@@ -541,7 +543,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ### B-03 — Governança do MVP interno
 
-**Estado após D-076:** `FECHADO PARA O MVP INTERNO`. MV. Ricardo Akinaga concentra as responsabilidades e aprova os gates documentais sobre commits identificados. Não existem cadeiras, comitês ou suplentes pendentes. A segunda conferência por outro MV é requisito do módulo clínico antes da publicação, não uma vaga de governança.
+**Estado após D-076/D-083:** `FECHADO PARA O MVP INTERNO`. MV. Ricardo Akinaga concentra as responsabilidades, aprova os gates documentais e é o único aprovador clínico obrigatório. Não existem cadeiras, comitês, suplentes ou segunda conferência veterinária obrigatória.
 
 ### B-04 — Direitos de uso das obras
 
@@ -587,11 +589,11 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Certificação | status no piloto; certificado na expansão |
 | Áreas do piloto | núcleo + emergência + internação |
 | Público | aproximadamente 10 veterinários; todos participam; sem segmentação |
-| Duração | 14 semanas no piloto; 34 semanas no ciclo completo (D-081) |
-| Tempo protegido | piloto 30–40 h, aproximadamente 2–3 h/semana; ciclo completo 90–115 h (D-081) |
+| Duração | 24 meses em duas partes, 24 módulos mensais (D-084; substitui D-081 na cadência vigente) |
+| Tempo protegido | aproximadamente 149 h no ciclo, média de 1 h 30 min/semana (D-084/D-085) |
 | Dados/B-05 | D-077: política mínima aprovada; somente identificação/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores e casos reais identificáveis proibidos |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
-| Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |
+| Governança/B-03 | D-076/D-083: Ricardo concentra as responsabilidades e é o único aprovador clínico obrigatório; B-03 fechado |
 | Processo atual/B-01 | D-078: aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | Público/B-02 | D-079: aproximadamente 10 veterinários; todos participam; B-02 fechado sem inventário |
 | Experiência do colaborador | D-080: uma próxima ação clara, unidades breves dentro de módulos completos, casos digitais, feedback imediato e progresso visível |
@@ -600,7 +602,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ## 6. Como fechar o gate
 
-✅ **Decisões de produto confirmadas e aplicadas ao rascunho em 2026-08-05.** Isso não representa aprovação do gate.
+✅ **Decisões de produto confirmadas e aplicadas ao rascunho entre 2026-08-05 e 2026-08-06.** Isso não representa aprovação do gate.
 
 **Remanescentes para fechamento total:**
 1. Aplicar diagnóstico inicial e coletar baseline (B-07), respeitando D-077;
@@ -608,3 +610,16 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 3. Reexecutar os gates na sequência prevista.
 
 Após isso, o Discovery deve ser reexecutado e aprovado; em seguida, o PRD deve ser reexecutado sobre um checkpoint Git identificado e submetido à aprovação humana. O status não muda automaticamente. A SPEC permanece bloqueada até ambas as aprovações formais.
+
+---
+
+## 7. Atualização curricular V3 — D-083 a D-086
+
+| ID | Decisão expressa do patrocinador em 2026-08-06 | Efeito |
+|---|---|---|
+| D-083 | descartar a revisão obrigatória por um segundo médico-veterinário | Ricardo se torna o único aprovador clínico obrigatório; revisão adicional é opcional |
+| D-084 | dividir o treinamento em Parte 1 e Parte 2, totalizando 24 meses | substitui a cadência V2 de D-081 e amplia o ciclo para 24 módulos mensais |
+| D-085 | trabalhar com casos fictícios e mix de quiz, múltipla escolha e dissertação, permitindo pesquisa | cria sessões assíncronas de pesquisa, casos progressivos, rubricas e revisão espaçada |
+| D-086 | usar Tratado, Ettinger e Fossum como base técnica | mantém rastreabilidade às obras; legislação, bula, protocolo aprovado e diretriz atual prevalecem em conflito |
+
+Artefatos: [PRD 0017](../01.PRD/0017_programa_curricular_24_meses.md) e [Anexo 0013](0013_pesquisa_melhores_praticas_trilha_24_meses.md).

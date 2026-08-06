@@ -40,7 +40,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-020 | O sistema deve permitir configurar as trilhas Núcleo Clínico, Emergência e Internação e publicar inicialmente somente os módulos autorizados do piloto; os 16 módulos formam o ciclo completo | P0 | PROPOSTA CURRICULAR V2 |
+| RF-020 | O sistema deve permitir configurar a trilha de 24 meses em duas partes, 24 módulos mensais e 96 sessões, publicando somente os módulos autorizados | P0 | PROPOSTA CURRICULAR V3 — D-084/D-085; ver 0017 |
 | RF-021 | O sistema deve atribuir trilha personalizada por perfil | P0 | FATO INFORMADO |
 | RF-022 | O sistema deve manter núcleo obrigatório não dispensável | P0 | FATO INFORMADO |
 | RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e trilhas | P1 | PROPOSTA CURRICULAR V2 |
@@ -54,12 +54,12 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-030 | O sistema deve exibir conteúdo em unidades curtas (10–15 min alvo) dentro de módulos clínicos completos de 4–6 horas | P1 | PROPOSTA CURRICULAR V2 |
+| RF-030 | O sistema deve organizar cada módulo mensal em quatro sessões, com carga regular de 6 horas e janelas assíncronas para pesquisa e casos | P1 | PROPOSTA CURRICULAR V3 — D-084/D-085; ver 0017 |
 | RF-031 | Cada módulo deve registrar internamente a obra e o capítulo/seção consultados, sem exibir esses metadados ao aluno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | PROPOSTA |
 | RF-033 | O sistema deve registrar conclusão de unidades e progresso | P0 | FATO INFORMADO |
-| RF-034 | O sistema deve suportar autoria → segunda conferência por outro MV → aprovação de Ricardo → publicação | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
-| RF-035 | O sistema deve impedir a publicação de módulo clínico sem o registro da segunda conferência veterinária | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RF-034 | O sistema deve suportar autoria → revisão clínica de Ricardo → aprovação → publicação, mantendo revisão adicional opcional | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
+| RF-035 | O sistema deve impedir a publicação de módulo clínico sem fonte, versão, rubrica/gabarito testado e aprovação humana registrada de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RF-036 | O sistema deve versionar todo conteúdo e manter histórico | P0 | FATO INFORMADO |
 | RF-037 | O sistema deve registrar data de corte científico e próxima revisão | P1 | PROPOSTA |
 | RF-038 | O sistema não deve armazenar, distribuir ou exibir os PDFs; eventual OCR, indexação, embeddings, RAG ou envio dos arquivos a IA depende de decisão futura D-033, sem bloquear conteúdo original produzido manualmente | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
@@ -86,9 +86,9 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-054 | O sistema não deve oferecer na primeira versão cadastro, agenda, checklist, upload ou aprovação de evidência de treinamento prático presencial ou procedimento real | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-055 | O sistema deve limitar a remediação a conteúdo, quiz, caso/simulação e orientação digitais | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-056 | Em atividade autocorrigível, o sistema deve dar feedback imediato; se houver revisão humana, deve mostrar imediatamente o status e a próxima ação | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
-| RF-057 | Casos digitais devem suportar ramificações, estado persistente, consequências, exames seriados, radiografias, POCUS e ECG | P0 | PROPOSTA CURRICULAR V2 |
-| RF-058 | Atividades devem suportar cálculo de dose/infusão e registro/passagem em campos estruturados, corrigidos automaticamente por rubrica; devem encaminhar para revisão humana respostas ambíguas, contestações, possível erro crítico ou atividade cujo método apresente falhas repetidas no piloto | P0 | APROVADA PELO PATROCINADOR EM D-070 (2026-08-06) |
-| RF-059 | O sistema deve suportar formas equivalentes, revisão espaçada, retomada da atividade e resultado por objetivo, competência e trilha | P0 | PROPOSTA CURRICULAR V2 |
+| RF-057 | Casos digitais devem suportar ramificações, estado persistente, consequências, exames seriados, radiografias, POCUS e ECG | P0 | PROPOSTA CURRICULAR V3 |
+| RF-058 | Atividades devem suportar cálculo de dose/infusão, campos estruturados e respostas abertas; campos avaliáveis usam rubrica automática e respostas dissertativas usam rubrica com correção humana de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-070/D-083/D-085 (2026-08-06) |
+| RF-059 | O sistema deve suportar formas equivalentes, revisão espaçada, retomada da atividade e resultado por objetivo, competência e trilha | P0 | PROPOSTA CURRICULAR V3 |
 
 ## 6. Contestação e correção
 
@@ -132,6 +132,9 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-094 | O sistema deve sinalizar itens com anomalia para revisão humana, sem decisão automática | P1 | PROPOSTA |
 | RF-095 | Ao registrar erro crítico em caso digital, o sistema deve explicar a decisão, marcar somente o objetivo afetado para reforço, atribuir conteúdo curto e novo caso equivalente e impedir apenas a conclusão desse objetivo até uma decisão segura; não pode gerar ranking, punição ou reprovação definitiva | P0 | APROVADA PELO PATROCINADOR EM D-082 (2026-08-06) |
 | RF-096 | O sistema deve impedir a publicação de pergunta/caso sem gabarito ou rubrica testados, respostas aceitas, erros relevantes e feedback; se a resposta não puder ser avaliada automaticamente, o item deve ser redesenhado ou marcado previamente para correção humana | P0 | FATO INFORMADO PELO PATROCINADOR; D-070 (2026-08-06) |
+| RF-097 | Atividades de pesquisa e casos abertos devem permitir consulta às fontes, pausa/retomada e janela assíncrona, exigindo indicação da fonte usada | P0 | APROVADA COMO DIREÇÃO EM D-085 (2026-08-06) |
+| RF-098 | O sistema deve suportar respostas curtas e dissertativas com rubrica, status de correção pendente, feedback humano e histórico da decisão | P0 | APROVADA COMO DIREÇÃO EM D-083/D-085 (2026-08-06) |
+| RF-099 | O sistema deve combinar quiz, múltipla escolha/associação, resposta aberta, interpretação e reflexão sem depender de um único formato para avaliar desenvolvimento | P0 | APROVADA COMO DIREÇÃO EM D-085 (2026-08-06) |
 
 ## 10. Requisitos não cobertos (pendências que impactam o PRD)
 

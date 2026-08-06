@@ -39,7 +39,7 @@ Os itens acima representam o **fluxo desejado declarado**, não o fluxo atual co
 - Médico-veterinário colaborador;
 - Centro Veterinário Guarapiranga como organização patrocinadora;
 - MV. Ricardo Akinaga como responsável pelas frentes do MVP;
-- outro médico-veterinário, escolhido por módulo para a segunda revisão clínica.
+- MV. Ricardo Akinaga como único aprovador clínico obrigatório; revisão adicional pode ser solicitada quando julgar necessário (D-083).
 
 ### Eventual apoio operacional
 

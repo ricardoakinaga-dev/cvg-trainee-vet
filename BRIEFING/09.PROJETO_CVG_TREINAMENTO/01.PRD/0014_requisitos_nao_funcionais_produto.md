@@ -45,7 +45,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-031 | Proteção do banco de questões contra vazamento e compartilhamento | PROPOSTA (D-048) |
 | RNF-032 | O MVP trata somente nome/login profissional, progresso, tentativas, notas e logs mínimos definidos na política; o aviso de privacidade deve registrar a base legal antes do primeiro cadastro real | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-033 | Casos e simulações do MVP são exclusivamente fictícios; prontuários, dados de tutores e casos reais identificáveis são proibidos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
-| RNF-034 | Módulo clínico exige segunda conferência de outro MV; alteração de nota nunca ocorre silenciosamente | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RNF-034 | Módulo clínico exige aprovação humana registrada de Ricardo; revisão adicional é opcional e alteração de nota nunca ocorre silenciosamente | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RNF-035 | Nenhuma decisão crítica clínica automatizada por IA sem revisão humana | FATO INFORMADO |
 | RNF-036 | Alteração de gabarito/nota exige justificativa e fluxo formal | PROPOSTA |
 

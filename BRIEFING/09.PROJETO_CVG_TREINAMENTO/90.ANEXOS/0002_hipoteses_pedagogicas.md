@@ -1,7 +1,7 @@
 # Anexo 0002 — Hipóteses Pedagógicas para Validação
 
-**Status:** registro histórico de hipóteses; a proposta curricular vigente está no [PRD 0016](../01.PRD/0016_programa_curricular_clinico.md)
-**Regra de leitura:** quando houver conflito, o PRD 0016 substitui este anexo. A carga/cadência foi aprovada em D-081.
+**Status:** registro histórico de hipóteses; a proposta curricular vigente está no [PRD 0017](../01.PRD/0017_programa_curricular_24_meses.md)
+**Regra de leitura:** quando houver conflito, o PRD 0017 substitui este anexo. D-084/D-085 substituem a carga/cadência de D-081.
 
 ## 1. Princípios candidatos
 

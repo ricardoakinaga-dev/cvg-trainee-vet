@@ -20,7 +20,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-005 | Administrador não altera silenciosamente notas, gabaritos ou histórico | FATO INFORMADO |
 | RN-006 | MV. Ricardo Akinaga acumula patrocínio, produto, coordenação educacional/clínica, operação, dados e segurança no MVP interno | APROVADA PELO PATROCINADOR COMO INSUMO (D-076); B-03 FECHADO PARA O MVP |
 | RN-007 | Não são exigidos comitês, suplentes ou cargos segregados no MVP; as decisões são registradas por commit Git | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
-| RN-008 | Módulo clínico exige revisão de outro médico-veterinário antes da publicação; o revisor é escolhido por módulo e identificado na versão | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RN-008 | Módulo clínico exige revisão e aprovação humana por MV. Ricardo Akinaga antes da publicação; não há segunda conferência obrigatória | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06; substitui D-076 neste ponto) |
 | RN-009 | Ricardo aprova os gates documentais do MVP sobre commits identificados; ausência de revisor clínico bloqueia somente a publicação do módulo correspondente | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
 
 ## 2. Regras da jornada de aprendizagem
@@ -65,8 +65,8 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-040 | Cada módulo registra internamente objetivo, competência, nível, obra e capítulo/seção consultados, autor, revisor, versão e data de revisão; esses dados não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RN-041 | Hierarquia de fontes: legislação/bula > protocolo CVG > diretriz atual > Ettinger 2024 > Fossum 2014 (temas cirúrgicos) > Tratado 2015 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05 — atualizada 2026-08-05: inclusão do Fossum, F-03) |
 | RN-042 | Divergências entre fontes seguem fluxo com `conflict_id` e decisão humana documentada; críticas nunca resolvidas por IA | FATO INFORMADO |
-| RN-043 | Conteúdo clínico só é publicado após revisão de outro médico-veterinário | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
-| RN-044 | Ricardo pode criar e aprovar o fluxo do conteúdo; a segunda conferência clínica permanece obrigatória antes da publicação | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
+| RN-043 | Conteúdo clínico só é publicado após revisão e aprovação humana de MV. Ricardo Akinaga | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
+| RN-044 | Ricardo pode criar, revisar, aprovar e publicar o conteúdo do MVP interno; a revisão de outro MV é opcional, não obrigatória | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RN-045 | Não copiar texto, página, tabela, figura ou imagem das obras; todo material de treinamento deve ter redação própria do CVG | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RN-046 | No MVP interno, as obras podem ser consultadas manualmente pela equipe; os PDFs ficam fora da plataforma e do Git; registra-se apenas obra e capítulo/seção por módulo; automação dos PDFs permanece pendente em D-033 sem bloquear a autoria manual | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05); B-04 FECHADO PARA O MVP INTERNO |
 | RN-047 | Validade por tipo de conteúdo: crítico 6 meses, clínico geral 12, fundamentos 24; alerta = revisão imediata | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -104,12 +104,12 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | ID | Regra | Classificação |
 |---|---|---|
 | RN-070 | Público inicial: aproximadamente 10 veterinários; todos participam da primeira aplicação, sem segmentação por setor ou turno | APROVADA PELO PATROCINADOR COMO INSUMO (D-079; B-02 FECHADO) |
-| RN-071 | Duração do piloto: 14 semanas, preservando dois ciclos semanais por módulo | APROVADA PELO PATROCINADOR EM D-081 (2026-08-05) |
+| RN-071 | Duração da trilha: 24 meses em duas partes, com 24 módulos mensais e 96 sessões | APROVADA COMO DIREÇÃO PELO PATROCINADOR EM D-084 (2026-08-06; substitui D-081) |
 | RN-072 | Piloto digital cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-074 | Baseline coletada no início do piloto (perfil, conhecimento, engajamento, indicadores selecionados) | PENDENTE (B-07) |
-| RN-075 | Módulo clínico revisado por outro MV antes da publicação; revisão pedagógica é opcional no MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
-| RN-076 | Carga do piloto: 30–40 horas em 14 semanas, aproximadamente 2–3 horas por semana; ciclo completo: 34 semanas e faixa de planejamento de 90–115 horas | APROVADA PELO PATROCINADOR EM D-081 (2026-08-05) |
+| RN-075 | Módulo clínico revisado e aprovado por Ricardo antes da publicação; revisão clínica adicional e revisão pedagógica são opcionais no MVP | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
+| RN-076 | Carga da trilha: 149 horas em 24 meses, com 6 horas nos meses regulares, 7 horas no diagnóstico e 8 horas nos meses integradores | PROPOSTA V3 APROVADA COMO DIREÇÃO EM D-084/D-085 (2026-08-06) |
 | RN-077 | Espécies do piloto: cães e gatos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-078 | Banco do piloto: 10 a 15 itens por objetivo de aprendizagem | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-079 | Certificação no piloto: somente status de conclusão e histórico; certificado formal avaliado na expansão | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -131,7 +131,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | Coordenação educacional e clínica | MV. Ricardo Akinaga | ativo |
 | Operação, dados e segurança do MVP | MV. Ricardo Akinaga | ativo |
 | Aprovação dos gates documentais | MV. Ricardo Akinaga, sobre commit identificado | ativo |
-| Segunda conferência clínica | outro médico-veterinário escolhido por módulo | exigido somente antes da publicação daquele módulo |
+| Aprovação clínica | MV. Ricardo Akinaga | exigida antes da publicação de cada módulo |
 
 D-076 substitui D-071/D-072 quanto ao modelo vigente e fecha B-03 para o MVP interno.
 
@@ -145,5 +145,5 @@ Por D-077, RN-063 a RN-067 e a [Política Mínima Interna de Dados](../90.ANEXOS
 
 1. RN-023 — domínio mínimo em componentes críticos (definir com dados do piloto);
 2. RN-074 — baseline (B-07);
-3. Identificar o segundo médico-veterinário em cada módulo somente antes de sua publicação;
+3. Manter data, fonte, versão e registro da aprovação clínica de Ricardo em cada módulo;
 4. Definição futura sobre processamento automatizado dos PDFs (D-033; não bloqueia o MVP manual).

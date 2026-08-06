@@ -1,6 +1,6 @@
 # Anexo 0003 — Hipóteses de Avaliações e Catálogo de Métricas
 
-**Status:** registro histórico; quantidades da proposta curricular vigente estão no [PRD 0016](../01.PRD/0016_programa_curricular_clinico.md)
+**Status:** registro histórico; quantidades da proposta curricular vigente estão no [PRD 0017](../01.PRD/0017_programa_curricular_24_meses.md)
 **Objetivo:** preservar as decisões de avaliação e indicar o blueprint proposto, sem criar questões reais.
 
 Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autoriza progressão até passar por validação de conteúdo, validade da avaliação, confiabilidade e standard setting.

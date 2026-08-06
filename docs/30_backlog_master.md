@@ -9,7 +9,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - título: validar blueprint das 120 questões diagnósticas
 - descrição: revisar a matriz das três sessões, cobertura clínica, estrutura cognitiva, avaliabilidade, equidade e aderência à política D-077
 - módulo: Discovery / avaliação diagnóstica
-- dependência: PRD 0016, D-070, D-077, D-082
+- dependência: PRD 0017, D-070, D-077, D-082, D-083 a D-086
 - fase: Discovery — correção B-07
 - risco: alto — blueprint inadequado contamina a baseline e a personalização
 - impacto: alto
@@ -21,7 +21,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - título: produzir 120 itens originais em três sessões de 40
 - descrição: escrever os itens conforme o blueprint, com cenários fictícios, gabaritos/rubricas testados, respostas aceitas e rastreabilidade interna por módulo/fonte
 - módulo: conteúdo e avaliação
-- dependência: B07-01 aprovado; segundo MV revisor nomeado; autorização humana para produção
+- dependência: B07-01 alinhado à V3; aprovação clínica de Ricardo; autorização humana para produção
 - fase: Discovery/PRD — correção B-07
 - risco: crítico — erro clínico, ambiguidade ou cópia bloqueia a aplicação
 - impacto: alto
@@ -29,14 +29,25 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 ### B07-03 — Revisão e pré-voo
 
-- título: revisar clinicamente e testar a avaliabilidade dos 120 itens
-- descrição: executar segunda conferência veterinária, verificar redação original, cobertura, scoring determinístico, respostas aceitas, feedback e comportamento de interrupção com dados sintéticos
+- título: executar revisão clínica de Ricardo e testar a avaliabilidade dos 120 itens
+- descrição: verificar redação original, cobertura, fontes atuais, scoring determinístico, respostas aceitas, feedback e comportamento de interrupção com dados sintéticos
 - módulo: governança clínica e qualidade da avaliação
 - dependência: B07-02 concluído
 - fase: Discovery/PRD — correção B-07
 - risco: crítico
 - impacto: alto
 - status: PENDENTE
+
+### CUR-24-01 — Fatia vertical do Mês 2
+
+- título: produzir e validar um módulo completo de emergência
+- descrição: criar quatro sessões, dois casos fictícios, quiz, questões objetivas, duas respostas abertas, rubricas, feedback e referências; medir carga do participante e correção por Ricardo
+- módulo: programa curricular V3 / emergência
+- dependência: aprovação humana do PRD 0017 e da carga mensal
+- fase: PRD — validação da proposta curricular
+- risco: alto — sem protótipo a carga de autoria e correção é apenas estimativa
+- impacto: alto
+- status: WAITING_HUMAN_APPROVAL
 
 ### B07-04 — Aplicação da baseline
 

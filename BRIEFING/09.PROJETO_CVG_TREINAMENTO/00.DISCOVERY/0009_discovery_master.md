@@ -44,7 +44,7 @@ O problema será medido por ativação, progresso, conclusão, domínio, ganho d
 - Avaliações posteriores: quizzes, provas e outras formas;
 - Necessidade de métricas individuais;
 - Áreas iniciais: núcleo comum, Emergência e Internação;
-- Responsável pelo MVP: MV. Ricardo Akinaga; outro MV confere cada módulo antes da publicação;
+- Responsável pelo MVP e único aprovador clínico obrigatório: MV. Ricardo Akinaga; revisão adicional é opcional por D-083;
 - Tempo protegido: 3 horas por mês;
 - Políticas mínimas de fontes e dados definidas por D-075 e D-077;
 - Fonte nacional: *Tratado de Medicina Interna de Cães e Gatos*, 1ª edição, 2015;
@@ -53,7 +53,7 @@ O problema será medido por ativação, progresso, conclusão, domínio, ganho d
 
 ### Desconhecido
 
-- Produção, validação e aplicação do diagnóstico de 120 itens proposto no PRD 0016 (B-07);
+- Alinhamento, produção, validação e aplicação do diagnóstico de 120 itens dentro do primeiro mês do PRD 0017 (B-07);
 - Primeiro módulo a ser produzido;
 - Restrição real de dispositivo ou acessibilidade, se houver;
 - Protocolos internos relevantes para cada módulo.

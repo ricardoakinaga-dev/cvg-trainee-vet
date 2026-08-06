@@ -38,9 +38,9 @@
 - [x] Modalidade digital e fronteira das simulações confirmadas pelo patrocinador como insumos (D-068); prática presencial bloqueada pelo `GATE-EXP-PRAT-01`;
 - [x] Áreas clínicas do piloto confirmadas pelo responsável do MVP — núcleo + Emergência + Internação (B-06);
 - [x] Coorte inicial delimitada: aproximadamente 10 veterinários, abrangendo toda a equipe (D-079).
-- [x] Programa curricular clínico V2 definido no PRD 0016: 16 módulos, 128 casos digitais-base e banco de 1.440 itens;
-- [x] Carga/cadência confirmada em D-081: piloto de 14 semanas/30–40 h; ciclo completo de 34 semanas/90–115 h.
-- [x] Ordem de produção confirmada em D-062: piloto integrado primeiro; demais módulos em ondas após aprendizado do piloto.
+- [x] Programa curricular clínico V3 definido no PRD 0017: 24 meses, duas partes, 24 módulos e 96 sessões;
+- [ ] Carga/cadência proposta em D-084/D-085: 149 horas; aguarda confirmação final após leitura e fatia vertical;
+- [x] Ordem de validação: fatia vertical do Mês 2 antes da produção em escala; demais módulos em ondas após aprendizado.
 
 ### REGRAS
 
@@ -76,7 +76,7 @@
 |---|---|---|---|---|
 | B-01 | fluxo atual do treinamento | estabelecer ponto de partida | MV. Ricardo Akinaga | FECHADO POR D-078 — aprendizado informal, sem trilha, avaliação ou registro centralizado |
 | B-02 | público e coorte | dimensionar a primeira aplicação | MV. Ricardo Akinaga | FECHADO POR D-079 — aproximadamente 10 veterinários; todos participam |
-| B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076 — MV. Ricardo Akinaga; segundo MV somente por módulo antes da publicação |
+| B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076/D-083 — MV. Ricardo Akinaga é o único aprovador clínico obrigatório |
 | B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | MV. Ricardo Akinaga | FECHADO POR D-077 — somente nome/login profissional, progresso, tentativas, notas e logs mínimos; dados clínicos reais e de tutores proibidos |
 | B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
@@ -90,7 +90,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 2. Composição quiz 0% + caso 30% + prova 70% (D-044) — ✅ corrige inconsistência RN-020/RN-022
 3. Tentativas 2 + remediação, intervalo mínimo 7 dias (D-042/D-043) — ✅
 4. Núcleo + Emergência/Internação no piloto (D-020) — ✅
-5. Aproximadamente 10 veterinários; piloto de 14 semanas e 30–40 h; ciclo completo de 34 semanas e 90–115 h (D-081) — ✅
+5. Aproximadamente 10 veterinários; trilha V3 de 24 meses, 24 módulos e 149 horas propostas (D-084/D-085) — direção aprovada; carga final depende da fatia vertical;
 6. Certificação: status de conclusão no piloto (D-049) — ✅
 7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
 8. Política de dados: D-077 aprovou o mínimo necessário e fechou B-05; prontuários, tutores, gravações e casos reais identificáveis permanecem proibidos — ✅
@@ -98,7 +98,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 10. Dispensa por domínio: não no piloto (D-045) — ✅
 11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
 12. Fontes: D-075 aprovou governança enxuta para o sistema interno; B-04 fechado; D-033 futura e não bloqueante — ✅
-13. Programa curricular: matriz V2 definida no PRD 0016; carga/cadência aprovada em D-081 — ✅
+13. Programa curricular: matriz V3 definida no PRD 0017; D-084/D-085 substituem a cadência de D-081 — confirmação operacional pendente;
 14. Erro crítico: objetivo em reforço, explicação e novo caso equivalente; sem punição ou reprovação definitiva (D-082) — ✅
 
 ---
@@ -135,9 +135,9 @@ MV. Ricardo Akinaga coordena e aprova essas atividades como responsável do MVP 
 | Papel | Nome | Decisão | Data |
 |---|---|---|---|
 | Responsável pelo MVP interno | MV. Ricardo Akinaga | patrocinador, produto, coordenação clínica/educacional, operação, dados, segurança e aprovação dos gates documentais | 2026-08-05 |
-| Revisor de conteúdo clínico | outro MV escolhido por módulo | exigido somente antes da publicação daquele módulo | POR MÓDULO |
+| Aprovador de conteúdo clínico | MV. Ricardo Akinaga | aprovação humana obrigatória por módulo; revisão adicional opcional | 2026-08-06 |
 
-O modelo enxuto e a regra de segunda conferência estão no documento Discovery 0006.
+O modelo enxuto e a regra de aprovação clínica única estão no documento Discovery 0006. D-083 substitui a exigência de segunda conferência de D-076.
 
 ## Próximo passo após fechamento dos compromissos
 

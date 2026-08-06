@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário
 **Data do rascunho:** 2026-08-06
-**Status:** RASCUNHO DE TRABALHO — B-07 EM ELABORAÇÃO
+**Status:** RASCUNHO DE TRABALHO — B-07 EM ELABORAÇÃO; governança atualizada por D-083
 **Checkpoint de origem:** D-070, commit 5e5b62c, tag gate-d070-adaptive-structured-scoring-2026-08-06
 **Responsável pelo MVP:** MV. Ricardo Akinaga
 **Natureza:** blueprint de avaliação, ainda não aprovado para aplicação
@@ -186,7 +186,7 @@ Cada item produzido deve manter, em registro interno não exibido ao aluno:
 | respostas aceitas e erros relevantes | sim |
 | feedback técnico-clínico | sim |
 | fonte interna e capítulo/seção consultados | sim, conforme D-075 |
-| autor, segundo MV revisor e data | sim antes da aplicação |
+| autor, aprovador clínico e data | sim antes da aplicação; aprovador obrigatório: MV. Ricardo Akinaga |
 | versão, status e data de corte | sim |
 
 O material deve ser redigido pelo CVG. É proibido copiar texto, tabela, figura, imagem ou página das obras. O aluno deve receber somente conteúdo institucional e o retorno educacional aprovado; a referência interna das obras não será exposta.
@@ -195,8 +195,8 @@ O material deve ser redigido pelo CVG. É proibido copiar texto, tabela, figura,
 
 ### 9.1 Revisão de conteúdo
 
-- Ricardo confere a aderência do blueprint ao PRD 0016;
-- outro médico-veterinário, escolhido e identificado antes da aplicação, faz a segunda conferência clínica;
+- Ricardo confere a aderência do blueprint ao programa curricular vigente e realiza a aprovação clínica;
+- a segunda conferência por outro médico-veterinário deixa de ser obrigatória por D-083; consulta adicional é opcional;
 - cada item é verificado quanto a correção, atualidade, espécie, urgência, risco e ausência de ambiguidade;
 - revisão pedagógica é opcional no MVP, mas pode ser usada para clareza e carga cognitiva;
 - divergências de fonte recebem conflito registrado e decisão humana.
@@ -226,7 +226,7 @@ O material deve ser redigido pelo CVG. É proibido copiar texto, tabela, figura,
 |---|---|---|
 | B07.1 | blueprint das 120 questões | CONCLUÍDA COMO RASCUNHO |
 | B07.2 | produção dos 120 itens originais | PENDENTE |
-| B07.3 | segunda conferência clínica | PENDENTE — revisor ainda não nomeado |
+| B07.3 | revisão clínica e aprovação por Ricardo | PENDENTE — executar durante a produção e antes da aplicação |
 | B07.4 | pré-voo de avaliabilidade e fluxo | PENDENTE |
 | B07.5 | autorização humana da aplicação | PENDENTE |
 | B07.6 | aplicação às aproximadamente 10 pessoas | PENDENTE |
@@ -240,7 +240,7 @@ B-07 só poderá ser marcado como fechado quando houver evidência das etapas B0
 2. D-038: regra de conversão do perfil em recomendação de trilha;
 3. D-039: mapeamento operacional dos conteúdos obrigatórios e temas críticos, sem dispensa no piloto;
 4. D-017/D-018: confirmar restrições concretas de dispositivo, conectividade e acessibilidade antes da aplicação;
-5. nome e identificação do segundo médico-veterinário revisor do instrumento;
+5. registro da aprovação clínica de Ricardo e da data de corte científico do instrumento;
 6. autorização, aviso de privacidade e controles mínimos para a aplicação real;
 7. produção, revisão e pré-voo dos 120 itens;
 8. critério de atualização ou repetição da baseline.
@@ -257,7 +257,7 @@ B-07 só poderá ser marcado como fechado quando houver evidência das etapas B0
 - [x] casos usam somente dados fictícios;
 - [x] dados permitidos e dados proibidos estão explícitos;
 - [x] revisão clínica, pré-voo e aplicação estão separados;
-- [ ] segundo MV aprovou o blueprint;
+- [ ] Ricardo aprovou clinicamente a versão aplicável do instrumento;
 - [ ] 120 itens foram produzidos;
 - [ ] 120 itens foram revisados e testados;
 - [ ] baseline foi aplicada e consolidada;
@@ -265,4 +265,4 @@ B-07 só poderá ser marcado como fechado quando houver evidência das etapas B0
 
 ## 13. Rastreamento e próximo passo
 
-Este anexo deve ser referenciado no D-037, no B-07 dos gates e no backlog operacional. O próximo passo elegível é obter a revisão clínica do blueprint e a autorização para produzir os itens. Sem essa revisão e sem a aplicação real, o status correto permanece WAITING_HUMAN_APPROVAL e os gates Discovery/PRD continuam reprovados.
+Este anexo deve ser referenciado no D-037, no B-07 dos gates e no backlog operacional. O próximo passo elegível é alinhar o diagnóstico à trilha V3, obter a aprovação clínica de Ricardo e produzir uma fatia vertical antes da escala completa. Sem revisão, produção, pré-voo e aplicação real, B-07 permanece aberto e os gates Discovery/PRD continuam reprovados.

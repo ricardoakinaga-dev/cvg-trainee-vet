@@ -83,7 +83,7 @@
 |---|---|---|---|---|---|
 | B-01 | fluxo atual do treinamento | estabelecer ponto de partida | descrição confirmada por Ricardo em D-078 | MV. Ricardo Akinaga | FECHADO — aprendizado informal, sem trilha, avaliação ou registro centralizado |
 | B-02 | público e coorte | dimensionar a primeira aplicação | confirmação direta de Ricardo | MV. Ricardo Akinaga | FECHADO POR D-079 — aproximadamente 10 veterinários; todos participam |
-| B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | aplicar D-076; segundo MV somente antes da publicação de cada módulo clínico | MV. Ricardo Akinaga | FECHADO PARA O MVP INTERNO |
+| B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | aplicar D-076/D-083; Ricardo é o único aprovador clínico obrigatório | MV. Ricardo Akinaga | FECHADO PARA O MVP INTERNO |
 | B-04 | uso das fontes no MVP interno | risco controlado | aplicar D-075: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo | patrocinador | FECHADO PARA O MVP INTERNO |
 | B-05 | política mínima interna de dados | limitar coleta e acesso | aplicar o Anexo 0011 | MV. Ricardo Akinaga | FECHADO POR D-077 — dados do treinamento permitidos; prontuários, tutores, gravações e casos reais identificáveis proibidos |
 | B-06 | áreas clínicas do piloto | escopo clínico | decisão registrada: núcleo + Emergência + Internação | coordenação clínica | FECHADO COMO INSUMO |
@@ -112,7 +112,7 @@ Por D-076, MV. Ricardo Akinaga é o responsável efetivo pelo MVP e pode decidir
 |---|---|---|---|
 | B-01 | fluxo atual validado por D-078 | manter a descrição como ponto de partida; detalhes informais são opcionais | concluído |
 | B-02 | público/coorte confirmado por D-079 | aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação obrigatória | concluído |
-| B-03 | responsável do MVP | Ricardo nomeado por D-076; segundo MV será identificado por módulo antes da publicação | concluído |
+| B-03 | responsável do MVP | Ricardo nomeado por D-076 e confirmado como único aprovador clínico obrigatório por D-083 | concluído |
 | B-04 | governança de fontes recalibrada por D-075 | fechado para o MVP interno; D-033 permanece separada e não bloqueia a autoria manual | concluído |
 | B-05 | fechado por D-077 | aplicar a política mínima interna; nenhuma ampliação de dados sem nova decisão | controle contínuo |
 | B-06 | áreas clínicas do piloto | decisão confirmada: núcleo + Emergência + Internação | fechado como insumo; revalidar no gate |
@@ -139,6 +139,6 @@ O Anexo 0012 registra somente o blueprint de trabalho. Ele não substitui a vali
 | Papel | Nome | Decisão | Data |
 |---|---|---|---|
 | Responsável pelo MVP interno | MV. Ricardo Akinaga | patrocinador, produto, coordenação clínica/educacional, operação, dados, segurança e aprovação dos gates documentais | 2026-08-05 |
-| Revisor de conteúdo clínico | outro MV escolhido por módulo | exigido somente antes da publicação do módulo | POR MÓDULO |
+| Aprovador de conteúdo clínico | MV. Ricardo Akinaga | revisão humana obrigatória antes da publicação; revisão adicional opcional | 2026-08-06 |
 
 Registro vigente: B-01, B-02, B-03, B-04 e B-05 estão fechados por D-078, D-079, D-076, D-075 e D-077. O gate Discovery continua pendente pelos demais itens.

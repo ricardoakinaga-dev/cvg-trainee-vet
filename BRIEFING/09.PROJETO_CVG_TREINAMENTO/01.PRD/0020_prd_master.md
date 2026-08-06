@@ -3,7 +3,7 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Fase:** PRD — consolidação  
-**Data:** 2026-08-05  
+**Data:** 2026-08-06
 **Status:** rascunho consolidado em correção; gate PRD reprovado
 **Base:** Discovery `REPROVADO — EM CORREÇÃO` (2026-08-05)
 
@@ -11,7 +11,7 @@
 
 ## 1. Visão geral
 
-O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina diagnóstico amplo fracionado, trilha recomendada, unidades técnicas curtas dentro de módulos completos, casos/simulações digitais, recuperação ativa, feedback imediato, remediação e progresso visível. O conteúdo é original do CVG e revisado por humanos.
+O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina diagnóstico amplo fracionado e uma trilha de 24 meses, dividida em duas partes, com casos fictícios, pesquisa aberta, recuperação ativa, respostas objetivas e dissertativas, feedback, remediação e progresso visível. O conteúdo é original do CVG e aprovado clinicamente por MV. Ricardo Akinaga.
 
 O produto **não** oferece treinamento prático presencial associado à plataforma, não avalia habilidade psicomotora ou competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos. Resultados de casos ou simulações digitais representam apenas conhecimento e raciocínio em cenário simulado (D-068).
 
@@ -24,8 +24,7 @@ Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 ## 3. Usuários
 
 - **Primário:** médico-veterinário colaborador;
-- **Responsável pelo MVP:** MV. Ricardo Akinaga administra o programa, produz/aprova conteúdos e responde pelos gates documentais;
-- **Revisor:** outro médico-veterinário faz a segunda conferência de cada módulo clínico antes da publicação;
+- **Responsável e aprovador clínico do MVP:** MV. Ricardo Akinaga administra o programa, produz/revisa/aprova conteúdos e responde pelos gates documentais;
 - **Apoio opcional:** mentor ou suporte técnico, somente quando Ricardo autorizar;
 
 ## 4. Fluxos principais
@@ -35,11 +34,11 @@ Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 ```text
 entrar
 → fazer um diagnóstico de 120 itens em três sessões, sem aprovação ou reprovação
-→ receber uma trilha recomendada
-→ estudar unidades de 10–15 minutos dentro de módulos de 4–6 horas
-→ praticar com questões e casos/simulações digitais contrastantes
-→ receber feedback imediato
-→ acompanhar o progresso e revisar apenas o necessário
+→ receber um plano individual de reforço
+→ percorrer 24 módulos mensais em duas partes
+→ ativar conhecimento, pesquisar nas fontes e decidir em casos fictícios
+→ responder quizzes, questões objetivas e dissertativas em janelas assíncronas
+→ receber feedback e reencontrar os conceitos em revisão espaçada
 ```
 
 ### 4.2 Governança editorial
@@ -49,8 +48,8 @@ seleção do tema
 → blueprint
 → pesquisa nas fontes
 → autoria
-→ segunda conferência por outro MV
-→ revisão pedagógica opcional
+→ revisão clínica e aprovação de Ricardo
+→ revisão clínica adicional ou pedagógica opcional
 → checagem simples: conteúdo original e PDF ausente
 → aprovação
 → publicação
@@ -70,10 +69,10 @@ contestações e alterações de gabarito → protocolo → revisor independente
 ### IN (piloto/MVP proposto)
 
 - Jornada do colaborador: diagnóstico amplo fracionado, trilha recomendada, unidades breves, módulos completos, questões, casos/simulações digitais, feedback, remediação e progresso;
-- Bastidores mínimos: login, publicação com segunda conferência veterinária, controle de acesso e registro de alterações sensíveis;
+- Bastidores mínimos: login, publicação com aprovação humana de Ricardo, controle de acesso e registro de alterações sensíveis;
 - Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05);
 - Público/coorte: aproximadamente 10 veterinários, com participação de toda a equipe (D-079; B-02 fechado);
-- Matriz curricular V2: ciclo completo de 34 semanas e faixa de planejamento de 90–115 horas; piloto aprovado de 14 semanas com cinco módulos/partes curriculares, caso integrador e 30–40 horas (D-081).
+- Matriz curricular V3: 24 meses, duas partes, 24 módulos, 96 sessões e carga estimada de 149 horas (D-084/D-085; PRD 0017).
 
 ### OUT
 
@@ -96,7 +95,7 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Tentativas | 2 + remediação obrigatória; intervalo mínimo 7 dias; itens diferentes na 2ª | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Retenção | itens equivalentes; não revoga conclusão; nunca substitui limiar absoluto | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Fontes | D-075: consulta manual interna, PDFs fora da plataforma/Git e referência simples por módulo | APROVADA PELO PATROCINADOR COMO INSUMO; B-04 FECHADO PARA O MVP INTERNO |
-| Conteúdo | rascunhos originais podem ser preparados; publicação do programa depende dos gates gerais, não de B-04 | RASCUNHO/INSUMO |
+| Conteúdo | rascunhos originais podem ser preparados; publicação exige aprovação clínica de Ricardo e os gates gerais | RASCUNHO/INSUMO — D-083 |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
 | Dados | somente nome/login profissional, progresso, tentativas, notas e logs mínimos; RH, prontuários, dados de tutores, gravações e casos reais identificáveis proibidos; retenção durante o vínculo + 2 anos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077; B-05 FECHADO) |
 | Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
@@ -111,7 +110,7 @@ Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 P0 do colaborador: entrar, fazer o diagnóstico fracionado, ver a trilha, concluir unidades e módulos, resolver questões/casos com feedback imediato, revisar lacunas e acompanhar o progresso. Controles de publicação, permissão e registro ficam nos bastidores.
 Detalhes em [0013 — Requisitos funcionais](0013_requisitos_funcionais.md).
 
-O conteúdo, a sequência, a carga, os casos e o blueprint de avaliação estão no [0016 — Programa curricular clínico](0016_programa_curricular_clinico.md).
+O conteúdo, a sequência, a carga e as sessões da trilha vigente estão no [0017 — Programa curricular de 24 meses](0017_programa_curricular_24_meses.md). O [0016](0016_programa_curricular_clinico.md) preserva a proposta V2 como histórico.
 
 ## 8. Requisitos não funcionais (resumo)
 
@@ -125,7 +124,7 @@ Detalhes em [0015 — Métricas de sucesso](0015_metricas_de_sucesso.md).
 
 ## 10. Riscos e hipóteses
 
-Riscos críticos: conteúdo incorreto/desatualizado, confusão entre teoria e autonomia clínica, cópia ou distribuição indevida dos PDFs, violação da política mínima de dados, IA sem revisão e alteração não auditada de notas. Riscos altos: tempo protegido, adesão, escopo, revisores, métricas punitivas, banco frágil e conteúdo sem manutenção.
+Riscos críticos: conteúdo incorreto/desatualizado, dependência de um único aprovador clínico, confusão entre teoria e autonomia clínica, cópia ou distribuição indevida dos PDFs, violação da política mínima de dados, IA sem revisão e alteração não auditada de notas. Riscos altos: tempo protegido, adesão, escopo, fila de correção dissertativa, métricas punitivas, banco frágil e conteúdo sem manutenção.
 Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOVERY/0007_riscos_e_hipoteses.md).
 
 ## 11. Fontes de conhecimento
@@ -148,14 +147,14 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
-3. Governança (B-03) — ✅ **FECHADO PARA O MVP INTERNO POR D-076 — Ricardo concentra as responsabilidades; segundo MV por módulo antes da publicação**;
+3. Governança (B-03) — ✅ **FECHADO PARA O MVP INTERNO POR D-076/D-083 — Ricardo concentra as responsabilidades e é o único aprovador clínico obrigatório**;
 4. Política de dados (B-05) — ✅ **POLÍTICA MÍNIMA INTERNA APROVADA POR D-077; B-05 FECHADO** (RN-063 a RN-067 e Anexo 0011);
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Público (B-02) — ✅ **FECHADO POR D-079: aproximadamente 10 veterinários, todos participam**; baseline B-07 continua pendente.
 8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
-10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016; CARGA/CADÊNCIA APROVADA EM D-081**.
+10. Programa curricular V3 — ✅ **DIREÇÃO APROVADA EM D-084/D-085; 24 MESES, DUAS PARTES, 24 MÓDULOS E 96 SESSÕES NO PRD 0017**.
 11. Remediação de erro crítico — ✅ **EDUCATIVA E NÃO PUNITIVA, APROVADA EM D-082**.
 12. Ordem de produção — ✅ **PILOTO INTEGRADO PRIMEIRO; EXPANSÃO EM ONDAS, APROVADA EM D-062**.
 13. Correção de registro/passagem — ✅ **ESTRUTURADA E AUTOMÁTICA NO INÍCIO, COM ESCALONAMENTO HUMANO POR EVIDÊNCIA, APROVADA EM D-070**.
@@ -171,12 +170,13 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 | 0014 | [Requisitos não funcionais](0014_requisitos_nao_funcionais_produto.md) |
 | 0015 | [Métricas de sucesso](0015_metricas_de_sucesso.md) |
 | 0016 | [Programa curricular clínico](0016_programa_curricular_clinico.md) |
+| 0017 | [Programa curricular de 24 meses](0017_programa_curricular_24_meses.md) |
 | 0020 | Este documento |
 | 0090 | [Validação (gate)](0090_prd_validation.md) |
 
 ## 15. Não feito nesta fase
 
-- Nenhuma SPEC, BUILD, código, teste, tela, questão ou aula clínica completa; a matriz curricular e os blueprints estão definidos no PRD 0016;
+- Nenhuma SPEC, BUILD, código, teste, tela, questão ou aula clínica completa; a trilha V3 está definida no PRD 0017;
 - Nenhuma decisão técnica (arquitetura, banco, API, framework);
 - Nenhum conteúdo derivado das obras;
 - Nenhuma integração.

@@ -200,6 +200,46 @@ O commit representa apenas um rascunho operacional. B-07, Discovery e PRD contin
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-06 — REDESENHO CURRICULAR V3 E PESQUISA EXTERNA
+
+### TIMESTAMP
+
+2026-08-06 07:21:17 -03:00
+
+### ENGINE
+
+PRD
+
+### PHASE
+
+Redesenho curricular e alinhamento de governança
+
+### SPRINT
+
+CUR-24-01 — trilha de 24 meses
+
+### TASK
+
+Pesquisar melhores práticas e detalhar módulos, sessões, tempos e temas
+
+### ACTION
+
+Pesquisadas fontes oficiais e acadêmicas sobre educação veterinária por competências, avaliação mista, consulta aberta, casos, recuperação ativa, aprendizagem espaçada e CPD. Mapeados os sumários das três obras locais. Criados o PRD 0017 e o Anexo 0013. A documentação ativa foi atualizada para retirar a segunda conferência veterinária obrigatória.
+
+### RESULT
+
+Proposta V3 com duas partes, 24 módulos, 96 sessões e 149 horas. Cada mês regular tem quatro sessões e seis horas. As atividades combinam quiz, múltipla escolha/associação, respostas abertas, interpretação e reflexão. D-083 a D-086 registram governança clínica única, nova duração, formato de aprendizagem e hierarquia de fontes.
+
+### DECISIONS
+
+Decisão humana recebida: segundo MV descartado; Ricardo é o único aprovador clínico obrigatório. Direção de 24 meses, casos fictícios, consulta às três obras e formatos mistos registrada. Permanece necessária confirmação final da carga/cadência proposta e autorização para produzir a fatia vertical do Mês 2.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

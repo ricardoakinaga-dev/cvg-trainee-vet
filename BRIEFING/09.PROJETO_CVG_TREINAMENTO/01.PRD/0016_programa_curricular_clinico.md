@@ -4,7 +4,7 @@
 **Público:** aproximadamente 10 médicos-veterinários; todos participam
 **Espécies:** cães e gatos
 **Modalidade:** integralmente digital
-**Status:** proposta curricular V2 com cadência e ordem de produção aprovadas por MV. Ricardo Akinaga em D-081/D-062
+**Status:** proposta curricular V2 preservada como histórico; cadência superada pela V3 de 24 meses em `0017` (D-084/D-085)
 **Data:** 2026-08-05
 
 ## 1. Resultado esperado
@@ -469,7 +469,7 @@ Com uma coorte de aproximadamente 10 pessoas, estatísticas por item serão expl
 - teste prévio de correção de todos os itens e decisões; item não avaliável bloqueia a publicação do módulo;
 - feedback completo de todas as decisões autocorrigíveis;
 - referência interna à obra e ao capítulo/seção consultados;
-- revisão de Ricardo e segunda conferência de outro MV.
+- revisão e aprovação clínica de Ricardo; a segunda conferência por outro MV deixou de ser obrigatória por D-083.
 
 ## 12. Base de evidência usada no desenho
 
@@ -504,4 +504,4 @@ O programa mede conhecimento, raciocínio, priorização, interpretação, presc
 
 ## 14. Decisão necessária para execução
 
-O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. A carga/cadência foi aprovada em D-081, a remediação educativa em D-082 e a ordem piloto integrado → expansão em ondas em D-062. A matriz detalhada de objetivos e erros será conferida clinicamente durante a autoria de cada módulo.
+O conteúdo curricular V2 permanece como histórico e insumo temático. D-083 substituiu a segunda conferência veterinária por aprovação clínica única de Ricardo; D-084/D-085 substituíram a cadência pela trilha V3 de 24 meses em `0017`. A matriz detalhada de objetivos e erros será conferida clinicamente durante a autoria de cada módulo.

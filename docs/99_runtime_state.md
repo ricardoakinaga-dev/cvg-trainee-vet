@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: B-07 — correção do Discovery e preparação da baseline
-- current_sprint: B-07-01 — blueprint diagnóstico
-- current_task: criar e validar o blueprint das 120 questões
+- current_phase: redesenho curricular V3 e alinhamento do B-07
+- current_sprint: CUR-24-01 — trilha de 24 meses
+- current_task: validar o cronograma de 24 módulos/96 sessões e autorizar a fatia vertical
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit ddc8383 registrou o checkpoint do blueprint B-07 e confirmou a persistência do estado após o commit de conteúdo 8bed361
-- next_action: revisão clínica independente do blueprint e autorização para produzir os 120 itens originais e planejar a aplicação
+- last_completed_action: pesquisa externa concluída e proposta curricular V3 documentada no PRD 0017 e no Anexo 0013; D-083 a D-086 registram as novas direções do patrocinador
+- next_action: obter confirmação humana da carga de 149 horas, da cadência mensal e do mix de avaliação; depois produzir a fatia vertical do Mês 2
 
 ## BLOQUEIOS
 
-- blockers: B-07 ainda aberto; os 120 itens não foram produzidos nem aplicados; revisão clínica por outro médico-veterinário e aprovação humana para a aplicação permanecem pendentes
+- blockers: B-07 ainda aberto; os 120 itens não foram produzidos nem aplicados; a trilha V3 ainda precisa de confirmação final e de uma fatia vertical para validar esforço e correção manual
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: confirmar o blueprint, nomear o segundo médico-veterinário revisor e autorizar a produção/aplicação da baseline dentro da política D-077
+- decision_description: confirmar o cronograma V3 de 24 meses/149 horas, o prazo proposto de cinco dias úteis para correção aberta e autorizar a fatia vertical do Mês 2
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T06:41:12-03:00
+- last_update: 2026-08-06T07:21:17-03:00
 
 ## REGRAS DE USO
 

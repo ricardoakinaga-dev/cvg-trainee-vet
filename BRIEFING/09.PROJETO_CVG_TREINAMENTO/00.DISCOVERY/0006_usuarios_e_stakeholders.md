@@ -1,7 +1,7 @@
 # 0006 — Usuários e Stakeholders
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
-**Status:** governança enxuta aprovada por D-076; público confirmado por D-079; B-02/B-03 fechados
+**Status:** governança enxuta aprovada por D-076 e atualizada por D-083; público confirmado por D-079; B-02/B-03 fechados
 
 ## Usuário primário
 
@@ -43,10 +43,11 @@ Por D-077/B-05, a plataforma pode tratar somente:
 - Propor módulos, objetivos, casos e questões;
 - Referenciar fontes;
 - Responder a revisões;
-- Não publicar módulo clínico sem a segunda conferência de outro MV.
+- Não publicar módulo clínico sem a revisão, a rastreabilidade e a aprovação humana de Ricardo.
 
-### Revisor clínico
+### Aprovador clínico
 
+- Papel exercido por MV. Ricardo Akinaga no MVP interno;
 - Validar correção científica;
 - Verificar atualidade;
 - Resolver divergências entre fontes;
@@ -91,7 +92,7 @@ Por D-077/B-05, a plataforma pode tratar somente:
 - Acesso restrito a dados necessários para desenvolvimento e conformidade;
 - Não deve receber automaticamente respostas detalhadas ou dados além da finalidade aprovada.
 
-## Decisor e responsável pelo MVP interno (D-076)
+## Decisor e responsável pelo MVP interno (D-076/D-083)
 
 MV. Ricardo Akinaga é o responsável único pelo MVP interno nesta fase. Ele acumula patrocínio, produto, coordenação educacional, coordenação clínica, operação, dados e segurança. Não são exigidos comitês, suplentes, atas de instalação ou cargos separados.
 
@@ -101,15 +102,15 @@ MV. Ricardo Akinaga é o responsável único pelo MVP interno nesta fase. Ele ac
 | Modelo educacional e operação | MV. Ricardo Akinaga | coordena o MVP |
 | Dados e segurança | MV. Ricardo Akinaga | aplica as regras mínimas aprovadas antes do piloto |
 | Conteúdo clínico | MV. Ricardo Akinaga | pode criar e coordenar |
-| Revisão antes da publicação clínica | outro médico-veterinário | revisor escolhido por módulo; nome registrado na versão publicada |
+| Revisão e aprovação antes da publicação clínica | MV. Ricardo Akinaga | fonte, data de corte, rubrica/gabarito e decisão registrados na versão |
 
-### Regra única de segunda conferência
+### Regra de aprovação clínica única
 
-Nenhum módulo clínico é publicado sem revisão de outro médico-veterinário. O revisor não precisa ocupar cargo permanente, ter suplente ou integrar comitê; basta registrar nome, CRMV, data e resultado da revisão no módulo. Rascunhos, documentos de produto e decisões operacionais podem ser preparados e aprovados por Ricardo.
+Por D-083, nenhum módulo clínico é publicado sem revisão e aprovação humana de Ricardo. A conferência por outro médico-veterinário deixa de ser obrigatória e passa a ser opcional. Cada versão registra fonte, data de corte científico, rubrica/gabarito testado, data e decisão do aprovador.
 
 ### Estado de B-03
 
-B-03 fica `FECHADO PARA O MVP INTERNO` por D-076. D-071 e D-072 permanecem apenas como histórico e foram substituídas quanto ao modelo vigente. Se o programa crescer, a separação de papéis poderá ser reavaliada sem bloquear a primeira versão.
+B-03 fica `FECHADO PARA O MVP INTERNO` por D-076/D-083. D-071 e D-072 permanecem apenas como histórico e foram substituídas quanto ao modelo vigente. Se o programa crescer, a separação de papéis poderá ser reavaliada sem bloquear a primeira versão.
 
 ## Impactados indiretos
 

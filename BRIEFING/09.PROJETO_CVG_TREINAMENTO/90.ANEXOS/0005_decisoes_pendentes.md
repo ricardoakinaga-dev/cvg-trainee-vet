@@ -14,7 +14,7 @@
 | D-002 | Quem é o patrocinador executivo? | direção | Discovery | resolvida — MV. Ricardo Akinaga, CEO |
 | D-003 | Quem será o product owner? | direção | Discovery | resolvida por D-076 — MV. Ricardo Akinaga no MVP interno |
 | D-004 | Quem coordenará o programa educacional? | direção clínica | Discovery | resolvida por D-076 — MV. Ricardo Akinaga no MVP interno |
-| D-005 | Quem revisa conteúdo clínico? | coordenação clínica | publicação do módulo | resolvida por D-076 — outro médico-veterinário escolhido e registrado por módulo; sem comitê permanente |
+| D-005 | Quem revisa conteúdo clínico? | coordenação clínica | publicação do módulo | resolvida por D-083 — MV. Ricardo Akinaga é o único aprovador clínico obrigatório; revisão adicional é opcional |
 | D-006 | Quem responde por dados e segurança? | direção | Discovery | resolvida para o MVP por D-076 — MV. Ricardo Akinaga; D-077/B-05 define o conjunto mínimo permitido |
 | D-007 | Quem aprova cada gate? | patrocinador | Discovery | resolvida por D-076 — MV. Ricardo Akinaga, com decisão registrada sobre commit identificado |
 
@@ -28,7 +28,7 @@
 | D-013 | Como o treinamento ocorre hoje? | MV. Ricardo Akinaga | Discovery | resolvida por D-078 — aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-014 | Quais ferramentas são usadas? | operação | Discovery | parcialmente resolvida — não há sistema de treinamento; ferramentas auxiliares pendentes |
 | D-015 | Quais lacunas já são conhecidas? | coord. clínica | Discovery | pendente |
-| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | substituída por D-081: piloto com 30–40 h em 14 semanas, aproximadamente 2–3 h/semana |
+| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | substituída por D-084/D-085: trilha de 149 h em 24 meses, média aproximada de 1 h 30 min/semana |
 | D-017 | Quais restrições de dispositivo/conectividade? | MV. Ricardo Akinaga | PRD | confirmar apenas se afetar o MVP |
 | D-018 | Quais necessidades de acessibilidade? | MV. Ricardo Akinaga | PRD | confirmar apenas se houver necessidade concreta |
 
@@ -92,8 +92,8 @@
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
 | D-060 | Qual coorte piloto? | coordenação | Discovery | substituída por D-079: aproximadamente 10 veterinários, todos participam; sem inventário ou segmentação obrigatória |
-| D-061 | Qual duração? | PO | PRD | substituída por D-081: piloto de 14 semanas; ciclo completo de 34 semanas |
-| D-062 | Quantos módulos e qual ordem de produção? | patrocinador/clínica | PRD | aprovada (2026-08-06), Alternativa 1: 16 módulos no ciclo; produzir primeiro o piloto integrado NC-01 → NC-02 → NC-03 → ponte + EM-01 → ponte + IN-01 → caso integrador; depois expandir os demais módulos em ondas |
+| D-061 | Qual duração? | PO | PRD | substituída por D-084: trilha de 24 meses em duas partes |
+| D-062 | Quantos módulos e qual ordem de produção? | patrocinador/clínica | PRD | parcialmente substituída por D-084/D-085: 24 módulos; validar primeiro uma fatia vertical do Mês 2 e expandir em ondas |
 | D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 itens (RN-078) |
 | D-064 | Qual critério de continuar/pausar? | patrocinador | PRD | conceito definido |
 | D-065 | Qual orçamento? | patrocinador | Discovery/PRD | pendente |
@@ -107,19 +107,23 @@
 | D-073 | Como preparar B-05 antes da política mínima? | patrocinador | plano de correção/B-05 | registro histórico; substituído por D-077 |
 | D-074 | Como usar as obras como consulta/validação técnica sem expor referências ao aluno? | patrocinador | fontes | substituída por D-075 quanto ao nível de controle; mantida a separação entre aluno e referência interna |
 | D-075 | Qual governança de fontes é proporcional a um treinamento digital exclusivamente interno do CVG? | patrocinador | fontes/B-04 | aprovada (2026-08-05): Alternativa 1, consulta manual interna, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; B-04 fechado para o MVP interno; D-033 não bloqueante |
-| D-076 | Qual governança organizacional é proporcional ao MVP interno? | patrocinador | governança/B-03 | aprovada (2026-08-05): Alternativa 1, Ricardo concentra as responsabilidades; outro MV revisa cada módulo clínico antes da publicação; sem comitês ou suplentes; B-03 fechado para o MVP |
+| D-076 | Qual governança organizacional é proporcional ao MVP interno? | patrocinador | governança/B-03 | aprovada em 2026-08-05 e parcialmente substituída por D-083: Ricardo concentra as responsabilidades; a segunda conferência deixou de ser obrigatória |
 | D-077 | Qual política de dados é proporcional ao MVP interno? | patrocinador | dados/B-05 | aprovada (2026-08-05): Alternativa 1, somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos; B-05 fechado para o MVP |
 | D-078 | Como funciona atualmente o treinamento veterinário no CVG? | patrocinador | Discovery/B-01 | confirmada (2026-08-05): não existe treinamento padronizado; o aprendizado é informal, conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-079 | Qual é o público da primeira aplicação? | patrocinador | Discovery/B-02 | aprovada (2026-08-05): aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação por setor, turno ou perfil; B-02 fechado |
 | D-080 | Qual princípio deve orientar a experiência do colaborador? | patrocinador | PRD/usabilidade | aprovada (2026-08-05) e refinada sem mudar o princípio: jornada prática e fluida, com unidades breves dentro de módulos completos, casos digitais, feedback imediato, progresso visível e uma próxima ação clara; controles administrativos ficam nos bastidores |
-| D-081 | Qual carga/cadência deve executar a matriz curricular clínica V2? | patrocinador | PRD/conteúdo | aprovada (2026-08-05), Alternativa 1: piloto de 14 semanas/30–40 h, aproximadamente 2–3 h/semana; ciclo completo de 34 semanas/90–115 h; substitui D-016 e D-061 |
+| D-081 | Qual carga/cadência deve executar a matriz curricular clínica V2? | patrocinador | PRD/conteúdo | preservada como histórico e substituída por D-084/D-085: trilha V3 de 24 meses/149 h |
 | D-082 | Como tratar erro crítico em caso digital? | patrocinador/clínica | PRD/avaliação | aprovada (2026-08-06), Alternativa 1: somente o objetivo afetado fica em reforço; explicação + conteúdo curto + novo caso equivalente; decisão segura libera; persistência recebe orientação individual; sem eliminação, punição, ranking ou reprovação definitiva |
+| D-083 | Quem aprova clinicamente módulos e questões no MVP interno? | patrocinador | governança/conteúdo | aprovada (2026-08-06): MV. Ricardo Akinaga é o único aprovador clínico obrigatório; revisão por outro MV é opcional; substitui a segunda conferência obrigatória de D-076 |
+| D-084 | Qual a duração e arquitetura da trilha? | patrocinador | PRD/conteúdo | aprovada como direção (2026-08-06): 24 meses, duas partes, 24 módulos mensais e 96 sessões; detalhamento no PRD 0017 |
+| D-085 | Como ocorrerá a aprendizagem e a avaliação ao longo da trilha? | patrocinador | PRD/avaliação | aprovada como direção (2026-08-06): casos fictícios, pesquisa aberta, quiz, múltipla escolha, respostas dissertativas, feedback e revisão espaçada |
+| D-086 | Como as três obras serão usadas? | patrocinador/clínica | fontes/conteúdo | aprovada (2026-08-06): Tratado, Ettinger e Fossum são a base bibliográfica; legislação, bula, protocolo CVG e diretriz atual prevalecem em divergência |
 
 ## 8. Próximas perguntas úteis
 
 1. Como validar clinicamente o blueprint do Anexo 0012 e transformá-lo nos 120 itens diagnósticos (B-07)?
 2. Há alguma restrição real de dispositivo ou acessibilidade?
-3. Quem será o segundo MV revisor do primeiro módulo quando ele estiver pronto?
+3. A carga de seis horas/mês e o prazo proposto de cinco dias úteis para correção aberta são viáveis na fatia vertical?
 
 ## 9. Regra de fechamento
 

@@ -204,7 +204,7 @@ PENDENTE.
 - Conteúdo revisado;
 - Banco suficiente;
 - Diagnóstico, aprendizagem, prova, remediação e retenção;
-- Duração aprovada em D-081: 14 semanas, com 30–40 horas totais.
+- Duração definida como direção em D-084/D-085: 24 meses, duas partes, 24 módulos, 96 sessões e 149 horas propostas; validar a carga com uma fatia vertical.
 
 ### Linha de base
 
@@ -303,11 +303,11 @@ Condições mínimas para abertura: evidência do piloto digital; PRD revisado c
 | Discovery | MV. Ricardo Akinaga | evidências do levantamento | MV. Ricardo Akinaga sobre commit identificado |
 | PRD | MV. Ricardo Akinaga | consistência com Discovery | MV. Ricardo Akinaga sobre commit identificado |
 | SPEC/Build | responsável técnico da implementação, quando a fase abrir | testes e segurança aplicáveis | MV. Ricardo Akinaga |
-| Conteúdo clínico | autor | outro médico-veterinário escolhido por módulo | MV. Ricardo Akinaga após a segunda conferência |
+| Conteúdo clínico | autor | MV. Ricardo Akinaga; revisão adicional opcional | MV. Ricardo Akinaga após rastreabilidade e validação da correção |
 | Piloto/Audit | MV. Ricardo Akinaga | resultados e problemas observados | MV. Ricardo Akinaga |
 | Expansão prática (`GATE-EXP-PRAT-01`) | MV. Ricardo Akinaga | análise específica futura | decisão futura registrada |
 
-D-076 define a governança enxuta do MVP e fecha B-03. Não há cargos, comitês ou suplentes pendentes; a única segunda conferência obrigatória é clínica, por outro MV, antes da publicação de cada módulo.
+D-076 define a governança enxuta do MVP e fecha B-03. D-083 retira a segunda conferência obrigatória: Ricardo passa a ser o único aprovador clínico, com revisão adicional opcional.
 
 ## 9. Estado e persistência futuros
 
