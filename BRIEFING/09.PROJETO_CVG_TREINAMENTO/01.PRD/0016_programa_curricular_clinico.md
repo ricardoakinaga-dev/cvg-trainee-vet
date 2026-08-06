@@ -63,7 +63,7 @@ Todos os objetivos deste documento usam a mesma condição e o mesmo padrão:
 
 Cada módulo tem seis objetivos. Antes da autoria dos casos, eles serão decompostos em uma matriz com: condição clínica, evidência esperada, espécie, estabilidade e ponto de decisão. Cada procedimento transversal deverá apontar módulo, caso, decisão avaliada e erro crítico. Para cada erro crítico, a matriz definirá condição de ativação, ação/omissão observável, consequência simulada, regra binária de ocorrência e evidência de remediação.
 
-Até a decisão D-082, um erro crítico aciona feedback e remediação, mas não cria sozinho uma nova regra de reprovação além dos limiares já aprovados.
+Por D-082, um erro crítico não elimina nem reprova definitivamente o colaborador. Somente o objetivo afetado fica em reforço: feedback explicativo, revisão curta e novo caso equivalente. Uma decisão segura nesse novo caso libera o objetivo; se o erro persistir, Ricardo ou mentor orienta individualmente, sem punição ou ranking. Conteúdos sem dependência podem continuar durante o reforço.
 
 ### 3.2 Contrastes obrigatórios
 
@@ -398,7 +398,7 @@ Critérios coerentes com as decisões já aprovadas:
 
 - mínimo geral: 70%;
 - decisões e conteúdos críticos: 80%;
-- regra recomendada de segurança: nenhum erro crítico permanece após remediação; sua ativação como condição adicional de aprovação depende da D-082;
+- erro crítico: reforço dirigido e novo caso equivalente; o objetivo é liberado após decisão segura, sem reprovação definitiva (D-082);
 - cada trilha exige aprovação na avaliação integradora;
 - o colaborador precisa transferir o raciocínio para um caso ainda não visto;
 - nova tentativa usa questões e casos equivalentes, não idênticos;
@@ -501,4 +501,4 @@ O programa mede conhecimento, raciocínio, priorização, interpretação, presc
 
 ## 14. Decisão necessária para execução
 
-O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. A carga/cadência foi aprovada em D-081. Permanecem a decisão D-082 sobre o efeito de erro crítico na conclusão e a validação clínica detalhada da ordem/matriz antes da autoria.
+O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. A carga/cadência foi aprovada em D-081 e a remediação educativa de erro crítico em D-082. Permanece a validação clínica detalhada da ordem/matriz antes da autoria.

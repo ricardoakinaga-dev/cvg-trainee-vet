@@ -51,7 +51,7 @@
 
 - [ ] Requisitos funcionais completos para o MVP proposto — existem requisitos e decisões pendentes (0013 §10);
 - [ ] Requisitos não funcionais completamente definidos — acessibilidade e exceções ainda possuem pendências; política mínima de dados aprovada por D-077;
-- [ ] Pendências registradas: validação clínica do blueprint detalhado, avaliadores de resposta construída, equivalência, acessibilidade e efeito do erro crítico na conclusão (D-082).
+- [ ] Pendências registradas: validação clínica do blueprint detalhado, avaliadores de resposta construída, equivalência e acessibilidade; efeito do erro crítico fechado por D-082.
 
 ### MÉTRICAS
 
@@ -97,7 +97,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
 12. Fontes: D-075 aprovou governança enxuta para o sistema interno; B-04 fechado; D-033 futura e não bloqueante — ✅
 13. Programa curricular: matriz V2 definida no PRD 0016; carga/cadência aprovada em D-081 — ✅
-14. Erro crítico: aciona feedback/remediação; seu efeito adicional na conclusão aguarda D-082 — 🟡
+14. Erro crítico: objetivo em reforço, explicação e novo caso equivalente; sem punição ou reprovação definitiva (D-082) — ✅
 
 ---
 

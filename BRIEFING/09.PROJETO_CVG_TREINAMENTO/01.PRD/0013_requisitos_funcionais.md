@@ -130,6 +130,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-092 | O sistema deve limitar exposição de respostas corretas após a prova | P1 | PROPOSTA |
 | RF-093 | O sistema deve registrar estatísticas observadas por item (dificuldade, discriminação, distratores, contestação) | P1 | PROPOSTA |
 | RF-094 | O sistema deve sinalizar itens com anomalia para revisão humana, sem decisão automática | P1 | PROPOSTA |
+| RF-095 | Ao registrar erro crítico em caso digital, o sistema deve explicar a decisão, marcar somente o objetivo afetado para reforço, atribuir conteúdo curto e novo caso equivalente e impedir apenas a conclusão desse objetivo até uma decisão segura; não pode gerar ranking, punição ou reprovação definitiva | P0 | APROVADA PELO PATROCINADOR EM D-082 (2026-08-06) |
 
 ## 10. Requisitos não cobertos (pendências que impactam o PRD)
 

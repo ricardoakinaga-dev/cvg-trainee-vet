@@ -166,6 +166,8 @@ Uma opção a testar quando o desempenho ficar abaixo de um padrão futuramente 
 7. Não expor publicamente o resultado;
 8. Registrar plano e desfecho.
 
+Por D-082, um erro crítico segue esse fluxo de forma educativa: apenas o objetivo afetado fica em remediação, recebe reforço curto e novo caso equivalente e é liberado após decisão segura. Persistência leva à orientação individual, nunca a ranking, punição ou reprovação definitiva.
+
 ## 5. Integridade acadêmica
 
 - Termo de uso;

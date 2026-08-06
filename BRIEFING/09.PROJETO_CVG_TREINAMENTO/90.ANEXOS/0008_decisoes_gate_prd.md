@@ -505,6 +505,16 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 **Decisão:** Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-05. D-081 substitui a duração histórica D-061 e a carga histórica D-016. O piloto passa a ter 14 semanas e 30–40 horas; o ciclo completo, 34 semanas e faixa de planejamento de 90–115 horas.
 
+### D-082 — Tratamento educativo do erro crítico
+
+| Alternativa | Tratamento | Veredito |
+|---|---|---|
+| **1** | **somente o objetivo afetado fica em reforço; feedback, revisão curta e novo caso equivalente; decisão segura libera; persistência recebe orientação individual** | **selecionada — educativa, proporcional e sem competição** |
+| 2 | erro crítico reduz a nota e pode ser compensado pelo restante do resultado | simples, mas permite compensar decisão insegura |
+| 3 | todo erro crítico depende de decisão individual de Ricardo | flexível, porém manual e menos uniforme |
+
+**Decisão:** Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-06. Não há eliminação, punição, ranking ou reprovação definitiva. O treinamento mede avanço individual de conhecimento; não é competição nem certificação de competência prática.
+
 ---
 
 ## 4. Dados e governança (B-03, B-04, B-05, D-051 a D-055)

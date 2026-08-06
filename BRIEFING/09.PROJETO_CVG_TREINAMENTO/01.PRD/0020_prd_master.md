@@ -100,6 +100,7 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
 | Dados | somente nome/login profissional, progresso, tentativas, notas e logs mínimos; RH, prontuários, dados de tutores, gravações e casos reais identificáveis proibidos; retenção durante o vínculo + 2 anos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077; B-05 FECHADO) |
 | Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
+| Erro crítico | reforço curto e novo caso equivalente; libera após decisão segura; sem eliminação, punição, ranking ou reprovação definitiva | APROVADA PELO PATROCINADOR (D-082, 2026-08-06) |
 
 Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
@@ -153,6 +154,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016; CARGA/CADÊNCIA APROVADA EM D-081**.
+11. Remediação de erro crítico — ✅ **EDUCATIVA E NÃO PUNITIVA, APROVADA EM D-082**.
 
 ## 14. Documentos do PRD
 
