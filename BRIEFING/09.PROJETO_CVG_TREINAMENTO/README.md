@@ -4,10 +4,10 @@
 **Nome provisório do produto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Data de abertura:** 2026-07-29  
-**Fase atual:** correção dos gates Discovery e PRD
-**Status do gate Discovery:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — há itens obrigatórios incompletos; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
-**Status do gate PRD:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — o PRD existente é rascunho controlado; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
-**Status da auditoria documental:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`  
+**Fase atual:** reexecução técnica dos gates; aguardando aprovação humana do checkpoint Git
+**Status do gate Discovery:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
+**Status do gate PRD:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`, depois do Discovery; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
+**Status da auditoria documental:** `CONCLUÍDA TECNICAMENTE — CHECKPOINT HUMANO PENDENTE`
 **Alinhamento pré-SPEC:** D-091 a D-100 aprovadas integralmente por MV. Ricardo Akinaga em 2026-08-06; ver [Anexo 0020](90.ANEXOS/0020_alinhamento_produto_pre_spec.md). Nenhuma SPEC foi iniciada.
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing, currículo V3 aprovado e fatia vertical documental do Mês 2; nenhuma plataforma, aplicação real ou código de produto foi criado.
@@ -38,7 +38,7 @@ DISCOVERY
 → MELHORIA CONTÍNUA
 ```
 
-Nesta etapa foram produzidos o **Discovery documental** e um **rascunho controlado do PRD**. Como ainda existem itens obrigatórios incompletos, ambos os gates estão `REPROVADOS — EM CORREÇÃO`. As decisões confirmadas permanecem válidas como insumos, mas não autorizam SPEC, BUILD, publicação geral, produção de conteúdo em escala ou mudança de fase. A única exceção vigente é a fatia M02 já autorizada por D-087/D-088 para ensaio controlado; T2 está pronto por D-089.
+Nesta etapa foram produzidos o **Discovery documental**, o **PRD** e o pacote de fechamento D-101 a D-108. A reexecução técnica encontrou todos os critérios canônicos atendidos; falta apenas a aprovação humana do commit, primeiro para Discovery e depois para PRD. Isso autorizará somente a readiness da SPEC. BUILD, publicação geral e piloto completo continuam sujeitos aos gates posteriores. A fatia M02 permanece autorizada por D-087/D-088 para ensaio controlado; T2 está pronto por D-089.
 
 ## 2. Regra de interpretação dos dados
 
@@ -80,7 +80,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 9. [0020 — PRD Master](01.PRD/0020_prd_master.md)
 10. [0090 — Validação do PRD](01.PRD/0090_prd_validation.md)
 
-### Anexos preparatórios, ainda não aprovados como PRD
+### Anexos de decisão, conteúdo e preparação
 
 1. [Governança das fontes](90.ANEXOS/0001_governanca_fonte_conhecimento.md)
 2. [Hipóteses pedagógicas](90.ANEXOS/0002_hipoteses_pedagogicas.md)
@@ -102,6 +102,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 18. [Protocolo do ensaio controlado e cronometrado da M02](90.ANEXOS/0018_protocolo_ensaio_controlado_m02.md)
 19. [Teste sintético das rubricas RA01 e RA02](90.ANEXOS/0019_teste_sintetico_rubricas_m02.md)
 20. [Alinhamento de produto e arquitetura antes da SPEC](90.ANEXOS/0020_alinhamento_produto_pre_spec.md)
+21. [Pacote de fechamento dos gates para iniciar a SPEC](90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md)
 
 ## 4. O que não foi criado
 
@@ -114,9 +115,9 @@ Nenhum campo desconhecido foi apresentado como certeza.
 - Auditoria de um sistema inexistente;
 - Conteúdo derivado extensivamente do livro.
 
-## 4.1 Bloqueios obrigatórios para nova submissão dos gates
+## 4.1 Estado dos bloqueios após a reexecução
 
-A autorização gerencial histórica para elaborar o rascunho do PRD não substituiu os gates canônicos. Os itens abaixo devem ser fechados com evidência antes da nova submissão do Discovery e, depois, do PRD:
+A autorização gerencial histórica para elaborar o PRD não substituiu os gates canônicos. A auditoria corrigiu a fronteira de B-07 sem waiver, conforme D-101 proposta:
 
 1. B-01 concluído por D-078: aprendizado atual informal, sem trilha, avaliação ou registro centralizado;
 2. B-02 concluído por D-079: aproximadamente 10 veterinários, todos participam da primeira aplicação, sem inventário ou segmentação obrigatória;
@@ -124,7 +125,9 @@ A autorização gerencial histórica para elaborar o rascunho do PRD não substi
 4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
 5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
-7. alinhar e produzir o diagnóstico inicial amplo dentro da trilha V3: 120 itens em três sessões de 40 no primeiro mês (B-07). O blueprint está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md); a trilha completa está no [PRD 0017](01.PRD/0017_programa_curricular_24_meses.md).
+7. B-07 está reposicionado como gate pré-piloto: o blueprint orienta a SPEC, enquanto aprovação clínica, produção, pré-voo e aplicação dos 120 itens continuam obrigatórios antes da baseline/piloto completo. O blueprint está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md).
+
+Os itens documentais dos gates estão tecnicamente fechados. O único bloqueio atual da readiness da SPEC é a aprovação humana do commit que consolida D-101 a D-108 e as duas reexecuções.
 
 ## 4.2 Controle de versão obrigatório
 
@@ -167,15 +170,15 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 ## 6. Condição para avançar
 
-O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abaixo não libera automaticamente a SPEC: primeiro será necessário reexecutar e aprovar formalmente os gates Discovery e PRD, com checkpoint Git identificado.
+O fechamento documental foi concluído tecnicamente em 2026-08-06. Para avançar:
 
-1. validar o blueprint do [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md), produzir e aplicar o diagnóstico inicial de 120 itens, em três sessões, para a linha de base (B-07);
-2. resolver somente os requisitos que afetem segurança ou uso do MVP;
-3. aplicar a política mínima D-077 no diagnóstico e no futuro sistema;
-4. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
-5. aplicar D-091 a D-100 como baseline aprovada de produto, arquitetura e agente de IA quando os gates autorizarem a futura SPEC.
+1. Ricardo aprova D-101 a D-108 e o gate Discovery sobre o commit identificado;
+2. no mesmo checkpoint e em ordem, Ricardo aprova o gate PRD;
+3. Ricardo autoriza iniciar somente a readiness da SPEC;
+4. a futura SPEC aplica D-091 a D-108 como baseline aprovada de produto e arquitetura;
+5. B-07 prossegue em paralelo como conteúdo pré-piloto e deve estar concluído antes da baseline/aplicação completa.
 
-Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. O diagnóstico deve respeitar D-077; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
+Até a aprovação humana, são permitidas correção documental e preparação de conteúdo original. Gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. BUILD, código e publicação do programa continuam sujeitos aos gates posteriores.
 
 **Política mínima de dados (D-077):** o Anexo 0011 está aprovado para o MVP e B-05 está fechado. O programa usa apenas dados de identificação/login profissional, progresso, tentativas, notas e segurança. Ricardo controla o acesso; os dados são mantidos durante o vínculo + 2 anos.
 

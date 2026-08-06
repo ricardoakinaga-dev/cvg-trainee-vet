@@ -45,11 +45,11 @@ Os itens acima representam o **fluxo desejado declarado**, não o fluxo atual co
 
 - eventual administrador técnico delegado, com acesso limitado e registrado.
 
-## Ferramentas atuais
+## Ferramentas atuais — inventário institucional concluído
 
 **FATO INFORMADO (D-078):** o CVG não possui sistema nem registro centralizado de treinamento. Ferramentas auxiliares eventualmente usadas em situações informais não formam um processo institucional.
 
-O inventário das ferramentas abaixo é opcional para integração futura e não bloqueia B-01:
+No escopo institucional do treinamento, o inventário atual é: **nenhuma plataforma, banco de avaliações, trilha, registro de progresso ou integração dedicada**. As categorias auxiliares abaixo podem existir informalmente, mas não compõem processo institucional nem são dependência da SPEC:
 
 - Armazenamento de materiais;
 - Ferramentas de videoconferência;
@@ -81,19 +81,18 @@ Exemplos de práticas que podem ocorrer, sem necessidade de inventário para fec
 - Leitura autônoma;
 - Acompanhamento individual por especialistas.
 
-## Restrições operacionais a validar
+## Restrições operacionais
 
 - Cobertura de plantões e turnos;
 - Tempo disponível para estudo;
-- Dispositivos disponíveis;
-- Conectividade;
-- Acessibilidade;
+- Dispositivos/conectividade: nenhuma restrição adicional foi informada; baseline de produto web responsiva em celular e computador;
+- Acessibilidade: WCAG 2.2 AA aprovada em D-099 e acomodação operacional proposta em D-104;
 - Uso simultâneo de uma equipe de aproximadamente 10 veterinários;
 - Uso em celular e computador;
 - Confidencialidade dos resultados;
 - Separação entre desenvolvimento e decisão disciplinar;
-- Autorização para uso de casos clínicos;
-- Anonimização de dados de pacientes e tutores.
+- Casos clínicos: somente fictícios no MVP, conforme D-077;
+- Dados de pacientes e tutores: proibidos no MVP, sem depender de anonimização.
 
 ## Contexto da fonte de conhecimento
 

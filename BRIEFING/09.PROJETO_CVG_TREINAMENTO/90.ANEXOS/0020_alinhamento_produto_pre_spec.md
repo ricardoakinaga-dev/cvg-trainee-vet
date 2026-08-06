@@ -5,7 +5,7 @@
 **Patrocinador:** MV. Ricardo Akinaga
 **Status:** `APROVADO_INTEGRALMENTE_PELO_PATROCINADOR`
 **Aprovação:** D-091 a D-100 aprovadas integralmente por MV. Ricardo Akinaga em 2026-08-06
-**Regra de avanço:** o alinhamento pré-SPEC está encerrado; nenhuma SPEC ou construção começa antes da aprovação dos gates canônicos e do tratamento de B-07.
+**Regra de avanço:** o alinhamento pré-SPEC está encerrado; a readiness da SPEC aguarda aprovação dos gates canônicos e de D-101 a D-108 no [Anexo 0021](0021_pacote_fechamento_gates_pre_spec.md). B-07 deve orientar a SPEC e ser concluído antes da baseline/piloto, sem bloquear o início da especificação.
 
 ## 1. Resultado do alinhamento
 
@@ -331,9 +331,12 @@ A SPEC somente poderá começar quando:
 - [x] catálogo de KPIs aceito;
 - [x] fronteira de RAG confirmada;
 - [x] papel, autonomia, roteamento e teto de custo do agente de IA confirmados;
-- [ ] critérios de escolha do fornecedor definidos;
-- [ ] RPO/RTO e política de sessão definidos na SPEC readiness;
-- [ ] B-07 e gates Discovery/PRD tratados conforme governança canônica.
+- [x] critérios de escolha do fornecedor propostos em D-107;
+- [x] RPO/RTO propostos em D-107 e política de sessão aprovada em D-091;
+- [x] fronteira de B-07 corrigida tecnicamente em D-101: obrigatório antes da baseline/piloto, não antes da SPEC;
+- [ ] D-101 a D-108 e gates Discovery/PRD aprovados humanamente sobre o commit consolidado.
+
+Os três itens técnicos acima passam a valer com a aprovação conjunta do Anexo 0021; até lá, o único bloqueio da readiness é esse checkpoint humano.
 
 ## 15. Método de pesquisa
 

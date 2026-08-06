@@ -111,6 +111,14 @@ D-090 confirmou a necessidade de receber bugs, erros e melhorias. D-094 aprovou,
 
 Não serão capturados automaticamente resposta de avaliação, texto clínico, URL com parâmetros, IP completo, tela, áudio, vídeo, prontuário ou dados de tutor. O formulário proíbe a inserção manual desses dados, bloqueia padrões suspeitos e exige remoção/redação auditada se conteúdo proibido escapar. A contestação de questão ou resultado continua no fluxo já permitido. Esta extensão está incorporada por D-094; não existe novo gate jurídico ou documental separado.
 
+### 9.2 Extensão mínima proposta para acomodação operacional
+
+D-104 propõe permitir somente: `accommodation_id`, tipo fechado (`TEMPO`, `FORMATO` ou `PRAZO`), escopo da atividade, início/fim, estado, identificador do autorizador e datas de criação/revogação. Diagnóstico, laudo, condição de saúde, documento comprobatório e justificativa livre permanecem proibidos.
+
+O participante vê a própria acomodação. Ricardo e administrador autorizado veem somente o necessário para conceder, aplicar, revogar e auditar; moderador recebe apenas o efeito operacional no prazo/formato da atividade atribuída, sem motivo ou metadado adicional. Concessão, alteração e revogação são auditadas. A retenção segue o vínculo + 2 anos da seção 5.
+
+Esta extensão só entra em vigor com a aprovação de D-104 sobre commit identificado; até lá, nenhum dado de acomodação pode ser coletado.
+
 ## 10. Controle de mudança
 
 Qualquer ampliação de dados, acesso, finalidade ou compartilhamento exige:

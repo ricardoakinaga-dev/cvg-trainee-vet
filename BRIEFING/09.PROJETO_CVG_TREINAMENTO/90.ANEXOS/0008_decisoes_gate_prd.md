@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Data:** 2026-08-05  
-**Status:** **DECIDIDO COMO INSUMO — recomendações confirmadas pelo patrocinador em 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03, D-077 fechou B-05, D-078 fechou B-01, D-079 fechou B-02 e D-080 definiu a jornada simples do colaborador. Os demais bloqueios continuam em seus estados próprios; Discovery e PRD permanecem `REPROVADOS — EM CORREÇÃO` por razões independentes desses itens.
+**Status:** **REGISTRO HISTÓRICO DAS DECISÕES DE 2026-08-05**. D-075 fechou B-04, D-076 fechou B-03, D-077 fechou B-05, D-078 fechou B-01, D-079 fechou B-02 e D-080 definiu a jornada simples do colaborador. O estado corrente dos gates está nas reexecuções 0090 de 2026-08-06 e no Anexo 0021.
 **Objetivo:** consolidar decisões de produto para a futura reexecução do gate `0090_prd_validation.md`, com opções objetivas e recomendação fundamentada no briefing (anexos 0002/0003, Discovery em correção e diretrizes do `sistema_treinamento_veterinarios_cvg.md`).
 **Uso:** documento histórico da decisão; alterações futuras exigem novo registro de gate.
 

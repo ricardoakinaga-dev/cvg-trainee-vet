@@ -1,6 +1,6 @@
 # Anexo 0004 — Roadmap e Gates de Construção
 
-**Status:** Discovery e PRD `REPROVADOS — EM CORREÇÃO`; PRD existente é rascunho controlado; SPEC/BUILD bloqueados
+**Status:** Discovery e PRD aprovados tecnicamente em 2026-08-06; aguardam aprovação humana sequencial do commit; BUILD bloqueado
 
 ## 1. Pipeline oficial
 
@@ -41,24 +41,21 @@ Produzidos neste briefing:
 
 ### Estado
 
-**`REPROVADO — EM CORREÇÃO` (2026-08-05).** A autorização gerencial para elaborar um rascunho de PRD não substitui o gate canônico. B-01 e B-02 foram fechados por D-078 e D-079; os demais itens incompletos permanecem no [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
+**`APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT` (2026-08-06).** A reexecução corrigiu a checklist local ampliada e aplicou estritamente a engine canônica, conforme [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md) e D-101.
 
 ### Próximas atividades permitidas
 
-- Correção dos artefatos de Discovery e do rascunho de PRD;
-- Definição da baseline B-07 dentro do conjunto mínimo de dados aprovado por D-077, sem gravações, prontuários, tutores ou casos reais identificáveis;
-- Priorização do piloto;
-- Nomeação de responsáveis;
-- Decisão de fontes, licenças e dados;
-- Reexecução do gate Discovery após todas as evidências.
+- Revisão e aprovação humana do checkpoint consolidado;
+- Continuidade de B-07 como conteúdo pré-piloto dentro de D-077;
+- T2 da M02 em seu fluxo controlado já autorizado.
 
-Não são permitidos: SPEC, preparação formal de SPEC, backlog de BUILD, arquitetura, código ou produção de conteúdo clínico.
+Até a aprovação humana não se inicia a readiness da SPEC. BUILD, código e publicação geral continuam proibidos.
 
 ## 3. Fase 1 — PRD
 
 ### Pré-condição
 
-`0090_discovery_validation.md` aprovado canonicamente — **NÃO CUMPRIDA**. Os artefatos abaixo existem apenas como rascunho controlado para correção e futura submissão.
+`0090_discovery_validation.md` aprovado canonicamente — **CUMPRIDA TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA DO COMMIT**.
 
 ### Objetivo
 
@@ -73,7 +70,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 - `0014_requisitos_nao_funcionais_produto.md`; ✅
 - `0015_metricas_de_sucesso.md`; ✅
 - `0020_prd_master.md`; ✅
-- `0090_prd_validation.md`; ❌ reprovado — em correção.
+- `0090_prd_validation.md`; ✅ aprovado tecnicamente; checkpoint humano pendente.
 
 ### Conteúdo que o PRD deverá fechar
 
@@ -93,13 +90,13 @@ Materializar o comportamento do produto sem definir tecnologia.
 
 ### Gate
 
-Todos os campos obrigatórios devem estar completos; qualquer ausência bloqueia SPEC. **REPROVADO — EM CORREÇÃO em 2026-08-05**. B-01/B-02/B-03/B-04/B-05 foram fechados por D-078/D-079/D-076/D-075/D-077; B-07 e requisitos pendentes ainda exigem fechamento e nova execução do gate.
+Todos os campos obrigatórios da engine canônica estão preenchidos. **APROVADO TECNICAMENTE em 2026-08-06**, com D-101 a D-108 e aprovação humana do commit como único checkpoint restante. B-07 bloqueia baseline/piloto, não a SPEC.
 
 ## 4. Fase 2 — SPEC
 
 ### Pré-condição
 
-Discovery e PRD aprovados canonicamente, em sequência, por commits identificados — **NÃO CUMPRIDA**.
+Discovery e PRD aprovados canonicamente, em sequência, por commit identificado — **CUMPRIDA TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA**.
 
 ### Objetivo
 
@@ -146,7 +143,7 @@ Transformar produto aprovado em contrato técnico rastreável.
 - Segurança e LGPD;
 - Recuperação e disponibilidade.
 
-Nenhuma dessas decisões foi tomada agora.
+As fronteiras de produto e arquitetura foram aprovadas em D-091 a D-100; D-107 acrescenta RPO/RTO e critérios de fornecedor. A SPEC deverá detalhar essas decisões sem reabri-las sem evidência.
 
 ## 5. Fase 3 — Build
 

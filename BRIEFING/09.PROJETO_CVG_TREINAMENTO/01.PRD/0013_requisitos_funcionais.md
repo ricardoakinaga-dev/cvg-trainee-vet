@@ -18,10 +18,10 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|---|
 | RF-001 | O sistema deve autenticar usuários individualmente | P0 | FATO INFORMADO |
 | RF-002 | O sistema deve identificar o colaborador por nome, identificador interno e login/e-mail profissional; função, área, turno e unidade não entram no cadastro do MVP | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
-| RF-003 | O sistema deve atribuir papéis e permissões conforme a matriz de acesso | P0 | PROPOSTA |
+| RF-003 | O sistema deve atribuir papéis e permissões conforme a matriz de capacidades aprovada | P0 | APROVADA PELO PATROCINADOR (D-092, 2026-08-06) |
 | RF-004 | O sistema deve registrar quem criou/alterou cada dado relevante (responsável e data) | P0 | FATO INFORMADO |
-| RF-005 | O sistema deve bloquear contas compartilhadas | P1 | PROPOSTA |
-| RF-006 | O sistema deve suportar desativação de usuários sem excluir histórico | P1 | PROPOSTA |
+| RF-005 | O sistema deve bloquear contas compartilhadas | P1 | APROVADA PELO PATROCINADOR (D-077/D-091, 2026-08-06) |
+| RF-006 | O sistema deve suportar desativação de usuários sem excluir histórico | P1 | APROVADA PELO PATROCINADOR (D-077/D-091, 2026-08-06) |
 | RF-007 | Antes do primeiro uso, a coordenação deve apresentar comunicação operacional simples sobre finalidade, dados mínimos, acesso e retenção; o T2 não depende de gate documental adicional | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077/D-089) |
 | RF-008 | O participante deve administrar a própria conta: consultar nome, identificador interno, e-mail profissional e estado; alterar credencial e encerrar outras sessões sem acessar campos não autorizados | P0 | APROVADA PELO PATROCINADOR (D-090/D-091, 2026-08-06) |
 | RF-009 | O administrador deve convidar usuários, reenviar convite, ativar/desativar conta, atribuir papel e trilha e revogar sessões, preservando o histórico | P0 | APROVADA PELO PATROCINADOR (D-090/D-091/D-092, 2026-08-06) |
@@ -34,7 +34,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-011 | O diagnóstico deve ser composto por questões organizadas por competência e casos curtos | P0 | FATO INFORMADO |
 | RF-012 | O sistema deve calcular perfil por tema e competência, sem depender de nota global única | P0 | FATO INFORMADO |
 | RF-013 | O diagnóstico deve ser não punitivo: sem reprovação nem nota pública | P0 | FATO INFORMADO |
-| RF-014 | O sistema deve preservar a sessão em caso de interrupção | P1 | PROPOSTA |
+| RF-014 | O sistema deve preservar a sessão em caso de interrupção | P1 | APROVADA COMO REGRA DE CONFIABILIDADE (D-096/D-098, 2026-08-06) |
 | RF-015 | O sistema deve recomendar a trilha inicial com base no perfil | P0 | FATO INFORMADO |
 | RF-016 | O sistema deve registrar a linha de base com data, versão dos itens e regra vigente | P0 | FATO INFORMADO |
 
@@ -42,13 +42,13 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-020 | O sistema deve permitir configurar a trilha de 24 meses em duas partes, 24 módulos mensais e 96 sessões, publicando somente os módulos autorizados | P0 | PROPOSTA CURRICULAR V3 — D-084/D-085; ver 0017 |
+| RF-020 | O sistema deve permitir configurar a trilha de 24 meses em duas partes, 24 módulos mensais e 96 sessões, publicando somente os módulos autorizados | P0 | APROVADA PELO PATROCINADOR (D-084/D-085, 2026-08-06) |
 | RF-021 | O sistema deve atribuir trilha personalizada por perfil | P0 | FATO INFORMADO |
 | RF-022 | O sistema deve manter núcleo obrigatório não dispensável | P0 | FATO INFORMADO |
-| RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e trilhas | P1 | PROPOSTA CURRICULAR V2 |
+| RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e trilhas | P1 | APROVADA NA TRILHA V3 (D-084/D-085; PRD 0017) |
 | RF-024 | O sistema deve gerenciar dispensa por domínio: **não aplicada no piloto**; regra futura | P2 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RF-025 | O sistema deve controlar estados da trilha conforme vocabulário do anexo 0003 | P0 | PROPOSTA |
-| RF-026 | O sistema deve tratar prazos, afastamentos e acomodações | P1 | PENDENTE (D-016/D-018) |
+| RF-025 | O sistema deve controlar separadamente progresso, avaliação e domínio conforme D-102 | P0 | PROPOSTA PARA APROVAÇÃO DO GATE (D-102) |
+| RF-026 | O sistema deve pausar/deslocar prazos em afastamentos/férias e aplicar acomodações autorizadas sem reduzir objetivos | P1 | PROPOSTA PARA APROVAÇÃO DO GATE (D-104) |
 | RF-027 | O sistema deve exibir aviso explícito de que aprovação em prova, caso ou simulação digital não comprova competência prática nem desbloqueia autorização clínica | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-028 | A tela inicial deve mostrar o progresso e uma única próxima ação recomendada | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
 
@@ -56,16 +56,16 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-030 | O sistema deve organizar cada módulo mensal em quatro sessões, com carga regular de 6 horas e janelas assíncronas para pesquisa e casos | P1 | PROPOSTA CURRICULAR V3 — D-084/D-085; ver 0017 |
+| RF-030 | O sistema deve organizar cada módulo mensal em quatro sessões, com carga regular de 6 horas e janelas assíncronas para pesquisa e casos | P1 | APROVADA PELO PATROCINADOR (D-084/D-085, 2026-08-06) |
 | RF-031 | Cada módulo deve registrar internamente a obra e o capítulo/seção consultados, sem exibir esses metadados ao aluno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
-| RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | PROPOSTA |
+| RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | APROVADA COMO REGRA DE CONTEÚDO (RN-047 a RN-049) |
 | RF-033 | O sistema deve registrar conclusão de unidades e progresso | P0 | FATO INFORMADO |
 | RF-034 | O sistema deve suportar autoria → revisão clínica de Ricardo → aprovação → publicação, mantendo revisão adicional opcional | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RF-035 | O sistema deve impedir a publicação de módulo clínico sem fonte, versão, rubrica/gabarito testado e aprovação humana registrada de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RF-036 | O sistema deve versionar todo conteúdo e manter histórico | P0 | FATO INFORMADO |
-| RF-037 | O sistema deve registrar data de corte científico e próxima revisão | P1 | PROPOSTA |
+| RF-037 | O sistema deve registrar data de corte científico e próxima revisão | P1 | APROVADA COMO REGRA DE CONTEÚDO (RN-040/RN-047) |
 | RF-038 | O sistema não deve armazenar, distribuir ou exibir os PDFs; eventual OCR, indexação, embeddings, RAG ou envio dos arquivos a IA depende de decisão futura D-033, sem bloquear conteúdo original produzido manualmente | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
-| RF-039 | O sistema deve suportar retirada emergencial com registro de afetados | P0 | PROPOSTA |
+| RF-039 | O sistema deve suportar retirada emergencial com registro de afetados | P0 | APROVADA COMO REGRA DE CONTEÚDO (RN-048) |
 
 ## 5. Avaliações
 
@@ -90,7 +90,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-056 | Em atividade autocorrigível, o sistema deve dar feedback imediato; se houver revisão humana, deve mostrar imediatamente o status e a próxima ação | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
 | RF-057 | Casos digitais devem suportar ramificações, estado persistente, consequências, exames seriados, radiografias, POCUS e ECG | P0 | PROPOSTA CURRICULAR V3 |
 | RF-058 | Atividades devem suportar cálculo de dose/infusão, campos estruturados e respostas abertas; campos avaliáveis usam rubrica automática e respostas dissertativas usam rubrica com correção humana de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-070/D-083/D-085 (2026-08-06) |
-| RF-059 | O sistema deve suportar formas equivalentes, revisão espaçada, retomada da atividade e resultado por objetivo, competência e trilha | P0 | PROPOSTA CURRICULAR V3 |
+| RF-059 | O sistema deve suportar formas equivalentes pelo mesmo blueprint, revisão espaçada, retomada e resultado por objetivo/competência/trilha | P0 | PROPOSTA PARA APROVAÇÃO DO GATE (D-106) |
 
 ## 6. Contestação e correção
 
@@ -113,7 +113,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-073 | Painel do administrador: contas, ativação, progresso, conclusão, inatividade, correções/SLA, remediação, validade de conteúdo, feedback e falhas técnicas | P0 | APROVADA PELO PATROCINADOR (D-090/D-093/D-095, 2026-08-06) |
 | RF-074 | O sistema deve restringir painéis por papel e escopo | P0 | FATO INFORMADO |
 | RF-075 | O sistema não deve exibir ranking público | P0 | FATO INFORMADO |
-| RF-076 | O sistema deve tratar dados faltantes, exclusões e acomodações no cálculo das métricas | P1 | PENDENTE |
+| RF-076 | O sistema deve tratar `DADO_INCOMPLETO`, `NAO_APLICAVEL`, exclusões e acomodações sem converter ausência em zero | P1 | APROVADA EM D-095; acomodação detalhada em D-104 |
 
 ## 8. Auditoria
 
@@ -121,7 +121,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|---|
 | RF-080 | O sistema deve registrar trilha de auditoria de ações sensíveis (alterações de nota/gabarito, aprovações, retiradas, alterações de permissão) | P0 | FATO INFORMADO |
 | RF-081 | O sistema deve permitir reconstruir qualquer decisão de aprovação (item, resposta, horário, versão, regra, cálculo, resultado) | P0 | FATO INFORMADO |
-| RF-082 | Auditor tem acesso de leitura à trilha, sem edição | P0 | PROPOSTA |
+| RF-082 | Auditor tem acesso de leitura à trilha, sem edição | P0 | APROVADA NA MATRIZ DE CAPACIDADES (D-092) |
 
 ## 9. Integridade do banco de questões
 
@@ -153,10 +153,8 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 ## 11. Requisitos não cobertos (pendências que impactam o PRD)
 
-- Validação clínica da matriz detalhada e do blueprint de 120 itens do diagnóstico (UC-001, B-07) — rascunho operacional no Anexo 0012; demais itens por objetivo definidos em 10–15 (RN-078);
+- Aprovação conjunta de D-101 a D-108 e dos gates sobre commit identificado;
+- Validação clínica da matriz e produção dos 120 itens do diagnóstico (B-07) antes da baseline/piloto completo; não bloqueia a SPEC se D-101 for aprovada;
 - Qualidade da correção estruturada deve ser verificada no piloto; D-070 permite migrar a atividade afetada para correção humana se surgirem lacunas ou erros repetidos;
-- Regra de repetição/atualização da linha de base;
-- Equivalência das formas de avaliação;
-- Política de certificação — resolvida: status de conclusão no piloto (RN-079);
-- Notificações externas;
-- Integrações externas (fora de escopo nesta fase).
+- Repetição/atualização da baseline e equivalência são definidas em D-105/D-106 no pacote de gate;
+- Notificações e integrações externas permanecem fora do escopo e não bloqueiam o MVP.

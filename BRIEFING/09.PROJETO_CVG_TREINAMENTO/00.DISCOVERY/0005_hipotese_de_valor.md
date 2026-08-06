@@ -88,7 +88,17 @@ Clareza sobre o que estudar, por que estudar, como evoluir e onde reforçar.
 
 ### Receita e custo
 
-Não há dados para estimar impacto financeiro. O piloto deverá medir custo por colaborador, tempo de coordenação e custo de produção/revisão.
+Não há evidência para estimar receita ou economia financeira. A estimativa operacional aprovada pela trilha V3 é:
+
+| Medida | Estimativa de planejamento |
+|---|---:|
+| carga por participante em 24 meses | 149 horas |
+| coorte inicial | aproximadamente 10 veterinários |
+| carga total da coorte | aproximadamente 1.490 horas-participante |
+| média da coorte por mês | aproximadamente 62,1 horas-participante |
+| média por participante/semana | aproximadamente 1h30 |
+
+Essa estimativa dimensiona esforço, não comprova benefício financeiro. O piloto medirá tempo de coordenação, autoria/revisão, correção e custo por concluinte.
 
 ## Hipótese testável
 

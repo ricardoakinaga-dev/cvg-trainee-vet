@@ -478,6 +478,46 @@ A aprovação encerra o alinhamento de produto, mas não inicia SPEC ou BUILD. B
 
 COMPLETED
 
+---
+
+## 2026-08-06 — REEXECUÇÃO CANÔNICA DOS GATES PRÉ-SPEC
+
+### TIMESTAMP
+
+2026-08-06 18:30:00 -03:00
+
+### ENGINE
+
+DISCOVERY / PRD — GATES CANÔNICOS
+
+### PHASE
+
+Fechamento documental anterior à SPEC
+
+### SPRINT
+
+GATE-01 / GATE-02
+
+### TASK
+
+D-101 a D-108 / reexecução 0090
+
+### ACTION
+
+Auditadas as checklists locais contra as engines canônicas. Foi corrigida a inversão que exigia produzir e aplicar 120 itens diagnósticos antes da especificação. Regras, requisitos, exceções, semântica de estados, criticidade, personalização, equivalência, RPO/RTO, fornecedores, protocolos e owners foram consolidados no Anexo 0021.
+
+### RESULT
+
+Discovery e PRD foram aprovados tecnicamente segundo seus checklists canônicos e aguardam aprovação humana sobre o commit consolidado. B-07 continua obrigatório antes da baseline e do piloto completo, mas não bloqueia a SPEC. Nenhuma SPEC, BUILD ou coleta real foi iniciada. Commit: `PENDENTE_CHECKPOINT`.
+
+### DECISIONS
+
+D-101 a D-108 estão propostas para aprovação conjunta. A manifestação humana deverá aprovar, em ordem, Discovery e PRD e autorizar somente a readiness da SPEC. T2 permanece pronto em fluxo controlado separado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

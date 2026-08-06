@@ -9,7 +9,7 @@
 
 ## 1. Escopo desta fase do projeto
 
-Esta fase mantém a **documentação de briefing do produto** como rascunho controlado. Discovery e PRD estão `REPROVADOS — EM CORREÇÃO`; não há autorização para SPEC, sistema, conteúdo clínico ou avaliações reais.
+Esta fase consolida a **documentação de briefing do produto**. Discovery e PRD estão aprovados tecnicamente e aguardam aprovação humana sobre o commit; depois disso, somente a readiness da SPEC será autorizada. BUILD e publicação geral continuam bloqueados.
 
 ## 2. IN SCOPE (o que será construído no produto)
 
@@ -34,7 +34,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 15. Contestação de questão/resultado com recálculo auditável;
 16. Trilha de auditoria completa;
 17. Papéis e permissões (matriz do 0006);
-18. Vocabulário de estados (anexo 0003: `NÃO_INICIADO`, `EM_ANDAMENTO`, `EM_AVALIAÇÃO`, `EM_REMEDIAÇÃO`, `APROVADO`, `REPROVADO`, `RESULTADO_EM_REVISÃO`, `CONCLUÍDO`, `VENCIDO`, `DISPENSADO_POR_DOMÍNIO`, `BLOQUEADO_POR_PRÉ_REQUISITO`).
+18. Vocabulário de estados separado por progresso, avaliação e domínio, conforme D-102 proposta;
 19. Canal interno para bugs, usabilidade, erros de conteúdo e melhorias, com protocolo, triagem e acompanhamento;
 20. KPIs operacionais simples e observabilidade mínima de login, salvamento, submissão, correções e disponibilidade.
 

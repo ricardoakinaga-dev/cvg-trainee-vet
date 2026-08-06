@@ -2,10 +2,10 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fase:** PRD — Definição de produto  
-**Data:** 2026-08-05  
+**Data:** 2026-08-06
 **Classificação:** `FATO INFORMADO` / `EVIDÊNCIA DOCUMENTAL` / `HIPÓTESE` / `PROPOSTA` / `PENDENTE`
 
-Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados como `PROPOSTA` dependem de aprovação humana no gate 0090 do PRD; itens `PENDENTE` não podem ser inventados.
+Regra geral: decisões explicitamente aprovadas pelo patrocinador são baseline do produto. Itens `PROPOSTA` dependem da aprovação conjunta do gate PRD; itens `PENDENTE` não podem ser inventados.
 
 ---
 
@@ -15,8 +15,8 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 |---|---|---|
 | RN-001 | Todo usuário é identificado individualmente; contas compartilhadas são proibidas | FATO INFORMADO |
 | RN-002 | Cada colaborador possui uma conta ativa por período; Ricardo atribui os módulos/trilhas sem exigir função, área, turno ou unidade no cadastro do MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
-| RN-003 | Acesso segue o princípio do mínimo necessário; matriz de acesso do 0006 é a referência | PROPOSTA |
-| RN-004 | Gestão de pessoas vê somente dados autorizados por finalidade aprovada; nunca respostas detalhadas automáticas | PROPOSTA |
+| RN-003 | Acesso segue o princípio do mínimo necessário; matriz de capacidades do Anexo 0020 é a referência vigente | APROVADA PELO PATROCINADOR (D-092, 2026-08-06) |
+| RN-004 | Administrador e moderador veem somente dados autorizados por finalidade e escopo; gestão de pessoas não recebe respostas detalhadas automáticas | APROVADA PELO PATROCINADOR (D-077/D-092, 2026-08-06) |
 | RN-005 | Administrador não altera silenciosamente notas, gabaritos ou histórico | FATO INFORMADO |
 | RN-006 | MV. Ricardo Akinaga acumula patrocínio, produto, coordenação educacional/clínica, operação, dados e segurança no MVP interno | APROVADA PELO PATROCINADOR COMO INSUMO (D-076); B-03 FECHADO PARA O MVP |
 | RN-007 | Não são exigidos comitês, suplentes ou cargos segregados no MVP; as decisões são registradas por commit Git | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
@@ -32,7 +32,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-012 | O diagnóstico estabelece linha de base por tema e competência | FATO INFORMADO |
 | RN-013 | A trilha inicial é atribuída conforme perfil do diagnóstico (personalização) | FATO INFORMADO |
 | RN-014 | Conteúdos institucionais obrigatórios e temas críticos não podem ser dispensados por personalização | FATO INFORMADO |
-| RN-015 | Progressão segue o vocabulário de estados do anexo 0003; distinção `APROVADO` × `CONCLUÍDO` a definir no gate | PENDENTE |
+| RN-015 | Progresso, avaliação e domínio usam dimensões separadas; `APROVADO` exige limiares e `CONCLUÍDO` exige atividades obrigatórias finalizadas, conforme D-102 | PROPOSTA PARA APROVAÇÃO DO GATE (D-102) |
 | RN-016 | Módulo só é desbloqueado quando pré-requisitos são atendidos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-017 | Dispensa por domínio comprovado: **não aplicada no piloto**; reavaliar com dados após o piloto | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-018 | Aprovação em conteúdo, prova, caso ou simulação digital não comprova competência prática, não confere autonomia clínica nem autoriza procedimentos | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
@@ -44,7 +44,7 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-020 | Quizzes formativos têm peso zero na decisão somativa | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-021 | Caso clínico ou simulação digital formativa tem peso zero; a modalidade somativa participa da composição | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RN-022 | Composição do escore do módulo: quiz 0% + caso/simulação digital somativa 30% + prova somativa 70% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05 — corrige proposta anterior 20/30/50, alinhada a RN-020) |
-| RN-023 | A média ponderada do módulo exige domínio mínimo em componentes críticos, quando definidos | PENDENTE |
+| RN-023 | A média ponderada não compensa componente crítico: aprovação exige 70% geral e 80% em cada objetivo/componente crítico, conforme D-103 | PROPOSTA PARA APROVAÇÃO DO GATE (D-103) |
 | RN-024 | Limiar geral de aprovação: 70% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-025 | Limiar para temas críticos: 80% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-026 | Tentativas da prova somativa: 2 + remediação obrigatória | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -105,9 +105,9 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 |---|---|---|
 | RN-070 | Público inicial: aproximadamente 10 veterinários; todos participam da primeira aplicação, sem segmentação por setor ou turno | APROVADA PELO PATROCINADOR COMO INSUMO (D-079; B-02 FECHADO) |
 | RN-071 | Duração da trilha: 24 meses em duas partes, com 24 módulos mensais e 96 sessões | APROVADA COMO DIREÇÃO PELO PATROCINADOR EM D-084 (2026-08-06; substitui D-081) |
-| RN-072 | Piloto digital cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
+| RN-072 | A onda piloto inicial valida diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção; a trilha V3 completa mantém 24 módulos obrigatórios, produzidos/publicados em ondas | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068/D-084/D-105) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RN-074 | Baseline coletada no início do piloto (perfil, conhecimento, engajamento, indicadores selecionados) | PENDENTE (B-07) |
+| RN-074 | Baseline será coletada antes do piloto completo e da calibração definitiva; orienta personalização, mas não bloqueia a SPEC, conforme D-101 | PROPOSTA PARA APROVAÇÃO DO GATE (D-101); B-07 |
 | RN-075 | Módulo clínico revisado e aprovado por Ricardo antes da publicação; revisão clínica adicional e revisão pedagógica são opcionais no MVP | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RN-076 | Carga da trilha: 149 horas em 24 meses, com 6 horas nos meses regulares, 7 horas no diagnóstico e 8 horas nos meses integradores | PROPOSTA V3 APROVADA COMO DIREÇÃO EM D-084/D-085 (2026-08-06) |
 | RN-077 | Espécies do piloto: cães e gatos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
@@ -122,6 +122,10 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-086 | Erro crítico em caso digital não gera eliminação, punição ou reprovação definitiva: o objetivo fica `EM_REMEDIAÇÃO`, recebe explicação e reforço curto e é concluído após decisão segura em novo caso equivalente; persistência direciona a orientação individual, sem ranking | APROVADA PELO PATROCINADOR EM D-082 (2026-08-06) |
 | RN-087 | Registro e passagem de caso começam com campos estruturados e correção automática por rubrica; revisão humana somente para ambiguidade, contestação, possível erro crítico ou falhas repetidas verificadas no piloto; a atividade afetada migra para correção especializada se o método automático não ensinar ou classificar adequadamente | APROVADA PELO PATROCINADOR EM D-070 (2026-08-06) |
 | RN-088 | Nenhuma pergunta ou decisão de caso pode ser publicada sem método de avaliação definido e testado: gabarito ou rubrica, respostas aceitas, erros relevantes e feedback. Se o sistema não conseguir avaliar a resposta, o item deve ser redesenhado, estruturado ou encaminhado para correção humana antes do uso | FATO INFORMADO PELO PATROCINADOR; INCORPORADO À D-070 (2026-08-06) |
+| RN-089 | Afastamento/férias pausam prazo e preservam progresso; mudança de setor/turno não altera a trilha da primeira aplicação; acomodação autorizada ajusta tempo/formato/prazo sem reduzir o objetivo e registra somente os campos mínimos da extensão D-104 da política D-077 | PROPOSTA PARA APROVAÇÃO DO GATE (D-104) |
+| RN-090 | Diagnóstico abaixo de 70% gera reforço prioritário; 70–79% gera monitoramento; ≥80% mantém sequência regular; erro crítico sempre gera reforço; não há dispensa | PROPOSTA PARA APROVAÇÃO DO GATE (D-105) |
+| RN-091 | Baseline ocorre uma vez na entrada; sessão interrompida é retomada e, após conclusão, evolução usa avaliações de módulo e retenção, sem reaplicar a baseline no piloto | PROPOSTA PARA APROVAÇÃO DO GATE (D-105) |
+| RN-092 | Formas equivalentes seguem o mesmo blueprint, objetivos, distribuição cognitiva/criticidade e pré-voo, sem repetição literal e com aprovação clínica | PROPOSTA PARA APROVAÇÃO DO GATE (D-106) |
 
 ## 8. Matriz de responsabilidades resumida (D-076)
 
@@ -139,11 +143,11 @@ Por D-077, RN-063 a RN-067 e a [Política Mínima Interna de Dados](../90.ANEXOS
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 
-**Confirmadas pelo patrocinador como insumos** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-075 a RN-088. Isso não aprova o gate. RN-023 e RN-074 permanecem pendentes.
+**Confirmadas pelo patrocinador como insumos** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-075 a RN-088. D-090 a D-100 também estão aprovadas. RN-015, RN-023, RN-074 e RN-089 a RN-092 integram o pacote final D-101 a D-106.
 
 **Pendências remanescentes:**
 
-1. RN-023 — domínio mínimo em componentes críticos (definir com dados do piloto);
-2. RN-074 — baseline (B-07);
-3. Manter data, fonte, versão e registro da aprovação clínica de Ricardo em cada módulo;
-4. Definição futura sobre processamento automatizado dos PDFs (D-033; não bloqueia o MVP manual).
+1. aprovação conjunta de D-101 a D-108 e dos gates sobre commit identificado;
+2. manter data, fonte, versão e registro da aprovação clínica de Ricardo em cada módulo;
+3. produzir, revisar e aplicar B-07 antes do piloto completo e da calibração definitiva;
+4. processamento automatizado dos PDFs permanece futuro em D-033 e não bloqueia a SPEC/MVP manual.

@@ -1,7 +1,7 @@
 # Anexo 0006 — Matriz de Cobertura do Briefing
 
 **Objetivo:** demonstrar que todos os campos solicitados pelas engines foram preenchidos ou explicitamente marcados como pendentes.  
-**Atualização:** 2026-08-05 — Discovery e PRD reclassificados como `REPROVADOS — EM CORREÇÃO`; PRD é rascunho controlado.
+**Atualização:** 2026-08-06 — Discovery e PRD aprovados tecnicamente na reexecução canônica; aguardam aprovação humana do commit consolidado.
 
 ## 1. Discovery
 
@@ -44,7 +44,7 @@
 | usuário primário | 0006 | preenchido |
 | usuário secundário | 0006 | preenchido |
 | operador | 0006 | preenchido |
-| decisor | 0006 | papéis; nomes pendentes |
+| decisor | 0006 | MV. Ricardo Akinaga por D-076/D-083 |
 | impactados indiretos | 0006 | preenchido |
 | hipóteses | 0007 | preenchidas |
 | riscos operacionais | 0007 | preenchidos |
@@ -52,7 +52,7 @@
 | dependências | 0007 | preenchidas |
 | limitações | 0007 | preenchidas |
 | consolidação | 0009 | preenchida |
-| gate | 0090 | reprovado com bloqueios |
+| gate | 0090 | aprovado tecnicamente; aguarda aprovação humana do commit |
 
 ## 2. Insumos de produto solicitados
 
@@ -60,12 +60,12 @@
 |---|---|---|
 | plataforma de treinamento digital, com casos e simulações digitais | 0000/0004/0009 + D-068 | modalidade confirmada pelo patrocinador como insumo; prática presencial excluída |
 | básico ao avançado | PRD 0017 + anexo 0002 | progressão de complexidade ao longo de 24 meses; sem rótulos formais no MVP |
-| trilhas | anexo 0002 | perguntas e opções não aprovadas |
-| provas | anexo 0003 | alternativas para futuro PRD |
-| quizzes | anexo 0003 | alternativa formativa não aprovada |
-| outras avaliações | anexo 0003 | catálogo de possibilidades |
-| medir evolução | anexo 0003 | KPIs candidatos |
-| remediação | anexos 0002/0003 | hipótese de fluxo |
+| trilhas | PRD 0017 | 24 módulos/96 sessões aprovados em D-084/D-085 |
+| provas | PRD 0012/0017 | composição e janelas aprovadas |
+| quizzes | PRD 0012/0017 | uso formativo definido |
+| outras avaliações | PRD 0012/0017 | casos, múltipla escolha e dissertativas definidos |
+| medir evolução | PRD 0015 + D-095 | KPIs e dicionário aprovados; metas calibradas após baseline |
+| remediação | PRD 0012 + D-082/D-105 | fluxo educativo e não punitivo definido |
 | fonte brasileira | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
 | fonte atualizada | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
 | fonte cirúrgica | anexo 0001 + D-075 | consulta manual interna aprovada; referência simples por módulo; B-04 fechado |
@@ -81,17 +81,17 @@
 | IN SCOPE | 01.PRD/0011 | preenchido (proposta) |
 | OUT OF SCOPE | 01.PRD/0011 | preenchido |
 | FUTURE SCOPE | 01.PRD/0011 | preenchido |
-| regras operacionais | 01.PRD/0012 | rascunho preenchido — RN-001 a RN-088, com itens pendentes explícitos |
+| regras operacionais | 01.PRD/0012 | preenchidas; complementos D-102 a D-106 aguardam aprovação no pacote final |
 | restrições | 01.PRD/0012 | preenchidas |
 | permissões de negócio | 01.PRD/0012 §8 | preenchidas |
 | validações obrigatórias | 01.PRD/0012 §9 | preenchidas |
 | requisitos funcionais (sem tecnologia) | 01.PRD/0013 | preenchidos — RF-001 a RF-096 |
 | requisitos não funcionais | 01.PRD/0014 | preenchidos — RNF-001 a RNF-084 |
-| KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
+| KPIs e metas | 01.PRD/0015 + D-095 | KPIs definidos; metas provisórias permitidas no PRD e calibração pré-piloto mantida |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
-| programa curricular, módulos, casos e blueprint | 01.PRD/0016 + 90.ANEXOS/0012 | V2 preenchida; blueprint B-07 criado como rascunho; carga/cadência D-081, remediação D-082 e ordem de produção D-062 aprovadas |
+| programa curricular, módulos, casos e blueprint | 01.PRD/0017 + 90.ANEXOS/0012 | V3 aprovada; blueprint B-07 tecnicamente pronto e mantido como gate pré-piloto |
 | consolidação | 01.PRD/0020 | preenchido |
-| gate | 01.PRD/0090 | reprovado — em correção; B-01/B-02/B-03/B-04/B-05 fechados por D-078/D-079/D-076/D-075/D-077; B-07 e requisitos pendentes continuam bloqueando nova submissão |
+| gate | 01.PRD/0090 | aprovado tecnicamente; D-101 a D-108 e aprovação humana do commit são o checkpoint restante |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |
 
 ## 3. Campos que só podem ser fechados no PRD
@@ -99,28 +99,28 @@
 Registrados como decisões pendentes, sem antecipar tecnologia:
 
 - Casos de uso completos; ✅ fechado (como proposta)
-- IN/OUT/FUTURE documentados no rascunho; — aguardando correção e nova submissão dos gates
-- Regras definitivas; — decisões do patrocinador são insumos, gate reprovado
+- IN/OUT/FUTURE documentados; ✅ fechado
+- Regras principais; ✅ fechadas tecnicamente, com D-102 a D-106 no checkpoint humano
 - Requisitos funcionais; ✅ fechados (como proposta)
 - Requisitos não funcionais; ✅ fechados (como proposta)
-- Metas definitivas; — dependem de baseline (B-07)
-- Critério final de aprovação; — decisões D-040 a D-044 confirmadas como insumos; baseline/standard setting pendentes
-- Política de certificação; — decisão D-049 confirmada como insumo; gate reprovado
+- Metas definitivas; — calibração depende de baseline B-07, sem bloquear a SPEC
+- Critério final de aprovação; ✅ 70% geral + 80% em cada crítico por D-103 proposta
+- Política de certificação; ✅ status de conclusão interno no piloto
 - Escopo do MVP; — áreas B-06 confirmadas e público de aproximadamente 10 veterinários fechado por D-079
 - Política de acesso aos dados; — FECHADA PARA O MVP (D-077/Anexo 0011: dados mínimos e acesso controlado por Ricardo)
 
 ## 4. Campos que só podem ser fechados na SPEC
 
-- Arquitetura;
+- Arquitetura detalhada e escolha de fornecedor; a direção proporcional foi aprovada em D-096;
 - Domínio;
 - Módulos técnicos;
 - Dados e persistência;
 - APIs;
 - Eventos;
 - Integrações;
-- Observabilidade;
-- Telas;
-- Segurança técnica;
+- Observabilidade detalhada; baseline aprovada em D-098;
+- Telas detalhadas; superfícies e conteúdo mínimo aprovados em D-090/D-093;
+- Segurança técnica detalhada; baseline de identidade/permissões aprovada em D-091/D-092;
 - Plano de build.
 
 ## 5. Campos que só existem após Build
@@ -138,12 +138,12 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 ## 6. Resultado de cobertura
 
 ```text
-CAMPOS DE DISCOVERY: REGISTRADOS; GATE DISCOVERY REPROVADO — EM CORREÇÃO (2026-08-05)
+CAMPOS DE DISCOVERY: REGISTRADOS; GATE APROVADO TECNICAMENTE EM 2026-08-06
 CAMPOS DESCONHECIDOS: REGISTRADOS COMO PENDENTES, SEM INVENÇÃO
-REQUISITOS DECLARADOS: MATERIALIZADOS NO PRD COMO PROPOSTA
+REQUISITOS DECLARADOS: MATERIALIZADOS NO PRD; D-101 A D-108 AGUARDAM CHECKPOINT HUMANO
 FONTES CLÍNICAS: GOVERNANÇA ENXUTA D-075 REGISTRADA; B-04 FECHADO PARA O MVP INTERNO
-PROGRAMA/IMPLEMENTAÇÃO: NÃO CRIADO
-GATE DISCOVERY: REPROVADO — B-01 FECHADO POR D-078; blueprint B-07 em rascunho no Anexo 0012; itens restantes devem ser fechados e o gate reexecutado
-GATE PRD: REPROVADO — RASCUNHO CONTROLADO; DECISÕES CONFIRMADAS SÃO INSUMOS
-SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
+PROGRAMA: V3 DOCUMENTADA; IMPLEMENTAÇÃO NÃO CRIADA
+GATE DISCOVERY: APROVADO TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA DO COMMIT
+GATE PRD: APROVADO TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA APÓS DISCOVERY
+SPEC: READINESS AGUARDA CHECKPOINT HUMANO; BUILD/AUDIT NÃO INICIADOS
 ```

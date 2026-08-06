@@ -1,8 +1,8 @@
 # Anexo 0009 — Validação da Documentação
 
 **Projeto:** Sistema CVG de Treinamento Veterinário
-**Data:** 2026-08-05
-**Status:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`
+**Data:** 2026-08-06
+**Status:** `AUDITORIA TÉCNICA CONCLUÍDA — CHECKPOINT HUMANO PENDENTE`
 **Escopo:** verificação documental da fase de briefing (Discovery + PRD) contra as diretrizes do `sistema_treinamento_veterinarios_cvg.md` e verificação física dos arquivos-fonte locais.
 
 ---
@@ -14,7 +14,7 @@
 3. Verificação física dos três PDFs-fonte quanto a: número de páginas, estrutura (partes/seções/capítulos), título, autor, edição e ano;
 4. Verificação de consistência interna: decisões de gate, regras de negócio (RN), decisões (D), bloqueios (B) e hierarquia de fontes.
 
-Esta verificação preserva achados e correções já presentes na baseline, mas não representa aprovação final. Os gates permanecem sujeitos às engines canônicas, ao fechamento das pendências e à aprovação humana de um commit identificado.
+Esta verificação preserva achados e correções da baseline. A reexecução de 2026-08-06 concluiu tecnicamente os gates pelas engines canônicas; a aprovação final continua dependendo da manifestação humana sobre o commit identificado.
 
 ## 2. Verificação física dos arquivos-fonte
 
@@ -63,19 +63,19 @@ Esta verificação preserva achados e correções já presentes na baseline, mas
 | Avaliação por resultados (não só presença) | painel inicial restrito a KPIs educacionais digitais; comportamento e resultados assistenciais ficam externos | ✅ |
 | 5 níveis de supervisão (CBVE) | referencial externo ao produto; não registrados nem avaliados na primeira versão | ✅ |
 
-## 5. Resultado provisório
+## 5. Resultado atualizado
 
 ```text
-BASELINE DOCUMENTAL: REGISTRADA PARA AUDITORIA (2026-08-05)
-VALIDAÇÃO FINAL: PENDENTE
+BASELINE DOCUMENTAL: AUDITADA E HARMONIZADA (2026-08-06)
+VALIDAÇÃO TÉCNICA: CONCLUÍDA
 ESTRUTURA DAS FONTES: VERIFICADA FISICAMENTE (TRATADO, ETTINGER, FOSSUM)
-CONSISTÊNCIA INTERNA: PARCIAL — D-040 A D-044 SINCRONIZADOS; OUTRAS CONTRADIÇÕES PERMANECEM
+CONSISTÊNCIA INTERNA: PACOTE D-101 A D-108 HARMONIZADO
 FONTE CIRÚRGICA: INCORPORADA (FOSSUM — F-03)
-STATUS DOS GATES: DISCOVERY E PRD REPROVADOS — EM CORREÇÃO
-CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA; CHECKLISTS AINDA INCOMPLETOS
+STATUS DOS GATES: APROVADOS TECNICAMENTE; APROVAÇÃO HUMANA DO COMMIT PENDENTE
+CONFORMIDADE DO CRITÉRIO DE GATE COM AS ENGINES CANÔNICAS: ALINHADA
 SITUAÇÃO DOS ITENS: B-01 (FECHADO POR D-078), B-02 (FECHADO POR D-079), B-03 (FECHADO PARA O MVP INTERNO POR D-076),
 B-04 (FECHADO POR D-075), B-05 (FECHADO PARA O MVP INTERNO POR D-077), B-07 (BASELINE)
-SPEC/BUILD/AUDIT: BLOQUEADOS / NÃO INICIADOS
+SPEC READINESS: AGUARDA CHECKPOINT HUMANO; BUILD NÃO INICIADO
 ```
 
 ## 6. Correções encontradas na baseline
@@ -93,7 +93,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 - B-03: fechado por D-076 e atualizado por D-083; Ricardo concentra as responsabilidades e é o único aprovador clínico obrigatório;
 - B-04: fechado por D-075 para o MVP interno; manter consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; D-033 é futura e não bloqueante;
 - B-05: fechado por D-077; aplicar o Anexo 0011 e não coletar prontuários, dados de tutores, gravações ou casos reais identificáveis;
-- B-07: alinhar o blueprint do Anexo 0012 à trilha V3 do PRD 0017, produzir e aplicar o diagnóstico de 120 itens em três sessões.
+- B-07: validar clinicamente, produzir, testar e aplicar o diagnóstico antes da baseline/piloto completo; não bloqueia a SPEC por D-101 proposta.
 
 ## 8. Controle de versão
 

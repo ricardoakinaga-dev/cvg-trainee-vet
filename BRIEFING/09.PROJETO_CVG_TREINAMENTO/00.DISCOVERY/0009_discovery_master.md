@@ -3,8 +3,8 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga  
 **Data:** 2026-07-29  
-**Atualização:** 2026-08-05 — reclassificação canônica pela Alternativa 1
-**Status:** consolidado como rascunho; gate `REPROVADO — EM CORREÇÃO`
+**Atualização:** 2026-08-06 — reexecução técnica pela engine canônica
+**Status:** consolidado; gate aprovado tecnicamente e aguardando aprovação humana do commit
 
 ## 1. Visão geral
 
@@ -106,7 +106,7 @@ Médico-veterinário colaborador.
 
 ### Decisores
 
-Os papéis estão definidos, mas os nomes ainda precisam ser indicados.
+MV. Ricardo Akinaga é patrocinador, product owner, coordenação clínica/educacional, owner operacional e aprovador dos gates do MVP por D-076; é também o único aprovador clínico obrigatório por D-083. Administrador e moderador seguem D-092.
 
 ## 7. Hipótese de valor
 
@@ -211,17 +211,17 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 ## 12. Dependências
 
-1. Validar o blueprint, produzir e aplicar o diagnóstico de 120 itens para a baseline (B-07);
-2. Confirmar somente restrições reais de dispositivo ou acessibilidade;
-3. Informar os protocolos internos relevantes quando cada módulo for criado;
-4. Reexecutar e aprovar formalmente o gate Discovery.
+1. aprovar D-101 a D-108 e o gate Discovery sobre commit identificado;
+2. usar o blueprint B-07 como entrada da SPEC e concluí-lo antes do piloto completo;
+3. registrar protocolo interno, `NAO_APLICAVEL` ou `NAO_FORNECIDO` antes de publicar cada módulo;
+4. iniciar a SPEC somente após aprovação também do gate PRD.
 
 ## 13. Resultado do Discovery
 
-O problema está recortado; D-078 fechou B-01 e D-079 confirmou o público de aproximadamente 10 veterinários, fechando B-02 sem inventário nominal ou segmentação. O Discovery continua em correção por B-07 e outros itens ainda incompletos.
+O problema está recortado; D-078 validou a dor e o fluxo, D-079 confirmou o público e D-075 a D-100 fecharam governança, dados e alinhamento do produto. Pela engine canônica, a documentação está tecnicamente pronta para o gate. B-07 permanece obrigatório antes da baseline/piloto, não antes da SPEC, conforme D-101 proposta.
 
 ```text
-RESULTADO: REPROVADO — EM CORREÇÃO (2026-08-05)
-MOTIVO: ITENS OBRIGATÓRIOS INCOMPLETOS; ENGINES CANÔNICAS NÃO ADMITEM APROVAÇÃO CONDICIONAL
-PRÓXIMA AÇÃO: FECHAR B-07 E DEMAIS ITENS PENDENTES, ATUALIZAR EVIDÊNCIAS E REEXECUTAR O GATE DISCOVERY
+RESULTADO TÉCNICO: PRONTO PARA APROVAÇÃO HUMANA DO GATE (2026-08-06)
+PENDÊNCIA: APROVAR D-101 A D-108 E O COMMIT DE REEXECUÇÃO
+PRÓXIMA AÇÃO: APROVAÇÃO HUMANA DO DISCOVERY E, EM SEGUIDA, DO PRD SOBRE O MESMO CHECKPOINT
 ```

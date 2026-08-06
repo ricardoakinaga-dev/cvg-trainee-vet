@@ -92,7 +92,9 @@ Levantar:
 
 ## Exceções conhecidas
 
-Ainda não foram confirmadas. O mapeamento deve considerar:
+**FLUXO ATUAL VALIDADO POR D-078:** como não existe processo institucional de treinamento, também não existem regras formais de exceção, retomada, contestação, afastamento ou acessibilidade. Cada situação é tratada informalmente conforme disponibilidade. Esta ausência é parte do problema, não uma lacuna de entendimento do fluxo atual.
+
+O produto desejado deve tratar:
 
 - Veterinário experiente que já domina o conteúdo;
 - Novo colaborador;
@@ -106,6 +108,8 @@ Ainda não foram confirmadas. O mapeamento deve considerar:
 - Prazo vencido;
 - Reprovação recorrente;
 - Conflito entre tratado, protocolo interno e diretriz atual.
+
+As regras desejadas estão definidas nos casos de uso e consolidadas em D-104 para afastamento, acessibilidade, conexão, conta, retirada e contestação.
 
 ## Refinamento opcional
 

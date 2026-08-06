@@ -28,16 +28,16 @@
 | R-04 | Sobrecarga de autores/revisores | alta | calendário, papéis e SLA |
 | R-05 | Aprendizado atual informal e dependente da disponibilidade individual | alta | implantar trilha, avaliação e registro centralizado no futuro sistema |
 | R-06 | Métrica sem ação associada | média | owner e regra de ação por KPI |
-| R-07 | Dependência de uma pessoa | alta | documentação e segunda revisão clínica por módulo |
+| R-07 | Dependência de uma pessoa | alta | documentação, versionamento, fila visível e revisão adicional opcional quando Ricardo julgar necessária |
 
 ## Riscos clínicos
 
 | ID | Risco | Severidade inicial | Mitigação proposta |
 |---|---|---:|---|
 | R-08 | Conteúdo de 2015 usado sem atualização | crítica | confronto com Ettinger 2024 e fontes vigentes |
-| R-09 | Erro em dose, fármaco ou protocolo | crítica | dupla revisão e retirada emergencial |
+| R-09 | Erro em dose, fármaco ou protocolo | crítica | aprovação clínica registrada de Ricardo, confronto com fonte atual e retirada emergencial; consulta adicional opcional |
 | R-10 | Confundir aprovação em conteúdo, caso ou simulação digital com competência prática ou autonomia clínica | crítica | aviso explícito, métricas separadas e bloqueio de funcionalidades práticas pelo `GATE-EXP-PRAT-01` |
-| R-11 | Questão clinicamente ambígua | alta | blueprint e revisão independente |
+| R-11 | Questão clinicamente ambígua | alta | blueprint, gabarito/rubrica testados e aprovação clínica de Ricardo; revisão adicional opcional |
 | R-12 | IA introduzir conteúdo incorreto | crítica | IA apenas como apoio; aprovação humana |
 | R-13 | Protocolo CVG divergir da fonte | alta | registro de decisão e versão |
 
@@ -109,9 +109,22 @@
 - **Médio:** pode avançar com mitigação registrada e monitoramento;
 - **Baixo:** registrar no backlog e revisar.
 
-## Riscos que mantêm Discovery e PRD reprovados
+## Owners e prazos de mitigação
 
-1. Baseline ainda não coletada (B-07);
-2. Restrições de dispositivo, conectividade e acessibilidade ainda não confirmadas;
-3. Requisitos e exceções do PRD ainda incompletos;
-4. Protocolos internos ainda não inventariados.
+Por D-076, MV. Ricardo Akinaga é owner dos riscos do MVP. Os prazos são vinculados ao momento de exposição:
+
+| Severidade | Prazo obrigatório |
+|---|---|
+| crítica | antes de publicar, aplicar ou liberar o artefato afetado |
+| alta | plano e controle implementados antes da fase relacionada |
+| média | item no backlog e controle definido antes do piloto completo |
+| baixa | revisão na auditoria ou no ciclo de melhoria |
+
+Riscos técnicos de autenticação, autorização, observabilidade e agente de IA seguem D-091 a D-100. Riscos de conteúdo seguem D-075/D-083 e a revisão adicional permanece opcional.
+
+## Riscos que condicionam as próximas fases
+
+1. D-101 a D-108 e os gates ainda dependem de aprovação humana sobre commit identificado;
+2. B-07 condiciona baseline, calibração e piloto completo, mas não a SPEC conforme D-101 proposta;
+3. protocolo interno nunca é presumido: cada módulo registra protocolo versionado, `NAO_APLICAVEL` ou `NAO_FORNECIDO`;
+4. BUILD continua condicionado à aprovação da SPEC.

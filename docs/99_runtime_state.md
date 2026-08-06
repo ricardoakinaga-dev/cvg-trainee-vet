@@ -3,14 +3,14 @@
 ## CONTEXTO
 
 - project: cvg-trainee-vet
-- current_engine: DISCOVERY
+- current_engine: PRD / GATES
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
 ## POSIÇÃO ATUAL
 
-- current_phase: correção do gate Discovery
-- current_sprint: B07-01 — blueprint diagnóstico
-- current_task: validar clinicamente o blueprint das 120 questões do Anexo 0012
+- current_phase: checkpoint humano para avanço à SPEC
+- current_sprint: GATE-01 / GATE-02 — fechamento sequencial
+- current_task: aprovar D-101 a D-108, Discovery e PRD sobre o commit consolidado
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit fc2df63 registrou a aprovação integral de D-091 a D-100 e concluiu PRE-SPEC-01 sem iniciar SPEC ou construção
-- next_action: MV. Ricardo Akinaga validar, ajustar ou rejeitar o blueprint diagnóstico do Anexo 0012 antes da produção dos 120 itens
+- last_completed_action: reexecução técnica corrigiu a fronteira canônica, fechou as lacunas D-101 a D-108 e deixou Discovery/PRD tecnicamente aprovados
+- next_action: MV. Ricardo Akinaga aprovar o commit consolidado, primeiro para Discovery e depois para PRD, e autorizar somente a readiness da SPEC
 
 ## BLOQUEIOS
 
-- blockers: B-07 e gates Discovery/PRD continuam abertos; T2 permanece pronto para agendamento em fluxo paralelo, sem bloqueio documental
+- blockers: somente aprovação humana do checkpoint de D-101 a D-108 e dos gates; B-07 é pré-piloto e T2 permanece pronto em fluxo paralelo
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: validar, ajustar ou rejeitar o blueprint diagnóstico B-07; D-091 a D-100 já estão aprovadas
+- decision_description: aprovar D-101 a D-108, Discovery e PRD em ordem sobre o commit identificado e autorizar somente a readiness da SPEC
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T17:30:19-03:00
+- last_update: 2026-08-06T18:30:00-03:00
 
 ## REGRAS DE USO
 

@@ -4,8 +4,8 @@
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Fase:** PRD — consolidação  
 **Data:** 2026-08-06
-**Status:** rascunho consolidado em correção; gate PRD reprovado
-**Base:** Discovery `REPROVADO — EM CORREÇÃO` (2026-08-05)
+**Status:** consolidado e aprovado tecnicamente; gate aguarda aprovação humana do commit
+**Base:** Discovery aprovado tecnicamente na reexecução de 2026-08-06, ainda sujeito ao checkpoint humano
 
 ---
 
@@ -141,14 +141,14 @@ As identificações abaixo pertencem à governança interna e não serão exibid
 - **Fossum** (FOS-2014, 4ª ed., Elsevier, 4 partes, 44 capítulos): referência cirúrgica (F-03);
 - Hierarquia e regras de divergência no [Anexo 0001](../90.ANEXOS/0001_governanca_fonte_conhecimento.md).
 
-## 12. Bloqueios obrigatórios dos gates
+## 12. Fronteira dos gates
 
-B-01, B-02, B-03, B-04 e B-05 estão fechados por D-078, D-079, D-076, D-075 e D-077. A baseline pode usar somente os dados permitidos pela política mínima. Depois do fechamento dos demais bloqueios, Discovery e PRD devem ser reexecutados.
+B-01 a B-06 estão fechados. A reexecução técnica de Discovery e PRD foi concluída segundo as engines canônicas. Por D-101 proposta, B-07 fornece insumos à SPEC e continua obrigatório antes da baseline/piloto completo, sem bloquear a especificação. A única pendência para iniciar a readiness da SPEC é a aprovação humana do commit consolidado.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
-## 13. Decisões humanas e insumos para nova submissão do gate PRD
+## 13. Decisões humanas e pacote para aprovação do gate PRD
 
-Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o gate enquanto existirem campos obrigatórios incompletos.
+Os itens confirmados pelo patrocinador formam a baseline do PRD. D-101 a D-108, descritas no Anexo 0021, completam a fronteira de gate, semântica, criticidade, exceções, diagnóstico, equivalência, recuperação e protocolos; aguardam aprovação no checkpoint final.
 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
@@ -165,6 +165,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 13. Correção de registro/passagem — ✅ **ESTRUTURADA E AUTOMÁTICA NO INÍCIO, COM ESCALONAMENTO HUMANO POR EVIDÊNCIA, APROVADA EM D-070**.
 14. Superfícies de conta e acompanhamento — ✅ **DIREÇÃO CONFIRMADA EM D-090**: login, conta, dashboards, evolução, feedback e KPIs simples.
 15. Pacote pré-SPEC — ✅ **D-091 A D-100 APROVADAS INTEGRALMENTE EM 2026-08-06**: autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA, detalhados no [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
+16. Pacote de fechamento — ⏳ **D-101 A D-108 AGUARDAM APROVAÇÃO HUMANA DO COMMIT**; ver [Anexo 0021](../90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md).
 
 ## 14. Documentos do PRD
 
@@ -181,7 +182,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 | 0020 | Este documento |
 | 0090 | [Validação (gate)](0090_prd_validation.md) |
 
-Documento transversal de alinhamento: [Anexo 0020 — Produto e arquitetura antes da SPEC](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
+Documentos transversais: [Anexo 0020 — Produto e arquitetura antes da SPEC](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md) e [Anexo 0021 — Fechamento dos gates](../90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md).
 
 ## 15. Não feito nesta fase
 

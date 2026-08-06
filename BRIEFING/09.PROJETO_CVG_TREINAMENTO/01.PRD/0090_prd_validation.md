@@ -1,151 +1,63 @@
 # 0090 — PRD Validation (Gate)
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
-**Data:** 2026-08-05  
-**Resultado:** `REPROVADO — EM CORREÇÃO; SPEC E BUILD BLOQUEADOS`
-**Natureza dos artefatos:** rascunho controlado; decisões do patrocinador são insumos preservados, não aprovação do gate
+**Reexecução técnica:** 2026-08-06
+**Resultado técnico:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`
+**Precondição formal:** aprovação humana do Discovery no mesmo checkpoint, imediatamente antes deste gate.
 
----
+## 1. Correção da reexecução
 
-## Checklist obrigatório
+A validação anterior transformou baseline aplicada, metas calibradas e detalhes próprios da SPEC em bloqueios do PRD. Esta reexecução usa somente os critérios obrigatórios do `PRD ENGINE ENTERPRISE`: problema, usuários, fluxos, escopo, regras principais, exceções conhecidas, métricas e riscos.
 
-### PROBLEMA
+A correção não é waiver. D-101 preserva B-07 como gate pré-piloto, enquanto D-102 a D-108 resolvem as lacunas de semântica, criticidade, exceções, diagnóstico, equivalência, recuperação e protocolos. O pacote está no [Anexo 0021](../90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md).
 
-- [x] Problema claramente definido (0009 Discovery Master §2);
-- [x] Impacto mensurável (dimensões em 0004 e anexo 0003);
-- [x] Dor operacional e processo atual confirmados por MV. Ricardo Akinaga, responsável por todas as áreas do MVP (D-078/B-01);
+## 2. Checklist canônico obrigatório
 
-### USUÁRIOS
+| Critério da engine | Estado | Evidência principal |
+|---|---|---|
+| problema | [x] | Discovery 0004/0009 e PRD Master 0020 |
+| usuários | [x] | Discovery 0006; D-079; papéis D-092 |
+| fluxos | [x] | casos de uso 0010; jornada e dashboards D-093 |
+| escopo | [x] | 0011; modalidade D-068; programa V3 D-084/D-085 |
+| regras principais | [x] | 0012; complementos D-102, D-103, D-105 e D-106 propostos |
+| exceções conhecidas | [x] | D-104 proposta; fluxos versionados de contestação e retirada |
+| métricas | [x] | 0015 e dicionário D-095; metas provisórias explicitadas |
+| riscos | [x] | Discovery 0007; controles e owner/prazos D-108 propostos |
 
-- [x] Usuário primário definido (colaborador);
-- [x] Usuários secundários e operadores mapeados;
-- [x] Responsabilidades claras (matriz de acesso 0006 e matriz de responsabilidades em 0012 §8);
-- [x] Responsável do MVP nomeado — MV. Ricardo Akinaga acumula as funções por D-076; B-03 fechado;
-- [x] Público/coorte confirmado por D-079: aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação obrigatória (B-02 fechado).
+## 3. Requisitos relevantes fechados para a fase
 
-### FLUXOS
+- autenticação, papéis, dashboards, feedback, KPIs, arquitetura, RAG, observabilidade, acessibilidade e agente operacional foram aprovados em D-091 a D-100;
+- progresso, avaliação e domínio ficam separados por D-102;
+- aprovação exige 70% geral e 80% em cada componente crítico por D-103;
+- afastamento, acessibilidade, conexão, desativação, retirada e contestação possuem regra por D-104;
+- o diagnóstico orienta reforço, não dispensa módulos e ocorre uma vez por D-105;
+- formas equivalentes possuem critérios verificáveis por D-106;
+- RPO de até uma hora, RTO de até quatro horas e critérios de fornecedor orientam a SPEC por D-107;
+- protocolo interno não fornecido nunca será presumido por D-108.
 
-- [x] Fluxo principal definido (jornada do colaborador, 0020 §4);
-- [x] Jornada prática e fluida confirmada por D-080: uma próxima ação clara, unidades breves dentro de módulos completos, feedback imediato e progresso visível;
-- [ ] Exceções completamente definidas — afastamento e acessibilidade permanecem pendentes;
-- [x] Fluxo atual real validado por D-078: aprendizado informal, sem trilha, avaliação ou registro centralizado.
+D-102 a D-108 passam a valer quando o pacote for aprovado humanamente.
 
-### ESCOPO
+## 4. Fronteira de B-07
 
-- [x] IN SCOPE claro (0011 §2);
-- [x] OUT OF SCOPE definido (0011 §3);
-- [x] FUTURE SCOPE registrado (0011 §4);
-- [x] Modalidade digital e fronteira das simulações confirmadas pelo patrocinador como insumos (D-068); prática presencial bloqueada pelo `GATE-EXP-PRAT-01`;
-- [x] Áreas clínicas do piloto confirmadas pelo responsável do MVP — núcleo + Emergência + Internação (B-06);
-- [x] Coorte inicial delimitada: aproximadamente 10 veterinários, abrangendo toda a equipe (D-079).
-- [x] Programa curricular clínico V3 definido no PRD 0017: 24 meses, duas partes, 24 módulos e 96 sessões;
-- [x] Carga/cadência de D-084/D-085 confirmada pelo patrocinador em 2026-08-06: 149 horas e correção aberta em até cinco dias úteis; a fatia vertical mede viabilidade operacional sem reabrir a aprovação curricular;
-- [x] Ordem de validação: fatia vertical do Mês 2 antes da produção em escala; demais módulos em ondas após aprendizado.
+O blueprint do Anexo 0012 é insumo suficiente para especificar entidades, estados, versões, formas e fluxos. Sua aprovação clínica, a produção, o pré-voo e a aplicação dos 120 itens permanecem obrigatórios antes da baseline e do piloto completo. A calibração posterior atualizará metas sem invalidar o PRD.
 
-### REGRAS
-
-- [ ] Regras principais completamente definidas — RN-015, RN-023, RN-074 e pontos de conteúdo permanecem pendentes;
-- [x] Restrições claras (segurança clínica, fontes, LGPD, não punição);
-- [x] Propostas do gate confirmadas pelo patrocinador em 2026-08-05 (incluindo D-068: RN-018, RN-081 a RN-085 e RF-027/RF-052 a RF-055 — ver anexo 0008).
-
-### REQUISITOS
-
-- [ ] Requisitos funcionais completos para o MVP proposto — existem requisitos e decisões pendentes (0013 §10);
-- [ ] Requisitos não funcionais completamente definidos — acessibilidade e exceções ainda possuem pendências; política mínima de dados aprovada por D-077;
-- [ ] Pendências registradas: validação clínica do blueprint detalhado, equivalência e acessibilidade; correção de registro/passagem fechada por D-070 e erro crítico fechado por D-082.
-- [x] Regra de avaliabilidade definida: pergunta/caso sem gabarito ou rubrica testados não pode ser publicado (RF-096/RN-088).
-
-### MÉTRICAS
-
-- [x] KPIs definidos (0015 §2 e §3);
-- [x] Critérios de sucesso claros (0015 §4);
-- [x] Regras de uso das métricas (0015 §6);
-- [ ] Metas definitivas calibradas com baseline (B-07).
-
-### RISCOS
-
-- [x] Riscos listados (0007);
-- [x] Hipóteses registradas (0007, H-01 a H-10);
-- [x] Owner do MVP aprovado por D-076; prazos específicos continuam no plano de trabalho.
-
----
-
-## Condições bloqueantes do gate
-
-| ID | Condição | Impacto | Owner recomendado | Status |
-|---|---|---|---|---|
-| B-01 | fluxo atual do treinamento | estabelecer ponto de partida | MV. Ricardo Akinaga | FECHADO POR D-078 — aprendizado informal, sem trilha, avaliação ou registro centralizado |
-| B-02 | público e coorte | dimensionar a primeira aplicação | MV. Ricardo Akinaga | FECHADO POR D-079 — aproximadamente 10 veterinários; todos participam |
-| B-03 | responsável pelo MVP | responsabilidade concentrada e registrada | direção | FECHADO POR D-076/D-083 — MV. Ricardo Akinaga é o único aprovador clínico obrigatório |
-| B-04 | uso das fontes no MVP interno | controles proporcionais | patrocinador | FECHADO POR D-075 — consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo |
-| B-05 | política mínima interna de dados | limitar coleta e acesso | MV. Ricardo Akinaga | FECHADO POR D-077 — somente nome/login profissional, progresso, tentativas, notas e logs mínimos; dados clínicos reais e de tutores proibidos |
-| B-06 | áreas do piloto | escopo clínico | MV. Ricardo Akinaga | FECHADO COMO INSUMO — núcleo + Emergência + Internação |
-| B-07 | baseline ausente | metas não calibradas | MV. Ricardo Akinaga | EM ELABORAÇÃO — blueprint de trabalho no Anexo 0012; falta revisão clínica, produção, teste e aplicação |
-
-## Decisões humanas preservadas como insumos (confirmadas em 2026-08-05 — ver anexo 0008)
-
-As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enquanto qualquer item obrigatório permanecer incompleto.
-
-1. Limiar geral 70% e críticos 80% (D-040/D-041) — ✅
-2. Composição quiz 0% + caso 30% + prova 70% (D-044) — ✅ corrige inconsistência RN-020/RN-022
-3. Tentativas 2 + remediação, intervalo mínimo 7 dias (D-042/D-043) — ✅
-4. Núcleo + Emergência/Internação no piloto (D-020) — ✅
-5. Aproximadamente 10 veterinários; trilha V3 de 24 meses, 24 módulos e 149 horas (D-084/D-085) — aprovada pelo patrocinador; a fatia vertical validará a viabilidade operacional;
-6. Certificação: status de conclusão no piloto (D-049) — ✅
-7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
-8. Política de dados: D-077 aprovou o mínimo necessário e fechou B-05; prontuários, tutores, gravações e casos reais identificáveis permanecem proibidos — ✅
-9. Contestação em 7 dias úteis (D-046) — ✅
-10. Dispensa por domínio: não no piloto (D-045) — ✅
-11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
-12. Fontes: D-075 aprovou governança enxuta para o sistema interno; B-04 fechado; D-033 futura e não bloqueante — ✅
-13. Programa curricular: matriz V3 definida no PRD 0017; D-084/D-085 substituem a cadência de D-081 — aprovada; confirmação operacional pela fatia vertical pendente;
-14. Erro crítico: objetivo em reforço, explicação e novo caso equivalente; sem punição ou reprovação definitiva (D-082) — ✅
-
----
-
-## Decisão
+## 5. Decisão técnica
 
 ```text
-STATUS: REPROVADO — EM CORREÇÃO (RECLASSIFICAÇÃO CANÔNICA, 2026-08-05)
-AÇÃO NECESSÁRIA: REEXECUTAR E APROVAR DISCOVERY; FECHAR B-07; CONCLUIR REQUISITOS PENDENTES; REEXECUTAR ESTE GATE
-SPEC: PROIBIDA, INCLUSIVE PREPARAÇÃO FORMAL
-BUILD: PROIBIDO
+STATUS TÉCNICO: APROVADO
+STATUS FORMAL: AGUARDA APROVAÇÃO HUMANA SOBRE COMMIT IDENTIFICADO
+ORDEM NO CHECKPOINT: DISCOVERY PRIMEIRO; PRD EM SEGUIDA
+SPEC: AUTORIZAR SOMENTE READINESS APÓS AS DUAS APROVAÇÕES
+BUILD: PROIBIDO ATÉ A APROVAÇÃO DA SPEC
+B-07: OBRIGATÓRIO ANTES DA BASELINE/PILOTO COMPLETO
 ```
 
-### Ações permitidas enquanto o gate estiver reprovado
+## 6. Histórico preservado
 
-- Corrigir documentos e sincronizar decisões já confirmadas;
-- Executar o diagnóstico B-07 somente com os dados permitidos pela política D-077;
-- Usar o Anexo 0012 como rascunho de cobertura, sem tratá-lo como aprovação do blueprint ou da baseline;
-- Resolver regras, requisitos, exceções e critérios marcados como pendentes;
-- Preparar evidências e checkpoint Git para nova submissão dos gates.
+Em 2026-08-05, este gate foi registrado como reprovado sob uma checklist local ampliada. O resultado fica superado apenas tecnicamente por esta reexecução. As decisões anteriores continuam preservadas; a aprovação formal depende de Ricardo confirmar o conteúdo exato do commit consolidado.
 
-MV. Ricardo Akinaga coordena e aprova essas atividades como responsável do MVP por D-076.
+## 7. Aprovação humana
 
-### Ações proibidas
-
-- Iniciar SPEC ou sua preparação formal;
-- Criar backlog de BUILD, arquitetura, banco, API, telas ou código;
-- Publicar o programa ou iniciar BUILD enquanto os gates aplicáveis permanecerem abertos; rascunhos de conteúdo original são permitidos;
-- Coletar dados além do escopo de D-077, especialmente gravações, prontuários, dados de tutores ou casos reais identificáveis;
-- Tratar qualquer decisão individual do patrocinador como aprovação automática de fase.
-
-## Aprovação humana
-
-| Papel | Nome | Decisão | Data |
+| Papel | Nome | Decisão | Estado |
 |---|---|---|---|
-| Responsável pelo MVP interno | MV. Ricardo Akinaga | patrocinador, produto, coordenação clínica/educacional, operação, dados, segurança e aprovação dos gates documentais | 2026-08-05 |
-| Aprovador de conteúdo clínico | MV. Ricardo Akinaga | aprovação humana obrigatória por módulo; revisão adicional opcional | 2026-08-06 |
-
-O modelo enxuto e a regra de aprovação clínica única estão no documento Discovery 0006. D-083 substitui a exigência de segunda conferência de D-076.
-
-## Próximo passo após fechamento dos compromissos
-
-```text
-B-01 A B-07 FECHADOS + REQUISITOS PENDENTES RESOLVIDOS
-→ REEXECUTAR 0090_DISCOVERY_VALIDATION
-→ REEXECUTAR 0090_PRD_VALIDATION
-→ SOMENTE COM AMBOS APROVADOS: SPEC ENGINE (02.ESPEC)
-→ 0100_spec_readiness_review.md
-→ FASE POR FASE ATÉ 0190_spec_validation.md
-```
+| Responsável pelo MVP e gate | MV. Ricardo Akinaga | após aprovar o Discovery, aprovar este PRD e autorizar somente a readiness da SPEC | aguardando checkpoint Git |

@@ -3,7 +3,7 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fase:** PRD — Definição de produto  
 **Data:** 2026-08-06
-**Regra:** requisitos de produto; o Anexo 0020 registra decisões arquiteturais recomendadas, ainda sem iniciar a SPEC ou escolher fornecedor.
+**Regra:** requisitos de produto; o Anexo 0020 registra a baseline arquitetural aprovada, sem escolher fornecedor ou iniciar BUILD.
 
 Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
@@ -26,10 +26,10 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-010 | Tentativas de avaliação devem ser preservadas em caso de interrupção (conexão, queda de energia) | FATO INFORMADO |
 | RNF-011 | Nenhuma resposta registrada pode ser perdida ou alterada silenciosamente | FATO INFORMADO |
-| RNF-012 | Disponibilidade deve ser planejada para operação contínua; janelas de manutenção fora do horário crítico do hospital | HIPÓTESE |
-| RNF-013 | Recuperação de falha deve restaurar o estado consistente da tentativa (sem respostas duplicadas) | PROPOSTA |
+| RNF-012 | Disponibilidade deve ser planejada para operação contínua; janelas de manutenção fora do horário crítico do hospital | PROPOSTA PARA DETALHAMENTO NA SPEC |
+| RNF-013 | Recuperação de falha deve restaurar o estado consistente da tentativa (sem respostas duplicadas) | APROVADA EM D-096/D-098 |
 | RNF-014 | Login, salvamento, submissão, correção e tarefas agendadas devem emitir telemetria estruturada e alertas acionáveis, sem conteúdo sensível | APROVADA PELO PATROCINADOR (D-098, 2026-08-06) |
-| RNF-015 | O banco deve ter backups automáticos e restauração testada; RPO e RTO serão definidos antes da SPEC ser considerada pronta | APROVADA PELO PATROCINADOR (D-098, 2026-08-06); RPO/RTO ainda pendentes |
+| RNF-015 | O banco deve ter backups automáticos e restauração testada; alvo inicial RPO ≤ 1 hora e RTO ≤ 4 horas | PROPOSTA PARA APROVAÇÃO DO GATE (D-107) |
 | RNF-016 | O MVP não deve usar gravação de tela, session replay ou coleta comportamental invasiva | APROVADA PELO PATROCINADOR (D-098, 2026-08-06) |
 | RNF-017 | Operações de submissão e correção devem ser idempotentes e transacionais para impedir duplicidade ou estado parcial | APROVADA PELO PATROCINADOR (D-096, 2026-08-06) |
 
@@ -52,7 +52,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-033 | Casos e simulações do MVP são exclusivamente fictícios; prontuários, dados de tutores e casos reais identificáveis são proibidos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-034 | Módulo clínico exige aprovação humana registrada de Ricardo; revisão adicional é opcional e alteração de nota nunca ocorre silenciosamente | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RNF-035 | Nenhuma decisão crítica clínica automatizada por IA sem revisão humana | FATO INFORMADO |
-| RNF-036 | Alteração de gabarito/nota exige justificativa e fluxo formal | PROPOSTA |
+| RNF-036 | Alteração de gabarito/nota exige justificativa, aprovação, versão e fluxo formal auditável | APROVADA EM D-054/RN-067 |
 | RNF-037 | Identidade, senha, recuperação e MFA devem usar provedor especializado; sessão usa cookie seguro, rotação, CSRF e rate limiting; a aplicação não armazena senha, segredo de recuperação ou token no banco comum | APROVADA PELO PATROCINADOR (D-091, 2026-08-06) |
 | RNF-038 | MFA deve ser obrigatório para administrador e moderador e disponível para participante; ações sensíveis exigem reautenticação | APROVADA PELO PATROCINADOR (D-091, 2026-08-06) |
 | RNF-039 | A autorização deve ser verificada no servidor, negar por padrão e aplicar mínimo privilégio; proteção por linha no banco funciona como defesa adicional | APROVADA PELO PATROCINADOR (D-091/D-092/D-096, 2026-08-06) |
@@ -63,7 +63,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-040 | O sistema deve suportar simultaneamente: colaboradores em estudo/avaliação, autores, revisores, gestores e auditor | HIPÓTESE |
 | RNF-041 | Escala 12×36 exige uso assíncrono (treinamento em momentos livres) | FATO INFORMADO |
-| RNF-042 | Acessibilidade para usuários com necessidades específicas inclui tempo/formato ajustável e compatibilidade com leitores, sem reduzir a segurança da avaliação | PADRÃO GERAL APROVADO EM D-099; necessidades concretas permanecem em D-018 |
+| RNF-042 | Acessibilidade inclui WCAG 2.2 AA, tempo/formato ajustável por acomodação autorizada e compatibilidade com leitores, sem reduzir o objetivo avaliado | D-099 APROVADA; REGRA OPERACIONAL EM D-104 |
 | RNF-043 | O sistema deve indicar claramente estado de cada avaliação ao usuário (em andamento, concluída, em revisão) | PROPOSTA |
 | RNF-044 | Administrador e moderador devem compartilhar a estrutura visual do dashboard, mas cada consulta, cartão e ação respeita o escopo autorizado | APROVADA PELO PATROCINADOR (D-092/D-093, 2026-08-06) |
 
@@ -72,10 +72,10 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | ID | Requisito | Classificação |
 |---|---|---|
 | RNF-050 | Fluxo editorial obrigatório antes de publicação | FATO INFORMADO |
-| RNF-051 | Controle de validade e reciclagem do conteúdo | PROPOSTA |
+| RNF-051 | Controle de validade e reciclagem do conteúdo | APROVADA EM RN-047 A RN-049 |
 | RNF-052 | Política mínima interna de dados aprovada antes do piloto (finalidade, acesso, retenção e descarte) | APROVADA PELO PATROCINADOR COMO INSUMO (D-077; B-05 FECHADO) |
-| RNF-053 | Política de correção manual de nota | PENDENTE (D-054) |
-| RNF-054 | Procedimento de contestação com revisor independente | PROPOSTA |
+| RNF-053 | Política de correção manual de nota exige justificativa, aprovação, versão e auditoria | APROVADA EM D-054/RN-067 |
+| RNF-054 | Procedimento de contestação com revisor independente, decisão versionada e recálculo | APROVADA EM D-046/RN-053 |
 
 ## 7. Privacidade (LGPD)
 
@@ -95,11 +95,11 @@ O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica
 
 | ID | Requisito | Classificação |
 |---|---|---|
-| RNF-070 | Afastamento, férias, mudança de setor: prazos e trilha ajustáveis | PENDENTE (D-016) |
-| RNF-071 | Perda de conexão durante avaliação: retomada sem perda de respostas | PROPOSTA |
-| RNF-072 | Questão anulada: recálculo de afetados e notificação | PROPOSTA |
-| RNF-073 | Conteúdo retirado: bloqueio imediato e registro de exposição | PROPOSTA |
-| RNF-074 | Reprovação recorrente: encaminhamento a revisão humana | PENDENTE (D-047) |
+| RNF-070 | Afastamento/férias pausam prazos e preservam progresso; mudança de setor não altera a trilha do piloto | PROPOSTA PARA APROVAÇÃO DO GATE (D-104) |
+| RNF-071 | Perda de conexão durante avaliação: retomada do último estado confirmado sem perda ou duplicidade | APROVADA EM D-096/D-098 |
+| RNF-072 | Questão anulada: recálculo de afetados e notificação | APROVADA EM D-046/RN-053 |
+| RNF-073 | Conteúdo retirado: bloqueio imediato e registro de exposição | APROVADA EM RN-048/RN-049 |
+| RNF-074 | Reprovação recorrente: plano individual e revisão humana, sem punição automática | APROVADA EM D-047/RN-034 |
 | RNF-075 | Conflito entre fontes: registro de decisão com `conflict_id` | FATO INFORMADO |
 
 ## 9. Restrições e limites de produto

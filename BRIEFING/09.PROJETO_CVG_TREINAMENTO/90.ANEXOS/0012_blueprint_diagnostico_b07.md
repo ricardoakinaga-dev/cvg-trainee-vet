@@ -2,12 +2,12 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário
 **Data do rascunho:** 2026-08-06
-**Status:** RASCUNHO DE TRABALHO — B-07 EM ELABORAÇÃO; governança atualizada por D-083
+**Status:** BLUEPRINT TÉCNICO PRONTO PARA REVISÃO CLÍNICA — B-07 PRE-PILOTO
 **Checkpoint de origem:** D-070, commit 5e5b62c, tag gate-d070-adaptive-structured-scoring-2026-08-06
 **Responsável pelo MVP:** MV. Ricardo Akinaga
 **Natureza:** blueprint de avaliação, ainda não aprovado para aplicação
 
-Este documento executa a próxima ação registrada após D-070: estruturar a matriz das 120 questões diagnósticas. Ele não contém questões clínicas, gabaritos de participantes ou dados pessoais. A criação do blueprint não fecha B-07, não aprova Discovery ou PRD e não autoriza SPEC, BUILD ou publicação.
+Este documento estrutura a matriz das 120 questões diagnósticas. Ele não contém questões clínicas, gabaritos de participantes ou dados pessoais. A criação do blueprint não fecha B-07 e não autoriza aplicação, baseline, BUILD ou publicação. Conforme D-101 proposta, produção/aplicação de B-07 bloqueia o piloto completo e a calibração, não a elaboração da SPEC.
 
 ## 1. Objetivo e limites
 
@@ -33,7 +33,7 @@ Regras obrigatórias:
 | S3 | 40 | Internação, monitoramento e integração | plano hospitalar, tendências, continuidade e transferência de raciocínio |
 | **Total** | **120** | **cobertura ampla** | **linha de base e recomendação inicial** |
 
-Cada sessão deve poder ser interrompida e retomada sem perda de resposta. Duração, janela, acomodação e regra de repetição do diagnóstico continuam pendentes de confirmação antes da aplicação. O blueprint não transforma duração proposta em regra operacional.
+Cada sessão deve poder ser interrompida e retomada sem perda de resposta. A V3 planeja 120 minutos por bloco, em janela assíncrona; o pré-voo validará instruções e a primeira aplicação medirá o tempo real. Acomodação segue D-104 e repetição segue D-105: interrupção retoma a sessão, mas baseline concluída não é refeita na primeira aplicação.
 
 ## 3. Distribuição por domínio e item
 
@@ -166,7 +166,7 @@ O diagnóstico não produzirá:
 - dispensa automática no piloto;
 - decisão disciplinar ou trabalhista.
 
-Os limiares para converter o perfil em recomendação de trilha ainda dependem de D-038 e da validação do PRD. Até essa decisão, o resultado deve ser tratado como mapa diagnóstico e não como corte de progressão. O núcleo obrigatório e temas críticos continuam não dispensáveis.
+A regra proposta em D-105 converte o perfil apenas em prioridade de reforço: `<70%` prioritário, `70–79%` monitorado e `≥80%` sequência regular; erro crítico sempre gera reforço. O resultado continua sendo mapa diagnóstico, não corte de progressão. Na trilha V3 completa, os 24 módulos permanecem obrigatórios quando elegíveis; a onda piloto inicial valida núcleo, Emergência e Internação, sem criar dispensa para a expansão.
 
 ## 8. Metadados internos obrigatórios por item
 
@@ -224,7 +224,7 @@ O material deve ser redigido pelo CVG. É proibido copiar texto, tabela, figura,
 
 | Etapa | Entrega | Estado atual |
 |---|---|---|
-| B07.1 | blueprint das 120 questões | CONCLUÍDA COMO RASCUNHO |
+| B07.1 | blueprint das 120 questões | PRONTO PARA APROVAÇÃO CLÍNICA |
 | B07.2 | produção dos 120 itens originais | PENDENTE |
 | B07.3 | revisão clínica e aprovação por Ricardo | PENDENTE — executar durante a produção e antes da aplicação |
 | B07.4 | pré-voo de avaliabilidade e fluxo | PENDENTE |
@@ -232,18 +232,15 @@ O material deve ser redigido pelo CVG. É proibido copiar texto, tabela, figura,
 | B07.6 | aplicação às aproximadamente 10 pessoas | PENDENTE |
 | B07.7 | relatório de baseline e atualização dos gates | PENDENTE |
 
-B-07 só poderá ser marcado como fechado quando houver evidência das etapas B07.2 a B07.7, respeitando o checkpoint Git do Anexo 0010.
+B-07 só poderá ser marcado como fechado quando houver evidência das etapas B07.2 a B07.7, respeitando o checkpoint Git do Anexo 0010. Por D-101 proposta, esse fechamento é pré-condição do piloto completo e da calibração definitiva, não da SPEC.
 
 ## 11. Pendências que permanecem abertas
 
-1. D-037: a matriz está desenhada neste rascunho, mas aguarda validação clínica e pedagógica aplicável;
-2. D-038: regra de conversão do perfil em recomendação de trilha;
-3. D-039: mapeamento operacional dos conteúdos obrigatórios e temas críticos, sem dispensa no piloto;
-4. D-017/D-018: confirmar restrições concretas de dispositivo, conectividade e acessibilidade antes da aplicação;
-5. registro da aprovação clínica de Ricardo e da data de corte científico do instrumento;
-6. autorização e controles mínimos de D-077 para a aplicação real;
-7. produção, revisão e pré-voo dos 120 itens;
-8. critério de atualização ou repetição da baseline.
+1. aprovação clínica de Ricardo para o blueprint e, depois, para os itens produzidos;
+2. autorização e controles mínimos de D-077 para a aplicação real;
+3. produção, revisão e pré-voo dos 120 itens;
+4. aplicação e relatório da baseline antes do piloto completo;
+5. D-105/D-106 aprovadas no gate para personalização, repetição e equivalência.
 
 ## 12. Critérios de aceite do blueprint
 
@@ -261,8 +258,8 @@ B-07 só poderá ser marcado como fechado quando houver evidência das etapas B0
 - [ ] 120 itens foram produzidos;
 - [ ] 120 itens foram revisados e testados;
 - [ ] baseline foi aplicada e consolidada;
-- [ ] B-07 foi revalidado no Discovery e no PRD.
+- [ ] B-07 foi revalidado no gate de prontidão do piloto.
 
 ## 13. Rastreamento e próximo passo
 
-Este anexo deve ser referenciado no D-037, no B-07 dos gates e no backlog operacional. O próximo passo elegível é alinhar o diagnóstico à trilha V3, obter a aprovação clínica de Ricardo e produzir uma fatia vertical antes da escala completa. Sem revisão, produção, pré-voo e aplicação real, B-07 permanece aberto e os gates Discovery/PRD continuam reprovados.
+Este anexo deve ser referenciado no D-037, no gate de prontidão do piloto e no backlog. O próximo passo é obter aprovação clínica de Ricardo e produzir uma fatia diagnóstica antes da escala completa. Sem revisão, produção, pré-voo e aplicação, B-07 permanece aberto para o piloto, mas a SPEC pode avançar após D-101 e os gates documentais serem aprovados.
