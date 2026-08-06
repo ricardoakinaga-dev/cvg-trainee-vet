@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: pacote pré-SPEC D-091 a D-100 consolidado, validado e aprovado em revisão independente; nenhuma SPEC ou construção iniciada
+- last_completed_action: commit 1803fac consolidou o pacote pré-SPEC D-091 a D-100, validado e aprovado em revisão independente; nenhuma SPEC ou construção iniciada
 - next_action: MV. Ricardo Akinaga aprovar ou ajustar D-091 a D-100 como pacote; nenhuma SPEC será iniciada antes disso
 
 ## BLOQUEIOS

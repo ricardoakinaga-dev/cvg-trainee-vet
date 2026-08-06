@@ -1,9 +1,9 @@
 # Anexo 0020 — Alinhamento de produto e arquitetura antes da SPEC
 
-**Projeto:** Sistema CVG de Treinamento Veterinário  
-**Data:** 2026-08-06  
-**Patrocinador:** MV. Ricardo Akinaga  
-**Status:** `PACOTE_RECOMENDADO_AGUARDA_APROVACAO`  
+**Projeto:** Sistema CVG de Treinamento Veterinário
+**Data:** 2026-08-06
+**Patrocinador:** MV. Ricardo Akinaga
+**Status:** `PACOTE_RECOMENDADO_AGUARDA_APROVACAO`
 **Regra de avanço:** nenhuma SPEC ou construção começa antes da aprovação das decisões D-091 a D-100 e dos gates canônicos.
 
 ## 1. Resultado do alinhamento

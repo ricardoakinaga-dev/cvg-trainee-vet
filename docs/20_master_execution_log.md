@@ -428,7 +428,7 @@ O pedido do patrocinador foi transformado em pacote de alinhamento sem iniciar a
 
 ### RESULT
 
-D-090 registra a direção confirmada. O Anexo 0020 recomenda monólito modular web, autenticação e PostgreSQL gerenciados, três papéis permanentes, aprovação clínica exclusiva de Ricardo, WCAG 2.2 AA, RAG fora do MVP e `gpt-5.6-luna` com esforço adaptativo para a assistência operacional. A revisão independente em Luna/high encontrou sete ajustes, todos corrigidos; a reavaliação retornou `PASS`. D-091 a D-100 aguardam aprovação conjunta. Commit de conteúdo: `PENDENTE_NESTA_RODADA`.
+D-090 registra a direção confirmada. O Anexo 0020 recomenda monólito modular web, autenticação e PostgreSQL gerenciados, três papéis permanentes, aprovação clínica exclusiva de Ricardo, WCAG 2.2 AA, RAG fora do MVP e `gpt-5.6-luna` com esforço adaptativo para a assistência operacional. A revisão independente em Luna/high encontrou sete ajustes, todos corrigidos; a reavaliação retornou `PASS`. D-091 a D-100 aguardam aprovação conjunta. Commit de conteúdo: `1803fac`.
 
 ### DECISIONS
 
