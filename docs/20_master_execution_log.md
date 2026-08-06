@@ -240,6 +240,46 @@ Decisão humana recebida: segundo MV descartado; Ricardo é o único aprovador c
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-06 — CHECKPOINT DA TRILHA CURRICULAR V3
+
+### TIMESTAMP
+
+2026-08-06 07:32:23 -03:00
+
+### ENGINE
+
+SYSTEM
+
+### PHASE
+
+Redesenho curricular e alinhamento de governança
+
+### SPRINT
+
+CUR-24-01 — trilha de 24 meses
+
+### TASK
+
+CHECKPOINT-D083-D086
+
+### ACTION
+
+Revisado e commitado o conjunto documental da trilha V3, da pesquisa de melhores práticas e da substituição da segunda conferência veterinária obrigatória.
+
+### RESULT
+
+Commit c1d3023 criado com mensagem convencional. Foram validados 24 módulos, 96 sessões, 149 horas, 80 links locais, ausência de segredos e ausência de PDFs rastreados.
+
+### DECISIONS
+
+D-083 a D-086 estão registradas como direção do patrocinador. O checkpoint não aprova Discovery/PRD e não autoriza SPEC/BUILD. A próxima decisão é confirmar a carga/cadência proposta e autorizar a fatia vertical do Mês 2.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

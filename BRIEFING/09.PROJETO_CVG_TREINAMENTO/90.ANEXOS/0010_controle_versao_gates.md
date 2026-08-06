@@ -202,3 +202,18 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Validações | git diff --check; contagens 40/40/40; matriz cognitiva 20/8/8/4 por sessão; varredura de segredos sem ocorrência; nenhum PDF staged |
 | Aprovação humana | não registrada; revisão clínica independente ainda necessária |
 | Próximo item | nomear segundo MV revisor, validar o blueprint, produzir/testar os 120 itens e só então solicitar autorização para aplicação |
+
+## 14. Checkpoint D-083 a D-086 — governança única e trilha curricular V3
+
+| Campo | Registro |
+|---|---|
+| Fase | redesenho documental do PRD; não aprova os gates nem autoriza SPEC/BUILD |
+| Decisões | D-083: Ricardo como único aprovador clínico obrigatório; D-084: 24 meses/duas partes; D-085: casos fictícios, pesquisa aberta e avaliação mista; D-086: três obras como base com camada de atualização |
+| Artefatos principais | 01.PRD/0017_programa_curricular_24_meses.md; 90.ANEXOS/0013_pesquisa_melhores_praticas_trilha_24_meses.md |
+| Escopo V3 | 24 módulos, 96 sessões e 149 horas; Parte 1 clínica médica/emergência/internação; Parte 2 cirurgia/especialidades/integração |
+| Commit do conteúdo | `c1d3023` — `docs: define 24-month veterinary curriculum` |
+| Validações | `git diff --cached --check`; 24 módulos; 96 sessões curriculares; cálculo de 149 h; 80 links locais válidos; varredura de segredos sem ocorrência; nenhum PDF rastreado |
+| Aprovação humana | direção fornecida por MV. Ricardo Akinaga em 2026-08-06; confirmação final da carga e da fatia vertical ainda necessária |
+| Efeito no checkpoint B-07.1 | a exigência histórica de segundo MV registrada na seção 13 foi substituída por D-083; B-07 continua aberto por falta de produção, pré-voo e aplicação |
+| Próximo item | confirmar carga/cadência V3 e produzir a fatia vertical do Mês 2 antes da produção em escala |
+| Tag | não criada — não é aprovação de gate |

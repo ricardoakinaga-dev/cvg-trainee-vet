@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: pesquisa externa concluída e proposta curricular V3 documentada no PRD 0017 e no Anexo 0013; D-083 a D-086 registram as novas direções do patrocinador
+- last_completed_action: commit c1d3023 registrou a pesquisa externa, a proposta curricular V3 e a propagação de D-083 a D-086 pelos artefatos ativos
 - next_action: obter confirmação humana da carga de 149 horas, da cadência mensal e do mix de avaliação; depois produzir a fatia vertical do Mês 2
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T07:21:17-03:00
+- last_update: 2026-08-06T07:32:23-03:00
 
 ## REGRAS DE USO
 

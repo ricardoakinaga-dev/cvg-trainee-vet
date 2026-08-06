@@ -48,6 +48,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto — sem protótipo a carga de autoria e correção é apenas estimativa
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
+- evidência: PRD 0017; Anexo 0013; commit c1d3023
 
 ### B07-04 — Aplicação da baseline
 
