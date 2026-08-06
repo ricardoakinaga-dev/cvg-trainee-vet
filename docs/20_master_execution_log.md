@@ -360,6 +360,44 @@ D-088 não autoriza publicação geral, uso somativo, certificação, coorte com
 
 WAITING_HUMAN_APPROVAL
 
+## 2026-08-06 — SIMPLIFICAÇÃO DA LIBERAÇÃO DO T2
+
+### TIMESTAMP
+
+2026-08-06 08:46:15 -03:00
+
+### ENGINE
+
+PRD / CONTEÚDO CONTROLADO
+
+### PHASE
+
+Validação operacional do currículo V3
+
+### SPRINT
+
+CUR-24-01 — ensaio controlado da M02
+
+### TASK
+
+D-089 / liberação de T2
+
+### ACTION
+
+Por decisão expressa de MV. Ricardo Akinaga, foi descartado o gate documental adicional criado durante a revisão do protocolo. Foram harmonizados protocolo, pré-voo, política mínima, requisitos, backlog e estado operacional.
+
+### RESULT
+
+T2 está autorizado e pronto para agendamento com dois a três veterinários. Permanecem a comunicação operacional simples, a coleta mínima de D-077 e a proibição de dados clínicos reais, prontuários, tutores, gravações, ranking, RH, punição e uso somativo. Commit de conteúdo: pendente neste checkpoint.
+
+### DECISIONS
+
+D-089 substitui o bloqueio operacional registrado na entrada anterior sem apagar o histórico. Nenhuma decisão humana adicional é necessária antes de selecionar e agendar os participantes.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

@@ -22,7 +22,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-004 | O sistema deve registrar quem criou/alterou cada dado relevante (responsável e data) | P0 | FATO INFORMADO |
 | RF-005 | O sistema deve bloquear contas compartilhadas | P1 | PROPOSTA |
 | RF-006 | O sistema deve suportar desativação de usuários sem excluir histórico | P1 | PROPOSTA |
-| RF-007 | Antes do primeiro cadastro real, o sistema deve apresentar aviso simples com finalidade, dados, acesso, retenção e base legal aplicável | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RF-007 | Antes do primeiro uso, a coordenação deve apresentar comunicação operacional simples sobre finalidade, dados mínimos, acesso e retenção; o T2 não depende de gate documental adicional | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077/D-089) |
 
 ## 2. Avaliação diagnóstica e linha de base
 

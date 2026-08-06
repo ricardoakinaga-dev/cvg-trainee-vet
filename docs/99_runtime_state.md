@@ -14,25 +14,25 @@
 
 ## STATUS
 
-- status: WAITING_HUMAN_APPROVAL
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: commit 2d0d608 registrou D-088, protocolo T0–T3, T0 reexecutado, T1 documental e revisão independente final PASS após correção de seis achados
-- next_action: completar o aviso de privacidade do T2 com base legal aplicável, canal de direitos, versão e data; depois selecionar/agendar dois a três veterinários
+- last_completed_action: D-089 descartou o gate documental adicional criado para T2; o protocolo continua limitado aos dados mínimos de D-077
+- next_action: selecionar e agendar dois a três veterinários autorizados para executar T2 conforme o Anexo 0018
 
 ## BLOQUEIOS
 
-- blockers: B-07 ainda aberto e os 120 itens não foram produzidos nem aplicados; T2 está bloqueado até o aviso D-077 registrar base legal aplicável e canal de direitos, além da coordenação dos participantes
+- blockers: B-07 ainda aberto e os 120 itens não foram produzidos nem aplicados; T2 não possui bloqueio documental e depende somente da coordenação dos participantes
 
 ## DECISÃO HUMANA
 
-- human_decision_required: yes
-- decision_description: Ricardo, com suporte jurídico/DPO quando aplicável, deve definir a base legal e o canal do aviso de privacidade antes de qualquer coleta real; depois de T2 decidirá manter, revisar ou bloquear a M02
+- human_decision_required: no
+- decision_description: nenhuma decisão adicional é necessária antes de T2; após os resultados, Ricardo decidirá manter, revisar ou bloquear a M02
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T08:21:28-03:00
+- last_update: 2026-08-06T08:46:15-03:00
 
 ## REGRAS DE USO
 

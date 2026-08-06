@@ -43,7 +43,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-030 | Acesso por papéis e escopos; mínimo necessário | FATO INFORMADO |
 | RNF-031 | Proteção do banco de questões contra vazamento e compartilhamento | PROPOSTA (D-048) |
-| RNF-032 | O MVP trata somente nome/login profissional, progresso, tentativas, notas e logs mínimos definidos na política; o aviso de privacidade deve registrar a base legal antes do primeiro cadastro real | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RNF-032 | O MVP trata somente nome/login profissional, progresso, tentativas, notas e logs mínimos definidos na política; o T2 não depende de gate documental adicional | APROVADA PELO PATROCINADOR COMO INSUMO (D-077/D-089) |
 | RNF-033 | Casos e simulações do MVP são exclusivamente fictícios; prontuários, dados de tutores e casos reais identificáveis são proibidos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-034 | Módulo clínico exige aprovação humana registrada de Ricardo; revisão adicional é opcional e alteração de nota nunca ocorre silenciosamente | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RNF-035 | Nenhuma decisão crítica clínica automatizada por IA sem revisão humana | FATO INFORMADO |
@@ -73,7 +73,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | ID | Requisito | Classificação |
 |---|---|---|
 | RNF-060 | Coleta limitada aos dados permitidos pelo Anexo 0011; qualquer ampliação exige nova decisão antes da coleta | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
-| RNF-061 | Aviso simples deve informar finalidade, dados, acesso, retenção e base legal aplicável antes do primeiro cadastro real | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RNF-061 | Comunicação operacional simples deve informar finalidade, dados mínimos, acesso e retenção antes do primeiro uso | APROVADA PELO PATROCINADOR COMO INSUMO (D-077/D-089) |
 | RNF-062 | Retenção durante o vínculo com o CVG + 2 anos; depois eliminação ou anonimização, ressalvadas obrigações aplicáveis | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-063 | Participante acessa os próprios dados; Ricardo acessa o necessário; mentor autorizado acessa somente lacunas/remediação dos participantes atribuídos; suporte delegado é excepcional e auditado | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-064 | Uso de resultados em RH, punição automática e ranking público proibidos no MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |

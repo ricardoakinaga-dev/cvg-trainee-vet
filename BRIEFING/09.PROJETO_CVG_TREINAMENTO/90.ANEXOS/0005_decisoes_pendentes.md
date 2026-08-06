@@ -120,6 +120,7 @@
 | D-086 | Como as três obras serão usadas? | patrocinador/clínica | fontes/conteúdo | aprovada (2026-08-06): Tratado, Ettinger e Fossum são a base bibliográfica; legislação, bula, protocolo CVG e diretriz atual prevalecem em divergência |
 | D-087 | A fatia vertical do Mês 2 pode ser produzida? | patrocinador/clínica | conteúdo/validação | aprovada (2026-08-06): produzir as quatro sessões de Emergência e UTI, com dois casos fictícios, avaliação mista, rubricas, feedback e pré-voo; a produção dos demais módulos continua condicionada ao aprendizado desta fatia |
 | D-088 | A M02 v0.1.0 pode seguir para ensaio controlado e cronometrado? | patrocinador/aprovador clínico | validação operacional | aprovada clinicamente por MV. Ricardo Akinaga em 2026-08-06 para ensaio controlado e cronometrado; não autoriza publicação geral, uso somativo, certificação ou produção em escala |
+| D-089 | O T2 depende do gate documental adicional criado durante a revisão? | patrocinador | validação operacional | aprovada (2026-08-06): não; o gate adicional fica descartado e T2 está pronto para agendamento com dois a três veterinários; permanecem a comunicação operacional simples, a coleta mínima de D-077 e as proibições de dados clínicos reais, gravações, ranking, RH e punição |
 
 ## 8. Próximas perguntas úteis
 

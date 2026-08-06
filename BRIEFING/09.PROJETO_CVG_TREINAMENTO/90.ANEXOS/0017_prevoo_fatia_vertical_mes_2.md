@@ -115,6 +115,6 @@ Uma segunda passagem somente leitura, executada depois das correções, retornou
 
 ## 7. Decisão do pré-voo
 
-**Resultado atual:** `APROVADO_PARA_ENSAIO_CONTROLADO`, com T2 bloqueado até o aviso de privacidade D-077 estar completo.
+**Resultado atual:** `APROVADO_PARA_ENSAIO_CONTROLADO`; por D-089, T2 está pronto para agendamento sem gate documental adicional.
 
 O protótipo pode ser usado apenas no ensaio definido no Anexo 0018. A próxima transição será decidida depois dos dados de tempo, clareza, correção e segurança: manter v0.1.0, corrigir para v0.1.1 ou bloquear o módulo.

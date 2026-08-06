@@ -47,16 +47,16 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: PRD — validação da proposta curricular
 - risco: alto — sem protótipo a carga de autoria e correção é apenas estimativa
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
+- status: READY_FOR_NEXT_STEP
 - evidência: PRD 0017; Anexos 0013 a 0019; commit curricular c1d3023; fatia vertical 91cb9e7; protocolo/T0/T1 2d0d608; aprovação D-088
-- próxima ação: Ricardo definir a base legal aplicável e o canal de direitos do aviso D-077; registrar versão/data e somente depois agendar T2 com dois a três veterinários
+- próxima ação: selecionar e agendar dois a três veterinários autorizados para executar T2 conforme o Anexo 0018
 
 ### B07-04 — Aplicação da baseline
 
 - título: aplicar o diagnóstico à coorte inicial
 - descrição: aplicar as três sessões aos aproximadamente 10 veterinários e consolidar somente os dados permitidos, sem gravações, prontuários, tutores ou casos reais identificáveis
 - módulo: piloto / baseline
-- dependência: B07-03 aprovado; autorização de Ricardo; aviso de privacidade e controles mínimos prontos
+- dependência: B07-03 aprovado; autorização de Ricardo; controles mínimos de D-077 prontos
 - fase: Discovery/PRD — correção B-07
 - risco: crítico — envolve dados pessoais e decisão operacional externa
 - impacto: alto

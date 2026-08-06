@@ -249,3 +249,15 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Próxima decisão | Ricardo, com suporte jurídico/DPO quando aplicável, completar o aviso; após T2 decidir manter v0.1.0, criar v0.1.1 ou bloquear M02 |
 | Efeito nos gates | não fecha B-07, Discovery ou PRD; não autoriza SPEC/BUILD |
 | Tag | não criada — T2 ainda não executado |
+
+## 17. Checkpoint D-089 — simplificação da liberação de T2
+
+| Campo | Registro |
+|---|---|
+| Decisão | descartar o gate documental adicional criado durante a revisão do protocolo |
+| Escopo mantido | dois a três veterinários autorizados; comunicação operacional simples; dados mínimos de D-077; casos integralmente fictícios |
+| Proibições mantidas | dados de pacientes ou tutores, prontuários, gravações, ranking, RH, punição e uso somativo |
+| Estado T2 | `READY_FOR_CONTROLLED_TRIAL`; pronto para seleção e agendamento dos participantes |
+| Commit de conteúdo | pendente neste checkpoint |
+| Próxima decisão | após T2, manter v0.1.0, criar v0.1.1 ou bloquear M02 |
+| Efeito nos gates | não fecha B-07, Discovery ou PRD; não autoriza SPEC/BUILD nem produção em escala |

@@ -81,7 +81,7 @@ Esses controles serão transformados em requisitos testáveis na SPEC e na const
 
 ## 7. Informação e correção
 
-No primeiro acesso, o participante deve receber aviso simples informando quais dados são usados, para quais finalidades, quem pode acessá-los e por quanto tempo serão mantidos. A base legal aplicável ao tratamento deverá constar nesse aviso antes da primeira coleta real.
+Antes do ensaio, o participante recebe uma comunicação operacional simples sobre os dados mínimos registrados, a finalidade formativa, os acessos permitidos e a retenção adotada pelo projeto.
 
 O participante poderá solicitar a Ricardo:
 
@@ -90,7 +90,7 @@ O participante poderá solicitar a Ricardo:
 - contestação de nota ou resultado;
 - eliminação ou anonimização quando aplicável.
 
-A definição do texto final do aviso e do canal operacional é uma tarefa anterior ao primeiro cadastro real, mas não reabre B-05 enquanto o escopo desta política for respeitado.
+No T2 da M02 não existe gate documental separado. Dúvidas, correções e contestações são tratadas diretamente com Ricardo. Essa simplificação foi aprovada em D-089 e não amplia o conjunto de dados permitido.
 
 ## 8. Incidentes
 
@@ -98,7 +98,7 @@ Suspeita de acesso indevido, vazamento ou perda de dados deve ser comunicada ime
 
 ## 9. Efeito da decisão D-077
 
-B-05 fica fechado para o MVP interno. Quando a plataforma estiver implementada com os controles da seção 6 e o aviso da seção 7, ficam autorizados somente os dados listados na seção 1.
+B-05 fica fechado para o MVP interno. Com os controles da seção 6 e a comunicação operacional da seção 7, ficam autorizados somente os dados listados na seção 1.
 
 O diagnóstico e a baseline podem usar dados identificados dentro desse limite. Continuam proibidos gravações, prontuários, dados de tutores e casos reais identificáveis.
 

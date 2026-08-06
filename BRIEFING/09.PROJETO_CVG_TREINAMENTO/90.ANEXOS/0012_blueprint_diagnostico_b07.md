@@ -241,7 +241,7 @@ B-07 só poderá ser marcado como fechado quando houver evidência das etapas B0
 3. D-039: mapeamento operacional dos conteúdos obrigatórios e temas críticos, sem dispensa no piloto;
 4. D-017/D-018: confirmar restrições concretas de dispositivo, conectividade e acessibilidade antes da aplicação;
 5. registro da aprovação clínica de Ricardo e da data de corte científico do instrumento;
-6. autorização, aviso de privacidade e controles mínimos para a aplicação real;
+6. autorização e controles mínimos de D-077 para a aplicação real;
 7. produção, revisão e pré-voo dos 120 itens;
 8. critério de atualização ou repetição da baseline.
 

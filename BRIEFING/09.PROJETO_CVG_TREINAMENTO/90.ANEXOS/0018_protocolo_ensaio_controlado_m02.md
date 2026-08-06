@@ -3,7 +3,7 @@
 **Módulo:** M02 — Emergência e Terapia Intensiva
 **Versão em teste:** 0.1.0
 **Autorização:** D-088, MV. Ricardo Akinaga, 2026-08-06
-**Estado:** `AUTHORIZED_BUT_BLOCKED_FOR_PRIVACY_NOTICE`
+**Estado:** `READY_FOR_CONTROLLED_TRIAL`
 **Natureza:** ensaio educacional formativo; não é aplicação somativa nem estudo clínico
 
 ## 1. Objetivo
@@ -25,7 +25,7 @@ O ensaio não mede competência prática, autonomia, desempenho trabalhista ou e
 |---|---:|---|---|
 | T0 — pré-teste sintético | nenhum participante real | testar rubricas com oito respostas artificiais | REEXECUTADO — `PASS_SINTETICO_COM_LIMITACOES` no Anexo 0019 |
 | T1 — ensaio de mesa | Ricardo ou executor autorizado | percorrer links, instruções, gabaritos e formulário de coleta | CONCLUÍDO NO ESCOPO DOCUMENTAL |
-| T2 — ensaio controlado | 2 a 3 veterinários autorizados | medir tempo, clareza, pesquisa e correção antes da coorte completa | AUTORIZADO; BLOQUEADO ATÉ AVISO DE PRIVACIDADE COMPLETO |
+| T2 — ensaio controlado | 2 a 3 veterinários autorizados | medir tempo, clareza, pesquisa e correção antes da coorte completa | AUTORIZADO; PRONTO PARA AGENDAMENTO |
 | T3 — decisão | Ricardo | manter v0.1.0, corrigir para v0.1.1 ou bloquear | PENDENTE |
 
 Usar dois a três participantes reduz exposição a um protótipo ainda não calibrado. A coorte aproximada de dez veterinários não entra automaticamente neste ensaio.
@@ -40,28 +40,6 @@ Antes do início, cada participante deve receber informação clara de que:
 - não deve inserir caso, prontuário, nome de tutor, imagem, gravação ou dado real;
 - pode relatar ambiguidade ou insegurança sem prejuízo;
 - qualquer item inseguro será retirado do ensaio.
-
-### 3.1 Aviso de privacidade obrigatório antes de T2
-
-T2 permanece bloqueado até Ricardo disponibilizar o aviso simples exigido por D-077. O aviso deve informar, antes da primeira coleta real:
-
-| Campo do aviso | Conteúdo mínimo |
-|---|---|
-| controlador/responsável | CVG e MV. Ricardo Akinaga como responsável operacional pelo treinamento |
-| dados | login/identificador, respostas, versões, progresso, horários, pausas, escores, feedback e registros mínimos do ensaio |
-| finalidade | aplicar e calibrar a M02, fornecer feedback, medir tempo/clareza e auditar correção |
-| acesso | participante aos próprios dados; Ricardo ao necessário; suporte delegado somente se indispensável e registrado |
-| retenção | durante o vínculo + dois anos; depois eliminar ou anonimizar, ressalvadas obrigações aplicáveis |
-| direitos/canal | acesso, correção, contestação e eliminação/anonimização quando aplicável, pelo canal indicado por Ricardo |
-| base legal | preencher com a base legal aplicável antes da coleta; este protocolo não a presume |
-
-Checklist de liberação:
-
-- [ ] base legal preenchida;
-- [ ] canal de direitos/contato preenchido;
-- [ ] texto entregue aos participantes antes do primeiro registro;
-- [ ] versão e data do aviso registradas;
-- [ ] confirmação de ciência registrada sem ampliar os dados coletados.
 
 ## 4. Dados mínimos permitidos
 
@@ -218,7 +196,7 @@ Limites de T1:
 - não houve participante real nem medição de 360 minutos;
 - o tempo de correção de Ricardo continua não medido.
 
-Próxima etapa elegível: completar base legal, canal e versão do aviso da seção 3.1; depois iniciar T2 com dois a três veterinários autorizados.
+Próxima etapa elegível: selecionar e agendar dois a três veterinários autorizados para T2.
 
 ## 12. Revisão independente do protocolo
 
@@ -231,4 +209,6 @@ A primeira passagem encontrou zero achados críticos, três altos, dois médios 
 - 28 itens objetivos e três estruturados tratados como igualmente determinísticos;
 - pendência clínica residual desatualizada no pré-voo.
 
-Todos foram corrigidos. A segunda passagem retornou `PASS`, sem novo achado crítico ou alto. O parecer confirmou explicitamente que T2 permanece bloqueado até base legal, canal, entrega e versão do aviso D-077 estarem registrados.
+Todos foram corrigidos. A segunda passagem retornou `PASS`, sem novo achado crítico ou alto. O parecer confirmou explicitamente que T2 permanecia bloqueado até base legal, canal, entrega e versão do aviso D-077 estarem registrados.
+
+Esse bloqueio histórico foi posteriormente substituído por D-089. O gate documental adicional foi descartado e T2 está pronto para agendamento, mantendo a coleta mínima e as proibições de D-077.
