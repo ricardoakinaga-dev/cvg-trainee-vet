@@ -350,7 +350,7 @@ Registrada a aprovação clínica de MV. Ricardo Akinaga para ensaio controlado 
 
 ### RESULT
 
-T0 foi reexecutado após correção de dois escores e retornou `PASS_SINTETICO_COM_LIMITACOES`; T1 retornou `PASS_DOCUMENTAL_COM_LIMITES`. A revisão do protocolo identificou 0 crítico, 3 altos, 2 médios e 1 baixo; todos foram corrigidos e a confirmação retornou PASS. Nenhum participante real ou dado pessoal foi usado. T2 está autorizado, mas bloqueado até aviso de privacidade com base legal e canal definidos. Commit: PENDENTE DE CHECKPOINT.
+T0 foi reexecutado após correção de dois escores e retornou `PASS_SINTETICO_COM_LIMITACOES`; T1 retornou `PASS_DOCUMENTAL_COM_LIMITES`. A revisão do protocolo identificou 0 crítico, 3 altos, 2 médios e 1 baixo; todos foram corrigidos e a confirmação retornou PASS. Nenhum participante real ou dado pessoal foi usado. T2 está autorizado, mas bloqueado até aviso de privacidade com base legal e canal definidos. Commit de conteúdo: `2d0d608`.
 
 ### DECISIONS
 

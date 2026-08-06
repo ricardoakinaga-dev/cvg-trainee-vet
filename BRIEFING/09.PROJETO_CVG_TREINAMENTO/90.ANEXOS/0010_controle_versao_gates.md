@@ -233,3 +233,19 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Próxima decisão | Ricardo aprovar, ajustar ou rejeitar a v0.1.0 para ensaio controlado e cronometrado |
 | Efeito nos gates | não fecha B-07, Discovery ou PRD; não autoriza SPEC/BUILD nem produção em escala |
 | Tag | não criada — aprovação clínica ainda pendente |
+
+## 16. Checkpoint D-088 — aprovação clínica e preparação T0/T1
+
+| Campo | Registro |
+|---|---|
+| Decisão | M02 v0.1.0 aprovada clinicamente por MV. Ricardo Akinaga em 2026-08-06 para ensaio controlado e cronometrado |
+| Escopo autorizado | T0 sintético, T1 documental e T2 com dois a três veterinários; sem publicação, uso somativo, certificação, coorte completa ou produção em escala |
+| Artefatos | Anexo 0018 — protocolo T0–T3; Anexo 0019 — oito respostas sintéticas e teste das rubricas |
+| T0 | reexecutado; `PASS_SINTETICO_COM_LIMITACOES`; RA02-SYN-B 5/10 e RA02-SYN-C 3/10 reproduzíveis por dimensão |
+| T1 | `PASS_DOCUMENTAL_COM_LIMITES`; 40 arquivos com links locais válidos, 31 IDs correspondentes, oito perfis sintéticos e nenhum PDF rastreado |
+| Revisão | primeira passagem: 0 crítico, 3 altos, 2 médios e 1 baixo; todos corrigidos; segunda passagem: PASS sem novo achado crítico/alto |
+| Commit de conteúdo | `2d0d608` — `docs: authorize controlled emergency module trial` |
+| Estado T2 | autorizado, mas bloqueado até aviso D-077 registrar base legal, canal, entrega, versão e data antes da primeira coleta real |
+| Próxima decisão | Ricardo, com suporte jurídico/DPO quando aplicável, completar o aviso; após T2 decidir manter v0.1.0, criar v0.1.1 ou bloquear M02 |
+| Efeito nos gates | não fecha B-07, Discovery ou PRD; não autoriza SPEC/BUILD |
+| Tag | não criada — T2 ainda não executado |

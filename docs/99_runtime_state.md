@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: Ricardo aprovou clinicamente a M02 v0.1.0; D-088 foi registrada; T0 reexecutado e T1 documental passaram; revisão independente final do protocolo retornou PASS após correção de seis achados
+- last_completed_action: commit 2d0d608 registrou D-088, protocolo T0–T3, T0 reexecutado, T1 documental e revisão independente final PASS após correção de seis achados
 - next_action: completar o aviso de privacidade do T2 com base legal aplicável, canal de direitos, versão e data; depois selecionar/agendar dois a três veterinários
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T08:20:28-03:00
+- last_update: 2026-08-06T08:21:28-03:00
 
 ## REGRAS DE USO
 
