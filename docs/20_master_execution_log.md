@@ -120,6 +120,46 @@ Manter o diagnóstico sem aprovação/reprovação, sem dispensa no piloto e sem
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-06 — CHECKPOINT DO RASCUNHO B-07.1
+
+### TIMESTAMP
+
+2026-08-06 06:39:22 -03:00
+
+### ENGINE
+
+SYSTEM
+
+### PHASE
+
+B-07 — baseline diagnóstica
+
+### SPRINT
+
+B-07-01 — blueprint diagnóstico
+
+### TASK
+
+CHECKPOINT-B07.1
+
+### ACTION
+
+Revisado e commitado o conjunto documental do blueprint e da persistência operacional.
+
+### RESULT
+
+Commit 8bed361 criado com mensagem convencional. A validação de whitespace passou; as três sessões somam 120 itens; não há PDF staged nem segredo detectável.
+
+### DECISIONS
+
+O commit representa apenas um rascunho operacional. B-07, Discovery e PRD continuam abertos; não iniciar produção de itens ou aplicação sem revisão clínica e autorização humana.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

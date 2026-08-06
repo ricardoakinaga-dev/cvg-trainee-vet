@@ -189,3 +189,16 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
 | Próximo item | B-07 — blueprint das 120 questões diagnósticas |
 | Tag | `gate-d070-adaptive-structured-scoring-2026-08-06` |
+
+## 13. Checkpoint B-07.1 — blueprint diagnóstico em rascunho
+
+| Campo | Registro |
+|---|---|
+| Fase | correção de Discovery/PRD; B-07 em elaboração |
+| Artefato | 90.ANEXOS/0012_blueprint_diagnostico_b07.md |
+| Conteúdo | 120 itens em três sessões de 40, cobertura por domínio, matriz cognitiva, criticidade, formatos estruturados e critérios de pré-voo |
+| Commit do rascunho | 8bed361 — docs: add B-07 diagnostic blueprint |
+| Estado | rascunho operacional; não fecha B-07 e não aprova qualquer gate |
+| Validações | git diff --check; contagens 40/40/40; matriz cognitiva 20/8/8/4 por sessão; varredura de segredos sem ocorrência; nenhum PDF staged |
+| Aprovação humana | não registrada; revisão clínica independente ainda necessária |
+| Próximo item | nomear segundo MV revisor, validar o blueprint, produzir/testar os 120 itens e só então solicitar autorização para aplicação |

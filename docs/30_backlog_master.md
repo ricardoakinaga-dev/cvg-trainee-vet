@@ -14,7 +14,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto — blueprint inadequado contamina a baseline e a personalização
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
-- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0012_blueprint_diagnostico_b07.md
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0012_blueprint_diagnostico_b07.md; commit 8bed361
 
 ### B07-02 — Produção dos itens diagnósticos
 
