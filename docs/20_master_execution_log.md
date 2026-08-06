@@ -388,7 +388,7 @@ Por decisão expressa de MV. Ricardo Akinaga, foi descartado o gate documental a
 
 ### RESULT
 
-T2 está autorizado e pronto para agendamento com dois a três veterinários. Permanecem a comunicação operacional simples, a coleta mínima de D-077 e a proibição de dados clínicos reais, prontuários, tutores, gravações, ranking, RH, punição e uso somativo. Commit de conteúdo: pendente neste checkpoint.
+T2 está autorizado e pronto para agendamento com dois a três veterinários. Permanecem a comunicação operacional simples, a coleta mínima de D-077 e a proibição de dados clínicos reais, prontuários, tutores, gravações, ranking, RH, punição e uso somativo. Commit de conteúdo: `b85184b`.
 
 ### DECISIONS
 

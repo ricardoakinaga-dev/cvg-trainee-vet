@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: D-089 descartou o gate documental adicional criado para T2; o protocolo continua limitado aos dados mínimos de D-077
+- last_completed_action: commit b85184b registrou D-089, descartou o gate documental adicional do T2 e manteve a coleta mínima de D-077
 - next_action: selecionar e agendar dois a três veterinários autorizados para executar T2 conforme o Anexo 0018
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T08:46:15-03:00
+- last_update: 2026-08-06T08:53:02-03:00
 
 ## REGRAS DE USO
 
