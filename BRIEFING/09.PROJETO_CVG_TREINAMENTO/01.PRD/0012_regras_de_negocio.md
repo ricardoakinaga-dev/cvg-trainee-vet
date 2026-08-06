@@ -120,6 +120,8 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | RN-084 | A primeira versão não agenda, associa, registra nem avalia treinamento prático presencial ou observação de atividade clínica real | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RN-085 | Qualquer escopo prático presencial futuro permanece `BLOQUEADO_POR_GATE` até aprovação do `GATE-EXP-PRAT-01` e não pode originar UC, RF, SPEC, backlog ou BUILD antes disso | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RN-086 | Erro crítico em caso digital não gera eliminação, punição ou reprovação definitiva: o objetivo fica `EM_REMEDIAÇÃO`, recebe explicação e reforço curto e é concluído após decisão segura em novo caso equivalente; persistência direciona a orientação individual, sem ranking | APROVADA PELO PATROCINADOR EM D-082 (2026-08-06) |
+| RN-087 | Registro e passagem de caso começam com campos estruturados e correção automática por rubrica; revisão humana somente para ambiguidade, contestação, possível erro crítico ou falhas repetidas verificadas no piloto; a atividade afetada migra para correção especializada se o método automático não ensinar ou classificar adequadamente | APROVADA PELO PATROCINADOR EM D-070 (2026-08-06) |
+| RN-088 | Nenhuma pergunta ou decisão de caso pode ser publicada sem método de avaliação definido e testado: gabarito ou rubrica, respostas aceitas, erros relevantes e feedback. Se o sistema não conseguir avaliar a resposta, o item deve ser redesenhado, estruturado ou encaminhado para correção humana antes do uso | FATO INFORMADO PELO PATROCINADOR; INCORPORADO À D-070 (2026-08-06) |
 
 ## 8. Matriz de responsabilidades resumida (D-076)
 
@@ -137,7 +139,7 @@ Por D-077, RN-063 a RN-067 e a [Política Mínima Interna de Dados](../90.ANEXOS
 
 ## 9. Regras confirmadas como insumos e pendências remanescentes
 
-**Confirmadas pelo patrocinador como insumos** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-075 a RN-086. Isso não aprova o gate. RN-023 e RN-074 permanecem pendentes.
+**Confirmadas pelo patrocinador como insumos** (conforme [Anexo 0008](../90.ANEXOS/0008_decisoes_gate_prd.md)): RN-006 a RN-009, RN-016/017/018, RN-020 a RN-022, RN-024 a RN-035, RN-041, RN-046 a RN-055, RN-063 a RN-067, RN-070 a RN-073 e RN-075 a RN-088. Isso não aprova o gate. RN-023 e RN-074 permanecem pendentes.
 
 **Pendências remanescentes:**
 

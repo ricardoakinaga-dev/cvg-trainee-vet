@@ -101,7 +101,7 @@
 | D-067 | Como o Fossum será usado no MVP interno? | patrocinador | conteúdo | resolvida por D-075 — consulta manual interna; PDF fora da plataforma/Git; sem cópia de material |
 | D-068 | Qual é a modalidade da primeira versão e a fronteira das simulações? | patrocinador/PO | PRD/SPEC | aprovada (2026-08-05): treinamento integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` |
 | D-069 | Como tratar gates com itens obrigatórios incompletos? | patrocinador/governança | Discovery/PRD | aprovada (2026-08-05): aplicar estritamente as engines; gates reprovados até checklist completo, reexecução, checkpoint Git e aprovação formal; sem waiver implícito |
-| D-070 | Quem avalia respostas construídas e haverá dupla correção? | coord. pedagógica/comitê clínico | PRD | pendente — bloqueia definição completa de UC-005 e requisitos de avaliação |
+| D-070 | Como corrigir registro/passagem sem burocracia? | patrocinador/clínica | PRD | aprovada (2026-08-06), Alternativa 2 adaptativa: campos estruturados e correção automática por rubrica; revisão humana por ambiguidade, contestação, possível erro crítico ou falhas repetidas; pergunta sem avaliação funcional é bloqueada antes do uso e deve ser redesenhada ou destinada à correção humana |
 | D-071 | Qual modelo de governança deve resolver B-03? | patrocinador | Discovery/PRD | substituída por D-076 quanto ao modelo vigente; preservada como histórico |
 | D-072 | Como coordenar o trabalho enquanto as cadeiras de B-03 permanecem vagas? | patrocinador | plano de correção | substituída por D-076; não há mais cadeiras vagas no modelo do MVP |
 | D-073 | Como preparar B-05 antes da política mínima? | patrocinador | plano de correção/B-05 | registro histórico; substituído por D-077 |
@@ -117,7 +117,7 @@
 
 ## 8. Próximas perguntas úteis
 
-1. Como corrigir respostas construídas sem criar burocracia (D-070)?
+1. Como organizar o blueprint das 120 questões diagnósticas (B-07)?
 2. Há alguma restrição real de dispositivo ou acessibilidade?
 3. Quem será o segundo MV revisor do primeiro módulo quando ele estiver pronto?
 

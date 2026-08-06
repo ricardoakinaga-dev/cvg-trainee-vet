@@ -101,6 +101,8 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Dados | somente nome/login profissional, progresso, tentativas, notas e logs mínimos; RH, prontuários, dados de tutores, gravações e casos reais identificáveis proibidos; retenção durante o vínculo + 2 anos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077; B-05 FECHADO) |
 | Modalidade | primeira versão integralmente digital; simulações medem apenas conhecimento/raciocínio; prática presencial e autonomia bloqueadas pelo `GATE-EXP-PRAT-01` | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | Erro crítico | reforço curto e novo caso equivalente; libera após decisão segura; sem eliminação, punição, ranking ou reprovação definitiva | APROVADA PELO PATROCINADOR (D-082, 2026-08-06) |
+| Registro/passagem | campos estruturados e correção automática por rubrica; revisão humana por exceção ou se o piloto revelar falhas repetidas | APROVADA PELO PATROCINADOR (D-070, 2026-08-06) |
+| Item avaliável | pergunta/caso sem correção definida e testada não pode ser publicado; deve ser redesenhado ou enviado previamente para correção humana | FATO INFORMADO; D-070 (2026-08-06) |
 
 Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
@@ -156,6 +158,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016; CARGA/CADÊNCIA APROVADA EM D-081**.
 11. Remediação de erro crítico — ✅ **EDUCATIVA E NÃO PUNITIVA, APROVADA EM D-082**.
 12. Ordem de produção — ✅ **PILOTO INTEGRADO PRIMEIRO; EXPANSÃO EM ONDAS, APROVADA EM D-062**.
+13. Correção de registro/passagem — ✅ **ESTRUTURADA E AUTOMÁTICA NO INÍCIO, COM ESCALONAMENTO HUMANO POR EVIDÊNCIA, APROVADA EM D-070**.
 
 ## 14. Documentos do PRD
 

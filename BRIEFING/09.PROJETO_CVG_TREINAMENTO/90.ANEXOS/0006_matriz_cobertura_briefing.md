@@ -81,11 +81,11 @@
 | IN SCOPE | 01.PRD/0011 | preenchido (proposta) |
 | OUT OF SCOPE | 01.PRD/0011 | preenchido |
 | FUTURE SCOPE | 01.PRD/0011 | preenchido |
-| regras operacionais | 01.PRD/0012 | rascunho preenchido — RN-001 a RN-086, com itens pendentes explícitos |
+| regras operacionais | 01.PRD/0012 | rascunho preenchido — RN-001 a RN-088, com itens pendentes explícitos |
 | restrições | 01.PRD/0012 | preenchidas |
 | permissões de negócio | 01.PRD/0012 §8 | preenchidas |
 | validações obrigatórias | 01.PRD/0012 §9 | preenchidas |
-| requisitos funcionais (sem tecnologia) | 01.PRD/0013 | preenchidos — RF-001 a RF-095 |
+| requisitos funcionais (sem tecnologia) | 01.PRD/0013 | preenchidos — RF-001 a RF-096 |
 | requisitos não funcionais | 01.PRD/0014 | preenchidos — RNF-001 a RNF-084 |
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |

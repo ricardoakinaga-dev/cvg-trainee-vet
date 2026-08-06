@@ -135,7 +135,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
   2. O colaborador decide por etapa (priorização, diferenciais, exames, conduta);
   3. O sistema registra as decisões e fornece feedback;
   4. Quando somativo, o sistema calcula o resultado por rubrica/gabarito revisado.
-- **Exceções:** resposta construída — `PENDENTE` (D-070, avaliadores e dupla correção); interrupção preserva etapas concluídas.
+- **Exceções:** por D-070, registro/passagem usa campos estruturados e correção automática por rubrica; resposta ambígua, contestação, possível erro crítico ou falha repetida do método segue para revisão humana; interrupção preserva etapas concluídas.
 - **Resultado esperado:** evidência de conhecimento e raciocínio em cenário digital; peso na nota conforme regra de composição.
 - **Observações:** peso de 30% quando somativo, compondo o escore com prova 70% e quiz 0% (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05, D-044). O resultado nunca comprova habilidade psicomotora, competência prática ou autonomia clínica (D-068).
 
@@ -370,7 +370,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 ## 6. Itens registrados como pendentes
 
 - Blueprint e quantidade de itens do diagnóstico (UC-001, B-07) — banco de itens por objetivo definido em 10–15 (RN-078);
-- Avaliadores e dupla correção de respostas construídas (UC-005, D-070);
+- Monitorar no piloto se a correção estruturada D-070 produz lacunas ou erros suficientes para exigir revisão humana na atividade afetada;
 - Periodicidade dos dashboards — resolvida: mensal (RN-080);
 - Certificação interna — resolvida: status no piloto (RN-079);
 - Integrações e notificações externas (fora de escopo);

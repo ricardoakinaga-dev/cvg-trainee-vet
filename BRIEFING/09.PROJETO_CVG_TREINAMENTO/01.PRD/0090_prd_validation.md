@@ -52,7 +52,8 @@
 
 - [ ] Requisitos funcionais completos para o MVP proposto — existem requisitos e decisões pendentes (0013 §10);
 - [ ] Requisitos não funcionais completamente definidos — acessibilidade e exceções ainda possuem pendências; política mínima de dados aprovada por D-077;
-- [ ] Pendências registradas: validação clínica do blueprint detalhado, avaliadores de resposta construída, equivalência e acessibilidade; efeito do erro crítico fechado por D-082.
+- [ ] Pendências registradas: validação clínica do blueprint detalhado, equivalência e acessibilidade; correção de registro/passagem fechada por D-070 e erro crítico fechado por D-082.
+- [x] Regra de avaliabilidade definida: pergunta/caso sem gabarito ou rubrica testados não pode ser publicado (RF-096/RN-088).
 
 ### MÉTRICAS
 

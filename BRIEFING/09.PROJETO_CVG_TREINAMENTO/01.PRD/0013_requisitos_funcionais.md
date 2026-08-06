@@ -87,7 +87,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-055 | O sistema deve limitar a remediação a conteúdo, quiz, caso/simulação e orientação digitais | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-056 | Em atividade autocorrigível, o sistema deve dar feedback imediato; se houver revisão humana, deve mostrar imediatamente o status e a próxima ação | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
 | RF-057 | Casos digitais devem suportar ramificações, estado persistente, consequências, exames seriados, radiografias, POCUS e ECG | P0 | PROPOSTA CURRICULAR V2 |
-| RF-058 | Atividades devem suportar cálculo de dose/infusão e resposta construída por rubrica para registro e passagem de caso | P0 | PROPOSTA CURRICULAR V2; correção humana depende da D-070 |
+| RF-058 | Atividades devem suportar cálculo de dose/infusão e registro/passagem em campos estruturados, corrigidos automaticamente por rubrica; devem encaminhar para revisão humana respostas ambíguas, contestações, possível erro crítico ou atividade cujo método apresente falhas repetidas no piloto | P0 | APROVADA PELO PATROCINADOR EM D-070 (2026-08-06) |
 | RF-059 | O sistema deve suportar formas equivalentes, revisão espaçada, retomada da atividade e resultado por objetivo, competência e trilha | P0 | PROPOSTA CURRICULAR V2 |
 
 ## 6. Contestação e correção
@@ -131,11 +131,12 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-093 | O sistema deve registrar estatísticas observadas por item (dificuldade, discriminação, distratores, contestação) | P1 | PROPOSTA |
 | RF-094 | O sistema deve sinalizar itens com anomalia para revisão humana, sem decisão automática | P1 | PROPOSTA |
 | RF-095 | Ao registrar erro crítico em caso digital, o sistema deve explicar a decisão, marcar somente o objetivo afetado para reforço, atribuir conteúdo curto e novo caso equivalente e impedir apenas a conclusão desse objetivo até uma decisão segura; não pode gerar ranking, punição ou reprovação definitiva | P0 | APROVADA PELO PATROCINADOR EM D-082 (2026-08-06) |
+| RF-096 | O sistema deve impedir a publicação de pergunta/caso sem gabarito ou rubrica testados, respostas aceitas, erros relevantes e feedback; se a resposta não puder ser avaliada automaticamente, o item deve ser redesenhado ou marcado previamente para correção humana | P0 | FATO INFORMADO PELO PATROCINADOR; D-070 (2026-08-06) |
 
 ## 10. Requisitos não cobertos (pendências que impactam o PRD)
 
 - Validação clínica da matriz detalhada e do blueprint de 120 itens do diagnóstico (UC-001, B-07) — demais itens por objetivo definidos em 10–15 (RN-078);
-- Avaliadores e dupla correção de respostas construídas (D-070);
+- Qualidade da correção estruturada deve ser verificada no piloto; D-070 permite migrar a atividade afetada para correção humana se surgirem lacunas ou erros repetidos;
 - Regra de repetição/atualização da linha de base;
 - Equivalência das formas de avaliação;
 - Política de certificação — resolvida: status de conclusão no piloto (RN-079);

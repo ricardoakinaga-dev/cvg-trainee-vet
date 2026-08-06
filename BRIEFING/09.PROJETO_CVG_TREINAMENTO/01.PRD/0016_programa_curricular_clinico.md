@@ -353,7 +353,9 @@ Cada resposta autocorrigível deve mostrar:
 5. próximo passo;
 6. ponto do conteúdo técnico usado para validação.
 
-Registros clínicos e passagens de caso terão resposta construída e rubrica; não serão reduzidos a múltipla escolha.
+Registros clínicos e passagens de caso começam com campos estruturados de problema, prioridade, justificativa, plano, monitoramento e escalonamento, corrigidos automaticamente por rubrica. Ricardo confere uma amostra simples do piloto e revisa contestações, ambiguidades e possíveis erros críticos. Se o método aceitar conduta insegura, perder informação clínica relevante ou gerar feedback ruim de forma repetida, somente essa atividade migra para correção humana especializada (D-070).
+
+Uma pergunta somente entra no banco quando sua avaliação funciona antes do uso: gabarito ou rubrica testados, respostas aceitas, erros relevantes e feedback correspondente. Se a resposta não puder ser avaliada, o problema está no item; ele deve ser redesenhado, transformado em campos estruturados ou classificado previamente para correção humana. O aluno nunca recebe uma pergunta que o sistema não sabe como corrigir.
 
 ### 8.3 Diagnóstico de entrada
 
@@ -464,6 +466,7 @@ Com uma coorte de aproximadamente 10 pessoas, estatísticas por item serão expl
 - banco único de 90 itens, particionado por uso;
 - avaliação de 25 itens e dois casos;
 - pelo menos um registro/passagem por rubrica quando aplicável;
+- teste prévio de correção de todos os itens e decisões; item não avaliável bloqueia a publicação do módulo;
 - feedback completo de todas as decisões autocorrigíveis;
 - referência interna à obra e ao capítulo/seção consultados;
 - revisão de Ricardo e segunda conferência de outro MV.
@@ -491,7 +494,7 @@ Para executar o currículo, a futura plataforma precisará suportar:
 - casos ramificados com estado e consequências;
 - exames seriados, radiografias, POCUS e ECG;
 - cálculo de dose e infusão;
-- resposta construída e rubrica para registro/passagem;
+- campos estruturados e rubrica automática para registro/passagem, com escalonamento humano quando indicado;
 - salvar e continuar;
 - randomização controlada e formas equivalentes;
 - agenda de revisão espaçada;

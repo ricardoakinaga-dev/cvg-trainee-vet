@@ -42,7 +42,7 @@ Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autor
 - **Peso:** pendente; o PRD deve decidir se o caso será formativo ou somativo;
 - **Correção:** gabarito ou rubrica revisados;
 - **Quantidade proposta:** seis casos de aprendizagem por módulo (dois resolvidos e quatro de prática), além de dois casos inéditos na avaliação; todos com variantes ou ramificações;
-- **Quando houver resposta construída:** definir avaliadores, treinamento de correção, dupla correção amostral ou integral, concordância interavaliador, tratamento de crédito parcial e recurso.
+- **Registro/passagem:** D-070 aprovou campos estruturados e correção automática por rubrica; Ricardo revisa amostra simples, contestações, ambiguidades e possíveis erros críticos; falhas repetidas fazem somente a atividade afetada migrar para correção humana especializada.
 
 ### A-04 — Prova somativa de módulo
 
@@ -84,6 +84,10 @@ Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autor
 - Alteração de gabarito preserva versão anterior;
 - Usuários afetados são identificados;
 - Decisão e justificativa ficam auditáveis.
+
+### Regra de avaliabilidade antes da publicação
+
+Toda pergunta ou decisão de caso deve demonstrar antes do uso que consegue classificar a resposta e fornecer feedback coerente. Item sem gabarito/rubrica testados, respostas aceitas e tratamento dos erros não entra no banco: será redesenhado, estruturado ou destinado previamente à correção humana.
 
 ## 2. Decisões pendentes sobre composição do resultado
 

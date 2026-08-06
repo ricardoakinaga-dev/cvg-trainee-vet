@@ -525,6 +525,16 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 **Decisão:** Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-06. O ciclo mantém 16 módulos; somente a primeira onda precisa estar pronta para iniciar o piloto autorizado.
 
+### D-070 — Correção de registro e passagem de caso
+
+| Alternativa | Modelo | Veredito |
+|---|---|---|
+| 1 | uma correção humana por Ricardo ou segundo MV; segunda opinião somente por dúvida/contestação | simples, mas cria trabalho manual desde o início |
+| **2** | **campos estruturados e correção automática por rubrica; revisão humana por exceção; migrar a atividade se o piloto revelar falhas repetidas** | **selecionada — automatiza o comum sem insistir no automático quando ele falhar** |
+| 3 | dupla correção humana obrigatória em toda resposta | burocracia desproporcional ao treinamento interno |
+
+**Decisão:** Alternativa 2 aprovada por MV. Ricardo Akinaga em 2026-08-06. Ricardo revisará amostra simples, contestações, ambiguidades e possíveis erros críticos. Se a correção automática perder informação clínica, aceitar conduta insegura ou produzir feedback inadequado repetidamente, a atividade afetada passa a depender de especialista humano. Pergunta que não possa ser avaliada de forma funcional é bloqueada antes do treinamento e deve ser redesenhada, estruturada ou destinada previamente à correção humana.
+
 ---
 
 ## 4. Dados e governança (B-03, B-04, B-05, D-051 a D-055)
