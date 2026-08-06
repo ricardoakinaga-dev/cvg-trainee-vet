@@ -150,3 +150,16 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Pendências remanescentes | D-062 (validação clínica detalhada da ordem), D-070 (correção de resposta construída) e D-082 (erro crítico) |
 | Próximo item | D-082, com três alternativas e recomendação clínica |
 | Tag | `gate-d081-curriculum-cadence-2026-08-05` |
+
+## 10. Checkpoint D-082 — remediação educativa de erro crítico
+
+| Campo | Registro |
+|---|---|
+| Decisão | Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-06 |
+| Regra | somente o objetivo afetado fica em reforço; feedback, conteúdo curto e novo caso equivalente; decisão segura libera o avanço |
+| Proporcionalidade | treinamento interno e não competitivo; sem eliminação, punição, ranking ou reprovação definitiva |
+| Persistência | orientação individual por Ricardo/mentor, mantendo caráter educativo |
+| Commit de conteúdo | `ee71875` — `docs: approve educational critical-error remediation` |
+| Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
+| Próximo item | D-062 — ordem de produção/validação dos módulos |
+| Tag | `gate-d082-educational-remediation-2026-08-06` |
