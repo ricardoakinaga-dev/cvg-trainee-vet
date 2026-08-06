@@ -367,7 +367,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
   5. O sistema registra alterações sensíveis sem armazenar senha ou token no banco comum.
 - **Exceções:** link expirado ou já usado; e-mail já associado; tentativa de alterar identificador controlado; conta desativada.
 - **Resultado esperado:** conta individual atualizada e sessões sob controle do titular.
-- **Observações:** cadastro público e conta compartilhada são proibidos. Detalhes aguardam D-091.
+- **Observações:** cadastro público e conta compartilhada são proibidos. Detalhes aprovados em D-091.
 
 ### UC-022 — Relatar bug, erro ou melhoria
 
@@ -381,7 +381,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
   4. O usuário acompanha o próprio relato e responde a pedidos de esclarecimento.
 - **Exceções:** contestação de questão ou resultado é redirecionada ao UC-010; possível risco clínico gera alerta prioritário; envio repetido pode ser vinculado como duplicado.
 - **Resultado esperado:** relato rastreável sem captura invasiva de tela, áudio, vídeo, prontuário ou resposta de avaliação.
-- **Observações:** campos, estados e roteamento aguardam D-094.
+- **Observações:** campos, estados e roteamento aprovados em D-094.
 
 ### UC-023 — Triar e tratar relato de produto ou conteúdo
 

@@ -57,7 +57,7 @@ Os casos e as simulações do MVP serão integralmente fictícios. Um futuro uso
 
 Contas compartilhadas são proibidas. Todo acesso deve ser individual, limitado à função e revogado quando deixar de ser necessário.
 
-Ricardo autoriza de forma auditável a concessão ou revogação de administrador e moderador. A capacidade `CLINICAL_APPROVER` permanece exclusiva da identidade de Ricardo e não pode ser concedida pela interface administrativa. Esta atualização de acesso passa a valer com a aprovação de D-092, sem criar gate jurídico separado.
+Ricardo autoriza de forma auditável a concessão ou revogação de administrador e moderador. A capacidade `CLINICAL_APPROVER` permanece exclusiva da identidade de Ricardo e não pode ser concedida pela interface administrativa. Esta atualização de acesso está aprovada por D-092 e não cria gate jurídico separado.
 
 ## 5. Retenção e descarte
 
@@ -107,9 +107,9 @@ O diagnóstico e a baseline podem usar dados identificados dentro desse limite. 
 
 ### 9.1 Extensão mínima proposta para feedback de produto
 
-D-090 confirmou a necessidade de receber bugs, erros e melhorias. Se D-094 for aprovada, a política passa a permitir, para essa finalidade, somente: protocolo, tipo, categoria, descrição de até 2.000 caracteres, página lógica sem parâmetros, versão da aplicação, autor, datas, responsável, prioridade, estado e resolução. O MVP não recebe anexos.
+D-090 confirmou a necessidade de receber bugs, erros e melhorias. D-094 aprovou, para essa finalidade, somente: protocolo, tipo, categoria, descrição de até 2.000 caracteres, página lógica sem parâmetros, versão da aplicação, autor, datas, responsável, prioridade, estado e resolução. O MVP não recebe anexos.
 
-Não serão capturados automaticamente resposta de avaliação, texto clínico, URL com parâmetros, IP completo, tela, áudio, vídeo, prontuário ou dados de tutor. O formulário proíbe a inserção manual desses dados, bloqueia padrões suspeitos e exige remoção/redação auditada se conteúdo proibido escapar. A contestação de questão ou resultado continua no fluxo já permitido. A aprovação de D-094 por Ricardo é suficiente para incorporar esta extensão; não existe novo gate jurídico ou documental separado.
+Não serão capturados automaticamente resposta de avaliação, texto clínico, URL com parâmetros, IP completo, tela, áudio, vídeo, prontuário ou dados de tutor. O formulário proíbe a inserção manual desses dados, bloqueia padrões suspeitos e exige remoção/redação auditada se conteúdo proibido escapar. A contestação de questão ou resultado continua no fluxo já permitido. Esta extensão está incorporada por D-094; não existe novo gate jurídico ou documental separado.
 
 ## 10. Controle de mudança
 

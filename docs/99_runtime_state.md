@@ -3,14 +3,14 @@
 ## CONTEXTO
 
 - project: cvg-trainee-vet
-- current_engine: PRD
+- current_engine: DISCOVERY
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
 ## POSIÇÃO ATUAL
 
-- current_phase: alinhamento de produto anterior à SPEC
-- current_sprint: PRE-SPEC-01 — superfícies, dados e arquitetura
-- current_task: aprovar ou ajustar o pacote D-091 a D-100
+- current_phase: correção do gate Discovery
+- current_sprint: B07-01 — blueprint diagnóstico
+- current_task: validar clinicamente o blueprint das 120 questões do Anexo 0012
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit 1803fac consolidou o pacote pré-SPEC D-091 a D-100, validado e aprovado em revisão independente; nenhuma SPEC ou construção iniciada
-- next_action: MV. Ricardo Akinaga aprovar ou ajustar D-091 a D-100 como pacote; nenhuma SPEC será iniciada antes disso
+- last_completed_action: D-091 a D-100 aprovadas integralmente pelo patrocinador; PRE-SPEC-01 concluído sem iniciar SPEC ou construção
+- next_action: MV. Ricardo Akinaga validar, ajustar ou rejeitar o blueprint diagnóstico do Anexo 0012 antes da produção dos 120 itens
 
 ## BLOQUEIOS
 
-- blockers: D-091 a D-100 aguardam decisão; B-07 e gates Discovery/PRD continuam abertos; T2 permanece pronto para agendamento em fluxo paralelo, sem bloqueio documental
+- blockers: B-07 e gates Discovery/PRD continuam abertos; T2 permanece pronto para agendamento em fluxo paralelo, sem bloqueio documental
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: aprovar ou ajustar o pacote D-091 a D-100; a decisão não interfere na autorização já concedida para agendar T2
+- decision_description: validar, ajustar ou rejeitar o blueprint diagnóstico B-07; D-091 a D-100 já estão aprovadas
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T10:11:11-03:00
+- last_update: 2026-08-06T17:30:19-03:00
 
 ## REGRAS DE USO
 

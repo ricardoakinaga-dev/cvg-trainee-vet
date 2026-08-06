@@ -3,8 +3,9 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário
 **Data:** 2026-08-06
 **Patrocinador:** MV. Ricardo Akinaga
-**Status:** `PACOTE_RECOMENDADO_AGUARDA_APROVACAO`
-**Regra de avanço:** nenhuma SPEC ou construção começa antes da aprovação das decisões D-091 a D-100 e dos gates canônicos.
+**Status:** `APROVADO_INTEGRALMENTE_PELO_PATROCINADOR`
+**Aprovação:** D-091 a D-100 aprovadas integralmente por MV. Ricardo Akinaga em 2026-08-06
+**Regra de avanço:** o alinhamento pré-SPEC está encerrado; nenhuma SPEC ou construção começa antes da aprovação dos gates canônicos e do tratamento de B-07.
 
 ## 1. Resultado do alinhamento
 
@@ -20,7 +21,7 @@ O pedido do patrocinador confirma como direção do produto:
 8. uso de RAG somente se trouxer valor real para consulta técnica;
 9. alinhamento completo desses pontos antes da SPEC.
 
-Esses nove itens formam D-090. As decisões de implementação e fronteira abaixo ainda aguardam aprovação do patrocinador.
+Esses nove itens formam D-090. As decisões de implementação e fronteira D-091 a D-100 foram aprovadas integralmente pelo patrocinador em 2026-08-06.
 
 ## 2. Conclusões da pesquisa
 
@@ -308,28 +309,28 @@ O ponto de partida econômico é Luna `medium`, com Luna `high` acionada para ex
 | ID | Decisão | Recomendação | Estado |
 |---|---|---|---|
 | D-090 | superfícies obrigatórias do produto | login, conta, dashboards, evolução, feedback e KPIs simples | direção confirmada pelo pedido de 2026-08-06 |
-| D-091 | modelo de autenticação | convite + provedor gerenciado + MFA admin/mod + sessão, CSRF, recuperação e rate limiting da seção 6 | aguarda aprovação |
-| D-092 | papéis do MVP | participante, moderador e administrador; concessão auditada e aprovação clínica exclusiva de Ricardo | aguarda aprovação |
-| D-093 | dashboards | painel individual em tempo quase real e painel administrativo/moderação por escopo | aguarda aprovação |
-| D-094 | feedback | formulário sem anexo, prevenção/remoção de dado proibido, triagem e contestação separada | aguarda aprovação |
-| D-095 | KPIs do MVP | conjunto e dicionário da seção 8, sem ranking ou BI externo | aguarda aprovação |
-| D-096 | arquitetura | monólito modular web + autenticação e PostgreSQL gerenciados | aguarda aprovação |
-| D-097 | RAG | fora do MVP; preparar metadados e reavaliar após D-033 | aguarda aprovação |
-| D-098 | observabilidade e recuperação | logs estruturados, captura de erros, alertas, backups e teste de restauração | aguarda aprovação |
-| D-099 | acessibilidade | WCAG 2.2 AA em login, formulários, treinamento e dashboards | aguarda aprovação |
-| D-100 | agente operacional de IA | controle determinístico + Luna adaptativa, ferramentas escopadas, proteção contra injection e aprovação auditada | aguarda aprovação |
+| D-091 | modelo de autenticação | convite + provedor gerenciado + MFA admin/mod + sessão, CSRF, recuperação e rate limiting da seção 6 | aprovada integralmente em 2026-08-06 |
+| D-092 | papéis do MVP | participante, moderador e administrador; concessão auditada e aprovação clínica exclusiva de Ricardo | aprovada integralmente em 2026-08-06 |
+| D-093 | dashboards | painel individual em tempo quase real e painel administrativo/moderação por escopo | aprovada integralmente em 2026-08-06 |
+| D-094 | feedback | formulário sem anexo, prevenção/remoção de dado proibido, triagem e contestação separada | aprovada integralmente em 2026-08-06 |
+| D-095 | KPIs do MVP | conjunto e dicionário da seção 8, sem ranking ou BI externo | aprovada integralmente em 2026-08-06 |
+| D-096 | arquitetura | monólito modular web + autenticação e PostgreSQL gerenciados | aprovada integralmente em 2026-08-06 |
+| D-097 | RAG | fora do MVP; preparar metadados e reavaliar após D-033 | aprovada integralmente em 2026-08-06 |
+| D-098 | observabilidade e recuperação | logs estruturados, captura de erros, alertas, backups e teste de restauração | aprovada integralmente em 2026-08-06 |
+| D-099 | acessibilidade | WCAG 2.2 AA em login, formulários, treinamento e dashboards | aprovada integralmente em 2026-08-06 |
+| D-100 | agente operacional de IA | controle determinístico + Luna adaptativa, ferramentas escopadas, proteção contra injection e aprovação auditada | aprovada integralmente em 2026-08-06 |
 
 ## 14. Definition of Ready da SPEC
 
 A SPEC somente poderá começar quando:
 
-- [ ] D-091 a D-100 aprovadas ou ajustadas;
-- [ ] matriz de capacidades aceita;
-- [ ] telas e cartões mínimos aceitos;
-- [ ] fluxo de feedback e dados mínimos aceitos;
-- [ ] catálogo de KPIs aceito;
-- [ ] fronteira de RAG confirmada;
-- [ ] papel, autonomia, roteamento e teto de custo do agente de IA confirmados;
+- [x] D-091 a D-100 aprovadas integralmente;
+- [x] matriz de capacidades aceita;
+- [x] telas e cartões mínimos aceitos;
+- [x] fluxo de feedback e dados mínimos aceitos;
+- [x] catálogo de KPIs aceito;
+- [x] fronteira de RAG confirmada;
+- [x] papel, autonomia, roteamento e teto de custo do agente de IA confirmados;
 - [ ] critérios de escolha do fornecedor definidos;
 - [ ] RPO/RTO e política de sessão definidos na SPEC readiness;
 - [ ] B-07 e gates Discovery/PRD tratados conforme governança canônica.

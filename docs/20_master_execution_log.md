@@ -438,6 +438,46 @@ Não foi criado código, tela, banco ou SPEC. Não foi criado novo gate jurídic
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-06 — APROVAÇÃO INTEGRAL DO PACOTE PRÉ-SPEC
+
+### TIMESTAMP
+
+2026-08-06 17:30:19 -03:00
+
+### ENGINE
+
+PRD / ARQUITETURA PRÉ-SPEC
+
+### PHASE
+
+Encerramento do alinhamento anterior à SPEC
+
+### SPRINT
+
+PRE-SPEC-01 — superfícies, dados e arquitetura
+
+### TASK
+
+D-091 a D-100
+
+### ACTION
+
+MV. Ricardo Akinaga aprovou integralmente D-091 a D-100. Foram atualizados o Anexo 0020, decisões, política mínima, casos de uso, escopo, requisitos funcionais e não funcionais, métricas, PRD Master, README, backlog e estado operacional.
+
+### RESULT
+
+PRE-SPEC-01 está `COMPLETED`. Autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA tornam-se baseline obrigatória da futura SPEC. Commit de conteúdo: `PENDENTE_NESTA_RODADA`.
+
+### DECISIONS
+
+A aprovação encerra o alinhamento de produto, mas não inicia SPEC ou BUILD. B-07 e os gates Discovery/PRD continuam abertos. T2 permanece autorizado e pronto para agendamento em paralelo.
+
+### STATUS
+
+COMPLETED
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

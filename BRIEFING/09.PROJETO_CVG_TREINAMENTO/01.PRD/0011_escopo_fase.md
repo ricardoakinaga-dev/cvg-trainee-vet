@@ -95,7 +95,7 @@ Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesq
 6. Divergências entre fontes seguem hierarquia do anexo 0001 (legislação > protocolo CVG > diretriz > Ettinger > Tratado);
 7. A [Política Mínima Interna de Dados](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) foi aprovada por D-077; B-05 está fechado e somente nome/login profissional, progresso, tentativas, notas e logs mínimos podem ser tratados.
 8. Qualquer prática presencial futura exige aprovação do `GATE-EXP-PRAT-01` antes de gerar UC, RF, SPEC, backlog ou BUILD.
-9. As superfícies obrigatórias foram confirmadas em D-090; arquitetura, autenticação, papéis, dashboards, feedback, KPIs, observabilidade, RAG, acessibilidade e agente operacional de IA aguardam aprovação conjunta em D-091 a D-100, conforme o [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
+9. As superfícies obrigatórias foram confirmadas em D-090; arquitetura, autenticação, papéis, dashboards, feedback, KPIs, observabilidade, RAG, acessibilidade e agente operacional de IA foram aprovados integralmente em D-091 a D-100, conforme o [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
 
 ## 6. Critérios de priorização para o piloto
 

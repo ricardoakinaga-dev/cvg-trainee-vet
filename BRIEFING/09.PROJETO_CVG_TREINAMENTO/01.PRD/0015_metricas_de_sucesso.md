@@ -57,7 +57,7 @@ O MVP não precisa exibir todas as métricas analíticas da seção 3. A interfa
 5. evolução por competência e por período;
 6. histórico de módulos, tentativas, resultados e contestações.
 
-Não há ranking, comparação entre colegas ou inferência de competência prática. Este recorte aguarda D-093/D-095.
+Não há ranking, comparação entre colegas ou inferência de competência prática. Este recorte foi aprovado em D-093/D-095.
 
 ### 3.2 Recorte simples do dashboard administrativo e de moderação
 
@@ -73,7 +73,7 @@ Não há ranking, comparação entre colegas ou inferência de competência prá
 | Feedback | relatos abertos por tipo/prioridade e tempo mediano de resolução | qualidade e melhoria |
 | Confiabilidade | erros por sessão, falhas de login/salvamento/submissão e disponibilidade | operação do produto |
 
-Cada cartão deve mostrar período, data de atualização, numerador e denominador quando houver taxa. Moderador vê apenas seu escopo; administrador vê a coorte e a operação autorizadas. O conjunto aguarda D-093/D-095/D-098.
+Cada cartão deve mostrar período, data de atualização, numerador e denominador quando houver taxa. Moderador vê apenas seu escopo; administrador vê a coorte e a operação autorizadas. O conjunto foi aprovado em D-093/D-095/D-098.
 
 ### 3.3 Regras operacionais comuns
 
@@ -132,7 +132,7 @@ Esta lista respeita a política mínima aprovada por D-077/B-05. A plataforma n�
 - Metadados de conteúdo (versão, validade, revisores, data de corte);
 - Eventos de auditoria (aprovações, alterações, retiradas, contestações);
 - Quantidade agregada de participantes elegíveis por KPI e exclusões, sem novos campos individuais na plataforma.
-- Depois da aprovação de D-094: tipo, prioridade, estado, datas e responsável dos relatos de produto, sem gravação de sessão ou captura automática de conteúdo sensível.
+- Conforme D-094 aprovada: tipo, prioridade, estado, datas e responsável dos relatos de produto, sem gravação de sessão ou captura automática de conteúdo sensível.
 - Eventos operacionais mínimos de login, salvamento, submissão e erro, sem senha, token ou resposta de avaliação.
 
 ## 8. Metas que dependem de baseline (não definidas)

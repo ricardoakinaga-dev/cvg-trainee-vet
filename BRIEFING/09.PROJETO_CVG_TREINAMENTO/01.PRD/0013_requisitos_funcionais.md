@@ -23,8 +23,8 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-005 | O sistema deve bloquear contas compartilhadas | P1 | PROPOSTA |
 | RF-006 | O sistema deve suportar desativação de usuários sem excluir histórico | P1 | PROPOSTA |
 | RF-007 | Antes do primeiro uso, a coordenação deve apresentar comunicação operacional simples sobre finalidade, dados mínimos, acesso e retenção; o T2 não depende de gate documental adicional | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (D-077/D-089) |
-| RF-008 | O participante deve administrar a própria conta: consultar nome, identificador interno, e-mail profissional e estado; alterar credencial e encerrar outras sessões sem acessar campos não autorizados | P0 | FATO INFORMADO PELO PATROCINADOR (D-090); detalhes em D-091 |
-| RF-009 | O administrador deve convidar usuários, reenviar convite, ativar/desativar conta, atribuir papel e trilha e revogar sessões, preservando o histórico | P0 | FATO INFORMADO PELO PATROCINADOR (D-090); detalhes em D-091/D-092 |
+| RF-008 | O participante deve administrar a própria conta: consultar nome, identificador interno, e-mail profissional e estado; alterar credencial e encerrar outras sessões sem acessar campos não autorizados | P0 | APROVADA PELO PATROCINADOR (D-090/D-091, 2026-08-06) |
+| RF-009 | O administrador deve convidar usuários, reenviar convite, ativar/desativar conta, atribuir papel e trilha e revogar sessões, preservando o histórico | P0 | APROVADA PELO PATROCINADOR (D-090/D-091/D-092, 2026-08-06) |
 
 ## 2. Avaliação diagnóstica e linha de base
 
@@ -107,10 +107,10 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-070 | Painel do colaborador: próxima ação, progresso da trilha/módulo, sessões, correções pendentes, remediação, retenção, evolução por competência e histórico | P0 | FATO INFORMADO PELO PATROCINADOR (D-090); composição recomendada em D-093 |
+| RF-070 | Painel do colaborador: próxima ação, progresso da trilha/módulo, sessões, correções pendentes, remediação, retenção, evolução por competência e histórico | P0 | APROVADA PELO PATROCINADOR (D-090/D-093, 2026-08-06) |
 | RF-071 | Painel do colaborador: recomendações de estudo e acesso rápido à conta e ao relato de problema/melhoria | P1 | FATO INFORMADO PELO PATROCINADOR (D-090) |
-| RF-072 | Painel do moderador: somente participantes e filas atribuídos, com progresso, lacunas, correções, feedback e plano de reforço digital, sem registro ou validação de prática | P0 | FATO INFORMADO PELO PATROCINADOR (D-090); escopo recomendado em D-092/D-093 |
-| RF-073 | Painel do administrador: contas, ativação, progresso, conclusão, inatividade, correções/SLA, remediação, validade de conteúdo, feedback e falhas técnicas | P0 | FATO INFORMADO PELO PATROCINADOR (D-090); composição recomendada em D-093/D-095 |
+| RF-072 | Painel do moderador: somente participantes e filas atribuídos, com progresso, lacunas, correções, feedback e plano de reforço digital, sem registro ou validação de prática | P0 | APROVADA PELO PATROCINADOR (D-090/D-092/D-093, 2026-08-06) |
+| RF-073 | Painel do administrador: contas, ativação, progresso, conclusão, inatividade, correções/SLA, remediação, validade de conteúdo, feedback e falhas técnicas | P0 | APROVADA PELO PATROCINADOR (D-090/D-093/D-095, 2026-08-06) |
 | RF-074 | O sistema deve restringir painéis por papel e escopo | P0 | FATO INFORMADO |
 | RF-075 | O sistema não deve exibir ranking público | P0 | FATO INFORMADO |
 | RF-076 | O sistema deve tratar dados faltantes, exclusões e acomodações no cálculo das métricas | P1 | PENDENTE |
@@ -143,13 +143,13 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
 | RF-100 | O sistema deve manter ação visível para relatar problema ou melhoria | P0 | FATO INFORMADO PELO PATROCINADOR (D-090) |
-| RF-101 | O relato deve distinguir bug técnico, usabilidade, erro de conteúdo, melhoria e contestação | P0 | PROPOSTA D-094 |
+| RF-101 | O relato deve distinguir bug técnico, usabilidade, erro de conteúdo, melhoria e contestação | P0 | APROVADA PELO PATROCINADOR (D-094, 2026-08-06) |
 | RF-102 | Contestação de questão, gabarito ou nota deve permanecer no fluxo auditável de RF-060 a RF-065 | P0 | FATO INFORMADO |
-| RF-103 | Participante deve acompanhar somente seus relatos e respectivas respostas; moderador e administrador veem o escopo autorizado | P1 | PROPOSTA D-092/D-094 |
-| RF-104 | Administrador/moderador deve triar, priorizar, atribuir, responder e encerrar relatos com histórico de estado | P0 | FATO INFORMADO PELO PATROCINADOR (D-090); fluxo recomendado em D-094 |
+| RF-103 | Participante deve acompanhar somente seus relatos e respectivas respostas; moderador e administrador veem o escopo autorizado | P1 | APROVADA PELO PATROCINADOR (D-092/D-094, 2026-08-06) |
+| RF-104 | Administrador/moderador deve triar, priorizar, atribuir, responder e encerrar relatos com histórico de estado | P0 | APROVADA PELO PATROCINADOR (D-090/D-094, 2026-08-06) |
 | RF-105 | Erro clínico ou de conteúdo deve permitir alerta imediato e retirada conforme RF-039 | P0 | FATO INFORMADO |
-| RF-106 | O relato não deve ter anexos nem capturar automática ou manualmente respostas, prontuários, parâmetros sensíveis de URL, áudio, vídeo, gravação de tela ou dado de paciente/tutor; conteúdo suspeito é bloqueado e eventual escape é redigido com auditoria | P0 | PROPOSTA D-094 |
-| RF-107 | O sistema deve associar ao relato somente contexto técnico mínimo: página lógica, versão da aplicação, datas e código de erro quando existente | P1 | PROPOSTA D-094 |
+| RF-106 | O relato não deve ter anexos nem capturar automática ou manualmente respostas, prontuários, parâmetros sensíveis de URL, áudio, vídeo, gravação de tela ou dado de paciente/tutor; conteúdo suspeito é bloqueado e eventual escape é redigido com auditoria | P0 | APROVADA PELO PATROCINADOR (D-094, 2026-08-06) |
+| RF-107 | O sistema deve associar ao relato somente contexto técnico mínimo: página lógica, versão da aplicação, datas e código de erro quando existente | P1 | APROVADA PELO PATROCINADOR (D-094, 2026-08-06) |
 
 ## 11. Requisitos não cobertos (pendências que impactam o PRD)
 

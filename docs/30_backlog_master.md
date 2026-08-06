@@ -13,9 +13,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: PRD — alinhamento anterior à SPEC
 - risco: alto — iniciar SPEC sem essas fronteiras gera retrabalho e permissões inconsistentes
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
+- status: COMPLETED
 - evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0020_alinhamento_produto_pre_spec.md
-- próxima ação: Ricardo aprovar ou ajustar D-091 a D-100 como pacote
+- resultado: D-091 a D-100 aprovadas integralmente por MV. Ricardo Akinaga em 2026-08-06; alinhamento congelado como baseline da futura SPEC
 
 ### B07-01 — Blueprint diagnóstico
 

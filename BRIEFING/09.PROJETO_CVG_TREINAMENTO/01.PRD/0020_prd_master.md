@@ -164,7 +164,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 12. Ordem de produção — ✅ **PILOTO INTEGRADO PRIMEIRO; EXPANSÃO EM ONDAS, APROVADA EM D-062**.
 13. Correção de registro/passagem — ✅ **ESTRUTURADA E AUTOMÁTICA NO INÍCIO, COM ESCALONAMENTO HUMANO POR EVIDÊNCIA, APROVADA EM D-070**.
 14. Superfícies de conta e acompanhamento — ✅ **DIREÇÃO CONFIRMADA EM D-090**: login, conta, dashboards, evolução, feedback e KPIs simples.
-15. Pacote pré-SPEC — ⏳ **AGUARDA APROVAÇÃO D-091 A D-100**: autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA, detalhados no [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
+15. Pacote pré-SPEC — ✅ **D-091 A D-100 APROVADAS INTEGRALMENTE EM 2026-08-06**: autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA, detalhados no [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
 
 ## 14. Documentos do PRD
 
@@ -186,6 +186,6 @@ Documento transversal de alinhamento: [Anexo 0020 — Produto e arquitetura ante
 ## 15. Não feito nesta fase
 
 - Nenhuma SPEC, BUILD, código, teste, tela, questão ou aula clínica completa; a trilha V3 está definida no PRD 0017;
-- Nenhuma implementação ou escolha de fornecedor; o Anexo 0020 registra arquitetura e roteamento de IA recomendados, ainda sujeitos à aprovação D-091 a D-100;
+- Nenhuma implementação ou escolha de fornecedor; o Anexo 0020 registra arquitetura e roteamento de IA aprovados em D-091 a D-100;
 - Nenhum conteúdo derivado das obras;
 - Nenhuma integração.
