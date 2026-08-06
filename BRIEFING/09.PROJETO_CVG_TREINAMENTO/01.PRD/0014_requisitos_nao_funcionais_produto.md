@@ -2,8 +2,8 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fase:** PRD — Definição de produto  
-**Data:** 2026-08-05  
-**Regra:** requisitos de produto, sem tecnologia; decisões de implementação ficam para a SPEC.
+**Data:** 2026-08-06
+**Regra:** requisitos de produto; o Anexo 0020 registra decisões arquiteturais recomendadas, ainda sem iniciar a SPEC ou escolher fornecedor.
 
 Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
@@ -18,6 +18,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-003 | O MVP deve atender com folga a equipe informada de aproximadamente 10 veterinários | PROPOSTA; B-02 FECHADO POR D-079 |
 | RNF-004 | Não deve haver perda de resposta por lentidão durante avaliação; política de tolerância definida no piloto | PROPOSTA |
 | RNF-005 | A jornada do colaborador deve priorizar linguagem simples, uma próxima ação clara e nenhum acesso a telas administrativas | APROVADA PELO PATROCINADOR (D-080) |
+| RNF-006 | Login, conta, treinamento, formulários e dashboards devem atender WCAG 2.2 nível AA, com teclado, foco visível, mensagens de erro identificáveis e estados anunciados | PROPOSTA (D-099) |
 
 ## 2. Confiabilidade
 
@@ -27,6 +28,10 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-011 | Nenhuma resposta registrada pode ser perdida ou alterada silenciosamente | FATO INFORMADO |
 | RNF-012 | Disponibilidade deve ser planejada para operação contínua; janelas de manutenção fora do horário crítico do hospital | HIPÓTESE |
 | RNF-013 | Recuperação de falha deve restaurar o estado consistente da tentativa (sem respostas duplicadas) | PROPOSTA |
+| RNF-014 | Login, salvamento, submissão, correção e tarefas agendadas devem emitir telemetria estruturada e alertas acionáveis, sem conteúdo sensível | PROPOSTA (D-098) |
+| RNF-015 | O banco deve ter backups automáticos e restauração testada; RPO e RTO serão definidos antes da SPEC ser considerada pronta | PROPOSTA (D-098) |
+| RNF-016 | O MVP não deve usar gravação de tela, session replay ou coleta comportamental invasiva | PROPOSTA (D-098) |
+| RNF-017 | Operações de submissão e correção devem ser idempotentes e transacionais para impedir duplicidade ou estado parcial | PROPOSTA (D-096) |
 
 ## 3. Rastreabilidade
 
@@ -48,6 +53,9 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-034 | Módulo clínico exige aprovação humana registrada de Ricardo; revisão adicional é opcional e alteração de nota nunca ocorre silenciosamente | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RNF-035 | Nenhuma decisão crítica clínica automatizada por IA sem revisão humana | FATO INFORMADO |
 | RNF-036 | Alteração de gabarito/nota exige justificativa e fluxo formal | PROPOSTA |
+| RNF-037 | Identidade, senha, recuperação e MFA devem usar provedor especializado; sessão usa cookie seguro, rotação, CSRF e rate limiting; a aplicação não armazena senha, segredo de recuperação ou token no banco comum | PROPOSTA (D-091) |
+| RNF-038 | MFA deve ser obrigatório para administrador e moderador e disponível para participante; ações sensíveis exigem reautenticação | PROPOSTA (D-091) |
+| RNF-039 | A autorização deve ser verificada no servidor, negar por padrão e aplicar mínimo privilégio; proteção por linha no banco funciona como defesa adicional | PROPOSTA (D-091/D-092/D-096) |
 
 ## 5. Operação multiusuário
 
@@ -55,8 +63,9 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-040 | O sistema deve suportar simultaneamente: colaboradores em estudo/avaliação, autores, revisores, gestores e auditor | HIPÓTESE |
 | RNF-041 | Escala 12×36 exige uso assíncrono (treinamento em momentos livres) | FATO INFORMADO |
-| RNF-042 | Acessibilidade para usuários com necessidades específicas (tempo, formato, leitores) | PENDENTE (D-018) |
+| RNF-042 | Acessibilidade para usuários com necessidades específicas inclui tempo/formato ajustável e compatibilidade com leitores, sem reduzir a segurança da avaliação | PROPOSTA (D-018/D-099) |
 | RNF-043 | O sistema deve indicar claramente estado de cada avaliação ao usuário (em andamento, concluída, em revisão) | PROPOSTA |
+| RNF-044 | Administrador e moderador devem compartilhar a estrutura visual do dashboard, mas cada consulta, cartão e ação respeita o escopo autorizado | PROPOSTA (D-092/D-093) |
 
 ## 6. Governança
 
@@ -78,6 +87,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-063 | Participante acessa os próprios dados; Ricardo acessa o necessário; mentor autorizado acessa somente lacunas/remediação dos participantes atribuídos; suporte delegado é excepcional e auditado | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-064 | Uso de resultados em RH, punição automática e ranking público proibidos no MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
 | RNF-065 | Participante pode acessar e corrigir cadastro e contestar nota ou resultado | APROVADA PELO PATROCINADOR COMO INSUMO (D-077) |
+| RNF-066 | Relatos devem coletar somente os campos de D-094, sem anexos ou inserção automática/manual de resposta, URL com parâmetros, IP completo, tela, áudio, vídeo, prontuário ou dado de paciente/tutor; escape é restringido e redigido com auditoria | PROPOSTA (D-094) |
 
 O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) foi aprovado por D-077 e fecha B-05 para o MVP. Os controles técnicos permanecem requisitos obrigatórios da futura SPEC e construção.
 
@@ -101,6 +111,8 @@ O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica
 | RNF-082 | O sistema não copia nem expõe PDFs, páginas, tabelas, figuras ou imagens das obras ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RNF-083 | O sistema não permite ranking público | FATO INFORMADO |
 | RNF-084 | Decisões automatizadas com impacto relevante exigem transparência e revisão humana | PROPOSTA |
+| RNF-085 | OCR, indexação, embeddings, RAG e envio dos PDFs a serviços de IA permanecem fora do MVP; apenas metadados de obra, edição, capítulo, versão e data de corte são preparados | PROPOSTA (D-097; D-033 permanece futura) |
+| RNF-086 | O agente operacional de IA não é fonte de estado nem autoridade clínica; ações usam ferramentas limitadas, saída validada, teto de custo e confirmação humana nos limites definidos em D-100 | PROPOSTA (D-100) |
 
 ## 10. Critérios de aceite gerais (PROPOSTA)
 
@@ -110,3 +122,4 @@ O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica
 4. Conteúdo clínico publicado somente após revisão humana, com redação própria e sem PDFs ou material copiado das obras;
 5. Acessibilidade e tratamento de interrupção validados no piloto;
 6. Métricas calculadas conforme dicionário do anexo 0003, com população, exceções e dados faltantes definidos.
+7. Fluxos de conta, dashboards, feedback, KPIs e agente operacional validados conforme o [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md), depois da aprovação de D-091 a D-100.

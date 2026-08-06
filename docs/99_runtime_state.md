@@ -3,36 +3,36 @@
 ## CONTEXTO
 
 - project: cvg-trainee-vet
-- current_engine: DISCOVERY
+- current_engine: PRD
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
 ## POSIÇÃO ATUAL
 
-- current_phase: prototipação e validação operacional do currículo V3
-- current_sprint: CUR-24-01 — trilha de 24 meses
-- current_task: executar T2 — ensaio controlado e cronometrado da M02 v0.1.0
+- current_phase: alinhamento de produto anterior à SPEC
+- current_sprint: PRE-SPEC-01 — superfícies, dados e arquitetura
+- current_task: aprovar ou ajustar o pacote D-091 a D-100
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: WAITING_HUMAN_APPROVAL
 
 ## PROGRESSO
 
-- last_completed_action: commit b85184b registrou D-089, descartou o gate documental adicional do T2 e manteve a coleta mínima de D-077
-- next_action: selecionar e agendar dois a três veterinários autorizados para executar T2 conforme o Anexo 0018
+- last_completed_action: pacote pré-SPEC D-091 a D-100 consolidado, validado e aprovado em revisão independente; nenhuma SPEC ou construção iniciada
+- next_action: MV. Ricardo Akinaga aprovar ou ajustar D-091 a D-100 como pacote; nenhuma SPEC será iniciada antes disso
 
 ## BLOQUEIOS
 
-- blockers: B-07 ainda aberto e os 120 itens não foram produzidos nem aplicados; T2 não possui bloqueio documental e depende somente da coordenação dos participantes
+- blockers: D-091 a D-100 aguardam decisão; B-07 e gates Discovery/PRD continuam abertos; T2 permanece pronto para agendamento em fluxo paralelo, sem bloqueio documental
 
 ## DECISÃO HUMANA
 
-- human_decision_required: no
-- decision_description: nenhuma decisão adicional é necessária antes de T2; após os resultados, Ricardo decidirá manter, revisar ou bloquear a M02
+- human_decision_required: yes
+- decision_description: aprovar ou ajustar o pacote D-091 a D-100; a decisão não interfere na autorização já concedida para agendar T2
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T08:53:02-03:00
+- last_update: 2026-08-06T10:11:11-03:00
 
 ## REGRAS DE USO
 

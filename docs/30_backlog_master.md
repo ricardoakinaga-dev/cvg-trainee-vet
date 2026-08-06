@@ -4,6 +4,19 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 ## P0 — CRÍTICO
 
+### PRE-SPEC-01 — Alinhamento de produto e arquitetura
+
+- título: aprovar as decisões de conta, dashboards, feedback, KPIs e base técnica antes da SPEC
+- descrição: congelar autenticação, papéis, cartões, fluxo de relatos, métricas, arquitetura proporcional, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA
+- módulo: produto / arquitetura pré-SPEC
+- dependência: direção D-090 confirmada; Anexo 0020 revisado
+- fase: PRD — alinhamento anterior à SPEC
+- risco: alto — iniciar SPEC sem essas fronteiras gera retrabalho e permissões inconsistentes
+- impacto: alto
+- status: WAITING_HUMAN_APPROVAL
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0020_alinhamento_produto_pre_spec.md
+- próxima ação: Ricardo aprovar ou ajustar D-091 a D-100 como pacote
+
 ### B07-01 — Blueprint diagnóstico
 
 - título: validar blueprint das 120 questões diagnósticas
@@ -93,7 +106,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - título: iniciar SPEC somente após aprovação canônica do PRD
 - descrição: criar readiness, visão arquitetural, domínio, contratos, dados, segurança, observabilidade e plano de build derivados do PRD aprovado
 - módulo: SPEC
-- dependência: GATE-02 aprovado
+- dependência: PRE-SPEC-01 aprovado e GATE-02 aprovado
 - fase: SPEC
 - risco: alto
 - impacto: alto

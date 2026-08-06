@@ -6,6 +6,8 @@
 
 **Atualização 2026-08-06:** D-082 aprovada como remediação educativa de erro crítico, sem eliminação, punição, ranking ou reprovação definitiva.
 
+**Atualização 2026-08-06 (pré-SPEC):** D-090 confirmou as superfícies obrigatórias; D-091 a D-100 formam o pacote recomendado que ainda aguarda aprovação conjunta.
+
 ## 1. Identidade e governança
 
 | ID | Pergunta/decisão | Owner recomendado | Bloqueia | Status |
@@ -121,12 +123,23 @@
 | D-087 | A fatia vertical do Mês 2 pode ser produzida? | patrocinador/clínica | conteúdo/validação | aprovada (2026-08-06): produzir as quatro sessões de Emergência e UTI, com dois casos fictícios, avaliação mista, rubricas, feedback e pré-voo; a produção dos demais módulos continua condicionada ao aprendizado desta fatia |
 | D-088 | A M02 v0.1.0 pode seguir para ensaio controlado e cronometrado? | patrocinador/aprovador clínico | validação operacional | aprovada clinicamente por MV. Ricardo Akinaga em 2026-08-06 para ensaio controlado e cronometrado; não autoriza publicação geral, uso somativo, certificação ou produção em escala |
 | D-089 | O T2 depende do gate documental adicional criado durante a revisão? | patrocinador | validação operacional | aprovada (2026-08-06): não; o gate adicional fica descartado e T2 está pronto para agendamento com dois a três veterinários; permanecem a comunicação operacional simples, a coleta mínima de D-077 e as proibições de dados clínicos reais, gravações, ranking, RH e punição |
+| D-090 | Quais superfícies de produto são obrigatórias antes da SPEC? | patrocinador | PRD/SPEC readiness | direção confirmada (2026-08-06): login, administração de conta, dashboard de administrador/moderador, resumo e evolução do participante, feedback de bugs/erros/melhorias e KPIs simples |
+| D-091 | Qual modelo de autenticação será usado? | patrocinador/produto | SPEC readiness | recomendada: convite + provedor gerenciado + MFA admin/mod + cookies seguros, CSRF, sessão rotativa, recuperação de 30 min e rate limiting; aguarda aprovação |
+| D-092 | Quais papéis entram no MVP? | patrocinador/produto | SPEC readiness | recomendada: participante, moderador e administrador; concessão/revogação auditada por autorização de Ricardo e `CLINICAL_APPROVER` impossível de delegar; aguarda aprovação |
+| D-093 | Qual conteúdo mínimo dos dashboards? | patrocinador/produto | SPEC readiness | recomendada: próxima ação e evolução individual; administração/moderação por escopo com progresso, correções, conteúdo, feedback e operação; aguarda aprovação |
+| D-094 | Como registrar bugs, erros e melhorias? | patrocinador/produto | SPEC readiness | recomendada: formulário sem anexo, prevenção/remoção auditada de dado proibido, triagem por estado/prioridade e contestação separada; aguarda aprovação |
+| D-095 | Quais KPIs simples entram no MVP? | patrocinador/produto | SPEC readiness | recomendada: conjunto e dicionário da seção 8 do Anexo 0020, com escopo, frescor, faltantes/zero denominador e sem ranking; aguarda aprovação |
+| D-096 | Qual arquitetura é proporcional ao MVP? | patrocinador/arquitetura | SPEC readiness | recomendada: monólito modular web responsivo, autenticação gerenciada e PostgreSQL gerenciado; aguarda aprovação |
+| D-097 | RAG entra no MVP? | patrocinador/produto/clínica | SPEC readiness/D-033 | recomendada: não; preparar somente metadados de fonte e reavaliar automação futura após D-033; aguarda aprovação |
+| D-098 | Qual observabilidade e recuperação mínimas? | patrocinador/arquitetura | SPEC readiness | recomendada: logs estruturados, captura de erros, alertas, backups e restauração testada, sem session replay; aguarda aprovação |
+| D-099 | Qual padrão de acessibilidade? | patrocinador/produto | SPEC readiness | recomendada: WCAG 2.2 nível AA em toda a jornada; aguarda aprovação |
+| D-100 | Como a IA deve apoiar a operação e qual modelo usar? | patrocinador/produto | SPEC readiness | recomendada: workflow determinístico; Luna adaptativa, ferramentas escopadas, proteção contra prompt injection, mínimo de dados e aprovação auditada; aguarda aprovação |
 
 ## 8. Próximas perguntas úteis
 
-1. Como validar clinicamente o blueprint do Anexo 0012 e transformá-lo nos 120 itens diagnósticos (B-07)?
-2. Há alguma restrição real de dispositivo ou acessibilidade?
-3. Quais ajustes de carga e correção serão indicados pelo pré-voo e pela aplicação da fatia vertical?
+1. O pacote recomendado D-091 a D-100 pode ser aprovado integralmente?
+2. Como validar clinicamente o blueprint do Anexo 0012 e transformá-lo nos 120 itens diagnósticos (B-07)?
+3. Há alguma restrição real de dispositivo ou acessibilidade além do padrão WCAG 2.2 AA recomendado?
 
 ## 9. Regra de fechamento
 

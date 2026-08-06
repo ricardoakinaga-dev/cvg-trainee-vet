@@ -8,6 +8,7 @@
 **Status do gate Discovery:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — há itens obrigatórios incompletos; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
 **Status do gate PRD:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — o PRD existente é rascunho controlado; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
 **Status da auditoria documental:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`  
+**Alinhamento pré-SPEC:** direção de telas confirmada por D-090; pacote recomendado D-091 a D-100 aguarda aprovação no [Anexo 0020](90.ANEXOS/0020_alinhamento_produto_pre_spec.md). Nenhuma SPEC foi iniciada.
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing, currículo V3 aprovado e fatia vertical documental do Mês 2; nenhuma plataforma, aplicação real ou código de produto foi criado.
 
@@ -100,11 +101,12 @@ Nenhum campo desconhecido foi apresentado como certeza.
 17. [Pré-voo da fatia vertical do Mês 2](90.ANEXOS/0017_prevoo_fatia_vertical_mes_2.md)
 18. [Protocolo do ensaio controlado e cronometrado da M02](90.ANEXOS/0018_protocolo_ensaio_controlado_m02.md)
 19. [Teste sintético das rubricas RA01 e RA02](90.ANEXOS/0019_teste_sintetico_rubricas_m02.md)
+20. [Alinhamento de produto e arquitetura antes da SPEC](90.ANEXOS/0020_alinhamento_produto_pre_spec.md)
 
 ## 4. O que não foi criado
 
 - Código, aplicação, site ou plataforma;
-- Banco de dados, API, arquitetura técnica ou stack;
+- Banco de dados, API, arquitetura implementada ou stack contratada; existe apenas uma recomendação pré-SPEC no Anexo 0020;
 - Conteúdo dos demais 23 módulos e os 120 itens diagnósticos — somente a fatia vertical documental do Mês 2 foi produzida e ainda aguarda aprovação clínica para ensaio;
 - Certificados;
 - Protótipos de telas;
@@ -171,6 +173,7 @@ O PRD foi elaborado como rascunho controlado em 2026-08-05. Fechar os itens abai
 2. resolver somente os requisitos que afetem segurança ou uso do MVP;
 3. aplicar a política mínima D-077 no diagnóstico e no futuro sistema;
 4. reexecutar e aprovar formalmente `00.DISCOVERY/0090_discovery_validation.md` e, depois, `01.PRD/0090_prd_validation.md`.
+5. aprovar ou ajustar D-091 a D-100 para congelar as decisões de produto, arquitetura e agente de IA que alimentarão a futura SPEC.
 
 Enquanto isso, são permitidas correção documental e preparação de rascunhos de conteúdo original. O diagnóstico deve respeitar D-077; gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. SPEC, BUILD, arquitetura, código e publicação do programa continuam sujeitos aos gates.
 

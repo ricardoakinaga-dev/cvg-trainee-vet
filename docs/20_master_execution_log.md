@@ -398,6 +398,46 @@ D-089 substitui o bloqueio operacional registrado na entrada anterior sem apagar
 
 READY_FOR_NEXT_STEP
 
+---
+
+## 2026-08-06 — ALINHAMENTO DE PRODUTO ANTES DA SPEC
+
+### TIMESTAMP
+
+2026-08-06 09:53:45 -03:00
+
+### ENGINE
+
+PRD / ARQUITETURA PRÉ-SPEC
+
+### PHASE
+
+Alinhamento de produto anterior à SPEC
+
+### SPRINT
+
+PRE-SPEC-01 — superfícies, dados e arquitetura
+
+### TASK
+
+D-090 a D-100
+
+### ACTION
+
+O pedido do patrocinador foi transformado em pacote de alinhamento sem iniciar a SPEC: acesso e conta, dashboards de participante/administração/moderação, feedback de bugs/erros/melhorias, KPIs simples, arquitetura proporcional, banco relacional, segurança, observabilidade, acessibilidade, limite do RAG e roteamento do agente operacional de IA. Foram pesquisadas fontes oficiais de NIST, OWASP, W3C, PostgreSQL, OpenTelemetry, ADL e OpenAI e harmonizados PRD, política mínima, backlog e estado operacional.
+
+### RESULT
+
+D-090 registra a direção confirmada. O Anexo 0020 recomenda monólito modular web, autenticação e PostgreSQL gerenciados, três papéis permanentes, aprovação clínica exclusiva de Ricardo, WCAG 2.2 AA, RAG fora do MVP e `gpt-5.6-luna` com esforço adaptativo para a assistência operacional. A revisão independente em Luna/high encontrou sete ajustes, todos corrigidos; a reavaliação retornou `PASS`. D-091 a D-100 aguardam aprovação conjunta. Commit de conteúdo: `PENDENTE_NESTA_RODADA`.
+
+### DECISIONS
+
+Não foi criado código, tela, banco ou SPEC. Não foi criado novo gate jurídico. T2 continua autorizado e pronto para agendamento em paralelo. A próxima decisão é aprovar ou ajustar D-091 a D-100.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

@@ -50,11 +50,14 @@ Os casos e as simulações do MVP serão integralmente fictícios. Um futuro uso
 |---|---|
 | Participante | seus próprios dados, progresso, tentativas, notas e contestações |
 | MV. Ricardo Akinaga | dados necessários para administrar o treinamento, acompanhar participantes e auditar resultados |
-| Mentor autorizado por Ricardo | lacunas e plano de remediação somente dos participantes atribuídos |
+| Moderador/mentor autorizado por Ricardo | progresso, lacunas, correções, feedback e remediação somente dos participantes/filas explicitamente atribuídos |
+| Administrador autorizado por Ricardo | contas, papéis, trilhas, coorte, operação e auditoria necessários à administração; sem alterar nota fora do fluxo formal |
 | Administrador técnico delegado | somente o necessário para suporte, por tempo limitado e com registro de acesso |
 | Demais gestores | somente indicadores agregados quando Ricardo autorizar |
 
 Contas compartilhadas são proibidas. Todo acesso deve ser individual, limitado à função e revogado quando deixar de ser necessário.
+
+Ricardo autoriza de forma auditável a concessão ou revogação de administrador e moderador. A capacidade `CLINICAL_APPROVER` permanece exclusiva da identidade de Ricardo e não pode ser concedida pela interface administrativa. Esta atualização de acesso passa a valer com a aprovação de D-092, sem criar gate jurídico separado.
 
 ## 5. Retenção e descarte
 
@@ -101,6 +104,12 @@ Suspeita de acesso indevido, vazamento ou perda de dados deve ser comunicada ime
 B-05 fica fechado para o MVP interno. Com os controles da seção 6 e a comunicação operacional da seção 7, ficam autorizados somente os dados listados na seção 1.
 
 O diagnóstico e a baseline podem usar dados identificados dentro desse limite. Continuam proibidos gravações, prontuários, dados de tutores e casos reais identificáveis.
+
+### 9.1 Extensão mínima proposta para feedback de produto
+
+D-090 confirmou a necessidade de receber bugs, erros e melhorias. Se D-094 for aprovada, a política passa a permitir, para essa finalidade, somente: protocolo, tipo, categoria, descrição de até 2.000 caracteres, página lógica sem parâmetros, versão da aplicação, autor, datas, responsável, prioridade, estado e resolução. O MVP não recebe anexos.
+
+Não serão capturados automaticamente resposta de avaliação, texto clínico, URL com parâmetros, IP completo, tela, áudio, vídeo, prontuário ou dados de tutor. O formulário proíbe a inserção manual desses dados, bloqueia padrões suspeitos e exige remoção/redação auditada se conteúdo proibido escapar. A contestação de questão ou resultado continua no fluxo já permitido. A aprovação de D-094 por Ricardo é suficiente para incorporar esta extensão; não existe novo gate jurídico ou documental separado.
 
 ## 10. Controle de mudança
 

@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fase:** PRD — Definição de produto  
-**Data:** 2026-08-05  
+**Data:** 2026-08-06
 **Classificação:** `FATO INFORMADO` / `EVIDÊNCIA DOCUMENTAL` / `HIPÓTESE` / `PROPOSTA` / `PENDENTE`
 
 ---
@@ -17,7 +17,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 
 ### Núcleo do produto (MVP sugerido)
 
-1. Cadastro e autenticação de médicos-veterinários colaboradores;
+1. Convite, autenticação e recuperação de acesso por e-mail profissional, com administração da própria conta;
 2. Avaliação diagnóstica inicial obrigatória, formativa e não punitiva;
 3. Linha de base individual por tema e competência;
 4. Atribuição de trilha personalizada (núcleo obrigatório + reforços por lacuna);
@@ -28,13 +28,15 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 9. Remediação estruturada após desempenho insuficiente;
 10. Avaliação de retenção (janelas 30/60/90 dias);
 11. Painel individual de progresso, domínio, retenção e confiança;
-12. Painel gerencial agregado (escopo autorizado);
+12. Dashboard de administrador e moderador, com acompanhamento por escopo, filas de correção, conteúdo, relatos e saúde operacional;
 13. Gestão de conteúdo: autoria, revisão e aprovação clínica de Ricardo, revisão adicional opcional, publicação, versionamento, validade e retirada;
 14. Banco de questões com blueprint e rastreabilidade;
 15. Contestação de questão/resultado com recálculo auditável;
 16. Trilha de auditoria completa;
 17. Papéis e permissões (matriz do 0006);
 18. Vocabulário de estados (anexo 0003: `NÃO_INICIADO`, `EM_ANDAMENTO`, `EM_AVALIAÇÃO`, `EM_REMEDIAÇÃO`, `APROVADO`, `REPROVADO`, `RESULTADO_EM_REVISÃO`, `CONCLUÍDO`, `VENCIDO`, `DISPENSADO_POR_DOMÍNIO`, `BLOQUEADO_POR_PRÉ_REQUISITO`).
+19. Canal interno para bugs, usabilidade, erros de conteúdo e melhorias, com protocolo, triagem e acompanhamento;
+20. KPIs operacionais simples e observabilidade mínima de login, salvamento, submissão, correções e disponibilidade.
 
 ### Escopo clínico do piloto (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05)
 
@@ -66,6 +68,8 @@ Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesq
 10. Processamento automatizado dos PDFs — OCR, indexação, embeddings, RAG ou envio dos arquivos a IA — fora do MVP e pendente em D-033; isso não bloqueia consulta e autoria manuais;
 11. Notificações externas (e-mail/SMS) — `PENDENTE`;
 12. Gamificação, ranking público ou comparativos entre colaboradores;
+13. Cadastro público, armazenamento de senhas no banco comum da aplicação, session replay ou gravação de tela;
+14. Microsserviços, mensageria distribuída, data warehouse, BI externo e banco vetorial dedicado sem evidência de necessidade.
 
 ## 4. FUTURE SCOPE (possíveis expansões)
 
@@ -79,6 +83,7 @@ Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesq
 8. Análise psicométrica avançada do banco de questões (quando a amostra permitir);
 9. Módulo de liderança/preceptoria;
 10. Inclusão de outros públicos (técnicos, recepção, auxiliares) — sujeito a nova decisão de escopo.
+11. Assistente técnico com RAG para autores/revisores, somente após D-033, corpus autorizado, avaliação de recuperação, citações e controles de acesso.
 
 ## 5. Limites e regras de fronteira
 
@@ -90,6 +95,7 @@ Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesq
 6. Divergências entre fontes seguem hierarquia do anexo 0001 (legislação > protocolo CVG > diretriz > Ettinger > Tratado);
 7. A [Política Mínima Interna de Dados](../90.ANEXOS/0011_politica_conservadora_dados_lgpd.md) foi aprovada por D-077; B-05 está fechado e somente nome/login profissional, progresso, tentativas, notas e logs mínimos podem ser tratados.
 8. Qualquer prática presencial futura exige aprovação do `GATE-EXP-PRAT-01` antes de gerar UC, RF, SPEC, backlog ou BUILD.
+9. As superfícies obrigatórias foram confirmadas em D-090; arquitetura, autenticação, papéis, dashboards, feedback, KPIs, observabilidade, RAG, acessibilidade e agente operacional de IA aguardam aprovação conjunta em D-091 a D-100, conforme o [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
 
 ## 6. Critérios de priorização para o piloto
 

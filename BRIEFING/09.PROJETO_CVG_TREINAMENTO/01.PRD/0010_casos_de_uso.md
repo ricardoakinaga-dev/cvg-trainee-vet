@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fase:** PRD — Definição de produto  
-**Data:** 2026-08-05  
+**Data:** 2026-08-06
 **Classificação:** os campos seguem as regras do briefing — `FATO INFORMADO`, `EVIDÊNCIA DOCUMENTAL`, `HIPÓTESE`, `PROPOSTA`, `PENDENTE`  
 **Regra:** nenhuma tecnologia é definida aqui; os fluxos são de produto.
 
@@ -15,8 +15,10 @@
 | Ator | Papel | Tipo |
 |---|---|---|
 | Colaborador | médico-veterinário que realiza a trilha | primário |
-| MV. Ricardo Akinaga | administra o programa, cria/revisa/aprova conteúdo e acompanha o piloto | responsável e aprovador clínico |
-| Mentor ou suporte | apoia apenas quando Ricardo autorizar | opcional |
+| Moderador | acompanha participantes e trata filas dentro do escopo atribuído | operacional, sem administração de contas |
+| Administrador | administra contas, papéis, trilhas, operação e auditoria | administrativo |
+| MV. Ricardo Akinaga | administra o programa, cria/revisa/aprova conteúdo e acompanha o piloto | responsável e único detentor da capacidade de aprovação clínica |
+| Mentor, suporte ou auditor | capacidade temporária e escopada, somente quando Ricardo autorizar | opcional |
 
 ---
 
@@ -55,6 +57,9 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 | UC-018 | Tratar contestação | Revisor independente |
 | UC-019 | Retirar conteúdo por risco clínico | MV. Ricardo Akinaga |
 | UC-020 | Gerenciar revisão e validade do conteúdo | Gestor educacional |
+| UC-021 | Administrar a própria conta | Usuário autenticado |
+| UC-022 | Relatar bug, erro ou melhoria | Usuário autenticado |
+| UC-023 | Triar e tratar relato de produto ou conteúdo | Moderador / Administrador |
 
 ---
 
@@ -349,6 +354,50 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 - **Resultado esperado:** 100% do conteúdo ativo dentro da validade (métrica).
 - **Observações:** frequências são `PROPOSTA` (anexo 0001, seção 9).
 
+### UC-021 — Administrar a própria conta
+
+- **Ator:** qualquer usuário autenticado.
+- **Objetivo:** manter os dados mínimos da conta e controlar o próprio acesso.
+- **Gatilho:** aceitar convite, recuperar acesso ou abrir “Minha conta”.
+- **Fluxo principal:**
+  1. O usuário ativa a conta por convite enviado ao e-mail profissional;
+  2. Confirma ou corrige os campos editáveis permitidos;
+  3. Altera senha por fluxo seguro do provedor de identidade;
+  4. Pode encerrar as demais sessões ativas;
+  5. O sistema registra alterações sensíveis sem armazenar senha ou token no banco comum.
+- **Exceções:** link expirado ou já usado; e-mail já associado; tentativa de alterar identificador controlado; conta desativada.
+- **Resultado esperado:** conta individual atualizada e sessões sob controle do titular.
+- **Observações:** cadastro público e conta compartilhada são proibidos. Detalhes aguardam D-091.
+
+### UC-022 — Relatar bug, erro ou melhoria
+
+- **Ator:** qualquer usuário autenticado.
+- **Objetivo:** comunicar problema técnico, dificuldade de uso, possível erro de conteúdo ou sugestão.
+- **Gatilho:** comando persistente “Relatar problema ou melhoria”.
+- **Fluxo principal:**
+  1. O usuário escolhe o tipo do relato;
+  2. Descreve o ocorrido e envia o formulário mínimo;
+  3. O sistema gera protocolo e estado inicial;
+  4. O usuário acompanha o próprio relato e responde a pedidos de esclarecimento.
+- **Exceções:** contestação de questão ou resultado é redirecionada ao UC-010; possível risco clínico gera alerta prioritário; envio repetido pode ser vinculado como duplicado.
+- **Resultado esperado:** relato rastreável sem captura invasiva de tela, áudio, vídeo, prontuário ou resposta de avaliação.
+- **Observações:** campos, estados e roteamento aguardam D-094.
+
+### UC-023 — Triar e tratar relato de produto ou conteúdo
+
+- **Ator:** Moderador ou Administrador, conforme escopo.
+- **Objetivo:** transformar relatos em correção, comunicação ou decisão de priorização rastreável.
+- **Gatilho:** entrada de novo relato ou alteração de prioridade.
+- **Fluxo principal:**
+  1. O responsável classifica impacto, urgência e tipo;
+  2. Vincula duplicados e atribui responsável;
+  3. Registra diagnóstico, resolução ou justificativa de não planejamento;
+  4. Valida a correção quando aplicável e encerra o relato;
+  5. O sistema informa o desfecho ao autor.
+- **Exceções:** erro clínico segue para Ricardo e pode acionar UC-019; falha de login, salvamento ou submissão recebe prioridade alta; moderador sem escopo recebe acesso negado.
+- **Resultado esperado:** fila visível, tempos mensuráveis e histórico preservado.
+- **Observações:** relato de produto não altera nota; correção de resultado continua no fluxo formal e versionado.
+
 ---
 
 ## 4. Casos de uso fora do escopo desta fase
@@ -357,6 +406,8 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 - Integrações com sistemas externos (futuro);
 - Emissão de certificados formais (decisão `PENDENTE`, D-049);
 - Notificações externas (e-mail/SMS) — decisão `PENDENTE`.
+- Cadastro público de usuários e autenticação construída internamente;
+- Gravação de sessão, captura automática de tela ou analytics comportamental invasivo.
 
 ## 5. Rastreabilidade com os anexos
 
@@ -364,6 +415,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 |---|---|
 | UC-001 a UC-010 | anexos 0002 e 0003 (hipóteses pedagógicas e de avaliação) |
 | UC-011 a UC-020 | anexo 0001 (governança) e 0006 (usuários/estrutura) |
+| UC-021 a UC-023 | anexo 0020 (alinhamento de produto pré-SPEC) |
 | Fluxos gerais | 0003 (fluxo atual/desejado) e 0002 (contexto operacional) |
 
 ## 6. Itens registrados como pendentes

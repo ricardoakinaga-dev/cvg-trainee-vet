@@ -11,7 +11,7 @@
 
 ## 1. Visão geral
 
-O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina diagnóstico amplo fracionado e uma trilha de 24 meses, dividida em duas partes, com casos fictícios, pesquisa aberta, recuperação ativa, respostas objetivas e dissertativas, feedback, remediação e progresso visível. O conteúdo é original do CVG e aprovado clinicamente por MV. Ricardo Akinaga.
+O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina acesso individual seguro, diagnóstico amplo fracionado e uma trilha de 24 meses, dividida em duas partes, com casos fictícios, pesquisa aberta, recuperação ativa, respostas objetivas e dissertativas, feedback, remediação e progresso visível. Administradores e moderadores acompanham a operação em dashboards escopados, e todos os usuários podem relatar bugs, erros e melhorias.
 
 O produto **não** oferece treinamento prático presencial associado à plataforma, não avalia habilidade psicomotora ou competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos. Resultados de casos ou simulações digitais representam apenas conhecimento e raciocínio em cenário simulado (D-068).
 
@@ -24,8 +24,10 @@ Ver [0009 — Discovery Master](../00.DISCOVERY/0009_discovery_master.md).
 ## 3. Usuários
 
 - **Primário:** médico-veterinário colaborador;
+- **Moderador:** acompanha participantes e filas atribuídos, sem administrar contas ou acessar infraestrutura;
+- **Administrador:** administra contas, papéis, trilhas, operação e auditoria;
 - **Responsável e aprovador clínico do MVP:** MV. Ricardo Akinaga administra o programa, produz/revisa/aprova conteúdos e responde pelos gates documentais;
-- **Apoio opcional:** mentor ou suporte técnico, somente quando Ricardo autorizar;
+- **Apoio opcional:** mentor, suporte técnico ou auditor como capacidade temporária e escopada, somente quando Ricardo autorizar;
 
 ## 4. Fluxos principais
 
@@ -69,7 +71,10 @@ contestações e alterações de gabarito → protocolo → revisor independente
 ### IN (piloto/MVP proposto)
 
 - Jornada do colaborador: diagnóstico amplo fracionado, trilha recomendada, unidades breves, módulos completos, questões, casos/simulações digitais, feedback, remediação e progresso;
-- Bastidores mínimos: login, publicação com aprovação humana de Ricardo, controle de acesso e registro de alterações sensíveis;
+- Acesso e conta: convite por e-mail profissional, login, recuperação, administração da própria conta e encerramento de sessões;
+- Bastidores mínimos: dashboards de administrador/moderador, gestão de usuários, publicação com aprovação humana de Ricardo, controle de acesso e registro de alterações sensíveis;
+- Canal interno de bugs, usabilidade, erros de conteúdo e melhorias, com protocolo e triagem;
+- KPIs simples de aprendizagem, operação, conteúdo, correções e confiabilidade;
 - Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05);
 - Público/coorte: aproximadamente 10 veterinários, com participação de toda a equipe (D-079; B-02 fechado);
 - Matriz curricular V3: 24 meses, duas partes, 24 módulos, 96 sessões e carga estimada de 149 horas (D-084/D-085; PRD 0017).
@@ -107,19 +112,19 @@ Detalhes em [0012 — Regras de negócio](0012_regras_de_negocio.md).
 
 ## 7. Requisitos funcionais (resumo)
 
-P0 do colaborador: entrar, fazer o diagnóstico fracionado, ver a trilha, concluir unidades e módulos, resolver questões/casos com feedback imediato, revisar lacunas e acompanhar o progresso. Controles de publicação, permissão e registro ficam nos bastidores.
+P0 do colaborador: aceitar convite, entrar, administrar a própria conta, fazer o diagnóstico fracionado, ver a trilha, concluir unidades e módulos, resolver questões/casos com feedback imediato, revisar lacunas, acompanhar o progresso e relatar problema ou melhoria. Administradores e moderadores operam dashboards e filas conforme o papel; controles de publicação, permissão e auditoria ficam nos bastidores.
 Detalhes em [0013 — Requisitos funcionais](0013_requisitos_funcionais.md).
 
 O conteúdo, a sequência, a carga e as sessões da trilha vigente estão no [0017 — Programa curricular de 24 meses](0017_programa_curricular_24_meses.md). O [0016](0016_programa_curricular_clinico.md) preserva a proposta V2 como histórico.
 
 ## 8. Requisitos não funcionais (resumo)
 
-Performance para uso assíncrono em escala 12×36; confiabilidade sem perda de respostas; referência simples das fontes por módulo; segurança por papéis + LGPD; governança editorial; acessibilidade (PENDENTE); exceções (afastamento, interrupção, anulação, retirada, reprovação recorrente).
+Performance para uso assíncrono em escala 12×36; confiabilidade sem perda de respostas; referência simples das fontes por módulo; identidade gerenciada; autorização no servidor e mínimo privilégio; observabilidade sem conteúdo sensível; backups com restauração testada; governança editorial; WCAG 2.2 AA proposta; exceções (afastamento, interrupção, anulação, retirada, reprovação recorrente).
 Detalhes em [0014 — Requisitos não funcionais](0014_requisitos_nao_funcionais_produto.md).
 
 ## 9. Métricas de sucesso
 
-KPIs primários (PROPOSTA): ativação ≥ 90%/14 dias; conclusão ≥ 80%; abandono ≤ 15%; ganho mediano ≥ 15 p.p.; recuperação ≥ 75%; conteúdo válido 100%; itens rastreáveis 100%. Metas restantes calibradas por baseline (B-07).  
+KPIs primários (PROPOSTA): ativação ≥ 90%/14 dias; conclusão ≥ 80%; abandono ≤ 15%; ganho mediano ≥ 15 p.p.; recuperação ≥ 75%; conteúdo válido 100%; itens rastreáveis 100%. O dashboard inicial usa um recorte simples de progresso, fila de correções, remediação, conteúdo, feedback e confiabilidade; metas restantes serão calibradas pela baseline (B-07).
 Detalhes em [0015 — Métricas de sucesso](0015_metricas_de_sucesso.md).
 
 ## 10. Riscos e hipóteses
@@ -158,6 +163,8 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 11. Remediação de erro crítico — ✅ **EDUCATIVA E NÃO PUNITIVA, APROVADA EM D-082**.
 12. Ordem de produção — ✅ **PILOTO INTEGRADO PRIMEIRO; EXPANSÃO EM ONDAS, APROVADA EM D-062**.
 13. Correção de registro/passagem — ✅ **ESTRUTURADA E AUTOMÁTICA NO INÍCIO, COM ESCALONAMENTO HUMANO POR EVIDÊNCIA, APROVADA EM D-070**.
+14. Superfícies de conta e acompanhamento — ✅ **DIREÇÃO CONFIRMADA EM D-090**: login, conta, dashboards, evolução, feedback e KPIs simples.
+15. Pacote pré-SPEC — ⏳ **AGUARDA APROVAÇÃO D-091 A D-100**: autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA, detalhados no [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
 
 ## 14. Documentos do PRD
 
@@ -174,9 +181,11 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 | 0020 | Este documento |
 | 0090 | [Validação (gate)](0090_prd_validation.md) |
 
+Documento transversal de alinhamento: [Anexo 0020 — Produto e arquitetura antes da SPEC](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
+
 ## 15. Não feito nesta fase
 
 - Nenhuma SPEC, BUILD, código, teste, tela, questão ou aula clínica completa; a trilha V3 está definida no PRD 0017;
-- Nenhuma decisão técnica (arquitetura, banco, API, framework);
+- Nenhuma implementação ou escolha de fornecedor; o Anexo 0020 registra arquitetura e roteamento de IA recomendados, ainda sujeitos à aprovação D-091 a D-100;
 - Nenhum conteúdo derivado das obras;
 - Nenhuma integração.
