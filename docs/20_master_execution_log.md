@@ -484,7 +484,7 @@ COMPLETED
 
 ### TIMESTAMP
 
-2026-08-06 18:30:00 -03:00
+2026-08-06 18:11:54 -03:00
 
 ### ENGINE
 
@@ -508,7 +508,7 @@ Auditadas as checklists locais contra as engines canônicas. Foi corrigida a inv
 
 ### RESULT
 
-Discovery e PRD foram aprovados tecnicamente segundo seus checklists canônicos e aguardam aprovação humana sobre o commit consolidado. B-07 continua obrigatório antes da baseline e do piloto completo, mas não bloqueia a SPEC. Nenhuma SPEC, BUILD ou coleta real foi iniciada. Commit: `PENDENTE_CHECKPOINT`.
+Discovery e PRD foram aprovados tecnicamente segundo seus checklists canônicos e aguardam aprovação humana sobre o commit consolidado `f6fefa1`. B-07 continua obrigatório antes da baseline e do piloto completo, mas não bloqueia a SPEC. Nenhuma SPEC, BUILD ou coleta real foi iniciada.
 
 ### DECISIONS
 

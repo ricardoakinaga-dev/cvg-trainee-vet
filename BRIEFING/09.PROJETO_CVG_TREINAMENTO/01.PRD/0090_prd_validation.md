@@ -60,4 +60,4 @@ Em 2026-08-05, este gate foi registrado como reprovado sob uma checklist local a
 
 | Papel | Nome | Decisão | Estado |
 |---|---|---|---|
-| Responsável pelo MVP e gate | MV. Ricardo Akinaga | após aprovar o Discovery, aprovar este PRD e autorizar somente a readiness da SPEC | aguardando checkpoint Git |
+| Responsável pelo MVP e gate | MV. Ricardo Akinaga | após aprovar o Discovery, aprovar este PRD no commit `f6fefa1` e autorizar somente a readiness da SPEC | aguardando aprovação humana |

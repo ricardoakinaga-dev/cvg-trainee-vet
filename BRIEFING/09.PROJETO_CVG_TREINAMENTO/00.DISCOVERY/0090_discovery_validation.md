@@ -57,4 +57,4 @@ Em 2026-07-29 e 2026-08-05, o gate foi registrado como reprovado porque a checkl
 
 | Papel | Nome | Decisão | Estado |
 |---|---|---|---|
-| Responsável pelo MVP e gate | MV. Ricardo Akinaga | aprovar D-101 a D-108 e o Discovery sobre commit identificado | aguardando checkpoint Git |
+| Responsável pelo MVP e gate | MV. Ricardo Akinaga | aprovar D-101 a D-108 e o Discovery sobre o commit `f6fefa1` | aguardando aprovação humana |

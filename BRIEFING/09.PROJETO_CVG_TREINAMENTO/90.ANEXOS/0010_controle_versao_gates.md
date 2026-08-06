@@ -261,3 +261,19 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Commit de conteúdo | `b85184b` — `docs: remove controlled trial privacy gate` |
 | Próxima decisão | após T2, manter v0.1.0, criar v0.1.1 ou bloquear M02 |
 | Efeito nos gates | não fecha B-07, Discovery ou PRD; não autoriza SPEC/BUILD nem produção em escala |
+
+## 18. Checkpoint técnico D-101 a D-108 — gates pré-SPEC
+
+| Campo | Registro |
+|---|---|
+| Escopo | correção da fronteira canônica; reexecução de Discovery e PRD; nenhuma SPEC/BUILD iniciada |
+| Decisões propostas | D-101 a D-108: fronteira de B-07, estados, criticidade, exceções, diagnóstico, equivalência, recuperação, fornecedores, protocolos e riscos |
+| Commit do conteúdo revisado | `f6fefa1` — `docs: prepare canonical gates for spec` |
+| Artefatos centrais | 0090 Discovery; 0090 PRD; Anexo 0021; política D-077; backlog e runtime |
+| Validações | `git diff --cached --check`; 25 Markdown com links locais válidos; 100 linhas D-* únicas; varredura de segredos sem ocorrência |
+| Revisão independente | primeira revisão sem crítico e com três achados altos materiais; acomodação, escopo da onda piloto e contrato de estados corrigidos; reavaliação `PASS` |
+| Estado do Discovery | aprovado tecnicamente; aguarda aprovação humana sobre este checkpoint |
+| Estado do PRD | aprovado tecnicamente; aguarda aprovação humana depois do Discovery, no mesmo checkpoint |
+| B-07 | gate pré-piloto; não bloqueia SPEC, mas bloqueia baseline/piloto completo |
+| Próxima decisão | Ricardo aprovar D-101 a D-108, Discovery, PRD e somente a readiness da SPEC, nessa ordem |
+| BUILD | proibido até aprovação da SPEC |

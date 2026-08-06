@@ -3,7 +3,7 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário
 **Data:** 2026-08-06
 **Responsável:** MV. Ricardo Akinaga
-**Status:** `PACOTE_TECNICO_AGUARDA_APROVACAO_HUMANA_DO_COMMIT`
+**Status:** `PACOTE_TECNICO_AGUARDA_APROVACAO_HUMANA_DO_COMMIT_F6FEFA1`
 
 ## 1. Resultado da auditoria
 
@@ -142,3 +142,5 @@ Uma única aprovação deverá confirmar, sobre o commit identificado:
 2. gate Discovery;
 3. gate PRD;
 4. autorização para iniciar somente a etapa de readiness da SPEC.
+
+**Checkpoint para aprovação:** `f6fefa1` — `docs: prepare canonical gates for spec`.

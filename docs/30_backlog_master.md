@@ -87,7 +87,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
-- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/00.DISCOVERY/0090_discovery_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
+- evidência: commit f6fefa1; BRIEFING/09.PROJETO_CVG_TREINAMENTO/00.DISCOVERY/0090_discovery_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
 
 ### GATE-02 — Aprovar reexecução do PRD
 
@@ -99,7 +99,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
-- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0090_prd_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
+- evidência: commit f6fefa1; BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0090_prd_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
 
 ## P2 — MÉDIO
 
