@@ -468,7 +468,7 @@ MV. Ricardo Akinaga aprovou integralmente D-091 a D-100. Foram atualizados o Ane
 
 ### RESULT
 
-PRE-SPEC-01 está `COMPLETED`. Autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA tornam-se baseline obrigatória da futura SPEC. Commit de conteúdo: `PENDENTE_NESTA_RODADA`.
+PRE-SPEC-01 está `COMPLETED`. Autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA tornam-se baseline obrigatória da futura SPEC. Commit de conteúdo: `fc2df63`.
 
 ### DECISIONS
 

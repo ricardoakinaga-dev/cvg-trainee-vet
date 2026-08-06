@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: D-091 a D-100 aprovadas integralmente pelo patrocinador; PRE-SPEC-01 concluído sem iniciar SPEC ou construção
+- last_completed_action: commit fc2df63 registrou a aprovação integral de D-091 a D-100 e concluiu PRE-SPEC-01 sem iniciar SPEC ou construção
 - next_action: MV. Ricardo Akinaga validar, ajustar ou rejeitar o blueprint diagnóstico do Anexo 0012 antes da produção dos 120 itens
 
 ## BLOQUEIOS
