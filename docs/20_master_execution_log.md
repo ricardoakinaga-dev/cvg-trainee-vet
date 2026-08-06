@@ -122,6 +122,46 @@ WAITING_HUMAN_APPROVAL
 
 ---
 
+## 2026-08-06 — PERSISTÊNCIA DO CHECKPOINT B-07.1
+
+### TIMESTAMP
+
+2026-08-06 06:41:12 -03:00
+
+### ENGINE
+
+SYSTEM
+
+### PHASE
+
+B-07 — baseline diagnóstica
+
+### SPRINT
+
+B-07-01 — blueprint diagnóstico
+
+### TASK
+
+PERSIST-CHECKPOINT-B07.1
+
+### ACTION
+
+Atualizado o estado, o log e o backlog para registrar o commit de controle do checkpoint B-07.1.
+
+### RESULT
+
+Commit ddc8383 criado com mensagem convencional. O estado operacional aponta para revisão clínica independente e autorização humana; nenhum gate foi promovido.
+
+### DECISIONS
+
+Manter WAITING_HUMAN_APPROVAL até que o segundo MV seja nomeado, o blueprint seja validado e a produção/aplicação seja autorizada.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+---
+
 ## 2026-08-06 — CHECKPOINT DO RASCUNHO B-07.1
 
 ### TIMESTAMP
