@@ -10,7 +10,7 @@
 
 - current_phase: prototipação e validação operacional do currículo V3
 - current_sprint: CUR-24-01 — trilha de 24 meses
-- current_task: produzir e validar a fatia vertical do Mês 2 — Emergência e UTI
+- current_task: executar T2 — ensaio controlado e cronometrado da M02 v0.1.0
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit 91cb9e7 registrou a fatia vertical M02 v0.1.0 com quatro sessões, dois casos, 31 itens estruturados, duas respostas abertas, rubricas, fontes e pré-voo; revisão independente final retornou PASS
-- next_action: Ricardo revisar clinicamente os Anexos 0015 e 0016 e decidir se a v0.1.0 pode seguir para ensaio controlado e cronometrado
+- last_completed_action: Ricardo aprovou clinicamente a M02 v0.1.0; D-088 foi registrada; T0 reexecutado e T1 documental passaram; revisão independente final do protocolo retornou PASS após correção de seis achados
+- next_action: completar o aviso de privacidade do T2 com base legal aplicável, canal de direitos, versão e data; depois selecionar/agendar dois a três veterinários
 
 ## BLOQUEIOS
 
-- blockers: B-07 ainda aberto e os 120 itens não foram produzidos nem aplicados; a fatia vertical está estruturalmente pronta, mas aplicação depende da aprovação clínica final de Ricardo e do ensaio autorizado
+- blockers: B-07 ainda aberto e os 120 itens não foram produzidos nem aplicados; T2 está bloqueado até o aviso D-077 registrar base legal aplicável e canal de direitos, além da coordenação dos participantes
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: aprovar, solicitar ajustes ou rejeitar a fatia vertical M02 v0.1.0 para ensaio controlado; a aprovação não autoriza publicação geral
+- decision_description: Ricardo, com suporte jurídico/DPO quando aplicável, deve definir a base legal e o canal do aviso de privacidade antes de qualquer coleta real; depois de T2 decidirá manter, revisar ou bloquear a M02
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T08:05:06-03:00
+- last_update: 2026-08-06T08:20:28-03:00
 
 ## REGRAS DE USO
 

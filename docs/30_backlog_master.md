@@ -48,8 +48,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto — sem protótipo a carga de autoria e correção é apenas estimativa
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
-- evidência: PRD 0017; Anexos 0013 a 0017; commit curricular c1d3023; fatia vertical 91cb9e7
-- próxima decisão: Ricardo revisar clinicamente a versão 0.1.0 e autorizar ou rejeitar ensaio controlado/cronometrado
+- evidência: PRD 0017; Anexos 0013 a 0019; commit curricular c1d3023; fatia vertical 91cb9e7; aprovação D-088; checkpoint do protocolo pendente
+- próxima ação: Ricardo definir a base legal aplicável e o canal de direitos do aviso D-077; registrar versão/data e somente depois agendar T2 com dois a três veterinários
 
 ### B07-04 — Aplicação da baseline
 

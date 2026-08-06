@@ -3,28 +3,28 @@
 **Escopo:** Anexos 0014, 0015 e 0016
 **Versão verificada:** 0.1.0
 **Data:** 2026-08-06
-**Estado:** `READY_FOR_CLINICAL_REVIEW` — não publicado
+**Estado:** `APROVADO_PARA_ENSAIO_CONTROLADO` em 2026-08-06 — não publicado
 
 ## 1. Resultado executivo
 
 A fatia vertical atingiu o estado `GREEN ESTRUTURAL`: os três artefatos existem, as quatro sessões totalizam 360 minutos planejados, os dois casos são fictícios, existem 31 itens objetivos/estruturados e exatamente duas respostas abertas principais, e todos os IDs avaliáveis aparecem no guia do facilitador.
 
-Isso não equivale a aprovação clínica ou publicação. Clareza, tempo real, aceitação das rubricas e segurança das condutas precisam da decisão de MV. Ricardo Akinaga e de um ensaio autorizado.
+A aprovação clínica de MV. Ricardo Akinaga, registrada em 2026-08-06, permite o ensaio controlado e cronometrado. Ela não equivale a publicação geral; clareza, tempo real e capacidade de correção continuam sendo hipóteses do ensaio.
 
 ## 2. Testes de aceite
 
 | ID | Resultado | Evidência | Pendência residual |
 |---|---|---|---|
 | FV-M02-01 | PASS estrutural | quatro cabeçalhos `M02-S1` a `M02-S4`; matriz 60+120+120+60 | medir duração real |
-| FV-M02-02 | PASS documental | Caso A canino e Caso B felino declarados como integralmente fictícios | confirmar plausibilidade clínica |
+| FV-M02-02 | PASS clínico/documental | Caso A canino e Caso B felino fictícios; plausibilidade aprovada por Ricardo para ensaio | observar clareza e realismo percebido em T2 |
 | FV-M02-03 | PASS | quiz, seleção, ordenação, interpretação, reflexão e duas RA principais | observar carga cognitiva |
 | FV-M02-04 | PASS estrutural | 31 IDs únicos no participante e os mesmos 31 no facilitador; duas rubricas analíticas | testar respostas limítrofes |
-| FV-M02-05 | PASS de desenho | itens críticos, erros críticos e remediação por objetivo definidos | aprovação clínica pendente |
-| FV-M02-06 | PASS de rastreabilidade | capítulos internos mapeados nas três obras + AAHA 2024 + RECOVER 2024 + WSAVA 2022 + AVHTM/TRACS | confirmar a interpretação clínica na aprovação |
+| FV-M02-05 | PASS | itens críticos, erros críticos e remediação por objetivo definidos; aprovação clínica registrada | observar ocorrências no ensaio |
+| FV-M02-06 | PASS | capítulos internos mapeados nas três obras + AAHA 2024 + RECOVER 2024 + WSAVA 2022 + AVHTM/TRACS; interpretação aprovada para ensaio | atualizar se surgir nova divergência |
 | FV-M02-07 | PASS | nenhum PDF rastreado; conteúdo autoral; sem reprodução de figura/tabela | manter checagem antes da publicação |
 | FV-M02-08 | PASS | nenhum código interno F-01/F-02/F-03 no artefato do participante; gabaritos em arquivo separado | validar projeção na futura plataforma |
 | FV-M02-09 | PASS de desenho | duas RA, rubricas 0–2 por dimensão, SLA de cinco dias úteis | medir minutos de correção por resposta |
-| FV-M02-10 | PASS | ambos os artefatos marcados `AGUARDA_APROVACAO_CLINICA` | Ricardo preencher decisão, data e versão |
+| FV-M02-10 | PASS | decisão, data, versão e commits registrados como `APROVADO_PARA_ENSAIO_CONTROLADO` | impedir ampliação de escopo |
 
 ## 3. Comandos e resultados estruturais
 
@@ -104,17 +104,17 @@ Uma segunda passagem somente leitura, executada depois das correções, retornou
 
 ## 6. Revisões pendentes antes de aplicação
 
-- [ ] Ricardo confirmou plausibilidade e segurança do Caso A;
-- [ ] Ricardo confirmou plausibilidade e segurança do Caso B;
-- [ ] Ricardo conferiu todas as alternativas e gabaritos;
-- [ ] Ricardo aplicou as rubricas às quatro respostas sintéticas por RA;
+- [x] Ricardo confirmou clinicamente a v0.1.0, incluindo os Casos A e B, para ensaio controlado;
+- [x] Ricardo aprovou as alternativas, gabaritos e rubricas da v0.1.0 para ensaio;
+- [x] um executor documental aplicou as rubricas a quatro respostas sintéticas por RA, com resultado `PASS_SINTETICO_COM_LIMITACOES` no Anexo 0019;
+- [ ] Ricardo confirmou a usabilidade das rubricas durante T1/T2;
 - [ ] um ensaio cronometrado confirmou ou ajustou os 360 minutos;
 - [ ] foi medido o tempo de correção e verificado o SLA de cinco dias úteis;
-- [ ] a versão aprovada e a data foram registradas no Anexo 0016;
-- [ ] qualquer divergência de fonte foi resolvida e documentada.
+- [x] a versão aprovada, a data e os commits foram registrados no Anexo 0016;
+- [x] não existe divergência de fonte conhecida e não resolvida na versão aprovada.
 
 ## 7. Decisão do pré-voo
 
-**Resultado atual:** `READY_FOR_CLINICAL_REVIEW`.
+**Resultado atual:** `APROVADO_PARA_ENSAIO_CONTROLADO`, com T2 bloqueado até o aviso de privacidade D-077 estar completo.
 
-O protótipo está estruturalmente pronto para revisão, mas permanece bloqueado para aplicação. A próxima transição elegível é `APROVADO_PARA_ENSAIO_CONTROLADO`, mediante decisão explícita de Ricardo e fechamento das pendências aplicáveis da seção 6.
+O protótipo pode ser usado apenas no ensaio definido no Anexo 0018. A próxima transição será decidida depois dos dados de tempo, clareza, correção e segurança: manter v0.1.0, corrigir para v0.1.1 ou bloquear o módulo.

@@ -2,12 +2,12 @@
 
 **Classificação:** uso interno CVG; não disponibilizar ao participante
 **Versão:** 0.1.0
-**Estado:** `AGUARDA_APROVACAO_CLINICA`
+**Estado:** `APROVADO_PARA_ENSAIO_CONTROLADO` — não publicado
 **Aprovador obrigatório:** MV. Ricardo Akinaga
 **Data de corte científico:** 2026-08-06
 **Próxima revisão programada:** 2027-02-06 ou antes, se houver alerta/diretriz relevante
 
-Este guia corrige o material do participante do Anexo 0015. O protótipo não pode ser publicado enquanto o campo de aprovação clínica permanecer vazio.
+Este guia corrige o material do participante do Anexo 0015. A aprovação clínica registrada permite somente ensaio controlado e cronometrado; publicação geral, uso somativo e produção em escala continuam bloqueados.
 
 ## 1. Blueprint operacional
 
@@ -206,9 +206,9 @@ As diretrizes atuais prevalecem sobre formulações antigas nos pontos conflitan
 | Campo | Registro |
 |---|---|
 | aprovador | MV. Ricardo Akinaga |
-| decisão | PENDENTE |
-| data | PENDENTE |
-| ajustes obrigatórios | PENDENTE |
-| versão aprovada | PENDENTE |
+| decisão | `APROVADO_PARA_ENSAIO_CONTROLADO_E_CRONOMETRADO` |
+| data | 2026-08-06 |
+| ajustes obrigatórios | nenhum adicional no momento da aprovação; incorporar achados do ensaio antes de qualquer publicação |
+| versão aprovada | v0.1.0; conteúdo `91cb9e7`; checkpoint `77e6d65` |
 
-Até o preenchimento desta tabela, o material permanece `AGUARDA_APROVACAO_CLINICA` e não pode ser aplicado.
+A decisão não aprova competência prática, nota somativa ou aplicação geral. O ensaio deve seguir o protocolo do Anexo 0018 e pode ser interrompido pelos critérios de segurança ali definidos.

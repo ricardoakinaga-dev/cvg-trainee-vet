@@ -119,6 +119,7 @@
 | D-085 | Como ocorrerá a aprendizagem e a avaliação ao longo da trilha? | patrocinador | PRD/avaliação | aprovada definitivamente (2026-08-06): casos fictícios, pesquisa aberta, quiz, múltipla escolha, respostas dissertativas, feedback e revisão espaçada; respostas abertas corrigidas em até cinco dias úteis |
 | D-086 | Como as três obras serão usadas? | patrocinador/clínica | fontes/conteúdo | aprovada (2026-08-06): Tratado, Ettinger e Fossum são a base bibliográfica; legislação, bula, protocolo CVG e diretriz atual prevalecem em divergência |
 | D-087 | A fatia vertical do Mês 2 pode ser produzida? | patrocinador/clínica | conteúdo/validação | aprovada (2026-08-06): produzir as quatro sessões de Emergência e UTI, com dois casos fictícios, avaliação mista, rubricas, feedback e pré-voo; a produção dos demais módulos continua condicionada ao aprendizado desta fatia |
+| D-088 | A M02 v0.1.0 pode seguir para ensaio controlado e cronometrado? | patrocinador/aprovador clínico | validação operacional | aprovada clinicamente por MV. Ricardo Akinaga em 2026-08-06 para ensaio controlado e cronometrado; não autoriza publicação geral, uso somativo, certificação ou produção em escala |
 
 ## 8. Próximas perguntas úteis
 

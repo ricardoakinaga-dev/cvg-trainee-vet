@@ -320,6 +320,46 @@ D-087 registrada. O material permanece `AGUARDA_APROVACAO_CLINICA`; nenhuma apli
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-06 — APROVAÇÃO CLÍNICA E PREPARAÇÃO DO ENSAIO M02
+
+### TIMESTAMP
+
+2026-08-06 08:13:22 -03:00
+
+### ENGINE
+
+PRD / CONTEÚDO CONTROLADO
+
+### PHASE
+
+Validação operacional do currículo V3
+
+### SPRINT
+
+CUR-24-01 — ensaio controlado da M02
+
+### TASK
+
+D-088 / T0 / T1
+
+### ACTION
+
+Registrada a aprovação clínica de MV. Ricardo Akinaga para ensaio controlado e cronometrado da v0.1.0. Criado protocolo T0–T3 com coleta mínima, critérios de sucesso/parada e formulários de tempo. Executados teste sintético de oito respostas e ensaio de mesa documental.
+
+### RESULT
+
+T0 foi reexecutado após correção de dois escores e retornou `PASS_SINTETICO_COM_LIMITACOES`; T1 retornou `PASS_DOCUMENTAL_COM_LIMITES`. A revisão do protocolo identificou 0 crítico, 3 altos, 2 médios e 1 baixo; todos foram corrigidos e a confirmação retornou PASS. Nenhum participante real ou dado pessoal foi usado. T2 está autorizado, mas bloqueado até aviso de privacidade com base legal e canal definidos. Commit: PENDENTE DE CHECKPOINT.
+
+### DECISIONS
+
+D-088 não autoriza publicação geral, uso somativo, certificação, coorte completa ou produção em escala. T2 deve usar somente dois a três veterinários autorizados, o protocolo do Anexo 0018 e aviso D-077 completo antes da primeira coleta.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

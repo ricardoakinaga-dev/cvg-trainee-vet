@@ -98,6 +98,8 @@ Nenhum campo desconhecido foi apresentado como certeza.
 15. [Fatia vertical do Mês 2 — material do participante](90.ANEXOS/0015_fatia_vertical_mes_2_participante.md)
 16. [Fatia vertical do Mês 2 — guia restrito do facilitador](90.ANEXOS/0016_fatia_vertical_mes_2_facilitador.md)
 17. [Pré-voo da fatia vertical do Mês 2](90.ANEXOS/0017_prevoo_fatia_vertical_mes_2.md)
+18. [Protocolo do ensaio controlado e cronometrado da M02](90.ANEXOS/0018_protocolo_ensaio_controlado_m02.md)
+19. [Teste sintético das rubricas RA01 e RA02](90.ANEXOS/0019_teste_sintetico_rubricas_m02.md)
 
 ## 4. O que não foi criado
 

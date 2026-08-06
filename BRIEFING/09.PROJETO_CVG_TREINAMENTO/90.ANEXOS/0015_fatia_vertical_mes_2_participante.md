@@ -4,7 +4,7 @@
 **Carga:** 6 horas em quatro sessões
 **Modalidade:** digital, assíncrona e baseada em casos fictícios
 **Versão:** 0.1.0 — protótipo não publicado
-**Estado:** `AGUARDA_APROVACAO_CLINICA`
+**Estado:** `APROVADO_PARA_ENSAIO_CONTROLADO` — não publicado
 **Data de corte científico:** 2026-08-06
 
 > Todo paciente, tutor, resultado, horário e evolução deste módulo são fictícios. O material desenvolve raciocínio em simulação e não substitui exame do paciente, protocolo do CVG, bula, legislação ou decisão clínica supervisionada.
