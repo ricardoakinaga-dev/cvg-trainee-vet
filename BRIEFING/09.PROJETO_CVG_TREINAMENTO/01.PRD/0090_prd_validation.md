@@ -40,6 +40,7 @@
 - [x] Coorte inicial delimitada: aproximadamente 10 veterinários, abrangendo toda a equipe (D-079).
 - [x] Programa curricular clínico V2 definido no PRD 0016: 16 módulos, 128 casos digitais-base e banco de 1.440 itens;
 - [x] Carga/cadência confirmada em D-081: piloto de 14 semanas/30–40 h; ciclo completo de 34 semanas/90–115 h.
+- [x] Ordem de produção confirmada em D-062: piloto integrado primeiro; demais módulos em ondas após aprendizado do piloto.
 
 ### REGRAS
 

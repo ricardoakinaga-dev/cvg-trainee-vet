@@ -48,7 +48,7 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 
 ### Programa curricular clínico V2 — proposta para validação
 
-O [PRD 0016](0016_programa_curricular_clinico.md) transforma o escopo em um treinamento executável: ciclo completo de 34 semanas e faixa preliminar de 90–115 horas, com 16 módulos, 128 casos digitais-base, diagnóstico de 120 itens e banco inicial de 1.440 itens. O piloto recomendado de 14 semanas testa cinco módulos/partes curriculares e um caso integrador em 30–40 horas; não pretende condensar o ciclo completo.
+O [PRD 0016](0016_programa_curricular_clinico.md) transforma o escopo em um treinamento executável: ciclo completo de 34 semanas e faixa preliminar de 90–115 horas, com 16 módulos, 128 casos digitais-base, diagnóstico de 120 itens e banco inicial de 1.440 itens. O piloto aprovado em D-062 segue NC-01 → NC-02 → NC-03 → ponte NC-04/NC-05 + EM-01 → ponte NC-04/NC-05 + IN-01 → caso integrador, em 14 semanas e 30–40 horas; não pretende condensar o ciclo completo.
 
 Uma unidade técnica dura 10–15 minutos. Um módulo completo inclui conteúdo, casos, prática, avaliação, remediação e revisão e exige de quatro a seis horas distribuídas em duas semanas.
 

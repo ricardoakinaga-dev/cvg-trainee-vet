@@ -194,7 +194,7 @@ Possibilidades futuras:
 - Especialidades;
 - Liderança/preceptoria.
 
-**CONFIRMADO:** núcleo comum, Emergência e Internação compõem o escopo clínico. A organização executável em 16 módulos está no PRD 0016.
+**CONFIRMADO:** núcleo comum, Emergência e Internação compõem o escopo clínico. A organização em 16 módulos e a produção do piloto integrado antes da expansão foram aprovadas em D-062 e estão no PRD 0016.
 
 ## 6. Campos a decidir para um futuro módulo
 

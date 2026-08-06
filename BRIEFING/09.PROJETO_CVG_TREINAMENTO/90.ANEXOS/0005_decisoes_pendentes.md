@@ -93,7 +93,7 @@
 |---|---|---|---|---|
 | D-060 | Qual coorte piloto? | coordenação | Discovery | substituída por D-079: aproximadamente 10 veterinários, todos participam; sem inventário ou segmentação obrigatória |
 | D-061 | Qual duração? | PO | PRD | substituída por D-081: piloto de 14 semanas; ciclo completo de 34 semanas |
-| D-062 | Quantos módulos? | PO/comitê | PRD | proposta definida no PRD 0016 V2: 16 módulos; aguarda validação clínica detalhada separada da D-081 |
+| D-062 | Quantos módulos e qual ordem de produção? | patrocinador/clínica | PRD | aprovada (2026-08-06), Alternativa 1: 16 módulos no ciclo; produzir primeiro o piloto integrado NC-01 → NC-02 → NC-03 → ponte + EM-01 → ponte + IN-01 → caso integrador; depois expandir os demais módulos em ondas |
 | D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 itens (RN-078) |
 | D-064 | Qual critério de continuar/pausar? | patrocinador | PRD | conceito definido |
 | D-065 | Qual orçamento? | patrocinador | Discovery/PRD | pendente |
@@ -117,7 +117,7 @@
 
 ## 8. Próximas perguntas úteis
 
-1. Qual ordem de produção dos módulos será adotada na D-062?
+1. Como corrigir respostas construídas sem criar burocracia (D-070)?
 2. Há alguma restrição real de dispositivo ou acessibilidade?
 3. Quem será o segundo MV revisor do primeiro módulo quando ele estiver pronto?
 

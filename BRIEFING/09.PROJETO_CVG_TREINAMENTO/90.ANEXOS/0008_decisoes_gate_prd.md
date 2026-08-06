@@ -515,6 +515,16 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 **Decisão:** Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-06. Não há eliminação, punição, ranking ou reprovação definitiva. O treinamento mede avanço individual de conhecimento; não é competição nem certificação de competência prática.
 
+### D-062 — Ordem de produção dos módulos
+
+| Alternativa | Ordem | Veredito |
+|---|---|---|
+| **1** | **piloto integrado: NC-01 → NC-02 → NC-03 → ponte + EM-01 → ponte + IN-01 → caso integrador; depois expansão em ondas** | **selecionada — entrega conteúdo útil e permite corrigir o formato antes de produzir tudo** |
+| 2 | concluir todo o Núcleo, depois toda Emergência e por fim Internação | simples, mas posterga conteúdo hospitalar |
+| 3 | fundamentos mínimos e Emergência/Internação primeiro | impacto rápido, porém base de raciocínio menor |
+
+**Decisão:** Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-06. O ciclo mantém 16 módulos; somente a primeira onda precisa estar pronta para iniciar o piloto autorizado.
+
 ---
 
 ## 4. Dados e governança (B-03, B-04, B-05, D-051 a D-055)

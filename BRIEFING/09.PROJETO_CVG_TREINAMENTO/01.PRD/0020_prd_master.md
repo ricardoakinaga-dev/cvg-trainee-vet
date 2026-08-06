@@ -155,6 +155,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016; CARGA/CADÊNCIA APROVADA EM D-081**.
 11. Remediação de erro crítico — ✅ **EDUCATIVA E NÃO PUNITIVA, APROVADA EM D-082**.
+12. Ordem de produção — ✅ **PILOTO INTEGRADO PRIMEIRO; EXPANSÃO EM ONDAS, APROVADA EM D-062**.
 
 ## 14. Documentos do PRD
 

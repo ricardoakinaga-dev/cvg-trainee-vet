@@ -4,7 +4,7 @@
 **Público:** aproximadamente 10 médicos-veterinários; todos participam
 **Espécies:** cães e gatos
 **Modalidade:** integralmente digital
-**Status:** proposta curricular V2 com cadência aprovada por MV. Ricardo Akinaga em D-081
+**Status:** proposta curricular V2 com cadência e ordem de produção aprovadas por MV. Ricardo Akinaga em D-081/D-062
 **Data:** 2026-08-05
 
 ## 1. Resultado esperado
@@ -438,7 +438,7 @@ competências
 → publicação autorizada
 ```
 
-Ordem das ondas:
+Ordem das ondas aprovada em D-062:
 
 1. detalhar e validar a matriz dos 96 objetivos;
 2. produzir uma fatia vertical de NC-01: um objetivo, duas variantes de caso e 15 itens;
@@ -501,4 +501,4 @@ O programa mede conhecimento, raciocínio, priorização, interpretação, presc
 
 ## 14. Decisão necessária para execução
 
-O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. A carga/cadência foi aprovada em D-081 e a remediação educativa de erro crítico em D-082. Permanece a validação clínica detalhada da ordem/matriz antes da autoria.
+O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. A carga/cadência foi aprovada em D-081, a remediação educativa em D-082 e a ordem piloto integrado → expansão em ondas em D-062. A matriz detalhada de objetivos e erros será conferida clinicamente durante a autoria de cada módulo.
