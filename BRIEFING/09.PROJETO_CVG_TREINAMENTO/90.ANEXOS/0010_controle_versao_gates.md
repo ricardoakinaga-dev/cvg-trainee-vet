@@ -136,3 +136,17 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Responsável pela validação humana | MV. Ricardo Akinaga |
 | Próximo passo proposto | decidir D-081 entre três cadências; depois tratar D-082, item por item |
 | Tag do checkpoint | `checkpoint-curriculum-v2-2026-08-05` |
+
+## 9. Checkpoint D-081 — carga e cadência curricular
+
+| Campo | Registro |
+|---|---|
+| Decisão | Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-05 |
+| Piloto | 14 semanas; 30–40 horas; aproximadamente 2–3 horas por semana |
+| Ciclo completo | 34 semanas; faixa de planejamento de 90–115 horas |
+| Efeito | substitui D-016/RN-076 de 3 h/mês e D-061/RN-071 de 12 semanas |
+| Commit de conteúdo | `19e2170` — `docs: approve curriculum cadence` |
+| Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
+| Pendências remanescentes | D-062 (validação clínica detalhada da ordem), D-070 (correção de resposta construída) e D-082 (erro crítico) |
+| Próximo item | D-082, com três alternativas e recomendação clínica |
+| Tag | `gate-d081-curriculum-cadence-2026-08-05` |
