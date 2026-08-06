@@ -176,3 +176,16 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
 | Próximo item | D-070 — correção simples de respostas construídas |
 | Tag | `gate-d062-integrated-pilot-order-2026-08-06` |
+
+## 12. Checkpoint D-070 — correção estruturada adaptativa
+
+| Campo | Registro |
+|---|---|
+| Decisão | Alternativa 2 aprovada por MV. Ricardo Akinaga em 2026-08-06 |
+| Modelo inicial | campos estruturados e correção automática por rubrica |
+| Escalonamento | revisão humana por ambiguidade, contestação, possível erro crítico ou falhas repetidas; somente a atividade afetada migra |
+| Regra de avaliabilidade | pergunta/caso sem correção funcional testada é bloqueado antes do treinamento e deve ser redesenhado, estruturado ou destinado à correção humana |
+| Commit de conteúdo | `5e5b62c` — `docs: approve adaptive structured response scoring` |
+| Validações | `git diff --check`; links locais válidos; varredura de padrões de segredo sem ocorrência; nenhum PDF incluído |
+| Próximo item | B-07 — blueprint das 120 questões diagnósticas |
+| Tag | `gate-d070-adaptive-structured-scoring-2026-08-06` |
