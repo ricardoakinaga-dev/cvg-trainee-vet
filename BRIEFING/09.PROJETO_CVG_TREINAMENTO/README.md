@@ -9,7 +9,7 @@
 **Status do gate PRD:** `REPROVADO — EM CORREÇÃO (2026-08-05)` — o PRD existente é rascunho controlado; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
 **Status da auditoria documental:** `EM AUDITORIA — BASELINE TÉCNICA NÃO APROVADA`  
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
-**Escopo desta entrega:** documentação de briefing e matriz curricular clínica V2; nenhuma implementação, aula, prova real ou código foi criado.
+**Escopo desta entrega:** documentação de briefing, currículo V3 aprovado e fatia vertical documental do Mês 2; nenhuma plataforma, aplicação real ou código de produto foi criado.
 
 **Princípio de produto (D-080):** o colaborador deve encontrar uma jornada clara e óbvia: entrar, receber uma recomendação, estudar unidades breves dentro de módulos clínicos completos, resolver casos digitais, obter feedback imediato e acompanhar o próprio progresso. Controles administrativos não devem criar etapas desnecessárias para quem está aprendendo.
 
@@ -94,12 +94,16 @@ Nenhum campo desconhecido foi apresentado como certeza.
 11. [Política mínima interna de dados — aprovada para o MVP](90.ANEXOS/0011_politica_conservadora_dados_lgpd.md)
 12. [Blueprint do diagnóstico inicial B-07 — rascunho](90.ANEXOS/0012_blueprint_diagnostico_b07.md)
 13. [Pesquisa de melhores práticas da trilha de 24 meses](90.ANEXOS/0013_pesquisa_melhores_praticas_trilha_24_meses.md)
+14. [Critérios de aceite da fatia vertical do Mês 2](90.ANEXOS/0014_criterios_aceite_fatia_vertical_mes_2.md)
+15. [Fatia vertical do Mês 2 — material do participante](90.ANEXOS/0015_fatia_vertical_mes_2_participante.md)
+16. [Fatia vertical do Mês 2 — guia restrito do facilitador](90.ANEXOS/0016_fatia_vertical_mes_2_facilitador.md)
+17. [Pré-voo da fatia vertical do Mês 2](90.ANEXOS/0017_prevoo_fatia_vertical_mes_2.md)
 
 ## 4. O que não foi criado
 
 - Código, aplicação, site ou plataforma;
 - Banco de dados, API, arquitetura técnica ou stack;
-- Aulas, casos e questões clínicas completas — a trilha V3 está definida no PRD 0017, mas o conteúdo real ainda será produzido;
+- Conteúdo dos demais 23 módulos e os 120 itens diagnósticos — somente a fatia vertical documental do Mês 2 foi produzida e ainda aguarda aprovação clínica para ensaio;
 - Certificados;
 - Protótipos de telas;
 - SPEC, backlog de BUILD ou sprints;

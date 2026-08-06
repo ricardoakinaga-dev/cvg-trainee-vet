@@ -5,7 +5,7 @@
 **Espécies:** cães e gatos
 **Modalidade:** digital, assíncrona e baseada em casos fictícios
 **Duração:** 24 meses, divididos em Parte 1 e Parte 2
-**Status:** PROPOSTA CURRICULAR V3 — direção aprovada pelo patrocinador em 2026-08-06; detalhamento sujeito aos gates canônicos
+**Status:** CURRÍCULO V3 APROVADO PELO PATROCINADOR EM 2026-08-06 — validação operacional pela fatia vertical e gates canônicos ainda pendente
 **Substitui:** cadência de 34 semanas/16 módulos da proposta V2 em `0016`
 
 ## 1. Visão da trilha
@@ -74,7 +74,7 @@ Regras:
 
 1. questões abertas permitem consulta às fontes e devem pedir síntese, justificativa ou aplicação, nunca mera transcrição;
 2. quizzes e questões objetivas podem ser corrigidos automaticamente depois do envio;
-3. respostas abertas usam rubrica explícita e correção por MV. Ricardo Akinaga, com prazo operacional proposto de cinco dias úteis;
+3. respostas abertas usam rubrica explícita e correção por MV. Ricardo Akinaga em até cinco dias úteis, conforme aprovação de 2026-08-06;
 4. toda resposta clínica deve citar a fonte usada e registrar a data de consulta quando envolver recomendação atualizável;
 5. erro crítico gera feedback e reapresentação em caso equivalente, sem punição, ranking ou reprovação definitiva;
 6. o programa combina atividades abertas e fechadas; nenhuma modalidade isolada decide o desenvolvimento do participante;

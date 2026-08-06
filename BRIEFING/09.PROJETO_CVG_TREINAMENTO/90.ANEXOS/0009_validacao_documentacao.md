@@ -55,7 +55,7 @@ Esta verificação preserva achados e correções já presentes na baseline, mas
 |---|---|---|
 | Treinamento por competências | 12 competências locais → núcleo comum e trilhas (anexo 0002) | ✅ |
 | Avaliação diagnóstica antes do treinamento | RN-010 a RN-013 | ✅ |
-| Aprendizagem espaçada | quatro sessões mensais, 6 h por módulo regular, 24 meses/149 h propostas | ✅ direção D-084/D-085; validar em fatia vertical |
+| Aprendizagem espaçada | quatro sessões mensais, 6 h por módulo regular, 24 meses/149 h | ✅ aprovada em D-084/D-085; fatia vertical documental produzida, ensaio cronometrado pendente |
 | Simulação/prática deliberada | simulação digital incluída para conhecimento/raciocínio; prática presencial excluída e bloqueada pelo `GATE-EXP-PRAT-01` | ✅ |
 | Mentoria e feedback | papéis de mentor/preceptor; plano individual em reprovação recorrente | ✅ |
 | Casos digitais estruturados | atividade digital de caso incluída; formato síncrono ou assíncrono ainda não decidido | ✅ com pendência de formato |

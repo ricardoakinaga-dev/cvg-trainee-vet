@@ -43,12 +43,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - título: produzir e validar um módulo completo de emergência
 - descrição: criar quatro sessões, dois casos fictícios, quiz, questões objetivas, duas respostas abertas, rubricas, feedback e referências; medir carga do participante e correção por Ricardo
 - módulo: programa curricular V3 / emergência
-- dependência: aprovação humana do PRD 0017 e da carga mensal
+- dependência: aprovação humana do PRD 0017 e da carga mensal — satisfeita em D-087
 - fase: PRD — validação da proposta curricular
 - risco: alto — sem protótipo a carga de autoria e correção é apenas estimativa
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
-- evidência: PRD 0017; Anexo 0013; commit c1d3023
+- evidência: PRD 0017; Anexos 0013 a 0017; commit curricular c1d3023; commit da fatia vertical pendente de checkpoint
+- próxima decisão: Ricardo revisar clinicamente a versão 0.1.0 e autorizar ou rejeitar ensaio controlado/cronometrado
 
 ### B07-04 — Aplicação da baseline
 

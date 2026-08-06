@@ -280,6 +280,46 @@ D-083 a D-086 estão registradas como direção do patrocinador. O checkpoint n�
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-06 — FATIA VERTICAL M02 V0.1.0
+
+### TIMESTAMP
+
+2026-08-06 08:02:59 -03:00
+
+### ENGINE
+
+PRD / CONTEÚDO CONTROLADO
+
+### PHASE
+
+Validação operacional do currículo V3
+
+### SPRINT
+
+CUR-24-01 — fatia vertical de Emergência e UTI
+
+### TASK
+
+CUR-24-01 / D-087
+
+### ACTION
+
+Registrada a aprovação de 149 horas, SLA de cinco dias úteis e autoria do Mês 2. Definidos testes antes da autoria; produzidos material do participante, guia restrito e pré-voo. Mapeados capítulos das três obras e atualizações AAHA 2024, RECOVER 2024, WSAVA 2022 e AVHTM/TRACS.
+
+### RESULT
+
+Versão 0.1.0 com quatro sessões/360 minutos, dois casos fictícios, 31 itens objetivos/estruturados e duas respostas abertas. Testes estruturais passaram. Uma revisão independente identificou dois achados altos e quatro médios; todos foram corrigidos e a confirmação final retornou PASS sem novo achado crítico/alto. Commit: PENDENTE DE CHECKPOINT.
+
+### DECISIONS
+
+D-087 registrada. O material permanece `AGUARDA_APROVACAO_CLINICA`; nenhuma aplicação foi autorizada. Próxima decisão: Ricardo aprovar, ajustar ou rejeitar a v0.1.0 para ensaio controlado e cronometrado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

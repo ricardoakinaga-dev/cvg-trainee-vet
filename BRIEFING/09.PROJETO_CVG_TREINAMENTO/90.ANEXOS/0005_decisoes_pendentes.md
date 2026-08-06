@@ -115,15 +115,16 @@
 | D-081 | Qual carga/cadência deve executar a matriz curricular clínica V2? | patrocinador | PRD/conteúdo | preservada como histórico e substituída por D-084/D-085: trilha V3 de 24 meses/149 h |
 | D-082 | Como tratar erro crítico em caso digital? | patrocinador/clínica | PRD/avaliação | aprovada (2026-08-06), Alternativa 1: somente o objetivo afetado fica em reforço; explicação + conteúdo curto + novo caso equivalente; decisão segura libera; persistência recebe orientação individual; sem eliminação, punição, ranking ou reprovação definitiva |
 | D-083 | Quem aprova clinicamente módulos e questões no MVP interno? | patrocinador | governança/conteúdo | aprovada (2026-08-06): MV. Ricardo Akinaga é o único aprovador clínico obrigatório; revisão por outro MV é opcional; substitui a segunda conferência obrigatória de D-076 |
-| D-084 | Qual a duração e arquitetura da trilha? | patrocinador | PRD/conteúdo | aprovada como direção (2026-08-06): 24 meses, duas partes, 24 módulos mensais e 96 sessões; detalhamento no PRD 0017 |
-| D-085 | Como ocorrerá a aprendizagem e a avaliação ao longo da trilha? | patrocinador | PRD/avaliação | aprovada como direção (2026-08-06): casos fictícios, pesquisa aberta, quiz, múltipla escolha, respostas dissertativas, feedback e revisão espaçada |
+| D-084 | Qual a duração e arquitetura da trilha? | patrocinador | PRD/conteúdo | aprovada definitivamente (2026-08-06): 24 meses, duas partes, 24 módulos mensais, 96 sessões e 149 horas; detalhamento no PRD 0017 |
+| D-085 | Como ocorrerá a aprendizagem e a avaliação ao longo da trilha? | patrocinador | PRD/avaliação | aprovada definitivamente (2026-08-06): casos fictícios, pesquisa aberta, quiz, múltipla escolha, respostas dissertativas, feedback e revisão espaçada; respostas abertas corrigidas em até cinco dias úteis |
 | D-086 | Como as três obras serão usadas? | patrocinador/clínica | fontes/conteúdo | aprovada (2026-08-06): Tratado, Ettinger e Fossum são a base bibliográfica; legislação, bula, protocolo CVG e diretriz atual prevalecem em divergência |
+| D-087 | A fatia vertical do Mês 2 pode ser produzida? | patrocinador/clínica | conteúdo/validação | aprovada (2026-08-06): produzir as quatro sessões de Emergência e UTI, com dois casos fictícios, avaliação mista, rubricas, feedback e pré-voo; a produção dos demais módulos continua condicionada ao aprendizado desta fatia |
 
 ## 8. Próximas perguntas úteis
 
 1. Como validar clinicamente o blueprint do Anexo 0012 e transformá-lo nos 120 itens diagnósticos (B-07)?
 2. Há alguma restrição real de dispositivo ou acessibilidade?
-3. A carga de seis horas/mês e o prazo proposto de cinco dias úteis para correção aberta são viáveis na fatia vertical?
+3. Quais ajustes de carga e correção serão indicados pelo pré-voo e pela aplicação da fatia vertical?
 
 ## 9. Regra de fechamento
 

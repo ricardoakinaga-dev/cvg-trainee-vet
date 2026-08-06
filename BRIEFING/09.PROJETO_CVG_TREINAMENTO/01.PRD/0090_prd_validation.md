@@ -39,7 +39,7 @@
 - [x] Áreas clínicas do piloto confirmadas pelo responsável do MVP — núcleo + Emergência + Internação (B-06);
 - [x] Coorte inicial delimitada: aproximadamente 10 veterinários, abrangendo toda a equipe (D-079).
 - [x] Programa curricular clínico V3 definido no PRD 0017: 24 meses, duas partes, 24 módulos e 96 sessões;
-- [ ] Carga/cadência proposta em D-084/D-085: 149 horas; aguarda confirmação final após leitura e fatia vertical;
+- [x] Carga/cadência de D-084/D-085 confirmada pelo patrocinador em 2026-08-06: 149 horas e correção aberta em até cinco dias úteis; a fatia vertical mede viabilidade operacional sem reabrir a aprovação curricular;
 - [x] Ordem de validação: fatia vertical do Mês 2 antes da produção em escala; demais módulos em ondas após aprendizado.
 
 ### REGRAS
@@ -90,7 +90,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 2. Composição quiz 0% + caso 30% + prova 70% (D-044) — ✅ corrige inconsistência RN-020/RN-022
 3. Tentativas 2 + remediação, intervalo mínimo 7 dias (D-042/D-043) — ✅
 4. Núcleo + Emergência/Internação no piloto (D-020) — ✅
-5. Aproximadamente 10 veterinários; trilha V3 de 24 meses, 24 módulos e 149 horas propostas (D-084/D-085) — direção aprovada; carga final depende da fatia vertical;
+5. Aproximadamente 10 veterinários; trilha V3 de 24 meses, 24 módulos e 149 horas (D-084/D-085) — aprovada pelo patrocinador; a fatia vertical validará a viabilidade operacional;
 6. Certificação: status de conclusão no piloto (D-049) — ✅
 7. Reprovação recorrente: plano individual com mentor, sem punição (D-047) — ✅
 8. Política de dados: D-077 aprovou o mínimo necessário e fechou B-05; prontuários, tutores, gravações e casos reais identificáveis permanecem proibidos — ✅
@@ -98,7 +98,7 @@ As decisões abaixo reduzem pendências de produto, mas não aprovam o gate enqu
 10. Dispensa por domínio: não no piloto (D-045) — ✅
 11. Modalidade: primeira versão integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` (D-068) — ✅
 12. Fontes: D-075 aprovou governança enxuta para o sistema interno; B-04 fechado; D-033 futura e não bloqueante — ✅
-13. Programa curricular: matriz V3 definida no PRD 0017; D-084/D-085 substituem a cadência de D-081 — confirmação operacional pendente;
+13. Programa curricular: matriz V3 definida no PRD 0017; D-084/D-085 substituem a cadência de D-081 — aprovada; confirmação operacional pela fatia vertical pendente;
 14. Erro crítico: objetivo em reforço, explicação e novo caso equivalente; sem punição ou reprovação definitiva (D-082) — ✅
 
 ---

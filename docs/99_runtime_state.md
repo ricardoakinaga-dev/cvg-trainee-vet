@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: redesenho curricular V3 e alinhamento do B-07
+- current_phase: prototipação e validação operacional do currículo V3
 - current_sprint: CUR-24-01 — trilha de 24 meses
-- current_task: validar o cronograma de 24 módulos/96 sessões e autorizar a fatia vertical
+- current_task: produzir e validar a fatia vertical do Mês 2 — Emergência e UTI
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit c1d3023 registrou a pesquisa externa, a proposta curricular V3 e a propagação de D-083 a D-086 pelos artefatos ativos
-- next_action: obter confirmação humana da carga de 149 horas, da cadência mensal e do mix de avaliação; depois produzir a fatia vertical do Mês 2
+- last_completed_action: fatia vertical M02 v0.1.0 produzida com quatro sessões, dois casos, 31 itens estruturados, duas respostas abertas, rubricas, fontes e pré-voo; revisão independente final retornou PASS
+- next_action: Ricardo revisar clinicamente os Anexos 0015 e 0016 e decidir se a v0.1.0 pode seguir para ensaio controlado e cronometrado
 
 ## BLOQUEIOS
 
-- blockers: B-07 ainda aberto; os 120 itens não foram produzidos nem aplicados; a trilha V3 ainda precisa de confirmação final e de uma fatia vertical para validar esforço e correção manual
+- blockers: B-07 ainda aberto e os 120 itens não foram produzidos nem aplicados; a fatia vertical está estruturalmente pronta, mas aplicação depende da aprovação clínica final de Ricardo e do ensaio autorizado
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: confirmar o cronograma V3 de 24 meses/149 horas, o prazo proposto de cinco dias úteis para correção aberta e autorizar a fatia vertical do Mês 2
+- decision_description: aprovar, solicitar ajustes ou rejeitar a fatia vertical M02 v0.1.0 para ensaio controlado; a aprovação não autoriza publicação geral
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T07:32:23-03:00
+- last_update: 2026-08-06T08:02:59-03:00
 
 ## REGRAS DE USO
 
