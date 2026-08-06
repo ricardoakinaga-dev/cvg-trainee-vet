@@ -55,7 +55,7 @@ Esta verificação preserva achados e correções já presentes na baseline, mas
 |---|---|---|
 | Treinamento por competências | 12 competências locais → núcleo comum e trilhas (anexo 0002) | ✅ |
 | Avaliação diagnóstica antes do treinamento | RN-010 a RN-013 | ✅ |
-| Microlearning espaçado | registro histórico substituído pelo PRD 0016: unidade 10–15 min dentro de módulo de 4–6 h; cadência final pendente na D-081 | ⚠️ REABERTO |
+| Microlearning espaçado | unidade 10–15 min dentro de módulo de 4–6 h; piloto de 14 semanas/30–40 h e ciclo de 34 semanas/90–115 h | ✅ D-081 |
 | Simulação/prática deliberada | simulação digital incluída para conhecimento/raciocínio; prática presencial excluída e bloqueada pelo `GATE-EXP-PRAT-01` | ✅ |
 | Mentoria e feedback | papéis de mentor/preceptor; plano individual em reprovação recorrente | ✅ |
 | Casos digitais estruturados | atividade digital de caso incluída; formato síncrono ou assíncrono ainda não decidido | ✅ com pendência de formato |

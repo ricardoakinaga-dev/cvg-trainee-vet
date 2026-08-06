@@ -1,7 +1,7 @@
 # Anexo 0002 — Hipóteses Pedagógicas para Validação
 
 **Status:** registro histórico de hipóteses; a proposta curricular vigente está no [PRD 0016](../01.PRD/0016_programa_curricular_clinico.md)
-**Regra de leitura:** quando houver conflito, o PRD 0016 substitui este anexo. A carga/cadência final ainda depende da D-081.
+**Regra de leitura:** quando houver conflito, o PRD 0016 substitui este anexo. A carga/cadência foi aprovada em D-081.
 
 ## 1. Princípios candidatos
 
@@ -263,11 +263,11 @@ O futuro PRD deverá decidir:
 
 - Unidade técnica: 10–15 minutos;
 - Módulo completo: 4–6 horas distribuídas em duas semanas;
-- Ciclo completo: 34 semanas e faixa preliminar de 90–115 horas;
-- Piloto recomendado: 14 semanas e faixa preliminar de 30–40 horas;
+- Ciclo completo: 34 semanas e faixa de planejamento aprovada de 90–115 horas;
+- Piloto aprovado: 14 semanas e 30–40 horas;
 - Revisão: espaçada e cumulativa, com intervalo adaptado ao acerto ou erro.
 
-A antiga referência de 2–4 horas por mês foi rejeitada por insuficiência diante do escopo. A D-081 selecionará a cadência final antes da execução.
+A antiga referência de 2–4 horas por mês foi rejeitada por insuficiência diante do escopo. D-081 confirmou aproximadamente 2–3 horas por semana no piloto.
 
 ## 10. Hipótese de conteúdo obrigatório versus eletivo
 

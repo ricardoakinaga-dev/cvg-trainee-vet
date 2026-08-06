@@ -4,7 +4,7 @@
 **Público:** aproximadamente 10 médicos-veterinários; todos participam
 **Espécies:** cães e gatos
 **Modalidade:** integralmente digital
-**Status:** proposta curricular V2 pronta para validação clínica por MV. Ricardo Akinaga
+**Status:** proposta curricular V2 com cadência aprovada por MV. Ricardo Akinaga em D-081
 **Data:** 2026-08-05
 
 ## 1. Resultado esperado
@@ -27,7 +27,7 @@ As questões são usadas para recuperação ativa, feedback e amostragem do conh
 | Componente | Dimensão proposta |
 |---|---:|
 | Duração do ciclo completo | 34 semanas: 32 de módulos + 2 de integração final |
-| Carga efetiva | faixa preliminar de 90–115 horas, a medir no piloto |
+| Carga efetiva | faixa de planejamento aprovada de 90–115 horas, a calibrar no piloto |
 | Trilhas | Núcleo Clínico, Emergência e Internação |
 | Módulos | 16 |
 | Objetivos observáveis | 96, com 6 por módulo |
@@ -421,7 +421,7 @@ O piloto valida a experiência e o método; ele não finge concluir todo o progr
 | 13 | caso integrador do piloto |
 | 14 | avaliação, remediação dirigida e feedback do piloto |
 
-Carga preliminar do piloto: 30–40 horas, aproximadamente duas a três horas por semana. Ela inclui 3–4 horas de diagnóstico/devolutiva, 22–30 horas de módulos e pontes e 5–6 horas de integração, avaliação, remediação e feedback. A carga antiga de 3 horas por mês e a janela anterior de 12 semanas não comportam este piloto sem compressão; ambas precisam ser substituídas na D-081 antes da execução.
+Carga aprovada do piloto: 30–40 horas, aproximadamente duas a três horas por semana. Ela inclui 3–4 horas de diagnóstico/devolutiva, 22–30 horas de módulos e pontes e 5–6 horas de integração, avaliação, remediação e feedback. D-081 substitui a carga antiga de 3 horas por mês e a janela anterior de 12 semanas.
 
 ## 11. Ordem de produção e capacidade
 
@@ -501,4 +501,4 @@ O programa mede conhecimento, raciocínio, priorização, interpretação, presc
 
 ## 14. Decisão necessária para execução
 
-O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. Antes da execução, Ricardo precisa selecionar a carga/cadência final e validar clinicamente a ordem dos 16 módulos.
+O conteúdo curricular, os objetivos, os casos e o volume estão definidos como proposta V2. A carga/cadência foi aprovada em D-081. Permanecem a decisão D-082 sobre o efeito de erro crítico na conclusão e a validação clínica detalhada da ordem/matriz antes da autoria.

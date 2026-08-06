@@ -42,8 +42,8 @@ Esta fase mantém a **documentação de briefing do produto** como rascunho cont
 - **Áreas clínicas:** **Emergência e Internação**, confirmadas pelo responsável do MVP (B-06);
 - Espécies: **cães e gatos** (D-022 resolvido);
 - Público/coorte: **aproximadamente 10 veterinários**, com participação de toda a equipe; sem segmentação obrigatória por setor ou turno (D-079/B-02 fechado);
-- Duração histórica do piloto: **12 semanas** (D-061); a matriz V2 recomenda 14 semanas e reabre a decisão na D-081 para evitar módulos comprimidos;
-- Carga antiga: **3 h/mês por veterinário** (D-016); a pesquisa e a matriz curricular V2 demonstraram que esse total é insuficiente para o escopo clínico aprovado e ele precisa ser substituído na D-081;
+- Duração do piloto: **14 semanas**, confirmada por D-081; substitui a decisão histórica D-061 de 12 semanas;
+- Carga protegida do piloto: **30–40 horas**, aproximadamente 2–3 horas por semana, confirmada por D-081; substitui a decisão histórica D-016 de 3 h/mês;
 - Banco de questões: **10 a 15 itens por objetivo** (D-063 resolvido).
 
 ### Programa curricular clínico V2 — proposta para validação
@@ -102,6 +102,6 @@ Uma unidade técnica dura 10–15 minutos. Um módulo completo inclui conteúdo,
 | 0 | Corrigir e revalidar Briefing (Discovery + PRD) | gates 0090 Discovery e PRD aprovados, nessa ordem |
 | 1 | SPEC | PRD aprovado |
 | 2 | BUILD (MVP piloto) | SPEC aprovada |
-| 3 | Piloto controlado (aproximadamente 10 veterinários; proposta de 14 semanas) | build funcional e D-081 confirmada |
+| 3 | Piloto controlado (aproximadamente 10 veterinários; 14 semanas e 30–40 horas) | build funcional e gates aplicáveis aprovados |
 | 4 | AUDIT | piloto em operação |
 | 5 | Melhoria contínua e expansão | decisão do patrocinador |

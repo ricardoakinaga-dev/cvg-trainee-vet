@@ -473,7 +473,7 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 
 ### D-061 — Duração do piloto
 
-> **Registro histórico reaberto:** esta escolha antecedeu a matriz curricular V2. A recomendação atual é 14 semanas para preservar dois ciclos semanais por módulo; a decisão final está na D-081.
+> **Registro histórico substituído:** esta escolha antecedeu a matriz curricular V2. D-081 aprovou 14 semanas para preservar dois ciclos semanais por módulo.
 
 | Opção | Duração | Veredito |
 |---|---|---|
@@ -481,11 +481,11 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | **B** | **10 a 12 semanas** | **recomendado — cabe diagnóstico, 2–3 módulos, prova, remediação e 1 janela de retenção (30 dias)** |
 | C | 16 semanas | posterga a decisão de expansão |
 
-**Recomendação histórica:** 12 semanas. **Situação atual:** reaberta pela D-081; proposta V2 de 14 semanas.
+**Recomendação histórica:** 12 semanas. **Situação atual:** substituída por 14 semanas em D-081.
 
 ### D-016 — Tempo protegido
 
-> **Registro histórico reaberto:** esta comparação foi feita antes da matriz curricular clínica. O PRD 0016 demonstrou que 3 h/mês não comportam casos, prática, avaliação e revisão; a decisão vigente está na D-081.
+> **Registro histórico substituído:** esta comparação foi feita antes da matriz curricular clínica. D-081 aprovou 30–40 horas em 14 semanas, aproximadamente 2–3 horas por semana.
 
 | Opção | Carga | Veredito |
 |---|---|---|
@@ -493,7 +493,17 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | **B** | **3 h/mês (≈ 45 min/semana: microlearning 10 min/dia + 1 round de 30–45 min quinzenal)** | **recomendado — dentro da faixa 2–4 h/mês e compatível com 12×36** |
 | C | 4 h/mês | máximo da faixa; depende de escala |
 
-**Recomendação histórica:** 3 h/mês protegidas. **Situação atual:** insuficiente e pendente de substituição pela D-081.
+**Recomendação histórica:** 3 h/mês protegidas. **Situação atual:** substituída por D-081.
+
+### D-081 — Carga e cadência da matriz curricular V2
+
+| Alternativa | Piloto | Ciclo completo | Veredito |
+|---|---|---|---|
+| **1** | **14 semanas; 30–40 h; aproximadamente 2–3 h/semana** | **34 semanas; 90–115 h** | **selecionada pelo patrocinador — preserva profundidade e fluidez** |
+| 2 | 12 semanas; 30–40 h | 26 semanas; 90–115 h | intensiva; maior concentração e fadiga |
+| 3 | 16 semanas; 30–40 h | 44 semanas; 90–115 h | contínua; menor carga semanal e ciclo mais longo |
+
+**Decisão:** Alternativa 1 aprovada por MV. Ricardo Akinaga em 2026-08-05. D-081 substitui a duração histórica D-061 e a carga histórica D-016. O piloto passa a ter 14 semanas e 30–40 horas; o ciclo completo, 34 semanas e faixa de planejamento de 90–115 horas.
 
 ---
 
@@ -547,8 +557,8 @@ Este bloco preserva a evidência histórica do checkpoint D-074. A decisão vige
 | Certificação | status no piloto; certificado na expansão |
 | Áreas do piloto | núcleo + emergência + internação |
 | Público | aproximadamente 10 veterinários; todos participam; sem segmentação |
-| Duração | decisão histórica de 12 semanas reaberta; proposta V2 de 14 semanas na D-081 |
-| Tempo protegido | decisão histórica de 3 h/mês reaberta; nova proposta no PRD 0016 e seleção pendente na D-081 |
+| Duração | 14 semanas no piloto; 34 semanas no ciclo completo (D-081) |
+| Tempo protegido | piloto 30–40 h, aproximadamente 2–3 h/semana; ciclo completo 90–115 h (D-081) |
 | Dados/B-05 | D-077: política mínima aprovada; somente identificação/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores e casos reais identificáveis proibidos |
 | Fontes/B-04 | D-075: governança enxuta aprovada; B-04 fechado para o MVP interno; D-033 futura e não bloqueante |
 | Governança/B-03 | D-076: Ricardo concentra as responsabilidades; B-03 fechado; segundo MV somente antes da publicação de cada módulo clínico |

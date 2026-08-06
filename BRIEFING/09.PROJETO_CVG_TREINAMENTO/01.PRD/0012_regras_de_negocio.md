@@ -104,12 +104,12 @@ Regra geral: nenhuma regra aqui está aprovada como definitiva. Itens marcados c
 | ID | Regra | Classificação |
 |---|---|---|
 | RN-070 | Público inicial: aproximadamente 10 veterinários; todos participam da primeira aplicação, sem segmentação por setor ou turno | APROVADA PELO PATROCINADOR COMO INSUMO (D-079; B-02 FECHADO) |
-| RN-071 | A duração histórica de 12 semanas foi reaberta; a matriz V2 recomenda 14 semanas para não comprimir módulos | REABERTA NA D-081 |
+| RN-071 | Duração do piloto: 14 semanas, preservando dois ciclos semanais por módulo | APROVADA PELO PATROCINADOR EM D-081 (2026-08-05) |
 | RN-072 | Piloto digital cobre: diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-074 | Baseline coletada no início do piloto (perfil, conhecimento, engajamento, indicadores selecionados) | PENDENTE (B-07) |
 | RN-075 | Módulo clínico revisado por outro MV antes da publicação; revisão pedagógica é opcional no MVP | APROVADA PELO PATROCINADOR COMO INSUMO (D-076) |
-| RN-076 | A carga de 3 h/mês é registro histórico e não comporta o programa clínico V2; a D-081 deve substituí-la antes da execução | REABERTA PELA MATRIZ CURRICULAR 0016 |
+| RN-076 | Carga do piloto: 30–40 horas em 14 semanas, aproximadamente 2–3 horas por semana; ciclo completo: 34 semanas e faixa de planejamento de 90–115 horas | APROVADA PELO PATROCINADOR EM D-081 (2026-08-05) |
 | RN-077 | Espécies do piloto: cães e gatos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-078 | Banco do piloto: 10 a 15 itens por objetivo de aprendizagem | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-079 | Certificação no piloto: somente status de conclusão e histórico; certificado formal avaliado na expansão | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |

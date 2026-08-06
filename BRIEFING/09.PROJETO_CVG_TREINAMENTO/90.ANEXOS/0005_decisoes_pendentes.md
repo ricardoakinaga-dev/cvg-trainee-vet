@@ -2,9 +2,9 @@
 
 **Objetivo:** transformar lacunas em perguntas acionáveis, com owner e gate.  
 **Atualização:** 2026-08-05 — PRD elaborado; as decisões abaixo marcadas como `proposta` foram incorporadas ao PRD como `PROPOSTA`.  
-**Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). Elas são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD. Permanecem somente as decisões ainda marcadas como pendentes.
+**Atualização 2026-08-05 (decisões de produto):** o patrocinador confirmou D-016, D-020, D-021, D-022, D-040 a D-047, D-049, D-051 a D-053, D-055, D-060, D-061 e D-063 (ver anexo 0008). D-081 posteriormente substituiu D-016 e D-061. Essas decisões são insumos para reexecução do gate e não equivalem à aprovação do Discovery ou do PRD.
 
-**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-082. D-078 confirma o processo atual, D-079 fecha o público/coorte, D-080 fixa a jornada simples do colaborador e D-081 concentra a escolha curricular imediata: carga/cadência.
+**Atualização 2026-08-05 (validação documental):** D-040 a D-044 sincronizados com as decisões do patrocinador (ver anexo 0009); incluídas D-067 a D-082. D-078 confirma o processo atual, D-079 fecha o público/coorte, D-080 fixa a jornada simples e D-081 aprova a carga/cadência curricular.
 
 ## 1. Identidade e governança
 
@@ -28,7 +28,7 @@
 | D-013 | Como o treinamento ocorre hoje? | MV. Ricardo Akinaga | Discovery | resolvida por D-078 — aprendizado informal conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-014 | Quais ferramentas são usadas? | operação | Discovery | parcialmente resolvida — não há sistema de treinamento; ferramentas auxiliares pendentes |
 | D-015 | Quais lacunas já são conhecidas? | coord. clínica | Discovery | pendente |
-| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | decisão histórica de 3 h/mês reaberta: insuficiente para a matriz curricular V2; substituição concentrada na D-081 |
+| D-016 | Quanto tempo protegido será oferecido? | direção | PRD | substituída por D-081: piloto com 30–40 h em 14 semanas, aproximadamente 2–3 h/semana |
 | D-017 | Quais restrições de dispositivo/conectividade? | MV. Ricardo Akinaga | PRD | confirmar apenas se afetar o MVP |
 | D-018 | Quais necessidades de acessibilidade? | MV. Ricardo Akinaga | PRD | confirmar apenas se houver necessidade concreta |
 
@@ -92,8 +92,8 @@
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
 | D-060 | Qual coorte piloto? | coordenação | Discovery | substituída por D-079: aproximadamente 10 veterinários, todos participam; sem inventário ou segmentação obrigatória |
-| D-061 | Qual duração? | PO | PRD | decisão histórica de 12 semanas reaberta: comprime o piloto V2; substituição concentrada na D-081 |
-| D-062 | Quantos módulos? | PO/comitê | PRD | proposta definida no PRD 0016 V2: 16 módulos; aguarda validação clínica junto com a D-081 |
+| D-061 | Qual duração? | PO | PRD | substituída por D-081: piloto de 14 semanas; ciclo completo de 34 semanas |
+| D-062 | Quantos módulos? | PO/comitê | PRD | proposta definida no PRD 0016 V2: 16 módulos; aguarda validação clínica detalhada separada da D-081 |
 | D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 itens (RN-078) |
 | D-064 | Qual critério de continuar/pausar? | patrocinador | PRD | conceito definido |
 | D-065 | Qual orçamento? | patrocinador | Discovery/PRD | pendente |
@@ -112,12 +112,12 @@
 | D-078 | Como funciona atualmente o treinamento veterinário no CVG? | patrocinador | Discovery/B-01 | confirmada (2026-08-05): não existe treinamento padronizado; o aprendizado é informal, conforme disponibilidade dos profissionais, sem trilha, avaliação ou registro centralizado; B-01 fechado |
 | D-079 | Qual é o público da primeira aplicação? | patrocinador | Discovery/B-02 | aprovada (2026-08-05): aproximadamente 10 veterinários; todos participam; sem inventário nominal ou segmentação por setor, turno ou perfil; B-02 fechado |
 | D-080 | Qual princípio deve orientar a experiência do colaborador? | patrocinador | PRD/usabilidade | aprovada (2026-08-05) e refinada sem mudar o princípio: jornada prática e fluida, com unidades breves dentro de módulos completos, casos digitais, feedback imediato, progresso visível e uma próxima ação clara; controles administrativos ficam nos bastidores |
-| D-081 | Qual carga/cadência deve executar a matriz curricular clínica V2? | patrocinador | PRD/conteúdo | pendente — proposta recomendada: ciclo completo de 34 semanas e faixa preliminar de 90–115 h; piloto de 14 semanas e 30–40 h; substitui 12 semanas/3 h por mês após confirmação |
+| D-081 | Qual carga/cadência deve executar a matriz curricular clínica V2? | patrocinador | PRD/conteúdo | aprovada (2026-08-05), Alternativa 1: piloto de 14 semanas/30–40 h, aproximadamente 2–3 h/semana; ciclo completo de 34 semanas/90–115 h; substitui D-016 e D-061 |
 | D-082 | Erro crítico remediado deve ser condição adicional de conclusão além de 70% geral/80% críticos? | patrocinador/clínica | PRD/avaliação | pendente — no PRD 0016 o erro aciona feedback e remediação, mas ainda não reprova isoladamente |
 
 ## 8. Próximas perguntas úteis
 
-1. Qual alternativa de carga/cadência da D-081 será adotada?
+1. Qual regra de erro crítico será adotada na D-082?
 2. Há alguma restrição real de dispositivo ou acessibilidade?
 3. Quem será o segundo MV revisor do primeiro módulo quando ele estiver pronto?
 

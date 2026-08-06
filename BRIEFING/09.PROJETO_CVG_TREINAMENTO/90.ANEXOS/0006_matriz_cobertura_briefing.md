@@ -89,7 +89,7 @@
 | requisitos não funcionais | 01.PRD/0014 | preenchidos — RNF-001 a RNF-084 |
 | KPIs e metas | 01.PRD/0015 | preenchidos (propostas; baseline pendente B-07) |
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
-| programa curricular, módulos, casos e blueprint | 01.PRD/0016 | proposta V2 preenchida; carga/cadência aguarda D-081 |
+| programa curricular, módulos, casos e blueprint | 01.PRD/0016 | proposta V2 preenchida; carga/cadência aprovada em D-081 |
 | consolidação | 01.PRD/0020 | preenchido |
 | gate | 01.PRD/0090 | reprovado — em correção; B-01/B-02/B-03/B-04/B-05 fechados por D-078/D-079/D-076/D-075/D-077; B-07 e requisitos pendentes continuam bloqueando nova submissão |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |

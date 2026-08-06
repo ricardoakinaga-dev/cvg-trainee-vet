@@ -73,7 +73,7 @@ contestações e alterações de gabarito → protocolo → revisor independente
 - Bastidores mínimos: login, publicação com segunda conferência veterinária, controle de acesso e registro de alterações sensíveis;
 - Núcleo comum obrigatório + áreas **Emergência e Internação** (APROVADO PELO PATROCINADOR COMO INSUMO em 2026-08-05);
 - Público/coorte: aproximadamente 10 veterinários, com participação de toda a equipe (D-079; B-02 fechado);
-- Matriz curricular V2: ciclo completo de 34 semanas e faixa preliminar de 90–115 horas; piloto recomendado de 14 semanas com cinco módulos/partes curriculares, caso integrador e 30–40 horas. A duração de 12 semanas e a carga de 3 h/mês precisam ser substituídas na D-081 antes da execução.
+- Matriz curricular V2: ciclo completo de 34 semanas e faixa de planejamento de 90–115 horas; piloto aprovado de 14 semanas com cinco módulos/partes curriculares, caso integrador e 30–40 horas (D-081).
 
 ### OUT
 
@@ -152,7 +152,7 @@ Os itens confirmados pelo patrocinador são insumos do rascunho; não aprovam o 
 7. Público (B-02) — ✅ **FECHADO POR D-079: aproximadamente 10 veterinários, todos participam**; baseline B-07 continua pendente.
 8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
-10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016**; carga/cadência final aguarda seleção na D-081.
+10. Programa curricular V2 — ✅ **DESENHADO NO PRD 0016; CARGA/CADÊNCIA APROVADA EM D-081**.
 
 ## 14. Documentos do PRD
 
