@@ -6,6 +6,7 @@
 **Responsável pelo produto e aprovação:** MV. Ricardo Akinaga
 **Engine:** `BRIEFING/02.ESPEC/SPEC ENGINE ENTERPRISE`
 **Baseline aprovada:** `f6fefa1`; checkpoint de evidência `e8abe6f`
+**Checkpoint da Fase 0:** `f8e1e08` — `docs: approve gates and add spec readiness`
 **Resultado:** `READY_FOR_SPEC_PHASE_1 — AGUARDA AUTORIZAÇÃO PARA 0101`
 
 ## 1. Objetivo e limite desta revisão

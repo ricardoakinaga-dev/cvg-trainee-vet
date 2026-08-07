@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: o 0100 foi concluído com `READY_FOR_SPEC_PHASE_1`, sem blocker crítico e com revisão independente `PASS`
+- last_completed_action: commit f8e1e08 concluiu o 0100 com `READY_FOR_SPEC_PHASE_1`, sem blocker crítico e com revisão independente `PASS`
 - next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101
 
 ## BLOQUEIOS

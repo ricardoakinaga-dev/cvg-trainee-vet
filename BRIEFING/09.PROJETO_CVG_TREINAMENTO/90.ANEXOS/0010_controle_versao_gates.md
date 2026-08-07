@@ -277,3 +277,18 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | B-07 | gate pré-piloto; não bloqueia SPEC, mas bloqueia baseline/piloto completo |
 | Decisão humana | aprovação sequencial registrada; checkpoint de evidência `e8abe6f` reconhecido; somente a readiness da SPEC autorizada |
 | BUILD | proibido até aprovação da SPEC |
+
+## 19. Checkpoint da SPEC Fase 0 — readiness 0100
+
+| Campo | Registro |
+|---|---|
+| Autorização de origem | gates Discovery/PRD e D-101 a D-108 aprovados por MV. Ricardo Akinaga em 2026-08-07; somente readiness autorizada |
+| Artefato | `02.SPEC/0100_spec_readiness_review.md` |
+| Commit do conteúdo | `f8e1e08` — `docs: approve gates and add spec readiness` |
+| Resultado | `READY_FOR_SPEC_PHASE_1 — AGUARDA AUTORIZAÇÃO PARA 0101` |
+| Lacunas críticas de produto | nenhuma |
+| Pendências não bloqueantes | B-07, T2, fornecedores, calibração e detalhes que pertencem aos documentos 0101–0117 |
+| Validações | `git diff --cached --check`; links Markdown locais; 100 decisões D-* únicas; varredura de segredos sem ocorrência |
+| Revisão independente | `PASS`, sem achado crítico ou alto |
+| Próxima decisão | aprovar o checkpoint da Fase 0 e autorizar somente o 0101, se desejado |
+| BUILD | continua proibido até aprovação integral do 0190 |

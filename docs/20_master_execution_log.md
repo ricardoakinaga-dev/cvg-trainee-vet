@@ -548,7 +548,7 @@ MV. Ricardo Akinaga aprovou D-101 a D-108 e o gate Discovery sobre `f6fefa1`; em
 
 ### RESULT
 
-GATE-01 e GATE-02 estão `COMPLETED`. O 0100 foi concluído com `READY_FOR_SPEC_PHASE_1`; a revisão independente retornou `PASS` sem achado crítico/alto. Nenhum BUILD, código, banco, API, tela ou coleta real foi iniciado. B-07 permanece gate pré-piloto.
+GATE-01 e GATE-02 estão `COMPLETED`. O 0100 foi concluído com `READY_FOR_SPEC_PHASE_1`; a revisão independente retornou `PASS` sem achado crítico/alto. Commit do conteúdo: `f8e1e08`. Nenhum BUILD, código, banco, API, tela ou coleta real foi iniciado. B-07 permanece gate pré-piloto.
 
 ### DECISIONS
 

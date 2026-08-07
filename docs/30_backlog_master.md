@@ -115,7 +115,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto
 - impacto: alto
 - status: READY_FOR_NEXT_STEP
-- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0100_spec_readiness_review.md; revisão independente `PASS`
+- evidência: commit f8e1e08; BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0100_spec_readiness_review.md; revisão independente `PASS`
 - próxima ação: obter autorização humana para iniciar `0101_visao_arquitetural.md`; BUILD permanece bloqueado
 
 ## P3 — BAIXO
