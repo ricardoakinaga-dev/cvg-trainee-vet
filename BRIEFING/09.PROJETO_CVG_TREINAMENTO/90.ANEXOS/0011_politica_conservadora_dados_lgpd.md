@@ -113,11 +113,11 @@ Não serão capturados automaticamente resposta de avaliação, texto clínico, 
 
 ### 9.2 Extensão mínima proposta para acomodação operacional
 
-D-104 propõe permitir somente: `accommodation_id`, tipo fechado (`TEMPO`, `FORMATO` ou `PRAZO`), escopo da atividade, início/fim, estado, identificador do autorizador e datas de criação/revogação. Diagnóstico, laudo, condição de saúde, documento comprobatório e justificativa livre permanecem proibidos.
+D-104 permite somente: `accommodation_id`, tipo fechado (`TEMPO`, `FORMATO` ou `PRAZO`), escopo da atividade, início/fim, estado, identificador do autorizador e datas de criação/revogação. Diagnóstico, laudo, condição de saúde, documento comprobatório e justificativa livre permanecem proibidos.
 
 O participante vê a própria acomodação. Ricardo e administrador autorizado veem somente o necessário para conceder, aplicar, revogar e auditar; moderador recebe apenas o efeito operacional no prazo/formato da atividade atribuída, sem motivo ou metadado adicional. Concessão, alteração e revogação são auditadas. A retenção segue o vínculo + 2 anos da seção 5.
 
-Esta extensão só entra em vigor com a aprovação de D-104 sobre commit identificado; até lá, nenhum dado de acomodação pode ser coletado.
+Esta extensão foi aprovada em 2026-08-07 com D-104 sobre o commit `f6fefa1`. Sua implementação continua sujeita à SPEC, ao BUILD e aos controles desta política.
 
 ## 10. Controle de mudança
 

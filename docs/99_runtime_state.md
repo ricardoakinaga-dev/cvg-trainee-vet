@@ -3,14 +3,14 @@
 ## CONTEXTO
 
 - project: cvg-trainee-vet
-- current_engine: PRD / GATES
+- current_engine: SPEC ENGINE
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
 ## POSIÇÃO ATUAL
 
-- current_phase: checkpoint humano para avanço à SPEC
-- current_sprint: GATE-01 / GATE-02 — fechamento sequencial
-- current_task: aprovar D-101 a D-108, Discovery e PRD sobre o commit consolidado
+- current_phase: SPEC — Fase 0 concluída
+- current_sprint: SPEC-01 — transição para visão arquitetural
+- current_task: aprovar o checkpoint do `0100_spec_readiness_review.md` antes de iniciar 0101
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit f6fefa1 registrou D-101 a D-108 e deixou Discovery/PRD tecnicamente aprovados; validações e revisão independente passaram
-- next_action: MV. Ricardo Akinaga aprovar o commit f6fefa1, primeiro para Discovery e depois para PRD, e autorizar somente a readiness da SPEC
+- last_completed_action: o 0100 foi concluído com `READY_FOR_SPEC_PHASE_1`, sem blocker crítico e com revisão independente `PASS`
+- next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101
 
 ## BLOQUEIOS
 
-- blockers: somente aprovação humana do checkpoint de D-101 a D-108 e dos gates; B-07 é pré-piloto e T2 permanece pronto em fluxo paralelo
+- blockers: nenhum técnico para 0101; falta autorização humana porque a permissão vigente limitou-se ao readiness; BUILD segue bloqueado até 0190
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: aprovar D-101 a D-108, Discovery e PRD em ordem sobre o commit f6fefa1 e autorizar somente a readiness da SPEC
+- decision_description: aprovar o checkpoint do 0100 e autorizar somente a Fase 1/0101, sem BUILD
 
 ## TIMESTAMP
 
-- last_update: 2026-08-06T18:11:54-03:00
+- last_update: 2026-08-07T06:14:36-03:00
 
 ## REGRAS DE USO
 

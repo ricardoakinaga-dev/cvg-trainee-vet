@@ -47,8 +47,8 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-022 | O sistema deve manter núcleo obrigatório não dispensável | P0 | FATO INFORMADO |
 | RF-023 | O sistema deve gerenciar pré-requisitos entre módulos e trilhas | P1 | APROVADA NA TRILHA V3 (D-084/D-085; PRD 0017) |
 | RF-024 | O sistema deve gerenciar dispensa por domínio: **não aplicada no piloto**; regra futura | P2 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RF-025 | O sistema deve controlar separadamente progresso, avaliação e domínio conforme D-102 | P0 | PROPOSTA PARA APROVAÇÃO DO GATE (D-102) |
-| RF-026 | O sistema deve pausar/deslocar prazos em afastamentos/férias e aplicar acomodações autorizadas sem reduzir objetivos | P1 | PROPOSTA PARA APROVAÇÃO DO GATE (D-104) |
+| RF-025 | O sistema deve controlar separadamente progresso, avaliação e domínio conforme D-102 | P0 | APROVADA EM 2026-08-07 (D-102) |
+| RF-026 | O sistema deve pausar/deslocar prazos em afastamentos/férias e aplicar acomodações autorizadas sem reduzir objetivos | P1 | APROVADA EM 2026-08-07 (D-104) |
 | RF-027 | O sistema deve exibir aviso explícito de que aprovação em prova, caso ou simulação digital não comprova competência prática nem desbloqueia autorização clínica | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068, 2026-08-05) |
 | RF-028 | A tela inicial deve mostrar o progresso e uma única próxima ação recomendada | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
 
@@ -90,7 +90,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-056 | Em atividade autocorrigível, o sistema deve dar feedback imediato; se houver revisão humana, deve mostrar imediatamente o status e a próxima ação | P0 | APROVADA PELO PATROCINADOR COMO DIRETRIZ DE USABILIDADE (D-080) |
 | RF-057 | Casos digitais devem suportar ramificações, estado persistente, consequências, exames seriados, radiografias, POCUS e ECG | P0 | PROPOSTA CURRICULAR V3 |
 | RF-058 | Atividades devem suportar cálculo de dose/infusão, campos estruturados e respostas abertas; campos avaliáveis usam rubrica automática e respostas dissertativas usam rubrica com correção humana de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-070/D-083/D-085 (2026-08-06) |
-| RF-059 | O sistema deve suportar formas equivalentes pelo mesmo blueprint, revisão espaçada, retomada e resultado por objetivo/competência/trilha | P0 | PROPOSTA PARA APROVAÇÃO DO GATE (D-106) |
+| RF-059 | O sistema deve suportar formas equivalentes pelo mesmo blueprint, revisão espaçada, retomada e resultado por objetivo/competência/trilha | P0 | APROVADA EM 2026-08-07 (D-106) |
 
 ## 6. Contestação e correção
 

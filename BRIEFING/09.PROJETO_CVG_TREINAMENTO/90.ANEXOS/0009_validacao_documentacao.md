@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário
 **Data:** 2026-08-06
-**Status:** `AUDITORIA TÉCNICA CONCLUÍDA — CHECKPOINT HUMANO PENDENTE`
+**Status:** `AUDITORIA CONCLUÍDA — GATES APROVADOS EM 2026-08-07`
 **Escopo:** verificação documental da fase de briefing (Discovery + PRD) contra as diretrizes do `sistema_treinamento_veterinarios_cvg.md` e verificação física dos arquivos-fonte locais.
 
 ---
@@ -93,7 +93,7 @@ Essas alterações não equivalem a aprovação do conjunto documental. Sua cons
 - B-03: fechado por D-076 e atualizado por D-083; Ricardo concentra as responsabilidades e é o único aprovador clínico obrigatório;
 - B-04: fechado por D-075 para o MVP interno; manter consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo; D-033 é futura e não bloqueante;
 - B-05: fechado por D-077; aplicar o Anexo 0011 e não coletar prontuários, dados de tutores, gravações ou casos reais identificáveis;
-- B-07: validar clinicamente, produzir, testar e aplicar o diagnóstico antes da baseline/piloto completo; não bloqueia a SPEC por D-101 proposta.
+- B-07: validar clinicamente, produzir, testar e aplicar o diagnóstico antes da baseline/piloto completo; não bloqueia a SPEC por D-101 aprovada.
 
 ## 8. Controle de versão
 

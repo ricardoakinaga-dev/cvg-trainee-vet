@@ -86,8 +86,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: Discovery
 - risco: alto
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
+- status: COMPLETED
 - evidência: commit f6fefa1; BRIEFING/09.PROJETO_CVG_TREINAMENTO/00.DISCOVERY/0090_discovery_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
+- resultado: aprovado por MV. Ricardo Akinaga em 2026-08-07
 
 ### GATE-02 — Aprovar reexecução do PRD
 
@@ -98,8 +99,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: PRD
 - risco: alto
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
+- status: COMPLETED
 - evidência: commit f6fefa1; BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0090_prd_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
+- resultado: aprovado por MV. Ricardo Akinaga em 2026-08-07, depois do Discovery
 
 ## P2 — MÉDIO
 
@@ -112,8 +114,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: SPEC
 - risco: alto
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
-- próxima ação: após o checkpoint humano, iniciar somente o readiness review da SPEC; BUILD permanece bloqueado
+- status: READY_FOR_NEXT_STEP
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0100_spec_readiness_review.md; revisão independente `PASS`
+- próxima ação: obter autorização humana para iniciar `0101_visao_arquitetural.md`; BUILD permanece bloqueado
 
 ## P3 — BAIXO
 

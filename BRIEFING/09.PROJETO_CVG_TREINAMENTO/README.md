@@ -4,11 +4,11 @@
 **Nome provisório do produto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Data de abertura:** 2026-07-29  
-**Fase atual:** reexecução técnica dos gates; aguardando aprovação humana do checkpoint Git
-**Status do gate Discovery:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
-**Status do gate PRD:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`, depois do Discovery; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
-**Status da auditoria documental:** `CONCLUÍDA TECNICAMENTE — CHECKPOINT HUMANO PENDENTE`
-**Alinhamento pré-SPEC:** D-091 a D-100 aprovadas integralmente por MV. Ricardo Akinaga em 2026-08-06; ver [Anexo 0020](90.ANEXOS/0020_alinhamento_produto_pre_spec.md). Nenhuma SPEC foi iniciada.
+**Fase atual:** SPEC — Fase 0 concluída; aguarda autorização para 0101
+**Status do gate Discovery:** `APROVADO EM 2026-08-07 SOBRE F6FEFA1`; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
+**Status do gate PRD:** `APROVADO EM 2026-08-07 SOBRE F6FEFA1`, depois do Discovery; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
+**Status da auditoria documental:** `CONCLUÍDA E APROVADA`
+**Alinhamento pré-SPEC:** D-091 a D-108 aprovadas; somente a readiness da SPEC foi autorizada. BUILD permanece proibido.
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing, currículo V3 aprovado e fatia vertical documental do Mês 2; nenhuma plataforma, aplicação real ou código de produto foi criado.
 
@@ -38,7 +38,7 @@ DISCOVERY
 → MELHORIA CONTÍNUA
 ```
 
-Nesta etapa foram produzidos o **Discovery documental**, o **PRD** e o pacote de fechamento D-101 a D-108. A reexecução técnica encontrou todos os critérios canônicos atendidos; falta apenas a aprovação humana do commit, primeiro para Discovery e depois para PRD. Isso autorizará somente a readiness da SPEC. BUILD, publicação geral e piloto completo continuam sujeitos aos gates posteriores. A fatia M02 permanece autorizada por D-087/D-088 para ensaio controlado; T2 está pronto por D-089.
+Foram produzidos e aprovados o **Discovery documental**, o **PRD** e o pacote D-101 a D-108. A Fase 0 da SPEC foi autorizada e materializada no readiness 0100. BUILD, publicação geral e piloto completo continuam sujeitos aos gates posteriores. A fatia M02 permanece autorizada por D-087/D-088 para ensaio controlado; T2 está pronto por D-089.
 
 ## 2. Regra de interpretação dos dados
 
@@ -80,6 +80,10 @@ Nenhum campo desconhecido foi apresentado como certeza.
 9. [0020 — PRD Master](01.PRD/0020_prd_master.md)
 10. [0090 — Validação do PRD](01.PRD/0090_prd_validation.md)
 
+### SPEC
+
+1. [0100 — SPEC Readiness Review](02.SPEC/0100_spec_readiness_review.md)
+
 ### Anexos de decisão, conteúdo e preparação
 
 1. [Governança das fontes](90.ANEXOS/0001_governanca_fonte_conhecimento.md)
@@ -111,13 +115,13 @@ Nenhum campo desconhecido foi apresentado como certeza.
 - Conteúdo dos demais 23 módulos e os 120 itens diagnósticos — somente a fatia vertical documental do Mês 2 foi produzida e aprovada clinicamente para ensaio controlado por D-088;
 - Certificados;
 - Protótipos de telas;
-- SPEC, backlog de BUILD ou sprints;
+- Demais documentos da SPEC (0101 a 0190), backlog de BUILD ou sprints;
 - Auditoria de um sistema inexistente;
 - Conteúdo derivado extensivamente do livro.
 
 ## 4.1 Estado dos bloqueios após a reexecução
 
-A autorização gerencial histórica para elaborar o PRD não substituiu os gates canônicos. A auditoria corrigiu a fronteira de B-07 sem waiver, conforme D-101 proposta:
+A autorização gerencial histórica para elaborar o PRD não substituiu os gates canônicos. A auditoria corrigiu a fronteira de B-07 sem waiver, conforme D-101 aprovada:
 
 1. B-01 concluído por D-078: aprendizado atual informal, sem trilha, avaliação ou registro centralizado;
 2. B-02 concluído por D-079: aproximadamente 10 veterinários, todos participam da primeira aplicação, sem inventário ou segmentação obrigatória;
@@ -127,7 +131,7 @@ A autorização gerencial histórica para elaborar o PRD não substituiu os gate
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
 7. B-07 está reposicionado como gate pré-piloto: o blueprint orienta a SPEC, enquanto aprovação clínica, produção, pré-voo e aplicação dos 120 itens continuam obrigatórios antes da baseline/piloto completo. O blueprint está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md).
 
-Os itens documentais dos gates estão tecnicamente fechados. O único bloqueio atual da readiness da SPEC é a aprovação humana do commit que consolida D-101 a D-108 e as duas reexecuções.
+Os gates documentais estão formalmente fechados. B-07 permanece no fluxo pré-piloto e não bloqueia os documentos da SPEC.
 
 ## 4.2 Controle de versão obrigatório
 
@@ -170,15 +174,15 @@ O Fossum será a **referência cirúrgica complementar** para a trilha de cirurg
 
 ## 6. Condição para avançar
 
-O fechamento documental foi concluído tecnicamente em 2026-08-06. Para avançar:
+O fechamento documental foi aprovado em 2026-08-07. A sequência cumprida foi:
 
-1. Ricardo aprova D-101 a D-108 e o gate Discovery sobre o commit identificado;
-2. no mesmo checkpoint e em ordem, Ricardo aprova o gate PRD;
-3. Ricardo autoriza iniciar somente a readiness da SPEC;
-4. a futura SPEC aplica D-091 a D-108 como baseline aprovada de produto e arquitetura;
+1. D-101 a D-108 e gate Discovery aprovados sobre `f6fefa1`;
+2. gate PRD aprovado em seguida no mesmo checkpoint;
+3. readiness 0100 da SPEC autorizada;
+4. a SPEC aplica D-091 a D-108 como baseline aprovada de produto e arquitetura;
 5. B-07 prossegue em paralelo como conteúdo pré-piloto e deve estar concluído antes da baseline/aplicação completa.
 
-Até a aprovação humana, são permitidas correção documental e preparação de conteúdo original. Gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. BUILD, código e publicação do programa continuam sujeitos aos gates posteriores.
+Durante a SPEC são permitidos somente documentos de engenharia derivados do PRD. Gravações, prontuários, dados de tutores e casos reais identificáveis continuam proibidos. BUILD, código e publicação do programa permanecem bloqueados até o gate 0190.
 
 **Política mínima de dados (D-077):** o Anexo 0011 está aprovado para o MVP e B-05 está fechado. O programa usa apenas dados de identificação/login profissional, progresso, tentativas, notas e segurança. Ricardo controla o acesso; os dados são mantidos durante o vínculo + 2 anos.
 

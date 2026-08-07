@@ -7,7 +7,7 @@
 **Responsável pelo MVP:** MV. Ricardo Akinaga
 **Natureza:** blueprint de avaliação, ainda não aprovado para aplicação
 
-Este documento estrutura a matriz das 120 questões diagnósticas. Ele não contém questões clínicas, gabaritos de participantes ou dados pessoais. A criação do blueprint não fecha B-07 e não autoriza aplicação, baseline, BUILD ou publicação. Conforme D-101 proposta, produção/aplicação de B-07 bloqueia o piloto completo e a calibração, não a elaboração da SPEC.
+Este documento estrutura a matriz das 120 questões diagnósticas. Ele não contém questões clínicas, gabaritos de participantes ou dados pessoais. A criação do blueprint não fecha B-07 e não autoriza aplicação, baseline, BUILD ou publicação. Conforme D-101 aprovada, produção/aplicação de B-07 bloqueia o piloto completo e a calibração, não a elaboração da SPEC.
 
 ## 1. Objetivo e limites
 
@@ -232,7 +232,7 @@ O material deve ser redigido pelo CVG. É proibido copiar texto, tabela, figura,
 | B07.6 | aplicação às aproximadamente 10 pessoas | PENDENTE |
 | B07.7 | relatório de baseline e atualização dos gates | PENDENTE |
 
-B-07 só poderá ser marcado como fechado quando houver evidência das etapas B07.2 a B07.7, respeitando o checkpoint Git do Anexo 0010. Por D-101 proposta, esse fechamento é pré-condição do piloto completo e da calibração definitiva, não da SPEC.
+B-07 só poderá ser marcado como fechado quando houver evidência das etapas B07.2 a B07.7, respeitando o checkpoint Git do Anexo 0010. Por D-101 aprovada, esse fechamento é pré-condição do piloto completo e da calibração definitiva, não da SPEC.
 
 ## 11. Pendências que permanecem abertas
 

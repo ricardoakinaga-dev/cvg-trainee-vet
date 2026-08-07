@@ -2,8 +2,8 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Reexecução técnica:** 2026-08-06
-**Resultado técnico:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`
-**Precondição formal:** aprovação humana do Discovery no mesmo checkpoint, imediatamente antes deste gate.
+**Resultado formal:** `APROVADO — GATE PRD ENCERRADO`
+**Aprovação:** MV. Ricardo Akinaga, em 2026-08-07, depois do Discovery, sobre o commit `f6fefa1`; checkpoint de evidência `e8abe6f` reconhecido.
 
 ## 1. Correção da reexecução
 
@@ -20,7 +20,7 @@ A correção não é waiver. D-101 preserva B-07 como gate pré-piloto, enquanto
 | fluxos | [x] | casos de uso 0010; jornada e dashboards D-093 |
 | escopo | [x] | 0011; modalidade D-068; programa V3 D-084/D-085 |
 | regras principais | [x] | 0012; complementos D-102, D-103, D-105 e D-106 propostos |
-| exceções conhecidas | [x] | D-104 proposta; fluxos versionados de contestação e retirada |
+| exceções conhecidas | [x] | D-104 aprovada; fluxos versionados de contestação e retirada |
 | métricas | [x] | 0015 e dicionário D-095; metas provisórias explicitadas |
 | riscos | [x] | Discovery 0007; controles e owner/prazos D-108 propostos |
 
@@ -35,7 +35,7 @@ A correção não é waiver. D-101 preserva B-07 como gate pré-piloto, enquanto
 - RPO de até uma hora, RTO de até quatro horas e critérios de fornecedor orientam a SPEC por D-107;
 - protocolo interno não fornecido nunca será presumido por D-108.
 
-D-102 a D-108 passam a valer quando o pacote for aprovado humanamente.
+D-102 a D-108 estão aprovadas e integram a baseline do produto.
 
 ## 4. Fronteira de B-07
 
@@ -45,19 +45,19 @@ O blueprint do Anexo 0012 é insumo suficiente para especificar entidades, estad
 
 ```text
 STATUS TÉCNICO: APROVADO
-STATUS FORMAL: AGUARDA APROVAÇÃO HUMANA SOBRE COMMIT IDENTIFICADO
-ORDEM NO CHECKPOINT: DISCOVERY PRIMEIRO; PRD EM SEGUIDA
-SPEC: AUTORIZAR SOMENTE READINESS APÓS AS DUAS APROVAÇÕES
+STATUS FORMAL: APROVADO POR MV. RICARDO AKINAGA EM 2026-08-07
+ORDEM CUMPRIDA: DISCOVERY PRIMEIRO; PRD EM SEGUIDA
+SPEC: READINESS AUTORIZADA
 BUILD: PROIBIDO ATÉ A APROVAÇÃO DA SPEC
 B-07: OBRIGATÓRIO ANTES DA BASELINE/PILOTO COMPLETO
 ```
 
 ## 6. Histórico preservado
 
-Em 2026-08-05, este gate foi registrado como reprovado sob uma checklist local ampliada. O resultado fica superado apenas tecnicamente por esta reexecução. As decisões anteriores continuam preservadas; a aprovação formal depende de Ricardo confirmar o conteúdo exato do commit consolidado.
+Em 2026-08-05, este gate foi registrado como reprovado sob uma checklist local ampliada. O resultado foi superado pela reexecução canônica e pela aprovação humana de 2026-08-07. As decisões anteriores continuam preservadas como histórico.
 
 ## 7. Aprovação humana
 
 | Papel | Nome | Decisão | Estado |
 |---|---|---|---|
-| Responsável pelo MVP e gate | MV. Ricardo Akinaga | após aprovar o Discovery, aprovar este PRD no commit `f6fefa1` e autorizar somente a readiness da SPEC | aguardando aprovação humana |
+| Responsável pelo MVP e gate | MV. Ricardo Akinaga | PRD aprovado após o Discovery no commit `f6fefa1`; readiness da SPEC autorizada | aprovado em 2026-08-07 |

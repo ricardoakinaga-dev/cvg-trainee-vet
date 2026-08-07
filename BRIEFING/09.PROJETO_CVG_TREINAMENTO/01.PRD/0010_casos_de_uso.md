@@ -81,7 +81,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
   - Acomodação de acessibilidade aprovada: tempo e formato ajustados;
   - Colaborador em afastamento/férias: prazo adiado conforme política aprovada.
 - **Resultado esperado:** linha de base registrada, perfil por competência e recomendação de trilha (não confere nota de aprovação nem autonomia clínica).
-- **Observações:** caráter formativo, sem punição. `PENDENTE` (B-07): blueprint e quantidade de itens do diagnóstico.
+- **Observações:** caráter formativo, sem punição. Blueprint e quantidade de 120 itens estão definidos no Anexo 0012; produção, revisão e aplicação permanecem no gate pré-piloto B-07.
 
 ### UC-002 — Receber trilha personalizada
 
@@ -154,7 +154,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
   3. O sistema corrige e calcula a nota por objetivo;
   4. Aprovação ou encaminhamento à remediação conforme limiares.
 - **Exceções:**
-  - Perda de conexão: tentativa preservada conforme regra; `PENDENTE` (D-043);
+  - Perda de conexão: tentativa preservada e retomada do último estado confirmado conforme D-104;
   - Limite de tentativas atingido: remediação obrigatória;
   - Questão anulada: recálculo das tentativas afetadas.
 - **Resultado esperado:** nota por objetivo, decisão de aprovação/reprovação e registro auditável.
@@ -290,7 +290,7 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 
 - **Ator:** Gestor educacional / gestor clínico (escopos autorizados).
 - **Objetivo:** monitorar ativação, progresso, lacunas e retenção.
-- **Gatilho:** periodicidade definida — `PENDENTE` (D-055).
+- **Gatilho:** consulta em tempo real e consolidação mensal, conforme RN-080/D-095.
 - **Fluxo principal:**
   1. O gestor acessa o painel agregado;
   2. Filtra por coorte, área, nível ou módulo;
@@ -404,8 +404,8 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 
 - Treinamento prático presencial, observação de trabalho real e registro de evidência prática (`FUTURE — BLOQUEADO POR GATE-EXP-PRAT-01`);
 - Integrações com sistemas externos (futuro);
-- Emissão de certificados formais (decisão `PENDENTE`, D-049);
-- Notificações externas (e-mail/SMS) — decisão `PENDENTE`.
+- Emissão de certificados formais; o MVP usa somente status de conclusão (D-049/RN-079);
+- Notificações externas (e-mail/SMS) — fora do MVP;
 - Cadastro público de usuários e autenticação construída internamente;
 - Gravação de sessão, captura automática de tela ou analytics comportamental invasivo.
 
@@ -418,9 +418,9 @@ O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso 
 | UC-021 a UC-023 | anexo 0020 (alinhamento de produto pré-SPEC) |
 | Fluxos gerais | 0003 (fluxo atual/desejado) e 0002 (contexto operacional) |
 
-## 6. Itens registrados como pendentes
+## 6. Controles remanescentes por fase
 
-- Blueprint e quantidade de itens do diagnóstico (UC-001, B-07) — banco de itens por objetivo definido em 10–15 (RN-078);
+- Produção, revisão, pré-voo e aplicação dos 120 itens diagnósticos (UC-001, B-07) antes da baseline/piloto completo;
 - Monitorar no piloto se a correção estruturada D-070 produz lacunas ou erros suficientes para exigir revisão humana na atividade afetada;
 - Periodicidade dos dashboards — resolvida: mensal (RN-080);
 - Certificação interna — resolvida: status no piloto (RN-079);

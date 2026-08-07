@@ -3,7 +3,8 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário
 **Data:** 2026-08-06
 **Responsável:** MV. Ricardo Akinaga
-**Status:** `PACOTE_TECNICO_AGUARDA_APROVACAO_HUMANA_DO_COMMIT_F6FEFA1`
+**Status:** `APROVADO_PELO_PATROCINADOR_EM_2026-08-07`
+**Aprovação:** D-101 a D-108, Discovery e PRD aprovados em ordem sobre `f6fefa1`; evidência `e8abe6f` reconhecida; autorizada somente a readiness da SPEC.
 
 ## 1. Resultado da auditoria
 
@@ -122,25 +123,26 @@ Ricardo é owner dos riscos do MVP por D-076. Prazos são vinculados à fase:
 
 A segunda revisão veterinária permanece opcional por D-083. O controle obrigatório é aprovação clínica registrada de Ricardo, versão, fonte, data de corte e retirada emergencial.
 
-## 10. Estado após aprovação deste pacote
+## 10. Estado vigente após a aprovação
 
 | Item | Estado esperado |
 |---|---|
-| Discovery documental | aprovado sobre commit identificado |
-| PRD documental | aprovado sobre commit identificado |
-| SPEC | autorizada a iniciar pelo readiness review |
+| Discovery documental | aprovado sobre `f6fefa1` em 2026-08-07 |
+| PRD documental | aprovado sobre `f6fefa1` em 2026-08-07, depois do Discovery |
+| SPEC | autorizada a iniciar somente pelo readiness review 0100 |
 | B-07 blueprint | continua em revisão clínica e alimenta a SPEC |
 | 120 itens e baseline | obrigatórios antes da aplicação/piloto completo, não antes da SPEC |
 | BUILD | continua proibido até aprovação da SPEC |
 | T2 da M02 | permanece autorizado em fluxo controlado separado |
 
-## 11. Decisão humana mínima
+## 11. Decisão humana registrada
 
-Uma única aprovação deverá confirmar, sobre o commit identificado:
+Em 2026-08-07, MV. Ricardo Akinaga confirmou, sobre o commit identificado:
 
 1. D-101 a D-108;
 2. gate Discovery;
 3. gate PRD;
 4. autorização para iniciar somente a etapa de readiness da SPEC.
 
-**Checkpoint para aprovação:** `f6fefa1` — `docs: prepare canonical gates for spec`.
+**Checkpoint aprovado:** `f6fefa1` — `docs: prepare canonical gates for spec`.
+**Checkpoint de evidência reconhecido:** `e8abe6f` — `docs: record spec gate readiness checkpoint`.

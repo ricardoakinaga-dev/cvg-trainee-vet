@@ -125,6 +125,6 @@ Riscos técnicos de autenticação, autorização, observabilidade e agente de I
 ## Riscos que condicionam as próximas fases
 
 1. D-101 a D-108 e os gates ainda dependem de aprovação humana sobre commit identificado;
-2. B-07 condiciona baseline, calibração e piloto completo, mas não a SPEC conforme D-101 proposta;
+2. B-07 condiciona baseline, calibração e piloto completo, mas não a SPEC conforme D-101 aprovada;
 3. protocolo interno nunca é presumido: cada módulo registra protocolo versionado, `NAO_APLICAVEL` ou `NAO_FORNECIDO`;
 4. BUILD continua condicionado à aprovação da SPEC.

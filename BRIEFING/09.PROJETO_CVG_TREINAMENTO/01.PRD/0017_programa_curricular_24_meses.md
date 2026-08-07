@@ -5,7 +5,7 @@
 **Espécies:** cães e gatos
 **Modalidade:** digital, assíncrona e baseada em casos fictícios
 **Duração:** 24 meses, divididos em Parte 1 e Parte 2
-**Status:** CURRÍCULO V3 APROVADO PELO PATROCINADOR EM 2026-08-06 — validação operacional pela fatia vertical e gates canônicos ainda pendente
+**Status:** CURRÍCULO V3 APROVADO PELO PATROCINADOR; GATES DISCOVERY/PRD APROVADOS EM 2026-08-07 — validação operacional pela fatia vertical continua antes da expansão
 **Substitui:** cadência de 34 semanas/16 módulos da proposta V2 em `0016`
 
 ## 1. Visão da trilha

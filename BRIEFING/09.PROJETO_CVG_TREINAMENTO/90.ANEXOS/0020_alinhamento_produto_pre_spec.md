@@ -334,9 +334,9 @@ A SPEC somente poderá começar quando:
 - [x] critérios de escolha do fornecedor propostos em D-107;
 - [x] RPO/RTO propostos em D-107 e política de sessão aprovada em D-091;
 - [x] fronteira de B-07 corrigida tecnicamente em D-101: obrigatório antes da baseline/piloto, não antes da SPEC;
-- [ ] D-101 a D-108 e gates Discovery/PRD aprovados humanamente sobre o commit consolidado.
+- [x] D-101 a D-108 e gates Discovery/PRD aprovados humanamente sobre `f6fefa1` em 2026-08-07.
 
-Os três itens técnicos acima passam a valer com a aprovação conjunta do Anexo 0021; até lá, o único bloqueio da readiness é esse checkpoint humano.
+A Definition of Ready pré-SPEC está integralmente cumprida. A Fase 0 da SPEC pode executar o readiness 0100; BUILD continua bloqueado.
 
 ## 15. Método de pesquisa
 

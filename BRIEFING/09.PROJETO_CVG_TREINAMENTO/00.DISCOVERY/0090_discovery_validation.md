@@ -2,8 +2,8 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Reexecução técnica:** 2026-08-06
-**Resultado técnico:** `APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT`
-**Efeito atual:** o gate ainda não mudou de fase; a aprovação formal pertence a MV. Ricardo Akinaga sobre o commit identificado.
+**Resultado formal:** `APROVADO — GATE DISCOVERY ENCERRADO`
+**Aprovação:** MV. Ricardo Akinaga, em 2026-08-07, sobre o commit `f6fefa1`; checkpoint de evidência `e8abe6f` reconhecido.
 
 ## 1. Correção da reexecução
 
@@ -21,7 +21,7 @@ Esta reexecução corrige a fronteira sem waiver e preserva D-069: aplica exatam
 | escopo delimitado | [x] | 0004 e Discovery Master 0009 |
 | usuários definidos | [x] | D-079; 0006 |
 | hipótese de valor clara | [x] | 0005, incluindo estimativa operacional da carga |
-| riscos documentados | [x] | 0007; owner e prazos por fase em D-108 proposta |
+| riscos documentados | [x] | 0007; owner e prazos por fase em D-108 aprovada |
 
 ## 3. Bloqueios reclassificados
 
@@ -43,18 +43,18 @@ Todos os critérios obrigatórios da engine canônica estão atendidos. A baseli
 
 ```text
 STATUS TÉCNICO: APROVADO
-STATUS FORMAL: AGUARDA APROVAÇÃO HUMANA SOBRE COMMIT IDENTIFICADO
-PRÓXIMA ORDEM: APROVAR DISCOVERY → APROVAR PRD → INICIAR SOMENTE SPEC READINESS
+STATUS FORMAL: APROVADO POR MV. RICARDO AKINAGA EM 2026-08-07
+ORDEM CUMPRIDA: DISCOVERY APROVADO ANTES DO PRD
 BUILD: PROIBIDO ATÉ A APROVAÇÃO DA SPEC
 B-07: OBRIGATÓRIO ANTES DA BASELINE/PILOTO COMPLETO
 ```
 
 ## 5. Histórico preservado
 
-Em 2026-07-29 e 2026-08-05, o gate foi registrado como reprovado porque a checklist local ampliada continha itens incompletos. Esse resultado fica superado apenas tecnicamente por esta reexecução; a mudança formal de gate ocorrerá somente quando Ricardo aprovar D-101 a D-108 e este documento sobre o commit consolidado.
+Em 2026-07-29 e 2026-08-05, o gate foi registrado como reprovado porque a checklist local ampliada continha itens incompletos. Esse resultado foi superado pela reexecução canônica e pela aprovação humana de 2026-08-07, sem apagar o histórico.
 
 ## 6. Aprovação humana
 
 | Papel | Nome | Decisão | Estado |
 |---|---|---|---|
-| Responsável pelo MVP e gate | MV. Ricardo Akinaga | aprovar D-101 a D-108 e o Discovery sobre o commit `f6fefa1` | aguardando aprovação humana |
+| Responsável pelo MVP e gate | MV. Ricardo Akinaga | D-101 a D-108 e Discovery aprovados sobre `f6fefa1` | aprovado em 2026-08-07 |

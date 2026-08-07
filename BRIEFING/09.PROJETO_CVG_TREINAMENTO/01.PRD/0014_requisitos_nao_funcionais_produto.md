@@ -29,7 +29,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RNF-012 | Disponibilidade deve ser planejada para operação contínua; janelas de manutenção fora do horário crítico do hospital | PROPOSTA PARA DETALHAMENTO NA SPEC |
 | RNF-013 | Recuperação de falha deve restaurar o estado consistente da tentativa (sem respostas duplicadas) | APROVADA EM D-096/D-098 |
 | RNF-014 | Login, salvamento, submissão, correção e tarefas agendadas devem emitir telemetria estruturada e alertas acionáveis, sem conteúdo sensível | APROVADA PELO PATROCINADOR (D-098, 2026-08-06) |
-| RNF-015 | O banco deve ter backups automáticos e restauração testada; alvo inicial RPO ≤ 1 hora e RTO ≤ 4 horas | PROPOSTA PARA APROVAÇÃO DO GATE (D-107) |
+| RNF-015 | O banco deve ter backups automáticos e restauração testada; alvo inicial RPO ≤ 1 hora e RTO ≤ 4 horas | APROVADA EM 2026-08-07 (D-107) |
 | RNF-016 | O MVP não deve usar gravação de tela, session replay ou coleta comportamental invasiva | APROVADA PELO PATROCINADOR (D-098, 2026-08-06) |
 | RNF-017 | Operações de submissão e correção devem ser idempotentes e transacionais para impedir duplicidade ou estado parcial | APROVADA PELO PATROCINADOR (D-096, 2026-08-06) |
 
@@ -95,7 +95,7 @@ O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica
 
 | ID | Requisito | Classificação |
 |---|---|---|
-| RNF-070 | Afastamento/férias pausam prazos e preservam progresso; mudança de setor não altera a trilha do piloto | PROPOSTA PARA APROVAÇÃO DO GATE (D-104) |
+| RNF-070 | Afastamento/férias pausam prazos e preservam progresso; mudança de setor não altera a trilha do piloto | APROVADA EM 2026-08-07 (D-104) |
 | RNF-071 | Perda de conexão durante avaliação: retomada do último estado confirmado sem perda ou duplicidade | APROVADA EM D-096/D-098 |
 | RNF-072 | Questão anulada: recálculo de afetados e notificação | APROVADA EM D-046/RN-053 |
 | RNF-073 | Conteúdo retirado: bloqueio imediato e registro de exposição | APROVADA EM RN-048/RN-049 |

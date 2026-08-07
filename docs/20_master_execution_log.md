@@ -518,6 +518,46 @@ D-101 a D-108 estão propostas para aprovação conjunta. A manifestação human
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-07 — APROVAÇÃO DOS GATES E ABERTURA DA SPEC READINESS
+
+### TIMESTAMP
+
+2026-08-07 06:08:48 -03:00
+
+### ENGINE
+
+SPEC ENGINE — FASE 0
+
+### PHASE
+
+Leitura e validação / readiness 0100
+
+### SPRINT
+
+SPEC-01 — readiness review
+
+### TASK
+
+Aprovação formal dos gates e criação do `0100_spec_readiness_review.md`
+
+### ACTION
+
+MV. Ricardo Akinaga aprovou D-101 a D-108 e o gate Discovery sobre `f6fefa1`; em seguida aprovou o gate PRD no mesmo commit, reconheceu `e8abe6f` e autorizou somente a SPEC readiness. Os estados de gate, PRD, backlog e runtime foram harmonizados. A SPEC Engine foi lida integralmente para limitar esta rodada à Fase 0.
+
+### RESULT
+
+GATE-01 e GATE-02 estão `COMPLETED`. O 0100 foi concluído com `READY_FOR_SPEC_PHASE_1`; a revisão independente retornou `PASS` sem achado crítico/alto. Nenhum BUILD, código, banco, API, tela ou coleta real foi iniciado. B-07 permanece gate pré-piloto.
+
+### DECISIONS
+
+D-101 a D-108 são baseline aprovada. O readiness deve distinguir lacunas da própria SPEC de bloqueios reais de produto; BUILD continua proibido até aprovação integral do 0190.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

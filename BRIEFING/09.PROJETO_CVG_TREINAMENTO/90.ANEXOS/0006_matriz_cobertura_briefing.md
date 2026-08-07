@@ -1,7 +1,7 @@
 # Anexo 0006 — Matriz de Cobertura do Briefing
 
 **Objetivo:** demonstrar que todos os campos solicitados pelas engines foram preenchidos ou explicitamente marcados como pendentes.  
-**Atualização:** 2026-08-06 — Discovery e PRD aprovados tecnicamente na reexecução canônica; aguardam aprovação humana do commit consolidado.
+**Atualização:** 2026-08-07 — Discovery e PRD aprovados formalmente; SPEC readiness 0100 autorizada.
 
 ## 1. Discovery
 
@@ -52,7 +52,7 @@
 | dependências | 0007 | preenchidas |
 | limitações | 0007 | preenchidas |
 | consolidação | 0009 | preenchida |
-| gate | 0090 | aprovado tecnicamente; aguarda aprovação humana do commit |
+| gate | 0090 | aprovado formalmente em 2026-08-07 sobre `f6fefa1` |
 
 ## 2. Insumos de produto solicitados
 
@@ -81,7 +81,7 @@
 | IN SCOPE | 01.PRD/0011 | preenchido (proposta) |
 | OUT OF SCOPE | 01.PRD/0011 | preenchido |
 | FUTURE SCOPE | 01.PRD/0011 | preenchido |
-| regras operacionais | 01.PRD/0012 | preenchidas; complementos D-102 a D-106 aguardam aprovação no pacote final |
+| regras operacionais | 01.PRD/0012 | preenchidas; complementos D-102 a D-106 aprovados em 2026-08-07 |
 | restrições | 01.PRD/0012 | preenchidas |
 | permissões de negócio | 01.PRD/0012 §8 | preenchidas |
 | validações obrigatórias | 01.PRD/0012 §9 | preenchidas |
@@ -91,7 +91,7 @@
 | critérios de sucesso | 01.PRD/0015 §4 | preenchidos (proposta) |
 | programa curricular, módulos, casos e blueprint | 01.PRD/0017 + 90.ANEXOS/0012 | V3 aprovada; blueprint B-07 tecnicamente pronto e mantido como gate pré-piloto |
 | consolidação | 01.PRD/0020 | preenchido |
-| gate | 01.PRD/0090 | aprovado tecnicamente; D-101 a D-108 e aprovação humana do commit são o checkpoint restante |
+| gate | 01.PRD/0090 | aprovado formalmente em 2026-08-07; readiness 0100 autorizada |
 | rastreabilidade Discovery → PRD | 0010 §5, 0012, 0020 | mantida |
 
 ## 3. Campos que só podem ser fechados no PRD
@@ -104,7 +104,7 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 - Requisitos funcionais; ✅ fechados (como proposta)
 - Requisitos não funcionais; ✅ fechados (como proposta)
 - Metas definitivas; — calibração depende de baseline B-07, sem bloquear a SPEC
-- Critério final de aprovação; ✅ 70% geral + 80% em cada crítico por D-103 proposta
+- Critério final de aprovação; ✅ 70% geral + 80% em cada crítico por D-103 aprovada
 - Política de certificação; ✅ status de conclusão interno no piloto
 - Escopo do MVP; — áreas B-06 confirmadas e público de aproximadamente 10 veterinários fechado por D-079
 - Política de acesso aos dados; — FECHADA PARA O MVP (D-077/Anexo 0011: dados mínimos e acesso controlado por Ricardo)
@@ -143,7 +143,7 @@ CAMPOS DESCONHECIDOS: REGISTRADOS COMO PENDENTES, SEM INVENÇÃO
 REQUISITOS DECLARADOS: MATERIALIZADOS NO PRD; D-101 A D-108 AGUARDAM CHECKPOINT HUMANO
 FONTES CLÍNICAS: GOVERNANÇA ENXUTA D-075 REGISTRADA; B-04 FECHADO PARA O MVP INTERNO
 PROGRAMA: V3 DOCUMENTADA; IMPLEMENTAÇÃO NÃO CRIADA
-GATE DISCOVERY: APROVADO TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA DO COMMIT
-GATE PRD: APROVADO TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA APÓS DISCOVERY
-SPEC: READINESS AGUARDA CHECKPOINT HUMANO; BUILD/AUDIT NÃO INICIADOS
+GATE DISCOVERY: APROVADO FORMALMENTE EM 2026-08-07 SOBRE F6FEFA1
+GATE PRD: APROVADO FORMALMENTE DEPOIS DO DISCOVERY NO MESMO CHECKPOINT
+SPEC: READINESS 0100 AUTORIZADA; BUILD/AUDIT NÃO INICIADOS
 ```

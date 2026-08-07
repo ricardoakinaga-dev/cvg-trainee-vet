@@ -4,7 +4,7 @@
 **Organização:** Centro Veterinário Guarapiranga  
 **Data:** 2026-07-29  
 **Atualização:** 2026-08-06 — reexecução técnica pela engine canônica
-**Status:** consolidado; gate aprovado tecnicamente e aguardando aprovação humana do commit
+**Status:** consolidado e aprovado formalmente em 2026-08-07 sobre `f6fefa1`
 
 ## 1. Visão geral
 
@@ -211,17 +211,17 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 ## 12. Dependências
 
-1. aprovar D-101 a D-108 e o gate Discovery sobre commit identificado;
+1. iniciar somente a readiness 0100 da SPEC, já autorizada;
 2. usar o blueprint B-07 como entrada da SPEC e concluí-lo antes do piloto completo;
 3. registrar protocolo interno, `NAO_APLICAVEL` ou `NAO_FORNECIDO` antes de publicar cada módulo;
-4. iniciar a SPEC somente após aprovação também do gate PRD.
+4. manter BUILD bloqueado até o gate 0190 da SPEC.
 
 ## 13. Resultado do Discovery
 
-O problema está recortado; D-078 validou a dor e o fluxo, D-079 confirmou o público e D-075 a D-100 fecharam governança, dados e alinhamento do produto. Pela engine canônica, a documentação está tecnicamente pronta para o gate. B-07 permanece obrigatório antes da baseline/piloto, não antes da SPEC, conforme D-101 proposta.
+O problema está recortado; D-078 validou a dor e o fluxo, D-079 confirmou o público e D-075 a D-108 fecharam governança, dados e alinhamento do produto. O gate foi aprovado formalmente. B-07 permanece obrigatório antes da baseline/piloto, não antes da SPEC, conforme D-101 aprovada.
 
 ```text
-RESULTADO TÉCNICO: PRONTO PARA APROVAÇÃO HUMANA DO GATE (2026-08-06)
-PENDÊNCIA: APROVAR D-101 A D-108 E O COMMIT DE REEXECUÇÃO
-PRÓXIMA AÇÃO: APROVAÇÃO HUMANA DO DISCOVERY E, EM SEGUIDA, DO PRD SOBRE O MESMO CHECKPOINT
+RESULTADO FORMAL: APROVADO EM 2026-08-07 SOBRE F6FEFA1
+PENDÊNCIA DE DISCOVERY: NENHUMA
+PRÓXIMA AÇÃO: SPEC READINESS 0100
 ```

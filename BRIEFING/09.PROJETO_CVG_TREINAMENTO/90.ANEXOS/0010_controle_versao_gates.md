@@ -267,13 +267,13 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Campo | Registro |
 |---|---|
 | Escopo | correção da fronteira canônica; reexecução de Discovery e PRD; nenhuma SPEC/BUILD iniciada |
-| Decisões propostas | D-101 a D-108: fronteira de B-07, estados, criticidade, exceções, diagnóstico, equivalência, recuperação, fornecedores, protocolos e riscos |
+| Decisões aprovadas | D-101 a D-108: fronteira de B-07, estados, criticidade, exceções, diagnóstico, equivalência, recuperação, fornecedores, protocolos e riscos |
 | Commit do conteúdo revisado | `f6fefa1` — `docs: prepare canonical gates for spec` |
 | Artefatos centrais | 0090 Discovery; 0090 PRD; Anexo 0021; política D-077; backlog e runtime |
 | Validações | `git diff --cached --check`; 25 Markdown com links locais válidos; 100 linhas D-* únicas; varredura de segredos sem ocorrência |
 | Revisão independente | primeira revisão sem crítico e com três achados altos materiais; acomodação, escopo da onda piloto e contrato de estados corrigidos; reavaliação `PASS` |
-| Estado do Discovery | aprovado tecnicamente; aguarda aprovação humana sobre este checkpoint |
-| Estado do PRD | aprovado tecnicamente; aguarda aprovação humana depois do Discovery, no mesmo checkpoint |
+| Estado do Discovery | aprovado formalmente por MV. Ricardo Akinaga em 2026-08-07 sobre `f6fefa1` |
+| Estado do PRD | aprovado formalmente depois do Discovery, no mesmo checkpoint, em 2026-08-07 |
 | B-07 | gate pré-piloto; não bloqueia SPEC, mas bloqueia baseline/piloto completo |
-| Próxima decisão | Ricardo aprovar D-101 a D-108, Discovery, PRD e somente a readiness da SPEC, nessa ordem |
+| Decisão humana | aprovação sequencial registrada; checkpoint de evidência `e8abe6f` reconhecido; somente a readiness da SPEC autorizada |
 | BUILD | proibido até aprovação da SPEC |

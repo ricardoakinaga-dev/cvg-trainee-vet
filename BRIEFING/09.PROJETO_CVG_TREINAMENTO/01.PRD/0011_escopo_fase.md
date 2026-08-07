@@ -9,7 +9,7 @@
 
 ## 1. Escopo desta fase do projeto
 
-Esta fase consolida a **documentação de briefing do produto**. Discovery e PRD estão aprovados tecnicamente e aguardam aprovação humana sobre o commit; depois disso, somente a readiness da SPEC será autorizada. BUILD e publicação geral continuam bloqueados.
+Esta fase consolidou a **documentação de briefing do produto**. Discovery e PRD foram aprovados formalmente em 2026-08-07; somente a readiness da SPEC está autorizada. BUILD e publicação geral continuam bloqueados.
 
 ## 2. IN SCOPE (o que será construído no produto)
 
@@ -34,7 +34,7 @@ Esta fase consolida a **documentação de briefing do produto**. Discovery e PRD
 15. Contestação de questão/resultado com recálculo auditável;
 16. Trilha de auditoria completa;
 17. Papéis e permissões (matriz do 0006);
-18. Vocabulário de estados separado por progresso, avaliação e domínio, conforme D-102 proposta;
+18. Vocabulário de estados separado por progresso, avaliação e domínio, conforme D-102 aprovada;
 19. Canal interno para bugs, usabilidade, erros de conteúdo e melhorias, com protocolo, triagem e acompanhamento;
 20. KPIs operacionais simples e observabilidade mínima de login, salvamento, submissão, correções e disponibilidade.
 
@@ -66,7 +66,7 @@ Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesq
 8. Cópia de texto, página, tabela, figura ou imagem dos livros-fonte — proibida; obras usadas para consulta manual interna, com conteúdo original CVG e referência simples por módulo (D-075/RN-046);
 9. Publicação dos PDFs das obras na plataforma;
 10. Processamento automatizado dos PDFs — OCR, indexação, embeddings, RAG ou envio dos arquivos a IA — fora do MVP e pendente em D-033; isso não bloqueia consulta e autoria manuais;
-11. Notificações externas (e-mail/SMS) — `PENDENTE`;
+11. Notificações externas (e-mail/SMS) — fora do MVP;
 12. Gamificação, ranking público ou comparativos entre colaboradores;
 13. Cadastro público, armazenamento de senhas no banco comum da aplicação, session replay ou gravação de tela;
 14. Microsserviços, mensageria distribuída, data warehouse, BI externo e banco vetorial dedicado sem evidência de necessidade.

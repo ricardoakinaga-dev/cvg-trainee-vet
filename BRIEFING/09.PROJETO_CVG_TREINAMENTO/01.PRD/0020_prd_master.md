@@ -4,8 +4,8 @@
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Fase:** PRD — consolidação  
 **Data:** 2026-08-06
-**Status:** consolidado e aprovado tecnicamente; gate aguarda aprovação humana do commit
-**Base:** Discovery aprovado tecnicamente na reexecução de 2026-08-06, ainda sujeito ao checkpoint humano
+**Status:** consolidado e aprovado formalmente em 2026-08-07 sobre `f6fefa1`
+**Base:** Discovery aprovado formalmente antes do PRD no mesmo checkpoint
 
 ---
 
@@ -143,12 +143,12 @@ As identificações abaixo pertencem à governança interna e não serão exibid
 
 ## 12. Fronteira dos gates
 
-B-01 a B-06 estão fechados. A reexecução técnica de Discovery e PRD foi concluída segundo as engines canônicas. Por D-101 proposta, B-07 fornece insumos à SPEC e continua obrigatório antes da baseline/piloto completo, sem bloquear a especificação. A única pendência para iniciar a readiness da SPEC é a aprovação humana do commit consolidado.
+B-01 a B-06 estão fechados. Discovery e PRD foram aprovados formalmente segundo as engines canônicas. Por D-101 aprovada, B-07 fornece insumos à SPEC e continua obrigatório antes da baseline/piloto completo, sem bloquear a especificação. A readiness 0100 da SPEC está autorizada.
 Detalhes em [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md).
 
 ## 13. Decisões humanas e pacote para aprovação do gate PRD
 
-Os itens confirmados pelo patrocinador formam a baseline do PRD. D-101 a D-108, descritas no Anexo 0021, completam a fronteira de gate, semântica, criticidade, exceções, diagnóstico, equivalência, recuperação e protocolos; aguardam aprovação no checkpoint final.
+Os itens confirmados pelo patrocinador formam a baseline aprovada do PRD. D-101 a D-108, descritas no Anexo 0021, completam a fronteira de gate, semântica, criticidade, exceções, diagnóstico, equivalência, recuperação e protocolos.
 
 1. Limiares, pesos e tentativas — ✅ **CONFIRMADOS PELO PATROCINADOR COMO INSUMOS em 2026-08-05** (anexo 0008);
 2. Escopo do piloto: núcleo + emergência/internação — ✅ **CONFIRMADO PELO PATROCINADOR COMO INSUMO em 2026-08-05**;
@@ -165,7 +165,7 @@ Os itens confirmados pelo patrocinador formam a baseline do PRD. D-101 a D-108, 
 13. Correção de registro/passagem — ✅ **ESTRUTURADA E AUTOMÁTICA NO INÍCIO, COM ESCALONAMENTO HUMANO POR EVIDÊNCIA, APROVADA EM D-070**.
 14. Superfícies de conta e acompanhamento — ✅ **DIREÇÃO CONFIRMADA EM D-090**: login, conta, dashboards, evolução, feedback e KPIs simples.
 15. Pacote pré-SPEC — ✅ **D-091 A D-100 APROVADAS INTEGRALMENTE EM 2026-08-06**: autenticação, papéis, dashboards, feedback, KPIs, arquitetura, fronteira de RAG, observabilidade, acessibilidade e agente operacional de IA, detalhados no [Anexo 0020](../90.ANEXOS/0020_alinhamento_produto_pre_spec.md).
-16. Pacote de fechamento — ⏳ **D-101 A D-108 AGUARDAM APROVAÇÃO HUMANA DO COMMIT**; ver [Anexo 0021](../90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md).
+16. Pacote de fechamento — ✅ **D-101 A D-108 APROVADAS EM 2026-08-07 SOBRE `f6fefa1`**; ver [Anexo 0021](../90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md).
 
 ## 14. Documentos do PRD
 

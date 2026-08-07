@@ -31,8 +31,8 @@
 | D-014 | Quais ferramentas são usadas? | operação | Discovery | resolvida institucionalmente — não há plataforma, banco, trilha, progresso ou integração; eventuais ferramentas informais não são dependência do MVP |
 | D-015 | Quais lacunas já são conhecidas? | coord. clínica | piloto | resolvida para a fase — falta de trilha, avaliação e registro centralizado; lacunas individuais serão observadas pelo B-07 antes do piloto completo |
 | D-016 | Quanto tempo protegido será oferecido? | direção | PRD | substituída por D-084/D-085: trilha de 149 h em 24 meses, média aproximada de 1 h 30 min/semana |
-| D-017 | Quais restrições de dispositivo/conectividade? | MV. Ricardo Akinaga | SPEC | resolvida para a baseline por D-104 proposta — web responsiva em celular e computador; perda de conexão retoma o último estado confirmado |
-| D-018 | Quais necessidades de acessibilidade? | MV. Ricardo Akinaga | SPEC/piloto | resolvida para a baseline por D-099 e D-104 proposta — WCAG 2.2 AA e acomodação autorizada quando houver necessidade concreta |
+| D-017 | Quais restrições de dispositivo/conectividade? | MV. Ricardo Akinaga | SPEC | resolvida para a baseline por D-104 aprovada — web responsiva em celular e computador; perda de conexão retoma o último estado confirmado |
+| D-018 | Quais necessidades de acessibilidade? | MV. Ricardo Akinaga | SPEC/piloto | resolvida para a baseline por D-099 e D-104 aprovadas — WCAG 2.2 AA e acomodação autorizada quando houver necessidade concreta |
 
 ## 3. Escopo clínico
 
@@ -41,7 +41,7 @@
 | D-020 | Quais áreas entram no piloto? | comitê clínico | Discovery | confirmada pelo patrocinador — núcleo comum + Emergência e Internação; B-06 fechado |
 | D-021 | Qual é o núcleo obrigatório? | comitê clínico | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): núcleo comum obrigatório (0011 §2) |
 | D-022 | O foco inicial será cães, gatos ou ambos? | coord. clínica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): cães e gatos (RN-077) |
-| D-023 | Quais conteúdos são eletivos? | coord. educacional | PRD | resolvida para a trilha completa — os 24 módulos são obrigatórios quando elegíveis; a onda piloto inicial cobre núcleo + Emergência + Internação e não há dispensa por diagnóstico (D-045/D-105 proposta) |
+| D-023 | Quais conteúdos são eletivos? | coord. educacional | PRD | resolvida para a trilha completa — os 24 módulos são obrigatórios quando elegíveis; a onda piloto inicial cobre núcleo + Emergência + Internação e não há dispensa por diagnóstico (D-045/D-105 aprovadas) |
 | D-024 | Quais competências definem básico/intermediário/avançado? | patrocinador/clínica | PRD | resolvida para o MVP pela V2: sem rótulos formais de nível; a complexidade progride dentro das trilhas; taxonomia fica para expansão |
 | D-025 | Quais protocolos internos prevalecem? | MV. Ricardo Akinaga | publicação do módulo | proposta D-108 — registrar protocolo versionado, `NAO_APLICAVEL` ou `NAO_FORNECIDO`; nenhuma regra interna será presumida |
 | D-026 | Quais temas exigem reciclagem obrigatória? | RT | conteúdo/piloto | resolvida para a fase — validade 6/12/24 meses por tipo e retenção 30/60/90 dias conforme regras aprovadas |
@@ -62,9 +62,9 @@
 
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
-| D-037 | Quais competências e temas compõem o blueprint do diagnóstico inicial? | Ricardo | piloto | blueprint técnico pronto no Anexo 0012; aguarda aprovação clínica antes da produção dos itens, sem bloquear a SPEC por D-101 proposta |
-| D-038 | Como o resultado diagnóstico determinará a trilha personalizada? | Ricardo | PRD | resolvida pela D-105 proposta — faixas <70%, 70–79% e ≥80%, criticidade e dado insuficiente orientam reforço, sem dispensa |
-| D-039 | Quais conteúdos obrigatórios não poderão ser dispensados pelo diagnóstico? | Ricardo | PRD | resolvida pela D-105 proposta — os 24 módulos da trilha completa permanecem obrigatórios quando elegíveis; a onda piloto inicial não cria dispensa futura |
+| D-037 | Quais competências e temas compõem o blueprint do diagnóstico inicial? | Ricardo | piloto | blueprint técnico pronto no Anexo 0012; aguarda aprovação clínica antes da produção dos itens, sem bloquear a SPEC por D-101 aprovada |
+| D-038 | Como o resultado diagnóstico determinará a trilha personalizada? | Ricardo | PRD | resolvida pela D-105 aprovada — faixas <70%, 70–79% e ≥80%, criticidade e dado insuficiente orientam reforço, sem dispensa |
+| D-039 | Quais conteúdos obrigatórios não poderão ser dispensados pelo diagnóstico? | Ricardo | PRD | resolvida pela D-105 aprovada — os 24 módulos da trilha completa permanecem obrigatórios quando elegíveis; a onda piloto inicial não cria dispensa futura |
 | D-040 | Qual limiar geral de aprovação? | comitê clínico/pedagógico | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 70% (RN-024; standard setting definitivo após baseline) |
 | D-041 | Qual limiar para temas críticos? | comitê | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 80% (RN-025) |
 | D-042 | Quantas tentativas? | coord. educacional | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 2 + remediação obrigatória (RN-026) |
@@ -80,14 +80,14 @@
 
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
-| D-050 | Quais metas finais após baseline? | patrocinador/PO | piloto | metas provisórias aceitas para a SPEC; calibração permanece obrigatória antes do piloto completo por D-101 proposta |
+| D-050 | Quais metas finais após baseline? | patrocinador/PO | piloto | metas provisórias aceitas para a SPEC; calibração permanece obrigatória antes do piloto completo por D-101 aprovada |
 | D-051 | Quem vê resultados individuais? | Ricardo | PRD | resolvida por D-077: participante vê os próprios dados; Ricardo acessa o necessário; suporte delegado somente de forma excepcional e registrada |
 | D-052 | Resultados podem ser usados em RH? | Ricardo | PRD | resolvida por D-077: proibido no MVP; ampliação exige nova decisão |
 | D-053 | Qual retenção dos dados? | Ricardo | PRD | resolvida por D-077: durante o vínculo com o CVG + 2 anos; depois eliminar ou anonimizar, ressalvadas obrigações aplicáveis |
 | D-054 | Qual política para correção manual de nota? | governança | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): fluxo formal (RN-067) |
 | D-055 | Qual periodicidade dos dashboards? | gestão | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): mensal; individual em tempo real (RN-080) |
 | D-056 | Quais indicadores clínicos serão apenas correlacionados? | coord. clínica | piloto | fora do MVP inicial; qualquer correlação futura exige nova decisão e dados permitidos |
-| D-057 | Qual fórmula de score do programa? | produto/auditoria | PRD | resolvida sem score único — progresso, avaliação e domínio permanecem dimensões separadas por D-102 proposta |
+| D-057 | Qual fórmula de score do programa? | produto/auditoria | PRD | resolvida sem score único — progresso, avaliação e domínio permanecem dimensões separadas por D-102 aprovada |
 
 ## 7. MVP e piloto
 
@@ -134,18 +134,18 @@
 | D-098 | Qual observabilidade e recuperação mínimas? | patrocinador/arquitetura | SPEC readiness | aprovada integralmente (2026-08-06): logs estruturados, captura de erros, alertas, backups e restauração testada, sem session replay |
 | D-099 | Qual padrão de acessibilidade? | patrocinador/produto | SPEC readiness | aprovada integralmente (2026-08-06): WCAG 2.2 nível AA em toda a jornada |
 | D-100 | Como a IA deve apoiar a operação e qual modelo usar? | patrocinador/produto | SPEC readiness | aprovada integralmente (2026-08-06): workflow determinístico; Luna adaptativa, ferramentas escopadas, proteção contra prompt injection, mínimo de dados e aprovação auditada |
-| D-101 | Qual é a fronteira canônica entre gates e B-07? | patrocinador/governança | Discovery/PRD | proposta no Anexo 0021 — B-07 bloqueia baseline e piloto, não a SPEC; aguarda aprovação humana sobre commit |
-| D-102 | Como separar progresso, avaliação, domínio, aprovação e conclusão? | patrocinador/produto | PRD | proposta no Anexo 0021; aguarda aprovação humana sobre commit |
-| D-103 | Como aplicar os limiares geral e crítico? | patrocinador/clínica | PRD | proposta no Anexo 0021 — 70% geral e 80% em cada componente crítico, sem compensação; aguarda aprovação |
-| D-104 | Quais exceções operacionais entram no MVP? | patrocinador/produto | PRD | proposta no Anexo 0021 — afastamento, acessibilidade, conexão, desativação, retirada e contestação; aguarda aprovação |
-| D-105 | Como o diagnóstico personaliza e quando é repetido? | patrocinador/clínica | PRD | proposta no Anexo 0021 — reforço por faixa/criticidade, sem dispensa e baseline única; aguarda aprovação |
-| D-106 | O que torna duas formas equivalentes? | patrocinador/clínica | PRD | proposta no Anexo 0021 — mesmo blueprint, distribuição comparável, rubrica testada, aprovação e pré-voo; aguarda aprovação |
-| D-107 | Quais RPO/RTO e critérios de fornecedor orientam a SPEC? | patrocinador/arquitetura | SPEC readiness | proposta no Anexo 0021 — RPO ≤1h, RTO ≤4h e requisitos de segurança/portabilidade; aguarda aprovação |
-| D-108 | Como registrar protocolos internos, owners e prazos de risco? | patrocinador/clínica | Discovery/PRD | proposta no Anexo 0021 — estado explícito por módulo e Ricardo como owner; aguarda aprovação |
+| D-101 | Qual é a fronteira canônica entre gates e B-07? | patrocinador/governança | Discovery/PRD | aprovada em 2026-08-07 — B-07 bloqueia baseline e piloto, não a SPEC |
+| D-102 | Como separar progresso, avaliação, domínio, aprovação e conclusão? | patrocinador/produto | PRD | aprovada em 2026-08-07 conforme Anexo 0021 |
+| D-103 | Como aplicar os limiares geral e crítico? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — 70% geral e 80% em cada componente crítico, sem compensação |
+| D-104 | Quais exceções operacionais entram no MVP? | patrocinador/produto | PRD | aprovada em 2026-08-07 — afastamento, acessibilidade, conexão, desativação, retirada e contestação |
+| D-105 | Como o diagnóstico personaliza e quando é repetido? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — reforço por faixa/criticidade, sem dispensa e baseline única |
+| D-106 | O que torna duas formas equivalentes? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — mesmo blueprint, distribuição comparável, rubrica testada, aprovação e pré-voo |
+| D-107 | Quais RPO/RTO e critérios de fornecedor orientam a SPEC? | patrocinador/arquitetura | SPEC readiness | aprovada em 2026-08-07 — RPO ≤1h, RTO ≤4h e requisitos de segurança/portabilidade |
+| D-108 | Como registrar protocolos internos, owners e prazos de risco? | patrocinador/clínica | Discovery/PRD | aprovada em 2026-08-07 — estado explícito por módulo e Ricardo como owner |
 
 ## 8. Próximas perguntas úteis
 
-1. Aprovar D-101 a D-108, o gate Discovery e, em seguida, o gate PRD sobre o commit consolidado, autorizando somente a readiness da SPEC.
+1. D-101 a D-108 e os gates foram aprovados; a próxima decisão ocorrerá somente se o readiness 0100 encontrar bloqueio real de produto.
 
 B-07 continua como trabalho obrigatório antes da baseline e do piloto completo, mas não é pendência para iniciar a SPEC.
 

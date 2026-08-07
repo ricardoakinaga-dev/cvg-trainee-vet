@@ -1,6 +1,6 @@
 # Anexo 0004 — Roadmap e Gates de Construção
 
-**Status:** Discovery e PRD aprovados tecnicamente em 2026-08-06; aguardam aprovação humana sequencial do commit; BUILD bloqueado
+**Status:** Discovery e PRD aprovados formalmente em 2026-08-07; SPEC readiness iniciada; BUILD bloqueado
 
 ## 1. Pipeline oficial
 
@@ -41,21 +41,21 @@ Produzidos neste briefing:
 
 ### Estado
 
-**`APROVADO TECNICAMENTE — AGUARDA APROVAÇÃO HUMANA DO COMMIT` (2026-08-06).** A reexecução corrigiu a checklist local ampliada e aplicou estritamente a engine canônica, conforme [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md) e D-101.
+**`APROVADO FORMALMENTE` (2026-08-07).** A reexecução corrigiu a checklist local ampliada e aplicou estritamente a engine canônica, conforme [0090 — Discovery Validation](../00.DISCOVERY/0090_discovery_validation.md) e D-101.
 
 ### Próximas atividades permitidas
 
-- Revisão e aprovação humana do checkpoint consolidado;
+- SPEC readiness e documentos posteriores da SPEC, em ordem;
 - Continuidade de B-07 como conteúdo pré-piloto dentro de D-077;
 - T2 da M02 em seu fluxo controlado já autorizado.
 
-Até a aprovação humana não se inicia a readiness da SPEC. BUILD, código e publicação geral continuam proibidos.
+BUILD, código e publicação geral continuam proibidos até o gate 0190.
 
 ## 3. Fase 1 — PRD
 
 ### Pré-condição
 
-`0090_discovery_validation.md` aprovado canonicamente — **CUMPRIDA TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA DO COMMIT**.
+`0090_discovery_validation.md` aprovado canonicamente — **CUMPRIDA FORMALMENTE EM 2026-08-07**.
 
 ### Objetivo
 
@@ -70,7 +70,7 @@ Materializar o comportamento do produto sem definir tecnologia.
 - `0014_requisitos_nao_funcionais_produto.md`; ✅
 - `0015_metricas_de_sucesso.md`; ✅
 - `0020_prd_master.md`; ✅
-- `0090_prd_validation.md`; ✅ aprovado tecnicamente; checkpoint humano pendente.
+- `0090_prd_validation.md`; ✅ aprovado formalmente em 2026-08-07.
 
 ### Conteúdo que o PRD deverá fechar
 
@@ -90,13 +90,13 @@ Materializar o comportamento do produto sem definir tecnologia.
 
 ### Gate
 
-Todos os campos obrigatórios da engine canônica estão preenchidos. **APROVADO TECNICAMENTE em 2026-08-06**, com D-101 a D-108 e aprovação humana do commit como único checkpoint restante. B-07 bloqueia baseline/piloto, não a SPEC.
+Todos os campos obrigatórios da engine canônica estão preenchidos. **APROVADO FORMALMENTE em 2026-08-07**. B-07 bloqueia baseline/piloto, não a SPEC.
 
 ## 4. Fase 2 — SPEC
 
 ### Pré-condição
 
-Discovery e PRD aprovados canonicamente, em sequência, por commit identificado — **CUMPRIDA TECNICAMENTE; AGUARDA APROVAÇÃO HUMANA**.
+Discovery e PRD aprovados canonicamente, em sequência, por commit identificado — **CUMPRIDA FORMALMENTE EM 2026-08-07**.
 
 ### Objetivo
 
