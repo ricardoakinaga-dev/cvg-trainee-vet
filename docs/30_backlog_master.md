@@ -103,6 +103,19 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - evidência: commit f6fefa1; BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0090_prd_validation.md; BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md
 - resultado: aprovado por MV. Ricardo Akinaga em 2026-08-07, depois do Discovery
 
+### LIT-01 — Consolidar leitura da literatura e matriz curricular
+
+- título: registrar a leitura dos três PDFs e a aplicação curricular por fonte
+- descrição: validar páginas, hashes, estrutura, capítulos prioritários, matriz dos 24 meses e regras de conversão da literatura em conteúdo autoral do CVG
+- módulo: conteúdo / governança de fontes
+- dependência: D-075, D-086 e D-109 aprovadas/refinadas; PDFs locais disponíveis
+- fase: PRD — preparação de conteúdo antes da autoria em escala
+- risco: alto — fonte sem rastreabilidade aumenta risco clínico, autoral e de atualização
+- impacto: alto
+- status: COMPLETED
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0022_leitura_literatura_e_matriz_curricular.md; hashes conferidos contra Anexo 0010
+- resultado: leitura integral processada; matriz pronta para autoria; rastreabilidade restrita ao workflow interno por D-109; nenhum PDF ou derivado foi versionado
+
 ## P2 — MÉDIO
 
 ### SPEC-01 — Preparar SPEC

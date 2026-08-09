@@ -62,13 +62,13 @@ Regra geral: decisões explicitamente aprovadas pelo patrocinador são baseline 
 
 | ID | Regra | Classificação |
 |---|---|---|
-| RN-040 | Cada módulo registra internamente objetivo, competência, nível, obra e capítulo/seção consultados, autor, revisor, versão e data de revisão; esses dados não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
+| RN-040 | Cada módulo mantém objetivo, competência, nível e toda rastreabilidade de fonte, autoria, revisão, versão e data somente no workflow interno; esses dados não são exibidos ao aluno por nenhuma superfície acessível | REFINADA POR D-109 (2026-08-09), sobre D-075 |
 | RN-041 | Hierarquia de fontes: legislação/bula > protocolo CVG > diretriz atual > Ettinger 2024 > Fossum 2014 (temas cirúrgicos) > Tratado 2015 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05 — atualizada 2026-08-05: inclusão do Fossum, F-03) |
 | RN-042 | Divergências entre fontes seguem fluxo com `conflict_id` e decisão humana documentada; críticas nunca resolvidas por IA | FATO INFORMADO |
 | RN-043 | Conteúdo clínico só é publicado após revisão e aprovação humana de MV. Ricardo Akinaga | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RN-044 | Ricardo pode criar, revisar, aprovar e publicar o conteúdo do MVP interno; a revisão de outro MV é opcional, não obrigatória | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RN-045 | Não copiar texto, página, tabela, figura ou imagem das obras; todo material de treinamento deve ter redação própria do CVG | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
-| RN-046 | No MVP interno, as obras podem ser consultadas manualmente pela equipe; os PDFs ficam fora da plataforma e do Git; registra-se apenas obra e capítulo/seção por módulo; automação dos PDFs permanece pendente em D-033 sem bloquear a autoria manual | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05); B-04 FECHADO PARA O MVP INTERNO |
+| RN-046 | No MVP interno, as obras podem ser consultadas manualmente pela equipe; os PDFs ficam fora da plataforma e do Git; a rastreabilidade completa fica somente no workflow interno por módulo; automação dos PDFs permanece pendente em D-033 sem bloquear a autoria manual | REFINADA POR D-109 (2026-08-09), sobre D-075; B-04 FECHADO PARA O MVP INTERNO |
 | RN-047 | Validade por tipo de conteúdo: crítico 6 meses, clínico geral 12, fundamentos 24; alerta = revisão imediata | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-048 | Retirada emergencial: crítico até 24h, alto até 3 dias úteis; registra afetados e ação corretiva | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RN-049 | Conteúdo vencido não é exibido como ativo | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |

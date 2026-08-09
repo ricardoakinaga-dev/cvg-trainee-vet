@@ -13,7 +13,7 @@
 O programa passa a ser uma jornada de desenvolvimento clínico contínuo, e não uma prova extensa ou uma sequência de aulas. A trilha combina:
 
 - casos fictícios progressivos;
-- pesquisa orientada nas obras do CVG e em diretrizes atuais;
+- pesquisa orientada em materiais autorais do CVG e diretrizes selecionadas pela equipe; as obras usadas na construção permanecem na camada interna;
 - quizzes de recuperação ativa;
 - questões de melhor resposta e associação estendida;
 - perguntas curtas e dissertativas;
@@ -48,7 +48,7 @@ Os 24 módulos cobrem os principais sistemas e situações da clínica de cães 
 | Sessão | Semana | Tempo | Experiência |
 |---|---:|---:|---|
 | S1 — ativação e caso de abertura | 1 | 60 min | quiz formativo, apresentação do problema, objetivos e dados iniciais |
-| S2 — pesquisa orientada | 2 | 120 min | consulta aberta às fontes, busca e comparação de condutas; janela de 7 dias |
+| S2 — pesquisa orientada | 2 | 120 min | análise e comparação de condutas a partir dos materiais autorizados pela equipe; janela de 7 dias |
 | S3 — caso progressivo e decisão | 3 | 120 min | novos dados, exames, tratamento, complicações e respostas mistas; janela de 7 dias |
 | S4 — debriefing e retenção | 4 | 60 min | feedback, síntese, reflexão, revisão espaçada e próxima ação |
 | **Total regular** |  | **360 min / 6 h** |  |
@@ -72,13 +72,13 @@ Essas proporções descrevem variedade de atividades, não os pesos da nota soma
 
 Regras:
 
-1. questões abertas permitem consulta às fontes e devem pedir síntese, justificativa ou aplicação, nunca mera transcrição;
+1. questões abertas devem pedir síntese, justificativa ou aplicação a partir do caso e dos materiais autorizados, nunca mera transcrição;
 2. quizzes e questões objetivas podem ser corrigidos automaticamente depois do envio;
 3. respostas abertas usam rubrica explícita e correção por MV. Ricardo Akinaga em até cinco dias úteis, conforme aprovação de 2026-08-06;
-4. toda resposta clínica deve citar a fonte usada e registrar a data de consulta quando envolver recomendação atualizável;
+4. a fonte e a data de consulta são registradas somente no registro interno de autoria/revisão; o participante não deve citar bibliografia nem recebe metadados bibliográficos na interface;
 5. erro crítico gera feedback e reapresentação em caso equivalente, sem punição, ranking ou reprovação definitiva;
 6. o programa combina atividades abertas e fechadas; nenhuma modalidade isolada decide o desenvolvimento do participante;
-7. uso de IA pelo participante, se permitido futuramente, deverá ser declarado e não substitui a verificação na fonte indicada.
+7. uso de IA pelo participante, se permitido futuramente, deverá ser declarado e não substitui a verificação no material/protocolo autorizado pelo CVG.
 
 ## 5. Parte 1 — Clínica médica, emergência e internação
 
@@ -186,7 +186,7 @@ Regras:
 | Sessão | Tempo | Temas |
 |---|---:|---|
 | S1 | 90 min | entrada de paciente multissistêmico: triagem, história, problemas e prioridades |
-| S2 | 150 min | pesquisa aberta: diferenciais, exames, evidência e plano inicial |
+| S2 | 150 min | estudo guiado em material autoral autorizado: diferenciais, exames, evidência e plano inicial |
 | S3 | 150 min | evolução com complicações: terapia, internação, comunicação e reavaliação |
 | S4 | 90 min | debriefing, retenção da Parte 1, remediação e atualização do plano individual |
 
@@ -337,7 +337,9 @@ legislação e regra profissional aplicável
 → Tratado brasileiro
 ```
 
-Quando houver divergência, o item fica bloqueado até decisão documentada de MV. Ricardo Akinaga. Nenhum trecho, tabela, figura ou página das obras será reproduzido no treinamento; os materiais serão autorais e manterão somente referência interna de capítulo/seção.
+Quando houver divergência, o item fica bloqueado até decisão documentada de MV. Ricardo Akinaga. Nenhum trecho, tabela, figura ou página das obras será reproduzido no treinamento; os materiais serão autorais e manterão somente referência interna de capítulo/seção, invisível ao participante.
+
+Todo material exibido ao participante deve passar por uma projeção de publicação que remova fonte, obra, autor, capítulo, página, PDF, foto, tabela, figura, trecho, link e qualquer outro metadado bibliográfico. Essa regra vale para tela, API/payload, exportação, analytics, notificações e logs acessíveis ao participante, conforme D-109.
 
 ## 9. Governança clínica V3
 

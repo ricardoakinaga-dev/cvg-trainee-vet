@@ -2,8 +2,9 @@
 
 **Status:** governança enxuta aprovada para o MVP interno por D-075; B-04 fechado nesse escopo
 **Objetivo:** definir o uso simples e seguro das fontes no treinamento interno do CVG.
+**Leitura registrada:** a verificação integral dos três PDFs e a matriz de aplicação curricular estão no [Anexo 0022](0022_leitura_literatura_e_matriz_curricular.md).
 
-> **Classificação:** os títulos, autores, editoras, ISBNs, arquivos, capítulos e páginas deste anexo são metadados internos de governança. Eles não integram a experiência do aluno. Na camada educacional, as obras serão usadas somente para consulta e validação técnica; o aluno verá conteúdo institucional autoral do CVG e informações de revisão/atualização.
+> **Classificação:** os títulos, autores, editoras, ISBNs, arquivos, capítulos e páginas deste anexo são metadados internos de governança. Eles não integram a experiência do aluno. Na camada educacional, a equipe usa as obras somente para consulta e validação técnica; o aluno verá apenas conteúdo autoral do CVG, casos fictícios, feedback e estados educacionais necessários.
 
 ## 1. Fontes canônicas
 
@@ -214,13 +215,13 @@ Esse mapeamento não representa módulos prontos.
 
 | Camada | O que registra ou exibe | Acesso |
 |---|---|---|
-| Experiência do aluno | conteúdo institucional CVG; justificativa técnico-clínica; versão, data de corte e estado de revisão | aluno e papéis educacionais autorizados |
+| Experiência do aluno | conteúdo institucional CVG; casos fictícios; feedback e estados educacionais necessários | aluno e papéis educacionais autorizados |
 | Registro interno do módulo | código F-01/F-02/F-03, edição e capítulo/seção consultados, autor e revisor | equipe responsável pelo treinamento |
 | Arquivo-fonte | PDF local fora do Git e fora da plataforma | equipe interna autorizada; automação depende de D-033 |
 
-O aluno recebe o conteúdo institucional do CVG. A equipe mantém uma referência simples por módulo para facilitar revisões e atualizações.
+O aluno recebe somente o conteúdo institucional do CVG. A equipe mantém uma referência detalhada por módulo para facilitar revisões e atualizações, mas essa referência não é projetada para a experiência do participante.
 
-A separação deve existir na projeção completa, não apenas visualmente: tela, API/payload, exportação, arquivo baixável, analytics e log acessível ao aluno não podem revelar os metadados restritos. Isso não remove termos gerais da plataforma, alertas clínico-regulatórios ou informações legalmente obrigatórias.
+A separação deve existir na projeção completa, não apenas visualmente: tela, API/payload, exportação, arquivo baixável, analytics, notificações e log acessível ao aluno não podem revelar fonte, obra, autor, capítulo, seção, página, PDF, foto, tabela, figura, trecho, link ou outro metadado bibliográfico. Isso não remove alertas de segurança, termos gerais da plataforma ou informações legalmente obrigatórias, desde que sejam redigidos pelo CVG e não reproduzam material protegido.
 
 Antes da publicação interna, autor e revisor confirmam somente que o material:
 
@@ -228,13 +229,14 @@ Antes da publicação interna, autor e revisor confirmam somente que o material:
 2. não copia texto, tabela, figura ou imagem da obra;
 3. registra a obra e o capítulo/seção consultados;
 4. passou por revisão clínica;
-5. não disponibiliza o PDF ao aluno.
+5. não disponibiliza o PDF ao aluno;
+6. a projeção publicada remove todos os metadados bibliográficos e ativos de terceiros da experiência do participante.
 
 ### 7.2 Estado de B-04 no MVP interno
 
 B-04 fica `FECHADO PARA O MVP INTERNO` por D-075. Consulta manual das obras e criação de conteúdo original do CVG não dependem de parecer jurídico, contato com editoras ou licença editorial adicional como gate do produto.
 
-Permanecem somente quatro controles operacionais: acesso interno, PDFs fora da plataforma e do Git, proibição de copiar material das obras e referência simples por módulo. D-033 continua pendente apenas para eventual processamento automatizado dos PDFs e não bloqueia o MVP ou a autoria manual.
+Permanecem somente quatro controles operacionais: acesso interno, PDFs fora da plataforma e do Git, proibição de copiar material das obras e registro de rastreabilidade exclusivamente interno por módulo. D-033 continua pendente apenas para eventual processamento automatizado dos PDFs e não bloqueia o MVP ou a autoria manual.
 
 O fechamento de B-04 remove apenas o bloqueio de fontes. Os demais gates da construção continuam com seus próprios requisitos.
 

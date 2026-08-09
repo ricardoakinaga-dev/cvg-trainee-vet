@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: SPEC — Fase 0 concluída
-- current_sprint: SPEC-01 — transição para visão arquitetural
-- current_task: aprovar o checkpoint do `0100_spec_readiness_review.md` antes de iniciar 0101
+- current_phase: SPEC — Fase 0 concluída; documentação de fontes em paralelo
+- current_sprint: LIT-01 — leitura da literatura e matriz curricular
+- current_task: registrar a leitura das três obras sem iniciar 0101 ou BUILD
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit f8e1e08 concluiu o 0100 com `READY_FOR_SPEC_PHASE_1`, sem blocker crítico e com revisão independente `PASS`
-- next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101
+- last_completed_action: RF/RN e a última questão M02 foram refinados; auditoria confirmou a remoção de busca/citação bibliográfica da superfície do participante; nenhum derivado foi versionado
+- next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101; aprovar o blueprint B-07 antes da produção diagnóstica
 
 ## BLOQUEIOS
 
-- blockers: nenhum técnico para 0101; falta autorização humana porque a permissão vigente limitou-se ao readiness; BUILD segue bloqueado até 0190
+- blockers: nenhum técnico para 0101; falta autorização humana porque a permissão vigente limitou-se ao readiness; autoria em escala e B-07 seguem seus gates; BUILD segue bloqueado até 0190
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-07T06:14:36-03:00
+- last_update: 2026-08-09T12:19:44-03:00
 
 ## REGRAS DE USO
 

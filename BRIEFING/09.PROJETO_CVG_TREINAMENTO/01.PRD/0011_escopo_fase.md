@@ -52,7 +52,7 @@ Esta fase consolidou a **documentação de briefing do produto**. Discovery e PR
 
 O [PRD 0017](0017_programa_curricular_24_meses.md) transforma o escopo em um treinamento executável: 24 meses, duas partes, 24 módulos mensais, 96 sessões e 149 horas. O primeiro mês contém o diagnóstico e o plano individual; os meses 2 a 12 desenvolvem clínica médica, emergência e internação; os meses 13 a 24 desenvolvem cirurgia, especialidades e integração.
 
-Um módulo regular possui quatro sessões e seis horas no mês: ativação, pesquisa aberta, caso progressivo e debriefing/retenção. Os meses integradores possuem oito horas.
+Um módulo regular possui quatro sessões e seis horas no mês: ativação, estudo guiado em material autoral do CVG, caso progressivo e debriefing/retenção. Os meses integradores possuem oito horas.
 
 ## 3. OUT OF SCOPE (o que NÃO será construído)
 

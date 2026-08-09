@@ -27,7 +27,7 @@ Nenhuma quantidade, peso, corte, tentativa, estado ou fórmula deste anexo autor
 - **Finalidade:** recuperação ativa e feedback;
 - **Quantidade proposta:** 20 itens formativos por módulo;
 - **Dificuldade:** básica a intermediária;
-- **Feedback ao aluno:** imediato, com justificativa técnico-clínica; fonte completa somente no workflow interno restrito (D-074);
+- **Feedback ao aluno:** imediato, com justificativa técnico-clínica; proveniência e rastreabilidade somente no workflow interno restrito, nunca na experiência do participante (D-109);
 - **Tentativas:** múltiplas para aprendizagem;
 - **Peso:** zero na decisão somativa enquanto for classificado como formativo;
 - **Consequência:** recomendar revisão, não punir;

@@ -558,6 +558,160 @@ D-101 a D-108 são baseline aprovada. O readiness deve distinguir lacunas da pr�
 
 WAITING_HUMAN_APPROVAL
 
+---
+
+## 2026-08-09 — LEITURA INTEGRAL DA LITERATURA E MATRIZ CURRICULAR
+
+### TIMESTAMP
+
+2026-08-09T12:02:49-03:00
+
+### ENGINE
+
+CONTEÚDO / GOVERNANÇA DE FONTES
+
+### PHASE
+
+Documentação de conteúdo em paralelo à SPEC readiness
+
+### SPRINT
+
+LIT-01 — leitura da literatura e matriz curricular
+
+### TASK
+
+Processar os três PDFs locais indicados pelo patrocinador e tornar a relação entre literatura, currículo e autoria verificável.
+
+### ACTION
+
+Foram verificados metadados, hashes e páginas; os três PDFs foram extraídos integralmente em diretório temporário fora do Git; sumários e capítulos prioritários foram revisados; a M02 foi conferida contra F-01, F-02, F-03 e diretrizes atuais já registradas; foi criado o Anexo 0022 com a matriz dos 24 meses, localizadores, formatos de aprendizagem, registro mínimo e pendências. Nenhum PDF, texto extraído, OCR, imagem, tabela, embedding ou RAG foi adicionado ao repositório.
+
+### RESULT
+
+`LIT-01` concluído documentalmente. Foram confirmados 7.047 páginas no F-01, 2.801 no F-02 e 5.008 no F-03; os hashes coincidem com o Anexo 0010. A matriz está pronta para orientar autoria original, revisão clínica e atualização por diretriz/protocolo. A leitura não autoriza 0101, BUILD, publicação geral, aplicação B-07 ou expansão do T2.
+
+### DECISIONS
+
+Mantidas D-075/D-086: consulta manual interna, conteúdo autoral do CVG, referências restritas por módulo e hierarquia de diretriz/protocolo sobre obra estática. Mantida a regra de que RCP, fluidoterapia, transfusão, doses, antimicrobianos e temas regulatórios exigem atualização contemporânea e aprovação de Ricardo.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-08-09 — REFINAMENTO DA EXPOSIÇÃO BIBLIOGRÁFICA
+
+### TIMESTAMP
+
+2026-08-09T12:13:54-03:00
+
+### ENGINE
+
+CONTEÚDO / GOVERNANÇA DE FONTES
+
+### PHASE
+
+Documentação de conteúdo em paralelo à SPEC readiness
+
+### SPRINT
+
+LIT-01 — leitura da literatura e matriz curricular
+
+### TASK
+
+Aplicar a orientação do patrocinador de que a rastreabilidade das obras serve somente à construção do desenvolvedor e à revisão interna.
+
+### ACTION
+
+Atualizados o contrato de exposição do Anexo 0022, os requisitos RNF-022/RNF-085, a governança de fontes, o currículo, o protocolo M02, o material do participante, as hipóteses de avaliação, a pesquisa pedagógica, o alinhamento pré-SPEC e o README do projeto. Foram removidos dos enunciados do participante os pedidos de informar fonte e data.
+
+### RESULT
+
+D-109 ficou registrada como regra vigente: fonte, obra, autor, edição, capítulo, página, versão, revisão, PDF, foto, tabela, figura, trecho, link e metadados bibliográficos permanecem somente no workflow interno de construção, revisão e auditoria. A experiência do participante recebe apenas conteúdo autoral do CVG, casos fictícios, feedback, progresso e estados educacionais necessários.
+
+### DECISIONS
+
+Não há autorização para expor bibliografia, materiais das obras ou derivados na interface, API, payload, exportação, notificação, analytics ou log acessível ao participante. Nenhuma plataforma, publicação geral, 0101, BUILD, aplicação B-07 ou expansão do T2 foi iniciada.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-08-09 — LIMPEZA DA SUPERFÍCIE DO PARTICIPANTE
+
+### TIMESTAMP
+
+2026-08-09T12:16:50-03:00
+
+### ENGINE
+
+CONTEÚDO / GOVERNANÇA DE FONTES
+
+### PHASE
+
+Documentação de conteúdo em paralelo à SPEC readiness
+
+### SPRINT
+
+LIT-01 — leitura da literatura e matriz curricular
+
+### TASK
+
+Garantir que nenhum fluxo ou requisito do participante incentive consulta, citação ou exibição de fontes protegidas.
+
+### ACTION
+
+Substituídas no artefato M02 e nos critérios de aceite as instruções de busca nas fontes por estudo em material autoral autorizado do CVG. PRD Master, escopo de fase, currículo e governança de fontes também foram alinhados; versão de fonte, data de corte e estado de revisão ficaram explicitamente internos.
+
+### RESULT
+
+A superfície participante está limitada a conteúdo autoral do CVG, casos fictícios, feedback, progresso e estados educacionais necessários. A pesquisa das obras permanece uma atividade interna de autoria/revisão; não há exigência de citação ou registro bibliográfico pelo participante.
+
+### DECISIONS
+
+Mantida a espera por aprovação humana do checkpoint da Fase 0. Nenhuma plataforma, publicação geral, 0101, BUILD, aplicação B-07 ou expansão do T2 foi iniciada.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-08-09 — REVISÃO DOS REQUISITOS FUNCIONAIS E DE NEGÓCIO
+
+### TIMESTAMP
+
+2026-08-09T12:19:44-03:00
+
+### ENGINE
+
+CONTEÚDO / GOVERNANÇA DE FONTES
+
+### PHASE
+
+Documentação de conteúdo em paralelo à SPEC readiness
+
+### SPRINT
+
+LIT-01 — leitura da literatura e matriz curricular
+
+### TASK
+
+Propagar D-109 aos requisitos funcionais e regras de negócio e eliminar a última formulação bibliográfica do material do participante.
+
+### ACTION
+
+RF-030/RF-031/RF-037/RF-038/RF-040 e RN-040/RN-046 foram refinados para separar construção interna de experiência educacional. A questão M02-S4-Q06 passou a falar em material antigo e orientação clínica vigente, sem sugerir referência bibliográfica ao participante.
+
+### RESULT
+
+Requisitos, critérios de aceite e artefato M02 mantêm a mesma fronteira: rastreabilidade, versões de fonte, datas de corte, revisão e materiais protegidos ficam internos; o participante usa apenas conteúdo autoral autorizado do CVG.
+
+### DECISIONS
+
+O conjunto documental está pronto para checkpoint local. O runtime permanece `WAITING_HUMAN_APPROVAL`; nenhum código, plataforma ou publicação foi iniciado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

@@ -12,7 +12,7 @@ Verificar, em ambiente controlado, se a M02:
 
 1. cabe em 360 minutos sem induzir pressa insegura;
 2. apresenta instruções, casos, alternativas e feedback compreensíveis;
-3. permite pesquisar e responder sem expor gabaritos ou metadados internos;
+3. permite responder usando somente os materiais autorizados, sem expor gabaritos, bibliografia ou metadados internos;
 4. produz correção consistente nas duas respostas abertas;
 5. permite que Ricardo cumpra o SLA de cinco dias úteis;
 6. não coleta dados clínicos reais ou pessoais além do mínimo autorizado.

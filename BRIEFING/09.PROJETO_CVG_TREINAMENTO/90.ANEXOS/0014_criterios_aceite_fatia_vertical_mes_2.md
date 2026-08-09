@@ -7,7 +7,7 @@
 
 ## 1. Jornada testada
 
-Como médico-veterinário participante, quero percorrer um caso fictício de emergência ao longo de quatro sessões, pesquisar nas fontes autorizadas, justificar decisões e receber feedback seguro, para desenvolver priorização, reavaliação e escalonamento sem usar dados de pacientes reais.
+Como médico-veterinário participante, quero percorrer um caso fictício de emergência ao longo de quatro sessões, estudar o material autoral autorizado pelo CVG, justificar decisões e receber feedback seguro, para desenvolver priorização, reavaliação e escalonamento sem usar dados de pacientes reais.
 
 ## 2. Entregas obrigatórias
 

@@ -56,22 +56,22 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-030 | O sistema deve organizar cada módulo mensal em quatro sessões, com carga regular de 6 horas e janelas assíncronas para pesquisa e casos | P1 | APROVADA PELO PATROCINADOR (D-084/D-085, 2026-08-06) |
-| RF-031 | Cada módulo deve registrar internamente a obra e o capítulo/seção consultados, sem exibir esses metadados ao aluno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
+| RF-030 | O sistema deve organizar cada módulo mensal em quatro sessões, com carga regular de 6 horas e janelas assíncronas para estudo guiado e casos | P1 | APROVADA PELO PATROCINADOR (D-084/D-085, refinada por D-109) |
+| RF-031 | Cada módulo deve registrar a rastreabilidade da construção somente no workflow interno de autoria/revisão; nenhum dado de obra, capítulo/seção ou outro metadado bibliográfico pode ser exibido ao aluno | P0 | REFINADA POR D-109 (2026-08-09), sobre D-075 |
 | RF-032 | O sistema deve bloquear exibição de conteúdo vencido ou retirado | P0 | APROVADA COMO REGRA DE CONTEÚDO (RN-047 a RN-049) |
 | RF-033 | O sistema deve registrar conclusão de unidades e progresso | P0 | FATO INFORMADO |
 | RF-034 | O sistema deve suportar autoria → revisão clínica de Ricardo → aprovação → publicação, mantendo revisão adicional opcional | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RF-035 | O sistema deve impedir a publicação de módulo clínico sem fonte, versão, rubrica/gabarito testado e aprovação humana registrada de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RF-036 | O sistema deve versionar todo conteúdo e manter histórico | P0 | FATO INFORMADO |
-| RF-037 | O sistema deve registrar data de corte científico e próxima revisão | P1 | APROVADA COMO REGRA DE CONTEÚDO (RN-040/RN-047) |
-| RF-038 | O sistema não deve armazenar, distribuir ou exibir os PDFs; eventual OCR, indexação, embeddings, RAG ou envio dos arquivos a IA depende de decisão futura D-033, sem bloquear conteúdo original produzido manualmente | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
+| RF-037 | O sistema deve registrar internamente data de corte científico e próxima revisão, sem projetar esses dados na experiência do participante | P1 | REFINADA POR D-109 (2026-08-09), sobre RN-040/RN-047 |
+| RF-038 | O sistema não deve armazenar, distribuir ou exibir os PDFs; eventual OCR, indexação, embeddings, RAG ou envio dos arquivos a IA permanece fora do MVP, e qualquer registro bibliográfico fica restrito à construção/revisão interna | P0 | REFINADA POR D-109 (2026-08-09), sobre D-075/D-033 |
 | RF-039 | O sistema deve suportar retirada emergencial com registro de afetados | P0 | APROVADA COMO REGRA DE CONTEÚDO (RN-048) |
 
 ## 5. Avaliações
 
 | ID | Requisito | Prioridade | Classificação |
 |---|---|---|---|
-| RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa técnico-clínica e múltiplas tentativas; referência bibliográfica completa somente no workflow interno | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-074, 2026-08-05) |
+| RF-040 | Quiz formativo: itens por objetivo, feedback imediato com justificativa técnico-clínica e múltiplas tentativas; qualquer rastreabilidade bibliográfica permanece somente no workflow interno | P0 | REFINADA POR D-109 (2026-08-09), sobre D-074 |
 | RF-041 | Quiz formativo: peso zero na nota somativa | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | RF-042 | Caso clínico/simulação digital: apresentação progressiva em etapas, com cenário integralmente fictício e decisões registradas; casos reais identificáveis são proibidos no MVP | P0 | APROVADA PELO PATROCINADOR COMO INSUMO (D-068/D-077) |
 | RF-043 | Caso clínico/simulação digital: feedback e debriefing formativo e/ou somativo; modalidade somativa participa com peso 30% | P1 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068) |

@@ -181,6 +181,8 @@ Este registro preserva o checkpoint histórico. A regra vigente é D-077.
 
 **Decisão do patrocinador em 2026-08-05:** Alternativa 1. A experiência do aluno apresentará apenas conteúdo institucional autoral do CVG, justificativa técnico-clínica, versão e estado de revisão. Nomes de obras, autores, editoras, ISBNs, arquivos e avisos de direitos autorais das obras consultadas não serão exibidos. O workflow interno restrito manterá fonte, edição, capítulo, páginas, afirmação validada, autores e revisores.
 
+**Refinamento D-109 em 2026-08-09:** o parágrafo acima é histórico quanto à superfície do participante. A regra vigente é mais restritiva: toda rastreabilidade de obra, autoria, edição, capítulo, página, versão de fonte, revisão, PDF, foto, tabela, figura, trecho, link ou metadado bibliográfico permanece exclusivamente no workflow interno de construção, revisão e auditoria. O participante recebe somente conteúdo autoral do CVG, casos fictícios, feedback, progresso e estados educacionais necessários.
+
 D-074 registrou controles mais rigorosos e manteve B-04 parcial naquele checkpoint. Esse estado foi substituído por D-075; não representa a regra vigente.
 
 ### Evidência do checkpoint D-074

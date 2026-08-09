@@ -56,7 +56,7 @@ Aplicação no CVG:
 - pesquisa aberta nas sessões S2 e S3;
 - perguntas pedem justificativa, comparação, plano ou interpretação;
 - quizzes curtos preservam recuperação de conhecimento essencial;
-- a fonte consultada deve ser registrada;
+- a equipe deve registrar internamente a base consultada; o participante não cita bibliografia nem recebe a referência;
 - a decisão é reaplicada em um caso novo para verificar transferência.
 
 Fontes: [Durning et al. — revisão de provas abertas e fechadas](https://pubmed.ncbi.nlm.nih.gov/26535862/), [Bengtsson — revisão de take-home exams](https://www.uu.nl/sites/default/files/take-home_exams_in_higher_education_systematic_review_l._bengtsson_2019.pdf).

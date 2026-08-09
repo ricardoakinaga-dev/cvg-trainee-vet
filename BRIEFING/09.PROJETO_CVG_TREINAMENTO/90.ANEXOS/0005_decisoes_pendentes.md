@@ -7,6 +7,7 @@
 **Atualização 2026-08-06:** D-082 aprovada como remediação educativa de erro crítico, sem eliminação, punição, ranking ou reprovação definitiva.
 
 **Atualização 2026-08-06 (pré-SPEC):** D-090 confirmou as superfícies obrigatórias; D-091 a D-100 foram aprovadas integralmente pelo patrocinador. O alinhamento pré-SPEC está encerrado, sem autorização para iniciar a SPEC antes dos gates canônicos.
+**Atualização 2026-08-09:** D-109 refinou a fronteira de exposição bibliográfica: a rastreabilidade das obras é exclusivamente interna à construção e revisão; a experiência do participante recebe somente conteúdo autoral do CVG.
 
 ## 1. Identidade e governança
 
@@ -142,6 +143,7 @@
 | D-106 | O que torna duas formas equivalentes? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — mesmo blueprint, distribuição comparável, rubrica testada, aprovação e pré-voo |
 | D-107 | Quais RPO/RTO e critérios de fornecedor orientam a SPEC? | patrocinador/arquitetura | SPEC readiness | aprovada em 2026-08-07 — RPO ≤1h, RTO ≤4h e requisitos de segurança/portabilidade |
 | D-108 | Como registrar protocolos internos, owners e prazos de risco? | patrocinador/clínica | Discovery/PRD | aprovada em 2026-08-07 — estado explícito por módulo e Ricardo como owner |
+| D-109 | O que da rastreabilidade bibliográfica pode aparecer ao participante? | patrocinador/produto/clínica | conteúdo/SPEC | aprovada em 2026-08-09 — nada de fonte, obra, autor, capítulo, página, PDF, foto, tabela, figura, trecho, link ou metadado bibliográfico na experiência, payload, exportação, analytics ou log acessível ao participante; manter somente no registro interno de construção, revisão e auditoria |
 
 ## 8. Próximas perguntas úteis
 

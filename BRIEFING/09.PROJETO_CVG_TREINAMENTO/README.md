@@ -9,6 +9,7 @@
 **Status do gate PRD:** `APROVADO EM 2026-08-07 SOBRE F6FEFA1`, depois do Discovery; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
 **Status da auditoria documental:** `CONCLUÍDA E APROVADA`
 **Alinhamento pré-SPEC:** D-091 a D-108 aprovadas; somente a readiness da SPEC foi autorizada. BUILD permanece proibido.
+**Regra de exposição (D-109, 2026-08-09):** a rastreabilidade bibliográfica é exclusivamente interna à construção, revisão e auditoria; a experiência do participante recebe somente conteúdo autoral do CVG e não expõe referências, metadados ou materiais das obras consultadas.
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
 **Escopo desta entrega:** documentação de briefing, currículo V3 aprovado e fatia vertical documental do Mês 2; nenhuma plataforma, aplicação real ou código de produto foi criado.
 
@@ -107,6 +108,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 19. [Teste sintético das rubricas RA01 e RA02](90.ANEXOS/0019_teste_sintetico_rubricas_m02.md)
 20. [Alinhamento de produto e arquitetura antes da SPEC](90.ANEXOS/0020_alinhamento_produto_pre_spec.md)
 21. [Pacote de fechamento dos gates para iniciar a SPEC](90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md)
+22. [Leitura da literatura e matriz curricular](90.ANEXOS/0022_leitura_literatura_e_matriz_curricular.md)
 
 ## 4. O que não foi criado
 
@@ -143,7 +145,7 @@ Os PDFs-fonte não serão versionados no Git. Sua integridade será controlada p
 
 ## 5. Fontes clínicas principais
 
-> **Registro interno:** os dados das obras abaixo não serão exibidos ao aluno. Por D-075, cada módulo mantém somente a referência interna simples à obra e ao capítulo/seção consultados.
+> **Registro interno:** os dados das obras abaixo não serão exibidos ao aluno. Por D-109, qualquer referência, localizador, metadado ou material derivado permanece somente no workflow interno de construção, revisão e auditoria.
 
 **Obra:** *Tratado de Medicina Interna de Cães e Gatos*  
 **Organizadores:** Márcia Marques Jericó, João Pedro de Andrade Neto e Márcia Mery Kogika  

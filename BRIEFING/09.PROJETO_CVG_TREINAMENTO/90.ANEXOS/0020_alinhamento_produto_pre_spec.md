@@ -5,6 +5,7 @@
 **Patrocinador:** MV. Ricardo Akinaga
 **Status:** `APROVADO_INTEGRALMENTE_PELO_PATROCINADOR`
 **Aprovação:** D-091 a D-100 aprovadas integralmente por MV. Ricardo Akinaga em 2026-08-06
+**Refinamento posterior (D-109, 2026-08-09):** a rastreabilidade das obras é exclusiva do workflow interno de construção, revisão e auditoria. Nenhuma referência, metadado ou material das obras deve chegar ao participante por tela, API, exportação, notificação, analytics ou log acessível a ele.
 **Regra de avanço:** o alinhamento pré-SPEC está encerrado; a readiness da SPEC aguarda aprovação dos gates canônicos e de D-101 a D-108 no [Anexo 0021](0021_pacote_fechamento_gates_pre_spec.md). B-07 deve orientar a SPEC e ser concluído antes da baseline/piloto, sem bloquear o início da especificação.
 
 ## 1. Resultado do alinhamento
@@ -262,7 +263,7 @@ Session replay, gravação de tela e analytics comportamental invasivo ficam for
 
 ## 11. Decisão recomendada sobre RAG
 
-**Não construir RAG no MVP.** O participante já precisa pesquisar nas obras e responder com curiosidade; uma resposta pronta da IA poderia reduzir esse objetivo pedagógico. Além disso, D-033 mantém OCR, embeddings e processamento automatizado dos PDFs fora do MVP.
+**Não construir RAG no MVP.** A equipe de conteúdo usa consulta manual interna para construir materiais autorais; o participante trabalha somente com o conteúdo autorizado do CVG. Uma resposta pronta da IA poderia reduzir o objetivo pedagógico e qualquer corpus bibliográfico aumentaria o risco de exposição e reprodução. Além disso, D-033 mantém OCR, embeddings e processamento automatizado dos PDFs fora do MVP.
 
 Preparar apenas a pista de evolução:
 

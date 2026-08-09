@@ -3,11 +3,9 @@
 **Programa:** Trilha Clínica CVG de 24 meses
 **Carga:** 6 horas em quatro sessões
 **Modalidade:** digital, assíncrona e baseada em casos fictícios
-**Versão:** 0.1.0 — protótipo não publicado
-**Estado:** `APROVADO_PARA_ENSAIO_CONTROLADO` — não publicado
-**Data de corte científico:** 2026-08-06
-
 > Todo paciente, tutor, resultado, horário e evolução deste módulo são fictícios. O material desenvolve raciocínio em simulação e não substitui exame do paciente, protocolo do CVG, bula, legislação ou decisão clínica supervisionada.
+
+> Este material do participante contém somente conteúdo autoral do CVG e casos fictícios. Não exibe bibliografia, nomes de obras, autores, capítulos, páginas, PDFs, fotos, tabelas, figuras, trechos ou links de terceiros. Esses registros ficam exclusivamente na documentação interna de construção e revisão.
 
 ## 1. O que você desenvolverá
 
@@ -23,15 +21,15 @@ Ao final do módulo, espera-se que você consiga:
 
 ## 2. Como trabalhar
 
-- Responda primeiro com seu conhecimento atual; depois pesquise e revise sua decisão quando a atividade solicitar.
-- Nas respostas abertas, escreva com suas palavras e registre a fonte consultada e a data.
+- Responda primeiro com seu conhecimento atual; depois revise sua decisão usando os materiais autorizados pela equipe quando a atividade solicitar.
+- Nas respostas abertas, escreva com suas palavras e justifique a decisão usando os dados do caso; não é necessário informar bibliografia.
 - Não procure um único número isolado: integre exame, tendências e resposta à intervenção.
-- Se duas fontes divergirem em conduta crítica, registre a divergência; não a resolva por suposição.
+- Se o enunciado ou material fornecido parecer inconsistente em uma conduta crítica, registre a dúvida; não a resolva por suposição.
 - O feedback objetivo aparece depois do envio. As duas respostas abertas serão corrigidas por MV. Ricardo Akinaga em até cinco dias úteis.
 
 Neste módulo, `ABCDE` organiza a avaliação inicial do paciente que apresenta sinais de vida. Se houver suspeita de parada cardiorrespiratória, a prioridade muda imediatamente para reconhecimento breve e suporte básico de vida conforme o algoritmo RECOVER vigente; não se espera concluir todo o `ABCDE`.
 
-Biblioteca orientada para pesquisa: emergência e cuidados intensivos; triagem e choque; fluidoterapia; analgesia no paciente crítico; trauma e hemorragia; emergências respiratórias; monitoração; ressuscitação cardiopulmonar.
+Materiais orientados para estudo: emergência e cuidados intensivos; triagem e choque; fluidoterapia; analgesia no paciente crítico; trauma e hemorragia; emergências respiratórias; monitoração; ressuscitação cardiopulmonar.
 
 ---
 
@@ -150,15 +148,15 @@ Em até 80 palavras, complete: “A ameaça mais urgente é ___; minha primeira 
 
 | Bloco | Tempo |
 |---|---:|
-| pergunta de pesquisa e busca nas fontes | 25 min |
+| estudo guiado no material autoral do CVG | 25 min |
 | progressão do Caso A | 25 min |
 | seis decisões objetivas | 20 min |
 | resposta aberta principal 1 | 35 min |
-| revisão e registro da fonte | 15 min |
+| revisão e registro dos achados | 15 min |
 
-### Pesquisa orientada
+### Estudo guiado
 
-Pesquise e anote:
+Revise o material autoral disponibilizado pelo CVG e anote:
 
 1. como diferenciar ressuscitação de reposição/manutenção;
 2. quais desfechos indicam resposta de perfusão;
@@ -233,7 +231,7 @@ Inclua obrigatoriamente:
 4. critérios para interromper ou escalonar fluidos;
 5. preparo para hemocomponentes e controle de fonte;
 6. comunicação ao tutor sobre urgência, incerteza, riscos e próxima decisão;
-7. fonte consultada e data.
+7. justificar decisões com os achados, metas e gatilhos do caso; não informar bibliografia.
 
 Não é necessário prescrever doses de fármacos. Se optar por indicar volume ou velocidade, explicite que depende do protocolo vigente, da resposta e das comorbidades.
 
@@ -332,7 +330,7 @@ Em **250 a 400 palavras**, escreva a passagem de Lua para a equipe que assume o 
 3. intervenções realizadas e resposta;
 4. riscos de nova deterioração e plano de monitoramento;
 5. organização inicial da equipe caso ocorra parada;
-6. fonte consultada e data.
+6. separar fatos, interpretação e pendências; não informar bibliografia.
 
 Não invente diagnóstico etiológico. Separe fatos, interpretações e pendências.
 
@@ -388,7 +386,7 @@ B. problema, prioridade, intervenção, resposta, tendência, próxima reavalia�
 C. lista de exames sem interpretação;
 D. apenas diagnóstico presumido.
 
-**M02-S4-Q06.** Se uma fonte antiga divergir de diretriz atual em conduta crítica:
+**M02-S4-Q06.** Se um material antigo divergir da orientação clínica vigente em conduta crítica:
 
 A. escolher a resposta mais familiar;
 B. registrar a divergência e seguir a hierarquia vigente, escalonando a decisão quando necessário;

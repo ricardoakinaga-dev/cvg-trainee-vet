@@ -39,7 +39,7 @@ Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 |---|---|---|
 | RNF-020 | Toda ação sensível (aprovação, publicação, alteração de nota/gabarito, permissão, retirada) deve gerar trilha de auditoria com responsável e data | FATO INFORMADO |
 | RNF-021 | Decisões de aprovação devem ser reproduzíveis: conteúdo, itens aplicados, respostas, horário, tentativa, regra, cálculo, resultado, alterações | FATO INFORMADO |
-| RNF-022 | Cada módulo deve manter referência interna simples à obra e ao capítulo/seção consultados; esses metadados não são exibidos ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
+| RNF-022 | Cada módulo deve manter referência bibliográfica somente no registro interno de construção/revisão; fonte, obra, autor, capítulo, página, PDF, foto, tabela, figura, trecho, link e metadados equivalentes não podem aparecer na experiência, payload, exportação, analytics ou log acessível ao aluno | APROVADA PELO PATROCINADOR (D-075 e D-109, 2026-08-09) |
 | RNF-023 | Versões de conteúdo, prova e gabarito devem ser preservadas | FATO INFORMADO |
 
 ## 4. Segurança operacional
@@ -111,7 +111,7 @@ O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica
 | RNF-082 | O sistema não copia nem expõe PDFs, páginas, tabelas, figuras ou imagens das obras ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RNF-083 | O sistema não permite ranking público | FATO INFORMADO |
 | RNF-084 | Decisões automatizadas com impacto relevante exigem transparência e revisão humana | PROPOSTA |
-| RNF-085 | OCR, indexação, embeddings, RAG e envio dos PDFs a serviços de IA permanecem fora do MVP; apenas metadados de obra, edição, capítulo, versão e data de corte são preparados | APROVADA PELO PATROCINADOR (D-097, 2026-08-06); D-033 permanece futura |
+| RNF-085 | OCR, indexação, embeddings, RAG e envio dos PDFs a serviços de IA permanecem fora do MVP; qualquer registro interno de fonte, obra, edição, capítulo, página, versão ou data existe somente para construção, revisão e auditoria e nunca é exposto ao participante por tela, API, payload, exportação, notificação, analytics ou log acessível a ele | REFINADA POR D-109 (2026-08-09), sobre D-097; D-033 permanece futura |
 | RNF-086 | O agente operacional de IA não é fonte de estado nem autoridade clínica; ações usam ferramentas limitadas, saída validada, teto de custo e confirmação humana nos limites definidos em D-100 | APROVADA PELO PATROCINADOR (D-100, 2026-08-06) |
 
 ## 10. Critérios de aceite gerais (PROPOSTA)

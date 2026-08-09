@@ -11,7 +11,7 @@
 
 ## 1. Visão geral
 
-O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina acesso individual seguro, diagnóstico amplo fracionado e uma trilha de 24 meses, dividida em duas partes, com casos fictícios, pesquisa aberta, recuperação ativa, respostas objetivas e dissertativas, feedback, remediação e progresso visível. Administradores e moderadores acompanham a operação em dashboards escopados, e todos os usuários podem relatar bugs, erros e melhorias.
+O Sistema CVG de Treinamento Veterinário é uma plataforma de **treinamento clínico integralmente digital** para aproximadamente 10 médicos-veterinários do CVG. A experiência principal combina acesso individual seguro, diagnóstico amplo fracionado e uma trilha de 24 meses, dividida em duas partes, com casos fictícios, estudo guiado em material autoral do CVG, recuperação ativa, respostas objetivas e dissertativas, feedback, remediação e progresso visível. Administradores e moderadores acompanham a operação em dashboards escopados, e todos os usuários podem relatar bugs, erros e melhorias.
 
 O produto **não** oferece treinamento prático presencial associado à plataforma, não avalia habilidade psicomotora ou competência prática, não confere autonomia clínica, não é instrumento disciplinar e não substitui protocolos internos. Resultados de casos ou simulações digitais representam apenas conhecimento e raciocínio em cenário simulado (D-068).
 
@@ -38,7 +38,7 @@ entrar
 → fazer um diagnóstico de 120 itens em três sessões, sem aprovação ou reprovação
 → receber um plano individual de reforço
 → percorrer 24 módulos mensais em duas partes
-→ ativar conhecimento, pesquisar nas fontes e decidir em casos fictícios
+→ ativar conhecimento, estudar material autoral autorizado e decidir em casos fictícios
 → responder quizzes, questões objetivas e dissertativas em janelas assíncronas
 → receber feedback e reencontrar os conceitos em revisão espaçada
 ```
@@ -134,7 +134,7 @@ Regra de severidade e mitigação em [0007 — Riscos e hipóteses](../00.DISCOV
 
 ## 11. Fontes de conhecimento
 
-As identificações abaixo pertencem à governança interna e não serão exibidas ao aluno. Na experiência educacional, a apresentação será `Conteúdo técnico CVG`, com versão, data de corte e estado de revisão.
+As identificações abaixo pertencem à governança interna e não serão exibidas ao aluno. Na experiência educacional, a apresentação será somente `Conteúdo técnico CVG`; versão de fonte, data de corte, estado de revisão e demais metadados de origem ficam no workflow interno.
 
 - **Tratado brasileiro** (TMI-CG-2015, 1ª ed., Roca, 2 vol., 23 partes, 264 capítulos): base curricular em português;
 - **Ettinger** (ETT-2024, 9ª ed., Elsevier, 2 vol., 22 seções, 331 capítulos): referência atualizada;
