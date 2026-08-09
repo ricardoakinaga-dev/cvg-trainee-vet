@@ -712,6 +712,44 @@ O conjunto documental está pronto para checkpoint local. O runtime permanece `W
 
 WAITING_HUMAN_APPROVAL
 
+## 2026-08-09 — CHECKPOINT DOCUMENTAL
+
+### TIMESTAMP
+
+2026-08-09T12:20:48-03:00
+
+### ENGINE
+
+SYSTEM
+
+### PHASE
+
+SPEC readiness / governança de fontes
+
+### SPRINT
+
+LIT-01 — leitura da literatura e matriz curricular
+
+### TASK
+
+Registrar o checkpoint Git da documentação alinhada a D-109.
+
+### ACTION
+
+Commitado o conjunto documental como `669956e` (`docs: restrict bibliographic traceability to internal workflow`).
+
+### RESULT
+
+O commit inclui o Anexo 0022, a matriz curricular e os alinhamentos de requisitos, governança, protocolo M02 e material do participante. A validação staged retornou `PASS`.
+
+### DECISIONS
+
+O conteúdo exato do commit aguarda aprovação humana; a autorização continua limitada ao checkpoint da Fase 0 e não libera 0101, BUILD, publicação geral, B-07 ou expansão do T2.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

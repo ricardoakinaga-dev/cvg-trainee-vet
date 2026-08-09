@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: RF/RN e a última questão M02 foram refinados; auditoria confirmou a remoção de busca/citação bibliográfica da superfície do participante; nenhum derivado foi versionado
+- last_completed_action: checkpoint documental D-109 commitado em 669956e; RF/RN, M02 e Anexo 0022 alinhados; nenhum derivado foi versionado
 - next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101; aprovar o blueprint B-07 antes da produção diagnóstica
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-09T12:19:44-03:00
+- last_update: 2026-08-09T12:20:48-03:00
 
 ## REGRAS DE USO
 
