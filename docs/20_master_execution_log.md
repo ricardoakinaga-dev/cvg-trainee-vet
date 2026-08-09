@@ -826,6 +826,44 @@ Nenhuma mudança de escopo ou autorização de construção foi feita. O BUILD c
 
 WAITING_HUMAN_APPROVAL
 
+## 2026-08-09 — TEMPLATE INTERNO DE AUTORIA E REVISÃO
+
+### TIMESTAMP
+
+2026-08-09T12:31:18-03:00
+
+### ENGINE
+
+CONTEÚDO / GOVERNANÇA EDITORIAL
+
+### PHASE
+
+SPEC — Fase 0 concluída; Fase 1 ainda não autorizada
+
+### SPRINT
+
+AUTH-01 — template interno de autoria e revisão
+
+### TASK
+
+Transformar a matriz literária e os requisitos pedagógicos em um fluxo repetível para produzir conteúdo autoral antes da construção.
+
+### ACTION
+
+Criado o Anexo 0024 com ficha de intenção pedagógica, registro interno de fonte, regras de redação própria, formatos de avaliação, rubricas, feedback, remediação, revisão clínica, estados editoriais, pré-voo e projeção do participante.
+
+### RESULT
+
+O template separa claramente o registro interno de construção da experiência do participante, proíbe fontes e ativos protegidos na projeção e mantém a ausência de protocolos como `NAO_FORNECIDO` em vez de inventar regras CVG.
+
+### DECISIONS
+
+O template não é schema, API, arquitetura ou autorização de autoria em escala. 0101, B-07, publicação geral e BUILD permanecem aguardando seus gates.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

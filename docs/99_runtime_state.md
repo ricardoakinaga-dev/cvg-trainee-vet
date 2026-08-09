@@ -8,8 +8,8 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: SPEC — Fase 0 concluída; auditoria documental pós-literatura concluída
-- current_sprint: SPEC-01 — autorização da Fase 1 após auditoria de requisitos
+- current_phase: SPEC — Fase 0 concluída; preparação editorial interna concluída
+- current_sprint: SPEC-01 — autorização da Fase 1 após auditoria e template editorial
 - current_task: aguardar autorização humana para 0101 sem iniciar BUILD
 
 ## STATUS
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: Anexo 0023 auditou a cobertura; RF-097, a jornada de estudo e a superfície M02 foram limpos de busca/citação/identificadores externos; nenhum derivado foi versionado
+- last_completed_action: Anexo 0024 consolidou o template interno de autoria/revisão, rubricas, pré-voo e projeção sem fontes; nenhum derivado foi versionado
 - next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101; aprovar o blueprint B-07 antes da produção diagnóstica
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-09T12:27:54-03:00
+- last_update: 2026-08-09T12:31:18-03:00
 
 ## REGRAS DE USO
 

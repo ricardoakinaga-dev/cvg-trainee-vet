@@ -264,4 +264,4 @@ Este anexo fecha a etapa de leitura e matriz bibliográfica, mas não autoriza:
 - criar OCR, RAG, embeddings ou automação dos PDFs;
 - inferir competência prática ou autonomia clínica.
 
-Próxima entrega documental recomendada: transformar o registro mínimo da seção 7 em um template de autoria/revisão e derivar dele os contratos da SPEC 0101–0111, somente após a autorização humana já registrada no runtime.
+O template interno de autoria/revisão recomendado foi criado no [Anexo 0024](0024_template_autoria_revisao_interno.md). A derivação de contratos da SPEC 0101–0111 continua condicionada à autorização humana já registrada no runtime.

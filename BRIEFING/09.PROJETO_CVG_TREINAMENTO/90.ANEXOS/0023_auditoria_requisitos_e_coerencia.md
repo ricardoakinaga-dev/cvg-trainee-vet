@@ -53,7 +53,7 @@ Estas pendências não são falhas de coerência; são gates ou decisões ainda 
 
 ## 5. Regra de avanço
 
-O próximo avanço permitido é a autorização humana explícita para a Fase 1 da SPEC. Depois dela, a documentação 0101–0117 deve derivar os requisitos aprovados sem ampliar dados, escopo ou exposição autoral. O BUILD só pode começar após a aprovação integral do gate 0190.
+A preparação editorial interna pode continuar por meio do Anexo 0024 sem iniciar a Fase 1. O próximo avanço de engenharia é a autorização humana explícita para 0101. Depois dela, a documentação 0101–0117 deve derivar os requisitos aprovados sem ampliar dados, escopo ou exposição autoral. O BUILD só pode começar após a aprovação integral do gate 0190.
 
 Até lá, qualquer conteúdo novo deve permanecer em documentação interna, usar redação própria do CVG, casos fictícios e materiais autorizados, sem inserir PDFs ou derivados no Git ou na plataforma.
 

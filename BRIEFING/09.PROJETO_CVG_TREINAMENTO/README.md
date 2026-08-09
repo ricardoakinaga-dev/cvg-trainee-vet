@@ -110,6 +110,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 21. [Pacote de fechamento dos gates para iniciar a SPEC](90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md)
 22. [Leitura da literatura e matriz curricular](90.ANEXOS/0022_leitura_literatura_e_matriz_curricular.md)
 23. [Auditoria de requisitos, coerência e prontidão para construção](90.ANEXOS/0023_auditoria_requisitos_e_coerencia.md)
+24. [Template interno de autoria, revisão e projeção](90.ANEXOS/0024_template_autoria_revisao_interno.md)
 
 ## 4. O que não foi criado
 

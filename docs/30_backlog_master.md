@@ -129,6 +129,19 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0023_auditoria_requisitos_e_coerencia.md
 - resultado: cobertura confirmada; RF-097 e formulações antigas de busca/citação/referência simples corrigidas; 0101 e BUILD continuam aguardando autorização/gate
 
+### AUTH-01 — Template interno de autoria e revisão
+
+- título: transformar a matriz literária em um fluxo repetível de conteúdo autoral
+- descrição: definir ficha de intenção pedagógica, registro interno de fontes, rubricas, feedback, remediação, revisão clínica, projeção sem metadados e pré-voo sintético
+- módulo: conteúdo / governança editorial
+- dependência: LIT-01 e DOC-01 concluídos; autorização humana para 0101 não é necessária para o template documental
+- fase: PRD — preparação editorial antes da construção
+- risco: alto — autoria sem checklist pode gerar erro clínico, exposição autoral ou item não avaliável
+- impacto: alto
+- status: COMPLETED
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0024_template_autoria_revisao_interno.md
+- resultado: template pronto para autoria controlada; não é esquema de API/banco e não autoriza produção em escala, B-07, publicação ou BUILD
+
 ## P2 — MÉDIO
 
 ### SPEC-01 — Preparar SPEC
