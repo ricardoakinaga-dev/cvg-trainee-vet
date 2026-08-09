@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: SPEC — Fase 0 concluída; documentação de fontes em paralelo
-- current_sprint: LIT-01 — leitura da literatura e matriz curricular
-- current_task: registrar a leitura das três obras sem iniciar 0101 ou BUILD
+- current_phase: SPEC — Fase 0 concluída; auditoria documental pós-literatura concluída
+- current_sprint: SPEC-01 — autorização da Fase 1 após auditoria de requisitos
+- current_task: aguardar autorização humana para 0101 sem iniciar BUILD
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: checkpoint documental D-109 commitado em 669956e; RF/RN, M02 e Anexo 0022 alinhados; nenhum derivado foi versionado
+- last_completed_action: Anexo 0023 auditou a cobertura; RF-097, a jornada de estudo e a superfície M02 foram limpos de busca/citação/identificadores externos; nenhum derivado foi versionado
 - next_action: MV. Ricardo Akinaga aprovar o checkpoint da Fase 0 e autorizar, se desejar, somente o 0101; aprovar o blueprint B-07 antes da produção diagnóstica
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-09T12:20:48-03:00
+- last_update: 2026-08-09T12:27:54-03:00
 
 ## REGRAS DE USO
 

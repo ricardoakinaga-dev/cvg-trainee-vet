@@ -27,7 +27,7 @@ Como médico-veterinário participante, quero percorrer um caso fictício de eme
 | Sessão | Limite planejado | Componentes obrigatórios |
 |---|---:|---|
 | M02-S1 | 60 min | ativação, quiz, abertura do Caso A e decisão inicial |
-| M02-S2 | 120 min | pesquisa orientada, progressão do Caso A, questões objetivas e resposta aberta 1 |
+| M02-S2 | 120 min | estudo guiado no material autoral do CVG, progressão do Caso A, questões objetivas e resposta aberta 1 |
 | M02-S3 | 120 min | Caso B, deterioração, suporte respiratório/CPR, questões objetivas e resposta aberta 2 |
 | M02-S4 | 60 min | integração, debriefing, recuperação espaçada e reflexão |
 | **Total** | **360 min** | **6 horas** |

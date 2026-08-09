@@ -13,14 +13,14 @@
 O programa passa a ser uma jornada de desenvolvimento clínico contínuo, e não uma prova extensa ou uma sequência de aulas. A trilha combina:
 
 - casos fictícios progressivos;
-- pesquisa orientada em materiais autorais do CVG e diretrizes selecionadas pela equipe; as obras usadas na construção permanecem na camada interna;
+- estudo guiado em materiais autorais do CVG e orientações clínicas selecionadas pela equipe; as obras usadas na construção permanecem na camada interna;
 - quizzes de recuperação ativa;
 - questões de melhor resposta e associação estendida;
 - perguntas curtas e dissertativas;
 - interpretação de exames, tendências, prescrições e registros;
 - feedback, reflexão e reapresentação espaçada dos temas.
 
-O participante não precisa responder às atividades abertas imediatamente. As sessões de pesquisa e casos progressivos possuem janela de sete dias e podem ser pausadas e retomadas. Quizzes curtos continuam disponíveis para recuperação ativa, mas são formativos e o feedback aparece somente depois do envio.
+O participante não precisa responder às atividades abertas imediatamente. As sessões de estudo guiado e casos progressivos possuem janela de sete dias e podem ser pausadas e retomadas. Quizzes curtos continuam disponíveis para recuperação ativa, mas são formativos e o feedback aparece somente depois do envio.
 
 O treinamento digital desenvolve conhecimento, raciocínio, busca de evidência, priorização, comunicação e tomada de decisão em cenário fictício. Ele não comprova execução manual, competência prática ou autonomia clínica.
 
@@ -48,7 +48,7 @@ Os 24 módulos cobrem os principais sistemas e situações da clínica de cães 
 | Sessão | Semana | Tempo | Experiência |
 |---|---:|---:|---|
 | S1 — ativação e caso de abertura | 1 | 60 min | quiz formativo, apresentação do problema, objetivos e dados iniciais |
-| S2 — pesquisa orientada | 2 | 120 min | análise e comparação de condutas a partir dos materiais autorizados pela equipe; janela de 7 dias |
+| S2 — estudo guiado | 2 | 120 min | análise e comparação de condutas a partir dos materiais autorais autorizados pela equipe; janela de 7 dias |
 | S3 — caso progressivo e decisão | 3 | 120 min | novos dados, exames, tratamento, complicações e respostas mistas; janela de 7 dias |
 | S4 — debriefing e retenção | 4 | 60 min | feedback, síntese, reflexão, revisão espaçada e próxima ação |
 | **Total regular** |  | **360 min / 6 h** |  |
@@ -82,14 +82,14 @@ Regras:
 
 ## 5. Parte 1 — Clínica médica, emergência e internação
 
-### Mês 1 — Diagnóstico, raciocínio clínico e uso das fontes — 7 h
+### Mês 1 — Diagnóstico, raciocínio clínico e estudo orientado — 7 h
 
 | Sessão | Tempo | Temas |
 |---|---:|---|
 | S1 | 120 min | diagnóstico 1: núcleo clínico, história, exame, segurança terapêutica e raciocínio |
 | S2 | 120 min | diagnóstico 2: emergência, priorização, perfusão, dor e decisões tempo-dependentes |
 | S3 | 120 min | diagnóstico 3: internação, monitoramento, comunicação e integração |
-| S4 | 60 min | devolutiva, plano individual, busca de evidência, hierarquia de fontes e registro clínico |
+| S4 | 60 min | devolutiva, plano individual, revisão de evidência clínica e registro clínico |
 
 ### Mês 2 — Emergência e terapia intensiva — 6 h
 
@@ -296,8 +296,8 @@ Regras:
 | Sessão | Tempo | Temas |
 |---|---:|---|
 | S1 | 90 min | emergência multissistêmica com decisões iniciais e segurança |
-| S2 | 150 min | caso aberto canino: pesquisa, diagnóstico, tratamento e monitoramento |
-| S3 | 150 min | caso aberto felino: clínica, cirurgia, internação e comunicação |
+| S2 | 150 min | caso aberto canino: estudo guiado, diagnóstico, tratamento e monitoramento |
+| S3 | 150 min | caso aberto felino: estudo guiado, clínica, cirurgia, internação e comunicação |
 | S4 | 90 min | debriefing final, portfólio, retenção, lacunas e plano dos próximos 12 meses |
 
 ## 7. Temas transversais obrigatórios

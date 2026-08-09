@@ -750,6 +750,82 @@ O conteúdo exato do commit aguarda aprovação humana; a autorização continua
 
 WAITING_HUMAN_APPROVAL
 
+## 2026-08-09 — AUDITORIA DE REQUISITOS E COERÊNCIA PRÉ-CONSTRUÇÃO
+
+### TIMESTAMP
+
+2026-08-09T12:26:28-03:00
+
+### ENGINE
+
+SPEC READINESS / GOVERNANÇA DOCUMENTAL
+
+### PHASE
+
+SPEC — Fase 0 concluída; Fase 1 ainda não autorizada
+
+### SPRINT
+
+DOC-01 — auditoria de requisitos e coerência pré-construção
+
+### TASK
+
+Confirmar que o briefing cobre o programa solicitado e que nenhuma formulação contraditória chega à futura interface ou ao domínio.
+
+### ACTION
+
+Auditados os requisitos de login, senha, conta, área do participante, dashboards, trilha, avaliações, feedback, remediação, retenção, literatura, direitos autorais, dados e gates. Corrigido o RF-097, que ainda exigia consulta/citação de fontes pelo participante; alinhados UC-001, currículo V3, critérios M02, PRD Master, README e governança.
+
+### RESULT
+
+Criado o Anexo 0023 com a matriz de cobertura e as pendências legítimas. A cobertura documental do objetivo foi confirmada; o participante usa somente material autoral autorizado do CVG e não recebe referências, PDFs, fotos, tabelas, figuras, trechos, links ou metadados das obras.
+
+### DECISIONS
+
+0101 continua aguardando autorização humana. B-07, T2, protocolos, fornecedores e gate 0190 seguem seus próprios bloqueios. Nenhum código, plataforma, API, banco ou tela foi iniciado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-08-09 — LIMPEZA FINAL DE IDENTIFICADORES DA SUPERFÍCIE DO PARTICIPANTE
+
+### TIMESTAMP
+
+2026-08-09T12:27:54-03:00
+
+### ENGINE
+
+CONTEÚDO / GOVERNANÇA DE FONTES
+
+### PHASE
+
+SPEC — Fase 0 concluída; Fase 1 ainda não autorizada
+
+### SPRINT
+
+DOC-01 — auditoria de requisitos e coerência pré-construção
+
+### TASK
+
+Remover da superfície participante até mesmo a identificação nominal de diretriz externa quando ela não é necessária para a aprendizagem.
+
+### ACTION
+
+O material M02 deixou de nomear o algoritmo externo RECOVER e passou a usar somente “algoritmo vigente autorizado pelo CVG”. A identificação e a rastreabilidade detalhadas permanecem no guia interno do facilitador e no registro de construção.
+
+### RESULT
+
+A varredura do material do participante não encontrou nomes de obras, códigos de fonte, ISBNs, URLs ou identificadores de diretrizes externas. O participante permanece limitado a conteúdo autoral do CVG e estados educacionais necessários.
+
+### DECISIONS
+
+Nenhuma mudança de escopo ou autorização de construção foi feita. O BUILD continua bloqueado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## REGRAS DE USO
 
 - Registrar toda ação relevante antes e depois da execução.

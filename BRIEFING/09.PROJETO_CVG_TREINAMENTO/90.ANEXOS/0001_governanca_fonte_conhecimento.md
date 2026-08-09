@@ -1,6 +1,6 @@
 # Anexo 0001 — Governança das Fontes de Conhecimento
 
-**Status:** governança enxuta aprovada para o MVP interno por D-075; B-04 fechado nesse escopo
+**Status:** governança enxuta aprovada para o MVP interno por D-075 e refinada por D-109; B-04 fechado nesse escopo
 **Objetivo:** definir o uso simples e seguro das fontes no treinamento interno do CVG.
 **Leitura registrada:** a verificação integral dos três PDFs e a matriz de aplicação curricular estão no [Anexo 0022](0022_leitura_literatura_e_matriz_curricular.md).
 
@@ -211,12 +211,12 @@ Esse mapeamento não representa módulos prontos.
 - Manter os arquivos-fonte em acesso local restrito;
 - Tratar OCR, indexação, embeddings, RAG ou envio dos PDFs a serviços de IA como decisão futura separada (D-033), sem bloquear a autoria manual do treinamento.
 
-### 7.1 Regra de separação simplificada por D-075
+### 7.1 Regra de separação vigente — D-075 refinada por D-109
 
 | Camada | O que registra ou exibe | Acesso |
 |---|---|---|
 | Experiência do aluno | conteúdo institucional CVG; casos fictícios; feedback e estados educacionais necessários | aluno e papéis educacionais autorizados |
-| Registro interno do módulo | código F-01/F-02/F-03, edição e capítulo/seção consultados, autor e revisor | equipe responsável pelo treinamento |
+| Registro interno do módulo | rastreabilidade completa de fonte, edição, capítulo/seção, página, autor, revisor, versão, data e decisão | equipe responsável pelo treinamento |
 | Arquivo-fonte | PDF local fora do Git e fora da plataforma | equipe interna autorizada; automação depende de D-033 |
 
 O aluno recebe somente o conteúdo institucional do CVG. A equipe mantém uma referência detalhada por módulo para facilitar revisões e atualizações, mas essa referência não é projetada para a experiência do participante.

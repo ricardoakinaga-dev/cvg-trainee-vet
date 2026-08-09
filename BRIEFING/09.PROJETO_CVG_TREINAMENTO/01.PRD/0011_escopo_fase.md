@@ -63,7 +63,7 @@ Um módulo regular possui quatro sessões e seis horas no mês: ativação, estu
 5. Emissão de diplomas ou equivalentes profissionais;
 6. Integração com sistema de prontuário, RH, financeiro ou qualquer sistema externo (fase futura);
 7. Avaliação trabalhista, decisões disciplinares ou uso de notas para sanções (uso em RH proibido no piloto — RN-066);
-8. Cópia de texto, página, tabela, figura ou imagem dos livros-fonte — proibida; obras usadas para consulta manual interna, com conteúdo original CVG e referência simples por módulo (D-075/RN-046);
+8. Cópia de texto, página, tabela, figura ou imagem dos livros-fonte — proibida; obras usadas somente para consulta manual interna, com rastreabilidade restrita ao workflow de construção/revisão (D-109/RN-046);
 9. Publicação dos PDFs das obras na plataforma;
 10. Processamento automatizado dos PDFs — OCR, indexação, embeddings, RAG ou envio dos arquivos a IA — fora do MVP e pendente em D-033; isso não bloqueia consulta e autoria manuais;
 11. Notificações externas (e-mail/SMS) — fora do MVP;

@@ -99,7 +99,7 @@ Detalhes em [0011 — Escopo](0011_escopo_fase.md).
 | Composição | quiz 0% + caso 30% + prova 70% | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Tentativas | 2 + remediação obrigatória; intervalo mínimo 7 dias; itens diferentes na 2ª | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
 | Retenção | itens equivalentes; não revoga conclusão; nunca substitui limiar absoluto | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| Fontes | D-075: consulta manual interna, PDFs fora da plataforma/Git e referência simples por módulo | APROVADA PELO PATROCINADOR COMO INSUMO; B-04 FECHADO PARA O MVP INTERNO |
+| Fontes | D-109: consulta manual interna, PDFs fora da plataforma/Git e rastreabilidade somente no workflow interno | REFINADA PELO PATROCINADOR; B-04 FECHADO PARA O MVP INTERNO |
 | Conteúdo | rascunhos originais podem ser preparados; publicação exige aprovação clínica de Ricardo e os gates gerais | RASCUNHO/INSUMO — D-083 |
 | Notas | alteração versionada, justificada e auditada; contestação em 7 dias úteis | FATO INFORMADO |
 | Dados | somente nome/login profissional, progresso, tentativas, notas e logs mínimos; RH, prontuários, dados de tutores, gravações e casos reais identificáveis proibidos; retenção durante o vínculo + 2 anos | APROVADA PELO PATROCINADOR COMO INSUMO (D-077; B-05 FECHADO) |
@@ -119,7 +119,7 @@ O conteúdo, a sequência, a carga e as sessões da trilha vigente estão no [00
 
 ## 8. Requisitos não funcionais (resumo)
 
-Performance para uso assíncrono em escala 12×36; confiabilidade sem perda de respostas; referência simples das fontes por módulo; identidade gerenciada; autorização no servidor e mínimo privilégio; observabilidade sem conteúdo sensível; backups com restauração testada; governança editorial; WCAG 2.2 AA proposta; exceções (afastamento, interrupção, anulação, retirada, reprovação recorrente).
+Performance para uso assíncrono em escala 12×36; confiabilidade sem perda de respostas; rastreabilidade das fontes somente no workflow interno; identidade gerenciada; autorização no servidor e mínimo privilégio; observabilidade sem conteúdo sensível; backups com restauração testada; governança editorial; WCAG 2.2 AA proposta; exceções (afastamento, interrupção, anulação, retirada, reprovação recorrente).
 Detalhes em [0014 — Requisitos não funcionais](0014_requisitos_nao_funcionais_produto.md).
 
 ## 9. Métricas de sucesso
@@ -157,7 +157,7 @@ Os itens confirmados pelo patrocinador formam a baseline aprovada do PRD. D-101 
 5. Política de certificação (D-049) — ✅ **CONFIRMADA COMO INSUMO: status de conclusão no piloto**;
 6. Tratamento de reprovação recorrente (D-047) — ✅ **CONFIRMADO COMO INSUMO: plano individual com mentor, sem punição**;
 7. Público (B-02) — ✅ **FECHADO POR D-079: aproximadamente 10 veterinários, todos participam**; baseline B-07 continua pendente.
-8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO POR D-075**; D-033 permanece futura e não bloqueante.
+8. Fontes (B-04) — ✅ **FECHADO PARA O MVP INTERNO; rastreabilidade exclusivamente interna por D-109**; D-033 permanece futura e não bloqueante.
 9. Modalidade da primeira versão (D-068) — ✅ **CONFIRMADA COMO INSUMO: integralmente digital, com simulações digitais e sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01`**.
 10. Programa curricular V3 — ✅ **DIREÇÃO APROVADA EM D-084/D-085; 24 MESES, DUAS PARTES, 24 MÓDULOS E 96 SESSÕES NO PRD 0017**.
 11. Remediação de erro crítico — ✅ **EDUCATIVA E NÃO PUNITIVA, APROVADA EM D-082**.

@@ -27,7 +27,7 @@ Ao final do módulo, espera-se que você consiga:
 - Se o enunciado ou material fornecido parecer inconsistente em uma conduta crítica, registre a dúvida; não a resolva por suposição.
 - O feedback objetivo aparece depois do envio. As duas respostas abertas serão corrigidas por MV. Ricardo Akinaga em até cinco dias úteis.
 
-Neste módulo, `ABCDE` organiza a avaliação inicial do paciente que apresenta sinais de vida. Se houver suspeita de parada cardiorrespiratória, a prioridade muda imediatamente para reconhecimento breve e suporte básico de vida conforme o algoritmo RECOVER vigente; não se espera concluir todo o `ABCDE`.
+Neste módulo, `ABCDE` organiza a avaliação inicial do paciente que apresenta sinais de vida. Se houver suspeita de parada cardiorrespiratória, a prioridade muda imediatamente para reconhecimento breve e suporte básico de vida conforme o algoritmo vigente autorizado pelo CVG; não se espera concluir todo o `ABCDE`.
 
 Materiais orientados para estudo: emergência e cuidados intensivos; triagem e choque; fluidoterapia; analgesia no paciente crítico; trauma e hemorragia; emergências respiratórias; monitoração; ressuscitação cardiopulmonar.
 
@@ -422,7 +422,7 @@ Depois, selecione um objetivo para revisão em 30 dias. Se você errou qualquer 
 
 Em até 100 palavras:
 
-1. qual decisão você mudaria após pesquisar;
+1. qual decisão você mudaria após revisar o material estudado;
 2. qual sinal de deterioração você pretende reconhecer mais cedo;
 3. qual pergunta clínica levará para revisão espaçada em 30 dias.
 

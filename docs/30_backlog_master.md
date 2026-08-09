@@ -116,6 +116,19 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0022_leitura_literatura_e_matriz_curricular.md; hashes conferidos contra Anexo 0010
 - resultado: leitura integral processada; matriz pronta para autoria; rastreabilidade restrita ao workflow interno por D-109; nenhum PDF ou derivado foi versionado
 
+### DOC-01 — Auditoria de requisitos e coerência pré-construção
+
+- título: confirmar cobertura do objetivo do programa e remover contradições documentais antes da SPEC Fase 1
+- descrição: auditar acesso, conta, área do participante, dashboards, trilha, avaliações, métodos pedagógicos, literatura, direitos autorais, dados e gates; alinhar toda superfície participante a D-109
+- módulo: governança documental / produto
+- dependência: PRD aprovado, Anexo 0022 e D-109
+- fase: PRD — auditoria de prontidão antes da SPEC Fase 1
+- risco: alto — requisito contraditório pode chegar ao domínio, à interface ou ao controle autoral
+- impacto: alto
+- status: COMPLETED
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0023_auditoria_requisitos_e_coerencia.md
+- resultado: cobertura confirmada; RF-097 e formulações antigas de busca/citação/referência simples corrigidas; 0101 e BUILD continuam aguardando autorização/gate
+
 ## P2 — MÉDIO
 
 ### SPEC-01 — Preparar SPEC

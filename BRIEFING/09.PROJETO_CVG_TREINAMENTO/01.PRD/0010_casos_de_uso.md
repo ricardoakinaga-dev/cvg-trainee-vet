@@ -26,7 +26,7 @@
 
 ```text
 entrar → diagnóstico amplo fracionado → plano individual → módulo mensal em quatro sessões
-→ ativar → pesquisar → decidir em caso fictício → receber feedback → refletir → próximo passo
+→ ativar → estudar material autoral autorizado → decidir em caso fictício → receber feedback → refletir → próximo passo
 ```
 
 O sistema deve sempre mostrar uma próxima ação clara. Os demais casos de uso existem para apoiar essa jornada e não devem aparecer como burocracia para o colaborador (D-080).

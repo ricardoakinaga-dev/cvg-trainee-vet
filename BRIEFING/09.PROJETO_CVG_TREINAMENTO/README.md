@@ -109,6 +109,7 @@ Nenhum campo desconhecido foi apresentado como certeza.
 20. [Alinhamento de produto e arquitetura antes da SPEC](90.ANEXOS/0020_alinhamento_produto_pre_spec.md)
 21. [Pacote de fechamento dos gates para iniciar a SPEC](90.ANEXOS/0021_pacote_fechamento_gates_pre_spec.md)
 22. [Leitura da literatura e matriz curricular](90.ANEXOS/0022_leitura_literatura_e_matriz_curricular.md)
+23. [Auditoria de requisitos, coerência e prontidão para construção](90.ANEXOS/0023_auditoria_requisitos_e_coerencia.md)
 
 ## 4. O que não foi criado
 
@@ -128,7 +129,7 @@ A autorização gerencial histórica para elaborar o PRD não substituiu os gate
 1. B-01 concluído por D-078: aprendizado atual informal, sem trilha, avaliação ou registro centralizado;
 2. B-02 concluído por D-079: aproximadamente 10 veterinários, todos participam da primeira aplicação, sem inventário ou segmentação obrigatória;
 3. B-03 concluído por D-076 e atualizado por D-083: Ricardo concentra as responsabilidades do MVP e é o único aprovador clínico obrigatório; revisão adicional é opcional;
-4. B-04 concluído por D-075 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e referência simples por módulo;
+4. B-04 concluído por D-075 e refinado por D-109 para o MVP interno: consulta manual, conteúdo original, PDFs fora da plataforma/Git e rastreabilidade somente no workflow interno;
 5. B-05 concluído por D-077: política mínima aprovada; somente nome/login profissional, progresso, tentativas, notas e logs mínimos; prontuários, tutores, gravações e casos reais identificáveis proibidos;
 6. áreas do piloto confirmadas: núcleo comum + emergência e internação (B-06);
 7. B-07 está reposicionado como gate pré-piloto: o blueprint orienta a SPEC, enquanto aprovação clínica, produção, pré-voo e aplicação dos 120 itens continuam obrigatórios antes da baseline/piloto completo. O blueprint está no [Anexo 0012](90.ANEXOS/0012_blueprint_diagnostico_b07.md).
@@ -172,7 +173,7 @@ O Ettinger será a **fonte clínica atualizada de referência** para complementa
 **Arquivo local:** `Fossum.Cirurgia de Pequenos Animais_ 4ª Edição-ilovepdf-compressed.pdf`  
 **Estrutura verificada:** quatro partes (princípios cirúrgicos gerais, cirurgia do tecido mole, ortopedia e neurocirurgia) e capítulos de 1 a 44; o arquivo PDF possui 5.008 páginas.
 
-O Fossum será a **referência cirúrgica complementar** para a trilha de cirurgia e para conteúdos perioperatórios de emergência/internação, na hierarquia definida no [Anexo 0001](90.ANEXOS/0001_governanca_fonte_conhecimento.md) (F-03), sob os controles internos simples de D-075.
+O Fossum será a **referência cirúrgica complementar** para a trilha de cirurgia e para conteúdos perioperatórios de emergência/internação, na hierarquia definida no [Anexo 0001](90.ANEXOS/0001_governanca_fonte_conhecimento.md) (F-03), sob rastreabilidade exclusivamente interna conforme D-109.
 
 ## 6. Condição para avançar
 
@@ -188,6 +189,6 @@ Durante a SPEC são permitidos somente documentos de engenharia derivados do PRD
 
 **Política mínima de dados (D-077):** o Anexo 0011 está aprovado para o MVP e B-05 está fechado. O programa usa apenas dados de identificação/login profissional, progresso, tentativas, notas e segurança. Ricardo controla o acesso; os dados são mantidos durante o vínculo + 2 anos.
 
-**Política de fontes (D-075):** governança enxuta para uso interno: consulta manual, conteúdo original CVG, PDFs fora da plataforma/Git e referência simples por módulo. B-04 está fechado; automação dos PDFs fica fora do MVP em D-033.
+**Política de fontes (D-109, refinando D-075):** governança interna: consulta manual, conteúdo original CVG, PDFs fora da plataforma/Git e rastreabilidade de construção/revisão/auditoria sem exposição ao participante. B-04 está fechado; automação dos PDFs fica fora do MVP em D-033.
 
 **Governança do MVP (D-076/D-083):** MV. Ricardo Akinaga responde pelas frentes do MVP, pelos gates documentais e pela aprovação clínica. Não há comitês, suplentes ou segunda conferência veterinária obrigatória; revisão adicional permanece opcional.
