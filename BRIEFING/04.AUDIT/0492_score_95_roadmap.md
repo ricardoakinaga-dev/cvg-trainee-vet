@@ -31,8 +31,8 @@ Elevar cada item da matriz do relatório `0491_full_construction_audit.md` para 
 | 12 | Observabilidade e operação | 48 | 95 | **CONCLUÍDO COM GAPS — 95/100** |
 | 13 | Web, UX e acessibilidade | 38 | 95 | **CONCLUÍDO COM GAPS — 96/100** |
 | 14 | Testes, cobertura e qualidade de evidência | 72 | 95 | **CONCLUÍDO COM GAPS — 96/100** |
-| 15 | CI, reprodutibilidade e prontidão de build | 50 | 95 | **EM EXECUÇÃO — 78/100 LOCAL; AGUARDA CI REMOTO** |
-| 16 | Rastreabilidade de código e controle de mudança | 45 | 95 | BLOQUEADO PELA ORDEM |
+| 15 | CI, reprodutibilidade e prontidão de build | 50 | 95 | **CONCLUÍDO COM GAPS — 95/100** |
+| 16 | Rastreabilidade de código e controle de mudança | 45 | 95 | **LIBERADO PELA ORDEM — PRÓXIMO ITEM** |
 
 ## Fase encerrada — item 1
 
@@ -281,9 +281,9 @@ O item 14 — **Testes, cobertura e qualidade de evidência** — iniciou com ba
 
 Gaps: cobertura por módulo desigual em entrypoints/repositórios, execução remota do workflow ainda não observada, carga/failover/restart e revisão manual de acessibilidade permanecem em seus itens próprios.
 
-## Fase ativa — item 15
+## Fase encerrada — item 15
 
-O item 15 — **CI, reprodutibilidade e prontidão de build** — inicia com baseline **50/100**. O objetivo é provar o workflow remoto, consolidar contrato de ambiente, artefatos, cache, rollback e build reprodutível sem misturar o gate clínico.
+O item 15 — **CI, reprodutibilidade e prontidão de build** — iniciou com baseline **50/100** e foi reavaliado em **95/100** no artifact `BRIEFING/04.AUDIT/0508_ci_reproducibility_audit.md`. O objetivo técnico foi fechado sem misturar o gate clínico.
 
 ### Gate de saída do item 15
 
@@ -292,7 +292,7 @@ O item 15 — **CI, reprodutibilidade e prontidão de build** — inicia com bas
 - `.env.example`, portas, serviços, ferramentas e secrets externos têm contrato reproduzível;
 - build e artefatos podem ser reconstituídos a partir de um SHA intencional;
 - rollback, cache e falhas de infraestrutura têm evidência redigida;
-- score do item 15 reavaliado em pelo menos 95 antes da abertura do item 16.
+- score do item 15 reavaliado em pelo menos 95 antes da abertura do item 16 — **atendido: 95/100**.
 
 ### CI-15-01 — Execução remota e reprodutibilidade
 
@@ -303,8 +303,9 @@ O item 15 — **CI, reprodutibilidade e prontidão de build** — inicia com bas
 - fase: BUILD — Phase 13 / SCORE-95-15
 - risco: alto — divergência entre local e CI pode esconder regressão antes do ambiente hospitalar
 - impacto: alto
-- status: `WAITING_HUMAN_APPROVAL`
+- status: `COMPLETED_WITH_GAPS`
 - critério de pronto: workflow remoto verde, artefatos redigidos, ambiente reproduzível e score >=95 no artifact do item 15
-- resultado atual: `0508_ci_reproducibility_audit.md` reavaliou o escopo local em 78/100; contrato, workflow, pins, serviços descartáveis, migrations, live, restore, build, audit, E2E e artefatos foram provados localmente; o baseline está congelado no commit `241a04ce4ba77245b46782d2f37732cf616b4baf`
-- gap crítico: não há `origin` nem repositório GitHub identificado; execução remota, SHA, duração, artefatos do Actions, cache observado, rollback e falhas de infraestrutura permanecem sem evidência
-- próxima ação: após aprovação de Ricardo, configurar o repositório/origin, publicar o SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf` e executar o workflow remoto
+- resultado atual: `0508_ci_reproducibility_audit.md` reavaliou o item em 95/100; o repositório privado foi publicado em `origin/main`, e o workflow `31380183984` passou no SHA `dd4790973e31e1c3799c58cf99701128367b055b` em 4m20s. O artifact `9059654877` preservou 99 arquivos, coverage, Playwright e JUnit, com digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`.
+- evidência adicional: `https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/31380183984`; falhas anteriores `31378647864` e `31379006703` foram preservadas e corrigidas; o cache pnpm foi declarado e o log registrou cache miss sem afetar a execução.
+- gaps: rollback de deployment, cache quente, carga, failover, restart e múltiplas réplicas não foram exercitados nesta rodada sem deployment; permanecem gaps operacionais explícitos.
+- próxima ação: abrir o item 16 — rastreabilidade de código e controle de mudança — preservando os gates clínicos e operacionais independentes.

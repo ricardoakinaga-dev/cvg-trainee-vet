@@ -364,22 +364,24 @@
 - fase: BUILD — Phase 13 / SCORE-95-15
 - risco: alto — divergência entre local e CI pode esconder regressão antes do ambiente hospitalar
 - impacto: alto
-- status: `WAITING_HUMAN_APPROVAL`
-- resultado parcial: `0508_ci_reproducibility_audit.md` reavaliou o item em 78/100 no escopo local; pins, contrato de ambiente, PostgreSQL/Qdrant descartáveis, readiness, migrations, live estendido 23/32, restore, build, audit, E2E 12/12 + 14/14 e artefatos condicionais passaram; o baseline está congelado no commit local `241a04ce4ba77245b46782d2f37732cf616b4baf`; a revalidação de 2026-08-10 confirmou `git remote -v` vazio e nenhum repositório `cvg-trainee-vet` na conta autenticada
-- gap: o checkout não possui `origin` nem repositório GitHub identificado; SHA remoto, duração, artefatos do Actions, cache observado, rollback e falhas de infraestrutura continuam sem evidência
+- status: `COMPLETED_WITH_GAPS`
+- resultado: `0508_ci_reproducibility_audit.md` reavaliou o item em **95/100**; o repositório privado foi publicado em `origin/main`, e o workflow remoto passou no SHA `dd4790973e31e1c3799c58cf99701128367b055b` no run `31380183984`, job `93428409312`, em 4m20s. O artifact `9059654877` preservou 99 arquivos, coverage, Playwright e JUnit, com digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`.
+- evidência: `.nvmrc`; `.env.example`; `scripts/verify-ci-contract.mjs`; `tests/integration/ci-governance.test.ts`; `.github/workflows/quality.yml`; `playwright.config.ts`; auditoria 0508; `https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/31380183984`
+- verificação: `pnpm verify` (77 arquivos/356 testes; 17 skips; cobertura 84,92%/80,34%/85,89%/85,61%); `pnpm build`; `pnpm audit --audit-level=high`; migrations; live estendido 23/32; E2E 12/12 e real 14/14; `pnpm verify:ci-contract`; `git diff --check`; CI remoto integralmente verde
+- gaps: rollback de deployment, cache quente, carga, failover, restart e múltiplas réplicas não foram exercitados; as falhas remotas anteriores e o cache miss foram registrados, sem apagar histórico
 - critério de pronto: workflow remoto verde, artefatos redigidos, ambiente reproduzível e score >=95 no artifact do item 15
-- próxima ação: após aprovação de Ricardo, configurar o repositório/origin, publicar o SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf`, executar o workflow remoto e registrar SHA, duração, artefatos, falhas e limites
+- próxima ação: abrir o item 16 — rastreabilidade de código e controle de mudança — sem misturar os gates clínicos, de piloto e de operação externa.
 
-## Itens bloqueados pela ordem
+## Próximo item pela ordem
 
-O item 16 permanece `BLOCKED_BY_ORDER`; o item 15 é o único item ativo. `AUD-C0-001` e `AUD-P2-002` foram encerrados, enquanto o conteúdo clínico e os gaps de produto permanecem registrados sem redefinir a ordem da meta.
+O item 15 foi fechado em 95/100 e o item 16 — rastreabilidade de código e controle de mudança — está liberado para abertura. `AUD-C0-001` e `AUD-P2-002` foram encerrados, enquanto o conteúdo clínico e os gaps de produto permanecem registrados sem redefinir a ordem da meta.
 
 ## Evidência e rastreabilidade
 
 O artifact `AUD-0491-FULL-CONSTRUCTION-AUDIT` deve ligar:
 
 ```text
-0491 → 0492/0493 → SCORE-10..27 → CURRICULUM-HOSPITAL-DESIGN-003 → CURRICULUM-RUNTIME-PREFLIGHT-004 → CURRICULUM-RUNTIME-INTEGRATION-005 → ARCHITECTURE-BOUNDARIES-006 → DOMAIN-CONTRACT-RULES-007 → 0495/0496/0497/0498/0499/0500/0501/0502/0503/0504/0505/0506/0507 → pnpm verify/coverage/E2E/live → item 7 = 95 → item 8 = 95 → item 9 = 95 → item 10 = 95 → item 11 = 95 → item 12 = 95 → item 13 = 96 → item 14 = 96 → item 15 ativo
+0491 → 0492/0493 → SCORE-10..27 → CURRICULUM-HOSPITAL-DESIGN-003 → CURRICULUM-RUNTIME-PREFLIGHT-004 → CURRICULUM-RUNTIME-INTEGRATION-005 → ARCHITECTURE-BOUNDARIES-006 → DOMAIN-CONTRACT-RULES-007 → 0495/0496/0497/0498/0499/0500/0501/0502/0503/0504/0505/0506/0507/0508 → pnpm verify/coverage/E2E/live → item 7 = 95 → item 8 = 95 → item 9 = 95 → item 10 = 95 → item 11 = 95 → item 12 = 95 → item 13 = 96 → item 14 = 96 → item 15 = 95 → item 16 liberado
 ```
 
 Toda mudança desta fase deve atualizar este backlog, o roadmap, `traceability.yml`, runtime state e log mestre.

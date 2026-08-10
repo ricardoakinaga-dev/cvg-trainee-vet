@@ -1372,7 +1372,7 @@ artifacts:
         "playwright.config.ts",
       ]
     tests: ["tests/integration/ci-governance.test.ts"]
-    commit: "241a04ce4ba77245b46782d2f37732cf616b4baf"
+    commit: "dd4790973e31e1c3799c58cf99701128367b055b"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1388,6 +1388,7 @@ artifacts:
         "pnpm audit --audit-level=high",
         "pnpm format:check",
         "git diff --check",
+        "gh run view 31380183984 --repo ricardoakinaga-dev/cvg-trainee-vet",
       ]
     status: "verified-with-gaps"
 notes:
@@ -1417,4 +1418,4 @@ notes:
   - "OBSERVABILITY-OPERATIONS-014 closes item 12 at 95/100 in the technical/documental scope: dependency health, protected Prometheus export, redaction, SLO/alert evaluation, local correlation, runbooks and synthetic PostgreSQL restore passed. The local restore recovered a synthetic marker into an isolated target with RTO 2.581 seconds. External collector/OTel, effective retention, provisioned dashboards, distributed traces, crash/failover, load and multiple replicas remain explicit operational gaps."
   - "WEB-UX-ACCESSIBILITY-015 closes item 13 at 96/100 in the implemented web scope: participant, authoring and operations surfaces expose bounded experience states; axe, keyboard/focus, unique IDs, reduced motion and narrow viewport checks pass; 12 mock E2E and 14 real-mode E2E scenarios pass, with the real mode reaching API/PostgreSQL through the web proxy and persisted participant fixture. Screen-reader/user review and complete PRD surfaces remain gaps."
   - "QUALITY-TEST-EVIDENCE-016 closes item 14 at 96/100: named contract/worker/live/restore/migration/E2E gates pass; PostgreSQL live passed 18/26 without skips, Qdrant extended 21/29 without skips, restore 1/1, standard E2E 12/12 and real persisted participant E2E 14/14. Coverage is 84.92% statements, 80.34% branches, 85.89% functions and 85.61% lines; module-level entrypoints remain explicit gaps and the remote CI execution is the next item."
-  - "CI-REPRODUCIBILITY-017 records item 15 at 78/100 locally: pinned Node/pnpm/lockfile and environment contract, PostgreSQL 16 and Qdrant 1.15.5 disposable services, readiness, migrations, live extended 23/32, restore, build, audit, standard E2E 12/12, real E2E 14/14 and conditional coverage/JUnit/Playwright artifact upload are verified. The baseline is frozen in local commit 241a04ce4ba77245b46782d2f37732cf616b4baf with a clean worktree. The checkout has no origin/repository, so remote SHA, Actions artifacts, cache observation, rollback and infrastructure-failure evidence remain pending; item 16 stays blocked by order."
+  - "CI-REPRODUCIBILITY-017 closes item 15 at 95/100 with gaps: pinned Node/pnpm/lockfile and environment contract, PostgreSQL 16 and Qdrant 1.15.5 disposable services, readiness, migrations, live, restore, build, audit, standard E2E 12/12, real E2E 14/14 and conditional coverage/JUnit/Playwright artifact upload passed locally and remotely. The private repository is origin/main at commit dd4790973e31e1c3799c58cf99701128367b055b; Actions run 31380183984/job 93428409312 passed in 4m20s and artifact 9059654877 contains 99 files with SHA256 fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee. Runs 31378647864 and 31379006703 preserve the pnpm bootstrap and NODE_ENV API failures; the pnpm cache miss was observed, while deployment rollback, cache hit, load, failover and restart remain gaps. Item 16 is released by order."

@@ -3011,3 +3011,45 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Ricardo deve informar/aprovar o repositório GitHub e a publicação do baseline local. Sem essa decisão, nenhuma execução remota ou avanço de ordem pode ser comprovado.
+
+## 2026-08-10 — SCORE-95-15: resolução do bloqueio remoto e fechamento do item 15
+
+### TIMESTAMP
+
+2026-08-10 07:51:18 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER / TDD / GITHUB CI
+
+### PHASE
+
+Phase 13 — CI, reprodutibilidade e prontidão de build / item 15 do relatório 0491
+
+### SPRINT
+
+SCORE-95-15
+
+### TASK
+
+CI-15-01 / criar o remoto autorizado, corrigir falhas reproduzidas e provar o workflow
+
+### ACTION
+
+Após a autorização explícita desta rodada para resolver o bloqueio externo, criado o repositório privado `ricardoakinaga-dev/cvg-trainee-vet`, configurado `origin` e publicado `main`. A primeira execução `31378647864` falhou porque `setup-node` resolvia o cache pnpm antes do passo de ativação. O teste RED foi adicionado antes da correção; `32163ec` moveu o bootstrap pnpm e atualizou o contrato. A execução seguinte `31379006703` alcançou o E2E real e falhou porque a API herdava `NODE_ENV=test` e encerrava sem escutar. Um teste RED específico foi adicionado; `dd47909` forçou `NODE_ENV=development` somente no webServer da API real e tornou a regra verificável por `verify:ci-contract`.
+
+### RESULT
+
+Localmente passaram `pnpm verify`, `pnpm build`, `pnpm audit --audit-level=high`, `pnpm db:migrate`, live estendido, E2E padrão 12/12, E2E real 14/14 com `NODE_ENV=test` no processo pai, contrato CI 4/4, secrets, documentation, traceability, exposure e diff-check. O workflow final `31380183984`, no SHA `dd4790973e31e1c3799c58cf99701128367b055b`, job `93428409312`, passou integralmente em 4m20s; o E2E real remoto passou 14/14, o audit não encontrou vulnerabilidades e o artifact `9059654877` preservou 99 arquivos, 821659 bytes e digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`.
+
+### DECISIONS
+
+O bloqueio `CI-REMOTE-001` foi resolvido e o item 15 foi reavaliado em **95/100 — COMPLETADO COM GAPS**. O histórico das falhas e do cache miss foi preservado. Rollback de deployment, cache quente, carga, failover, restart e múltiplas réplicas não foram exercitados e continuam gaps operacionais; release, piloto e publicação clínica continuam dependentes dos gates humanos próprios.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir o item 16 — rastreabilidade de código e controle de mudança — e iniciar a task correspondente mantendo os registros clínicos independentes.

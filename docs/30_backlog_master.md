@@ -2,7 +2,7 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
-**Item ativo da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados; o item 16 aguarda a ordem.
+**Item concluído mais recente da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade, reavaliado em 95/100. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados; o item 16 está liberado para abertura.
 
 ## P0 — CRÍTICO
 
@@ -291,13 +291,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 13 / SCORE-95-15
 - risco: alto — divergência entre local e CI pode esconder regressão antes do ambiente hospitalar
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
-- resultado parcial: `BRIEFING/04.AUDIT/0508_ci_reproducibility_audit.md` reavaliou o item em 78/100; contrato local, workflow, artefatos, migrations, live PostgreSQL/Qdrant/restore e E2E passaram; o baseline foi congelado no commit local `241a04ce4ba77245b46782d2f37732cf616b4baf`, mas a execução remota não é comprovável sem repositório/origin aprovado
-- evidência adicional: `.nvmrc`; `.env.example`; `scripts/verify-ci-contract.mjs`; `tests/integration/ci-governance.test.ts`; `.github/workflows/quality.yml`; auditoria 0508; `git status --short --branch` limpo no SHA local; revalidação em 2026-08-10 confirmou `git remote -v` vazio e nenhum repositório `cvg-trainee-vet` na conta autenticada
-- verificação adicional: `pnpm verify` (77 arquivos/354 testes; 17 skips; cobertura 84,92%/80,34%/85,89%/85,61%); `pnpm build`; `pnpm audit --audit-level=high`; migrations; live estendido 23/32; E2E 12/12 e real 14/14; `pnpm verify:ci-contract`; `git diff --check`
-- gap: sem `origin`, SHA remoto, duração, artefatos efetivamente anexados, cache/rollback observados; item 16 permanece bloqueado pela ordem
+- status: COMPLETED_WITH_GAPS
+- resultado: `BRIEFING/04.AUDIT/0508_ci_reproducibility_audit.md` reavaliou o item em **95/100**; o repositório privado foi publicado em `origin/main`, e o workflow `31380183984` passou no SHA `dd4790973e31e1c3799c58cf99701128367b055b` em 4m20s. O artifact `9059654877` preservou 99 arquivos, coverage, Playwright e JUnit, com digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`.
+- evidência adicional: `.nvmrc`; `.env.example`; `scripts/verify-ci-contract.mjs`; `tests/integration/ci-governance.test.ts`; `.github/workflows/quality.yml`; `playwright.config.ts`; auditoria 0508; `https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/31380183984`
+- verificação adicional: `pnpm verify` (77 arquivos/356 testes; 17 skips; cobertura 84,92%/80,34%/85,89%/85,61%); `pnpm build`; `pnpm audit --audit-level=high`; migrations; live estendido 23/32; E2E 12/12 e real 14/14; `pnpm verify:ci-contract`; `git diff --check`; CI remoto integralmente verde
+- gaps: rollback de deployment, cache quente, carga, failover, restart e múltiplas réplicas não foram exercitados; falhas remotas anteriores e cache miss foram registrados sem apagar histórico
 - critério de pronto: workflow remoto verde, artefatos redigidos, ambiente reproduzível e score >=95 no artifact do item 15
-- próxima ação: após aprovação de Ricardo, configurar o repositório/origin, publicar o SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf`, executar o workflow remoto e registrar SHA, duração, artefatos, falhas e limites
+- próxima ação: abrir o item 16 — rastreabilidade de código e controle de mudança — sem misturar os gates clínicos, de piloto e de operação externa
 
 ### B07-04 — Aplicação da baseline
 

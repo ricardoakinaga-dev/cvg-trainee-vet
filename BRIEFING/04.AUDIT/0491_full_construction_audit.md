@@ -3,12 +3,12 @@
 **Data da verificação:** 2026-08-10, America/Sao_Paulo  
 **Projeto:** `cvg-trainee-vet`  
 **Escopo:** documentação `BRIEFING/`, documentação operacional `docs/`, construção existente em `apps/`, `packages/`, `tests/`, scripts, CI, runtime local e prontidão do programa curricular.  
-**Estado auditado:** working tree local no HEAD `1337163a1d7785cb288dac45db797f077de2e290`; a construção não estava congelada em um commit, e os diretórios de aplicação/pacotes estavam fora do índice Git no momento da auditoria.  
+**Estado auditado:** código e workflow remoto no commit `dd4790973e31e1c3799c58cf99701128367b`; o run `31380183984` e o artifact `9059654877` são a evidência vigente de CI. A atualização documental desta auditoria preserva o histórico anterior e fecha a rastreabilidade do item 15.
 **Método:** leitura do corpus documental, inspeção de código/configuração, execução de gates locais, smoke HTTP, integração PostgreSQL/Qdrant local e E2E Playwright.
 
 ## 1. Veredito executivo
 
-**Nota geral ponderada reavaliada: 93/100 (93,25/100 antes do arredondamento).** A nota anterior era 90/100 (90,41 antes do arredondamento); o item 14 subiu de 72 para **96**, o item 15 evoluiu localmente de 50 para **78**, enquanto os itens 1–12 permanecem em **95** e o item 13 em **96**. A média ainda não representa prontidão para release.
+**Nota geral ponderada reavaliada: 94/100 (94,10/100 antes do arredondamento).** A nota anterior era 90/100 (90,41 antes do arredondamento); o item 14 subiu de 72 para **96**, o item 15 evoluiu de 50 para **95** após a execução remota, enquanto os itens 1–12 permanecem em **95** e o item 13 em **96**. A média ainda não representa prontidão para release.
 
 **Status técnico:** `BLOCKED` para release.  
 **Status do produto:** fundação funcional parcial; produto ainda não está completo.  
@@ -102,8 +102,8 @@ As notas medem o estado real observado, não apenas a qualidade da intenção do
 | 11. Worker, Qdrant, IA e resiliência | 6% | **95** | Matriz de eventos reconhecidos, reconciliação live não vazia com divergência/órfão/replay/retirada, lease expirado, retry e dead-letter foram provados; provider produtivo, restart observável e telemetria externa permanecem gaps. |
 | 12. Observabilidade e operação | 5% | **95** | Health/dependencies, exporter protegido, redaction, SLO/alertas, correlação, runbooks e restore sintético foram provados; collector externo, retenção efetiva, dashboards, traces distribuídos, carga e failover permanecem gaps operacionais. |
 | 13. Web, UX e acessibilidade | 4% | **96** | Participante, autoria e operação possuem estados de experiência, foco/teclado, axe, viewport estreito, fronteira pública redigida e E2E real de health e do fluxo persistido mínimo; revisão manual ampliada permanece gap. |
-| 14. Testes, cobertura e qualidade de evidência | 6% | **96** | `0507` fecha comandos por camada, cobertura global, live PostgreSQL/Qdrant/restore, migrations e E2E navegador→API→PostgreSQL persistido; cobertura por módulo e execução remota do CI ainda têm limites explícitos. |
-| 15. CI, reprodutibilidade e prontidão de build | 5% | **78** | `0508` fecha pins, contrato de ambiente, serviços descartáveis, migrations, live PostgreSQL/Qdrant, restore, build, E2E e upload condicional de artefatos localmente; execução remota, SHA, artefatos do Actions, rollback e cache observado continuam pendentes. |
+| 14. Testes, cobertura e qualidade de evidência | 6% | **96** | `0507` fecha comandos por camada, cobertura global, live PostgreSQL/Qdrant/restore, migrations e E2E navegador→API→PostgreSQL persistido; cobertura por módulo, cache quente e operação de release continuam com limites explícitos. |
+| 15. CI, reprodutibilidade e prontidão de build | 5% | **95** | `0508` registra workflow remoto verde no SHA `dd47909`, job de 4m20s, E2E real 14/14 e artifact `9059654877`; rollback de deployment, cache quente, carga, failover e restart permanecem gaps próprios. |
 | 16. Rastreabilidade de código e controle de mudança | 2% | **45** | Manifesto, docs e caminhos existem; código/pacotes não estavam rastreados no commit auditado e os status declarados superam o estado atual. |
 
 ### 4.1 Leitura da nota geral
@@ -257,17 +257,17 @@ O artifact `0507_test_quality_evidence_audit.md` fecha o item 14. Os comandos po
 
 O gate live PostgreSQL passou com 18 arquivos/26 testes sem skips; a extensão Qdrant passou com 21/29 e o restore com 1/1 em container descartável. O E2E padrão passou 12/12 e o modo real 14/14, incluindo aceite do convite, atividade, tentativa, resposta e submissão persistidos no PostgreSQL. A fixture é sintética, efêmera, limpa no shutdown e não expõe token, hash, fonte ou dado clínico.
 
-O CI agora declara serviço PostgreSQL, aplica migrations, executa live integration, restore, E2E padrão, E2E real e audit; a execução remota ainda precisa ocorrer no próximo job. A cobertura por módulo continua desigual em entrypoints de composição e alguns repositórios e está registrada como gap, sem tornar a cobertura global falsa. O item 15 passa a tratar a prova remota e a reprodutibilidade final do ambiente.
+O CI declara serviço PostgreSQL, aplica migrations, executa live integration, restore, E2E padrão, E2E real e audit; o workflow remoto verde confirmou a mesma cadeia no GitHub. A cobertura por módulo continua desigual em entrypoints de composição e alguns repositórios e está registrada como gap, sem tornar a cobertura global falsa. O cache quente e a operação de release permanecem fora desta prova.
 
-### 5.15 CI, reprodutibilidade e prontidão de build — 78/100
+### 5.15 CI, reprodutibilidade e prontidão de build — 95/100
 
-O artifact `0508_ci_reproducibility_audit.md` reavaliou o item em 78/100. `.nvmrc`, engines Node/pnpm, lockfile, `.env.example`, `verify:ci-contract`, workflow com PostgreSQL/Qdrant pinados, readiness no runner, migrations, live, restore, E2E padrão/real, audit e upload condicional de `coverage/`, `playwright-report/` e `test-results/` estão materializados. A reprodução local passou `pnpm verify`, build, audit, migrations, live estendido 23/32 e E2E 12/12 + 14/14.
+O artifact `0508_ci_reproducibility_audit.md` reavaliou o item em 95/100. `.nvmrc`, engines Node/pnpm, lockfile, `.env.example`, `verify:ci-contract`, workflow com PostgreSQL/Qdrant pinados, readiness no runner, migrations, live, restore, E2E padrão/real, audit e upload condicional de `coverage/`, `playwright-report/` e `test-results/` foram materializados e executados localmente e no GitHub.
 
-O score não alcança 95: o checkout não possui `origin`, o repositório GitHub não foi identificado, não há SHA remoto, duração, artefato do Actions, cache observado, rollback ou falha de infraestrutura registrada. O item 16 continua bloqueado pela ordem; a próxima ação depende de Ricardo informar/aprovar o repositório e a publicação do checkout.
+O repositório privado `ricardoakinaga-dev/cvg-trainee-vet` está em `origin/main` no SHA `dd4790973e31e1c3799c58cf99701128367b055b`. O run `31380183984`, job `93428409312`, passou em 4m20s; o E2E padrão passou 12/12, o E2E real 14/14, o audit não encontrou vulnerabilidades conhecidas e o artifact `9059654877` preservou 99 arquivos com digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`. As falhas anteriores de bootstrap pnpm (`31378647864`) e `NODE_ENV` da API (`31379006703`) foram preservadas e corrigidas; o log registrou cache miss. Rollback de deployment, cache quente, carga, failover, restart e múltiplas réplicas não foram exercitados.
 
 ### 5.16 Rastreabilidade de código e controle de mudança — 45/100
 
-O manifesto e a cadeia documental estão atualizados, mas o working tree continua sem um commit final intencional que congele código, testes, documentação e artefatos desta construção. O item 16 permanece para fechar commit, diff, manifesto, evidência e reauditoria do mesmo SHA.
+O manifesto e a cadeia documental agora apontam para o commit remoto intencional `dd4790973e31e1c3799c58cf99701128367b055b`; o item 16 permanece para fechar a rastreabilidade detalhada de cada mudança, diff, manifesto, evidência e reauditoria do mesmo SHA.
 
 ## 6. Bloqueios e riscos priorizados
 

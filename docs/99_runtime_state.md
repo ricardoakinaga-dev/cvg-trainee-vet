@@ -9,30 +9,30 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 13 CI, reprodutibilidade e prontidão de build
-- current_sprint: SCORE-95-15 — execução remota e contrato de ambiente/build
-- current_task: elevar o item 15 de 50 para pelo menos 95 com evidência reproduzível
+- current_sprint: SCORE-95-16 — rastreabilidade de código e controle de mudança
+- current_task: abrir o item 16 após fechar CI-15-01 com evidência local e remota
 
 ## STATUS
 
-- status: WAITING_HUMAN_APPROVAL
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: terceira revalidação consecutiva da continuidade executada em 2026-08-10; `git status` limpo em `353f55e`, `git remote -v` sem saída, autenticação GitHub válida e nenhum repositório `cvg-trainee-vet` identificado; contrato local do item 15 e baseline `241a04ce4ba77245b46782d2f37732cf616b4baf` permanecem válidos
-- next_action: obter/aprovar o repositório GitHub, configurar origin e publicar o SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf` para executar o workflow remoto e guardar seus artefatos redigidos
+- last_completed_action: criado o repositório privado `ricardoakinaga-dev/cvg-trainee-vet`, publicado o commit `dd4790973e31e1c3799c58cf99701128367b055b`, corrigidos com TDD os dois bloqueios de bootstrap do CI e aprovado o workflow remoto `31380183984`/job `93428409312` em 4m20s; artifact `9059654877` preservado com digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`
+- next_action: abrir o item 16 — rastreabilidade de código e controle de mudança — e iniciar sua task conforme `BRIEFING/03.BUILD/0302_backlog_master.md`
 
 ## BLOQUEIOS
 
-- blockers: CI-REMOTE-001 — checkout sem origin/repositório GitHub identificado impede execução remota; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; AUD-P1-002/004/005/006 — collector/retention/traces/carga/failover, operação de ambiente, rastreabilidade e banco autoral permanecem para seus itens próprios; item 16 aguarda a ordem
+- blockers: CI-REMOTE-001 — **RESOLVIDO** nesta rodada com repositório privado, origin, SHA e workflow remoto verde; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; AUD-P1-002/004/005/006 — collector/retention/traces/carga/failover, operação de ambiente, rastreabilidade e banco autoral permanecem para seus itens próprios
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: Ricardo deve informar/aprovar o repositório GitHub e a publicação do checkout para o CI remoto; revisão e autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico 95 não equivale a aprovação clínica ou competência prática
+- decision_description: não há decisão humana pendente para o CI-15-01; revisão e autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico 95 não equivale a aprovação clínica ou competência prática
 
 ## TIMESTAMP
 
-- last_update: 2026-08-10T07:15:14-03:00
+- last_update: 2026-08-10T07:51:18-03:00
 
 ## REGRAS DE USO
 
