@@ -40,6 +40,12 @@ const requiredWorkflowChecks = Object.freeze([
   ["JUnit/test result path", /test-results\//u],
   ["Qdrant readiness check", /127\.0\.0\.1:6333\/readyz/u],
 ]);
+const requiredRuntimeChecks = Object.freeze([
+  [
+    "real E2E API bootstrap outside test mode",
+    /NODE_ENV=development API_HOST=127\.0\.0\.1 API_PORT=3101/u,
+  ],
+]);
 
 function envKeys(text) {
   return new Set(
@@ -89,6 +95,9 @@ export function validateCiContract(contract) {
     ...requiredWorkflowChecks
       .filter(([, pattern]) => !pattern.test(contract.workflow))
       .map(([name]) => `workflow is missing ${name}`),
+    ...requiredRuntimeChecks
+      .filter(([, pattern]) => !pattern.test(contract.playwrightConfig))
+      .map(([name]) => `Playwright runtime is missing ${name}`),
     ...(enablePnpmStep < 0 || setupNodeStep < 0
       ? ["workflow must define Setup Node.js and Enable pnpm steps"]
       : enablePnpmStep > setupNodeStep
@@ -104,23 +113,32 @@ export function validateCiContract(contract) {
     pnpmVersion: expectedPnpmVersion,
     requiredEnvironmentKeys: requiredEnvironmentKeys.length,
     requiredWorkflowChecks: requiredWorkflowChecks.length,
+    requiredRuntimeChecks: requiredRuntimeChecks.length,
   });
 }
 
 export async function readCiContract(rootDirectory = projectRoot) {
-  const [packageText, envExample, workflow, nodeVersion, lockfile] =
-    await Promise.all([
-      readFile(join(rootDirectory, "package.json"), "utf8"),
-      readFile(join(rootDirectory, ".env.example"), "utf8"),
-      readFile(join(rootDirectory, ".github/workflows/quality.yml"), "utf8"),
-      readFile(join(rootDirectory, ".nvmrc"), "utf8"),
-      readFile(join(rootDirectory, "pnpm-lock.yaml"), "utf8"),
-    ]);
+  const [
+    packageText,
+    envExample,
+    workflow,
+    playwrightConfig,
+    nodeVersion,
+    lockfile,
+  ] = await Promise.all([
+    readFile(join(rootDirectory, "package.json"), "utf8"),
+    readFile(join(rootDirectory, ".env.example"), "utf8"),
+    readFile(join(rootDirectory, ".github/workflows/quality.yml"), "utf8"),
+    readFile(join(rootDirectory, "playwright.config.ts"), "utf8"),
+    readFile(join(rootDirectory, ".nvmrc"), "utf8"),
+    readFile(join(rootDirectory, "pnpm-lock.yaml"), "utf8"),
+  ]);
 
   return Object.freeze({
     packageJson: JSON.parse(packageText),
     envExample,
     workflow,
+    playwrightConfig,
     nodeVersion: nodeVersion.trim(),
     lockfile,
   });

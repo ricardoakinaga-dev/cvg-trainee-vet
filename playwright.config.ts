@@ -33,7 +33,7 @@ export default defineConfig({
           },
           {
             command:
-              "API_HOST=127.0.0.1 API_PORT=3101 WEB_ORIGINS=http://127.0.0.1:3100 pnpm --filter @cvg/api start",
+              "NODE_ENV=development API_HOST=127.0.0.1 API_PORT=3101 WEB_ORIGINS=http://127.0.0.1:3100 pnpm --filter @cvg/api start",
             url: "http://127.0.0.1:3101/health/ready",
             reuseExistingServer: false,
             timeout: 120_000,

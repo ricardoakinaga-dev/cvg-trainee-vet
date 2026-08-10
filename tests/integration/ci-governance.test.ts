@@ -43,4 +43,13 @@ describe("CI reproducibility contract", () => {
     expect(enablePnpmStep).toBeLessThan(setupNodeStep);
     expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
   });
+
+  it("starts the real API web server outside test bootstrap mode", async () => {
+    const contract = await readCiContract();
+
+    expect(contract.playwrightConfig).toMatch(
+      /NODE_ENV=development API_HOST=127\.0\.0\.1 API_PORT=3101/u,
+    );
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
 });
