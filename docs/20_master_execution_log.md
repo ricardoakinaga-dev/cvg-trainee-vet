@@ -3053,3 +3053,33 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Abrir o item 16 — rastreabilidade de código e controle de mudança — e iniciar a task correspondente mantendo os registros clínicos independentes.
+
+## 2026-08-10 — SCORE-95-15: validação final da documentação publicada
+
+### TIMESTAMP
+
+2026-08-10 08:00:56 -03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / GITHUB CI
+
+### PHASE
+
+Phase 13 encerrada — validação do item 15 / preparação do item 16
+
+### ACTION
+
+Publicado o fechamento documental no commit `4281f238e0a2644410c88801e670f2a9eda760c1`, contendo auditoria 0508, roadmap, backlog, estado, log e manifesto reconciliados. O push foi validado pelo workflow remoto final `31381262006`.
+
+### RESULT
+
+O job `93431720358` passou todos os passos em 4m45s. O artifact `9060063069` contém 99 arquivos, expira em `2026-08-17T11:00:21Z` e tem digest `7745f6c5578416bf88971d6da2b336ffd2ea1aed7fab3033c30905778f64ce43`. O código segue comprovado pelo run anterior `31380183984` no SHA `dd4790973e31e1c3799c58cf99701128367b055b`.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir o item 16 — rastreabilidade de código e controle de mudança — mantendo release, piloto e publicação clínica nos gates humanos próprios.

@@ -78,6 +78,7 @@ O container descartável `cvg-ci-real-e2e-postgres` criado para a reprodução l
 | Retenção | 7 dias; expira em `2026-08-17T10:45:11Z` |
 | URL do run | `https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/31380183984` |
 | URL do artifact | `https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/31380183984/artifacts/9059654877` |
+| Validação final da documentação | commit `4281f238e0a2644410c88801e670f2a9eda760c1`; run `31381262006`; job `93431720358`; 4m45s; artifact `9060063069`; SHA256 `7745f6c5578416bf88971d6da2b336ffd2ea1aed7fab3033c30905778f64ce43` |
 
 O `Setup Node.js` registrou `cache: pnpm` e `pnpm cache is not found`; esse cache miss é evidência observada e não falha do job. O workflow continua reproduzível por `pnpm install --frozen-lockfile`. O rollback de release não foi executado porque esta rodada não fez deployment; o rollback seguro permanece a reversão por commit imutável/revert de `dd47909`, documentada como operação separada e não como falso teste de produção.
 

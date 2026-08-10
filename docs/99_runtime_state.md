@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: criado o repositório privado `ricardoakinaga-dev/cvg-trainee-vet`, publicado o commit `dd4790973e31e1c3799c58cf99701128367b055b`, corrigidos com TDD os dois bloqueios de bootstrap do CI e aprovado o workflow remoto `31380183984`/job `93428409312` em 4m20s; artifact `9059654877` preservado com digest `fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee`
+- last_completed_action: documentação canônica publicada no commit `4281f238e0a2644410c88801e670f2a9eda760c1` e validada pelo workflow final `31381262006`/job `93431720358` em 4m45s; artifact final `9060063069` preservado com digest `7745f6c5578416bf88971d6da2b336ffd2ea1aed7fab3033c30905778f64ce43`; a execução de código `31380183984` já havia provado E2E real 14/14
 - next_action: abrir o item 16 — rastreabilidade de código e controle de mudança — e iniciar sua task conforme `BRIEFING/03.BUILD/0302_backlog_master.md`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-10T07:51:18-03:00
+- last_update: 2026-08-10T08:00:56-03:00
 
 ## REGRAS DE USO
 
