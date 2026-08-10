@@ -292,12 +292,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto — divergência entre local e CI pode esconder regressão antes do ambiente hospitalar
 - impacto: alto
 - status: WAITING_HUMAN_APPROVAL
-- resultado parcial: `BRIEFING/04.AUDIT/0508_ci_reproducibility_audit.md` reavaliou o item em 78/100; contrato local, workflow, artefatos, migrations, live PostgreSQL/Qdrant/restore e E2E passaram, mas a execução remota não é comprovável sem repositório/origin aprovado
-- evidência adicional: `.nvmrc`; `.env.example`; `scripts/verify-ci-contract.mjs`; `tests/integration/ci-governance.test.ts`; `.github/workflows/quality.yml`; auditoria 0508
+- resultado parcial: `BRIEFING/04.AUDIT/0508_ci_reproducibility_audit.md` reavaliou o item em 78/100; contrato local, workflow, artefatos, migrations, live PostgreSQL/Qdrant/restore e E2E passaram; o baseline foi congelado no commit local `241a04ce4ba77245b46782d2f37732cf616b4baf`, mas a execução remota não é comprovável sem repositório/origin aprovado
+- evidência adicional: `.nvmrc`; `.env.example`; `scripts/verify-ci-contract.mjs`; `tests/integration/ci-governance.test.ts`; `.github/workflows/quality.yml`; auditoria 0508; `git status --short --branch` limpo no SHA local
 - verificação adicional: `pnpm verify` (77 arquivos/354 testes; 17 skips; cobertura 84,92%/80,34%/85,89%/85,61%); `pnpm build`; `pnpm audit --audit-level=high`; migrations; live estendido 23/32; E2E 12/12 e real 14/14; `pnpm verify:ci-contract`; `git diff --check`
 - gap: sem `origin`, SHA remoto, duração, artefatos efetivamente anexados, cache/rollback observados; item 16 permanece bloqueado pela ordem
 - critério de pronto: workflow remoto verde, artefatos redigidos, ambiente reproduzível e score >=95 no artifact do item 15
-- próxima ação: após aprovação de Ricardo, configurar o repositório/origin, publicar o SHA intencional, executar o workflow remoto e registrar SHA, duração, artefatos, falhas e limites
+- próxima ação: após aprovação de Ricardo, configurar o repositório/origin, publicar o SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf`, executar o workflow remoto e registrar SHA, duração, artefatos, falhas e limites
 
 ### B07-04 — Aplicação da baseline
 

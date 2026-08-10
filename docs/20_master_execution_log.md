@@ -2885,3 +2885,45 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Ricardo deve informar/aprovar o repositório GitHub e a publicação deste checkout em branch/commit intencional.
+
+## 2026-08-10 — SCORE-95-15: baseline local congelado
+
+### TIMESTAMP
+
+2026-08-10 07:08:30 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER / VERIFICATION LOOP
+
+### PHASE
+
+Phase 13 — CI, reprodutibilidade e prontidão de build / item 15 do relatório 0491
+
+### SPRINT
+
+SCORE-95-15
+
+### TASK
+
+CI-15-01 / congelar o baseline verificado e preservar rastreabilidade
+
+### ACTION
+
+Revisado o conjunto staged; os arquivos `*.tsbuildinfo` gerados foram retirados do índice e adicionados ao `.gitignore`. Reexecutados `pnpm verify`, `pnpm build`, `pnpm audit --audit-level=high`, `pnpm verify:secrets`, `pnpm verify:traceability`, `pnpm verify:documentation` e `pnpm verify:ci-contract`.
+
+### RESULT
+
+As verificações passaram: 77 arquivos/354 testes, 17 skips condicionais, cobertura 84,92% statements, 80,34% branches, 85,89% functions e 85,61% lines; build dos 12 workspaces; audit sem vulnerabilidades; contrato CI, secrets, traceability e documentação válidos. O baseline foi congelado no commit local `241a04ce4ba77245b46782d2f37732cf616b4baf` (`feat: establish CVG build and CI contract`) e o worktree ficou limpo.
+
+### DECISIONS
+
+O SHA local agora é rastreável e reproduzível, mas não substitui a prova de execução remota. Não criar repositório, não apontar para outro projeto e não publicar sem aprovação explícita do repositório/origin.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve informar/aprovar o repositório GitHub e a publicação do SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf`; depois executar o workflow remoto e registrar SHA remoto, duração, artefatos, falhas e limites.
