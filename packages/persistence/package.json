@@ -1,0 +1,20 @@
+{
+  "name": "@cvg/persistence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@cvg/application": "workspace:*",
+    "@cvg/curriculum": "workspace:*",
+    "@cvg/domain": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "postgres": "3.4.9"
+  }
+}

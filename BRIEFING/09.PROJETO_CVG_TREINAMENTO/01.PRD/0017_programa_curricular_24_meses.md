@@ -57,6 +57,30 @@ As 120 questões do diagnóstico inicial ocupam o primeiro mês em três blocos 
 
 Nos meses 12 e 24, a carga aumenta para oito horas: S1 com 90 minutos, S2 e S3 com 150 minutos cada e S4 com 90 minutos.
 
+## 3.1 Camada de eficácia hospitalar — modelo V1
+
+A grade V3 mantém os 24 módulos, mas cada módulo passa a declarar uma camada operacional inspirada na pesquisa interna `BRIEFING/04.AUDIT/0495_pesquisa_praticas_mundiais_treinamento_hospitalar.md`:
+
+```text
+baseline → microaprendizagem → caso progressivo → simulação digital
+→ debriefing → recuperação em D+7/D+30/D+90 → métrica piloto de transferência
+```
+
+O catálogo executável em `packages/curriculum` materializa, por módulo:
+
+- audiência principal e audiência multiprofissional quando o risco envolver handoff, emergência, procedimento, internação ou segurança;
+- comportamentos hospitalares observáveis, como priorização, reavaliação, escalonamento, registro, passagem e comunicação fechada;
+- modalidades digitais de recuperação ativa, raciocínio em caso, simulação e debriefing;
+- revisão espaçada em 7, 30 e 90 dias;
+- indicador agregado/manual de processo para o piloto e gatilho de atualização;
+- regra de 70% geral, 80% em objetivo crítico e bloqueio por comportamento crítico digital, sem alegar competência prática.
+
+O MVP continua integralmente digital. Observação de trabalho, prática presencial, avaliação psicomotora, nível de supervisão e autonomia permanecem fora da plataforma e bloqueados pelo `GATE-EXP-PRAT-01`. O resultado digital mede conhecimento, raciocínio, priorização e comunicação simulada; não autoriza procedimento nem substitui protocolo ou supervisão clínica.
+
+No M02, o banco inicial contém 31 itens objetivos/estruturados e duas respostas abertas. A projeção pública agora transporta as alternativas e diferencia seleção simples de múltipla; gabarito, feedback interno, rubrica, criticidade e referências permanecem somente no workflow interno. O seed técnico permanece em `PROJECAO_VERIFICADA` até revisão clínica e não publica conteúdo automaticamente.
+
+O runtime técnico complementar em `packages/curriculum/src/learning-runtime.ts` materializa packs versionados para os 24 módulos, um draft diagnóstico B-07 com 120 itens (40 por sessão), preflight de contagem/correção/projeção, perfil diagnóstico por tema sem nota global, domínio digital por objetivo, remediação dirigida, trilha por pré-requisito e retenção D+7/D+30/D+90. Os packs que ainda não passaram pela autoria clínica são `RASCUNHO`; respostas abertas aguardam correção humana e nenhum resultado digital declara competência prática. O runtime é uma base executável de autoria e ensaio, não autorização de aplicação hospitalar.
+
 ## 4. Mix de atividades e correção
 
 Distribuição-alvo das atividades ao longo de cada módulo:

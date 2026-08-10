@@ -1,0 +1,10 @@
+BRIEFING/
+docs/
+.agents/
+node_modules/
+dist/
+coverage/
+.next/
+pnpm-lock.yaml
+packages/persistence/drizzle/meta/
+*.pdf

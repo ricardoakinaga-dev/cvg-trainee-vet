@@ -107,7 +107,7 @@ Regra geral: decisões explicitamente aprovadas pelo patrocinador são baseline 
 | RN-071 | Duração da trilha: 24 meses em duas partes, com 24 módulos mensais e 96 sessões | APROVADA COMO DIREÇÃO PELO PATROCINADOR EM D-084 (2026-08-06; substitui D-081) |
 | RN-072 | A onda piloto inicial valida diagnóstico, núcleo obrigatório + Emergência + Internação, casos/simulações digitais, avaliação, remediação e retenção; a trilha V3 completa mantém 24 módulos obrigatórios, produzidos/publicados em ondas | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05; esclarecida por D-068/D-084/D-105) |
 | RN-073 | Critérios de continuar/pausar seguem anexo 0004 §6 | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |
-| RN-074 | Baseline será coletada antes do piloto completo e da calibração definitiva; orienta personalização, mas não bloqueia a SPEC, conforme D-101 | APROVADA EM 2026-08-07 (D-101); B-07 PRÉ-PILOTO |
+| RN-074 | B-07 pode orientar uma baseline formativa quando aplicado, mas não existe calibração obrigatória nem bloqueio da construção ou do treinamento interno | REFINADA PELA DECISÃO ATUAL DO ANEXO 0027; B-07 É MELHORIA PARALELA |
 | RN-075 | Módulo clínico revisado e aprovado por Ricardo antes da publicação; revisão clínica adicional e revisão pedagógica são opcionais no MVP | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RN-076 | Carga da trilha: 149 horas em 24 meses, com 6 horas nos meses regulares, 7 horas no diagnóstico e 8 horas nos meses integradores | PROPOSTA V3 APROVADA COMO DIREÇÃO EM D-084/D-085 (2026-08-06) |
 | RN-077 | Espécies do piloto: cães e gatos | APROVADA PELO PATROCINADOR COMO INSUMO (2026-08-05) |

@@ -48,11 +48,11 @@ entrar
 ```text
 seleção do tema
 → blueprint
-→ pesquisa nas fontes
+→ consulta manual interna das fontes (somente construção/revisão)
 → autoria
 → revisão clínica e aprovação de Ricardo
 → revisão clínica adicional ou pedagógica opcional
-→ checagem simples: conteúdo original e PDF ausente
+→ projeção verificada: conteúdo autoral, caso fictício e nenhum identificador/material de fonte
 → aprovação
 → publicação
 → monitoramento
@@ -124,7 +124,7 @@ Detalhes em [0014 — Requisitos não funcionais](0014_requisitos_nao_funcionais
 
 ## 9. Métricas de sucesso
 
-KPIs primários (PROPOSTA): ativação ≥ 90%/14 dias; conclusão ≥ 80%; abandono ≤ 15%; ganho mediano ≥ 15 p.p.; recuperação ≥ 75%; conteúdo válido 100%; itens rastreáveis 100%. O dashboard inicial usa um recorte simples de progresso, fila de correções, remediação, conteúdo, feedback e confiabilidade; metas restantes serão calibradas pela baseline (B-07).
+KPIs primários (PROPOSTA): ativação ≥ 90%/14 dias; conclusão ≥ 80%; abandono ≤ 15%; ganho mediano ≥ 15 p.p.; recuperação ≥ 75%; conteúdo válido 100%; itens rastreáveis 100%. O dashboard inicial usa um recorte simples de progresso, fila de correções, remediação, conteúdo, feedback e confiabilidade; metas podem ser observadas e ajustadas operacionalmente, sem calibração obrigatória ou dependência de B-07.
 Detalhes em [0015 — Métricas de sucesso](0015_metricas_de_sucesso.md).
 
 ## 10. Riscos e hipóteses
@@ -187,6 +187,6 @@ Documentos transversais: [Anexo 0020 — Produto e arquitetura antes da SPEC](..
 ## 15. Não feito nesta fase
 
 - Nenhuma SPEC, BUILD, código, teste, tela, questão ou aula clínica completa; a trilha V3 está definida no PRD 0017;
-- Nenhuma implementação ou escolha de fornecedor; o Anexo 0020 registra arquitetura e roteamento de IA aprovados em D-091 a D-100;
+- Nenhuma implementação de código; a baseline de arquitetura, integrações e IA foi refinada no Anexo 0027 e na SPEC, sem etapa de seleção ou consulta de fornecedor;
 - Nenhum conteúdo derivado das obras;
 - Nenhuma integração.

@@ -4,14 +4,14 @@
 **Nome provisório do produto:** Sistema CVG de Treinamento Veterinário  
 **Organização:** Centro Veterinário Guarapiranga — CVG  
 **Data de abertura:** 2026-07-29  
-**Fase atual:** SPEC — Fase 0 concluída; aguarda autorização para 0101
+**Fase atual:** SPEC — 0101–0190 concluídos tecnicamente; documentação do BUILD autorizada
 **Status do gate Discovery:** `APROVADO EM 2026-08-07 SOBRE F6FEFA1`; ver [0090 — Discovery Validation](00.DISCOVERY/0090_discovery_validation.md)
 **Status do gate PRD:** `APROVADO EM 2026-08-07 SOBRE F6FEFA1`, depois do Discovery; ver [0090 — PRD Validation](01.PRD/0090_prd_validation.md)
 **Status da auditoria documental:** `CONCLUÍDA E APROVADA`
-**Alinhamento pré-SPEC:** D-091 a D-108 aprovadas; somente a readiness da SPEC foi autorizada. BUILD permanece proibido.
+**Alinhamento pré-SPEC:** D-091 a D-109 refinadas pelo Anexo 0027; SPEC 0190 aprovada tecnicamente. Documentação do BUILD pode começar; código permanece proibido até 04–08 atingir 100%.
 **Regra de exposição (D-109, 2026-08-09):** a rastreabilidade bibliográfica é exclusivamente interna à construção, revisão e auditoria; a experiência do participante recebe somente conteúdo autoral do CVG e não expõe referências, metadados ou materiais das obras consultadas.
 **Modalidade confirmada pelo patrocinador como insumo (D-068):** treinamento integralmente digital, com casos e simulações digitais; sem treinamento prático presencial associado à plataforma na primeira versão.
-**Escopo desta entrega:** documentação de briefing, currículo V3 aprovado e fatia vertical documental do Mês 2; nenhuma plataforma, aplicação real ou código de produto foi criado.
+**Escopo desta entrega:** documentação de briefing, PRD auditado, SPEC técnica completa, currículo V3 e fatia vertical documental do Mês 2; nenhuma plataforma ou código de produto foi criado.
 
 **Princípio de produto (D-080):** o colaborador deve encontrar uma jornada clara e óbvia: entrar, receber uma recomendação, estudar unidades breves dentro de módulos clínicos completos, resolver casos digitais, obter feedback imediato e acompanhar o próprio progresso. Controles administrativos não devem criar etapas desnecessárias para quem está aprendendo.
 
@@ -84,6 +84,26 @@ Nenhum campo desconhecido foi apresentado como certeza.
 ### SPEC
 
 1. [0100 — SPEC Readiness Review](02.SPEC/0100_spec_readiness_review.md)
+2. [0101 — Visão arquitetural](02.SPEC/0101_visao_arquitetural.md)
+3. [0102 — Bounded contexts](02.SPEC/0102_bounded_contexts.md)
+4. [0103 — Mapa de módulos](02.SPEC/0103_mapa_de_modulos.md)
+5. [0104 — Modelo de domínio](02.SPEC/0104_modelo_de_dominio.md)
+6. [0105 — Máquina de estados](02.SPEC/0105_maquina_de_estados_e_fluxos.md)
+7. [0106 — Contratos de aplicação](02.SPEC/0106_contratos_de_aplicacao.md)
+8. [0107 — Contratos de API](02.SPEC/0107_contratos_de_api.md)
+9. [0108 — Eventos e assincronismo](02.SPEC/0108_contratos_de_eventos_e_assincronismo.md)
+10. [0109 — Dados e persistência](02.SPEC/0109_dados_e_persistencia.md)
+11. [0110 — Integridade e migrações](02.SPEC/0110_consistencia_integridade_e_migracoes.md)
+12. [0111 — Permissões e auditoria](02.SPEC/0111_permissoes_governanca_e_auditoria.md)
+13. [0112 — Integrações](02.SPEC/0112_integracoes.md)
+14. [0113 — Observabilidade e runtime](02.SPEC/0113_observabilidade_runtime_e_operacao.md)
+15. [0114 — Web/SPA e acessibilidade](02.SPEC/0114_superficie_web_spa_e_acessibilidade.md)
+16. [0115 — Plano de BUILD](02.SPEC/0115_plano_de_build_por_fases.md)
+17. [0116 — Dependências e versionamento](02.SPEC/0116_matriz_de_dependencias_e_versionamento.md)
+18. [0117 — Backlog estruturado](02.SPEC/0117_backlog_estruturado.md)
+19. [0118 — Testes, rastreabilidade e verificação](02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md)
+20. [0120 — SPEC Master](02.SPEC/0120_spec_master.md)
+21. [0190 — Validação da SPEC](02.SPEC/0190_spec_validation.md)
 
 ### Anexos de decisão, conteúdo e preparação
 
@@ -111,15 +131,19 @@ Nenhum campo desconhecido foi apresentado como certeza.
 22. [Leitura da literatura e matriz curricular](90.ANEXOS/0022_leitura_literatura_e_matriz_curricular.md)
 23. [Auditoria de requisitos, coerência e prontidão para construção](90.ANEXOS/0023_auditoria_requisitos_e_coerencia.md)
 24. [Template interno de autoria, revisão e projeção](90.ANEXOS/0024_template_autoria_revisao_interno.md)
+25. [Plano interno da primeira onda curricular](90.ANEXOS/0025_plano_primeira_onda_curricular_interno.md)
+26. [Gate de qualidade documental do PRD](90.ANEXOS/0026_gate_qualidade_documental_prd.md)
+27. [Decisão atual de integrações, testes e execução](90.ANEXOS/0027_decisao_atual_integracoes_testes_e_sem_burocracia.md)
+28. [Gate de documentação 100%](90.ANEXOS/0028_gate_documentacao_100.md)
 
 ## 4. O que não foi criado
 
-- Código, aplicação, site ou plataforma;
-- Banco de dados, API, arquitetura implementada ou stack contratada; existe apenas uma recomendação pré-SPEC no Anexo 0020;
+- Produto final completo, site publicado ou experiência do participante;
+- Banco de dados provisionado e ambiente de produção; existe schema/migração inicial e composição server-side no BUILD;
 - Conteúdo dos demais 23 módulos e os 120 itens diagnósticos — somente a fatia vertical documental do Mês 2 foi produzida e aprovada clinicamente para ensaio controlado por D-088;
 - Certificados;
 - Protótipos de telas;
-- Demais documentos da SPEC (0101 a 0190), backlog de BUILD ou sprints;
+- Conteúdo clínico publicado e superfície do participante; o BUILD técnico começou pela fundação, integrações server-side e testes, sem expor fontes, fotos ou PDFs;
 - Auditoria de um sistema inexistente;
 - Conteúdo derivado extensivamente do livro.
 

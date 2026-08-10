@@ -1,0 +1,111 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786293729906,
+      "tag": "0000_dry_bastion",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786296363126,
+      "tag": "0001_moaning_the_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786298625257,
+      "tag": "0002_lovely_madelyne_pryor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786300309546,
+      "tag": "0003_fluffy_psylocke",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786302858877,
+      "tag": "0004_outstanding_green_goblin",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786304389622,
+      "tag": "0005_rapid_pixie",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786305211635,
+      "tag": "0006_unknown_randall_flagg",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786328384962,
+      "tag": "0007_small_khan",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786328398984,
+      "tag": "0008_abnormal_zzzax",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786332334899,
+      "tag": "0009_nappy_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786337408991,
+      "tag": "0010_classy_kronos",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786337836994,
+      "tag": "0011_daffy_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786340000000,
+      "tag": "0012_secure_participant_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1786341000000,
+      "tag": "0013_shared_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1786345414839,
+      "tag": "0014_salty_penance",
+      "breakpoints": true
+    }
+  ]
+}

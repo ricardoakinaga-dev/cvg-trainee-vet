@@ -46,7 +46,7 @@ Estas pendências não são falhas de coerência; são gates ou decisões ainda 
 - autorização humana para iniciar `0101_visao_arquitetural.md`;
 - blueprint B-07 e produção dos 120 itens antes da baseline;
 - execução do T2 controlado da M02;
-- confirmação de protocolos CVG ou registro explícito de `NAO_FORNECIDO`/`NAO_APLICAVEL`;
+- redação interna dos protocolos CVG necessários a partir da literatura, ou registro explícito de `NAO_APLICAVEL`;
 - seleção e contratação de identidade, banco, hospedagem e telemetria;
 - derivação de domínio, contratos, modelo de dados, segurança, observabilidade, telas e plano de BUILD na SPEC;
 - aprovação do gate `0190` antes de qualquer código ou implantação.

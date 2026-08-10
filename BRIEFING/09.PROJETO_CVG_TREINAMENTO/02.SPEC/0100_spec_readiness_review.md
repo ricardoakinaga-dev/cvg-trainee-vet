@@ -7,7 +7,7 @@
 **Engine:** `BRIEFING/02.ESPEC/SPEC ENGINE ENTERPRISE`
 **Baseline aprovada:** `f6fefa1`; checkpoint de evidência `e8abe6f`
 **Checkpoint da Fase 0:** `f8e1e08` — `docs: approve gates and add spec readiness`
-**Resultado:** `READY_FOR_SPEC_PHASE_1 — AGUARDA AUTORIZAÇÃO PARA 0101`
+**Resultado:** `READY_FOR_SPEC_PHASE_1 — AUTORIZADA PELO PATROCINADOR EM 2026-08-09`
 
 ## 1. Objetivo e limite desta revisão
 
@@ -52,9 +52,9 @@ O diretório canônico genérico `/docs/02_spec` é materializado neste projeto 
 | PRD aprovado depois do Discovery | mesma manifestação, em ordem, sobre `f6fefa1` | satisfeita |
 | checkpoint de evidência | `e8abe6f` reconhecido pelo aprovador | satisfeita |
 | D-101 a D-108 | aprovadas integralmente em 2026-08-07 | satisfeita |
-| autorização desta fase | somente a readiness da SPEC autorizada | satisfeita |
+| autorização desta fase | autorização explícita do patrocinador nesta sessão, após o gate PRD técnico de 97%, para concluir a SPEC 0101–0190; BUILD executável continua condicionado ao gate final e à documentação 04–08 | satisfeita |
 
-O PRD está formalmente aprovado. B-07 não é bloqueio da SPEC por D-101; ele continua bloqueando a baseline, a calibração definitiva e o piloto completo.
+O PRD está formalmente aprovado. B-07 é conteúdo diagnóstico que pode ser concluído em paralelo; não bloqueia a SPEC, a construção nem o treinamento interno. O diagnóstico pode ser aprimorado depois sem criar uma etapa obrigatória de calibração.
 
 ## 4. Resumo do produto aprovado
 
@@ -62,19 +62,19 @@ O produto é uma plataforma web responsiva interna para aproximadamente dez méd
 
 Participante, moderador e administrador possuem superfícies e permissões separadas. Ricardo é o único aprovador clínico obrigatório; revisão veterinária adicional é opcional. Dashboards, feedback de bugs/erros/melhorias e KPIs simples fazem parte do MVP, sem ranking, uso punitivo ou inferência de competência prática.
 
-A direção técnica aprovada é um monólito modular, autenticação gerenciada e PostgreSQL gerenciado. RAG, OCR, embeddings e processamento automatizado dos PDFs ficam fora do MVP. O agente de IA é opcional e assistivo; workflow, permissões, notas, prazos e mudanças de estado permanecem determinísticos.
+A direção técnica da SPEC é um monorepo modular com `web`/SPA, API autoritativa, worker separado, PostgreSQL transacional, Qdrant auxiliar e adaptador de IA server-side. Qdrant/IA são recursos internos e assistivos: não são fonte de verdade, não recebem PDFs/fotos/cópias protegidas ou dados reais e não têm autoridade sobre workflow, permissões, notas, prazos ou mudanças de estado. Os fluxos educacionais determinísticos continuam operando quando esses recursos estão desligados.
 
 ## 5. Fronteiras obrigatórias
 
 1. somente casos e dados clínicos fictícios podem entrar na plataforma;
 2. prontuários, tutores, gravações, casos reais identificáveis e uso em RH permanecem proibidos;
-3. PDFs-fonte, OCR, trechos extraídos, embeddings e RAG ficam fora do MVP;
+3. PDFs-fonte, fotos, OCR, trechos protegidos e cópias ficam fora dos serviços; Qdrant pode manter embeddings de registros autorais internos autorizados, com payload mínimo e acesso restrito ao workflow de construção;
 4. prática presencial, habilidade psicomotora, autonomia e certificação profissional ficam fora do produto;
 5. aprovação digital nunca autoriza procedimento ou autonomia clínica;
 6. toda publicação clínica exige aprovação registrada de Ricardo;
 7. WCAG 2.2 AA vale para toda a jornada;
 8. RPO inicial é de até uma hora e RTO de até quatro horas;
-9. nenhuma escolha de fornecedor pode ampliar dados, escopo ou autonomia aprovados;
+9. nenhuma integração pode ampliar dados, escopo ou autonomia aprovados; a baseline técnica é adotada diretamente, sem consulta ou seleção externa;
 10. BUILD permanece proibido até aprovação integral do gate 0190.
 
 ## 6. Lacunas que a própria SPEC deve fechar
@@ -85,28 +85,28 @@ Nenhuma das lacunas abaixo exige reabrir o PRD para iniciar a Fase 1. Todas deve
 |---|---|---|---|---|---|
 | L-SPEC-01 | detalhar componentes, fronteiras e trade-offs do monólito modular | engenharia | engenharia | 0101–0103 | 0190 |
 | L-SPEC-02 | definir proteção técnica do banco de questões e segregação de gabaritos (D-048) | segurança | engenharia/segurança | 0104, 0109 e 0111 | 0190 |
-| L-SPEC-03 | selecionar provedor de identidade, banco, hospedagem e telemetria pelos critérios D-107 | dependência | Ricardo/engenharia | 0112 e 0116 | contratação/BUILD |
+| L-SPEC-03 | fixar a baseline de execução para PostgreSQL, Qdrant e IA e manter adaptadores pequenos de infraestrutura | engenharia | equipe de construção | 0101, 0112 e 0116 | 0190 |
 | L-SPEC-04 | definir modelo de dados, integridade, idempotência, versões e migrações | engenharia | engenharia | 0104–0110 | 0190 |
 | L-SPEC-05 | derivar contratos de aplicação, API e eventos de cada caso de uso | engenharia | engenharia | 0106–0108 | 0190 |
 | L-SPEC-06 | detalhar RBAC, escopos, RLS, auditoria e bootstrap de `CLINICAL_APPROVER` | segurança | engenharia/segurança | 0111 | 0190 |
 | L-SPEC-07 | definir SLOs/SLIs, alertas, restauração e verificação de RPO/RTO | operação | engenharia/operação | 0113 | 0190 |
 | L-SPEC-08 | traduzir as superfícies aprovadas em estados de tela, erro, vazio e carregamento | experiência | produto/engenharia | 0114 | 0190 |
-| L-SPEC-09 | estimar custo e congelar dependências/versionamento técnico | dependência | Ricardo/engenharia | 0116 | contratação/BUILD |
+| L-SPEC-09 | congelar dependências, versões, limites operacionais e variáveis de ambiente | dependência | engenharia | 0112/0116 | 0190 |
 | L-SPEC-10 | estruturar fases, critérios, dependências e backlog do BUILD | planejamento | engenharia | 0115–0117 | 0190 |
 
 ## 7. Pendências externas que não bloqueiam a SPEC
 
 | Pendência | Bloqueia | Não bloqueia |
 |---|---|---|
-| aprovação clínica final do blueprint B-07 | produção dos itens | documentos da SPEC |
-| produzir, revisar e testar os 120 itens | aplicação da baseline | modelagem do sistema |
-| aplicar e consolidar a baseline | calibração e piloto completo | gate 0100 |
-| metas e equivalência quantitativa calibradas | comparações definitivas do piloto | contratos conceituais da SPEC |
-| executar T2 da M02 | decisão de expansão curricular | SPEC |
-| informar protocolo, `NAO_APLICAVEL` ou `NAO_FORNECIDO` | publicação do módulo correspondente | arquitetura |
-| escolha e contratação de fornecedores | BUILD/deploy | derivação da SPEC |
-| validar custo/desempenho do agente de IA | habilitação operacional da IA | produto sem IA |
-| D-033 sobre processamento dos PDFs | eventual OCR/RAG futuro | MVP manual sem RAG |
+| aprovação clínica final do blueprint B-07 | melhoria do diagnóstico | SPEC, construção e treinamento interno |
+| produzir, revisar e testar os 120 itens | aplicação específica da baseline | modelagem e construção do sistema |
+| aplicar a baseline | observação futura do diagnóstico | gate 0100 e BUILD |
+| equivalência quantitativa | comparação estatística futura, se desejada | SPEC, construção e treinamento interno |
+| executar T2 da M02 | melhoria opcional do formato | SPEC e construção |
+| redigir protocolo CVG autoral | publicação da unidade dependente do protocolo | arquitetura e construção |
+| infraestrutura | configuração operacional da baseline escolhida | derivação da SPEC |
+| validar custo/desempenho do agente de IA | ajuste operacional posterior; limites e desligamento já ficam especificados | produto determinístico e SPEC |
+| D-033 sobre processamento dos PDFs | eventual OCR/RAG de ativos autorizados no futuro | núcleo autoral e índice interno controlado |
 
 ## 8. Hipóteses técnicas controladas
 
@@ -117,10 +117,10 @@ Estas hipóteses podem orientar a próxima fase, mas não substituem decisões r
 | H-SPEC-01 | uma aplicação web responsiva atende celular e computador sem app nativo | D-096/D-099 e coorte pequena | baixo | 0101 e 0114 |
 | H-SPEC-02 | um monólito modular com um banco relacional atende a escala inicial | D-096; aproximadamente 10 usuários | baixo | 0101, 0102 e 0109 |
 | H-SPEC-03 | processamento síncrono é padrão; tarefas assíncronas ficam restritas a filas justificadas | poucos fluxos de alta latência | médio | 0108 e 0113 |
-| H-SPEC-04 | provedor gerenciado suporta convite, recuperação, MFA e revogação exigidos | D-091 | médio | 0112 e 0116 |
+| H-SPEC-04 | a porta de identidade escolhida suporta convite, recuperação, MFA e revogação exigidos | D-091 | médio | 0112 e 0116; sem consulta externa |
 | H-SPEC-05 | PostgreSQL e autorização no servidor, com RLS como defesa adicional, atendem os escopos | D-092/D-096 | médio | 0109 e 0111 |
-| H-SPEC-06 | o sistema principal funciona integralmente com o agente de IA desligado | D-100 | baixo | 0106, 0113 e testes futuros |
-| H-SPEC-07 | nenhum dado ou ativo dos PDFs precisa ser persistido para entregar o MVP | D-075/D-097 | baixo | 0109 e 0112 |
+| H-SPEC-06 | o sistema principal funciona integralmente com IA e Qdrant desligados | D-100 e decisão desta SPEC | baixo | 0106, 0113 e testes futuros |
+| H-SPEC-07 | Qdrant indexa somente registros autorais internos e pode ser reconstruído a partir do PostgreSQL | decisão desta SPEC | médio | 0108, 0109, 0112 e testes futuros |
 | H-SPEC-08 | resultados de T2 podem ajustar estimativas/UX sem alterar o domínio aprovado | protocolo M02 separado | médio | revisar antes de 0114/0190 |
 
 ## 9. Bloqueios da readiness
@@ -140,9 +140,9 @@ Estas hipóteses podem orientar a próxima fase, mas não substituem decisões r
 SPEC READINESS: APROVADA TECNICAMENTE
 BLOQUEIO PARA 0101: NENHUM TÉCNICO
 PRÓXIMA ENTREGA: 0101_VISAO_ARQUITETURAL.MD
-AUTORIZAÇÃO ATUAL: SOMENTE 0100 CONCLUÍDO
-BUILD: PROIBIDO ATÉ APROVAÇÃO DO 0190
-PILOTO COMPLETO: BLOQUEADO POR B-07 E GATES APLICÁVEIS
+AUTORIZAÇÃO ATUAL: 0101–0190 autorizada; somente documentação de SPEC nesta etapa
+BUILD EXECUTÁVEL: proibido até aprovação do 0190 e do gate documental 04–08/100%
+PILOTO/USO INTERNO: conteúdo clínico deve passar pela revisão de Ricardo; B-07 e T2 não bloqueiam a construção
 ```
 
-A Fase 1 não foi iniciada. O avanço para 0101 exige nova autorização de Ricardo sobre o checkpoint deste readiness.
+A Fase 1 está autorizada pela manifestação explícita do patrocinador em 2026-08-09. A autorização libera a conclusão da SPEC e a preparação do BUILD; a implementação executável ocorrerá depois do gate documental 04–08/100%, conforme a ordem definida pelo patrocinador.

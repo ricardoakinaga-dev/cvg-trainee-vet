@@ -1,0 +1,16 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/config" },
+    { "path": "packages/curriculum" },
+    { "path": "packages/domain" },
+    { "path": "packages/application" },
+    { "path": "packages/contracts" },
+    { "path": "packages/persistence" },
+    { "path": "packages/integrations" },
+    { "path": "packages/observability" },
+    { "path": "packages/ui" },
+    { "path": "apps/api" },
+    { "path": "apps/worker" }
+  ]
+}

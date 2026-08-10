@@ -208,7 +208,7 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Campo | Registro |
 |---|---|
 | Fase | redesenho documental do PRD; não aprova os gates nem autoriza SPEC/BUILD |
-| Decisões | D-083: Ricardo como único aprovador clínico obrigatório; D-084: 24 meses/duas partes; D-085: casos fictícios, pesquisa aberta e avaliação mista; D-086: três obras como base com camada de atualização |
+| Decisões | D-083: Ricardo como único aprovador clínico obrigatório; D-084: 24 meses/duas partes; D-085: casos fictícios, estudo guiado autoral e avaliação mista; D-086: três obras como base com camada de atualização |
 | Artefatos principais | 01.PRD/0017_programa_curricular_24_meses.md; 90.ANEXOS/0013_pesquisa_melhores_praticas_trilha_24_meses.md |
 | Escopo V3 | 24 módulos, 96 sessões e 149 horas; Parte 1 clínica médica/emergência/internação; Parte 2 cirurgia/especialidades/integração |
 | Commit do conteúdo | `c1d3023` — `docs: define 24-month veterinary curriculum` |
@@ -267,7 +267,7 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Campo | Registro |
 |---|---|
 | Escopo | correção da fronteira canônica; reexecução de Discovery e PRD; nenhuma SPEC/BUILD iniciada |
-| Decisões aprovadas | D-101 a D-108: fronteira de B-07, estados, criticidade, exceções, diagnóstico, equivalência, recuperação, fornecedores, protocolos e riscos |
+| Decisões aprovadas | D-101 a D-108: fronteira de B-07, estados, criticidade, exceções, diagnóstico, equivalência, recuperação, infraestrutura, protocolos e riscos; Anexo 0027 refinou a execução |
 | Commit do conteúdo revisado | `f6fefa1` — `docs: prepare canonical gates for spec` |
 | Artefatos centrais | 0090 Discovery; 0090 PRD; Anexo 0021; política D-077; backlog e runtime |
 | Validações | `git diff --cached --check`; 25 Markdown com links locais válidos; 100 linhas D-* únicas; varredura de segredos sem ocorrência |
@@ -285,9 +285,9 @@ O estado encontrado em 2026-08-05 será preservado como baseline técnica de aud
 | Autorização de origem | gates Discovery/PRD e D-101 a D-108 aprovados por MV. Ricardo Akinaga em 2026-08-07; somente readiness autorizada |
 | Artefato | `02.SPEC/0100_spec_readiness_review.md` |
 | Commit do conteúdo | `f8e1e08` — `docs: approve gates and add spec readiness` |
-| Resultado | `READY_FOR_SPEC_PHASE_1 — AGUARDA AUTORIZAÇÃO PARA 0101` |
+| Resultado | `READY_FOR_SPEC_PHASE_1 — AUTORIZADA EM 2026-08-09` |
 | Lacunas críticas de produto | nenhuma |
-| Pendências não bloqueantes | B-07, T2, fornecedores, calibração e detalhes que pertencem aos documentos 0101–0117 |
+| Pendências não bloqueantes | B-07, T2, observações métricas e detalhes que pertencem aos documentos 0101–0118; sem consulta de fornecedor ou calibração obrigatória |
 | Validações | `git diff --cached --check`; links Markdown locais; 100 decisões D-* únicas; varredura de segredos sem ocorrência |
 | Revisão independente | `PASS`, sem achado crítico ou alto |
 | Próxima decisão | aprovar o checkpoint da Fase 0 e autorizar somente o 0101, se desejado |

@@ -1,0 +1,8 @@
+interface:
+  display_name: "CVG Audit Engine"
+  short_description: "Auditar runtime, aderência, dados e segurança"
+  default_prompt: "Use $audit-engine para auditar um runtime CVG observável."
+  brand_color: "#2563EB"
+
+policy:
+  allow_implicit_invocation: true

@@ -64,7 +64,7 @@ Legenda de classificação: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 | RF-035 | O sistema deve impedir a publicação de módulo clínico sem fonte, versão, rubrica/gabarito testado e aprovação humana registrada de Ricardo | P0 | APROVADA PELO PATROCINADOR EM D-083 (2026-08-06) |
 | RF-036 | O sistema deve versionar todo conteúdo e manter histórico | P0 | FATO INFORMADO |
 | RF-037 | O sistema deve registrar internamente data de corte científico e próxima revisão, sem projetar esses dados na experiência do participante | P1 | REFINADA POR D-109 (2026-08-09), sobre RN-040/RN-047 |
-| RF-038 | O sistema não deve armazenar, distribuir ou exibir os PDFs; eventual OCR, indexação, embeddings, RAG ou envio dos arquivos a IA permanece fora do MVP, e qualquer registro bibliográfico fica restrito à construção/revisão interna | P0 | REFINADA POR D-109 (2026-08-09), sobre D-075/D-033 |
+| RF-038 | O sistema não deve armazenar, distribuir ou exibir PDFs, fotos ou cópias protegidas; Qdrant/embeddings só podem indexar registros autorais internos autorizados, e a IA só pode receber contexto redigido no workflow interno | P0 | REFINADA PELA DECISÃO ATUAL DO ANEXO 0027, sobre D-109 |
 | RF-039 | O sistema deve suportar retirada emergencial com registro de afetados | P0 | APROVADA COMO REGRA DE CONTEÚDO (RN-048) |
 
 ## 5. Avaliações

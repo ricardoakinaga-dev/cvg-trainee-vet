@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "sourceDocuments": [
+    "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0101_visao_arquitetural.md",
+    "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0102_bounded_contexts.md",
+    "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0103_mapa_de_modulos.md"
+  ],
+  "packages": {
+    "@cvg/api": {
+      "manifest": "apps/api/package.json",
+      "allowedWorkspaceDependencies": [
+        "@cvg/application",
+        "@cvg/config",
+        "@cvg/contracts",
+        "@cvg/domain",
+        "@cvg/integrations",
+        "@cvg/observability",
+        "@cvg/persistence"
+      ]
+    },
+    "@cvg/web": {
+      "manifest": "apps/web/package.json",
+      "allowedWorkspaceDependencies": []
+    },
+    "@cvg/worker": {
+      "manifest": "apps/worker/package.json",
+      "allowedWorkspaceDependencies": [
+        "@cvg/config",
+        "@cvg/integrations",
+        "@cvg/observability",
+        "@cvg/persistence"
+      ]
+    },
+    "@cvg/application": {
+      "manifest": "packages/application/package.json",
+      "allowedWorkspaceDependencies": ["@cvg/curriculum", "@cvg/domain"]
+    },
+    "@cvg/config": {
+      "manifest": "packages/config/package.json",
+      "allowedWorkspaceDependencies": []
+    },
+    "@cvg/contracts": {
+      "manifest": "packages/contracts/package.json",
+      "allowedWorkspaceDependencies": []
+    },
+    "@cvg/curriculum": {
+      "manifest": "packages/curriculum/package.json",
+      "allowedWorkspaceDependencies": []
+    },
+    "@cvg/domain": {
+      "manifest": "packages/domain/package.json",
+      "allowedWorkspaceDependencies": []
+    },
+    "@cvg/integrations": {
+      "manifest": "packages/integrations/package.json",
+      "allowedWorkspaceDependencies": ["@cvg/config", "@cvg/persistence"]
+    },
+    "@cvg/observability": {
+      "manifest": "packages/observability/package.json",
+      "allowedWorkspaceDependencies": []
+    },
+    "@cvg/persistence": {
+      "manifest": "packages/persistence/package.json",
+      "allowedWorkspaceDependencies": [
+        "@cvg/application",
+        "@cvg/curriculum",
+        "@cvg/domain"
+      ]
+    },
+    "@cvg/ui": {
+      "manifest": "packages/ui/package.json",
+      "allowedWorkspaceDependencies": []
+    }
+  },
+  "sourceRules": [
+    {
+      "root": "packages/domain/src",
+      "forbiddenImports": [
+        "@cvg/",
+        "node:",
+        "drizzle-orm",
+        "postgres",
+        "fetch("
+      ]
+    },
+    {
+      "root": "packages/curriculum/src",
+      "forbiddenImports": [
+        "@cvg/",
+        "node:",
+        "drizzle-orm",
+        "postgres",
+        "fetch("
+      ]
+    },
+    {
+      "root": "packages/contracts/src",
+      "forbiddenImports": ["@cvg/", "node:", "drizzle-orm", "postgres"]
+    },
+    {
+      "root": "packages/application/src",
+      "forbiddenImports": [
+        "@cvg/persistence",
+        "@cvg/integrations",
+        "@cvg/config",
+        "@cvg/contracts",
+        "@cvg/observability",
+        "drizzle-orm",
+        "postgres",
+        "@qdrant/",
+        "openai"
+      ]
+    },
+    {
+      "root": "packages/persistence/src",
+      "forbiddenImports": [
+        "@cvg/integrations",
+        "@cvg/config",
+        "@cvg/contracts",
+        "@cvg/observability",
+        "@qdrant/",
+        "openai"
+      ]
+    },
+    {
+      "root": "packages/integrations/src",
+      "forbiddenImports": [
+        "@cvg/application",
+        "@cvg/contracts",
+        "@cvg/api",
+        "@cvg/web"
+      ]
+    },
+    {
+      "root": "packages/config/src",
+      "forbiddenImports": [
+        "@cvg/",
+        "drizzle-orm",
+        "postgres",
+        "@qdrant/",
+        "openai"
+      ]
+    },
+    {
+      "root": "packages/observability/src",
+      "forbiddenImports": ["@cvg/", "drizzle-orm", "postgres"]
+    },
+    {
+      "root": "packages/ui/src",
+      "forbiddenImports": ["@cvg/", "node:", "drizzle-orm", "postgres"]
+    },
+    {
+      "root": "apps/api/src",
+      "forbiddenImports": [
+        "@cvg/web",
+        "@cvg/ui",
+        "drizzle-orm",
+        "postgres",
+        "@qdrant/",
+        "openai"
+      ]
+    },
+    {
+      "root": "apps/worker/src",
+      "forbiddenImports": [
+        "@cvg/application",
+        "@cvg/contracts",
+        "@cvg/web",
+        "@cvg/ui",
+        "drizzle-orm",
+        "postgres",
+        "@qdrant/",
+        "openai"
+      ]
+    },
+    {
+      "root": "apps/web/app",
+      "forbiddenImports": [
+        "@cvg/application",
+        "@cvg/persistence",
+        "@cvg/integrations",
+        "@cvg/config",
+        "@cvg/domain",
+        "drizzle-orm",
+        "postgres",
+        "@qdrant/",
+        "openai"
+      ]
+    }
+  ]
+}

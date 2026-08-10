@@ -27,7 +27,7 @@ As questões são usadas para recuperação ativa, feedback e amostragem do conh
 | Componente | Dimensão proposta |
 |---|---:|
 | Duração do ciclo completo | 34 semanas: 32 de módulos + 2 de integração final |
-| Carga efetiva | faixa de planejamento aprovada de 90–115 horas, a calibrar no piloto |
+| Carga efetiva | faixa de planejamento aprovada de 90–115 horas; ajustes futuros são melhoria operacional, não pré-requisito |
 | Trilhas | Núcleo Clínico, Emergência e Internação |
 | Módulos | 16 |
 | Objetivos observáveis | 96, com 6 por módulo |

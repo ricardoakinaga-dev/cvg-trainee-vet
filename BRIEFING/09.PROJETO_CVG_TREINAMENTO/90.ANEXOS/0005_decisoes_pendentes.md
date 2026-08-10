@@ -44,7 +44,7 @@
 | D-022 | O foco inicial será cães, gatos ou ambos? | coord. clínica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): cães e gatos (RN-077) |
 | D-023 | Quais conteúdos são eletivos? | coord. educacional | PRD | resolvida para a trilha completa — os 24 módulos são obrigatórios quando elegíveis; a onda piloto inicial cobre núcleo + Emergência + Internação e não há dispensa por diagnóstico (D-045/D-105 aprovadas) |
 | D-024 | Quais competências definem básico/intermediário/avançado? | patrocinador/clínica | PRD | resolvida para o MVP pela V2: sem rótulos formais de nível; a complexidade progride dentro das trilhas; taxonomia fica para expansão |
-| D-025 | Quais protocolos internos prevalecem? | MV. Ricardo Akinaga | publicação do módulo | proposta D-108 — registrar protocolo versionado, `NAO_APLICAVEL` ou `NAO_FORNECIDO`; nenhuma regra interna será presumida |
+| D-025 | Quais protocolos internos prevalecem? | MV. Ricardo Akinaga | publicação do módulo | resolvida por orientação do patrocinador: protocolos CVG serão redigidos internamente a partir da literatura consultada, versionados e revisados por Ricardo; `NAO_APLICAVEL` vale quando não houver protocolo necessário |
 | D-026 | Quais temas exigem reciclagem obrigatória? | RT | conteúdo/piloto | resolvida para a fase — validade 6/12/24 meses por tipo e retenção 30/60/90 dias conforme regras aprovadas |
 
 ## 4. Fontes e direitos
@@ -81,7 +81,7 @@
 
 | ID | Pergunta/decisão | Owner | Bloqueia | Status |
 |---|---|---|---|---|
-| D-050 | Quais metas finais após baseline? | patrocinador/PO | piloto | metas provisórias aceitas para a SPEC; calibração permanece obrigatória antes do piloto completo por D-101 aprovada |
+| D-050 | Quais metas finais após baseline? | patrocinador/PO | piloto | metas operacionais são suficientes; observação e ajustes futuros são opcionais e não bloqueiam construção ou treinamento interno |
 | D-051 | Quem vê resultados individuais? | Ricardo | PRD | resolvida por D-077: participante vê os próprios dados; Ricardo acessa o necessário; suporte delegado somente de forma excepcional e registrada |
 | D-052 | Resultados podem ser usados em RH? | Ricardo | PRD | resolvida por D-077: proibido no MVP; ampliação exige nova decisão |
 | D-053 | Qual retenção dos dados? | Ricardo | PRD | resolvida por D-077: durante o vínculo com o CVG + 2 anos; depois eliminar ou anonimizar, ressalvadas obrigações aplicáveis |
@@ -99,7 +99,7 @@
 | D-062 | Quantos módulos e qual ordem de produção? | patrocinador/clínica | PRD | resolvida por D-084/D-085/D-087: 24 módulos; validar primeiro a fatia vertical do Mês 2 e expandir em ondas |
 | D-063 | Quantas questões por objetivo? | coord. pedagógica | PRD | confirmada pelo patrocinador (2026-08-05; insumo para reexecução do gate): 10–15 itens (RN-078) |
 | D-064 | Qual critério de continuar/pausar? | patrocinador | PRD | conceito definido |
-| D-065 | Qual orçamento? | patrocinador | fornecedor/BUILD | não informado e não exigido pelos gates canônicos; custo deverá ser comparado antes da contratação |
+| D-065 | Qual orçamento? | patrocinador | operação futura | baseline técnica adotada sem consulta ou contratação; custo/uso pode ser observado depois, sem bloquear BUILD |
 | D-066 | Qual prazo desejado? | patrocinador | programa | resolvida para o treinamento por D-084: 24 meses; cronograma de software será estimado após a SPEC |
 | D-067 | Como o Fossum será usado no MVP interno? | patrocinador | conteúdo | resolvida por D-075 — consulta manual interna; PDF fora da plataforma/Git; sem cópia de material |
 | D-068 | Qual é a modalidade da primeira versão e a fronteira das simulações? | patrocinador/PO | PRD/SPEC | aprovada (2026-08-05): treinamento integralmente digital, com casos e simulações digitais; sem prática presencial associada à plataforma; expansão prática bloqueada pelo `GATE-EXP-PRAT-01` |
@@ -119,7 +119,7 @@
 | D-082 | Como tratar erro crítico em caso digital? | patrocinador/clínica | PRD/avaliação | aprovada (2026-08-06), Alternativa 1: somente o objetivo afetado fica em reforço; explicação + conteúdo curto + novo caso equivalente; decisão segura libera; persistência recebe orientação individual; sem eliminação, punição, ranking ou reprovação definitiva |
 | D-083 | Quem aprova clinicamente módulos e questões no MVP interno? | patrocinador | governança/conteúdo | aprovada (2026-08-06): MV. Ricardo Akinaga é o único aprovador clínico obrigatório; revisão por outro MV é opcional; substitui a segunda conferência obrigatória de D-076 |
 | D-084 | Qual a duração e arquitetura da trilha? | patrocinador | PRD/conteúdo | aprovada definitivamente (2026-08-06): 24 meses, duas partes, 24 módulos mensais, 96 sessões e 149 horas; detalhamento no PRD 0017 |
-| D-085 | Como ocorrerá a aprendizagem e a avaliação ao longo da trilha? | patrocinador | PRD/avaliação | aprovada definitivamente (2026-08-06): casos fictícios, pesquisa aberta, quiz, múltipla escolha, respostas dissertativas, feedback e revisão espaçada; respostas abertas corrigidas em até cinco dias úteis |
+| D-085 | Como ocorrerá a aprendizagem e a avaliação ao longo da trilha? | patrocinador | PRD/avaliação | aprovada definitivamente (2026-08-06) e refinada por D-109: casos fictícios, estudo guiado em material autoral do CVG, quiz, múltipla escolha, respostas dissertativas, feedback e revisão espaçada; respostas abertas corrigidas em até cinco dias úteis, sem pesquisa, indicação ou citação bibliográfica pelo participante |
 | D-086 | Como as três obras serão usadas? | patrocinador/clínica | fontes/conteúdo | aprovada (2026-08-06): Tratado, Ettinger e Fossum são a base bibliográfica; legislação, bula, protocolo CVG e diretriz atual prevalecem em divergência |
 | D-087 | A fatia vertical do Mês 2 pode ser produzida? | patrocinador/clínica | conteúdo/validação | aprovada (2026-08-06): produzir as quatro sessões de Emergência e UTI, com dois casos fictícios, avaliação mista, rubricas, feedback e pré-voo; a produção dos demais módulos continua condicionada ao aprendizado desta fatia |
 | D-088 | A M02 v0.1.0 pode seguir para ensaio controlado e cronometrado? | patrocinador/aprovador clínico | validação operacional | aprovada clinicamente por MV. Ricardo Akinaga em 2026-08-06 para ensaio controlado e cronometrado; não autoriza publicação geral, uso somativo, certificação ou produção em escala |
@@ -131,18 +131,18 @@
 | D-094 | Como registrar bugs, erros e melhorias? | patrocinador/produto | SPEC readiness | aprovada integralmente (2026-08-06): formulário sem anexo, prevenção/remoção auditada de dado proibido, triagem por estado/prioridade e contestação separada |
 | D-095 | Quais KPIs simples entram no MVP? | patrocinador/produto | SPEC readiness | aprovada integralmente (2026-08-06): conjunto e dicionário da seção 8 do Anexo 0020, com escopo, frescor, faltantes/zero denominador e sem ranking |
 | D-096 | Qual arquitetura é proporcional ao MVP? | patrocinador/arquitetura | SPEC readiness | aprovada integralmente (2026-08-06): monólito modular web responsivo, autenticação gerenciada e PostgreSQL gerenciado |
-| D-097 | RAG entra no MVP? | patrocinador/produto/clínica | SPEC readiness/D-033 | aprovada integralmente (2026-08-06): não; preparar somente metadados de fonte e reavaliar automação futura após D-033 |
+| D-097 | Busca semântica e IA entram no MVP? | patrocinador/produto/clínica | SPEC readiness | refinada pelo Anexo 0027: Qdrant/IA internos, server-side, assistivos, reconstruíveis e sem exposição de fonte |
 | D-098 | Qual observabilidade e recuperação mínimas? | patrocinador/arquitetura | SPEC readiness | aprovada integralmente (2026-08-06): logs estruturados, captura de erros, alertas, backups e restauração testada, sem session replay |
 | D-099 | Qual padrão de acessibilidade? | patrocinador/produto | SPEC readiness | aprovada integralmente (2026-08-06): WCAG 2.2 nível AA em toda a jornada |
-| D-100 | Como a IA deve apoiar a operação e qual modelo usar? | patrocinador/produto | SPEC readiness | aprovada integralmente (2026-08-06): workflow determinístico; Luna adaptativa, ferramentas escopadas, proteção contra prompt injection, mínimo de dados e aprovação auditada |
-| D-101 | Qual é a fronteira canônica entre gates e B-07? | patrocinador/governança | Discovery/PRD | aprovada em 2026-08-07 — B-07 bloqueia baseline e piloto, não a SPEC |
+| D-100 | Como a IA deve apoiar a operação e qual modelo usar? | patrocinador/produto | SPEC readiness | refinada pelo Anexo 0027: adaptador configurável, saída estruturada, ferramentas escopadas, proteção contra prompt injection, mínimo de dados e aprovação auditada |
+| D-101 | Qual é a fronteira canônica entre gates e B-07? | patrocinador/governança | Discovery/PRD | refinada pelo Anexo 0027 — B-07 é melhoria paralela e não bloqueia SPEC, construção ou treinamento interno |
 | D-102 | Como separar progresso, avaliação, domínio, aprovação e conclusão? | patrocinador/produto | PRD | aprovada em 2026-08-07 conforme Anexo 0021 |
 | D-103 | Como aplicar os limiares geral e crítico? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — 70% geral e 80% em cada componente crítico, sem compensação |
 | D-104 | Quais exceções operacionais entram no MVP? | patrocinador/produto | PRD | aprovada em 2026-08-07 — afastamento, acessibilidade, conexão, desativação, retirada e contestação |
 | D-105 | Como o diagnóstico personaliza e quando é repetido? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — reforço por faixa/criticidade, sem dispensa e baseline única |
 | D-106 | O que torna duas formas equivalentes? | patrocinador/clínica | PRD | aprovada em 2026-08-07 — mesmo blueprint, distribuição comparável, rubrica testada, aprovação e pré-voo |
-| D-107 | Quais RPO/RTO e critérios de fornecedor orientam a SPEC? | patrocinador/arquitetura | SPEC readiness | aprovada em 2026-08-07 — RPO ≤1h, RTO ≤4h e requisitos de segurança/portabilidade |
-| D-108 | Como registrar protocolos internos, owners e prazos de risco? | patrocinador/clínica | Discovery/PRD | aprovada em 2026-08-07 — estado explícito por módulo e Ricardo como owner |
+| D-107 | Quais RPO/RTO e requisitos técnicos orientam a SPEC? | patrocinador/arquitetura | SPEC readiness | refinada pelo Anexo 0027 — RPO ≤1h, RTO ≤4h, segurança/portabilidade; sem seleção ou consulta de fornecedor |
+| D-108 | Como registrar protocolos internos, owners e prazos de risco? | patrocinador/clínica | Discovery/PRD | refinada pelo Anexo 0027 — protocolos são redigidos internamente a partir da literatura, versionados e revisados por Ricardo |
 | D-109 | O que da rastreabilidade bibliográfica pode aparecer ao participante? | patrocinador/produto/clínica | conteúdo/SPEC | aprovada em 2026-08-09 — nada de fonte, obra, autor, capítulo, página, PDF, foto, tabela, figura, trecho, link ou metadado bibliográfico na experiência, payload, exportação, analytics ou log acessível ao participante; manter somente no registro interno de construção, revisão e auditoria |
 
 ## 8. Próximas perguntas úteis

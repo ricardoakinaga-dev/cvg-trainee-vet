@@ -232,7 +232,7 @@ O registro interno do conteúdo deve manter, no mínimo:
 | `volume_section_part` | volume, seção ou parte |
 | `chapter_locator` | capítulo/seção consultados |
 | `pdf_page` | opcional, página do PDF local |
-| `protocol_id` | protocolo CVG, ou `NAO_FORNECIDO`/`NAO_APLICAVEL` |
+| `protocol_id` | protocolo CVG versionado, ou `NAO_APLICAVEL` |
 | `dynamic_topic` | sim/não; doses, RCP, transfusão etc. |
 | `scientific_cutoff` | data de corte da revisão |
 | `valid_until` | validade 6/12/24 meses conforme regra |
@@ -247,9 +247,9 @@ Esse registro é restrito à equipe autorizada. O aluno recebe somente o materia
 ## 8. Pendências antes da produção em escala
 
 - Aprovar clinicamente o blueprint B-07 antes de produzir os 120 itens diagnósticos.
-- Confirmar protocolos CVG para triagem, fluidos, RCP, transfusão, analgesia, antimicrobianos e encaminhamento; quando não existirem, registrar `NAO_FORNECIDO` em vez de inventar regra interna.
-- Selecionar e registrar as diretrizes atuais por módulo, começando por fluidoterapia, RECOVER, dor e transfusão na M02.
-- Executar o T2 controlado da M02 e usar tempo, clareza, avaliabilidade e correção para ajustar o formato.
+- Redigir internamente protocolos CVG autorais para triagem, fluidos, RCP, transfusão, analgesia, antimicrobianos e encaminhamento, usando a literatura consultada como base técnica e submetendo-os à revisão clínica de Ricardo.
+- Versionar esses protocolos junto do conteúdo; nenhuma consulta, contratação ou aprovação de fornecedor é necessária para concluir a documentação ou iniciar a implementação.
+- O T2 da M02 é uma atividade de melhoria opcional e não bloqueia a produção do programa interno.
 - Criar o template definitivo de autoria/revisão antes da onda seguinte; a SPEC deve traduzir esse registro para o modelo de dados, sem armazenar PDFs.
 - Fazer revisão visual de páginas críticas quando a extração textual estiver incompleta ou ambígua.
 

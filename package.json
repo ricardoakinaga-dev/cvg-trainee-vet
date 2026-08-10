@@ -1,0 +1,59 @@
+{
+  "name": "cvg-trainee-vet",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.22.0 <23",
+    "pnpm": ">=10.33.0 <11"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "format:check": "prettier --check 'AGENTS.md' 'apps/**/*.{ts,tsx,json,mjs,css}' 'packages/**/*.{ts,json,mjs}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.mjs' '.github/workflows/**/*.{yml,yaml}' '*.{json,yaml,yml,mjs,ts}'",
+    "lint": "eslint .",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:contract": "vitest run --project unit packages/contracts/src",
+    "test:worker": "vitest run --project unit apps/worker/src",
+    "test:integration:live": "node scripts/run-live-integration.mjs",
+    "test:integration:qdrant": "CVG_INCLUDE_LIVE_QDRANT=true pnpm test:integration:live",
+    "test:integration:extended": "CVG_INCLUDE_LIVE_RESTORE=true CVG_INCLUDE_LIVE_QDRANT=true node scripts/run-live-integration.mjs",
+    "test:integration:restore": "CVG_INCLUDE_LIVE_RESTORE=true CVG_ONLY_LIVE_RESTORE=true node scripts/run-live-integration.mjs",
+    "test:e2e": "node scripts/build-e2e.mjs && playwright test",
+    "test:coverage": "vitest run --coverage",
+    "reconcile:qdrant": "pnpm --filter @cvg/worker build && pnpm --dir apps/worker reconcile:qdrant",
+    "verify:ci-contract": "node scripts/verify-ci-contract.mjs",
+    "verify:secrets": "node scripts/verify-secrets.mjs",
+    "verify:traceability": "node scripts/verify-traceability.mjs",
+    "verify:architecture": "vitest run tests/integration/architecture-boundaries.test.ts",
+    "verify:documentation": "node scripts/verify-documentation.mjs",
+    "verify:migrations": "node scripts/verify-migrations.mjs",
+    "verify:product-definition": "node scripts/verify-product-definition.mjs",
+    "verify:exposure": "node scripts/verify-public-boundary.mjs",
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.55.1",
+    "@types/node": "22.20.1",
+    "@vitest/coverage-v8": "4.1.10",
+    "drizzle-kit": "0.31.10",
+    "drizzle-orm": "0.45.2",
+    "eslint": "9.39.5",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.66.0",
+    "vitest": "4.1.10"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0"
+    }
+  }
+}

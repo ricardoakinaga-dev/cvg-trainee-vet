@@ -1,0 +1,19 @@
+{
+  "name": "@cvg/integrations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@cvg/config": "workspace:*",
+    "@cvg/persistence": "workspace:*",
+    "@qdrant/js-client-rest": "1.19.0",
+    "openai": "5.23.2"
+  }
+}

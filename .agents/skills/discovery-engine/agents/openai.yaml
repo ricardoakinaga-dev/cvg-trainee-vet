@@ -1,0 +1,8 @@
+interface:
+  display_name: "CVG Discovery Engine"
+  short_description: "Estruturar problemas e hipóteses antes do produto"
+  default_prompt: "Use $discovery-engine para estruturar um Discovery CVG."
+  brand_color: "#2563EB"
+
+policy:
+  allow_implicit_invocation: true

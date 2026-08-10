@@ -1,0 +1,20 @@
+{
+  "name": "@cvg/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@cvg/application": "workspace:*",
+    "@cvg/config": "workspace:*",
+    "@cvg/contracts": "workspace:*",
+    "@cvg/domain": "workspace:*",
+    "@cvg/integrations": "workspace:*",
+    "@cvg/observability": "workspace:*",
+    "@cvg/persistence": "workspace:*"
+  }
+}

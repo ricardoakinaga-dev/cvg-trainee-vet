@@ -1,0 +1,18 @@
+{
+  "name": "@cvg/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/main.js",
+    "reconcile:qdrant": "CVG_WORKER_AUTOSTART=false node dist/reconcile-command.js"
+  },
+  "dependencies": {
+    "@cvg/config": "workspace:*",
+    "@cvg/integrations": "workspace:*",
+    "@cvg/observability": "workspace:*",
+    "@cvg/persistence": "workspace:*"
+  }
+}

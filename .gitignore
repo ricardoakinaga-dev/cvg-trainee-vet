@@ -1,24 +1,18 @@
-# Licensed and large reference sources
-/*.pdf
-
-# Local extraction and analysis artifacts
-*.tmp
-
-# Secrets and local credentials — never commit
+node_modules/
+dist/
+coverage/
+.turbo/
+.next/
 .env
 .env.*
 !.env.example
-!.env.*.example
-*.pem
-*.key
-*.p12
-*.pfx
-credentials.json
-secrets.json
-secrets.yaml
-secrets.yml
-
-# Editor and operating-system artifacts
+*.log
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.tsbuildinfo
+playwright-report/
+test-results/
 .DS_Store
-Thumbs.db
-*~

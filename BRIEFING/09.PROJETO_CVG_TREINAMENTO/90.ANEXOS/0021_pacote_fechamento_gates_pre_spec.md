@@ -22,8 +22,8 @@ Portanto, a correção proposta não é waiver. Ela aplica estritamente as engin
 2. B-07 não bloqueia a SPEC;
 3. o blueprint diagnóstico aprovado deve orientar a SPEC;
 4. produção, revisão e pré-voo dos 120 itens bloqueiam a aplicação da baseline;
-5. aplicação e consolidação da baseline bloqueiam personalização definitiva, metas calibradas e abertura do piloto completo;
-6. nenhuma dessas mudanças autoriza BUILD ou coleta real antes dos respectivos gates.
+5. a baseline e o diagnóstico podem ser aprimorados depois, mas não bloqueiam a construção ou o treinamento interno;
+6. a aplicação de participantes reais continua sujeita aos controles mínimos de privacidade e aprovação clínica, sem criar uma etapa de calibração obrigatória.
 
 ## 3. D-102 — Estados e diferença entre aprovado e concluído
 
@@ -86,7 +86,7 @@ Duas formas são consideradas equivalentes para uso operacional quando:
 
 Comparações quantitativas entre formas serão marcadas como exploratórias até haver amostra suficiente. Isso não impede a definição do requisito nem a SPEC.
 
-## 8. D-107 — Recuperação e critérios de fornecedor
+## 8. D-107 — Recuperação e baseline técnica
 
 Baseline técnica recomendada para a SPEC:
 
@@ -100,7 +100,7 @@ Baseline técnica recomendada para a SPEC:
 - custo previsível e ausência de uso dos dados do CVG para treinamento de modelos;
 - portabilidade suficiente para trocar fornecedor sem reescrever o domínio.
 
-Esses critérios orientam a SPEC; a escolha do fornecedor não pertence ao PRD.
+Esses critérios orientam a SPEC, mas não criam uma etapa de seleção ou consulta de fornecedor. O CVG adota a baseline técnica da SPEC e pode trocar o adaptador de infraestrutura sem alterar o domínio.
 
 ## 9. D-108 — Protocolos e riscos
 
@@ -108,9 +108,9 @@ Esses critérios orientam a SPEC; a escolha do fornecedor não pertence ao PRD.
 
 Nenhum protocolo interno foi fornecido ao repositório. O inventário inicial registra `NENHUM_PROTOCOLO_FORNECIDO_AO_PROJETO`. Antes da publicação de cada módulo, Ricardo deverá selecionar uma das opções:
 
-- protocolo CVG identificado, versionado e aplicável;
-- `NAO_APLICAVEL`;
-- `NAO_FORNECIDO` — nesse caso, nenhuma regra interna pode ser presumida e valem as fontes aprovadas na hierarquia D-086.
+- protocolo CVG autoral, redigido a partir da literatura consultada, versionado e aplicável;
+- `NAO_APLICAVEL` quando a unidade não depender de protocolo;
+- protocolo ausente vira tarefa interna de autoria/revisão, não dependência de fornecedor nem bloqueio da SPEC.
 
 ### Owners e prazos
 

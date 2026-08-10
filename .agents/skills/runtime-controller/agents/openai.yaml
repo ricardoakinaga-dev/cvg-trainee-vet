@@ -1,0 +1,8 @@
+interface:
+  display_name: "CVG Runtime Controller"
+  short_description: "Persistir estado, log, backlog e retomada"
+  default_prompt: "Use $runtime-controller para atualizar o estado e retomar a execução CVG."
+  brand_color: "#2563EB"
+
+policy:
+  allow_implicit_invocation: false

@@ -11,7 +11,7 @@ A literatura não sustenta um programa baseado somente em aulas, somente em caso
 
 1. resultados observáveis e progressão explícita;
 2. casos fictícios com revelação progressiva;
-3. pesquisa aberta para decisões de maior complexidade;
+3. estudo guiado em material autoral do CVG para decisões de maior complexidade;
 4. recuperação ativa e revisões espaçadas;
 5. combinação de questões objetivas, respostas curtas, dissertações e reflexão;
 6. múltiplas evidências ao longo do tempo, sem depender de uma única nota;
@@ -53,7 +53,7 @@ Uma revisão sistemática de 37 estudos não encontrou base suficiente para adot
 
 Aplicação no CVG:
 
-- pesquisa aberta nas sessões S2 e S3;
+- estudo guiado nas sessões S2 e S3, sem exigir pesquisa externa, citação ou indicação bibliográfica do participante;
 - perguntas pedem justificativa, comparação, plano ou interpretação;
 - quizzes curtos preservam recuperação de conhecimento essencial;
 - a equipe deve registrar internamente a base consultada; o participante não cita bibliografia nem recebe a referência;
@@ -137,7 +137,7 @@ Os temas dos livros foram usados apenas para mapeamento e síntese. Nenhum conte
 |---|---|---|
 | D-083 | governança clínica | Ricardo é o único aprovador clínico; segunda conferência veterinária deixa de ser obrigatória |
 | D-084 | duração e arquitetura | 24 meses, duas partes, 24 módulos e 96 sessões |
-| D-085 | modelo de aprendizagem | casos fictícios, pesquisa aberta, formatos mistos, feedback e revisão espaçada |
+| D-085 | modelo de aprendizagem | casos fictícios, estudo guiado autoral, formatos mistos, feedback e revisão espaçada |
 | D-086 | fontes | três obras como base; fontes regulatórias e diretrizes atuais prevalecem em conflito |
 
 ## 5. Riscos e mitigação

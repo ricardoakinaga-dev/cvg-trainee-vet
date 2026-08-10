@@ -1,0 +1,8 @@
+interface:
+  display_name: "CVG SPEC Engine"
+  short_description: "Transformar PRD aprovado em engenharia"
+  default_prompt: "Use $spec-engine para fechar a SPEC técnica do CVG."
+  brand_color: "#2563EB"
+
+policy:
+  allow_implicit_invocation: true

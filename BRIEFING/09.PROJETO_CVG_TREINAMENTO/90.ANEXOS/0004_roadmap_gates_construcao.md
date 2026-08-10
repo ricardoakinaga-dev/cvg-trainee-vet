@@ -143,7 +143,7 @@ Transformar produto aprovado em contrato técnico rastreável.
 - Segurança e LGPD;
 - Recuperação e disponibilidade.
 
-As fronteiras de produto e arquitetura foram aprovadas em D-091 a D-100; D-107 acrescenta RPO/RTO e critérios de fornecedor. A SPEC deverá detalhar essas decisões sem reabri-las sem evidência.
+As fronteiras de produto e arquitetura foram refinadas pela decisão atual do Anexo 0027. A SPEC detalha PostgreSQL, Qdrant, IA, API/SPA/worker, testes e operação sem criar uma etapa de seleção ou consulta de fornecedor.
 
 ## 5. Fase 3 — Build
 

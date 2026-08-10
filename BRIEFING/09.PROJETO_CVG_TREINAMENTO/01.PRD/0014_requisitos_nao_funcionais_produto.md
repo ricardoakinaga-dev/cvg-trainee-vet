@@ -3,7 +3,7 @@
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fase:** PRD — Definição de produto  
 **Data:** 2026-08-06
-**Regra:** requisitos de produto; o Anexo 0020 registra a baseline arquitetural aprovada, sem escolher fornecedor ou iniciar BUILD.
+**Regra:** requisitos de produto; os Anexos 0020/0027 e a SPEC registram a baseline técnica adotada, sem iniciar BUILD executável nesta fase.
 
 Legenda: `FATO INFORMADO` / `PROPOSTA` / `PENDENTE`.
 
@@ -111,7 +111,7 @@ O [Anexo 0011 — Política Mínima Interna de Dados](../90.ANEXOS/0011_politica
 | RNF-082 | O sistema não copia nem expõe PDFs, páginas, tabelas, figuras ou imagens das obras ao aluno | APROVADA PELO PATROCINADOR COMO INSUMO (D-075, 2026-08-05) |
 | RNF-083 | O sistema não permite ranking público | FATO INFORMADO |
 | RNF-084 | Decisões automatizadas com impacto relevante exigem transparência e revisão humana | PROPOSTA |
-| RNF-085 | OCR, indexação, embeddings, RAG e envio dos PDFs a serviços de IA permanecem fora do MVP; qualquer registro interno de fonte, obra, edição, capítulo, página, versão ou data existe somente para construção, revisão e auditoria e nunca é exposto ao participante por tela, API, payload, exportação, notificação, analytics ou log acessível a ele | REFINADA POR D-109 (2026-08-09), sobre D-097; D-033 permanece futura |
+| RNF-085 | PDFs, fotos, OCR, cópias protegidas e dados reais não entram nos serviços; Qdrant pode indexar apenas registros autorais internos autorizados, enquanto a IA recebe contexto redigido server-side. Fonte, obra, edição, capítulo, página, versão, prompt e saída interna nunca chegam ao participante por tela, API, payload, exportação, notificação, analytics ou log acessível a ele | REFINADA PELA DECISÃO ATUAL DO ANEXO 0027, sobre D-109 |
 | RNF-086 | O agente operacional de IA não é fonte de estado nem autoridade clínica; ações usam ferramentas limitadas, saída validada, teto de custo e confirmação humana nos limites definidos em D-100 | APROVADA PELO PATROCINADOR (D-100, 2026-08-06) |
 
 ## 10. Critérios de aceite gerais (PROPOSTA)

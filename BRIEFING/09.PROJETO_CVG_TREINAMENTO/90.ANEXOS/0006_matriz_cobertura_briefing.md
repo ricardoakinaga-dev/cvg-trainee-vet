@@ -103,7 +103,7 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 - Regras principais; ✅ fechadas tecnicamente, com D-102 a D-106 no checkpoint humano
 - Requisitos funcionais; ✅ fechados (como proposta)
 - Requisitos não funcionais; ✅ fechados (como proposta)
-- Metas definitivas; — calibração depende de baseline B-07, sem bloquear a SPEC
+- Metas definitivas; — metas operacionais e observação futura, sem calibração obrigatória ou bloqueio da construção
 - Critério final de aprovação; ✅ 70% geral + 80% em cada crítico por D-103 aprovada
 - Política de certificação; ✅ status de conclusão interno no piloto
 - Escopo do MVP; — áreas B-06 confirmadas e público de aproximadamente 10 veterinários fechado por D-079
@@ -111,7 +111,7 @@ Registrados como decisões pendentes, sem antecipar tecnologia:
 
 ## 4. Campos que só podem ser fechados na SPEC
 
-- Arquitetura detalhada e escolha de fornecedor; a direção proporcional foi aprovada em D-096;
+- Arquitetura detalhada e baseline técnica; a direção proporcional foi refinada em D-096 e no Anexo 0027, sem seleção de fornecedor;
 - Domínio;
 - Módulos técnicos;
 - Dados e persistência;

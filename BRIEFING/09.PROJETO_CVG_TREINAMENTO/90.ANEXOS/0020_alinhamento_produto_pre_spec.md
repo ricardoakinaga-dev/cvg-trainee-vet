@@ -65,14 +65,16 @@ Aplicação web em monólito modular
         │
         ├── autenticação gerenciada
         ├── PostgreSQL gerenciado
-        ├── armazenamento privado somente de ativos autorais permitidos do CVG
+        ├── PostgreSQL como fonte transacional
+        ├── Qdrant como índice semântico interno derivado
+        ├── IA server-side com adaptador e saída estruturada
         ├── tarefas agendadas simples
         └── logs, erros, alertas e backups
 ```
 
-Esta é uma inferência arquitetural proporcional à coorte de aproximadamente dez usuários. Microsserviços, Kafka, Redis, data warehouse, BI externo e banco vetorial dedicado adicionariam operação sem benefício demonstrado no MVP.
+Esta é uma inferência arquitetural proporcional à coorte de aproximadamente dez usuários. API, SPA/web e worker ficam separados no monorepo para atualização e operação; o domínio continua único para auditoria e correção. Microsserviços de domínio, Kafka, Redis, data warehouse e BI externo adicionariam operação sem benefício demonstrado no MVP. Qdrant é a exceção documentada para busca semântica interna.
 
-“Ativos CVG” significa somente material autoral permitido para a plataforma. PDFs-fonte, páginas, trechos extraídos, OCR, embeddings e cópias das obras permanecem fora do armazenamento da aplicação.
+“Ativos CVG” significa somente material autoral permitido para a plataforma. PDFs-fonte, páginas, trechos protegidos, OCR, fotos e cópias das obras permanecem fora dos serviços. Embeddings podem existir somente para registros autorais internos autorizados, com payload mínimo, acesso restrito e reconstrução a partir do PostgreSQL.
 
 ### 3.1 Fronteiras do monólito
 
@@ -261,49 +263,27 @@ O MVP registra logs estruturados com `request_id`, rota lógica, resultado, lat�
 
 Session replay, gravação de tela e analytics comportamental invasivo ficam fora do MVP. Métricas de produto usam somente eventos necessários para progresso, operação e feedback.
 
-## 11. Decisão recomendada sobre RAG
+## 11. Busca semântica interna e agente de IA
 
-**Não construir RAG no MVP.** A equipe de conteúdo usa consulta manual interna para construir materiais autorais; o participante trabalha somente com o conteúdo autorizado do CVG. Uma resposta pronta da IA poderia reduzir o objetivo pedagógico e qualquer corpus bibliográfico aumentaria o risco de exposição e reprodução. Além disso, D-033 mantém OCR, embeddings e processamento automatizado dos PDFs fora do MVP.
+Qdrant e IA entram como integrações de construção/revisão, não como funcionalidades de exposição ao participante. A equipe redige protocolos CVG a partir da literatura consultada; o sistema pode recuperar registros autorais internos e produzir rascunhos auxiliares, mas não envia PDFs, fotos, cópias protegidas ou catálogo bibliográfico bruto a serviço externo.
 
-Preparar apenas a pista de evolução:
+A recomendação é usar IA como **assistente de autoria/operação**, nunca como banco de dados, relógio, calculadora de nota ou autoridade clínica. Agenda, estados, permissões, prazos, cálculo de progresso e transições permanecem determinísticos. O modelo configurado em `AI_MODEL` deve usar saída estruturada, limites explícitos e revisão humana antes de qualquer publicação.
 
-- registro de obra, edição, capítulo/seção, versão e data de corte;
-- vínculo entre conteúdo CVG e fontes consultadas;
-- conteúdo autoral do CVG estruturado e versionado;
-- nenhum PDF, trecho extraído ou embedding na aplicação inicial.
-
-Se D-033 for aberta no futuro, o primeiro RAG será restrito a autor/revisor, com citações obrigatórias, filtro por versão, recusa quando não houver evidência, corpus aprovado, avaliação humana e testes de recuperação. PostgreSQL com extensão vetorial ou File Search gerenciado serão comparados somente nessa fase.
-
-## 12. Agente de IA para apoiar a operação
-
-A recomendação é usar IA como **assistente operacional**, nunca como banco de dados, relógio, calculadora de nota ou autoridade clínica. Agenda, estados, permissões, prazos, cálculo de progresso e transições do workflow permanecem determinísticos no sistema. A IA pode resumir filas, sugerir prioridade, preparar mensagens internas, investigar erros e recomendar a próxima ação, sempre por ferramentas com escopo limitado e saída validada.
-
-### 12.1 Roteamento recomendado de modelo
-
-| Trabalho | Rota inicial | Regra |
-|---|---|---|
-| resumo de fila, categorização e texto operacional | `gpt-5.6-luna`, esforço `medium` | menor custo/latência; saída estruturada e revisável |
-| investigação difícil, planejamento ou ambiguidade relevante | `gpt-5.6-luna`, esforço `high` | usar somente quando o caso justificar mais raciocínio |
-| tarefa excepcional que falha nos testes com Luna | `gpt-5.6-terra`, esforço calibrado | escalar por evidência, não por padrão |
-| publicação clínica, alteração de nota/permissão ou ação externa | nenhuma decisão autônoma | exige regra determinística e/ou aprovação humana aplicável |
-
-A documentação oficial posiciona `gpt-5.6-luna` para cargas eficientes e de alto volume, `gpt-5.6-terra` como equilíbrio entre desempenho e custo e recomenda calibrar o esforço com avaliações representativas. Fonte: [OpenAI — Using GPT-5.6](https://developers.openai.com/api/docs/guides/latest-model).
-
-### 12.2 Controles mínimos
+### 11.1 Controles mínimos
 
 1. permitir somente ferramentas necessárias à tarefa e negar o restante;
 2. validar entrada, saída e permissão antes de executar qualquer ação;
 3. registrar modelo, esforço, versão do prompt, ferramentas e desfecho, sem senha, token ou resposta clínica livre;
 4. impor limites de custo, chamadas, tempo e tentativas por execução;
 5. exigir confirmação humana para publicar conteúdo clínico, alterar nota/gabarito/permissão, retirar conteúdo por risco ou enviar comunicação externa;
-6. medir sucesso, custo, latência, erros e taxa de escalonamento em um conjunto de tarefas reais antes de promover configuração;
+6. medir sucesso, custo, latência, erros e taxa de fallback em tarefas sintéticas e internas antes de promover configuração;
 7. permitir desligar o agente sem interromper login, treinamento, avaliações ou dashboards.
 8. tratar mensagem de usuário, ticket, conteúdo educacional e retorno de ferramenta como dados não confiáveis, nunca como nova instrução de sistema; tentativas de prompt injection são recusadas e registradas;
 9. propagar a identidade, o papel e o escopo do solicitante em cada ferramenta; o agente não usa conta superadministradora compartilhada nem amplia a permissão do usuário;
 10. enviar ao modelo somente os campos mínimos necessários, preferindo agregados e identificadores internos a texto livre ou dados pessoais;
 11. registrar toda aprovação humana com aprovador, ação exata, parâmetros, horário e resultado; aprovação genérica não autoriza ações posteriores diferentes.
 
-O ponto de partida econômico é Luna `medium`, com Luna `high` acionada para exceções complexas. Se Ricardo preferir simplicidade operacional acima da economia máxima, Luna `high` pode ser o perfil único do piloto, desde que o teto de custo seja configurado e medido.
+O ponto de partida é o modelo definido em configuração e lockfile do BUILD, com limite de custo/latência registrado. A troca de modelo é uma alteração de adaptador/versão, não uma decisão de produto nem uma etapa de consulta a fornecedor.
 
 ## 13. Decisões antes da SPEC
 
@@ -315,11 +295,11 @@ O ponto de partida econômico é Luna `medium`, com Luna `high` acionada para ex
 | D-093 | dashboards | painel individual em tempo quase real e painel administrativo/moderação por escopo | aprovada integralmente em 2026-08-06 |
 | D-094 | feedback | formulário sem anexo, prevenção/remoção de dado proibido, triagem e contestação separada | aprovada integralmente em 2026-08-06 |
 | D-095 | KPIs do MVP | conjunto e dicionário da seção 8, sem ranking ou BI externo | aprovada integralmente em 2026-08-06 |
-| D-096 | arquitetura | monólito modular web + autenticação e PostgreSQL gerenciados | aprovada integralmente em 2026-08-06 |
-| D-097 | RAG | fora do MVP; preparar metadados e reavaliar após D-033 | aprovada integralmente em 2026-08-06 |
+| D-096 | arquitetura | monorepo modular com web/SPA, API, worker e PostgreSQL | refinada pela SPEC e pela decisão do Anexo 0027 |
+| D-097 | busca semântica/IA | Qdrant e IA internos, assistivos, server-side e sem exposição autoral | refinada pela decisão do Anexo 0027 |
 | D-098 | observabilidade e recuperação | logs estruturados, captura de erros, alertas, backups e teste de restauração | aprovada integralmente em 2026-08-06 |
 | D-099 | acessibilidade | WCAG 2.2 AA em login, formulários, treinamento e dashboards | aprovada integralmente em 2026-08-06 |
-| D-100 | agente operacional de IA | controle determinístico + Luna adaptativa, ferramentas escopadas, proteção contra injection e aprovação auditada | aprovada integralmente em 2026-08-06 |
+| D-100 | agente operacional de IA | adaptador configurável, saída estruturada, ferramentas escopadas, proteção contra injection e aprovação auditada | refinada pela decisão do Anexo 0027 |
 
 ## 14. Definition of Ready da SPEC
 
@@ -330,11 +310,11 @@ A SPEC somente poderá começar quando:
 - [x] telas e cartões mínimos aceitos;
 - [x] fluxo de feedback e dados mínimos aceitos;
 - [x] catálogo de KPIs aceito;
-- [x] fronteira de RAG confirmada;
+- [x] fronteira de Qdrant/IA interna confirmada;
 - [x] papel, autonomia, roteamento e teto de custo do agente de IA confirmados;
-- [x] critérios de escolha do fornecedor propostos em D-107;
+- [x] baseline de infraestrutura adotada sem gate de seleção/consulta de fornecedor;
 - [x] RPO/RTO propostos em D-107 e política de sessão aprovada em D-091;
-- [x] fronteira de B-07 corrigida tecnicamente em D-101: obrigatório antes da baseline/piloto, não antes da SPEC;
+- [x] fronteira de B-07 corrigida: melhoria paralela, sem bloquear SPEC, BUILD ou treinamento interno;
 - [x] D-101 a D-108 e gates Discovery/PRD aprovados humanamente sobre `f6fefa1` em 2026-08-07.
 
 A Definition of Ready pré-SPEC está integralmente cumprida. A Fase 0 da SPEC pode executar o readiness 0100; BUILD continua bloqueado.

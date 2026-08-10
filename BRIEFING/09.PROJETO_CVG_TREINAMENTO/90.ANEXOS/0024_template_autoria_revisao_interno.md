@@ -45,6 +45,13 @@ Preencher antes de redigir o item ou a unidade:
 | `prerequisites` | conhecimentos ou sessões necessários |
 | `remediation_target` | objetivo que será reforçado se houver erro |
 | `retention_window` | revisão equivalente em 30, 60 ou 90 dias, quando aplicável |
+| `hospital_behavior` | comportamento de rotina que o módulo pretende tornar observável |
+| `team_audience` | veterinário, enfermagem/técnico ou multiprofissional |
+| `team_behaviors` | comunicação fechada, handoff, monitoramento, apoio mútuo ou liderança |
+| `assessment_modes` | recuperação ativa, raciocínio em caso, simulação digital, debriefing e retenção |
+| `spaced_review_days` | padrão CVG: D+7, D+30 e D+90 |
+| `transfer_metric` | indicador agregado/manual do piloto, sem prontuário ou dado identificável |
+| `mastery_rule` | 70% geral, 80% em objetivo crítico e gate de comportamento crítico digital |
 
 Regras de desenho:
 
@@ -53,7 +60,9 @@ Regras de desenho:
 3. o enunciado deve separar fato, interpretação, incerteza e próxima ação;
 4. uma alternativa insegura não pode vencer por ambiguidade linguística;
 5. dose, concentração, infusão, transfusão, RCP ou critério regulatório exigem atualização contemporânea e protocolo identificado internamente;
-6. se a conduta depender de protocolo CVG não fornecido, registrar `NAO_FORNECIDO` e bloquear publicação até decisão de Ricardo.
+6. se a conduta depender de protocolo CVG ainda inexistente, o autor deve redigir um protocolo interno original a partir da literatura consultada; a publicação depende somente da revisão clínica e aprovação de Ricardo, sem consulta ou dependência de fornecedor externo.
+
+No MVP, as modalidades acima medem somente conhecimento, raciocínio, priorização e comunicação simulada. Observação de trabalho, prática presencial, avaliação psicomotora, nível de supervisão e autonomia são escopo futuro bloqueado pelo `GATE-EXP-PRAT-01`.
 
 ## 4. Registro interno de construção e fonte
 
@@ -69,12 +78,18 @@ Preencher somente no documento ou sistema interno de autoria/revisão:
 | `source_url` | somente para controle interno; nunca para a projeção do participante |
 | `source_hash` | hash local, quando necessário para integridade |
 | `consulted_at` | data da consulta |
-| `protocol_id` | protocolo CVG ou `NAO_FORNECIDO`/`NAO_APLICAVEL` |
+| `protocol_id` | protocolo CVG autoral/versionado ou `NAO_APLICAVEL` |
 | `dynamic_topic` | sim/não; indicar RCP, fluido, dose, transfusão, antimicrobiano ou regulação |
 | `scientific_cutoff` | data da última revisão clínica |
 | `valid_until` | validade de 6, 12 ou 24 meses, conforme criticidade |
 | `conflict_id` | conflito entre obras, diretriz, bula, legislação ou protocolo |
 | `conflict_decision` | decisão documentada de Ricardo, quando houver |
+| `content_status` | estado editorial vigente do item ou pack |
+| `clinical_review` | `PENDENTE`, `EM_REVISAO`, `APROVADO` ou estado equivalente definido pelo workflow |
+| `publication_authorized` | booleano interno; deve permanecer falso até aprovação de Ricardo |
+| `remediation_target_objective` | objetivo que recebe reforço quando houver erro crítico |
+| `retention_forms` | formas equivalentes previstas para D+7, D+30 e D+90 |
+| `technical_preflight` | resultado de contagem, campos, correção, projeção e bloqueio de publicação |
 
 A hierarquia interna é: legislação/bula aplicável, protocolo CVG aprovado, diretriz atual, fonte clínica atualizada e obras estáticas. A hierarquia orienta a construção; nunca aparece como bibliografia na experiência do participante.
 

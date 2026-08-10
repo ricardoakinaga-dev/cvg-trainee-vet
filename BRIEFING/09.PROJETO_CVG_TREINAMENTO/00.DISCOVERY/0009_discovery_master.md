@@ -213,7 +213,7 @@ Hipóteses para validação em [Anexo 0003](../90.ANEXOS/0003_hipoteses_avaliaco
 
 1. iniciar somente a readiness 0100 da SPEC, já autorizada;
 2. usar o blueprint B-07 como entrada da SPEC e concluí-lo antes do piloto completo;
-3. registrar protocolo interno, `NAO_APLICAVEL` ou `NAO_FORNECIDO` antes de publicar cada módulo;
+3. registrar protocolo CVG autoral versionado quando necessário, ou `NAO_APLICAVEL`, antes de publicar cada módulo;
 4. manter BUILD bloqueado até o gate 0190 da SPEC.
 
 ## 13. Resultado do Discovery

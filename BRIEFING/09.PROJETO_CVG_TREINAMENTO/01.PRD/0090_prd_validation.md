@@ -32,14 +32,14 @@ A correção não é waiver. D-101 preserva B-07 como gate pré-piloto, enquanto
 - afastamento, acessibilidade, conexão, desativação, retirada e contestação possuem regra por D-104;
 - o diagnóstico orienta reforço, não dispensa módulos e ocorre uma vez por D-105;
 - formas equivalentes possuem critérios verificáveis por D-106;
-- RPO de até uma hora, RTO de até quatro horas e critérios de fornecedor orientam a SPEC por D-107;
-- protocolo interno não fornecido nunca será presumido por D-108.
+- RPO de até uma hora, RTO de até quatro horas e requisitos técnicos orientam a SPEC por D-107, sem seleção ou consulta de fornecedor;
+- protocolo CVG necessário será redigido internamente a partir da literatura e revisado por Ricardo, conforme Anexo 0027.
 
 D-102 a D-108 estão aprovadas e integram a baseline do produto.
 
 ## 4. Fronteira de B-07
 
-O blueprint do Anexo 0012 é insumo suficiente para especificar entidades, estados, versões, formas e fluxos. Sua aprovação clínica, a produção, o pré-voo e a aplicação dos 120 itens permanecem obrigatórios antes da baseline e do piloto completo. A calibração posterior atualizará metas sem invalidar o PRD.
+O blueprint do Anexo 0012 é insumo suficiente para especificar entidades, estados, versões, formas e fluxos. Sua aprovação clínica, a produção, o pré-voo e a aplicação dos 120 itens são melhorias do diagnóstico e podem ocorrer em paralelo; não bloqueiam a construção nem o treinamento interno. Metas podem ser observadas e ajustadas operacionalmente, sem etapa obrigatória de calibração.
 
 ## 5. Decisão técnica
 
@@ -49,7 +49,7 @@ STATUS FORMAL: APROVADO POR MV. RICARDO AKINAGA EM 2026-08-07
 ORDEM CUMPRIDA: DISCOVERY PRIMEIRO; PRD EM SEGUIDA
 SPEC: READINESS AUTORIZADA
 BUILD: PROIBIDO ATÉ A APROVAÇÃO DA SPEC
-B-07: OBRIGATÓRIO ANTES DA BASELINE/PILOTO COMPLETO
+B-07: MELHORIA PARALELA; NÃO BLOQUEIA CONSTRUÇÃO OU TREINAMENTO INTERNO
 ```
 
 ## 6. Histórico preservado

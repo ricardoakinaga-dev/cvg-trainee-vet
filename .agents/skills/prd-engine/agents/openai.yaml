@@ -1,0 +1,8 @@
+interface:
+  display_name: "CVG PRD Engine"
+  short_description: "Transformar Discovery aprovado em PRD executável"
+  default_prompt: "Use $prd-engine para derivar o PRD CVG do Discovery aprovado."
+  brand_color: "#2563EB"
+
+policy:
+  allow_implicit_invocation: true

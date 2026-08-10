@@ -1,0 +1,8 @@
+interface:
+  display_name: "CVG BUILD Engine"
+  short_description: "Planejar e executar construção faseada"
+  default_prompt: "Use $build-engine para planejar o BUILD CVG com testes e gates."
+  brand_color: "#2563EB"
+
+policy:
+  allow_implicit_invocation: true

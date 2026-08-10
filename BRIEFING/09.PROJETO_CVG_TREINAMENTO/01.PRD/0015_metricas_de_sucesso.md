@@ -37,11 +37,11 @@
 | Progresso | unidades concluídas ÷ obrigatórias | atual | conforme prazo |
 | Nota diagnóstica | acertos ponderados ÷ itens | entrada | sem meta (baseline) |
 | Nota por competência | pontos obtidos ÷ possíveis | módulo | ≥ limiar aprovado |
-| Ganho absoluto | pós − pré | módulo | calibrar no piloto |
-| Ganho normalizado | (pós−pré) ÷ (100−pré) | módulo | calibrar |
+| Ganho absoluto | pós − pré | módulo | observar e ajustar se necessário |
+| Ganho normalizado | (pós−pré) ÷ (100−pré) | módulo | opcional, sem gate de construção |
 | Domínio tardio absoluto | pontos tardios ÷ possíveis | 30/60/90 dias | padrão a definir |
 | Retenção relativa | tardia ÷ pós (se domínio pós e equivalência) | 30/60/90 dias | baseline |
-| Consistência | variação entre avaliações equivalentes | longitudinal | calibrar |
+| Consistência | variação entre avaliações equivalentes | longitudinal | observar, sem etapa obrigatória |
 | Tempo até domínio | mediana entre início e aprovação | módulo/nível | baseline |
 
 Regras (anexo 0003 §10): retenção relativa nunca substitui limiar absoluto; dados faltantes e exclusões definidos por KPI; acomodações de acessibilidade registradas.

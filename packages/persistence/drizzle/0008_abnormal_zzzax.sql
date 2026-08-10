@@ -1,0 +1,1 @@
+ALTER TABLE "content_versions" ADD CONSTRAINT "content_versions_selection_mode_check" CHECK ("content_versions"."participant_selection_mode" is null or "content_versions"."participant_selection_mode" in ('SINGLE', 'MULTIPLE'));
