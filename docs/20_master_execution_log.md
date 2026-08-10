@@ -3221,3 +3221,29 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Configurar dependências externas quando houver ambiente autorizado, criar commit intencional e repetir a auditoria no SHA publicado.
+
+## 2026-08-10 — RUNTIME-DEPLOY-19: programa e dependências em execução
+
+### TIMESTAMP
+
+2026-08-10 12:07:23 -03:00
+
+### ACTION
+
+Iniciada a stack local HA do CVG Trainee Vet com PostgreSQL, Qdrant, migration, collector OTLP, `api-a/api-b`, `worker-a/worker-b`, Caddy, Prometheus e Grafana. A interface web foi reconstruída para o edge final `3180` e registrada no systemd user como `cvg-trainee-vet-web.service` em `3100`.
+
+### EVIDENCE
+
+- Web `:3100`: root 200 e proxy `/health/live` 200.
+- Edge `:3180`: `/health/live` e `/health/ready` 200.
+- HA: 100/100 HTTP 200 em operação normal; 100/100 com API-A parada; 100/100 após restauração; API-A saudável em 3s.
+- Observabilidade: Prometheus com API-A/API-B/collector `up`; Grafana health `ok`; Qdrant `all shards are ready`; collector debug exporter recebeu spans.
+- Migration exit 0, PostgreSQL saudável e ambos os workers saudáveis.
+
+### LIMITS
+
+Evidência é local e sintética. Não há domínio público/TLS, provedor de identidade externo ou armazenamento durável de traces. A tela inicial exige convite interno autorizado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP

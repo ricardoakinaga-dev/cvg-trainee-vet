@@ -548,3 +548,41 @@ Ricardo deve informar/aprovar o repositório GitHub e a publicação deste check
 ### STATUS
 
 WAITING_HUMAN_APPROVAL
+
+## 2026-08-10 — RUNTIME-DEPLOY-19: stack local HA iniciada e validada
+
+### TIMESTAMP
+
+2026-08-10 12:07:23 -03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 14 — deployment local operacional
+
+### TASK
+
+DEPLOY-19-01 / subir programa web e dependências, verificar acesso, telemetria e failover
+
+### ACTION
+
+Subida a composição `cvg-trainee-vet-ha` a partir de `infra/production/docker-compose.ha.yml`: PostgreSQL, migration, Qdrant, collector OTLP, duas APIs, dois workers, Caddy, Prometheus e Grafana. A interface Next.js foi reconstruída com o edge final e registrada em `cvg-trainee-vet-web.service` com Node 22, porta 3100 e restart automático. A porta externa do edge foi fixada em 3180 para não conflitar com a reserva histórica da porta 8080.
+
+### RESULT
+
+Stack final ativa: PostgreSQL saudável; migration exit 0; Qdrant pronto; API-A/API-B saudáveis; worker-A/worker-B saudáveis; edge ativo; Prometheus e Grafana ativos; web ativa. `http://127.0.0.1:3100/` retornou 200, o proxy web `/health/live` retornou 200 e o edge `http://127.0.0.1:3180/health/live`/`ready` retornou 200. Carga final: 100/100 HTTP 200 normal, 100/100 durante parada controlada de API-A e 100/100 após restauração; API-A voltou a `healthy` em 3 segundos. Prometheus reportou três targets `up`, Qdrant/Grafana passaram readiness/health e o collector registrou spans.
+
+### LIMITS
+
+É deployment local/LAN/Tailscale, sem domínio público, TLS, provedor externo de identidade ou backend durável de traces. A entrada do participante continua protegida por convite; não foi criado token de acesso sintético nem bypass de autenticação.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Usar um convite interno autorizado para entrar no programa; quando aplicável, configurar identidade externa, traces duráveis e deployment público/rollback.

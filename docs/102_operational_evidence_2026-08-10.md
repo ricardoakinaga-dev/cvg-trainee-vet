@@ -61,3 +61,11 @@ pnpm ops:load-smoke
 2. A retenção comprovada é a retenção de métricas do Prometheus. Retenção de traces e política de backup/restore de produção ainda exigem backend e runbook implantados.
 3. MFA e recuperação de conta estão implementados como adapter server-side e permanecem `NOT_CONFIGURED` sem um provedor de identidade configurado; não foram simulados como concluídos.
 4. Carga, failover e múltiplas réplicas foram comprovados em um ambiente local sintético, não em uma infraestrutura externa de produção.
+
+## Deployment local ativo após publicação do código
+
+Depois da prova descartável, a mesma topologia foi iniciada como Compose project `cvg-trainee-vet-ha` e permanece ativa com volumes nomeados. O edge externo foi movido para `:3180` porque `:8080` está reservado no inventário da máquina; a web Next.js está em `:3100` sob systemd user e reescreve `/health/*` e `/api/v1/*` para o edge.
+
+Na validação final, a web retornou 200, o proxy web retornou 200, o edge retornou live/ready 200, e a carga final entregou 100/100 HTTP 200 em operação normal, 100/100 durante parada controlada de API-A e 100/100 depois da restauração. Prometheus reportou três targets `up`; Grafana respondeu `database: ok`; Qdrant respondeu `all shards are ready`; e o collector registrou lotes de spans.
+
+Esta ativação continua sendo local/LAN/Tailscale: não é publicação hospitalar, não possui domínio/TLS, identidade externa nem backend durável de traces. A entrada do participante segue protegida por convite interno.

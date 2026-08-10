@@ -1569,6 +1569,38 @@ artifacts:
       ]
     commit: "UNCOMMITTED_WORKTREE"
     status: "implemented-verified-with-historical-schema-compatibility"
+  - id: "LOCAL-HA-DEPLOYMENT-023"
+    requirements: ["SPEC-0113", "SPEC-0118", "AUD-P1-005"]
+    documents:
+      [
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/102_operational_evidence_2026-08-10.md",
+        "docs/103_followup_program_status_2026-08-10.md",
+      ]
+    code:
+      [
+        "infra/production/docker-compose.ha.yml",
+        "infra/production/Caddyfile",
+        "apps/web/next.config.ts",
+      ]
+    tests:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "docker compose ps",
+        "HTTP live/readiness and 100-request normal/failover smoke",
+      ]
+    verification:
+      [
+        "systemctl --user is-active cvg-trainee-vet-web.service",
+        "Prometheus targets API-A/API-B/collector up",
+        "OTLP collector received spans",
+        "Qdrant readiness and Grafana health",
+      ]
+    commit: "PENDING_DEPLOYMENT_COMMIT"
+    status: "running-verified-local"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

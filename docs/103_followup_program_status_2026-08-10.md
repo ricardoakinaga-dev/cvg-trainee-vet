@@ -62,3 +62,7 @@ Na prova Docker descartável, o edge manteve 200/200 respostas 2xx com API-A ati
 4. O HA foi comprovado em Docker local sintético; não é prova de deployment hospitalar, RPO/RTO produtivo ou rollback externo.
 5. O conteúdo não declara competência prática e nenhum piloto real foi executado.
 6. O worktree contém mudanças não commitadas; não existe novo SHA de release para atribuir a esta rodada.
+
+## Runtime local ativo
+
+Após o commit publicado `d79a6d0eb225c72737c77d02c6b8785b10d27bb4`, a composição HA foi iniciada localmente e a web foi colocada sob `cvg-trainee-vet-web.service`. O acesso web está em `:3100` e o edge da API em `:3180`; a validação final passou com 100/100 respostas 200 antes, durante o failover de API-A e após a restauração. Isso comprova execução operacional local, não deployment público/hospitalar. A atualização de port binding e os registros desta execução aguardam o próximo commit intencional.
