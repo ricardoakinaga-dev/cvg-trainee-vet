@@ -28,4 +28,19 @@ describe("CI reproducibility contract", () => {
 
     expect(() => validateCiContract(withoutQdrant)).toThrow(/Qdrant service/i);
   });
+
+  it("activates pnpm before setup-node resolves the pnpm cache", async () => {
+    const contract = await readCiContract();
+    const setupNodeStep = contract.workflow.indexOf(
+      "      - name: Setup Node.js",
+    );
+    const enablePnpmStep = contract.workflow.indexOf(
+      "      - name: Enable pnpm",
+    );
+
+    expect(enablePnpmStep).toBeGreaterThanOrEqual(0);
+    expect(setupNodeStep).toBeGreaterThanOrEqual(0);
+    expect(enablePnpmStep).toBeLessThan(setupNodeStep);
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
 });

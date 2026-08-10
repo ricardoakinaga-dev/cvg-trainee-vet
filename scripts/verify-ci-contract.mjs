@@ -55,6 +55,10 @@ function invalid(message) {
 }
 
 export function validateCiContract(contract) {
+  const setupNodeStep = contract.workflow.indexOf(
+    "      - name: Setup Node.js",
+  );
+  const enablePnpmStep = contract.workflow.indexOf("      - name: Enable pnpm");
   const failures = [
     ...(contract.packageJson.packageManager !== `pnpm@${expectedPnpmVersion}`
       ? [`packageManager must be pnpm@${expectedPnpmVersion}`]
@@ -85,6 +89,11 @@ export function validateCiContract(contract) {
     ...requiredWorkflowChecks
       .filter(([, pattern]) => !pattern.test(contract.workflow))
       .map(([name]) => `workflow is missing ${name}`),
+    ...(enablePnpmStep < 0 || setupNodeStep < 0
+      ? ["workflow must define Setup Node.js and Enable pnpm steps"]
+      : enablePnpmStep > setupNodeStep
+        ? ["workflow must enable pnpm before Setup Node.js cache resolution"]
+        : []),
   ];
 
   if (failures.length > 0) throw invalid(failures.join("; "));
