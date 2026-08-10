@@ -1526,7 +1526,7 @@ artifacts:
         "git diff --check",
         "pnpm verify:traceability",
       ]
-    commit: "UNCOMMITTED_WORKTREE"
+    commit: "d79a6d0eb225c72737c77d02c6b8785b10d27bb4"
     status: "reconciled-working-tree"
   - id: "AUTOMATIC-PUBLICATION-PATH-022"
     requirements: ["SPEC-0105", "SPEC-0106", "AUD-C0-002", "AUD-P1-005"]
@@ -1567,7 +1567,7 @@ artifacts:
         "pnpm verify:clinical-sources",
         "git diff --check",
       ]
-    commit: "UNCOMMITTED_WORKTREE"
+    commit: "d79a6d0eb225c72737c77d02c6b8785b10d27bb4"
     status: "implemented-verified-with-historical-schema-compatibility"
   - id: "LOCAL-HA-DEPLOYMENT-023"
     requirements: ["SPEC-0113", "SPEC-0118", "AUD-P1-005"]
@@ -1599,7 +1599,7 @@ artifacts:
         "OTLP collector received spans",
         "Qdrant readiness and Grafana health",
       ]
-    commit: "PENDING_DEPLOYMENT_COMMIT"
+    commit: "738906eaff56e6df0742e8720f442ec6c13f2186"
     status: "running-verified-local"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."

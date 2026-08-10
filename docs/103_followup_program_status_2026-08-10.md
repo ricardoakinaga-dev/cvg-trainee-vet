@@ -2,7 +2,7 @@
 
 **Data:** 2026-08-10
 **Base de comparação:** [`100_full_program_audit_2026-08-10.md`](100_full_program_audit_2026-08-10.md), 73/100 no SHA histórico `fbbc692979c99a8e5dd359efd54675c35f61a314`
-**Estado avaliado:** worktree atual, ainda não commitado; após remoção literal do caminho executável de revisão clínica
+**Estado avaliado:** branch `agent/publish-production-hardening`, commit `738906eaff56e6df0742e8720f442ec6c13f2186`, com runtime HA local ativo após remoção literal do caminho executável de revisão clínica
 **Nota técnica de acompanhamento:** **87/100**
 
 Esta nota mede a mudança verificável desde a auditoria baseline. Não é declaração de liberação clínica, competência prática, deployment hospitalar ou perfeição. As notas anteriores permanecem históricas; esta rodada acrescenta código, testes e evidência operacional.
@@ -26,7 +26,7 @@ Esta nota mede a mudança verificável desde a auditoria baseline. Não é decla
 | 13 | Web, UX e acessibilidade | 4% | **88** | `/dashboard`, `/account` e `/admin` foram adicionados; build e E2E 12/12 passam, mas não houve user test nem E2E específico de cada nova tela contra provider real. |
 | 14 | Testes, qualidade e evidência | 6% | **91** | 378 testes passaram na execução de cobertura (17 skips condicionais), 84,95% statements, 80,03% branches, 86,17% functions e 85,66% lines; cobertura funcional de produção continua desigual. |
 | 15 | CI e reprodutibilidade | 5% | **95** | Build dos 12 workspaces, audit sem vulnerabilidades conhecidas, E2E 12/12, HA topology e smoke local passaram; rollback/deployment externo não foi exercitado. |
-| 16 | Rastreabilidade e controle de mudanças | 2% | **80** | `traceability.yml`, backlog, runtime state, log, source policy e ops evidence estão ligados; as alterações desta rodada permanecem não commitadas. |
+| 16 | Rastreabilidade e controle de mudanças | 2% | **82** | `traceability.yml`, backlog, runtime state, log, source policy e ops evidence estão ligados; o runtime local foi publicado no commit `738906eaff56e6df0742e8720f442ec6c13f2186`. |
 
 **Cálculo ponderado:** 87,12 → **87/100**.
 
@@ -61,8 +61,8 @@ Na prova Docker descartável, o edge manteve 200/200 respostas 2xx com API-A ati
 3. Traces são recebidos pelo collector, porém esta topologia não possui armazenamento durável de traces.
 4. O HA foi comprovado em Docker local sintético; não é prova de deployment hospitalar, RPO/RTO produtivo ou rollback externo.
 5. O conteúdo não declara competência prática e nenhum piloto real foi executado.
-6. O worktree contém mudanças não commitadas; não existe novo SHA de release para atribuir a esta rodada.
+6. A nota histórica de 87/100 foi calculada antes do commit; a execução local atual está atribuída ao SHA `738906eaff56e6df0742e8720f442ec6c13f2186`, sem transformar isso em deployment público/hospitalar.
 
 ## Runtime local ativo
 
-Após o commit publicado `d79a6d0eb225c72737c77d02c6b8785b10d27bb4`, a composição HA foi iniciada localmente e a web foi colocada sob `cvg-trainee-vet-web.service`. O acesso web está em `:3100` e o edge da API em `:3180`; a validação final passou com 100/100 respostas 200 antes, durante o failover de API-A e após a restauração. Isso comprova execução operacional local, não deployment público/hospitalar. A atualização de port binding e os registros desta execução aguardam o próximo commit intencional.
+Após os commits `d79a6d0eb225c72737c77d02c6b8785b10d27bb4` e `738906eaff56e6df0742e8720f442ec6c13f2186`, a composição HA foi iniciada localmente e a web foi colocada sob `cvg-trainee-vet-web.service`. O acesso web está em `:3100` e o edge da API em `:3180`; a validação final passou com 100/100 respostas 200 antes, durante o failover de API-A e após a restauração. Isso comprova execução operacional local, não deployment público/hospitalar.
