@@ -303,7 +303,7 @@ O item 15 — **CI, reprodutibilidade e prontidão de build** — inicia com bas
 - fase: BUILD — Phase 13 / SCORE-95-15
 - risco: alto — divergência entre local e CI pode esconder regressão antes do ambiente hospitalar
 - impacto: alto
-- status: `IN_PROGRESS`
+- status: `WAITING_HUMAN_APPROVAL`
 - critério de pronto: workflow remoto verde, artefatos redigidos, ambiente reproduzível e score >=95 no artifact do item 15
 - resultado atual: `0508_ci_reproducibility_audit.md` reavaliou o escopo local em 78/100; contrato, workflow, pins, serviços descartáveis, migrations, live, restore, build, audit, E2E e artefatos foram provados localmente; o baseline está congelado no commit `241a04ce4ba77245b46782d2f37732cf616b4baf`
 - gap crítico: não há `origin` nem repositório GitHub identificado; execução remota, SHA, duração, artefatos do Actions, cache observado, rollback e falhas de infraestrutura permanecem sem evidência

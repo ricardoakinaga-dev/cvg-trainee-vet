@@ -2927,3 +2927,45 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Ricardo deve informar/aprovar o repositório GitHub e a publicação do SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf`; depois executar o workflow remoto e registrar SHA remoto, duração, artefatos, falhas e limites.
+
+## 2026-08-10 — RESUME-CI-15-02: revalidação da dependência externa
+
+### TIMESTAMP
+
+2026-08-10 07:13:01 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — CI, reprodutibilidade e prontidão de build / item 15 do relatório 0491
+
+### SPRINT
+
+SCORE-95-15
+
+### TASK
+
+CI-15-01 / continuar após o checkpoint local
+
+### ACTION
+
+Relidos `AGENTS.md`, runtime state, log, backlog e artifacts do item 15. Revalidados `git status --short --branch`, histórico local, `git remote -v`, autenticação GitHub e a lista de repositórios da conta autenticada.
+
+### RESULT
+
+O worktree permanece limpo em `5684826`; o baseline de código continua em `241a04ce4ba77245b46782d2f37732cf616b4baf`; `git remote -v` continua sem saída; e não existe repositório `cvg-trainee-vet` na conta `ricardoakinaga-dev`. A execução remota, SHA remoto, duração, artifacts do Actions, cache, rollback e falhas de infraestrutura continuam sem evidência.
+
+### DECISIONS
+
+Harmonizado o roadmap 0492 para `WAITING_HUMAN_APPROVAL`. Não criar repositório, não apontar para outro projeto, não publicar e não abrir o item 16 sem aprovação objetiva do repositório/origin.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve informar/aprovar o repositório GitHub e a publicação do baseline local; somente então configurar `origin`, executar o workflow e registrar os artifacts redigidos.

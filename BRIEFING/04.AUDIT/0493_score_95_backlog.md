@@ -365,7 +365,7 @@
 - risco: alto — divergência entre local e CI pode esconder regressão antes do ambiente hospitalar
 - impacto: alto
 - status: `WAITING_HUMAN_APPROVAL`
-- resultado parcial: `0508_ci_reproducibility_audit.md` reavaliou o item em 78/100 no escopo local; pins, contrato de ambiente, PostgreSQL/Qdrant descartáveis, readiness, migrations, live estendido 23/32, restore, build, audit, E2E 12/12 + 14/14 e artefatos condicionais passaram; o baseline está congelado no commit local `241a04ce4ba77245b46782d2f37732cf616b4baf`
+- resultado parcial: `0508_ci_reproducibility_audit.md` reavaliou o item em 78/100 no escopo local; pins, contrato de ambiente, PostgreSQL/Qdrant descartáveis, readiness, migrations, live estendido 23/32, restore, build, audit, E2E 12/12 + 14/14 e artefatos condicionais passaram; o baseline está congelado no commit local `241a04ce4ba77245b46782d2f37732cf616b4baf`; a revalidação de 2026-08-10 confirmou `git remote -v` vazio e nenhum repositório `cvg-trainee-vet` na conta autenticada
 - gap: o checkout não possui `origin` nem repositório GitHub identificado; SHA remoto, duração, artefatos do Actions, cache observado, rollback e falhas de infraestrutura continuam sem evidência
 - critério de pronto: workflow remoto verde, artefatos redigidos, ambiente reproduzível e score >=95 no artifact do item 15
 - próxima ação: após aprovação de Ricardo, configurar o repositório/origin, publicar o SHA local `241a04ce4ba77245b46782d2f37732cf616b4baf`, executar o workflow remoto e registrar SHA, duração, artefatos, falhas e limites
