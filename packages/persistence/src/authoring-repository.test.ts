@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  authoringRowToRecord,
-  reviewRowToState,
-} from "./authoring-repository.js";
+import { authoringRowToRecord } from "./authoring-repository.js";
 
 const row = {
   editorialRecordId: "11111111-1111-4111-8111-111111111111",
@@ -15,7 +12,7 @@ const row = {
   sessionId: "M02-S1",
   objectiveId: "M02-OBJ-01",
   authorId: "55555555-5555-4555-8555-555555555555",
-  contentStatus: "EM_REVISAO_CLINICA",
+  contentStatus: "AUTOVERIFICADO",
   item: {
     title: "Item sintético",
     prompt: "Escolha a prioridade segura.",
@@ -29,7 +26,11 @@ const row = {
     critical: true,
     remediationTargetObjectiveId: "M02-OBJ-01",
     sourceRefs: [
-      { code: "F-02", locator: "localizador", updateRequired: true },
+      {
+        code: "BOOK_ETTINGER_9E",
+        locator: "capítulo 123, seção de ressuscitação",
+        updateRequired: false,
+      },
     ],
     participant: {
       id: "33333333-3333-4333-8333-333333333333",
@@ -48,8 +49,7 @@ const row = {
   preflight: {
     ruleVersion: "authoring-preflight-v1",
     technicalChecksPassed: true,
-    readyForClinicalReview: true,
-    readyForPublication: false,
+    readyForPublication: true,
     checks: {
       requiredFields: true,
       correctionMetadata: true,
@@ -67,43 +67,12 @@ describe("authoring persistence mapping", () => {
 
     expect(record).toMatchObject({
       contentId: row.contentId,
-      contentStatus: "EM_REVISAO_CLINICA",
+      contentStatus: "AUTOVERIFICADO",
       correctChoiceIds: ["a"],
       preflight: { technicalChecksPassed: true },
     });
     expect(record.participant).not.toHaveProperty("correctChoiceIds");
     expect(record.participant).not.toHaveProperty("sourceRefs");
-  });
-
-  it("maps and validates the latest clinical review decision", () => {
-    const reviewedAt = new Date("2026-08-10T05:00:00.000Z");
-    const review = reviewRowToState({
-      reviewerId: "66666666-6666-4666-8666-666666666666",
-      decision: "APROVAR_CLINICAMENTE",
-      rationale: "Revisão sintética concluída.",
-      reviewedAt,
-      correlationId: "77777777-7777-4777-8777-777777777777",
-    });
-
-    expect(authoringRowToRecord(row, review).latestReview).toEqual(review);
-    expect(() =>
-      reviewRowToState({
-        reviewerId: "66666666-6666-4666-8666-666666666666",
-        decision: "INVALIDO",
-        rationale: "Revisão inválida.",
-        reviewedAt,
-        correlationId: "77777777-7777-4777-8777-777777777777",
-      }),
-    ).toThrow();
-    expect(() =>
-      reviewRowToState({
-        reviewerId: "66666666-6666-4666-8666-666666666666",
-        decision: "SOLICITAR_AJUSTES",
-        rationale: "Data inválida.",
-        reviewedAt: new Date("invalid"),
-        correlationId: "77777777-7777-4777-8777-777777777777",
-      }),
-    ).toThrow();
   });
 
   it("rejects malformed internal source and preflight data", () => {

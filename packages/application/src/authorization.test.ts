@@ -52,25 +52,20 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
-  it("allows clinical approval only to Ricardo's configured approved identity", () => {
+  it("allows automatic publication to scoped authors without a clinical gate", () => {
     const request = participant({
-      principalId: "ricardo-account",
-      roles: ["CLINICAL_APPROVER"],
-      capability: "APPROVE_CLINICAL_CONTENT",
+      principalId: "author-account",
+      roles: ["AUTHOR"],
+      capability: "PUBLISH_CONTENT",
       resource: { scopeId: "curriculum-1" },
       scopes: ["curriculum-1"],
-      approvedClinicalApproverId: "ricardo-account",
     });
 
     expect(canAccess(request)).toBe(true);
-    expect(canAccess({ ...request, principalId: "another-approver" })).toBe(
-      false,
-    );
     expect(
       canAccess({
         ...request,
-        roles: ["ADMIN"],
-        principalId: "admin-1",
+        scopes: [],
       }),
     ).toBe(false);
   });

@@ -1,20 +1,21 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  authoringReviewRequestSchema,
+  authoringPublicationRequestSchema,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
 
 describe("internal authoring contracts", () => {
-  it("accepts a scoped review request and an internal authoring projection", () => {
+  it("accepts automatic publication and an internal authoring projection", () => {
     expect(
-      authoringReviewRequestSchema.parse({
+      authoringPublicationRequestSchema.parse({
         version: 1,
         scopeId: "11111111-1111-4111-8111-111111111111",
-        decision: "APROVAR_CLINICAMENTE",
-        rationale: "Revisão sintética concluída.",
       }),
-    ).toMatchObject({ decision: "APROVAR_CLINICAMENTE" });
+    ).toEqual({
+      version: 1,
+      scopeId: "11111111-1111-4111-8111-111111111111",
+    });
 
     expect(
       parseInternalAuthoringRecordProjection({
@@ -25,7 +26,7 @@ describe("internal authoring contracts", () => {
         sessionId: "M02-S1",
         objectiveId: "M02-OBJ-01",
         authorId: "33333333-3333-4333-8333-333333333333",
-        contentStatus: "EM_REVISAO_CLINICA",
+        contentStatus: "AUTOVERIFICADO",
         item: {
           title: "Item",
           prompt: "Prompt fictício",
@@ -39,7 +40,11 @@ describe("internal authoring contracts", () => {
           critical: true,
           remediationTargetObjectiveId: "M02-OBJ-01",
           sourceRefs: [
-            { code: "F-02", locator: "interno", updateRequired: true },
+            {
+              code: "BOOK_ETTINGER_9E",
+              locator: "capítulo 123, seção de ressuscitação",
+              updateRequired: false,
+            },
           ],
           participant: {
             id: "22222222-2222-4222-8222-222222222222",
@@ -58,8 +63,7 @@ describe("internal authoring contracts", () => {
         preflight: {
           ruleVersion: "authoring-preflight-v1",
           technicalChecksPassed: true,
-          readyForClinicalReview: true,
-          readyForPublication: false,
+          readyForPublication: true,
           checks: {
             requiredFields: true,
             correctionMetadata: true,
@@ -75,11 +79,9 @@ describe("internal authoring contracts", () => {
 
   it("rejects participant-shaped payloads at the internal authoring boundary", () => {
     expect(() =>
-      authoringReviewRequestSchema.parse({
+      authoringPublicationRequestSchema.parse({
         version: 1,
         scopeId: "11111111-1111-4111-8111-111111111111",
-        decision: "APROVAR_CLINICAMENTE",
-        rationale: "ok",
         correctChoiceIds: ["a"],
       }),
     ).toThrow();

@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export type SafeFieldValue = string | number | boolean | null;
@@ -63,6 +65,53 @@ export type MetricsPort = Readonly<{
   ) => void;
   readonly snapshot: () => MetricsSnapshot;
   readonly prometheus: () => string;
+  readonly quantile: (
+    name: string,
+    quantile: number,
+    labels?: MetricLabels,
+  ) => number | null;
+}>;
+
+export type TraceSpan = Readonly<{
+  readonly traceId: string;
+  readonly spanId: string;
+  readonly parentSpanId?: string;
+  readonly service: string;
+  readonly name: string;
+  readonly startedAt: string;
+  readonly endedAt: string;
+  readonly durationMs: number;
+  readonly status: "ok" | "error";
+  readonly attributes: Readonly<{
+    readonly method?: string;
+    readonly route?: string;
+    readonly status?: number;
+    readonly outcome?: string;
+  }>;
+}>;
+
+export type TraceSpanInput = Readonly<{
+  readonly traceId?: string;
+  readonly parentSpanId?: string;
+  readonly name: string;
+  readonly startedAt: Date;
+  readonly endedAt: Date;
+  readonly status: "ok" | "error";
+  readonly attributes?: Readonly<{
+    readonly method?: string;
+    readonly route?: string;
+    readonly status?: number;
+    readonly outcome?: string;
+  }>;
+}>;
+
+export type TraceSink = (span: TraceSpan) => void;
+
+type TraceFetch = (input: string, init?: RequestInit) => Promise<Response>;
+
+export type TracesPort = Readonly<{
+  readonly record: (span: TraceSpanInput) => void;
+  readonly snapshot: () => readonly TraceSpan[];
 }>;
 
 export type ObservabilityOptions = Readonly<{
@@ -70,11 +119,13 @@ export type ObservabilityOptions = Readonly<{
   readonly clock?: () => Date;
   readonly sink?: LogSink;
   readonly minimumLevel?: LogLevel;
+  readonly traceSink?: TraceSink;
 }>;
 
 export type Observability = Readonly<{
   readonly logger: Logger;
   readonly metrics: MetricsPort;
+  readonly traces: TracesPort;
 }>;
 
 const MAX_STRING_LENGTH = 160;
@@ -140,6 +191,29 @@ function safeIdentifier(value: unknown): string | undefined {
     return undefined;
   }
   return normalized;
+}
+
+function safeTraceRoute(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const route = boundedString(value, MAX_IDENTIFIER_LENGTH);
+  return /^\/[a-zA-Z0-9_/:.-]+$/u.test(route) ? route : undefined;
+}
+
+function safeTraceIdentifier(
+  value: unknown,
+  length: 16 | 32,
+): string | undefined {
+  if (
+    typeof value !== "string" ||
+    !new RegExp(`^[a-f0-9]{${length}}$`, "u").test(value)
+  ) {
+    return undefined;
+  }
+  return value;
+}
+
+function randomTraceIdentifier(bytes: 8 | 16): string {
+  return randomBytes(bytes).toString("hex");
 }
 
 export function sanitizeCorrelationId(value: unknown): string | undefined {
@@ -354,6 +428,11 @@ function createMetrics(): MetricsPort {
 
   let counters: readonly Counter[] = [];
   let histograms: readonly Histogram[] = [];
+  let observations: readonly Readonly<{
+    readonly name: string;
+    readonly value: number;
+    readonly labels: MetricLabels;
+  }>[] = [];
 
   function increment(
     name: string,
@@ -390,6 +469,10 @@ function createMetrics(): MetricsPort {
     if (!Number.isFinite(value) || value < 0) return;
     const safeName = safeMetricName(name);
     const safeLabels = sanitizeLabels(labels);
+    observations = [
+      ...observations,
+      Object.freeze({ name: safeName, value, labels: safeLabels }),
+    ].slice(-10_000);
     const key = labelsKey(safeLabels);
     const index = histograms.findIndex(
       (histogram) =>
@@ -436,12 +519,184 @@ function createMetrics(): MetricsPort {
       ),
     });
 
+  const quantile = (
+    name: string,
+    quantileValue: number,
+    labels?: MetricLabels,
+  ): number | null => {
+    if (
+      !Number.isFinite(quantileValue) ||
+      quantileValue < 0 ||
+      quantileValue > 1
+    ) {
+      return null;
+    }
+    const safeName = safeMetricName(name);
+    const safeLabels =
+      labels === undefined ? undefined : sanitizeLabels(labels);
+    const values = observations
+      .filter(
+        (observation) =>
+          observation.name === safeName &&
+          (safeLabels === undefined ||
+            labelsKey(observation.labels) === labelsKey(safeLabels)),
+      )
+      .map((observation) => observation.value)
+      .sort((left, right) => left - right);
+    if (values.length === 0) return null;
+    const index = Math.min(
+      values.length - 1,
+      Math.max(0, Math.ceil(quantileValue * values.length) - 1),
+    );
+    return values[index] ?? null;
+  };
+
   return Object.freeze({
     increment,
     observe,
     snapshot,
     prometheus: () => renderPrometheusMetrics(snapshot()),
+    quantile,
   });
+}
+
+function createTraces(options: ObservabilityOptions): TracesPort {
+  let spans: readonly TraceSpan[] = [];
+  const service = safeService(options.service);
+
+  const record = (input: TraceSpanInput): void => {
+    const parentSpanId = safeTraceIdentifier(input.parentSpanId, 16);
+    const traceId = safeTraceIdentifier(input.traceId, 32);
+    const route = safeTraceRoute(input.attributes?.route);
+    const durationMs = Math.max(
+      0,
+      Math.min(
+        MAX_DURATION_MS,
+        input.endedAt.getTime() - input.startedAt.getTime(),
+      ),
+    );
+    const span: TraceSpan = Object.freeze({
+      traceId: traceId ?? randomTraceIdentifier(16),
+      spanId: randomTraceIdentifier(8),
+      ...(parentSpanId === undefined ? {} : { parentSpanId }),
+      service,
+      name: safeEvent(input.name),
+      startedAt: input.startedAt.toISOString(),
+      endedAt: input.endedAt.toISOString(),
+      durationMs,
+      status: input.status,
+      attributes: Object.freeze({
+        ...(input.attributes?.method === undefined
+          ? {}
+          : { method: boundedString(input.attributes.method, 16) }),
+        ...(input.attributes?.route === undefined
+          ? {}
+          : route === undefined
+            ? {}
+            : { route }),
+        ...(input.attributes?.status === undefined
+          ? {}
+          : { status: Math.max(100, Math.min(599, input.attributes.status)) }),
+        ...(input.attributes?.outcome === undefined
+          ? {}
+          : { outcome: safeEvent(input.attributes.outcome) }),
+      }),
+    });
+    spans = [...spans, span].slice(-10_000);
+    options.traceSink?.(span);
+  };
+
+  return Object.freeze({
+    record,
+    snapshot: () =>
+      Object.freeze(spans.map((span) => Object.freeze({ ...span }))),
+  });
+}
+
+function traceTimestampNanoseconds(value: string): string {
+  return (BigInt(Date.parse(value)) * 1_000_000n).toString();
+}
+
+function otlpAttribute(
+  key: string,
+  value: string | number,
+): Readonly<{
+  readonly key: string;
+  readonly value: Readonly<Record<string, string>>;
+}> {
+  return Object.freeze({
+    key,
+    value:
+      typeof value === "number"
+        ? Object.freeze({ intValue: String(value) })
+        : Object.freeze({ stringValue: value }),
+  });
+}
+
+export function createOtlpHttpTraceSink(
+  endpoint: string,
+  fetchImpl: TraceFetch = globalThis.fetch,
+): TraceSink {
+  const normalizedEndpoint = endpoint.replace(/\/$/u, "");
+  const target = normalizedEndpoint.endsWith("/v1/traces")
+    ? normalizedEndpoint
+    : `${normalizedEndpoint}/v1/traces`;
+  return (span: TraceSpan): void => {
+    const attributes = [
+      ...(span.attributes.method === undefined
+        ? []
+        : [otlpAttribute("http.method", span.attributes.method)]),
+      ...(span.attributes.route === undefined
+        ? []
+        : [otlpAttribute("http.route", span.attributes.route)]),
+      ...(span.attributes.status === undefined
+        ? []
+        : [otlpAttribute("http.status_code", span.attributes.status)]),
+      ...(span.attributes.outcome === undefined
+        ? []
+        : [otlpAttribute("cvg.outcome", span.attributes.outcome)]),
+    ];
+    const otlpSpan = {
+      traceId: span.traceId,
+      spanId: span.spanId,
+      ...(span.parentSpanId === undefined
+        ? {}
+        : { parentSpanId: span.parentSpanId }),
+      name: span.name,
+      kind: 2,
+      startTimeUnixNano: traceTimestampNanoseconds(span.startedAt),
+      endTimeUnixNano: traceTimestampNanoseconds(span.endedAt),
+      attributes,
+      status: { code: span.status === "ok" ? 1 : 2 },
+    };
+    const body = JSON.stringify({
+      resourceSpans: [
+        {
+          resource: {
+            attributes: [otlpAttribute("service.name", span.service)],
+          },
+          scopeSpans: [
+            {
+              scope: { name: "cvg.observability" },
+              spans: [otlpSpan],
+            },
+          ],
+        },
+      ],
+    });
+    void fetchImpl(target, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("OTLP trace export failed");
+      })
+      .catch(() => undefined);
+  };
 }
 
 export function createObservability(
@@ -450,5 +705,6 @@ export function createObservability(
   return Object.freeze({
     logger: createLogger(options),
     metrics: createMetrics(),
+    traces: createTraces(options),
   });
 }

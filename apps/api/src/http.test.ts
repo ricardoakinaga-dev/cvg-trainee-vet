@@ -109,7 +109,13 @@ const authoringRecord: AuthoringRecord = {
   feedback: "Defina uma meta.",
   critical: true,
   remediationTargetObjectiveId: "M02-OBJ-01",
-  sourceRefs: [{ code: "F-02", locator: "interno", updateRequired: true }],
+  sourceRefs: [
+    {
+      code: "BOOK_ETTINGER_9E",
+      locator: "capítulo 123, seção de ressuscitação",
+      updateRequired: false,
+    },
+  ],
   participant: {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     ordinal: 1,
@@ -123,12 +129,11 @@ const authoringRecord: AuthoringRecord = {
     ],
     selectionMode: "SINGLE",
   },
-  contentStatus: "EM_REVISAO_CLINICA",
+  contentStatus: "AUTOVERIFICADO",
   preflight: {
     ruleVersion: "authoring-preflight-v1",
     technicalChecksPassed: true,
-    readyForClinicalReview: true,
-    readyForPublication: false,
+    readyForPublication: true,
     checks: {
       requiredFields: true,
       correctionMetadata: true,
@@ -290,6 +295,22 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(metrics)).toContain("api_requests_total");
     expect(JSON.stringify(metrics)).not.toContain("participant");
 
+    const scrapeToken = "s".repeat(32);
+    const scraped = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/internal/metrics",
+        body: undefined,
+        headers: { authorization: `Bearer ${scrapeToken}` },
+      },
+      dependencies({
+        observability,
+        metricsScrapeToken: scrapeToken,
+        authenticate: async () => null,
+      }),
+    );
+    expect(scraped.status).toBe(200);
+
     const denied = await handleApiRequest(
       { method: "GET", path: "/internal/metrics", body: undefined },
       dependencies(),
@@ -337,20 +358,7 @@ describe("API HTTP boundary", () => {
     expect(getInternalAuthoringRecord).toHaveBeenCalledTimes(2);
   });
 
-  it("accepts a scoped clinical review without exposing it to the participant route", async () => {
-    const reviewAuthoringContent = vi.fn(async () => ({
-      record: {
-        ...authoringRecord,
-        contentStatus: "APROVADO_CLINICAMENTE" as const,
-      },
-      review: {
-        reviewerId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
-        decision: "APROVAR_CLINICAMENTE" as const,
-        rationale: "Revisão sintética.",
-        reviewedAt: "2026-08-10T05:00:00.000Z",
-        correlationId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
-      },
-    }));
+  it("does not expose a human clinical review route", async () => {
     const response = await handleApiRequest(
       {
         method: "POST",
@@ -363,26 +371,66 @@ describe("API HTTP boundary", () => {
         },
       },
       dependencies({
-        approvedClinicalApproverId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         authenticate: async () => ({
           principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
           accountStatus: "ACTIVE",
           roles: ["CLINICAL_APPROVER"],
           scopes: [authoringRecord.scopeId],
         }),
-        reviewAuthoringContent,
+      }),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("publishes authoring content through automatic source verification", async () => {
+    const publishAuthoringContent = vi.fn(async () => ({
+      record: {
+        ...authoringRecord,
+        contentStatus: "PUBLICADO" as const,
+        preflight: {
+          ...authoringRecord.preflight,
+          sourceVerification: "VERIFICADO_AUTOMATICAMENTE" as const,
+          readyForPublication: true,
+          checks: {
+            ...authoringRecord.preflight.checks,
+            publicationBlocked: false,
+          },
+        },
+      },
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/content/${authoringRecord.contentId}/publish`,
+        body: { version: 1, scopeId: authoringRecord.scopeId },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [authoringRecord.scopeId],
+        }),
+        publishAuthoringContent,
       }),
     );
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      data: { contentStatus: "APROVADO_CLINICAMENTE" },
+      data: {
+        contentStatus: "PUBLICADO",
+        preflight: {
+          sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
+          readyForPublication: true,
+        },
+      },
     });
-    expect(reviewAuthoringContent).toHaveBeenCalledWith(
+    expect(publishAuthoringContent).toHaveBeenCalledWith(
       expect.objectContaining({
         contentId: authoringRecord.contentId,
-        decision: "APROVAR_CLINICAMENTE",
+        scopeId: authoringRecord.scopeId,
       }),
     );
   });
@@ -782,6 +830,144 @@ describe("API HTTP boundary", () => {
     });
     expect(JSON.stringify(response.body)).not.toContain("scopeId");
     expect(JSON.stringify(response.body)).not.toContain("participantId");
+  });
+
+  it("returns the complete 24-month participant dashboard", async () => {
+    const getParticipantLearningJourney = vi.fn(
+      async (): Promise<ParticipantLearningJourneyState> => ({
+        participantId: attempt.participantId,
+        assignments: [],
+        activities: [],
+        results: [],
+        runtimes: [],
+        nextAction: "INICIAR_ATIVIDADE",
+      }),
+    );
+    const response = await handleApiRequest(
+      { method: "GET", path: "/api/v1/dashboard", body: undefined },
+      dependencies({ getParticipantLearningJourney }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        totalMonths: 24,
+        totalModules: 24,
+        roadmap: expect.any(Array),
+      },
+    });
+    expect(
+      (response.body as { data: { roadmap: readonly unknown[] } }).data.roadmap,
+    ).toHaveLength(24);
+    expect(JSON.stringify(response.body)).not.toContain("correctChoiceIds");
+    expect(JSON.stringify(response.body)).not.toContain("sourceRefs");
+  });
+
+  it("exposes operations and account security dashboards with honest evidence states", async () => {
+    const operations = await handleApiRequest(
+      { method: "GET", path: "/api/v1/internal/dashboard", body: undefined },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "88888888-8888-4888-8888-888888888888",
+          accountStatus: "ACTIVE",
+          roles: ["AUDITOR"],
+          scopes: [],
+        }),
+        dependencyStatus: async () => ({
+          status: "READY" as const,
+          dependencies: {
+            postgres: "UP" as const,
+            qdrant: "DISABLED" as const,
+            ai: "DISABLED" as const,
+          },
+        }),
+      }),
+    );
+    expect(operations.status).toBe(200);
+    expect(operations.body).toMatchObject({
+      success: true,
+      data: {
+        dependencyStatus: "READY",
+        evidence: { load: "NOT_EXECUTED", failover: "NOT_EXECUTED" },
+      },
+    });
+
+    const account = await handleApiRequest(
+      { method: "GET", path: "/api/v1/account/security", body: undefined },
+      dependencies(),
+    );
+    expect(account).toMatchObject({
+      status: 200,
+      body: {
+        success: true,
+        data: {
+          provider: "NOT_CONFIGURED",
+          recovery: "UNAVAILABLE",
+          mfa: "UNAVAILABLE",
+          session: "ACTIVE",
+        },
+      },
+    });
+  });
+
+  it("delegates recovery and MFA enrollment without storing authentication secrets", async () => {
+    const identityProvider = {
+      getSecurityStatus: vi.fn(async () => ({
+        provider: "EXTERNAL_IDENTITY_PROVIDER" as const,
+        recovery: "AVAILABLE" as const,
+        mfa: "NOT_ENABLED" as const,
+      })),
+      beginRecovery: vi.fn(async () => ({
+        operationId: "recovery-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+      beginMfaEnrollment: vi.fn(async () => ({
+        operationId: "mfa-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+    };
+    const overrides = {
+      identityProvider,
+      authenticate: async () => ({
+        principalId: attempt.participantId,
+        accountStatus: "ACTIVE" as const,
+        roles: ["PARTICIPANT"] as const,
+        scopes: ["scope-1"],
+      }),
+    };
+    const recovery = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/account/recovery/start",
+        body: {},
+      },
+      dependencies(overrides),
+    );
+    const mfa = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/account/mfa/enrollment",
+        body: {},
+      },
+      dependencies(overrides),
+    );
+
+    expect(recovery).toMatchObject({
+      status: 202,
+      body: { success: true, data: { operationId: "recovery-operation" } },
+    });
+    expect(mfa).toMatchObject({
+      status: 202,
+      body: { success: true, data: { operationId: "mfa-operation" } },
+    });
+    expect(identityProvider.beginRecovery).toHaveBeenCalledWith(
+      attempt.participantId,
+    );
+    expect(identityProvider.beginMfaEnrollment).toHaveBeenCalledWith(
+      attempt.participantId,
+    );
+    expect(JSON.stringify(recovery)).not.toContain("secret");
   });
 
   it("reads only the public curriculum runtime projection", async () => {
@@ -1472,7 +1658,6 @@ describe("API HTTP boundary", () => {
       accountStatus: "ACTIVE",
       roles: ["CLINICAL_APPROVER"],
       scopes: [internalScopeId],
-      approvedClinicalApproverId: "ricardo-account",
       contentId: activity.activityId,
       version: 1,
       scopeId: internalScopeId,

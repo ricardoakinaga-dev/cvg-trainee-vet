@@ -2,17 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ContentRecord } from "./content-use-cases.js";
 import {
-  reviewAuthoringContent,
+  publishAuthoringContent,
   runAuthoringPreflight,
   type AuthoringRecord,
   type AuthoringRepositoryPort,
-  type AuthoringReview,
 } from "./authoring-use-cases.js";
 
 const contentId = "11111111-1111-4111-8111-111111111111";
 const scopeId = "22222222-2222-4222-8222-222222222222";
 const authorId = "33333333-3333-4333-8333-333333333333";
-const reviewerId = "44444444-4444-4444-8444-444444444444";
 
 const record: AuthoringRecord = {
   editorialRecordId: "77777777-7777-4777-8777-777777777777",
@@ -36,7 +34,11 @@ const record: AuthoringRecord = {
   critical: true,
   remediationTargetObjectiveId: "M02-OBJ-01",
   sourceRefs: [
-    { code: "F-02", locator: "localizador interno", updateRequired: true },
+    {
+      code: "BOOK_ETTINGER_9E",
+      locator: "capítulo 123, seção de ressuscitação",
+      updateRequired: false,
+    },
   ],
   participant: {
     id: contentId,
@@ -51,7 +53,7 @@ const record: AuthoringRecord = {
     ],
     selectionMode: "SINGLE",
   },
-  contentStatus: "EM_REVISAO_CLINICA",
+  contentStatus: "AUTOVERIFICADO",
   preflight: {
     ruleVersion: "authoring-preflight-v1",
     technicalChecksPassed: true,
@@ -66,25 +68,13 @@ const record: AuthoringRecord = {
   },
 };
 
-function repository(
-  value: AuthoringRecord = record,
-): AuthoringRepositoryPort & {
-  readonly savedReview: AuthoringReview | undefined;
-} {
-  let savedReview: AuthoringReview | undefined;
+function repository(value: AuthoringRecord = record): AuthoringRepositoryPort {
   return {
     find: vi.fn(async () => value),
     savePreflight: vi.fn(async (_record, preflight) => ({
       ...value,
       preflight,
     })),
-    saveReview: vi.fn(async (_record, review) => {
-      savedReview = review;
-      return { ...value, latestReview: review };
-    }),
-    get savedReview() {
-      return savedReview;
-    },
   };
 }
 
@@ -93,13 +83,43 @@ function workflow(status: ContentRecord["status"]): ContentRecord {
 }
 
 describe("authoring and clinical review use cases", () => {
-  it("runs a deterministic preflight and keeps publication blocked", () => {
+  it("runs deterministic source preflight and enables publication", () => {
     const result = runAuthoringPreflight(record);
 
     expect(result.technicalChecksPassed).toBe(true);
-    expect(result.readyForClinicalReview).toBe(true);
-    expect(result.readyForPublication).toBe(false);
-    expect(result.checks.publicationBlocked).toBe(true);
+    expect(result.readyForPublication).toBe(true);
+    expect(result.sourceVerification).toBe("VERIFICADO_AUTOMATICAMENTE");
+    expect(result.checks.publicationBlocked).toBe(false);
+  });
+
+  it("publishes an authoring record after automatic source preflight", async () => {
+    const repositoryPort = repository({
+      ...record,
+      contentStatus: "AUTOVERIFICADO",
+    });
+    const transition = vi.fn(async () => workflow("PUBLICADO"));
+
+    const result = await publishAuthoringContent(
+      {
+        principalId: authorId,
+        accountStatus: "ACTIVE",
+        roles: ["AUTHOR"],
+        scopes: [scopeId],
+        contentId,
+        version: 1,
+        scopeId,
+        correlationId: "66666666-6666-4666-8666-666666666666",
+      },
+      { repository: repositoryPort, transition },
+    );
+
+    expect(result.record.contentStatus).toBe("PUBLICADO");
+    expect(result.record.preflight.sourceVerification).toBe(
+      "VERIFICADO_AUTOMATICAMENTE",
+    );
+    expect(transition).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "PUBLICAR_AUTOMATICAMENTE" }),
+    );
   });
 
   it("covers text and non-response correction policies", () => {
@@ -164,204 +184,5 @@ describe("authoring and clinical review use cases", () => {
       runAuthoringPreflight({ ...record, responseMode: "NONE" }).checks
         .correctionMetadata,
     ).toBe(true);
-  });
-
-  it("requires an independent clinical approver and advances only after review", async () => {
-    const repositoryPort = repository();
-    const transition = vi.fn(async () => workflow("APROVADO_CLINICAMENTE"));
-
-    const result = await reviewAuthoringContent(
-      {
-        principalId: reviewerId,
-        accountStatus: "ACTIVE",
-        roles: ["CLINICAL_APPROVER"],
-        scopes: [scopeId],
-        contentId,
-        version: 1,
-        scopeId,
-        decision: "APROVAR_CLINICAMENTE",
-        rationale: "Revisão clínica sintética concluída.",
-        correlationId: "66666666-6666-4666-8666-666666666666",
-      },
-      { repository: repositoryPort, transition },
-    );
-
-    expect(result.review.decision).toBe("APROVAR_CLINICAMENTE");
-    expect(result.record.latestReview?.reviewerId).toBe(reviewerId);
-    expect(transition).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "APROVAR_CLINICAMENTE" }),
-    );
-    expect(repositoryPort.saveReview).toHaveBeenCalledOnce();
-  });
-
-  it("rejects approval when preflight is incomplete or reviewer is the author", async () => {
-    const incomplete = repository({
-      ...record,
-      correctChoiceIds: [],
-    });
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: reviewerId,
-          accountStatus: "ACTIVE",
-          roles: ["CLINICAL_APPROVER"],
-          scopes: [scopeId],
-          contentId,
-          version: 1,
-          scopeId,
-          decision: "APROVAR_CLINICAMENTE",
-          rationale: "Não deve aprovar.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        { repository: incomplete, transition: vi.fn() },
-      ),
-    ).rejects.toMatchObject({ code: "state_conflict" });
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: authorId,
-          accountStatus: "ACTIVE",
-          roles: ["CLINICAL_APPROVER"],
-          scopes: [scopeId],
-          contentId,
-          version: 1,
-          scopeId,
-          decision: "APROVAR_CLINICAMENTE",
-          rationale: "O autor não pode aprovar seu próprio item.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        { repository: repository(), transition: vi.fn() },
-      ),
-    ).rejects.toMatchObject({ code: "forbidden" });
-  });
-
-  it("validates review commands, scope, status, and adjustment decisions", async () => {
-    const dependencies = {
-      repository: repository(),
-      transition: vi.fn(async () => workflow("AJUSTES_SOLICITADOS")),
-    };
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: "",
-          accountStatus: "ACTIVE",
-          roles: ["MODERATOR"],
-          scopes: [scopeId],
-          contentId,
-          version: 1,
-          scopeId,
-          decision: "SOLICITAR_AJUSTES",
-          rationale: "Motivo.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        dependencies,
-      ),
-    ).rejects.toMatchObject({ code: "validation_error" });
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: reviewerId,
-          accountStatus: "ACTIVE",
-          roles: ["MODERATOR"],
-          scopes: [scopeId],
-          contentId,
-          version: 0,
-          scopeId,
-          decision: "SOLICITAR_AJUSTES",
-          rationale: "Motivo.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        dependencies,
-      ),
-    ).rejects.toMatchObject({ code: "validation_error" });
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: reviewerId,
-          accountStatus: "ACTIVE",
-          roles: ["MODERATOR"],
-          scopes: [],
-          contentId,
-          version: 1,
-          scopeId,
-          decision: "SOLICITAR_AJUSTES",
-          rationale: "Motivo.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        dependencies,
-      ),
-    ).rejects.toMatchObject({ code: "forbidden" });
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: reviewerId,
-          accountStatus: "ACTIVE",
-          roles: ["MODERATOR"],
-          scopes: [scopeId],
-          contentId,
-          version: 1,
-          scopeId,
-          decision: "SOLICITAR_AJUSTES",
-          rationale: "Motivo.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        {
-          ...dependencies,
-          repository: {
-            ...repository(),
-            find: vi.fn(async () => null),
-          },
-        },
-      ),
-    ).rejects.toMatchObject({ code: "not_found" });
-
-    await expect(
-      reviewAuthoringContent(
-        {
-          principalId: reviewerId,
-          accountStatus: "ACTIVE",
-          roles: ["MODERATOR"],
-          scopes: [scopeId],
-          contentId,
-          version: 1,
-          scopeId,
-          decision: "SOLICITAR_AJUSTES",
-          rationale: "Motivo.",
-          correlationId: "66666666-6666-4666-8666-666666666666",
-        },
-        {
-          ...dependencies,
-          repository: repository({
-            ...record,
-            contentStatus: "RASCUNHO",
-          }),
-        },
-      ),
-    ).rejects.toMatchObject({ code: "state_conflict" });
-
-    const adjusted = await reviewAuthoringContent(
-      {
-        principalId: reviewerId,
-        accountStatus: "ACTIVE",
-        roles: ["MODERATOR"],
-        scopes: [scopeId],
-        contentId,
-        version: 1,
-        scopeId,
-        decision: "SOLICITAR_AJUSTES",
-        rationale: "Ajustar a explicação do caso.",
-        correlationId: "66666666-6666-4666-8666-666666666666",
-      },
-      dependencies,
-    );
-
-    expect(adjusted.review.decision).toBe("SOLICITAR_AJUSTES");
-    expect(adjusted.record.contentStatus).toBe("AJUSTES_SOLICITADOS");
   });
 });

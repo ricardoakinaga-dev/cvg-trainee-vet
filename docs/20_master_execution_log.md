@@ -3083,3 +3083,141 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Abrir o item 16 — rastreabilidade de código e controle de mudança — mantendo release, piloto e publicação clínica nos gates humanos próprios.
+
+## 2026-08-10 — SOURCE-PRODUCT-OPS-18: fontes, produto e operação HA
+
+### TIMESTAMP
+
+2026-08-10 10:40:00 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER / TDD
+
+### PHASE
+
+Phase 14 — governança de fonte, superfícies de produto e evidência operacional
+
+### SPRINT
+
+SOURCE-PRODUCT-OPS-18
+
+### TASK
+
+Reconciliar B-07, os 24 módulos, conta/recuperação/MFA, dashboards/KPIs, HA e item 16 sem criar gate clínico humano adicional.
+
+### ACTION
+
+Foram verificados os três PDFs autorizados por hash e número de páginas e criada a registry executável em `packages/curriculum/src/source-registry.ts`, `clinical-sources.json` e `scripts/verify-clinical-sources.mjs`. O catálogo, B-07, os 24 packs e a autoria foram normalizados para os códigos canônicos; o caminho ativo de publicação usa pré-voo automático e `PUBLICAR_AUTOMATICAMENTE`.
+
+Foram adicionadas as projeções estritas de dashboard, a roadmap integral de 24 meses, a superfície de conta/segurança, os adapters server-side para recuperação/MFA e a superfície de operações com KPIs. A operação recebeu métricas Prometheus raw protegidas, amostras de duração para p95, IDs de trace compatíveis com W3C/OTLP, sink OTLP e topologia Docker com duas réplicas de API, duas de worker, collector, Prometheus, Grafana, Postgres e Qdrant.
+
+### RESULT
+
+`pnpm verify:clinical-sources` passou. Após corrigir o registro de observações no caminho de métricas, typecheck/build de observabilidade e API passaram e os testes direcionados passaram em 3 arquivos/46 testes. `pnpm ops:verify-ha` passou. A prova descartável descrita em `docs/102_operational_evidence_2026-08-10.md` registrou carga normal 200/200 e failover 200/200, targets Prometheus `up`, receipt OTLP e recuperação das réplicas.
+
+`traceability.yml`, `docs/99_runtime_state.md`, este log, `docs/30_backlog_master.md`, o relatório baseline e os relatórios de fonte/operação foram reconciliados. O trabalho permanece não commitado; o SHA anterior do baseline não representa estas alterações.
+
+### DECISIONS
+
+Não há aprovação clínica humana obrigatória no caminho ativo de publicação. O limite técnico é automático: somente os três hashes registrados são aceitos e referências externas falham no pré-voo. A prova semântica texto-a-texto dos textos contra os livros, piloto real, provedor externo de identidade e backend durável de traces continuam gaps honestos e não foram convertidos em aprovação silenciosa.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar o `pnpm verify` completo, revisar exposição/format/diff, capturar o estado final do worktree, encerrar a composição Docker descartável e atualizar o relatório de acompanhamento.
+
+## 2026-08-10 — SOURCE-PRODUCT-OPS-18: fechamento da verificação
+
+### TIMESTAMP
+
+2026-08-10 10:54:21 -03:00
+
+### ENGINE
+
+AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 14 encerrada — handoff técnico com gaps externos explícitos
+
+### ACTION
+
+Executados o gate integral `pnpm verify`, `pnpm build`, `pnpm test:e2e` e `pnpm audit --audit-level=high`. Capturado o estado do Compose HA descartável, incluindo APIs/workers saudáveis, targets Prometheus `up`, retenção configurada e logs OTLP; em seguida foram removidos somente os containers, volumes, rede e arquivo temporário sintéticos da prova.
+
+### RESULT
+
+`pnpm verify` passou com 383 testes e 17 skips condicionais; cobertura 84,89% statements, 80,09% branches, 85,89% functions e 85,61% lines. O build passou nos 12 workspaces, o E2E padrão passou 12/12 e o audit de dependências não encontrou vulnerabilidades conhecidas. A prova HA manteve 200/200 respostas 2xx antes e depois do failover, com duas réplicas de API e duas de worker; o collector recebeu spans e Prometheus observou API-A/API-B/collector.
+
+O relatório de acompanhamento [`docs/103_followup_program_status_2026-08-10.md`](103_followup_program_status_2026-08-10.md) reavaliou o estado técnico em 87/100. O worktree permanece não commitado; nenhum SHA novo de release foi declarado.
+
+### DECISIONS
+
+O caminho ativo não possui aprovação clínica humana obrigatória. A próxima evolução depende de configuração externa (identity provider, backend durável de traces e deployment/rollback) e de prova semântica/piloto, sem transformar essas dependências em bloqueio artificial do código já verificável.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Configurar os componentes externos quando disponíveis, criar um commit intencional do worktree e repetir a auditoria no SHA publicado.
+
+## 2026-08-10 — SOURCE-PRODUCT-OPS-18: remoção literal do gate clínico executável
+
+### TIMESTAMP
+
+2026-08-10 11:17:00 -03:00
+
+### ENGINE
+
+BUILD / TDD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 14 — fechamento do caminho de publicação automática
+
+### ACTION
+
+Removidos do caminho executável a rota HTTP `/api/v1/internal/content/:contentId/review`, o contrato de revisão, o caso de uso de revisão autoral, o armazenamento/leitura de review no repositório autoral e os eventos/transições de aprovação clínica. Mantida a tabela histórica da migration 0014 sem qualquer leitura ou escrita pelo caminho ativo, evitando deleção destrutiva de histórico.
+
+### RESULT
+
+O caminho executável agora é pré-voo automático contra os três PDFs registrados → `PUBLICAR_AUTOMATICAMENTE` → `PUBLICADO`. O teste negativo comprova que a rota antiga retorna `404`; os testes direcionados passaram 58/58, a suíte completa passou 378 testes com 17 skips condicionais, a cobertura ficou em 84,95% statements / 80,03% branches / 86,17% functions / 85,66% lines, o build passou nos 12 workspaces e o E2E passou 12/12. `pnpm verify` passou integralmente.
+
+### DECISIONS
+
+Não há aprovação clínica humana obrigatória para publicação de conteúdo. Autenticação, autorização de escopo, auditoria, proteção de segredos, pré-voo de fonte e fronteira pública continuam controles técnicos. A correção humana de respostas abertas continua sendo um fluxo educacional separado e não é gate de publicação.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Atualizar o relatório/manifesto final, manter o worktree não commitado até um commit intencional e, quando disponíveis, configurar provider de identidade, backend durável de traces e deployment/rollback.
+
+## 2026-08-10 — SOURCE-PRODUCT-OPS-18: gate final pós-reconciliação
+
+### TIMESTAMP
+
+2026-08-10 11:20:30 -03:00
+
+### ACTION
+
+Reexecutado o gate integral depois da atualização de código, testes, relatório, backlog, runtime state e `traceability.yml`.
+
+### RESULT
+
+`pnpm verify` passou integralmente: 378 testes pass, 17 skips condicionais, cobertura 84,95% statements / 80,03% branches / 86,17% functions / 85,66% lines; fontes imutáveis, topologia HA, lint, typecheck, contratos, worker, migrations, secrets, traceability, documentação, product definition e public boundary passaram. O último `pnpm build` passou nos 12 workspaces, `pnpm test:e2e` passou 12/12, `pnpm audit --audit-level=high` passou e `git diff --check` não encontrou erro.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Configurar dependências externas quando houver ambiente autorizado, criar commit intencional e repetir a auditoria no SHA publicado.

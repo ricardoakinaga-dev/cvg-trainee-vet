@@ -12,7 +12,6 @@ import {
   accounts,
   contentVersions,
   contentEditorialRecords,
-  contentReviewDecisions,
   createContentUseCaseDependencies,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
@@ -82,7 +81,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             critical: false,
             remediationTargetObjectiveId: "M02-OBJ-01",
             sourceRefs: [
-              { code: "F-02", locator: "interno", updateRequired: true },
+              {
+                code: "BOOK_ETTINGER_9E",
+                locator: "capítulo 123, seção de ressuscitação",
+                updateRequired: false,
+              },
             ],
             participant: {
               id: contentId,
@@ -96,37 +99,22 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           preflight: {
             ruleVersion: "authoring-preflight-v1",
             technicalChecksPassed: true,
-            readyForClinicalReview: true,
-            readyForPublication: false,
+            readyForPublication: true,
             checks: {
               requiredFields: true,
               correctionMetadata: true,
               publicBoundary: true,
               sourceTraceability: true,
-              publicationBlocked: true,
+              publicationBlocked: false,
             },
             checkedAt: new Date().toISOString(),
           },
         });
-        await database.db.insert(contentReviewDecisions).values({
-          contentEditorialRecordId: editorialRecordId,
-          contentVersionId: versionId,
-          contentId,
-          version: 1,
-          scopeId,
-          reviewerId: approverId,
-          decision: "APROVAR_CLINICAMENTE",
-          rationale: "Revisão sintética.",
-          correlationId,
-          reviewedAt: new Date(),
-        });
-
         const command: AdvanceContentCommand = {
           principalId: approverId,
           accountStatus: "ACTIVE",
           roles: ["CLINICAL_APPROVER"],
           scopes: [scopeId],
-          approvedClinicalApproverId: approverId,
           contentId,
           version: 1,
           scopeId,
@@ -158,9 +146,6 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await database.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
-        await database.db
-          .delete(contentReviewDecisions)
-          .where(eq(contentReviewDecisions.contentId, contentId));
         await database.db
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));

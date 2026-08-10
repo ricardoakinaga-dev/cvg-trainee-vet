@@ -16,7 +16,9 @@ import {
   getAttemptFeedback,
   getParticipantLearningJourney,
   getParticipantProgress,
-  reviewAuthoringContent,
+  createHttpIdentityProvider,
+  createUnavailableIdentityProvider,
+  publishAuthoringContent,
   saveAnswer,
   startAttempt,
   submitAttempt,
@@ -32,7 +34,10 @@ import {
   createServerIntegrations,
   type ServerIntegrationSet,
 } from "@cvg/integrations";
-import { createObservability } from "@cvg/observability";
+import {
+  createObservability,
+  createOtlpHttpTraceSink,
+} from "@cvg/observability";
 import {
   createActivityScopeResolver,
   createActivityReadRepository,
@@ -84,7 +89,20 @@ export function createApiRuntime(
 }> {
   const config = loadRuntimeConfig(environment);
   const integrations = createServerIntegrations(config);
-  const observability = createObservability({ service: "api" });
+  const identityProvider = config.identityProvider.configured
+    ? createHttpIdentityProvider({
+        baseUrl: config.identityProvider.url,
+        bearerToken: config.identityProvider.token,
+      })
+    : createUnavailableIdentityProvider();
+  const observability = createObservability({
+    service: "api",
+    ...(config.observability.configured
+      ? {
+          traceSink: createOtlpHttpTraceSink(config.observability.otlpEndpoint),
+        }
+      : {}),
+  });
   const webOrigins = configuredOrigins(environment);
   const attemptDependencies = createAttemptUseCaseDependencies(
     integrations.database.db,
@@ -135,6 +153,9 @@ export function createApiRuntime(
     ...(config.approvedClinicalApproverId === undefined
       ? {}
       : { approvedClinicalApproverId: config.approvedClinicalApproverId }),
+    ...(config.metricsScrapeToken === undefined
+      ? {}
+      : { metricsScrapeToken: config.metricsScrapeToken }),
     authenticate:
       options.authenticate ??
       (async (request) => {
@@ -193,12 +214,17 @@ export function createApiRuntime(
     advanceContent: (command) => advanceContent(command, contentDependencies),
     getInternalAuthoringRecord: (contentId, version) =>
       authoringRepository.find(contentId, version),
-    reviewAuthoringContent: (command) =>
-      reviewAuthoringContent(command, {
+    publishAuthoringContent: (command) =>
+      publishAuthoringContent(command, {
         repository: authoringRepository,
         transition: (transitionCommand) =>
           advanceContent(transitionCommand, contentDependencies),
       }),
+    identityProvider,
+    getAccountSecurity: async (principalId) => {
+      const status = await identityProvider.getSecurityStatus(principalId);
+      return Object.freeze({ ...status, session: "ACTIVE" as const });
+    },
     getParticipantProgress: (participantId, activityId) =>
       getParticipantProgress(
         { participantId, activityId },

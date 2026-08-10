@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  createOtlpHttpTraceSink,
   createObservability,
   renderPrometheusMetrics,
   sanitizeCorrelationId,
   type LogRecord,
+  type TraceSpan,
 } from "./observability.js";
 
 describe("observability", () => {
@@ -200,6 +202,25 @@ describe("observability", () => {
     });
   });
 
+  it("retains a bounded duration sample for p95 dashboard KPIs", () => {
+    const metrics = createObservability({
+      service: "api",
+      sink: () => undefined,
+    }).metrics;
+
+    metrics.observe("api.request.duration_ms", 10);
+    metrics.observe("api.request.duration_ms", 20);
+    metrics.observe("api.request.duration_ms", 30);
+
+    expect(metrics.quantile("api.request.duration_ms", 0.95)).toBe(30);
+    expect(
+      metrics.quantile("api.request.duration_ms", 0.95, {
+        route: "/health/live",
+      }),
+    ).toBeNull();
+    expect(metrics.quantile("api.request.duration_ms", 1.1)).toBeNull();
+  });
+
   it("exports counters and histogram aggregates in redacted Prometheus text", () => {
     const observability = createObservability({
       service: "worker",
@@ -227,5 +248,81 @@ describe("observability", () => {
     expect(rendered).toContain("worker_batch_duration_ms_sum");
     expect(rendered).not.toContain("participant");
     expect(observability.metrics.prometheus()).toBe(rendered);
+  });
+
+  it("records bounded request spans and preserves route attributes", () => {
+    const spans: TraceSpan[] = [];
+    const observability = createObservability({
+      service: "api",
+      traceSink: (span) => spans.push(span),
+      sink: () => undefined,
+    });
+    const startedAt = new Date("2026-08-09T20:00:00.000Z");
+    const endedAt = new Date("2026-08-09T20:00:00.012Z");
+
+    observability.traces.record({
+      traceId: "a".repeat(32),
+      parentSpanId: "b".repeat(16),
+      name: "http.request",
+      startedAt,
+      endedAt,
+      status: "ok",
+      attributes: {
+        method: "GET",
+        route: "/api/v1/modules/:moduleId",
+        status: 200,
+        outcome: "success",
+      },
+    });
+
+    expect(spans).toHaveLength(1);
+    expect(observability.traces.snapshot()).toMatchObject([
+      {
+        traceId: "a".repeat(32),
+        parentSpanId: "b".repeat(16),
+        service: "api",
+        name: "http.request",
+        durationMs: 12,
+        attributes: {
+          method: "GET",
+          route: "/api/v1/modules/:moduleId",
+          status: 200,
+          outcome: "success",
+        },
+      },
+    ]);
+    expect(JSON.stringify(spans)).not.toContain("participant");
+    expect(JSON.stringify(spans)).not.toContain("payload");
+  });
+
+  it("exports OTLP spans without payload fields", () => {
+    const requests: RequestInit[] = [];
+    const sink = createOtlpHttpTraceSink(
+      "http://collector:4318",
+      async (input, init) => {
+        expect(input).toBe("http://collector:4318/v1/traces");
+        if (init !== undefined) requests.push(init);
+        return new Response(null, { status: 200 });
+      },
+    );
+
+    sink({
+      traceId: "a".repeat(32),
+      spanId: "b".repeat(16),
+      service: "api",
+      name: "http.request",
+      startedAt: "2026-08-09T20:00:00.000Z",
+      endedAt: "2026-08-09T20:00:00.012Z",
+      durationMs: 12,
+      status: "ok",
+      attributes: { method: "GET", route: "/health/live", status: 200 },
+    });
+
+    expect(requests).toHaveLength(1);
+    const body = String(requests[0]?.body);
+    expect(body).toContain("service.name");
+    expect(body).toContain("http.status_code");
+    expect(body).not.toContain("payload");
+    expect(body).not.toContain("participant");
   });
 });

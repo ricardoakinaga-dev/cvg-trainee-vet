@@ -15,7 +15,7 @@ const authoringRecord = {
   sessionId: "M02-S1",
   objectiveId: "M02-OBJ-01",
   authorId: "33333333-3333-4333-8333-333333333333",
-  contentStatus: "EM_REVISAO_CLINICA",
+  contentStatus: "AUTOVERIFICADO",
   item: {
     title: "Prioridade sintética",
     prompt: "Escolha a próxima ação segura.",
@@ -28,7 +28,13 @@ const authoringRecord = {
     feedback: "Defina uma meta.",
     critical: true,
     remediationTargetObjectiveId: "M02-OBJ-01",
-    sourceRefs: [{ code: "F-02", locator: "interno", updateRequired: true }],
+    sourceRefs: [
+      {
+        code: "BOOK_ETTINGER_9E",
+        locator: "capítulo 123, seção de ressuscitação",
+        updateRequired: false,
+      },
+    ],
     participant: {
       id: contentId,
       ordinal: 1,
@@ -46,20 +52,20 @@ const authoringRecord = {
   preflight: {
     ruleVersion: "authoring-preflight-v1",
     technicalChecksPassed: true,
-    readyForClinicalReview: true,
-    readyForPublication: false,
+    sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
+    readyForPublication: true,
     checks: {
       requiredFields: true,
       correctionMetadata: true,
       publicBoundary: true,
       sourceTraceability: true,
-      publicationBlocked: true,
+      publicationBlocked: false,
     },
     checkedAt: "2026-08-10T05:00:00.000Z",
   },
 };
 
-test("clinical reviewer can inspect and decide an internal authoring item", async ({
+test("author can inspect and publish a source-verified authoring item", async ({
   page,
 }) => {
   await page.route(
@@ -73,7 +79,7 @@ test("clinical reviewer can inspect and decide an internal authoring item", asyn
     },
   );
   await page.route(
-    `**/api/v1/internal/content/${contentId}/review`,
+    `**/api/v1/internal/content/${contentId}/publish`,
     async (route) => {
       await route.fulfill({
         status: 200,
@@ -81,7 +87,7 @@ test("clinical reviewer can inspect and decide an internal authoring item", asyn
         body: JSON.stringify(
           successEnvelope({
             ...authoringRecord,
-            contentStatus: "APROVADO_CLINICAMENTE",
+            contentStatus: "PUBLICADO",
           }),
         ),
       });
@@ -92,10 +98,14 @@ test("clinical reviewer can inspect and decide an internal authoring item", asyn
   await expect(
     page.getByRole("heading", { name: "Prioridade sintética" }),
   ).toBeVisible();
-  await expect(page.getByText("F-02 · interno")).toBeVisible();
+  await expect(
+    page.getByText("BOOK_ETTINGER_9E · capítulo 123, seção de ressuscitação"),
+  ).toBeVisible();
   await expect(page.getByText("gabarito")).toBeVisible();
-  await page.getByRole("button", { name: "Aprovar clinicamente" }).click();
+  await page
+    .getByRole("button", { name: "Publicar conteúdo verificado" })
+    .click();
   await expect(page.getByRole("status")).toHaveText(
-    "Revisão clínica registrada.",
+    "Fonte verificada automaticamente e conteúdo publicado.",
   );
 });

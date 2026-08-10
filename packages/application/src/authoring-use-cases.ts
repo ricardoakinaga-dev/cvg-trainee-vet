@@ -1,9 +1,5 @@
-import {
-  canAccess,
-  type AccountStatus,
-  type Capability,
-  type Role,
-} from "./authorization.js";
+import { canAccess, type AccountStatus, type Role } from "./authorization.js";
+import { validateClinicalSourceRefs } from "@cvg/curriculum";
 import { ApplicationError } from "./errors.js";
 import type {
   AdvanceContentCommand,
@@ -47,7 +43,7 @@ export type AuthoringParticipantItem = Readonly<{
 export type AuthoringPreflight = Readonly<{
   readonly ruleVersion: "authoring-preflight-v1";
   readonly technicalChecksPassed: boolean;
-  readonly readyForClinicalReview?: boolean;
+  readonly sourceVerification?: "VERIFICADO_AUTOMATICAMENTE" | "INVALIDO";
   readonly readyForPublication?: boolean;
   readonly checks: Readonly<{
     readonly requiredFields: boolean;
@@ -57,17 +53,6 @@ export type AuthoringPreflight = Readonly<{
     readonly publicationBlocked: boolean;
   }>;
   readonly checkedAt: string;
-}>;
-
-export type AuthoringReviewDecision =
-  "APROVAR_CLINICAMENTE" | "SOLICITAR_AJUSTES";
-
-export type AuthoringReview = Readonly<{
-  readonly reviewerId: string;
-  readonly decision: AuthoringReviewDecision;
-  readonly rationale: string;
-  readonly reviewedAt: string;
-  readonly correlationId: string;
 }>;
 
 export type AuthoringRecord = Readonly<{
@@ -93,7 +78,6 @@ export type AuthoringRecord = Readonly<{
   readonly participant: AuthoringParticipantItem;
   readonly contentStatus: ContentRecord["status"];
   readonly preflight: AuthoringPreflight;
-  readonly latestReview?: AuthoringReview;
 }>;
 
 export interface AuthoringRepositoryPort {
@@ -105,27 +89,20 @@ export interface AuthoringRepositoryPort {
     record: AuthoringRecord,
     preflight: AuthoringPreflight,
   ) => Promise<AuthoringRecord>;
-  readonly saveReview: (
-    record: AuthoringRecord,
-    review: AuthoringReview,
-  ) => Promise<AuthoringRecord>;
 }
 
-export type ReviewAuthoringCommand = Readonly<{
+export type PublishAuthoringCommand = Readonly<{
   readonly principalId: string;
   readonly accountStatus: AccountStatus;
   readonly roles: readonly Role[];
   readonly scopes: readonly string[];
-  readonly approvedClinicalApproverId?: string;
   readonly contentId: string;
   readonly version: number;
   readonly scopeId: string;
-  readonly decision: AuthoringReviewDecision;
-  readonly rationale: string;
   readonly correlationId: string;
 }>;
 
-export type AuthoringWorkflowDependencies = Readonly<{
+export type AuthoringPublicationDependencies = Readonly<{
   readonly repository: AuthoringRepositoryPort;
   readonly transition: (
     command: AdvanceContentCommand,
@@ -134,8 +111,7 @@ export type AuthoringWorkflowDependencies = Readonly<{
 
 export type AuthoringPreflightResult = AuthoringPreflight &
   Readonly<{
-    readonly readyForClinicalReview: boolean;
-    readonly readyForPublication: false;
+    readonly readyForPublication: boolean;
   }>;
 
 function assertNonEmpty(value: string, field: string): void {
@@ -208,10 +184,9 @@ export function runAuthoringPreflight(
   const correctionMetadata = hasCorrectionMetadata(record);
   const publicBoundary = hasPublicBoundary(record);
   const sourceTraceability =
-    record.sourceRefs.length > 0 &&
     record.sourceRefs.every(
       (source) => isText(source.code) && isText(source.locator),
-    );
+    ) && validateClinicalSourceRefs(record.sourceRefs).valid;
   const technicalChecksPassed =
     requiredFields &&
     correctionMetadata &&
@@ -221,34 +196,29 @@ export function runAuthoringPreflight(
   return Object.freeze({
     ruleVersion: "authoring-preflight-v1" as const,
     technicalChecksPassed,
-    readyForClinicalReview: technicalChecksPassed,
-    readyForPublication: false as const,
+    sourceVerification: technicalChecksPassed
+      ? ("VERIFICADO_AUTOMATICAMENTE" as const)
+      : ("INVALIDO" as const),
+    readyForPublication: technicalChecksPassed,
     checks: Object.freeze({
       requiredFields,
       correctionMetadata,
       publicBoundary,
       sourceTraceability,
-      publicationBlocked: true as const,
+      publicationBlocked: !technicalChecksPassed,
     }),
     checkedAt,
   });
 }
 
-function capabilityForDecision(decision: AuthoringReviewDecision): Capability {
-  return decision === "APROVAR_CLINICAMENTE"
-    ? "APPROVE_CLINICAL_CONTENT"
-    : "MODERATE_CONTENT";
-}
-
-export async function reviewAuthoringContent(
-  command: ReviewAuthoringCommand,
-  dependencies: AuthoringWorkflowDependencies,
-): Promise<Readonly<{ record: AuthoringRecord; review: AuthoringReview }>> {
+export async function publishAuthoringContent(
+  command: PublishAuthoringCommand,
+  dependencies: AuthoringPublicationDependencies,
+): Promise<Readonly<{ record: AuthoringRecord }>> {
   for (const [value, field] of [
     [command.principalId, "principalId"],
     [command.contentId, "contentId"],
     [command.scopeId, "scopeId"],
-    [command.rationale, "rationale"],
     [command.correlationId, "correlationId"],
   ] as const) {
     assertNonEmpty(value, field);
@@ -261,18 +231,12 @@ export async function reviewAuthoringContent(
       principalId: command.principalId,
       accountStatus: command.accountStatus,
       roles: command.roles,
-      capability: capabilityForDecision(command.decision),
+      capability: "PUBLISH_CONTENT",
       resource: { scopeId: command.scopeId },
       scopes: command.scopes,
-      ...(command.decision === "APROVAR_CLINICAMENTE"
-        ? {
-            approvedClinicalApproverId:
-              command.approvedClinicalApproverId ?? command.principalId,
-          }
-        : {}),
     })
   ) {
-    throw new ApplicationError("forbidden", "Reviewer is outside the scope");
+    throw new ApplicationError("forbidden", "Publisher is outside the scope");
   }
 
   const record = await dependencies.repository.find(
@@ -282,20 +246,8 @@ export async function reviewAuthoringContent(
   if (record === null) {
     throw new ApplicationError("not_found", "Authoring record not found");
   }
-  if (
-    record.scopeId !== command.scopeId ||
-    record.contentStatus !== "EM_REVISAO_CLINICA"
-  ) {
-    throw new ApplicationError(
-      "state_conflict",
-      "Authoring record is not reviewable in the requested scope",
-    );
-  }
-  if (record.authorId === command.principalId) {
-    throw new ApplicationError(
-      "forbidden",
-      "Author cannot approve the authored content",
-    );
+  if (record.scopeId !== command.scopeId) {
+    throw new ApplicationError("forbidden", "Content is outside the scope");
   }
 
   const preflight = runAuthoringPreflight(record);
@@ -303,28 +255,17 @@ export async function reviewAuthoringContent(
     record,
     preflight,
   );
-  if (
-    command.decision === "APROVAR_CLINICAMENTE" &&
-    !preflight.readyForClinicalReview
-  ) {
+  if (!preflight.readyForPublication) {
     throw new ApplicationError(
       "state_conflict",
-      "Authoring preflight is incomplete",
+      "Automatic source preflight is incomplete",
     );
   }
+  if (record.contentStatus === "PUBLICADO") {
+    return Object.freeze({ record: preflightRecord });
+  }
 
-  const review = Object.freeze({
-    reviewerId: command.principalId,
-    decision: command.decision,
-    rationale: command.rationale,
-    reviewedAt: new Date().toISOString(),
-    correlationId: command.correlationId,
-  });
-  const savedRecord = await dependencies.repository.saveReview(
-    preflightRecord,
-    review,
-  );
-  const transitionCommand: AdvanceContentCommand = {
+  const transitioned = await dependencies.transition({
     principalId: command.principalId,
     accountStatus: command.accountStatus,
     roles: command.roles,
@@ -332,24 +273,14 @@ export async function reviewAuthoringContent(
     contentId: command.contentId,
     version: command.version,
     scopeId: command.scopeId,
-    event: command.decision,
+    event: "PUBLICAR_AUTOMATICAMENTE",
     correlationId: command.correlationId,
-    ...(command.decision === "APROVAR_CLINICAMENTE"
-      ? {
-          approvedClinicalApproverId:
-            command.approvedClinicalApproverId ?? command.principalId,
-        }
-      : {}),
-  };
-  const transitioned = await dependencies.transition(transitionCommand);
-
+  });
   return Object.freeze({
-    review,
     record: Object.freeze({
-      ...savedRecord,
+      ...preflightRecord,
       contentStatus: transitioned.status,
       preflight,
-      latestReview: review,
     }),
   });
 }

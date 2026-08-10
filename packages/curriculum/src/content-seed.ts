@@ -10,7 +10,7 @@ import {
   getModuleDraftPack,
 } from "./learning-runtime.js";
 
-export type CurriculumContentSeedStatus = "RASCUNHO" | "PROJECAO_VERIFICADA";
+export type CurriculumContentSeedStatus = "PROJECAO_VERIFICADA" | "PUBLICADO";
 
 export type CurriculumContentVersionSeed = Readonly<{
   readonly id: string;
@@ -36,7 +36,7 @@ export type CurriculumActivitySeed = Readonly<{
     readonly scopeId: string;
     readonly slug: string;
     readonly title: string;
-    readonly status: "RASCUNHO" | "PUBLISHED";
+    readonly status: "PUBLISHED";
   }>;
   readonly contentVersions: readonly CurriculumContentVersionSeed[];
   readonly activityItems: readonly Readonly<{
@@ -88,7 +88,7 @@ function toContentVersion(
 function createSeedFromActivity(
   scopeId: string,
   status: CurriculumContentSeedStatus,
-  activityStatus: "RASCUNHO" | "PUBLISHED",
+  activityStatus: "PUBLISHED",
   activity: ParticipantActivity,
 ): CurriculumActivitySeed {
   const contentVersions = activity.items.map((item) =>
@@ -116,13 +116,13 @@ function createSeedFromActivity(
 
 export function createM02ContentSeed(
   scopeId: string,
-  status: CurriculumContentSeedStatus = "PROJECAO_VERIFICADA",
+  status: CurriculumContentSeedStatus = "PUBLICADO",
 ): CurriculumActivitySeed {
   assertScopeId(scopeId);
   return createSeedFromActivity(
     scopeId,
     status,
-    "RASCUNHO",
+    "PUBLISHED",
     toParticipantActivity(m02Assessment),
   );
 }
@@ -130,26 +130,26 @@ export function createM02ContentSeed(
 export function createCurriculumContentSeed(
   scopeId: string,
   moduleId: string,
-  status: CurriculumContentSeedStatus = "RASCUNHO",
+  status: CurriculumContentSeedStatus = "PUBLICADO",
 ): CurriculumActivitySeed {
   assertScopeId(scopeId);
   return createSeedFromActivity(
     scopeId,
     status,
-    "RASCUNHO",
+    "PUBLISHED",
     toParticipantActivityFromDraft(getModuleDraftPack(moduleId)),
   );
 }
 
 export function createDiagnosticContentSeed(
   scopeId: string,
-  status: CurriculumContentSeedStatus = "RASCUNHO",
+  status: CurriculumContentSeedStatus = "PUBLICADO",
 ): CurriculumActivitySeed {
   assertScopeId(scopeId);
   return createSeedFromActivity(
     scopeId,
     status,
-    "RASCUNHO",
+    "PUBLISHED",
     toParticipantActivityFromDiagnosticDraft(b07DiagnosticDraftPack),
   );
 }

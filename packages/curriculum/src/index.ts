@@ -21,6 +21,17 @@ export {
   createM02AuthoringBank,
 } from "./authoring.js";
 export {
+  CLINICAL_SOURCES,
+  isAllowedClinicalSourceCode,
+  validateClinicalSourceRefs,
+} from "./source-registry.js";
+export type {
+  ClinicalSource,
+  ClinicalSourceCode,
+  ClinicalSourceRef,
+  ClinicalSourceValidation,
+} from "./source-registry.js";
+export {
   b07DiagnosticDraftPack,
   buildPersonalizedCurriculumPath,
   curriculumDraftCounts,

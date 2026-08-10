@@ -5,13 +5,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   advanceContent,
-  reviewAuthoringContent,
+  publishAuthoringContent,
 } from "../../packages/application/src/index.js";
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   accounts,
   contentEditorialRecords,
-  contentReviewDecisions,
   contentVersions,
   createAuthoringRepository,
   createContentRepository,
@@ -23,15 +22,14 @@ const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
-  "PostgreSQL authoring and clinical review integration",
+  "PostgreSQL automatic authoring publication integration",
   () => {
-    it("persists item-level review and blocks publication until all gates are closed", async () => {
+    it("persists automatic source preflight and publication without a clinical gate", async () => {
       if (databaseUrl === undefined)
         throw new Error("test database URL is required");
 
       const database = createPostgresDatabase(databaseUrl);
       const authorId = randomUUID();
-      const reviewerId = randomUUID();
       const contentId = randomUUID();
       const contentVersionId = randomUUID();
       const editorialRecordId = randomUUID();
@@ -51,9 +49,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         remediationTargetObjectiveId: "M02-OBJ-01",
         sourceRefs: [
           {
-            code: "F-02",
-            locator: "localizador interno",
-            updateRequired: true,
+            code: "BOOK_ETTINGER_9E",
+            locator: "capítulo 123, seção de ressuscitação",
+            updateRequired: false,
           },
         ],
         participant: {
@@ -73,14 +71,13 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const preflight = {
         ruleVersion: "authoring-preflight-v1" as const,
         technicalChecksPassed: true,
-        readyForClinicalReview: true,
-        readyForPublication: false,
+        readyForPublication: true,
         checks: {
           requiredFields: true,
           correctionMetadata: true,
           publicBoundary: true,
           sourceTraceability: true,
-          publicationBlocked: true,
+          publicationBlocked: false,
         },
         checkedAt: new Date().toISOString(),
       };
@@ -92,18 +89,13 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             professionalEmail: `${authorId}@example.invalid`,
             status: "ACTIVE",
           },
-          {
-            id: reviewerId,
-            professionalEmail: `${reviewerId}@example.invalid`,
-            status: "ACTIVE",
-          },
         ]);
         await database.db.insert(contentVersions).values({
           id: contentVersionId,
           contentId,
           scopeId,
           version: 1,
-          status: "EM_REVISAO_CLINICA",
+          status: "AUTOVERIFICADO",
           kind: "QUESTAO",
           title: bankItem.title,
           participantText: bankItem.prompt,
@@ -130,17 +122,15 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           database.db,
           randomUUID,
         );
-        const reviewed = await reviewAuthoringContent(
+        const published = await publishAuthoringContent(
           {
-            principalId: reviewerId,
+            principalId: authorId,
             accountStatus: "ACTIVE",
-            roles: ["AUTHOR", "CLINICAL_APPROVER"],
+            roles: ["AUTHOR"],
             scopes: [scopeId],
             contentId,
             version: 1,
             scopeId,
-            decision: "APROVAR_CLINICAMENTE",
-            rationale: "Revisão sintética concluída.",
             correlationId: requestId,
           },
           {
@@ -150,65 +140,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           },
         );
 
-        expect(reviewed.record.contentStatus).toBe("APROVADO_CLINICAMENTE");
-        expect(reviewed.record.latestReview?.reviewerId).toBe(reviewerId);
+        expect(published.record.contentStatus).toBe("PUBLICADO");
         const persisted = await authoringRepository.find(contentId, 1);
-        expect(persisted?.latestReview?.decision).toBe("APROVAR_CLINICAMENTE");
         expect(persisted?.correctChoiceIds).toEqual(["a"]);
-
-        await advanceContent(
-          {
-            principalId: reviewerId,
-            accountStatus: "ACTIVE",
-            roles: ["AUTHOR", "CLINICAL_APPROVER"],
-            scopes: [scopeId],
-            approvedClinicalApproverId: reviewerId,
-            contentId,
-            version: 1,
-            scopeId,
-            event: "VERIFICAR_PROJECAO",
-            correlationId: randomUUID(),
-          },
-          contentDependencies,
-        );
-        await advanceContent(
-          {
-            principalId: reviewerId,
-            accountStatus: "ACTIVE",
-            roles: ["CLINICAL_APPROVER"],
-            scopes: [scopeId],
-            approvedClinicalApproverId: reviewerId,
-            contentId,
-            version: 1,
-            scopeId,
-            event: "AUTORIZAR_PUBLICACAO",
-            correlationId: randomUUID(),
-          },
-          contentDependencies,
-        );
-        const published = await advanceContent(
-          {
-            principalId: reviewerId,
-            accountStatus: "ACTIVE",
-            roles: ["CLINICAL_APPROVER"],
-            scopes: [scopeId],
-            approvedClinicalApproverId: reviewerId,
-            contentId,
-            version: 1,
-            scopeId,
-            event: "PUBLICAR",
-            correlationId: randomUUID(),
-          },
-          contentDependencies,
-        );
-        expect(published.status).toBe("PUBLICADO");
-
-        const reviews = await database.db
-          .select({ decision: contentReviewDecisions.decision })
-          .from(contentReviewDecisions)
-          .where(eq(contentReviewDecisions.contentId, contentId));
-        expect(reviews).toHaveLength(1);
-        expect(reviews[0]?.decision).toBe("APROVAR_CLINICAMENTE");
 
         const stored = await createContentRepository(database.db).find(
           contentId,
@@ -221,9 +155,6 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
         await database.db
-          .delete(contentReviewDecisions)
-          .where(eq(contentReviewDecisions.contentId, contentId));
-        await database.db
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));
         await database.db
@@ -235,7 +166,6 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             ),
           );
         await database.db.delete(accounts).where(eq(accounts.id, authorId));
-        await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
         await database.close();
       }
     });

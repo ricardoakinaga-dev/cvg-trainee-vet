@@ -30,12 +30,12 @@ export type {
 export { contentTransitionRequestSchema } from "./content.js";
 export type { ContentTransitionRequest } from "./content.js";
 export {
-  authoringReviewRequestSchema,
+  authoringPublicationRequestSchema,
   internalAuthoringRecordProjectionSchema,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
 export type {
-  AuthoringReviewRequest,
+  AuthoringPublicationRequest,
   InternalAuthoringRecordProjection,
 } from "./authoring.js";
 export {
@@ -101,6 +101,24 @@ export {
   participantLearningJourneyProjectionSchema,
 } from "./journey.js";
 export type { ParticipantLearningJourneyProjection } from "./journey.js";
+export {
+  accountActionRequestSchema,
+  accountOperationProjectionSchema,
+} from "./account.js";
+export type { AccountOperationProjection } from "./account.js";
+export {
+  accountSecurityProjectionSchema,
+  operationsDashboardProjectionSchema,
+  parseAccountSecurity,
+  parseOperationsDashboard,
+  parseParticipantDashboard,
+  participantDashboardProjectionSchema,
+} from "./dashboard.js";
+export type {
+  AccountSecurityProjection,
+  OperationsDashboardProjection,
+  ParticipantDashboardProjection,
+} from "./dashboard.js";
 export {
   apiErrorCodeSchema,
   apiErrorResponse,

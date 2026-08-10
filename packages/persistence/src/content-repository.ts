@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   ContentRecord,
@@ -16,7 +16,6 @@ import {
 import { createAuditRepository } from "./audit-repository.js";
 import {
   contentEditorialRecords,
-  contentReviewDecisions,
   contentVersions,
   outboxEvents,
 } from "./schema.js";
@@ -60,9 +59,6 @@ const maxReconciliationRecords = 10_000;
 const contentStatuses: readonly ContentStatus[] = [
   "RASCUNHO",
   "AUTOVERIFICADO",
-  "EM_REVISAO_CLINICA",
-  "AJUSTES_SOLICITADOS",
-  "APROVADO_CLINICAMENTE",
   "PROJECAO_VERIFICADA",
   "AUTORIZADO_PARA_PUBLICACAO",
   "PUBLICADO",
@@ -110,7 +106,6 @@ export function contentRowToRecord(row: ContentRowShape): ContentRecord {
 
 function publicationGate(
   preflight: unknown,
-  latestReviewDecision: string | undefined,
 ): Readonly<{ readonly ready: boolean; readonly reasons: readonly string[] }> {
   const reasons: string[] = [];
   if (
@@ -121,9 +116,6 @@ function publicationGate(
       true
   ) {
     reasons.push("TECHNICAL_PREFLIGHT_INCOMPLETE");
-  }
-  if (latestReviewDecision !== "APROVAR_CLINICAMENTE") {
-    reasons.push("CLINICAL_APPROVAL_MISSING");
   }
   return Object.freeze({
     ready: reasons.length === 0,
@@ -161,7 +153,6 @@ export function createContentRepository(
       const editorialRows = await db
         .select({
           preflight: contentEditorialRecords.preflight,
-          editorialRecordId: contentEditorialRecords.id,
         })
         .from(contentEditorialRecords)
         .where(
@@ -179,24 +170,7 @@ export function createContentRepository(
           publicationBlockReasons: ["AUTHORING_RECORD_MISSING"],
         });
       }
-      const reviewRows = await db
-        .select({ decision: contentReviewDecisions.decision })
-        .from(contentReviewDecisions)
-        .where(
-          eq(
-            contentReviewDecisions.contentEditorialRecordId,
-            editorial.editorialRecordId,
-          ),
-        )
-        .orderBy(
-          desc(contentReviewDecisions.reviewedAt),
-          desc(contentReviewDecisions.createdAt),
-        )
-        .limit(1);
-      const gate = publicationGate(
-        editorial.preflight,
-        reviewRows[0]?.decision,
-      );
+      const gate = publicationGate(editorial.preflight);
       return contentRowToRecord({
         ...row,
         publicationReady: gate.ready,

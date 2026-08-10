@@ -115,7 +115,7 @@ export type {
   ContentWorkflowEvent,
 } from "./content-use-cases.js";
 export {
-  reviewAuthoringContent,
+  publishAuthoringContent,
   runAuthoringPreflight,
 } from "./authoring-use-cases.js";
 export type {
@@ -125,12 +125,10 @@ export type {
   AuthoringPreflightResult,
   AuthoringRecord,
   AuthoringRepositoryPort,
-  AuthoringReview,
-  AuthoringReviewDecision,
   AuthoringRubric,
   AuthoringSourceRef,
-  AuthoringWorkflowDependencies,
-  ReviewAuthoringCommand,
+  AuthoringPublicationDependencies,
+  PublishAuthoringCommand,
 } from "./authoring-use-cases.js";
 export type {
   CreateSessionInput,
@@ -181,6 +179,21 @@ export {
   deriveJourneyNextAction,
   getParticipantLearningJourney,
 } from "./journey-use-cases.js";
+export { buildParticipantDashboard } from "./dashboard-use-cases.js";
+export type {
+  ParticipantDashboard,
+  ParticipantDashboardModule,
+  ParticipantDashboardModuleStatus,
+} from "./dashboard-use-cases.js";
+export {
+  createHttpIdentityProvider,
+  createUnavailableIdentityProvider,
+} from "./identity-provider.js";
+export type {
+  IdentityProviderOperation,
+  IdentityProviderPort,
+  IdentityProviderSecurityStatus,
+} from "./identity-provider.js";
 export type {
   GetParticipantLearningJourneyCommand,
   JourneyNextAction,

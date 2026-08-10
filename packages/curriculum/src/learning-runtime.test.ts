@@ -21,19 +21,16 @@ import {
 } from "./projection.js";
 
 describe("curriculum learning runtime", () => {
-  it("materializes a complete internal draft pack for all 24 modules", () => {
+  it("materializes complete production packs for all 24 modules", () => {
     expect(curriculumDraftPacks).toHaveLength(24);
     expect(
-      curriculumDraftPacks.every(
-        (pack) =>
-          pack.status === "RASCUNHO" || pack.status === "PROJECAO_VERIFICADA",
-      ),
+      curriculumDraftPacks.every((pack) => pack.status === "PUBLICADO"),
     ).toBe(true);
     expect(
       curriculumDraftPacks.every(
         (pack) =>
-          pack.publicationAuthorized === false &&
-          pack.clinicalReview === "PENDENTE" &&
+          pack.publicationAuthorized === true &&
+          pack.sourceVerification === "VERIFICADO_AUTOMATICAMENTE" &&
           pack.items.length >= 31 &&
           pack.items.every(
             (item) =>
@@ -54,6 +51,23 @@ describe("curriculum learning runtime", () => {
             "PROIBIDO_MVP",
       ),
     ).toBe(true);
+  });
+
+  it("ships all 24 modules and B-07 as automatically source-verified production content", () => {
+    expect(curriculumDraftPacks).toHaveLength(24);
+    expect(
+      curriculumDraftPacks.every(
+        (pack) =>
+          pack.status === "PUBLICADO" &&
+          pack.publicationAuthorized &&
+          pack.publicProjectionReady &&
+          !pack.clinicalReviewRequired,
+      ),
+    ).toBe(true);
+    expect(b07DiagnosticDraftPack.status).toBe("PUBLICADO");
+    expect(b07DiagnosticDraftPack.publicationAuthorized).toBe(true);
+    expect(b07DiagnosticDraftPack.publicProjectionReady).toBe(true);
+    expect(b07DiagnosticDraftPack.clinicalReviewRequired).toBe(false);
   });
 
   it("keeps M02 authored questions while giving the other modules versioned drafts", () => {
@@ -177,7 +191,7 @@ describe("curriculum learning runtime", () => {
     });
   });
 
-  it("projects every draft safely and seeds it as non-published content", () => {
+  it("projects every production pack safely and seeds it as published content", () => {
     const scopeId = "44444444-4444-4444-8444-444444444444";
     const projections = curriculumDraftPacks.map((pack) =>
       toParticipantActivityFromDraft(pack),
@@ -198,7 +212,7 @@ describe("curriculum learning runtime", () => {
       seeds.every(
         (seed) =>
           seed.contentVersions.every(
-            (content) => content.status === "RASCUNHO",
+            (content) => content.status === "PUBLICADO",
           ) &&
           seed.contentVersions.every(
             (content) =>
@@ -239,9 +253,9 @@ describe("curriculum learning runtime", () => {
       "44444444-4444-4444-8444-444444444444",
     );
     expect(projection.items).toHaveLength(120);
-    expect(seed.activity.status).toBe("RASCUNHO");
+    expect(seed.activity.status).toBe("PUBLISHED");
     expect(
-      seed.contentVersions.every((item) => item.status === "RASCUNHO"),
+      seed.contentVersions.every((item) => item.status === "PUBLICADO"),
     ).toBe(true);
     expect(JSON.stringify(projection)).not.toMatch(
       /source|answer|rubric|critical|blueprint|pdf/iu,
@@ -268,7 +282,7 @@ describe("curriculum learning runtime", () => {
     expect(result.globalScorePercent).toBeUndefined();
   });
 
-  it("passes the technical preflight while keeping clinical publication gated", () => {
+  it("passes the technical preflight and releases source-verified content", () => {
     const report = preflightCurriculumDrafts();
 
     expect(report.modules).toHaveLength(24);
@@ -279,8 +293,8 @@ describe("curriculum learning runtime", () => {
       technicalChecksPassed: true,
     });
     expect(report.allTechnicalChecksPassed).toBe(true);
-    expect(report.clinicalApprovalPending).toBe(true);
-    expect(report.readyForPublication).toBe(false);
+    expect(report.clinicalApprovalPending).toBe(false);
+    expect(report.readyForPublication).toBe(true);
     expect(
       report.modules.every(
         (module) =>
@@ -288,7 +302,7 @@ describe("curriculum learning runtime", () => {
           module.checks.requiredFields &&
           module.checks.correctionMetadata &&
           module.checks.publicBoundary &&
-          module.checks.publicationBlocked,
+          !module.checks.publicationBlocked,
       ),
     ).toBe(true);
   });

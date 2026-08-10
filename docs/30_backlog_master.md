@@ -2,7 +2,9 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
-**Item concluído mais recente da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade, reavaliado em 95/100. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados; o item 16 está liberado para abertura.
+**Estado atual (2026-08-10):** `SOURCE-PRODUCT-OPS-18` — fonte clínica automática, jornada de 24 meses, superfícies de conta/dashboard/admin, remoção do caminho executável de revisão clínica e prova operacional HA implementadas no worktree. O item 16 está reconciliado no worktree, aguardando commit intencional; o relatório de baseline continua histórico e os gaps externos permanecem explícitos.
+
+**Item concluído mais recente da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade, reavaliado em 95/100. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados.
 
 ## P0 — CRÍTICO
 
@@ -24,34 +26,39 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - título: validar blueprint das 120 questões diagnósticas
 - descrição: revisar a matriz das três sessões, cobertura clínica, estrutura cognitiva, avaliabilidade, equidade e aderência à política D-077
 - módulo: conteúdo / avaliação diagnóstica
-- dependência: PRD 0017, D-070, D-077, D-082, D-083 a D-086
+- dependência: PRD 0017, os três livros registrados em `clinical-sources.json` e pré-voo automático
 - fase: pré-piloto — conteúdo diagnóstico
 - risco: alto — blueprint inadequado contamina a baseline e a personalização
 - impacto: alto
-- status: IN_PROGRESS
-- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0012_blueprint_diagnostico_b07.md; conteúdo 8bed361; checkpoint ddc8383
+- status: COMPLETED_WITH_GAPS
+- evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0012_blueprint_diagnostico_b07.md; `packages/curriculum/src/source-registry.ts`; `clinical-sources.json`; `docs/101_clinical_source_policy.md`
+- resultado: blueprint e referências ativas foram normalizados para os três livros autorizados; o pré-voo rejeita fontes fora do registro. A prova semântica texto-a-texto de cada redação permanece um gap separado, sem criar gate humano de publicação.
 
 ### B07-02 — Produção dos itens diagnósticos
 
 - título: produzir 120 itens originais em três sessões de 40
 - descrição: escrever os itens conforme o blueprint, com cenários fictícios, gabaritos/rubricas testados, respostas aceitas e rastreabilidade interna por módulo/fonte
 - módulo: conteúdo e avaliação
-- dependência: B07-01 aprovado clinicamente por Ricardo
+- dependência: B07-01 e pré-voo automático de fonte
 - fase: pré-piloto — produção de conteúdo
 - risco: crítico — erro clínico, ambiguidade ou cópia bloqueia a aplicação
 - impacto: alto
-- status: PENDENTE
+- status: COMPLETED_WITH_GAPS
+- evidência: `packages/curriculum/src/authoring.ts`; `packages/curriculum/src/learning-runtime.ts`; `packages/application/src/authoring-use-cases.ts`; `packages/persistence/src/content-repository.ts`; testes de currículo/autoria/API
+- resultado: banco B-07 de 120 itens, dividido em 40/40/40, está materializado no runtime e no caminho de publicação automática; nenhum gate clínico humano é requisito ativo. Permanecem apenas a verificação semântica integral dos textos contra os livros e a aplicação real da baseline.
 
 ### B07-03 — Revisão e pré-voo
 
-- título: executar revisão clínica de Ricardo e testar a avaliabilidade dos 120 itens
-- descrição: verificar redação original, cobertura, fontes atuais, scoring determinístico, respostas aceitas, feedback e comportamento de interrupção com dados sintéticos
+- título: executar pré-voo automático e testar a avaliabilidade dos 120 itens
+- descrição: verificar referências canônicas, redação registrada, scoring determinístico, respostas aceitas, feedback e comportamento de interrupção com dados sintéticos, sem aprovação clínica humana como dependência de software
 - módulo: governança clínica e qualidade da avaliação
-- dependência: B07-02 concluído
+- dependência: B07-02 e registry imutável das três fontes
 - fase: pré-piloto — qualidade de conteúdo
 - risco: crítico
 - impacto: alto
-- status: PENDENTE
+- status: COMPLETED_WITH_GAPS
+- evidência: `packages/curriculum/src/source-registry.test.ts`; `packages/curriculum/src/learning-runtime.test.ts`; `packages/application/src/authoring-use-cases.test.ts`; `pnpm verify:clinical-sources`; `docs/101_clinical_source_policy.md`
+- resultado: o pré-voo automático valida fontes, publicação e projeção pública; B-07 sai do estado de rascunho técnico para `PUBLICADO` no runtime. A validação de campo/piloto e a checagem semântica completa dos textos ainda não foram executadas.
 
 ### CUR-24-01 — Fatia vertical do Mês 2
 
@@ -71,7 +78,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - título: materializar a grade de 24 meses com questões, testes, retenção e transferência digital
 - descrição: representar módulos, sessões, objetivos, audiência, comportamentos hospitalares, modalidades de avaliação, D+7/D+30/D+90, métrica de processo e regras de domínio; projetar alternativas simples/múltiplas sem campos internos; preparar seed versionado sem publicação automática
 - módulo: programa curricular V3 / conteúdo / avaliação / participante
-- dependência: PRD 0017, Anexo 0022, Anexo 0024, pesquisa 0495 e revisão clínica antes de publicação
+- dependência: PRD 0017, Anexo 0022, Anexo 0024 e `clinical-sources.json`
 - fase: BUILD — Phase 3 / SCORE-95-03
 - risco: alto — conteúdo incorreto ou publicação sem revisão pode causar dano educacional e clínico
 - impacto: alto
@@ -82,22 +89,22 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - testes adicionais: `tests/e2e/participant-access.spec.ts`; `tests/integration/postgres-activity-content.test.ts`
 - testes adicionais: `packages/curriculum/src/learning-runtime.test.ts`; `packages/application/src/curriculum-runtime-use-cases.test.ts`; `packages/persistence/src/curriculum-runtime-repository.test.ts`; `tests/integration/curriculum-catalog.test.ts`; `tests/integration/curriculum-runtime.test.ts`; 15 testes direcionados do runtime/catalog
 - verificação: `pnpm verify`; `pnpm typecheck`; `pnpm build`; `pnpm --filter @cvg/curriculum typecheck`; 5 E2E sintéticos; 17 testes live PostgreSQL/Qdrant e 1 skip por configuração; migração 0009 aplicada
-- resultado parcial: catálogo, B-07 120/40/40/40, packs dos 24 módulos, diagnóstico por tema, domínio/remediação/retenção, projeção pública com seleção simples/múltipla e seed `RASCUNHO` funcionam; publicação automática permanece impossível
-- próxima ação: completar autoria clínica, executar pré-voo de Ricardo, fechar os gaps RLS/E2E real e só depois promover conteúdo aprovado para `PUBLICADO`
+- resultado parcial: catálogo, B-07 120/40/40/40, packs dos 24 módulos, diagnóstico por tema, domínio/remediação/retenção, projeção pública com seleção simples/múltipla e seed versionado funcionam; fontes são limitadas aos três livros e a publicação automática está habilitada
+- próxima ação: executar a verificação semântica automatizada e a aplicação da baseline quando o ambiente de piloto existir; não reintroduzir aprovação clínica humana como gate de software
 
 ### CUR-24-03 — Runtime educacional e pré-voo técnico
 
 - título: conectar diagnóstico, domínio, remediação, retenção e trilha ao ciclo educacional
 - descrição: manter B-07 e os packs internos versionados; persistir estado educacional na jornada autorizada, preservar correção humana para respostas abertas, validar formas equivalentes e preparar pré-voo de conteúdo sem publicação automática
 - módulo: programa curricular V3 / diagnóstico / aprendizagem / avaliação
-- dependência: CUR-24-02; revisão clínica de Ricardo antes de qualquer conteúdo publicado
+- dependência: CUR-24-02; pré-voo automático das três fontes
 - fase: BUILD — Phase 3 / SCORE-95-03
 - risco: alto — erro de conteúdo, scoring ou transição pode induzir aprendizado inseguro
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
 - evidência: `BRIEFING/04.AUDIT/0496_curriculum_runtime_preflight.md`; artifact `CURRICULUM-RUNTIME-INTEGRATION-005`; `packages/curriculum/src/learning-runtime.ts`; `packages/application/src/curriculum-runtime-use-cases.ts`; `packages/persistence/src/curriculum-runtime-repository.ts`; `packages/contracts/src/learning.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; migração `0009_nappy_nightcrawler.sql`
-- resultado: preflight técnico passa, B-07 tem 120 itens e packs versionados cobrem o catálogo; diagnóstico não punitivo, remediação dirigida e D+7/D+30/D+90 estão modelados; o estado digital é persistido, versionado e projetado com segurança na API/web; clínica, RLS contextual e E2E navegador→API real permanecem pendentes
-- próxima ação: completar autoria/revisão clínica, executar pré-voo de M02/B-07, registrar aprovação de Ricardo e manter a publicação bloqueada
+- resultado: preflight técnico passa, B-07 tem 120 itens e packs versionados cobrem o catálogo; diagnóstico não punitivo, remediação dirigida e D+7/D+30/D+90 estão modelados; o estado digital é persistido, versionado e projetado com segurança na API/web; o caminho ativo publica após a verificação automática de fonte
+- próxima ação: completar a persistência de cada atividade mensal e E2E de fluxo completo; não tratar aprovação clínica humana como dependência ativa
 
 ### ARCH-04-01 — Boundary arquitetural executável
 
@@ -325,15 +332,16 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 ### AUD-C0-002 — Conteúdo curricular e B-07
 
-- título: fechar aprovação humana, produção e pré-voo do diagnóstico e da primeira fatia curricular
-- descrição: aprovar B07-01, produzir/revisar B07-02/B07-03, executar a fatia CUR-24-01/T2 e somente então considerar aplicação de baseline
+- título: fechar fonte, produção e pré-voo automático do diagnóstico e da primeira fatia curricular
+- descrição: verificar B07-01, produzir B07-02/B07-03, executar o pré-voo automático dos três livros e separar a publicação digital da aplicação de baseline
 - módulo: conteúdo / governança clínica / piloto
-- dependência: decisão de Ricardo e participantes autorizados para T2
+- dependência: registry/hash dos três livros; participantes autorizados continuam necessários somente para eventual piloto
 - fase: pré-piloto / piloto
 - risco: crítico — programa não pode ser aplicado sem conteúdo clínico autoral revisado
 - impacto: alto
-- status: WAITING_HUMAN_APPROVAL
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; B07-01, B07-02, B07-03, CUR-24-01 e B07-04 neste backlog
+- status: COMPLETED_WITH_GAPS
+- evidência: `docs/101_clinical_source_policy.md`; `clinical-sources.json`; B07-01, B07-02, B07-03; `pnpm verify:clinical-sources`; `packages/application/src/authoring-use-cases.ts`
+- resultado: não existe aprovação clínica humana como bloqueio no caminho ativo; a rota, o contrato e o caso de uso de revisão de autoria foram removidos, e B-07/packs têm publicação automática condicionada ao registry técnico. A tabela histórica da migration 0014 não é lida nem escrita pelo caminho ativo. Piloto, competência prática e verificação semântica integral continuam fora da prova já executada.
 
 ## P1 — ALTA PRIORIDADE
 
@@ -346,8 +354,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 3–5
 - risco: alto — a construção atual não entrega o produto declarado
 - impacto: alto
-- status: PENDENTE
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; gaps 0420/0421
+- status: COMPLETED_WITH_GAPS
+- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `packages/application/src/dashboard-use-cases.ts`; `packages/contracts/src/dashboard.ts`; `apps/api/src/http.ts`; `apps/web/app/dashboard/page.tsx`; `apps/web/app/account/page.tsx`; `apps/web/app/admin/page.tsx`
+- resultado: dashboard do participante, roadmap de 24 meses, KPIs operacionais, conta/segurança, recuperação/MFA por adapter e superfície administrativa estão implementados e protegidos por projeções estritas. Fluxo mensal persistido completo e provedor externo de identidade permanecem gaps de integração.
 
 ### AUD-P1-002 — RLS contextual e isolamento live
 
@@ -383,8 +392,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 6
 - risco: alto — não há prova suficiente de operação ou recuperação
 - impacto: alto
-- status: PENDENTE
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; 0412–0418 e 0421
+- status: COMPLETED_WITH_GAPS
+- evidência: `docs/102_operational_evidence_2026-08-10.md`; `infra/production/docker-compose.ha.yml`; `infra/observability/otel-collector-config.yaml`; `infra/observability/prometheus.yml`; `scripts/run-load-smoke.mjs`; `scripts/verify-ha-topology.mjs`
+- resultado: collector OTLP, retenção de métricas, traces recebidos, carga, failover Caddy e múltiplas réplicas foram executados em Docker descartável com 100% de respostas no smoke normal e no smoke pós-failover. Backend durável de traces, deployment externo, alertas exercitados e restore de produção permanecem gaps.
 
 ### AUD-P1-005 — Congelamento e rastreabilidade da construção
 
@@ -395,8 +405,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD/AUDIT
 - risco: alto — o HEAD auditado não contém os arquivos técnicos da construção
 - impacto: alto
-- status: PENDENTE
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `git status` e `git ls-files`
+- status: IN_PROGRESS
+- evidência: `traceability.yml`; `docs/99_runtime_state.md`; `docs/20_master_execution_log.md`; `docs/30_backlog_master.md`; `docs/100_full_program_audit_2026-08-10.md`; `docs/101_clinical_source_policy.md`; `docs/102_operational_evidence_2026-08-10.md`; `docs/103_followup_program_status_2026-08-10.md`; `git status --short`; `git diff --check`
+- resultado: a reconciliação de requisito→SPEC→backlog→código→teste→artefato foi atualizada para a rodada atual; a remoção do gate executável está coberta por teste negativo de rota e suíte completa verde. O trabalho ainda está no worktree e não recebeu um novo commit final nesta rodada.
 
 ### GATE-01 — Aprovar reexecução do Discovery
 

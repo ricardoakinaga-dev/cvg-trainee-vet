@@ -17,12 +17,10 @@ export type Capability =
   | "CORRECT_ATTEMPT"
   | "MODERATE_CONTENT"
   | "AUTHOR_CONTENT"
-  | "APPROVE_CLINICAL_CONTENT"
   | "PUBLISH_CONTENT"
   | "VIEW_INTERNAL_SOURCE"
   | "VIEW_INTERNAL_AUDIT"
   | "MANAGE_ROLES"
-  | "GRANT_CLINICAL_APPROVER"
   | "MANAGE_LEARNING_ASSIGNMENTS"
   | "MANAGE_ASSESSMENT_WORKFLOWS"
   | "CREATE_FEEDBACK_TICKET"
@@ -111,9 +109,13 @@ export function canAccess(request: AuthorizationRequest): boolean {
       );
     case "AUTHOR_CONTENT":
       return hasRole(request, "AUTHOR") && hasScope(request);
-    case "APPROVE_CLINICAL_CONTENT":
     case "PUBLISH_CONTENT":
-      return isApprovedClinicalIdentity(request) && hasScope(request);
+      return (
+        (hasRole(request, "AUTHOR") ||
+          hasRole(request, "MODERATOR") ||
+          hasRole(request, "ADMIN")) &&
+        hasScope(request)
+      );
     case "VIEW_INTERNAL_SOURCE":
       return (
         (hasRole(request, "AUTHOR") || isApprovedClinicalIdentity(request)) &&
@@ -123,8 +125,6 @@ export function canAccess(request: AuthorizationRequest): boolean {
       return hasRole(request, "AUDITOR") || hasRole(request, "ADMIN");
     case "MANAGE_ROLES":
       return hasRole(request, "ADMIN");
-    case "GRANT_CLINICAL_APPROVER":
-      return false;
     default:
       return false;
   }

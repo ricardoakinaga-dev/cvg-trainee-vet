@@ -1,0 +1,195 @@
+name: cvg-trainee-vet-ha
+
+x-api-common: &api-common
+  build:
+    context: ../..
+    dockerfile: infra/production/Dockerfile
+  image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
+  restart: unless-stopped
+  environment: &api-environment
+    NODE_ENV: production
+    API_HOST: 0.0.0.0
+    API_PORT: "3000"
+    DATABASE_URL: postgresql://${CVG_DB_USER:?set CVG_DB_USER}:${CVG_DB_APP_PASSWORD:?set CVG_DB_APP_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
+    WEB_ORIGINS: ${WEB_ORIGINS:?set WEB_ORIGINS}
+    QDRANT_ENABLED: "false"
+    AI_ENABLED: "false"
+    METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  networks: [backend]
+  healthcheck:
+    test:
+      [
+        CMD,
+        node,
+        -e,
+        "fetch('http://127.0.0.1:3000/health/live').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+      ]
+    interval: 10s
+    timeout: 3s
+    start_period: 20s
+    retries: 5
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    otel-collector:
+      condition: service_started
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${CVG_DB_ADMIN:?set CVG_DB_ADMIN}
+      POSTGRES_PASSWORD: ${CVG_DB_ADMIN_PASSWORD:?set CVG_DB_ADMIN_PASSWORD}
+      POSTGRES_DB: ${CVG_DB_NAME:?set CVG_DB_NAME}
+      CVG_DB_USER: ${CVG_DB_USER:?set CVG_DB_USER}
+      CVG_DB_APP_PASSWORD: ${CVG_DB_APP_PASSWORD:?set CVG_DB_APP_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init-app-role.sh:/docker-entrypoint-initdb.d/01-init-app-role.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [backend]
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.5
+    restart: unless-stopped
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks: [backend]
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: infra/production/Dockerfile
+    image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
+    restart: "no"
+    command: ["pnpm", "db:migrate"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${CVG_DB_ADMIN:?set CVG_DB_ADMIN}:${CVG_DB_ADMIN_PASSWORD:?set CVG_DB_ADMIN_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [backend]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.136.0
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ../observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks: [backend]
+
+  api-a:
+    <<: *api-common
+
+  api-b:
+    <<: *api-common
+
+  worker-a:
+    build:
+      context: ../..
+      dockerfile: infra/production/Dockerfile
+    image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
+    restart: unless-stopped
+    command: ["node", "apps/worker/dist/main.js"]
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "try { process.kill(1, 0); process.exit(0); } catch { process.exit(1); }",
+        ]
+      interval: 10s
+      timeout: 3s
+      start_period: 20s
+      retries: 5
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${CVG_DB_USER:?set CVG_DB_USER}:${CVG_DB_APP_PASSWORD:?set CVG_DB_APP_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
+      QDRANT_ENABLED: "false"
+      AI_ENABLED: "false"
+      METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [backend]
+
+  worker-b:
+    extends:
+      service: worker-a
+    command: ["node", "apps/worker/dist/main.js"]
+
+  edge:
+    image: caddy:2.9.1-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      api-a:
+        condition: service_healthy
+      api-b:
+        condition: service_healthy
+    networks: [backend]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+      - --storage.tsdb.retention.size=20GB
+      - --web.enable-lifecycle
+    volumes:
+      - ../observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    secrets: [metrics_scrape_token]
+    depends_on:
+      api-a:
+        condition: service_healthy
+      api-b:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks: [backend]
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    restart: unless-stopped
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+    networks: [backend]
+
+volumes:
+  postgres-data:
+  qdrant-data:
+  prometheus-data:
+  grafana-data:
+
+secrets:
+  metrics_scrape_token:
+    file: ${METRICS_SCRAPE_TOKEN_FILE:?set METRICS_SCRAPE_TOKEN_FILE}
+
+networks:
+  backend:
+    driver: bridge

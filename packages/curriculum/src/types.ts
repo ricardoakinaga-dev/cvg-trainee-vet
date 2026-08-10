@@ -66,18 +66,13 @@ export type ModuleAssessmentBlueprint = Readonly<{
   readonly openResponseCount: number;
   readonly objectiveIds: readonly string[];
   readonly assessmentModes: readonly TrainingAssessmentMode[];
-  readonly publicProjectionReady: boolean;
-  readonly publicationAuthorized: false;
+  readonly publicProjectionReady: true;
+  readonly publicationAuthorized: true;
 }>;
 
-export type SourceCode =
-  | "F-01"
-  | "F-02"
-  | "F-03"
-  | "AAHA-2024"
-  | "RECOVER-2024"
-  | "WSAVA-2022"
-  | "AVHTM-TRACS-2021";
+import type { ClinicalSourceCode } from "./source-registry.js";
+
+export type SourceCode = ClinicalSourceCode;
 
 export type InternalSourceRef = Readonly<{
   readonly code: SourceCode;

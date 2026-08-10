@@ -34,8 +34,12 @@
     "verify:documentation": "node scripts/verify-documentation.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",
     "verify:product-definition": "node scripts/verify-product-definition.mjs",
+    "verify:clinical-sources": "node scripts/verify-clinical-sources.mjs",
+    "ops:load-smoke": "node scripts/run-load-smoke.mjs",
+    "ops:verify-ha": "node scripts/verify-ha-topology.mjs",
+    "verify:operational-config": "pnpm ops:verify-ha",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
-    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm verify:clinical-sources && pnpm verify:operational-config && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",

@@ -56,11 +56,10 @@ function dependencies(
 }
 
 const publishCommand = {
-  principalId: "ricardo-account",
+  principalId: "content-author",
   accountStatus: "ACTIVE" as const,
-  roles: ["CLINICAL_APPROVER"] as const,
+  roles: ["AUTHOR"] as const,
   scopes: [content.scopeId],
-  approvedClinicalApproverId: "ricardo-account",
   contentId: content.contentId,
   version: content.version,
   scopeId: content.scopeId,
@@ -69,7 +68,7 @@ const publishCommand = {
 };
 
 describe("content workflow use cases", () => {
-  it("publishes only through the configured clinical approver and redacts the event", async () => {
+  it("publishes source-verified content without a clinical approver and redacts the event", async () => {
     const deps = dependencies();
 
     const result = await advanceContent(publishCommand, deps);
@@ -89,12 +88,36 @@ describe("content workflow use cases", () => {
     );
   });
 
-  it("denies publication to another clinical identity without writing state", async () => {
+  it("supports automatic publication without a human clinical gate", async () => {
+    const sourceVerified: ContentRecord = {
+      ...content,
+      status: "AUTOVERIFICADO",
+      publicationReady: true,
+    };
+    const deps = dependencies(sourceVerified);
+
+    const result = await advanceContent(
+      {
+        ...publishCommand,
+        event: "PUBLICAR_AUTOMATICAMENTE",
+      },
+      deps,
+    );
+
+    expect(result.status).toBe("PUBLICADO");
+    expect(deps.saved.current).toMatchObject({ status: "PUBLICADO" });
+  });
+
+  it("denies publication to an out-of-scope author without writing state", async () => {
     const deps = dependencies();
 
     await expect(
       advanceContent(
-        { ...publishCommand, principalId: "another-account" },
+        {
+          ...publishCommand,
+          principalId: "another-account",
+          scopes: [],
+        },
         deps,
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
@@ -112,40 +135,25 @@ describe("content workflow use cases", () => {
     ).rejects.toMatchObject({ code: "not_found" });
   });
 
-  it("allows an author to request clinical review but not to publish", async () => {
-    const draft: ContentRecord = { ...content, status: "AUTOVERIFICADO" };
-    const deps = dependencies(draft);
-    const command = {
-      principalId: publishCommand.principalId,
-      accountStatus: publishCommand.accountStatus,
-      roles: ["AUTHOR"] as const,
-      scopes: publishCommand.scopes,
-      contentId: publishCommand.contentId,
-      version: publishCommand.version,
-      scopeId: publishCommand.scopeId,
-      event: "INICIAR_REVISAO_CLINICA" as const,
-      correlationId: publishCommand.correlationId,
+  it("allows an authorized author to publish source-verified content without a clinical approver", async () => {
+    const sourceVerified: ContentRecord = {
+      ...content,
+      status: "AUTOVERIFICADO",
+      publicationReady: true,
     };
+    const deps = dependencies(sourceVerified);
 
-    await expect(advanceContent(command, deps)).resolves.toMatchObject({
-      status: "EM_REVISAO_CLINICA",
-    });
     await expect(
       advanceContent(
         {
-          principalId: publishCommand.principalId,
-          accountStatus: publishCommand.accountStatus,
-          roles: ["AUTHOR"] as const,
-          scopes: publishCommand.scopes,
-          contentId: publishCommand.contentId,
-          version: publishCommand.version,
-          scopeId: publishCommand.scopeId,
-          event: publishCommand.event,
-          correlationId: publishCommand.correlationId,
+          ...publishCommand,
+          principalId: "content-author",
+          roles: ["AUTHOR"],
+          event: "VERIFICAR_PROJECAO",
         },
-        dependencies(),
+        deps,
       ),
-    ).rejects.toMatchObject({ code: "forbidden" });
+    ).resolves.toMatchObject({ status: "PROJECAO_VERIFICADA" });
   });
 
   it("maps an invalid editorial transition to a stable conflict", async () => {

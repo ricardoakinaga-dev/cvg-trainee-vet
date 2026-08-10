@@ -5,7 +5,10 @@ import {
   createServerIntegrations,
   type ServerIntegrationSet,
 } from "@cvg/integrations";
-import { createObservability } from "@cvg/observability";
+import {
+  createObservability,
+  createOtlpHttpTraceSink,
+} from "@cvg/observability";
 import {
   createAiSuggestionSink,
   createContentIndexSourceRepository,
@@ -35,7 +38,14 @@ export function createWorkerRuntime(
 }> {
   const config = loadRuntimeConfig(environment);
   const integrations = createServerIntegrations(config);
-  const observability = createObservability({ service: "worker" });
+  const observability = createObservability({
+    service: "worker",
+    ...(config.observability.configured
+      ? {
+          traceSink: createOtlpHttpTraceSink(config.observability.otlpEndpoint),
+        }
+      : {}),
+  });
   const outbox = createOutboxRepository(integrations.database.db);
   const source = createContentIndexSourceRepository(integrations.database.db);
   const workerDependencies = {

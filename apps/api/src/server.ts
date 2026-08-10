@@ -119,6 +119,14 @@ function writeResponse(
   for (const [name, value] of Object.entries(payload.headers ?? {})) {
     response.setHeader(name, value);
   }
+  if (payload.rawBody !== undefined) {
+    response.setHeader(
+      "content-type",
+      payload.rawContentType ?? "text/plain; charset=utf-8",
+    );
+    response.end(payload.rawBody);
+    return;
+  }
   response.end(JSON.stringify(payload.body));
 }
 
@@ -138,6 +146,9 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (method === "GET" && path === "/internal/metrics") {
     return "/internal/metrics";
+  }
+  if (method === "GET" && path === "/internal/metrics/prometheus") {
+    return "/internal/metrics/prometheus";
   }
   if (method === "POST" && path === "/api/v1/invitations/accept") {
     return "/api/v1/invitations/accept";
@@ -168,6 +179,21 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (method === "GET" && path === "/api/v1/learning-path") {
     return "/api/v1/learning-path";
+  }
+  if (method === "GET" && path === "/api/v1/dashboard") {
+    return "/api/v1/dashboard";
+  }
+  if (method === "GET" && path === "/api/v1/account/security") {
+    return "/api/v1/account/security";
+  }
+  if (method === "POST" && path === "/api/v1/account/recovery/start") {
+    return "/api/v1/account/recovery/start";
+  }
+  if (method === "POST" && path === "/api/v1/account/mfa/enrollment") {
+    return "/api/v1/account/mfa/enrollment";
+  }
+  if (method === "GET" && path === "/api/v1/internal/dashboard") {
+    return "/api/v1/internal/dashboard";
   }
   if (/^\/api\/v1\/activities\/[^/]+$/u.test(path)) {
     return "/api/v1/activities/:activityId";
@@ -203,9 +229,9 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (
     method === "POST" &&
-    /^\/api\/v1\/internal\/content\/[^/]+\/review$/u.test(path)
+    /^\/api\/v1\/internal\/content\/[^/]+\/publish$/u.test(path)
   ) {
-    return "/api/v1/internal/content/:contentId/review";
+    return "/api/v1/internal/content/:contentId/publish";
   }
   if (
     /^\/api\/v1\/internal\/curriculum\/modules\/[^/]+\/evaluate$/u.test(path)
@@ -257,6 +283,12 @@ function observeRequest(
   const durationMs = Math.max(0, Date.now() - startedAt);
   const fields = { method, route, status: payload.status, outcome };
 
+  const traceparent = request.headers.traceparent;
+  const traceContext =
+    typeof traceparent === "string"
+      ? traceparent.match(/^00-([a-f0-9]{32})-([a-f0-9]{16})-[a-f0-9]{2}$/u)
+      : null;
+
   observability.logger.info("http.request.completed", {
     requestId,
     correlationId,
@@ -270,6 +302,17 @@ function observeRequest(
   });
   observability.metrics.observe("api.request.duration_ms", durationMs, {
     route,
+  });
+  observability.traces.record({
+    ...(traceContext?.[1] === undefined ? {} : { traceId: traceContext[1] }),
+    ...(traceContext?.[2] === undefined
+      ? {}
+      : { parentSpanId: traceContext[2] }),
+    name: "http.request",
+    startedAt: new Date(startedAt),
+    endedAt: new Date(),
+    status: outcome === "server_error" ? "error" : "ok",
+    attributes: { method, route, status: payload.status, outcome },
   });
 }
 

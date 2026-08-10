@@ -1,18 +1,13 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AuthoringRecord,
   AuthoringRepositoryPort,
-  AuthoringReview,
 } from "@cvg/application";
 import type { ContentStatus } from "@cvg/domain";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
-import {
-  contentEditorialRecords,
-  contentReviewDecisions,
-  contentVersions,
-} from "./schema.js";
+import { contentEditorialRecords, contentVersions } from "./schema.js";
 import type * as schema from "./schema.js";
 
 export type AuthoringRowShape = Readonly<{
@@ -28,14 +23,6 @@ export type AuthoringRowShape = Readonly<{
   readonly item: unknown;
   readonly preflight: unknown;
   readonly contentStatus: string;
-}>;
-
-export type ReviewRowShape = Readonly<{
-  readonly reviewerId: string;
-  readonly decision: string;
-  readonly rationale: string;
-  readonly reviewedAt: Date;
-  readonly correlationId: string;
 }>;
 
 type ParsedAuthoringItem = Readonly<{
@@ -57,9 +44,6 @@ type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 const contentStatuses: readonly ContentStatus[] = [
   "RASCUNHO",
   "AUTOVERIFICADO",
-  "EM_REVISAO_CLINICA",
-  "AJUSTES_SOLICITADOS",
-  "APROVADO_CLINICAMENTE",
   "PROJECAO_VERIFICADA",
   "AUTORIZADO_PARA_PUBLICACAO",
   "PUBLICADO",
@@ -228,14 +212,6 @@ function parsePreflight(value: unknown): AuthoringRecord["preflight"] {
       value.technicalChecksPassed,
       "preflight.technicalChecksPassed",
     ),
-    ...(value.readyForClinicalReview === undefined
-      ? {}
-      : {
-          readyForClinicalReview: requiredBoolean(
-            value.readyForClinicalReview,
-            "preflight.readyForClinicalReview",
-          ),
-        }),
     ...(value.readyForPublication === undefined
       ? {}
       : {
@@ -283,10 +259,7 @@ function assertVersion(value: number, field: string): void {
   }
 }
 
-export function authoringRowToRecord(
-  row: AuthoringRowShape,
-  latestReview?: AuthoringReview,
-): AuthoringRecord {
+export function authoringRowToRecord(row: AuthoringRowShape): AuthoringRecord {
   for (const [value, field] of [
     [row.editorialRecordId, "editorialRecordId"],
     [row.contentVersionId, "contentVersionId"],
@@ -315,29 +288,6 @@ export function authoringRowToRecord(
     ...item,
     contentStatus: assertContentStatus(row.contentStatus),
     preflight,
-    ...(latestReview === undefined ? {} : { latestReview }),
-  });
-}
-
-export function reviewRowToState(row: ReviewRowShape): AuthoringReview {
-  if (
-    row.decision !== "APROVAR_CLINICAMENTE" &&
-    row.decision !== "SOLICITAR_AJUSTES"
-  ) {
-    throw new PersistenceMappingError("review decision is invalid");
-  }
-  requiredString(row.reviewerId, "reviewerId");
-  requiredString(row.rationale, "rationale");
-  requiredString(row.correlationId, "correlationId");
-  if (Number.isNaN(row.reviewedAt.getTime())) {
-    throw new PersistenceMappingError("reviewedAt must be valid");
-  }
-  return Object.freeze({
-    reviewerId: row.reviewerId,
-    decision: row.decision,
-    rationale: row.rationale,
-    reviewedAt: row.reviewedAt.toISOString(),
-    correlationId: row.correlationId,
   });
 }
 
@@ -376,31 +326,7 @@ export function createAuthoringRepository(
       const row = rows[0];
       if (row === undefined) return null;
 
-      const reviews = await db
-        .select({
-          reviewerId: contentReviewDecisions.reviewerId,
-          decision: contentReviewDecisions.decision,
-          rationale: contentReviewDecisions.rationale,
-          reviewedAt: contentReviewDecisions.reviewedAt,
-          correlationId: contentReviewDecisions.correlationId,
-        })
-        .from(contentReviewDecisions)
-        .where(
-          eq(
-            contentReviewDecisions.contentEditorialRecordId,
-            row.editorialRecordId,
-          ),
-        )
-        .orderBy(
-          desc(contentReviewDecisions.reviewedAt),
-          desc(contentReviewDecisions.createdAt),
-        )
-        .limit(1);
-      const reviewRow = reviews[0];
-      return authoringRowToRecord(
-        row,
-        reviewRow === undefined ? undefined : reviewRowToState(reviewRow),
-      );
+      return authoringRowToRecord(row);
     },
     savePreflight: async (record, preflight) => {
       await db
@@ -414,36 +340,6 @@ export function createAuthoringRepository(
           ),
         );
       return Object.freeze({ ...record, preflight });
-    },
-    saveReview: async (record, review) => {
-      await db.transaction(async (transaction) => {
-        await transaction.insert(contentReviewDecisions).values({
-          contentEditorialRecordId: record.editorialRecordId,
-          contentVersionId: record.contentVersionId,
-          contentId: record.contentId,
-          version: record.version,
-          scopeId: record.scopeId,
-          reviewerId: review.reviewerId,
-          decision: review.decision,
-          rationale: review.rationale,
-          correlationId: review.correlationId,
-          reviewedAt: new Date(review.reviewedAt),
-        });
-        await transaction
-          .update(contentEditorialRecords)
-          .set({ updatedAt: new Date() })
-          .where(
-            and(
-              eq(
-                contentEditorialRecords.contentVersionId,
-                record.contentVersionId,
-              ),
-              eq(contentEditorialRecords.contentId, record.contentId),
-              eq(contentEditorialRecords.version, record.version),
-            ),
-          );
-      });
-      return Object.freeze({ ...record, latestReview: review });
     },
   };
   return Object.freeze(repository);

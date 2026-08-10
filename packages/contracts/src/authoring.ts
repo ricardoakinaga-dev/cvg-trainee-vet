@@ -9,9 +9,15 @@ const plainTextSchema = z
   .max(10_000)
   .refine((value) => !/<[^>]*>/u.test(value), "plain text is required");
 
+const clinicalSourceCodeSchema = z.enum([
+  "BOOK_ETTINGER_9E",
+  "BOOK_FOSSUM_4E",
+  "BOOK_JERICO_CAES_GATOS",
+]);
+
 const sourceRefSchema = z
   .object({
-    code: plainTextSchema.max(128),
+    code: clinicalSourceCodeSchema,
     locator: plainTextSchema.max(512),
     updateRequired: z.boolean(),
   })
@@ -79,7 +85,9 @@ const preflightSchema = z
   .object({
     ruleVersion: z.literal("authoring-preflight-v1"),
     technicalChecksPassed: z.boolean(),
-    readyForClinicalReview: z.boolean().optional(),
+    sourceVerification: z
+      .enum(["VERIFICADO_AUTOMATICAMENTE", "INVALIDO"])
+      .optional(),
     readyForPublication: z.boolean().optional(),
     checks: z
       .object({
@@ -94,22 +102,10 @@ const preflightSchema = z
   })
   .strict();
 
-const reviewSchema = z
-  .object({
-    reviewerId: idSchema,
-    decision: z.enum(["APROVAR_CLINICAMENTE", "SOLICITAR_AJUSTES"]),
-    rationale: plainTextSchema,
-    reviewedAt: z.iso.datetime(),
-    correlationId: idSchema,
-  })
-  .strict();
-
-export const authoringReviewRequestSchema = z
+export const authoringPublicationRequestSchema = z
   .object({
     version: versionSchema,
     scopeId: idSchema,
-    decision: z.enum(["APROVAR_CLINICAMENTE", "SOLICITAR_AJUSTES"]),
-    rationale: plainTextSchema,
   })
   .strict();
 
@@ -125,9 +121,6 @@ export const internalAuthoringRecordProjectionSchema = z
     contentStatus: z.enum([
       "RASCUNHO",
       "AUTOVERIFICADO",
-      "EM_REVISAO_CLINICA",
-      "AJUSTES_SOLICITADOS",
-      "APROVADO_CLINICAMENTE",
       "PROJECAO_VERIFICADA",
       "AUTORIZADO_PARA_PUBLICACAO",
       "PUBLICADO",
@@ -136,12 +129,11 @@ export const internalAuthoringRecordProjectionSchema = z
     ]),
     item: internalAuthoringItemSchema,
     preflight: preflightSchema,
-    latestReview: reviewSchema.optional(),
   })
   .strict();
 
-export type AuthoringReviewRequest = z.infer<
-  typeof authoringReviewRequestSchema
+export type AuthoringPublicationRequest = z.infer<
+  typeof authoringPublicationRequestSchema
 >;
 export type InternalAuthoringRecordProjection = z.infer<
   typeof internalAuthoringRecordProjectionSchema

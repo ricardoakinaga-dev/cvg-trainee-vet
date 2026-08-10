@@ -64,7 +64,7 @@ it("materializes the 24-month curriculum and its session cadence", () => {
         blueprint.questionTotal >= 31 &&
         blueprint.openResponseCount >= 2 &&
         blueprint.objectiveIds.length === 3 &&
-        blueprint.publicationAuthorized === false &&
+        blueprint.publicationAuthorized === true &&
         blueprint.assessmentModes.includes("DEBRIEFING"),
     ),
   ).toBe(true);
@@ -115,16 +115,14 @@ it("projects M02 without internal source, answer-key, or rubric fields", () => {
   );
 });
 
-it("prepares M02 persistence rows without auto-publishing clinical content", () => {
+it("prepares M02 persistence rows after automatic source verification", () => {
   const seed = createM02ContentSeed("44444444-4444-4444-8444-444444444444");
 
-  expect(seed.activity.status).toBe("RASCUNHO");
+  expect(seed.activity.status).toBe("PUBLISHED");
   expect(seed.contentVersions).toHaveLength(33);
   expect(seed.activityItems).toHaveLength(33);
   expect(
-    seed.contentVersions.every(
-      (content) => content.status === "PROJECAO_VERIFICADA",
-    ),
+    seed.contentVersions.every((content) => content.status === "PUBLICADO"),
   ).toBe(true);
   expect(
     seed.contentVersions.some(

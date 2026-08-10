@@ -42,16 +42,10 @@ describe("content editorial state machine", () => {
     ).toThrow("status");
   });
 
-  it("requires the complete clinical publication sequence", () => {
+  it("publishes through source verification without a clinical approval gate", () => {
     const draft = createContent(contentInput);
     const autoVerified = transitionContent(draft, { type: "AUTOVERIFICAR" });
-    const inReview = transitionContent(autoVerified, {
-      type: "INICIAR_REVISAO_CLINICA",
-    });
-    const approved = transitionContent(inReview, {
-      type: "APROVAR_CLINICAMENTE",
-    });
-    const projectionVerified = transitionContent(approved, {
+    const projectionVerified = transitionContent(autoVerified, {
       type: "VERIFICAR_PROJECAO",
     });
     const authorized = transitionContent(projectionVerified, {
@@ -60,33 +54,31 @@ describe("content editorial state machine", () => {
     const published = transitionContent(authorized, { type: "PUBLICAR" });
 
     expect(published.status).toBe("PUBLICADO");
+  });
+
+  it("publishes a source-verified draft through the automatic publication event", () => {
+    const draft = createContent(contentInput);
+    const published = transitionContent(draft, {
+      type: "PUBLICAR_AUTOMATICAMENTE",
+    });
+
+    expect(published.status).toBe("PUBLICADO");
     expect(Object.isFrozen(published)).toBe(true);
-    expect(draft.status).toBe("RASCUNHO");
-    expect(published.version).toBe(1);
   });
 
-  it("returns requested changes to a new draft cycle", () => {
-    const autoVerified = transitionContent(createContent(contentInput), {
-      type: "AUTOVERIFICAR",
-    });
-    const inReview = transitionContent(autoVerified, {
-      type: "INICIAR_REVISAO_CLINICA",
-    });
-    const changes = transitionContent(inReview, {
-      type: "SOLICITAR_AJUSTES",
-    });
-    const draft = transitionContent(changes, { type: "RETORNAR_A_RASCUNHO" });
-
-    expect(changes.status).toBe("AJUSTES_SOLICITADOS");
-    expect(draft.status).toBe("RASCUNHO");
-  });
-
-  it("does not permit approval, publication, or withdrawal out of order", () => {
+  it("does not expose human clinical review transitions", () => {
     const draft = createContent(contentInput);
 
     expect(() =>
-      transitionContent(draft, { type: "APROVAR_CLINICAMENTE" }),
-    ).toThrow("APROVAR_CLINICAMENTE");
+      transitionContent(draft, {
+        type: "APROVAR_CLINICAMENTE" as never,
+      }),
+    ).toThrow(ContentDomainError);
+  });
+
+  it("does not permit publication or withdrawal out of order", () => {
+    const draft = createContent(contentInput);
+
     expect(() => transitionContent(draft, { type: "PUBLICAR" })).toThrow(
       ContentDomainError,
     );
@@ -98,8 +90,6 @@ describe("content editorial state machine", () => {
   it("withdraws or expires only content that was published", () => {
     const published = [
       "AUTOVERIFICAR",
-      "INICIAR_REVISAO_CLINICA",
-      "APROVAR_CLINICAMENTE",
       "VERIFICAR_PROJECAO",
       "AUTORIZAR_PUBLICACAO",
       "PUBLICAR",

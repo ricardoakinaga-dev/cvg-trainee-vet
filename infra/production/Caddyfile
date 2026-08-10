@@ -1,0 +1,8 @@
+:8080 {
+  encode gzip
+  reverse_proxy api-a:3000 api-b:3000 {
+    health_uri /health/live
+    health_interval 5s
+    health_timeout 2s
+  }
+}

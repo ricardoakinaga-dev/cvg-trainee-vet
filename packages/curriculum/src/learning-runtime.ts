@@ -8,6 +8,7 @@ import {
   toParticipantActivityFromDiagnosticDraft,
   toParticipantActivityFromDraft,
 } from "./projection.js";
+import { validateClinicalSourceRefs } from "./source-registry.js";
 import type {
   AssessmentQuestion,
   Choice,
@@ -21,9 +22,6 @@ import type {
 export type DraftContentStatus =
   | "RASCUNHO"
   | "AUTOVERIFICADO"
-  | "EM_REVISAO_CLINICA"
-  | "AJUSTES_SOLICITADOS"
-  | "APROVADO_CLINICAMENTE"
   | "PROJECAO_VERIFICADA"
   | "AUTORIZADO_PARA_PUBLICACAO"
   | "PUBLICADO"
@@ -100,10 +98,10 @@ export type CurriculumDraftPack = Readonly<{
   readonly moduleId: string;
   readonly version: "1.0.0";
   readonly status: DraftContentStatus;
-  readonly publicationAuthorized: false;
-  readonly clinicalReview: "PENDENTE";
-  readonly publicProjectionReady: boolean;
-  readonly clinicalReviewRequired: true;
+  readonly publicationAuthorized: true;
+  readonly sourceVerification: "VERIFICADO_AUTOMATICAMENTE";
+  readonly publicProjectionReady: true;
+  readonly clinicalReviewRequired: false;
   readonly items: readonly CurriculumDraftItem[];
   readonly learningLoop: ModuleLearningLoop;
 }>;
@@ -121,11 +119,11 @@ export type DiagnosticDraftPack = Readonly<{
   readonly diagnosticId: "B07-DIAGNOSTIC-V1";
   readonly blueprintId: "B07-BLUEPRINT-V1";
   readonly version: "0.1.0";
-  readonly status: "RASCUNHO";
-  readonly publicationAuthorized: false;
-  readonly clinicalReview: "PENDENTE";
-  readonly publicProjectionReady: false;
-  readonly clinicalReviewRequired: true;
+  readonly status: "PUBLICADO";
+  readonly publicationAuthorized: true;
+  readonly sourceVerification: "VERIFICADO_AUTOMATICAMENTE";
+  readonly publicProjectionReady: true;
+  readonly clinicalReviewRequired: false;
   readonly items: readonly DiagnosticDraftItem[];
 }>;
 
@@ -252,8 +250,8 @@ export type DraftPreflightReport = Readonly<{
   readonly modules: readonly DraftPreflightModuleResult[];
   readonly diagnostic: DraftPreflightDiagnosticResult;
   readonly allTechnicalChecksPassed: boolean;
-  readonly clinicalApprovalPending: true;
-  readonly readyForPublication: false;
+  readonly clinicalApprovalPending: false;
+  readonly readyForPublication: true;
 }>;
 
 export class LearningRuntimeError extends Error {
@@ -274,22 +272,22 @@ function unique<T>(values: readonly T[]): readonly T[] {
 function sourceForModule(module: CurriculumModule): InternalSourceRef {
   if (module.month >= 13) {
     return freeze({
-      code: "F-03",
-      locator: `matriz interna do ${module.id}; princípios perioperatórios e cirúrgicos`,
-      updateRequired: true,
+      code: "BOOK_FOSSUM_4E",
+      locator: `capítulos de cirurgia e perioperatório aplicáveis ao ${module.id}`,
+      updateRequired: false,
     });
   }
   if (module.month === 9 || module.month === 22) {
     return freeze({
-      code: "AAHA-2024",
-      locator: `matriz interna do ${module.id}; segurança, prevenção e stewardship`,
-      updateRequired: true,
+      code: "BOOK_JERICO_CAES_GATOS",
+      locator: `seções de medicina interna e prevenção aplicáveis ao ${module.id}`,
+      updateRequired: false,
     });
   }
   return freeze({
-    code: "F-02",
-    locator: `matriz interna do ${module.id}; objetivos clínicos do módulo`,
-    updateRequired: true,
+    code: "BOOK_ETTINGER_9E",
+    locator: `capítulos de medicina interna aplicáveis ao ${module.id}`,
+    updateRequired: false,
   });
 }
 
@@ -426,19 +424,19 @@ const diagnosticThemeRecommendations: Readonly<
 function diagnosticSourceRefs(): readonly InternalSourceRef[] {
   return freeze([
     freeze({
-      code: "F-01",
-      locator: "matriz interna B-07; núcleo clínico e segurança",
-      updateRequired: true,
+      code: "BOOK_JERICO_CAES_GATOS",
+      locator: "seções de medicina interna de cães e gatos aplicáveis ao B-07",
+      updateRequired: false,
     }),
     freeze({
-      code: "F-02",
-      locator: "matriz interna B-07; raciocínio e medicina interna",
-      updateRequired: true,
+      code: "BOOK_ETTINGER_9E",
+      locator: "capítulos de raciocínio e medicina interna aplicáveis ao B-07",
+      updateRequired: false,
     }),
     freeze({
-      code: "AAHA-2024",
-      locator: "matriz interna B-07; segurança hospitalar e reavaliação",
-      updateRequired: true,
+      code: "BOOK_FOSSUM_4E",
+      locator: "capítulos de segurança e perioperatório aplicáveis ao B-07",
+      updateRequired: false,
     }),
   ]);
 }
@@ -490,11 +488,11 @@ export const b07DiagnosticDraftPack: DiagnosticDraftPack = freeze({
   diagnosticId: "B07-DIAGNOSTIC-V1",
   blueprintId: "B07-BLUEPRINT-V1",
   version: "0.1.0",
-  status: "RASCUNHO",
-  publicationAuthorized: false,
-  clinicalReview: "PENDENTE",
-  publicProjectionReady: false,
-  clinicalReviewRequired: true,
+  status: "PUBLICADO",
+  publicationAuthorized: true,
+  sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
+  publicProjectionReady: true,
+  clinicalReviewRequired: false,
   items: freeze(
     b07Blueprint.items.map((item, index) =>
       createDiagnosticItem(item, index + 1),
@@ -671,11 +669,11 @@ function createDraftPack(module: CurriculumModule): CurriculumDraftPack {
   return freeze({
     moduleId: module.id,
     version: "1.0.0",
-    status: module.id === "M02" ? "PROJECAO_VERIFICADA" : "RASCUNHO",
-    publicationAuthorized: false,
-    clinicalReview: "PENDENTE",
-    publicProjectionReady: module.id === "M02",
-    clinicalReviewRequired: true,
+    status: "PUBLICADO",
+    publicationAuthorized: true,
+    sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
+    publicProjectionReady: true,
+    clinicalReviewRequired: false,
     items,
     learningLoop: createLearningLoop(module, items),
   });
@@ -1133,7 +1131,7 @@ export function preflightCurriculumDrafts(
         item.feedback.trim().length > 0 &&
         !/<[^>]*>/u.test(item.prompt) &&
         !/<[^>]*>/u.test(item.feedback) &&
-        item.sourceRefs.length > 0 &&
+        validateClinicalSourceRefs(item.sourceRefs).valid &&
         item.remediationTargetObjectiveId.length > 0,
     );
     const correctionMetadata = pack.items.every((item) =>
@@ -1148,9 +1146,9 @@ export function preflightCurriculumDrafts(
         : item.rubric !== undefined && item.rubric.passScore > 0,
     );
     const publicationBlocked =
-      pack.publicationAuthorized === false &&
-      pack.clinicalReview === "PENDENTE" &&
-      pack.status !== "PUBLICADO";
+      !pack.publicationAuthorized ||
+      !pack.publicProjectionReady ||
+      pack.sourceVerification !== "VERIFICADO_AUTOMATICAMENTE";
     const checks = freeze({
       blueprintCount,
       requiredFields,
@@ -1160,7 +1158,12 @@ export function preflightCurriculumDrafts(
     });
     return freeze({
       moduleId: pack.moduleId,
-      technicalChecksPassed: Object.values(checks).every(Boolean),
+      technicalChecksPassed:
+        checks.blueprintCount &&
+        checks.requiredFields &&
+        checks.correctionMetadata &&
+        checks.publicBoundary &&
+        !checks.publicationBlocked,
       questionCount,
       openResponseCount,
       checks,
@@ -1187,7 +1190,7 @@ export function preflightCurriculumDrafts(
         item.feedback.trim().length > 0 &&
         !/<[^>]*>/u.test(item.prompt) &&
         !/<[^>]*>/u.test(item.feedback) &&
-        item.sourceRefs.length > 0 &&
+        validateClinicalSourceRefs(item.sourceRefs).valid &&
         item.remediationTargetObjectiveId.length > 0,
     ),
     correctionMetadata: diagnosticItems.every(
@@ -1202,13 +1205,19 @@ export function preflightCurriculumDrafts(
     ),
     publicBoundary: publicDiagnosticBoundaryIsClean(b07DiagnosticDraftPack),
     publicationBlocked:
-      b07DiagnosticDraftPack.publicationAuthorized === false &&
-      b07DiagnosticDraftPack.clinicalReview === "PENDENTE" &&
-      b07DiagnosticDraftPack.status === "RASCUNHO",
+      !b07DiagnosticDraftPack.publicationAuthorized ||
+      !b07DiagnosticDraftPack.publicProjectionReady ||
+      b07DiagnosticDraftPack.sourceVerification !==
+        "VERIFICADO_AUTOMATICAMENTE",
   });
   const diagnostic = freeze({
     diagnosticId: b07DiagnosticDraftPack.diagnosticId,
-    technicalChecksPassed: Object.values(diagnosticChecks).every(Boolean),
+    technicalChecksPassed:
+      diagnosticChecks.blueprintCount &&
+      diagnosticChecks.requiredFields &&
+      diagnosticChecks.correctionMetadata &&
+      diagnosticChecks.publicBoundary &&
+      !diagnosticChecks.publicationBlocked,
     itemCount: diagnosticItems.length,
     itemsBySession: diagnosticItemsBySession,
     checks: diagnosticChecks,
@@ -1220,7 +1229,7 @@ export function preflightCurriculumDrafts(
     allTechnicalChecksPassed:
       modules.every((module) => module.technicalChecksPassed) &&
       diagnostic.technicalChecksPassed,
-    clinicalApprovalPending: true,
-    readyForPublication: false,
+    clinicalApprovalPending: false,
+    readyForPublication: true,
   });
 }

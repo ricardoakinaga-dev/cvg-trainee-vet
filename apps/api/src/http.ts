@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 
 import type {
   AnswerState,
@@ -20,13 +20,13 @@ import {
   type CreatedInvitation,
   type AdvanceContentCommand,
   type AuthoringRecord,
-  type ReviewAuthoringCommand,
+  type PublishAuthoringCommand,
   canAccess,
   type AccountStatus,
+  buildParticipantDashboard,
   type Capability,
   type ContentRecord,
   type CurriculumRuntimeState,
-  type AuthoringReview,
   type EvaluateCurriculumModuleCommand,
   type AppealCreateCommand,
   type AppealTransitionCommand,
@@ -39,6 +39,8 @@ import {
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
+  type IdentityProviderOperation,
+  type IdentityProviderPort,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
@@ -48,8 +50,13 @@ import {
 } from "@cvg/application";
 import {
   apiErrorResponse,
+  accountActionRequestSchema,
+  accountOperationProjectionSchema,
   apiSuccessResponse,
-  authoringReviewRequestSchema,
+  parseAccountSecurity,
+  parseOperationsDashboard,
+  parseParticipantDashboard,
+  authoringPublicationRequestSchema,
   createAttemptRequestSchema,
   contentTransitionRequestSchema,
   parseParticipantActivity,
@@ -85,6 +92,23 @@ import {
 import type { Observability } from "@cvg/observability";
 import type { DependencyStatus } from "@cvg/integrations";
 
+type OperationalEvidenceStatus = "VERIFIED" | "NOT_CONFIGURED" | "NOT_EXECUTED";
+type OperationalEvidence = Readonly<{
+  readonly collector: OperationalEvidenceStatus;
+  readonly retention: OperationalEvidenceStatus;
+  readonly traces: OperationalEvidenceStatus;
+  readonly load: OperationalEvidenceStatus;
+  readonly failover: OperationalEvidenceStatus;
+  readonly replicas: OperationalEvidenceStatus;
+}>;
+
+type AccountSecurityStatus = Readonly<{
+  readonly provider: "EXTERNAL_IDENTITY_PROVIDER" | "NOT_CONFIGURED";
+  readonly recovery: "AVAILABLE" | "UNAVAILABLE";
+  readonly mfa: "ENABLED" | "NOT_ENABLED" | "UNAVAILABLE";
+  readonly session: "ACTIVE" | "NO_SESSION";
+}>;
+
 export type ApiHttpRequest = Readonly<{
   readonly method: string;
   readonly path: string;
@@ -102,6 +126,8 @@ export type ApiPrincipal = Readonly<{
 export interface ApiHttpDependencies {
   readonly requestIdFactory: () => string;
   readonly observability?: Observability;
+  readonly metricsScrapeToken?: string;
+  readonly operationalEvidence?: OperationalEvidence;
   readonly approvedClinicalApproverId?: string;
   readonly createInvitation: (
     command: CreateInvitationCommand,
@@ -157,9 +183,13 @@ export interface ApiHttpDependencies {
     contentId: string,
     version: number,
   ) => Promise<AuthoringRecord | null>;
-  readonly reviewAuthoringContent?: (
-    command: ReviewAuthoringCommand,
-  ) => Promise<Readonly<{ record: AuthoringRecord; review: AuthoringReview }>>;
+  readonly publishAuthoringContent?: (
+    command: PublishAuthoringCommand,
+  ) => Promise<Readonly<{ record: AuthoringRecord }>>;
+  readonly getAccountSecurity?: (
+    principalId: string,
+  ) => Promise<AccountSecurityStatus>;
+  readonly identityProvider?: IdentityProviderPort;
   readonly getParticipantProgress: (
     participantId: string,
     activityId: string,
@@ -199,6 +229,8 @@ export type ApiHttpResponse = Readonly<{
   readonly status: number;
   readonly body: ApiSuccessEnvelope<unknown> | ApiErrorEnvelope;
   readonly headers?: Readonly<Record<string, string>>;
+  readonly rawBody?: string;
+  readonly rawContentType?: string;
 }>;
 
 const statusByErrorCode: Readonly<Record<ApiErrorCode, number>> = {
@@ -232,6 +264,23 @@ function errorResponse(
   status = statusByErrorCode[code],
 ): ApiHttpResponse {
   return { status, body: apiErrorResponse(code, requestId) };
+}
+
+function hasMetricsScrapeToken(
+  request: ApiHttpRequest,
+  expectedToken: string | undefined,
+): boolean {
+  if (expectedToken === undefined) return false;
+  const authorization = request.headers?.authorization;
+  const prefix = "Bearer ";
+  if (authorization === undefined || !authorization.startsWith(prefix)) {
+    return false;
+  }
+  const provided = Buffer.from(authorization.slice(prefix.length));
+  const expected = Buffer.from(expectedToken);
+  return (
+    provided.length === expected.length && timingSafeEqual(provided, expected)
+  );
 }
 
 function publicAttemptProjection(
@@ -406,8 +455,7 @@ function isAllowed(
     capability,
     resource,
     scopes: principal.scopes,
-    ...(capability === "APPROVE_CLINICAL_CONTENT" ||
-    capability === "PUBLISH_CONTENT" ||
+    ...(capability === "PUBLISH_CONTENT" ||
     capability === "VIEW_INTERNAL_SOURCE"
       ? {
           approvedClinicalApproverId:
@@ -445,9 +493,6 @@ function internalAuthoringProjection(
       participant: record.participant,
     },
     preflight: record.preflight,
-    ...(record.latestReview === undefined
-      ? {}
-      : { latestReview: record.latestReview }),
   });
 }
 
@@ -640,6 +685,155 @@ async function handleLearningPath(
   };
 }
 
+async function handleParticipantDashboard(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getParticipantLearningJourney === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const canViewDashboard = principal.scopes.some((scopeId) =>
+    isAllowed(principal, "VIEW_OWN_ACTIVITY", {
+      ownerId: principal.principalId,
+      scopeId,
+    }),
+  );
+  if (!canViewDashboard) return errorResponse("forbidden", requestId);
+
+  const journey = await dependencies.getParticipantLearningJourney(
+    principal.principalId,
+    principal.scopes,
+  );
+  if (journey.participantId !== principal.principalId) {
+    return errorResponse("forbidden", requestId);
+  }
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      parseParticipantDashboard(buildParticipantDashboard(journey)),
+      requestId,
+    ),
+  };
+}
+
+function dashboardMetricTotals(
+  observability: Observability | undefined,
+): Readonly<{
+  readonly requestsTotal: number;
+  readonly errorsTotal: number;
+  readonly p95DurationMs: number | null;
+}> {
+  const counters = observability?.metrics.snapshot().counters ?? [];
+  const requestCounters = counters.filter(
+    (counter) => counter.name === "api.requests.total",
+  );
+  return Object.freeze({
+    requestsTotal: requestCounters.reduce(
+      (total, counter) => total + counter.value,
+      0,
+    ),
+    errorsTotal: requestCounters
+      .filter((counter) => counter.labels.outcome === "server_error")
+      .reduce((total, counter) => total + counter.value, 0),
+    p95DurationMs:
+      observability?.metrics.quantile("api.request.duration_ms", 0.95) ?? null,
+  });
+}
+
+async function handleOperationsDashboard(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (
+    !canAccess({
+      principalId: principal.principalId,
+      accountStatus: principal.accountStatus,
+      roles: principal.roles,
+      capability: "VIEW_INTERNAL_AUDIT",
+      scopes: principal.scopes,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (dependencies.dependencyStatus === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const dependency = await dependencies.dependencyStatus();
+  const totals = dashboardMetricTotals(dependencies.observability);
+  const evidence: OperationalEvidence = dependencies.operationalEvidence ?? {
+    collector: "NOT_CONFIGURED",
+    retention: "NOT_CONFIGURED",
+    traces: "NOT_CONFIGURED",
+    load: "NOT_EXECUTED",
+    failover: "NOT_EXECUTED",
+    replicas: "NOT_EXECUTED",
+  };
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      parseOperationsDashboard({
+        dependencyStatus: dependency.status,
+        dependencies: dependency.dependencies,
+        metrics: {
+          ...totals,
+        },
+        evidence,
+      }),
+      requestId,
+    ),
+  };
+}
+
+async function handleAccountSecurity(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  const security =
+    dependencies.getAccountSecurity === undefined
+      ? {
+          provider: "NOT_CONFIGURED" as const,
+          recovery: "UNAVAILABLE" as const,
+          mfa: "UNAVAILABLE" as const,
+          session: "ACTIVE" as const,
+        }
+      : await dependencies.getAccountSecurity(principal.principalId);
+  return {
+    status: 200,
+    body: apiSuccessResponse(parseAccountSecurity(security), requestId),
+  };
+}
+
+async function handleAccountOperation(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+  operation: (
+    provider: IdentityProviderPort,
+    principalId: string,
+  ) => Promise<IdentityProviderOperation>,
+): Promise<ApiHttpResponse> {
+  const parsed = accountActionRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (dependencies.identityProvider === undefined) {
+    return errorResponse("state_conflict", requestId);
+  }
+  const result = await operation(
+    dependencies.identityProvider,
+    principal.principalId,
+  );
+  return {
+    status: 202,
+    body: apiSuccessResponse(
+      accountOperationProjectionSchema.parse(result),
+      requestId,
+    ),
+  };
+}
+
 async function handleCurriculumRuntimeEvaluation(
   request: ApiHttpRequest,
   moduleId: string,
@@ -696,7 +890,7 @@ async function handleContentTransition(
   const parsed = contentTransitionRequestSchema.safeParse(request.body);
   if (!parsed.success) return validationResponse(requestId);
 
-  const baseCommand = {
+  const command = {
     principalId: principal.principalId,
     accountStatus: principal.accountStatus,
     roles: principal.roles,
@@ -707,13 +901,6 @@ async function handleContentTransition(
     event: parsed.data.event,
     correlationId: requestId,
   } satisfies AdvanceContentCommand;
-  const command: AdvanceContentCommand =
-    dependencies.approvedClinicalApproverId === undefined
-      ? baseCommand
-      : {
-          ...baseCommand,
-          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
-        };
   const result = await dependencies.advanceContent(command);
 
   return {
@@ -764,33 +951,26 @@ async function handleInternalAuthoringRecord(
   };
 }
 
-async function handleAuthoringReview(
+async function handleAuthoringPublication(
   request: ApiHttpRequest,
   contentId: string,
   requestId: string,
   principal: ApiPrincipal,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
-  if (dependencies.reviewAuthoringContent === undefined) {
+  if (dependencies.publishAuthoringContent === undefined) {
     return errorResponse("internal_error", requestId);
   }
-  const parsed = authoringReviewRequestSchema.safeParse(request.body);
+  const parsed = authoringPublicationRequestSchema.safeParse(request.body);
   if (!parsed.success) return validationResponse(requestId);
-  const capability: Capability =
-    parsed.data.decision === "APROVAR_CLINICAMENTE"
-      ? "APPROVE_CLINICAL_CONTENT"
-      : "MODERATE_CONTENT";
   if (
-    !isAllowed(
-      principal,
-      capability,
-      { scopeId: parsed.data.scopeId },
-      dependencies.approvedClinicalApproverId,
-    )
+    !isAllowed(principal, "PUBLISH_CONTENT", {
+      scopeId: parsed.data.scopeId,
+    })
   ) {
     return errorResponse("forbidden", requestId);
   }
-  const command: ReviewAuthoringCommand = {
+  const command: PublishAuthoringCommand = {
     principalId: principal.principalId,
     accountStatus: principal.accountStatus,
     roles: principal.roles,
@@ -798,16 +978,9 @@ async function handleAuthoringReview(
     contentId,
     version: parsed.data.version,
     scopeId: parsed.data.scopeId,
-    decision: parsed.data.decision,
-    rationale: parsed.data.rationale,
     correlationId: requestId,
-    ...(dependencies.approvedClinicalApproverId === undefined
-      ? {}
-      : {
-          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
-        }),
   };
-  const result = await dependencies.reviewAuthoringContent(command);
+  const result = await dependencies.publishAuthoringContent(command);
   return {
     status: 200,
     body: apiSuccessResponse(
@@ -1378,21 +1551,43 @@ export async function handleApiRequest(
       }
     }
 
-    if (request.method === "GET" && request.path === "/internal/metrics") {
-      const principal = await dependencies.authenticate(request);
-      if (principal === null)
+    if (
+      request.method === "GET" &&
+      (request.path === "/internal/metrics" ||
+        request.path === "/internal/metrics/prometheus")
+    ) {
+      const authorizedByScrapeToken = hasMetricsScrapeToken(
+        request,
+        dependencies.metricsScrapeToken,
+      );
+      const principal = authorizedByScrapeToken
+        ? null
+        : await dependencies.authenticate(request);
+      if (!authorizedByScrapeToken && principal === null) {
         return errorResponse("unauthenticated", requestId);
-      const authorized = canAccess({
-        principalId: principal.principalId,
-        accountStatus: principal.accountStatus,
-        roles: principal.roles,
-        capability: "VIEW_INTERNAL_AUDIT",
-        scopes: principal.scopes,
-      });
+      }
+      const authorized =
+        authorizedByScrapeToken ||
+        (principal !== null &&
+          canAccess({
+            principalId: principal.principalId,
+            accountStatus: principal.accountStatus,
+            roles: principal.roles,
+            capability: "VIEW_INTERNAL_AUDIT",
+            scopes: principal.scopes,
+          }));
       if (!authorized) return errorResponse("forbidden", requestId);
       const prometheus = dependencies.observability?.metrics.prometheus;
       if (prometheus === undefined) {
         return errorResponse("internal_error", requestId);
+      }
+      if (request.path === "/internal/metrics/prometheus") {
+        return {
+          status: 200,
+          body: apiSuccessResponse({ format: "prometheus" }, requestId),
+          rawBody: prometheus(),
+          rawContentType: "text/plain; version=0.0.4; charset=utf-8",
+        };
       }
       return {
         status: 200,
@@ -1401,6 +1596,62 @@ export async function handleApiRequest(
           requestId,
         ),
       };
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/dashboard"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleOperationsDashboard(
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/account/security"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAccountSecurity(requestId, principal, dependencies);
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/account/recovery/start"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAccountOperation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+        (provider, principalId) => provider.beginRecovery(principalId),
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/account/mfa/enrollment"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAccountOperation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+        (provider, principalId) => provider.beginMfaEnrollment(principalId),
+      );
     }
 
     if (
@@ -1571,6 +1822,17 @@ export async function handleApiRequest(
       return await handleLearningPath(requestId, principal, dependencies);
     }
 
+    if (request.method === "GET" && request.path === "/api/v1/dashboard") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleParticipantDashboard(
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
     const activityMatch = request.path.match(
       /^\/api\/v1\/activities\/([^/]+)$/,
     );
@@ -1653,16 +1915,19 @@ export async function handleApiRequest(
       );
     }
 
-    const authoringReviewMatch = request.path.match(
-      /^\/api\/v1\/internal\/content\/([^/]+)\/review$/u,
+    const authoringPublicationMatch = request.path.match(
+      /^\/api\/v1\/internal\/content\/([^/]+)\/publish$/u,
     );
-    if (request.method === "POST" && authoringReviewMatch?.[1] !== undefined) {
+    if (
+      request.method === "POST" &&
+      authoringPublicationMatch?.[1] !== undefined
+    ) {
       const principal = await dependencies.authenticate(request);
       if (principal === null)
         return errorResponse("unauthenticated", requestId);
-      return await handleAuthoringReview(
+      return await handleAuthoringPublication(
         request,
-        authoringReviewMatch[1],
+        authoringPublicationMatch[1],
         requestId,
         principal,
         dependencies,

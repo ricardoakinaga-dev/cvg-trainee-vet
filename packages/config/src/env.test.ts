@@ -17,6 +17,8 @@ describe("loadRuntimeConfig", () => {
       databaseUrl: "postgresql://cvg:cvg@localhost:5432/cvg",
       requireDatabaseLeastPrivilege: false,
       approvedClinicalApproverId: "ricardo-account",
+      identityProvider: { configured: false },
+      observability: { configured: false },
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
     });
@@ -72,6 +74,7 @@ describe("loadRuntimeConfig", () => {
       AI_PROVIDER: "openai",
       AI_API_KEY: "fake-key",
       AI_MODEL: "model-test",
+      METRICS_SCRAPE_TOKEN: "m".repeat(32),
     });
 
     expect(config.qdrant).toEqual({
@@ -127,5 +130,26 @@ describe("loadRuntimeConfig", () => {
         AI_ENABLED: "false",
       }),
     ).toThrow("development or test");
+  });
+
+  it("requires a dedicated metrics token in production and never exposes it", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+      }),
+    ).toThrow("METRICS_SCRAPE_TOKEN");
+
+    const config = loadRuntimeConfig({
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+      METRICS_SCRAPE_TOKEN: "m".repeat(32),
+    });
+    expect(config.metricsScrapeToken).toBe("m".repeat(32));
+    expect(JSON.stringify(config)).not.toContain("METRICS_SCRAPE_TOKEN");
   });
 });

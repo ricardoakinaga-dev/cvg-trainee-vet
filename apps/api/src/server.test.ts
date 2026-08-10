@@ -53,6 +53,9 @@ describe("API node server adapter", () => {
       "/health/dependencies",
     );
     expect(routeTemplate("GET", "/internal/metrics")).toBe("/internal/metrics");
+    expect(routeTemplate("GET", "/internal/metrics/prometheus")).toBe(
+      "/internal/metrics/prometheus",
+    );
     expect(routeTemplate("POST", "/api/v1/invitations/accept")).toBe(
       "/api/v1/invitations/accept",
     );
@@ -116,6 +119,9 @@ describe("API node server adapter", () => {
     expect(
       routeTemplate("POST", "/api/v1/internal/content/content/transition"),
     ).toBe("/api/v1/internal/content/:contentId/transition");
+    expect(
+      routeTemplate("POST", "/api/v1/internal/content/content/review"),
+    ).toBe("unmatched");
     expect(
       routeTemplate("POST", "/api/v1/internal/curriculum/modules/M03/evaluate"),
     ).toBe("/api/v1/internal/curriculum/modules/:moduleId/evaluate");
@@ -258,6 +264,9 @@ describe("API node server adapter", () => {
       const exported = await fetch(`${baseUrl}/internal/metrics`, {
         headers: { "x-test-auditor": "true" },
       });
+      const scraped = await fetch(`${baseUrl}/internal/metrics/prometheus`, {
+        headers: { "x-test-auditor": "true" },
+      });
       const exportedBody = (await exported.json()) as {
         data: { format: string; text: string };
       };
@@ -272,6 +281,9 @@ describe("API node server adapter", () => {
       expect(exportedBody.data.format).toBe("prometheus");
       expect(exportedBody.data.text).toContain("api_requests_total");
       expect(exportedBody.data.text).not.toContain("participant");
+      expect(scraped.status).toBe(200);
+      expect(scraped.headers.get("content-type")).toContain("text/plain");
+      expect(await scraped.text()).toContain("api_requests_total");
     } finally {
       await api.close();
     }

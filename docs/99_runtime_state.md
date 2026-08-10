@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 13 CI, reprodutibilidade e prontidão de build
-- current_sprint: SCORE-95-16 — rastreabilidade de código e controle de mudança
-- current_task: abrir o item 16 após fechar CI-15-01 com evidência local e remota
+- current_phase: AUDIT — fechamento técnico da rodada e handoff operacional
+- current_sprint: SOURCE-PRODUCT-OPS-18
+- current_task: fechar a remoção do gate clínico executável, atualizar evidências e manter os gaps externos explícitos
 
 ## STATUS
 
@@ -18,21 +18,21 @@
 
 ## PROGRESSO
 
-- last_completed_action: documentação canônica publicada no commit `4281f238e0a2644410c88801e670f2a9eda760c1` e validada pelo workflow final `31381262006`/job `93431720358` em 4m45s; artifact final `9060063069` preservado com digest `7745f6c5578416bf88971d6da2b336ffd2ea1aed7fab3033c30905778f64ce43`; a execução de código `31380183984` já havia provado E2E real 14/14
-- next_action: abrir o item 16 — rastreabilidade de código e controle de mudança — e iniciar sua task conforme `BRIEFING/03.BUILD/0302_backlog_master.md`
+- last_completed_action: removida a rota/contrato/caso de uso/transição de revisão clínica de autoria; o gate integral pós-reconciliação passou (`pnpm verify`, `pnpm build`, `pnpm test:e2e` 12/12, `pnpm audit --audit-level=high`), assim como fontes, rastreabilidade e fronteira pública; a prova Docker HA foi capturada e seus containers/volumes sintéticos foram removidos
+- next_action: quando houver infraestrutura externa, configurar provider de identidade, backend durável de traces e deployment/rollback; antes de qualquer release, criar um commit intencional deste worktree e repetir a auditoria no SHA
 
 ## BLOQUEIOS
 
-- blockers: CI-REMOTE-001 — **RESOLVIDO** nesta rodada com repositório privado, origin, SHA e workflow remoto verde; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; AUD-P1-002/004/005/006 — collector/retention/traces/carga/failover, operação de ambiente, rastreabilidade e banco autoral permanecem para seus itens próprios
+- blockers: nenhum bloqueio humano clínico ativo no caminho de publicação automática; a migration 0014 conserva somente histórico; permanecem gaps técnicos/operacionais honestos: provedor externo de identidade ainda não configurado, backend durável de traces ainda não configurado, deployment/segredos de produção ainda não executados, piloto real e prova semântica texto-a-texto dos livros ainda não executados
 
 ## DECISÃO HUMANA
 
-- human_decision_required: yes
-- decision_description: não há decisão humana pendente para o CI-15-01; revisão e autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico 95 não equivale a aprovação clínica ou competência prática
+- human_decision_required: no
+- decision_description: a publicação ativa usa pré-voo automático contra os três PDFs registrados; controles de segurança, autorização, observabilidade e auditoria permanecem obrigatórios, mas não constituem aprovação clínica humana adicional
 
 ## TIMESTAMP
 
-- last_update: 2026-08-10T08:00:56-03:00
+- last_update: 2026-08-10T11:20:30-03:00
 
 ## REGRAS DE USO
 

@@ -42,14 +42,8 @@ type InternalAuthoringRecord = Readonly<{
   }>;
   readonly preflight: Readonly<{
     readonly technicalChecksPassed: boolean;
-    readonly readyForClinicalReview?: boolean;
+    readonly sourceVerification?: "VERIFICADO_AUTOMATICAMENTE" | "INVALIDO";
     readonly readyForPublication?: boolean;
-  }>;
-  readonly latestReview?: Readonly<{
-    readonly decision: string;
-    readonly rationale: string;
-    readonly reviewerId: string;
-    readonly reviewedAt: string;
   }>;
 }>;
 
@@ -151,39 +145,28 @@ export default function AuthoringPage() {
     }
   }
 
-  async function review(
-    decision: "APROVAR_CLINICAMENTE" | "SOLICITAR_AJUSTES",
-  ) {
+  async function publish() {
     if (record === null) return;
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
       const data = await requestJson(
-        `/api/v1/internal/content/${record.contentId}/review`,
+        `/api/v1/internal/content/${record.contentId}/publish`,
         {
           method: "POST",
           body: {
             version: record.version,
             scopeId: record.scopeId,
-            decision,
-            rationale:
-              decision === "APROVAR_CLINICAMENTE"
-                ? "Revisão clínica concluída na superfície interna."
-                : "Ajustes clínicos solicitados na superfície interna.",
           },
         },
       );
       if (!isInternalAuthoringRecord(data))
         throw new Error("Projeção inválida.");
       setRecord(data);
-      setNotice(
-        decision === "APROVAR_CLINICAMENTE"
-          ? "Revisão clínica registrada."
-          : "Ajustes solicitados.",
-      );
+      setNotice("Fonte verificada automaticamente e conteúdo publicado.");
     } catch {
-      setError("Não foi possível registrar a decisão clínica.");
+      setError("Não foi possível publicar o conteúdo verificado.");
     } finally {
       setBusy(false);
     }
@@ -197,7 +180,7 @@ export default function AuthoringPage() {
       >
         <div>
           <p className="eyebrow">CVG · superfície interna</p>
-          <span className="brand">Autoria e revisão clínica</span>
+          <span className="brand">Autoria e publicação</span>
         </div>
         <span className="status-pill">Acesso restrito</span>
       </header>
@@ -207,9 +190,9 @@ export default function AuthoringPage() {
           <p className="eyebrow">Registro editorial</p>
           <h1 id="authoring-title">Abrir item autoral</h1>
           <p>
-            Esta superfície exige sessão autorizada de autoria ou revisão
-            clínica. Gabaritos, fontes e rubricas nunca são projetados para o
-            participante.
+            Esta superfície exige sessão autorizada de autoria. A fonte é
+            verificada automaticamente contra o registro imutável; gabaritos,
+            fontes e rubricas nunca são projetados para o participante.
           </p>
           <div className="access-form">
             <label htmlFor="content-id">Content ID</label>
@@ -283,29 +266,28 @@ export default function AuthoringPage() {
             <div className="review-actions">
               <button
                 type="button"
-                onClick={() => void review("SOLICITAR_AJUSTES")}
-                disabled={busy}
+                onClick={() => void publish()}
+                disabled={
+                  busy ||
+                  !record.preflight.technicalChecksPassed ||
+                  record.preflight.readyForPublication === false ||
+                  record.contentStatus === "PUBLICADO"
+                }
               >
-                Solicitar ajustes
-              </button>
-              <button
-                type="button"
-                onClick={() => void review("APROVAR_CLINICAMENTE")}
-                disabled={busy || !record.preflight.technicalChecksPassed}
-              >
-                Aprovar clinicamente
+                Publicar conteúdo verificado
               </button>
             </div>
           </div>
           <aside className="privacy-card" aria-label="Governança editorial">
             <p className="eyebrow">Governança</p>
-            <h2>Pré-voo técnico</h2>
+            <h2>Verificação automática</h2>
             <p>
               {record.preflight.technicalChecksPassed
                 ? "Completo"
                 : "Incompleto"}
             </p>
             <p>Objetivo: {record.objectiveId}</p>
+            <p>Fonte: {record.preflight.sourceVerification ?? "PENDENTE"}</p>
             <p>Crítico: {record.item.critical ? "sim" : "não"}</p>
             <p>Remediação: {record.item.remediationTargetObjectiveId}</p>
             <h3>Fontes internas</h3>

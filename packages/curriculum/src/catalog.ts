@@ -31,26 +31,37 @@ function source(
 }
 
 const emergencySources = freeze([
-  source("F-02", "caps. 119–124", true),
-  source("F-01", "Partes 2, 3, 12 e 20", true),
-  source("AAHA-2024", "fluidoterapia e reavaliação", false),
+  source("BOOK_ETTINGER_9E", "caps. 119–124", false),
+  source(
+    "BOOK_JERICO_CAES_GATOS",
+    "seções de emergência e terapia intensiva",
+    false,
+  ),
 ]);
 
 const respiratorySources = freeze([
-  source("F-02", "caps. 90–96 e 123", true),
-  source("F-01", "Parte 2, caps. 3–5 e 11", true),
-  source("F-03", "caps. 29–31", true),
+  source("BOOK_ETTINGER_9E", "caps. 90–96 e 123", false),
+  source("BOOK_JERICO_CAES_GATOS", "seções de doenças respiratórias", false),
+  source("BOOK_FOSSUM_4E", "caps. 29–31", false),
 ]);
 
 const resuscitationSources = freeze([
-  source("RECOVER-2024", "BLS/ALS e monitoramento", false),
-  source("F-02", "cap. 131 como referência histórica", true),
+  source("BOOK_ETTINGER_9E", "cap. 123, ressuscitação cardiopulmonar", false),
+  source(
+    "BOOK_FOSSUM_4E",
+    "cap. 12, anestesia e terapia perioperatória",
+    false,
+  ),
 ]);
 
 const surgerySources = freeze([
-  source("F-03", "caps. 4, 8, 12, 19, 24 e 29–31", true),
-  source("F-01", "Partes 2, 3, 12 e 20", true),
-  source("F-02", "emergência e perioperatório", true),
+  source("BOOK_FOSSUM_4E", "caps. 4, 8, 12, 19, 24 e 29–31", false),
+  source(
+    "BOOK_JERICO_CAES_GATOS",
+    "seções de cirurgia e perioperatório",
+    false,
+  ),
+  source("BOOK_ETTINGER_9E", "seções de emergência e perioperatório", false),
 ]);
 
 type ModuleSpec = Readonly<{
@@ -792,8 +803,8 @@ function createModuleAssessmentBlueprint(
     openResponseCount: module.month === 12 || module.month === 24 ? 3 : 2,
     objectiveIds: freeze([...objectiveIds]),
     assessmentModes: module.hospitalTraining.assessmentModes,
-    publicProjectionReady: module.id === "M02",
-    publicationAuthorized: false,
+    publicProjectionReady: true,
+    publicationAuthorized: true,
   });
 }
 
@@ -1277,7 +1288,7 @@ const s3Questions: readonly AssessmentQuestion[] = [
     ),
     correctChoiceIds: ["c"],
     feedback:
-      "Use o algoritmo vigente do CVG baseado na recomendação RECOVER atual.",
+      "Use o algoritmo de ressuscitação descrito no material interno baseado nos capítulos permitidos.",
     critical: true,
     sourceRefs: resuscitationSources,
   }),

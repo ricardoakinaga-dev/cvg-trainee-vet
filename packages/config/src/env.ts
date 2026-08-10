@@ -43,6 +43,24 @@ const rawEnvironmentSchema = z.object({
   AI_PROVIDER: z.literal("openai").default("openai"),
   AI_API_KEY: z.string().min(1).optional(),
   AI_MODEL: z.string().min(1).optional(),
+  IDENTITY_PROVIDER_URL: z
+    .string()
+    .url()
+    .refine(
+      (value) => value.startsWith("http://") || value.startsWith("https://"),
+      "IDENTITY_PROVIDER_URL must use HTTP(S)",
+    )
+    .optional(),
+  IDENTITY_PROVIDER_TOKEN: z.string().min(1).optional(),
+  METRICS_SCRAPE_TOKEN: z.string().min(32).optional(),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .url()
+    .refine(
+      (value) => value.startsWith("http://") || value.startsWith("https://"),
+      "OTEL_EXPORTER_OTLP_ENDPOINT must use HTTP(S)",
+    )
+    .optional(),
 });
 
 type EnvironmentInput = Record<string, string | undefined>;
@@ -52,6 +70,11 @@ export type RuntimeConfig = {
   databaseUrl: string;
   requireDatabaseLeastPrivilege: boolean;
   approvedClinicalApproverId?: string;
+  identityProvider:
+    { configured: false } | { configured: true; url: string; token: string };
+  observability:
+    { configured: false } | { configured: true; otlpEndpoint: string };
+  metricsScrapeToken?: string;
   qdrant:
     | {
         enabled: false;
@@ -131,6 +154,14 @@ export function loadRuntimeConfig(
     if (!value.AI_MODEL) missing.push("AI_MODEL");
   }
 
+  if (value.IDENTITY_PROVIDER_URL && !value.IDENTITY_PROVIDER_TOKEN) {
+    missing.push("IDENTITY_PROVIDER_TOKEN");
+  }
+
+  if (value.NODE_ENV === "production" && !value.METRICS_SCRAPE_TOKEN) {
+    missing.push("METRICS_SCRAPE_TOKEN");
+  }
+
   if (missing.length > 0) {
     throw new ConfigError(
       `Missing runtime configuration: ${missing.join(", ")}`,
@@ -144,6 +175,24 @@ export function loadRuntimeConfig(
     ...(value.CLINICAL_APPROVER_ID === undefined
       ? {}
       : { approvedClinicalApproverId: value.CLINICAL_APPROVER_ID }),
+    identityProvider:
+      value.IDENTITY_PROVIDER_URL === undefined
+        ? { configured: false }
+        : {
+            configured: true,
+            url: value.IDENTITY_PROVIDER_URL,
+            token: value.IDENTITY_PROVIDER_TOKEN as string,
+          },
+    observability:
+      value.OTEL_EXPORTER_OTLP_ENDPOINT === undefined
+        ? { configured: false }
+        : {
+            configured: true,
+            otlpEndpoint: value.OTEL_EXPORTER_OTLP_ENDPOINT,
+          },
+    ...(value.METRICS_SCRAPE_TOKEN === undefined
+      ? {}
+      : { metricsScrapeToken: value.METRICS_SCRAPE_TOKEN }),
     qdrant: value.QDRANT_ENABLED
       ? {
           enabled: true,

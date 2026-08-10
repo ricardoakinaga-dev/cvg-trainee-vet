@@ -1,0 +1,59 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Requests by route and outcome",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (route, outcome) (rate(api_requests_total[5m]))",
+          "legendFormat": "{{route}} — {{outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "title": "Request duration aggregate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (route) (rate(api_request_duration_ms_sum[5m])) / clamp_min(sum by (route) (rate(api_request_duration_ms_count[5m])), 1)",
+          "legendFormat": "{{route}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "id": 3,
+      "title": "Worker throughput",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (outcome) (rate(worker_events_processed_total[5m]))",
+          "legendFormat": "{{outcome}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "CVG — Operational Overview",
+  "uid": "cvg-operational-overview",
+  "version": 1
+}
