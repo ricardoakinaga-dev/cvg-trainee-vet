@@ -2969,3 +2969,45 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Ricardo deve informar/aprovar o repositório GitHub e a publicação do baseline local; somente então configurar `origin`, executar o workflow e registrar os artifacts redigidos.
+
+## 2026-08-10 — RESUME-CI-15-03: bloqueio externo confirmado
+
+### TIMESTAMP
+
+2026-08-10 07:15:14 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — CI, reprodutibilidade e prontidão de build / item 15 do relatório 0491
+
+### SPRINT
+
+SCORE-95-15
+
+### TASK
+
+CI-15-01 / auditar repetição do bloqueio e preservar o checkpoint
+
+### ACTION
+
+Executada a terceira revalidação consecutiva do estado canônico, worktree, histórico, `origin`, autenticação GitHub e lista de repositórios da conta autenticada.
+
+### RESULT
+
+O worktree permanece limpo em `353f55e`; `git remote -v` continua sem saída; a conta `ricardoakinaga-dev` continua autenticada, mas não possui `cvg-trainee-vet`. Não há repositório autorizado, SHA remoto, duração, artifacts do Actions, cache, rollback ou falha de infraestrutura observável.
+
+### DECISIONS
+
+O ciclo de execução fica bloqueado por `CI-REMOTE-001`, após três revalidações consecutivas sem mudança externa. O runtime continua em `WAITING_HUMAN_APPROVAL`; não criar repositório, não apontar para outro projeto, não publicar e não abrir o item 16.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve informar/aprovar o repositório GitHub e a publicação do baseline local. Sem essa decisão, nenhuma execução remota ou avanço de ordem pode ser comprovado.
