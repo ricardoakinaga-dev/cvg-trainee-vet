@@ -358,6 +358,62 @@ describe("API HTTP boundary", () => {
     expect(getInternalAuthoringRecord).toHaveBeenCalledTimes(2);
   });
 
+  it("exposes only a scoped paginated clinical review queue to an approved reviewer", async () => {
+    const getClinicalReviewQueue = vi.fn(async () => ({
+      items: [
+        {
+          contentId: authoringRecord.contentId,
+          version: 1,
+          scopeId: authoringRecord.scopeId,
+          moduleId: authoringRecord.moduleId,
+          sessionId: authoringRecord.sessionId,
+          objectiveId: authoringRecord.objectiveId,
+          authorId: authoringRecord.authorId,
+          contentStatus: "PROJECAO_VERIFICADA" as const,
+          reviewStatus: "PENDING" as const,
+          technicalChecksPassed: true,
+          latestReview: null,
+        },
+      ],
+      page: 2,
+      perPage: 10,
+      total: 11,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/authoring/review-queue",
+        query: {
+          scopeId: authoringRecord.scopeId,
+          page: "2",
+          per_page: "10",
+          status: "PENDING",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [authoringRecord.scopeId],
+        }),
+        getClinicalReviewQueue,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { page: 2, perPage: 10, total: 11 },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("correctChoiceIds");
+    expect(getClinicalReviewQueue).toHaveBeenCalledWith(
+      authoringRecord.scopeId,
+      { page: 2, perPage: 10, status: "PENDING" },
+    );
+  });
+
   it("exposes a scoped clinical review route without exposing internals publicly", async () => {
     const reviewAuthoringContent = vi.fn(async () => ({
       record: authoringRecord,

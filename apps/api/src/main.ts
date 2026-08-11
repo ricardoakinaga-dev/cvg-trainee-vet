@@ -45,6 +45,7 @@ import {
   createActivityScopeResolver,
   createActivityReadRepository,
   createAuthoringRepository,
+  createClinicalReviewQueueRepository,
   createAnswerUseCaseDependencies,
   createAttemptUseCaseDependencies,
   createContentUseCaseDependencies,
@@ -151,6 +152,9 @@ export function createApiRuntime(
   const authoringRepository = createAuthoringRepository(
     integrations.database.db,
   );
+  const clinicalReviewQueueRepository = createClinicalReviewQueueRepository(
+    integrations.database.db,
+  );
   const learningStateRepository = createLearningStateRepository(
     integrations.database.db,
   );
@@ -226,6 +230,8 @@ export function createApiRuntime(
     advanceContent: (command) => advanceContent(command, contentDependencies),
     getInternalAuthoringRecord: (contentId, version) =>
       authoringRepository.find(contentId, version),
+    getClinicalReviewQueue: (scopeId, query) =>
+      clinicalReviewQueueRepository.listClinicalReviewQueue(scopeId, query),
     publishAuthoringContent: (command) =>
       publishAuthoringContent(command, {
         repository: authoringRepository,

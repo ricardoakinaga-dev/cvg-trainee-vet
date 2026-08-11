@@ -132,3 +132,61 @@ test("author can inspect and publish a source-verified authoring item", async ({
     "Fonte verificada automaticamente e conteúdo publicado.",
   );
 });
+
+test("approved reviewer can open a paginated queue without exposing item internals", async ({
+  page,
+}) => {
+  await page.route(
+    `**/api/v1/internal/authoring/review-queue?scopeId=${scopeId}&page=1&per_page=20&status=PENDING`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            items: [
+              {
+                contentId,
+                version: 1,
+                scopeId,
+                moduleId: "M02",
+                sessionId: "M02-S1",
+                objectiveId: "M02-OBJ-01",
+                authorId: authoringRecord.authorId,
+                contentStatus: "PROJECAO_VERIFICADA",
+                reviewStatus: "PENDING",
+                technicalChecksPassed: true,
+                latestReview: null,
+              },
+            ],
+            page: 1,
+            perPage: 20,
+            total: 1,
+          }),
+        ),
+      });
+    },
+  );
+  await page.route(
+    `**/api/v1/internal/content/${contentId}/versions/1/authoring`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope(authoringRecord)),
+      });
+    },
+  );
+
+  await page.goto(`/authoring?scopeId=${scopeId}`);
+  await expect(
+    page.getByRole("heading", { name: "Fila de revisão clínica" }),
+  ).toBeVisible();
+  await expect(page.getByText("M02 · M02-S1")).toBeVisible();
+  await expect(page.getByText("PROJECAO_VERIFICADA")).toBeVisible();
+  await expect(page.getByText("correctChoiceIds")).toHaveCount(0);
+  await page.getByRole("button", { name: "Abrir item" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Prioridade sintética" }),
+  ).toBeVisible();
+});

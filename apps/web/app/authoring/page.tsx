@@ -50,6 +50,30 @@ type InternalAuthoringRecord = Readonly<{
 type ApiRecord = Readonly<Record<string, unknown>>;
 const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 
+type ClinicalReviewQueueItem = Readonly<{
+  readonly contentId: string;
+  readonly version: number;
+  readonly scopeId: string;
+  readonly moduleId: string;
+  readonly sessionId: string;
+  readonly objectiveId: string;
+  readonly authorId: string;
+  readonly contentStatus: string;
+  readonly reviewStatus: "PENDING" | "APPROVED" | "ADJUSTMENTS_REQUESTED";
+  readonly technicalChecksPassed: boolean;
+  readonly latestReview: Readonly<{
+    readonly decision: string;
+    readonly reviewedAt: string;
+  }> | null;
+}>;
+
+type ClinicalReviewQueuePage = Readonly<{
+  readonly items: readonly ClinicalReviewQueueItem[];
+  readonly page: number;
+  readonly perPage: number;
+  readonly total: number;
+}>;
+
 function isRecord(value: unknown): value is ApiRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -79,6 +103,51 @@ function isInternalAuthoringRecord(
   );
 }
 
+function isClinicalReviewQueuePage(
+  value: unknown,
+): value is ClinicalReviewQueuePage {
+  if (!isRecord(value) || !Array.isArray(value.items)) return false;
+  if (
+    typeof value.page !== "number" ||
+    !Number.isInteger(value.page) ||
+    value.page < 1 ||
+    typeof value.perPage !== "number" ||
+    !Number.isInteger(value.perPage) ||
+    value.perPage < 1 ||
+    typeof value.total !== "number" ||
+    !Number.isInteger(value.total) ||
+    value.total < 0
+  ) {
+    return false;
+  }
+  return value.items.every((item): item is ClinicalReviewQueueItem => {
+    if (!isRecord(item) || !isString(item.contentId)) return false;
+    if (
+      typeof item.version !== "number" ||
+      !Number.isInteger(item.version) ||
+      item.version < 1 ||
+      !isString(item.scopeId) ||
+      !isString(item.moduleId) ||
+      !isString(item.sessionId) ||
+      !isString(item.objectiveId) ||
+      !isString(item.authorId) ||
+      !isString(item.contentStatus) ||
+      (item.reviewStatus !== "PENDING" &&
+        item.reviewStatus !== "APPROVED" &&
+        item.reviewStatus !== "ADJUSTMENTS_REQUESTED") ||
+      typeof item.technicalChecksPassed !== "boolean"
+    ) {
+      return false;
+    }
+    return (
+      item.latestReview === null ||
+      (isRecord(item.latestReview) &&
+        isString(item.latestReview.decision) &&
+        isString(item.latestReview.reviewedAt))
+    );
+  });
+}
+
 async function requestJson(
   path: string,
   init: Readonly<{ method: "GET" | "POST"; body?: unknown }>,
@@ -99,12 +168,15 @@ async function requestJson(
 function queryInput(): Readonly<{
   readonly contentId: string;
   readonly version: string;
+  readonly scopeId: string;
 }> {
-  if (typeof window === "undefined") return { contentId: "", version: "1" };
+  if (typeof window === "undefined")
+    return { contentId: "", version: "1", scopeId: "" };
   const params = new URLSearchParams(window.location.search);
   return {
     contentId: params.get("contentId") ?? "",
     version: params.get("version") ?? "1",
+    scopeId: params.get("scopeId") ?? "",
   };
 }
 
@@ -112,6 +184,8 @@ export default function AuthoringPage() {
   const [record, setRecord] = useState<InternalAuthoringRecord | null>(null);
   const [contentId, setContentId] = useState("");
   const [version, setVersion] = useState("1");
+  const [scopeId, setScopeId] = useState("");
+  const [queue, setQueue] = useState<ClinicalReviewQueuePage | null>(null);
   const [rationale, setRationale] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,8 +195,12 @@ export default function AuthoringPage() {
     const input = queryInput();
     setContentId(input.contentId);
     setVersion(input.version);
-    if (input.contentId.trim().length === 0) return;
-    void loadRecord(input.contentId, input.version);
+    setScopeId(input.scopeId);
+    if (input.contentId.trim().length > 0) {
+      void loadRecord(input.contentId, input.version);
+    } else if (input.scopeId.trim().length > 0) {
+      void loadQueue(input.scopeId, 1);
+    }
   }, []);
 
   async function loadRecord(
@@ -144,6 +222,43 @@ export default function AuthoringPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function loadQueue(
+    selectedScopeId: string,
+    page: number,
+  ): Promise<void> {
+    if (selectedScopeId.trim().length === 0) {
+      setError("Informe o escopo da fila clínica.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const query = new URLSearchParams({
+        scopeId: selectedScopeId,
+        page: String(page),
+        per_page: "20",
+        status: "PENDING",
+      });
+      const data = await requestJson(
+        `/api/v1/internal/authoring/review-queue?${query.toString()}`,
+        { method: "GET" },
+      );
+      if (!isClinicalReviewQueuePage(data))
+        throw new Error("Fila clínica inválida.");
+      setQueue(data);
+    } catch {
+      setError("Não foi possível carregar a fila de revisão clínica.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openQueueItem(item: ClinicalReviewQueueItem): void {
+    setQueue(null);
+    setScopeId(item.scopeId);
+    void loadRecord(item.contentId, String(item.version));
   }
 
   async function publish() {
@@ -226,45 +341,116 @@ export default function AuthoringPage() {
       </header>
 
       {record === null ? (
-        <section className="hero-card" aria-labelledby="authoring-title">
-          <p className="eyebrow">Registro editorial</p>
-          <h1 id="authoring-title">Abrir item autoral</h1>
-          <p>
-            Esta superfície exige sessão autorizada de autoria. A fonte é
-            verificada automaticamente contra o registro imutável; gabaritos,
-            fontes e rubricas nunca são projetados para o participante.
-          </p>
-          <div className="access-form">
-            <label htmlFor="content-id">Content ID</label>
-            <p id="content-id-help" className="field-help">
-              Informe o identificador interno recebido da equipe editorial.
+        <>
+          <section className="hero-card" aria-labelledby="authoring-title">
+            <p className="eyebrow">Registro editorial</p>
+            <h1 id="authoring-title">Abrir item autoral</h1>
+            <p>
+              Esta superfície exige sessão autorizada de autoria. A fonte é
+              verificada automaticamente contra o registro imutável; gabaritos,
+              fontes e rubricas nunca são projetados para o participante.
             </p>
-            <input
-              id="content-id"
-              name="contentId"
-              aria-describedby="content-id-help"
-              value={contentId}
-              onChange={(event) => setContentId(event.target.value)}
-            />
-            <label htmlFor="content-version">Versão</label>
-            <input
-              id="content-version"
-              name="version"
-              type="number"
-              min="1"
-              inputMode="numeric"
-              value={version}
-              onChange={(event) => setVersion(event.target.value)}
-            />
-            <button
-              type="button"
-              onClick={() => void loadRecord(contentId, version)}
-              disabled={busy}
-            >
-              {busy ? "Carregando…" : "Carregar autoria"}
-            </button>
-          </div>
-        </section>
+            <div className="access-form">
+              <label htmlFor="scope-id">Escopo da fila clínica</label>
+              <p id="scope-id-help" className="field-help">
+                Use o escopo autorizado da revisão clínica para carregar itens
+                pendentes sem expor metadados de conteúdo.
+              </p>
+              <input
+                id="scope-id"
+                name="scopeId"
+                aria-describedby="scope-id-help"
+                value={scopeId}
+                onChange={(event) => setScopeId(event.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => void loadQueue(scopeId, 1)}
+                disabled={busy}
+              >
+                {busy ? "Carregando…" : "Carregar fila de revisão clínica"}
+              </button>
+              <label htmlFor="content-id">Content ID</label>
+              <p id="content-id-help" className="field-help">
+                Também é possível abrir um item específico já recebido da equipe
+                editorial.
+              </p>
+              <input
+                id="content-id"
+                name="contentId"
+                aria-describedby="content-id-help"
+                value={contentId}
+                onChange={(event) => setContentId(event.target.value)}
+              />
+              <label htmlFor="content-version">Versão</label>
+              <input
+                id="content-version"
+                name="version"
+                type="number"
+                min="1"
+                inputMode="numeric"
+                value={version}
+                onChange={(event) => setVersion(event.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => void loadRecord(contentId, version)}
+                disabled={busy}
+              >
+                {busy ? "Carregando…" : "Carregar autoria"}
+              </button>
+            </div>
+          </section>
+          {queue !== null ? (
+            <section className="hero-card" aria-labelledby="review-queue-title">
+              <p className="eyebrow">Itens pendentes · página {queue.page}</p>
+              <h1 id="review-queue-title">Fila de revisão clínica</h1>
+              <p>
+                {queue.total} item(ns) aguardam decisão independente. A fila não
+                contém gabarito, fonte, rubrica ou texto clínico.
+              </p>
+              {queue.items.length === 0 ? (
+                <p role="status">Nenhum item pendente neste escopo.</p>
+              ) : (
+                <div className="journey-list">
+                  {queue.items.map((item) => (
+                    <div
+                      className="review-card"
+                      key={`${item.contentId}-${item.version}`}
+                    >
+                      <p className="eyebrow">
+                        {item.moduleId} · {item.sessionId}
+                      </p>
+                      <p>
+                        Objetivo {item.objectiveId} · {item.contentStatus}
+                      </p>
+                      <p>
+                        Pré-voo técnico:{" "}
+                        {item.technicalChecksPassed ? "OK" : "PENDENTE"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openQueueItem(item)}
+                        disabled={busy}
+                      >
+                        Abrir item
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {queue.page * queue.perPage < queue.total ? (
+                <button
+                  type="button"
+                  onClick={() => void loadQueue(scopeId, queue.page + 1)}
+                  disabled={busy}
+                >
+                  Próxima página
+                </button>
+              ) : null}
+            </section>
+          ) : null}
+        </>
       ) : (
         <section className="review-layout" aria-labelledby="review-title">
           <div className="review-main">

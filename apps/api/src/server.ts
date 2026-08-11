@@ -138,6 +138,20 @@ function toPath(request: IncomingMessage): string {
   }
 }
 
+function toQuery(
+  request: IncomingMessage,
+): Readonly<Record<string, string | undefined>> {
+  try {
+    return Object.freeze(
+      Object.fromEntries(
+        new URL(request.url ?? "/", "http://127.0.0.1").searchParams.entries(),
+      ),
+    );
+  } catch {
+    return Object.freeze({});
+  }
+}
+
 export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/health/live") return "/health/live";
   if (method === "GET" && path === "/health/ready") return "/health/ready";
@@ -235,6 +249,9 @@ export function routeTemplate(method: string, path: string): string {
     )
   ) {
     return "/api/v1/internal/content/:contentId/versions/:version/authoring";
+  }
+  if (method === "GET" && path === "/api/v1/internal/authoring/review-queue") {
+    return "/api/v1/internal/authoring/review-queue";
   }
   if (
     method === "POST" &&
@@ -404,6 +421,7 @@ export function createApiServer(
       method,
       path,
       body,
+      query: toQuery(request),
       headers,
     };
     const payload = await handleApiRequest(apiRequest, dependencies);

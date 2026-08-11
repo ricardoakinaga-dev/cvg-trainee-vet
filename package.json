@@ -39,6 +39,7 @@
     "ops:load-smoke": "node scripts/run-load-smoke.mjs",
     "ops:materialize-curriculum": "pnpm build && node scripts/materialize-curriculum.mjs",
     "ops:verify-curriculum-runtime": "node scripts/verify-curriculum-runtime.mjs",
+    "ops:verify-clinical-review-queue": "node scripts/verify-clinical-review-queue.mjs",
     "ops:verify-durable-traces": "node scripts/verify-durable-traces.mjs",
     "ops:verify-edge-security": "node scripts/verify-edge-security.mjs",
     "ops:verify-production-security": "node scripts/verify-production-security-config.mjs",

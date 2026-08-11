@@ -1,11 +1,49 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  clinicalReviewQueueQuerySchema,
+  parseClinicalReviewQueuePage,
   authoringPublicationRequestSchema,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
 
 describe("internal authoring contracts", () => {
+  it("normalizes a scoped, bounded clinical review queue query and page", () => {
+    expect(
+      clinicalReviewQueueQuerySchema.parse({
+        scopeId: "11111111-1111-4111-8111-111111111111",
+      }),
+    ).toEqual({
+      scopeId: "11111111-1111-4111-8111-111111111111",
+      page: 1,
+      per_page: 20,
+      status: "PENDING",
+    });
+
+    expect(
+      parseClinicalReviewQueuePage({
+        items: [
+          {
+            contentId: "22222222-2222-4222-8222-222222222222",
+            version: 1,
+            scopeId: "11111111-1111-4111-8111-111111111111",
+            moduleId: "M01",
+            sessionId: "M01-S1",
+            objectiveId: "M01-OBJ-01",
+            authorId: "33333333-3333-4333-8333-333333333333",
+            contentStatus: "PROJECAO_VERIFICADA",
+            reviewStatus: "PENDING",
+            technicalChecksPassed: true,
+            latestReview: null,
+          },
+        ],
+        page: 1,
+        perPage: 20,
+        total: 1,
+      }),
+    ).toMatchObject({ total: 1, items: [{ reviewStatus: "PENDING" }] });
+  });
+
   it("accepts automatic publication and an internal authoring projection", () => {
     expect(
       authoringPublicationRequestSchema.parse({

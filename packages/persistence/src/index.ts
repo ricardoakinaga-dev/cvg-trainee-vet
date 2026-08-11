@@ -160,6 +160,7 @@ export {
   createAuthoringRepository,
 } from "./authoring-repository.js";
 export type { AuthoringRowShape } from "./authoring-repository.js";
+export { createClinicalReviewQueueRepository } from "./clinical-review-queue-repository.js";
 export {
   OutboxMappingError,
   createOutboxRepository,

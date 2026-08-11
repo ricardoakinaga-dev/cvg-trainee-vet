@@ -100,6 +100,25 @@ describe("authorization policy", () => {
         scopes: [],
       }),
     ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "clinical-approver-1",
+        accountStatus: "ACTIVE",
+        roles: ["CLINICAL_APPROVER"],
+        capability: "VIEW_CLINICAL_REVIEW_QUEUE",
+        resource: { scopeId: "curriculum-1" },
+        scopes: ["curriculum-1"],
+        approvedClinicalApproverId: "clinical-approver-1",
+      }),
+    ).toBe(true);
+    expect(
+      canAccess(
+        participant({
+          capability: "VIEW_CLINICAL_REVIEW_QUEUE",
+          resource: { scopeId: "curriculum-1" },
+        }),
+      ),
+    ).toBe(false);
   });
 
   it("separates participant creation from scoped staff transitions", () => {

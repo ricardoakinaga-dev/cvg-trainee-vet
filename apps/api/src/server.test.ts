@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createObservability, type LogRecord } from "@cvg/observability";
 
@@ -130,6 +130,9 @@ describe("API node server adapter", () => {
       routeTemplate("POST", "/api/v1/internal/content/content/review"),
     ).toBe("unmatched");
     expect(
+      routeTemplate("GET", "/api/v1/internal/authoring/review-queue"),
+    ).toBe("/api/v1/internal/authoring/review-queue");
+    expect(
       routeTemplate("POST", "/api/v1/internal/curriculum/modules/M03/evaluate"),
     ).toBe("/api/v1/internal/curriculum/modules/:moduleId/evaluate");
     expect(routeTemplate("DELETE", "/unknown")).toBe("unmatched");
@@ -168,6 +171,44 @@ describe("API node server adapter", () => {
         data: { status: "live" },
         meta: { request_id: "request-server-test" },
       });
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("forwards the clinical review queue query without putting it in the route label", async () => {
+    const getClinicalReviewQueue = vi.fn(async (_scopeId, query) => ({
+      items: [],
+      page: query.page,
+      perPage: query.perPage,
+      total: 0,
+    }));
+    const api = createApiServer(
+      {
+        ...dependencies,
+        authenticate: async () => ({
+          principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          accountStatus: "ACTIVE" as const,
+          roles: ["CLINICAL_APPROVER" as const],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        getClinicalReviewQueue,
+      },
+      { host: "127.0.0.1", port: 0 },
+    );
+    await api.listen();
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/api/v1/internal/authoring/review-queue?scopeId=11111111-1111-4111-8111-111111111111&page=2&per_page=10&status=PENDING`,
+      );
+      expect(response.status).toBe(200);
+      expect(getClinicalReviewQueue).toHaveBeenCalledWith(
+        "11111111-1111-4111-8111-111111111111",
+        { page: 2, perPage: 10, status: "PENDING" },
+      );
     } finally {
       await api.close();
     }

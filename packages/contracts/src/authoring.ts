@@ -2,6 +2,18 @@ import { z } from "zod";
 
 const idSchema = z.string().uuid();
 const versionSchema = z.number().int().min(1);
+const contentStatusSchema = z.enum([
+  "RASCUNHO",
+  "AUTOVERIFICADO",
+  "EM_REVISAO_CLINICA",
+  "AJUSTES_SOLICITADOS",
+  "APROVADO_CLINICAMENTE",
+  "PROJECAO_VERIFICADA",
+  "AUTORIZADO_PARA_PUBLICACAO",
+  "PUBLICADO",
+  "RETIRADO",
+  "VENCIDO",
+]);
 const plainTextSchema = z
   .string()
   .trim()
@@ -118,6 +130,46 @@ export const authoringReviewRequestSchema = z
   })
   .strict();
 
+export const clinicalReviewQueueQuerySchema = z
+  .object({
+    scopeId: idSchema,
+    page: z.coerce.number().int().min(1).max(10_000).default(1),
+    per_page: z.coerce.number().int().min(1).max(100).default(20),
+    status: z.enum(["PENDING", "ALL"]).default("PENDING"),
+  })
+  .strict();
+
+const clinicalReviewQueueItemSchema = z
+  .object({
+    contentId: idSchema,
+    version: versionSchema,
+    scopeId: idSchema,
+    moduleId: plainTextSchema.max(128),
+    sessionId: plainTextSchema.max(128),
+    objectiveId: plainTextSchema.max(128),
+    authorId: idSchema,
+    contentStatus: contentStatusSchema,
+    reviewStatus: z.enum(["PENDING", "APPROVED", "ADJUSTMENTS_REQUESTED"]),
+    technicalChecksPassed: z.boolean(),
+    latestReview: z
+      .object({
+        decision: z.enum(["APROVAR_CLINICAMENTE", "SOLICITAR_AJUSTES"]),
+        reviewedAt: z.iso.datetime(),
+      })
+      .strict()
+      .nullable(),
+  })
+  .strict();
+
+export const clinicalReviewQueuePageSchema = z
+  .object({
+    items: z.array(clinicalReviewQueueItemSchema).max(100),
+    page: z.number().int().min(1),
+    perPage: z.number().int().min(1).max(100),
+    total: z.number().int().min(0),
+  })
+  .strict();
+
 export const internalAuthoringRecordProjectionSchema = z
   .object({
     contentId: idSchema,
@@ -147,6 +199,12 @@ export const internalAuthoringRecordProjectionSchema = z
 export type AuthoringPublicationRequest = z.infer<
   typeof authoringPublicationRequestSchema
 >;
+export type ClinicalReviewQueueQuery = z.infer<
+  typeof clinicalReviewQueueQuerySchema
+>;
+export type ClinicalReviewQueuePage = z.infer<
+  typeof clinicalReviewQueuePageSchema
+>;
 export type AuthoringReviewRequest = z.infer<
   typeof authoringReviewRequestSchema
 >;
@@ -158,4 +216,10 @@ export function parseInternalAuthoringRecordProjection(
   value: unknown,
 ): InternalAuthoringRecordProjection {
   return internalAuthoringRecordProjectionSchema.parse(value);
+}
+
+export function parseClinicalReviewQueuePage(
+  value: unknown,
+): ClinicalReviewQueuePage {
+  return clinicalReviewQueuePageSchema.parse(value);
 }

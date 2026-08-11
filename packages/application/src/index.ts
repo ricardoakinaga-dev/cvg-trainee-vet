@@ -6,6 +6,13 @@ export type {
   Capability,
   Role,
 } from "./authorization.js";
+export type {
+  ClinicalReviewQueueFilter,
+  ClinicalReviewQueueItem,
+  ClinicalReviewQueuePage,
+  ClinicalReviewQueuePort,
+  ClinicalReviewQueueQuery,
+} from "./authoring-review-queue.js";
 export { ApplicationError, toApplicationError } from "./errors.js";
 export type { ApplicationErrorCode, ApplicationErrorDetail } from "./errors.js";
 export { createAuditEntry } from "./audit.js";

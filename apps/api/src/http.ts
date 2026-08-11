@@ -23,6 +23,8 @@ import {
   type SetAccountPasswordCommand,
   type AdvanceContentCommand,
   type AuthoringRecord,
+  type ClinicalReviewQueuePage,
+  type ClinicalReviewQueueQuery,
   type PublishAuthoringCommand,
   type ReviewAuthoringCommand,
   canAccess,
@@ -71,6 +73,8 @@ import {
   parseParticipantProgress,
   parseParticipantLearningJourney,
   parseInternalAuthoringRecordProjection,
+  clinicalReviewQueueQuerySchema,
+  parseClinicalReviewQueuePage,
   correctOpenResponseRequestSchema,
   correctionResultProjectionSchema,
   acceptInvitationRequestSchema,
@@ -121,6 +125,7 @@ export type ApiHttpRequest = Readonly<{
   readonly method: string;
   readonly path: string;
   readonly body: unknown;
+  readonly query?: Readonly<Record<string, string | undefined>>;
   readonly headers?: Readonly<Record<string, string | undefined>>;
 }>;
 
@@ -197,6 +202,10 @@ export interface ApiHttpDependencies {
     contentId: string,
     version: number,
   ) => Promise<AuthoringRecord | null>;
+  readonly getClinicalReviewQueue?: (
+    scopeId: string,
+    query: ClinicalReviewQueueQuery,
+  ) => Promise<ClinicalReviewQueuePage>;
   readonly publishAuthoringContent?: (
     command: PublishAuthoringCommand,
   ) => Promise<Readonly<{ record: AuthoringRecord }>>;
@@ -474,7 +483,8 @@ function isAllowed(
     scopes: principal.scopes,
     ...(capability === "PUBLISH_CONTENT" ||
     capability === "VIEW_INTERNAL_SOURCE" ||
-    capability === "APPROVE_CLINICAL_CONTENT"
+    capability === "APPROVE_CLINICAL_CONTENT" ||
+    capability === "VIEW_CLINICAL_REVIEW_QUEUE"
       ? {
           approvedClinicalApproverId:
             approvedClinicalApproverId ?? principal.principalId,
@@ -511,6 +521,35 @@ function internalAuthoringProjection(
       participant: record.participant,
     },
     preflight: record.preflight,
+  });
+}
+
+function clinicalReviewQueueProjection(
+  page: ClinicalReviewQueuePage,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return parseClinicalReviewQueuePage({
+    items: page.items.map((item) => ({
+      contentId: item.contentId,
+      version: item.version,
+      scopeId: item.scopeId,
+      moduleId: item.moduleId,
+      sessionId: item.sessionId,
+      objectiveId: item.objectiveId,
+      authorId: item.authorId,
+      contentStatus: item.contentStatus,
+      reviewStatus: item.reviewStatus,
+      technicalChecksPassed: item.technicalChecksPassed,
+      latestReview:
+        item.latestReview === null
+          ? null
+          : {
+              decision: item.latestReview.decision,
+              reviewedAt: item.latestReview.reviewedAt,
+            },
+    })),
+    page: page.page,
+    perPage: page.perPage,
+    total: page.total,
   });
 }
 
@@ -966,6 +1005,42 @@ async function handleInternalAuthoringRecord(
   return {
     status: 200,
     body: apiSuccessResponse(internalAuthoringProjection(record), requestId),
+  };
+}
+
+async function handleClinicalReviewQueue(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getClinicalReviewQueue === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = clinicalReviewQueueQuerySchema.safeParse(request.query ?? {});
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_CLINICAL_REVIEW_QUEUE",
+      { scopeId: parsed.data.scopeId },
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const query: ClinicalReviewQueueQuery = {
+    page: parsed.data.page,
+    perPage: parsed.data.per_page,
+    status: parsed.data.status,
+  };
+  const page = await dependencies.getClinicalReviewQueue(
+    parsed.data.scopeId,
+    query,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(clinicalReviewQueueProjection(page), requestId),
   };
 }
 
@@ -2063,6 +2138,21 @@ export async function handleApiRequest(
       return await handleInternalAuthoringRecord(
         authoringRecordMatch[1],
         authoringRecordMatch[2],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/authoring/review-queue"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleClinicalReviewQueue(
+        request,
         requestId,
         principal,
         dependencies,

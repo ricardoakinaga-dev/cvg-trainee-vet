@@ -32,11 +32,16 @@ export type { ContentTransitionRequest } from "./content.js";
 export {
   authoringPublicationRequestSchema,
   authoringReviewRequestSchema,
+  clinicalReviewQueueQuerySchema,
+  clinicalReviewQueuePageSchema,
   internalAuthoringRecordProjectionSchema,
+  parseClinicalReviewQueuePage,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
 export type {
   AuthoringPublicationRequest,
+  ClinicalReviewQueuePage,
+  ClinicalReviewQueueQuery,
   InternalAuthoringRecordProjection,
 } from "./authoring.js";
 export {
