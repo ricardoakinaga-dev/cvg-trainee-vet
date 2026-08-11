@@ -20,4 +20,27 @@ describe("production edge contract", () => {
     expect(productionCaddyfile).not.toContain("tls internal");
     expect(productionCaddyfile).toContain("Strict-Transport-Security");
   });
+
+  it("exposes an external trace overlay without changing the local profile", async () => {
+    const overlay = await readFile(
+      "infra/production/docker-compose.external-traces.example.yml",
+      "utf8",
+    );
+    const collector = await readFile(
+      "infra/observability/otel-collector.production.example.yaml",
+      "utf8",
+    );
+
+    expect(overlay).toContain(
+      "../observability/otel-collector.production.example.yaml",
+    );
+    expect(overlay).toContain("CVG_TRACE_OTLP_HTTP_ENDPOINT");
+    expect(overlay).toContain("CVG_TRACE_AUTHORIZATION");
+    expect(overlay).toContain('profiles: ["local-traces"]');
+    expect(overlay).toContain("depends_on: !override");
+    expect(collector).toContain("otlphttp/durable:");
+    expect(collector).toContain("${env:CVG_TRACE_OTLP_HTTP_ENDPOINT}");
+    expect(collector).toContain("insecure: false");
+    expect(collector).toContain("${env:CVG_TRACE_AUTHORIZATION}");
+  });
 });

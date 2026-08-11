@@ -1,0 +1,44 @@
+services:
+  tempo:
+    profiles: ["local-traces"]
+
+  otel-collector:
+    environment:
+      CVG_TRACE_OTLP_HTTP_ENDPOINT: ${CVG_TRACE_OTLP_HTTP_ENDPOINT:?set CVG_TRACE_OTLP_HTTP_ENDPOINT}
+      CVG_TRACE_AUTHORIZATION: ${CVG_TRACE_AUTHORIZATION:?set CVG_TRACE_AUTHORIZATION}
+    volumes:
+      - ../observability/otel-collector.production.example.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on: !override {}
+
+  api-a:
+    depends_on: !override
+      migrate:
+        condition: service_completed_successfully
+      otel-collector:
+        condition: service_started
+
+  api-b:
+    depends_on: !override
+      migrate:
+        condition: service_completed_successfully
+      otel-collector:
+        condition: service_started
+
+  worker-a:
+    depends_on: !override
+      migrate:
+        condition: service_completed_successfully
+      otel-collector:
+        condition: service_started
+
+  worker-b:
+    depends_on: !override
+      migrate:
+        condition: service_completed_successfully
+      otel-collector:
+        condition: service_started
+
+  grafana:
+    depends_on: !override
+      prometheus:
+        condition: service_started
