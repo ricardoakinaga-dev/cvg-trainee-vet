@@ -10,6 +10,11 @@ const environment = {
           (process.env.CVG_RUN_ACTIVE_HA_E2E === "true"
             ? "http://127.0.0.1:3182"
             : "http://127.0.0.1:3101"),
+        CVG_WEB_DIST_DIR:
+          process.env.CVG_WEB_DIST_DIR ??
+          (process.env.CVG_RUN_ACTIVE_HA_E2E === "true"
+            ? ".next-e2e-active"
+            : ".next-e2e-real"),
       }
     : {}),
 };

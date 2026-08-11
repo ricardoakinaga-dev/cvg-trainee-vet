@@ -54,7 +54,7 @@ export default defineConfig({
               },
               {
                 command:
-                  "CVG_API_INTERNAL_URL=http://127.0.0.1:3101 pnpm --dir apps/web start --hostname 127.0.0.1 --port 3100",
+                  "CVG_WEB_DIST_DIR=.next-e2e-real CVG_API_INTERNAL_URL=http://127.0.0.1:3101 pnpm --dir apps/web start --hostname 127.0.0.1 --port 3100",
                 url: "http://127.0.0.1:3100",
                 reuseExistingServer: false,
                 timeout: 120_000,

@@ -8,6 +8,10 @@ export const ACTIVE_HA_FIXTURE_SERVICE = "real-e2e-fixture";
 const DEFAULT_FIXTURE_CONTAINER_FILE = "/tmp/cvg-real-e2e-fixture.json";
 const DEFAULT_FIXTURE_PORT = 3102;
 
+export function buildActiveHaReadinessUrl(baseUrl) {
+  return `${assertLocalBaseUrl(baseUrl)}/health/dependencies`;
+}
+
 function assertLocalBaseUrl(baseUrl) {
   const parsed = new URL(baseUrl);
   if (
@@ -95,6 +99,21 @@ async function waitForFixture(port) {
     await new Promise((resolveResult) => setTimeout(resolveResult, 250));
   }
   throw new Error("active HA E2E fixture did not become ready");
+}
+
+async function waitForActiveRuntime(baseUrl) {
+  const url = buildActiveHaReadinessUrl(baseUrl);
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) return;
+    } catch {
+      // The web proxy is still converging on a ready API replica.
+    }
+    await new Promise((resolveResult) => setTimeout(resolveResult, 250));
+  }
+  throw new Error("active HA web runtime did not become ready");
 }
 
 async function main() {
@@ -186,6 +205,7 @@ async function main() {
       throw new Error("active HA E2E fixture is incomplete");
     }
 
+    await waitForActiveRuntime(baseUrl);
     const playwright = await run(
       "pnpm",
       ["exec", "playwright", "test", "tests/e2e/real-runtime.spec.ts"],

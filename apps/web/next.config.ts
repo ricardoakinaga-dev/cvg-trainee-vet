@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.CVG_WEB_DIST_DIR ?? ".next",
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

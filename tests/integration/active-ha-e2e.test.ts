@@ -6,6 +6,7 @@ import {
   ACTIVE_HA_FIXTURE_SERVICE,
   buildActiveHaComposeArgs,
   buildActiveHaPlaywrightEnvironment,
+  buildActiveHaReadinessUrl,
 } from "../../scripts/active-ha-e2e.mjs";
 
 describe("active HA E2E orchestration", () => {
@@ -56,6 +57,27 @@ describe("active HA E2E orchestration", () => {
         inherited: {},
       }),
     ).toThrow("active HA E2E base URL must be local");
+  });
+
+  it("waits for active web dependency health before browser tests", async () => {
+    expect(buildActiveHaReadinessUrl("http://127.0.0.1:3100")).toBe(
+      "http://127.0.0.1:3100/health/dependencies",
+    );
+
+    const activeRunner = await readFile("scripts/active-ha-e2e.mjs", "utf8");
+    expect(activeRunner).toContain("await waitForActiveRuntime(baseUrl)");
+  });
+
+  it("keeps disposable E2E Next builds isolated from the operational artifact", async () => {
+    const [nextConfig, buildScript, playwrightConfig] = await Promise.all([
+      readFile("apps/web/next.config.ts", "utf8"),
+      readFile("scripts/build-e2e.mjs", "utf8"),
+      readFile("playwright.config.ts", "utf8"),
+    ]);
+
+    expect(nextConfig).toContain("CVG_WEB_DIST_DIR");
+    expect(buildScript).toContain(".next-e2e-real");
+    expect(playwrightConfig).toContain("CVG_WEB_DIST_DIR=.next-e2e-real");
   });
 
   it("keeps the web-to-API channel on a loopback port separate from public HTTP redirect", async () => {
