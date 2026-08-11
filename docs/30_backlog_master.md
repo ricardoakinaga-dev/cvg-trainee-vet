@@ -676,8 +676,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD / AUDIT
 - risco: alto
 - impacto: alto
-- status: IN_PROGRESS
-- evidência: materialização, gates de segurança/observabilidade e testes locais concluídos; implementação commitada em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`; reauditoria pós-commit e registro de handoff ainda em execução; 0509_current_worktree_audit_2026-08-11.md permanece como registro histórico da limitação
+- status: COMPLETED
+- evidência: materialização, gates de segurança/observabilidade e testes locais concluídos; implementação em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`; reauditoria pós-commit no handoff `31d54f6abb9bbc8e36ae40afea78538240fef79d`; 0509_current_worktree_audit_2026-08-11.md permanece como registro histórico da limitação
 - critério de pronto: nenhum código da janela fica fora do commit, manifesto aponta para SHA e a matriz de notas é reexecutada
 
 ### AUD-P2-008 — Harness de carga e contrato de proxy
@@ -711,8 +711,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - plano canônico: BRIEFING/03.BUILD/0303_remediation_program.md;
 - roadmap: BRIEFING/03.BUILD/0301_roadmap.md, PHASE R;
 - backlog executável: BRIEFING/03.BUILD/0302_backlog_master.md, REMEDIAÇÃO R;
-- estado atual: IN_PROGRESS / WAITING_HUMAN_APPROVAL para gates externos;
-- próximo passo: R6-S2/R6-S3, depois revisão clínica, provedor MFA, domínio/certificado, storage e ambiente autorizado;
+- estado atual: WAITING_HUMAN_APPROVAL para gates externos;
+- próximo passo: revisão clínica, provedor MFA, domínio/certificado, storage e ambiente autorizado;
 - decisões necessárias para R3–R5: provedor de identidade/MFA, domínio/DNS/TLS, backend de traces, storage de backup e ambiente de deploy.
 
 ## REGRAS DE USO

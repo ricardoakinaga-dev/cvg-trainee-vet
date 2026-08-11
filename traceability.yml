@@ -1862,8 +1862,8 @@ artifacts:
         "R6 quality gate and final SHA",
         "git diff --check",
       ]
-    commit: "e3cd966efb1d4d2a5596075d1d12f4101dd12492"
-    status: "r1-r6-local-verified-production-gates-pending-postcommit-reaudit"
+    commit: "31d54f6abb9bbc8e36ae40afea78538240fef79d"
+    status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."
@@ -1896,4 +1896,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, honest pending runtime states, fail-closed identity, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. Human review, external IdP, managed TLS, external storage, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, honest pending runtime states, fail-closed identity, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The implementation is in e3cd966efb1d4d2a5596075d1d12f4101dd12492 and the post-commit handoff is 31d54f6abb9bbc8e36ae40afea78538240fef79d. Human review, external IdP, managed TLS, external storage, production deploy and RPO/RTO remain pending."

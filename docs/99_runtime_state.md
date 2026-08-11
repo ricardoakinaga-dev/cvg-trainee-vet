@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — fechamento técnico da rodada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: fechar quality gate, rastreabilidade e commit da remediação local
+- current_task: handoff da remediação local e decisões de produção/conteúdo
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: R1–R6 locais comprovados e commitados em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`: E2E real 14/14 com API sem SUPERUSER/BYPASSRLS; materialização idempotente dos 24 módulos/796 itens; review/publication gate clínico fail-closed; edge/HTTPS/headers; Tempo após restart; release/rollback; backup/restore; `pnpm verify`; build; audit; load smoke
-- next_action: repetir a auditoria no SHA `e3cd966efb1d4d2a5596075d1d12f4101dd12492` e depois obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente de deploy
+- last_completed_action: R1–R6 locais reauditados no commit `31d54f6abb9bbc8e36ae40afea78538240fef79d`: E2E real 14/14 com API sem SUPERUSER/BYPASSRLS; materialização idempotente dos 24 módulos/796 itens; review/publication gate clínico fail-closed; edge/HTTPS/headers; Tempo após restart; release/rollback; backup/restore; `pnpm verify`; build; audit; load smoke
+- next_action: obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T08:55:00-03:00
+- last_update: 2026-08-11T08:58:36-03:00
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 
@@ -96,7 +96,7 @@ WAITING_HUMAN_APPROVAL
 
 ### PRÓXIMA AÇÃO
 
-Reauditar o SHA `e3cd966efb1d4d2a5596075d1d12f4101dd12492`. Não promover produção nem publicar conteúdo antes das decisões humanas registradas.
+Obter as decisões humanas de conteúdo e produção. Não promover nem publicar antes dos gates registrados.
 
 ## REGRAS DE USO
 

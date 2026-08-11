@@ -3466,7 +3466,7 @@ Reexecutado o quality gate após as correções do teste de catálogo, cobertura
 
 `pnpm verify` passou com **406 testes**, 17 skips condicionais e cobertura **84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines**. `pnpm build`, `pnpm audit --audit-level=high`, `pnpm test:integration:restore` (marcador isolado, RTO 557 ms), E2E real (14/14), edge/TLS (HTTP 200, HTTPS 200, redirect 308), Tempo após restart e load smoke (200/200, p95 63,60 ms) passaram.
 
-Foi identificado e corrigido o contrato de build-time do Next: o E2E recompõe a aplicação com `:3101` por default, enquanto o serviço web local usa `:3180`; o web foi recompilado com `CVG_API_INTERNAL_URL=http://127.0.0.1:3180`, reiniciado e voltou a health 200.
+Foi identificado e corrigido o contrato de build-time do Next: o E2E recompõe a aplicação com `:3101` por default, enquanto o serviço web local usa `:3180`; o web foi recompilado com `CVG_API_INTERNAL_URL=http://127.0.0.1:3180`, reiniciado e voltou a health 200. A reauditoria pós-commit no handoff `31d54f6abb9bbc8e36ae40afea78538240fef79d` repetiu `pnpm verify`, build, diff-check e worktree limpo.
 
 ### LIMITES
 
@@ -3474,8 +3474,8 @@ O código está tecnicamente verificável localmente, mas não há aprovação c
 
 ### STATUS
 
-READY_FOR_NEXT_STEP / WAITING_HUMAN_APPROVAL
+COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção e conteúdo
 
 ### NEXT
 
-Commit de implementação criado em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`. Reauditar esse SHA e, em seguida, aguardar as decisões humanas de produção e conteúdo.
+Implementação e evidências fechadas nos commits `e3cd966efb1d4d2a5596075d1d12f4101dd12492` e `31d54f6abb9bbc8e36ae40afea78538240fef79d`. Aguardar: revisão clínica dos itens, provedor MFA/recovery, domínio/certificado, storage externo, backup/RPO/RTO e ambiente autorizado de deploy.

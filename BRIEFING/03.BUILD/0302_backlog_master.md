@@ -273,7 +273,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **impacto:** alto;
 - **testes:** live PostgreSQL, idempotência, RLS contextual, learning path;
 - **pronto:** 24 estados/atribuições visíveis somente no escopo autorizado e nenhum mastery inventado;
-- **status:** COMPLETED localmente;
+- **status:** COMPLETED;
 - **evidência:** `scripts/materialize-curriculum.mjs` executado no banco ativo e em banco efêmero: 24 `learning_activities`, 796 versões/editorial/itens, 24 `learning_assignments`, 24 `curriculum_runtime_states`; segunda execução idempotente com zero inserts; estados `PENDENTE`/`INICIAR_BASELINE`, atribuições `NAO_ATRIBUIDO`; RLS da API permanece sem `SUPERUSER`/`BYPASSRLS`;
 - **plano:** 0303_remediation_program.md.
 
@@ -343,8 +343,8 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **impacto:** alto;
 - **testes:** load smoke default, verify, build, E2E, live, restore, security, diff-check;
 - **pronto:** worktree limpo, commit auditável e reauditoria no mesmo SHA sem P1 aberto;
-- **status:** IN_PROGRESS;
-- **evidência:** load smoke default 200/200, edge/Tempo/HA verificados ao vivo; `pnpm verify` 406/423 com cobertura global acima de 80%, build, audit, E2E real 14/14, restore isolado e diff-check passaram; implementação commitada em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`; reauditoria pós-commit ainda em execução;
+- **status:** COMPLETED;
+- **evidência:** load smoke default 200/200, edge/Tempo/HA verificados ao vivo; `pnpm verify` 406/423 com cobertura global acima de 80%, build, audit, E2E real 14/14, restore isolado e diff-check passaram; implementação em `e3cd966efb1d4d2a5596075d1d12f4101dd12492` e reauditoria no handoff `31d54f6abb9bbc8e36ae40afea78538240fef79d`;
 - **plano:** 0303_remediation_program.md.
 
 ## P2 — MÉDIO
