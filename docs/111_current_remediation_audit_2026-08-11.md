@@ -2,7 +2,7 @@
 
 ## Escopo
 
-Esta reauditoria confronta as limitações originais com o runtime HA local ativo e o commit `0db281bd3713f18ec2c05b06701750c69e202d7d`. O resultado distingue prova local/sintética, falha esperada de gate e dependência externa; não há credenciais, dados clínicos reais ou aprovação clínica inferida.
+Esta reauditoria confronta as limitações originais com o runtime HA local ativo e o commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351`. O resultado distingue prova local/sintética, falha esperada de gate e dependência externa; não há credenciais, dados clínicos reais ou aprovação clínica inferida.
 
 ## Evidências locais atuais
 
@@ -15,16 +15,18 @@ Esta reauditoria confronta as limitações originais com o runtime HA local ativ
 - Edge, HA, manifesto de release e durabilidade local passaram: headers/redirect e topologia local válidos, duas réplicas de API e worker, Tempo em volume local e manifesto imutável com rollback digest sintético.
 - E2E da conta após reinício do processo web com o build atual: provider-mediated recovery/MFA passou 1/1; códigos não permanecem na interface.
 - Build web sem `CVG_API_INTERNAL_URL` falha explicitamente em produção; com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passa. O workflow CI fixa `CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build`, evitando artefato sem proxy.
+- Restore live usando PostgreSQL acessível somente pela rede Docker: `pnpm test:integration:restore` passou 2/2 após encaminhar `PGPASSWORD` por ambiente ao `docker exec`; execução direta restaurou marcador em banco isolado com RTO observado de 2,546 s.
 
 ## Hardening desta rodada
 
 - `packages/application/src/identity-provider.ts` rejeita `operationId` retornado pelo provedor com tamanho inválido ou caracteres de controle antes de expor o resultado.
 - `packages/contracts/src/account.ts` aplica a mesma fronteira ao projection da operação.
-- RED foi observado nos testes de projection e de build proxy; GREEN passou nos testes direcionados. O hardening provider projection está no commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`; o contrato de build web/CI está no commit `0db281bd3713f18ec2c05b06701750c69e202d7d` (`fix: fail closed on missing web proxy build config`).
+- `scripts/verify-postgres-restore.mjs` e `scripts/postgres-command.mjs` encaminham a senha somente por variável de ambiente para comandos PostgreSQL executados via Docker, mantendo o segredo fora dos argumentos.
+- RED foi observado nos testes de projection, build proxy e comando Docker de restore; GREEN passou nos testes direcionados. O hardening provider projection está no commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`; o contrato de build web/CI está no commit `0db281bd3713f18ec2c05b06701750c69e202d7d`; o restore Docker está no commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351` (`fix: pass postgres password to docker restore`).
 
 ## Quality gate
 
-- `pnpm verify`: 96 arquivos de teste passaram, 16 foram pulados condicionalmente; 453 testes passaram e 18 foram pulados.
+- `pnpm verify`: 96 arquivos de teste passaram, 16 foram pulados condicionalmente; 455 testes passaram e 18 foram pulados.
 - Cobertura: 85,04% statements, 80,33% branches, 86,85% functions e 85,79% lines.
 - `pnpm build`, lint, typecheck, format, secret scan, `pnpm audit --audit-level=high`, documentação, rastreabilidade, migrações, arquitetura, definição de produto e fronteira pública passaram.
 

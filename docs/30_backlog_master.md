@@ -820,6 +820,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** URL interna aprovada, domínio/TLS público, IdP, traces/backups externos, registry/deploy/rollback e restore produtivo continuam dependentes do ambiente declarado;
 - **próximo passo:** propagar a URL interna aprovada ao pipeline/serviço web do ambiente real e repetir health, E2E e gates externos.
 
+## 2026-08-11 — REMEDIATION-DOCKER-RESTORE-PASSWORD
+
+- **item:** tornar o restore live compatível com PostgreSQL acessível somente pela rede Docker, sem expor senha nos argumentos;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para backup e restore produtivos;
+- **evidência:** `scripts/postgres-command.mjs` valida o container e encaminha `PGPASSWORD` por ambiente; teste de contrato 6/6; `pnpm test:integration:restore` 2/2; execução direta com banco isolado observou RTO de 2,546 s; commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351`;
+- **limite:** agendamento, criptografia, storage/retenção externos, owner, RPO/RTO produtivo e autorização de restore continuam pendentes;
+- **próximo passo:** repetir o drill usando artefato e política do ambiente produtivo declarado.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

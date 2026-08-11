@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após tornar o build web fail-closed e reauditar o runtime HA, sem promover produção
+- current_task: manter o handoff externo após corrigir o restore Docker e reauditar o runtime HA, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `0db281bd3713f18ec2c05b06701750c69e202d7d` tornou o build web de produção fail-closed sem `CVG_API_INTERNAL_URL` e fixou o alvo no CI; `pnpm verify` passou em 453 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%, com E2E HA 2/2 após rebuild correto
+- last_completed_action: commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351` corrigiu o encaminhamento seguro de `PGPASSWORD` no restore Docker; `pnpm verify` passou em 455 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%, restore live 2/2 e E2E HA 2/2
 - next_action: obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; em paralelo, executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T14:26:40-03:00
+- last_update: 2026-08-11T14:40:47-03:00
 
 ## 2026-08-11T14:16:14-03:00 — REMEDIATION-CURRENT-AUDIT
 
@@ -85,6 +85,32 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Usar o ambiente CI/produtivo declarado com a URL interna aprovada; depois executar os gates externos e estritos sem mascarar ausência de configuração.
+
+## 2026-08-11T14:40:47-03:00 — REMEDIATION-DOCKER-RESTORE-PASSWORD
+
+### AÇÃO
+
+O restore live foi reexecutado no HA atual e falhou porque o PostgreSQL não publica a porta no host; o verificador chamava `docker exec` sem encaminhar a senha de conexão.
+
+### RESULTADO
+
+Foi criado `scripts/postgres-command.mjs`, com validação do identificador do container e encaminhamento de `PGPASSWORD` somente por ambiente. `scripts/verify-postgres-restore.mjs` passou a usar o contrato; o teste de contrato passou 6/6, `pnpm test:integration:restore` passou 2/2 e a execução direta restaurou marcador em banco isolado com RTO de 2,546 s.
+
+### EVIDÊNCIA
+
+Commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351`; `docs/111_current_remediation_audit_2026-08-11.md`; `pnpm verify` com 455 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines.
+
+### LIMITES
+
+Esta prova fecha o caminho local/HA e não comprova agendamento, criptografia, storage externo, retenção, RPO/RTO ou restore de produção.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Registrar o destino de backup e a política operacional aprovados; repetir o drill com artefato do ambiente produtivo declarado.
 
 ## 2026-08-11T14:00:27-03:00 — REMEDIATION-IDENTITY-LIFECYCLE
 

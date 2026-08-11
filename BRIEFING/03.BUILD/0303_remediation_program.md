@@ -251,6 +251,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Aceite:** RPO ≤ 1 hora e RTO ≤ 4 horas no ambiente declarado; dump não fica no repositório; evidência redigida.
 - **Rollback:** interromper job e preservar último backup íntegro; nunca sobrescrever produção sem confirmação.
 - **Progresso local:** o manifesto agora é validado contra nome, tamanho, formato, timestamp e SHA-256; o verificador aceita um dump existente fora do repositório e restaura esse artefato em banco descartável, além do marcador sintético. O teste live no HA passou 2/2; uma execução direta observou 197.097 bytes, 27 objetos restaurados e RTO de 2.357 ms.
+- **Progresso adicional:** quando o PostgreSQL só está acessível pela rede Docker, `scripts/postgres-command.mjs` encaminha `PGPASSWORD` por ambiente ao `docker exec`; `pnpm test:integration:restore` passou 2/2 e a execução direta observou RTO de 2.546 ms, sem expor a senha nos argumentos.
 - **Limite:** agendamento, retenção, criptografia, storage externo, owner, RPO/RTO produtivo e autorização de restore continuam pendentes; a prova local não fecha o gate de produção.
 
 ### R6 — Qualidade, carga, auditoria e fechamento

@@ -4229,3 +4229,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Usar o ambiente CI/produtivo declarado com a URL interna aprovada; depois executar os gates externos e estritos sem mascarar ausência de configuração.
+
+## 2026-08-11T14:40:47-03:00 — REMEDIATION-DOCKER-RESTORE-PASSWORD
+
+### ACTION
+
+O restore live foi reexecutado no HA atual e falhou porque o PostgreSQL não publica a porta no host; o verificador chamava `docker exec` sem encaminhar a senha de conexão.
+
+### RESULT
+
+Foi criado `scripts/postgres-command.mjs`, com validação do identificador do container e encaminhamento de `PGPASSWORD` somente por ambiente. `scripts/verify-postgres-restore.mjs` passou a usar o contrato; o teste de contrato passou 6/6, `pnpm test:integration:restore` passou 2/2 e a execução direta restaurou marcador em banco isolado com RTO de 2,546 s.
+
+### EVIDENCE
+
+Commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351`; `docs/111_current_remediation_audit_2026-08-11.md`; `pnpm verify` com 455 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines.
+
+### LIMITS
+
+Esta prova fecha o caminho local/HA e não comprova agendamento, criptografia, storage externo, retenção, RPO/RTO ou restore de produção.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Registrar o destino de backup e a política operacional aprovados; repetir o drill com artefato do ambiente produtivo declarado.
