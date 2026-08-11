@@ -106,7 +106,7 @@ jobs:
         run: pnpm test:integration:restore
 
       - name: Build all workspaces
-        run: pnpm build
+        run: CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build
 
       - name: Install Chromium for browser tests
         run: pnpm exec playwright install --with-deps chromium

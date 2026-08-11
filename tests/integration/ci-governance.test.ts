@@ -52,4 +52,13 @@ describe("CI reproducibility contract", () => {
     );
     expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
   });
+
+  it("pins the build-time web proxy target in CI", async () => {
+    const contract = await readCiContract();
+
+    expect(contract.workflow).toMatch(
+      /run:\s*CVG_API_INTERNAL_URL=http:\/\/127\.0\.0\.1:3000 pnpm build/u,
+    );
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
 });

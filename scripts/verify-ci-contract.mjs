@@ -35,6 +35,10 @@ const requiredWorkflowChecks = Object.freeze([
   ["live PostgreSQL integration", /run:\s*pnpm test:integration:live\b/u],
   ["live Qdrant integration", /run:\s*pnpm test:integration:qdrant\b/u],
   ["synthetic restore", /run:\s*pnpm test:integration:restore\b/u],
+  [
+    "build-time web proxy",
+    /run:\s*CVG_API_INTERNAL_URL=http:\/\/127\.0\.0\.1:3000 pnpm build\b/u,
+  ],
   ["mocked browser E2E", /run:\s*pnpm test:e2e\b/u],
   ["real browser E2E", /CVG_RUN_REAL_E2E=true pnpm test:e2e/u],
   ["real E2E admin database", /CVG_REAL_E2E_ADMIN_DATABASE_URL:/u],
