@@ -3919,3 +3919,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter backend de traces e retenção aprovados, então executar em ambiente autorizado com credenciais fora do repositório; não promover valores sintéticos.
+
+## 2026-08-11 — REMEDIATION-EXTERNAL-TRACE-ENDPOINT-SEMANTICS
+
+### TIMESTAMP
+
+2026-08-11 12:11:54 -03:00
+
+### ACTION
+
+A documentação oficial do OpenTelemetry Collector Contrib foi consultada para confirmar a semântica do exporter `otlphttp`. O comentário e o contrato foram ajustados para exigir uma URL-base HTTPS, deixando `/v1/traces` para o caminho padrão do exporter. A correção foi registrada no commit `8b03283`.
+
+### RESULT
+
+O teste de contrato passou 2/2; a validação do Collector passou com `https://traces.example.org` sintético (sem caminho duplicado); `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. O Compose externo e o runtime local permaneceram inalterados.
+
+### LIMITES
+
+Esta correção melhora a interoperabilidade do perfil, mas não configura fornecedor, credencial, retenção, consulta, alerta ou persistência externa. O gate de produção continua aguardando decisões e ambiente autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Selecionar backend e retenção de traces; então executar o overlay em ambiente autorizado com credenciais fora do repositório.
