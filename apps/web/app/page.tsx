@@ -301,6 +301,53 @@ function selectedChoiceIds(
   }
 }
 
+const ITEMS_PER_BLOCK = 3;
+type PageSaveState = "idle" | "saving" | "saved";
+
+function answersFromAttempt(
+  attempt: AttemptProjection | null,
+): Readonly<Record<string, string>> {
+  if (attempt === null) return {};
+  return Object.fromEntries(
+    attempt.answers.map((answer) => [answer.itemId, answer.response]),
+  );
+}
+
+function mergeAttemptProjection(
+  previous: AttemptProjection | null,
+  next: AttemptProjection,
+): AttemptProjection {
+  const answerByItem = new Map(
+    (previous?.answers ?? []).map((answer) => [answer.itemId, answer]),
+  );
+  for (const answer of next.answers) answerByItem.set(answer.itemId, answer);
+  return { ...next, answers: Array.from(answerByItem.values()) };
+}
+
+function isAnswerComplete(
+  item: ActivityItem,
+  value: string | undefined,
+): boolean {
+  if (item.responseMode === "NONE") return true;
+  if (item.responseMode === "CHOICE") {
+    return selectedChoiceIds(item, value).length > 0;
+  }
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function attemptFromJourneyActivity(
+  activity: JourneyActivityProjection | undefined,
+): AttemptProjection | null {
+  if (activity?.attemptId === undefined) return null;
+  return {
+    attemptId: activity.attemptId,
+    activityId: activity.activityId,
+    status: activity.attemptStatus ?? "EM_ANDAMENTO",
+    version: activity.attemptVersion ?? 0,
+    answers: [],
+  };
+}
+
 async function requestJson(
   path: string,
   init: Readonly<{
@@ -349,6 +396,8 @@ export default function HomePage() {
   );
   const [attempt, setAttempt] = useState<AttemptProjection | null>(null);
   const [answers, setAnswers] = useState<Readonly<Record<string, string>>>({});
+  const [questionPage, setQuestionPage] = useState(0);
+  const [pageSaveState, setPageSaveState] = useState<PageSaveState>("idle");
   const [authenticated, setAuthenticated] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -361,7 +410,10 @@ export default function HomePage() {
     setActivityId(initialActivityId());
   }, []);
 
-  async function loadActivity(nextActivityId: string): Promise<void> {
+  async function loadActivity(
+    nextActivityId: string,
+    seedAttempt: AttemptProjection | null = null,
+  ): Promise<void> {
     setActivityState("loading");
     setRetryAction("activity");
     try {
@@ -370,7 +422,14 @@ export default function HomePage() {
       });
       if (!isActivity(data))
         throw new PublicApiError("internal_error", "invalid projection");
+      const isNewActivity = activity?.activityId !== data.activityId;
       setActivity(data);
+      if (isNewActivity) {
+        setAttempt(seedAttempt);
+        setAnswers(answersFromAttempt(seedAttempt));
+        setQuestionPage(0);
+        setPageSaveState("idle");
+      }
       const moduleId = moduleIdFromActivity(data);
       if (moduleId === null) {
         setRuntime(null);
@@ -428,7 +487,13 @@ export default function HomePage() {
       activityId.trim().length > 0 ? activityId : initialActivityId();
     if (requestedActivityId.length > 0) {
       setActivityId(requestedActivityId);
-      await loadActivity(requestedActivityId);
+      const requestedJourneyActivity = loadedJourney.activities.find(
+        (item) => item.activityId === requestedActivityId,
+      );
+      await loadActivity(
+        requestedActivityId,
+        attemptFromJourneyActivity(requestedJourneyActivity),
+      );
       return;
     }
     const nextActivity = loadedJourney.activities.find(
@@ -436,7 +501,10 @@ export default function HomePage() {
     );
     if (nextActivity !== undefined) {
       setActivityId(nextActivity.activityId);
-      await loadActivity(nextActivity.activityId);
+      await loadActivity(
+        nextActivity.activityId,
+        attemptFromJourneyActivity(nextActivity),
+      );
     }
   }
 
@@ -505,7 +573,13 @@ export default function HomePage() {
             )?.activityId;
       if (nextActivityId !== undefined && nextActivityId.length > 0) {
         setActivityId(nextActivityId);
-        await loadActivity(nextActivityId);
+        const nextActivity = loadedJourney.activities.find(
+          (item) => item.activityId === nextActivityId,
+        );
+        await loadActivity(
+          nextActivityId,
+          attemptFromJourneyActivity(nextActivity),
+        );
       }
       setNotice("Jornada atualizada.");
     } catch (caught) {
@@ -555,6 +629,12 @@ export default function HomePage() {
           "invalid attempt projection",
         );
       setAttempt(data);
+      setAnswers((previous) => ({
+        ...previous,
+        ...answersFromAttempt(data),
+      }));
+      setQuestionPage(0);
+      setPageSaveState("idle");
       setNotice("Tentativa iniciada.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -588,28 +668,58 @@ export default function HomePage() {
     }));
   }
 
+  function currentBlockItems(): readonly ActivityItem[] {
+    if (activity === null) return [];
+    const start = questionPage * ITEMS_PER_BLOCK;
+    return activity.items.slice(start, start + ITEMS_PER_BLOCK);
+  }
+
+  function focusAnswer(item: ActivityItem): void {
+    const target =
+      item.responseMode === "TEXT"
+        ? document.getElementById("answer-" + item.itemId)
+        : document.querySelector<HTMLInputElement>(
+            'input[name="answer-' + item.itemId + '"]',
+          );
+    target?.focus();
+  }
+
+  async function persistAnswer(
+    item: ActivityItem,
+    currentAttempt: AttemptProjection,
+  ): Promise<AttemptProjection> {
+    const data = await requestJson(
+      "/api/v1/attempts/" + currentAttempt.attemptId + "/answers",
+      {
+        method: "POST",
+        body: {
+          attemptId: currentAttempt.attemptId,
+          activityId: activity?.activityId ?? "",
+          itemId: item.itemId,
+          response: answers[item.itemId] ?? "",
+          idempotencyKey: idempotencyKey("answer"),
+        },
+      },
+    );
+    if (!isAttempt(data))
+      throw new PublicApiError("internal_error", "invalid answer projection");
+    return data;
+  }
+
   async function handleSaveAnswer(item: ActivityItem): Promise<void> {
     if (activity === null || attempt === null) return;
+    if (!isAnswerComplete(item, answers[item.itemId])) {
+      setError("Responda esta questão antes de salvar.");
+      focusAnswer(item);
+      return;
+    }
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      const data = await requestJson(
-        `/api/v1/attempts/${attempt.attemptId}/answers`,
-        {
-          method: "POST",
-          body: {
-            attemptId: attempt.attemptId,
-            activityId: activity.activityId,
-            itemId: item.itemId,
-            response: answers[item.itemId] ?? "",
-            idempotencyKey: idempotencyKey("answer"),
-          },
-        },
-      );
-      if (!isAttempt(data))
-        throw new PublicApiError("internal_error", "invalid answer projection");
-      setAttempt(data);
+      const data = await persistAnswer(item, attempt);
+      setAttempt((previous) => mergeAttemptProjection(previous, data));
+      setPageSaveState("saved");
       setNotice("Resposta salva.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -618,14 +728,80 @@ export default function HomePage() {
     }
   }
 
+  async function saveCurrentBlock(): Promise<AttemptProjection | null> {
+    if (activity === null || attempt === null) return null;
+    const blockItems = currentBlockItems();
+    const incomplete = blockItems.find(
+      (item) => !isAnswerComplete(item, answers[item.itemId]),
+    );
+    if (incomplete !== undefined) {
+      setPageSaveState("idle");
+      setError("Responda todas as questões deste bloco antes de avançar.");
+      focusAnswer(incomplete);
+      return null;
+    }
+
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    setPageSaveState("saving");
+    let currentAttempt = attempt;
+    try {
+      for (const item of blockItems) {
+        if (item.responseMode === "NONE") continue;
+        const data = await persistAnswer(item, currentAttempt);
+        currentAttempt = mergeAttemptProjection(currentAttempt, data);
+      }
+      setAttempt(currentAttempt);
+      setPageSaveState("saved");
+      setNotice("Bloco salvo.");
+      return currentAttempt;
+    } catch (caught) {
+      setPageSaveState("idle");
+      setError(publicErrorMessage(caught));
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleNextPage(): Promise<void> {
+    const savedAttempt = await saveCurrentBlock();
+    if (savedAttempt === null || activity === null) return;
+    const totalBlocks = Math.max(
+      1,
+      Math.ceil(activity.items.length / ITEMS_PER_BLOCK),
+    );
+    if (questionPage >= totalBlocks - 1) return;
+    setQuestionPage((previous) => previous + 1);
+    setPageSaveState("idle");
+    setNotice("Bloco salvo. Próximo bloco liberado.");
+    window.requestAnimationFrame(() => {
+      document.getElementById("question-block-title")?.focus();
+    });
+  }
+
   async function handleSubmitAttempt(): Promise<void> {
-    if (attempt === null) return;
+    if (attempt === null || activity === null) return;
+    const incomplete = activity.items.find(
+      (item) => !isAnswerComplete(item, answers[item.itemId]),
+    );
+    if (incomplete !== undefined) {
+      setError("Responda todas as questões antes de enviar a tentativa.");
+      setQuestionPage(
+        Math.floor(activity.items.indexOf(incomplete) / ITEMS_PER_BLOCK),
+      );
+      focusAnswer(incomplete);
+      return;
+    }
+    const savedAttempt = await saveCurrentBlock();
+    if (savedAttempt === null) return;
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
       const data = await requestJson(
-        `/api/v1/attempts/${attempt.attemptId}/submit`,
+        "/api/v1/attempts/" + savedAttempt.attemptId + "/submit",
         {
           method: "POST",
           body: { idempotencyKey: idempotencyKey("submit") },
@@ -636,7 +812,7 @@ export default function HomePage() {
           "internal_error",
           "invalid submission projection",
         );
-      setAttempt(data);
+      setAttempt((previous) => mergeAttemptProjection(previous, data));
       setNotice("Tentativa submetida.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -648,6 +824,33 @@ export default function HomePage() {
   useEffect(() => {
     void restoreSession();
   }, []);
+
+  const answerableItems =
+    activity?.items.filter((item) => item.responseMode !== "NONE") ?? [];
+  const answeredItemCount = answerableItems.filter((item) =>
+    isAnswerComplete(item, answers[item.itemId]),
+  ).length;
+  const progressPercent =
+    answerableItems.length === 0
+      ? 0
+      : Math.round((answeredItemCount / answerableItems.length) * 100);
+  const totalBlocks =
+    activity === null
+      ? 0
+      : Math.max(1, Math.ceil(activity.items.length / ITEMS_PER_BLOCK));
+  const visibleItems =
+    attempt === null
+      ? (activity?.items.slice(0, ITEMS_PER_BLOCK) ?? [])
+      : currentBlockItems();
+  const currentBlockAnswerableItems = visibleItems.filter(
+    (item) => item.responseMode !== "NONE",
+  );
+  const currentBlockAnsweredCount = currentBlockAnswerableItems.filter((item) =>
+    isAnswerComplete(item, answers[item.itemId]),
+  ).length;
+  const blockStartOrdinal = visibleItems[0]?.ordinal ?? 0;
+  const blockEndOrdinal = visibleItems[visibleItems.length - 1]?.ordinal ?? 0;
+  const hasNextPage = questionPage < totalBlocks - 1;
 
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
@@ -902,9 +1105,97 @@ export default function HomePage() {
               Responda no seu ritmo. O sistema salva apenas a sua projeção de
               aprendizagem e permite retomar depois.
             </p>
+            {attempt === null ? (
+              <section
+                className="attempt-launch-card"
+                data-testid="attempt-launch"
+              >
+                <div>
+                  <p className="eyebrow">Primeiro passo</p>
+                  <h2>Pronto para começar?</h2>
+                  <p>
+                    Você responderá a atividade em blocos de até três questões.
+                    O progresso fica salvo a cada avanço.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleStartAttempt()}
+                  disabled={busy}
+                >
+                  Iniciar tentativa <span aria-hidden="true">→</span>
+                </button>
+              </section>
+            ) : (
+              <section
+                className="activity-progress"
+                aria-label="Progresso da atividade"
+              >
+                <div className="progress-copy">
+                  <div>
+                    <p className="eyebrow">Progresso da atividade</p>
+                    <strong>
+                      {answeredItemCount} de {answerableItems.length}{" "}
+                      respondidas
+                    </strong>
+                  </div>
+                  <span className="progress-status">
+                    {pageSaveState === "saving"
+                      ? "Salvando…"
+                      : pageSaveState === "saved"
+                        ? "Salvo"
+                        : progressPercent + "%"}
+                  </span>
+                </div>
+                <div
+                  className="progress-track"
+                  role="progressbar"
+                  aria-label="Progresso da atividade"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progressPercent}
+                  aria-valuetext={
+                    answeredItemCount +
+                    " de " +
+                    answerableItems.length +
+                    " respondidas"
+                  }
+                >
+                  <span style={{ width: progressPercent + "%" }} />
+                </div>
+              </section>
+            )}
+            {attempt !== null ? (
+              <div className="question-block-heading">
+                <div>
+                  <p className="eyebrow">
+                    Bloco {questionPage + 1} de {totalBlocks}
+                  </p>
+                  <h2 id="question-block-title" tabIndex={-1}>
+                    Questões {blockStartOrdinal}–{blockEndOrdinal}
+                  </h2>
+                </div>
+                <span>
+                  {currentBlockAnsweredCount} de{" "}
+                  {currentBlockAnswerableItems.length} respondidas
+                </span>
+              </div>
+            ) : (
+              <p className="activity-preview-note">
+                Prévia da atividade · inicie a tentativa para liberar as
+                respostas.
+              </p>
+            )}
             <div className="item-list">
-              {activity.items.map((item) => (
-                <article className="item-card" key={item.itemId}>
+              {visibleItems.map((item) => (
+                <article
+                  className={
+                    attempt === null
+                      ? "item-card item-card-preview"
+                      : "item-card"
+                  }
+                  key={item.itemId}
+                >
                   <div className="item-meta">
                     <span>Item {item.ordinal}</span>
                     <span>{item.kind}</span>
@@ -922,7 +1213,7 @@ export default function HomePage() {
                           answers[item.itemId],
                         ).includes(choice.id);
                         return (
-                          <label key={choice.id}>
+                          <label className="answer-option" key={choice.id}>
                             <input
                               type={
                                 item.selectionMode === "MULTIPLE"
@@ -980,7 +1271,9 @@ export default function HomePage() {
                         type="button"
                         className="secondary-button"
                         onClick={() => void handleSaveAnswer(item)}
-                        disabled={busy}
+                        disabled={
+                          busy || !isAnswerComplete(item, answers[item.itemId])
+                        }
                       >
                         Salvar resposta
                       </button>
@@ -989,25 +1282,55 @@ export default function HomePage() {
                 </article>
               ))}
             </div>
-            <div className="action-row">
-              {attempt === null ? (
+            {attempt !== null ? (
+              <div className="question-navigation">
                 <button
                   type="button"
-                  onClick={() => void handleStartAttempt()}
-                  disabled={busy}
+                  className="secondary-button navigation-back"
+                  onClick={() => {
+                    setQuestionPage((previous) => Math.max(0, previous - 1));
+                    setPageSaveState("idle");
+                  }}
+                  disabled={busy || questionPage === 0}
                 >
-                  Iniciar tentativa
+                  ← Voltar
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void handleSubmitAttempt()}
-                  disabled={busy || attempt.status === "SUBMETIDA"}
-                >
-                  Enviar tentativa
-                </button>
-              )}
-            </div>
+                <div className="question-navigation-main">
+                  {hasNextPage ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleNextPage()}
+                      disabled={busy}
+                    >
+                      {pageSaveState === "saving"
+                        ? "Salvando…"
+                        : "Salvar e avançar"}
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void saveCurrentBlock()}
+                      disabled={busy}
+                    >
+                      {pageSaveState === "saving"
+                        ? "Salvando…"
+                        : "Salvar bloco"}
+                    </button>
+                  )}
+                  {!hasNextPage ? (
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => void handleSubmitAttempt()}
+                      disabled={busy || attempt.status === "SUBMETIDA"}
+                    >
+                      Enviar tentativa
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </div>
           <aside className="privacy-card" aria-label="Proteção de dados">
             <p className="eyebrow">Superfície do participante</p>

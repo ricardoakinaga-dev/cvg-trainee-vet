@@ -1310,3 +1310,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Ricardo deve validar a primeira impressão em `http://localhost:3100/`. Depois, iniciar a próxima fase da experiência autenticada: dashboard do participante em formato de trilha e área administrativa para usuários, treinamentos e progresso.
+
+## 2026-08-11T17:08:38-03:00 — ACCESS-ACTIVITY-FLOW-24
+
+### AÇÃO
+
+Reestruturada a tela de atividade do participante para orientar o início da tentativa, exibir no máximo três questões por bloco, permitir avanço sequencial e mostrar progresso contínuo. O salvamento do bloco foi ligado ao endpoint de respostas antes do avanço; respostas vazias agora são bloqueadas com foco na questão pendente.
+
+### RESULTADO
+
+A atividade publicada em `http://127.0.0.1:3100` foi reconstruída e reiniciada. O rádio/checkbox recebeu estilo próprio para não herdar a largura de campos de texto. A navegação agora permanece no fluxo da página e não cobre alternativas. O teste novo comprovou o envio das três respostas do primeiro bloco; a suíte participante/acessibilidade passou 13/13 e o health retornou 200.
+
+### EVIDÊNCIA
+
+`apps/web/app/page.tsx`; `apps/web/app/globals.css`; `tests/e2e/participant-access.spec.ts`. Build web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`; `pnpm lint`; typecheck web; `pnpm test:coverage` com 462 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines; E2E Chromium contra `3100`; capturas desktop e mobile inspecionadas.
+
+### LIMITES
+
+Esta entrega cobre a experiência da atividade e o salvamento de respostas já existente. Não implementa ainda a trilha persistida completa do participante, perfil/área do usuário, mascote interativo, gerenciamento administrativo de usuários ou controle editorial de treinamentos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve abrir `http://localhost:3100/`, iniciar a atividade, responder um bloco e confirmar visualmente o avanço. Depois, priorizar o dashboard persistido da trilha e a área administrativa já registrada como próxima fase.

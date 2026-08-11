@@ -4341,3 +4341,21 @@ O teste E2E foi escrito primeiro e falhou pela ausência da nova experiência; a
 ### DECISÃO / LIMITE
 
 O escopo desta entrega é somente a entrada. A autenticação continua por conta provisionada pela operação, com cookie HttpOnly e sem cadastro público. Mascote interativo, trilha autenticada, área de usuário e administração de usuários/treinamentos ficam registrados como próxima fase, não foram simulados nesta tela.
+
+## 2026-08-11T17:08:38-03:00 — ACCESS-ACTIVITY-FLOW-24
+
+### CONTEXTO
+
+A atividade apresentava o início no final da tela, controles de escolha com formatação herdada de campos de texto e nenhuma confirmação confiável de que as respostas eram persistidas. A interação precisava ser reduzida a blocos curtos, com orientação clara e progresso visível.
+
+### EXECUÇÃO
+
+Foi implementado um cartão de início antes das questões, blocos de até três itens, barra de progresso com contagem e percentual, navegação `Voltar`/`Salvar e avançar`, salvamento sequencial do bloco e validação de completude antes de salvar ou enviar. O componente de alternativa passou a usar um layout próprio para rádio/checkbox; a navegação deixou de ser sticky para não sobrepor conteúdo.
+
+### VERIFICAÇÃO
+
+O teste E2E foi escrito para falhar na ausência do novo cartão de início e passou após a implementação. Ele também verifica que os três `itemId`s do primeiro bloco chegam ao endpoint de respostas antes da mudança para o bloco 2. A suíte participant/accessibility passou 13/13 contra `http://127.0.0.1:3100`; build e health foram validados; cobertura global passou com 462 testes e 85,04% statements / 80,33% branches.
+
+### DECISÃO / LIMITE
+
+A entrega permanece restrita à experiência do participante na atividade e reutiliza o contrato server-side existente. Não foi criado cadastro público nem bypass de autorização. Área de usuário, dashboard de trilha, administração de usuários/treinamentos e mascote com comunicação dinâmica continuam como próximos incrementos.

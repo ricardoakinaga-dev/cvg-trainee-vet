@@ -860,3 +860,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **entrega:** missão inicial, mascote Caju, prévia da trilha, explicação de convite, senha visível/oculta e layout responsivo;
 - **limite:** ainda não implementa falas dinâmicas do mascote, trilha persistida do participante, perfil completo, gerenciamento de usuários ou controle de treinamentos;
 - **próximo passo:** validar visualmente a entrada e priorizar a área autenticada do participante antes de ampliar para administração.
+
+## 2026-08-11 — ACCESS-24 — Fluxo de atividade em blocos
+
+- **título:** orientar a resposta de atividades em blocos de até três questões, com salvamento e progresso visíveis;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para validação visual do operador;
+- **evidência:** `apps/web/app/page.tsx`, `apps/web/app/globals.css`, `tests/e2e/participant-access.spec.ts`; build web reiniciada em `3100`; E2E participante/acessibilidade 13/13; coverage 462 testes, 85,04% statements e 80,33% branches;
+- **entrega:** cartão de início no topo, barra de progresso, navegação por blocos, salvamento das respostas antes do avanço, validação de respostas vazias e correção do layout de rádio/checkbox;
+- **limite:** não implementa ainda dashboard persistido da trilha, área de usuário, mascote interativo, gerenciamento de usuários ou controle editorial de treinamentos;
+- **próximo passo:** Ricardo validar o fluxo em `http://localhost:3100/` e depois priorizar o dashboard do participante.

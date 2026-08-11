@@ -221,6 +221,113 @@ test.describe("participant access and learning projection", () => {
     await expect(page.locator("body")).not.toContainText("tokenHash");
   });
 
+  test("guides the participant through three-question blocks and saves before advancing", async ({
+    page,
+  }) => {
+    const blockItems = Array.from({ length: 5 }, (_, index) => ({
+      itemId: `55555555-5555-4555-8555-55555555555${index + 1}`,
+      ordinal: index + 1,
+      kind: "QUESTAO",
+      title: `Questão ${index + 1}`,
+      text: `Escolha a alternativa da questão ${index + 1}.`,
+      responseMode: "CHOICE",
+      selectionMode: "SINGLE",
+      choices: [
+        { id: "a", label: "A", text: `Alternativa A ${index + 1}` },
+        { id: "b", label: "B", text: `Alternativa B ${index + 1}` },
+      ],
+    }));
+    let savedItemIds: readonly string[] = [];
+
+    await page.route("**/api/v1/auth/login", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: blockItems,
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/attempts", async (route) => {
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId,
+            activityId,
+            status: "EM_ANDAMENTO",
+            version: 1,
+            answers: [],
+          }),
+        ),
+      });
+    });
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/answers`,
+      async (route) => {
+        const body = route.request().postDataJSON() as Readonly<{
+          readonly itemId: string;
+          readonly response: string;
+        }>;
+        savedItemIds = [...savedItemIds, body.itemId];
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptId,
+              activityId,
+              status: "SALVA",
+              version: 2,
+              answers: [{ itemId: body.itemId, response: body.response }],
+            }),
+          ),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await signIn(page);
+
+    await expect(page.getByTestId("attempt-launch")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Iniciar tentativa" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Iniciar tentativa" }).click();
+
+    await expect(page.getByText("Bloco 1 de 2")).toBeVisible();
+    await expect(
+      page.getByRole("progressbar", { name: "Progresso da atividade" }),
+    ).toHaveAttribute("aria-valuenow", "0");
+    await page.getByRole("radio", { name: /Alternativa A 1/ }).check();
+    await page.getByRole("radio", { name: /Alternativa A 2/ }).check();
+    await page.getByRole("radio", { name: /Alternativa A 3/ }).check();
+    await page.getByRole("button", { name: "Salvar e avançar" }).click();
+
+    await expect(page.getByText("Bloco 2 de 2")).toBeVisible();
+    expect(savedItemIds).toEqual(
+      blockItems.slice(0, 3).map((item) => item.itemId),
+    );
+    await expect(page.getByText("Questões 4–5")).toBeVisible();
+    await expect(
+      page.getByRole("progressbar", { name: "Progresso da atividade" }),
+    ).toHaveAttribute("aria-valuenow", "60");
+    await expect(page.locator("body")).not.toContainText("Questão 1");
+  });
+
   test("renders and saves a multi-select question from the public projection", async ({
     page,
   }) => {
