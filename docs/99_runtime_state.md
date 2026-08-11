@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: gate clínico de autoria endurecido no commit `c7a591b`: E2E comprova publicação desabilitada antes da aprovação e habilitada depois; `pnpm --filter @cvg/web typecheck` e E2E de autoria 1/1 passaram; os gates externos continuam fail-closed
+- last_completed_action: gate clínico de autoria endurecido no commit `c7a591b`: E2E comprova publicação desabilitada antes da aprovação e habilitada depois; typecheck e build de produção do web passaram com artefato descartável; os gates externos continuam fail-closed
 - next_action: executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T12:20:44-03:00
+- last_update: 2026-08-11T12:25:20-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -996,3 +996,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Usar a superfície interna para revisar os 763 itens com aprovador independente; em paralelo, fornecer as decisões e recursos externos de R3–R5.
+
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-BUILD-RECHECK
+
+### AÇÃO
+
+Executado `CVG_WEB_DIST_DIR=.next-verify-build2 CVG_API_INTERNAL_URL=http://127.0.0.1:3182 CVG_PUBLIC_HTTPS=true pnpm build`, com remoção recuperável do artefato temporário e restauração dos arquivos gerados pelo Next.
+
+### RESULTADO
+
+O build dos 12 workspaces passou; a rota `/authoring` foi compilada em produção e o web manteve o artefato operacional intacto. O typecheck, o E2E de revisão 1/1, `pnpm verify` 423/17 e `git diff --check` permanecem verdes.
+
+### LIMITES
+
+O build comprova o mecanismo de revisão, não a aprovação clínica dos itens. A produção continua sem domínio, IdP, storage externo, backup produtivo e ambiente de release autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Iniciar a revisão humana rastreável dos 763 itens; depois executar os gates externos somente com decisões e credenciais autorizadas.

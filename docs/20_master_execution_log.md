@@ -3997,3 +3997,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Usar a superfície interna para revisar os 763 itens com aprovador independente; em paralelo, fornecer as decisões e recursos externos de R3–R5.
+
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-BUILD-RECHECK
+
+### TIMESTAMP
+
+2026-08-11 12:25:20 -03:00
+
+### ACTION
+
+Executado `CVG_WEB_DIST_DIR=.next-verify-build2 CVG_API_INTERNAL_URL=http://127.0.0.1:3182 CVG_PUBLIC_HTTPS=true pnpm build`, com remoção recuperável do artefato temporário e restauração dos arquivos gerados pelo Next.
+
+### RESULT
+
+O build dos 12 workspaces passou; a rota `/authoring` foi compilada em produção e o web manteve o artefato operacional intacto. O typecheck, o E2E de revisão 1/1, `pnpm verify` 423/17 e `git diff --check` permanecem verdes.
+
+### LIMITES
+
+O build comprova o mecanismo de revisão, não a aprovação clínica dos itens. A produção continua sem domínio, IdP, storage externo, backup produtivo e ambiente de release autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Iniciar a revisão humana rastreável dos 763 itens; depois executar os gates externos somente com decisões e credenciais autorizadas.
