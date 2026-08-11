@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: contrato de backup/restore por artefato implementado; manifesto, tamanho e SHA-256 são verificados antes do restore; `pnpm test:integration:restore` passou 2/2 no HA ativo e execução direta restaurou 27 objetos com RTO observado de 2.357 ms
+- last_completed_action: contrato de backup/restore por artefato implementado no commit `cafba44890efc2a5b99e5af10faf79a95c9be59d`; manifesto, tamanho e SHA-256 são verificados antes do restore; `pnpm test:integration:restore` passou 2/2 no HA ativo e execução direta restaurou 27 objetos com RTO observado de 2.357 ms
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS

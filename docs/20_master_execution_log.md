@@ -4064,6 +4064,8 @@ Executado TDD para fechar a diferença entre gerar um dump novo e verificar um b
 
 O RED falhou pela ausência do contrato; o GREEN passou em `tests/integration/backup-artifact.test.ts` (4/4). `pnpm lint`, `pnpm typecheck` e `git diff --check` passaram. No HA ativo, um dump custom de 197.097 bytes teve SHA-256 validado; o restore do artefato persistido passou com `verificationMode=stored-artifact`, 27 objetos restaurados e RTO observado de 2.357 ms. O teste oficial `pnpm test:integration:restore` passou 2/2, cobrindo marcador sintético e artefato checksummed existente.
 
+Commit técnico/documental: `cafba44890efc2a5b99e5af10faf79a95c9be59d` (`fix: verify stored backup artifacts before restore`).
+
 ### LIMITES
 
 O resultado é prova local/HA sintética do contrato de artefato e do mecanismo de restore. Agendamento, storage externo, criptografia, retenção, owner, RPO/RTO produtivo, failover e autorização de produção continuam sem evidência e não foram preenchidos por valores sintéticos. Evidência: `docs/107_backup_artifact_restore_evidence_2026-08-11.md`.
