@@ -264,6 +264,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** pnpm ops:load-smoke sem variáveis; 100/100; p95 documentado; status não-2xx falha o processo.
 - **Aceite:** comando default funciona em shell local e CI.
 - **Rollback:** retornar somente ao parser anterior se o gate de compatibilidade exigir, mantendo teste de regressão.
+- **Progresso adicional:** o build web de produção agora falha fechado sem `CVG_API_INTERNAL_URL`; o workflow CI injeta o alvo de proxy no build e o contrato `tests/integration/ci-governance.test.ts` cobre a configuração.
 
 #### R6-S2 — Quality gate completo
 

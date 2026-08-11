@@ -812,6 +812,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** publicação clínica estrita permanece bloqueada por 763 itens; IdP/sandbox, domínio/certificado, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado e aprovação clínica não têm prova;
 - **próximo passo:** obter decisões e recursos externos, revisar os conteúdos com aprovador autorizado e repetir os gates estritos no ambiente declarado.
 
+## 2026-08-11 — REMEDIATION-WEB-BUILD-CONTRACT
+
+- **item:** impedir que um build web de produção pareça saudável sem o proxy server-side para API/health;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para ambiente produtivo;
+- **evidência:** `apps/web/next.config.ts` falha fechado sem `CVG_API_INTERNAL_URL`; `apps/web/src/build-config.test.ts` passou 4/4; `.github/workflows/quality.yml` fixa o alvo CI; `scripts/verify-ci-contract.mjs` exige o contrato; build com URL explícita e E2E HA 2/2 passaram; commit `0db281bd3713f18ec2c05b06701750c69e202d7d`;
+- **limite:** URL interna aprovada, domínio/TLS público, IdP, traces/backups externos, registry/deploy/rollback e restore produtivo continuam dependentes do ambiente declarado;
+- **próximo passo:** propagar a URL interna aprovada ao pipeline/serviço web do ambiente real e repetir health, E2E e gates externos.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

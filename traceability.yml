@@ -1858,6 +1858,8 @@ artifacts:
         "apps/api/src/http.ts",
         "apps/api/src/server.ts",
         "apps/web/next.config.ts",
+        "scripts/verify-ci-contract.mjs",
+        ".github/workflows/quality.yml",
         "infra/production/Dockerfile",
       ]
     tests:
@@ -1882,6 +1884,8 @@ artifacts:
         "packages/contracts/src/account.test.ts",
         "apps/api/src/http.test.ts",
         "apps/api/src/server.test.ts",
+        "apps/web/src/build-config.test.ts",
+        "tests/integration/ci-governance.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
         "tests/e2e/authoring-review.spec.ts",
         "tests/e2e/account-security.spec.ts",
@@ -1927,8 +1931,9 @@ artifacts:
         "stored backup artifact checksum, size and manifest verification",
         "identity provider readiness probe with synthetic responses and fail-closed production gate",
         "provider-mediated MFA enrollment verification and recovery completion with bounded non-persisted codes",
+        "production web build fails closed without CVG_API_INTERNAL_URL and CI pins the build-time proxy target",
         "active HA local re-verification: E2E 2/2, RLS role, 24 runtime states, clinical queue, headers, trace restart and load 200/200",
-        "pnpm verify 448 tests / 18 skips / coverage 85.04% statements / 80.33% branches / 86.85% functions / 85.79% lines",
+        "pnpm verify 453 tests / 18 skips / coverage 85.04% statements / 80.33% branches / 86.85% functions / 85.79% lines",
         "current HA re-audit: E2E real 2/2, 24 assignments and runtime states, clinical queue PASS_WITH_GAPS, load 200/200, account E2E 1/1",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
@@ -1936,7 +1941,7 @@ artifacts:
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "dfe58311156ca908082dbb2f16fa3a67b8b511c6"
+    commit: "0db281bd3713f18ec2c05b06701750c69e202d7d"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
@@ -1970,4 +1975,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, a scoped/paginated metadata-only clinical review queue, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, provider-mediated MFA/recovery lifecycle contracts with non-persisted codes and bounded provider operation projections, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum plus stored-artifact verification and load smoke. The queue implementation is in 8670def, following the UI gate c7a591b, versioned rollback handoff 35d5c57, profile addition b5e615c, identity lifecycle implementation e93f4d7 and provider projection hardening dfe5831. Human review of 763 items, external IdP/sandbox, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, a scoped/paginated metadata-only clinical review queue, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, provider-mediated MFA/recovery lifecycle contracts with non-persisted codes and bounded provider operation projections, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum plus stored-artifact verification and load smoke. The queue implementation is in 8670def, following the UI gate c7a591b, versioned rollback handoff 35d5c57, profile addition b5e615c, identity lifecycle implementation e93f4d7, provider projection hardening dfe5831 and fail-closed web build contract 0db281b. Human review of 763 items, external IdP/sandbox, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."

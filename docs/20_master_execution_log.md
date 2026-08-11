@@ -4203,3 +4203,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões e recursos externos autorizados; iniciar a revisão clínica item a item; depois repetir os gates estritos no ambiente declarado.
+
+## 2026-08-11T14:26:40-03:00 — REMEDIATION-WEB-BUILD-CONTRACT
+
+### ACTION
+
+Após a reauditoria, foi reproduzida uma falha de convergência do web: um `pnpm build` sem `CVG_API_INTERNAL_URL` produzia artefato Next sem rewrite para `/health` e `/api`. Foi aplicado TDD para transformar esse silêncio em falha explícita e para fixar a variável no workflow CI.
+
+### RESULT
+
+`apps/web/next.config.ts` agora rejeita build de produção sem URL absoluta HTTP(S), sem credenciais embutidas; em desenvolvimento, proxy ausente continua sendo uma escolha explícita. O teste `apps/web/src/build-config.test.ts` passou 4/4; o workflow e `scripts/verify-ci-contract.mjs` passaram a exigir `CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build`. O build com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passou; após rebuild/restart, web root, health via proxy, HTTP edge e HTTPS com SNI retornaram 200; E2E HA real passou 2/2.
+
+### EVIDENCE
+
+Commit `0db281bd3713f18ec2c05b06701750c69e202d7d`; `docs/111_current_remediation_audit_2026-08-11.md`; `pnpm verify` com 453 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines.
+
+### LIMITS
+
+O contrato garante o proxy no build, mas não fornece domínio público, certificado gerenciado, IdP, storage externo, backup produtivo, registry ou autorização operacional. Esses gates permanecem humanos/externos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Usar o ambiente CI/produtivo declarado com a URL interna aprovada; depois executar os gates externos e estritos sem mascarar ausência de configuração.

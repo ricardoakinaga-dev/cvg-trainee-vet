@@ -2,7 +2,7 @@
 
 ## Escopo
 
-Esta reauditoria confronta as limitações originais com o runtime HA local ativo e o commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`. O resultado distingue prova local/sintética, falha esperada de gate e dependência externa; não há credenciais, dados clínicos reais ou aprovação clínica inferida.
+Esta reauditoria confronta as limitações originais com o runtime HA local ativo e o commit `0db281bd3713f18ec2c05b06701750c69e202d7d`. O resultado distingue prova local/sintética, falha esperada de gate e dependência externa; não há credenciais, dados clínicos reais ou aprovação clínica inferida.
 
 ## Evidências locais atuais
 
@@ -14,16 +14,17 @@ Esta reauditoria confronta as limitações originais com o runtime HA local ativ
 - Load smoke no alvo HA `http://127.0.0.1:3180/health/live`: 200/200, 100% de sucesso, p95 observado de 64,25 ms; o teste do parser default passou 4/4.
 - Edge, HA, manifesto de release e durabilidade local passaram: headers/redirect e topologia local válidos, duas réplicas de API e worker, Tempo em volume local e manifesto imutável com rollback digest sintético.
 - E2E da conta após reinício do processo web com o build atual: provider-mediated recovery/MFA passou 1/1; códigos não permanecem na interface.
+- Build web sem `CVG_API_INTERNAL_URL` falha explicitamente em produção; com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passa. O workflow CI fixa `CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build`, evitando artefato sem proxy.
 
 ## Hardening desta rodada
 
 - `packages/application/src/identity-provider.ts` rejeita `operationId` retornado pelo provedor com tamanho inválido ou caracteres de controle antes de expor o resultado.
 - `packages/contracts/src/account.ts` aplica a mesma fronteira ao projection da operação.
-- RED foi observado no teste de projection; GREEN passou em 12 testes direcionados. O commit convencional é `dfe58311156ca908082dbb2f16fa3a67b8b511c6` (`fix: validate provider operation projections`).
+- RED foi observado nos testes de projection e de build proxy; GREEN passou nos testes direcionados. O hardening provider projection está no commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`; o contrato de build web/CI está no commit `0db281bd3713f18ec2c05b06701750c69e202d7d` (`fix: fail closed on missing web proxy build config`).
 
 ## Quality gate
 
-- `pnpm verify`: 95 arquivos de teste passaram, 16 foram pulados condicionalmente; 448 testes passaram e 18 foram pulados.
+- `pnpm verify`: 96 arquivos de teste passaram, 16 foram pulados condicionalmente; 453 testes passaram e 18 foram pulados.
 - Cobertura: 85,04% statements, 80,33% branches, 86,85% functions e 85,79% lines.
 - `pnpm build`, lint, typecheck, format, secret scan, `pnpm audit --audit-level=high`, documentação, rastreabilidade, migrações, arquitetura, definição de produto e fronteira pública passaram.
 

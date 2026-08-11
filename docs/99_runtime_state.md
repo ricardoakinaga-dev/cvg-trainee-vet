@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após reauditar o runtime HA e endurecer a fronteira de operações do provedor, sem promover produção
+- current_task: manter o handoff externo após tornar o build web fail-closed e reauditar o runtime HA, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6` endureceu a validação de projections provider-mediated; reauditoria atual confirmou E2E HA 2/2, 24 atribuições/24 estados M01–M24, fila 763 pendente/0 falhas técnicas, load 200/200 e conta E2E 1/1; `pnpm verify` passou em 448 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%
+- last_completed_action: commit `0db281bd3713f18ec2c05b06701750c69e202d7d` tornou o build web de produção fail-closed sem `CVG_API_INTERNAL_URL` e fixou o alvo no CI; `pnpm verify` passou em 453 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%, com E2E HA 2/2 após rebuild correto
 - next_action: obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; em paralelo, executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T14:16:14-03:00
+- last_update: 2026-08-11T14:26:40-03:00
 
 ## 2026-08-11T14:16:14-03:00 — REMEDIATION-CURRENT-AUDIT
 
@@ -59,6 +59,32 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões e recursos externos autorizados; iniciar a revisão clínica item a item; depois repetir os gates estritos no ambiente declarado.
+
+## 2026-08-11T14:26:40-03:00 — REMEDIATION-WEB-BUILD-CONTRACT
+
+### AÇÃO
+
+Após a reauditoria, foi reproduzida uma falha de convergência do web: um `pnpm build` sem `CVG_API_INTERNAL_URL` produzia artefato Next sem rewrite para `/health` e `/api`. Foi aplicado TDD para transformar esse silêncio em falha explícita e para fixar a variável no workflow CI.
+
+### RESULTADO
+
+`apps/web/next.config.ts` agora rejeita build de produção sem URL absoluta HTTP(S), sem credenciais embutidas; em desenvolvimento, proxy ausente continua sendo uma escolha explícita. O teste `apps/web/src/build-config.test.ts` passou 4/4; o workflow e `scripts/verify-ci-contract.mjs` passaram a exigir `CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build`. O build com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passou; após rebuild/restart, web root, health via proxy, HTTP edge e HTTPS com SNI retornaram 200; E2E HA real passou 2/2.
+
+### EVIDÊNCIA
+
+Commit `0db281bd3713f18ec2c05b06701750c69e202d7d`; `docs/111_current_remediation_audit_2026-08-11.md`; `pnpm verify` com 453 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines.
+
+### LIMITES
+
+O contrato garante o proxy no build, mas não fornece domínio público, certificado gerenciado, IdP, storage externo, backup produtivo, registry ou autorização operacional. Esses gates permanecem humanos/externos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Usar o ambiente CI/produtivo declarado com a URL interna aprovada; depois executar os gates externos e estritos sem mascarar ausência de configuração.
 
 ## 2026-08-11T14:00:27-03:00 — REMEDIATION-IDENTITY-LIFECYCLE
 
