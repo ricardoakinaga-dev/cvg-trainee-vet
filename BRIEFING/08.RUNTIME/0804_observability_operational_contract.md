@@ -59,7 +59,7 @@ request_id e correlation_id são validados na borda, propagados ao worker quando
 
 ## Backup, RPO e RTO
 
-O teste de restauração usa somente um marcador sintético, pg_dump custom, pg_restore e banco temporário com nome aleatório. A execução local desta rodada verificou o marcador, isolou o destino e mediu **RTO de 2.581 ms**; o teste não grava o dump no repositório e remove origem auxiliar, destino e arquivo temporário ao final. O marcador inserido antes do dump foi recuperado, fornecendo RPO observado de zero perda nesse cenário. Isso é evidência de mecanismo e não substitui backup agendado, fornecedor, janela de retenção ou ensaio de produção.
+O teste de restauração usa marcador sintético, `pg_dump` custom, `pg_restore` e banco temporário com nome aleatório. O modo adicional de artefato valida manifesto, tamanho e SHA-256 de um dump já armazenado fora do repositório antes de restaurá-lo; a execução live no HA ativo passou nos dois cenários, com artefato de 197.097 bytes, 27 objetos restaurados e RTO observado de 2.357 ms. O teste não grava dumps no repositório e remove os temporários ao final. O marcador inserido antes do dump fornece RPO observado de zero perda somente no cenário sintético. Isso é evidência de mecanismo e não substitui backup agendado, fornecedor, janela de retenção ou ensaio de produção.
 
 ## Gaps que continuam bloqueando release
 

@@ -6,6 +6,8 @@ import { spawn } from "node:child_process";
 import { basename, isAbsolute, relative, resolve } from "node:path";
 import { URL } from "node:url";
 
+import { assertBackupManifest } from "./backup-artifact.mjs";
+
 const sourceUrl =
   process.env.CVG_BACKUP_SOURCE_DATABASE_URL ?? process.env.DATABASE_URL;
 const destination = process.env.CVG_BACKUP_DIRECTORY;
@@ -72,6 +74,7 @@ const manifest = {
   rpoTarget: "PT1H",
   restoreVerifier: "scripts/verify-postgres-restore.mjs",
 };
+assertBackupManifest(manifest, basename(backupPath));
 await writeFile(manifestPath, `${JSON.stringify(manifest)}\n`, {
   encoding: "utf8",
   mode: 0o600,
@@ -110,7 +113,8 @@ function parseConnection(value) {
 }
 
 function commandFor(value) {
-  const container = process.env.CVG_BACKUP_DOCKER_CONTAINER?.trim();
+  const container =
+    process.env.CVG_BACKUP_DOCKER_CONTAINER?.trim() || undefined;
   if (container !== undefined && !/^[A-Za-z0-9_.-]+$/u.test(container)) {
     throw new Error("backup Docker container identifier is invalid");
   }

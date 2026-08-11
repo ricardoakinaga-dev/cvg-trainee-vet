@@ -770,6 +770,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **evidência:** `GET /api/v1/internal/authoring/review-queue` com paginação e capability `VIEW_CLINICAL_REVIEW_QUEUE`; `apps/web/app/authoring/page.tsx` lista a fila sem internals; `scripts/verify-clinical-review-queue.mjs` e `pnpm ops:verify-clinical-review-queue` observaram no PostgreSQL HA 796 itens, 763 pendentes, 763 sem revisão e 0 falhas de pré-voo; o modo estrito falhou com `clinical review queue is incomplete: 763 pending items`; E2E de autoria 2/2;
 - **limite:** nenhum item foi aprovado ou publicado automaticamente; a revisão semântica independente e as decisões de Ricardo permanecem obrigatórias;
 - **commit:** `8670def` (`feat: add clinical review queue`);
+
+## 2026-08-11 — REMEDIATION-BACKUP-ARTIFACT-RESTORE
+
+- **item:** validar o manifesto e o checksum do backup que será consumido, não apenas gerar um novo dump durante o drill;
+- **status:** COMPLETED tecnicamente / WAITING_HUMAN_APPROVAL para backup e restore produtivos;
+- **evidência:** `scripts/backup-artifact.mjs` valida nome, formato, tamanho, timestamp e SHA-256; `scripts/verify-postgres-restore.mjs` restaura `CVG_RESTORE_BACKUP_FILE` em banco descartável e confirma objetos restaurados; `tests/integration/backup-artifact.test.ts` passou 4/4; `pnpm test:integration:restore` passou 2/2 no HA ativo; execução direta observou artefato de 197.097 bytes, 27 objetos e RTO 2.357 ms;
+- **limite:** agendamento, storage/criptografia/retenção externos, owner, RPO/RTO produtivo e autorização operacional continuam pendentes;
+- **próximo passo:** registrar destino e política de backup aprovados e repetir o verificador com artefato do ambiente declarado.
 - **plano:** `docs/106_clinical_review_queue_evidence_2026-08-11.md` e `BRIEFING/03.BUILD/0303_remediation_program.md`.
 
 ## REGRAS DE USO

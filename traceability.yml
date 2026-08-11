@@ -1810,6 +1810,7 @@ artifacts:
         "docs/104_remediation_evidence_2026-08-11.md",
         "docs/105_active_ha_e2e_evidence_2026-08-11.md",
         "docs/106_clinical_review_queue_evidence_2026-08-11.md",
+        "docs/107_backup_artifact_restore_evidence_2026-08-11.md",
       ]
     code:
       [
@@ -1838,6 +1839,7 @@ artifacts:
         "scripts/deploy-release.mjs",
         "scripts/rollback-release.mjs",
         "scripts/local-release-rehearsal.mjs",
+        "scripts/backup-artifact.mjs",
         "scripts/create-postgres-backup.mjs",
         "scripts/real-e2e-fixture-server.mjs",
         "scripts/active-ha-e2e.mjs",
@@ -1863,6 +1865,7 @@ artifacts:
         "tests/integration/clinical-review-queue-verifier.test.ts",
         "tests/integration/production-edge-contract.test.ts",
         "tests/integration/postgres-restore.test.ts",
+        "tests/integration/backup-artifact.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
         "tests/e2e/authoring-review.spec.ts",
         "pnpm verify",
@@ -1901,8 +1904,9 @@ artifacts:
         "clinical review queue is scoped, paginated and metadata-only",
         "clinical review queue verifier live and strict modes",
         "synthetic pg_dump checksum",
-        "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 432 tests / 17 skips / coverage 84.94% statements / 80.26% branches / 86.66% functions / 85.69% lines",
+        "live restore tests 2/2 with isolated marker and stored artifact",
+        "stored backup artifact checksum, size and manifest verification",
+        "pnpm verify 436 tests / 18 skips / coverage 84.94% statements / 80.26% branches / 86.66% functions / 85.69% lines",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
@@ -1943,4 +1947,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, a scoped/paginated metadata-only clinical review queue, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The queue implementation is in 8670def, following the UI gate c7a591b, versioned rollback handoff 35d5c57 and profile addition b5e615c. Human review of 763 items, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, a scoped/paginated metadata-only clinical review queue, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum plus stored-artifact verification and load smoke. The queue implementation is in 8670def, following the UI gate c7a591b, versioned rollback handoff 35d5c57 and profile addition b5e615c. Human review of 763 items, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."

@@ -8,10 +8,13 @@ import { spawn } from "node:child_process";
 import { pipeline } from "node:stream/promises";
 import { URL } from "node:url";
 
+import { verifyBackupArtifact } from "./backup-artifact.mjs";
+
 const sourceUrl =
   process.env.CVG_RESTORE_SOURCE_DATABASE_URL ??
   process.env.CVG_TEST_DATABASE_URL;
-const dockerContainer = process.env.CVG_RESTORE_DOCKER_CONTAINER?.trim();
+const dockerContainer =
+  process.env.CVG_RESTORE_DOCKER_CONTAINER?.trim() || undefined;
 let currentStage = "parse-source";
 
 function fail() {
@@ -146,41 +149,62 @@ async function checked(command, connection, options = {}) {
 
 async function main() {
   const connection = parseConnection(sourceUrl);
+  const storedBackupPath = optionalEnvironmentValue("CVG_RESTORE_BACKUP_FILE");
+  const storedManifestPath = optionalEnvironmentValue(
+    "CVG_RESTORE_BACKUP_MANIFEST",
+  );
+  if ((storedBackupPath === undefined) !== (storedManifestPath === undefined)) {
+    throw new Error(
+      "CVG_RESTORE_BACKUP_FILE and CVG_RESTORE_BACKUP_MANIFEST must be provided together",
+    );
+  }
   const targetDatabase = `cvg_restore_${randomUUID().replaceAll("-", "")}`;
   const markerTable = `cvg_restore_marker_${randomUUID().replaceAll("-", "")}`;
   const markerValue = randomUUID();
   const quotedMarkerTable = quoteIdentifier(markerTable);
   const temporaryDirectory = await mkdtemp(join(tmpdir(), "cvg-restore-"));
-  const dumpPath = join(temporaryDirectory, "database.dump");
   let markerCreated = false;
   let targetCreated = false;
+  let storedArtifact;
 
   try {
-    currentStage = "create-marker";
-    await checked(
-      commandFor("psql", [
-        ...connectionArgs(connection),
-        "-v",
-        "ON_ERROR_STOP=1",
-        "-c",
-        `create table ${quotedMarkerTable} (marker text primary key); insert into ${quotedMarkerTable} (marker) values (${quoteLiteral(markerValue)});`,
-      ]),
-      connection,
-    );
-    markerCreated = true;
+    if (storedBackupPath !== undefined && storedManifestPath !== undefined) {
+      currentStage = "verify-backup-artifact";
+      storedArtifact = await verifyBackupArtifact({
+        backupPath: storedBackupPath,
+        manifestPath: storedManifestPath,
+      });
+    }
 
-    currentStage = "backup";
     const startedAt = Date.now();
-    const dump = await runCommand(
-      commandFor("pg_dump", [
-        ...connectionArgs(connection),
-        "--format=custom",
-        "--no-owner",
-        "--no-privileges",
-      ]),
-      { env: commandEnvironment(connection), stdoutFile: dumpPath },
-    );
-    if (dump.code !== 0) throw new Error("backup command failed");
+    const dumpPath =
+      storedArtifact?.backupPath ?? join(temporaryDirectory, "database.dump");
+    if (storedArtifact === undefined) {
+      currentStage = "create-marker";
+      await checked(
+        commandFor("psql", [
+          ...connectionArgs(connection),
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-c",
+          `create table ${quotedMarkerTable} (marker text primary key); insert into ${quotedMarkerTable} (marker) values (${quoteLiteral(markerValue)});`,
+        ]),
+        connection,
+      );
+      markerCreated = true;
+
+      currentStage = "backup";
+      const dump = await runCommand(
+        commandFor("pg_dump", [
+          ...connectionArgs(connection),
+          "--format=custom",
+          "--no-owner",
+          "--no-privileges",
+        ]),
+        { env: commandEnvironment(connection), stdoutFile: dumpPath },
+      );
+      if (dump.code !== 0) throw new Error("backup command failed");
+    }
 
     currentStage = "create-target";
     const createTarget = await runCommand(
@@ -210,25 +234,59 @@ async function main() {
     );
     if (restore.code !== 0) throw new Error("restore command failed");
 
-    currentStage = "verify-marker";
-    const markerCount = await checked(
+    if (storedArtifact === undefined) {
+      currentStage = "verify-marker";
+      const markerCount = await checked(
+        commandFor("psql", [
+          ...connectionArgs(connection, targetDatabase),
+          "-At",
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-c",
+          `select count(*) from ${quotedMarkerTable} where marker = ${quoteLiteral(markerValue)};`,
+        ]),
+        connection,
+      );
+      if (markerCount !== "1")
+        throw new Error("synthetic marker was not restored");
+
+      console.log(
+        JSON.stringify({
+          status: "PASS",
+          markerVerified: true,
+          artifactVerified: false,
+          verificationMode: "synthetic-marker",
+          targetIsolated: true,
+          rtoMs: Math.max(0, Date.now() - startedAt),
+        }),
+      );
+      return;
+    }
+
+    currentStage = "verify-restored-artifact";
+    const restoredObjectCount = await checked(
       commandFor("psql", [
         ...connectionArgs(connection, targetDatabase),
         "-At",
         "-v",
         "ON_ERROR_STOP=1",
         "-c",
-        `select count(*) from ${quotedMarkerTable} where marker = ${quoteLiteral(markerValue)};`,
+        "select count(*) from pg_catalog.pg_class as relation inner join pg_catalog.pg_namespace as schema on schema.oid = relation.relnamespace where schema.nspname not in ('pg_catalog', 'information_schema') and relation.relkind in ('r', 'p', 'v', 'm', 'f', 'S');",
       ]),
       connection,
     );
-    if (markerCount !== "1")
-      throw new Error("synthetic marker was not restored");
-
+    const restoredObjects = Number(restoredObjectCount);
+    if (!Number.isSafeInteger(restoredObjects) || restoredObjects < 1) {
+      throw new Error("stored backup restored no application objects");
+    }
     console.log(
       JSON.stringify({
         status: "PASS",
-        markerVerified: true,
+        markerVerified: false,
+        artifactVerified: true,
+        verificationMode: "stored-artifact",
+        backupId: storedArtifact.manifest.backupId,
+        restoredObjects,
         targetIsolated: true,
         rtoMs: Math.max(0, Date.now() - startedAt),
       }),
@@ -258,6 +316,11 @@ async function main() {
     }
     await rm(temporaryDirectory, { recursive: true, force: true });
   }
+}
+
+function optionalEnvironmentValue(name) {
+  const value = process.env[name]?.trim();
+  return value === undefined || value === "" ? undefined : value;
 }
 
 try {

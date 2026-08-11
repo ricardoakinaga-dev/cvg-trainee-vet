@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após criar a fila paginada e o verificador live de revisão clínica, sem promover produção
+- current_task: manter o handoff externo após fechar a verificação de artefato de backup/restore, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fila clínica protegida, paginada e sem internals criada no commit `8670def`; verificador live confirmou 796 itens, 763 pendentes, 763 sem revisão e 0 falhas técnicas; E2E 2/2 e modo estrito fail-closed passaram conforme esperado
+- last_completed_action: contrato de backup/restore por artefato implementado; manifesto, tamanho e SHA-256 são verificados antes do restore; `pnpm test:integration:restore` passou 2/2 no HA ativo e execução direta restaurou 27 objetos com RTO observado de 2.357 ms
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T12:44:45-03:00
+- last_update: 2026-08-11T13:10:06-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -1040,3 +1040,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Usar a fila com aprovador independente e registrar as decisões/justificativas no fluxo editorial; depois executar os gates externos somente com credenciais e recursos autorizados.
+
+## 2026-08-11 — REMEDIATION-BACKUP-ARTIFACT-RESTORE
+
+### AÇÃO
+
+Foi implementada a validação independente de artefato de backup: manifesto custom-format, nome do dump, tamanho, timestamp, SHA-256 e caminho externo ao repositório. O verificador de restore agora pode consumir o dump já armazenado por `CVG_RESTORE_BACKUP_FILE` + `CVG_RESTORE_BACKUP_MANIFEST`, mantendo o destino descartável isolado.
+
+### RESULTADO
+
+O RED do contrato falhou antes da implementação; o GREEN passou em 4/4. `pnpm lint`, `pnpm typecheck` e o restore live oficial passaram. No HA ativo, o dump de 197.097 bytes foi validado e restaurado com 27 objetos e RTO observado de 2.357 ms; o teste oficial cobriu marcador sintético e artefato existente em 2/2.
+
+### LIMITES
+
+Isso fecha a lacuna de consumir/verificar um artefato local, não o gate de produção. Agendamento, storage externo, criptografia, retenção, owner, RPO/RTO produtivo, failover e autorização continuam pendentes. Nenhum dump ou segredo foi versionado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões humanas de destino/retensão/criptografia e ambiente autorizado; então repetir o verificador com backup do ambiente declarado e registrar RPO/RTO medidos.

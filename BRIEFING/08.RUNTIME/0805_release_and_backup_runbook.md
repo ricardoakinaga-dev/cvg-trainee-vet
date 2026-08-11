@@ -54,6 +54,17 @@ pnpm test:integration:restore
 
 O drill restaura em banco descartável isolado, valida marcador sintético e remove o destino. O resultado local não autoriza produção: RPO ≤1h e RTO ≤4h precisam ser medidos no ambiente declarado e acompanhados de retenção, criptografia, acesso e owner.
 
+Para verificar um backup já armazenado, fornecer o dump e o manifesto correspondentes, sempre fora do repositório:
+
+```bash
+CVG_RESTORE_SOURCE_DATABASE_URL='postgresql://<user>:<password>@<host>:5432/<database>' \
+CVG_RESTORE_BACKUP_FILE=/var/backups/cvg/postgres/cvg-backup-<id>.dump \
+CVG_RESTORE_BACKUP_MANIFEST=/var/backups/cvg/postgres/cvg-backup-<id>.json \
+pnpm exec node scripts/verify-postgres-restore.mjs
+```
+
+O verificador recusa manifesto incompleto, nome divergente, tamanho incorreto, SHA-256 divergente, symlink no dump e entradas dentro do repositório; depois restaura em banco descartável e confirma objetos de aplicação. Essa prova de artefato não substitui a medição de RPO/RTO no ambiente produtivo.
+
 ## Evidência obrigatória
 
 Registrar release id, digest, migração, canário, health gate, rollback/restore, RPO/RTO medidos, incidentes e próximo passo em `docs/20_master_execution_log.md` e `docs/99_runtime_state.md`. Não registrar credenciais, URLs com senha, dados clínicos ou conteúdo de participantes.

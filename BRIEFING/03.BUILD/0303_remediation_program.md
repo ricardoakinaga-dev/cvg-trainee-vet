@@ -249,6 +249,8 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** backup agendado, corrupção simulada, restore em banco descartável, perda máxima medida e tempo de recuperação.
 - **Aceite:** RPO ≤ 1 hora e RTO ≤ 4 horas no ambiente declarado; dump não fica no repositório; evidência redigida.
 - **Rollback:** interromper job e preservar último backup íntegro; nunca sobrescrever produção sem confirmação.
+- **Progresso local:** o manifesto agora é validado contra nome, tamanho, formato, timestamp e SHA-256; o verificador aceita um dump existente fora do repositório e restaura esse artefato em banco descartável, além do marcador sintético. O teste live no HA passou 2/2; uma execução direta observou 197.097 bytes, 27 objetos restaurados e RTO de 2.357 ms.
+- **Limite:** agendamento, retenção, criptografia, storage externo, owner, RPO/RTO produtivo e autorização de restore continuam pendentes; a prova local não fecha o gate de produção.
 
 ### R6 — Qualidade, carga, auditoria e fechamento
 
