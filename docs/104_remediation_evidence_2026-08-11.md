@@ -104,3 +104,9 @@ pnpm verify                              PASS — 423 testes, 17 skips, cobertur
 ```
 
 Esta é uma preparação de integração, não uma prova de traces duráveis em produção. Não foi escolhido fornecedor, endpoint real, credencial, retenção, consulta, alerta ou destino de armazenamento; não há evidência de persistência externa, RPO/RTO ou autorização de deploy. O perfil local Tempo permaneceu inalterado.
+
+## Gate de revisão clínica na autoria — 2026-08-11
+
+O commit `c7a591b` fechou uma falha de experiência do gate clínico: a tela de autoria agora exige justificativa e decisão explícita (`APROVAR_CLINICAMENTE` ou `SOLICITAR_AJUSTES`) antes de habilitar publicação. O E2E de autoria passou 1/1 contra Next isolado, verificando publicação desabilitada antes da aprovação e habilitada depois; o typecheck do web passou.
+
+Isso não publica conteúdo nem substitui a decisão humana. Os 763 itens continuam `PROJECAO_VERIFICADA`; cada decisão deverá ser registrada por aprovador independente no fluxo editorial.

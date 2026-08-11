@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após preparar os perfis de TLS e traces duráveis, sem promover produção
+- current_task: manter o handoff externo após tornar a revisão clínica obrigatória na autoria, sem promover produção
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: rechecagem final do handoff: commits `b5e615c` e `8b03283` preparam o perfil de traces externos com semântica de URL-base; `pnpm verify`, rastreabilidade, documentação, health do HA local e o overlay sintético passaram; o gate produtivo continuou fail-closed pelas entradas externas listadas abaixo
-- next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
+- last_completed_action: gate clínico de autoria endurecido no commit `c7a591b`: E2E comprova publicação desabilitada antes da aprovação e habilitada depois; `pnpm --filter @cvg/web typecheck` e E2E de autoria 1/1 passaram; os gates externos continuam fail-closed
+- next_action: executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T12:12:49-03:00
+- last_update: 2026-08-11T12:20:44-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -974,3 +974,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Registrar as decisões de provedor MFA/recovery, domínio/certificado, traces/retenção, backup e ambiente de release; depois executar os gates externos correspondentes.
+
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-UI
+
+### AÇÃO
+
+O E2E de autoria foi alterado primeiro para exigir justificativa, aprovação clínica e só depois publicação. O RED falhou porque a tela não possuía o campo nem o botão de revisão. O GREEN adicionou `apps/web/app/authoring/page.tsx` com decisão `APROVAR_CLINICAMENTE`/`SOLICITAR_AJUSTES`, justificativa obrigatória e publicação desabilitada até `APROVADO_CLINICAMENTE`.
+
+### RESULTADO
+
+`pnpm --filter @cvg/web typecheck` passou. O E2E Chromium passou 1/1 contra um web server Next isolado: publicação inicialmente desabilitada, justificativa registrada, aprovação clínica enviada e publicação habilitada em seguida. Commit: `c7a591b`.
+
+### LIMITES
+
+O fluxo agora torna o gate humano aplicável, mas não aprova automaticamente nenhum item. Os 763 conteúdos permanecem `PROJECAO_VERIFICADA` até revisão semântica e decisão de Ricardo; não houve publicação clínica nesta ação.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Usar a superfície interna para revisar os 763 itens com aprovador independente; em paralelo, fornecer as decisões e recursos externos de R3–R5.

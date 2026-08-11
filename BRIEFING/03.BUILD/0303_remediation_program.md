@@ -162,6 +162,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** autor não aprova o próprio item; participante nunca recebe fonte/gabarito; publicação parcial é recusada.
 - **Aceite:** cada módulo tem decisão rastreável; prova semântica e revisão humana são artefatos separados; piloto somente após gate.
 - **Rollback:** retirar versão publicada e apontar atribuição para estado aguardando conteúdo.
+- **Progresso local:** a tela `apps/web/app/authoring/page.tsx` passou a exigir justificativa e decisão clínica explícita; o botão de publicação permanece desabilitado até `APROVADO_CLINICAMENTE`. O E2E `tests/e2e/authoring-review.spec.ts` comprovou a ordem revisão → publicação no commit `c7a591b`. Isso torna o gate humano executável, mas não substitui a revisão item a item dos 763 conteúdos.
 
 ### R3 — Identidade, recuperação e MFA
 

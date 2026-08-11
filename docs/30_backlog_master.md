@@ -755,6 +755,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** endpoint, autorização, fornecedor, retenção, consulta, alerta, persistência externa, RPO/RTO e promoção produtiva não foram configurados nem declarados;
 - **próximo passo:** registrar backend/retention autorizados e executar o overlay em ambiente externo com credenciais fora do Git.
 
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-UI
+
+- **item:** tornar a revisão clínica humana executável e bloquear publicação até decisão explícita;
+- **status:** COMPLETED tecnicamente / WAITING_HUMAN_APPROVAL para revisão dos 763 itens;
+- **evidência:** `apps/web/app/authoring/page.tsx` exige justificativa, oferece `Aprovar clinicamente`/`Solicitar ajustes` e só habilita publicação em `APROVADO_CLINICAMENTE`; `tests/e2e/authoring-review.spec.ts` passou 1/1 com publicação desabilitada antes da aprovação e habilitada depois; typecheck web passou; commit `c7a591b`;
+- **limite:** nenhum conteúdo foi aprovado automaticamente; 763 itens continuam `PROJECAO_VERIFICADA` e a revisão semântica/item a item de Ricardo permanece obrigatória;
+- **próximo passo:** revisar os itens com aprovador independente e registrar cada decisão/rationale no PostgreSQL.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

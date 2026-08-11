@@ -177,3 +177,9 @@ O commit `b5e615c` adicionou um overlay Compose não ativo para o caminho de tra
 Validações executadas: teste de contrato 2/2, `otelcol-contrib validate` com endpoint HTTPS sintético, `docker compose config --quiet` sem o perfil e com `--profile local-traces`, e `pnpm verify` com 423 testes, 17 skips e cobertura acima de 80%.
 
 Isso não é uma prova live do HA: não houve fornecedor, endpoint real, token, retenção, consulta ou persistência externa. O E2E HA ativo e o runtime local permaneceram inalterados; a execução externa exige decisão, credenciais fora do Git e ambiente autorizado.
+
+## Gate clínico da superfície de autoria — 2026-08-11
+
+O E2E `tests/e2e/authoring-review.spec.ts` foi fortalecido no commit `c7a591b`: a publicação começa desabilitada, a justificativa clínica é obrigatória, a aprovação é enviada ao endpoint interno de review e somente a resposta `APROVADO_CLINICAMENTE` habilita a publicação. O cenário passou 1/1 em web Next isolado.
+
+Esse teste prova a ordem e a proteção da interface, não a aprovação de nenhum item real; a revisão semântica dos 763 conteúdos continua pendente.

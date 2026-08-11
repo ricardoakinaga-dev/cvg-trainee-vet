@@ -1839,6 +1839,7 @@ artifacts:
         "scripts/active-ha-e2e.mjs",
         "scripts/build-e2e.mjs",
         "playwright.config.ts",
+        "apps/web/app/authoring/page.tsx",
         "apps/web/next.config.ts",
         "infra/production/Dockerfile",
       ]
@@ -1857,6 +1858,7 @@ artifacts:
         "tests/integration/production-edge-contract.test.ts",
         "tests/integration/postgres-restore.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
+        "tests/e2e/authoring-review.spec.ts",
         "pnpm verify",
         "pnpm build",
         "pnpm ops:verify-ha",
@@ -1888,6 +1890,7 @@ artifacts:
         "live curriculum verifier confirms M01–M24 and reports unpublished clinical content",
         "managed TLS Caddy profile validates with synthetic FQDN while local defaults remain unchanged",
         "external OTLP HTTPS collector profile validates with synthetic endpoint while local Tempo profile remains unchanged",
+        "authoring E2E requires clinical approval before enabling publication",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
         "pnpm verify 423 tests / 17 skips / coverage above 80%",
@@ -1897,7 +1900,7 @@ artifacts:
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "8b032833282c66529c6fc1f2ad23f35c8f1bff0a"
+    commit: "c7a591bf91943df7e0090ec61a6b41b3bde8c9f0"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
@@ -1931,4 +1934,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The current implementation is in 8b032833282c66529c6fc1f2ad23f35c8f1bff0a, following the versioned rollback handoff in 35d5c57 and profile addition in b5e615c. Human review, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The current implementation is in c7a591bf91943df7e0090ec61a6b41b3bde8c9f0, following the versioned rollback handoff in 35d5c57 and profile addition in b5e615c. Human review of 763 items, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."

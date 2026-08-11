@@ -3971,3 +3971,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Registrar as decisões de provedor MFA/recovery, domínio/certificado, traces/retenção, backup e ambiente de release; depois executar os gates externos correspondentes.
+
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-UI
+
+### TIMESTAMP
+
+2026-08-11 12:20:44 -03:00
+
+### ACTION
+
+O E2E de autoria foi alterado primeiro para exigir justificativa, aprovação clínica e só depois publicação. O RED falhou porque a tela não possuía o campo nem o botão de revisão. O GREEN adicionou `apps/web/app/authoring/page.tsx` com decisão `APROVAR_CLINICAMENTE`/`SOLICITAR_AJUSTES`, justificativa obrigatória e publicação desabilitada até `APROVADO_CLINICAMENTE`.
+
+### RESULT
+
+`pnpm --filter @cvg/web typecheck` passou. O E2E Chromium passou 1/1 contra um web server Next isolado: publicação inicialmente desabilitada, justificativa registrada, aprovação clínica enviada e publicação habilitada em seguida. Commit: `c7a591b`.
+
+### LIMITES
+
+O fluxo agora torna o gate humano aplicável, mas não aprova automaticamente nenhum item. Os 763 conteúdos permanecem `PROJECAO_VERIFICADA` até revisão semântica e decisão de Ricardo; não houve publicação clínica nesta ação.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Usar a superfície interna para revisar os 763 itens com aprovador independente; em paralelo, fornecer as decisões e recursos externos de R3–R5.
