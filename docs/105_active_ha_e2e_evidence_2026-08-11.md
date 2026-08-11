@@ -142,3 +142,24 @@ restauração final   PASS — api-a/api-b/worker-a/worker-b saudáveis
 Esta é a melhor evidência local do controlador de rollback, mas ainda não é
 promoção produtiva: não houve registry externo, CI remoto, autorização de
 ambiente, assinatura/verificação de supply chain ou tráfego público.
+
+## Verificação live do catálogo e runtime curricular — 2026-08-11
+
+Foi criado `scripts/verify-curriculum-runtime.mjs` com modo read-only e
+conexão administrativa explicitamente separada da API. Contra o PostgreSQL HA
+ativo, o resultado foi:
+
+```text
+ops:verify-curriculum-runtime                  PASS_WITH_GAPS
+activities/content/editorial/items             24 / 796 / 796 / 796
+learning_assignments/curriculum_runtime_states 24 / 24
+assignment modules                              M01–M24
+assignment status                               NAO_ATRIBUIDO (24)
+runtime status                                  PENDENTE (24)
+content status                                  PROJECAO_VERIFICADA (763), PUBLICADO (33)
+```
+
+O modo `CVG_CURRICULUM_REQUIRE_CLINICAL_PUBLICATION=true` falhou com a causa
+esperada: `clinical publication is incomplete: 763 items`. Assim, o verificador
+fecha a limitação estrutural do catálogo sem declarar conteúdo clínico como
+aprovado.

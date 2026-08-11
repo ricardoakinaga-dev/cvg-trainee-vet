@@ -3739,3 +3739,41 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Executar os gates externos somente após as decisões humanas registradas; manter o objetivo ativo enquanto esses requisitos não tiverem evidência.
+
+## 2026-08-11 — REMEDIATION-CURRICULUM-RUNTIME-VERIFIER
+
+### TIMESTAMP
+
+2026-08-11 11:29:01 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER / TDD
+
+### PHASE
+
+Remediação R2-S1 — verificação live do catálogo e runtime curricular
+
+### ACTION
+
+Escrito primeiro o teste `tests/integration/curriculum-runtime-verifier.test.ts` (RED pela ausência do módulo); depois foi implementado `scripts/verify-curriculum-runtime.mjs`, com leitura read-only, expectativa derivada da planilha curricular materializada e conexão administrativa somente por variável explícita. O comando `pnpm ops:verify-curriculum-runtime` foi adicionado ao contrato operacional.
+
+### RESULT
+
+O PostgreSQL HA ativo retornou `PASS_WITH_GAPS`: 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições e 24 estados; módulos M01–M24; atribuições `NAO_ATRIBUIDO` (24); estados `PENDENTE` (24); conteúdo `PROJECAO_VERIFICADA` (763) e `PUBLICADO` (33). O modo clínico estrito falhou como esperado com `clinical publication is incomplete: 763 items`. O RED/GREEN direcionado passou 3/3 e o commit convencional foi `0a36d1d`.
+
+### QUALITY GATE
+
+`pnpm verify` passou: 420 testes, 17 skips, 84,85% statements, 80,07% branches, 86,55% functions e 85,61% lines; lint, typecheck, migrações, segredos, arquitetura, documentação, definição de produto e fronteira pública também passaram.
+
+### LIMITES
+
+A estrutura curricular e sua honestidade de estado estão comprovadas localmente. A revisão semântica item a item e a publicação clínica dos 763 itens continuam pendentes, assim como IdP/MFA/recovery, domínio/TLS gerenciado, traces/backups externos, RPO/RTO e deploy/rollback produtivo autorizado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões humanas e executar os gates externos correspondentes sem tratar provas locais como equivalentes de produção.

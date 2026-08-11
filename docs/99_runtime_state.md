@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: validar rehearsal local de deploy/rollback e fechar handoff operacional sem promover produção
+- current_task: registrar a verificação live do catálogo curricular e manter o handoff externo sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: rehearsal local de release passou canário/promoção e rollback com health 200 entre a imagem atual `bf457ddf…` e uma imagem construída do commit anterior `b30c85d` (`6ca763bb…`), restaurando api-a/api-b/worker-a/worker-b ao artefato operacional; contrato TDD do bypass de pull e rollback por imagem local passaram; implementação congelada em `35d5c57` sobre `cfaeed3` e manifesto atualizado
+- last_completed_action: verificador read-only `scripts/verify-curriculum-runtime.mjs` confirmou no PostgreSQL HA ativo 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições e 24 estados nos módulos M01–M24; `pnpm verify` passou com 420 testes, 17 skips e cobertura 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines; implementação em `0a36d1d`
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T11:14:17-03:00
+- last_update: 2026-08-11T11:29:01-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -810,3 +810,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Build descartável isolado, pin de rastreabilidade `9c585a9` e sincronização do VPS truth source concluídos; manter `WAITING_HUMAN_APPROVAL` para os gates externos.
+
+## 2026-08-11 — REMEDIATION-CURRICULUM-RUNTIME-VERIFIER
+
+### AÇÃO
+
+Criado o verificador read-only `scripts/verify-curriculum-runtime.mjs`, com expectativa derivada da fonte `curriculumV3`, conexão administrativa explicitamente opt-in e teste TDD em `tests/integration/curriculum-runtime-verifier.test.ts`. O comando foi adicionado como `pnpm ops:verify-curriculum-runtime`.
+
+### RESULTADO
+
+Contra o PostgreSQL HA ativo, o verificador retornou `PASS_WITH_GAPS`: 24 atividades, 796 versões/editorial/itens, 24 atribuições e 24 estados; módulos M01–M24; atribuições `NAO_ATRIBUIDO` (24); estados `PENDENTE` (24); conteúdo `PROJECAO_VERIFICADA` (763) e `PUBLICADO` (33). Com `CVG_CURRICULUM_REQUIRE_CLINICAL_PUBLICATION=true`, falhou de forma esperada com `clinical publication is incomplete: 763 items`.
+
+### EVIDÊNCIA
+
+O commit `0a36d1d` contém o código e os testes. `pnpm verify` passou com 420 testes, 17 skips e cobertura acima de 80%. A prova estrutural do catálogo está fechada localmente; a revisão semântica e a publicação clínica dos 763 itens continuam dependentes de Ricardo.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter decisões sobre revisão/publicação clínica, IdP/MFA/recovery, domínio/DNS/TLS, storage externo de traces, backup/RPO/RTO e ambiente autorizado para deploy/rollback.

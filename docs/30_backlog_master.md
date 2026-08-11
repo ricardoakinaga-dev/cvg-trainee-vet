@@ -2,7 +2,7 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
-**Estado atual (2026-08-10):** `SOURCE-PRODUCT-OPS-18` — fonte clínica automática, jornada de 24 meses, superfícies de conta/dashboard/admin, remoção do caminho executável de revisão clínica e prova operacional HA implementadas no worktree. O item 16 está reconciliado no worktree, aguardando commit intencional; o relatório de baseline continua histórico e os gaps externos permanecem explícitos.
+**Estado atual (2026-08-11):** `REMEDIATION-CURRICULUM-RUNTIME-VERIFIER` — catálogo estrutural de 24 módulos materializado e verificado no PostgreSQL HA ativo; o conteúdo clínico permanece `PASS_WITH_GAPS` até revisão/publicação. O código do verificador está no commit `0a36d1d`; os gaps externos permanecem explícitos.
 
 **Item concluído mais recente da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade, reavaliado em 95/100. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados.
 
@@ -722,6 +722,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **evidência:** canal loopback `127.0.0.1:3182 → Caddy:8081`, serviço web em `3100`, edge público `3180/3181`, build descartável isolado em `.next-e2e-real`, `pnpm test:e2e:active-ha` final 2/2, E2E descartável 14/14, restore live 1/1, web dependencies 200 após teardown, cleanup com zero resíduos mutáveis e auditoria append-only preservada;
 - **limites:** CI remoto, IdP/MFA/recovery externo, domínio/TLS gerenciado, storage externo, RPO/RTO de produção, deploy/rollback autorizado e revisão clínica continuam pendentes;
 - **próximo passo:** aguardar decisões humanas dos gates externos; o rehearsal local de deploy/rollback passou com troca entre a imagem atual e a imagem construída do commit anterior, mas registry/ambiente de produção ainda não foram autorizados; a implementação de rehearsal está no commit `35d5c57` sobre `cfaeed3` e o manifesto foi atualizado para esse SHA.
+
+## 2026-08-11 — REMEDIATION-CURRICULUM-RUNTIME-VERIFIER
+
+- **item:** validar a projeção executável dos 24 módulos e tornar explícita a diferença entre estrutura materializada e publicação clínica;
+- **status:** COMPLETED localmente / PASS_WITH_GAPS para conteúdo clínico;
+- **evidência:** `scripts/verify-curriculum-runtime.mjs` e `pnpm ops:verify-curriculum-runtime` confirmaram 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições, 24 estados, módulos M01–M24, `NAO_ATRIBUIDO` (24) e `PENDENTE` (24); 763 itens estão `PROJECAO_VERIFICADA` e 33 `PUBLICADO`; o modo clínico estrito falha com `clinical publication is incomplete: 763 items`;
+- **commit:** `0a36d1d` (`feat: add live curriculum runtime verification`);
+- **próximo passo:** revisão semântica e aprovação clínica de Ricardo; em paralelo, obter as decisões externas de identidade, TLS, traces, backup e deploy/rollback.
 
 ## REGRAS DE USO
 

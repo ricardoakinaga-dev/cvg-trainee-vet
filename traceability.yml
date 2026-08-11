@@ -1813,6 +1813,7 @@ artifacts:
     code:
       [
         "scripts/materialize-curriculum.mjs",
+        "scripts/verify-curriculum-runtime.mjs",
         "packages/curriculum/src/materialization-plan.ts",
         "packages/curriculum/src/learning-runtime.ts",
         "packages/application/src/authoring-use-cases.ts",
@@ -1849,6 +1850,7 @@ artifacts:
         "tests/e2e/real-runtime.spec.ts",
         "tests/integration/active-ha-e2e.test.ts",
         "tests/integration/local-release-rehearsal.test.ts",
+        "tests/integration/curriculum-runtime-verifier.test.ts",
         "tests/integration/postgres-restore.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
         "pnpm verify",
@@ -1860,6 +1862,7 @@ artifacts:
         "pnpm ops:deploy-release",
         "pnpm ops:rollback-release",
         "pnpm ops:rehearse-local-release",
+        "pnpm ops:verify-curriculum-runtime",
         "pnpm ops:create-postgres-backup",
         "pnpm test:integration:restore",
         "CVG_RUN_REAL_E2E=true pnpm test:e2e",
@@ -1878,16 +1881,17 @@ artifacts:
         "immutable release dry-run",
         "local HA release rehearsal with canary/promotion, distinct rollback digest and runtime restoration",
         "local HA release rehearsal using a second image built from commit b30c85d",
+        "live curriculum verifier confirms M01–M24 and reports unpublished clinical content",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 417 tests / 17 skips / coverage above 80%",
+        "pnpm verify 420 tests / 17 skips / coverage above 80%",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "35d5c57"
+    commit: "0a36d1d79a14ed34bf6a175e8a84effbf26f37fd"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
@@ -1921,4 +1925,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, honest pending runtime states, fail-closed identity, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The implementation is in e3cd966efb1d4d2a5596075d1d12f4101dd12492 and the post-commit handoff is 31d54f6abb9bbc8e36ae40afea78538240fef79d. Human review, external IdP, managed TLS, external storage, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, honest pending runtime states, fail-closed identity, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The implementation is in 0a36d1d79a14ed34bf6a175e8a84effbf26f37fd, following the versioned rollback handoff in 35d5c57. Human review, external IdP, managed TLS, external storage, production deploy and RPO/RTO remain pending."

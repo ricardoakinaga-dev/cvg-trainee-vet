@@ -136,12 +136,14 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 #### R2-S1 — Seed de atribuições e estados
 
 - **O que:** criar job administrativo idempotente que deriva os módulos da fonte curriculumV3, cria uma learning_assignment por módulo e um curriculum_runtime_state inicial por participante/escopo, com status explícito e próxima ação honesta.
-- **Onde:** packages/application, packages/persistence, scripts/seed-curriculum-runtime.mjs, migration apenas se o contrato exigir.
+- **Onde:** packages/application, packages/persistence, `scripts/materialize-curriculum.mjs`, `scripts/verify-curriculum-runtime.mjs`, migration apenas se o contrato exigir.
 - **Dependências:** R1-S1; conta/escopo sintéticos autorizados.
 - **Teste RED:** participante sem escopo não pode criar/ler estado de outro participante; rerun não duplica; estado inicial não pode declarar mastery.
-- **Teste GREEN:** 24 atribuições e 24 estados são criados e lidos pelo learning path autorizado.
+- **Teste GREEN:** 24 atribuições e 24 estados são criados e lidos pelo learning path autorizado; `pnpm ops:verify-curriculum-runtime` valida a projeção no PostgreSQL administrativo.
 - **Aceite:** banco ativo/homologação mostra 24 estados e 24 atribuições para o fixture; conteúdo não publicado aparece como bloqueado/aguardando conteúdo, não como atividade disponível.
 - **Rollback:** job idempotente com modo dry-run e remoção somente do namespace sintético.
+- **Status:** COMPLETED localmente / PASS_WITH_GAPS para conteúdo clínico.
+- **Evidência:** verificador live confirmou 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições e 24 estados; módulos M01–M24 estão presentes, atribuições permanecem `NAO_ATRIBUIDO` e estados `PENDENTE`; o modo clínico estrito falha honestamente enquanto 763 itens estiverem `PROJECAO_VERIFICADA`.
 
 #### R2-S2 — Produção dos packs
 

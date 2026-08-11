@@ -285,10 +285,10 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **phase:** R2;
 - **risco:** alto;
 - **impacto:** alto;
-- **testes:** live PostgreSQL, idempotência, RLS contextual, learning path;
+- **testes:** live PostgreSQL, idempotência, RLS contextual, learning path, `pnpm ops:verify-curriculum-runtime`;
 - **pronto:** 24 estados/atribuições visíveis somente no escopo autorizado e nenhum mastery inventado;
 - **status:** COMPLETED;
-- **evidência:** `scripts/materialize-curriculum.mjs` executado no banco ativo e em banco efêmero: 24 `learning_activities`, 796 versões/editorial/itens, 24 `learning_assignments`, 24 `curriculum_runtime_states`; segunda execução idempotente com zero inserts; estados `PENDENTE`/`INICIAR_BASELINE`, atribuições `NAO_ATRIBUIDO`; RLS da API permanece sem `SUPERUSER`/`BYPASSRLS`;
+- **evidência:** `scripts/materialize-curriculum.mjs` executado no banco ativo e em banco efêmero: 24 `learning_activities`, 796 versões/editorial/itens, 24 `learning_assignments`, 24 `curriculum_runtime_states`; segunda execução idempotente com zero inserts; `scripts/verify-curriculum-runtime.mjs` confirmou M01–M24, estados `PENDENTE`, atribuições `NAO_ATRIBUIDO` e 763 itens ainda não publicados; RLS da API permanece sem `SUPERUSER`/`BYPASSRLS`;
 - **plano:** 0303_remediation_program.md.
 
 ### R2-S2/R2-S3 — Packs, revisão e publicação

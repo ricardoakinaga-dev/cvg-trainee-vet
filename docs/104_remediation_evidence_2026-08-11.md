@@ -71,3 +71,11 @@ O release permanece `WAITING_HUMAN_APPROVAL` até Ricardo registrar:
 6. revisão semântica e aprovação clínica dos packs que poderão ser publicados.
 
 Sem essas decisões, o sistema permanece operacionalmente demonstrável em ambiente local/sintético, mas não é declarado publicado, clínico ou de produção.
+
+## Atualização live do catálogo — 2026-08-11
+
+O commit `0a36d1d` adicionou `scripts/verify-curriculum-runtime.mjs` e seu teste de contrato. A execução contra o PostgreSQL HA ativo confirmou os agregados esperados de 24 atividades, 796 versões/editorial/itens, 24 atribuições e 24 estados curriculares nos módulos M01–M24. As atribuições permanecem `NAO_ATRIBUIDO` e os estados `PENDENTE`; 763 itens estão `PROJECAO_VERIFICADA` e 33 `PUBLICADO`.
+
+`pnpm ops:verify-curriculum-runtime` retornou `PASS_WITH_GAPS`. O modo `CVG_CURRICULUM_REQUIRE_CLINICAL_PUBLICATION=true` retornou `FAIL` com `clinical publication is incomplete: 763 items`, preservando o gate humano em vez de promover rascunhos clínicos.
+
+Após a alteração, `pnpm verify` passou com 420 testes, 17 skips e cobertura 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines.
