@@ -3777,3 +3777,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões humanas e executar os gates externos correspondentes sem tratar provas locais como equivalentes de produção.
+
+## 2026-08-11 — REMEDIATION-FINAL-HANDOFF-CHECK
+
+### TIMESTAMP
+
+2026-08-11 11:32:33 -03:00
+
+### ACTION
+
+Reexecutada a checagem de encerramento após os commits `0a36d1d` e `3d3aa3d`: saúde web/edge/API, manifestos documentais, diff e verificador live curricular.
+
+### RESULT
+
+`web-dependencies`, `edge-ready` e `api-live` retornaram `200`; `pnpm verify:traceability`, `pnpm verify:documentation` e `git diff --check` passaram. O verificador curricular retornou `PASS_WITH_GAPS` com 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições, 24 estados, M01–M24, 763 `PROJECAO_VERIFICADA` e 33 `PUBLICADO`. O modo clínico estrito retornou `FAIL` com `clinical publication is incomplete: 763 items`.
+
+### GATE EXTERNO
+
+O gate explícito `CVG_VERIFY_PRODUCTION_SECURITY=true pnpm ops:verify-production-security` continuou bloqueado pelas entradas de IdP/MFA, origem HTTPS pública, storage/retention de traces, backup criptografado e digests de release/rollback. Isso mantém a distinção entre prova local e aprovação produtiva.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar as decisões humanas e a disponibilidade dos ambientes/provedores externos; não promover produção nem publicar os 763 itens pendentes.

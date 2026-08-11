@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: verificador read-only `scripts/verify-curriculum-runtime.mjs` confirmou no PostgreSQL HA ativo 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições e 24 estados nos módulos M01–M24; `pnpm verify` passou com 420 testes, 17 skips e cobertura 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines; implementação em `0a36d1d`
+- last_completed_action: handoff final validado após o commit `3d3aa3d`: web-dependencies, edge-ready e api-live retornaram 200; verificador live manteve `PASS_WITH_GAPS` para 24/796/796/796 e 24/24, enquanto o modo clínico estrito falhou com 763 itens; traceability/documentation passaram e o gate produtivo permaneceu bloqueado por entradas externas ausentes
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T11:29:01-03:00
+- last_update: 2026-08-11T11:32:33-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -832,3 +832,21 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter decisões sobre revisão/publicação clínica, IdP/MFA/recovery, domínio/DNS/TLS, storage externo de traces, backup/RPO/RTO e ambiente autorizado para deploy/rollback.
+
+## 2026-08-11 — REMEDIATION-FINAL-HANDOFF-CHECK
+
+### RESULTADO
+
+Após os commits `0a36d1d` e `3d3aa3d`, os endpoints locais `http://127.0.0.1:3100/health/dependencies`, `http://127.0.0.1:3180/health/ready` e `http://127.0.0.1:3182/health/live` retornaram `200`. `pnpm verify:traceability`, `pnpm verify:documentation` e `git diff --check` passaram. A execução live do currículo permaneceu `PASS_WITH_GAPS`, e o modo `CVG_CURRICULUM_REQUIRE_CLINICAL_PUBLICATION=true` retornou `FAIL` por 763 itens não publicados.
+
+### GATE EXTERNO
+
+`CVG_VERIFY_PRODUCTION_SECURITY=true pnpm ops:verify-production-security` permaneceu bloqueado por `IDENTITY_PROVIDER_REQUIRED`, `IDENTITY_PROVIDER_URL`, `IDENTITY_PROVIDER_TOKEN`, `CVG_PUBLIC_HTTPS_ORIGIN`, `CVG_TRACE_STORAGE_BACKEND`, `CVG_TRACE_RETENTION`, `CVG_BACKUP_URI`, `CVG_BACKUP_ENCRYPTION_KEY_REF`, `CVG_RELEASE_IMAGE_DIGEST` e `CVG_ROLLBACK_IMAGE_DIGEST`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Não promover produção nem publicar conteúdo clínico. A próxima ação exige as decisões humanas e os recursos externos listados no bloco `BLOQUEIOS`.
