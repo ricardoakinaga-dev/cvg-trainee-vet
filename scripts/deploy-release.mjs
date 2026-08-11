@@ -2,6 +2,10 @@ import { readFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 
 import { assertReleaseManifest } from "./release-manifest.mjs";
+import {
+  pullStepResult,
+  resolveReleasePullMode,
+} from "./release-execution.mjs";
 
 const manifestPath =
   process.env.CVG_RELEASE_MANIFEST ??
@@ -16,6 +20,7 @@ const healthTarget =
   process.env.CVG_CANARY_HEALTH_URL ??
   `http://127.0.0.1:3180${manifest.healthPath}`;
 const execute = process.env.CVG_RELEASE_EXECUTE === "true";
+const pullMode = resolveReleasePullMode(process.env);
 const composeEnvironment = {
   ...process.env,
   CVG_APP_IMAGE: `${manifest.image}@${manifest.imageDigest}`,
@@ -44,7 +49,11 @@ if (!execute) {
   process.exit(0);
 }
 
-await runCompose(["pull", "api-a", "api-b", "worker-a", "worker-b"]);
+if (pullMode === "required") {
+  await runCompose(["pull", "api-a", "api-b", "worker-a", "worker-b"]);
+} else {
+  console.log(JSON.stringify(pullStepResult(pullMode)));
+}
 await runCompose(["run", "--rm", "migrate"]);
 await runCompose(["up", "-d", "--no-build", "api-a", "worker-a"]);
 await waitForHealth(healthTarget);

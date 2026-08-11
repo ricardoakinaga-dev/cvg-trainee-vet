@@ -44,6 +44,7 @@
     "ops:verify-release-manifest": "node scripts/verify-release-manifest.mjs",
     "ops:deploy-release": "node scripts/deploy-release.mjs",
     "ops:rollback-release": "node scripts/rollback-release.mjs",
+    "ops:rehearse-local-release": "CVG_RUN_LOCAL_RELEASE_REHEARSAL=true node scripts/local-release-rehearsal.mjs",
     "ops:create-postgres-backup": "node scripts/create-postgres-backup.mjs",
     "ops:verify-ha": "node scripts/verify-ha-topology.mjs",
     "verify:operational-config": "pnpm ops:verify-ha",
