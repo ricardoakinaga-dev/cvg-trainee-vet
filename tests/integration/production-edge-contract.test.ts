@@ -39,6 +39,9 @@ describe("production edge contract", () => {
     expect(overlay).toContain('profiles: ["local-traces"]');
     expect(overlay).toContain("depends_on: !override");
     expect(collector).toContain("otlphttp/durable:");
+    expect(collector).toContain(
+      "Base URL only; the exporter appends /v1/traces",
+    );
     expect(collector).toContain("${env:CVG_TRACE_OTLP_HTTP_ENDPOINT}");
     expect(collector).toContain("insecure: false");
     expect(collector).toContain("${env:CVG_TRACE_AUTHORIZATION}");

@@ -20,6 +20,7 @@ exporters:
     endpoint: 0.0.0.0:8889
     namespace: cvg
   otlphttp/durable:
+    # Base URL only; the exporter appends /v1/traces for the traces pipeline.
     endpoint: ${env:CVG_TRACE_OTLP_HTTP_ENDPOINT}
     headers:
       authorization: ${env:CVG_TRACE_AUTHORIZATION}
