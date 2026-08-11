@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: imagem `cvg-trainee-vet:local` reconstruída no HEAD `4a5aa676939102d8598365206bf42270e9cdd19b` e recriada no HA; defaults versionados e ambiente local fixados em 3180/3181; health web/HTTP/HTTPS 200; edge security PASS; load smoke HA 200/200 (p95 66,91 ms); trace consultável após restart do Tempo; `pnpm verify` 406/423; VPS truth source sincronizado
+- last_completed_action: imagem `cvg-trainee-vet:local` reconstruída no HEAD `4a5aa676939102d8598365206bf42270e9cdd19b` e recriada no HA; defaults versionados e ambiente local fixados em 3180/3181; health web/HTTP/HTTPS 200; edge security PASS; load smoke HA 200/200 (p95 66,91 ms); trace consultável após restart do Tempo; `pnpm verify` 406/423; VPS truth source sincronizado; evidência final em `5cdcf6c`
 - next_action: obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS

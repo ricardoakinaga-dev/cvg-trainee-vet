@@ -4,7 +4,7 @@
 
 Este registro fecha as limitações técnicas observadas em `0509_current_worktree_audit_2026-08-11.md` sem transformar provas locais em aprovação de produção. Todos os dados usados foram sintéticos; nenhum prontuário, tutor, foto, PDF, segredo ou credencial foi registrado.
 
-Implementação registrada no commit `e3cd966efb1d4d2a5596075d1d12f4101dd12492`; reauditoria e handoff documental em `31d54f6abb9bbc8e36ae40afea78538240fef79d` e `4a5aa676939102d8598365206bf42270e9cdd19b`.
+Implementação registrada no commit `e3cd966efb1d4d2a5596075d1d12f4101dd12492`; reauditoria e handoff documental em `31d54f6abb9bbc8e36ae40afea78538240fef79d` e `4a5aa676939102d8598365206bf42270e9cdd19b`; defaults de runtime e evidência final em `5cdcf6c`.
 
 ## Resultado por limitação
 
