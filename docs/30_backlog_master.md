@@ -828,6 +828,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** agendamento, criptografia, storage/retenção externos, owner, RPO/RTO produtivo e autorização de restore continuam pendentes;
 - **próximo passo:** repetir o drill usando artefato e política do ambiente produtivo declarado.
 
+## 2026-08-11 — REMEDIATION-PRODUCTION-CONFIG-CONTRACT
+
+- **item:** impedir que o gate produtivo aceite configuração semanticamente insegura antes da probe externa;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para recursos produtivos reais;
+- **evidência:** `scripts/verify-production-security-config.mjs` valida IdP HTTPS sem credenciais, origem pública, storage de traces, retenção, URI de backup, referência de chave e digests distintos; `tests/integration/production-security-config.test.ts` passou 7/7; commit `7777876a86b8bef8dff5714d127281a25a4c8b6d`;
+- **limite:** configuração válida não comprova probe do IdP, certificado/DNS, backend de traces, backup/restore, registry ou deploy/rollback;
+- **próximo passo:** fornecer os valores por secret manager/ambiente aprovado e executar o gate produtivo completo.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

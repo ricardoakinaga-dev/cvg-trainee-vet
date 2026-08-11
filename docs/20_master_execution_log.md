@@ -4255,3 +4255,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Registrar o destino de backup e a política operacional aprovados; repetir o drill com artefato do ambiente produtivo declarado.
+
+## 2026-08-11T14:52:20-03:00 — REMEDIATION-PRODUCTION-CONFIG-CONTRACT
+
+### ACTION
+
+O gate produtivo anterior validava principalmente presença de variáveis; foi criado um contrato puro para rejeitar configurações semanticamente inseguras antes da probe externa.
+
+### RESULT
+
+`scripts/verify-production-security-config.mjs` agora exige IdP obrigatório em HTTPS sem credenciais, origem pública HTTPS sem path/query/localidade, backend de traces permitido, retenção positiva, URI de backup `s3://`, `gs://` ou `az://`, referência de chave bounded e digests de release/rollback distintos. A saída não inclui token ou chave. `tests/integration/production-security-config.test.ts` passou 7/7; o gate sem ambiente autorizado continua fail-closed.
+
+### EVIDENCE
+
+Commit `7777876a86b8bef8dff5714d127281a25a4c8b6d`; `pnpm verify` com 462 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines.
+
+### LIMITS
+
+Validação de configuração não é prova de IdP, domínio, storage, backup, release ou rollback reais; esses recursos continuam externos e não configurados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter os valores aprovados por secret manager/ambiente de deploy e executar a probe de IdP, health público, trace externo, backup e release no ambiente declarado.

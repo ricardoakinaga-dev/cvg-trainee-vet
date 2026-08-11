@@ -2,7 +2,7 @@
 
 ## Escopo
 
-Esta reauditoria confronta as limitações originais com o runtime HA local ativo e o commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351`. O resultado distingue prova local/sintética, falha esperada de gate e dependência externa; não há credenciais, dados clínicos reais ou aprovação clínica inferida.
+Esta reauditoria confronta as limitações originais com o runtime HA local ativo e o commit `7777876a86b8bef8dff5714d127281a25a4c8b6d`. O resultado distingue prova local/sintética, falha esperada de gate e dependência externa; não há credenciais, dados clínicos reais ou aprovação clínica inferida.
 
 ## Evidências locais atuais
 
@@ -16,17 +16,19 @@ Esta reauditoria confronta as limitações originais com o runtime HA local ativ
 - E2E da conta após reinício do processo web com o build atual: provider-mediated recovery/MFA passou 1/1; códigos não permanecem na interface.
 - Build web sem `CVG_API_INTERNAL_URL` falha explicitamente em produção; com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passa. O workflow CI fixa `CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build`, evitando artefato sem proxy.
 - Restore live usando PostgreSQL acessível somente pela rede Docker: `pnpm test:integration:restore` passou 2/2 após encaminhar `PGPASSWORD` por ambiente ao `docker exec`; execução direta restaurou marcador em banco isolado com RTO observado de 2,546 s.
+- O validador do gate produtivo agora rejeita origem local/credenciada, backup fora de object storage, retenção inválida, referências com controle e digests de release/rollback iguais; a configuração completa retorna somente projeções redigidas e o gate sem ambiente autorizado continua falhando fechado.
 
 ## Hardening desta rodada
 
 - `packages/application/src/identity-provider.ts` rejeita `operationId` retornado pelo provedor com tamanho inválido ou caracteres de controle antes de expor o resultado.
 - `packages/contracts/src/account.ts` aplica a mesma fronteira ao projection da operação.
 - `scripts/verify-postgres-restore.mjs` e `scripts/postgres-command.mjs` encaminham a senha somente por variável de ambiente para comandos PostgreSQL executados via Docker, mantendo o segredo fora dos argumentos.
-- RED foi observado nos testes de projection, build proxy e comando Docker de restore; GREEN passou nos testes direcionados. O hardening provider projection está no commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`; o contrato de build web/CI está no commit `0db281bd3713f18ec2c05b06701750c69e202d7d`; o restore Docker está no commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351` (`fix: pass postgres password to docker restore`).
+- `scripts/verify-production-security-config.mjs` separa validação pura de configuração da probe externa e não retorna token/chave; o contrato cobre origem pública, URI de backup, retenção, digests e referências bounded.
+- RED foi observado nos testes de projection, build proxy, comando Docker de restore e configuração produtiva; GREEN passou nos testes direcionados. O hardening provider projection está no commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`; o contrato de build web/CI está no commit `0db281bd3713f18ec2c05b06701750c69e202d7d`; o restore Docker está no commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351`; o validador produtivo está no commit `7777876a86b8bef8dff5714d127281a25a4c8b6d` (`fix: harden production security gate config`).
 
 ## Quality gate
 
-- `pnpm verify`: 96 arquivos de teste passaram, 16 foram pulados condicionalmente; 455 testes passaram e 18 foram pulados.
+- `pnpm verify`: 97 arquivos de teste passaram, 16 foram pulados condicionalmente; 462 testes passaram e 18 foram pulados.
 - Cobertura: 85,04% statements, 80,33% branches, 86,85% functions e 85,79% lines.
 - `pnpm build`, lint, typecheck, format, secret scan, `pnpm audit --audit-level=high`, documentação, rastreabilidade, migrações, arquitetura, definição de produto e fronteira pública passaram.
 

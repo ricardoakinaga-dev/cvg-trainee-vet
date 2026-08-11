@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após corrigir o restore Docker e reauditar o runtime HA, sem promover produção
+- current_task: manter o handoff externo após endurecer o contrato do gate produtivo, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `fbc9591e6fe2b785d3d3fc50eaa4a096421c1351` corrigiu o encaminhamento seguro de `PGPASSWORD` no restore Docker; `pnpm verify` passou em 455 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%, restore live 2/2 e E2E HA 2/2
+- last_completed_action: commit `7777876a86b8bef8dff5714d127281a25a4c8b6d` endureceu o validador de configuração produtiva sem expor segredos; `pnpm verify` passou em 462 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%, restore live 2/2 e E2E HA 2/2
 - next_action: obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; em paralelo, executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T14:40:47-03:00
+- last_update: 2026-08-11T14:52:20-03:00
 
 ## 2026-08-11T14:16:14-03:00 — REMEDIATION-CURRENT-AUDIT
 
@@ -111,6 +111,32 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Registrar o destino de backup e a política operacional aprovados; repetir o drill com artefato do ambiente produtivo declarado.
+
+## 2026-08-11T14:52:20-03:00 — REMEDIATION-PRODUCTION-CONFIG-CONTRACT
+
+### AÇÃO
+
+O gate produtivo anterior validava principalmente presença de variáveis; foi criado um contrato puro para rejeitar configurações semanticamente inseguras antes da probe externa.
+
+### RESULTADO
+
+`scripts/verify-production-security-config.mjs` agora exige IdP obrigatório em HTTPS sem credenciais, origem pública HTTPS sem path/query/localidade, backend de traces permitido, retenção positiva, URI de backup `s3://`, `gs://` ou `az://`, referência de chave bounded e digests de release/rollback distintos. A saída não inclui token ou chave. `tests/integration/production-security-config.test.ts` passou 7/7; o gate sem ambiente autorizado continua fail-closed.
+
+### EVIDÊNCIA
+
+Commit `7777876a86b8bef8dff5714d127281a25a4c8b6d`; `pnpm verify` com 462 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines.
+
+### LIMITES
+
+Validação de configuração não é prova de IdP, domínio, storage, backup, release ou rollback reais; esses recursos continuam externos e não configurados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter os valores aprovados por secret manager/ambiente de deploy e executar a probe de IdP, health público, trace externo, backup e release no ambiente declarado.
 
 ## 2026-08-11T14:00:27-03:00 — REMEDIATION-IDENTITY-LIFECYCLE
 

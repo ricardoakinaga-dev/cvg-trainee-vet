@@ -272,6 +272,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **O que:** executar verify, build, contract, worker, live PostgreSQL/Qdrant, restore, E2E sintético/real, security, dependency audit, headers/TLS, traces e load.
 - **Dependências:** R1–R5 conforme o ambiente.
 - **Aceite:** nenhum P0/P1 aberto no escopo de release; todo skip possui causa e owner; cobertura global ≥80%.
+- **Progresso adicional:** `scripts/verify-production-security-config.mjs` separa validação pura da probe externa e rejeita configuração insegura para IdP, origem pública, traces, backup, retenção e digests; `tests/integration/production-security-config.test.ts` passou 7/7. O gate produtivo permanece dependente do ambiente autorizado.
 - **Rollback:** não promover release; manter estado WAITING_HUMAN_APPROVAL.
 
 #### R6-S3 — Commit e auditoria final
