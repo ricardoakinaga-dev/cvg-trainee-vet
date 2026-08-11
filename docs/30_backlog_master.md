@@ -739,6 +739,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** não há declaração de MFA/recovery disponível sem provedor, sandbox e segredo fornecidos por decisão humana;
 - **próximo passo:** selecionar o provedor e executar enrollment, challenge, recovery, step-up e revogação em sandbox.
 
+## 2026-08-11 — REMEDIATION-MANAGED-TLS-PROFILE
+
+- **item:** preparar o edge para certificado gerenciado/automático sem fingir TLS produtivo no ambiente local;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para domínio e certificado;
+- **evidência:** `infra/production/Caddyfile.production.example` validado pelo Caddy, sem `tls internal`; Compose produtivo sintético com FQDN e targets 80/443 passou; teste de contrato e `pnpm verify` passaram com 422 testes;
+- **limite:** domínio, DNS, ACME/certificado, renovação, handshake público e E2E externo continuam pendentes;
+- **próximo passo:** registrar FQDN e método de certificado autorizados, então executar o perfil fora do ambiente local.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

@@ -330,7 +330,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **testes:** curl headers, TLS handshake, renovação staging, E2E HTTPS;
 - **pronto:** edge HTTPS sem mixed content e cookie Secure;
 - **status:** WAITING_HUMAN_APPROVAL;
-- **evidência:** Caddy/Next headers, redirect HTTP→HTTPS e TLS interno foram verificados ao vivo em `:3180/:3181`; certificado gerenciado, domínio/DNS e E2E público aguardam decisão humana;
+- **evidência:** Caddy/Next headers, redirect HTTP→HTTPS e TLS interno foram verificados ao vivo em `:3180/:3181`; `infra/production/Caddyfile.production.example` foi validado pelo Caddy sem `tls internal`, e o Compose foi validado com FQDN/targets produtivos sintéticos; certificado gerenciado, domínio/DNS, handshake público e E2E externo aguardam decisão humana;
 - **plano:** 0303_remediation_program.md.
 
 ### R5-S1/R5-S2/R5-S3 — Traces, deploy, rollback e restore

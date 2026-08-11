@@ -212,6 +212,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Aceite:** domínio responde HTTPS, sem certificado expirado, sem HTTP de sessão, health e API preservados.
 - **Rollback:** manter edge interno, remover rota pública e revogar certificado conforme runbook.
 - **Status:** WAITING_HUMAN_APPROVAL até haver domínio.
+- **Progresso local:** criado `infra/production/Caddyfile.production.example`, sem `tls internal`, com FQDN parametrizado, HSTS e HTTPS automático; Compose agora permite selecionar esse perfil e parametrizar os targets 80/443 sem alterar os defaults locais. `caddy validate` e Compose com configuração sintética passaram. Handshake público, DNS, ACME/renovação e E2E externo ainda dependem do domínio autorizado.
 
 ### R5 — Traces, deployment, rollback e restore
 

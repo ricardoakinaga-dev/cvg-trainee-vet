@@ -85,3 +85,9 @@ Após a alteração, `pnpm verify` passou com 420 testes, 17 skips e cobertura 8
 O commit `3793066` endureceu o adapter e o carregamento de configuração: URLs `http://` agora são rejeitadas no adapter, e `NODE_ENV=production` exige URL HTTPS para o IdP. O teste RED/GREEN cobriu ambos os limites; `pnpm verify` passou com 421 testes, 17 skips e cobertura acima de 80%.
 
 A disponibilidade real de MFA e recuperação continua não comprovada até a escolha, configuração e execução de sandbox do provedor externo.
+
+## Perfil de TLS gerenciado — 2026-08-11
+
+O commit `9386e21` adicionou `infra/production/Caddyfile.production.example`, que usa FQDN configurável e HTTPS automático, sem `tls internal`, preservando os mesmos headers e HSTS. O Compose passou a aceitar `CVG_CADDYFILE`, `CVG_CADDY_HTTPS_SITE`, `CVG_EDGE_HTTP_TARGET_PORT` e `CVG_EDGE_TLS_TARGET_PORT`; os defaults locais permanecem inalterados.
+
+`caddy validate` passou com FQDN sintético e o Compose passou com `CVG_EDGE_PORT=80`, `CVG_EDGE_TLS_PORT=443` e target TLS 443. Isso fecha a preparação do perfil, mas não comprova domínio, DNS, certificado/ACME, renovação, handshake público ou E2E externo.

@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após a revalidação de qualidade local, sem promover produção
+- current_task: manter o handoff externo após preparar o perfil de TLS gerenciado, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: qualidade local revalidada após `3793066`: `pnpm verify` passou com 421 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; build isolado, audit de dependências, traceability/documentation e diff-check passaram; os gates externos continuam sem configuração
+- last_completed_action: perfil `Caddyfile.production.example` preparado no commit `9386e21`; `caddy validate`, Compose com FQDN/ports produtivos sintéticos e `pnpm verify` passaram com 422 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; domínio/certificado reais continuam ausentes
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T11:44:09-03:00
+- last_update: 2026-08-11T11:50:35-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -886,3 +886,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Aguardar as decisões humanas e executar os gates externos correspondentes; não promover produção nem publicar conteúdo clínico.
+
+## 2026-08-11 — REMEDIATION-MANAGED-TLS-PROFILE
+
+### AÇÃO
+
+Escrito primeiro o teste de contrato do edge gerenciado; o RED confirmou a ausência do perfil. O GREEN adicionou `infra/production/Caddyfile.production.example`, seleção de arquivo via `CVG_CADDYFILE`, FQDN via `CVG_CADDY_HTTPS_SITE` e targets de porta parametrizáveis no Compose.
+
+### RESULTADO
+
+O commit `9386e21` mantém os defaults locais (`Caddyfile`, `3180/3181/3182`) e permite o perfil externo com `CVG_CADDY_HTTPS_SITE=<FQDN>`, `CVG_EDGE_PORT=80`, `CVG_EDGE_TLS_PORT=443` e `CVG_EDGE_TLS_TARGET_PORT=443`. `caddy validate` passou com FQDN sintético; Compose também passou com credenciais sintéticas não persistidas; o teste de contrato e `pnpm verify` passaram.
+
+### LIMITES
+
+O perfil é preparação executável, não prova de TLS produtivo: ainda faltam domínio/DNS, ACME ou certificado gerenciado, exposição pública 80/443, handshake/renovação e E2E externo autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Selecionar o domínio e o método de certificado; somente então executar o perfil fora do ambiente local e registrar evidência pública redigida.

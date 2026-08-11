@@ -163,3 +163,9 @@ O modo `CVG_CURRICULUM_REQUIRE_CLINICAL_PUBLICATION=true` falhou com a causa
 esperada: `clinical publication is incomplete: 763 items`. Assim, o verificador
 fecha a limitação estrutural do catálogo sem declarar conteúdo clínico como
 aprovado.
+
+## Perfil de edge para TLS gerenciado — 2026-08-11
+
+Foi adicionado `infra/production/Caddyfile.production.example` para o ambiente autorizado. O perfil mantém headers, redirect HTTP→HTTPS e HSTS, mas não usa `tls internal`; o FQDN é fornecido por `CVG_CADDY_HTTPS_SITE` e o Compose permite selecionar o arquivo e mapear os targets públicos 80/443. `caddy validate` passou com FQDN sintético e a configuração Compose produtiva sintética passou.
+
+O edge local continua usando o `Caddyfile` com `tls internal`. Não houve alteração de portas ativas nem tráfego público; domínio, DNS, certificado/ACME, renovação e E2E externo permanecem pendentes.

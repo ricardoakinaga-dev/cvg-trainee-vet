@@ -3859,3 +3859,33 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Aguardar as decisões humanas e executar os gates externos sem tratar o ambiente local como produção.
+
+## 2026-08-11 — REMEDIATION-MANAGED-TLS-PROFILE
+
+### TIMESTAMP
+
+2026-08-11 11:50:35 -03:00
+
+### ENGINE
+
+BUILD / SECURITY REVIEW / TDD / VPS TRUTH SOURCE
+
+### ACTION
+
+Criado primeiro `tests/integration/production-edge-contract.test.ts`, que falhou pela ausência de um perfil externo. O GREEN adicionou `infra/production/Caddyfile.production.example` e parametrizou `CVG_CADDYFILE`, `CVG_CADDY_HTTPS_SITE`, `CVG_EDGE_HTTP_TARGET_PORT` e `CVG_EDGE_TLS_TARGET_PORT` no Compose, sem escolher nova porta ativa.
+
+### RESULT
+
+O teste de contrato passou; `pnpm ops:verify-ha` passou com os defaults locais; Compose passou com `CVG_CADDYFILE=./Caddyfile.production.example`, FQDN sintético e targets 80/443; `caddy validate` retornou `Valid configuration` sem `tls internal`. `pnpm verify` passou com 422 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commit: `9386e21`.
+
+### LIMITES
+
+O perfil externo só é um artefato de preparação. Sem domínio/DNS/certificado ou ACME, exposição pública, handshake, renovação e E2E externo, o requisito de TLS produtivo continua não comprovado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar o domínio e o método de certificado autorizados; não trocar o Caddy local nem promover portas públicas neste ambiente.
