@@ -175,12 +175,13 @@ services:
     restart: unless-stopped
     environment:
       CVG_PUBLIC_HTTPS_ORIGIN: ${CVG_PUBLIC_HTTPS_ORIGIN:-https://localhost:3181}
+      CVG_CADDY_HTTPS_SITE: ${CVG_CADDY_HTTPS_SITE:-}
     ports:
-      - "${CVG_EDGE_PORT:-8080}:8080"
-      - "${CVG_EDGE_TLS_PORT:-3181}:8443"
+      - "${CVG_EDGE_PORT:-8080}:${CVG_EDGE_HTTP_TARGET_PORT:-8080}"
+      - "${CVG_EDGE_TLS_PORT:-3181}:${CVG_EDGE_TLS_TARGET_PORT:-8443}"
       - "127.0.0.1:${CVG_EDGE_INTERNAL_PORT:-3182}:8081"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${CVG_CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
