@@ -66,11 +66,19 @@ export function buildLocalReleaseEnvironment(inherited = {}) {
   });
 }
 
+export function resolveLocalRollbackImage(environment = {}) {
+  const rollbackImage = environment.CVG_LOCAL_RELEASE_ROLLBACK_IMAGE;
+  if (rollbackImage === undefined || rollbackImage === "") return null;
+  assertLocalImage(rollbackImage);
+  return rollbackImage;
+}
+
 export async function runLocalReleaseRehearsal(environment = process.env) {
   assertLocalReleaseRehearsalEnabled(environment);
 
   const localImage = environment.CVG_LOCAL_RELEASE_IMAGE ?? DEFAULT_LOCAL_IMAGE;
   assertLocalImage(localImage);
+  const rollbackSourceImage = resolveLocalRollbackImage(environment);
 
   const composeFile = environment.CVG_COMPOSE_FILE ?? DEFAULT_COMPOSE_FILE;
   const composeEnvFile =
@@ -95,21 +103,26 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
   let runtimeRestored = false;
 
   try {
-    await runCommand("docker", [
-      "create",
-      "--name",
-      rehearsalContainer,
-      localImage,
-    ]);
-    await runCommand("docker", [
-      "commit",
-      "--change",
-      "LABEL cvg.local.rehearsal=rollback",
-      rehearsalContainer,
-      rollbackTag,
-    ]);
-    rollbackImageCreated = true;
-    const rollbackImage = await inspectRepositoryDigest(rollbackTag);
+    let rollbackImage;
+    if (rollbackSourceImage) {
+      rollbackImage = await inspectRepositoryDigest(rollbackSourceImage);
+    } else {
+      await runCommand("docker", [
+        "create",
+        "--name",
+        rehearsalContainer,
+        localImage,
+      ]);
+      await runCommand("docker", [
+        "commit",
+        "--change",
+        "LABEL cvg.local.rehearsal=rollback",
+        rehearsalContainer,
+        rollbackTag,
+      ]);
+      rollbackImageCreated = true;
+      rollbackImage = await inspectRepositoryDigest(rollbackTag);
+    }
     const manifest = createLocalReleaseManifest({
       releaseDigest: releaseImage.digest,
       rollbackDigest: rollbackImage.digest,
@@ -155,6 +168,9 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
       releaseId: manifest.releaseId,
       releaseDigest: manifest.imageDigest,
       rollbackDigest: manifest.rollbackImageDigest,
+      rollbackMode: rollbackSourceImage
+        ? "EXISTING_LOCAL_IMAGE"
+        : "SYNTHETIC_CLONE",
       deploy: "PASS",
       rollback: "PASS",
       runtimeRestored: true,

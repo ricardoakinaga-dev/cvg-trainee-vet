@@ -5,6 +5,7 @@ import {
   buildLocalReleaseEnvironment,
   createLocalReleaseManifest,
   parseRepositoryDigest,
+  resolveLocalRollbackImage,
 } from "../../scripts/local-release-rehearsal.mjs";
 import { assertReleaseManifest } from "../../scripts/release-manifest.mjs";
 import { resolveReleasePullMode } from "../../scripts/release-execution.mjs";
@@ -35,6 +36,22 @@ describe("local release rehearsal contract", () => {
 
     expect(() => parseRepositoryDigest("cvg-trainee-vet:local")).toThrow(
       "local image must expose an immutable repository digest",
+    );
+  });
+
+  it("accepts only a local rollback image override", () => {
+    expect(
+      resolveLocalRollbackImage({
+        CVG_LOCAL_RELEASE_ROLLBACK_IMAGE: "cvg-trainee-vet:previous",
+      }),
+    ).toBe("cvg-trainee-vet:previous");
+    expect(resolveLocalRollbackImage({})).toBeNull();
+    expect(() =>
+      resolveLocalRollbackImage({
+        CVG_LOCAL_RELEASE_ROLLBACK_IMAGE: "registry.example.invalid/cvg:old",
+      }),
+    ).toThrow(
+      "local release rehearsal accepts only the local cvg-trainee-vet image",
     );
   });
 
