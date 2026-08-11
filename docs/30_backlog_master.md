@@ -851,3 +851,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **evidência:** conta `ricardo@cvg.internal` ativa; credencial transitória provisionada fora do repositório; login real `200`, cookie HttpOnly emitido, jornada autenticada `200` e endpoint de rotação autenticada `200` com origem CSRF válida em `http://127.0.0.1:3100`;
 - **limite:** senha não foi registrada em código, documentação, log ou Git; a superfície web de rotação ainda não foi implementada; MFA/recuperação externa e acesso público permanecem pendentes;
 - **próximo passo:** operador visualizar M02, rotacionar a senha por fluxo autenticado e manter os gates externos/ clínicos aguardando aprovação.
+
+## 2026-08-11 — ACCESS-23 — Redesign da entrada do participante
+
+- **título:** transformar o login em uma entrada orientada para a jornada, sem abrir cadastro público;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para a próxima fase autenticada;
+- **evidência:** `apps/web/app/page.tsx`, `apps/web/app/login-mascot.tsx`, `apps/web/app/globals.css` e `tests/e2e/participant-access.spec.ts`; build, typecheck, coverage 85,04% statements / 80,33% branches, E2E participante/acessibilidade 12/12 contra `3100`, health 200;
+- **entrega:** missão inicial, mascote Caju, prévia da trilha, explicação de convite, senha visível/oculta e layout responsivo;
+- **limite:** ainda não implementa falas dinâmicas do mascote, trilha persistida do participante, perfil completo, gerenciamento de usuários ou controle de treinamentos;
+- **próximo passo:** validar visualmente a entrada e priorizar a área autenticada do participante antes de ampliar para administração.

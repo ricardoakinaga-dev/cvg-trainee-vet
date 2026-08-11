@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useState } from "react";
+import { LoginMascot } from "./login-mascot";
 
 type ActivityItem = Readonly<{
   readonly itemId: string;
@@ -338,6 +339,7 @@ export default function HomePage() {
   const [activityId, setActivityId] = useState("");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [activity, setActivity] = useState<ActivityProjection | null>(null);
   const [journey, setJourney] = useState<LearningJourneyProjection | null>(
     null,
@@ -649,12 +651,20 @@ export default function HomePage() {
 
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
-      <header className="topbar" aria-label="Identificação do ambiente">
+      <header
+        className={authenticated ? "topbar" : "topbar login-topbar"}
+        aria-label="Identificação do ambiente"
+      >
         <div>
-          <p className="eyebrow">CVG · ambiente interno</p>
+          <p className="eyebrow">CVG · academia interna</p>
           <span className="brand">Treinamento veterinário</span>
         </div>
-        <span className="status-pill">Acesso protegido</span>
+        {!authenticated ? (
+          <span className="status-pill">
+            <span className="status-dot" aria-hidden="true" />
+            Acesso protegido
+          </span>
+        ) : null}
       </header>
 
       {busy ? (
@@ -669,52 +679,141 @@ export default function HomePage() {
       ) : null}
 
       {!authenticated ? (
-        <section className="hero-card" aria-labelledby="access-title">
-          <div className="hero-copy">
-            <p className="eyebrow">Entrada segura</p>
+        <section className="login-card" aria-labelledby="access-title">
+          <div className="login-visual">
+            <div className="login-kicker">
+              <span className="login-kicker-icon" aria-hidden="true">
+                ✦
+              </span>
+              Jornada de desenvolvimento clínico
+            </div>
             <h1 id="access-title">Entrar no treinamento</h1>
-            <p>
-              Use seu e-mail profissional e sua senha para continuar sua
-              jornada. A sessão é protegida e o conteúdo é apresentado apenas
-              depois da autenticação.
+            <p className="login-lede">Sua missão começa aqui</p>
+            <p className="login-description">
+              Avance por desafios, perguntas e decisões que transformam estudo
+              em prática segura — um passo de cada vez.
+            </p>
+
+            <div className="login-mascot-stage">
+              <div className="mascot-orbit mascot-orbit-one" />
+              <div className="mascot-orbit mascot-orbit-two" />
+              <LoginMascot />
+              <div className="mascot-message">
+                <span className="mascot-message-tail" aria-hidden="true" />
+                <strong>Oi, eu sou o Caju.</strong>
+                <span>Vou te acompanhar nessa jornada.</span>
+              </div>
+            </div>
+
+            <div className="login-trail-preview" aria-label="Prévia da trilha">
+              <div className="trail-step is-active">
+                <span className="trail-step-number">01</span>
+                <span>
+                  <strong>Fundamentos</strong>
+                  <small>Comece por aqui</small>
+                </span>
+              </div>
+              <div className="trail-connector" aria-hidden="true" />
+              <div className="trail-step">
+                <span className="trail-step-number">02</span>
+                <span>
+                  <strong>Raciocínio clínico</strong>
+                  <small>Desafios práticos</small>
+                </span>
+              </div>
+              <div className="trail-connector" aria-hidden="true" />
+              <div className="trail-step">
+                <span className="trail-step-number">03</span>
+                <span>
+                  <strong>Consolidação</strong>
+                  <small>Seu próximo nível</small>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="login-form-panel">
+            <div className="form-panel-meta">
+              <span className="form-panel-label">Acesso interno</span>
+              <span className="form-panel-security">
+                <span className="security-lock" aria-hidden="true">
+                  ◈
+                </span>
+                Sessão protegida
+              </span>
+            </div>
+            <h2>Bem-vindo de volta</h2>
+            <p className="form-panel-intro">
+              Entre com o e-mail profissional e continue de onde parou.
+            </p>
+
+            <form className="access-form login-form" onSubmit={handleLogin}>
+              <label htmlFor="login">E-mail profissional</label>
+              <p id="login-help" className="field-help">
+                Use o e-mail cadastrado pela operação do ambiente.
+              </p>
+              <input
+                id="login"
+                name="login"
+                type="email"
+                autoComplete="username"
+                aria-describedby="login-help"
+                value={login}
+                onChange={(event) => setLogin(event.target.value)}
+                maxLength={320}
+                required
+              />
+              <div className="password-label-row">
+                <label htmlFor="password">Senha</label>
+                <span className="password-rule">Mínimo de 12 caracteres</span>
+              </div>
+              <p id="password-help" className="field-help">
+                Use a senha recebida no convite da operação.
+              </p>
+              <div className="password-field">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  aria-describedby="password-help"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  minLength={12}
+                  maxLength={128}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-controls="password"
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((visible) => !visible)}
+                >
+                  {showPassword ? "Ocultar senha" : "Mostrar senha"}
+                </button>
+              </div>
+              <button className="login-submit" type="submit" disabled={busy}>
+                <span>{busy ? "Abrindo jornada…" : "Entrar"}</span>
+                <span className="submit-arrow" aria-hidden="true">
+                  →
+                </span>
+              </button>
+            </form>
+
+            <div className="login-support">
+              <span className="support-icon" aria-hidden="true">
+                ✦
+              </span>
+              <p>
+                <strong>Primeiro acesso?</strong> Acesso por convite da
+                operação. Solicite seu convite à coordenação.
+              </p>
+            </div>
+            <p className="login-footer">
+              Conteúdo interno · acesso individual · sem cadastro público
             </p>
           </div>
-          <form className="access-form" onSubmit={handleLogin}>
-            <label htmlFor="login">E-mail profissional</label>
-            <p id="login-help" className="field-help">
-              Use o e-mail cadastrado pela operação do ambiente.
-            </p>
-            <input
-              id="login"
-              name="login"
-              type="email"
-              autoComplete="username"
-              aria-describedby="login-help"
-              value={login}
-              onChange={(event) => setLogin(event.target.value)}
-              maxLength={320}
-              required
-            />
-            <label htmlFor="password">Senha</label>
-            <p id="password-help" className="field-help">
-              A senha deve ter pelo menos 12 caracteres.
-            </p>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              aria-describedby="password-help"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              minLength={12}
-              maxLength={128}
-              required
-            />
-            <button type="submit" disabled={busy}>
-              {busy ? "Entrando…" : "Entrar"}
-            </button>
-          </form>
         </section>
       ) : activity === null ? (
         journeyState === "empty" ? (

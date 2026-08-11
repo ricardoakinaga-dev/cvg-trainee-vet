@@ -1284,3 +1284,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões e recursos externos autorizados e iniciar a revisão clínica item a item; então executar os gates correspondentes no ambiente declarado.
+
+## 2026-08-11T16:32:14-03:00 — ACCESS-LOGIN-UX-23
+
+### AÇÃO
+
+Remodelada a superfície de primeiro acesso para deixar de ser um formulário isolado e passar a apresentar a jornada do participante desde a entrada. A autenticação existente foi preservada; a mudança ficou restrita à composição visual, orientação e acessibilidade do login.
+
+### RESULTADO
+
+A tela agora apresenta a missão inicial, uma prévia de trilha em três etapas, o mascote vetorial Caju com instrução contextual, o motivo do acesso por convite, estado de sessão protegida e controle acessível para revelar/ocultar a senha. O layout foi validado em desktop e viewport estreito. O serviço web foi reconstruído e reiniciado em `3100`.
+
+### EVIDÊNCIA
+
+`apps/web/app/page.tsx`; `apps/web/app/login-mascot.tsx`; `apps/web/app/globals.css`; `tests/e2e/participant-access.spec.ts`. `pnpm build`, `pnpm typecheck`, `pnpm format:check`, `pnpm verify:secrets` e `pnpm test:coverage` passaram; cobertura global: 85,04% statements / 80,33% branches. E2E Chromium contra `http://127.0.0.1:3100`: 12/12; `/health/live`: 200.
+
+### LIMITES
+
+O mascote é uma orientação visual estática nesta fase; ainda não há falas dinâmicas, progresso autenticado da trilha, área de usuário completa, gerenciamento administrativo de usuários ou controle editorial de treinamentos. Nenhum cadastro público ou bypass de autenticação foi criado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve validar a primeira impressão em `http://localhost:3100/`. Depois, iniciar a próxima fase da experiência autenticada: dashboard do participante em formato de trilha e área administrativa para usuários, treinamentos e progresso.

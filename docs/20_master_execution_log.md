@@ -4323,3 +4323,21 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Operador deve abrir a interface, autenticar e validar a atividade M02. Depois, executar a rotação da senha e prosseguir somente com recursos externos autorizados para os gates de produção.
+
+## 2026-08-11T16:32:14-03:00 — ACCESS-LOGIN-UX-23
+
+### CONTEXTO
+
+A primeira tela não orientava o participante, não explicava o primeiro acesso e apresentava somente um formulário estático. O objetivo desta task foi corrigir a entrada sem alterar o contrato server-side de autenticação.
+
+### EXECUÇÃO
+
+Foi criada uma composição de portal com narrativa de missão, mascote vetorial acessível, prévia da trilha em três etapas, painel de acesso interno, orientação de convite e botão de senha visível/oculta. A solução usa SVG/CSS local, sem fornecedor externo, imagem de terceiro, segredo ou dado clínico.
+
+### VERIFICAÇÃO
+
+O teste E2E foi escrito primeiro e falhou pela ausência da nova experiência; após a implementação passou. `pnpm --filter @cvg/web typecheck`, lint pontual, build isolado, `pnpm build`, `pnpm typecheck`, `pnpm format:check`, `pnpm verify:secrets` e `pnpm test:coverage` passaram. A suíte de cobertura passou 462 testes e 18 skips. Contra o serviço principal em `3100`, participant/accessibility passou 12/12, incluindo axe, e `/health/live` retornou 200. As capturas desktop e mobile foram inspecionadas.
+
+### DECISÃO / LIMITE
+
+O escopo desta entrega é somente a entrada. A autenticação continua por conta provisionada pela operação, com cookie HttpOnly e sem cadastro público. Mascote interativo, trilha autenticada, área de usuário e administração de usuários/treinamentos ficam registrados como próxima fase, não foram simulados nesta tela.

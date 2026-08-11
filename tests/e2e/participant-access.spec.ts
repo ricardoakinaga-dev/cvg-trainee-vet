@@ -51,6 +51,37 @@ test.describe("participant access and learning projection", () => {
     });
   });
 
+  test("presents a mission-oriented first-access screen", async ({ page }) => {
+    await page.route("**/api/v1/session", async (route) => {
+      await route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          error: { code: "unauthenticated", message: "Não autenticado." },
+        }),
+      });
+    });
+
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("heading", { name: "Entrar no treinamento" }),
+    ).toBeVisible();
+    await expect(page.getByText("Sua missão começa aqui")).toBeVisible();
+    await expect(
+      page.getByText("Acesso por convite da operação"),
+    ).toBeVisible();
+
+    const password = page.getByLabel("Senha");
+    await expect(password).toHaveAttribute("type", "password");
+    await page.getByRole("button", { name: "Mostrar senha" }).click();
+    await expect(password).toHaveAttribute("type", "text");
+    await expect(
+      page.getByRole("button", { name: "Ocultar senha" }),
+    ).toBeVisible();
+  });
+
   test("loads the learning path and starts with its next action", async ({
     page,
   }) => {
