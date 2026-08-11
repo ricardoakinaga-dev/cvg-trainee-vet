@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: fechar E2E no HA ativo, restore live e rastreabilidade da janela de remediação
+- current_task: reauditar E2E HA após isolamento do artefato Next e fechar handoff operacional
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: implementação consolidada em `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`; manifesto de rastreabilidade fixado em `9e9759310542b8f3e7a85aa1f1cc772cd41b8c5f`; VPS truth source sincronizado; imagem `cvg-trainee-vet:local` digest local `sha256:bf457dddf975ac1e6c3b6acb48d50acab6f608d006ce9af3a7fd1c3f96cac475` aplicada ao HA; API-A/API-B/workers saudáveis; canal interno loopback `3182 → Caddy:8081` validado; E2E HA ativo 2/2 com cleanup mutável em zero e auditoria append-only preservada; E2E descartável 14/14; restore live 1/1; `pnpm verify` 410 testes/17 skips e cobertura acima de 80%
+- last_completed_action: isolamento do build descartável em `.next-e2e-real` consolidado em `57ed11985312a573a3649ed48c6b15b399e7bf8f`; artefato operacional reconstruído com `CVG_API_INTERNAL_URL=3182`; web dependencies 200 após teardown; E2E HA ativo final 2/2; todos os resíduos mutáveis em zero e auditoria append-only preservada; `pnpm verify` final 412 testes/17 skips com cobertura acima de 80%; manifesto ainda aponta para o commit de implementação da janela anterior `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T10:30:00-03:00
+- last_update: 2026-08-11T10:34:43-03:00
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 
@@ -791,4 +791,4 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Pinagem do manifesto e sincronização de `/home/ricardo/vps-truth` concluídas; solicitar decisões humanas e manter o runtime em `WAITING_HUMAN_APPROVAL`.
+Build descartável isolado e reauditoria HA concluídos; atualizar o pin de rastreabilidade para `57ed11985312a573a3649ed48c6b15b399e7bf8f`, sincronizar o VPS truth source e manter `WAITING_HUMAN_APPROVAL` para os gates externos.

@@ -1833,6 +1833,7 @@ artifacts:
         "scripts/active-ha-e2e.mjs",
         "scripts/build-e2e.mjs",
         "playwright.config.ts",
+        "apps/web/next.config.ts",
         "infra/production/Dockerfile",
       ]
     tests:
@@ -1868,18 +1869,19 @@ artifacts:
         "HTTP/HTTPS/header/redirect check",
         "active HA browser E2E 2/2 through loopback 3182 → Caddy 8081",
         "active HA fixture mutable rows zero and append-only audit retained",
+        "disposable E2E build isolated in .next-e2e-real and operational web remains 200 after teardown",
         "Tempo query after restart",
         "immutable release dry-run",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 410 tests / 17 skips / coverage above 80%",
+        "pnpm verify 412 tests / 17 skips / coverage above 80%",
         "R6 quality gate and final SHA",
-        "HA image rebuilt from audited HEAD 4a5aa676939102d8598365206bf42270e9cdd19b",
+        "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9"
+    commit: "57ed11985312a573a3649ed48c6b15b399e7bf8f"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."

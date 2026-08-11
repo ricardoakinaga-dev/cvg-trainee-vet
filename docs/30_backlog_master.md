@@ -719,9 +719,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 - **item:** provar a jornada E2E contra o runtime HA ativo e fechar a limitação do proxy público/cleanup;
 - **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção;
-- **evidência:** canal loopback `127.0.0.1:3182 → Caddy:8081`, serviço web em `3100`, edge público `3180/3181`, `pnpm test:e2e:active-ha` 2/2, E2E descartável 14/14, restore live 1/1, cleanup com zero resíduos mutáveis e 11 auditorias sintéticas append-only preservadas;
+- **evidência:** canal loopback `127.0.0.1:3182 → Caddy:8081`, serviço web em `3100`, edge público `3180/3181`, build descartável isolado em `.next-e2e-real`, `pnpm test:e2e:active-ha` final 2/2, E2E descartável 14/14, restore live 1/1, web dependencies 200 após teardown, cleanup com zero resíduos mutáveis e auditoria append-only preservada;
 - **limites:** CI remoto, IdP/MFA/recovery externo, domínio/TLS gerenciado, storage externo, RPO/RTO de produção, deploy/rollback autorizado e revisão clínica continuam pendentes;
-- **próximo passo:** decisões humanas dos gates externos; o commit e a fixação do SHA já foram concluídos.
+- **próximo passo:** fixar o commit `57ed11985312a573a3649ed48c6b15b399e7bf8f` no manifesto e depois aguardar decisões humanas dos gates externos.
 
 ## REGRAS DE USO
 

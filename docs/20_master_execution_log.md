@@ -3527,3 +3527,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 A implementação foi consolidada no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`; o manifesto foi fixado no commit `9e9759310542b8f3e7a85aa1f1cc772cd41b8c5f`; o VPS truth source foi sincronizado e o status/diff final ficou limpo. Próximo passo: obter as decisões humanas dos gates de conteúdo e produção.
+
+## 2026-08-11 — REMEDIATION-E2E-ARTIFACT-ISOLATION
+
+### TIMESTAMP
+
+2026-08-11 10:34:43 -03:00
+
+### ACTION
+
+Reauditado o E2E HA após detectar que o fluxo descartável recompilava o `.next` operacional com destino `3101`. Implementado `CVG_WEB_DIST_DIR`, build descartável `.next-e2e-real`, espera de `health/dependencies` no runner e reconstrução do web operacional com API interna `3182`.
+
+### RESULT
+
+O teste de contrato passou primeiro em RED e depois em GREEN. O E2E HA final passou **2/2**; `http://127.0.0.1:3100/` e `/health/dependencies` ficaram em 200 após teardown; `3182/health/live` ficou em 200; todos os resíduos mutáveis da fixture ficaram em zero. `pnpm verify` final passou com **412 testes**, 17 skips e cobertura acima de 80%. A correção foi consolidada no commit `57ed11985312a573a3649ed48c6b15b399e7bf8f`.
+
+### LIMITES
+
+O runtime continua local/LAN/Tailscale. IdP/MFA/recovery externo, domínio/certificado gerenciado, storage externo, RPO/RTO de produção, deploy/rollback autorizado, CI remoto e revisão clínica permanecem pendentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Fixar o novo commit no manifesto, sincronizar o VPS truth source e repetir o estado final.

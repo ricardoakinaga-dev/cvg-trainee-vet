@@ -57,7 +57,7 @@ O teste de restore recebeu timeout de 60 s porque o dump/restore do catálogo HA
 ## Gates finais locais
 
 ```text
-pnpm verify                                PASS — 410 testes, 17 skips
+pnpm verify                                PASS — 412 testes, 17 skips
 coverage                                   84,85% statements / 80,07% branches
                                            86,55% functions / 85,61% lines
 pnpm build                                 PASS
@@ -74,3 +74,16 @@ A imagem local ativa é `cvg-trainee-vet:local`, digest local `sha256:bf457dddf9
 ## Limites não resolvidos como produção
 
 O gate `pnpm ops:verify-production-security` permanece explicitamente `NOT_EXECUTED` fora de ambiente aprovado. Ainda dependem de decisão/ambiente humano: provedor externo de identidade com MFA e recuperação, domínio/DNS/certificado gerenciado, storage externo de traces e backups, RPO/RTO de produção, deploy/rollback autorizado, CI remoto e revisão clínica semântica dos packs. Nenhuma prova local acima é declarada equivalente a esses gates.
+
+## Reauditoria após isolamento do build descartável
+
+O E2E descartável reconstruía anteriormente o `.next` operacional com o destino temporário `3101`. Isso fazia o serviço systemd voltar a responder 500 depois do teste, apesar de `3182` e das APIs estarem saudáveis. A correção adiciona `CVG_WEB_DIST_DIR`, usa `.next-e2e-real` no fluxo descartável e preserva `.next` para o runtime operacional. O runner também aguarda `health/dependencies` do web proxy antes do browser.
+
+```text
+fix: isolate disposable E2E build artifact       57ed11985312a573a3649ed48c6b15b399e7bf8f
+web root/dependencies após teardown              200/200
+pnpm test:e2e:active-ha                          PASS — 2/2
+fixture mutável após teardown                    0
+```
+
+O artefato operacional foi reconstruído com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` e o serviço web permaneceu saudável depois da execução. Esta correção elimina a interferência local entre o E2E descartável e o runtime HA; não altera os limites de produção listados acima.
