@@ -65,6 +65,8 @@ export interface InvitationAccountPort {
     input: Readonly<{
       readonly accountId: string;
       readonly professionalEmail: string;
+      readonly roles?: readonly Role[];
+      readonly scopes?: readonly string[];
     }>,
   ) => Promise<void>;
   readonly activate: (accountId: string) => Promise<void>;
@@ -188,7 +190,12 @@ export async function createInvitation(
 
   try {
     await dependencies.transaction.run(async (operations) => {
-      await operations.account.createInvited({ accountId, professionalEmail });
+      await operations.account.createInvited({
+        accountId,
+        professionalEmail,
+        roles: command.invitedRoles,
+        scopes: command.invitedScopes,
+      });
       await operations.invitation.create(record);
       await operations.audit.append(
         createAuditEntry({

@@ -1,5 +1,9 @@
 # 0490 — Audit Report (registro histórico do recorte)
 
+## Reauditoria vigente
+
+A janela local de 2026-08-11 está registrada em 0509_current_worktree_audit_2026-08-11.md. Ela supersede as conclusões operacionais desta página para o worktree atual e mantém 0491 como histórico da janela anterior.
+
 > **Atualização de continuidade:** este arquivo preserva o relatório scoped produzido antes da reexecução final. O relatório vigente, com a leitura completa da documentação, verificação da construção e matriz de notas 0–100, está em [`0491_full_construction_audit.md`](0491_full_construction_audit.md). Os resultados históricos de `pnpm verify`/`pnpm build` abaixo não devem ser tratados como evidência atual até que sejam reexecutados no mesmo artefato congelado.
 
 **Status histórico do recorte:** `PASS_WITH_GAPS; AUDITORIA SCOPED F3-S3 + COMPLEMENTOS F3-S4/F3-S5/F3-S6/F3-S7/F3-S8; RELEASE NÃO APROVADO`  

@@ -42,13 +42,19 @@ describe("content editorial state machine", () => {
     ).toThrow("status");
   });
 
-  it("publishes through source verification without a clinical approval gate", () => {
+  it("requires clinical review and explicit authorization before publication", () => {
     const draft = createContent(contentInput);
     const autoVerified = transitionContent(draft, { type: "AUTOVERIFICAR" });
     const projectionVerified = transitionContent(autoVerified, {
       type: "VERIFICAR_PROJECAO",
     });
-    const authorized = transitionContent(projectionVerified, {
+    const inReview = transitionContent(projectionVerified, {
+      type: "ENVIAR_PARA_REVISAO_CLINICA",
+    });
+    const clinicallyApproved = transitionContent(inReview, {
+      type: "APROVAR_CLINICAMENTE",
+    });
+    const authorized = transitionContent(clinicallyApproved, {
       type: "AUTORIZAR_PUBLICACAO",
     });
     const published = transitionContent(authorized, { type: "PUBLICAR" });
@@ -56,24 +62,22 @@ describe("content editorial state machine", () => {
     expect(published.status).toBe("PUBLICADO");
   });
 
-  it("publishes a source-verified draft through the automatic publication event", () => {
+  it("rejects automatic publication without a clinical decision", () => {
     const draft = createContent(contentInput);
-    const published = transitionContent(draft, {
-      type: "PUBLICAR_AUTOMATICAMENTE",
-    });
-
-    expect(published.status).toBe("PUBLICADO");
-    expect(Object.isFrozen(published)).toBe(true);
+    expect(() =>
+      transitionContent(draft, { type: "PUBLICAR_AUTOMATICAMENTE" }),
+    ).toThrow(ContentDomainError);
   });
 
-  it("does not expose human clinical review transitions", () => {
+  it("exposes explicit clinical review transitions", () => {
     const draft = createContent(contentInput);
-
-    expect(() =>
-      transitionContent(draft, {
-        type: "APROVAR_CLINICAMENTE" as never,
-      }),
-    ).toThrow(ContentDomainError);
+    const inReview = transitionContent(
+      transitionContent(draft, { type: "AUTOVERIFICAR" }),
+      { type: "ENVIAR_PARA_REVISAO_CLINICA" },
+    );
+    expect(
+      transitionContent(inReview, { type: "SOLICITAR_AJUSTES" }).status,
+    ).toBe("AJUSTES_SOLICITADOS");
   });
 
   it("does not permit publication or withdrawal out of order", () => {
@@ -91,6 +95,8 @@ describe("content editorial state machine", () => {
     const published = [
       "AUTOVERIFICAR",
       "VERIFICAR_PROJECAO",
+      "ENVIAR_PARA_REVISAO_CLINICA",
+      "APROVAR_CLINICAMENTE",
       "AUTORIZAR_PUBLICACAO",
       "PUBLICAR",
     ].reduce(

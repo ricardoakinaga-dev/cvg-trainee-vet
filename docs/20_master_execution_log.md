@@ -3247,3 +3247,235 @@ Evidência é local e sintética. Não há domínio público/TLS, provedor de id
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-08-10 — ACCESS-BOOTSTRAP-20: convite inicial de acesso emitido
+
+### TIMESTAMP
+
+2026-08-10 13:05:00 -03:00
+
+### ACTION
+
+Provisionado o primeiro convite interno sintético no PostgreSQL ativo, após confirmação de identity store vazio. A conta `ricardo@cvg.internal` recebeu somente `PARTICIPANT`, com validade de sete dias e aceite único. O token em claro foi entregue apenas ao operador e não foi persistido em arquivo, log, banco ou Git.
+
+### EVIDENCE
+
+Consulta redigida confirmou 1 convite ativo não aceito, 1 convite expirado da tentativa transitória anterior, 1 conta convidada e auditoria append-only registrada. O caminho de aceite continua sendo `POST /api/v1/invitations/accept`, seguido de sessão server-side em cookie HttpOnly.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Operador deve acessar `http://localhost:3100/` e usar o token uma única vez; após o aceite, validar a jornada apresentada e o estado de sessão.
+
+## 2026-08-10 — ACCESS-LOGIN-JOURNEY-21: login por e-mail/senha e jornada inicial corrigidos
+
+### TIMESTAMP
+
+2026-08-10 13:40:33 -03:00
+
+### ENGINE
+
+BUILD / TDD / SECURITY REVIEW / RUNTIME CONTROLLER
+
+### ACTION
+
+Substituída a entrada visual por convite por login com e-mail profissional e senha. O backend passou a oferecer login com hash scrypt, sessão server-side em cookie `__Host-cvg_session`, restauração de sessão, troca autenticada de senha e auditoria sem credencial. A migração aditiva `0015_lonely_shooting_star.sql` foi aplicada no PostgreSQL ativo. O seed operacional existente do currículo publicou a projeção M02 e atribuiu a atividade ao participante interno; nenhum conteúdo novo foi inventado neste passo.
+
+### EVIDENCE
+
+`pnpm build` passou nos 12 workspaces; testes direcionados de autenticação/API/contratos passaram 49/49; E2E web passou 12/12; navegador contra o runtime real confirmou login 200, sessão 200, jornada 200, uma atividade atribuída e ausência do estado vazio. A RLS recusou uma tentativa de escrita do usuário de aplicação e o seed foi executado somente pelo job administrativo de migração.
+
+### LIMITS
+
+O ambiente continua local/LAN/Tailscale. Recuperação externa e MFA continuam `NOT_CONFIGURED`; o login local usa somente hash, não senha em claro. A jornada de 24 meses permanece modelada no currículo, mas a atribuição operacional inicial deste ambiente é M02.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Usar as credenciais transitórias entregues diretamente ao operador, trocar a senha em fluxo autenticado e, quando houver provedor externo autorizado, migrar a identidade sem alterar a projeção de aprendizagem.
+
+## 2026-08-10 — ACCESS-LOGIN-VERIFY-23: gates finais aprovados localmente
+
+### TIMESTAMP
+
+2026-08-10 13:49:16 -03:00
+
+### ACTION
+
+Reconstruído o web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3180`, reiniciado o serviço e repetidos os gates de qualidade e o navegador contra o runtime ativo.
+
+### EVIDENCE
+
+Formato, lint, typecheck, scanner de segredos, cobertura e build passaram. A cobertura final foi 392 testes passantes, 17 skips, 84,98% statements / 80,13% branches / 86,50% functions / 85,71% lines. O navegador confirmou login, M02 — Emergência e terapia intensiva, 33 cartões, `Iniciar tentativa` e ausência de `empty-state`; o serviço systemd permaneceu ativo em `3100`. `git diff --check` passou.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Operador deve usar o acesso transitório fornecido na conversa. Não há credencial em claro no repositório; a rotação de senha na superfície de conta e os limites de MFA/recuperação permanecem explicitamente pendentes.
+
+## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
+
+### TIMESTAMP
+
+2026-08-11 06:33:36 -03:00
+
+### ENGINE
+
+AUDIT / SECURITY REVIEW / RUNTIME CONTROLLER
+
+### PHASE
+
+AUDIT — reauditoria do worktree e do runtime local
+
+### TASK
+
+AUD-2026-08-11-WORKTREE-LOGIN / ler BRIEFING e docs, verificar construção, runtime, testes, segurança e retornar notas por item
+
+### ACTION
+
+Lidos os gates, PRD, SPEC, BUILD, AUDIT, estado, log, backlog e documentação operacional. Reexecutados verify, build, E2E sintético, smoke HTTP, smoke de carga controlado, topologia HA, audit de dependências, secret scan, diff-check e consulta agregada do PostgreSQL ativo. Tentado E2E real com fixture sintético.
+
+### RESULT
+
+Nota ponderada: 86/100. verify, build, E2E sintético 12/12, audit, secrets, HA topology e smoke HTTP passaram. O E2E real falhou antes do navegador porque o fixture tentou inserir activity_assignments com usuário sujeito a RLS. O smoke default também tem defeito de parsing no timeout 5_000. O runtime foi restaurado saudável e os registros sintéticos foram removidos, preservando auditoria append-only.
+
+### DECISIONS
+
+Nenhuma credencial ou dado clínico real foi registrado. Release, piloto e publicação clínica permanecem não aprovados. O worktree não foi commitado nem alterado em código nesta auditoria; a remediação do fixture/RLS, do contrato de build e do load smoke depende da próxima decisão humana.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Decidir a remediação, criar commit intencional com rastreabilidade completa e repetir a auditoria no mesmo SHA.
+
+## 2026-08-11 — REMEDIATION-PROJECT-01
+
+### TIMESTAMP
+
+2026-08-11 06:57:49 -03:00
+
+### ENGINE
+
+BUILD / SECURITY REVIEW / TDD / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — PHASE R, projeto de remediação integral
+
+### TASK
+
+R0-S1 / estruturar o projeto para resolver todas as limitações da auditoria 0509
+
+### ACTION
+
+Criado BRIEFING/03.BUILD/0303_remediation_program.md e ligado o plano ao roadmap 0301 e backlog 0302. O projeto cobre R0 controle de mudança, R1 E2E/RLS, R2 currículo/conteúdo, R3 identidade/MFA/recovery, R4 TLS/headers, R5 traces/deploy/rollback/restore e R6 load smoke/auditoria/commit.
+
+### RESULT
+
+Cada fase recebeu dependências, teste RED/GREEN, aceite, rollback e evidência. As decisões de provedor de identidade, domínio/DNS/TLS, backend de traces, storage de backup e ambiente de deploy foram marcadas como humanas; R0/R1/R2/R6 podem avançar localmente com dados sintéticos.
+
+### DECISIONS
+
+Não foi declarado que um adapter HTTP, um volume local ou um teste sintético equivalem a MFA, produção, traces duráveis ou restore de produção. PostgreSQL continua fonte de verdade, RLS continua deny-by-default e conteúdo não revisado não será publicado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar R0-S1 e iniciar R1-S1/R1-S2 em TDD; obter as decisões externas antes de fechar R3–R5.
+
+## 2026-08-11 — REMEDIATION-R1
+
+### TIMESTAMP
+
+2026-08-11 07:22:00 -03:00
+
+### ACTION
+
+Separados os papéis do E2E real: `CVG_REAL_E2E_DATABASE_URL` para a API e `CVG_REAL_E2E_ADMIN_DATABASE_URL` para seed/cleanup. O fixture passou a ativar a conta sintética antes do login. O parser do load smoke foi centralizado em módulo configurável e testável, com timeout default numérico.
+
+### RESULT
+
+Em banco PostgreSQL efêmero, com papel da API `NOSUPERUSER=false` e `BYPASSRLS=false`, o E2E real passou **14/14** cenários. O load smoke sem override explícito passou **200/200**, com 100% de sucesso. `pnpm verify` passou com **396 testes**, 17 skips condicionais e cobertura global de **85,01% statements / 80,19% branches / 86,52% functions / 85,74% lines**; `pnpm build` também passou.
+
+### LIMITES
+
+R1 não prova produção, MFA, TLS, traces duráveis, restore operacional nem revisão clínica. O banco efêmero e os papéis transitórios foram removidos ao final; o serviço web local foi restaurado saudável.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar R2-S1 em banco descartável, materializando o catálogo/authoring de 24 meses de forma idempotente e mantendo conteúdo não revisado fora de `PUBLICADO`.
+
+## 2026-08-11 — REMEDIATION-R2-R5-LOCAL
+
+### TIMESTAMP
+
+2026-08-11 08:32:01 -03:00
+
+### ACTION
+
+Executada a materialização idempotente dos 24 módulos no banco ativo sintético; aplicada a revisão do caminho de publicação para exigir aprovação clínica independente; configurado fail-closed para identidade externa; recriada a imagem Docker após corrigir o parser de variáveis opcionais; ativados edge HTTPS interno, headers, Tempo e exportação OTLP; adicionados preflight de release/rollback e backup PostgreSQL com checksum.
+
+### RESULT
+
+A materialização produziu 24 atividades, 796 versões de conteúdo, 796 registros editoriais, 796 itens, 24 atribuições e 24 estados curriculares; o rerun produziu zero inserts. Os estados ficaram `PENDENTE`/`INICIAR_BASELINE`, as atribuições `NAO_ATRIBUIDO`, 23 atividades novas `WITHDRAWN` e nenhuma publicação nova. A fatia M02 publicada preexistente foi preservada. A imagem reconstruída iniciou api-a/api-b/worker-a/worker-b saudáveis e a borda respondeu health 200.
+
+`pnpm ops:verify-ha`, `pnpm ops:verify-edge-security`, `pnpm ops:verify-durable-traces` com restart, `pnpm ops:load-smoke`, manifest/release dry-runs e backup sintético passaram. O load observado foi 200/200, 100%, p95 76,68 ms. O trace sintético permaneceu consultável após restart do Tempo em `tempo-data`.
+
+### DECISIONS
+
+O incidente da imagem stale foi tratado como falha de rollout e não como mudança de contrato: o código fonte e a imagem foram alinhados antes da promoção local. A prova de Tempo em volume local não é declarada como storage de produção; `NOT_CONFIGURED` não é declarado como MFA; TLS interno não é declarado como domínio público; conteúdo `PROJECAO_VERIFICADA` não é declarado como aprovado clinicamente.
+
+### STATUS
+
+IN_PROGRESS / WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar R6-S3: diff-check, revisão do manifesto, commit convencional e reauditoria no SHA. Depois solicitar as decisões humanas sobre revisão clínica, provedor MFA, domínio/certificado, storage, backup e ambiente autorizado de deploy.
+
+## 2026-08-11 — REMEDIATION-R6-QUALITY
+
+### TIMESTAMP
+
+2026-08-11 08:52:00 -03:00
+
+### ACTION
+
+Reexecutado o quality gate após as correções do teste de catálogo, cobertura, secret scan e wrapper de restore. Repetidos build, E2E real em PostgreSQL efêmero com papel de API separado, restore isolado, audit de dependências, edge/TLS, tracing após restart, load smoke e health do web service.
+
+### RESULT
+
+`pnpm verify` passou com **406 testes**, 17 skips condicionais e cobertura **84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines**. `pnpm build`, `pnpm audit --audit-level=high`, `pnpm test:integration:restore` (marcador isolado, RTO 557 ms), E2E real (14/14), edge/TLS (HTTP 200, HTTPS 200, redirect 308), Tempo após restart e load smoke (200/200, p95 63,60 ms) passaram.
+
+Foi identificado e corrigido o contrato de build-time do Next: o E2E recompõe a aplicação com `:3101` por default, enquanto o serviço web local usa `:3180`; o web foi recompilado com `CVG_API_INTERNAL_URL=http://127.0.0.1:3180`, reiniciado e voltou a health 200.
+
+### LIMITES
+
+O código está tecnicamente verificável localmente, mas não há aprovação clínica dos 796 itens, provedor externo de MFA/recovery, domínio/certificado gerenciado, storage externo de traces/backups, promoção real de release ou piloto. Esses gates permanecem humanos e não são substituídos pelos testes sintéticos.
+
+### STATUS
+
+READY_FOR_NEXT_STEP / WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Revisar o diff, criar o commit convencional, atualizar o manifesto para o SHA e repetir a auditoria no mesmo SHA. Em seguida, aguardar as decisões humanas de produção e conteúdo.

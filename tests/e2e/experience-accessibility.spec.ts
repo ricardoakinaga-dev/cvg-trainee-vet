@@ -1,7 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const invitationToken = "a".repeat(32);
+const loginEmail = "participant@cvg.example";
+const loginCredential = "Acesso-" + "CVG-2026!Seguro";
 
 function successEnvelope(data: unknown) {
   return {
@@ -25,11 +26,15 @@ test.describe("web experience and accessibility contract", () => {
     await page.keyboard.press("Enter");
     await expect(page.locator("main#main-content")).toBeFocused();
     await expect(
-      page.getByRole("heading", { name: "Acesso interno" }),
+      page.getByRole("heading", { name: "Entrar no treinamento" }),
     ).toBeVisible();
-    await expect(page.getByLabel("Token de convite")).toHaveAttribute(
+    await expect(page.getByLabel("E-mail profissional")).toHaveAttribute(
       "aria-describedby",
-      "invitation-help",
+      "login-help",
+    );
+    await expect(page.getByLabel("Senha")).toHaveAttribute(
+      "aria-describedby",
+      "password-help",
     );
 
     const duplicateIds = await page.evaluate(() => {
@@ -44,10 +49,10 @@ test.describe("web experience and accessibility contract", () => {
   test("renders an accessible loading state and recovers through retry", async ({
     page,
   }) => {
-    let invitationAttempts = 0;
-    await page.route("**/api/v1/invitations/accept", async (route) => {
-      invitationAttempts += 1;
-      if (invitationAttempts === 1) {
+    let loginAttempts = 0;
+    await page.route("**/api/v1/auth/login", async (route) => {
+      loginAttempts += 1;
+      if (loginAttempts === 1) {
         await new Promise((resolve) => setTimeout(resolve, 150));
         await route.fulfill({
           status: 503,
@@ -83,13 +88,14 @@ test.describe("web experience and accessibility contract", () => {
     });
 
     await page.goto("/");
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    const activation = page.getByRole("button", { name: "Ativar acesso" });
-    const activationRequest = activation.click();
+    await page.getByLabel("E-mail profissional").fill(loginEmail);
+    await page.getByLabel("Senha").fill(loginCredential);
+    const loginButton = page.getByRole("button", { name: "Entrar" });
+    const loginRequest = loginButton.click();
     await expect(page.getByTestId("loading-state")).toHaveText(
       "Atualizando seu treinamento…",
     );
-    await activationRequest;
+    await loginRequest;
 
     await expect(page.locator("p[role=alert]")).toContainText(
       "Não foi possível concluir a operação.",
@@ -105,7 +111,7 @@ test.describe("web experience and accessibility contract", () => {
   test("shows an explicit empty journey and refresh action", async ({
     page,
   }) => {
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -129,8 +135,9 @@ test.describe("web experience and accessibility contract", () => {
     });
 
     await page.goto("/");
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await page.getByLabel("E-mail profissional").fill(loginEmail);
+    await page.getByLabel("Senha").fill(loginCredential);
+    await page.getByRole("button", { name: "Entrar" }).click();
 
     await expect(page.getByTestId("empty-state")).toBeVisible();
     await expect(
@@ -145,9 +152,10 @@ test.describe("web experience and accessibility contract", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { name: "Acesso interno" }),
+      page.getByRole("heading", { name: "Entrar no treinamento" }),
     ).toBeVisible();
-    await expect(page.getByLabel("Token de convite")).toBeVisible();
+    await expect(page.getByLabel("E-mail profissional")).toBeVisible();
+    await expect(page.getByLabel("Senha")).toBeVisible();
     const horizontalOverflow = await page.evaluate(
       () =>
         document.documentElement.scrollWidth >

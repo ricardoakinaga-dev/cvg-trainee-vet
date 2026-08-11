@@ -115,24 +115,31 @@ it("projects M02 without internal source, answer-key, or rubric fields", () => {
   );
 });
 
-it("prepares M02 persistence rows after automatic source verification", () => {
-  const seed = createM02ContentSeed("44444444-4444-4444-8444-444444444444");
-
-  expect(seed.activity.status).toBe("PUBLISHED");
-  expect(seed.contentVersions).toHaveLength(33);
-  expect(seed.activityItems).toHaveLength(33);
+it("prepares M02 persistence rows without publishing them", () => {
+  const draft = createM02ContentSeed("44444444-4444-4444-8444-444444444444");
+  expect(draft.activity.status).toBe("WITHDRAWN");
   expect(
-    seed.contentVersions.every((content) => content.status === "PUBLICADO"),
+    draft.contentVersions.every(
+      (content) => content.status === "PROJECAO_VERIFICADA",
+    ),
+  ).toBe(true);
+
+  expect(draft.contentVersions).toHaveLength(33);
+  expect(draft.activityItems).toHaveLength(33);
+  expect(
+    draft.contentVersions.every(
+      (content) => content.status === "PROJECAO_VERIFICADA",
+    ),
   ).toBe(true);
   expect(
-    seed.contentVersions.some(
+    draft.contentVersions.some(
       (content) =>
         content.responseMode === "CHOICE" &&
         content.participantOptions !== undefined &&
         content.participantSelectionMode === "MULTIPLE",
     ),
   ).toBe(true);
-  expect(JSON.stringify(seed)).not.toMatch(
+  expect(JSON.stringify(draft)).not.toMatch(
     /source|chapter|page|answer|rubric|critical|pdf/iu,
   );
 });

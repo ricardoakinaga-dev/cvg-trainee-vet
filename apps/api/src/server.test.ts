@@ -59,6 +59,13 @@ describe("API node server adapter", () => {
     expect(routeTemplate("POST", "/api/v1/invitations/accept")).toBe(
       "/api/v1/invitations/accept",
     );
+    expect(routeTemplate("POST", "/api/v1/auth/login")).toBe(
+      "/api/v1/auth/login",
+    );
+    expect(routeTemplate("GET", "/api/v1/session")).toBe("/api/v1/session");
+    expect(routeTemplate("POST", "/api/v1/account/password")).toBe(
+      "/api/v1/account/password",
+    );
     expect(routeTemplate("POST", "/api/v1/session/revoke")).toBe(
       "/api/v1/session/revoke",
     );

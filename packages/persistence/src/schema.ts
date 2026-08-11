@@ -114,6 +114,15 @@ export const accounts = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     professionalEmail: text("professional_email").notNull().unique(),
     status: text("status").notNull().default("INVITED"),
+    passwordHash: text("password_hash"),
+    roles: jsonb("roles")
+      .$type<readonly string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    scopes: jsonb("scopes")
+      .$type<readonly string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

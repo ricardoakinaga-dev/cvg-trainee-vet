@@ -12,10 +12,15 @@ const sourceUrl =
   process.env.CVG_RESTORE_SOURCE_DATABASE_URL ??
   process.env.CVG_TEST_DATABASE_URL;
 const dockerContainer = process.env.CVG_RESTORE_DOCKER_CONTAINER?.trim();
+let currentStage = "parse-source";
 
 function fail() {
   console.error(
-    JSON.stringify({ status: "FAIL", code: "restore_verification_failed" }),
+    JSON.stringify({
+      status: "FAIL",
+      code: "restore_verification_failed",
+      stage: currentStage,
+    }),
   );
   process.exit(1);
 }
@@ -75,6 +80,13 @@ function connectionArgs(connection, database = connection.database) {
     "-d",
     database,
   ];
+}
+
+function administrativeConnectionArgs(connection) {
+  if (dockerContainer !== undefined) {
+    return ["-U", connection.user];
+  }
+  return ["-h", connection.host, "-p", connection.port, "-U", connection.user];
 }
 
 function commandEnvironment(connection) {
@@ -144,6 +156,7 @@ async function main() {
   let targetCreated = false;
 
   try {
+    currentStage = "create-marker";
     await checked(
       commandFor("psql", [
         ...connectionArgs(connection),
@@ -156,6 +169,7 @@ async function main() {
     );
     markerCreated = true;
 
+    currentStage = "backup";
     const startedAt = Date.now();
     const dump = await runCommand(
       commandFor("pg_dump", [
@@ -168,11 +182,10 @@ async function main() {
     );
     if (dump.code !== 0) throw new Error("backup command failed");
 
+    currentStage = "create-target";
     const createTarget = await runCommand(
       commandFor("createdb", [
-        ...connectionArgs(connection, "postgres").filter(
-          (argument) => argument !== "-d" && argument !== "postgres",
-        ),
+        ...administrativeConnectionArgs(connection),
         targetDatabase,
       ]),
       { env: commandEnvironment(connection) },
@@ -181,6 +194,7 @@ async function main() {
       throw new Error("target database creation failed");
     targetCreated = true;
 
+    currentStage = "restore";
     const restore = await runCommand(
       commandFor(
         "pg_restore",
@@ -196,6 +210,7 @@ async function main() {
     );
     if (restore.code !== 0) throw new Error("restore command failed");
 
+    currentStage = "verify-marker";
     const markerCount = await checked(
       commandFor("psql", [
         ...connectionArgs(connection, targetDatabase),
@@ -222,9 +237,7 @@ async function main() {
     if (targetCreated) {
       await runCommand(
         commandFor("dropdb", [
-          ...connectionArgs(connection, "postgres").filter(
-            (argument) => argument !== "-d" && argument !== "postgres",
-          ),
+          ...administrativeConnectionArgs(connection),
           "--if-exists",
           targetDatabase,
         ]),

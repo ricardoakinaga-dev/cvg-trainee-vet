@@ -1,5 +1,9 @@
 # 0412 — Runtime Analysis
 
+## Reauditoria vigente — 2026-08-11
+
+Runtime local observável: web em 3100, edge em 3180, API/worker replicados, PostgreSQL, Qdrant, collector, Prometheus e Grafana saudáveis. Liveness, readiness, dependencies e rotas protegidas responderam conforme esperado. A base ativa contém 1 conta, 1 atividade publicada, 1 atribuição, 33 itens e 0 curriculum_runtime_states. A evidência é sintética e local; o E2E real foi interrompido no seed por RLS.
+
 Resultado: PARTIAL — F3-S3 + complementos F3-S4/F3-S5/F3-S6/F3-S7/F3-S8.
 
 ## Perguntas obrigatórias

@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { eq, inArray } from "drizzle-orm";
 
 import { createInvitation } from "../packages/application/dist/invitation-use-cases.js";
+import { hashPassword } from "../packages/application/dist/password-auth.js";
 import { createPostgresDatabase } from "../packages/persistence/dist/database.js";
 import { createInvitationUseCaseDependencies } from "../packages/persistence/dist/invitation-repository.js";
 import {
@@ -23,26 +24,44 @@ import {
   sessions,
 } from "../packages/persistence/dist/schema.js";
 
-const databaseUrl =
-  process.env.DATABASE_URL ?? process.env.CVG_TEST_DATABASE_URL;
+const applicationDatabaseUrl =
+  process.env.CVG_REAL_E2E_DATABASE_URL ??
+  process.env.DATABASE_URL ??
+  process.env.CVG_TEST_DATABASE_URL;
+const adminDatabaseUrl = process.env.CVG_REAL_E2E_ADMIN_DATABASE_URL;
 const fixtureFile =
   process.env.CVG_REAL_E2E_FIXTURE_FILE ?? "/tmp/cvg-real-e2e-fixture.json";
 const port = Number(process.env.CVG_REAL_E2E_FIXTURE_PORT ?? "3102");
 
-if (databaseUrl === undefined) {
-  throw new Error("DATABASE_URL or CVG_TEST_DATABASE_URL is required");
+if (applicationDatabaseUrl === undefined) {
+  throw new Error(
+    "CVG_REAL_E2E_DATABASE_URL, DATABASE_URL or CVG_TEST_DATABASE_URL is required",
+  );
+}
+if (adminDatabaseUrl === undefined) {
+  throw new Error(
+    "CVG_REAL_E2E_ADMIN_DATABASE_URL is required for fixture seed and cleanup",
+  );
+}
+const applicationRole = new URL(applicationDatabaseUrl).username;
+const adminRole = new URL(adminDatabaseUrl).username;
+if (applicationRole === adminRole) {
+  throw new Error(
+    "fixture admin connection must use a role different from the API connection",
+  );
 }
 if (!Number.isInteger(port) || port < 1 || port > 65_535) {
   throw new Error("CVG_REAL_E2E_FIXTURE_PORT is invalid");
 }
 
-const database = createPostgresDatabase(databaseUrl);
+const database = createPostgresDatabase(adminDatabaseUrl);
 const adminId = randomUUID();
 const scopeId = randomUUID();
 const activityId = randomUUID();
 const contentId = randomUUID();
 const contentVersionId = randomUUID();
 const token = randomBytes(32).toString("base64url");
+const participantPassword = randomBytes(18).toString("base64url");
 let participantId;
 let closed = false;
 
@@ -53,13 +72,14 @@ async function seed() {
     status: "ACTIVE",
   });
 
+  const participantEmail = `real-e2e-participant-${activityId}@cvg.example`;
   const invitation = await createInvitation(
     {
       principalId: adminId,
       accountStatus: "ACTIVE",
       roles: ["ADMIN"],
       scopes: [scopeId],
-      professionalEmail: `real-e2e-participant-${activityId}@cvg.example`,
+      professionalEmail: participantEmail,
       invitedRoles: ["PARTICIPANT"],
       invitedScopes: [scopeId],
       expiresInSeconds: 3600,
@@ -69,6 +89,13 @@ async function seed() {
     createInvitationUseCaseDependencies(database.db, randomUUID),
   );
   participantId = invitation.accountId;
+  await database.db
+    .update(accounts)
+    .set({
+      passwordHash: await hashPassword(participantPassword),
+      status: "ACTIVE",
+    })
+    .where(eq(accounts.id, participantId));
 
   await database.db.insert(contentVersions).values({
     id: contentVersionId,
@@ -101,7 +128,12 @@ async function seed() {
 
   await writeFile(
     fixtureFile,
-    JSON.stringify({ token, activityId, itemId: contentVersionId }),
+    JSON.stringify({
+      login: participantEmail,
+      password: participantPassword,
+      activityId,
+      itemId: contentVersionId,
+    }),
     "utf8",
   );
 }

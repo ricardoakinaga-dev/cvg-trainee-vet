@@ -4,6 +4,7 @@ import {
   b07DiagnosticDraftPack,
   buildPersonalizedCurriculumPath,
   curriculumDraftPacks,
+  createInitialModuleEvaluation,
   evaluateDiagnosticAttempt,
   evaluateModuleAttempt,
   getModuleDraftPack,
@@ -21,15 +22,34 @@ import {
 } from "./projection.js";
 
 describe("curriculum learning runtime", () => {
-  it("materializes complete production packs for all 24 modules", () => {
+  it("creates an honest not-started state without mastery or score", () => {
+    expect(createInitialModuleEvaluation("M01")).toEqual({
+      moduleId: "M01",
+      status: "PENDENTE",
+      nextAction: "INICIAR_BASELINE",
+      objectiveResults: [],
+      remediationObjectiveIds: [],
+      criticalErrorItemIds: [],
+      invalidAnswerItemIds: [],
+      unansweredChoiceItemIds: [],
+      openResponseItemIds: [],
+      retentionReviews: [],
+      practicalCompetenceClaim: "PROIBIDO_MVP",
+    });
+    expect(() => createInitialModuleEvaluation("M25")).toThrow(
+      "moduleId is invalid",
+    );
+  });
+
+  it("materializes complete technical draft packs for all 24 modules", () => {
     expect(curriculumDraftPacks).toHaveLength(24);
     expect(
-      curriculumDraftPacks.every((pack) => pack.status === "PUBLICADO"),
+      curriculumDraftPacks.every((pack) => pack.status === "RASCUNHO"),
     ).toBe(true);
     expect(
       curriculumDraftPacks.every(
         (pack) =>
-          pack.publicationAuthorized === true &&
+          pack.publicationAuthorized === false &&
           pack.sourceVerification === "VERIFICADO_AUTOMATICAMENTE" &&
           pack.items.length >= 31 &&
           pack.items.every(
@@ -53,21 +73,21 @@ describe("curriculum learning runtime", () => {
     ).toBe(true);
   });
 
-  it("ships all 24 modules and B-07 as automatically source-verified production content", () => {
+  it("keeps all 24 modules and B-07 behind human clinical publication", () => {
     expect(curriculumDraftPacks).toHaveLength(24);
     expect(
       curriculumDraftPacks.every(
         (pack) =>
-          pack.status === "PUBLICADO" &&
-          pack.publicationAuthorized &&
+          pack.status === "RASCUNHO" &&
+          !pack.publicationAuthorized &&
           pack.publicProjectionReady &&
-          !pack.clinicalReviewRequired,
+          pack.clinicalReviewRequired,
       ),
     ).toBe(true);
-    expect(b07DiagnosticDraftPack.status).toBe("PUBLICADO");
-    expect(b07DiagnosticDraftPack.publicationAuthorized).toBe(true);
+    expect(b07DiagnosticDraftPack.status).toBe("RASCUNHO");
+    expect(b07DiagnosticDraftPack.publicationAuthorized).toBe(false);
     expect(b07DiagnosticDraftPack.publicProjectionReady).toBe(true);
-    expect(b07DiagnosticDraftPack.clinicalReviewRequired).toBe(false);
+    expect(b07DiagnosticDraftPack.clinicalReviewRequired).toBe(true);
   });
 
   it("keeps M02 authored questions while giving the other modules versioned drafts", () => {
@@ -191,7 +211,7 @@ describe("curriculum learning runtime", () => {
     });
   });
 
-  it("projects every production pack safely and seeds it as published content", () => {
+  it("projects every draft pack safely without publishing it", () => {
     const scopeId = "44444444-4444-4444-8444-444444444444";
     const projections = curriculumDraftPacks.map((pack) =>
       toParticipantActivityFromDraft(pack),
@@ -212,7 +232,7 @@ describe("curriculum learning runtime", () => {
       seeds.every(
         (seed) =>
           seed.contentVersions.every(
-            (content) => content.status === "PUBLICADO",
+            (content) => content.status === "PROJECAO_VERIFICADA",
           ) &&
           seed.contentVersions.every(
             (content) =>
@@ -253,9 +273,11 @@ describe("curriculum learning runtime", () => {
       "44444444-4444-4444-8444-444444444444",
     );
     expect(projection.items).toHaveLength(120);
-    expect(seed.activity.status).toBe("PUBLISHED");
+    expect(seed.activity.status).toBe("WITHDRAWN");
     expect(
-      seed.contentVersions.every((item) => item.status === "PUBLICADO"),
+      seed.contentVersions.every(
+        (item) => item.status === "PROJECAO_VERIFICADA",
+      ),
     ).toBe(true);
     expect(JSON.stringify(projection)).not.toMatch(
       /source|answer|rubric|critical|blueprint|pdf/iu,
@@ -282,7 +304,7 @@ describe("curriculum learning runtime", () => {
     expect(result.globalScorePercent).toBeUndefined();
   });
 
-  it("passes the technical preflight and releases source-verified content", () => {
+  it("passes the technical preflight but blocks publication pending review", () => {
     const report = preflightCurriculumDrafts();
 
     expect(report.modules).toHaveLength(24);
@@ -293,8 +315,8 @@ describe("curriculum learning runtime", () => {
       technicalChecksPassed: true,
     });
     expect(report.allTechnicalChecksPassed).toBe(true);
-    expect(report.clinicalApprovalPending).toBe(false);
-    expect(report.readyForPublication).toBe(true);
+    expect(report.clinicalApprovalPending).toBe(true);
+    expect(report.readyForPublication).toBe(false);
     expect(
       report.modules.every(
         (module) =>
@@ -302,7 +324,7 @@ describe("curriculum learning runtime", () => {
           module.checks.requiredFields &&
           module.checks.correctionMetadata &&
           module.checks.publicBoundary &&
-          !module.checks.publicationBlocked,
+          module.checks.publicationBlocked,
       ),
     ).toBe(true);
   });

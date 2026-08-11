@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ModuleEvaluationResult } from "@cvg/curriculum";
+import { createInitialModuleEvaluation } from "@cvg/curriculum";
 
 import type { ParticipantLearningJourneyState } from "./journey-use-cases.js";
 import { buildParticipantDashboard } from "./dashboard-use-cases.js";
@@ -45,6 +46,32 @@ describe("participant dashboard use case", () => {
     });
     expect(JSON.stringify(dashboard)).not.toContain("sourceRefs");
     expect(JSON.stringify(dashboard)).not.toContain("correctChoiceIds");
+  });
+
+  it("does not present draft curriculum as available or mastered", () => {
+    const dashboard = buildParticipantDashboard({
+      participantId: state.participantId,
+      assignments: [],
+      activities: [],
+      results: [],
+      runtimes: [
+        {
+          participantId: state.participantId,
+          scopeId: "scope-1",
+          version: 1,
+          updatedAt: "2026-08-11T00:00:00.000Z",
+          evaluation: createInitialModuleEvaluation("M01"),
+        },
+      ],
+      nextAction: "AGUARDAR_PUBLICACAO",
+    });
+
+    expect(dashboard.roadmap[0]).toMatchObject({
+      status: "AGUARDANDO_PUBLICACAO",
+      nextAction: "AGUARDAR_PUBLICACAO",
+    });
+    expect(dashboard.completedModules).toBe(0);
+    expect(dashboard.activeModuleId).toBeUndefined();
   });
 
   it("maps runtime, assignment and prerequisite states to deterministic actions", () => {

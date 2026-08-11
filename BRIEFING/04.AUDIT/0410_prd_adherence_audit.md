@@ -1,5 +1,9 @@
 # 0410 — PRD Adherence Audit
 
+## Reauditoria vigente — 2026-08-11
+
+Resultado: PARTIAL, nota de aderência ao produto: 82/100. O PRD está aprovado e o núcleo de acesso/jornada M02 funciona no runtime local, mas o produto declarado de 24 meses não está operacionalmente materializado: há uma única atribuição ativa, zero estados curriculares persistidos e os packs não-M02 continuam drafts parametrizados. A tentativa de E2E real não chegou ao navegador porque o seed violou RLS em activity_assignments.
+
 Resultado da janela F3-S3 + complemento F3-S4: PARTIAL — requisitos de núcleo, sessão, convite, resposta, atividade publicada, transição editorial, correção humana, feedback, progresso, superfície inicial do participante e fronteira autoral têm evidência; produto completo ainda não foi construído.
 
 ## Verificar

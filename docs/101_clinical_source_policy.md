@@ -1,7 +1,7 @@
 # Política de fonte clínica — CVG
 
 **Data:** 2026-08-10
-**Status:** ativa no caminho de publicação automática
+**Status:** ativa no caminho de publicação com revisão clínica obrigatória
 **Escopo:** conteúdo de treinamento, B-07, catálogo dos 24 módulos e pré-voo de publicação
 
 ## Regra imutável
@@ -23,9 +23,9 @@ clinical source governance: PASS (3 immutable PDFs, hashes verified)
 
 ## Publicação e bloqueios
 
-- B-07 e os 24 packs do currículo passam por registro de fonte, pré-voo técnico e projeção pública redigida.
-- A publicação ativa usa `PUBLICAR_AUTOMATICAMENTE` depois da verificação automática da fonte; não há gate humano clínico obrigatório nesse caminho.
-- A rota, o contrato e o caso de uso de revisão clínica de autoria foram removidos do caminho executável. A tabela e os checks históricos da migration 0014 permanecem somente para compatibilidade e preservação de dados existentes; nenhum revisor pode ser exigido por eles.
+- B-07 e os 24 packs do currículo passam por registro de fonte, pré-voo técnico, revisão item a item, aprovação clínica independente e projeção pública redigida.
+- A verificação automática de fonte é somente um pré-requisito técnico. `PUBLICAR_AUTOMATICAMENTE` não bypassa a decisão clínica: a publicação ativa exige `APROVADO_CLINICAMENTE`, decisão registrada, aprovador autorizado e preflight técnico.
+- A rota, o contrato e o caso de uso de revisão clínica de autoria fazem parte do caminho executável. A tabela `content_review_decisions` preserva a decisão independente e impede autoaprovação; conteúdo sem revisão permanece fora de `PUBLICADO`.
 - A IA, o Qdrant e a interface não podem inventar fonte, editar estado, publicar ou alterar gabarito.
 - Autenticação, autorização server-side, proteção de segredos, redaction, auditoria e testes continuam controles técnicos do produto; não são autorização clínica adicional.
 
@@ -33,4 +33,4 @@ clinical source governance: PASS (3 immutable PDFs, hashes verified)
 
 O código garante que o catálogo e os registros de autoria apontem apenas para esses três identificadores e rejeita marcadores de fontes externas. Ele não transforma uma checagem de hash em prova semântica de que cada frase de um texto novo aparece literalmente em um livro. Por isso, a regra de implementação é: não adicionar texto clínico novo fora de um fluxo de conteúdo cuja origem esteja registrada nesses três livros; os artefatos do repositório não armazenam trechos, PDFs, fotos, prontuários ou dados de participantes.
 
-Esta política elimina a autorização clínica humana como bloqueio de software, mas não declara competência prática, segurança clínica de atendimento ou liberação hospitalar sem execução dos testes e configurações de produção correspondentes.
+Esta política mantém a autorização clínica humana como bloqueio de publicação, mas não declara competência prática, segurança clínica de atendimento ou liberação hospitalar sem execução dos testes e configurações de produção correspondentes.

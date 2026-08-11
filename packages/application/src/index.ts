@@ -116,6 +116,7 @@ export type {
 } from "./content-use-cases.js";
 export {
   publishAuthoringContent,
+  reviewAuthoringContent,
   runAuthoringPreflight,
 } from "./authoring-use-cases.js";
 export type {
@@ -128,7 +129,11 @@ export type {
   AuthoringRubric,
   AuthoringSourceRef,
   AuthoringPublicationDependencies,
+  AuthoringReviewDependencies,
+  ClinicalReviewDecision,
+  ClinicalReviewRecord,
   PublishAuthoringCommand,
+  ReviewAuthoringCommand,
 } from "./authoring-use-cases.js";
 export type {
   CreateSessionInput,
@@ -201,3 +206,20 @@ export type {
   ParticipantJourneyReadPort,
   ParticipantLearningJourneyState,
 } from "./journey-use-cases.js";
+export {
+  hashPassword,
+  loginWithPassword,
+  passwordPolicy,
+  setAccountPassword,
+  verifyPassword,
+} from "./password-auth.js";
+export type {
+  LoggedInPassword,
+  LoginWithPasswordCommand,
+  PasswordAccountRecord,
+  PasswordAuthAccountPort,
+  PasswordAuthTransactionPort,
+  PasswordAuthTransactionalOperations,
+  PasswordAuthUseCaseDependencies,
+  SetAccountPasswordCommand,
+} from "./password-auth.js";

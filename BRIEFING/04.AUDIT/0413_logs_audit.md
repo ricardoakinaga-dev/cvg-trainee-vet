@@ -1,5 +1,9 @@
 # 0413 — Logs Audit
 
+## Reauditoria vigente — 2026-08-11
+
+Os logs observados permaneceram redigidos, sem senha, token, stack trace ou conteúdo clínico. Há correlação e métricas locais; não há backend durável de traces nem retenção operacional comprovada. A falha do fixture foi observada como erro de integração no teste, não exposta ao endpoint público.
+
 Resultado: PARTIAL no recorte F3-S3 + complementos F3-S5/F3-S6 — logger JSON redigido, sink padrão, allowlist, correlação de API/worker, telemetria de rejeições de borda e teste negativo foram construídos; retenção, acesso controlado ao sink e correlação distribuída ponta a ponta ainda não.
 
 ## Checklist

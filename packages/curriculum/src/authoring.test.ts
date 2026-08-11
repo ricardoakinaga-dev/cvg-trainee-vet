@@ -10,7 +10,7 @@ const scopeId = "11111111-1111-4111-8111-111111111111";
 const authorId = "22222222-2222-4222-8222-222222222222";
 
 describe("internal authoring banks", () => {
-  it("materializes M02 with internal correction metadata and automatic publication", () => {
+  it("materializes M02 with internal correction metadata and a review gate", () => {
     const bank = createM02AuthoringBank(scopeId, authorId);
 
     expect(bank.moduleId).toBe("M02");
@@ -24,9 +24,10 @@ describe("internal authoring banks", () => {
           item.correctChoiceIds !== undefined || item.rubric !== undefined,
       ),
     ).toBe(true);
-    expect(bank.publicationAuthorized).toBe(true);
+    expect(bank.publicationAuthorized).toBe(false);
+    expect(bank.clinicalReviewRequired).toBe(true);
     expect(bank.sourceVerification).toBe("VERIFICADO_AUTOMATICAMENTE");
-    expect(bank.status).toBe("PUBLICADO");
+    expect(bank.status).toBe("RASCUNHO");
   });
 
   it("materializes the full curriculum and the 120-item diagnostic bank", () => {
@@ -42,7 +43,7 @@ describe("internal authoring banks", () => {
           item.correctChoiceIds !== undefined || item.rubric !== undefined,
       ),
     ).toBe(true);
-    expect(JSON.stringify(diagnostic)).toContain("PUBLICADO");
+    expect(JSON.stringify(diagnostic)).toContain("RASCUNHO");
   });
 
   it("does not expose internal authoring fields in the participant projection input", () => {

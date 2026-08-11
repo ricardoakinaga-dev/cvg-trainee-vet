@@ -1,5 +1,16 @@
 # 0420 — Gap Analysis
 
+## Reauditoria vigente — 2026-08-11
+
+| ID | Gap atual | Severidade | Estado |
+|---|---|---|---|
+| GAP-2026-001 | Fixture E2E real usa usuário de aplicação para seed direto e é bloqueado pela RLS em activity_assignments | P1 | OPEN |
+| GAP-2026-002 | CVG_API_INTERNAL_URL precisa ser injetada no build web, mas não está no contrato padrão do fluxo | P1 | OPEN |
+| GAP-2026-003 | Default do load smoke usa 5_000 como string e falha antes das requisições | P2 | OPEN |
+| GAP-2026-004 | Runtime ativo tem somente M02 atribuída e zero estados curriculares persistidos | P1 | OPEN |
+| GAP-2026-005 | MFA/recuperação externa, TLS/headers, traces duráveis, deployment/rollback e restore de produção não foram comprovados | P1 | OPEN |
+| GAP-2026-006 | Alterações de autenticação e documentação desta janela permanecem sem SHA final auditável | P1 | OPEN |
+
 Estado: OPEN/PARTIAL; gaps abaixo são do recorte B0/F2-S2/F3-S2/F3-S3 + complementos F3-S4/F3-S5/F3-S6/F3-S7/F3-S8 e não foram mascarados.
 
 ## Classificação

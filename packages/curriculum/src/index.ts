@@ -20,6 +20,13 @@ export {
   createDiagnosticAuthoringBank,
   createM02AuthoringBank,
 } from "./authoring.js";
+export { createCurriculumMaterializationPlan } from "./materialization-plan.js";
+export type {
+  CurriculumMaterializationInput,
+  CurriculumMaterializationItemPlan,
+  CurriculumMaterializationModulePlan,
+  CurriculumMaterializationPlan,
+} from "./materialization-plan.js";
 export {
   CLINICAL_SOURCES,
   isAllowedClinicalSourceCode,
@@ -35,6 +42,7 @@ export {
   b07DiagnosticDraftPack,
   buildPersonalizedCurriculumPath,
   curriculumDraftCounts,
+  createInitialModuleEvaluation,
   evaluateDiagnosticAttempt,
   curriculumDraftPacks,
   evaluateModuleAttempt,

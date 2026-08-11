@@ -637,6 +637,62 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps remanescentes: E2E navegador→API real, RLS contextual, observabilidade externa e backup/restore; recuperação interna permanece baseada em convite administrativo controlado;
 - próximo passo: consolidar o gate completo da fatia e AUDIT 0400–0490.
 
+### ACCESS-21 — Login por credencial e jornada inicial do runtime
+
+- título: substituir a entrada visual por convite por login/senha e entregar uma primeira atividade atribuída no ambiente ativo;
+- descrição: criar autenticação local com hash scrypt e sessão server-side, restaurar sessão, manter convite somente como onboarding compatível, publicar a projeção M02 já existente e atribuí-la ao participante interno por job administrativo idempotente;
+- módulo: identidade / conta / API / web / currículo / persistência;
+- dependência: F3-S3, F3-S4, F3-S8 e runtime local HA;
+- fase: BUILD — Phase 14;
+- risco: alto — credencial e atribuição de aprendizagem precisam permanecer server-side, redigidas e isoladas por RLS;
+- impacto: alto;
+- status: COMPLETED_WITH_LIMITS;
+- evidência: `packages/application/src/password-auth.ts`; `packages/persistence/src/password-auth-repository.ts`; migration `0015_lonely_shooting_star.sql`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; `tests/e2e/participant-access.spec.ts`; navegador contra `http://127.0.0.1:3100`;
+- resultado: login 200, sessão 200, jornada 200 com M02 atribuída, 51 testes direcionados, suíte unitária 392/409 com cobertura global 84,98% statements / 80,13% branches / 86,50% functions / 85,71% lines e E2E 12/12; tentativa de escrita pelo usuário da aplicação foi negada por RLS e o seed foi executado pelo job administrativo;
+- limites remanescentes: recuperação externa/MFA ainda `NOT_CONFIGURED`, deployment público/TLS não configurado e a atribuição automática deste ambiente cobre M02, não os 24 meses completos;
+- próxima ação: adicionar rotação de senha na superfície de conta, integrar provedor externo quando autorizado e expandir atribuições por fase do programa.
+
+## REAUDITORIA 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
+
+### AUD-P1-006 — Fixture E2E real compatível com RLS
+
+- título: fechar o seed do E2E real sem abrir bypass de autorização
+- descrição: ajustar o fixture para usar job administrativo controlado ou contexto RLS autorizado; repetir navegador → web → API → PostgreSQL
+- módulo: CI / E2E / persistence / security
+- dependência: decisão de implementação e contrato de seed
+- fase: AUDIT / BUILD hardening
+- risco: alto
+- impacto: alto
+- status: COMPLETED
+- evidência: `scripts/real-e2e-fixture-server.mjs`; banco efêmero com conexão administrativa separada; API `NOSUPERUSER`/`NOBYPASSRLS`; E2E real 14/14 e cleanup concluídos sem ampliar privilégios do participante
+- critério de pronto: E2E real passa sem ampliar privilégios do usuário comum; cleanup preserva append-only
+
+### AUD-P1-007 — Fechamento do worktree auditado
+
+- título: congelar código, docs, testes e manifesto no mesmo SHA
+- descrição: revisar diff, executar gates, criar commit intencional e repetir a reauditoria no SHA final
+- módulo: governança / release engineering
+- dependência: AUD-P1-006 e correções aprovadas
+- fase: BUILD / AUDIT
+- risco: alto
+- impacto: alto
+- status: IN_PROGRESS
+- evidência: materialização, gates de segurança/observabilidade e testes locais concluídos; `traceability.yml` aguarda SHA final desta rodada; 0509_current_worktree_audit_2026-08-11.md permanece como registro histórico da limitação
+- critério de pronto: nenhum código da janela fica fora do commit, manifesto aponta para SHA e a matriz de notas é reexecutada
+
+### AUD-P2-008 — Harness de carga e contrato de proxy
+
+- título: tornar load smoke e build web reproduzíveis no default
+- descrição: corrigir o timeout default 5_000 e declarar CVG_API_INTERNAL_URL no contrato de build, serviço e CI
+- módulo: runtime / CI / web
+- dependência: AUD-P1-007
+- fase: BUILD hardening
+- risco: médio
+- impacto: médio
+- status: COMPLETED
+- evidência: `scripts/run-load-smoke.mjs`, `packages/config/src/load-smoke.ts`, `apps/web/next.config.ts`; default sem override passou 200/200 e build/proxy foram verificados
+- critério de pronto: smoke default executa 100 requests e build limpo mantém proxy e health 200
+
 ## P3 — BAIXO
 
 ### FUT-01 — Decisões futuras
@@ -649,6 +705,15 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: médio
 - impacto: baixo
 - status: BACKLOG FUTURO
+
+## PROJETO DE REMEDIAÇÃO ATIVO
+
+- plano canônico: BRIEFING/03.BUILD/0303_remediation_program.md;
+- roadmap: BRIEFING/03.BUILD/0301_roadmap.md, PHASE R;
+- backlog executável: BRIEFING/03.BUILD/0302_backlog_master.md, REMEDIAÇÃO R;
+- estado atual: IN_PROGRESS / WAITING_HUMAN_APPROVAL para gates externos;
+- próximo passo: R6-S2/R6-S3, depois revisão clínica, provedor MFA, domínio/certificado, storage e ambiente autorizado;
+- decisões necessárias para R3–R5: provedor de identidade/MFA, domínio/DNS/TLS, backend de traces, storage de backup e ambiente de deploy.
 
 ## REGRAS DE USO
 

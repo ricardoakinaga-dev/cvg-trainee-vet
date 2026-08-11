@@ -62,6 +62,7 @@ function statusLabel(status: string): string {
     RETENCAO_PENDENTE: "Retenção pendente",
     CONCLUIDO_DIGITAL: "Concluído no digital",
     BLOQUEADO_PRE_REQUISITO: "Aguardando pré-requisito",
+    AGUARDANDO_PUBLICACAO: "Aguardando publicação clínica",
   };
   return labels[status] ?? status;
 }

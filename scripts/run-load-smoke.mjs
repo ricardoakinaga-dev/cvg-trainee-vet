@@ -1,36 +1,12 @@
 import process from "node:process";
 
-const target =
-  process.env.CVG_LOAD_TARGET ?? "http://127.0.0.1:3000/health/live";
-const requestCount = parsePositiveInteger(
-  process.env.CVG_LOAD_REQUESTS ?? "200",
-  "CVG_LOAD_REQUESTS",
-  20_000,
-);
-const concurrency = parsePositiveInteger(
-  process.env.CVG_LOAD_CONCURRENCY ?? "10",
-  "CVG_LOAD_CONCURRENCY",
-  200,
-);
-const timeoutMs = parsePositiveInteger(
-  process.env.CVG_LOAD_TIMEOUT_MS ?? "5_000",
-  "CVG_LOAD_TIMEOUT_MS",
-  60_000,
-);
-
-try {
-  new URL(target);
-} catch {
-  throw new Error("CVG_LOAD_TARGET must be an absolute URL");
-}
-
-function parsePositiveInteger(value, name, maximum) {
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > maximum) {
-    throw new Error(`${name} must be an integer from 1 to ${maximum}`);
-  }
-  return parsed;
-}
+const { loadLoadSmokeConfig } =
+  await import("../packages/config/dist/load-smoke.js");
+const smokeConfig = loadLoadSmokeConfig(process.env);
+const target = smokeConfig.target;
+const requestCount = smokeConfig.requestCount;
+const concurrency = smokeConfig.concurrency;
+const timeoutMs = smokeConfig.timeoutMs;
 
 const startedAt = performance.now();
 let nextRequest = 0;

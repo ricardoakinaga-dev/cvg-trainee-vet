@@ -9,6 +9,9 @@ export const contentTransitionRequestSchema = z
     event: z.enum([
       "AUTOVERIFICAR",
       "VERIFICAR_PROJECAO",
+      "ENVIAR_PARA_REVISAO_CLINICA",
+      "SOLICITAR_AJUSTES",
+      "APROVAR_CLINICAMENTE",
       "AUTORIZAR_PUBLICACAO",
       "PUBLICAR",
       "PUBLICAR_AUTOMATICAMENTE",

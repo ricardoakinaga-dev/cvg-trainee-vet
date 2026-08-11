@@ -1,13 +1,18 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
+  ClinicalReviewRecord,
   AuthoringRecord,
   AuthoringRepositoryPort,
 } from "@cvg/application";
 import type { ContentStatus } from "@cvg/domain";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
-import { contentEditorialRecords, contentVersions } from "./schema.js";
+import {
+  contentEditorialRecords,
+  contentReviewDecisions,
+  contentVersions,
+} from "./schema.js";
 import type * as schema from "./schema.js";
 
 export type AuthoringRowShape = Readonly<{
@@ -44,6 +49,9 @@ type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 const contentStatuses: readonly ContentStatus[] = [
   "RASCUNHO",
   "AUTOVERIFICADO",
+  "EM_REVISAO_CLINICA",
+  "AJUSTES_SOLICITADOS",
+  "APROVADO_CLINICAMENTE",
   "PROJECAO_VERIFICADA",
   "AUTORIZADO_PARA_PUBLICACAO",
   "PUBLICADO",
@@ -340,6 +348,71 @@ export function createAuthoringRepository(
           ),
         );
       return Object.freeze({ ...record, preflight });
+    },
+    findLatestClinicalReview: async (contentId, version) => {
+      const rows = await db
+        .select({
+          reviewId: contentReviewDecisions.id,
+          contentId: contentReviewDecisions.contentId,
+          version: contentReviewDecisions.version,
+          contentEditorialRecordId:
+            contentReviewDecisions.contentEditorialRecordId,
+          contentVersionId: contentReviewDecisions.contentVersionId,
+          scopeId: contentReviewDecisions.scopeId,
+          reviewerId: contentReviewDecisions.reviewerId,
+          decision: contentReviewDecisions.decision,
+          rationale: contentReviewDecisions.rationale,
+          correlationId: contentReviewDecisions.correlationId,
+          reviewedAt: contentReviewDecisions.reviewedAt,
+        })
+        .from(contentReviewDecisions)
+        .where(
+          and(
+            eq(contentReviewDecisions.contentId, contentId),
+            eq(contentReviewDecisions.version, version),
+          ),
+        )
+        .orderBy(desc(contentReviewDecisions.reviewedAt))
+        .limit(1);
+      const row = rows[0];
+      if (row === undefined) return null;
+      if (
+        row.decision !== "APROVAR_CLINICAMENTE" &&
+        row.decision !== "SOLICITAR_AJUSTES"
+      ) {
+        throw new PersistenceMappingError(
+          "clinical review decision is invalid",
+        );
+      }
+      const review: ClinicalReviewRecord = {
+        reviewId: row.reviewId,
+        contentId: row.contentId,
+        version: row.version,
+        contentEditorialRecordId: row.contentEditorialRecordId,
+        contentVersionId: row.contentVersionId,
+        scopeId: row.scopeId,
+        reviewerId: row.reviewerId,
+        decision: row.decision,
+        rationale: row.rationale,
+        correlationId: row.correlationId,
+        reviewedAt: row.reviewedAt.toISOString(),
+      };
+      return Object.freeze(review);
+    },
+    saveClinicalReview: async (review) => {
+      await db.insert(contentReviewDecisions).values({
+        id: review.reviewId,
+        contentEditorialRecordId: review.contentEditorialRecordId,
+        contentVersionId: review.contentVersionId,
+        contentId: review.contentId,
+        version: review.version,
+        scopeId: review.scopeId,
+        reviewerId: review.reviewerId,
+        decision: review.decision,
+        rationale: review.rationale,
+        correlationId: review.correlationId,
+        reviewedAt: new Date(review.reviewedAt),
+      });
     },
   };
   return Object.freeze(repository);

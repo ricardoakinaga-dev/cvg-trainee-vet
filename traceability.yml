@@ -1601,6 +1601,269 @@ artifacts:
       ]
     commit: "738906eaff56e6df0742e8720f442ec6c13f2186"
     status: "running-verified-local"
+  - id: "ACCESS-PASSWORD-JOURNEY-022"
+    requirements:
+      [
+        "PRD-RF-002",
+        "PRD-RF-009",
+        "PRD-RF-014",
+        "PRD-RNF-037",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0014_requisitos_nao_funcionais_produto.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "docs/20_master_execution_log.md",
+        "docs/99_runtime_state.md",
+      ]
+    code:
+      [
+        "packages/application/src/password-auth.ts",
+        "packages/persistence/src/password-auth-repository.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/drizzle/0015_lonely_shooting_star.sql",
+        "packages/contracts/src/auth.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/next.config.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/password-auth.test.ts",
+        "packages/contracts/src/auth.test.ts",
+        "packages/persistence/src/password-auth-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+        "tests/e2e/experience-accessibility.spec.ts",
+        "browser-runtime-login-check",
+      ]
+    verification:
+      [
+        "pnpm build",
+        "pnpm exec vitest run packages/application/src/password-auth.test.ts packages/contracts/src/auth.test.ts apps/api/src/http.test.ts apps/api/src/server.test.ts",
+        "pnpm exec playwright test",
+        "docker compose migrate",
+        "RLS negative seed check",
+        "runtime login/session/learning-path HTTP check",
+        "git diff --check",
+      ]
+    commit: "working-tree-pending"
+    status: "implemented-verified-local-uncommitted"
+  - id: "AUDIT-WORKTREE-LOGIN-024"
+    requirements:
+      [
+        "PRD-RF-002",
+        "PRD-RF-009",
+        "PRD-RNF-037",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0114",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0400_audit_scope.md",
+        "BRIEFING/04.AUDIT/0401_audit_plan.md",
+        "BRIEFING/04.AUDIT/0410_prd_adherence_audit.md",
+        "BRIEFING/04.AUDIT/0411_spec_adherence_audit.md",
+        "BRIEFING/04.AUDIT/0412_runtime_analysis.md",
+        "BRIEFING/04.AUDIT/0413_logs_audit.md",
+        "BRIEFING/04.AUDIT/0414_metrics_audit.md",
+        "BRIEFING/04.AUDIT/0415_integrations_audit.md",
+        "BRIEFING/04.AUDIT/0416_data_integrity_audit.md",
+        "BRIEFING/04.AUDIT/0417_security_governance_audit.md",
+        "BRIEFING/04.AUDIT/0418_operational_experience_audit.md",
+        "BRIEFING/04.AUDIT/0420_gap_analysis.md",
+        "BRIEFING/04.AUDIT/0421_remediation_plan.md",
+        "BRIEFING/04.AUDIT/0509_current_worktree_audit_2026-08-11.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/next.config.ts",
+        "scripts/real-e2e-fixture-server.mjs",
+        "scripts/run-load-smoke.mjs",
+        "traceability.yml",
+      ]
+    tests:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "CVG_RUN_REAL_E2E=true pnpm test:e2e",
+        "pnpm ops:load-smoke",
+        "pnpm ops:verify-ha",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:secrets",
+      ]
+    verification:
+      [
+        "runtime HTTP smoke",
+        "PostgreSQL aggregate integrity query",
+        "RLS negative fixture result",
+        "git diff --check",
+      ]
+    commit: "working-tree-pending"
+    status: "audited-with-gaps-local"
+  - id: "REMEDIATION-PROGRAM-025"
+    requirements:
+      [
+        "PRD-RF-002",
+        "PRD-RF-009",
+        "PRD-RF-014",
+        "PRD-RNF-037",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/0303_remediation_program.md",
+        "BRIEFING/04.AUDIT/0509_current_worktree_audit_2026-08-11.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "scripts/real-e2e-fixture-server.mjs",
+        "scripts/run-load-smoke.mjs",
+        "packages/config/src/load-smoke.ts",
+        "packages/config/src/load-smoke.test.ts",
+        "infra/production/Caddyfile",
+        "infra/production/docker-compose.ha.yml",
+        "packages/application/src/identity-provider.ts",
+        "packages/persistence/src/security-context.ts",
+      ]
+    tests:
+      [
+        "tests/e2e/real-runtime.spec.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "tests/integration/postgres-curriculum-runtime.test.ts",
+        "pnpm verify:ci-contract",
+        "pnpm typecheck",
+        "pnpm build",
+        "pnpm test:e2e",
+        "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live pnpm ops:load-smoke",
+        "pnpm test:integration:restore",
+      ]
+    verification:
+      [
+        "R0–R6 task acceptance matrix in 0303",
+        "pnpm verify",
+        "pnpm verify:documentation",
+        "pnpm verify:traceability",
+        "git diff --check",
+      ]
+    commit: "working-tree-pending"
+    status: "r1-complete-r2-r6-pending-explicit-gates"
+  - id: "REMEDIATION-EVIDENCE-026"
+    requirements:
+      [
+        "PRD-RF-002",
+        "PRD-RF-009",
+        "PRD-RF-014",
+        "PRD-RNF-037",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/0303_remediation_program.md",
+        "BRIEFING/08.RUNTIME/0805_release_and_backup_runbook.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/101_clinical_source_policy.md",
+        "docs/104_remediation_evidence_2026-08-11.md",
+      ]
+    code:
+      [
+        "scripts/materialize-curriculum.mjs",
+        "packages/curriculum/src/materialization-plan.ts",
+        "packages/curriculum/src/learning-runtime.ts",
+        "packages/application/src/authoring-use-cases.ts",
+        "packages/config/src/env.ts",
+        "infra/production/Caddyfile",
+        "infra/production/docker-compose.ha.yml",
+        "infra/observability/tempo.yaml",
+        "infra/observability/otel-collector-config.yaml",
+        "scripts/verify-edge-security.mjs",
+        "scripts/verify-durable-traces.mjs",
+        "scripts/verify-production-security-config.mjs",
+        "scripts/release-manifest.mjs",
+        "scripts/deploy-release.mjs",
+        "scripts/rollback-release.mjs",
+        "scripts/create-postgres-backup.mjs",
+      ]
+    tests:
+      [
+        "packages/curriculum/src/materialization-plan.test.ts",
+        "packages/curriculum/src/learning-runtime.test.ts",
+        "packages/application/src/authoring-use-cases.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/config/src/env.test.ts",
+        "packages/config/src/load-smoke.test.ts",
+        "tests/e2e/real-runtime.spec.ts",
+        "tests/integration/postgres-authoring-workflow.test.ts",
+        "pnpm verify",
+        "pnpm build",
+        "pnpm ops:verify-ha",
+        "pnpm ops:verify-edge-security",
+        "pnpm ops:verify-durable-traces",
+        "pnpm ops:verify-release-manifest",
+        "pnpm ops:deploy-release",
+        "pnpm ops:rollback-release",
+        "pnpm ops:create-postgres-backup",
+        "pnpm test:integration:restore",
+        "CVG_RUN_REAL_E2E=true pnpm test:e2e",
+        "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live pnpm ops:load-smoke",
+      ]
+    verification:
+      [
+        "active PostgreSQL aggregate counts",
+        "materialization rerun with zero inserts",
+        "HTTP/HTTPS/header/redirect check",
+        "Tempo query after restart",
+        "immutable release dry-run",
+        "synthetic pg_dump checksum",
+        "R6 quality gate and final SHA",
+        "git diff --check",
+      ]
+    commit: "working-tree-pending"
+    status: "r1-r5-local-verified-r6-in-progress-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."
@@ -1629,7 +1892,8 @@ notes:
   - "WEB-UX-ACCESSIBILITY-015 closes item 13 at 96/100 in the implemented web scope: participant, authoring and operations surfaces expose bounded experience states; axe, keyboard/focus, unique IDs, reduced motion and narrow viewport checks pass; 12 mock E2E and 14 real-mode E2E scenarios pass, with the real mode reaching API/PostgreSQL through the web proxy and persisted participant fixture. Screen-reader/user review and complete PRD surfaces remain gaps."
   - "QUALITY-TEST-EVIDENCE-016 closes item 14 at 96/100: named contract/worker/live/restore/migration/E2E gates pass; PostgreSQL live passed 18/26 without skips, Qdrant extended 21/29 without skips, restore 1/1, standard E2E 12/12 and real persisted participant E2E 14/14. Coverage is 84.92% statements, 80.34% branches, 85.89% functions and 85.61% lines; module-level entrypoints remain explicit gaps and the remote CI execution is the next item."
   - "CI-REPRODUCIBILITY-017 closes item 15 at 95/100 with gaps: pinned Node/pnpm/lockfile and environment contract, PostgreSQL 16 and Qdrant 1.15.5 disposable services, readiness, migrations, live, restore, build, audit, standard E2E 12/12, real E2E 14/14 and conditional coverage/JUnit/Playwright artifact upload passed locally and remotely. The private repository is origin/main at commit dd4790973e31e1c3799c58cf99701128367b055b; Actions run 31380183984/job 93428409312 passed in 4m20s and artifact 9059654877 contains 99 files with SHA256 fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee. Runs 31378647864 and 31379006703 preserve the pnpm bootstrap and NODE_ENV API failures; the pnpm cache miss was observed, while deployment rollback, cache hit, load, failover and restart remain gaps. Item 16 is released by order."
-  - "CONTENT-SOURCE-GOVERNANCE-018 supersedes the historical clinical-approval note for the active publication path: only the three hashes in clinical-sources.json are accepted, and publication uses automatic source preflight. Historical review fields remain only for compatibility and audit history."
+  - "CONTENT-SOURCE-GOVERNANCE-018 supersedes the historical clinical-approval note for the active publication path: only the three hashes in clinical-sources.json are accepted, technical source preflight is mandatory, and publication additionally requires an independent clinical approval decision."
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the current worktree to docs, backlog, runtime state, source policy and operational evidence. The current changes are intentionally uncommitted and must not be reported as a committed release SHA."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, honest pending runtime states, fail-closed identity, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. Human review, external IdP, managed TLS, external storage, production deploy and RPO/RTO remain pending."

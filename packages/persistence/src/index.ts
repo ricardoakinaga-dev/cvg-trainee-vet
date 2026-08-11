@@ -192,3 +192,4 @@ export {
 export type { AssessmentResultRowShape } from "./correction-repository.js";
 export { auditEntryToRow, createAuditRepository } from "./audit-repository.js";
 export type { AuditInsertRow } from "./audit-repository.js";
+export { createPasswordAuthUseCaseDependencies } from "./password-auth-repository.js";

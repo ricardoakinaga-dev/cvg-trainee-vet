@@ -3,7 +3,8 @@ import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
 type RealFixture = Readonly<{
-  readonly token: string;
+  readonly login: string;
+  readonly password: string;
   readonly activityId: string;
   readonly itemId: string;
 }>;
@@ -39,8 +40,9 @@ test("participant completes a persisted synthetic activity through the real API"
   ) as RealFixture;
 
   await page.goto(`/?activityId=${fixture.activityId}`);
-  await page.getByLabel("Token de convite").fill(fixture.token);
-  await page.getByRole("button", { name: "Ativar acesso" }).click();
+  await page.getByLabel("E-mail profissional").fill(fixture.login);
+  await page.getByLabel("Senha").fill(fixture.password);
+  await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(
     page.getByRole("heading", { name: "Atividade real sintética" }),

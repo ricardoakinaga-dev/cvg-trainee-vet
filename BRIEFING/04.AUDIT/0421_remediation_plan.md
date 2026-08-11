@@ -1,5 +1,20 @@
 # 0421 — Remediation Plan
 
+## Projeto vigente
+
+O plano executável consolidado para todos os gaps da reauditoria 2026-08-11 está em BRIEFING/03.BUILD/0303_remediation_program.md. Este documento mantém os gaps históricos e deve ser lido junto com as tasks R0–R6 e seus gates.
+
+## Reauditoria vigente — 2026-08-11
+
+| Gap | Ação necessária | Prioridade | Critério de encerramento |
+|---|---|---:|---|
+| GAP-2026-001 | Ajustar o fixture para seed administrativo controlado ou aplicar contexto RLS autorizado sem abrir bypass no runtime; repetir E2E real completo | P1 | E2E real passa e o seed continua deny-by-default para usuário comum |
+| GAP-2026-002 | Declarar e injetar CVG_API_INTERNAL_URL no contrato de build, serviço e CI; provar build limpo e health web/edge | P1 | build reproduzível com proxy e health 200 sem intervenção manual |
+| GAP-2026-003 | Corrigir parsing/valor default do timeout e adicionar teste do script | P2 | load smoke default executa requisições e retorna relatório válido |
+| GAP-2026-004 | Persistir atribuições/estados dos módulos autorizados e provar a jornada completa por escopo | P1 | banco e E2E demonstram a trilha operacional prevista, sem inventar conteúdo |
+| GAP-2026-005 | Configurar identidade externa/MFA, TLS/headers, traces, backup/restore e rollback somente com infraestrutura autorizada | P1 | evidência live, redigida e reproduzível em ambiente apropriado |
+| GAP-2026-006 | Revisar diff, criar commit intencional, atualizar manifesto e repetir a auditoria no mesmo SHA | P1 | SHA contém código, testes, docs e evidência da reauditoria |
+
 Plano da janela F3-S3 + complementos F3-S4/F3-S6/F3-S7/F3-S8: nenhuma correção P0 identificada; F3-S3 fechou a fatia mínima de identidade/correção/feedback, F3-S4 adicionou a superfície participante E2E sintética, F3-S6 adicionou hardening de borda, F3-S7 reconciliação determinística e F3-S8 rotação/revogação, mantendo release bloqueado pelos gaps P1/P2 e pelas fases posteriores.
 
 | Campo | Obrigatório |

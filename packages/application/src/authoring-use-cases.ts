@@ -80,6 +80,23 @@ export type AuthoringRecord = Readonly<{
   readonly preflight: AuthoringPreflight;
 }>;
 
+export type ClinicalReviewDecision =
+  "APROVAR_CLINICAMENTE" | "SOLICITAR_AJUSTES";
+
+export type ClinicalReviewRecord = Readonly<{
+  readonly reviewId: string;
+  readonly contentId: string;
+  readonly version: number;
+  readonly contentEditorialRecordId: string;
+  readonly contentVersionId: string;
+  readonly scopeId: string;
+  readonly reviewerId: string;
+  readonly decision: ClinicalReviewDecision;
+  readonly rationale: string;
+  readonly correlationId: string;
+  readonly reviewedAt: string;
+}>;
+
 export interface AuthoringRepositoryPort {
   readonly find: (
     contentId: string,
@@ -89,6 +106,11 @@ export interface AuthoringRepositoryPort {
     record: AuthoringRecord,
     preflight: AuthoringPreflight,
   ) => Promise<AuthoringRecord>;
+  readonly findLatestClinicalReview: (
+    contentId: string,
+    version: number,
+  ) => Promise<ClinicalReviewRecord | null>;
+  readonly saveClinicalReview: (review: ClinicalReviewRecord) => Promise<void>;
 }
 
 export type PublishAuthoringCommand = Readonly<{
@@ -102,11 +124,30 @@ export type PublishAuthoringCommand = Readonly<{
   readonly correlationId: string;
 }>;
 
+export type ReviewAuthoringCommand = Readonly<{
+  readonly principalId: string;
+  readonly accountStatus: AccountStatus;
+  readonly roles: readonly Role[];
+  readonly scopes: readonly string[];
+  readonly contentId: string;
+  readonly version: number;
+  readonly scopeId: string;
+  readonly decision: ClinicalReviewDecision;
+  readonly rationale: string;
+  readonly correlationId: string;
+}>;
+
 export type AuthoringPublicationDependencies = Readonly<{
   readonly repository: AuthoringRepositoryPort;
   readonly transition: (
     command: AdvanceContentCommand,
   ) => Promise<ContentRecord>;
+}>;
+
+export type AuthoringReviewDependencies = Readonly<{
+  readonly repository: AuthoringRepositoryPort;
+  readonly transition: AuthoringPublicationDependencies["transition"];
+  readonly idFactory: () => string;
 }>;
 
 export type AuthoringPreflightResult = AuthoringPreflight &
@@ -250,6 +291,21 @@ export async function publishAuthoringContent(
     throw new ApplicationError("forbidden", "Content is outside the scope");
   }
 
+  const latestReview = await dependencies.repository.findLatestClinicalReview(
+    command.contentId,
+    command.version,
+  );
+  if (
+    record.contentStatus !== "APROVADO_CLINICAMENTE" ||
+    latestReview?.decision !== "APROVAR_CLINICAMENTE" ||
+    latestReview.reviewerId === record.authorId
+  ) {
+    throw new ApplicationError(
+      "state_conflict",
+      "Clinical approval is required before publication",
+    );
+  }
+
   const preflight = runAuthoringPreflight(record);
   const preflightRecord = await dependencies.repository.savePreflight(
     record,
@@ -261,10 +317,17 @@ export async function publishAuthoringContent(
       "Automatic source preflight is incomplete",
     );
   }
-  if (record.contentStatus === "PUBLICADO") {
-    return Object.freeze({ record: preflightRecord });
-  }
-
+  await dependencies.transition({
+    principalId: command.principalId,
+    accountStatus: command.accountStatus,
+    roles: command.roles,
+    scopes: command.scopes,
+    contentId: command.contentId,
+    version: command.version,
+    scopeId: command.scopeId,
+    event: "AUTORIZAR_PUBLICACAO",
+    correlationId: command.correlationId,
+  });
   const transitioned = await dependencies.transition({
     principalId: command.principalId,
     accountStatus: command.accountStatus,
@@ -273,7 +336,7 @@ export async function publishAuthoringContent(
     contentId: command.contentId,
     version: command.version,
     scopeId: command.scopeId,
-    event: "PUBLICAR_AUTOMATICAMENTE",
+    event: "PUBLICAR",
     correlationId: command.correlationId,
   });
   return Object.freeze({
@@ -282,5 +345,136 @@ export async function publishAuthoringContent(
       contentStatus: transitioned.status,
       preflight,
     }),
+  });
+}
+
+export async function reviewAuthoringContent(
+  command: ReviewAuthoringCommand,
+  dependencies: AuthoringReviewDependencies,
+): Promise<
+  Readonly<{ record: AuthoringRecord; review: ClinicalReviewRecord }>
+> {
+  for (const [value, field] of [
+    [command.principalId, "principalId"],
+    [command.contentId, "contentId"],
+    [command.scopeId, "scopeId"],
+    [command.rationale, "rationale"],
+    [command.correlationId, "correlationId"],
+  ] as const) {
+    assertNonEmpty(value, field);
+  }
+  if (!Number.isInteger(command.version) || command.version < 1) {
+    throw new ApplicationError("validation_error", "version is invalid");
+  }
+  if (command.rationale.length > 10_000 || /<[^>]*>/u.test(command.rationale)) {
+    throw new ApplicationError(
+      "validation_error",
+      "rationale must be plain text",
+    );
+  }
+  const capability =
+    command.decision === "APROVAR_CLINICAMENTE"
+      ? ("APPROVE_CLINICAL_CONTENT" as const)
+      : ("MODERATE_CONTENT" as const);
+  if (
+    !canAccess({
+      principalId: command.principalId,
+      accountStatus: command.accountStatus,
+      roles: command.roles,
+      capability,
+      resource: { scopeId: command.scopeId },
+      scopes: command.scopes,
+      approvedClinicalApproverId: command.principalId,
+    })
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Clinical review is outside the scope",
+    );
+  }
+
+  const record = await dependencies.repository.find(
+    command.contentId,
+    command.version,
+  );
+  if (record === null) {
+    throw new ApplicationError("not_found", "Authoring record not found");
+  }
+  if (record.scopeId !== command.scopeId) {
+    throw new ApplicationError("forbidden", "Content is outside the scope");
+  }
+  if (record.authorId === command.principalId) {
+    throw new ApplicationError("forbidden", "Author cannot review own content");
+  }
+
+  const preflight = runAuthoringPreflight(record);
+  if (!preflight.technicalChecksPassed) {
+    throw new ApplicationError(
+      "state_conflict",
+      "Technical preflight must pass before clinical review",
+    );
+  }
+  const preflightRecord = await dependencies.repository.savePreflight(
+    record,
+    preflight,
+  );
+  let reviewedStatus = record.contentStatus;
+  if (
+    reviewedStatus === "AUTOVERIFICADO" ||
+    reviewedStatus === "PROJECAO_VERIFICADA"
+  ) {
+    const submitted = await dependencies.transition({
+      principalId: command.principalId,
+      accountStatus: command.accountStatus,
+      roles: command.roles,
+      scopes: command.scopes,
+      contentId: command.contentId,
+      version: command.version,
+      scopeId: command.scopeId,
+      event: "ENVIAR_PARA_REVISAO_CLINICA",
+      correlationId: command.correlationId,
+      approvedClinicalApproverId: command.principalId,
+    });
+    reviewedStatus = submitted.status;
+  }
+  if (reviewedStatus !== "EM_REVISAO_CLINICA") {
+    throw new ApplicationError(
+      "state_conflict",
+      "Content is not awaiting clinical review",
+    );
+  }
+  const transition = await dependencies.transition({
+    principalId: command.principalId,
+    accountStatus: command.accountStatus,
+    roles: command.roles,
+    scopes: command.scopes,
+    contentId: command.contentId,
+    version: command.version,
+    scopeId: command.scopeId,
+    event: command.decision,
+    correlationId: command.correlationId,
+    approvedClinicalApproverId: command.principalId,
+  });
+  const review = Object.freeze({
+    reviewId: dependencies.idFactory(),
+    contentId: record.contentId,
+    version: record.version,
+    contentEditorialRecordId: record.editorialRecordId,
+    contentVersionId: record.contentVersionId,
+    scopeId: record.scopeId,
+    reviewerId: command.principalId,
+    decision: command.decision,
+    rationale: command.rationale,
+    correlationId: command.correlationId,
+    reviewedAt: new Date().toISOString(),
+  });
+  await dependencies.repository.saveClinicalReview(review);
+  return Object.freeze({
+    record: Object.freeze({
+      ...preflightRecord,
+      contentStatus: transition.status,
+      preflight,
+    }),
+    review,
   });
 }

@@ -1,5 +1,9 @@
 # 0415 — Integrations Audit
 
+## Reauditoria vigente — 2026-08-11
+
+PostgreSQL, API, worker, Caddy, Prometheus, Grafana e collector local responderam. Qdrant e integração HA têm evidência local/histórica. A tentativa de E2E real falhou no fixture ao inserir activity_assignments sob RLS; isso impede declarar a integração web→API→banco fechada nesta janela. Provedores externos, deployment e recovery permanecem não executados.
+
 Resultado da janela: PASS_WITH_GAPS para B0/F2-S2/F3-S2/F3-S3 + complementos F3-S4/F3-S5/F3-S6/F3-S7/F3-S8; não é aprovação de release.
 
 ## Verificar por dependência

@@ -1,5 +1,13 @@
 # 0400 — Audit Scope — CVG
 
+## Reauditoria vigente — AUD-2026-08-11-WORKTREE-LOGIN
+
+- status: PASS_WITH_GAPS; release, piloto e publicação clínica não aprovados;
+- escopo adicional: autenticação local por senha, migração 0015, runtime HA ativo, leitura agregada do PostgreSQL, rotas protegidas, build web com proxy, smoke de carga e tentativa de E2E real;
+- evidência principal: 0509_current_worktree_audit_2026-08-11.md;
+- resultado: pnpm verify, pnpm build, E2E sintético 12/12, audit de dependências, secret scan, HA topology e smoke HTTP passaram; o E2E real falhou no seed por RLS em activity_assignments; o load smoke default falha por conversão de 5_000;
+- limites: evidência local e sintética, somente M02 atribuída no banco ativo, nenhum SHA final para o worktree atual, sem MFA/recuperação externa, TLS, traces duráveis, deployment/rollback ou piloto.
+
 **Status:** `ESCOPO_EXECUTADO_PARCIALMENTE; RELEASE NÃO APROVADO`  
 **Janela:** 2026-08-09, desenvolvimento local, commit de trabalho não congelado; escopo atual F3-S3 + complementos F3-S4/F3-S5/F3-S6/F3-S7/F3-S8/B0–F3.
 

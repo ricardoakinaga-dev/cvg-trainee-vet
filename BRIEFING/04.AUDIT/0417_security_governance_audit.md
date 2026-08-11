@@ -1,5 +1,9 @@
 # 0417 — Security and Governance Audit
 
+## Reauditoria vigente — 2026-08-11
+
+Sem P0 observado. Hash scrypt, cookie HttpOnly/Secure/SameSite, sessão por hash, mensagens uniformes de login, validação estrita, CSRF, autorização server-side, RLS e scans de segredo/dependência passaram. Permanecem P1: MFA/recuperação externa, TLS e headers de produção, rate limit dedicado/distribuído, traces duráveis, deployment/rollback e fechamento do worktree em SHA.
+
 Resultado: PARTIAL — sem achado P0 no recorte F3-S3 + complementos F3-S4/F3-S5/F3-S6/F3-S8; sessão, convite hash-only, aceite único, rotação/revogação, correção por identidade clínica, auditoria, atividade por atribuição, transição editorial, worker redigido, RLS mínima, superfície participante sem campos proibidos, redaction do sink e hardening de borda foram verificadas, escala operacional e recuperação além do convite ainda pendentes.
 
 ## Verificar

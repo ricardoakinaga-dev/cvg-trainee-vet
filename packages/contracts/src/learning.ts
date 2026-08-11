@@ -146,11 +146,13 @@ export const participantCurriculumRuntimeProjectionSchema = z
     moduleId: moduleIdSchema,
     version: z.number().int().min(1),
     status: z.enum([
+      "PENDENTE",
       "DOMINIO_DIGITAL",
       "EM_REMEDIACAO",
       "AGUARDA_CORRECAO_HUMANA",
     ]),
     nextAction: z.enum([
+      "INICIAR_BASELINE",
       "REVISAR_RETENCAO",
       "EXECUTAR_REMEDIACAO",
       "AGUARDAR_CORRECAO_HUMANA",

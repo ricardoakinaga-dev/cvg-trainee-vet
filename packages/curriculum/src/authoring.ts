@@ -63,7 +63,8 @@ export type AuthoringBank = Readonly<{
   readonly moduleId: string;
   readonly status: DraftContentStatus;
   readonly sourceVerification: "VERIFICADO_AUTOMATICAMENTE";
-  readonly publicationAuthorized: true;
+  readonly publicationAuthorized: false;
+  readonly clinicalReviewRequired: true;
   readonly items: readonly AuthoringItem[];
 }>;
 
@@ -221,9 +222,10 @@ function bankFromItems(
     scopeId,
     authorId,
     moduleId,
-    status: "PUBLICADO",
+    status: "RASCUNHO",
     sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
-    publicationAuthorized: true,
+    publicationAuthorized: false,
+    clinicalReviewRequired: true,
     items: freeze([...items]),
   });
 }

@@ -10,6 +10,8 @@ describe("loadRuntimeConfig", () => {
       CLINICAL_APPROVER_ID: "ricardo-account",
       QDRANT_ENABLED: "false",
       AI_ENABLED: "false",
+      IDENTITY_PROVIDER_URL: "",
+      IDENTITY_PROVIDER_TOKEN: "",
     });
 
     expect(config).toEqual({
@@ -18,6 +20,7 @@ describe("loadRuntimeConfig", () => {
       requireDatabaseLeastPrivilege: false,
       approvedClinicalApproverId: "ricardo-account",
       identityProvider: { configured: false },
+      identityProviderRequired: false,
       observability: { configured: false },
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
@@ -151,5 +154,58 @@ describe("loadRuntimeConfig", () => {
     });
     expect(config.metricsScrapeToken).toBe("m".repeat(32));
     expect(JSON.stringify(config)).not.toContain("METRICS_SCRAPE_TOKEN");
+  });
+
+  it("fails closed when an external identity provider is required", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        IDENTITY_PROVIDER_REQUIRED: "true",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+        METRICS_SCRAPE_TOKEN: "m".repeat(32),
+      }),
+    ).toThrow("IDENTITY_PROVIDER_URL");
+
+    const config = loadRuntimeConfig({
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      IDENTITY_PROVIDER_REQUIRED: "true",
+      IDENTITY_PROVIDER_URL: "https://identity.example",
+      IDENTITY_PROVIDER_TOKEN: "x",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+      METRICS_SCRAPE_TOKEN: "m".repeat(32),
+    });
+    expect(config.identityProviderRequired).toBe(true);
+    expect(config.identityProvider.configured).toBe(true);
+  });
+
+  it("rejects an identity provider URL without its server-side token", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        IDENTITY_PROVIDER_URL: "https://identity.example",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+      }),
+    ).toThrow("IDENTITY_PROVIDER_TOKEN");
+  });
+
+  it("loads the OTLP endpoint without exposing credentials", () => {
+    const config = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+    });
+
+    expect(config.observability).toEqual({
+      configured: true,
+      otlpEndpoint: "http://otel-collector:4318",
+    });
   });
 });

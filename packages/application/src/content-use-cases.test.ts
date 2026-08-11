@@ -88,7 +88,7 @@ describe("content workflow use cases", () => {
     );
   });
 
-  it("supports automatic publication without a human clinical gate", async () => {
+  it("rejects automatic publication without a human clinical gate", async () => {
     const sourceVerified: ContentRecord = {
       ...content,
       status: "AUTOVERIFICADO",
@@ -96,16 +96,16 @@ describe("content workflow use cases", () => {
     };
     const deps = dependencies(sourceVerified);
 
-    const result = await advanceContent(
-      {
-        ...publishCommand,
-        event: "PUBLICAR_AUTOMATICAMENTE",
-      },
-      deps,
-    );
-
-    expect(result.status).toBe("PUBLICADO");
-    expect(deps.saved.current).toMatchObject({ status: "PUBLICADO" });
+    await expect(
+      advanceContent(
+        {
+          ...publishCommand,
+          event: "PUBLICAR_AUTOMATICAMENTE",
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "state_conflict" });
+    expect(deps.saved.current).toBeUndefined();
   });
 
   it("denies publication to an out-of-scope author without writing state", async () => {

@@ -52,7 +52,7 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
-  it("allows automatic publication to scoped authors without a clinical gate", () => {
+  it("allows scoped authors to request publication while keeping the clinical gate", () => {
     const request = participant({
       principalId: "author-account",
       roles: ["AUTHOR"],
@@ -68,6 +68,20 @@ describe("authorization policy", () => {
         scopes: [],
       }),
     ).toBe(false);
+  });
+
+  it("allows an active clinical approver to submit a scoped review decision", () => {
+    expect(
+      canAccess({
+        principalId: "clinical-approver-1",
+        accountStatus: "ACTIVE",
+        roles: ["CLINICAL_APPROVER"],
+        capability: "MODERATE_CONTENT",
+        resource: { scopeId: "curriculum-1" },
+        scopes: ["curriculum-1"],
+        approvedClinicalApproverId: "clinical-approver-1",
+      }),
+    ).toBe(true);
   });
 
   it("keeps internal source and audit capabilities outside participant access", () => {

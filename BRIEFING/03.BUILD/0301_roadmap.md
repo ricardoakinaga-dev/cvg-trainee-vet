@@ -72,6 +72,20 @@
 - **Riscos:** exposição indevida, incidente operacional ou conteúdo não aprovado.
 - **Critério de sucesso:** smoke pós-deploy, observabilidade ativa, rollback testado, AUDIT 0490 emitido.
 
+## PHASE R — Remediação integral pós-auditoria
+
+- **Objetivo:** fechar as limitações AUD-2026-08-11 sem mascarar dependências externas.
+- **Documento executável:** 0303_remediation_program.md.
+- **R0:** baseline e controle de mudança;
+- **R1:** fixture E2E real, seed administrativo segregado, RLS e cleanup;
+- **R2:** 24 atribuições/estados e produção/revisão dos packs;
+- **R3:** provedor externo, recovery e MFA;
+- **R4:** headers, domínio e TLS;
+- **R5:** traces duráveis, artefato versionado, rollback e restore;
+- **R6:** load smoke, quality gate, commit e reauditoria no SHA.
+- **Dependências:** R3/R4/R5 exigem decisões e infraestrutura autorizadas; R1/R2/R6 podem avançar localmente com dados sintéticos.
+- **Critério de sucesso:** todos os gates de 0303 passam e nenhum item da reauditoria permanece sem evidência ou owner.
+
 ## Ordem de sprints
 
 ```text
@@ -80,4 +94,3 @@ DOC-01 → F0-S1 → F1-S1/S2 → F2-S1/S2 → F3-S1/S2/S3
 ```
 
 Uma sprint pode ser paralelizada somente se suas dependências e contratos estiverem fechados. Cada sprint segue `TASK → TESTE → REVIEW → AUDIT → LOG`.
-

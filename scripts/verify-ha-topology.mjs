@@ -27,6 +27,7 @@ const requiredServices = [
   "postgres",
   "migrate",
   "qdrant",
+  "tempo",
   "otel-collector",
   "api-a",
   "api-b",
@@ -62,6 +63,34 @@ if (services.edge.depends_on?.["api-a"]?.condition !== "service_healthy") {
 }
 if (services.edge.depends_on?.["api-b"]?.condition !== "service_healthy") {
   throw new Error("edge must route only after api-b is healthy");
+}
+if (services.tempo.image !== "grafana/tempo:3.0.0") {
+  throw new Error("tempo must use the pinned local durable-trace image");
+}
+if (
+  services["otel-collector"].depends_on?.tempo?.condition !== "service_started"
+) {
+  throw new Error("otel-collector must start after the durable trace backend");
+}
+if (
+  services.tempo.volumes?.some((volume) =>
+    String(volume.source).includes("tempo-data"),
+  ) !== true
+) {
+  throw new Error("tempo must persist data in tempo-data");
+}
+const edgePorts = services.edge.ports ?? [];
+const edgePortTargets = edgePorts.map((port) => String(port.target));
+for (const targetPort of ["8080", "8443"]) {
+  if (!edgePortTargets.includes(targetPort)) {
+    throw new Error(`edge must expose target port ${targetPort}`);
+  }
+}
+if (
+  typeof services.edge.environment?.CVG_PUBLIC_HTTPS_ORIGIN !== "string" ||
+  services.edge.environment.CVG_PUBLIC_HTTPS_ORIGIN.length === 0
+) {
+  throw new Error("edge must declare CVG_PUBLIC_HTTPS_ORIGIN");
 }
 if (
   services.prometheus.command?.join(" ").includes("retention.time=15d") !== true
@@ -100,6 +129,12 @@ process.stdout.write(
     replicas: { api: ["api-a", "api-b"], worker: ["worker-a", "worker-b"] },
     retention: "15d",
     traceCollector: "OTLP HTTP :4318",
+    traceBackend: "Tempo 3.0.0 local volume with 14d default block retention",
+    edge: {
+      httpTargetPort: 8080,
+      httpsTargetPort: 8443,
+      publicHttpsOrigin: services.edge.environment.CVG_PUBLIC_HTTPS_ORIGIN,
+    },
     failover: "Caddy health-routed edge across api-a/api-b",
   })}\n`,
 );

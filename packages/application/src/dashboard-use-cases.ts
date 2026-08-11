@@ -8,7 +8,8 @@ export type ParticipantDashboardModuleStatus =
   | "EM_REMEDIACAO"
   | "RETENCAO_PENDENTE"
   | "CONCLUIDO_DIGITAL"
-  | "BLOQUEADO_PRE_REQUISITO";
+  | "BLOQUEADO_PRE_REQUISITO"
+  | "AGUARDANDO_PUBLICACAO";
 
 export type ParticipantDashboardModule = Readonly<{
   readonly moduleId: string;
@@ -40,6 +41,17 @@ function moduleProjection(
     (candidate) => candidate.evaluation.moduleId === module.id,
   );
   if (runtime !== undefined) {
+    if (runtime.evaluation.status === "PENDENTE") {
+      return Object.freeze({
+        moduleId: module.id,
+        month: module.month,
+        title: module.title,
+        competence: module.competence,
+        sessionCount: 4,
+        status: "AGUARDANDO_PUBLICACAO",
+        nextAction: "AGUARDAR_PUBLICACAO",
+      });
+    }
     if (runtime.evaluation.status === "EM_REMEDIACAO") {
       return Object.freeze({
         moduleId: module.id,
@@ -80,6 +92,17 @@ function moduleProjection(
     ({ state: candidate }) => candidate.moduleId === module.id,
   )?.state;
   if (assignment !== undefined) {
+    if (assignment.status === "NAO_ATRIBUIDO") {
+      return Object.freeze({
+        moduleId: module.id,
+        month: module.month,
+        title: module.title,
+        competence: module.competence,
+        sessionCount: 4,
+        status: "AGUARDANDO_PUBLICACAO",
+        nextAction: "AGUARDAR_PUBLICACAO",
+      });
+    }
     if (assignment.status === "BLOQUEADO") {
       return Object.freeze({
         moduleId: module.id,
@@ -151,10 +174,13 @@ export function buildParticipantDashboard(
     (module) =>
       module.status !== "CONCLUIDO_DIGITAL" &&
       module.status !== "RETENCAO_PENDENTE" &&
-      module.status !== "BLOQUEADO_PRE_REQUISITO",
+      module.status !== "BLOQUEADO_PRE_REQUISITO" &&
+      module.status !== "AGUARDANDO_PUBLICACAO",
   );
   const firstActionable = roadmap.find(
-    (module) => module.status !== "BLOQUEADO_PRE_REQUISITO",
+    (module) =>
+      module.status !== "BLOQUEADO_PRE_REQUISITO" &&
+      module.status !== "AGUARDANDO_PUBLICACAO",
   );
 
   return Object.freeze({

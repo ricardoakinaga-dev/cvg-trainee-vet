@@ -37,6 +37,12 @@ export default defineConfig({
             url: "http://127.0.0.1:3101/health/ready",
             reuseExistingServer: false,
             timeout: 120_000,
+            env: {
+              ...process.env,
+              ...(process.env.CVG_REAL_E2E_DATABASE_URL === undefined
+                ? {}
+                : { DATABASE_URL: process.env.CVG_REAL_E2E_DATABASE_URL }),
+            },
           },
           {
             command:

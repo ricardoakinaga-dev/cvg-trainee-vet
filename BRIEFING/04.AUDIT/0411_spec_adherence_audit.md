@@ -1,5 +1,9 @@
 # 0411 — SPEC Adherence Audit
 
+## Reauditoria vigente — 2026-08-11
+
+Resultado: PARTIAL, nota de aderência técnica: 88/100. A arquitetura modular, contratos estritos, PostgreSQL autoritativo, Qdrant derivado, IA assistiva, autorização server-side, sessão e observabilidade local estão implementados. Permanecem sem prova externa o deployment/rollback, traces duráveis, recuperação/MFA, RLS operacional fora das fatias cobertas e E2E real; o fixture foi bloqueado por RLS ao semear activity_assignments.
+
 Resultado da janela F3-S3 + complementos F3-S4/F3-S6/F3-S7/F3-S8: PARTIAL.
 
 ## Verificar

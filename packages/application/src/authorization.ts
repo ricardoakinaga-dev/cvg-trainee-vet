@@ -16,6 +16,7 @@ export type Capability =
   | "VIEW_OWN_FEEDBACK"
   | "CORRECT_ATTEMPT"
   | "MODERATE_CONTENT"
+  | "APPROVE_CLINICAL_CONTENT"
   | "AUTHOR_CONTENT"
   | "PUBLISH_CONTENT"
   | "VIEW_INTERNAL_SOURCE"
@@ -104,9 +105,13 @@ export function canAccess(request: AuthorizationRequest): boolean {
       return isApprovedClinicalIdentity(request) && hasScope(request);
     case "MODERATE_CONTENT":
       return (
-        (hasRole(request, "MODERATOR") || hasRole(request, "ADMIN")) &&
+        (hasRole(request, "MODERATOR") ||
+          hasRole(request, "ADMIN") ||
+          isApprovedClinicalIdentity(request)) &&
         hasScope(request)
       );
+    case "APPROVE_CLINICAL_CONTENT":
+      return isApprovedClinicalIdentity(request) && hasScope(request);
     case "AUTHOR_CONTENT":
       return hasRole(request, "AUTHOR") && hasScope(request);
     case "PUBLISH_CONTENT":

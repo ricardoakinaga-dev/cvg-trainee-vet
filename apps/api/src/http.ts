@@ -18,9 +18,13 @@ import {
   type CreatedSession,
   type CreateInvitationCommand,
   type CreatedInvitation,
+  type LoggedInPassword,
+  type LoginWithPasswordCommand,
+  type SetAccountPasswordCommand,
   type AdvanceContentCommand,
   type AuthoringRecord,
   type PublishAuthoringCommand,
+  type ReviewAuthoringCommand,
   canAccess,
   type AccountStatus,
   buildParticipantDashboard,
@@ -57,6 +61,7 @@ import {
   parseOperationsDashboard,
   parseParticipantDashboard,
   authoringPublicationRequestSchema,
+  authoringReviewRequestSchema,
   createAttemptRequestSchema,
   contentTransitionRequestSchema,
   parseParticipantActivity,
@@ -69,8 +74,11 @@ import {
   correctOpenResponseRequestSchema,
   correctionResultProjectionSchema,
   acceptInvitationRequestSchema,
+  activeSessionProjectionSchema,
   rotateSessionRequestSchema,
   createInvitationRequestSchema,
+  loginRequestSchema,
+  passwordUpdateRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
   appealCreateRequestSchema,
@@ -135,6 +143,12 @@ export interface ApiHttpDependencies {
   readonly acceptInvitation: (
     command: AcceptInvitationCommand,
   ) => Promise<AcceptedInvitation>;
+  readonly loginWithPassword?: (
+    command: LoginWithPasswordCommand,
+  ) => Promise<LoggedInPassword>;
+  readonly setAccountPassword?: (
+    command: SetAccountPasswordCommand,
+  ) => Promise<void>;
   readonly revokeSession?: (cookieHeader: string | undefined) => Promise<void>;
   readonly rotateSession?: (
     cookieHeader: string | undefined,
@@ -185,6 +199,9 @@ export interface ApiHttpDependencies {
   ) => Promise<AuthoringRecord | null>;
   readonly publishAuthoringContent?: (
     command: PublishAuthoringCommand,
+  ) => Promise<Readonly<{ record: AuthoringRecord }>>;
+  readonly reviewAuthoringContent?: (
+    command: ReviewAuthoringCommand,
   ) => Promise<Readonly<{ record: AuthoringRecord }>>;
   readonly getAccountSecurity?: (
     principalId: string,
@@ -456,7 +473,8 @@ function isAllowed(
     resource,
     scopes: principal.scopes,
     ...(capability === "PUBLISH_CONTENT" ||
-    capability === "VIEW_INTERNAL_SOURCE"
+    capability === "VIEW_INTERNAL_SOURCE" ||
+    capability === "APPROVE_CLINICAL_CONTENT"
       ? {
           approvedClinicalApproverId:
             approvedClinicalApproverId ?? principal.principalId,
@@ -990,6 +1008,51 @@ async function handleAuthoringPublication(
   };
 }
 
+async function handleAuthoringReview(
+  request: ApiHttpRequest,
+  contentId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.reviewAuthoringContent === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = authoringReviewRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const capability =
+    parsed.data.decision === "APROVAR_CLINICAMENTE"
+      ? ("APPROVE_CLINICAL_CONTENT" as const)
+      : ("MODERATE_CONTENT" as const);
+  if (
+    !isAllowed(principal, capability, {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const command: ReviewAuthoringCommand = {
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    contentId,
+    version: parsed.data.version,
+    scopeId: parsed.data.scopeId,
+    decision: parsed.data.decision,
+    rationale: parsed.data.rationale,
+    correlationId: requestId,
+  };
+  const result = await dependencies.reviewAuthoringContent(command);
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalAuthoringProjection(result.record),
+      requestId,
+    ),
+  };
+}
+
 async function handleCorrection(
   request: ApiHttpRequest,
   attemptId: string,
@@ -1099,6 +1162,74 @@ async function handleAcceptInvitation(
     status: 200,
     headers: { "set-cookie": accepted.session.cookie },
     body: apiSuccessResponse({ status: "active" }, requestId),
+  };
+}
+
+async function handlePasswordLogin(
+  request: ApiHttpRequest,
+  requestId: string,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  const parsed = loginRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (dependencies.loginWithPassword === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+
+  const loggedIn = await dependencies.loginWithPassword({
+    login: parsed.data.login,
+    password: parsed.data.password,
+    sessionExpiresInSeconds: parsed.data.sessionExpiresInSeconds,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    headers: { "set-cookie": loggedIn.session.cookie },
+    body: apiSuccessResponse(
+      activeSessionProjectionSchema.parse({ status: "active" }),
+      requestId,
+    ),
+  };
+}
+
+async function handleSessionStatus(
+  request: ApiHttpRequest,
+  requestId: string,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  const principal = await dependencies.authenticate(request);
+  if (principal === null) return errorResponse("unauthenticated", requestId);
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      activeSessionProjectionSchema.parse({ status: "active" }),
+      requestId,
+    ),
+  };
+}
+
+async function handlePasswordUpdate(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  const parsed = passwordUpdateRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (dependencies.setAccountPassword === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  if (principal.accountStatus !== "ACTIVE") {
+    return errorResponse("forbidden", requestId);
+  }
+  await dependencies.setAccountPassword({
+    principalId: principal.principalId,
+    password: parsed.data.password,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse({ status: "updated" }, requestId),
   };
 }
 
@@ -1661,6 +1792,29 @@ export async function handleApiRequest(
       return await handleAcceptInvitation(request, requestId, dependencies);
     }
 
+    if (request.method === "POST" && request.path === "/api/v1/auth/login") {
+      return await handlePasswordLogin(request, requestId, dependencies);
+    }
+
+    if (request.method === "GET" && request.path === "/api/v1/session") {
+      return await handleSessionStatus(request, requestId, dependencies);
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/account/password"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handlePasswordUpdate(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
     if (
       request.method === "POST" &&
       request.path === "/api/v1/session/revoke"
@@ -1909,6 +2063,22 @@ export async function handleApiRequest(
       return await handleInternalAuthoringRecord(
         authoringRecordMatch[1],
         authoringRecordMatch[2],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const authoringReviewMatch = request.path.match(
+      /^\/api\/v1\/internal\/content\/([^/]+)\/review$/u,
+    );
+    if (request.method === "POST" && authoringReviewMatch?.[1] !== undefined) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAuthoringReview(
+        request,
+        authoringReviewMatch[1],
         requestId,
         principal,
         dependencies,

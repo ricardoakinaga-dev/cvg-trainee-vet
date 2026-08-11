@@ -10,6 +10,7 @@ const dashboardModuleStatusSchema = z.enum([
   "RETENCAO_PENDENTE",
   "CONCLUIDO_DIGITAL",
   "BLOQUEADO_PRE_REQUISITO",
+  "AGUARDANDO_PUBLICACAO",
 ]);
 const dashboardNextActionSchema = z
   .string()

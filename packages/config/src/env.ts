@@ -4,6 +4,23 @@ const booleanString = z
   .enum(["true", "false"])
   .transform((value) => value === "true");
 
+const optionalNonEmptyString = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().min(1).optional(),
+);
+
+const optionalHttpUrl = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z
+    .string()
+    .url()
+    .refine(
+      (value) => value.startsWith("http://") || value.startsWith("https://"),
+      "IDENTITY_PROVIDER_URL must use HTTP(S)",
+    )
+    .optional(),
+);
+
 const rawEnvironmentSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -43,15 +60,9 @@ const rawEnvironmentSchema = z.object({
   AI_PROVIDER: z.literal("openai").default("openai"),
   AI_API_KEY: z.string().min(1).optional(),
   AI_MODEL: z.string().min(1).optional(),
-  IDENTITY_PROVIDER_URL: z
-    .string()
-    .url()
-    .refine(
-      (value) => value.startsWith("http://") || value.startsWith("https://"),
-      "IDENTITY_PROVIDER_URL must use HTTP(S)",
-    )
-    .optional(),
-  IDENTITY_PROVIDER_TOKEN: z.string().min(1).optional(),
+  IDENTITY_PROVIDER_REQUIRED: booleanString.default(false),
+  IDENTITY_PROVIDER_URL: optionalHttpUrl,
+  IDENTITY_PROVIDER_TOKEN: optionalNonEmptyString,
   METRICS_SCRAPE_TOKEN: z.string().min(32).optional(),
   OTEL_EXPORTER_OTLP_ENDPOINT: z
     .string()
@@ -72,6 +83,7 @@ export type RuntimeConfig = {
   approvedClinicalApproverId?: string;
   identityProvider:
     { configured: false } | { configured: true; url: string; token: string };
+  identityProviderRequired: boolean;
   observability:
     { configured: false } | { configured: true; otlpEndpoint: string };
   metricsScrapeToken?: string;
@@ -157,6 +169,12 @@ export function loadRuntimeConfig(
   if (value.IDENTITY_PROVIDER_URL && !value.IDENTITY_PROVIDER_TOKEN) {
     missing.push("IDENTITY_PROVIDER_TOKEN");
   }
+  if (value.IDENTITY_PROVIDER_REQUIRED && !value.IDENTITY_PROVIDER_URL) {
+    missing.push("IDENTITY_PROVIDER_URL");
+  }
+  if (value.IDENTITY_PROVIDER_REQUIRED && !value.IDENTITY_PROVIDER_TOKEN) {
+    missing.push("IDENTITY_PROVIDER_TOKEN");
+  }
 
   if (value.NODE_ENV === "production" && !value.METRICS_SCRAPE_TOKEN) {
     missing.push("METRICS_SCRAPE_TOKEN");
@@ -183,6 +201,7 @@ export function loadRuntimeConfig(
             url: value.IDENTITY_PROVIDER_URL,
             token: value.IDENTITY_PROVIDER_TOKEN as string,
           },
+    identityProviderRequired: value.IDENTITY_PROVIDER_REQUIRED,
     observability:
       value.OTEL_EXPORTER_OTLP_ENDPOINT === undefined
         ? { configured: false }

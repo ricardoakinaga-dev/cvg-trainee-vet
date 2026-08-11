@@ -39,9 +39,15 @@ type CurriculumRuntimeProjection = Readonly<{
   readonly moduleId: string;
   readonly version: number;
   readonly status:
-    "DOMINIO_DIGITAL" | "EM_REMEDIACAO" | "AGUARDA_CORRECAO_HUMANA";
+    | "PENDENTE"
+    | "DOMINIO_DIGITAL"
+    | "EM_REMEDIACAO"
+    | "AGUARDA_CORRECAO_HUMANA";
   readonly nextAction:
-    "REVISAR_RETENCAO" | "EXECUTAR_REMEDIACAO" | "AGUARDAR_CORRECAO_HUMANA";
+    | "INICIAR_BASELINE"
+    | "REVISAR_RETENCAO"
+    | "EXECUTAR_REMEDIACAO"
+    | "AGUARDAR_CORRECAO_HUMANA";
   readonly scorePercent?: number;
   readonly remediationCount: number;
   readonly retentionReviews: readonly Readonly<{
@@ -76,7 +82,7 @@ type ApiRecord = Readonly<Record<string, unknown>>;
 const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 
 type ExperienceState = "idle" | "loading" | "ready" | "empty" | "error";
-type RetryAction = "access" | "journey" | "activity" | null;
+type RetryAction = "login" | "journey" | "activity" | null;
 
 class PublicApiError extends Error {
   public constructor(
@@ -176,10 +182,12 @@ function isAttempt(value: unknown): value is AttemptProjection {
 function isRuntime(value: unknown): value is CurriculumRuntimeProjection {
   if (!isRecord(value)) return false;
   const status =
+    value.status === "PENDENTE" ||
     value.status === "DOMINIO_DIGITAL" ||
     value.status === "EM_REMEDIACAO" ||
     value.status === "AGUARDA_CORRECAO_HUMANA";
   const nextAction =
+    value.nextAction === "INICIAR_BASELINE" ||
     value.nextAction === "REVISAR_RETENCAO" ||
     value.nextAction === "EXECUTAR_REMEDIACAO" ||
     value.nextAction === "AGUARDAR_CORRECAO_HUMANA";
@@ -252,7 +260,9 @@ function nextActionLabel(value: string): string {
     CONSULTAR_PROXIMO_PASSO: "Consultar próximo passo",
     EXECUTAR_REMEDIACAO: "Executar remediação",
     REVISAR_RETENCAO: "Revisar retenção",
+    INICIAR_BASELINE: "Iniciar baseline",
     AGUARDAR_CORRECAO_HUMANA: "Aguardar correção humana",
+    AGUARDAR_PUBLICACAO: "Aguardar publicação clínica",
   };
   return labels[value] ?? value;
 }
@@ -263,11 +273,11 @@ function moduleIdFromActivity(activity: ActivityProjection): string | null {
 }
 
 function publicErrorMessage(error: unknown): string {
-  if (error instanceof PublicApiError && error.code === "not_found") {
-    return "O convite não está disponível. Verifique o link interno.";
+  if (error instanceof PublicApiError && error.code === "unauthenticated") {
+    return "Login ou senha inválidos.";
   }
   if (error instanceof PublicApiError && error.code === "validation_error") {
-    return "Revise o token informado e tente novamente.";
+    return "Informe um e-mail profissional e uma senha válida.";
   }
   return "Não foi possível concluir a operação. Tente novamente.";
 }
@@ -326,7 +336,8 @@ function initialActivityId(): string {
 
 export default function HomePage() {
   const [activityId, setActivityId] = useState("");
-  const [token, setToken] = useState("");
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
   const [activity, setActivity] = useState<ActivityProjection | null>(null);
   const [journey, setJourney] = useState<LearningJourneyProjection | null>(
     null,
@@ -408,38 +419,48 @@ export default function HomePage() {
     }
   }
 
-  async function activateAccess(): Promise<void> {
+  async function openJourneyActivity(
+    loadedJourney: LearningJourneyProjection,
+  ): Promise<void> {
+    const requestedActivityId =
+      activityId.trim().length > 0 ? activityId : initialActivityId();
+    if (requestedActivityId.length > 0) {
+      setActivityId(requestedActivityId);
+      await loadActivity(requestedActivityId);
+      return;
+    }
+    const nextActivity = loadedJourney.activities.find(
+      (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
+    );
+    if (nextActivity !== undefined) {
+      setActivityId(nextActivity.activityId);
+      await loadActivity(nextActivity.activityId);
+    }
+  }
+
+  async function signIn(): Promise<void> {
     setBusy(true);
     setError(null);
     setNotice(null);
     setRetryAction(null);
     try {
-      await requestJson("/api/v1/invitations/accept", {
+      await requestJson("/api/v1/auth/login", {
         method: "POST",
-        body: { token, sessionExpiresInSeconds: 3600 },
+        body: { login, password, sessionExpiresInSeconds: 3600 },
       });
     } catch (caught) {
-      setRetryAction("access");
+      setRetryAction("login");
       setError(publicErrorMessage(caught));
       setBusy(false);
       return;
     }
 
     setAuthenticated(true);
-    setNotice("Acesso ativado.");
+    setPassword("");
+    setNotice("Login realizado.");
     try {
       const loadedJourney = await loadJourney();
-      if (activityId.trim().length > 0) {
-        await loadActivity(activityId);
-      } else {
-        const nextActivity = loadedJourney.activities.find(
-          (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-        );
-        if (nextActivity !== undefined) {
-          setActivityId(nextActivity.activityId);
-          await loadActivity(nextActivity.activityId);
-        }
-      }
+      await openJourneyActivity(loadedJourney);
     } catch (caught) {
       setError(publicErrorMessage(caught));
     } finally {
@@ -447,9 +468,25 @@ export default function HomePage() {
     }
   }
 
-  function handleAccept(event: FormEvent<HTMLFormElement>): void {
+  function handleLogin(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    void activateAccess();
+    void signIn();
+  }
+
+  async function restoreSession(): Promise<void> {
+    try {
+      await requestJson("/api/v1/session", { method: "GET" });
+    } catch {
+      return;
+    }
+
+    setAuthenticated(true);
+    try {
+      const loadedJourney = await loadJourney();
+      await openJourneyActivity(loadedJourney);
+    } catch (caught) {
+      setError(publicErrorMessage(caught));
+    }
   }
 
   async function refreshJourney(): Promise<void> {
@@ -492,7 +529,7 @@ export default function HomePage() {
   }
 
   function handleRetry(): void {
-    if (retryAction === "access") void activateAccess();
+    if (retryAction === "login") void signIn();
     if (retryAction === "journey") void refreshJourney();
     if (retryAction === "activity") void refreshActivity();
   }
@@ -606,6 +643,10 @@ export default function HomePage() {
     }
   }
 
+  useEffect(() => {
+    void restoreSession();
+  }, []);
+
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
       <header className="topbar" aria-label="Identificação do ambiente">
@@ -630,32 +671,48 @@ export default function HomePage() {
       {!authenticated ? (
         <section className="hero-card" aria-labelledby="access-title">
           <div className="hero-copy">
-            <p className="eyebrow">Entrada por convite</p>
-            <h1 id="access-title">Acesso interno</h1>
+            <p className="eyebrow">Entrada segura</p>
+            <h1 id="access-title">Entrar no treinamento</h1>
             <p>
-              Use o convite recebido internamente para ativar sua sessão. Não
-              usamos senha ou arquivo clínico nesta etapa.
+              Use seu e-mail profissional e sua senha para continuar sua
+              jornada. A sessão é protegida e o conteúdo é apresentado apenas
+              depois da autenticação.
             </p>
           </div>
-          <form className="access-form" onSubmit={handleAccept}>
-            <label htmlFor="invitation-token">Token de convite</label>
-            <p id="invitation-help" className="field-help">
-              O token é usado somente para ativar sua sessão interna.
+          <form className="access-form" onSubmit={handleLogin}>
+            <label htmlFor="login">E-mail profissional</label>
+            <p id="login-help" className="field-help">
+              Use o e-mail cadastrado pela operação do ambiente.
             </p>
             <input
-              id="invitation-token"
-              name="token"
+              id="login"
+              name="login"
+              type="email"
+              autoComplete="username"
+              aria-describedby="login-help"
+              value={login}
+              onChange={(event) => setLogin(event.target.value)}
+              maxLength={320}
+              required
+            />
+            <label htmlFor="password">Senha</label>
+            <p id="password-help" className="field-help">
+              A senha deve ter pelo menos 12 caracteres.
+            </p>
+            <input
+              id="password"
+              name="password"
               type="password"
-              autoComplete="one-time-code"
-              aria-describedby="invitation-help"
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              minLength={32}
-              maxLength={256}
+              autoComplete="current-password"
+              aria-describedby="password-help"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              minLength={12}
+              maxLength={128}
               required
             />
             <button type="submit" disabled={busy}>
-              {busy ? "Ativando…" : "Ativar acesso"}
+              {busy ? "Entrando…" : "Entrar"}
             </button>
           </form>
         </section>

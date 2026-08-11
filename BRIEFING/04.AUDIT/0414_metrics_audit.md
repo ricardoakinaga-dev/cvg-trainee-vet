@@ -1,5 +1,9 @@
 # 0414 — Metrics Audit
 
+## Reauditoria vigente — 2026-08-11
+
+O smoke de carga com timeout explícito passou com 100/100 respostas 200 e p95 aproximado de 115,47 ms. A topologia HA foi validada. O comando default do smoke falha antes das requisições porque o valor 5_000 é convertido de forma inválida; não há prova de SLO/alerta efetivo em ambiente externo ou traces duráveis.
+
 Resultado: PARTIAL no recorte F3-S3 + complemento F3-S5 — contadores/histogramas em memória e instrumentação de API/worker passam em testes; não há collector persistente, alertas, SLOs publicados ou dashboards nesta fase.
 
 ## Métricas técnicas

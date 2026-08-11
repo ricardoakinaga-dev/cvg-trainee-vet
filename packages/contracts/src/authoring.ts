@@ -109,6 +109,15 @@ export const authoringPublicationRequestSchema = z
   })
   .strict();
 
+export const authoringReviewRequestSchema = z
+  .object({
+    version: versionSchema,
+    scopeId: idSchema,
+    decision: z.enum(["APROVAR_CLINICAMENTE", "SOLICITAR_AJUSTES"]),
+    rationale: plainTextSchema,
+  })
+  .strict();
+
 export const internalAuthoringRecordProjectionSchema = z
   .object({
     contentId: idSchema,
@@ -121,6 +130,9 @@ export const internalAuthoringRecordProjectionSchema = z
     contentStatus: z.enum([
       "RASCUNHO",
       "AUTOVERIFICADO",
+      "EM_REVISAO_CLINICA",
+      "AJUSTES_SOLICITADOS",
+      "APROVADO_CLINICAMENTE",
       "PROJECAO_VERIFICADA",
       "AUTORIZADO_PARA_PUBLICACAO",
       "PUBLICADO",
@@ -134,6 +146,9 @@ export const internalAuthoringRecordProjectionSchema = z
 
 export type AuthoringPublicationRequest = z.infer<
   typeof authoringPublicationRequestSchema
+>;
+export type AuthoringReviewRequest = z.infer<
+  typeof authoringReviewRequestSchema
 >;
 export type InternalAuthoringRecordProjection = z.infer<
   typeof internalAuthoringRecordProjectionSchema

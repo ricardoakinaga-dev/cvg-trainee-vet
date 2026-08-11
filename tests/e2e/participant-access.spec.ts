@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-const invitationToken = "a".repeat(32);
+const loginEmail = "participant@cvg.example";
+const loginCredential = "Acesso-" + "CVG-2026!Seguro";
 const activityId = "11111111-1111-4111-8111-111111111111";
 const attemptId = "22222222-2222-4222-8222-222222222222";
 const itemId = "33333333-3333-4333-8333-333333333333";
@@ -11,6 +12,16 @@ function successEnvelope(data: unknown) {
     data,
     meta: { request_id: "e2e-request" },
   };
+}
+
+async function signIn(
+  page: Page,
+  email = loginEmail,
+  credential = loginCredential,
+): Promise<void> {
+  await page.getByLabel("E-mail profissional").fill(email);
+  await page.getByLabel("Senha").fill(credential);
+  await page.getByRole("button", { name: "Entrar" }).click();
 }
 
 test.describe("participant access and learning projection", () => {
@@ -43,7 +54,7 @@ test.describe("participant access and learning projection", () => {
   test("loads the learning path and starts with its next action", async ({
     page,
   }) => {
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -89,8 +100,7 @@ test.describe("participant access and learning projection", () => {
     });
 
     await page.goto("/");
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await signIn(page);
 
     await expect(
       page.getByRole("heading", { name: "Emergência" }),
@@ -101,7 +111,7 @@ test.describe("participant access and learning projection", () => {
   test("accepts an internal invitation and renders only the participant activity", async ({
     page,
   }) => {
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -135,10 +145,9 @@ test.describe("participant access and learning projection", () => {
 
     await page.goto(`/?activityId=${activityId}`);
     await expect(
-      page.getByRole("heading", { name: "Acesso interno" }),
+      page.getByRole("heading", { name: "Entrar no treinamento" }),
     ).toBeVisible();
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await signIn(page);
 
     await expect(
       page.getByRole("heading", { name: "Emergência" }),
@@ -155,15 +164,15 @@ test.describe("participant access and learning projection", () => {
   test("shows a bounded public error for an unavailable invitation", async ({
     page,
   }) => {
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
-        status: 404,
+        status: 401,
         contentType: "application/json",
         body: JSON.stringify({
           success: false,
           error: {
-            code: "not_found",
-            message: "O recurso solicitado não foi encontrado.",
+            code: "unauthenticated",
+            message: "Credenciais inválidas.",
             details: [],
           },
           meta: { request_id: "e2e-request" },
@@ -172,11 +181,10 @@ test.describe("participant access and learning projection", () => {
     });
 
     await page.goto("/");
-    await page.getByLabel("Token de convite").fill("b".repeat(32));
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await signIn(page, "missing@cvg.example", "Senha-" + "incorreta-2026!");
 
     await expect(page.locator("p[role=alert]")).toHaveText(
-      "O convite não está disponível. Verifique o link interno.",
+      "Login ou senha inválidos.",
     );
     await expect(page.locator("body")).not.toContainText("stack");
     await expect(page.locator("body")).not.toContainText("tokenHash");
@@ -186,7 +194,7 @@ test.describe("participant access and learning projection", () => {
     page,
   }) => {
     const choiceItemId = "44444444-4444-4444-8444-444444444444";
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -261,8 +269,7 @@ test.describe("participant access and learning projection", () => {
     );
 
     await page.goto(`/?activityId=${activityId}`);
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await signIn(page);
     await page.getByRole("button", { name: "Iniciar tentativa" }).click();
     await page.getByRole("checkbox", { name: /Avaliar via aérea/ }).check();
     await page.getByRole("checkbox", { name: /Designar funções/ }).check();
@@ -273,7 +280,7 @@ test.describe("participant access and learning projection", () => {
   test("starts, saves, and submits an attempt through public projections", async ({
     page,
   }) => {
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -356,8 +363,7 @@ test.describe("participant access and learning projection", () => {
     );
 
     await page.goto(`/?activityId=${activityId}`);
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await signIn(page);
     await page.getByRole("button", { name: "Iniciar tentativa" }).click();
     await page
       .getByLabel("Resposta — Prioridades iniciais")
@@ -371,7 +377,7 @@ test.describe("participant access and learning projection", () => {
   test("renders the persisted curriculum runtime next action without internal fields", async ({
     page,
   }) => {
-    await page.route("**/api/v1/invitations/accept", async (route) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -430,8 +436,7 @@ test.describe("participant access and learning projection", () => {
     );
 
     await page.goto(`/?activityId=${activityId}`);
-    await page.getByLabel("Token de convite").fill(invitationToken);
-    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await signIn(page);
 
     await expect(page.getByText("REVISAR_RETENCAO")).toBeVisible();
     await expect(

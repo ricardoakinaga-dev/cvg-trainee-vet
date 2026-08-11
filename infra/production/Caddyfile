@@ -1,8 +1,38 @@
-:8080 {
+(common_headers) {
+  header {
+    -Server
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "no-referrer"
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Cross-Origin-Opener-Policy "same-origin"
+    Cross-Origin-Resource-Policy "same-origin"
+    Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+  }
+}
+
+(common_proxy) {
   encode gzip
+  import common_headers
   reverse_proxy api-a:3000 api-b:3000 {
     health_uri /health/live
     health_interval 5s
     health_timeout 2s
   }
+}
+
+:8080 {
+  import common_headers
+  @health path /health/*
+  handle @health {
+    import common_proxy
+  }
+  @not_health not path /health/*
+  redir @not_health {$CVG_PUBLIC_HTTPS_ORIGIN:https://localhost:8443}{uri} 308
+}
+
+https://localhost:8443 {
+  tls internal
+  import common_proxy
+  header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 }

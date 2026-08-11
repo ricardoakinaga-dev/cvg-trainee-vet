@@ -1,5 +1,9 @@
 # 0416 — Data Integrity Audit
 
+## Reauditoria vigente — 2026-08-11
+
+As consultas do banco ativo confirmaram 1 conta ativa, 1 atividade publicada, 1 atribuição disponível, 33 versões públicas, 33 itens, 0 estados curriculares, 5 sessões e 8 auditorias. A RLS bloqueou corretamente o seed direto do fixture em activity_assignments. Os registros sintéticos parciais foram removidos; o evento de auditoria append-only permaneceu preservado.
+
 Resultado: PARTIAL — F3-S3.
 
 ## Verificar

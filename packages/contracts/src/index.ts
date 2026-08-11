@@ -31,6 +31,7 @@ export { contentTransitionRequestSchema } from "./content.js";
 export type { ContentTransitionRequest } from "./content.js";
 export {
   authoringPublicationRequestSchema,
+  authoringReviewRequestSchema,
   internalAuthoringRecordProjectionSchema,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
@@ -51,6 +52,12 @@ export type {
   AcceptInvitationRequest,
   CreateInvitationRequest,
 } from "./invitation.js";
+export {
+  activeSessionProjectionSchema,
+  loginRequestSchema,
+  passwordUpdateRequestSchema,
+} from "./auth.js";
+export type { LoginRequest, PasswordUpdateRequest } from "./auth.js";
 export {
   parseParticipantProgress,
   participantProgressProjectionSchema,

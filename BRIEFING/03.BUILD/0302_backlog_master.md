@@ -234,6 +234,119 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - testes: `CONTENT-REDACTION-*`, `CONTENT-PREFLIGHT-*`
 - pronto: versão aprovada e nenhuma referência protegida na superfície participante.
 
+## REMEDIAÇÃO R — AUD-2026-08-11-WORKTREE-LOGIN
+
+### R0-S1 — Baseline auditável
+
+- **descrição:** congelar diff, branch, manifesto e gates sem apagar alterações existentes;
+- **módulo:** governança/release;
+- **dependência:** autorização da remediação;
+- **phase:** R0;
+- **risco:** alto;
+- **impacto:** alto;
+- **testes:** verify, verify-documentation, verify-traceability, git diff --check;
+- **pronto:** todos os arquivos da janela ligados a um SHA ou status explicitamente pendente;
+- **status:** COMPLETED;
+- **plano:** 0303_remediation_program.md.
+
+### R1-S1/R1-S2/R1-S3 — E2E real e RLS
+
+- **descrição:** separar DATABASE_URL da API e DATABASE_ADMIN_URL do fixture, tornar seed/cleanup idempotentes e executar web → API → PostgreSQL real;
+- **módulo:** CI/E2E/persistence/security;
+- **dependência:** R0-S1;
+- **phase:** R1;
+- **risco:** alto;
+- **impacto:** alto;
+- **testes:** RLS negativo, seed/cleanup, E2E real, acesso cruzado;
+- **pronto:** E2E real verde sem dar BYPASSRLS à API;
+- **status:** COMPLETED;
+- **evidência:** `scripts/real-e2e-fixture-server.mjs`; `playwright.config.ts`; `.github/workflows/quality.yml`; E2E real 14/14 em banco efêmero com papel da API sem `SUPERUSER`/`BYPASSRLS`; limpeza do banco e papel transitórios confirmada;
+- **plano:** 0303_remediation_program.md.
+
+### R2-S1 — Atribuições e estados dos 24 módulos
+
+- **descrição:** job administrativo idempotente para 24 learning_assignments e 24 curriculum_runtime_states, com estado inicial honesto;
+- **módulo:** curriculum/application/persistence;
+- **dependência:** R1-S1;
+- **phase:** R2;
+- **risco:** alto;
+- **impacto:** alto;
+- **testes:** live PostgreSQL, idempotência, RLS contextual, learning path;
+- **pronto:** 24 estados/atribuições visíveis somente no escopo autorizado e nenhum mastery inventado;
+- **status:** COMPLETED localmente;
+- **evidência:** `scripts/materialize-curriculum.mjs` executado no banco ativo e em banco efêmero: 24 `learning_activities`, 796 versões/editorial/itens, 24 `learning_assignments`, 24 `curriculum_runtime_states`; segunda execução idempotente com zero inserts; estados `PENDENTE`/`INICIAR_BASELINE`, atribuições `NAO_ATRIBUIDO`; RLS da API permanece sem `SUPERUSER`/`BYPASSRLS`;
+- **plano:** 0303_remediation_program.md.
+
+### R2-S2/R2-S3 — Packs, revisão e publicação
+
+- **descrição:** produzir banco autoral dos 24 packs, preflight, revisão item a item e publicação/retirada rastreável;
+- **módulo:** authoring/content/governance;
+- **dependência:** R2-S1, source registry e revisão de Ricardo;
+- **phase:** R2;
+- **risco:** crítico;
+- **impacto:** alto;
+- **testes:** preflight, exposure, authoring E2E, publicação parcial recusada;
+- **pronto:** cada pack tem status e decisão; somente conteúdo revisado pode ser PUBLICADO;
+- **status:** WAITING_HUMAN_APPROVAL;
+- **evidência:** banco autoral e preflight materializados para 24 módulos; publicação permanece protegida por aprovação clínica independente; 763 versões novas estão `PROJECAO_VERIFICADA`, 33 versões M02 pré-existentes `PUBLICADO`; revisão semântica/item a item de Ricardo ainda é obrigatória;
+- **plano:** 0303_remediation_program.md.
+
+### R3-S1/R3-S2/R3-S3 — Provedor, recuperação e MFA
+
+- **descrição:** escolher e integrar provedor externo, recovery, enrollment/challenge MFA, step-up e revogação;
+- **módulo:** identity/security/web;
+- **dependência:** decisão humana de provedor, domínio e política;
+- **phase:** R3;
+- **risco:** crítico;
+- **impacto:** alto;
+- **testes:** adapter unitário, sandbox do provedor, E2E recovery/MFA e secret scan;
+- **pronto:** status externo disponível, operação real comprovada e nenhum segredo/log sensível;
+- **status:** WAITING_HUMAN_APPROVAL;
+- **evidência:** configuração fail-closed e adapter testado para ausência/erro do provedor; recovery/MFA não retornam sucesso sem `IDENTITY_PROVIDER_REQUIRED`, URL HTTPS e token configurados; sandbox/provedor real ainda não escolhido;
+- **plano:** 0303_remediation_program.md.
+
+### R4-S1/R4-S2 — Headers e TLS
+
+- **descrição:** CSP, HSTS condicional, headers de proteção, domínio, DNS, certificado e redirect HTTPS;
+- **módulo:** edge/web/runtime;
+- **dependência:** domínio e infraestrutura autorizados;
+- **phase:** R4;
+- **risco:** crítico;
+- **impacto:** alto;
+- **testes:** curl headers, TLS handshake, renovação staging, E2E HTTPS;
+- **pronto:** edge HTTPS sem mixed content e cookie Secure;
+- **status:** WAITING_HUMAN_APPROVAL;
+- **evidência:** Caddy/Next headers, redirect HTTP→HTTPS e TLS interno foram verificados ao vivo em `:3180/:3181`; certificado gerenciado, domínio/DNS e E2E público aguardam decisão humana;
+- **plano:** 0303_remediation_program.md.
+
+### R5-S1/R5-S2/R5-S3 — Traces, deploy, rollback e restore
+
+- **descrição:** backend durável de traces, release manifest, canário, rollback, backup agendado e restore com RPO/RTO;
+- **módulo:** observability/runtime/release;
+- **dependência:** storage/ambiente autorizado;
+- **phase:** R5;
+- **risco:** crítico;
+- **impacto:** alto;
+- **testes:** trace após restart, deploy de dois digests, rollback, pg_dump/restore e failover;
+- **pronto:** evidência live de retenção, rollback e RPO ≤ 1h/RTO ≤ 4h;
+- **status:** WAITING_HUMAN_APPROVAL;
+- **evidência:** Tempo 3.0.0 recebeu trace OTLP consultável após restart em volume `tempo-data`; manifest imutável, dry-run de canário/rollback e backup PostgreSQL com checksum passaram; storage externo, retenção de produção, RPO/RTO e promoção real permanecem pendentes;
+- **plano:** 0303_remediation_program.md.
+
+### R6-S1/R6-S2/R6-S3 — Carga, auditoria e commit
+
+- **descrição:** corrigir parser 5_000, executar quality gate completo, atualizar auditoria e criar SHA final;
+- **módulo:** scripts/CI/audit/release;
+- **dependência:** R1–R5 conforme o escopo;
+- **phase:** R6;
+- **risco:** alto;
+- **impacto:** alto;
+- **testes:** load smoke default, verify, build, E2E, live, restore, security, diff-check;
+- **pronto:** worktree limpo, commit auditável e reauditoria no mesmo SHA sem P1 aberto;
+- **status:** READY_FOR_NEXT_STEP;
+- **evidência:** load smoke default 200/200, edge/Tempo/HA verificados ao vivo; `pnpm verify` 406/423 com cobertura global acima de 80%, build, audit, E2E real 14/14, restore isolado e diff-check passaram; somente commit/re-auditoria no SHA e gates humanos permanecem;
+- **plano:** 0303_remediation_program.md.
+
 ## P2 — MÉDIO
 
 - BLD-020: melhoria de busca interna e reindexação sem alterar fonte de verdade;

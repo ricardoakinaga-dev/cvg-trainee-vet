@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   ContentRecord,
@@ -16,6 +16,7 @@ import {
 import { createAuditRepository } from "./audit-repository.js";
 import {
   contentEditorialRecords,
+  contentReviewDecisions,
   contentVersions,
   outboxEvents,
 } from "./schema.js";
@@ -59,6 +60,9 @@ const maxReconciliationRecords = 10_000;
 const contentStatuses: readonly ContentStatus[] = [
   "RASCUNHO",
   "AUTOVERIFICADO",
+  "EM_REVISAO_CLINICA",
+  "AJUSTES_SOLICITADOS",
+  "APROVADO_CLINICAMENTE",
   "PROJECAO_VERIFICADA",
   "AUTORIZADO_PARA_PUBLICACAO",
   "PUBLICADO",
@@ -171,10 +175,28 @@ export function createContentRepository(
         });
       }
       const gate = publicationGate(editorial.preflight);
+      const reviewRows = await db
+        .select({ decision: contentReviewDecisions.decision })
+        .from(contentReviewDecisions)
+        .where(
+          and(
+            eq(contentReviewDecisions.contentId, contentId),
+            eq(contentReviewDecisions.version, version),
+          ),
+        )
+        .orderBy(desc(contentReviewDecisions.reviewedAt))
+        .limit(1);
+      const latestReview = reviewRows[0];
+      const clinicallyApproved =
+        latestReview?.decision === "APROVAR_CLINICAMENTE";
+      const publicationBlockReasons = [
+        ...gate.reasons,
+        ...(clinicallyApproved ? [] : ["CLINICAL_REVIEW_MISSING"]),
+      ];
       return contentRowToRecord({
         ...row,
-        publicationReady: gate.ready,
-        publicationBlockReasons: gate.reasons,
+        publicationReady: gate.ready && clinicallyApproved,
+        publicationBlockReasons: publicationBlockReasons,
       });
     },
     save: async (

@@ -163,6 +163,10 @@ button:disabled {
   gap: 0.65rem;
 }
 
+.access-form {
+  align-self: center;
+}
+
 label {
   color: var(--green-dark);
   font-size: 0.85rem;

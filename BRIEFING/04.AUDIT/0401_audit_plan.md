@@ -1,5 +1,9 @@
 # 0401 — Audit Plan — CVG
 
+## Reauditoria vigente — 2026-08-11
+
+O recorte foi reexecutado sobre o runtime local ativo e o worktree atual. A coleta incluiu leitura de BRIEFING/docs, pnpm verify, pnpm build, E2E sintético, tentativa de E2E real, smoke HTTP, smoke de carga com timeout explícito, verificação de topologia HA, audit de dependências, scanner de segredos, diff-check e consulta agregada do PostgreSQL. A classificação vigente é PARTIAL: o núcleo local funciona, mas a prova real foi interrompida pelo fixture incompatível com RLS e a rastreabilidade do worktree não está fechada.
+
 **Execução atual:** `AUD-F3-S3-SCOPED` + complementos `AUD-F3-S4-WEB-E2E`/`AUD-F3-S5-OBSERVABILITY`/`AUD-F3-S6-EDGE-HARDENING`/`AUD-F3-S7-INDEX-RECONCILIATION`/`AUD-F3-S8-SESSION-ROTATION`; resultado em consolidação em `0490_audit_report.md` como `PASS_WITH_GAPS`, sem autorização de release.
 
 ## Método

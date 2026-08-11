@@ -1,0 +1,10 @@
+{
+  "releaseId": "cvg-example-release",
+  "image": "registry.example.invalid/cvg-trainee-vet",
+  "imageDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "rollbackImageDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "migrationStrategy": "EXPAND_CONTRACT",
+  "canaryService": "api-a",
+  "healthPath": "/health/ready",
+  "canarySeconds": 60
+}

@@ -33,6 +33,7 @@ export type AdvanceContentCommand = Readonly<{
   readonly scopeId: string;
   readonly event: ContentEvent["type"];
   readonly correlationId: string;
+  readonly approvedClinicalApproverId?: string;
 }>;
 
 export interface ContentRepositoryPort {
@@ -85,6 +86,9 @@ export interface ContentUseCaseDependencies {
 const capabilityByEvent: Readonly<Record<ContentEvent["type"], Capability>> = {
   AUTOVERIFICAR: "AUTHOR_CONTENT",
   VERIFICAR_PROJECAO: "AUTHOR_CONTENT",
+  ENVIAR_PARA_REVISAO_CLINICA: "MODERATE_CONTENT",
+  SOLICITAR_AJUSTES: "MODERATE_CONTENT",
+  APROVAR_CLINICAMENTE: "APPROVE_CLINICAL_CONTENT",
   AUTORIZAR_PUBLICACAO: "PUBLISH_CONTENT",
   PUBLICAR: "PUBLISH_CONTENT",
   PUBLICAR_AUTOMATICAMENTE: "PUBLISH_CONTENT",
@@ -141,6 +145,9 @@ export async function advanceContent(
     capability,
     resource: { scopeId: command.scopeId },
     scopes: command.scopes,
+    ...(command.approvedClinicalApproverId === undefined
+      ? {}
+      : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
   });
   if (!authorized) {
     throw new ApplicationError(

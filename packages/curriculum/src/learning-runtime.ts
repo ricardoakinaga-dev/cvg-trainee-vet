@@ -98,10 +98,10 @@ export type CurriculumDraftPack = Readonly<{
   readonly moduleId: string;
   readonly version: "1.0.0";
   readonly status: DraftContentStatus;
-  readonly publicationAuthorized: true;
+  readonly publicationAuthorized: false;
   readonly sourceVerification: "VERIFICADO_AUTOMATICAMENTE";
   readonly publicProjectionReady: true;
-  readonly clinicalReviewRequired: false;
+  readonly clinicalReviewRequired: true;
   readonly items: readonly CurriculumDraftItem[];
   readonly learningLoop: ModuleLearningLoop;
 }>;
@@ -119,11 +119,11 @@ export type DiagnosticDraftPack = Readonly<{
   readonly diagnosticId: "B07-DIAGNOSTIC-V1";
   readonly blueprintId: "B07-BLUEPRINT-V1";
   readonly version: "0.1.0";
-  readonly status: "PUBLICADO";
-  readonly publicationAuthorized: true;
+  readonly status: "RASCUNHO";
+  readonly publicationAuthorized: false;
   readonly sourceVerification: "VERIFICADO_AUTOMATICAMENTE";
   readonly publicProjectionReady: true;
-  readonly clinicalReviewRequired: false;
+  readonly clinicalReviewRequired: true;
   readonly items: readonly DiagnosticDraftItem[];
 }>;
 
@@ -174,10 +174,13 @@ export type RetentionReviewResult = Readonly<{
 }>;
 
 export type ModuleEvaluationStatus =
-  "DOMINIO_DIGITAL" | "EM_REMEDIACAO" | "AGUARDA_CORRECAO_HUMANA";
+  "PENDENTE" | "DOMINIO_DIGITAL" | "EM_REMEDIACAO" | "AGUARDA_CORRECAO_HUMANA";
 
 export type ModuleNextAction =
-  "REVISAR_RETENCAO" | "EXECUTAR_REMEDIACAO" | "AGUARDAR_CORRECAO_HUMANA";
+  | "INICIAR_BASELINE"
+  | "REVISAR_RETENCAO"
+  | "EXECUTAR_REMEDIACAO"
+  | "AGUARDAR_CORRECAO_HUMANA";
 
 export type ModuleEvaluationResult = Readonly<{
   readonly moduleId: string;
@@ -250,8 +253,8 @@ export type DraftPreflightReport = Readonly<{
   readonly modules: readonly DraftPreflightModuleResult[];
   readonly diagnostic: DraftPreflightDiagnosticResult;
   readonly allTechnicalChecksPassed: boolean;
-  readonly clinicalApprovalPending: false;
-  readonly readyForPublication: true;
+  readonly clinicalApprovalPending: true;
+  readonly readyForPublication: false;
 }>;
 
 export class LearningRuntimeError extends Error {
@@ -263,6 +266,27 @@ export class LearningRuntimeError extends Error {
 
 function freeze<T>(value: T): Readonly<T> {
   return Object.freeze(value);
+}
+
+export function createInitialModuleEvaluation(
+  moduleId: string,
+): ModuleEvaluationResult {
+  if (!/^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(moduleId)) {
+    throw new LearningRuntimeError("moduleId is invalid");
+  }
+  return freeze({
+    moduleId,
+    status: "PENDENTE",
+    nextAction: "INICIAR_BASELINE",
+    objectiveResults: freeze([]),
+    remediationObjectiveIds: freeze([]),
+    criticalErrorItemIds: freeze([]),
+    invalidAnswerItemIds: freeze([]),
+    unansweredChoiceItemIds: freeze([]),
+    openResponseItemIds: freeze([]),
+    retentionReviews: freeze([]),
+    practicalCompetenceClaim: "PROIBIDO_MVP",
+  });
 }
 
 function unique<T>(values: readonly T[]): readonly T[] {
@@ -488,11 +512,11 @@ export const b07DiagnosticDraftPack: DiagnosticDraftPack = freeze({
   diagnosticId: "B07-DIAGNOSTIC-V1",
   blueprintId: "B07-BLUEPRINT-V1",
   version: "0.1.0",
-  status: "PUBLICADO",
-  publicationAuthorized: true,
+  status: "RASCUNHO",
+  publicationAuthorized: false,
   sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
   publicProjectionReady: true,
-  clinicalReviewRequired: false,
+  clinicalReviewRequired: true,
   items: freeze(
     b07Blueprint.items.map((item, index) =>
       createDiagnosticItem(item, index + 1),
@@ -669,11 +693,11 @@ function createDraftPack(module: CurriculumModule): CurriculumDraftPack {
   return freeze({
     moduleId: module.id,
     version: "1.0.0",
-    status: "PUBLICADO",
-    publicationAuthorized: true,
+    status: "RASCUNHO",
+    publicationAuthorized: false,
     sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
     publicProjectionReady: true,
-    clinicalReviewRequired: false,
+    clinicalReviewRequired: true,
     items,
     learningLoop: createLearningLoop(module, items),
   });
@@ -1162,8 +1186,7 @@ export function preflightCurriculumDrafts(
         checks.blueprintCount &&
         checks.requiredFields &&
         checks.correctionMetadata &&
-        checks.publicBoundary &&
-        !checks.publicationBlocked,
+        checks.publicBoundary,
       questionCount,
       openResponseCount,
       checks,
@@ -1216,8 +1239,7 @@ export function preflightCurriculumDrafts(
       diagnosticChecks.blueprintCount &&
       diagnosticChecks.requiredFields &&
       diagnosticChecks.correctionMetadata &&
-      diagnosticChecks.publicBoundary &&
-      !diagnosticChecks.publicationBlocked,
+      diagnosticChecks.publicBoundary,
     itemCount: diagnosticItems.length,
     itemsBySession: diagnosticItemsBySession,
     checks: diagnosticChecks,
@@ -1229,7 +1251,7 @@ export function preflightCurriculumDrafts(
     allTechnicalChecksPassed:
       modules.every((module) => module.technicalChecksPassed) &&
       diagnostic.technicalChecksPassed,
-    clinicalApprovalPending: false,
-    readyForPublication: true,
+    clinicalApprovalPending: true,
+    readyForPublication: false,
   });
 }

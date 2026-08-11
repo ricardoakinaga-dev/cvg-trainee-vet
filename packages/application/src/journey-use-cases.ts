@@ -24,6 +24,8 @@ export type JourneyNextAction =
   | ProgressNextAction
   | "EXECUTAR_REMEDIACAO"
   | "REVISAR_RETENCAO"
+  | "INICIAR_BASELINE"
+  | "AGUARDAR_PUBLICACAO"
   | "AGUARDAR_CORRECAO_HUMANA";
 
 export type ParticipantLearningJourneyState = Readonly<{
@@ -122,6 +124,7 @@ export function deriveJourneyNextAction(
   const runtimeAction = state.runtimes.find(
     (runtime) => runtime.evaluation.nextAction !== undefined,
   )?.evaluation.nextAction;
+  if (runtimeAction === "INICIAR_BASELINE") return "AGUARDAR_PUBLICACAO";
   if (runtimeAction !== undefined) return runtimeAction;
 
   const activityAction = state.activities.find(

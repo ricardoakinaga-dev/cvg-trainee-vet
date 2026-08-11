@@ -3,36 +3,100 @@
 ## CONTEXTO
 
 - project: cvg-trainee-vet
-- current_engine: BUILD ENGINE
+- current_engine: AUDIT ENGINE
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
 ## POSIÇÃO ATUAL
 
 - current_phase: AUDIT — fechamento técnico da rodada e handoff operacional
-- current_sprint: SOURCE-PRODUCT-OPS-18
-- current_task: fechar a remoção do gate clínico executável, atualizar evidências e manter os gaps externos explícitos
+- current_sprint: BUILD-REMEDIATION-R6
+- current_task: fechar quality gate, rastreabilidade e commit da remediação local
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: WAITING_HUMAN_APPROVAL
 
 ## PROGRESSO
 
-- last_completed_action: removida a rota/contrato/caso de uso/transição de revisão clínica de autoria; o gate integral pós-reconciliação passou (`pnpm verify`, `pnpm build`, `pnpm test:e2e` 12/12, `pnpm audit --audit-level=high`), assim como fontes, rastreabilidade e fronteira pública; a prova Docker HA foi capturada e seus containers/volumes sintéticos foram removidos
-- next_action: quando houver infraestrutura externa, configurar provider de identidade, backend durável de traces e deployment/rollback; antes de qualquer release, criar um commit intencional deste worktree e repetir a auditoria no SHA
+- last_completed_action: R1–R6 locais comprovados: E2E real 14/14 com API sem SUPERUSER/BYPASSRLS; materialização idempotente dos 24 módulos/796 itens no banco ativo; review/publication gate clínico fail-closed; MFA/recovery NOT_CONFIGURED sem provedor; edge HTTP/HTTPS e headers verificados; Tempo recebeu trace após restart; release/rollback, backup/restore, `pnpm verify`, build, audit e load smoke passaram
+- next_action: revisar o diff, criar o commit convencional e repetir a auditoria no SHA; depois obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente de deploy
 
 ## BLOQUEIOS
 
-- blockers: nenhum bloqueio humano clínico ativo no caminho de publicação automática; a migration 0014 conserva somente histórico; permanecem gaps técnicos/operacionais honestos: provedor externo de identidade ainda não configurado, backend durável de traces ainda não configurado, deployment/segredos de produção ainda não executados, piloto real e prova semântica texto-a-texto dos livros ainda não executados
+- blockers: revisão semântica/humana dos 796 itens e publicação clínica; provedor externo de MFA/recuperação; domínio/certificado TLS de produção; storage/retention de traces e backups de produção; ambiente autorizado para deploy/rollback e piloto; SHA final ainda pendente até o fechamento desta rodada
 
 ## DECISÃO HUMANA
 
-- human_decision_required: no
-- decision_description: a publicação ativa usa pré-voo automático contra os três PDFs registrados; controles de segurança, autorização, observabilidade e auditoria permanecem obrigatórios, mas não constituem aprovação clínica humana adicional
+- human_decision_required: yes
+- decision_description: decidir provedor externo de identidade/MFA, domínio/DNS/TLS, backend de traces, destino de backup e ambiente autorizado de deploy; R0/R1/R2/R6 podem avançar com dados sintéticos
 
 ## TIMESTAMP
 
-- last_update: 2026-08-10T11:20:30-03:00
+- last_update: 2026-08-11T08:32:01-03:00
+
+## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
+
+### RESULTADO
+
+A construção atual foi auditada contra o runtime local ativo. A nota ponderada ficou em **86/100**. A classificação é PASS_WITH_GAPS e o release permanece não aprovado. A evidência detalhada está em BRIEFING/04.AUDIT/0509_current_worktree_audit_2026-08-11.md.
+
+### EVIDÊNCIA
+
+O runtime web/edge/HA permaneceu saudável após a coleta. O banco ativo contém somente a fatia sintética M02: 1 conta ativa, 1 atividade publicada, 1 atribuição, 33 itens e 0 estados curriculares. O E2E sintético passou 12/12; o E2E real falhou no seed por RLS em activity_assignments. Nenhuma credencial foi registrada neste arquivo.
+
+### LIMITES
+
+Não há prova de conteúdo clínico completo, piloto, MFA/recuperação externa, TLS/headers, traces duráveis, restore/deployment/rollback de produção ou commit final do worktree. O próximo avanço requer decisão humana sobre remediação e congelamento.
+
+## 2026-08-11 — REMEDIATION-PROJECT-01
+
+### RESULTADO
+
+O projeto de remediação integral foi criado em BRIEFING/03.BUILD/0303_remediation_program.md. Ele cobre E2E/RLS, 24 estados/atribuições, produção e revisão dos packs, identidade/MFA/recovery, headers/TLS, traces duráveis, deploy/rollback, restore, load smoke e commit final.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### PRÓXIMA AÇÃO
+
+Executar R0-S1 e R1-S1/R1-S2 em TDD. R3–R5 permanecem dependentes de decisões/infraestrutura externa; nenhum adapter sintético será declarado como produção.
+
+## 2026-08-11 — REMEDIATION-R1
+
+### RESULTADO
+
+O fixture E2E passou a receber `CVG_REAL_E2E_DATABASE_URL` para a API e `CVG_REAL_E2E_ADMIN_DATABASE_URL` somente para seed/cleanup. Em banco efêmero, a API usou papel `NOSUPERUSER`/`NOBYPASSRLS`; migrations, seed, login, leitura, tentativa, resposta, envio e limpeza passaram em **14/14** cenários Chromium. O seed ativa a conta sintética antes do login e não relaxa RLS.
+
+O parser do load smoke foi extraído para configuração testável; o default numérico deixou de usar `5_000` como string. A execução sem override de timeout completou **200/200**, 100% de sucesso.
+
+### EVIDÊNCIA
+
+`scripts/real-e2e-fixture-server.mjs`; `playwright.config.ts`; `.github/workflows/quality.yml`; `packages/config/src/load-smoke.ts`; `packages/config/src/load-smoke.test.ts`; `tests/e2e/real-runtime.spec.ts`; `pnpm verify`; `pnpm verify:ci-contract`; `pnpm typecheck`; `pnpm build`; E2E real 14/14; load smoke 200/200.
+
+### PRÓXIMA AÇÃO
+
+Executar R2-S1 em banco descartável, com materialização idempotente do catálogo/authoring e estado inicial que não declare domínio antes de atividade do participante.
+
+## 2026-08-11 — REMEDIATION-R2-R5-LOCAL
+
+### RESULTADO
+
+R2-S1 foi concluído com o job administrativo idempotente `scripts/materialize-curriculum.mjs`. No banco ativo sintético, a primeira execução materializou 24 `learning_activities`, 796 `content_versions`, 796 registros editoriais, 796 itens, 24 `learning_assignments` e 24 `curriculum_runtime_states`; a segunda execução inseriu zero duplicatas. O estado dos 24 módulos é `PENDENTE`/`INICIAR_BASELINE`, as atribuições são `NAO_ATRIBUIDO` e nenhuma publicação nova foi feita. A base preservou a fatia M02 já existente: 1 atividade `PUBLISHED`, 33 conteúdos `PUBLICADO` e 23 atividades novas `WITHDRAWN`.
+
+R2-S2/R2-S3 agora têm materialização, preflight, revisão clínica independente e gate de publicação implementados, mas a revisão semântica e a aprovação humana de Ricardo ainda não ocorreram. R3 permanece fail-closed (`NOT_CONFIGURED`) até um provedor externo ser escolhido e comprovado. R4 tem prova local de HTTP→HTTPS, TLS interno e headers; domínio/certificado gerenciado de produção continua pendente. R5 tem Tempo em volume local, trace consultável após restart, manifestos imutáveis, dry-run de deploy/rollback e backup PostgreSQL com checksum; storage externo, RPO/RTO e promoção de produção continuam pendentes.
+
+### EVIDÊNCIA
+
+`docs/104_remediation_evidence_2026-08-11.md`; `scripts/materialize-curriculum.mjs`; `scripts/verify-durable-traces.mjs`; `scripts/verify-edge-security.mjs`; `scripts/verify-production-security-config.mjs`; `scripts/verify-release-manifest.mjs`; `scripts/create-postgres-backup.mjs`; `infra/observability/tempo.yaml`; `infra/production/Caddyfile`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### PRÓXIMA AÇÃO
+
+Executar R6-S3: revisar diff-check, criar commit convencional e reauditar o SHA. Não promover produção nem publicar conteúdo antes das decisões humanas registradas.
 
 ## REGRAS DE USO
 
@@ -586,3 +650,101 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Usar um convite interno autorizado para entrar no programa; quando aplicável, configurar identidade externa, traces duráveis e deployment público/rollback.
+
+## 2026-08-10 — ACCESS-BOOTSTRAP-20: convite inicial de acesso emitido
+
+### TIMESTAMP
+
+2026-08-10 13:05:00 -03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / SECURITY REVIEW
+
+### PHASE
+
+Phase 14 — acesso inicial do ambiente local
+
+### TASK
+
+ACCESS-20-01 / emitir convite sintético de uso único para o operador
+
+### ACTION
+
+Verificado que o identity store estava vazio. Foi criado um convite sintético para a conta interna `ricardo@cvg.internal`, com papel `PARTICIPANT`, escopo técnico de demonstração e expiração de sete dias. O token bruto foi mantido somente na operação transitória e entregue ao operador; banco, logs, documentação e Git receberam apenas o digest/metadata operacional.
+
+### RESULT
+
+O banco confirmou 1 convite não aceito e dentro da validade, 1 convite expirado de uma tentativa de bootstrap que falhou antes da entrega do token, 1 conta convidada e 2 eventos de auditoria append-only. Nenhuma senha, hash ou token foi registrado neste arquivo.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir a interface local e inserir o token de uso único. O aceite ativa a conta e cria a sessão HttpOnly; depois disso o convite não poderá ser reutilizado.
+
+## 2026-08-10 — ACCESS-LOGIN-JOURNEY-21: runtime com credencial e M02 atribuída
+
+### TIMESTAMP
+
+2026-08-10 13:40:33 -03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / SECURITY REVIEW / TDD
+
+### PHASE
+
+Phase 14 — acesso e jornada inicial do ambiente local
+
+### TASK
+
+ACCESS-21-01 / substituir a tela de convite por login seguro e eliminar jornada vazia no runtime ativo
+
+### ACTION
+
+Aplicados a migração `0015_lonely_shooting_star.sql`, o contrato de login, o caso de uso de senha, o repositório PostgreSQL, as rotas `/api/v1/auth/login`, `/api/v1/session` e `/api/v1/account/password`, a tela web de login e a restauração de sessão. O seed administrativo idempotente publicou 33 itens da atividade M02 já existente e criou a atribuição `DISPONIVEL` para o participante interno no escopo técnico de demonstração.
+
+### RESULT
+
+O banco ativo confirma conta `ACTIVE` com papel/escopo de participante, uma atividade publicada e uma atribuição disponível. O login real retornou `200`, a sessão restaurada retornou `200`, a jornada retornou uma atividade M02 com próxima ação `INICIAR_ATIVIDADE`, e a verificação Playwright real não encontrou `empty-state`. A interface foi reconstruída com `CVG_API_INTERNAL_URL=http://127.0.0.1:3180` e o serviço `cvg-trainee-vet-web.service` está ativo em `3100`.
+
+### SECURITY
+
+Senha não é registrada em documentação, log, auditoria ou Git; somente hash scrypt é persistido. A tentativa de seed pelo usuário de aplicação foi negada por RLS e o seed final usou exclusivamente o job administrativo de migração. Convite continua disponível como onboarding administrativo compatível, mas não é mais a tela principal.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Operador deve entrar em `http://localhost:3100/`, usar o e-mail e a senha transitória entregues nesta rodada, trocar a senha e validar a atividade M02. Recuperação/MFA externo e atribuição de todos os 24 meses permanecem limites explícitos.
+
+## 2026-08-10 — ACCESS-LOGIN-VERIFY-23: gates finais do login e da jornada
+
+### TIMESTAMP
+
+2026-08-10 13:49:16 -03:00
+
+### ACTION
+
+Reexecutados os gates após a reconstrução final do web com o proxy interno do edge. A verificação cobriu formato, lint, TypeScript, scanner de segredos, cobertura, build dos workspaces, serviço systemd e navegação contra o runtime ativo.
+
+### RESULT
+
+`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm verify:secrets`, `pnpm test:coverage` e `pnpm build` passaram. A suíte registrou 392 testes passantes e 17 skips, com 84,98% statements, 80,13% branches, 86,50% functions e 85,71% lines. O serviço `cvg-trainee-vet-web.service` está ativo; o navegador real confirmou tela de login, atividade M02, 33 cartões, botão `Iniciar tentativa` e zero ocorrências de `empty-state`.
+
+### SECURITY
+
+O scanner de segredos ficou limpo; a senha transitória não foi gravada em código, documentação, logs ou Git. `git diff --check` passou.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Usar as credenciais transitórias diretamente na interface local. Rotação de senha na superfície de conta, MFA/recuperação externos e expansão de atribuições continuam itens posteriores explícitos.

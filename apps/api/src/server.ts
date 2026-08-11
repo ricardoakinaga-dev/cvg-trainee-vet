@@ -153,6 +153,15 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "POST" && path === "/api/v1/invitations/accept") {
     return "/api/v1/invitations/accept";
   }
+  if (method === "POST" && path === "/api/v1/auth/login") {
+    return "/api/v1/auth/login";
+  }
+  if (method === "GET" && path === "/api/v1/session") {
+    return "/api/v1/session";
+  }
+  if (method === "POST" && path === "/api/v1/account/password") {
+    return "/api/v1/account/password";
+  }
   if (method === "POST" && path === "/api/v1/session/revoke") {
     return "/api/v1/session/revoke";
   }

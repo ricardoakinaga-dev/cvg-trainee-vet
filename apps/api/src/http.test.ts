@@ -358,7 +358,10 @@ describe("API HTTP boundary", () => {
     expect(getInternalAuthoringRecord).toHaveBeenCalledTimes(2);
   });
 
-  it("does not expose a human clinical review route", async () => {
+  it("exposes a scoped clinical review route without exposing internals publicly", async () => {
+    const reviewAuthoringContent = vi.fn(async () => ({
+      record: authoringRecord,
+    }));
     const response = await handleApiRequest(
       {
         method: "POST",
@@ -377,10 +380,17 @@ describe("API HTTP boundary", () => {
           roles: ["CLINICAL_APPROVER"],
           scopes: [authoringRecord.scopeId],
         }),
+        reviewAuthoringContent,
       }),
     );
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
+    expect(reviewAuthoringContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: "APROVAR_CLINICAMENTE",
+        contentId: authoringRecord.contentId,
+      }),
+    );
   });
 
   it("publishes authoring content through automatic source verification", async () => {
@@ -540,6 +550,118 @@ describe("API HTTP boundary", () => {
     });
     expect(JSON.stringify(response.body)).not.toContain("accountId");
     expect(JSON.stringify(response.body)).not.toContain("b".repeat(32));
+  });
+
+  it("logs in with credentials and exposes only an active-session projection", async () => {
+    const loginWithPassword = vi.fn(async (command) => ({
+      accountId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      session: {
+        sessionId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        token: "s".repeat(32),
+        expiresAt: new Date("2026-08-09T18:00:00.000Z"),
+        cookie:
+          "__Host-cvg_session=" +
+          "s".repeat(32) +
+          "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=" +
+          command.sessionExpiresInSeconds,
+      },
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/auth/login",
+        body: {
+          login: "trainee@cvg.example",
+          password: "Acesso-" + "CVG-2026!Seguro",
+        },
+      },
+      dependencies({ loginWithPassword }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(loginWithPassword).toHaveBeenCalledWith({
+      login: "trainee@cvg.example",
+      password: "Acesso-" + "CVG-2026!Seguro",
+      sessionExpiresInSeconds: 3600,
+      correlationId: "request-123",
+    });
+    expect(response.headers?.["set-cookie"]).toContain("HttpOnly");
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "active" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("Acesso-CVG");
+    expect(JSON.stringify(response.body)).not.toContain("ssssssss");
+  });
+
+  it("rejects malformed credential logins before invoking the auth use case", async () => {
+    const loginWithPassword = vi.fn();
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/auth/login",
+        body: { login: "invalid", password: "short" },
+      },
+      dependencies({ loginWithPassword }),
+    );
+
+    expect(response.status).toBe(422);
+    expect(loginWithPassword).not.toHaveBeenCalled();
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "validation_error" },
+    });
+  });
+
+  it("restores a session without returning roles, scopes, or account identifiers", async () => {
+    const authenticate = vi.fn(async () => ({
+      principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      accountStatus: "ACTIVE" as const,
+      roles: ["PARTICIPANT" as const],
+      scopes: ["11111111-1111-4111-8111-111111111111"],
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/session",
+        body: undefined,
+        headers: { cookie: "__Host-cvg_session=" + "s".repeat(32) },
+      },
+      dependencies({ authenticate }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(authenticate).toHaveBeenCalled();
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "active" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("aaaaaaaa");
+    expect(JSON.stringify(response.body)).not.toContain("PARTICIPANT");
+  });
+
+  it("updates a password only for an authenticated active account", async () => {
+    const setAccountPassword = vi.fn(async () => undefined);
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/account/password",
+        body: { password: "N" + "ovo-Acesso-CVG-2026!" },
+      },
+      dependencies({ setAccountPassword }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(setAccountPassword).toHaveBeenCalledWith({
+      principalId: attempt.participantId,
+      password: "N" + "ovo-Acesso-CVG-2026!",
+      correlationId: "request-123",
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "updated" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("Novo-Acesso");
   });
 
   it("revokes a session without revealing whether the cookie was active", async () => {

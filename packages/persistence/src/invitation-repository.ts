@@ -156,6 +156,8 @@ export function createInvitationUseCaseDependencies(
       createInvited: async (input: {
         readonly accountId: string;
         readonly professionalEmail: string;
+        readonly roles?: readonly Role[];
+        readonly scopes?: readonly string[];
       }): Promise<void> => {
         assertNonEmpty(input.accountId, "accountId");
         const professionalEmail = normalizeEmail(input.professionalEmail);
@@ -163,6 +165,8 @@ export function createInvitationUseCaseDependencies(
           id: input.accountId,
           professionalEmail,
           status: "INVITED",
+          roles: Object.freeze([...(input.roles ?? [])]),
+          scopes: Object.freeze([...(input.scopes ?? [])]),
         });
       },
       activate: async (accountId: string): Promise<void> => {

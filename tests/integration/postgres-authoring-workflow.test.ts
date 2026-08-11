@@ -6,11 +6,13 @@ import { describe, expect, it } from "vitest";
 import {
   advanceContent,
   publishAuthoringContent,
+  reviewAuthoringContent,
 } from "../../packages/application/src/index.js";
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   accounts,
   contentEditorialRecords,
+  contentReviewDecisions,
   contentVersions,
   createAuthoringRepository,
   createContentRepository,
@@ -22,14 +24,15 @@ const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
-  "PostgreSQL automatic authoring publication integration",
+  "PostgreSQL authoring and clinical review integration",
   () => {
-    it("persists automatic source preflight and publication without a clinical gate", async () => {
+    it("persists source preflight, independent clinical approval, and publication", async () => {
       if (databaseUrl === undefined)
         throw new Error("test database URL is required");
 
       const database = createPostgresDatabase(databaseUrl);
       const authorId = randomUUID();
+      const reviewerId = randomUUID();
       const contentId = randomUUID();
       const contentVersionId = randomUUID();
       const editorialRecordId = randomUUID();
@@ -89,13 +92,18 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             professionalEmail: `${authorId}@example.invalid`,
             status: "ACTIVE",
           },
+          {
+            id: reviewerId,
+            professionalEmail: `${reviewerId}@example.invalid`,
+            status: "ACTIVE",
+          },
         ]);
         await database.db.insert(contentVersions).values({
           id: contentVersionId,
           contentId,
           scopeId,
           version: 1,
-          status: "AUTOVERIFICADO",
+          status: "PROJECAO_VERIFICADA",
           kind: "QUESTAO",
           title: bankItem.title,
           participantText: bankItem.prompt,
@@ -122,6 +130,28 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           database.db,
           randomUUID,
         );
+        const review = await reviewAuthoringContent(
+          {
+            principalId: reviewerId,
+            accountStatus: "ACTIVE",
+            roles: ["CLINICAL_APPROVER"],
+            scopes: [scopeId],
+            contentId,
+            version: 1,
+            scopeId,
+            decision: "APROVAR_CLINICAMENTE",
+            rationale: "Revisão clínica sintética independente.",
+            correlationId: requestId,
+          },
+          {
+            repository: authoringRepository,
+            transition: (command) =>
+              advanceContent(command, contentDependencies),
+            idFactory: randomUUID,
+          },
+        );
+        expect(review.record.contentStatus).toBe("APROVADO_CLINICAMENTE");
+
         const published = await publishAuthoringContent(
           {
             principalId: authorId,
@@ -149,8 +179,17 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           1,
         );
         expect(stored).toMatchObject({ publicationReady: true });
+        const persistedReview =
+          await authoringRepository.findLatestClinicalReview(contentId, 1);
+        expect(persistedReview).toMatchObject({
+          reviewerId,
+          decision: "APROVAR_CLINICAMENTE",
+        });
         expect(JSON.stringify(stored)).not.toContain("correctChoiceIds");
       } finally {
+        await database.db
+          .delete(contentReviewDecisions)
+          .where(eq(contentReviewDecisions.contentId, contentId));
         await database.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
@@ -166,6 +205,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             ),
           );
         await database.db.delete(accounts).where(eq(accounts.id, authorId));
+        await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
         await database.close();
       }
     });

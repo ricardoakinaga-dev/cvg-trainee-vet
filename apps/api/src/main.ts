@@ -18,8 +18,11 @@ import {
   getParticipantProgress,
   createHttpIdentityProvider,
   createUnavailableIdentityProvider,
+  loginWithPassword,
   publishAuthoringContent,
+  reviewAuthoringContent,
   saveAnswer,
+  setAccountPassword,
   startAttempt,
   submitAttempt,
   transitionAppealState,
@@ -53,6 +56,7 @@ import {
   createPostgresRateLimiter,
   createProgressReadRepository,
   createParticipantJourneyRepository,
+  createPasswordAuthUseCaseDependencies,
   createSessionRepository,
 } from "@cvg/persistence";
 
@@ -127,6 +131,10 @@ export function createApiRuntime(
     integrations.database.db,
     randomUUID,
   );
+  const passwordAuthDependencies = createPasswordAuthUseCaseDependencies(
+    integrations.database.db,
+    randomUUID,
+  );
   const sessionRepository = createSessionRepository(integrations.database.db);
   const activityReadRepository = createActivityReadRepository(
     integrations.database.db,
@@ -182,6 +190,10 @@ export function createApiRuntime(
       createInvitation(command, invitationDependencies),
     acceptInvitation: (command) =>
       acceptInvitation(command, invitationDependencies),
+    loginWithPassword: (command) =>
+      loginWithPassword(command, passwordAuthDependencies),
+    setAccountPassword: (command) =>
+      setAccountPassword(command, passwordAuthDependencies),
     revokeSession: (cookieHeader) =>
       revokeSessionCookie(cookieHeader, sessionRepository),
     rotateSession: (cookieHeader, expiresInSeconds) =>
@@ -219,6 +231,13 @@ export function createApiRuntime(
         repository: authoringRepository,
         transition: (transitionCommand) =>
           advanceContent(transitionCommand, contentDependencies),
+      }),
+    reviewAuthoringContent: (command) =>
+      reviewAuthoringContent(command, {
+        repository: authoringRepository,
+        transition: (transitionCommand) =>
+          advanceContent(transitionCommand, contentDependencies),
+        idFactory: randomUUID,
       }),
     identityProvider,
     getAccountSecurity: async (principalId) => {

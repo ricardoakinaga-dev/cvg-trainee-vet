@@ -16,6 +16,9 @@ x-api-common: &api-common
     AI_ENABLED: "false"
     METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    IDENTITY_PROVIDER_REQUIRED: ${IDENTITY_PROVIDER_REQUIRED:-false}
+    IDENTITY_PROVIDER_URL: ${IDENTITY_PROVIDER_URL:-}
+    IDENTITY_PROVIDER_TOKEN: ${IDENTITY_PROVIDER_TOKEN:-}
   networks: [backend]
   healthcheck:
     test:
@@ -33,6 +36,8 @@ x-api-common: &api-common
     migrate:
       condition: service_completed_successfully
     otel-collector:
+      condition: service_started
+    tempo:
       condition: service_started
 
 services:
@@ -86,6 +91,20 @@ services:
     ports:
       - "4317:4317"
       - "4318:4318"
+    depends_on:
+      tempo:
+        condition: service_started
+    networks: [backend]
+
+  tempo:
+    image: grafana/tempo:3.0.0
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ../observability/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "127.0.0.1:${CVG_TEMPO_PORT:-3320}:3200"
     networks: [backend]
 
   api-a:
@@ -123,6 +142,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      tempo:
+        condition: service_started
     networks: [backend]
 
   worker-b:
@@ -133,10 +154,15 @@ services:
   edge:
     image: caddy:2.9.1-alpine
     restart: unless-stopped
+    environment:
+      CVG_PUBLIC_HTTPS_ORIGIN: ${CVG_PUBLIC_HTTPS_ORIGIN:-https://localhost:8443}
     ports:
       - "${CVG_EDGE_PORT:-8080}:8080"
+      - "${CVG_EDGE_TLS_PORT:-8443}:8443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
     depends_on:
       api-a:
         condition: service_healthy
@@ -178,6 +204,8 @@ services:
     depends_on:
       prometheus:
         condition: service_started
+      tempo:
+        condition: service_started
     networks: [backend]
 
 volumes:
@@ -185,6 +213,9 @@ volumes:
   qdrant-data:
   prometheus-data:
   grafana-data:
+  caddy-data:
+  caddy-config:
+  tempo-data:
 
 secrets:
   metrics_scrape_token:
