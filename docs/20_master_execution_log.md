@@ -4077,3 +4077,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Registrar destino, retenção, criptografia e ambiente de backup aprovados; então executar o mesmo verificador sobre artefato real redigido e medir RPO/RTO no ambiente declarado.
+
+## 2026-08-11T13:18:34-03:00 — REMEDIATION-FINAL-LOCAL-GATE
+
+### ACTION
+
+Reexecutado o gate completo no estado dos commits `cafba44890efc2a5b99e5af10faf79a95c9be59d` e `2ade105`. O adapter de identidade permaneceu fail-closed sem IdP escolhido; não foram inventados endpoints, credenciais ou provas de MFA/step-up.
+
+### RESULT
+
+`pnpm verify` passou com 436 testes, 18 skips e cobertura de 84,94% statements / 80,26% branches / 86,66% functions / 85,69% lines. Build, audit de dependências, secrets, migrações, arquitetura, documentação, produto, exposição pública e `git diff --check` passaram. O restore live oficial ficou 2/2; a verificação do artefato existente observou 27 objetos restaurados e RTO local de 2.357 ms.
+
+### DECISIONS
+
+O resultado fecha a parte local da remediação do backup/restore e da rastreabilidade, mas não autoriza produção. Continuam pendentes: provedor/política MFA-recovery, domínio/TLS público, storage/retention externo de traces/backups, RPO/RTO produtivo, registry/ambiente de deploy e revisão clínica dos 763 itens.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões e recursos externos autorizados; então executar os gates de IdP, edge, traces, backup/RPO/RTO, deploy/rollback e revisão clínica.

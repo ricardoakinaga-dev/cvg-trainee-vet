@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: contrato de backup/restore por artefato implementado no commit `cafba44890efc2a5b99e5af10faf79a95c9be59d`; manifesto, tamanho e SHA-256 são verificados antes do restore; `pnpm test:integration:restore` passou 2/2 no HA ativo e execução direta restaurou 27 objetos com RTO observado de 2.357 ms
+- last_completed_action: gate local final após o contrato de backup/restore por artefato; `pnpm verify` passou com 436 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%; build, audit, secrets, documentação e rastreabilidade também passaram nos commits `cafba448` e `2ade105`
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T13:10:06-03:00
+- last_update: 2026-08-11T13:18:34-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -1062,3 +1062,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões humanas de destino/retensão/criptografia e ambiente autorizado; então repetir o verificador com backup do ambiente declarado e registrar RPO/RTO medidos.
+
+## 2026-08-11 — REMEDIATION-FINAL-LOCAL-GATE
+
+### AÇÃO
+
+Reexecutado o gate completo no estado final dos commits `cafba44890efc2a5b99e5af10faf79a95c9be59d` e `2ade105`. Também foi mantida a separação entre prova local e produção: o adapter de identidade continua `NOT_CONFIGURED` sem provedor autorizado, e nenhum endpoint sintético foi tratado como MFA/step-up real.
+
+### RESULTADO
+
+`pnpm verify` passou com 436 testes, 18 skips e cobertura global de 84,94% statements, 80,26% branches, 86,66% functions e 85,69% lines. Build, audit de dependências, secret scan, migrações, arquitetura, documentação, produto, exposição pública e `git diff --check` passaram. O restore live oficial permanece 2/2 e a prova de artefato restaurou 27 objetos com RTO local observado de 2.357 ms.
+
+### LIMITES
+
+O conjunto local está auditável, mas a rodada não possui provedor MFA/recovery, domínio/certificado público, storage externo de traces/backups, RPO/RTO produtivo, registry/ambiente de deploy ou revisão clínica dos 763 itens. Esses gates não podem ser preenchidos com credenciais, endpoints ou decisões inventados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve decidir provedor/política MFA-recovery, domínio/TLS, backend e retenção de traces, destino/criptografia/owner de backup, ambiente de release e fluxo de revisão clínica; depois executar os verificadores externos correspondentes.
