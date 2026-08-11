@@ -731,6 +731,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **commit:** `0a36d1d` (`feat: add live curriculum runtime verification`);
 - **próximo passo:** revisão semântica e aprovação clínica de Ricardo; em paralelo, obter as decisões externas de identidade, TLS, traces, backup e deploy/rollback.
 
+## 2026-08-11 — REMEDIATION-IDP-TRANSPORT-HARDENING
+
+- **item:** impedir que o runtime aceite IdP sem transporte HTTPS em produção;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para provedor real;
+- **evidência:** RED comprovado com `http://identity.example`; GREEN em `packages/application/src/identity-provider.ts` e `packages/config/src/env.ts`; commit `3793066`; `pnpm verify` passou com 421 testes e cobertura acima de 80%;
+- **limite:** não há declaração de MFA/recovery disponível sem provedor, sandbox e segredo fornecidos por decisão humana;
+- **próximo passo:** selecionar o provedor e executar enrollment, challenge, recovery, step-up e revogação em sandbox.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

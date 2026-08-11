@@ -316,7 +316,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **testes:** adapter unitário, sandbox do provedor, E2E recovery/MFA e secret scan;
 - **pronto:** status externo disponível, operação real comprovada e nenhum segredo/log sensível;
 - **status:** WAITING_HUMAN_APPROVAL;
-- **evidência:** configuração fail-closed e adapter testado para ausência/erro do provedor; recovery/MFA não retornam sucesso sem `IDENTITY_PROVIDER_REQUIRED`, URL HTTPS e token configurados; sandbox/provedor real ainda não escolhido;
+- **evidência:** configuração fail-closed e adapter testado para ausência/erro do provedor; recovery/MFA não retornam sucesso sem `IDENTITY_PROVIDER_REQUIRED`, URL HTTPS e token configurados; o commit `3793066` passou a rejeitar `http://` também no runtime de produção; sandbox/provedor real ainda não escolhido;
 - **plano:** 0303_remediation_program.md.
 
 ### R4-S1/R4-S2 — Headers e TLS

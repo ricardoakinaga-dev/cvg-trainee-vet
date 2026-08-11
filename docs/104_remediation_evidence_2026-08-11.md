@@ -79,3 +79,9 @@ O commit `0a36d1d` adicionou `scripts/verify-curriculum-runtime.mjs` e seu teste
 `pnpm ops:verify-curriculum-runtime` retornou `PASS_WITH_GAPS`. O modo `CVG_CURRICULUM_REQUIRE_CLINICAL_PUBLICATION=true` retornou `FAIL` com `clinical publication is incomplete: 763 items`, preservando o gate humano em vez de promover rascunhos clínicos.
 
 Após a alteração, `pnpm verify` passou com 420 testes, 17 skips e cobertura 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines.
+
+## Atualização de segurança do IdP — 2026-08-11
+
+O commit `3793066` endureceu o adapter e o carregamento de configuração: URLs `http://` agora são rejeitadas no adapter, e `NODE_ENV=production` exige URL HTTPS para o IdP. O teste RED/GREEN cobriu ambos os limites; `pnpm verify` passou com 421 testes, 17 skips e cobertura acima de 80%.
+
+A disponibilidade real de MFA e recuperação continua não comprovada até a escolha, configuração e execução de sandbox do provedor externo.

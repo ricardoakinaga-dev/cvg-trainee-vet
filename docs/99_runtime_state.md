@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: handoff final validado após o commit `3d3aa3d`: web-dependencies, edge-ready e api-live retornaram 200; verificador live manteve `PASS_WITH_GAPS` para 24/796/796/796 e 24/24, enquanto o modo clínico estrito falhou com 763 itens; traceability/documentation passaram e o gate produtivo permaneceu bloqueado por entradas externas ausentes
+- last_completed_action: endurecimento fail-closed do IdP no commit `3793066`: adapter e `NODE_ENV=production` rejeitam URL HTTP; `pnpm verify` passou com 421 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; traceability/documentation passaram e os gates externos continuam sem configuração
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T11:32:33-03:00
+- last_update: 2026-08-11T11:39:55-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -850,3 +850,21 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Não promover produção nem publicar conteúdo clínico. A próxima ação exige as decisões humanas e os recursos externos listados no bloco `BLOQUEIOS`.
+
+## 2026-08-11 — REMEDIATION-IDP-TRANSPORT-HARDENING
+
+### AÇÃO
+
+Aplicado TDD no adapter de identidade e no carregamento de configuração: o teste inicialmente falhou porque `http://identity.example` era aceito; o GREEN passou após o adapter exigir `https://` e a configuração de produção rejeitar transporte inseguro.
+
+### RESULTADO
+
+O commit `3793066` fecha o gap local de transporte do IdP. `pnpm verify` passou com 421 testes, 17 skips e cobertura global de 84,86% statements, 80,10% branches, 86,55% functions e 85,61% lines. A mudança não declara MFA/recovery disponíveis: o provedor, sandbox e jornada real continuam ausentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Escolher e configurar o provedor externo autorizado; então executar sandbox, enrollment, challenge, recovery, step-up e revogação com segredos fora do Git.

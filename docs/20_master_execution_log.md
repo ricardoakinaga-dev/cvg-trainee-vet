@@ -3803,3 +3803,33 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Aguardar as decisões humanas e a disponibilidade dos ambientes/provedores externos; não promover produção nem publicar os 763 itens pendentes.
+
+## 2026-08-11 — REMEDIATION-IDP-TRANSPORT-HARDENING
+
+### TIMESTAMP
+
+2026-08-11 11:39:55 -03:00
+
+### ENGINE
+
+BUILD / SECURITY REVIEW / TDD
+
+### ACTION
+
+Foi escrito primeiro o teste de rejeição de `http://` no adapter e no runtime de produção. O RED falhou em 2 cenários; o GREEN alterou `packages/application/src/identity-provider.ts` e `packages/config/src/env.ts` para exigir HTTPS no transporte do IdP.
+
+### RESULT
+
+17 testes direcionados passaram, seguido de lint, typecheck e `pnpm verify` completo: 421 testes, 17 skips, 84,86% statements, 80,10% branches, 86,55% functions e 85,61% lines. O commit é `3793066` (`fix: require secure identity provider transport`).
+
+### LIMITES
+
+Esta alteração fecha somente o contrato local de transporte seguro. Não prova provedor externo, MFA, recovery, enrollment, challenge, step-up, domínio público ou autorização de produção.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter decisão de provedor e executar os testes de sandbox sem registrar token ou segredo.

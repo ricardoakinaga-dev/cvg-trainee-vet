@@ -181,6 +181,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** unitário de respostas inválidas, timeout, 401/409/5xx, replay e ausência de segredo; integração com sandbox do provedor.
 - **Aceite:** security status retorna EXTERNAL_IDENTITY_PROVIDER; recovery e MFA retornam operationId sem secret; sessão e papéis continuam server-side.
 - **Rollback:** feature flag retorna ao convite administrativo e desabilita mutações externas.
+- **Progresso local:** o adapter e o runtime agora rejeitam transporte HTTP para o IdP; `NODE_ENV=production` exige URL `https://`, coberto por teste RED/GREEN. O sandbox/provedor real, enrollment, challenge e recovery continuam pendentes por decisão humana.
 
 #### R3-S3 — Jornada web e MFA obrigatório
 
