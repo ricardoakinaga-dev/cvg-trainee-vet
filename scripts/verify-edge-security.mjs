@@ -19,6 +19,7 @@ if (missing.length > 0) {
 
 const targets = [
   process.env.CVG_EDGE_HTTP_TARGET,
+  process.env.CVG_EDGE_INTERNAL_TARGET,
   process.env.CVG_EDGE_HTTPS_TARGET,
 ].filter((target) => target !== undefined && target.length > 0);
 const results = [];

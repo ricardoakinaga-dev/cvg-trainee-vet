@@ -151,6 +151,25 @@ services:
       service: worker-a
     command: ["node", "apps/worker/dist/main.js"]
 
+  real-e2e-fixture:
+    <<: *api-common
+    profiles: [e2e]
+    restart: "no"
+    command: ["node", "scripts/real-e2e-fixture-server.mjs"]
+    healthcheck:
+      disable: true
+    environment:
+      <<: *api-environment
+      CVG_REAL_E2E_DATABASE_URL: postgresql://${CVG_DB_USER:?set CVG_DB_USER}:${CVG_DB_APP_PASSWORD:?set CVG_DB_APP_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
+      CVG_REAL_E2E_ADMIN_DATABASE_URL: postgresql://${CVG_DB_ADMIN:?set CVG_DB_ADMIN}:${CVG_DB_ADMIN_PASSWORD:?set CVG_DB_ADMIN_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
+      CVG_REAL_E2E_FIXTURE_FILE: /tmp/cvg-real-e2e-fixture.json
+      CVG_REAL_E2E_FIXTURE_HOST: 0.0.0.0
+      CVG_REAL_E2E_FIXTURE_PORT: "3102"
+    ports:
+      - "127.0.0.1:${CVG_REAL_E2E_FIXTURE_PORT:-3102}:3102"
+    depends_on: {}
+    networks: [backend]
+
   edge:
     image: caddy:2.9.1-alpine
     restart: unless-stopped
@@ -159,6 +178,7 @@ services:
     ports:
       - "${CVG_EDGE_PORT:-8080}:8080"
       - "${CVG_EDGE_TLS_PORT:-3181}:8443"
+      - "127.0.0.1:${CVG_EDGE_INTERNAL_PORT:-3182}:8081"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

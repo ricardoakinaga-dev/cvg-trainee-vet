@@ -16,7 +16,6 @@ import {
   answers,
   attemptIdempotency,
   attempts,
-  auditEntries,
   contentVersions,
   learningActivities,
   learningActivityItems,
@@ -32,6 +31,7 @@ const adminDatabaseUrl = process.env.CVG_REAL_E2E_ADMIN_DATABASE_URL;
 const fixtureFile =
   process.env.CVG_REAL_E2E_FIXTURE_FILE ?? "/tmp/cvg-real-e2e-fixture.json";
 const port = Number(process.env.CVG_REAL_E2E_FIXTURE_PORT ?? "3102");
+const host = process.env.CVG_REAL_E2E_FIXTURE_HOST ?? "127.0.0.1";
 
 if (applicationDatabaseUrl === undefined) {
   throw new Error(
@@ -63,7 +63,8 @@ const contentVersionId = randomUUID();
 const token = randomBytes(32).toString("base64url");
 const participantPassword = randomBytes(18).toString("base64url");
 let participantId;
-let closed = false;
+let cleanupStarted = false;
+let cleanupStep = "not_started";
 
 async function seed() {
   await database.db.insert(accounts).values({
@@ -139,10 +140,11 @@ async function seed() {
 }
 
 async function cleanup() {
-  if (closed) return;
-  closed = true;
+  if (cleanupStarted) return;
+  cleanupStarted = true;
   try {
     if (participantId !== undefined) {
+      cleanupStep = "participant_attempts";
       const participantAttempts = await database.db
         .select({ id: attempts.id })
         .from(attempts)
@@ -165,6 +167,7 @@ async function cleanup() {
           .delete(attempts)
           .where(inArray(attempts.id, attemptIds));
       }
+      cleanupStep = "participant_sessions";
       await database.db
         .delete(sessions)
         .where(eq(sessions.accountId, participantId));
@@ -174,26 +177,34 @@ async function cleanup() {
       await database.db
         .delete(activityAssignments)
         .where(eq(activityAssignments.participantId, participantId));
-      await database.db
-        .delete(auditEntries)
-        .where(eq(auditEntries.principalId, participantId));
     }
-    await database.db
-      .delete(auditEntries)
-      .where(eq(auditEntries.principalId, adminId));
+    cleanupStep = "activity_items";
     await database.db
       .delete(learningActivityItems)
       .where(eq(learningActivityItems.activityId, activityId));
+    cleanupStep = "activity";
     await database.db
       .delete(learningActivities)
       .where(eq(learningActivities.id, activityId));
+    cleanupStep = "content";
     await database.db
       .delete(contentVersions)
       .where(eq(contentVersions.id, contentVersionId));
     if (participantId !== undefined) {
+      cleanupStep = "participant_account";
       await database.db.delete(accounts).where(eq(accounts.id, participantId));
     }
+    cleanupStep = "admin_account";
     await database.db.delete(accounts).where(eq(accounts.id, adminId));
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        status: "FAIL",
+        code: "real_e2e_fixture_cleanup_step_failed",
+        step: cleanupStep,
+      }),
+    );
+    throw error;
   } finally {
     await database.close();
     await unlink(fixtureFile).catch(() => undefined);
@@ -213,11 +224,25 @@ const server = createServer((request, response) => {
 });
 
 const shutdown = async () => {
-  await new Promise((resolve) => server.close(() => resolve()));
-  await cleanup();
+  let exitCode = 0;
+  try {
+    await cleanup();
+  } catch {
+    console.error(
+      JSON.stringify({
+        status: "FAIL",
+        code: "real_e2e_fixture_cleanup_failed",
+      }),
+    );
+    exitCode = 1;
+  } finally {
+    server.close();
+    server.closeAllConnections?.();
+    process.exit(exitCode);
+  }
 };
 process.once("SIGTERM", () => void shutdown());
 process.once("SIGINT", () => void shutdown());
-server.listen(port, "127.0.0.1", () => {
+server.listen(port, host, () => {
   console.log("real E2E fixture ready");
 });

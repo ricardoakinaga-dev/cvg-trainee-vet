@@ -715,6 +715,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - próximo passo: revisão clínica, provedor MFA, domínio/certificado, storage e ambiente autorizado;
 - decisões necessárias para R3–R5: provedor de identidade/MFA, domínio/DNS/TLS, backend de traces, storage de backup e ambiente de deploy.
 
+## 2026-08-11 — REMEDIATION-ACTIVE-HA-E2E
+
+- **item:** provar a jornada E2E contra o runtime HA ativo e fechar a limitação do proxy público/cleanup;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção;
+- **evidência:** canal loopback `127.0.0.1:3182 → Caddy:8081`, serviço web em `3100`, edge público `3180/3181`, `pnpm test:e2e:active-ha` 2/2, E2E descartável 14/14, restore live 1/1, cleanup com zero resíduos mutáveis e 11 auditorias sintéticas append-only preservadas;
+- **limites:** CI remoto, IdP/MFA/recovery externo, domínio/TLS gerenciado, storage externo, RPO/RTO de produção, deploy/rollback autorizado e revisão clínica continuam pendentes;
+- **próximo passo:** commit final da janela, fixação do SHA no manifesto e decisões humanas dos gates externos.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

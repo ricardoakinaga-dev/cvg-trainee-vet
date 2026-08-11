@@ -3501,3 +3501,29 @@ COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção e conteúdo
 ### NEXT
 
 Solicitar revisão clínica humana dos 796 itens e as decisões sobre IdP/MFA/recovery, domínio/DNS/TLS, traces/backups externos e ambiente autorizado de deploy/rollback.
+
+## 2026-08-11 — REMEDIATION-ACTIVE-HA-E2E
+
+### TIMESTAMP
+
+2026-08-11 10:22:22 -03:00
+
+### ACTION
+
+Corrigido o caminho do web proxy para o HA ativo com canal loopback `127.0.0.1:3182 → Caddy:8081`, preservando o edge público `3180` e o TLS interno `3181`. Criado o runner `scripts/active-ha-e2e.mjs`, o serviço Compose `real-e2e-fixture` e testes de contrato do orquestrador. O cleanup da fixture passou a excluir somente dados mutáveis; `audit_entries` append-only é preservado.
+
+### RESULT
+
+API-A/API-B e workers foram recriados com a imagem final e ficaram saudáveis. O E2E no runtime existente passou **2/2**; contas, atividades, itens, conteúdo, sessões, atribuições e estados sintéticos ficaram em zero após o teardown; 11 auditorias sintéticas recentes permaneceram preservadas. O E2E descartável passou **14/14** em PostgreSQL efêmero com roles segregadas. O restore live passou **1/1** com marcador em banco isolado e zero resíduos; `pnpm verify` passou **410 testes**, 17 skips e cobertura acima de 80%; build, audit, traces após restart, edge, topologia e load-smoke também passaram.
+
+### LIMITES
+
+Esta é evidência local/LAN/Tailscale. O gate de segurança de produção permanece `NOT_EXECUTED`; IdP/MFA/recovery externo, domínio/certificado gerenciado, storage externo de traces/backups, RPO/RTO de produção, deploy/rollback autorizado, CI remoto e revisão clínica dos 796 itens continuam pendentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Criar o commit convencional desta janela, fixar o SHA no manifesto de rastreabilidade, sincronizar o VPS truth source e repetir o status/diff final.

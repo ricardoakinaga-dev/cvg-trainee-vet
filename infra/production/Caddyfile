@@ -31,6 +31,10 @@
   redir @not_health {$CVG_PUBLIC_HTTPS_ORIGIN:https://localhost:3181}{uri} 308
 }
 
+:8081 {
+  import common_proxy
+}
+
 https://localhost:8443 {
   tls internal
   import common_proxy

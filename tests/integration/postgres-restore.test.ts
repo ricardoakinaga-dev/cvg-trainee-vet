@@ -67,6 +67,6 @@ describe.skipIf(!runLiveRestoreTest || databaseUrl === undefined)(
         targetIsolated: true,
       });
       expect(result.rtoMs).toBeGreaterThanOrEqual(0);
-    });
+    }, 60_000);
   },
 );

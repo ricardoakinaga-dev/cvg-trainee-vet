@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: alinhar runtime HA ao HEAD auditado e registrar evidência operacional
+- current_task: fechar E2E no HA ativo, restore live e rastreabilidade da janela de remediação
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: imagem `cvg-trainee-vet:local` reconstruída no HEAD `4a5aa676939102d8598365206bf42270e9cdd19b` e recriada no HA; defaults versionados e ambiente local fixados em 3180/3181; health web/HTTP/HTTPS 200; edge security PASS; load smoke HA 200/200 (p95 66,91 ms); trace consultável após restart do Tempo; `pnpm verify` 406/423; VPS truth source sincronizado; evidência final em `5cdcf6c`
-- next_action: obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente autorizado de deploy/rollback
+- last_completed_action: imagem `cvg-trainee-vet:local` digest local `sha256:bf457dddf975ac1e6c3b6acb48d50acab6f608d006ce9af3a7fd1c3f96cac475` aplicada ao HA; API-A/API-B/workers saudáveis; canal interno loopback `3182 → Caddy:8081` validado; E2E HA ativo 2/2 com cleanup mutável em zero e auditoria append-only preservada; E2E descartável 14/14; restore live 1/1; `pnpm verify` 410 testes/17 skips e cobertura acima de 80%
+- next_action: criar o commit convencional da janela, fixar seu SHA no manifesto de rastreabilidade, reexecutar diff/status e solicitar decisões humanas para conteúdo clínico e produção
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T09:20:44-03:00
+- last_update: 2026-08-11T10:22:22-03:00
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 
@@ -770,3 +770,25 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Usar as credenciais transitórias diretamente na interface local. Rotação de senha na superfície de conta, MFA/recuperação externos e expansão de atribuições continuam itens posteriores explícitos.
+
+## 2026-08-11 — REMEDIATION-ACTIVE-HA-E2E
+
+### AÇÃO
+
+Adicionado o orquestrador `scripts/active-ha-e2e.mjs` e a fixture Compose `real-e2e-fixture`. O Caddy ganhou `:8081`, publicado somente em `127.0.0.1:3182`; o serviço web e o E2E HA usam esse canal, mantendo `3180` público e `3181` TLS interno. O cleanup deixou de tentar apagar `audit_entries`, que é append-only, e passou a relatar etapa segura em caso de falha.
+
+### RESULTADO
+
+Após recriar API-A/API-B e workers com a imagem final, `pnpm test:e2e:active-ha` passou 2/2. A consulta pós-teardown encontrou zero contas, atividades, itens, conteúdo, sessões, atribuições e estados sintéticos mutáveis; 11 registros recentes de auditoria sintética foram preservados. `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 14/14 em PostgreSQL efêmero. O restore live passou 1/1 em banco HA com marcador isolado e cleanup confirmado. `pnpm verify` passou com 410 testes e cobertura 84,85% statements / 80,07% branches.
+
+### LIMITES
+
+O runtime é local/LAN/Tailscale. MFA/recovery externo, domínio/certificado gerenciado, storage externo de traces/backups, RPO/RTO de produção, deploy/rollback autorizado, CI remoto e aprovação clínica dos 796 itens permanecem pendentes. `pnpm ops:verify-production-security` foi mantido em `NOT_EXECUTED` fora de ambiente aprovado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Criar o commit convencional da janela, fixar o SHA no manifesto, sincronizar `/home/ricardo/vps-truth` e encerrar esta rodada com worktree limpo e limites explícitos.

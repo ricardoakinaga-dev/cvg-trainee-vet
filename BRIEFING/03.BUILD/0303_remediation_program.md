@@ -63,7 +63,7 @@ CI/homologação:
 Produção interna:
 
 - Caddy HTTPS com headers;
-- web → edge → api-a/api-b;
+- web → edge interno loopback `3182` → Caddy `8081` → api-a/api-b; o edge público permanece em `3180`/`3181`;
 - PostgreSQL com backup/restore;
 - worker-a/worker-b → Qdrant derivado;
 - OTEL collector → backend de traces durável;
@@ -118,6 +118,16 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** CVG_RUN_REAL_E2E=true pnpm test:e2e.
 - **Aceite:** todos os cenários passam sem interceptação; relatório Playwright/JUnit é publicado; caso negativo de acesso cruzado retorna 401/403.
 - **Rollback:** remover somente a fixture nova, mantendo os E2E sintéticos existentes.
+
+#### R1-S4 — E2E contra o runtime HA ativo
+
+- **O que:** executar a mesma jornada Chromium contra o web service e o HA já implantados, iniciando somente uma fixture sintética temporária no projeto Compose e encerrando-a com cleanup verificável.
+- **Onde:** `scripts/active-ha-e2e.mjs`, `infra/production/docker-compose.ha.yml`, `infra/production/Caddyfile`, `playwright.config.ts`, `tests/integration/active-ha-e2e.test.ts`.
+- **Dependências:** R1-S1/R1-S2/R1-S3; edge local em `3180`/`3181` e canal interno loopback `3182 → 8081`.
+- **Teste:** `pnpm test:e2e:active-ha`; teste de integração do orquestrador; consulta administrativa pós-cleanup sem dados mutáveis `real-e2e-*`.
+- **Aceite:** navegador alcança API real pelo proxy web ativo; 2/2 cenários passam; container fixture sai com código 0; contas, atividade, conteúdo, sessões, atribuições e estados sintéticos ficam em zero; auditoria append-only não é apagada.
+- **Rollback:** parar/remover somente `real-e2e-fixture`, apagar apenas o arquivo temporário local e preservar o runtime HA, o volume PostgreSQL e os registros de auditoria imutáveis.
+- **Status:** COMPLETED localmente; CI remoto e ambientes públicos continuam gates separados.
 
 ### R2 — Currículo operacional e conteúdo
 

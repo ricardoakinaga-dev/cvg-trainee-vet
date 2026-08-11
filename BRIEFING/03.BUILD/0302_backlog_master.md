@@ -261,6 +261,20 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **pronto:** E2E real verde sem dar BYPASSRLS à API;
 - **status:** COMPLETED;
 - **evidência:** `scripts/real-e2e-fixture-server.mjs`; `playwright.config.ts`; `.github/workflows/quality.yml`; E2E real 14/14 em banco efêmero com papel da API sem `SUPERUSER`/`BYPASSRLS`; limpeza do banco e papel transitórios confirmada;
+
+### R1-S4 — E2E contra HA ativo
+
+- **descrição:** executar a jornada de participante no web service e no HA já ativos, com fixture efêmera administrativa e teardown seguro;
+- **módulo:** CI/E2E/runtime/edge;
+- **dependência:** R1-S1/R1-S2/R1-S3 e canal interno loopback do edge;
+- **phase:** R1;
+- **risco:** alto — teste pode mascarar falha de proxy, cleanup ou isolamento de dados;
+- **impacto:** alto;
+- **testes:** `pnpm test:e2e:active-ha`, integração do orquestrador, consulta administrativa de resíduos mutáveis e `ops:verify-ha`;
+- **pronto:** navegador percorre web→API→PostgreSQL no runtime ativo; fixture encerra com código 0; resíduos mutáveis ficam em zero; auditoria append-only permanece;
+- **status:** COMPLETED localmente;
+- **evidência:** `scripts/active-ha-e2e.mjs`, `scripts/real-e2e-fixture-server.mjs`, `tests/integration/active-ha-e2e.test.ts`, Caddy `:8081`, host loopback `3182`, E2E 2/2, contagens mutáveis 0 e 11 registros sintéticos recentes de auditoria imutável preservados;
+- **limites:** prova local/LAN; IdP/MFA/recovery externo, domínio/TLS gerenciado, storage externo, deploy/rollback autorizado e CI remoto permanecem pendentes;
 - **plano:** 0303_remediation_program.md.
 
 ### R2-S1 — Atribuições e estados dos 24 módulos
@@ -344,7 +358,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **testes:** load smoke default, verify, build, E2E, live, restore, security, diff-check;
 - **pronto:** worktree limpo, commit auditável e reauditoria no mesmo SHA sem P1 aberto;
 - **status:** COMPLETED;
-- **evidência:** parser/timeout default validado por teste e load smoke HA publicado com `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live` em 200/200; edge/Tempo/HA verificados ao vivo; `pnpm verify` 406/423 com cobertura global acima de 80%, build, audit, E2E real 14/14, restore isolado e diff-check passaram; implementação em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`, handoff `31d54f6abb9bbc8e36ae40afea78538240fef79d` e runtime reconstruído no HEAD `4a5aa676939102d8598365206bf42270e9cdd19b`;
+- **evidência:** parser/timeout default validado por teste e load smoke HA publicado com `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live` em 200/200; edge/Tempo/HA verificados ao vivo; `pnpm verify` 410/427 com cobertura global 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines; build, audit, E2E real 14/14, E2E HA ativo 2/2, restore isolado 1/1 e diff-check passaram; implementação desta janela será fixada no commit final da remediação;
 - **plano:** 0303_remediation_program.md.
 
 ## P2 — MÉDIO

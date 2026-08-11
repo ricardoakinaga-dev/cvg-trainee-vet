@@ -81,7 +81,7 @@ if (
 }
 const edgePorts = services.edge.ports ?? [];
 const edgePortTargets = edgePorts.map((port) => String(port.target));
-for (const targetPort of ["8080", "8443"]) {
+for (const targetPort of ["8080", "8081", "8443"]) {
   if (!edgePortTargets.includes(targetPort)) {
     throw new Error(`edge must expose target port ${targetPort}`);
   }
@@ -132,6 +132,7 @@ process.stdout.write(
     traceBackend: "Tempo 3.0.0 local volume with 14d default block retention",
     edge: {
       httpTargetPort: 8080,
+      internalApiTargetPort: 8081,
       httpsTargetPort: 8443,
       publicHttpsOrigin: services.edge.environment.CVG_PUBLIC_HTTPS_ORIGIN,
     },
