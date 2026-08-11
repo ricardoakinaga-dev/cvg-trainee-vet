@@ -3552,4 +3552,4 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Fixar o novo commit no manifesto, sincronizar o VPS truth source e repetir o estado final.
+O commit de implementação `57ed11985312a573a3649ed48c6b15b399e7bf8f` foi fixado no manifesto pelo pin `9c585a9`; próximo passo: obter decisões humanas dos gates externos.

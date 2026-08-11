@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: isolamento do build descartável em `.next-e2e-real` consolidado em `57ed11985312a573a3649ed48c6b15b399e7bf8f`; artefato operacional reconstruído com `CVG_API_INTERNAL_URL=3182`; web dependencies 200 após teardown; E2E HA ativo final 2/2; todos os resíduos mutáveis em zero e auditoria append-only preservada; `pnpm verify` final 412 testes/17 skips com cobertura acima de 80%; manifesto ainda aponta para o commit de implementação da janela anterior `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`
+- last_completed_action: isolamento do build descartável em `.next-e2e-real` consolidado em `57ed11985312a573a3649ed48c6b15b399e7bf8f`; manifesto de evidência fixado em `9c585a9`; VPS truth source sincronizado; artefato operacional reconstruído com `CVG_API_INTERNAL_URL=3182`; web dependencies 200 após teardown; E2E HA ativo final 2/2; todos os resíduos mutáveis em zero e auditoria append-only preservada; `pnpm verify` final 412 testes/17 skips com cobertura acima de 80%
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS
@@ -791,4 +791,4 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Build descartável isolado e reauditoria HA concluídos; atualizar o pin de rastreabilidade para `57ed11985312a573a3649ed48c6b15b399e7bf8f`, sincronizar o VPS truth source e manter `WAITING_HUMAN_APPROVAL` para os gates externos.
+Build descartável isolado, pin de rastreabilidade `9c585a9` e sincronização do VPS truth source concluídos; manter `WAITING_HUMAN_APPROVAL` para os gates externos.

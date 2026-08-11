@@ -87,3 +87,5 @@ fixture mutável após teardown                    0
 ```
 
 O artefato operacional foi reconstruído com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` e o serviço web permaneceu saudável depois da execução. Esta correção elimina a interferência local entre o E2E descartável e o runtime HA; não altera os limites de produção listados acima.
+
+O pin atual da evidência no manifesto é `9c585a9`; o código correspondente está em `57ed11985312a573a3649ed48c6b15b399e7bf8f`.
