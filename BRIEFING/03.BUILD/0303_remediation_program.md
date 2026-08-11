@@ -2,7 +2,7 @@
 
 **Projeto:** CVG Trainee Vet
 **Origem:** reauditoria AUD-2026-08-11-WORKTREE-LOGIN
-**Status:** EM EXECUÇÃO — gates locais R1–R5 comprovados; gates externos e fechamento R6 pendentes
+**Status:** EM EXECUÇÃO — gates locais R1–R6 comprovados; gates externos e aprovação clínica pendentes
 **Responsável técnico:** Codex, sob revisão de Ricardo
 **Critério de segurança:** nenhum dado clínico real, prontuário, tutor, foto, PDF, token, senha ou segredo entra em código, teste, seed, log ou artefato.
 
