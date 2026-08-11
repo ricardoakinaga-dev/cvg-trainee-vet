@@ -843,3 +843,11 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - Não tratar B-07 como bloqueio da SPEC; ele bloqueia baseline e piloto completo por D-101.
 - Adicionar imediatamente qualquer nova pendência descoberta durante revisão ou aplicação.
 - Usar este backlog junto com docs/99_runtime_state.md e docs/20_master_execution_log.md.
+
+## 2026-08-11 — ACCESS-22 — Primeiro acesso do operador
+
+- **título:** desbloquear a entrada inicial sem permitir cadastro público em ambiente interno;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para rotação de senha e identidade externa;
+- **evidência:** conta `ricardo@cvg.internal` ativa; credencial transitória provisionada fora do repositório; login real `200`, cookie HttpOnly emitido, jornada autenticada `200` e endpoint de rotação autenticada `200` com origem CSRF válida em `http://127.0.0.1:3100`;
+- **limite:** senha não foi registrada em código, documentação, log ou Git; a superfície web de rotação ainda não foi implementada; MFA/recuperação externa e acesso público permanecem pendentes;
+- **próximo passo:** operador visualizar M02, rotacionar a senha por fluxo autenticado e manter os gates externos/ clínicos aguardando aprovação.

@@ -4281,3 +4281,45 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter os valores aprovados por secret manager/ambiente de deploy e executar a probe de IdP, health público, trace externo, backup e release no ambiente declarado.
+
+## 2026-08-11T15:38:51-03:00 — ACCESS-FIRST-LOGIN
+
+### TIMESTAMP
+
+2026-08-11T15:38:51-03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / SECURITY REVIEW
+
+### PHASE
+
+Phase 14 — acesso inicial do ambiente local
+
+### SPRINT
+
+ACCESS-22
+
+### TASK
+
+ACCESS-22-01 / desbloquear o primeiro acesso sem abrir cadastro público
+
+### ACTION
+
+Confirmada a conta interna ativa `ricardo@cvg.internal`. Foi provisionada uma senha temporária aleatória fora do repositório, sem persistir credencial ou hash em documentação, log ou Git. O fluxo continua baseado em conta provisionada pela operação, compatível com o ambiente interno.
+
+### RESULT
+
+Login real em `http://127.0.0.1:3100/api/v1/auth/login` retornou `200`, sessão HttpOnly foi emitida, a jornada autenticada retornou `200` e a rotação autenticada de senha retornou `200` com a origem CSRF permitida pela interface. Não houve bypass, cadastro aberto ou exposição de segredo no runtime.
+
+### DECISIONS
+
+O primeiro acesso usa a conta e a credencial transitória entregues diretamente ao operador. A rotação posterior deve ocorrer por fluxo autenticado; o contrato CSRF foi respeitado na validação. MFA/recuperação externa e acesso público continuam fora do escopo local não autorizado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Operador deve abrir a interface, autenticar e validar a atividade M02. Depois, executar a rotação da senha e prosseguir somente com recursos externos autorizados para os gates de produção.

@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `7777876a86b8bef8dff5714d127281a25a4c8b6d` endureceu o validador de configuração produtiva sem expor segredos; `pnpm verify` passou em 462 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%, restore live 2/2 e E2E HA 2/2
-- next_action: obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; em paralelo, executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado
+- last_completed_action: credencial temporária de primeiro acesso foi provisionada fora do repositório para `ricardo@cvg.internal`; login real retornou 200, sessão HttpOnly foi emitida e a jornada retornou 200
+- next_action: operador deve entrar no ambiente local com a credencial transitória e solicitar/realizar a rotação após o primeiro acesso; em paralelo, obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS
 
@@ -32,7 +32,29 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T14:52:20-03:00
+- last_update: 2026-08-11T15:38:51-03:00
+
+## 2026-08-11T15:38:51-03:00 — ACCESS-FIRST-LOGIN
+
+### AÇÃO
+
+Desbloqueado o primeiro acesso do operador no runtime HA local. A conta interna existente `ricardo@cvg.internal` permaneceu no fluxo de credencial provisionada; não foi aberto cadastro público nem criado bypass de autenticação. Foi definida uma senha temporária aleatória fora do repositório, sem registrar senha ou hash em documentação, log ou Git.
+
+### RESULTADO
+
+O login contra `http://127.0.0.1:3100/api/v1/auth/login` retornou `200`, emitiu cookie de sessão HttpOnly, a consulta autenticada da jornada retornou `200` e o endpoint autenticado de rotação de senha retornou `200` quando chamado com a origem CSRF da interface. A interface web continua disponível em `http://localhost:3100/`, `http://192.168.15.10:3100/` e `http://100.122.88.125:3100/`.
+
+### LIMITES
+
+O ambiente continua interno/local, sem cadastro aberto. A senha é transitória e deve ser rotacionada após o primeiro acesso; a superfície web de rotação ainda é uma pendência explícita. MFA e recuperação externa continuam `NOT_CONFIGURED`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Operador deve usar a credencial transitória entregue na conversa para visualizar a atividade M02; depois registrar a rotação da senha e manter os gates externos/ clínicos pendentes até haver recursos autorizados.
 
 ## 2026-08-11T14:16:14-03:00 — REMEDIATION-CURRENT-AUDIT
 
