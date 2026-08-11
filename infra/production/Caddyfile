@@ -28,7 +28,7 @@
     import common_proxy
   }
   @not_health not path /health/*
-  redir @not_health {$CVG_PUBLIC_HTTPS_ORIGIN:https://localhost:8443}{uri} 308
+  redir @not_health {$CVG_PUBLIC_HTTPS_ORIGIN:https://localhost:3181}{uri} 308
 }
 
 https://localhost:8443 {

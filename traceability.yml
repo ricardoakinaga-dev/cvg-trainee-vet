@@ -1860,6 +1860,9 @@ artifacts:
         "immutable release dry-run",
         "synthetic pg_dump checksum",
         "R6 quality gate and final SHA",
+        "HA image rebuilt from audited HEAD 4a5aa676939102d8598365206bf42270e9cdd19b",
+        "live edge 3180/3181 and health after runtime recreation",
+        "VPS truth source sync without secrets",
         "git diff --check",
       ]
     commit: "31d54f6abb9bbc8e36ae40afea78538240fef79d"

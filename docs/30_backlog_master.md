@@ -690,7 +690,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: médio
 - impacto: médio
 - status: COMPLETED
-- evidência: `scripts/run-load-smoke.mjs`, `packages/config/src/load-smoke.ts`, `apps/web/next.config.ts`; default sem override passou 200/200 e build/proxy foram verificados
+- evidência: `scripts/run-load-smoke.mjs`, `packages/config/src/load-smoke.ts`, `apps/web/next.config.ts`; parser/timeout default passou testes, o alvo HA publicado `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live` passou 200/200 e build/proxy foram verificados
 - critério de pronto: smoke default executa 100 requests e build limpo mantém proxy e health 200
 
 ## P3 — BAIXO

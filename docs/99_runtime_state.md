@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: AUDIT — fechamento técnico da rodada e handoff operacional
+- current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: handoff da remediação local e decisões de produção/conteúdo
+- current_task: alinhar runtime HA ao HEAD auditado e registrar evidência operacional
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: R1–R6 locais reauditados no commit `31d54f6abb9bbc8e36ae40afea78538240fef79d`: E2E real 14/14 com API sem SUPERUSER/BYPASSRLS; materialização idempotente dos 24 módulos/796 itens; review/publication gate clínico fail-closed; edge/HTTPS/headers; Tempo após restart; release/rollback; backup/restore; `pnpm verify`; build; audit; load smoke
+- last_completed_action: imagem `cvg-trainee-vet:local` reconstruída no HEAD `4a5aa676939102d8598365206bf42270e9cdd19b` e recriada no HA; defaults versionados e ambiente local fixados em 3180/3181; health web/HTTP/HTTPS 200; edge security PASS; load smoke HA 200/200 (p95 66,91 ms); trace consultável após restart do Tempo; `pnpm verify` 406/423; VPS truth source sincronizado
 - next_action: obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T08:58:36-03:00
+- last_update: 2026-08-11T09:20:44-03:00
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 
@@ -108,6 +108,28 @@ Obter as decisões humanas de conteúdo e produção. Não promover nem publicar
 6. Nunca encerrar uma rodada sem last_completed_action, next_action, status e timestamp válidos.
 7. Usar somente os estados oficiais: IN_PROGRESS, READY_FOR_NEXT_STEP, BLOCKED, WAITING_HUMAN_APPROVAL e COMPLETED.
 8. Não avançar para PRD formal, SPEC, BUILD ou AUDIT enquanto os gates canônicos não estiverem aprovados.
+
+## 2026-08-11 — REMEDIATION-RUNTIME-ALIGNMENT
+
+### ACTION
+
+Reconstruída a imagem Docker do HA a partir do HEAD auditado `4a5aa676939102d8598365206bf42270e9cdd19b`, com ID `sha256:dd8b96026bf763f8cd030bb3a52bfb92b4b82fbd29b9770512c830cf89dc0e7c`. API-A/API-B e workers foram recriados e ficaram saudáveis; a migration terminou com exit 0. O ambiente local não secreto fixou edge HTTP `3180`, HTTPS interno `3181` e origem `https://localhost:3181`.
+
+### RESULT
+
+O web service permaneceu ativo em `3100`; web, edge HTTP e edge HTTPS retornaram 200. A verificação ao vivo confirmou headers, redirect HTTP 308, load smoke no alvo publicado `http://127.0.0.1:3180/health/live` com 200/200 e p95 de 66,91 ms, e trace sintético consultável após restart do Tempo. A decisão e o incidente foram sincronizados em `/home/ricardo/vps-truth` e no GBrain local, sem registrar segredos.
+
+### LIMITES
+
+O comando de load smoke sem `CVG_LOAD_TARGET` continua apontando para o default de desenvolvimento `:3000`; para o HA publicado usa-se explicitamente `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live`. Isso não reduz a correção do parser/timeout, mas é um requisito operacional documentado. MFA/recovery externo, domínio/certificado gerenciado, storage externo, backup/RPO/RTO de produção, deploy/rollback autorizado e aprovação clínica dos 796 itens continuam pendentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões humanas de conteúdo e produção; não publicar nem promover o runtime local como produção.
 
 ## 2026-08-10 — SCORE-95-03: integração vertical e reavaliação do item 3
 

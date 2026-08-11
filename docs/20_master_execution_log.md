@@ -3479,3 +3479,25 @@ COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção e conteúdo
 ### NEXT
 
 Implementação e evidências fechadas nos commits `e3cd966efb1d4d2a5596075d1d12f4101dd12492` e `31d54f6abb9bbc8e36ae40afea78538240fef79d`. Aguardar: revisão clínica dos itens, provedor MFA/recovery, domínio/certificado, storage externo, backup/RPO/RTO e ambiente autorizado de deploy.
+
+## 2026-08-11 — REMEDIATION-RUNTIME-ALIGNMENT
+
+### AÇÃO
+
+Reconstruída a imagem `cvg-trainee-vet:local` no HEAD `4a5aa676939102d8598365206bf42270e9cdd19b` e recriada a topologia HA local. O runtime foi fixado nos valores não secretos documentados: edge HTTP `3180`, edge HTTPS interno `3181`, web `3100`, OTLP `4317/4318` e Tempo local `3320`.
+
+### EVIDÊNCIA
+
+Imagem ativa `sha256:dd8b96026bf763f8cd030bb3a52bfb92b4b82fbd29b9770512c830cf89dc0e7c`; migration exit 0; API-A/API-B e workers saudáveis; web/HTTP/HTTPS health 200. `ops:verify-edge-security` passou com HTTP 200, HTTPS 200, headers e redirect 308; `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live pnpm ops:load-smoke` passou 200/200, p95 66,91 ms; `ops:verify-durable-traces` encontrou trace após restart do Tempo. O VPS truth source foi atualizado e sincronizado.
+
+### OBSERVAÇÃO OPERACIONAL
+
+O default de alvo do load smoke continua sendo `:3000` para desenvolvimento; o alvo publicado do HA deve ser informado explicitamente. A primeira recriação com env files explícitos voltou ao default TLS `8443`; isso foi corrigido nos defaults versionados e também fixando `CVG_EDGE_TLS_PORT=3181` e `CVG_PUBLIC_HTTPS_ORIGIN=https://localhost:3181` no arquivo local não versionado. O `pnpm verify` final confirmou o contrato com origem pública local `https://localhost:3181`.
+
+### STATUS
+
+COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção e conteúdo
+
+### NEXT
+
+Solicitar revisão clínica humana dos 796 itens e as decisões sobre IdP/MFA/recovery, domínio/DNS/TLS, traces/backups externos e ambiente autorizado de deploy/rollback.
