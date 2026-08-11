@@ -112,6 +112,7 @@ export default function AuthoringPage() {
   const [record, setRecord] = useState<InternalAuthoringRecord | null>(null);
   const [contentId, setContentId] = useState("");
   const [version, setVersion] = useState("1");
+  const [rationale, setRationale] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -167,6 +168,45 @@ export default function AuthoringPage() {
       setNotice("Fonte verificada automaticamente e conteúdo publicado.");
     } catch {
       setError("Não foi possível publicar o conteúdo verificado.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function review(
+    decision: "APROVAR_CLINICAMENTE" | "SOLICITAR_AJUSTES",
+  ): Promise<void> {
+    if (record === null) return;
+    if (rationale.trim().length === 0) {
+      setError("Informe uma justificativa clínica antes de decidir.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const data = await requestJson(
+        `/api/v1/internal/content/${record.contentId}/review`,
+        {
+          method: "POST",
+          body: {
+            version: record.version,
+            scopeId: record.scopeId,
+            decision,
+            rationale,
+          },
+        },
+      );
+      if (!isInternalAuthoringRecord(data))
+        throw new Error("Projeção inválida.");
+      setRecord(data);
+      setNotice(
+        decision === "APROVAR_CLINICAMENTE"
+          ? "Conteúdo aprovado clinicamente."
+          : "Ajustes clínicos solicitados.",
+      );
+    } catch {
+      setError("Não foi possível registrar a decisão clínica.");
     } finally {
       setBusy(false);
     }
@@ -263,15 +303,44 @@ export default function AuthoringPage() {
                 <p>Nota mínima: {record.item.rubric.passScore}</p>
               </div>
             ) : null}
+            <div className="review-card">
+              <h2>Decisão clínica</h2>
+              <label htmlFor="clinical-rationale">Justificativa clínica</label>
+              <textarea
+                id="clinical-rationale"
+                name="clinical-rationale"
+                rows={5}
+                value={rationale}
+                onChange={(event) => setRationale(event.target.value)}
+                placeholder="Registre a justificativa da revisão."
+                disabled={busy}
+              />
+              <div className="review-actions">
+                <button
+                  type="button"
+                  onClick={() => void review("APROVAR_CLINICAMENTE")}
+                  disabled={busy || record.contentStatus === "PUBLICADO"}
+                >
+                  Aprovar clinicamente
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void review("SOLICITAR_AJUSTES")}
+                  disabled={busy || record.contentStatus === "PUBLICADO"}
+                >
+                  Solicitar ajustes
+                </button>
+              </div>
+            </div>
             <div className="review-actions">
               <button
                 type="button"
                 onClick={() => void publish()}
                 disabled={
                   busy ||
+                  record.contentStatus !== "APROVADO_CLINICAMENTE" ||
                   !record.preflight.technicalChecksPassed ||
-                  record.preflight.readyForPublication === false ||
-                  record.contentStatus === "PUBLICADO"
+                  record.preflight.readyForPublication === false
                 }
               >
                 Publicar conteúdo verificado

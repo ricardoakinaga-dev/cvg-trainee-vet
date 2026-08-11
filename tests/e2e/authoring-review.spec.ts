@@ -79,6 +79,21 @@ test("author can inspect and publish a source-verified authoring item", async ({
     },
   );
   await page.route(
+    `**/api/v1/internal/content/${contentId}/review`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            ...authoringRecord,
+            contentStatus: "APROVADO_CLINICAMENTE",
+          }),
+        ),
+      });
+    },
+  );
+  await page.route(
     `**/api/v1/internal/content/${contentId}/publish`,
     async (route) => {
       await route.fulfill({
@@ -102,9 +117,17 @@ test("author can inspect and publish a source-verified authoring item", async ({
     page.getByText("BOOK_ETTINGER_9E · capítulo 123, seção de ressuscitação"),
   ).toBeVisible();
   await expect(page.getByText("gabarito")).toBeVisible();
-  await page
-    .getByRole("button", { name: "Publicar conteúdo verificado" })
-    .click();
+  const publishButton = page.getByRole("button", {
+    name: "Publicar conteúdo verificado",
+  });
+  await expect(publishButton).toBeDisabled();
+  await page.getByLabel("Justificativa clínica").fill("Revisão sintética.");
+  await page.getByRole("button", { name: "Aprovar clinicamente" }).click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Conteúdo aprovado clinicamente.",
+  );
+  await expect(publishButton).toBeEnabled();
+  await publishButton.click();
   await expect(page.getByRole("status")).toHaveText(
     "Fonte verificada automaticamente e conteúdo publicado.",
   );
