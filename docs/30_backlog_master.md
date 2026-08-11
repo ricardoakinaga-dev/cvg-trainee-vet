@@ -721,7 +721,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção;
 - **evidência:** canal loopback `127.0.0.1:3182 → Caddy:8081`, serviço web em `3100`, edge público `3180/3181`, `pnpm test:e2e:active-ha` 2/2, E2E descartável 14/14, restore live 1/1, cleanup com zero resíduos mutáveis e 11 auditorias sintéticas append-only preservadas;
 - **limites:** CI remoto, IdP/MFA/recovery externo, domínio/TLS gerenciado, storage externo, RPO/RTO de produção, deploy/rollback autorizado e revisão clínica continuam pendentes;
-- **próximo passo:** commit final da janela, fixação do SHA no manifesto e decisões humanas dos gates externos.
+- **próximo passo:** decisões humanas dos gates externos; o commit e a fixação do SHA já foram concluídos.
 
 ## REGRAS DE USO
 

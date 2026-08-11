@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: implementação da janela consolidada no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`; imagem `cvg-trainee-vet:local` digest local `sha256:bf457dddf975ac1e6c3b6acb48d50acab6f608d006ce9af3a7fd1c3f96cac475` aplicada ao HA; API-A/API-B/workers saudáveis; canal interno loopback `3182 → Caddy:8081` validado; E2E HA ativo 2/2 com cleanup mutável em zero e auditoria append-only preservada; E2E descartável 14/14; restore live 1/1; `pnpm verify` 410 testes/17 skips e cobertura acima de 80%
-- next_action: criar o commit de pinagem do manifesto, reexecutar diff/status final, sincronizar o VPS truth source e solicitar decisões humanas para conteúdo clínico e produção
+- last_completed_action: implementação consolidada em `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`; manifesto de rastreabilidade fixado em `9e9759310542b8f3e7a85aa1f1cc772cd41b8c5f`; VPS truth source sincronizado; imagem `cvg-trainee-vet:local` digest local `sha256:bf457dddf975ac1e6c3b6acb48d50acab6f608d006ce9af3a7fd1c3f96cac475` aplicada ao HA; API-A/API-B/workers saudáveis; canal interno loopback `3182 → Caddy:8081` validado; E2E HA ativo 2/2 com cleanup mutável em zero e auditoria append-only preservada; E2E descartável 14/14; restore live 1/1; `pnpm verify` 410 testes/17 skips e cobertura acima de 80%
+- next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T10:27:00-03:00
+- last_update: 2026-08-11T10:30:00-03:00
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 
@@ -791,4 +791,4 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Criar o commit de pinagem do manifesto, sincronizar `/home/ricardo/vps-truth` e encerrar esta rodada com worktree limpo e limites explícitos.
+Pinagem do manifesto e sincronização de `/home/ricardo/vps-truth` concluídas; solicitar decisões humanas e manter o runtime em `WAITING_HUMAN_APPROVAL`.

@@ -3526,4 +3526,4 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-A implementação foi consolidada no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`. Próximo passo: criar o commit de pinagem do manifesto, sincronizar o VPS truth source e repetir o status/diff final.
+A implementação foi consolidada no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`; o manifesto foi fixado no commit `9e9759310542b8f3e7a85aa1f1cc772cd41b8c5f`; o VPS truth source foi sincronizado e o status/diff final ficou limpo. Próximo passo: obter as decisões humanas dos gates de conteúdo e produção.

@@ -358,7 +358,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **testes:** load smoke default, verify, build, E2E, live, restore, security, diff-check;
 - **pronto:** worktree limpo, commit auditável e reauditoria no mesmo SHA sem P1 aberto;
 - **status:** COMPLETED;
-- **evidência:** parser/timeout default validado por teste e load smoke HA publicado com `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live` em 200/200; edge/Tempo/HA verificados ao vivo; `pnpm verify` 410/427 com cobertura global 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines; build, audit, E2E real 14/14, E2E HA ativo 2/2, restore isolado 1/1 e diff-check passaram; implementação desta janela está no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`, com pinagem do manifesto pendente;
+- **evidência:** parser/timeout default validado por teste e load smoke HA publicado com `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live` em 200/200; edge/Tempo/HA verificados ao vivo; `pnpm verify` 410/427 com cobertura global 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines; build, audit, E2E real 14/14, E2E HA ativo 2/2, restore isolado 1/1 e diff-check passaram; implementação desta janela está no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`, manifesto fixado no commit `9e9759310542b8f3e7a85aa1f1cc772cd41b8c5f`;
 - **plano:** 0303_remediation_program.md.
 
 ## P2 — MÉDIO
