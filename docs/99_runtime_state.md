@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: registrar a verificação live do catálogo curricular e manter o handoff externo sem promover produção
+- current_task: manter o handoff externo após a revalidação de qualidade local, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: endurecimento fail-closed do IdP no commit `3793066`: adapter e `NODE_ENV=production` rejeitam URL HTTP; `pnpm verify` passou com 421 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; traceability/documentation passaram e os gates externos continuam sem configuração
+- last_completed_action: qualidade local revalidada após `3793066`: `pnpm verify` passou com 421 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; build isolado, audit de dependências, traceability/documentation e diff-check passaram; os gates externos continuam sem configuração
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T11:39:55-03:00
+- last_update: 2026-08-11T11:44:09-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -868,3 +868,21 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Escolher e configurar o provedor externo autorizado; então executar sandbox, enrollment, challenge, recovery, step-up e revogação com segredos fora do Git.
+
+## 2026-08-11 — REMEDIATION-LOCAL-QUALITY-RECHECK
+
+### RESULTADO
+
+Após o commit `3793066`, `pnpm verify` passou com 421 testes, 17 skips e cobertura 84,86% statements, 80,10% branches, 86,55% functions e 85,61% lines. `pnpm build` passou usando `CVG_WEB_DIST_DIR=.next-verify-build` e `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`, sem substituir o artefato web operacional; `pnpm audit --audit-level=high` não encontrou vulnerabilidades conhecidas.
+
+### LIMPEZA E LIMITES
+
+Os arquivos temporários gerados pelo Next foram removidos para a lixeira e o worktree voltou a ficar limpo. Esta é uma revalidação local: não altera a ausência de provedor MFA/recovery, domínio TLS público, storage externo, backup produtivo ou ambiente autorizado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar as decisões humanas e executar os gates externos correspondentes; não promover produção nem publicar conteúdo clínico.

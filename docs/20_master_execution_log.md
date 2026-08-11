@@ -3833,3 +3833,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter decisão de provedor e executar os testes de sandbox sem registrar token ou segredo.
+
+## 2026-08-11 — REMEDIATION-LOCAL-QUALITY-RECHECK
+
+### TIMESTAMP
+
+2026-08-11 11:44:09 -03:00
+
+### ACTION
+
+Reexecutada a qualidade local após o endurecimento do transporte do IdP. O build web foi direcionado para `.next-verify-build` para preservar o artefato operacional.
+
+### RESULT
+
+`pnpm verify` passou com 421 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. `pnpm build` passou em todos os workspaces e `pnpm audit --audit-level=high` retornou `No known vulnerabilities found`. `pnpm verify:traceability`, `pnpm verify:documentation` e `git diff --check` passaram; os artefatos temporários do Next foram removidos e o worktree ficou limpo.
+
+### LIMITES
+
+O resultado comprova somente qualidade e build locais. O provedor real de MFA/recovery, domínio/certificado público, backend externo de traces, backup/RPO/RTO produtivo e deploy/rollback autorizado continuam sem evidência.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar as decisões humanas e executar os gates externos sem tratar o ambiente local como produção.
