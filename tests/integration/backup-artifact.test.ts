@@ -9,6 +9,7 @@ import {
   assertBackupManifest,
   verifyBackupArtifact,
 } from "../../scripts/backup-artifact.mjs";
+import { buildDockerExecCommand } from "../../scripts/postgres-command.mjs";
 
 const baseManifest = {
   backupId: "cvg-backup-20260811120000-abcdef12",
@@ -23,6 +24,39 @@ const baseManifest = {
 };
 
 describe("backup artifact contract", () => {
+  it("forwards the inherited database password into Docker PostgreSQL commands", () => {
+    expect(
+      buildDockerExecCommand({
+        container: "cvg-postgres",
+        program: "pg_restore",
+        args: ["-U", "cvg_admin"],
+        interactive: true,
+      }),
+    ).toEqual({
+      program: "docker",
+      args: [
+        "exec",
+        "-i",
+        "-e",
+        "PGPASSWORD",
+        "cvg-postgres",
+        "pg_restore",
+        "-U",
+        "cvg_admin",
+      ],
+    });
+  });
+
+  it("rejects an unsafe Docker container identifier", () => {
+    expect(() =>
+      buildDockerExecCommand({
+        container: "postgres;drop",
+        program: "psql",
+        args: [],
+      }),
+    ).toThrow("container identifier");
+  });
+
   it("accepts a complete custom-format manifest", () => {
     expect(assertBackupManifest(baseManifest)).toMatchObject(baseManifest);
   });

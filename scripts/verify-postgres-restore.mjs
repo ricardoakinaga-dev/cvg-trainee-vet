@@ -9,6 +9,7 @@ import { pipeline } from "node:stream/promises";
 import { URL } from "node:url";
 
 import { verifyBackupArtifact } from "./backup-artifact.mjs";
+import { buildDockerExecCommand } from "./postgres-command.mjs";
 
 const sourceUrl =
   process.env.CVG_RESTORE_SOURCE_DATABASE_URL ??
@@ -60,12 +61,11 @@ function commandFor(program, args, input = false) {
   if (dockerContainer === undefined) {
     return Object.freeze({ program, args });
   }
-  if (!/^[A-Za-z0-9_.-]+$/u.test(dockerContainer)) {
-    throw new Error("restore container identifier is invalid");
-  }
-  return Object.freeze({
-    program: "docker",
-    args: ["exec", ...(input ? ["-i"] : []), dockerContainer, program, ...args],
+  return buildDockerExecCommand({
+    container: dockerContainer,
+    program,
+    args,
+    interactive: input,
   });
 }
 
@@ -95,7 +95,7 @@ function administrativeConnectionArgs(connection) {
 function commandEnvironment(connection) {
   return {
     ...process.env,
-    ...(dockerContainer === undefined && connection.password.length > 0
+    ...(connection.password.length > 0
       ? { PGPASSWORD: connection.password }
       : {}),
   };
