@@ -677,7 +677,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto
 - impacto: alto
 - status: IN_PROGRESS
-- evidência: materialização, gates de segurança/observabilidade e testes locais concluídos; `traceability.yml` aguarda SHA final desta rodada; 0509_current_worktree_audit_2026-08-11.md permanece como registro histórico da limitação
+- evidência: materialização, gates de segurança/observabilidade e testes locais concluídos; implementação commitada em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`; reauditoria pós-commit e registro de handoff ainda em execução; 0509_current_worktree_audit_2026-08-11.md permanece como registro histórico da limitação
 - critério de pronto: nenhum código da janela fica fora do commit, manifesto aponta para SHA e a matriz de notas é reexecutada
 
 ### AUD-P2-008 — Harness de carga e contrato de proxy

@@ -1661,8 +1661,8 @@ artifacts:
         "runtime login/session/learning-path HTTP check",
         "git diff --check",
       ]
-    commit: "working-tree-pending"
-    status: "implemented-verified-local-uncommitted"
+    commit: "e3cd966efb1d4d2a5596075d1d12f4101dd12492"
+    status: "implemented-verified-local-committed"
   - id: "AUDIT-WORKTREE-LOGIN-024"
     requirements:
       [
@@ -1724,8 +1724,8 @@ artifacts:
         "RLS negative fixture result",
         "git diff --check",
       ]
-    commit: "working-tree-pending"
-    status: "audited-with-gaps-local"
+    commit: "e3cd966efb1d4d2a5596075d1d12f4101dd12492"
+    status: "audited-with-gaps-local-committed"
   - id: "REMEDIATION-PROGRAM-025"
     requirements:
       [
@@ -1782,8 +1782,8 @@ artifacts:
         "pnpm verify:traceability",
         "git diff --check",
       ]
-    commit: "working-tree-pending"
-    status: "r1-complete-r2-r6-pending-explicit-gates"
+    commit: "e3cd966efb1d4d2a5596075d1d12f4101dd12492"
+    status: "r1-r6-local-verified-production-gates-pending"
   - id: "REMEDIATION-EVIDENCE-026"
     requirements:
       [
@@ -1862,8 +1862,8 @@ artifacts:
         "R6 quality gate and final SHA",
         "git diff --check",
       ]
-    commit: "working-tree-pending"
-    status: "r1-r5-local-verified-r6-in-progress-production-gates-pending"
+    commit: "e3cd966efb1d4d2a5596075d1d12f4101dd12492"
+    status: "r1-r6-local-verified-production-gates-pending-postcommit-reaudit"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."
@@ -1895,5 +1895,5 @@ notes:
   - "CONTENT-SOURCE-GOVERNANCE-018 supersedes the historical clinical-approval note for the active publication path: only the three hashes in clinical-sources.json are accepted, technical source preflight is mandatory, and publication additionally requires an independent clinical approval decision."
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
-  - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the current worktree to docs, backlog, runtime state, source policy and operational evidence. The current changes are intentionally uncommitted and must not be reported as a committed release SHA."
+  - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
   - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, honest pending runtime states, fail-closed identity, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. Human review, external IdP, managed TLS, external storage, production deploy and RPO/RTO remain pending."

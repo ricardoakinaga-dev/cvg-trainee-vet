@@ -3478,4 +3478,4 @@ READY_FOR_NEXT_STEP / WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Revisar o diff, criar o commit convencional, atualizar o manifesto para o SHA e repetir a auditoria no mesmo SHA. Em seguida, aguardar as decisões humanas de produção e conteúdo.
+Commit de implementação criado em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`. Reauditar esse SHA e, em seguida, aguardar as decisões humanas de produção e conteúdo.

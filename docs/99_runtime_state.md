@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: R1–R6 locais comprovados: E2E real 14/14 com API sem SUPERUSER/BYPASSRLS; materialização idempotente dos 24 módulos/796 itens no banco ativo; review/publication gate clínico fail-closed; MFA/recovery NOT_CONFIGURED sem provedor; edge HTTP/HTTPS e headers verificados; Tempo recebeu trace após restart; release/rollback, backup/restore, `pnpm verify`, build, audit e load smoke passaram
-- next_action: revisar o diff, criar o commit convencional e repetir a auditoria no SHA; depois obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente de deploy
+- last_completed_action: R1–R6 locais comprovados e commitados em `e3cd966efb1d4d2a5596075d1d12f4101dd12492`: E2E real 14/14 com API sem SUPERUSER/BYPASSRLS; materialização idempotente dos 24 módulos/796 itens; review/publication gate clínico fail-closed; edge/HTTPS/headers; Tempo após restart; release/rollback; backup/restore; `pnpm verify`; build; audit; load smoke
+- next_action: repetir a auditoria no SHA `e3cd966efb1d4d2a5596075d1d12f4101dd12492` e depois obter as decisões humanas de revisão clínica, provedor MFA, domínio/certificado, storage de traces/backups e ambiente de deploy
 
 ## BLOQUEIOS
 
-- blockers: revisão semântica/humana dos 796 itens e publicação clínica; provedor externo de MFA/recuperação; domínio/certificado TLS de produção; storage/retention de traces e backups de produção; ambiente autorizado para deploy/rollback e piloto; SHA final ainda pendente até o fechamento desta rodada
+- blockers: revisão semântica/humana dos 796 itens e publicação clínica; provedor externo de MFA/recuperação; domínio/certificado TLS de produção; storage/retention de traces e backups de produção; ambiente autorizado para deploy/rollback e piloto
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T08:32:01-03:00
+- last_update: 2026-08-11T08:55:00-03:00
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 
@@ -96,7 +96,7 @@ WAITING_HUMAN_APPROVAL
 
 ### PRÓXIMA AÇÃO
 
-Executar R6-S3: revisar diff-check, criar commit convencional e reauditar o SHA. Não promover produção nem publicar conteúdo antes das decisões humanas registradas.
+Reauditar o SHA `e3cd966efb1d4d2a5596075d1d12f4101dd12492`. Não promover produção nem publicar conteúdo antes das decisões humanas registradas.
 
 ## REGRAS DE USO
 
