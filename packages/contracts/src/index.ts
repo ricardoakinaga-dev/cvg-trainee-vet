@@ -116,8 +116,12 @@ export type { ParticipantLearningJourneyProjection } from "./journey.js";
 export {
   accountActionRequestSchema,
   accountOperationProjectionSchema,
+  accountVerificationRequestSchema,
 } from "./account.js";
-export type { AccountOperationProjection } from "./account.js";
+export type {
+  AccountOperationProjection,
+  AccountVerificationRequest,
+} from "./account.js";
 export {
   accountSecurityProjectionSchema,
   operationsDashboardProjectionSchema,

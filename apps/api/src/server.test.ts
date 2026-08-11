@@ -66,6 +66,12 @@ describe("API node server adapter", () => {
     expect(routeTemplate("POST", "/api/v1/account/password")).toBe(
       "/api/v1/account/password",
     );
+    expect(routeTemplate("POST", "/api/v1/account/mfa/enrollment/verify")).toBe(
+      "/api/v1/account/mfa/enrollment/verify",
+    );
+    expect(routeTemplate("POST", "/api/v1/account/recovery/complete")).toBe(
+      "/api/v1/account/recovery/complete",
+    );
     expect(routeTemplate("POST", "/api/v1/session/revoke")).toBe(
       "/api/v1/session/revoke",
     );

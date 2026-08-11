@@ -1104,6 +1104,14 @@ describe("API HTTP boundary", () => {
         operationId: "mfa-operation",
         expiresAt: "2026-08-10T06:00:00.000Z",
       })),
+      verifyMfaEnrollment: vi.fn(async () => ({
+        operationId: "mfa-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+      completeRecovery: vi.fn(async () => ({
+        operationId: "recovery-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
     };
     const overrides = {
       identityProvider,
@@ -1146,6 +1154,91 @@ describe("API HTTP boundary", () => {
       attempt.participantId,
     );
     expect(JSON.stringify(recovery)).not.toContain("secret");
+  });
+
+  it("validates and delegates MFA verification and recovery completion without echoing codes", async () => {
+    const identityProvider = {
+      getSecurityStatus: vi.fn(async () => ({
+        provider: "EXTERNAL_IDENTITY_PROVIDER" as const,
+        recovery: "AVAILABLE" as const,
+        mfa: "NOT_ENABLED" as const,
+      })),
+      beginRecovery: vi.fn(async () => ({
+        operationId: "recovery-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+      beginMfaEnrollment: vi.fn(async () => ({
+        operationId: "mfa-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+      verifyMfaEnrollment: vi.fn(async () => ({
+        operationId: "mfa-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+      completeRecovery: vi.fn(async () => ({
+        operationId: "recovery-operation",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      })),
+    };
+    const overrides = {
+      identityProvider,
+      authenticate: async () => ({
+        principalId: attempt.participantId,
+        accountStatus: "ACTIVE" as const,
+        roles: ["PARTICIPANT"] as const,
+        scopes: ["scope-1"],
+      }),
+    };
+
+    const mfa = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/account/mfa/enrollment/verify",
+        body: { operationId: "mfa-operation", verificationCode: "123456" },
+      },
+      dependencies(overrides),
+    );
+    const recovery = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/account/recovery/complete",
+        body: {
+          operationId: "recovery-operation",
+          verificationCode: "recovery-code",
+        },
+      },
+      dependencies(overrides),
+    );
+    const invalid = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/account/mfa/enrollment/verify",
+        body: { operationId: "mfa-operation", verificationCode: "\n" },
+      },
+      dependencies(overrides),
+    );
+
+    expect(mfa).toMatchObject({
+      status: 202,
+      body: { success: true, data: { operationId: "mfa-operation" } },
+    });
+    expect(recovery).toMatchObject({
+      status: 202,
+      body: { success: true, data: { operationId: "recovery-operation" } },
+    });
+    expect(invalid.status).toBe(422);
+    expect(identityProvider.verifyMfaEnrollment).toHaveBeenCalledWith(
+      attempt.participantId,
+      "mfa-operation",
+      "123456",
+    );
+    expect(identityProvider.completeRecovery).toHaveBeenCalledWith(
+      attempt.participantId,
+      "recovery-operation",
+      "recovery-code",
+    );
+    expect(JSON.stringify(mfa)).not.toContain("123456");
+    expect(JSON.stringify(recovery)).not.toContain("recovery-code");
   });
 
   it("reads only the public curriculum runtime projection", async () => {

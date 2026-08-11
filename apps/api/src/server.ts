@@ -215,6 +215,12 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "POST" && path === "/api/v1/account/mfa/enrollment") {
     return "/api/v1/account/mfa/enrollment";
   }
+  if (method === "POST" && path === "/api/v1/account/mfa/enrollment/verify") {
+    return "/api/v1/account/mfa/enrollment/verify";
+  }
+  if (method === "POST" && path === "/api/v1/account/recovery/complete") {
+    return "/api/v1/account/recovery/complete";
+  }
   if (method === "GET" && path === "/api/v1/internal/dashboard") {
     return "/api/v1/internal/dashboard";
   }

@@ -10,6 +10,11 @@ type Security = Readonly<{
 }>;
 
 type ApiRecord = Readonly<Record<string, unknown>>;
+type Operation = Readonly<{
+  readonly operationId: string;
+  readonly expiresAt: string;
+}>;
+type OperationSetter = (operation: Operation | null) => void;
 const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 
 function isRecord(value: unknown): value is ApiRecord {
@@ -29,8 +34,24 @@ function isSecurity(value: unknown): value is Security {
   );
 }
 
+function isOperation(value: unknown): value is Operation {
+  return (
+    isRecord(value) &&
+    typeof value.operationId === "string" &&
+    value.operationId.trim().length > 0 &&
+    typeof value.expiresAt === "string" &&
+    value.expiresAt.trim().length > 0
+  );
+}
+
 export default function AccountPage() {
   const [security, setSecurity] = useState<Security | null>(null);
+  const [recoveryOperation, setRecoveryOperation] = useState<Operation | null>(
+    null,
+  );
+  const [mfaOperation, setMfaOperation] = useState<Operation | null>(null);
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +77,11 @@ export default function AccountPage() {
     }
   }
 
-  async function begin(path: string, message: string): Promise<void> {
+  async function begin(
+    path: string,
+    message: string,
+    setOperation: OperationSetter,
+  ): Promise<void> {
     setBusy(true);
     setNotice(null);
     setError(null);
@@ -68,12 +93,60 @@ export default function AccountPage() {
         body: "{}",
       });
       const payload: unknown = await response.json().catch(() => null);
-      if (!isRecord(payload) || payload.success !== true) {
+      if (
+        !isRecord(payload) ||
+        payload.success !== true ||
+        !isOperation(payload.data)
+      ) {
         throw new Error("operation unavailable");
       }
+      setOperation(payload.data);
       setNotice(message);
     } catch {
       setError("A operação depende de um provedor de identidade configurado.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function complete(
+    path: string,
+    operation: Operation | null,
+    code: string,
+    setOperation: OperationSetter,
+    clearCode: () => void,
+    message: string,
+  ): Promise<void> {
+    if (operation === null || code.trim().length === 0) {
+      setError("Informe o código recebido do provedor de identidade.");
+      return;
+    }
+    setBusy(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`${apiBase}${path}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          operationId: operation.operationId,
+          verificationCode: code,
+        }),
+      });
+      const payload: unknown = await response.json().catch(() => null);
+      if (
+        !isRecord(payload) ||
+        payload.success !== true ||
+        !isOperation(payload.data)
+      ) {
+        throw new Error("operation unavailable");
+      }
+      setOperation(null);
+      clearCode();
+      setNotice(message);
+    } catch {
+      setError("O provedor não confirmou o código informado.");
     } finally {
       setBusy(false);
     }
@@ -131,6 +204,7 @@ export default function AccountPage() {
               void begin(
                 "/api/v1/account/recovery/start",
                 "Solicitação de recuperação encaminhada ao provedor.",
+                setRecoveryOperation,
               )
             }
           >
@@ -145,12 +219,77 @@ export default function AccountPage() {
               void begin(
                 "/api/v1/account/mfa/enrollment",
                 "Inscrição MFA encaminhada ao provedor.",
+                setMfaOperation,
               )
             }
           >
             Configurar MFA
           </button>
         </div>
+
+        {recoveryOperation !== null ? (
+          <fieldset className="review-actions">
+            <legend>Confirmar recuperação</legend>
+            <label htmlFor="recovery-code">Código de recuperação</label>
+            <input
+              id="recovery-code"
+              type="password"
+              inputMode="text"
+              autoComplete="one-time-code"
+              maxLength={256}
+              value={recoveryCode}
+              onChange={(event) => setRecoveryCode(event.target.value)}
+            />
+            <button
+              type="button"
+              disabled={busy || recoveryCode.trim().length === 0}
+              onClick={() =>
+                void complete(
+                  "/api/v1/account/recovery/complete",
+                  recoveryOperation,
+                  recoveryCode,
+                  setRecoveryOperation,
+                  () => setRecoveryCode(""),
+                  "Recuperação concluída pelo provedor.",
+                )
+              }
+            >
+              Concluir recuperação
+            </button>
+          </fieldset>
+        ) : null}
+
+        {mfaOperation !== null ? (
+          <fieldset className="review-actions">
+            <legend>Confirmar MFA</legend>
+            <label htmlFor="mfa-code">Código de confirmação MFA</label>
+            <input
+              id="mfa-code"
+              type="password"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={256}
+              value={mfaCode}
+              onChange={(event) => setMfaCode(event.target.value)}
+            />
+            <button
+              type="button"
+              disabled={busy || mfaCode.trim().length === 0}
+              onClick={() =>
+                void complete(
+                  "/api/v1/account/mfa/enrollment/verify",
+                  mfaOperation,
+                  mfaCode,
+                  setMfaOperation,
+                  () => setMfaCode(""),
+                  "MFA confirmado pelo provedor.",
+                )
+              }
+            >
+              Confirmar MFA
+            </button>
+          </fieldset>
+        ) : null}
       </section>
       {error !== null ? (
         <p className="feedback error" role="alert">

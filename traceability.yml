@@ -1813,6 +1813,7 @@ artifacts:
         "docs/107_backup_artifact_restore_evidence_2026-08-11.md",
         "docs/108_identity_provider_readiness_evidence_2026-08-11.md",
         "docs/109_remediation_local_reverification_2026-08-11.md",
+        "docs/110_identity_provider_lifecycle_evidence_2026-08-11.md",
       ]
     code:
       [
@@ -1824,6 +1825,9 @@ artifacts:
         "packages/application/src/authoring-use-cases.ts",
         "packages/application/src/authoring-review-queue.ts",
         "packages/application/src/authorization.ts",
+        "packages/application/src/identity-provider.ts",
+        "packages/contracts/src/account.ts",
+        "packages/contracts/src/index.ts",
         "packages/config/src/env.ts",
         "infra/production/Caddyfile",
         "infra/production/Caddyfile.production.example",
@@ -1849,6 +1853,9 @@ artifacts:
         "scripts/build-e2e.mjs",
         "playwright.config.ts",
         "apps/web/app/authoring/page.tsx",
+        "apps/web/app/account/page.tsx",
+        "apps/api/src/http.ts",
+        "apps/api/src/server.ts",
         "apps/web/next.config.ts",
         "infra/production/Dockerfile",
       ]
@@ -1870,8 +1877,13 @@ artifacts:
         "tests/integration/postgres-restore.test.ts",
         "tests/integration/backup-artifact.test.ts",
         "tests/integration/identity-provider-readiness.test.ts",
+        "packages/application/src/identity-provider.test.ts",
+        "packages/contracts/src/account.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
         "tests/e2e/authoring-review.spec.ts",
+        "tests/e2e/account-security.spec.ts",
         "pnpm verify",
         "pnpm build",
         "pnpm ops:verify-ha",
@@ -1888,6 +1900,7 @@ artifacts:
         "pnpm test:integration:restore",
         "CVG_RUN_REAL_E2E=true pnpm test:e2e",
         "pnpm test:e2e:active-ha",
+        "CVG_RUN_ACTIVE_HA_E2E=true BASE_URL=http://127.0.0.1:3110 pnpm exec playwright test tests/e2e/account-security.spec.ts",
         "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live pnpm ops:load-smoke",
       ]
     verification:
@@ -1912,8 +1925,9 @@ artifacts:
         "live restore tests 2/2 with isolated marker and stored artifact",
         "stored backup artifact checksum, size and manifest verification",
         "identity provider readiness probe with synthetic responses and fail-closed production gate",
+        "provider-mediated MFA enrollment verification and recovery completion with bounded non-persisted codes",
         "active HA local re-verification: E2E 2/2, RLS role, 24 runtime states, clinical queue, headers, trace restart and load 200/200",
-        "pnpm verify 441 tests / 18 skips / coverage 84.94% statements / 80.26% branches / 86.66% functions / 85.69% lines",
+        "pnpm verify 447 tests / 18 skips / coverage 85.04% statements / 80.34% branches / 86.84% functions / 85.78% lines",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",

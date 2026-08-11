@@ -58,6 +58,7 @@ import {
   apiErrorResponse,
   accountActionRequestSchema,
   accountOperationProjectionSchema,
+  accountVerificationRequestSchema,
   apiSuccessResponse,
   parseAccountSecurity,
   parseOperationsDashboard,
@@ -881,6 +882,38 @@ async function handleAccountOperation(
   const result = await operation(
     dependencies.identityProvider,
     principal.principalId,
+  );
+  return {
+    status: 202,
+    body: apiSuccessResponse(
+      accountOperationProjectionSchema.parse(result),
+      requestId,
+    ),
+  };
+}
+
+async function handleAccountVerificationOperation(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+  operation: (
+    provider: IdentityProviderPort,
+    principalId: string,
+    operationId: string,
+    verificationCode: string,
+  ) => Promise<IdentityProviderOperation>,
+): Promise<ApiHttpResponse> {
+  const parsed = accountVerificationRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (dependencies.identityProvider === undefined) {
+    return errorResponse("state_conflict", requestId);
+  }
+  const result = await operation(
+    dependencies.identityProvider,
+    principal.principalId,
+    parsed.data.operationId,
+    parsed.data.verificationCode,
   );
   return {
     status: 202,
@@ -1857,6 +1890,44 @@ export async function handleApiRequest(
         principal,
         dependencies,
         (provider, principalId) => provider.beginMfaEnrollment(principalId),
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/account/mfa/enrollment/verify"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAccountVerificationOperation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+        (provider, principalId, operationId, verificationCode) =>
+          provider.verifyMfaEnrollment(
+            principalId,
+            operationId,
+            verificationCode,
+          ),
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/account/recovery/complete"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAccountVerificationOperation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+        (provider, principalId, operationId, verificationCode) =>
+          provider.completeRecovery(principalId, operationId, verificationCode),
       );
     }
 

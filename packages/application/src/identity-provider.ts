@@ -21,12 +21,40 @@ export interface IdentityProviderPort {
   readonly beginMfaEnrollment: (
     principalId: string,
   ) => Promise<IdentityProviderOperation>;
+  readonly verifyMfaEnrollment: (
+    principalId: string,
+    operationId: string,
+    verificationCode: string,
+  ) => Promise<IdentityProviderOperation>;
+  readonly completeRecovery: (
+    principalId: string,
+    operationId: string,
+    verificationCode: string,
+  ) => Promise<IdentityProviderOperation>;
 }
 
 function assertPrincipalId(principalId: string): void {
   if (typeof principalId !== "string" || principalId.trim().length === 0) {
     throw new ApplicationError("validation_error", "principalId is required");
   }
+}
+
+function assertOpaqueValue(value: string, name: string): void {
+  if (
+    typeof value !== "string" ||
+    value.trim().length === 0 ||
+    value.length > 256 ||
+    hasControlCharacter(value)
+  ) {
+    throw new ApplicationError("validation_error", `${name} is invalid`);
+  }
+}
+
+function hasControlCharacter(value: string): boolean {
+  return [...value].some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
 
 function notConfigured(): ApplicationError {
@@ -52,6 +80,26 @@ export function createUnavailableIdentityProvider(): IdentityProviderPort {
     },
     beginMfaEnrollment: async (principalId: string) => {
       assertPrincipalId(principalId);
+      throw notConfigured();
+    },
+    verifyMfaEnrollment: async (
+      principalId: string,
+      operationId: string,
+      verificationCode: string,
+    ) => {
+      assertPrincipalId(principalId);
+      assertOpaqueValue(operationId, "operationId");
+      assertOpaqueValue(verificationCode, "verificationCode");
+      throw notConfigured();
+    },
+    completeRecovery: async (
+      principalId: string,
+      operationId: string,
+      verificationCode: string,
+    ) => {
+      assertPrincipalId(principalId);
+      assertOpaqueValue(operationId, "operationId");
+      assertOpaqueValue(verificationCode, "verificationCode");
       throw notConfigured();
     },
   });
@@ -160,6 +208,7 @@ export function createHttpIdentityProvider(
     path: string,
     method: "GET" | "POST",
     principalId: string,
+    body: Readonly<Record<string, string>> = {},
   ): Promise<unknown> => {
     assertPrincipalId(principalId);
     const response = await fetchImpl(providerUrl(options.baseUrl, path), {
@@ -169,7 +218,7 @@ export function createHttpIdentityProvider(
         authorization: `Bearer ${options.bearerToken}`,
         ...(method === "POST" ? { "content-type": "application/json" } : {}),
       },
-      ...(method === "POST" ? { body: JSON.stringify({}) } : {}),
+      ...(method === "POST" ? { body: JSON.stringify(body) } : {}),
     });
     return parseProviderResponse(response);
   };
@@ -199,5 +248,37 @@ export function createHttpIdentityProvider(
           principalId,
         ),
       ),
+    verifyMfaEnrollment: async (
+      principalId: string,
+      operationId: string,
+      verificationCode: string,
+    ) => {
+      assertOpaqueValue(operationId, "operationId");
+      assertOpaqueValue(verificationCode, "verificationCode");
+      return parseOperation(
+        await request(
+          `/v1/accounts/${encodeURIComponent(principalId)}/mfa/enrollment/verify`,
+          "POST",
+          principalId,
+          { operationId, verificationCode },
+        ),
+      );
+    },
+    completeRecovery: async (
+      principalId: string,
+      operationId: string,
+      verificationCode: string,
+    ) => {
+      assertOpaqueValue(operationId, "operationId");
+      assertOpaqueValue(verificationCode, "verificationCode");
+      return parseOperation(
+        await request(
+          `/v1/accounts/${encodeURIComponent(principalId)}/recovery/complete`,
+          "POST",
+          principalId,
+          { operationId, verificationCode },
+        ),
+      );
+    },
   });
 }

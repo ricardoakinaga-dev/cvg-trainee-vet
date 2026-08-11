@@ -183,7 +183,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** unitário de respostas inválidas, timeout, 401/409/5xx, replay e ausência de segredo; integração com sandbox do provedor.
 - **Aceite:** security status retorna EXTERNAL_IDENTITY_PROVIDER; recovery e MFA retornam operationId sem secret; sessão e papéis continuam server-side.
 - **Rollback:** feature flag retorna ao convite administrativo e desabilita mutações externas.
-- **Progresso local:** o adapter e o runtime agora rejeitam transporte HTTP para o IdP; `NODE_ENV=production` exige URL `https://`, coberto por teste RED/GREEN. O gate `scripts/verify-identity-provider-readiness.mjs` passou a consultar o endpoint de segurança por HTTPS e exigir recuperação `AVAILABLE` + MFA `ENABLED` antes do gate produtivo aceitar configuração; o sandbox/provedor real, enrollment, challenge, recovery codes, step-up, revogação e sincronização continuam pendentes por decisão humana.
+- **Progresso local:** o adapter e o runtime agora rejeitam transporte HTTP para o IdP; `NODE_ENV=production` exige URL `https://`, coberto por teste RED/GREEN. O gate `scripts/verify-identity-provider-readiness.mjs` passou a consultar o endpoint de segurança por HTTPS e exigir recuperação `AVAILABLE` + MFA `ENABLED` antes do gate produtivo aceitar configuração. O adapter também suporta `verifyMfaEnrollment` e `completeRecovery`, com rotas autenticadas, códigos limitados e não persistidos; o sandbox/provedor real, challenge real, recovery codes, step-up, revogação e sincronização continuam pendentes por decisão humana.
 
 #### R3-S3 — Jornada web e MFA obrigatório
 
@@ -192,6 +192,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** login sem MFA quando obrigatório é bloqueado; recovery expirado/replay falha; code não aparece em log/telemetria.
 - **Aceite:** E2E em sandbox prova enrollment, challenge, recovery e revogação; status no banco e UI é coerente.
 - **Rollback:** revogar enrollment e bloquear rollout, nunca fazer fallback silencioso para senha.
+- **Progresso local:** `/account` agora executa início → código provider-mediated → confirmação para recovery e MFA; o E2E sintético passou 1/1 e verifica que os códigos não permanecem na UI. Isso prepara o sandbox, mas não substitui a prova com IdP externo.
 
 ### R4 — TLS, headers e edge
 

@@ -22,6 +22,12 @@ describe("identity provider boundary", () => {
     await expect(
       provider.beginMfaEnrollment("account-1"),
     ).rejects.toMatchObject({ code: "state_conflict" });
+    await expect(
+      provider.verifyMfaEnrollment("account-1", "mfa-operation", "123456"),
+    ).rejects.toMatchObject({ code: "state_conflict" });
+    await expect(
+      provider.completeRecovery("account-1", "recovery-operation", "code"),
+    ).rejects.toMatchObject({ code: "state_conflict" });
   });
 
   it("validates principal ids on every unavailable operation", async () => {
@@ -36,6 +42,12 @@ describe("identity provider boundary", () => {
     await expect(provider.beginMfaEnrollment(" ")).rejects.toMatchObject({
       code: "validation_error",
     });
+    await expect(
+      provider.verifyMfaEnrollment("account-1", " ", "123456"),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    await expect(
+      provider.completeRecovery("account-1", "operation", "\n"),
+    ).rejects.toMatchObject({ code: "validation_error" });
   });
 
   it("calls the configured provider with redacted, method-specific requests", async () => {
@@ -110,6 +122,101 @@ describe("identity provider boundary", () => {
     expect(calls[2]?.input).toBe(
       "https://identity.example/v1/accounts/acct%2F1/mfa/enrollment",
     );
+  });
+
+  it("verifies MFA enrollment and completes recovery without returning the code", async () => {
+    const responses = [
+      new Response(
+        JSON.stringify({
+          operationId: "mfa-operation",
+          expiresAt: "2026-08-10T06:00:00.000Z",
+        }),
+        { status: 200 },
+      ),
+      new Response(
+        JSON.stringify({
+          operationId: "recovery-operation",
+          expiresAt: "2026-08-10T06:00:00.000Z",
+        }),
+        { status: 200 },
+      ),
+    ];
+    const calls: Array<{ input: string; init?: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (input: string, init?: RequestInit) => {
+      calls.push(init === undefined ? { input } : { input, init });
+      return responses.shift()!;
+    });
+    const provider = createHttpIdentityProvider({
+      baseUrl: "https://identity.example",
+      bearerToken: testBearer,
+      fetchImpl,
+    });
+
+    await expect(
+      provider.verifyMfaEnrollment("acct/1", "mfa-operation", "123456"),
+    ).resolves.toEqual({
+      operationId: "mfa-operation",
+      expiresAt: "2026-08-10T06:00:00.000Z",
+    });
+    await expect(
+      provider.completeRecovery(
+        "acct/1",
+        "recovery-operation",
+        "recovery-code",
+      ),
+    ).resolves.toEqual({
+      operationId: "recovery-operation",
+      expiresAt: "2026-08-10T06:00:00.000Z",
+    });
+
+    expect(calls[0]).toMatchObject({
+      input:
+        "https://identity.example/v1/accounts/acct%2F1/mfa/enrollment/verify",
+      init: {
+        method: "POST",
+        body: JSON.stringify({
+          operationId: "mfa-operation",
+          verificationCode: "123456",
+        }),
+      },
+    });
+    expect(calls[1]).toMatchObject({
+      input: "https://identity.example/v1/accounts/acct%2F1/recovery/complete",
+      init: {
+        method: "POST",
+        body: JSON.stringify({
+          operationId: "recovery-operation",
+          verificationCode: "recovery-code",
+        }),
+      },
+    });
+    expect(JSON.stringify({ calls })).toContain("123456");
+  });
+
+  it("rejects malformed operation or verification values before network access", async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            operationId: "operation",
+            expiresAt: "2026-08-10T06:00:00.000Z",
+          }),
+          { status: 200 },
+        ),
+    );
+    const provider = createHttpIdentityProvider({
+      baseUrl: "https://identity.example",
+      bearerToken: testBearer,
+      fetchImpl,
+    });
+
+    await expect(
+      provider.verifyMfaEnrollment("account-1", " ", "123456"),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    await expect(
+      provider.completeRecovery("account-1", "operation", "\n"),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("rejects invalid provider configuration and malformed successful responses", async () => {
