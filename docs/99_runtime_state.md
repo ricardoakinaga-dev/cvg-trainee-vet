@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: perfil de traces externos preparado nos commits `b5e615c` e `8b03283`; a semântica de URL-base do exporter OTLP foi explicitada, collector validado com endpoint HTTPS sintético, Compose externo validado sem e com `local-traces`, e `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; perfis locais permanecem inalterados
+- last_completed_action: rechecagem final do handoff: commits `b5e615c` e `8b03283` preparam o perfil de traces externos com semântica de URL-base; `pnpm verify`, rastreabilidade, documentação, health do HA local e o overlay sintético passaram; o gate produtivo continuou fail-closed pelas entradas externas listadas abaixo
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T12:11:54-03:00
+- last_update: 2026-08-11T12:12:49-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -952,3 +952,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Selecionar backend e retenção de traces; então executar o overlay em ambiente autorizado com credenciais fora do repositório.
+
+## 2026-08-11 — REMEDIATION-PRODUCTION-GATE-RECHECK
+
+### AÇÃO
+
+Reexecutados `pnpm verify:traceability`, `pnpm verify:documentation`, `git diff --check`, health do HA (`web-dependencies`, edge ready e API live) e `CVG_VERIFY_PRODUCTION_SECURITY=true pnpm ops:verify-production-security`.
+
+### RESULTADO
+
+O worktree permaneceu limpo; API-A/API-B e workers estão saudáveis; health web/edge/API retornou sucesso; rastreabilidade e documentação passaram. O gate produtivo falhou de forma esperada e explícita por `IDENTITY_PROVIDER_REQUIRED`, `IDENTITY_PROVIDER_URL`, `IDENTITY_PROVIDER_TOKEN`, `CVG_PUBLIC_HTTPS_ORIGIN`, `CVG_TRACE_STORAGE_BACKEND`, `CVG_TRACE_RETENTION`, `CVG_BACKUP_URI`, `CVG_BACKUP_ENCRYPTION_KEY_REF`, `CVG_RELEASE_IMAGE_DIGEST` e `CVG_ROLLBACK_IMAGE_DIGEST` ausentes.
+
+### LIMITES
+
+As entradas ausentes exigem decisões, credenciais e ambiente externos; não devem ser preenchidas com valores sintéticos para forçar aprovação. A revisão clínica dos 763 itens não publicados também continua humana.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Registrar as decisões de provedor MFA/recovery, domínio/certificado, traces/retenção, backup e ambiente de release; depois executar os gates externos correspondentes.

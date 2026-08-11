@@ -3945,3 +3945,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Selecionar backend e retenção de traces; então executar o overlay em ambiente autorizado com credenciais fora do repositório.
+
+## 2026-08-11 — REMEDIATION-PRODUCTION-GATE-RECHECK
+
+### TIMESTAMP
+
+2026-08-11 12:12:49 -03:00
+
+### ACTION
+
+Reexecutados `pnpm verify:traceability`, `pnpm verify:documentation`, `git diff --check`, health do HA (`web-dependencies`, edge ready e API live) e `CVG_VERIFY_PRODUCTION_SECURITY=true pnpm ops:verify-production-security`.
+
+### RESULT
+
+O worktree permaneceu limpo; API-A/API-B e workers estão saudáveis; health web/edge/API retornou sucesso; rastreabilidade e documentação passaram. O gate produtivo falhou de forma esperada e explícita por `IDENTITY_PROVIDER_REQUIRED`, `IDENTITY_PROVIDER_URL`, `IDENTITY_PROVIDER_TOKEN`, `CVG_PUBLIC_HTTPS_ORIGIN`, `CVG_TRACE_STORAGE_BACKEND`, `CVG_TRACE_RETENTION`, `CVG_BACKUP_URI`, `CVG_BACKUP_ENCRYPTION_KEY_REF`, `CVG_RELEASE_IMAGE_DIGEST` e `CVG_ROLLBACK_IMAGE_DIGEST` ausentes.
+
+### LIMITES
+
+As entradas ausentes exigem decisões, credenciais e ambiente externos; não devem ser preenchidas com valores sintéticos para forçar aprovação. A revisão clínica dos 763 itens não publicados também continua humana.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Registrar as decisões de provedor MFA/recovery, domínio/certificado, traces/retenção, backup e ambiente de release; depois executar os gates externos correspondentes.
