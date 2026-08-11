@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após revalidar E2E/RLS, currículo, edge, traces e load no HA, sem promover produção
+- current_task: manter o handoff externo após fechar o ciclo provider-mediated de MFA/recovery e revalidar os gates locais, sem promover produção
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: revalidação live local registrada em `docs/109_remediation_local_reverification_2026-08-11.md` no commit `0083b069a802ace3bad6eb02218b68e29b590f17`: E2E HA 2/2 com cleanup zero, `cvg_app` sem SUPERUSER/BYPASSRLS, 24 atribuições/24 estados M01–M24, fila 763 pendente/0 falhas técnicas, edge live 200, trace após restart e load 200/200; `pnpm verify` permanece em 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%
-- next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
+- last_completed_action: commit `e93f4d774b80ca920122e7ed09ffd106b66a83b5` fechou localmente o ciclo provider-mediated de MFA/recovery: contrato, adapter HTTPS, rotas autenticadas, tela `/account`, testes RED/GREEN e E2E sintético 1/1; `pnpm verify` passou em 447 testes, 18 skips e cobertura 85,04%/80,34%/86,84%/85,78%
+- next_action: obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; em paralelo, executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado
 
 ## BLOQUEIOS
 
@@ -32,7 +32,33 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T13:36:41-03:00
+- last_update: 2026-08-11T14:00:27-03:00
+
+## 2026-08-11T14:00:27-03:00 — REMEDIATION-IDENTITY-LIFECYCLE
+
+### AÇÃO
+
+Executado TDD e revisão de segurança para fechar a transição entre iniciar uma operação de identidade e confirmar o challenge emitido pelo provedor. Foram adicionados contratos bounded, métodos provider-mediated no adapter HTTPS, rotas API autenticadas e campos efêmeros na tela `/account` para recovery e confirmação MFA.
+
+### RESULTADO
+
+O commit `e93f4d774b80ca920122e7ed09ffd106b66a83b5` (`feat: complete provider mediated identity flows`) implementa `verifyMfaEnrollment` e `completeRecovery`. Códigos são aceitos somente em memória, com limite de 256 caracteres e rejeição de caracteres de controle; não entram em persistência, envelope ou mensagem de erro. O E2E sintético verificou as rotas, os corpos provider-mediated e o desaparecimento dos códigos da interface após sucesso. `pnpm verify` passou com 447 testes, 18 skips e cobertura 85,04% statements / 80,34% branches / 86,84% functions / 85,78% lines; build, lint, typecheck, format e secret scan passaram.
+
+### EVIDÊNCIA
+
+`docs/110_identity_provider_lifecycle_evidence_2026-08-11.md`; `tests/e2e/account-security.spec.ts`; manifesto `REMEDIATION-EVIDENCE-026` fixado no mesmo SHA.
+
+### LIMITES
+
+Esta é uma prova local/provider-neutral. Não foram executados IdP ou sandbox reais, enrollment/challenge/recovery code reais, step-up, revogação ou sincronização de papéis. Também continuam pendentes domínio/certificado público, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado e revisão clínica dos 763 itens.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Escolher o provedor e política de identidade, fornecer credenciais pelo secret manager e executar o probe e E2E em sandbox; só então repetir os gates de produção e manter a publicação clínica bloqueada até revisão item a item.
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 

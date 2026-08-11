@@ -796,6 +796,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** IdP/MFA/recovery real, domínio/certificado público, traces/backups externos, RPO/RTO produtivo, registry/deploy/rollback autorizado e aprovação clínica dos 763 itens permanecem sem prova;
 - **próximo passo:** obter decisões/recursos externos e iniciar a revisão clínica item a item; depois executar os verificadores no ambiente declarado.
 
+## 2026-08-11 — REMEDIATION-IDENTITY-LIFECYCLE
+
+- **item:** completar o ciclo local provider-mediated de início e confirmação para recovery e MFA, sem armazenar códigos;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para IdP, sandbox e produção;
+- **evidência:** `packages/application/src/identity-provider.ts` implementa `verifyMfaEnrollment` e `completeRecovery`; API autenticada e contratos bounded; `/account` mantém código somente em memória; `tests/e2e/account-security.spec.ts` passou 1/1; `docs/110_identity_provider_lifecycle_evidence_2026-08-11.md`; commit `e93f4d774b80ca920122e7ed09ffd106b66a83b5`;
+- **limite:** não há prova de IdP/sandbox real, enrollment/challenge/recovery code real, step-up, revogação, sincronização de papéis, domínio/TLS público, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado ou revisão dos 763 conteúdos;
+- **próximo passo:** escolher provedor/política, fornecer segredo pelo secret manager e executar os fluxos autorizados em sandbox; manter o gate produtivo fechado até evidência externa.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

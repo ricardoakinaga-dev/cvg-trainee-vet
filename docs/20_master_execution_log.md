@@ -4151,3 +4151,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Selecionar IdP/política, domínio/TLS, backend de traces, destino de backup e ambiente de deploy; iniciar a revisão dos 763 itens com aprovador autorizado; repetir a auditoria somente após as provas externas.
+
+## 2026-08-11T14:00:27-03:00 — REMEDIATION-IDENTITY-LIFECYCLE
+
+### ACTION
+
+Executado TDD e revisão de segurança para fechar a transição entre iniciar uma operação de identidade e confirmar o challenge emitido pelo provedor. Foram adicionados contratos bounded, métodos provider-mediated no adapter HTTPS, rotas API autenticadas e campos efêmeros na tela `/account` para recovery e confirmação MFA.
+
+### RESULT
+
+O commit `e93f4d774b80ca920122e7ed09ffd106b66a83b5` (`feat: complete provider mediated identity flows`) implementa `verifyMfaEnrollment` e `completeRecovery`. Códigos são aceitos somente em memória, com limite de 256 caracteres e rejeição de caracteres de controle; não entram em persistência, envelope ou mensagem de erro. O E2E sintético verificou as rotas, os corpos provider-mediated e o desaparecimento dos códigos da interface após sucesso. `pnpm verify` passou com 447 testes, 18 skips e cobertura 85,04% statements / 80,34% branches / 86,84% functions / 85,78% lines; build, lint, typecheck, format e secret scan passaram.
+
+### EVIDENCE
+
+`docs/110_identity_provider_lifecycle_evidence_2026-08-11.md`; `tests/e2e/account-security.spec.ts`; manifesto `REMEDIATION-EVIDENCE-026` fixado no mesmo SHA.
+
+### LIMITS
+
+Esta é uma prova local/provider-neutral. Não foram executados IdP ou sandbox reais, enrollment/challenge/recovery code reais, step-up, revogação ou sincronização de papéis. Também continuam pendentes domínio/certificado público, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado e revisão clínica dos 763 itens.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Escolher o provedor e política de identidade, fornecer credenciais pelo secret manager e executar o probe e E2E em sandbox; só então repetir os gates de produção e manter a publicação clínica bloqueada até revisão item a item.
