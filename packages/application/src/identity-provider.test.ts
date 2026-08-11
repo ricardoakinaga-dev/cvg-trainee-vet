@@ -115,10 +115,16 @@ describe("identity provider boundary", () => {
   it("rejects invalid provider configuration and malformed successful responses", async () => {
     expect(() =>
       createHttpIdentityProvider({
+        baseUrl: "http://identity.example",
+        bearerToken: testBearer,
+      }),
+    ).toThrow("HTTPS");
+    expect(() =>
+      createHttpIdentityProvider({
         baseUrl: "ftp://identity.example",
         bearerToken: testBearer,
       }),
-    ).toThrow("HTTP(S)");
+    ).toThrow("HTTPS");
     expect(() =>
       createHttpIdentityProvider({
         baseUrl: "https://identity.example",

@@ -182,6 +182,21 @@ describe("loadRuntimeConfig", () => {
     expect(config.identityProvider.configured).toBe(true);
   });
 
+  it("rejects an insecure identity provider transport in production", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        IDENTITY_PROVIDER_REQUIRED: "true",
+        IDENTITY_PROVIDER_URL: "http://identity.example",
+        IDENTITY_PROVIDER_TOKEN: "x",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+        METRICS_SCRAPE_TOKEN: "m".repeat(32),
+      }),
+    ).toThrow("HTTPS");
+  });
+
   it("rejects an identity provider URL without its server-side token", () => {
     expect(() =>
       loadRuntimeConfig({

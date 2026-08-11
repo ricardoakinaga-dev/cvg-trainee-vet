@@ -69,10 +69,10 @@ type IdentityProviderOptions = Readonly<{
 }>;
 
 function assertProviderOptions(options: IdentityProviderOptions): void {
-  if (!/^https?:\/\//u.test(options.baseUrl)) {
+  if (!/^https:\/\//u.test(options.baseUrl)) {
     throw new ApplicationError(
       "validation_error",
-      "Identity provider URL must use HTTP(S)",
+      "Identity provider URL must use HTTPS",
     );
   }
   if (options.bearerToken.trim().length === 0) {

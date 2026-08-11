@@ -176,6 +176,14 @@ export function loadRuntimeConfig(
     missing.push("IDENTITY_PROVIDER_TOKEN");
   }
 
+  if (
+    value.NODE_ENV === "production" &&
+    value.IDENTITY_PROVIDER_URL !== undefined &&
+    !value.IDENTITY_PROVIDER_URL.startsWith("https://")
+  ) {
+    throw new ConfigError("IDENTITY_PROVIDER_URL must use HTTPS in production");
+  }
+
   if (value.NODE_ENV === "production" && !value.METRICS_SCRAPE_TOKEN) {
     missing.push("METRICS_SCRAPE_TOKEN");
   }
