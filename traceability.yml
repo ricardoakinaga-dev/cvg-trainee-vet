@@ -1918,7 +1918,7 @@ artifacts:
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "cafba44890efc2a5b99e5af10faf79a95c9be59d"
+    commit: "312624708c2f608bcf750e9c5365571d88bdf02c"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."

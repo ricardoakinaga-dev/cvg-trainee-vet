@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: probe provider-neutral de prontidão do IdP adicionado; testes sintéticos 5/5, `pnpm verify` passou com 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%; gate com flag sem provedor falha fechado
+- last_completed_action: probe provider-neutral de prontidão do IdP adicionado no commit `312624708c2f608bcf750e9c5365571d88bdf02c`; testes sintéticos 5/5, `pnpm verify` passou com 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%; gate com flag sem provedor falha fechado
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS

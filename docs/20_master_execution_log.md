@@ -4110,6 +4110,8 @@ Executado TDD para o gate provider-neutral de prontidão do IdP. `scripts/verify
 
 RED pela ausência do módulo; GREEN em `tests/integration/identity-provider-readiness.test.ts` (5/5). O teste valida respostas sintéticas, principal codificado, header de autorização, falhas HTTP, JSON inválido e ausência de segredo no resultado. `pnpm lint`, `pnpm typecheck`, `pnpm verify:secrets`, build e `pnpm verify` passaram; o último passou com 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%. Sem flag, o comando retorna `NOT_EXECUTED`; sem IdP, com flag, retorna `FAIL`.
 
+Commit técnico: `312624708c2f608bcf750e9c5365571d88bdf02c` (`fix: gate production on identity provider readiness`).
+
 ### DECISIONS
 
 Nenhum endpoint ou credencial real foi inventado. O probe é uma barreira de prontidão, não prova enrollment, challenge, recovery code, step-up, revogação ou sincronização de papéis.
