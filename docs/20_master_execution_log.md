@@ -3889,3 +3889,33 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Aguardar o domínio e o método de certificado autorizados; não trocar o Caddy local nem promover portas públicas neste ambiente.
+
+## 2026-08-11 — REMEDIATION-EXTERNAL-TRACE-PROFILE
+
+### TIMESTAMP
+
+2026-08-11 12:03:19 -03:00
+
+### ENGINE
+
+BUILD / SECURITY REVIEW / TDD / VPS TRUTH SOURCE
+
+### ACTION
+
+Foi escrito primeiro o contrato em `tests/integration/production-edge-contract.test.ts`; o RED falhou pela ausência do overlay e do collector externo. O GREEN adicionou `infra/observability/otel-collector.production.example.yaml` e `infra/production/docker-compose.external-traces.example.yml`. O overlay injeta endpoint OTLP e autorização somente por ambiente, troca o exporter local por OTLP HTTP com TLS obrigatório e coloca Tempo atrás do perfil opcional `local-traces`.
+
+### RESULT
+
+O teste de contrato passou 2/2. O OpenTelemetry Collector validou a configuração com endpoint HTTPS e autorização sintéticos. `docker compose config --quiet` passou com o overlay externo, sem ativar `local-traces`, e também com `--profile local-traces`; `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commit: `b5e615c`.
+
+### LIMITES
+
+O perfil é preparação genérica e não ativa: fornecedor, endpoint, token, retenção, consulta, alerta e persistência externa continuam sem prova. O backend real, RPO/RTO e autorização de produção permanecem pendentes; os defaults locais não foram alterados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter backend de traces e retenção aprovados, então executar em ambiente autorizado com credenciais fora do repositório; não promover valores sintéticos.

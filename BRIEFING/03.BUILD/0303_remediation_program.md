@@ -226,6 +226,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Teste:** request sintético gera trace consultável após reinício do collector; nenhum payload secreto; alerta de perda de exportação.
 - **Aceite:** trace permanece após restart, possui request_id/correlation_id e retenção documentada.
 - **Rollback:** exporter debug/local redigido, sem bloquear o núcleo da aplicação.
+- **Progresso local:** o contrato RED/GREEN adicionou `infra/observability/otel-collector.production.example.yaml` com exporter OTLP HTTP HTTPS e autorização por ambiente, além do overlay Compose `infra/production/docker-compose.external-traces.example.yml`; o collector e o Compose foram validados com valores sintéticos, e Tempo ficou opcional no perfil `local-traces`. Backend, retenção, consulta, alertas, persistência externa e execução autorizada continuam pendentes.
 
 #### R5-S2 — Artefato versionado e rollback
 

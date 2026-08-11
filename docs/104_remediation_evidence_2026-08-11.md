@@ -91,3 +91,16 @@ A disponibilidade real de MFA e recuperação continua não comprovada até a es
 O commit `9386e21` adicionou `infra/production/Caddyfile.production.example`, que usa FQDN configurável e HTTPS automático, sem `tls internal`, preservando os mesmos headers e HSTS. O Compose passou a aceitar `CVG_CADDYFILE`, `CVG_CADDY_HTTPS_SITE`, `CVG_EDGE_HTTP_TARGET_PORT` e `CVG_EDGE_TLS_TARGET_PORT`; os defaults locais permanecem inalterados.
 
 `caddy validate` passou com FQDN sintético e o Compose passou com `CVG_EDGE_PORT=80`, `CVG_EDGE_TLS_PORT=443` e target TLS 443. Isso fecha a preparação do perfil, mas não comprova domínio, DNS, certificado/ACME, renovação, handshake público ou E2E externo.
+
+## Perfil de traces externos — 2026-08-11
+
+O commit `b5e615c` adicionou `infra/observability/otel-collector.production.example.yaml` e `infra/production/docker-compose.external-traces.example.yml`. O collector recebe OTLP e exporta traces por OTLP HTTP com `insecure: false`; endpoint e autorização são obrigatoriamente fornecidos por variáveis de ambiente do overlay. O serviço Tempo do Compose base fica disponível somente no perfil opcional `local-traces`, e as dependências herdadas foram substituídas explicitamente para não carregar o backend local no perfil externo.
+
+```text
+teste de contrato production-edge       PASS — 2/2
+collector validate                       PASS — endpoint HTTPS/autorização sintéticos
+Compose overlay                          PASS — sem e com --profile local-traces
+pnpm verify                              PASS — 423 testes, 17 skips, cobertura >80%
+```
+
+Esta é uma preparação de integração, não uma prova de traces duráveis em produção. Não foi escolhido fornecedor, endpoint real, credencial, retenção, consulta, alerta ou destino de armazenamento; não há evidência de persistência externa, RPO/RTO ou autorização de deploy. O perfil local Tempo permaneceu inalterado.

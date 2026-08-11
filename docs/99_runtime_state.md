@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após preparar o perfil de TLS gerenciado, sem promover produção
+- current_task: manter o handoff externo após preparar os perfis de TLS e traces duráveis, sem promover produção
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: perfil `Caddyfile.production.example` preparado no commit `9386e21`; `caddy validate`, Compose com FQDN/ports produtivos sintéticos e `pnpm verify` passaram com 422 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; domínio/certificado reais continuam ausentes
-- next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
+- last_completed_action: perfil de traces externos preparado no commit `b5e615c`; collector OTLP validado com endpoint HTTPS sintético, Compose externo validado sem e com `local-traces`, e `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; perfis locais permanecem inalterados
+- next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T11:50:35-03:00
+- last_update: 2026-08-11T12:03:19-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -908,3 +908,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Selecionar o domínio e o método de certificado; somente então executar o perfil fora do ambiente local e registrar evidência pública redigida.
+
+## 2026-08-11 — REMEDIATION-EXTERNAL-TRACE-PROFILE
+
+### AÇÃO
+
+Foi escrito primeiro o contrato em `tests/integration/production-edge-contract.test.ts`; o RED falhou pela ausência do overlay e do collector externo. O GREEN adicionou `infra/observability/otel-collector.production.example.yaml` e `infra/production/docker-compose.external-traces.example.yml`. O overlay injeta endpoint OTLP e autorização somente por ambiente, troca o exporter local por OTLP HTTP com TLS obrigatório e coloca Tempo atrás do perfil opcional `local-traces`.
+
+### RESULTADO
+
+O teste de contrato passou 2/2. O binário oficial do OpenTelemetry Collector validou a configuração com endpoint HTTPS e autorização sintéticos. `docker compose config --quiet` passou com o overlay externo, sem ativar `local-traces`, e também com `--profile local-traces`; `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commit: `b5e615c`.
+
+### LIMITES
+
+O perfil é genérico e não ativo: nenhum fornecedor, endpoint, token, retenção, consulta, alerta ou prova de persistência externa foi configurado. O backend real, política de retenção, RPO/RTO e autorização de produção continuam pendentes; o perfil local Tempo não foi alterado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter o backend de traces e a política de retenção aprovados, então executar o collector em ambiente autorizado com credenciais fornecidas fora do repositório; não promover o overlay com valores sintéticos.

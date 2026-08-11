@@ -344,7 +344,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **testes:** trace após restart, deploy de dois digests, rollback, pg_dump/restore e failover;
 - **pronto:** evidência live de retenção, rollback e RPO ≤ 1h/RTO ≤ 4h;
 - **status:** WAITING_HUMAN_APPROVAL;
-- **evidência:** Tempo 3.0.0 recebeu trace OTLP consultável após restart em volume `tempo-data`; manifest imutável, dry-run e rehearsal local de canário/rollback (`pnpm ops:rehearse-local-release`, release `bf457ddf…`, rollback versionado `6ca763bb…`) passaram; a prova foi fortalecida com uma segunda imagem construída do commit anterior `b30c85d`, com troca e restauração do HA saudáveis; implementação congelada em `35d5c57` sobre `cfaeed3`; storage externo, retenção de produção, RPO/RTO, registry e promoção autorizada permanecem pendentes;
+- **evidência:** Tempo 3.0.0 recebeu trace OTLP consultável após restart em volume `tempo-data`; o perfil externo genérico `infra/observability/otel-collector.production.example.yaml` e o overlay `infra/production/docker-compose.external-traces.example.yml` foram validados com endpoint HTTPS/autorização sintéticos, sem alterar o perfil local; manifest imutável, dry-run e rehearsal local de canário/rollback (`pnpm ops:rehearse-local-release`, release `bf457ddf…`, rollback versionado `6ca763bb…`) passaram; a prova foi fortalecida com uma segunda imagem construída do commit anterior `b30c85d`, com troca e restauração do HA saudáveis; implementação de traces externos congelada em `b5e615c`; storage externo escolhido, retenção de produção, RPO/RTO, registry e promoção autorizada permanecem pendentes;
 - **plano:** 0303_remediation_program.md.
 
 ### R6-S1/R6-S2/R6-S3 — Carga, auditoria e commit

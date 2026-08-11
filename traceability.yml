@@ -1821,8 +1821,10 @@ artifacts:
         "infra/production/Caddyfile",
         "infra/production/Caddyfile.production.example",
         "infra/production/docker-compose.ha.yml",
+        "infra/production/docker-compose.external-traces.example.yml",
         "infra/observability/tempo.yaml",
         "infra/observability/otel-collector-config.yaml",
+        "infra/observability/otel-collector.production.example.yaml",
         "scripts/verify-edge-security.mjs",
         "scripts/verify-ha-topology.mjs",
         "scripts/verify-durable-traces.mjs",
@@ -1885,16 +1887,17 @@ artifacts:
         "local HA release rehearsal using a second image built from commit b30c85d",
         "live curriculum verifier confirms M01–M24 and reports unpublished clinical content",
         "managed TLS Caddy profile validates with synthetic FQDN while local defaults remain unchanged",
+        "external OTLP HTTPS collector profile validates with synthetic endpoint while local Tempo profile remains unchanged",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 422 tests / 17 skips / coverage above 80%",
+        "pnpm verify 423 tests / 17 skips / coverage above 80%",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "9386e212e7e76584885bf83966a448387a116886"
+    commit: "b5e615ce6ba8522d01d4f707cfa2faf9db7bc93d"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
@@ -1928,4 +1931,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The implementation is in 9386e212e7e76584885bf83966a448387a116886, following the versioned rollback handoff in 35d5c57. Human review, external IdP, managed certificate, external storage, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The current implementation is in b5e615ce6ba8522d01d4f707cfa2faf9db7bc93d, following the versioned rollback handoff in 35d5c57. Human review, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."

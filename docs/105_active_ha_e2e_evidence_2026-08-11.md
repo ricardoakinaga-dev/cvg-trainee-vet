@@ -169,3 +169,11 @@ aprovado.
 Foi adicionado `infra/production/Caddyfile.production.example` para o ambiente autorizado. O perfil mantém headers, redirect HTTP→HTTPS e HSTS, mas não usa `tls internal`; o FQDN é fornecido por `CVG_CADDY_HTTPS_SITE` e o Compose permite selecionar o arquivo e mapear os targets públicos 80/443. `caddy validate` passou com FQDN sintético e a configuração Compose produtiva sintética passou.
 
 O edge local continua usando o `Caddyfile` com `tls internal`. Não houve alteração de portas ativas nem tráfego público; domínio, DNS, certificado/ACME, renovação e E2E externo permanecem pendentes.
+
+## Perfil de traces externos preparado — 2026-08-11
+
+O commit `b5e615c` adicionou um overlay Compose não ativo para o caminho de traces externos. `otel-collector.production.example.yaml` exporta por OTLP HTTP com TLS obrigatório e recebe endpoint/autorização exclusivamente por ambiente; o overlay substitui as dependências de Tempo e preserva o backend local no perfil `local-traces`.
+
+Validações executadas: teste de contrato 2/2, `otelcol-contrib validate` com endpoint HTTPS sintético, `docker compose config --quiet` sem o perfil e com `--profile local-traces`, e `pnpm verify` com 423 testes, 17 skips e cobertura acima de 80%.
+
+Isso não é uma prova live do HA: não houve fornecedor, endpoint real, token, retenção, consulta ou persistência externa. O E2E HA ativo e o runtime local permaneceram inalterados; a execução externa exige decisão, credenciais fora do Git e ambiente autorizado.

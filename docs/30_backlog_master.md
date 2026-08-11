@@ -747,6 +747,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** domínio, DNS, ACME/certificado, renovação, handshake público e E2E externo continuam pendentes;
 - **próximo passo:** registrar FQDN e método de certificado autorizados, então executar o perfil fora do ambiente local.
 
+## 2026-08-11 — REMEDIATION-EXTERNAL-TRACE-PROFILE
+
+- **item:** preparar o caminho de traces externos duráveis sem alterar o runtime local;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para backend e retenção reais;
+- **evidência:** `infra/observability/otel-collector.production.example.yaml` usa exporter OTLP HTTP com `insecure: false`, endpoint e autorização vindos exclusivamente do ambiente; `infra/production/docker-compose.external-traces.example.yml` sobrepõe o collector e coloca Tempo no perfil opcional `local-traces`; teste de contrato 2/2, validação do collector, Compose sem/com perfil e `pnpm verify` com 423 testes passaram no commit `b5e615c`;
+- **limite:** endpoint, autorização, fornecedor, retenção, consulta, alerta, persistência externa, RPO/RTO e promoção produtiva não foram configurados nem declarados;
+- **próximo passo:** registrar backend/retention autorizados e executar o overlay em ambiente externo com credenciais fora do Git.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.
