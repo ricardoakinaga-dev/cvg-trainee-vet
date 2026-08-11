@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após fechar o ciclo provider-mediated de MFA/recovery e revalidar os gates locais, sem promover produção
+- current_task: manter o handoff externo após reauditar o runtime HA e endurecer a fronteira de operações do provedor, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `e93f4d774b80ca920122e7ed09ffd106b66a83b5` fechou localmente o ciclo provider-mediated de MFA/recovery: contrato, adapter HTTPS, rotas autenticadas, tela `/account`, testes RED/GREEN e E2E sintético 1/1; `pnpm verify` passou em 447 testes, 18 skips e cobertura 85,04%/80,34%/86,84%/85,78%
+- last_completed_action: commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6` endureceu a validação de projections provider-mediated; reauditoria atual confirmou E2E HA 2/2, 24 atribuições/24 estados M01–M24, fila 763 pendente/0 falhas técnicas, load 200/200 e conta E2E 1/1; `pnpm verify` passou em 448 testes, 18 skips e cobertura 85,04%/80,33%/86,85%/85,79%
 - next_action: obter IdP/sandbox, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; em paralelo, executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado
 
 ## BLOQUEIOS
@@ -32,7 +32,33 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T14:00:27-03:00
+- last_update: 2026-08-11T14:16:14-03:00
+
+## 2026-08-11T14:16:14-03:00 — REMEDIATION-CURRENT-AUDIT
+
+### AÇÃO
+
+Reauditado o estado atual contra as sete limitações originais no HA ativo. Repetidos E2E real/RLS, verificadores administrativos de currículo e fila, edge, traces locais, topologia, manifesto, load smoke, conta web, quality gate e gate produtivo fail-closed.
+
+### RESULTADO
+
+`pnpm test:e2e:active-ha` passou 2/2. A role `cvg_app` permaneceu sem SUPERUSER/BYPASSRLS; o verificador administrativo retornou `PASS_WITH_GAPS` com 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições, 24 estados, M01–M24, `NAO_ATRIBUIDO=24`, `PENDENTE=24`, 763 `PROJECAO_VERIFICADA` e 33 `PUBLICADO`. A fila clínica retornou 796 totais, 763 pendentes, 763 não revisados e zero falhas técnicas. O smoke de carga passou 200/200 com p95 de 64,25 ms; o E2E da conta passou 1/1 após reinício do bundle web atual. `pnpm verify` passou em 448 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines. Build, audit de dependências e demais gates locais passaram.
+
+### EVIDÊNCIA
+
+`docs/111_current_remediation_audit_2026-08-11.md`; commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`.
+
+### LIMITES
+
+O modo clínico estrito falha com 763 itens pendentes e a fila estrita falha com 763 itens não revisados. O gate `CVG_VERIFY_PRODUCTION_SECURITY=true pnpm ops:verify-production-security` continua falhando por ausência de IdP/probe, origem HTTPS pública, traces/retention externos, backup criptografado e digests de release/rollback. IdP/sandbox, domínio/certificado, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado e aprovação clínica permanecem sem prova.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões e recursos externos autorizados; iniciar a revisão clínica item a item; depois repetir os gates estritos no ambiente declarado.
 
 ## 2026-08-11T14:00:27-03:00 — REMEDIATION-IDENTITY-LIFECYCLE
 

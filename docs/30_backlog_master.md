@@ -804,6 +804,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** não há prova de IdP/sandbox real, enrollment/challenge/recovery code real, step-up, revogação, sincronização de papéis, domínio/TLS público, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado ou revisão dos 763 conteúdos;
 - **próximo passo:** escolher provedor/política, fornecer segredo pelo secret manager e executar os fluxos autorizados em sandbox; manter o gate produtivo fechado até evidência externa.
 
+## 2026-08-11 — REMEDIATION-CURRENT-AUDIT
+
+- **item:** reauditar o estado atual das sete limitações originais após o hardening do boundary provider-mediated;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para publicação clínica e gates externos;
+- **evidência:** `docs/111_current_remediation_audit_2026-08-11.md`; E2E HA real 2/2; `cvg_app` sem SUPERUSER/BYPASSRLS; 24 atribuições/24 estados M01–M24; fila 763 pendente/0 falhas; load 200/200; conta E2E 1/1; `pnpm verify` 448/18; commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`;
+- **limite:** publicação clínica estrita permanece bloqueada por 763 itens; IdP/sandbox, domínio/certificado, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado e aprovação clínica não têm prova;
+- **próximo passo:** obter decisões e recursos externos, revisar os conteúdos com aprovador autorizado e repetir os gates estritos no ambiente declarado.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

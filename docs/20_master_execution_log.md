@@ -4177,3 +4177,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Escolher o provedor e política de identidade, fornecer credenciais pelo secret manager e executar o probe e E2E em sandbox; só então repetir os gates de produção e manter a publicação clínica bloqueada até revisão item a item.
+
+## 2026-08-11T14:16:14-03:00 — REMEDIATION-CURRENT-AUDIT
+
+### ACTION
+
+Reauditado o estado atual contra as sete limitações originais no HA ativo. Repetidos E2E real/RLS, verificadores administrativos de currículo e fila, edge, traces locais, topologia, manifesto, load smoke, conta web, quality gate e gate produtivo fail-closed.
+
+### RESULT
+
+`pnpm test:e2e:active-ha` passou 2/2. A role `cvg_app` permaneceu sem SUPERUSER/BYPASSRLS; o verificador administrativo retornou `PASS_WITH_GAPS` com 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições, 24 estados, M01–M24, `NAO_ATRIBUIDO=24`, `PENDENTE=24`, 763 `PROJECAO_VERIFICADA` e 33 `PUBLICADO`. A fila clínica retornou 796 totais, 763 pendentes, 763 não revisados e zero falhas técnicas. O smoke de carga passou 200/200 com p95 de 64,25 ms; o E2E da conta passou 1/1 após reinício do bundle web atual. `pnpm verify` passou em 448 testes, 18 skips e cobertura 85,04% statements / 80,33% branches / 86,85% functions / 85,79% lines. Build, audit de dependências e demais gates locais passaram.
+
+### EVIDENCE
+
+`docs/111_current_remediation_audit_2026-08-11.md`; commit `dfe58311156ca908082dbb2f16fa3a67b8b511c6`.
+
+### LIMITS
+
+O modo clínico estrito falha com 763 itens pendentes e a fila estrita falha com 763 itens não revisados. O gate `CVG_VERIFY_PRODUCTION_SECURITY=true pnpm ops:verify-production-security` continua falhando por ausência de IdP/probe, origem HTTPS pública, traces/retention externos, backup criptografado e digests de release/rollback. IdP/sandbox, domínio/certificado, traces/backups externos, RPO/RTO produtivo, deploy/rollback autorizado e aprovação clínica permanecem sem prova.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões e recursos externos autorizados; iniciar a revisão clínica item a item; depois repetir os gates estritos no ambiente declarado.
