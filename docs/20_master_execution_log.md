@@ -3526,4 +3526,4 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Criar o commit convencional desta janela, fixar o SHA no manifesto de rastreabilidade, sincronizar o VPS truth source e repetir o status/diff final.
+A implementação foi consolidada no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`. Próximo passo: criar o commit de pinagem do manifesto, sincronizar o VPS truth source e repetir o status/diff final.

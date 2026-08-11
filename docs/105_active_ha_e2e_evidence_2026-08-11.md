@@ -69,7 +69,7 @@ pnpm ops:verify-release-manifest           PASS
 CVG_LOAD_TARGET=... pnpm ops:load-smoke    PASS — 200/200, 100%, p95 75,21 ms
 ```
 
-A imagem local ativa é `cvg-trainee-vet:local`, digest local `sha256:bf457dddf975ac1e6c3b6acb48d50acab6f608d006ce9af3a7fd1c3f96cac475`. O commit final da janela é preenchido no manifesto de rastreabilidade durante o handoff auditável.
+A imagem local ativa é `cvg-trainee-vet:local`, digest local `sha256:bf457dddf975ac1e6c3b6acb48d50acab6f608d006ce9af3a7fd1c3f96cac475`. A implementação desta janela está no commit `80fc9cb5c48e772d9b2cc0a27795bbb2f6eacde9`; o segundo commit da rodada apenas fixa esse SHA no manifesto de rastreabilidade.
 
 ## Limites não resolvidos como produção
 
