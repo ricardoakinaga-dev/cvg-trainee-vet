@@ -788,6 +788,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **próximo passo:** registrar destino e política de backup aprovados e repetir o verificador com artefato do ambiente declarado.
 - **plano:** `docs/106_clinical_review_queue_evidence_2026-08-11.md` e `BRIEFING/03.BUILD/0303_remediation_program.md`.
 
+## 2026-08-11 — REMEDIATION-LOCAL-REVERIFICATION
+
+- **item:** reexecutar os gates locais das limitações originais no runtime HA ativo e registrar evidência atual sem promover produção;
+- **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para gates externos e clínicos;
+- **evidência:** `docs/109_remediation_local_reverification_2026-08-11.md`; E2E HA 2/2 com cleanup zero; `cvg_app` sem SUPERUSER/BYPASSRLS; 24 atribuições e 24 estados M01–M24; fila clínica com 763 pendentes e 0 falhas técnicas; headers live 200; trace após restart; HA e manifesto de release; load smoke 200/200 com p95 de 77,64 ms;
+- **limite:** IdP/MFA/recovery real, domínio/certificado público, traces/backups externos, RPO/RTO produtivo, registry/deploy/rollback autorizado e aprovação clínica dos 763 itens permanecem sem prova;
+- **próximo passo:** obter decisões/recursos externos e iniciar a revisão clínica item a item; depois executar os verificadores no ambiente declarado.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

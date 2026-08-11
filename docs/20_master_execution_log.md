@@ -4123,3 +4123,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Escolher o IdP/política, fornecer o principal de probe e segredo pelo secret manager e executar a verificação autorizada e o E2E em sandbox.
+
+## 2026-08-11T13:36:41-03:00 — REMEDIATION-LOCAL-REVERIFICATION
+
+### ACTION
+
+Reexecutados os gates locais de R1, R2, R4, R5 e R6 no HA ativo: E2E Chromium, verificador de currículo, fila clínica, edge, traces após restart, topologia HA, manifesto de release e load smoke.
+
+### RESULT
+
+`pnpm test:e2e:active-ha` passou 2/2 através de web → edge/Caddy → API → PostgreSQL; o cleanup deixou zero contas, atividades, atribuições, tentativas e sessões `real-e2e-*`. A role `cvg_app` permaneceu `rolsuper=false`/`rolbypassrls=false`. O verificador live de currículo retornou `PASS_WITH_GAPS` com 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições, 24 estados, M01–M24, `NAO_ATRIBUIDO=24` e `PENDENTE=24`. A fila clínica retornou 796 itens, 763 pendentes, 763 não revisados e 0 falhas técnicas. Edge live respondeu 200 com headers; o trace sintético foi encontrado após restart do Tempo; HA e manifesto de release passaram; o load smoke passou 200/200 com p95 de 77,64 ms.
+
+### EVIDENCE
+
+`docs/109_remediation_local_reverification_2026-08-11.md`.
+
+### LIMITS
+
+Esta rodada não usa nem inventa provedor MFA/recovery, domínio/certificado público, storage externo, backup produtivo, registry ou aprovação clínica. Portanto, os gates externos e clínicos permanecem abertos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Selecionar IdP/política, domínio/TLS, backend de traces, destino de backup e ambiente de deploy; iniciar a revisão dos 763 itens com aprovador autorizado; repetir a auditoria somente após as provas externas.

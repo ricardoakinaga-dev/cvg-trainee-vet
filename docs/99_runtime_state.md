@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após adicionar o probe fail-closed de prontidão do IdP, sem promover produção
+- current_task: manter o handoff externo após revalidar E2E/RLS, currículo, edge, traces e load no HA, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: probe provider-neutral de prontidão do IdP adicionado no commit `312624708c2f608bcf750e9c5365571d88bdf02c`; testes sintéticos 5/5, `pnpm verify` passou com 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%; gate com flag sem provedor falha fechado
+- last_completed_action: revalidação live local registrada em `docs/109_remediation_local_reverification_2026-08-11.md`: E2E HA 2/2 com cleanup zero, `cvg_app` sem SUPERUSER/BYPASSRLS, 24 atribuições/24 estados M01–M24, fila 763 pendente/0 falhas técnicas, edge live 200, trace após restart e load 200/200; `pnpm verify` permanece em 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T13:27:19-03:00
+- last_update: 2026-08-11T13:36:41-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -1106,3 +1106,29 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Escolher o IdP e a política, fornecer principal sintético/segredo pelo secret manager e executar o probe e o E2E autorizado; manter o gate fechado até `PASS` real.
+
+## 2026-08-11T13:36:41-03:00 — REMEDIATION-LOCAL-REVERIFICATION
+
+### AÇÃO
+
+Reexecutados os gates locais de R1, R2, R4, R5 e R6 no HA ativo: `pnpm test:e2e:active-ha`, verificador live de currículo, fila clínica, headers live, Tempo após restart, topologia HA, manifesto de release e smoke de carga.
+
+### RESULTADO
+
+O E2E Chromium passou 2/2 e deixou zero contas, atividades, atribuições, tentativas e sessões da fixture. A role `cvg_app` está sem `SUPERUSER` e `BYPASSRLS`. O runtime observou 24 atividades, 796 conteúdos/editorial/itens, 24 atribuições e 24 estados M01–M24; a fila clínica observou 763 pendências, 763 não revisados e 0 falhas técnicas. Edge live retornou 200 com headers, o trace sintético sobreviveu ao restart do Tempo e o load smoke passou 200/200 com p95 de 77,64 ms.
+
+### EVIDÊNCIA
+
+`docs/109_remediation_local_reverification_2026-08-11.md`.
+
+### LIMITES
+
+Os resultados são locais/sintéticos. Não provam IdP/MFA/recovery real, domínio/certificado público, traces ou backups externos, RPO/RTO produtivo, registry/deploy/rollback autorizado ou aprovação clínica dos 763 itens.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões e recursos externos autorizados e iniciar a revisão clínica item a item; então executar os gates correspondentes no ambiente declarado.
