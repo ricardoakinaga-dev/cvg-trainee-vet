@@ -232,7 +232,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Aceite:** rollback restaura tráfego para digest anterior, registra auditoria e não perde transação confirmada.
 - **Rollback:** próprio script de rollback e imagem anterior imutável.
 - **Status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para registry, ambiente e produção.
-- **Evidência local:** canário/promoção, rollback e restauração final passaram com health 200 nos dois sentidos; o modo de pull local é fail-closed fora do rehearsal e o artefato sintético é removido ao final.
+- **Evidência local:** canário/promoção, rollback e restauração final passaram com health 200 nos dois sentidos usando também uma imagem construída do commit anterior `b30c85d` (`sha256:6ca763bb…e6e570`); o modo de pull local é fail-closed fora do rehearsal e os artefatos auxiliares são removidos ao final.
 
 #### R5-S3 — Backup, restore e RPO/RTO
 

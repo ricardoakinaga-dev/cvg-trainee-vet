@@ -57,7 +57,7 @@ O teste de restore recebeu timeout de 60 s porque o dump/restore do catálogo HA
 ## Gates finais locais
 
 ```text
-pnpm verify                                PASS — 416 testes, 17 skips
+pnpm verify                                PASS — 417 testes, 17 skips
 coverage                                   84,85% statements / 80,07% branches
                                            86,55% functions / 85,61% lines
 pnpm build                                 PASS
@@ -90,7 +90,7 @@ O artefato operacional foi reconstruído com `CVG_API_INTERNAL_URL=http://127.0.
 
 O pin da evidência anterior era `9c585a9`, com código em
 `57ed11985312a573a3649ed48c6b15b399e7bf8f`; a extensão de release/rollback
-local está congelada no commit `cfaeed3` e foi fixada no manifesto após a
+local está congelada no commit `35d5c57` (sobre `cfaeed3`) e foi fixada no manifesto após a
 execução dos gates.
 
 ## Rehearsal local de deploy e rollback — 2026-08-11
@@ -119,5 +119,26 @@ produção, registry externo, CI remoto e aprovação do ambiente continuam send
 gates separados.
 
 O manifesto de rastreabilidade `REMEDIATION-EVIDENCE-026` aponta agora para
-`cfaeed3`, que contém o controlador de rehearsal, a proteção do bypass de pull
-e os testes do contrato.
+`35d5c57`, que adiciona o rollback por imagem local versionada ao controlador
+de rehearsal e seus testes; a guarda de pull e o controlador-base estão em
+`cfaeed3`.
+
+## Rehearsal com duas imagens versionadas locais — 2026-08-11
+
+Para fortalecer a prova de rollback, foi construída uma segunda imagem a partir
+do commit anterior `b30c85d`, fora do worktree, usando contexto Git em stream.
+O runner recebeu `CVG_LOCAL_RELEASE_ROLLBACK_IMAGE` e executou a troca entre
+dois artefatos locais distintos:
+
+```text
+release atual       sha256:bf457ddf...cac475
+rollback b30c85d    sha256:6ca763bb...e6e570
+rollbackMode        EXISTING_LOCAL_IMAGE
+canário/promoção    PASS — /health/ready 200
+rollback            PASS — /health/ready 200
+restauração final   PASS — api-a/api-b/worker-a/worker-b saudáveis
+```
+
+Esta é a melhor evidência local do controlador de rollback, mas ainda não é
+promoção produtiva: não houve registry externo, CI remoto, autorização de
+ambiente, assinatura/verificação de supply chain ou tráfego público.

@@ -1877,16 +1877,17 @@ artifacts:
         "Tempo query after restart",
         "immutable release dry-run",
         "local HA release rehearsal with canary/promotion, distinct rollback digest and runtime restoration",
+        "local HA release rehearsal using a second image built from commit b30c85d",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 416 tests / 17 skips / coverage above 80%",
+        "pnpm verify 417 tests / 17 skips / coverage above 80%",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "cfaeed3"
+    commit: "35d5c57"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."

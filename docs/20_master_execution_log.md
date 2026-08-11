@@ -3671,3 +3671,71 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões humanas e executar somente os gates externos correspondentes; não contar as provas locais como equivalentes de produção.
+
+## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-VERSIONED-ROLLBACK
+
+### TIMESTAMP
+
+2026-08-11 11:12:16 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Remediação R5-S2 — rollback entre artefatos versionados locais
+
+### ACTION
+
+Construída uma imagem Docker a partir do commit anterior `b30c85d` em contexto Git temporário em stream. O rehearsal recebeu essa imagem como `CVG_LOCAL_RELEASE_ROLLBACK_IMAGE`, mantendo a política de pull externo obrigatória fora do modo local explícito.
+
+### RESULT
+
+O HA passou canário/promoção na imagem `sha256:bf457ddf…cac475`, rollback na imagem anterior `sha256:6ca763bb…e6e570` e restauração final ao runtime operacional; todos os health gates `/health/ready` retornaram 200. A imagem auxiliar foi removida após o registro da evidência.
+
+### LIMITES
+
+Ainda é uma prova local: não comprova registry externo, assinatura de imagem, CI remoto, autorização de produção, domínio público, storage externo ou RPO/RTO produtivo.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar os gates após o ajuste do runner, remover a imagem auxiliar, atualizar o commit de rastreabilidade e manter o handoff externo explícito.
+
+## 2026-08-11 — REMEDIATION-VERSIONED-ROLLBACK-COMMIT
+
+### TIMESTAMP
+
+2026-08-11 11:14:17 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Remediação R5-S2 — fechamento do rollback versionado local
+
+### ACTION
+
+Criado o commit `35d5c57` (`feat: support versioned local rollback images`) com override validado para uma imagem local anterior, teste de rejeição de imagem externa e modo explícito `EXISTING_LOCAL_IMAGE` no resultado do rehearsal. O manifesto agora aponta para esse SHA sobre `cfaeed3`.
+
+### RESULT
+
+`pnpm verify` passou com 417 testes, 17 skips e cobertura 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines. A imagem construída de `b30c85d` foi removida após a prova; o HA voltou a usar `cvg-trainee-vet:local` e permaneceu saudável.
+
+### LIMITES
+
+O fechamento continua local; registry, assinatura/supply chain, CI remoto, autorização de produção, storage externo, RPO/RTO, IdP/MFA, domínio/TLS e aprovação clínica continuam pendentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar os gates externos somente após as decisões humanas registradas; manter o objetivo ativo enquanto esses requisitos não tiverem evidência.
