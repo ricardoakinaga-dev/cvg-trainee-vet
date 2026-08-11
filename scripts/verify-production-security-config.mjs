@@ -1,5 +1,7 @@
 import process from "node:process";
 
+import { probeIdentityProviderReadiness } from "./verify-identity-provider-readiness.mjs";
+
 const productionRequested =
   process.env.CVG_VERIFY_PRODUCTION_SECURITY === "true";
 
@@ -21,6 +23,10 @@ const required = [
   ],
   ["IDENTITY_PROVIDER_URL", process.env.IDENTITY_PROVIDER_URL],
   ["IDENTITY_PROVIDER_TOKEN", process.env.IDENTITY_PROVIDER_TOKEN],
+  [
+    "CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL",
+    process.env.CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL,
+  ],
   ["CVG_PUBLIC_HTTPS_ORIGIN", process.env.CVG_PUBLIC_HTTPS_ORIGIN],
   ["CVG_TRACE_STORAGE_BACKEND", process.env.CVG_TRACE_STORAGE_BACKEND],
   ["CVG_TRACE_RETENTION", process.env.CVG_TRACE_RETENTION],
@@ -42,6 +48,13 @@ if (missing.length > 0) {
 
 if (!/^https:\/\//u.test(process.env.IDENTITY_PROVIDER_URL)) {
   throw new Error("IDENTITY_PROVIDER_URL must use HTTPS in production");
+}
+const identityProviderReadiness = await probeIdentityProviderReadiness({
+  ...process.env,
+  CVG_VERIFY_IDENTITY_PROVIDER: "true",
+});
+if (identityProviderReadiness.status !== "PASS") {
+  throw new Error("identity provider readiness was not verified");
 }
 const publicOrigin = new URL(process.env.CVG_PUBLIC_HTTPS_ORIGIN);
 if (
@@ -68,6 +81,7 @@ console.log(
   JSON.stringify({
     status: "PASS",
     identityProvider: "configured-over-https",
+    identityProviderReadiness: identityProviderReadiness.status,
     publicOrigin: publicOrigin.origin,
     traceStorage: process.env.CVG_TRACE_STORAGE_BACKEND,
     retention: process.env.CVG_TRACE_RETENTION,

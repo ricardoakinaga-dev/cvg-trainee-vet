@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após fechar a verificação de artefato de backup/restore, sem promover produção
+- current_task: manter o handoff externo após adicionar o probe fail-closed de prontidão do IdP, sem promover produção
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: gate local final após o contrato de backup/restore por artefato; `pnpm verify` passou com 436 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%; build, audit, secrets, documentação e rastreabilidade também passaram nos commits `cafba448` e `2ade105`
+- last_completed_action: probe provider-neutral de prontidão do IdP adicionado; testes sintéticos 5/5, `pnpm verify` passou com 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%; gate com flag sem provedor falha fechado
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T13:18:34-03:00
+- last_update: 2026-08-11T13:27:19-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -1084,3 +1084,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Ricardo deve decidir provedor/política MFA-recovery, domínio/TLS, backend e retenção de traces, destino/criptografia/owner de backup, ambiente de release e fluxo de revisão clínica; depois executar os verificadores externos correspondentes.
+
+## 2026-08-11 — REMEDIATION-IDP-READINESS-PROBE
+
+### AÇÃO
+
+Foi criado `scripts/verify-identity-provider-readiness.mjs` e o comando `pnpm ops:verify-identity-provider`. O gate exige execução explícita, URL HTTPS sem credenciais embutidas, token em ambiente, principal técnico de probe e status externo com recuperação disponível e MFA habilitado. `ops:verify-production-security` agora executa esse probe antes de aceitar a configuração.
+
+### RESULTADO
+
+O RED falhou pela ausência do módulo; o GREEN passou em 5/5 com respostas HTTP sintéticas. `pnpm lint`, `pnpm typecheck`, `pnpm verify:secrets`, format, documentação e rastreabilidade passaram. `pnpm verify` passou com 441 testes, 18 skips e cobertura 84,94% statements, 80,26% branches, 86,66% functions e 85,69% lines. Sem flag, o comando retorna `NOT_EXECUTED`; com flag e sem provedor, retorna `FAIL` sem expor token ou corpo de erro.
+
+### LIMITES
+
+Nenhum IdP real foi consultado. Enrollment, challenge, recovery codes, step-up, revogação, sincronização de papéis e E2E em sandbox continuam pendentes; o probe não é uma declaração de MFA produtivo.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Escolher o IdP e a política, fornecer principal sintético/segredo pelo secret manager e executar o probe e o E2E autorizado; manter o gate fechado até `PASS` real.

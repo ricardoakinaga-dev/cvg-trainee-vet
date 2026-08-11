@@ -42,6 +42,7 @@
     "ops:verify-clinical-review-queue": "node scripts/verify-clinical-review-queue.mjs",
     "ops:verify-durable-traces": "node scripts/verify-durable-traces.mjs",
     "ops:verify-edge-security": "node scripts/verify-edge-security.mjs",
+    "ops:verify-identity-provider": "node scripts/verify-identity-provider-readiness.mjs",
     "ops:verify-production-security": "node scripts/verify-production-security-config.mjs",
     "ops:verify-release-manifest": "node scripts/verify-release-manifest.mjs",
     "ops:deploy-release": "node scripts/deploy-release.mjs",

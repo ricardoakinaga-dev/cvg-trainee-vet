@@ -7,6 +7,7 @@ Este runbook fecha o mecanismo operacional sem fingir que um ambiente produtivo 
 - `pnpm verify`, `pnpm build`, migrações, E2E real, headers/TLS, traces e restore passam no artefato candidato;
 - `CVG_RELEASE_MANIFEST` contém `imageDigest` e `rollbackImageDigest` imutáveis, diferentes e compatíveis com migração `EXPAND_CONTRACT`;
 - IdP externo, domínio HTTPS gerenciado, storage de traces, destino de backup e janela de mudança estão aprovados;
+- `CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL` identifica uma conta técnica sintética do IdP; o valor não é uma conta de participante nem segredo;
 - `pnpm ops:verify-production-security` retorna `PASS` no ambiente de release, sem imprimir segredos.
 
 ## Deploy canário
@@ -64,6 +65,8 @@ pnpm exec node scripts/verify-postgres-restore.mjs
 ```
 
 O verificador recusa manifesto incompleto, nome divergente, tamanho incorreto, SHA-256 divergente, symlink no dump e entradas dentro do repositório; depois restaura em banco descartável e confirma objetos de aplicação. Essa prova de artefato não substitui a medição de RPO/RTO no ambiente produtivo.
+
+O gate de segurança de produção também executa `pnpm ops:verify-identity-provider` internamente. Ele só retorna `PASS` depois de consultar o IdP por HTTPS e confirmar recuperação `AVAILABLE` e MFA `ENABLED`; a ausência de provedor ou qualquer resposta inválida permanece `FAIL`.
 
 ## Evidência obrigatória
 

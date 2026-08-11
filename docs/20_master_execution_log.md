@@ -4099,3 +4099,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter as decisões e recursos externos autorizados; então executar os gates de IdP, edge, traces, backup/RPO/RTO, deploy/rollback e revisão clínica.
+
+## 2026-08-11T13:27:19-03:00 — REMEDIATION-IDP-READINESS-PROBE
+
+### ACTION
+
+Executado TDD para o gate provider-neutral de prontidão do IdP. `scripts/verify-identity-provider-readiness.mjs` exige flag explícita, URL HTTPS sem credenciais embutidas, principal técnico, recuperação `AVAILABLE` e MFA `ENABLED`; `scripts/verify-production-security-config.mjs` passou a executar o probe antes de aceitar configuração produtiva.
+
+### RESULT
+
+RED pela ausência do módulo; GREEN em `tests/integration/identity-provider-readiness.test.ts` (5/5). O teste valida respostas sintéticas, principal codificado, header de autorização, falhas HTTP, JSON inválido e ausência de segredo no resultado. `pnpm lint`, `pnpm typecheck`, `pnpm verify:secrets`, build e `pnpm verify` passaram; o último passou com 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%. Sem flag, o comando retorna `NOT_EXECUTED`; sem IdP, com flag, retorna `FAIL`.
+
+### DECISIONS
+
+Nenhum endpoint ou credencial real foi inventado. O probe é uma barreira de prontidão, não prova enrollment, challenge, recovery code, step-up, revogação ou sincronização de papéis.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Escolher o IdP/política, fornecer o principal de probe e segredo pelo secret manager e executar a verificação autorizada e o E2E em sandbox.

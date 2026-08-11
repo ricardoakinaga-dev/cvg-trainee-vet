@@ -739,6 +739,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** não há declaração de MFA/recovery disponível sem provedor, sandbox e segredo fornecidos por decisão humana;
 - **próximo passo:** selecionar o provedor e executar enrollment, challenge, recovery, step-up e revogação em sandbox.
 
+## 2026-08-11 — REMEDIATION-IDP-READINESS-PROBE
+
+- **item:** impedir que URL/token presentes sejam confundidos com MFA e recuperação operacionais;
+- **status:** COMPLETED tecnicamente / WAITING_HUMAN_APPROVAL para o IdP real;
+- **evidência:** `scripts/verify-identity-provider-readiness.mjs` e `pnpm ops:verify-identity-provider` exigem flag explícita, principal de probe, HTTPS sem credenciais embutidas e resposta `EXTERNAL_IDENTITY_PROVIDER` + `AVAILABLE` + `ENABLED`; `tests/integration/identity-provider-readiness.test.ts` passou 5/5; o gate de produção agora executa o probe antes de retornar `PASS`;
+- **limite:** nenhum provedor real foi consultado; enrollment, challenge, recovery codes, step-up, revogação, sincronização e E2E sandbox continuam pendentes;
+- **próximo passo:** escolher o IdP/política, fornecer principal sintético e segredo pelo secret manager e executar a prova autorizada.
+
 ## 2026-08-11 — REMEDIATION-MANAGED-TLS-PROFILE
 
 - **item:** preparar o edge para certificado gerenciado/automático sem fingir TLS produtivo no ambiente local;
