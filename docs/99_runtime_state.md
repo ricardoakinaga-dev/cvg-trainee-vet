@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: revalidação live local registrada em `docs/109_remediation_local_reverification_2026-08-11.md`: E2E HA 2/2 com cleanup zero, `cvg_app` sem SUPERUSER/BYPASSRLS, 24 atribuições/24 estados M01–M24, fila 763 pendente/0 falhas técnicas, edge live 200, trace após restart e load 200/200; `pnpm verify` permanece em 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%
+- last_completed_action: revalidação live local registrada em `docs/109_remediation_local_reverification_2026-08-11.md` no commit `0083b069a802ace3bad6eb02218b68e29b590f17`: E2E HA 2/2 com cleanup zero, `cvg_app` sem SUPERUSER/BYPASSRLS, 24 atribuições/24 estados M01–M24, fila 763 pendente/0 falhas técnicas, edge live 200, trace após restart e load 200/200; `pnpm verify` permanece em 441 testes, 18 skips e cobertura 84,94%/80,26%/86,66%/85,69%
 - next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS

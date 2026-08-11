@@ -4138,6 +4138,8 @@ Reexecutados os gates locais de R1, R2, R4, R5 e R6 no HA ativo: E2E Chromium, v
 
 `docs/109_remediation_local_reverification_2026-08-11.md`.
 
+Commit documental: `0083b069a802ace3bad6eb02218b68e29b590f17` (`docs: record local remediation reverification`).
+
 ### LIMITS
 
 Esta rodada não usa nem inventa provedor MFA/recovery, domínio/certificado público, storage externo, backup produtivo, registry ou aprovação clínica. Portanto, os gates externos e clínicos permanecem abertos.
