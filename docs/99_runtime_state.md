@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: manter o handoff externo após tornar a revisão clínica obrigatória na autoria, sem promover produção
+- current_task: manter o handoff externo após criar a fila paginada e o verificador live de revisão clínica, sem promover produção
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: gate clínico de autoria endurecido no commit `c7a591b`: E2E comprova publicação desabilitada antes da aprovação e habilitada depois; typecheck e build de produção do web passaram com artefato descartável; os gates externos continuam fail-closed
-- next_action: executar revisão semântica/item a item dos 763 conteúdos com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
+- last_completed_action: fila clínica protegida, paginada e sem internals criada no commit `8670def`; verificador live confirmou 796 itens, 763 pendentes, 763 sem revisão e 0 falhas técnicas; E2E 2/2 e modo estrito fail-closed passaram conforme esperado
+- next_action: executar revisão semântica/item a item dos 763 conteúdos pela fila com aprovador autorizado e obter decisões sobre IdP/MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente de deploy/rollback
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T12:25:20-03:00
+- last_update: 2026-08-11T12:44:45-03:00
 
 ## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
 
@@ -1018,3 +1018,25 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Iniciar a revisão humana rastreável dos 763 itens; depois executar os gates externos somente com decisões e credenciais autorizadas.
+
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-QUEUE
+
+### RESULTADO
+
+A revisão clínica deixou de depender de `contentId` conhecido manualmente. A API ganhou a fila interna paginada e protegida por `VIEW_CLINICAL_REVIEW_QUEUE`; a web lista itens pendentes e abre a autoria sem projetar gabarito, rubrica, feedback ou fontes. O verificador live confirmou no PostgreSQL HA 796 registros, 763 pendentes, 763 sem revisão e 0 falhas de pré-voo técnico.
+
+### EVIDÊNCIA
+
+`tests/e2e/authoring-review.spec.ts` passou 2/2; `tests/integration/clinical-review-queue-verifier.test.ts` passou 3/3; `pnpm lint`, `pnpm typecheck` e `pnpm build` passaram. `pnpm ops:verify-clinical-review-queue` retornou `PASS_WITH_GAPS`; com `CVG_CLINICAL_REVIEW_REQUIRE_COMPLETE=true`, falhou com exit code 1 e `clinical review queue is incomplete: 763 pending items`. Evidência detalhada: `docs/106_clinical_review_queue_evidence_2026-08-11.md`.
+
+### LIMITES
+
+A fila torna a revisão humana executável, mas não aprova conteúdo nem substitui a decisão clínica de Ricardo. Os 763 itens continuam fora de publicação clínica; os gates externos de IdP/MFA/recovery, domínio/certificado, traces, backup/RPO/RTO e deploy/rollback seguem aguardando decisão e ambiente autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Usar a fila com aprovador independente e registrar as decisões/justificativas no fluxo editorial; depois executar os gates externos somente com credenciais e recursos autorizados.

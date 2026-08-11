@@ -1809,14 +1809,18 @@ artifacts:
         "docs/101_clinical_source_policy.md",
         "docs/104_remediation_evidence_2026-08-11.md",
         "docs/105_active_ha_e2e_evidence_2026-08-11.md",
+        "docs/106_clinical_review_queue_evidence_2026-08-11.md",
       ]
     code:
       [
         "scripts/materialize-curriculum.mjs",
         "scripts/verify-curriculum-runtime.mjs",
+        "scripts/verify-clinical-review-queue.mjs",
         "packages/curriculum/src/materialization-plan.ts",
         "packages/curriculum/src/learning-runtime.ts",
         "packages/application/src/authoring-use-cases.ts",
+        "packages/application/src/authoring-review-queue.ts",
+        "packages/application/src/authorization.ts",
         "packages/config/src/env.ts",
         "infra/production/Caddyfile",
         "infra/production/Caddyfile.production.example",
@@ -1849,12 +1853,14 @@ artifacts:
         "packages/curriculum/src/learning-runtime.test.ts",
         "packages/application/src/authoring-use-cases.test.ts",
         "packages/application/src/authorization.test.ts",
+        "packages/persistence/src/clinical-review-queue-repository.test.ts",
         "packages/config/src/env.test.ts",
         "packages/config/src/load-smoke.test.ts",
         "tests/e2e/real-runtime.spec.ts",
         "tests/integration/active-ha-e2e.test.ts",
         "tests/integration/local-release-rehearsal.test.ts",
         "tests/integration/curriculum-runtime-verifier.test.ts",
+        "tests/integration/clinical-review-queue-verifier.test.ts",
         "tests/integration/production-edge-contract.test.ts",
         "tests/integration/postgres-restore.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
@@ -1869,6 +1875,7 @@ artifacts:
         "pnpm ops:rollback-release",
         "pnpm ops:rehearse-local-release",
         "pnpm ops:verify-curriculum-runtime",
+        "pnpm ops:verify-clinical-review-queue",
         "pnpm ops:create-postgres-backup",
         "pnpm test:integration:restore",
         "CVG_RUN_REAL_E2E=true pnpm test:e2e",
@@ -1891,16 +1898,18 @@ artifacts:
         "managed TLS Caddy profile validates with synthetic FQDN while local defaults remain unchanged",
         "external OTLP HTTPS collector profile validates with synthetic endpoint while local Tempo profile remains unchanged",
         "authoring E2E requires clinical approval before enabling publication",
+        "clinical review queue is scoped, paginated and metadata-only",
+        "clinical review queue verifier live and strict modes",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 423 tests / 17 skips / coverage above 80%",
+        "pnpm verify 432 tests / 17 skips / coverage 84.94% statements / 80.26% branches / 86.66% functions / 85.69% lines",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "c7a591bf91943df7e0090ec61a6b41b3bde8c9f0"
+    commit: "8670defb3a1c098c556afdf9cddbd427a64d693a"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
@@ -1934,4 +1943,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The current implementation is in c7a591bf91943df7e0090ec61a6b41b3bde8c9f0, following the versioned rollback handoff in 35d5c57 and profile addition in b5e615c. Human review of 763 items, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, a scoped/paginated metadata-only clinical review queue, an explicit clinical-review-before-publication UI gate, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The queue implementation is in 8670def, following the UI gate c7a591b, versioned rollback handoff 35d5c57 and profile addition b5e615c. Human review of 763 items, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."

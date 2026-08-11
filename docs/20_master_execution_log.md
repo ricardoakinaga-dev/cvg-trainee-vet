@@ -4023,3 +4023,33 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Iniciar a revisão humana rastreável dos 763 itens; depois executar os gates externos somente com decisões e credenciais autorizadas.
+
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-QUEUE
+
+### TIMESTAMP
+
+2026-08-11 12:44:45 -03:00
+
+### ACTION
+
+Implementada a fila interna paginada de revisão clínica e o verificador live. O endpoint exige escopo e aprovador clínico autorizado; a projeção metadata-only não contém gabarito, rubrica, feedback, fontes ou prompt. A superfície web lista a fila e abre o item para o fluxo existente de justificativa → aprovação/ajustes → publicação.
+
+### RESULT
+
+RED comprovado nos contratos, autorização e endpoint; GREEN passou com API HTTP 34/34, servidor 9/9, contratos 3/3, autorização 7/7, verificador 3/3 e E2E Chromium 2/2. `pnpm lint`, `pnpm typecheck` e `pnpm build` passaram. No PostgreSQL HA ativo, `pnpm ops:verify-clinical-review-queue` observou 796 itens, 763 pendentes, 763 sem revisão, 0 aprovações clínicas persistidas e 0 falhas de pré-voo técnico; a consulta paginada retornou total 763. O modo estrito falhou corretamente com exit code 1. Commit técnico: `8670def`.
+
+### EVIDENCE
+
+`docs/106_clinical_review_queue_evidence_2026-08-11.md`; `packages/application/src/authoring-review-queue.ts`; `packages/persistence/src/clinical-review-queue-repository.ts`; `scripts/verify-clinical-review-queue.mjs`; testes de contrato/API/servidor/integração/E2E.
+
+### LIMITS
+
+Nenhum conteúdo foi aprovado automaticamente. A revisão semântica/item a item dos 763 permanece humana; MFA/recovery externo, domínio/certificado, traces/retenção externos, backup/RPO/RTO e deploy/rollback produtivos seguem sem autorização/credenciais.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Usar a fila com aprovador independente, registrar justificativa e decisão por item e somente então reexecutar o gate clínico estrito.

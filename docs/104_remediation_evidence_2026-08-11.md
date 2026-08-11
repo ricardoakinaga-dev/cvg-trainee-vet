@@ -110,3 +110,11 @@ Esta é uma preparação de integração, não uma prova de traces duráveis em 
 O commit `c7a591b` fechou uma falha de experiência do gate clínico: a tela de autoria agora exige justificativa e decisão explícita (`APROVAR_CLINICAMENTE` ou `SOLICITAR_AJUSTES`) antes de habilitar publicação. O E2E de autoria passou 1/1 contra Next isolado, verificando publicação desabilitada antes da aprovação e habilitada depois; o typecheck do web passou.
 
 Isso não publica conteúdo nem substitui a decisão humana. Os 763 itens continuam `PROJECAO_VERIFICADA`; cada decisão deverá ser registrada por aprovador independente no fluxo editorial.
+
+## Fila paginada de revisão clínica
+
+A janela seguinte criou `GET /api/v1/internal/authoring/review-queue`, protegido por escopo e pela capability `VIEW_CLINICAL_REVIEW_QUEUE`, além de `scripts/verify-clinical-review-queue.mjs`. A projeção da fila contém apenas metadata editorial e pré-voo técnico; a web lista e pagina os itens, e a abertura retorna à tela de autoria que mantém justificativa e aprovação antes da publicação.
+
+No PostgreSQL HA ativo, a execução read-only observou 796 registros editoriais, 763 pendentes, 763 sem revisão, 0 aprovações clínicas persistidas, 0 solicitações de ajuste e 0 falhas de pré-voo técnico. A consulta da fila retornou total 763. O modo normal retornou `PASS_WITH_GAPS`; `CVG_CLINICAL_REVIEW_REQUIRE_COMPLETE=true` retornou `FAIL` com `clinical review queue is incomplete: 763 pending items`, sem alterar dados. O E2E passou 2/2, incluindo ausência de `correctChoiceIds` na projeção da fila.
+
+Evidência detalhada: `docs/106_clinical_review_queue_evidence_2026-08-11.md`. A revisão semântica item a item e a aprovação de Ricardo continuam pendentes; nenhum conteúdo foi publicado por esta alteração.

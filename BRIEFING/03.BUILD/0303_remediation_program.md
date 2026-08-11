@@ -163,6 +163,7 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 - **Aceite:** cada módulo tem decisão rastreável; prova semântica e revisão humana são artefatos separados; piloto somente após gate.
 - **Rollback:** retirar versão publicada e apontar atribuição para estado aguardando conteúdo.
 - **Progresso local:** a tela `apps/web/app/authoring/page.tsx` passou a exigir justificativa e decisão clínica explícita; o botão de publicação permanece desabilitado até `APROVADO_CLINICAMENTE`. O E2E `tests/e2e/authoring-review.spec.ts` comprovou a ordem revisão → publicação no commit `c7a591b`. Isso torna o gate humano executável, mas não substitui a revisão item a item dos 763 conteúdos.
+- **Progresso adicional:** a fila paginada `GET /api/v1/internal/authoring/review-queue` e a capability `VIEW_CLINICAL_REVIEW_QUEUE` permitem descoberta controlada por aprovador clínico; a projeção é metadata-only e a web agora lista a fila e abre o item. `scripts/verify-clinical-review-queue.mjs` confirmou live 796 registros, 763 pendentes, 763 sem revisão e 0 falhas de pré-voo; o modo estrito falha com `clinical review queue is incomplete: 763 pending items`. E2E de autoria passou 2/2. Evidência: `docs/106_clinical_review_queue_evidence_2026-08-11.md`.
 
 ### R3 — Identidade, recuperação e MFA
 

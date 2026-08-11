@@ -302,7 +302,7 @@ Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e
 - **testes:** preflight, exposure, authoring E2E, publicação parcial recusada;
 - **pronto:** cada pack tem status e decisão; somente conteúdo revisado pode ser PUBLICADO;
 - **status:** WAITING_HUMAN_APPROVAL;
-- **evidência:** banco autoral e preflight materializados para 24 módulos; a superfície web agora exige justificativa e aprovação clínica antes de habilitar publicação; E2E de autoria passou com publicação desabilitada antes da aprovação e publicação habilitada depois (`c7a591b`); 763 versões novas estão `PROJECAO_VERIFICADA`, 33 versões M02 pré-existentes `PUBLICADO`; revisão semântica/item a item de Ricardo ainda é obrigatória;
+- **evidência:** banco autoral e preflight materializados para 24 módulos; a superfície web agora exige justificativa e aprovação clínica antes de habilitar publicação; E2E de autoria passou com publicação desabilitada antes da aprovação e publicação habilitada depois (`c7a591b`); a fila paginada protegida por `VIEW_CLINICAL_REVIEW_QUEUE` e o verificador live confirmaram 796 registros, 763 pendentes, 763 sem revisão e 0 falhas de pré-voo; o modo estrito falha com `clinical review queue is incomplete: 763 pending items`; 763 versões novas estão `PROJECAO_VERIFICADA`, 33 versões M02 pré-existentes `PUBLICADO`; revisão semântica/item a item de Ricardo ainda é obrigatória;
 - **plano:** 0303_remediation_program.md.
 
 ### R3-S1/R3-S2/R3-S3 — Provedor, recuperação e MFA

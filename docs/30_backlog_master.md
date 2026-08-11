@@ -763,6 +763,15 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** nenhum conteúdo foi aprovado automaticamente; 763 itens continuam `PROJECAO_VERIFICADA` e a revisão semântica/item a item de Ricardo permanece obrigatória;
 - **próximo passo:** revisar os itens com aprovador independente e registrar cada decisão/rationale no PostgreSQL.
 
+## 2026-08-11 — REMEDIATION-CLINICAL-REVIEW-QUEUE
+
+- **item:** retirar a dependência operacional de `contentId` manual e medir de forma auditável os conteúdos aguardando revisão;
+- **status:** COMPLETED tecnicamente / WAITING_HUMAN_APPROVAL para revisão dos 763 itens;
+- **evidência:** `GET /api/v1/internal/authoring/review-queue` com paginação e capability `VIEW_CLINICAL_REVIEW_QUEUE`; `apps/web/app/authoring/page.tsx` lista a fila sem internals; `scripts/verify-clinical-review-queue.mjs` e `pnpm ops:verify-clinical-review-queue` observaram no PostgreSQL HA 796 itens, 763 pendentes, 763 sem revisão e 0 falhas de pré-voo; o modo estrito falhou com `clinical review queue is incomplete: 763 pending items`; E2E de autoria 2/2;
+- **limite:** nenhum item foi aprovado ou publicado automaticamente; a revisão semântica independente e as decisões de Ricardo permanecem obrigatórias;
+- **commit:** `8670def` (`feat: add clinical review queue`);
+- **plano:** `docs/106_clinical_review_queue_evidence_2026-08-11.md` e `BRIEFING/03.BUILD/0303_remediation_program.md`.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.
