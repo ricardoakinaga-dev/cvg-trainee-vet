@@ -1897,7 +1897,7 @@ artifacts:
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "b5e615ce6ba8522d01d4f707cfa2faf9db7bc93d"
+    commit: "8b032833282c66529c6fc1f2ad23f35c8f1bff0a"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
@@ -1931,4 +1931,4 @@ notes:
   - "PRODUCT-SURFACES-019 adds the strict participant 24-month roadmap, participant/operations dashboards, account security projection and server-side identity-provider adapter. Recovery and MFA are honest NOT_CONFIGURED until an external provider is supplied; no secret is stored in the repository."
   - "OPERATIONAL-HA-EVIDENCE-020 records a disposable Docker proof of OTLP collector receipt, Prometheus retention configuration, 100% normal/failover load smoke and api/worker replicas. The trace backend is not durable in this proof, and the environment is not a hospital production deployment."
   - "TRACEABILITY-CHANGE-CONTROL-021 reconciles the implementation window to docs, backlog, runtime state, source policy and operational evidence. The implementation is committed at e3cd966efb1d4d2a5596075d1d12f4101dd12492; production gates remain explicitly pending."
-  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The current implementation is in b5e615ce6ba8522d01d4f707cfa2faf9db7bc93d, following the versioned rollback handoff in 35d5c57. Human review, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."
+  - "REMEDIATION-EVIDENCE-026 records local proof separately from production gates: 24 modules/796 content records, a live verifier for M01–M24, honest pending runtime states, fail-closed identity with HTTPS-only IdP transport, a managed-TLS Caddy profile, an external OTLP HTTPS collector overlay with explicit base-URL semantics, internal HTTPS, Tempo restart persistence, immutable release dry-runs, backup checksum and load smoke. The current implementation is in 8b032833282c66529c6fc1f2ad23f35c8f1bff0a, following the versioned rollback handoff in 35d5c57 and profile addition in b5e615c. Human review, external IdP, managed certificate, real trace storage/retention, production deploy and RPO/RTO remain pending."

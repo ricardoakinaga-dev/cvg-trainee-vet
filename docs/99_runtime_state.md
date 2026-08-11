@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: perfil de traces externos preparado no commit `b5e615c`; collector OTLP validado com endpoint HTTPS sintético, Compose externo validado sem e com `local-traces`, e `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; perfis locais permanecem inalterados
+- last_completed_action: perfil de traces externos preparado nos commits `b5e615c` e `8b03283`; a semântica de URL-base do exporter OTLP foi explicitada, collector validado com endpoint HTTPS sintético, Compose externo validado sem e com `local-traces`, e `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines; perfis locais permanecem inalterados
 - next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, backend/retention de traces, backup externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
@@ -917,7 +917,7 @@ Foi escrito primeiro o contrato em `tests/integration/production-edge-contract.t
 
 ### RESULTADO
 
-O teste de contrato passou 2/2. O binário oficial do OpenTelemetry Collector validou a configuração com endpoint HTTPS e autorização sintéticos. `docker compose config --quiet` passou com o overlay externo, sem ativar `local-traces`, e também com `--profile local-traces`; `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commit: `b5e615c`.
+O teste de contrato passou 2/2. O binário oficial do OpenTelemetry Collector validou a configuração com endpoint HTTPS-base e autorização sintéticos; a configuração registra que `/v1/traces` é acrescentado pelo exporter. `docker compose config --quiet` passou com o overlay externo, sem ativar `local-traces`, e também com `--profile local-traces`; `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commits: `b5e615c` e `8b03283`.
 
 ### LIMITES
 

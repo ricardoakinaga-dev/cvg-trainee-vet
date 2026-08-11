@@ -751,7 +751,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 - **item:** preparar o caminho de traces externos duráveis sem alterar o runtime local;
 - **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para backend e retenção reais;
-- **evidência:** `infra/observability/otel-collector.production.example.yaml` usa exporter OTLP HTTP com `insecure: false`, endpoint e autorização vindos exclusivamente do ambiente; `infra/production/docker-compose.external-traces.example.yml` sobrepõe o collector e coloca Tempo no perfil opcional `local-traces`; teste de contrato 2/2, validação do collector, Compose sem/com perfil e `pnpm verify` com 423 testes passaram no commit `b5e615c`;
+- **evidência:** `infra/observability/otel-collector.production.example.yaml` usa exporter OTLP HTTP com `insecure: false`, URL-base e autorização vindas exclusivamente do ambiente; a configuração explicita que o exporter acrescenta `/v1/traces`; `infra/production/docker-compose.external-traces.example.yml` sobrepõe o collector e coloca Tempo no perfil opcional `local-traces`; teste de contrato 2/2, validação do collector, Compose sem/com perfil e `pnpm verify` com 423 testes passaram nos commits `b5e615c` e `8b03283`;
 - **limite:** endpoint, autorização, fornecedor, retenção, consulta, alerta, persistência externa, RPO/RTO e promoção produtiva não foram configurados nem declarados;
 - **próximo passo:** registrar backend/retention autorizados e executar o overlay em ambiente externo com credenciais fora do Git.
 

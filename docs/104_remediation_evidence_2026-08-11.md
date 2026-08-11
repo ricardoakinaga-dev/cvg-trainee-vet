@@ -94,7 +94,7 @@ O commit `9386e21` adicionou `infra/production/Caddyfile.production.example`, qu
 
 ## Perfil de traces externos — 2026-08-11
 
-O commit `b5e615c` adicionou `infra/observability/otel-collector.production.example.yaml` e `infra/production/docker-compose.external-traces.example.yml`. O collector recebe OTLP e exporta traces por OTLP HTTP com `insecure: false`; endpoint e autorização são obrigatoriamente fornecidos por variáveis de ambiente do overlay. O serviço Tempo do Compose base fica disponível somente no perfil opcional `local-traces`, e as dependências herdadas foram substituídas explicitamente para não carregar o backend local no perfil externo.
+O commit `b5e615c` adicionou `infra/observability/otel-collector.production.example.yaml` e `infra/production/docker-compose.external-traces.example.yml`; o follow-up `8b03283` explicitou que a variável é uma URL-base e que o exporter acrescenta `/v1/traces`. O collector recebe OTLP e exporta traces por OTLP HTTP com `insecure: false`; endpoint-base e autorização são obrigatoriamente fornecidos por variáveis de ambiente do overlay. O serviço Tempo do Compose base fica disponível somente no perfil opcional `local-traces`, e as dependências herdadas foram substituídas explicitamente para não carregar o backend local no perfil externo.
 
 ```text
 teste de contrato production-edge       PASS — 2/2

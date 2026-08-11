@@ -172,7 +172,7 @@ O edge local continua usando o `Caddyfile` com `tls internal`. Não houve altera
 
 ## Perfil de traces externos preparado — 2026-08-11
 
-O commit `b5e615c` adicionou um overlay Compose não ativo para o caminho de traces externos. `otel-collector.production.example.yaml` exporta por OTLP HTTP com TLS obrigatório e recebe endpoint/autorização exclusivamente por ambiente; o overlay substitui as dependências de Tempo e preserva o backend local no perfil `local-traces`.
+O commit `b5e615c` adicionou um overlay Compose não ativo para o caminho de traces externos; o follow-up `8b03283` explicitou a URL-base e o caminho `/v1/traces` padrão do exporter. `otel-collector.production.example.yaml` exporta por OTLP HTTP com TLS obrigatório e recebe endpoint-base/autorização exclusivamente por ambiente; o overlay substitui as dependências de Tempo e preserva o backend local no perfil `local-traces`.
 
 Validações executadas: teste de contrato 2/2, `otelcol-contrib validate` com endpoint HTTPS sintético, `docker compose config --quiet` sem o perfil e com `--profile local-traces`, e `pnpm verify` com 423 testes, 17 skips e cobertura acima de 80%.
 

@@ -3906,7 +3906,7 @@ Foi escrito primeiro o contrato em `tests/integration/production-edge-contract.t
 
 ### RESULT
 
-O teste de contrato passou 2/2. O OpenTelemetry Collector validou a configuração com endpoint HTTPS e autorização sintéticos. `docker compose config --quiet` passou com o overlay externo, sem ativar `local-traces`, e também com `--profile local-traces`; `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commit: `b5e615c`.
+O teste de contrato passou 2/2. O OpenTelemetry Collector validou a configuração com endpoint HTTPS-base e autorização sintéticos; a configuração registra que `/v1/traces` é acrescentado pelo exporter. `docker compose config --quiet` passou com o overlay externo, sem ativar `local-traces`, e também com `--profile local-traces`; `pnpm verify` passou com 423 testes, 17 skips e cobertura 84,86% statements / 80,10% branches / 86,55% functions / 85,61% lines. Commits: `b5e615c` e `8b03283`.
 
 ### LIMITES
 
