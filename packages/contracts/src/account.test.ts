@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   accountVerificationRequestSchema,
   accountActionRequestSchema,
+  accountOperationProjectionSchema,
 } from "./account.js";
 
 describe("account security contracts", () => {
@@ -39,6 +40,15 @@ describe("account security contracts", () => {
     expect(accountActionRequestSchema.parse({})).toEqual({});
     expect(() =>
       accountActionRequestSchema.parse({ code: "123456" }),
+    ).toThrow();
+  });
+
+  it("rejects provider operation projections with control characters", () => {
+    expect(() =>
+      accountOperationProjectionSchema.parse({
+        operationId: "operation\nidentifier",
+        expiresAt: "2026-08-10T06:00:00.000Z",
+      }),
     ).toThrow();
   });
 });

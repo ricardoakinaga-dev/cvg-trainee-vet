@@ -40,14 +40,18 @@ function assertPrincipalId(principalId: string): void {
 }
 
 function assertOpaqueValue(value: string, name: string): void {
-  if (
-    typeof value !== "string" ||
-    value.trim().length === 0 ||
-    value.length > 256 ||
-    hasControlCharacter(value)
-  ) {
+  if (!isSafeOpaqueValue(value)) {
     throw new ApplicationError("validation_error", `${name} is invalid`);
   }
+}
+
+function isSafeOpaqueValue(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    value.length <= 256 &&
+    !hasControlCharacter(value)
+  );
 }
 
 function hasControlCharacter(value: string): boolean {
@@ -183,8 +187,7 @@ function parseOperation(value: unknown): IdentityProviderOperation {
   }
   const candidate = value as Record<string, unknown>;
   if (
-    typeof candidate.operationId !== "string" ||
-    candidate.operationId.trim().length === 0 ||
+    !isSafeOpaqueValue(candidate.operationId) ||
     typeof candidate.expiresAt !== "string" ||
     candidate.expiresAt.trim().length === 0
   ) {

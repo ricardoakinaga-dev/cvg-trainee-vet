@@ -35,7 +35,7 @@ export type AccountVerificationRequest = z.infer<
 
 export const accountOperationProjectionSchema = z
   .object({
-    operationId: z.string().trim().min(1).max(256),
+    operationId: operationIdSchema,
     expiresAt: z.iso.datetime(),
   })
   .strict();

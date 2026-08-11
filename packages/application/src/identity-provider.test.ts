@@ -290,6 +290,22 @@ describe("identity provider boundary", () => {
     await expect(
       invalidOperationShape.beginRecovery("account-1"),
     ).rejects.toMatchObject({ code: "internal_error" });
+
+    const invalidOperationControl = createHttpIdentityProvider({
+      baseUrl: "https://identity.example",
+      bearerToken: testBearer,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            operationId: "operation\nidentifier",
+            expiresAt: "2026-08-10T06:00:00.000Z",
+          }),
+          { status: 200 },
+        ),
+    });
+    await expect(
+      invalidOperationControl.beginRecovery("account-1"),
+    ).rejects.toMatchObject({ code: "internal_error" });
   });
 
   it("maps provider failures without exposing their response body", async () => {
