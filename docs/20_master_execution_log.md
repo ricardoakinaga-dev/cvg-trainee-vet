@@ -3553,3 +3553,121 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 O commit de implementação `57ed11985312a573a3649ed48c6b15b399e7bf8f` foi fixado no manifesto pelo pin `9c585a9`; próximo passo: obter decisões humanas dos gates externos.
+
+## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
+
+### TIMESTAMP
+
+2026-08-11 10:53:10 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Remediação R5-S2 — rehearsal local de deployment/rollback
+
+### SPRINT
+
+REMEDIATION-R5-LOCAL-RELEASE
+
+### TASK
+
+Executar canário, promoção, rollback por digest e restauração segura do HA local.
+
+### ACTION
+
+Criados `scripts/release-execution.mjs` e `scripts/local-release-rehearsal.mjs`; o modo `CVG_RELEASE_PULL=skip` passou a exigir `CVG_RELEASE_LOCAL_REHEARSAL=true`. O contrato foi testado em RED/GREEN e o rehearsal foi executado pelo script do package.
+
+### RESULT
+
+`pnpm ops:rehearse-local-release` passou. O release local usou `sha256:bf457ddf…cac475`; o rollback sintético usou `sha256:14a55265…32cc1a7`; canário/promoção, rollback e health gate passaram em `/health/ready` 200. O runtime foi restaurado ao `cvg-trainee-vet:local`; o container auxiliar, a imagem temporária e o manifesto fora do repositório foram removidos.
+
+### DECISIONS
+
+O rehearsal comprova apenas o controlador local e não conta como deploy de produção. Registry, versão histórica real, CI remoto, ambiente autorizado, storage externo, RPO/RTO, domínio/TLS gerenciado, MFA/recovery externo e revisão clínica continuam gates separados.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar `pnpm verify`, atualizar o manifesto de rastreabilidade com o SHA da implementação, criar commit convencional e repetir a auditoria no SHA final.
+
+## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-COMMIT
+
+### TIMESTAMP
+
+2026-08-11 11:00:15 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Remediação R5-S2/R6-S3 — congelamento da implementação
+
+### SPRINT
+
+REMEDIATION-R5-LOCAL-RELEASE
+
+### TASK
+
+Fixar o rehearsal local, seus testes e o contrato de execução em SHA auditável.
+
+### ACTION
+
+Criado o commit convencional `cfaeed3` (`feat: add guarded local release rehearsal`) com package script, controlador local, guarda fail-closed para `CVG_RELEASE_PULL=skip` e teste TDD. O manifesto `REMEDIATION-EVIDENCE-026` foi atualizado para esse SHA.
+
+### RESULT
+
+`pnpm verify` passou com 416 testes, 17 skips e cobertura 84,85% statements / 80,07% branches / 86,55% functions / 85,61% lines; `pnpm build`, `pnpm audit --audit-level=high`, `git diff --check`, `pnpm verify:traceability` e `pnpm verify:documentation` passaram. O rehearsal local foi repetido com sucesso e o runtime HA ficou saudável.
+
+### DECISIONS
+
+O worktree ainda contém somente documentação de handoff a ser congelada nesta rodada; produção permanece WAITING_HUMAN_APPROVAL. Nenhum segredo, conteúdo clínico real ou decisão de fornecedor foi inferido.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Revisar e commitar os documentos de estado/log/backlog/evidência; repetir os gates documentais no SHA final e manter as dependências externas explicitamente pendentes.
+
+## 2026-08-11 — REMEDIATION-HANDOFF-LOCAL-COMPLETE
+
+### TIMESTAMP
+
+2026-08-11 11:02:17 -03:00
+
+### ENGINE
+
+AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Remediação local — handoff para gates externos
+
+### ACTION
+
+Revisados e preparados os documentos de estado, log, backlog, evidência e rastreabilidade após o commit `cfaeed3`; as pendências de produção foram mantidas explícitas.
+
+### RESULT
+
+O conjunto local está pronto para handoff: E2E real/RLS, 24 atribuições/estados, load smoke, HA E2E, traces locais, restore sintético e rehearsal local de release/rollback têm evidência; o worktree será congelado após esta atualização documental.
+
+### DECISIONS
+
+Não promover produção nem publicar conteúdo clínico enquanto não houver revisão humana dos itens e decisões sobre IdP/MFA/recovery, domínio/DNS/TLS, storage externo, backup/RPO/RTO e ambiente autorizado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter as decisões humanas e executar somente os gates externos correspondentes; não contar as provas locais como equivalentes de produção.

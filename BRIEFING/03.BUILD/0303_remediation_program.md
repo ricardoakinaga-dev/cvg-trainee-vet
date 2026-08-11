@@ -226,11 +226,13 @@ Nenhuma porta nova de host será escolhida sem consultar inventory/ports.md. Com
 #### R5-S2 — Artefato versionado e rollback
 
 - **O que:** criar release manifest com SHA/image digest, preflight, migração expand/contract, canário, health gate, promoção e rollback.
-- **Onde:** infra/production, scripts/deploy-release.mjs, scripts/rollback-release.mjs, CI.
+- **Onde:** infra/production, scripts/deploy-release.mjs, scripts/rollback-release.mjs, scripts/release-execution.mjs, scripts/local-release-rehearsal.mjs, CI.
 - **Dependências:** R0-S1 e R4-S2 para produção; staging pode usar edge interno.
-- **Teste:** deploy de duas versões sintéticas, falha de health, rollback de app e migração compatível.
+- **Teste:** deploy de duas versões sintéticas, falha de health, rollback de app e migração compatível; `pnpm ops:rehearse-local-release` no HA local.
 - **Aceite:** rollback restaura tráfego para digest anterior, registra auditoria e não perde transação confirmada.
 - **Rollback:** próprio script de rollback e imagem anterior imutável.
+- **Status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para registry, ambiente e produção.
+- **Evidência local:** canário/promoção, rollback e restauração final passaram com health 200 nos dois sentidos; o modo de pull local é fail-closed fora do rehearsal e o artefato sintético é removido ao final.
 
 #### R5-S3 — Backup, restore e RPO/RTO
 

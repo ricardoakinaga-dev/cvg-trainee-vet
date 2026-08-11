@@ -10,7 +10,7 @@
 
 - current_phase: AUDIT — remediação local fechada e handoff operacional
 - current_sprint: BUILD-REMEDIATION-R6
-- current_task: reauditar E2E HA após isolamento do artefato Next e fechar handoff operacional
+- current_task: validar rehearsal local de deploy/rollback e fechar handoff operacional sem promover produção
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: isolamento do build descartável em `.next-e2e-real` consolidado em `57ed11985312a573a3649ed48c6b15b399e7bf8f`; manifesto de evidência fixado em `9c585a9`; VPS truth source sincronizado; artefato operacional reconstruído com `CVG_API_INTERNAL_URL=3182`; web dependencies 200 após teardown; E2E HA ativo final 2/2; todos os resíduos mutáveis em zero e auditoria append-only preservada; `pnpm verify` final 412 testes/17 skips com cobertura acima de 80%
-- next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback
+- last_completed_action: rehearsal local de release passou canário/promoção e rollback com health 200, em digest distinto, e restaurou api-a/api-b/worker-a/worker-b ao artefato operacional; rollback sintético e manifesto temporário foram removidos; contrato TDD do bypass de pull passou; implementação congelada em `cfaeed3` e manifesto atualizado
+- next_action: obter decisões humanas para revisão clínica, provedor MFA/recovery, domínio/certificado, storage externo e ambiente autorizado de deploy/rollback; executar somente os gates externos correspondentes
 
 ## BLOQUEIOS
 
@@ -32,7 +32,25 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-11T10:34:43-03:00
+- last_update: 2026-08-11T11:02:17-03:00
+
+## 2026-08-11 — REMEDIATION-LOCAL-RELEASE-REHEARSAL
+
+### RESULTADO
+
+O fluxo local de release passou em ambiente HA ativo: digest operacional `sha256:bf457ddf…cac475`, rollback sintético distinto `sha256:14a55265…32cc1a7`, canário/promoção e rollback com `/health/ready` 200, seguida de restauração ao artefato `cvg-trainee-vet:local`. A imagem temporária e o manifesto fora do repositório foram removidos; api-a/api-b e worker-a/worker-b ficaram saudáveis.
+
+### LIMITES
+
+Esta prova fecha o controlador local e não prova registry externo, versão histórica real, CI remoto, autorização de produção, RPO/RTO, domínio/TLS gerenciado, traces externos, MFA/recovery externo ou revisão clínica dos 796 itens.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+`pnpm verify:traceability` e `pnpm verify:documentation` passaram no SHA `cfaeed3`; manter o handoff em WAITING_HUMAN_APPROVAL para os gates externos.
 
 ## 2026-08-11 — AUD-2026-08-11-WORKTREE-LOGIN
 

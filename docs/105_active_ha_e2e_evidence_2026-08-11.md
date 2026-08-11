@@ -57,7 +57,7 @@ O teste de restore recebeu timeout de 60 s porque o dump/restore do catálogo HA
 ## Gates finais locais
 
 ```text
-pnpm verify                                PASS — 412 testes, 17 skips
+pnpm verify                                PASS — 416 testes, 17 skips
 coverage                                   84,85% statements / 80,07% branches
                                            86,55% functions / 85,61% lines
 pnpm build                                 PASS
@@ -88,4 +88,36 @@ fixture mutável após teardown                    0
 
 O artefato operacional foi reconstruído com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` e o serviço web permaneceu saudável depois da execução. Esta correção elimina a interferência local entre o E2E descartável e o runtime HA; não altera os limites de produção listados acima.
 
-O pin atual da evidência no manifesto é `9c585a9`; o código correspondente está em `57ed11985312a573a3649ed48c6b15b399e7bf8f`.
+O pin da evidência anterior era `9c585a9`, com código em
+`57ed11985312a573a3649ed48c6b15b399e7bf8f`; a extensão de release/rollback
+local está congelada no commit `cfaeed3` e foi fixada no manifesto após a
+execução dos gates.
+
+## Rehearsal local de deploy e rollback — 2026-08-11
+
+Foi adicionado um caminho explícito de rehearsal local, protegido por
+`CVG_RUN_LOCAL_RELEASE_REHEARSAL=true`. O release normal continua exigindo
+`pull` de imagem imutável; `CVG_RELEASE_PULL=skip` é rejeitado fora desse modo
+local. O rehearsal não aceita imagem externa nem alvo de health público: usa
+somente o daemon local, o projeto HA local e um endpoint loopback.
+
+```text
+pnpm ops:rehearse-local-release                         PASS
+release digest       sha256:bf457ddf...cac475
+rollback digest      sha256:14a55265...32cc1a7
+canário/promoção     PASS — /health/ready 200
+rollback             PASS — /health/ready 200
+restauração final    PASS — api-a/api-b/worker-a/worker-b saudáveis
+artefato temporário  removido após a prova
+```
+
+O digest de rollback foi gerado como artefato sintético local com o mesmo
+filesystem da imagem operacional e um label de rehearsal. Isso prova o
+controlador, o health gate, a troca de digest e a restauração sem declarar que
+existe uma versão anterior de produção. Deploy/rollback autorizado em
+produção, registry externo, CI remoto e aprovação do ambiente continuam sendo
+gates separados.
+
+O manifesto de rastreabilidade `REMEDIATION-EVIDENCE-026` aponta agora para
+`cfaeed3`, que contém o controlador de rehearsal, a proteção do bypass de pull
+e os testes do contrato.

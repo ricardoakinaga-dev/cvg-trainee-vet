@@ -1826,8 +1826,10 @@ artifacts:
         "scripts/verify-durable-traces.mjs",
         "scripts/verify-production-security-config.mjs",
         "scripts/release-manifest.mjs",
+        "scripts/release-execution.mjs",
         "scripts/deploy-release.mjs",
         "scripts/rollback-release.mjs",
+        "scripts/local-release-rehearsal.mjs",
         "scripts/create-postgres-backup.mjs",
         "scripts/real-e2e-fixture-server.mjs",
         "scripts/active-ha-e2e.mjs",
@@ -1846,6 +1848,7 @@ artifacts:
         "packages/config/src/load-smoke.test.ts",
         "tests/e2e/real-runtime.spec.ts",
         "tests/integration/active-ha-e2e.test.ts",
+        "tests/integration/local-release-rehearsal.test.ts",
         "tests/integration/postgres-restore.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
         "pnpm verify",
@@ -1856,6 +1859,7 @@ artifacts:
         "pnpm ops:verify-release-manifest",
         "pnpm ops:deploy-release",
         "pnpm ops:rollback-release",
+        "pnpm ops:rehearse-local-release",
         "pnpm ops:create-postgres-backup",
         "pnpm test:integration:restore",
         "CVG_RUN_REAL_E2E=true pnpm test:e2e",
@@ -1872,16 +1876,17 @@ artifacts:
         "disposable E2E build isolated in .next-e2e-real and operational web remains 200 after teardown",
         "Tempo query after restart",
         "immutable release dry-run",
+        "local HA release rehearsal with canary/promotion, distinct rollback digest and runtime restoration",
         "synthetic pg_dump checksum",
         "live restore test 1/1 with isolated marker and zero residue",
-        "pnpm verify 412 tests / 17 skips / coverage above 80%",
+        "pnpm verify 416 tests / 17 skips / coverage above 80%",
         "R6 quality gate and final SHA",
         "HA image rebuilt from remediation source and active web artifact rebuilt with internal API 3182",
         "live edge 3180/3181 and health after runtime recreation",
         "VPS truth source sync without secrets",
         "git diff --check",
       ]
-    commit: "57ed11985312a573a3649ed48c6b15b399e7bf8f"
+    commit: "cfaeed3"
     status: "r1-r6-local-verified-production-gates-pending"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."

@@ -721,7 +721,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **status:** COMPLETED localmente / WAITING_HUMAN_APPROVAL para produção;
 - **evidência:** canal loopback `127.0.0.1:3182 → Caddy:8081`, serviço web em `3100`, edge público `3180/3181`, build descartável isolado em `.next-e2e-real`, `pnpm test:e2e:active-ha` final 2/2, E2E descartável 14/14, restore live 1/1, web dependencies 200 após teardown, cleanup com zero resíduos mutáveis e auditoria append-only preservada;
 - **limites:** CI remoto, IdP/MFA/recovery externo, domínio/TLS gerenciado, storage externo, RPO/RTO de produção, deploy/rollback autorizado e revisão clínica continuam pendentes;
-- **próximo passo:** aguardar decisões humanas dos gates externos; o commit `57ed11985312a573a3649ed48c6b15b399e7bf8f` já está fixado no manifesto pelo pin `9c585a9`.
+- **próximo passo:** aguardar decisões humanas dos gates externos; o rehearsal local de deploy/rollback passou com troca de digest e restauração do HA, mas registry/ambiente de produção ainda não foram autorizados; a implementação de rehearsal está no commit `cfaeed3` e o manifesto foi atualizado para esse SHA.
 
 ## REGRAS DE USO
 
