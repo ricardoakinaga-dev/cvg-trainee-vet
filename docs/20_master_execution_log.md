@@ -6853,3 +6853,29 @@ WAITING_HUMAN_APPROVAL / PILOT_BLOCKED
 ### NEXT ACTION
 
 Obter alvo/provider/FQDN/IdP/storage/registry e autorização de mudança; depois executar somente os gates externos correspondentes e reauditar o mesmo RC.
+
+## 2026-08-14T13:39:26-03:00 — LIVE-CLINICAL-QUEUE-RUNTIME-126
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-01 + BLK-05 runtime recheck
+
+### ACTION
+
+Revalidados health live/ready/dependencies, HA, edge security e a fila clínica dentro da rede do PostgreSQL. Executado também o modo estrito de completude clínica.
+
+### RESULT
+
+Health `200/200/200`, `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram. A fila live observou `796` conteúdos, `763` pendentes, `763` não revisados, `0` aprovados, `0` ajustes solicitados e `0` falhas técnicas. O modo estrito terminou com exit `1` e `clinical review queue is incomplete: 763 pending items`, como previsto.
+
+### DECISIONS
+
+O beta com veterinários é o mecanismo autorizado para a revisão humana. Nenhum conteúdo foi aprovado, alterado ou publicado; nenhum ambiente externo foi escrito. Uma chamada inicial de `docker compose ps` sem o env-file falhou por configuração ausente, sem indicar falha do runtime; a inspeção direta e os health checks confirmaram os serviços ativos.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar roster/T0/ambiente clínico e executar calibração/lotes auditáveis, depois revalidar BLK-01 e os gates externos no mesmo RC.

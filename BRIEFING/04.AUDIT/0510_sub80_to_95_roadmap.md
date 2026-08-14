@@ -277,3 +277,7 @@ O CI agora declara `vars.CVG_CLINICAL_SOURCES_DIRECTORY` e o verificador aceita 
 Critério de saída do B-G5 continua: bundle licenciado provisionado, acesso read-only, materialização temporária, retenção, run remoto verde no mesmo RC e depois registry/deploy/rollback por digest. A mudança não promove o gate nem a baseline.
 
 O contrato local foi consolidado no commit `9bfa2c1`; falta evidência do provedor e do run remoto no mesmo RC.
+
+## 12.14 Checkpoint BLK-01/RUNTIME — 2026-08-14T13:39:26-03:00
+
+Health local `200/200/200`, HA e edge passaram. A fila live contém `796` conteúdos, com `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o gate estrito falha até que o beta registre decisões veterinárias auditáveis. O marco técnico do beta está preparado, mas BLK-01/B-G1 continua aberto. A próxima janela depende de roster, T0, ambiente e capacidade clínica aprovados.

@@ -13,6 +13,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` e `0/145` cadeias completas preservados;
 - **próxima ação:** Ricardo aprovar alvo/provider/FQDN/IdP/storage/registry e janela de mudança; depois executar o gate externo e reauditar o mesmo RC.
 
+## 2026-08-14T13:39:26-03:00 — LIVE-CLINICAL-QUEUE-RUNTIME-126
+
+- **evidência:** health live/ready/dependencies `200/200/200`; `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram; fila PostgreSQL live `796` total, `763` pendentes/não revisados, `0` aprovados, `0` ajustes e `0` falhas técnicas;
+- **gate estrito:** falhou corretamente com `clinical review queue is incomplete: 763 pending items` e exit `1`, sem publicar ou alterar conteúdo;
+- **interpretação:** BLK-01 está tecnicamente pronto para beta, mas não resolvido; a revisão será executada por veterinários autorizados em lotes auditáveis;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` e `0/145` cadeias completas preservados;
+- **próxima ação:** aprovar roster/T0/ambiente clínico, executar calibração e lotes, depois revalidar o gate estrito e os demais gates no mesmo RC.
+
 ## 2026-08-14T07:42:06-03:00 — TRACEABILITY-EVIDENCE-BATCH-098
 
 - **status:** RF-057/RF-058 implementados localmente com evidência focalizada; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;

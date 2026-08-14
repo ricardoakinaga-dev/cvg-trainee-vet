@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-05 ganhou fronteira local segura para bundle clínico privado fora do checkout; `CVG_CLINICAL_SOURCES_DIRECTORY` absoluto, basename/traversal protegidos, workflow parametrizado e testes focais verdes; manifesto, deploy e rollback locais foram revalidados em modo seguro (`PASS`/`DRY_RUN`/`DRY_RUN`); RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-01/BLK-05 revalidados localmente: fila clínica live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; manifesto, deploy e rollback locais foram revalidados em modo seguro (`PASS`/`DRY_RUN`/`DRY_RUN`); RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; manifesto de release passou, deploy/rollback ficaram em `DRY_RUN` fail-safe e o gate produtivo permaneceu `NOT_EXECUTED`; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`, health `200/200`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
+- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; manifesto de release passou, deploy/rollback ficaram em `DRY_RUN` fail-safe e o gate produtivo permaneceu `NOT_EXECUTED`; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; health live/ready/dependencies `200/200/200`, HA/edge passaram; fila live `796` total/`763` pendentes/`0` aprovados/`0` falhas técnicas e gate estrito falhou de forma esperada; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T13:32:36-03:00
+- last_update: 2026-08-14T13:39:26-03:00
 
 ## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
 
@@ -50,6 +50,23 @@ As primitivas locais de release são verificáveis e fail-safe, mas não constit
 ### NEXT ACTION
 
 Obter alvo/provider/FQDN/IdP/storage/registry e autorização de mudança; somente depois executar os probes externos e reauditar o mesmo RC.
+
+## 2026-08-14T13:39:26-03:00 — LIVE-CLINICAL-QUEUE-RUNTIME-126
+
+### RESULTADO
+
+- health live/ready/dependencies do edge local retornou `200/200/200`; `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram;
+- o verificador executado dentro da rede do PostgreSQL observou `796` conteúdos, `763` pendentes, `763` não revisados, `0` aprovados, `0` ajustes solicitados e `0` falhas técnicas, distribuídos em M01/M03–M24;
+- o modo estrito falhou com `clinical review queue is incomplete: 763 pending items`, exit `1`, mantendo publicação fail-closed;
+- uma tentativa inicial de `docker compose ps` sem o env-file falhou apenas por variáveis obrigatórias ausentes; a inspeção direta e os health checks confirmaram o runtime ativo.
+
+### DECISÃO
+
+O beta clínico com veterinários permanece o caminho autorizado para as decisões humanas. Não houve aprovação, alteração de conteúdo, publicação ou escrita externa nesta revalidação.
+
+### NEXT ACTION
+
+Provisionar equipe/contas de veterinários em ambiente aprovado, executar a calibração e os lotes auditáveis, depois revalidar o gate estrito e os demais gates externos no mesmo RC.
 
 ## 2026-08-14T12:46:44-03:00 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
 

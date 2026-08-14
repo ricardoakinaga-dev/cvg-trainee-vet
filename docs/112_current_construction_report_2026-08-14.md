@@ -258,3 +258,9 @@ O código e a documentação desta melhoria foram consolidados no commit local `
 `pnpm ops:verify-release-manifest` passou no manifesto de exemplo, validando estratégia `EXPAND_CONTRACT`, canário `api-a/health/ready`, digest imutável do release e digest distinto de rollback. `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`, portanto não fizeram pull, migração, restart, deploy, rollback ou escrita externa. `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado.
 
 O probe foi executado no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`; o worktree permaneceu limpo e o registro foi consolidado em commit documental posterior, sem alteração executável. Esta verificação fortalece a prontidão local de release, mas não prova CI remoto, registry, deploy ou rollback produtivos; a nota permanece `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 33. Revalidação live da fila clínica e do runtime — 2026-08-14T13:39:26-03:00
+
+O edge local respondeu `200` em `/health/live`, `/health/ready` e `/health/dependencies`; `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram. Dentro da rede do PostgreSQL HA, a fila clínica foi lida em modo somente leitura: `796` conteúdos, `763` pendentes, `763` não revisados, `0` aprovados, `0` ajustes solicitados e `0` falhas técnicas. O modo estrito falhou com `clinical review queue is incomplete: 763 pending items` e exit `1`, preservando o bloqueio de publicação.
+
+Essa evidência confirma que a infraestrutura do beta está preparada para revisão por veterinários, mas não substitui as decisões clínicas humanas. Nenhum conteúdo foi aprovado, alterado ou publicado; a nota permanece `83,24/100`, o estado `WAITING_HUMAN_APPROVAL`, `0/145` cadeias completas e `PILOT_BLOCKED`.

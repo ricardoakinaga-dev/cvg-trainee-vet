@@ -317,3 +317,9 @@ Foi implementado o contrato de materialização segura do bundle: `CVG_CLINICAL_
 RED/GREEN passou `11/11`, `verify:ci-contract` e `verify:clinical-sources` localmente. Isso reduz o risco de integração do B-G5, mas não fecha o gate: ainda faltam provedor/licença, bundle, credencial read-only, retenção e run remoto verde no RC. Baseline `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
 
 A mudança foi consolidada no commit local `9bfa2c1`, sem push.
+
+## 17.16 Checkpoint live da fila clínica — 2026-08-14T13:39:26-03:00
+
+O runtime HA local foi revalidado com health `200/200/200`, HA/edge verdes e leitura somente leitura da fila clínica: `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas. O modo estrito falhou de forma esperada enquanto houver pendências, impedindo publicação automática.
+
+Este checkpoint confirma a prontidão técnica do beta com veterinários e não encerra BLK-01. O próximo passo é Ricardo aprovar roster, capacidade, T0 e ambiente; em seguida executar calibração, lotes de revisão, rework e preflight final, mantendo os itens sem decisão fora da publicação.
