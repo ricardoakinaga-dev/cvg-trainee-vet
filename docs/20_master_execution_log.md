@@ -6568,6 +6568,20 @@ A E2E HA inicial encontrou uma inconsistência de runtime: o processo Next estav
 
 Ainda dependem de autorização/ambiente externo: revisão clínica dos 763 conteúdos, IdP/MFA/recovery, DNS/TLS gerenciado, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/manual WCAG/Web Vitals/soak/DR, horários hospitalares aprovados e reauditoria. Próxima ação: revisar o diff e obter autorização explícita para commit/RC antes de qualquer gate externo no mesmo SHA.
 
+## 2026-08-14T11:02:00-03:00 — LOCAL-RC-COMMIT-AND-ROLLBACK-108
+
+### ACTION
+
+Após `pnpm verify`, E2E HA, secret scan e `git diff --check` verdes, as alterações do worktree foram consolidadas no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9` (`feat: complete local production hardening`). Não houve push. As 145 linhas da matriz foram atualizadas para referenciar esse SHA; os estados de release permaneceram bloqueados.
+
+### RESULT
+
+`pnpm verify:traceability` e `pnpm verify:premium-traceability` passaram com 145/145 evidências locais, 87/87 P0/P1, 0 gaps estruturais e 0/145 cadeias completas. Não restam `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O ensaio `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true pnpm ops:rehearse-local-release` passou deploy, canário, rollback sintético e restauração do runtime; release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`.
+
+### LIMITES / STATUS / NEXT
+
+O worktree local está limpo e o rollback local foi comprovado, mas não há registry/deploy externo, RC publicado, IdP/MFA, DNS/TLS gerenciado, backup externo/RPO/RTO, beta clínico, UAT/manual WCAG/Web Vitals/soak/DR, horários hospitalares ou reauditoria. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`. Próxima ação: reconstruir o runtime com o SHA do RC e aguardar/provisionar os gates externos autorizados.
+
 ## 2026-08-14T10:42:04-03:00 — ASSESSMENT-RECALCULATION-LOCAL-INTEGRATION-105
 
 ### ENGINE

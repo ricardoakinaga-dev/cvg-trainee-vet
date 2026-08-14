@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: verificação integral final passou após a integração e a correção do web: 161 arquivos de teste, 706 testes aprovados, 18 skips governados, cobertura 83,78%/80,41%/84,95%/84,55%, migrations 29/29, E2E HA 3/3 e `git diff --check`; matriz em 145/145 linhas com evidência local e 87/87 P0/P1, mas 0/145 cadeias completas; runtime local foi recriado no digest comum `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` para API/worker e as rotas internas protegidas retornaram 401 sem autenticação; score e release não foram promovidos
-- next_action: revisar o diff completo e obter a fronteira autorizada de commit/RC; depois executar IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR e beta clínico; manter `PILOT_BLOCKED` até 145/145 cadeias com commit/artefato de release no mesmo SHA e reauditoria
+- last_completed_action: commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9` criado após verify, diff-check e secret scan; 145 linhas da matriz foram ancoradas nesse SHA; ensaio local de release/deploy/rollback passou com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd` e runtime restaurado; score e release externo não foram promovidos
+- next_action: reconstruir o runtime com `CVG_SOURCE_SHA` do RC local e repetir health/E2E; depois executar IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR e beta clínico; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC e reauditoria
 
 ## BLOQUEIOS
 
-- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; worktree sem SHA final; runtime local sem vínculo imutável ao SHA atual; reauditoria independente dos seis itens no mesmo RC; evidência local sintética não substitui gates externos, clínicos ou humanos
+- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; commit local e rollback local comprovados, mas registry/deploy externo, estado/release do RC e reauditoria independente dos seis itens continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,20 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T10:51:57-03:00
+- last_update: 2026-08-14T11:02:00-03:00
+
+## 2026-08-14T11:02:00-03:00 — LOCAL-RC-COMMIT-AND-ROLLBACK-108
+
+### RESULTADO
+
+- o worktree foi consolidado no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9` (`feat: complete local production hardening`); não houve push;
+- `traceability.yml` não possui mais `GAP:commit-pending` nem `GAP:worktree-sha-pending`; as 145 linhas apontam para o SHA local de implementação;
+- `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true pnpm ops:rehearse-local-release` passou deploy, canário, rollback sintético e restauração do runtime; digest de release `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, rollback `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`;
+- a matriz permanece `0/145` cadeias completas porque estado `VERIFIED`, `RELEASE_READY`, gates externos e evidência clínica ainda não existem.
+
+### STATUS / NEXT
+
+O worktree está limpo localmente, mas o RC ainda é local e não foi publicado em registry nem promovido a produção. Próxima ação: ancorar o runtime ao SHA do RC, verificar digest/label, e então aguardar ou obter os ambientes e autorizações externas para os gates restantes. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
 
 ## 2026-08-14T10:51:57-03:00 — FINAL-LOCAL-VERIFICATION-107
 

@@ -704,3 +704,9 @@ O lote local de `BLK-08-B` foi executado com TDD e evidência direta para os dez
 Entregas locais: recálculo determinístico com persistência PostgreSQL/RLS, atualização otimista, notificação transacional em outbox e reconhecimento no worker; painéis internos de moderador e administração com escopo server-side; estatística de item e anomalias para revisão humana; decisão de conflito de fontes; governança de IA operacional com confirmação humana e teto de custo; policy fail-closed e contrato Zod de janela de manutenção. Migrations `0024`–`0028` foram aplicadas no PostgreSQL local.
 
 O lote não altera os estados de `BLK-01`–`BLK-07`, não fecha `BLK-06`/`BLK-08-C/D`, não promove score, release ou piloto e não substitui a revisão clínica dos 763 conteúdos. O recálculo está integrado localmente, mas a entrega clínica externa, UAT e produção ainda não foram exercitadas; a janela hospitalar requer horários aprovados. Evidência integral: `pnpm verify` com 161 arquivos/706 testes/18 skips e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines.
+
+## 16.13 Commit local e ensaio de rollback — 2026-08-14T11:02:00-03:00
+
+O worktree foi limpo no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push. As 145 linhas da matriz estão ancoradas no SHA e não há `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O ensaio local de release/deploy/rollback passou com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd` e runtime restaurado.
+
+Esse resultado fecha somente a parte local de mudança/rollback. O backlog permanece `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` até haver 763 decisões clínicas auditáveis, identidade/edge/backup/CI/deploy reais, UAT/operação aprovados, 145/145 cadeias em `VERIFIED`/`RELEASE_READY` e reauditoria independente.

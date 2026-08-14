@@ -115,6 +115,12 @@ Após a alteração, `pnpm verify` passou com 138 arquivos/639 testes/18 skips e
 
 O lote seguinte fechou os dez gaps de módulo/contrato/teste/artefato com mudanças requisito-específicas: dashboards de moderador e administração, estatística/anomalia de item, decisão de conflito de fontes, governança de IA operacional, recálculo/notificação integrado localmente e policy/contrato de janela de manutenção. O último contrato foi validado em RED antes da implementação e GREEN depois.
 
-Resultado atualizado: `pnpm verify` passou com 161 arquivos/706 testes/18 skips e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines; migrations 29/29, contratos 81/81 e worker 24/24 passaram. `pnpm verify:premium-traceability` passou com `145/145` evidências locais, `87/87` P0/P1, `0/145` gaps de módulo/contrato/teste/artefato, `0/145` cadeias completas e `145/145` commits/SHA pendentes.
+Resultado atualizado: `pnpm verify` passou com 161 arquivos/706 testes/18 skips e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines; migrations 29/29, contratos 81/81 e worker 24/24 passaram. `pnpm verify:premium-traceability` passou com `145/145` evidências locais, `87/87` P0/P1, `0/145` gaps de módulo/contrato/teste/artefato, `0/145` cadeias completas e todas as linhas ancoradas no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`.
 
-O fechamento local não promove `VERIFIED` ou `RELEASE_READY`: o worktree permanece dirty; não há RC/SHA, manifesto, registry, deploy ou rollback externos; a entrega clínica externa do recálculo não foi exercitada; e a janela hospitalar ainda não possui horários aprovados. A disposição permanece `PILOT_BLOCKED`.
+O fechamento local não promove `VERIFIED` ou `RELEASE_READY`: o worktree está limpo e o rollback local foi ensaiado, mas não há registry/deploy/rollback externos, entrega clínica externa, RC publicado ou reauditoria; e a janela hospitalar ainda não possui horários aprovados. A disposição permanece `PILOT_BLOCKED`.
+
+## Commit local e ensaio de release — 2026-08-14T11:02:00-03:00
+
+O worktree foi consolidado no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push. A matriz não possui mais `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O ensaio `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true pnpm ops:rehearse-local-release` passou deploy, canário, rollback sintético e restauração com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`.
+
+Isso reduz o gap local de mudança/rollback, mas `completeChains=0` permanece correto: estado `VERIFIED`, release `RELEASE_READY`, revisão clínica, identidade real, edge público, backup externo, CI/registry, UAT, operação e reauditoria ainda não foram comprovados.

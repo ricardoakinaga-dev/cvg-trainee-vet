@@ -1500,3 +1500,11 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **rastreabilidade:** 145/145 linhas com evidência local, 87/87 P0/P1, 0/145 cadeias completas e 145/145 commits/SHA pendentes;
 - **limite:** os gates externos, clínicos, humanos e de release continuam abertos; nenhum score, release, piloto ou publicação clínica foi promovido;
 - **próxima ação:** revisar o diff completo e obter autorização explícita para commit/RC antes de qualquer execução externa no mesmo SHA.
+
+## 2026-08-14T11:02:00-03:00 — LOCAL-RC-COMMIT-AND-ROLLBACK-108
+
+- **status:** worktree local limpo no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
+- **rastreabilidade:** 145/145 linhas ancoradas no SHA local, sem `GAP:commit-pending` ou `GAP:worktree-sha-pending`; 0/145 cadeias completas porque estado/release e gates externos continuam bloqueados;
+- **evidência:** ensaio local de release/deploy/rollback passou e restaurou o runtime com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`;
+- **limite:** isso não comprova registry/deploy externo, IdP/MFA, DNS/TLS público, backup/RPO/RTO, beta clínico, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria;
+- **próxima ação:** reconstruir o runtime com `CVG_SOURCE_SHA` do RC e executar apenas os gates externos autorizados.

@@ -391,3 +391,9 @@ O item 11 do relatório 0491 foi fechado em 95/100 no artifact `BRIEFING/04.AUDI
 O lote de fechamento local da matriz completou os dez elos de evidência que estavam pendentes e integrou o recálculo localmente. `pnpm verify` passou com 161 arquivos de teste, 706 testes aprovados, 18 skips governados e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines; migrations 29/29, contratos 81/81 e worker 24/24 passaram. A matriz está em 145/145 linhas com evidência local e 0/145 cadeias completas, pois o worktree continua dirty e 145/145 commits/SHA de release continuam pendentes.
 
 O recálculo determinístico agora possui adapter PostgreSQL/RLS, rota interna, outbox e handler de worker no runtime local; a entrega clínica externa continua sem prova e a policy de manutenção ainda aguarda horários hospitalares aprovados. Portanto o backlog permanece `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; BLK-01…BLK-07, BLK-06-B/C/D e BLK-08-C/D continuam abertos.
+
+## Addendum de commit e rollback local — 2026-08-14T11:02:00-03:00
+
+As alterações verificadas foram consolidadas no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push; o worktree está limpo. As 145 linhas da matriz foram ancoradas no SHA e não há mais gaps de commit/worktree. O ensaio local de release/deploy/rollback passou com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`.
+
+Esse fechamento é local: não promove estado `VERIFIED`/`RELEASE_READY` e não substitui beta clínico, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy externo, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.

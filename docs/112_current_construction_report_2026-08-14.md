@@ -6,7 +6,7 @@
 
 ## 1. Conclusão executiva
 
-O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é de worktree e ambiente sintético/local, sem SHA de release imutável, sem operação externa comprovada e sem os gates humanos/clínicos necessários.
+O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O worktree agora está limpo no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; isso não equivale a um RC publicado ou aprovado.
 
 Estado: `WAITING_HUMAN_APPROVAL`.
 Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
@@ -25,7 +25,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 - `pnpm audit --prod --audit-level high`: nenhuma vulnerabilidade conhecida.
 - Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos.
 - Gate de segurança produtiva: falhou fechado pela ausência das 11 referências externas obrigatórias; não houve tentativa de contornar o gate.
-- Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas por falta de commit/SHA de release.
+- Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas porque estado/release externos e gates clínicos ainda não estão aprovados; as linhas estão ancoradas no SHA local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`.
 
 ## 3. Notas por item
 
@@ -36,7 +36,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 | 3 | Currículo e conteúdo clínico | 72 | Catálogo materializado com 24 módulos, 96 sessões e 796 conteúdos; 763 itens aguardam revisão clínica independente. |
 | 4 | Arquitetura e modularidade | 92 | Monorepo modular e fronteiras PostgreSQL/Qdrant/IA adequadas; há hotspots de código grandes. |
 | 5 | Domínio, contratos e regras | 88 | Invariantes e decisões críticas bem cobertos; faltam provas completas para todos os requisitos P0/P1. |
-| 6 | Persistência, migrations e integridade | 90 | 24 migrations verificadas, incluindo estado persistente do caso digital; evidência produtiva autorizada ainda ausente. |
+| 6 | Persistência, migrations e integridade | 90 | 29 migrations verificadas, incluindo estado persistente do caso digital e recálculo; evidência produtiva autorizada ainda ausente. |
 | 7 | API e backend | 82 | API funcional e protegida; alguns entrypoints e fluxos operacionais têm cobertura inferior. |
 | 8 | Segurança, identidade e privacidade | 86 | Autorização server-side, RLS, CSRF, cookies e redaction presentes; IdP/MFA real não executado. |
 | 9 | Jornada do participante | 75 | Fluxos principais funcionam localmente; jornada integral, UAT e métricas reais não comprovados. |
@@ -46,7 +46,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 | 13 | Web, UX e acessibilidade | 78 | Rotas e fluxos principais funcionam; há cinco gaps manuais de WCAG e Web Vitals reais pendentes. |
 | 14 | Testes, cobertura e evidências | 93 | Cobertura global forte e suíte ampla; skips e evidências sintéticas ainda não fecham o release. |
 | 15 | CI e reprodutibilidade | 86 | Contratos, lint, typecheck e build locais passam; CI remoto, registry, deploy e rollback não comprovados. |
-| 16 | Rastreabilidade e controle de mudanças | 65 | Existem 145 requisitos e 145 linhas de evidência local; 0/145 cadeias estão completas porque commit/SHA de release, manifesto e worktree limpo ainda não foram autorizados/comprovados. |
+| 16 | Rastreabilidade e controle de mudanças | 65 | Existem 145 requisitos e 145 linhas de evidência local ancoradas no commit local `4d8618d`; 0/145 cadeias estão completas porque estado/release, gates externos e reauditoria ainda não foram aprovados. |
 
 ## 4. Bloqueios que exigem resolução
 
@@ -55,15 +55,15 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 3. DNS público e TLS gerenciado não comprovados.
 4. Backups externos, retenção e RPO/RTO produtivos pendentes.
 5. CI, registry, deploy e rollback atuais não comprovados.
-6. Worktree sujo e runtime sem vínculo imutável ao SHA atual.
+6. Worktree local agora limpo e commitado; falta vincular o runtime ao SHA do RC e comprovar registry/deploy externo.
 7. UAT, acessibilidade manual, Web Vitals reais, soak e DR pendentes.
-8. 0/145 cadeias de rastreabilidade completas porque nenhum commit/SHA de release foi autorizado e comprovado.
-9. Recálculo de avaliações ainda não integrado ao adapter PostgreSQL, rota operacional e handler de worker.
+8. 0/145 cadeias de rastreabilidade completas porque o estado/release e os gates externos ainda não foram aprovados, apesar do commit local já estar ancorado.
+9. Recálculo de avaliações integrado localmente; entrega clínica externa e produção ainda não comprovadas.
 10. Horários hospitalares de manutenção ainda não foram configurados/aprovados.
 
 ## 5. Limites da evidência
 
-O runtime local não representa produção: a imagem em execução não possui vínculo confiável ao SHA atual do worktree, o TLS live é interno/local, os dados do E2E são sintéticos e o gate produtivo permanece fail-closed. A revisão clínica deve ocorrer em beta controlado com veterinários autorizados, sem prontuários, pacientes, tutores, fotos, PDFs de terceiros ou dados identificáveis.
+O runtime local não representa produção: a imagem em execução ainda precisa ser reconstruída com o label do SHA do RC local, o TLS live é interno/local, os dados do E2E são sintéticos e o gate produtivo permanece fail-closed. A revisão clínica deve ocorrer em beta controlado com veterinários autorizados, sem prontuários, pacientes, tutores, fotos, PDFs de terceiros ou dados identificáveis.
 
 ## 6. Decisão
 
@@ -127,7 +127,7 @@ Em 2026-08-14T10:42:04-03:00, a integração local do recálculo foi fechada com
 
 `pnpm verify` passou com 161 arquivos de teste, 706 testes aprovados, 18 skips governados e cobertura global de 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines. Também passaram lint, typecheck, contratos 81/81, worker 24/24, migrations 29/29, secrets, decisões críticas, escopo, rastreabilidade, risco, skips, evidência, change control, acessibilidade automatizada, capacidade, Web Performance, jornada/correção, arquitetura, documentação, produto e fronteira pública.
 
-`pnpm verify:premium-traceability` passou com 145/145 linhas de evidência local e 87/87 P0/P1, mas `completeChains=0`: as 145 linhas ainda têm `GAP:commit-pending`, o worktree está dirty e não há artefato/manifesto de release no mesmo SHA. A migration `0028_assessment_recalculation_candidates` foi aplicada no PostgreSQL local; API-A/API-B e worker-A/worker-B foram recriados no digest comum `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, e as rotas internas de recálculo, moderador e administração responderam 401 sem autenticação.
+`pnpm verify:premium-traceability` passou com 145/145 linhas de evidência local e 87/87 P0/P1, mas `completeChains=0`: as 145 linhas estão ancoradas no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, enquanto estado/release e artefato de RC aprovado continuam pendentes. A migration `0028_assessment_recalculation_candidates` foi aplicada no PostgreSQL local; API-A/API-B e worker-A/worker-B foram recriados no digest comum `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, e as rotas internas de recálculo, moderador e administração responderam 401 sem autenticação.
 
 ### Leitura atual da nota
 
@@ -141,4 +141,10 @@ Na repetição, `pnpm test:e2e:active-ha` passou 3/3: proxy real, atividade sint
 
 ## 18. Verificação final
 
-Às 10:51:57, a verificação integral repetida passou sem regressão: 161 arquivos, 706 testes, 18 skips, cobertura 83,78%/80,41%/84,95%/84,55%, 29 migrations, 145/145 linhas com evidência local e E2E HA 3/3. A nota oficial permanece 83,24/100 e o projeto permanece `PILOT_BLOCKED`, pois evidência local não fecha os gates externos nem cria um SHA de release.
+Às 10:51:57, a verificação integral repetida passou sem regressão: 161 arquivos, 706 testes, 18 skips, cobertura 83,78%/80,41%/84,95%/84,55%, 29 migrations, 145/145 linhas com evidência local e E2E HA 3/3. Depois, o commit local `4d8618d` limpou o worktree e o ensaio local de release/rollback passou. A nota oficial permanece 83,24/100 e o projeto permanece `PILOT_BLOCKED`, pois evidência local não fecha os gates externos nem aprova o RC.
+
+## 19. Commit local, rastreabilidade e ensaio de release
+
+O worktree foi consolidado no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push. As 145 linhas da matriz agora apontam para esse SHA; não existem mais `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O ensaio `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true pnpm ops:rehearse-local-release` passou deploy, canário, rollback sintético e restauração do runtime com digest de release `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`.
+
+Essa evidência fecha o subproblema local de worktree/commit/rollback, mas não transforma as linhas em `VERIFIED`/`RELEASE_READY`: ainda faltam beta clínico, IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy externo, UAT, WCAG manual, Web Vitals reais, soak, DR, aprovação de manutenção e reauditoria.
