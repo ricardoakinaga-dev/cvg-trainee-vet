@@ -1617,3 +1617,4 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **checks:** testes focais `11/11`, `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente;
 - **resultado:** prepara a resolução de BLK-05 sem alegar CI remoto; `0/145` cadeias completas, baseline `83,24/100` e `PILOT_BLOCKED` permanecem;
 - **próxima ação:** aprovar/provisionar bundle, credencial read-only, retenção, runner, registry, deploy e rollback; executar o pipeline e reauditar no mesmo RC.
+- **commit local:** `9bfa2c1` (`fix: support external clinical source bundle`), sem push.

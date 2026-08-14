@@ -275,3 +275,5 @@ O GitHub continua sem infraestrutura de promoção: PR `#1` aberto no head remot
 O CI agora declara `vars.CVG_CLINICAL_SOURCES_DIRECTORY` e o verificador aceita um diretório absoluto externo, validando nomes exatos e SHA-256 sem copiar PDFs para o repositório. Os testes focais passaram `11/11` e o pré-voo local passou.
 
 Critério de saída do B-G5 continua: bundle licenciado provisionado, acesso read-only, materialização temporária, retenção, run remoto verde no mesmo RC e depois registry/deploy/rollback por digest. A mudança não promove o gate nem a baseline.
+
+O contrato local foi consolidado no commit `9bfa2c1`; falta evidência do provedor e do run remoto no mesmo RC.

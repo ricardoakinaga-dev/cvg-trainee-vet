@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`, health `200/200`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); alterações locais aguardando commit desta rodada, sem push ou escrita remota
+- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`, health `200/200`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -2744,6 +2744,7 @@ O resultado não altera a nota `83,24/100`, `completeChains=0/145`, `WAITING_HUM
 - `scripts/clinical-source-location.mjs` rejeita path relativo, diretório interno e filename com traversal; `verify-clinical-sources` mantém os nomes/SHA-256 do manifesto;
 - testes focais `11/11`, `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente; nenhum PDF foi adicionado ou copiado para o Git;
 - workflow, relatório, política de fontes, traceability, plano, roadmap, backlog e remediação foram atualizados.
+- commit local: `9bfa2c1` (`fix: support external clinical source bundle`); worktree limpo após a consolidação.
 
 ### STATUS / NEXT
 

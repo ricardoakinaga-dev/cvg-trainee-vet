@@ -6806,6 +6806,8 @@ Criada a resolução parametrizada de fontes clínicas externas ao checkout, doc
 
 Testes focais `11/11`, `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente. PDFs não foram adicionados ao Git, logs ou artefatos públicos.
 
+A alteração foi consolidada no commit local `9bfa2c1` (`fix: support external clinical source bundle`), sem push.
+
 ### DECISIONS
 
 O bundle privado, provedor/licença, credencial read-only, retenção e run remoto no RC continuam decisões/recursos externos; não alterar `PASS_WITH_GAPS`, `0/145`, baseline `83,24/100` ou `PILOT_BLOCKED`.

@@ -186,3 +186,5 @@ O PR `#1` continua aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e
 O gate de fontes ganhou suporte explícito a `CVG_CLINICAL_SOURCES_DIRECTORY`: caminho absoluto, fora do repositório, com validação de basename e rejeição de traversal. O CI documenta a variável opcional por `vars.CVG_CLINICAL_SOURCES_DIRECTORY`; os PDFs continuam fora do Git e o pré-voo mantém os três nomes/SHA-256 exatos.
 
 O teste focal passou `11/11`, `verify:ci-contract` passou e a execução local do pré-voo passou. Isso fecha somente o contrato local de materialização segura. O bundle licenciado, a credencial read-only, a retenção do artefato e o run remoto verde no RC continuam ausentes; `completeChains=0/145`, baseline `83,24/100` e `PILOT_BLOCKED` permanecem.
+
+A alteração foi consolidada no commit local `9bfa2c1`, sem push; o commit é evidência da mudança de contrato, não prova do bundle ou do CI remoto.

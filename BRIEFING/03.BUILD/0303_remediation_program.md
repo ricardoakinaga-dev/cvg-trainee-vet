@@ -348,3 +348,5 @@ Chromium local observou LCP `232/172 ms`, CLS `0/0` e INP proxy `120/144 ms`; ca
 O gate de fontes agora suporta `CVG_CLINICAL_SOURCES_DIRECTORY` como diretório absoluto externo, com proteção contra traversal e validação posterior dos três nomes/SHA-256. O workflow usa `vars.CVG_CLINICAL_SOURCES_DIRECTORY`; a política continua proibindo PDFs no Git, logs e artefatos públicos. Os testes focalizados passaram `11/11` e os verificadores locais passaram.
 
 Esse é um avanço de preparação de CI, não uma prova externa: o bundle licenciado, a credencial read-only, a retenção e a execução verde do RC ainda precisam ser provisionados e auditados.
+
+Commit local da melhoria: `9bfa2c1`; nenhum push ou write remoto foi executado.

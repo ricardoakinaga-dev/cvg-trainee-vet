@@ -752,6 +752,7 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **restrição:** não versionar PDFs, não aceitar bundle sem os três SHA-256 e não marcar B-G5 como verde sem run remoto no RC;
 - **dependências:** provedor/licença, bundle privado, credencial read-only, materialização no runner, retenção de artefato, registry/deploy/rollback;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar a fronteira externa autorizada e reexecutar o CI no mesmo RC.
+- **commit local:** `9bfa2c1` (`fix: support external clinical source bundle`), sem push.
 
 ## 16.23 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
 

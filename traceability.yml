@@ -2605,7 +2605,7 @@ artifacts:
         "playwright.config.ts",
       ]
     tests: ["tests/integration/ci-governance.test.ts"]
-    commit: "dd4790973e31e1c3799c58cf99701128367b055b"
+    commit: "9bfa2c11315bbc829e320009ce244179bfdcf01a"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:

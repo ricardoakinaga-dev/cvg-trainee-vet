@@ -315,3 +315,5 @@ O PR `#1` continua aberto no head remoto antigo `d3964a9…`; os checks `quality
 Foi implementado o contrato de materialização segura do bundle: `CVG_CLINICAL_SOURCES_DIRECTORY` é opcional, mas quando usado exige caminho absoluto fora do repositório; nomes de arquivo são basenames e traversal falha. O workflow expõe `vars.CVG_CLINICAL_SOURCES_DIRECTORY`, mantendo PDFs fora do Git e de artefatos públicos.
 
 RED/GREEN passou `11/11`, `verify:ci-contract` e `verify:clinical-sources` localmente. Isso reduz o risco de integração do B-G5, mas não fecha o gate: ainda faltam provedor/licença, bundle, credencial read-only, retenção e run remoto verde no RC. Baseline `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
+
+A mudança foi consolidada no commit local `9bfa2c1`, sem push.
