@@ -745,6 +745,13 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **rollback:** não escrever no host até aprovação; após provisionamento, remover somente recursos do projeto por manifest explícito e retornar ao digest anterior;
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
 
+## 16.23 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
+
+- **evidência:** PR `#1` permanece aberto no head remoto anterior, com checks `quality` falhos;
+- **infraestrutura:** `0` secrets, `0` variables, `0` environments e `0` deployments;
+- **aceite:** não há run verde no RC local, registry, deploy ou rollback remoto comprovados;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar bundle licenciado e pipeline autorizado sem versionar PDFs.
+
 ## 16.20 RC atual e recuperação local — 2026-08-14T12:46:44-03:00
 
 - **entrega local:** RC reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; web E2E `25/25`, HA E2E `3/3`, failover `500/500` e restore `2/2` passaram;
@@ -759,3 +766,10 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **aceite:** somente consistência local; `145/145` linhas locais, `87/87` P0/P1 e `0/145` cadeias completas;
 - **limite:** não fecha os gates clínicos, IdP/MFA, DNS/TLS, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR ou reauditoria;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar decisões/provisionamento e reauditar no mesmo RC.
+
+## 16.22 Web Vitals e carga delimitada — 2026-08-14T13:00:56-03:00
+
+- **evidência local:** Chromium HTTP 200; mobile/desktop LCP `232/172 ms`, CLS `0/0`, INP proxy `120/144 ms`;
+- **carga:** `20.000/20.000` requests, concorrência `50`, throughput `889,41 req/s`, p95 `119,82 ms`, zero erros;
+- **limite:** RUM público, UAT/manual WCAG, screen reader, soak 24h, SLO, DR e CI de budgets continuam pendentes;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.

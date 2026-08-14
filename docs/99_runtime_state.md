@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-06-D local revalidado no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`; RC local, E2E web/HA, failover controlado, restore live e rollback sintético passaram; inventário read-only do Hostinger confirmou capacidade genérica de edge, mas nenhum projeto/route do Trainee Vet; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-06-D local revalidado no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`; RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético passaram; inventário read-only do Hostinger confirmou capacidade genérica de edge, mas nenhum projeto/route do Trainee Vet; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; web recompilado/reiniciado; E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500` com uma réplica parada, restore live `2/2`, health `200/200`, HA/edge/manifesto e documentação verificados; `pnpm verify` passou novamente com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; documentação consolidada no commit local desta rodada, sem push e com worktree limpo
+- last_completed_action: runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; web recompilado/reiniciado; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500` com uma réplica parada, restore live `2/2`, health `200/200`, HA/edge/manifesto e documentação verificados; `pnpm verify` passou novamente com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto reconsultado sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); evidências novas consolidadas em commit local, sem push e com worktree limpo
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T12:54:15-03:00
+- last_update: 2026-08-14T13:09:29-03:00
 
 ## 2026-08-14T12:46:44-03:00 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
 
@@ -67,6 +67,40 @@ Os nove artefatos de relatório, estado, log, backlog, roadmap e plano foram con
 ### STATUS / NEXT
 
 Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; baseline `83,24/100`. Próxima ação: obter decisões e provisionamento autorizados para os gates clínicos, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy, UAT/operação e reauditoria.
+
+## 2026-08-14T13:00:56-03:00 — LOCAL-WEB-VITALS-BOUNDED-LOAD-120
+
+### RESULTADO
+
+- Chromium local observou HTTP `200`, LCP `232/172 ms`, CLS `0/0` e INP proxy `120/144 ms` em mobile/desktop;
+- carga delimitada no health HA passou `20.000/20.000`, concorrência `50`, throughput `889,41 req/s`, média `56,04 ms`, p95 `119,82 ms`, zero erros;
+- evidência detalhada adicionada em `docs/115_local_web_vitals_capacity_evidence_2026-08-14.md`.
+
+### LIMITES / STATUS / NEXT
+
+Essa é evidência local, sintética e delimitada. RUM público, UAT manual, screen reader, soak de 24 horas, saturação, SLO produtivo, DR e CI de budgets continuam pendentes. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; próxima ação é provisionar as janelas e owners externos autorizados.
+
+## 2026-08-14T13:07:52-03:00 — REMOTE-CI-READONLY-RECHECK-121
+
+### RESULTADO
+
+- PR `#1` aberto, head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, checks `quality` mais recentes falhos;
+- GitHub confirmou `0` secrets, `0` variables, `0` environments e `0` deployments;
+- o commit local atual não foi publicado e nenhuma alteração remota foi realizada.
+
+### STATUS / NEXT
+
+O gap de bundle licenciado, CI verde no RC, registry, deploy e rollback remoto permanece `WAITING_HUMAN_APPROVAL`. Estado `PILOT_BLOCKED`; próxima ação é aprovar/provisionar o CI e o bundle sem versionar PDFs de terceiros.
+
+## 2026-08-14T13:09:29-03:00 — DOCUMENTATION-COMMIT-122
+
+### RESULTADO
+
+O artefato `docs/115`, a reconciliação do preflight, a reconsulta do CI e as atualizações correspondentes de relatório, estado, log, backlog, roadmap, plano e rastreabilidade foram consolidados em commit local. Não houve push, alteração de código executável ou escrita remota; o worktree ficou limpo.
+
+### STATUS / NEXT
+
+Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; baseline `83,24/100`. Próxima ação: obter bundle licenciado/CI, alvo/FQDN/IdP/storage e equipe clínica autorizados; então executar os gates externos e reauditar o mesmo RC.
 
 ## 2026-08-14T11:42:45-03:00 — REMOTE-CI-INFRASTRUCTURE-INVENTORY-112
 

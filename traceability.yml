@@ -4288,6 +4288,7 @@ artifacts:
         "docs/99_runtime_state.md",
         "docs/20_master_execution_log.md",
         "docs/30_backlog_master.md",
+        "docs/115_local_web_vitals_capacity_evidence_2026-08-14.md",
       ]
     code: ["sub80-to-95-program.json", "scripts/verify-sub80-to-95-program.mjs"]
     tests:

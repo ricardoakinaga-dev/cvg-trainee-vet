@@ -170,3 +170,13 @@ Essa evidência completa os elos locais de execução e recuperação, mas não 
 ## Verificação integral após o inventário — 2026-08-14T12:23:45-03:00
 
 O `pnpm verify` subsequente passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, documentação e governanças passaram. A matriz permanece `145/145` linhas com evidência local e `0/145` cadeias completas. A execução não converte infraestrutura candidata em ambiente autorizado nem altera `PILOT_BLOCKED`.
+
+## Web Vitals e carga delimitada — 2026-08-14T13:00:56-03:00
+
+O runtime web local foi medido no Chromium em mobile e desktop: LCP `232/172 ms`, CLS `0/0` e INP proxy `120/144 ms`, ambos HTTP 200. A carga delimitada passou `20.000/20.000` requests, concorrência `50`, throughput `889,41 req/s` e p95 `119,82 ms`. A evidência está em `docs/115_local_web_vitals_capacity_evidence_2026-08-14.md`.
+
+Isso adiciona evidência local aos requisitos de experiência/capacidade, mas não fecha a cadeia: RUM público retido, UAT, screen reader, soak de 24 horas, SLO, DR, CI de budgets e reauditoria continuam ausentes; `completeChains=0/145` permanece.
+
+## Reconsulta read-only do CI remoto — 2026-08-14T13:07:52-03:00
+
+O PR `#1` continua aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, com os dois checks `quality` mais recentes falhos. O repositório permanece sem secrets, variables, environments ou deployments (`0/0/0/0`); o commit local atual não foi publicado. O gap de bundle licenciado, CI verde no RC, registry, deploy e rollback remoto permanece explícito.

@@ -13,7 +13,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 
 ## 2. Evidências executadas
 
-- Foram lidos e reconciliados os 19 arquivos da pasta `docs/`, incluindo estado, log, backlog e registro canônico.
+- Foram lidos e reconciliados os 20 arquivos da pasta `docs/`, incluindo estado, log, backlog, registro canônico e a nova evidência local de Web Vitals/carga.
 - `pnpm verify` integral no SHA executável do RC `8cf40e567d02149b9f5714c8b1084b60bd291426`: passou com 161 arquivos, 706 testes aprovados, 18 skips governados; cobertura de 83,78% statements, 80,41% branches, 84,95% functions e 84,55% lines. Também passaram contratos 81/81, worker 24/24, migrations 29/29, lint, typecheck, decisões críticas, documentação, arquitetura, governanças, produto, fronteira pública e `git diff --check`.
 - A fatia local adicional de RF-057/RF-058 e o recálculo de avaliações estão integrados: interação estruturada e dose/infusão, caso digital progressivo, projeção pública segura, persistência PostgreSQL versionada com RLS, recálculo/outbox/worker e rotas autenticadas. A matriz possui 145/145 linhas com evidência local e 87/87 P0/P1; isso não transforma as linhas em cadeias completas.
 - A verificação integral subsequente passou após a atualização do inventário M24 e da expectativa de rotas: 138 arquivos de teste, 639 testes aprovados, 18 skips governados; cobertura de 85,28% statements, 81,36% branches, 86,88% functions e 85,99% lines; migrations 24/24 e todos os gates locais do `pnpm verify` verdes. A disposição continua `PILOT_BLOCKED`.
@@ -228,3 +228,19 @@ A baseline permanece `83,24/100`, estado `WAITING_HUMAN_APPROVAL` e disposição
 O resultado confirma a consistência do snapshot local e não promove a nota. `verify:premium-traceability` permanece `PASS_WITH_GAPS` com `145/145` linhas locais, `87/87` P0/P1 e `0/145` cadeias completas; o CI remoto, revisão clínica, produção pública, IdP/MFA, backup/RPO/RTO, UAT manual, Web Vitals reais, soak, DR e reauditoria continuam sem prova autorizada. Baseline `83,24/100`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
 
 Os artefatos desta atualização foram consolidados no commit local convencional desta rodada, sem push e sem alteração do código executável; o worktree ficou limpo.
+
+## 29. Web Vitals observados e carga delimitada — 2026-08-14T13:00:56-03:00
+
+Foi executada medição real no navegador Chromium contra o web local atual: mobile `390×844` com HTTP 200, LCP `232 ms`, CLS `0` e INP proxy `120 ms`; desktop `1440×900` com HTTP 200, LCP `172 ms`, CLS `0` e INP proxy `144 ms`. A medição está dentro dos budgets locais, mas não é RUM de produção.
+
+Uma carga delimitada adicional passou `20.000/20.000` requests HTTP 200 com concorrência `50`, throughput `889,41 req/s`, média `56,04 ms` e p95 `119,82 ms`. Isso fortalece a prova local de estabilidade, mas não fecha soak de 24 horas, saturação, SLO produtivo, UAT manual, screen reader, DR ou Web Vitals públicos. A evidência detalhada está em [`docs/115_local_web_vitals_capacity_evidence_2026-08-14.md`](115_local_web_vitals_capacity_evidence_2026-08-14.md).
+
+A baseline permanece `83,24/100`, estado `WAITING_HUMAN_APPROVAL` e disposição `PILOT_BLOCKED`.
+
+## 30. Reconsulta read-only do CI remoto — 2026-08-14T13:07:52-03:00
+
+O GitHub foi reconsultado sem escrita. O PR `#1` continua aberto e seu head remoto permanece `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, anterior ao commit local atual. Os dois checks `quality` mais recentes continuam `FAILURE`; o checkout remoto segue sem o bundle licenciado das três fontes clínicas. A API do repositório confirmou `0` secrets, `0` variables, `0` environments e `0` deployments.
+
+O commit local desta rodada não foi publicado, portanto não há evidência de CI, registry, deploy ou rollback do RC atual. Nenhuma alteração remota foi realizada. A nota permanece `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+As evidências desta reconsulta e da medição local foram consolidadas em commit local, sem alteração do código executável.

@@ -67,3 +67,7 @@ Isso não conclui BLK-06: o worktree continua sujo e a proveniência é um ident
 O fixture foi ajustado para limpar apenas resíduos sintéticos com prefixo `real-e2e-*`; o E2E ativo passou 3/3 com teardown código 0 e a inspeção posterior encontrou zero contas, atividades, versões de conteúdo, estados de caso digital, estados curriculares e sessões sintéticas escopadas. `pnpm verify` passou com 138 arquivos/639 testes/18 skips e cobertura 85,28%/81,36%/86,88%/85,99%.
 
 Essa correção encerra a inconsistência de higiene local, não BLK-06 nem BLK-08: o worktree segue dirty, não existe RC/SHA imutável aprovado, a matriz está em 0/145 cadeias completas e os 10 gaps locais continuam explícitos. BLK-06-B/C/D, BLK-08-B/C/D e os gates clínicos, externos e humanos permanecem pendentes.
+
+## Reconciliação posterior do preflight — 2026-08-14T13:00:56-03:00
+
+As seções anteriores são históricas. O estado atual foi corrigido posteriormente: worktree limpo, runtime no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`, E2E/failover/restore locais aprovados, Web Vitals observados e carga delimitada `20.000/20.000`. A reconciliação atual não fecha os gates externos: revisão clínica dos 763, IdP/MFA, DNS/TLS público, backup/RPO/RTO produtivos, CI/registry/deploy/rollback remoto, UAT manual, soak 24h, DR e reauditoria continuam pendentes.

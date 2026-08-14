@@ -301,3 +301,11 @@ O RC local foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdada
 ## 17.12 Verificação integral pós-registro — 2026-08-14T12:51:24-03:00
 
 `pnpm verify` passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, documentação, fontes clínicas locais, segurança e governanças passaram. O resultado confirma apenas a consistência local; os oito gates e a reauditoria continuam condicionados a decisões e ambientes autorizados.
+
+## 17.13 Web Vitals e carga delimitada — 2026-08-14T13:00:56-03:00
+
+Foi medida a aplicação no Chromium local em mobile/desktop, com LCP `232/172 ms`, CLS `0/0`, INP proxy `120/144 ms` e HTTP 200. Uma carga delimitada de `20.000` requests a concorrência `50` passou com p95 `119,82 ms` e 100% de sucesso. Isso fortalece BLK-07 localmente; não fecha RUM público, UAT manual, soak de 24 horas, SLO ou DR.
+
+## 17.14 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
+
+O PR `#1` continua aberto no head remoto antigo `d3964a9…`; os checks `quality` falham e o repositório não possui secrets, variables, environments ou deployments. O plano mantém BLK-05/B-G5 aberto até bundle licenciado, CI verde no RC, registry, deploy e rollback por digest serem provisionados e autorizados.

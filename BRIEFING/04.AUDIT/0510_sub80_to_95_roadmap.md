@@ -261,3 +261,11 @@ O RC foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`,
 ## 12.10 Verificação integral pós-registro — 2026-08-14T12:51:24-03:00
 
 `pnpm verify` passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; o roadmap permanece sem promoção de gate, pois `145/145` cadeias completas, revisão clínica, operação pública e aceite humano ainda não existem.
+
+## 12.11 Web Vitals e carga delimitada — 2026-08-14T13:00:56-03:00
+
+O runtime local passou medição Chromium em dois viewports (LCP `232/172 ms`, CLS `0/0`, INP proxy `120/144 ms`) e carga delimitada `20.000/20.000` com concorrência `50`, p95 `119,82 ms`. O roadmap mantém `PASS_WITH_GAPS`: a janela de RUM público, UAT manual, screen reader, soak 24h, SLO, DR e CI de budgets ainda depende de autorização.
+
+## 12.12 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
+
+O GitHub continua sem infraestrutura de promoção: PR `#1` aberto no head remoto anterior, checks `quality` falhos e `0` secrets/variables/environments/deployments. B-G5 e G-S80-9 permanecem abertos; o próximo passo exige bundle licenciado, CI read-only, registry imutável, ambiente de deploy e rollback autorizado.

@@ -6762,3 +6762,28 @@ O gate confirma consistência local, mantendo `145/145` linhas de evidência e `
 - **escopo:** relatório, estado, log, backlog, roadmap, plano executivo, remediação e análise de rastreabilidade; nenhuma alteração de código executável, push ou escrita remota;
 - **verificação:** worktree limpo, `git diff --check`, `verify:documentation` e `verify:premium-traceability` verdes antes da consolidação;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar os gates externos/humanos e reauditar no mesmo RC.
+
+## 2026-08-14T13:00:56-03:00 — LOCAL-WEB-VITALS-BOUNDED-LOAD-120
+
+### RESULTADO
+
+- Chromium contra o web local: mobile `390×844` HTTP 200, LCP `232 ms`, CLS `0`, INP proxy `120 ms`; desktop `1440×900` HTTP 200, LCP `172 ms`, CLS `0`, INP proxy `144 ms`;
+- carga delimitada no HA: `20.000/20.000` requests HTTP 200, concorrência `50`, throughput `889,41 req/s`, média `56,04 ms`, p95 `119,82 ms`, zero erros;
+- artefato: `docs/115_local_web_vitals_capacity_evidence_2026-08-14.md`.
+
+### STATUS / NEXT
+
+Essa evidência melhora BLK-07 localmente, mas não é RUM público nem soak aprovado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` permanecem; executar UAT manual, screen reader, soak de 24 horas, SLO/DR e CI de budgets somente em ambiente autorizado.
+
+## 2026-08-14T13:07:52-03:00 — REMOTE-CI-READONLY-RECHECK-121
+
+- **evidência:** PR `#1` ainda aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; os dois checks `quality` mais recentes continuam falhos;
+- **inventário:** GitHub sem secrets, variables, environments ou deployments (`0/0/0/0`);
+- **limite:** commit local atual não publicado; bundle licenciado, CI verde no RC, registry, deploy e rollback remoto continuam sem prova;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar/provisionar as dependências sem versionar PDFs de terceiros.
+
+## 2026-08-14T13:09:29-03:00 — DOCUMENTATION-COMMIT-122
+
+- **resultado:** evidência de Web Vitals/carga, reconciliação do preflight e reconsulta do CI foram consolidadas com as atualizações de relatório, estado, log, backlog, roadmap, plano e rastreabilidade;
+- **restrição:** nenhum push, alteração de código executável ou escrita remota; worktree limpo;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; obter bundle licenciado/CI, alvo/FQDN/IdP/storage e equipe clínica autorizados antes da reauditoria externa.

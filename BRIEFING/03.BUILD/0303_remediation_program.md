@@ -338,3 +338,7 @@ O runtime HA foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bda
 ## 11. Verify integral pós-registro — 2026-08-14T12:51:24-03:00
 
 `pnpm verify` passou com `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29` e documentação/governanças verdes. O fechamento é local; R3–R5, revisão clínica, identidade, edge público, UAT, Web Vitals, soak, DR e reauditoria continuam pendentes.
+
+## 12. Web Vitals e carga delimitada — 2026-08-14T13:00:56-03:00
+
+Chromium local observou LCP `232/172 ms`, CLS `0/0` e INP proxy `120/144 ms`; carga delimitada de `20.000/20.000` requests passou com p95 `119,82 ms`. A evidência é local e não fecha R3–R5, RUM público, UAT manual, soak de 24 horas, SLO ou DR.

@@ -1589,3 +1589,24 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **resultado:** relatório, estado, log, backlog, roadmap, plano executivo, remediação e análise de rastreabilidade consolidados no commit local convencional desta rodada;
 - **restrição:** nenhuma alteração de código executável, push ou escrita remota; worktree limpo;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar os ambientes/provedores autorizados e reauditar o mesmo RC.
+
+## 2026-08-14 — LOCAL-WEB-VITALS-BOUNDED-LOAD-120
+
+- **evidência:** Chromium local mediu LCP `232/172 ms`, CLS `0/0` e INP proxy `120/144 ms` em mobile/desktop, HTTP 200;
+- **capacidade:** carga delimitada `20.000/20.000`, concorrência `50`, throughput `889,41 req/s`, p95 `119,82 ms`, zero erros;
+- **artefato:** `docs/115_local_web_vitals_capacity_evidence_2026-08-14.md`;
+- **limite:** não fecha RUM público, UAT/manual WCAG, screen reader, soak de 24 horas, SLO, DR ou CI de budgets;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
+
+## 2026-08-14 — REMOTE-CI-READONLY-RECHECK-121
+
+- **evidência:** PR `#1` aberto, head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, dois checks `quality` mais recentes falhos;
+- **infraestrutura:** `0` secrets, `0` variables, `0` environments e `0` deployments no repositório;
+- **limite:** o RC local atual não foi publicado; bundle licenciado, CI verde, registry, deploy e rollback remoto permanecem pendentes;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
+
+## 2026-08-14 — DOCUMENTATION-COMMIT-122
+
+- **resultado:** novo artefato de Web Vitals/carga, reconciliação do preflight e inventário CI foram consolidados com relatório, estado, log, backlog, roadmap, plano e rastreabilidade;
+- **restrição:** nenhum push, alteração de código executável ou escrita remota; worktree limpo;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar dependências externas/humanas e reauditar o mesmo RC.
