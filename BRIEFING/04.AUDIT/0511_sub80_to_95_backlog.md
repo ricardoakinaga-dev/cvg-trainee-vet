@@ -726,3 +726,7 @@ Essas evidências não fecham os gates: veterinários ainda precisam revisar, re
 ## 16.16 CI remoto e bundle de fontes licenciadas — 2026-08-14T11:38:12-03:00
 
 O PR `#1` continua com `quality` falho no `verify:clinical-sources`: os três PDFs existem somente fora do Git local e não estão disponíveis no checkout remoto. A task deve provisionar bundle privado/licenciado, acesso read-only, materialização temporária e hash-check; não deve adicionar PDFs ao repositório nem desabilitar o gate. Sem run remoto verde no RC, BLK-05 e BLK-08-C/D permanecem `WAITING_HUMAN_APPROVAL`.
+
+## 16.17 Inventário de infraestrutura remota — 2026-08-14T11:42:45-03:00
+
+O inventário read-only do GitHub retornou zero secrets, zero variables, zero environments e zero deployments; o único workflow ativo/listado é `quality`. BLK-05 continua sem prova de bundle licenciado acessível, credencial CI, registry, deploy ou rollback remoto. Nenhuma alteração remota foi feita; a resolução requer aprovação e provisionamento pelo responsável autorizado.

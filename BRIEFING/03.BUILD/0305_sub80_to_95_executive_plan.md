@@ -277,3 +277,7 @@ Preparação local comprovada: fila clínica live `796/763` (total/pendentes), `
 ## 17.7 Checkpoint de CI remoto — 2026-08-14T11:38:12-03:00
 
 O PR `#1` falhou nos runs `quality` porque o checkout remoto não possui os três PDFs licenciados exigidos pelo pré-voo de fontes. A ação planejada é provisionar bundle privado/licenciado e acesso CI read-only, mantendo hash-check e a proibição de versionar PDFs. O plano não considera o CI fechado até um run remoto verde no RC publicado.
+
+## 17.8 Inventário de infraestrutura remota — 2026-08-14T11:42:45-03:00
+
+O inventário read-only do GitHub não encontrou secrets, variables, environments ou deployments configurados; somente o workflow `quality` está listado. O plano permanece dependente de provedor/licença para o bundle de fontes, credencial CI read-only, registry imutável, ambiente de deploy e rollback por digest. Nenhuma alteração remota foi executada.

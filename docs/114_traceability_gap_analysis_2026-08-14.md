@@ -140,3 +140,5 @@ Isso melhora a prova de preparação do beta, capacidade e recuperação local, 
 ## CI remoto e proveniência das fontes — 2026-08-14T11:38:12-03:00
 
 O PR `#1` foi inspecionado por `gh`: os runs `quality` falharam no commit remoto `d3964a9…` durante `verify:clinical-sources`, com ausência dos três PDFs licenciados no checkout. O workspace local passa porque os arquivos estão fora do Git. O requisito de artefato da cadeia continua aberto: falta bundle privado/licenciado, retenção do artefato, acesso CI read-only e prova de execução no mesmo RC. `completeChains=0/145` permanece correto.
+
+O inventário read-only do GitHub não encontrou secrets, variables, environments ou deployments configurados e listou somente o workflow `quality`. Assim, também falta a infraestrutura remota mínima para provar registry, credencial CI, deploy e rollback do RC; nenhuma alteração remota foi realizada.

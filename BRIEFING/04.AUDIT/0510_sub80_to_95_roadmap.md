@@ -239,3 +239,7 @@ O roadmap agora tem evidência local adicional para as linhas B-L1, B-L3 e B-L5:
 ## 12.5 Dependência de CI para fontes licenciadas — 2026-08-14T11:38:12-03:00
 
 O gate B-G5 ganhou uma dependência explícita: os PDFs licenciados não serão versionados; o CI deverá baixar um bundle privado autorizado, verificar os três SHA-256 e executar o pré-voo em diretório temporário. Até existir provedor, credencial read-only e run remoto verde no RC, B-G5 e G-S80-9 permanecem abertos.
+
+## 12.6 Inventário remoto do CI — 2026-08-14T11:42:45-03:00
+
+Read-only no GitHub: nenhum secret, variable, environment ou deployment configurado; somente `quality` aparece como workflow. B-G5 continua vermelho até haver bundle licenciado acessível, credencial read-only, registry, deploy e rollback por digest comprovados no RC.

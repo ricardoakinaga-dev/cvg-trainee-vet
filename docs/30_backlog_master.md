@@ -1534,3 +1534,10 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **ação necessária:** aprovar bundle privado/licenciado, armazenamento/artefato, credencial read-only e diretório temporário no CI; validar hashes antes do `pnpm verify`;
 - **restrição:** não versionar PDF de terceiros e não remover o gate de fontes;
 - **status:** CI remoto `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; nenhum push ou alteração remota executado.
+
+## 2026-08-14T11:42:45-03:00 — REMOTE-CI-INFRASTRUCTURE-INVENTORY-112
+
+- **evidência:** inventário read-only do GitHub encontrou zero secrets, zero variables, zero environments e zero deployments; o único workflow listado é `quality`;
+- **impacto:** não há prova de registry, credencial CI, bundle licenciado acessível, ambiente de deploy ou alvo remoto de rollback;
+- **ação necessária:** aprovar e provisionar essas dependências, sem versionar PDFs de terceiros e sem remover `verify:clinical-sources`;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; nenhum recurso remoto foi criado ou alterado.

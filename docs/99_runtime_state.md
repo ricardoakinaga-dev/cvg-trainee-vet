@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: além do RC local imutável e `pnpm verify` verde, fila clínica live confirmou `796` conteúdos com `763` pendentes/não revisados e `0` falhas técnicas; carga local `5.000/5.000` passou; backup administrativo externo ao repositório e restore isolado passaram com artefato verificado, RPO-alvo `PT1H` e RTO observado `4.583 ms`; diagnóstico remoto do PR `#1` identificou ausência do bundle licenciado no checkout CI; score e release externo não foram promovidos
+- last_completed_action: além do RC local imutável e `pnpm verify` verde, fila clínica live confirmou `796` conteúdos com `763` pendentes/não revisados e `0` falhas técnicas; carga local `5.000/5.000` passou; backup administrativo externo ao repositório e restore isolado passaram com artefato verificado, RPO-alvo `PT1H` e RTO observado `4.583 ms`; diagnóstico remoto do PR `#1` identificou ausência do bundle licenciado no checkout CI e confirmou que não há secrets, variables, environments ou deployments configurados no repositório; score e release externo não foram promovidos
 - next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC
 
 ## BLOQUEIOS
 
-- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; PR #1 do GitHub falha no `verify:clinical-sources` por ausência dos três PDFs licenciados no checkout remoto; commit, digest e rollback locais comprovados, mas bundle privado/licenciado de fontes para CI, registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
+- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; PR #1 do GitHub falha no `verify:clinical-sources` por ausência dos três PDFs licenciados no checkout remoto; inventário remoto read-only não encontrou secrets, variables, environments ou deployments e listou somente o workflow `quality`; commit, digest e rollback locais comprovados, mas bundle privado/licenciado de fontes para CI, registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,19 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T11:38:12-03:00
+- last_update: 2026-08-14T11:42:45-03:00
+
+## 2026-08-14T11:42:45-03:00 — REMOTE-CI-INFRASTRUCTURE-INVENTORY-112
+
+### RESULTADO
+
+- inspeção read-only do repositório GitHub confirmou ausência de secrets e variables de repositório, nenhum environment configurado e nenhum deployment registrado;
+- `gh workflow list --all` mostrou somente o workflow `quality`; não há registry, alvo de deploy, credencial CI ou ambiente externo comprovado nesta integração;
+- não houve criação de secret, environment, deployment, push ou alteração remota.
+
+### STATUS / LIMITES / NEXT
+
+O inventário confirma ausência de infraestrutura remota necessária para fechar B-G5: ainda faltam bundle licenciado de fontes, acesso CI read-only, registry imutável, ambiente de deploy, rollback por digest e execução verde no RC. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
 
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
