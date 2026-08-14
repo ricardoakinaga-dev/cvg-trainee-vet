@@ -305,6 +305,6 @@ Resultado: o bloqueio de CI está diagnosticado e a correção local está pront
 
 ## 39. Revalidação local final — 2026-08-14T14:46:03-03:00
 
-Após registrar o diagnóstico do CI remoto no commit documental `fffd49f`, os gates locais foram reexecutados. A proveniência passou com source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` e quatro containers HA alinhados. `ops:verify-ha`, `ops:verify-edge-security`, `verify:documentation`, `verify:traceability` e `verify:premium-traceability` também passaram; o worktree está limpo.
+Após registrar o diagnóstico do CI remoto no commit documental `fffd49f`, os gates locais foram reexecutados e a consolidação final foi registrada no commit documental seguinte. A proveniência passou com source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` e quatro containers HA alinhados. `ops:verify-ha`, `ops:verify-edge-security`, `verify:documentation`, `verify:traceability` e `verify:premium-traceability` também passaram; o worktree está limpo.
 
 Esses resultados confirmam a construção e a operação local, mas não promovem a disposição: a nota permanece `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`. CI/registry/deploy/rollback externo, bundle clínico e revisão com veterinários no beta, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak/DR e reauditoria continuam não executados.

@@ -1680,6 +1680,6 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 ## 2026-08-14T14:46:03-03:00 — FINAL-LOCAL-REVALIDATION-132
 
 - **evidência:** proveniência, HA, edge security, documentação, rastreabilidade baseline e rastreabilidade premium passaram; runtime no SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro containers alinhados;
-- **estado:** worktree limpo no commit documental `fffd49f`; nenhuma escrita externa foi realizada;
+- **estado:** worktree limpo no commit documental final; nenhuma escrita externa foi realizada;
 - **aceite:** confirma apenas a fatia local; `0/145` cadeias, `83,24/100`, gates externos, clínicos e humanos permanecem abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; obter autorizações/dependências e reauditar o mesmo RC.

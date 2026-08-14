@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: diagnóstico read-only do CI remoto registrado no commit documental `fffd49f`; o run `31402470511`/job `93500569913` confirmou a ausência dos três arquivos licenciados no head remoto antigo, sem secrets/variables/environments/deployments e sem escrita externa; a correção local `CVG_CLINICAL_SOURCES_DIRECTORY` permanece em `9bfa2c1`; a revalidação final local passou proveniência no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro containers, HA/edge e gates de documentação/rastreabilidade
+- last_completed_action: diagnóstico read-only do CI remoto registrado em `fffd49f` e revalidação final consolidada no commit documental seguinte; o run `31402470511`/job `93500569913` confirmou a ausência dos três arquivos licenciados no head remoto antigo, sem secrets/variables/environments/deployments e sem escrita externa; a correção local `CVG_CLINICAL_SOURCES_DIRECTORY` permanece em `9bfa2c1`; a revalidação local passou proveniência no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro containers, HA/edge e gates de documentação/rastreabilidade
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -2877,7 +2877,7 @@ O contrato local está pronto, mas bundle privado/licenciado, credencial read-on
 
 - `ops:verify-runtime-provenance` passou com source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` e quatro containers alinhados;
 - `ops:verify-ha` e `ops:verify-edge-security` passaram; `verify:documentation`, `verify:traceability` e `verify:premium-traceability` passaram;
-- worktree está limpo no commit documental `fffd49f`; nenhum ambiente externo foi alterado.
+- worktree está limpo no commit documental final; nenhum ambiente externo foi alterado.
 
 ### STATUS / NEXT
 

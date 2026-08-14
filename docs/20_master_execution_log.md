@@ -7022,7 +7022,7 @@ BUILD — SUB80→95 / S0 / final local cross-check
 
 ### ACTION
 
-Reexecutados os gates read-only após registrar o diagnóstico do CI remoto e consolidar a documentação no commit `fffd49f`.
+Reexecutados os gates read-only após registrar o diagnóstico do CI remoto em `fffd49f`; a revalidação final foi consolidada no commit documental seguinte.
 
 ### RESULT
 
