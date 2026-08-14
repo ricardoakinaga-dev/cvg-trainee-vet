@@ -841,3 +841,18 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **gates locais:** HA, edge estático, fontes clínicas, premium traceability e `git diff --check` passaram; health local live/ready/dependencies e HTTPS local `200`;
 - **gaps:** `0/145` cadeias completas, revisão veterinária dos `763`, CI/registry/deploy externo, DNS/TLS público, IdP/MFA, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria permanecem abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar gates reais no mesmo RC após autorização e provisionamento.
+
+## 16.33 Histerese do edge e reancoragem do RC — 2026-08-14T15:47:15-03:00
+
+- **TDD:** teste de contrato falhou sem histerese e passou com `health_fails 3`, `health_passes 2` e `lb_try_duration 5s` nos perfis Caddy local/produtivo;
+- **RC:** commit `8859c6c`, source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`, rollback sintético `sha256:b24ae6ca5a12f3833982edd80f4b7b226e20163f4fb10c0edcec0e821fb9e7d2`;
+- **evidência:** Caddy validate, `pnpm verify` `163/720/18`, E2E HA `3/3`, proveniência HA e probes locais `200` passaram; nenhum erro novo no recorte pós-prontidão;
+- **gaps:** não fecha DNS/TLS público, CI/registry/deploy externo, IdP/MFA, backup/RPO/RTO, revisão veterinária, UAT, WCAG manual, Web Vitals reais, soak, DR ou `0/145`;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar gates reais no mesmo RC.
+
+## 16.34 Verificação integral final do RC do edge — 2026-08-14T15:51:33-03:00
+
+- **verify:** `git diff --check` e `pnpm verify` `PASS`, `163` arquivos/`720` testes/`18` skips, cobertura `83,78%/80,41%/84,95%/84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`;
+- **runtime:** source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`, proveniência PASS, rehearsal PASS e E2E HA `3/3`;
+- **gaps:** `0/145`, revisão veterinária, CI/registry/deploy externo, DNS/TLS público, IdP/MFA, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria continuam abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar somente gates reais autorizados no mesmo RC.

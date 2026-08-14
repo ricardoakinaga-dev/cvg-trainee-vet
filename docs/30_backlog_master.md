@@ -1727,3 +1727,18 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **health:** live/ready/dependencies `200` em `127.0.0.1:3182` e HTTPS local live/ready `200` em `localhost:3181`;
 - **limite:** `145/145` linhas locais e `0/145` cadeias completas; revisão dos `763` itens, CI/registry/deploy externo, edge público, identidade, backup, UAT e reauditoria permanecem abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar autorização/provisionamento e executar somente os gates reais no mesmo RC.
+
+## 2026-08-14T15:47:15-03:00 — EDGE-RC-REANCHOR-139
+
+- **correção:** TDD RED/GREEN adicionou `health_fails 3`, `health_passes 2` e `lb_try_duration 5s` ao Caddy local e ao perfil produtivo; Caddy validate passou;
+- **RC:** commit `8859c6c`, source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`, rehearsal deploy/rollback/restauração `PASS`, rollback `sha256:b24ae6ca5a12f3833982edd80f4b7b226e20163f4fb10c0edcec0e821fb9e7d2`;
+- **verificação:** `pnpm verify` `163/720/18`, cobertura `83,78%/80,41%/84,95%/84,55%`, E2E HA `3/3`, proveniência HA `PASS`, live/ready/dependencies `200`, HTTPS `200/200` e probes `200/200`;
+- **gaps:** edge público/CA, CI/registry/deploy externo, IdP/MFA, backup/RPO/RTO, revisão dos `763`, UAT/WCAG manual, Web Vitals reais, soak, DR e `0/145` permanecem abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar gates autorizados no mesmo RC.
+
+## 2026-08-14T15:51:33-03:00 — FULL-VERIFY-EDGE-RC-140
+
+- **evidência:** `git diff --check` e `pnpm verify` passaram com `163/720/18`, cobertura `83,78%/80,41%/84,95%/84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação e produto;
+- **runtime:** source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`, proveniência PASS e E2E HA `3/3`;
+- **limite:** `145/145` evidências locais, `87/87` P0/P1 e `0/145` cadeias; gates clínicos, humanos, externos e produtivos continuam abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar gates reais no mesmo RC após autorização.

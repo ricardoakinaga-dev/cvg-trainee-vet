@@ -335,3 +335,15 @@ O build web e os dois cenários Playwright de autoria/revisão passaram contra o
 O gate explícito de proveniência confirmou os quatro containers HA no mesmo digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, alinhados ao source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; HA, edge estático, fontes clínicas, premium traceability e diff-check passaram. Live/ready/dependencies e HTTPS local retornaram `200`.
 
 Classificação permanece: proveniência local `PASS`; edge público, CI/registry/deploy/rollback externo, IdP/MFA, backup/RPO/RTO, beta humano, UAT, WCAG manual, Web Vitals reais, soak, DR e `0/145` `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`. Nenhuma promoção foi inferida.
+
+## 12.26 Histerese do edge e reancoragem do RC — 2026-08-14T15:47:15-03:00
+
+O roadmap registra o fix TDD do edge (`health_fails 3`, `health_passes 2`, `lb_try_duration 5s`) após falhas transitórias do resolver Docker. O Caddy validou a configuração; `pnpm verify` passou `163/720/18`, E2E HA `3/3`, rehearsal local passou deploy/rollback/restauração e o runtime está ancorado no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`.
+
+Classificação: resiliência local do edge `PASS` no recorte pós-restart; edge público/CA, CI/registry/deploy/rollback, identidade, backup, beta humano, UAT, WCAG manual, Web Vitals reais, soak, DR e `0/145` continuam `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`.
+
+## 12.27 Verificação integral final do RC do edge — 2026-08-14T15:51:33-03:00
+
+O roadmap registra `pnpm verify` e `git diff --check` verdes no RC `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, com `163/720/18`, cobertura `83,78%/80,41%/84,95%/84,55%`, contratos/worker/migrations verdes, E2E HA `3/3` e proveniência no digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`.
+
+Nenhuma promoção é inferida: revisão humana, edge público, identidade, backup, CI/release externo, UAT/manual accessibility, Web Vitals reais, soak, DR e `0/145` permanecem abertos.

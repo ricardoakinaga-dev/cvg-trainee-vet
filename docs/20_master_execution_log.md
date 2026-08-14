@@ -7193,3 +7193,55 @@ O cabeçalho do relatório foi reancorado no RC executável vigente. A evidênci
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; obter autorizações e dependências externas, executar o beta com veterinários e reauditar o mesmo RC sem drift.
+
+## 2026-08-14T15:47:15-03:00 — EDGE-RC-REANCHOR-139
+
+### ENGINE
+
+BUILD / AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-06 edge resilience and RC reanchor
+
+### ACTION
+
+Investigada a intermitência de resolução Docker do Caddy; escrito teste de contrato antes da alteração, executado RED, aplicada histerese de health-check nos perfis local e produtivo, executado GREEN e validada a configuração pelo binário do Caddy.
+
+### RESULT
+
+O fix `health_fails 3`, `health_passes 2` e `lb_try_duration 5s` foi commitado em `8859c6c`. `pnpm verify` passou com `163` arquivos/`720` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; E2E HA passou `3/3`. A imagem do RC foi reconstruída com source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; rehearsal local passou deploy, rollback e restauração, com rollback sintético `sha256:b24ae6ca5a12f3833982edd80f4b7b226e20163f4fb10c0edcec0e821fb9e7d2`. Proveniência nos quatro containers, health local e `200/200` probes HTTPS passaram; não houve erro novo após a janela de startup no recorte observado.
+
+### DECISIONS
+
+BLK-06 local e a resiliência transitória do edge foram reforçados; isso não constitui DNS/TLS público, CI/registry/deploy/rollback produtivos ou qualquer gate humano/externo. Nenhuma escrita remota foi realizada.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar/aprovar os ambientes externos e humanos e reauditar o mesmo RC sem drift.
+
+## 2026-08-14T15:51:33-03:00 — FULL-VERIFY-EDGE-RC-140
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / verificação final pós-edge-RC
+
+### ACTION
+
+Executados `git diff --check` e `pnpm verify` após o commit do fix de histerese, rebuild, rehearsal e reancoragem do runtime.
+
+### RESULT
+
+`pnpm verify` passou com `163` arquivos/`720` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, decisões, governanças, arquitetura, documentação, produto e fronteira pública passaram. E2E HA passou `3/3`; runtime permanece no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`.
+
+### DECISIONS
+
+Verificação local final sem regressão; `0/145`, revisão clínica humana, CI/registry/deploy/rollback externo, identidade, edge público, backup, UAT, WCAG manual, Web Vitals reais, soak, DR e reauditoria continuam não executados. Nenhuma escrita externa foi realizada.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar os gates reais no mesmo RC somente após autorização e provisionamento.

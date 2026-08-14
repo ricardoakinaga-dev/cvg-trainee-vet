@@ -383,3 +383,15 @@ O build web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passou e o Playwrig
 Após corrigir a âncora do relatório, os verificadores condicionais foram executados com flags explícitas. A proveniência passou nos quatro containers no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; HA, edge estático, fontes clínicas, rastreabilidade premium e `git diff --check` passaram; health local retornou `200` nas três superfícies e no HTTPS local.
 
 O plano permanece fail-closed: isso confirma somente o RC local. Não promove revisão humana, `0/145`, CI/registry/deploy/rollback produtivos, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.
+
+## 17.28 Histerese do edge e reancoragem do RC — 2026-08-14T15:47:15-03:00
+
+O diagnóstico de logs revelou falhas transitórias do resolver Docker durante os health-checks do Caddy. O plano aplicou TDD no contrato de edge: RED sem proteção, GREEN com `health_fails 3`, `health_passes 2` e `lb_try_duration 5s`, Caddy validate, `pnpm verify` verde e E2E HA `3/3`.
+
+O RC foi reconstruído no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; rehearsal deploy/rollback/restauração passou. O plano fecha somente a lacuna local de resiliência; mantém os gates externos/humanos e `0/145` abertos.
+
+## 17.29 Verificação integral final do RC do edge — 2026-08-14T15:51:33-03:00
+
+`git diff --check` e `pnpm verify` passaram no RC do edge: `163` arquivos/`720` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets e governanças verdes; E2E HA `3/3` e proveniência no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` também passaram.
+
+O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`: o resultado não substitui revisão clínica, CI/registry/deploy/rollback externo, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.
