@@ -7087,3 +7087,29 @@ Classificar BLK-06 local como evidência `PASS`, sem inferir CI/registry/deploy/
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; investigar o resolver do edge e aguardar provider/bundle/licença, IdP, FQDN/CA, storage/backup, CI/registry/deploy e demais gates humanos antes da reauditoria final.
+
+## 2026-08-14T15:10:35-03:00 — FULL-VERIFY-CURRENT-RC-135
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / verificação integral pós-reancoragem
+
+### ACTION
+
+Executado `pnpm verify` após a reancoragem do RC e a consolidação documental, mantendo o runtime apontado ao source SHA executável `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`.
+
+### RESULT
+
+Passaram `163` arquivos/`719` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública. O gate de proveniência do runtime continuou `PASS` nos quatro containers e no digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`.
+
+### DECISIONS
+
+Qualidade local confirmada; nenhum gap externo, clínico ou humano foi inferido como concluído. A matriz permanece `0/145` cadeias completas e a disposição continua `PILOT_BLOCKED`.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar as autorizações e dependências externas para executar a reauditoria final do mesmo RC.

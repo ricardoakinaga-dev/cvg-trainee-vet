@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: RC reconstruído e restaurado no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; rehearsal `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; quatro containers alinhados; live/ready/dependencies `200/200/200`; edge local permanece `PARTIAL` por TLS interno e logs intermitentes de DNS Docker/`503`
+- last_completed_action: `pnpm verify` integral passou após reancoragem: `163` arquivos/`719` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets e governanças passaram; proveniência continua PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T15:03:15-03:00
+- last_update: 2026-08-14T15:10:35-03:00
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 
@@ -2907,3 +2907,15 @@ Classificar BLK-03/BLK-07 local como `PARTIAL`; investigar a intermitência em j
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; BLK-06 local está comprovado, mas CI/registry/deploy/rollback produtivos, edge público, IdP/MFA, backup, beta clínico, UAT, soak/DR e reauditoria permanecem pendentes.
+
+## 2026-08-14T15:10:35-03:00 — FULL-VERIFY-CURRENT-RC-135
+
+### RESULTADO
+
+- `pnpm verify` passou com `163` arquivos/`719` testes/`18` skips, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines;
+- contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram;
+- proveniência segue `PASS` nos quatro containers no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest comum `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; qualidade local confirmada, mas `0/145` cadeias completas e os gates externos, clínicos e humanos permanecem pendentes.

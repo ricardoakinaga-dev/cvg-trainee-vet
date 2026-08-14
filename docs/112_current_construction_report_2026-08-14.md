@@ -322,3 +322,9 @@ O RC local foi reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fe
 Após a restauração, o gate de proveniência passou com os quatro containers da aplicação (`api-a`, `api-b`, `worker-a`, `worker-b`) no mesmo `image@digest`, label OCI e `CVG_SOURCE_SHA`. Compose confirmou os processos `healthy`; live/ready/dependencies retornaram `200/200/200`, HTTPS local retornou `200` e `ops:verify-ha`/`ops:verify-edge-security` passaram. A consolidação documental posterior não altera o código executável do RC; o vínculo operacional permanece explicitamente no SHA acima.
 
 Isso fecha a evidência local de proveniência/reversibilidade de BLK-06, mas não equivale a CI/registry/deploy/rollback produtivos. O edge continua `PARTIAL` por intermitência de resolução observada e TLS interno; DNS público/CA gerenciada, IdP/MFA, backup externo/RPO/RTO, CI remoto, beta clínico, UAT, WCAG manual, Web Vitals reais, soak/DR e reauditoria continuam pendentes. A nota permanece `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 42. Verificação integral do RC e da documentação — 2026-08-14T15:10:35-03:00
+
+`pnpm verify` concluiu sem falhas: `163` arquivos de teste, `719` testes aprovados, `18` skips governados; cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines. Contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram.
+
+Os gates que ainda são deliberadamente condicionais permanecem com lacunas explícitas: `0/145` cadeias completas, `0/87` linhas de prova completa, revisão clínica item a item, CI/registry/deploy/rollback produtivos, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak/DR e reauditoria. A execução integral confirma qualidade local; não altera a nota `83,24/100`, `WAITING_HUMAN_APPROVAL` ou `PILOT_BLOCKED`.

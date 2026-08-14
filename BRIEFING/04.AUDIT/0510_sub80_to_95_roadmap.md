@@ -317,3 +317,7 @@ O edge local respondeu `60/60` probes HTTP de readiness com `200` e HTTPS local 
 O RC local foi reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; rehearsal `PASS` em deploy/rollback/restauração, release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b` e rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`. Proveniência confirmou quatro containers alinhados e health `200/200/200`.
 
 O roadmap marca BLK-06 local como `PASS`, sem promover B-G5/G-S80-9 nem os gates humanos/externos. Edge público/CA, CI/registry/deploy/rollback, IdP/MFA, backup/RPO/RTO, beta clínico, UAT, WCAG manual, Web Vitals reais, soak/DR e `0/145` continuam abertos.
+
+## 12.22 Verificação integral pós-reancoragem — 2026-08-14T15:10:35-03:00
+
+`pnpm verify` passou com `163` arquivos/`719` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos, worker, migrations, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram. O roadmap mantém `0/145`, `PILOT_BLOCKED` e todos os gates externos/humanos não comprovados como abertos.

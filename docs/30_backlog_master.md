@@ -1698,3 +1698,10 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **health:** Compose `healthy`; live/ready/dependencies `200/200/200`; `ops:verify-ha` e `ops:verify-edge-security` passaram;
 - **aceite:** fecha somente BLK-06 local; não prova promoção produtiva, edge público, CI remoto, backup, IdP/MFA, beta, UAT, soak/DR ou `0/145`;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; manter o RC imutável, investigar a intermitência do edge e aguardar as autorizações/provisionamentos externos.
+
+## 2026-08-14T15:10:35-03:00 — FULL-VERIFY-CURRENT-RC-135
+
+- **evidência:** `pnpm verify` passou com `163` arquivos/`719` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets e governanças passaram;
+- **proveniência:** gate continuou `PASS` para os quatro containers no source SHA executável `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`;
+- **aceite:** confirma qualidade local; `0/145` cadeias completas e gates externos/clínicos/humanos continuam abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar a reauditoria do mesmo RC somente após provisionamento e autorização.

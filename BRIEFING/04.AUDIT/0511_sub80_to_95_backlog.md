@@ -813,3 +813,10 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **health:** Compose `healthy`, live/ready/dependencies `200/200/200`, HA e edge security passaram;
 - **aceite:** BLK-06 local comprovado; não fecha CI/registry/deploy/rollback produtivo, edge público, IdP/MFA, backup, beta, UAT, soak/DR ou `0/145`;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; manter o RC, investigar a intermitência do edge e aguardar provisionamentos/autorização externa.
+
+## 16.29 Verificação integral pós-reancoragem — 2026-08-14T15:10:35-03:00
+
+- **evidência:** `pnpm verify` passou com `163` arquivos/`719` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24` e migrations `29/29`;
+- **proveniência:** runtime continua PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`;
+- **aceite:** qualidade local confirmada; não fecha `0/145` nem gates externos, clínicos ou humanos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar autorização/provisionamento e reauditar o mesmo RC.

@@ -361,3 +361,9 @@ O Compose com `.env.local` confirmou a topologia local saudável e `60/60` probe
 O RC foi reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`. O rehearsal local passou `deploy`, `rollback` e `runtimeRestored=true`, com release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b` e rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`.
 
 O gate de proveniência pós-restauração confirmou os quatro containers no mesmo digest/SHA; Compose, health `200/200/200`, HA e edge security passaram. Isso encerra somente a evidência local de BLK-06. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`: edge público, CI/registry/deploy/rollback produtivos, IdP/MFA, backup externo, revisão veterinária, UAT, WCAG manual, Web Vitals reais, soak/DR e `0/145` continuam abertos.
+
+## 17.24 Verificação integral pós-reancoragem — 2026-08-14T15:10:35-03:00
+
+`pnpm verify` passou com `163` arquivos/`719` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram. A proveniência do RC continuou PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`.
+
+A verificação confirma qualidade local, mas não promove `0/145`, revisão clínica, CI/registry/deploy/rollback produtivos, identidade, edge público, backup, UAT, performance real, soak, DR ou reauditoria.
