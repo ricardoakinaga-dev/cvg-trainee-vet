@@ -798,3 +798,10 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **dependências:** provider/licença, bundle privado, credencial/variável autorizada, push do RC, CI verde, registry, deploy/rollback e retenção de artefatos;
 - **restrição:** não usar segredo real, não disparar workflow, não publicar ou marcar B-G5 como concluído sem autorização;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar e reauditar o mesmo RC.
+
+## 16.27 Revalidação live do edge — 2026-08-14T14:53:34-03:00
+
+- **evidência:** Compose com `.env.local`, aplicação HA `healthy`, digest comum, `60/60` readiness HTTP `200` e HTTPS local `200` em `localhost`;
+- **limite:** certificado `Caddy Local Authority - ECC Intermediate`; DNS público e CA gerenciada continuam não executados;
+- **risco:** logs mostram erros intermitentes do resolver Docker e `503 no upstreams available`, apesar de a amostra curta não reproduzir falhas;
+- **aceite:** não fecha BLK-03/BLK-07 nem promove score; exige investigação controlada e validação externa autorizada.

@@ -7035,3 +7035,29 @@ Nenhum gate externo, clínico ou humano foi inferido como concluído. Não houve
 ### STATUS / NEXT
 
 Obter as autorizações e dependências registradas no backlog; executar CI/registry/deploy/rollback e os gates clínicos, de identidade, edge, backup, UAT, performance, DR e reauditoria no mesmo RC.
+
+## 2026-08-14T14:53:34-03:00 — EDGE-LIVE-REVALIDATION-133
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-03 + BLK-07 live edge cross-check
+
+### ACTION
+
+Executado o Compose com `infra/production/.env.local`, inspecionados serviços e logs do edge, medidos `60` probes HTTP de readiness e testado HTTPS local com hostname/SNI `localhost`.
+
+### RESULT
+
+Compose listou API-A/API-B e worker-A/worker-B `healthy` no digest comum; HTTP readiness passou `60/60` com `200`; HTTPS local passou `200` usando TLS interno do Caddy. O certificado é da `Caddy Local Authority - ECC Intermediate`. Logs do edge registram falhas intermitentes de resolução Docker para `api-a/api-b` e respostas `503 no upstreams available`, não reproduzidas na amostra curta.
+
+### DECISIONS
+
+Classificar a evidência como `PARTIAL`: TLS interno/local não prova DNS público ou certificado gerenciado; a intermitência do resolver não deve ser mascarada por uma amostra verde curta. Nenhuma configuração ou ambiente foi alterado.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; investigar/reproduzir a intermitência em janela controlada e, com autorização, comprovar FQDN público, CA gerenciada, IdP, backup, CI/deploy e demais gates no mesmo RC.

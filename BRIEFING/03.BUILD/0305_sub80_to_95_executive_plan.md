@@ -351,3 +351,7 @@ Esse marco reforça BLK-06-D somente no ambiente local e mantém BLK-01/BLK-05, 
 O run remoto confirmou a causa de BLK-05: o head `d3964a9…` falha em `verify:clinical-sources` porque o checkout não possui os três PDFs licenciados. A correção local de `CVG_CLINICAL_SOURCES_DIRECTORY` já está pronta em `9bfa2c1`, mas o repositório não possui secrets, variables, environments ou deployments e o RC `be43fc8f` não foi publicado.
 
 O plano não transforma esse diagnóstico em fechamento. A saída exige decisão de provider/licença, bundle privado, credencial read-only, autorização de push, run verde no mesmo RC, registry imutável, deploy/rollback por digest e reauditoria.
+
+## 17.22 Revalidação live do edge — 2026-08-14T14:53:34-03:00
+
+O Compose com `.env.local` confirmou a topologia local saudável e `60/60` probes HTTP readiness `200`; HTTPS local respondeu `200` com o hostname `localhost`, mas usa a autoridade interna do Caddy. Logs ainda mostram falhas transitórias de DNS Docker e `503` durante health checks, portanto o plano classifica o edge como `PARTIAL` e exige investigação controlada antes de promoção. DNS público, CA gerenciada, IdP, backup e demais gates externos continuam condicionados a autorização e provisionamento.

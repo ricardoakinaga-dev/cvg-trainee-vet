@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: diagnóstico read-only do CI remoto registrado em `fffd49f` e revalidação final consolidada no commit documental seguinte; o run `31402470511`/job `93500569913` confirmou a ausência dos três arquivos licenciados no head remoto antigo, sem secrets/variables/environments/deployments e sem escrita externa; a correção local `CVG_CLINICAL_SOURCES_DIRECTORY` permanece em `9bfa2c1`; a revalidação local passou proveniência no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro containers, HA/edge e gates de documentação/rastreabilidade
+- last_completed_action: edge local revalidado com Compose usando `infra/production/.env.local`; API-A/API-B e worker-A/worker-B `healthy` no digest comum, `60/60` probes HTTP readiness `200` e HTTPS local `200` com hostname `localhost`; certificado é autoridade interna do Caddy e logs registram falhas intermitentes de DNS Docker/`503`, portanto edge permanece `PARTIAL`; CI remoto continua sem bundle/licença/infraestrutura e a proveniência local segue PASS no SHA `be43fc8f7f410435a40550eb70e9b2a700882355`
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T14:46:03-03:00
+- last_update: 2026-08-14T14:53:34-03:00
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 
@@ -2882,3 +2882,15 @@ O contrato local está pronto, mas bundle privado/licenciado, credencial read-on
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar somente após autorização o bundle/licença, push/CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/Web Vitals/soak/DR, beta clínico e reauditoria no mesmo RC.
+
+## 2026-08-14T14:53:34-03:00 — EDGE-LIVE-REVALIDATION-133
+
+### RESULTADO
+
+- Compose com `infra/production/.env.local` listou a aplicação HA `healthy` no digest comum;
+- `60/60` probes HTTP readiness retornaram `200`; HTTPS local retornou `200` com SNI/hostname `localhost`;
+- o certificado é `Caddy Local Authority - ECC Intermediate`; logs do edge registram falhas intermitentes de resolução Docker para `api-a/api-b` e janelas `503 no upstreams available`, não reproduzidas na amostra curta.
+
+### DECISÃO / NEXT
+
+Classificar BLK-03/BLK-07 local como `PARTIAL`; investigar a intermitência em janela controlada e manter DNS público/CA gerenciada, IdP, backup, CI/deploy e demais gates como pendentes até autorização e evidência externa.

@@ -307,3 +307,7 @@ O roadmap não promove B-G6/G-S80-9: CI/registry/deploy/rollback externo, identi
 ## 12.19 Diagnóstico do CI remoto — 2026-08-14T14:38:49-03:00
 
 O PR `#1` continua apontando para o head remoto antigo, e o run `31402470511` falhou porque os três arquivos licenciados não estão no checkout. B-G5/G-S80-9 permanecem abertos: a correção local de bundle externo está pronta, mas faltam provider/licença, credencial, autorização de publicação, CI verde no RC, registry, deploy/rollback e reauditoria.
+
+## 12.20 Revalidação live do edge — 2026-08-14T14:53:34-03:00
+
+O edge local respondeu `60/60` probes HTTP de readiness com `200` e HTTPS local com `200` sob `localhost`, porém o certificado é interno do Caddy e os logs evidenciam falhas intermitentes de resolução Docker com janelas `503`. O roadmap mantém B-G3/B-G7 como `PARTIAL`: reproduzir e resolver a intermitência, depois validar FQDN público e CA gerenciada no ambiente autorizado.

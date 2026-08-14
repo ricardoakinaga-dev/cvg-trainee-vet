@@ -1683,3 +1683,10 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **estado:** worktree limpo no commit documental final; nenhuma escrita externa foi realizada;
 - **aceite:** confirma apenas a fatia local; `0/145` cadeias, `83,24/100`, gates externos, clínicos e humanos permanecem abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; obter autorizações/dependências e reauditar o mesmo RC.
+
+## 2026-08-14T14:53:34-03:00 — EDGE-LIVE-REVALIDATION-133
+
+- **evidência:** Compose executado com `infra/production/.env.local`; quatro processos de aplicação `healthy` no digest comum; `60/60` probes HTTP readiness retornaram `200`; HTTPS local respondeu `200` com hostname `localhost`;
+- **limite:** certificado é `Caddy Local Authority - ECC Intermediate`; não comprova CA pública, DNS público ou TLS gerenciado;
+- **risco observado:** logs do edge registram falhas intermitentes de resolução Docker de `api-a/api-b` e janelas `503 no upstreams available`, não reproduzidas na amostra curta;
+- **status/next:** `PARTIAL` / `WAITING_HUMAN_APPROVAL`; investigar a intermitência e provisionar/verificar o edge público autorizado antes de promover BLK-03/BLK-07.
