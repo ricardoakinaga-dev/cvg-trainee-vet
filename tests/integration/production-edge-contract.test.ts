@@ -61,4 +61,17 @@ describe("production edge contract", () => {
     expect(compose).toContain("SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}");
     expect(compose).toContain("CVG_SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}");
   });
+
+  it("uses health-check hysteresis for transient Docker DNS failures", async () => {
+    const [localCaddyfile, productionCaddyfile] = await Promise.all([
+      readFile("infra/production/Caddyfile", "utf8"),
+      readFile("infra/production/Caddyfile.production.example", "utf8"),
+    ]);
+
+    for (const caddyfile of [localCaddyfile, productionCaddyfile]) {
+      expect(caddyfile).toContain("health_fails 3");
+      expect(caddyfile).toContain("health_passes 2");
+      expect(caddyfile).toContain("lb_try_duration 5s");
+    }
+  });
 });
