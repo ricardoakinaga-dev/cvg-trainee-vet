@@ -6815,3 +6815,41 @@ O bundle privado, provedor/licença, credencial read-only, retenção e run remo
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL`. Próxima ação: provisionamento autorizado do bundle/runner, depois CI verde, registry/deploy/rollback e reauditoria no mesmo RC.
+
+## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
+
+### ENGINE
+
+AUDIT
+
+### PHASE
+
+BUILD — SUB80→95 / BLK-05
+
+### SPRINT
+
+S0 — overlay de resolução dos oito bloqueios
+
+### TASK
+
+Revalidar as primitivas locais de manifesto, deploy, rollback e gate produtivo sem executar escrita externa.
+
+### ACTION
+
+Executados `pnpm ops:verify-release-manifest`, `pnpm ops:deploy-release`, `pnpm ops:rollback-release`, `pnpm ops:verify-production-security`, `git status --short` e `git rev-parse HEAD`.
+
+### RESULT
+
+Manifesto passou; deploy e rollback passaram em `DRY_RUN`; gate produtivo permaneceu `NOT_EXECUTED`; worktree limpo; HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`. Nenhum pull, migration, restart, deploy, rollback ou escrita remota foi executado.
+
+### DECISIONS
+
+As primitivas locais são evidência de preparação, não prova de CI/registry/deploy/rollback produtivos. Nenhum score, release, piloto ou cadeia de rastreabilidade foi promovido.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter alvo/provider/FQDN/IdP/storage/registry e autorização de mudança; depois executar somente os gates externos correspondentes e reauditar o mesmo RC.

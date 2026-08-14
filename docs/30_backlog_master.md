@@ -6,6 +6,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Baseline canônica:** `BRIEFING/04.AUDIT/0491_full_construction_audit.md` — 16 itens entre 65 e 95, nota ponderada 83/100, release/piloto/publicação clínica não aprovados.
 
+## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
+
+- **evidência:** `pnpm ops:verify-release-manifest` passou; `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`; `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado; worktree limpo no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`;
+- **interpretação:** manifesto, canário, digest e rollback possuem contrato local fail-safe; não há prova de CI remoto, registry, deploy ou rollback produtivos;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` e `0/145` cadeias completas preservados;
+- **próxima ação:** Ricardo aprovar alvo/provider/FQDN/IdP/storage/registry e janela de mudança; depois executar o gate externo e reauditar o mesmo RC.
+
 ## 2026-08-14T07:42:06-03:00 — TRACEABILITY-EVIDENCE-BATCH-098
 
 - **status:** RF-057/RF-058 implementados localmente com evidência focalizada; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;

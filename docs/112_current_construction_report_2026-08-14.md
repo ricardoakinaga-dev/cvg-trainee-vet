@@ -252,3 +252,9 @@ Foi implementada uma fronteira parametrizada para que o CI autorizado materializ
 RED/GREEN passou com `11/11` testes focados (`ci-governance` e `clinical-source-location`), `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` local. Essa mudança torna o contrato de bundle reproduzível, mas não inventa o bundle remoto: a execução GitHub ainda não foi repetida no RC, não há provider/credencial configurado e o CI continua `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`. A baseline permanece `83,24/100` e `0/145` cadeias completas.
 
 O código e a documentação desta melhoria foram consolidados no commit local `9bfa2c1` (`fix: support external clinical source bundle`), sem push.
+
+## 32. Revalidação das primitivas de release — 2026-08-14T13:32:36-03:00
+
+`pnpm ops:verify-release-manifest` passou no manifesto de exemplo, validando estratégia `EXPAND_CONTRACT`, canário `api-a/health/ready`, digest imutável do release e digest distinto de rollback. `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`, portanto não fizeram pull, migração, restart, deploy, rollback ou escrita externa. `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado.
+
+O probe foi executado no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`; o worktree permaneceu limpo e o registro foi consolidado em commit documental posterior, sem alteração executável. Esta verificação fortalece a prontidão local de release, mas não prova CI remoto, registry, deploy ou rollback produtivos; a nota permanece `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-05 ganhou fronteira local segura para bundle clínico privado fora do checkout; `CVG_CLINICAL_SOURCES_DIRECTORY` absoluto, basename/traversal protegidos, workflow parametrizado e testes focais verdes; RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-05 ganhou fronteira local segura para bundle clínico privado fora do checkout; `CVG_CLINICAL_SOURCES_DIRECTORY` absoluto, basename/traversal protegidos, workflow parametrizado e testes focais verdes; manifesto, deploy e rollback locais foram revalidados em modo seguro (`PASS`/`DRY_RUN`/`DRY_RUN`); RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`, health `200/200`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
+- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; manifesto de release passou, deploy/rollback ficaram em `DRY_RUN` fail-safe e o gate produtivo permaneceu `NOT_EXECUTED`; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`, health `200/200`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,24 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T13:18:25-03:00
+- last_update: 2026-08-14T13:32:36-03:00
+
+## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
+
+### RESULTADO
+
+- `pnpm ops:verify-release-manifest` passou no manifesto de exemplo, validando `EXPAND_CONTRACT`, canário `api-a/health/ready`, digest do release e digest distinto de rollback;
+- `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`, sem pull, migração, restart ou escrita de ambiente externo;
+- `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED`, como requerido sem ambiente aprovado e referências reais de IdP, HTTPS público, traces, backup e release;
+- `git status --short` permaneceu limpo e o HEAD local é `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`.
+
+### DECISÃO
+
+As primitivas locais de release são verificáveis e fail-safe, mas não constituem CI remoto, registry, deploy ou rollback produtivos. `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
+
+### NEXT ACTION
+
+Obter alvo/provider/FQDN/IdP/storage/registry e autorização de mudança; somente depois executar os probes externos e reauditar o mesmo RC.
 
 ## 2026-08-14T12:46:44-03:00 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
 
