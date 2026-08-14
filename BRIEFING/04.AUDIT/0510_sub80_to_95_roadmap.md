@@ -293,3 +293,7 @@ O marco fecha somente a proveniência/reversibilidade local de BLK-06; os gates 
 O controlador local exige SHA explícito, compara o label da imagem e restaura por digest imutável. Testes focais `6/6`, ausência de SHA falhou antes de qualquer alteração e rehearsal real passou no commit executável `e70d3f4`; o RC final reporta digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c` e health `200/200/200`.
 
 Esse resultado fecha apenas a correção local de BLK-06; não fecha prova produtiva de CI/registry/deploy/rollback nem os gates externos/humanos.
+
+## 12.17 Reconsulta do CI remoto — 2026-08-14T14:09:16-03:00
+
+PR `#1` continua aberto no head remoto anterior; os checks `quality` continuam falhos e não há secrets, variables, environments ou deployments. B-G5 e G-S80-9 permanecem abertos; o próximo marco exige provisionamento autorizado e run verde no mesmo RC.

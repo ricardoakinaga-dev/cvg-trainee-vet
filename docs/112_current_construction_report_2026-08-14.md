@@ -280,3 +280,9 @@ O controlador `scripts/local-release-rehearsal.mjs` foi corrigido no commit exec
 Os testes focais passaram `6/6`; sem SHA o comando falhou antes de alterar o runtime. Com o SHA atual, o rehearsal passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`. O RC final local foi reconstruído no SHA `e70d3f415f38a5443a059c9800d023f95949957f`, com digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`; API-A/API-B e worker-A/worker-B reportaram o mesmo SHA/digest e health `200/200/200`.
 
 Isso corrige o subproblema local de proveniência/reversibilidade, mas não transforma rehearsal em CI/registry/deploy/rollback produtivo. A nota permanece `83,24/100`, a rastreabilidade `0/145`, o estado `WAITING_HUMAN_APPROVAL` e a disposição `PILOT_BLOCKED`.
+
+## 36. Reconsulta atual do CI remoto — 2026-08-14T14:09:16-03:00
+
+A consulta somente leitura ao GitHub confirmou que o PR `#1` continua aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; os dois checks `quality` continuam em `FAILURE`. O repositório segue sem infraestrutura de promoção: `0` secrets, `0` variables, `0` environments e `0` deployments.
+
+Nenhuma escrita, push ou disparo remoto foi realizado. O RC local `e70d3f4` permanece não publicado; BLK-05/B-G5 continuam pendentes de bundle licenciado, runner/variáveis autorizadas, registry, deploy e rollback produtivos. A nota permanece `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.

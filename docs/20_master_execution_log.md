@@ -6931,3 +6931,29 @@ O drift `unknown` não é mais aceito pelo rehearsal e a restauração não usa 
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; BLK-06 local reforçado. Provisionar CI/registry/deploy/rollback externos, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/soak/DR e beta clínico antes de reauditar e tentar fechar `145/145`.
+
+## 2026-08-14T14:09:16-03:00 — REMOTE-CI-INVENTORY-129
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-05 external inventory recheck
+
+### ACTION
+
+Executada consulta somente leitura ao PR `#1`, checks, secrets, variables, environments e deployments do repositório remoto.
+
+### RESULT
+
+PR aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; dois checks `quality` em `FAILURE`; `0` secrets, `0` variables, `0` environments e `0` deployments. O RC local `e70d3f4` não foi publicado.
+
+### DECISIONS
+
+Nenhuma escrita, push, trigger de workflow ou alteração remota foi executada. A ausência de infraestrutura externa mantém BLK-05/B-G5 em `WAITING_HUMAN_APPROVAL`.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar bundle/licença, runner/variáveis, registry, deploy e rollback autorizados e então reauditar o mesmo RC.

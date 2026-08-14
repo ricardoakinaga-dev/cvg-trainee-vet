@@ -32,7 +32,23 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T14:04:54-03:00
+- last_update: 2026-08-14T14:09:16-03:00
+
+## 2026-08-14T14:09:16-03:00 — REMOTE-CI-INVENTORY-129
+
+### RESULTADO
+
+- reconsulta read-only do GitHub confirmou PR `#1` aberto, head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c` e os dois checks `quality` mais recentes em `FAILURE`;
+- inventário da API confirmou `0` secrets, `0` variables, `0` environments e `0` deployments;
+- nenhuma escrita, push, trigger de workflow ou alteração de configuração foi executada.
+
+### DECISÃO
+
+BLK-05/B-G5 permanece sem CI remoto, registry, deploy ou rollback produtivos. O RC local `e70d3f4` não pode ser tratado como publicado.
+
+### NEXT ACTION
+
+Provisionar bundle clínico licenciado, runner/variáveis autorizadas, registry e ambiente de deploy; executar o pipeline no mesmo RC somente após aprovação de mudança.
 
 ## 2026-08-14T14:04:54-03:00 — LOCAL-REHEARSAL-SHA-GUARD-128
 

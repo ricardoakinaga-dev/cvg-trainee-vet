@@ -335,3 +335,7 @@ Os quatro processos HA reportam o mesmo SHA/digest e health `200/200/200`; HA/ed
 O rehearsal agora falha antes de alterar o runtime quando `CVG_SOURCE_SHA` está ausente, inválido ou não corresponde ao label OCI da imagem. A restauração usa `image@digest`; RED/GREEN passou `6/6` e o rehearsal real passou deploy, rollback e restauração no commit executável `e70d3f4`.
 
 O RC local final está alinhado no SHA `e70d3f415f38a5443a059c9800d023f95949957f`, digest `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`, com os quatro processos HA e health `200/200/200`. BLK-06 local foi fortalecido; os gates externos e `0/145` permanecem abertos.
+
+## 17.19 Reconsulta do CI remoto — 2026-08-14T14:09:16-03:00
+
+O GitHub permanece sem capacidade de promoção: PR `#1` aberto no head remoto antigo, checks `quality` falhos e `0` secrets/variables/environments/deployments. O plano mantém BLK-05/B-G5 bloqueado até haver bundle clínico licenciado, runner/variáveis autorizadas, registry, deploy e rollback produtivos no RC `e70d3f4`.

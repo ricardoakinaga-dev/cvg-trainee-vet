@@ -39,6 +39,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` preservada;
 - **próxima ação:** usar o RC `e70d3f4` como referência somente após provisionar as autorizações/ambientes externos e a coorte beta.
 
+## 2026-08-14T14:09:16-03:00 — REMOTE-CI-INVENTORY-129
+
+- **evidência:** PR `#1` aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; dois checks `quality` em `FAILURE`; inventário GitHub com `0` secrets, `0` variables, `0` environments e `0` deployments;
+- **interpretação:** BLK-05/B-G5 continuam sem CI/registry/deploy/rollback produtivos; RC `e70d3f4` não foi publicado;
+- **restrição:** nenhuma escrita, push ou trigger remoto foi executado;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` e `0/145` cadeias preservados;
+- **próxima ação:** aprovar/provisionar bundle licenciado, runner, variáveis, registry e ambiente de promoção, depois reexecutar e reauditar.
+
 ## 2026-08-14T07:42:06-03:00 — TRACEABILITY-EVIDENCE-BATCH-098
 
 - **status:** RF-057/RF-058 implementados localmente com evidência focalizada; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
