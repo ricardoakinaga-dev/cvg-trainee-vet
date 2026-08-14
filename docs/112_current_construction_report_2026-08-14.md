@@ -6,7 +6,7 @@
 
 ## 1. Conclusão executiva
 
-O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi validado no SHA executável imutável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest comum `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`; o commit `6190e9c` é somente documental e posterior à validação. Isso não equivale a um RC publicado ou aprovado.
+O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi validado no SHA executável imutável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest comum `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`; os commits `6190e9c` e `87b48ee` são documentais e posteriores à validação. Isso não equivale a um RC publicado ou aprovado.
 
 Estado: `WAITING_HUMAN_APPROVAL`.
 Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
