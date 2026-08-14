@@ -338,3 +338,9 @@ Isso prova prontidão técnica para a revisão beta, não a revisão dos `763` i
 O recheck read-only do GitHub confirmou PR `#1` aberto/draft no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; os dois checks `quality` continuam falhando em `verify:clinical-sources` por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`. O head remoto é ancestral do worktree local, mas os commits locais posteriores ainda não foram publicados; permanecem `0` secrets, `0` variables, `0` environments e `0` deployments observados. Nenhum push, dispatch ou provisionamento foi executado.
 
 Classificação: beta clínico `READY_FOR_HUMAN_EXECUTION`, revisão efetiva `NOT_EXECUTED`; CI remoto `FAIL`/`WAITING_HUMAN_APPROVAL`. A nota permanece `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 44. E2E focal do fluxo beta local — 2026-08-14T15:21:52-03:00
+
+O build web passou com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`. Contra o web local ativo em `127.0.0.1:3100`, o Playwright executou `tests/e2e/authoring-review.spec.ts` em modo controlado e passou `2/2`: autoria/publicação condicionada e fila paginada para revisor aprovado sem exposição de internals.
+
+Essa evidência cobre a superfície técnica do beta, não a execução humana, o roster, a calibração, a revisão dos `763` itens ou a publicação produtiva. A nota, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem inalterados.

@@ -7141,3 +7141,29 @@ Classificar a infraestrutura local do beta como `READY_FOR_HUMAN_EXECUTION`, a r
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar roster/T0/beta veterinário, bundle/licença/variável de CI e autorização de publicação; depois executar no mesmo RC e reauditar.
+
+## 2026-08-14T15:21:52-03:00 — BETA-E2E-REVALIDATION-137
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-01 E2E focal do beta local
+
+### ACTION
+
+Reconstruído o web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` e executado `tests/e2e/authoring-review.spec.ts` contra o web local ativo, sem reiniciar o serviço existente.
+
+### RESULT
+
+Playwright passou `2/2`: autoria/publicação condicionada e revisor aprovado abrindo fila clínica paginada sem exposição de internals. Worktree permaneceu limpo.
+
+### DECISIONS
+
+Classificar a superfície técnica do beta como `PASS`; revisão humana dos `763` itens, calibração, roster, CI remoto e publicação produtiva continuam não executados.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar o beta com veterinários e provisionar o CI/infraestrutura autorizada antes da reauditoria.

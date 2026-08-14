@@ -325,3 +325,7 @@ O roadmap marca BLK-06 local como `PASS`, sem promover B-G5/G-S80-9 nem os gates
 ## 12.23 Rechecagem do beta clínico e CI remoto — 2026-08-14T15:16:10-03:00
 
 O roadmap classifica a fatia técnica do beta como `READY_FOR_HUMAN_EXECUTION`: fila, escopo, papel, decisão persistida e gate de publicação estão presentes; a revisão efetiva dos `763` itens continua `NOT_EXECUTED`. O CI remoto permanece `FAIL` no head `d3964a9e…` por ausência do bundle licenciado; B-G1/B-G5/G-S80-9 continuam abertos.
+
+## 12.24 E2E focal do beta local — 2026-08-14T15:21:52-03:00
+
+O build web e os dois cenários Playwright de autoria/revisão passaram contra o web local ativo. O roadmap marca a superfície técnica como `PASS`, mas preserva B-G1 como `NOT_EXECUTED` até roster, calibração e revisão humana dos `763` itens; B-G5/G-S80-9 permanecem abertos.

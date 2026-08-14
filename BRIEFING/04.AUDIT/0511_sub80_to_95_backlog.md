@@ -827,3 +827,10 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **fila:** `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; revisão veterinária real `NOT_EXECUTED`;
 - **CI:** PR `#1` no head remoto `d3964a9e…`; dois checks `quality` falham por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; sem secrets/variables/environments/deployments;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar roster/T0, bundle/licença/runner, push, registry/deploy e reauditoria no mesmo RC.
+
+## 16.31 E2E focal do beta local — 2026-08-14T15:21:52-03:00
+
+- **evidência:** build web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passou; Playwright `tests/e2e/authoring-review.spec.ts` passou `2/2` contra web local ativo;
+- **cobertura:** autoria/publicação condicionada e fila paginada sem exposição de internals;
+- **limite:** não substitui roster, calibração, revisão veterinária dos `763`, CI/registry/deploy produtivo ou publicação;
+- **status/next:** superfície técnica `PASS`; beta humano/release `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.

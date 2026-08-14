@@ -373,3 +373,7 @@ A verificação confirma qualidade local, mas não promove `0/145`, revisão cl�
 O código local está pronto para a revisão beta com veterinários: fila escopada/paginada, `CLINICAL_APPROVER`, decisão persistida, interface de autoria e gate de publicação antes da aprovação, sustentados por `c7a591b` e `8670def`. A evidência live ainda mostra `763` pendências; nenhuma revisão humana foi simulada ou inferida.
 
 O PR remoto permanece no head antigo `d3964a9e…`; os checks falham por ausência do bundle licenciado e o repositório continua sem secrets, variables, environments ou deployments. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED` até autorização do beta, bundle/runner, push e infraestrutura de promoção.
+
+## 17.26 E2E focal do beta local — 2026-08-14T15:21:52-03:00
+
+O build web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passou e o Playwright passou `2/2` em `tests/e2e/authoring-review.spec.ts` contra o web local ativo. A evidência comprova a superfície técnica de autoria/revisão e publicação condicionada; não executa a revisão veterinária dos `763` itens nem fecha os gates externos.

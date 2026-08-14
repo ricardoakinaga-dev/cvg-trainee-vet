@@ -1713,3 +1713,10 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **CI remoto:** PR `#1` continua no head `d3964a9e…`; runs `31402470511` e `31402464508` falham por ausência dos três arquivos licenciados; `0` secrets/variables/environments/deployments;
 - **divergência:** o head remoto é ancestral do worktree local; as correções locais posteriores não foram publicadas e não houve push/dispatch;
 - **status/next:** `READY_FOR_HUMAN_EXECUTION` para o beta técnico, `FAIL` para o CI remoto e `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`; aprovar veterinários, bundle/licença, variável/runner e publicação do RC.
+
+## 2026-08-14T15:21:52-03:00 — BETA-E2E-REVALIDATION-137
+
+- **build:** web reconstruído com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`;
+- **E2E:** `tests/e2e/authoring-review.spec.ts` passou `2/2` contra o web local ativo: publicação condicionada e fila paginada sem exposição de internals;
+- **limite:** prova técnica local; não comprova roster, revisão humana dos `763`, calibração, CI/registry/deploy produtivo ou publicação;
+- **status/next:** `PASS` para a superfície técnica, `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` para o beta e release.
