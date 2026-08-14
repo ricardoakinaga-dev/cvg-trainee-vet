@@ -6879,3 +6879,55 @@ O beta com veterinários é o mecanismo autorizado para a revisão humana. Nenhu
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar roster/T0/ambiente clínico e executar calibração/lotes auditáveis, depois revalidar BLK-01 e os gates externos no mesmo RC.
+
+## 2026-08-14T13:51:47-03:00 — LOCAL-RC-PROVENANCE-REBUILD-127
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-06-D runtime provenance recheck
+
+### ACTION
+
+Após o rehearsal local, inspecionados o HEAD, labels/envs/digests dos quatro processos HA, health, topologia, edge e fila clínica. O drift `CVG_SOURCE_SHA=unknown` foi corrigido reconstruindo a imagem com o SHA atual e recriando somente os serviços do aplicativo/migration.
+
+### RESULT
+
+O runtime final carrega o HEAD `2e7a96b39c60139fc0bd0c642fb77800f5c6c00a`, imagem `cvg-trainee-vet:rc-head-2e7a96b39c60`, digest comum `sha256:6d0d64b722a45d307ea36b9bbfbb4946b3ba4d0e2d0255e00e3aebb610898e27` e health `200/200/200`; `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram. A fila live observou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o modo estrito terminou com exit `1` por pendências clínicas.
+
+### DECISIONS
+
+O drift foi corrigido e a imagem `unknown` não foi aceita como evidência. Nenhum ambiente externo foi escrito e nenhum score, release, beta ou cadeia de rastreabilidade foi promovido.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; manter o RC alinhado ao SHA e provisionar roster clínico, IdP, edge público, storage/backup, CI/registry/deploy e ambiente de UAT antes da reauditoria.
+
+## 2026-08-14T14:04:54-03:00 — LOCAL-REHEARSAL-SHA-GUARD-128
+
+### ENGINE
+
+BUILD / AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-06-D hardening
+
+### ACTION
+
+Escrito primeiro o teste para exigir SHA explícito e proveniência coincidente; depois implementados a validação do SHA, a comparação com o label OCI e a restauração por referência `image@digest`. Executados teste focal, caso negativo sem SHA, rehearsal real, inspeção de quatro containers, health e fila clínica.
+
+### RESULT
+
+O commit executável `e70d3f415f38a5443a059c9800d023f95949957f` contém a correção. Testes focais `6/6` e `pnpm verify` integral passaram (`162` arquivos/`713` testes/`18` skips; cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`). O rehearsal sem SHA terminou com exit `1` antes do Docker; com SHA válido passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`. O runtime final usa `cvg-trainee-vet@sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`, todos os quatro processos reportam o SHA e digest esperados, e health live/ready/dependencies `200/200/200`.
+
+### DECISIONS
+
+O drift `unknown` não é mais aceito pelo rehearsal e a restauração não usa tag mutável. Nenhum ambiente externo foi escrito; a fila live segue `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas, com publicação fail-closed.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; BLK-06 local reforçado. Provisionar CI/registry/deploy/rollback externos, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/soak/DR e beta clínico antes de reauditar e tentar fechar `145/145`.

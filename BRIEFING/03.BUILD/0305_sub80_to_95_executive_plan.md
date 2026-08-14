@@ -323,3 +323,15 @@ A mudança foi consolidada no commit local `9bfa2c1`, sem push.
 O runtime HA local foi revalidado com health `200/200/200`, HA/edge verdes e leitura somente leitura da fila clínica: `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas. O modo estrito falhou de forma esperada enquanto houver pendências, impedindo publicação automática.
 
 Este checkpoint confirma a prontidão técnica do beta com veterinários e não encerra BLK-01. O próximo passo é Ricardo aprovar roster, capacidade, T0 e ambiente; em seguida executar calibração, lotes de revisão, rework e preflight final, mantendo os itens sem decisão fora da publicação.
+
+## 17.17 Correção de proveniência após rehearsal — 2026-08-14T13:51:47-03:00
+
+O rehearsal local foi auditado após sua execução e revelou que havia restaurado `cvg-trainee-vet:local` com `CVG_SOURCE_SHA=unknown`. O drift foi corrigido antes de qualquer promoção: a imagem `cvg-trainee-vet:rc-head-2e7a96b39c60` foi reconstruída do HEAD `2e7a96b39c60139fc0bd0c642fb77800f5c6c00a`, com digest `sha256:6d0d64b722a45d307ea36b9bbfbb4946b3ba4d0e2d0255e00e3aebb610898e27`.
+
+Os quatro processos HA reportam o mesmo SHA/digest e health `200/200/200`; HA/edge passaram. Isso fortalece BLK-06 localmente e mantém o gate fail-closed, mas não converte ensaio local em CI/registry/deploy/rollback produtivos nem fecha `0/145`, pois o estado/release ainda não foi aprovado.
+
+## 17.18 Guardas de SHA no rehearsal — 2026-08-14T14:04:54-03:00
+
+O rehearsal agora falha antes de alterar o runtime quando `CVG_SOURCE_SHA` está ausente, inválido ou não corresponde ao label OCI da imagem. A restauração usa `image@digest`; RED/GREEN passou `6/6` e o rehearsal real passou deploy, rollback e restauração no commit executável `e70d3f4`.
+
+O RC local final está alinhado no SHA `e70d3f415f38a5443a059c9800d023f95949957f`, digest `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`, com os quatro processos HA e health `200/200/200`. BLK-06 local foi fortalecido; os gates externos e `0/145` permanecem abertos.

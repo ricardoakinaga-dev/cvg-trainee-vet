@@ -21,6 +21,24 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` e `0/145` cadeias completas preservados;
 - **próxima ação:** aprovar roster/T0/ambiente clínico, executar calibração e lotes, depois revalidar o gate estrito e os demais gates no mesmo RC.
 
+## 2026-08-14T13:51:47-03:00 — LOCAL-RC-PROVENANCE-REBUILD-127
+
+- **evidência:** o rehearsal foi auditado e a imagem `cvg-trainee-vet:local` com `CVG_SOURCE_SHA=unknown` foi descartada como prova; a imagem foi reconstruída do HEAD `2e7a96b39c60139fc0bd0c642fb77800f5c6c00a` como `cvg-trainee-vet:rc-head-2e7a96b39c60`, digest `sha256:6d0d64b722a45d307ea36b9bbfbb4946b3ba4d0e2d0255e00e3aebb610898e27`;
+- **runtime:** API-A/API-B e worker-A/worker-B reportaram o mesmo SHA/digest; health `200/200/200`, `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram;
+- **clínico:** fila live `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o gate estrito falhou corretamente, sem publicação;
+- **interpretação:** BLK-06 local corrigido e reforçado; o rehearsal não prova CI/registry/deploy/rollback produtivos, e retenção Tempo continua somente local;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` e `0/145` cadeias completas preservados;
+- **próxima ação:** não aceitar drift em novo probe; provisionar os gates externos/humanos e reauditar o mesmo RC.
+
+## 2026-08-14T14:04:54-03:00 — LOCAL-REHEARSAL-SHA-GUARD-128
+
+- **entrega:** `scripts/local-release-rehearsal.mjs` agora exige `CVG_SOURCE_SHA`, valida o label OCI da imagem e restaura por `image@digest`; `unknown`/mismatch falham antes de qualquer execução Docker;
+- **checks:** testes focais `6/6`, ausência de SHA falhou fail-closed, rehearsal com SHA válido passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`;
+- **runtime:** commit executável `e70d3f415f38a5443a059c9800d023f95949957f`, digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`, quatro processos alinhados e health `200/200/200`;
+- **limite:** BLK-06 local reforçado; CI/registry/deploy/rollback produtivos, gates clínicos/externos, UAT e `0/145` continuam pendentes;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; baseline `83,24/100` preservada;
+- **próxima ação:** usar o RC `e70d3f4` como referência somente após provisionar as autorizações/ambientes externos e a coorte beta.
+
 ## 2026-08-14T07:42:06-03:00 — TRACEABILITY-EVIDENCE-BATCH-098
 
 - **status:** RF-057/RF-058 implementados localmente com evidência focalizada; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;

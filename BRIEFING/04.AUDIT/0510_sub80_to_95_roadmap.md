@@ -281,3 +281,15 @@ O contrato local foi consolidado no commit `9bfa2c1`; falta evidência do proved
 ## 12.14 Checkpoint BLK-01/RUNTIME — 2026-08-14T13:39:26-03:00
 
 Health local `200/200/200`, HA e edge passaram. A fila live contém `796` conteúdos, com `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o gate estrito falha até que o beta registre decisões veterinárias auditáveis. O marco técnico do beta está preparado, mas BLK-01/B-G1 continua aberto. A próxima janela depende de roster, T0, ambiente e capacidade clínica aprovados.
+
+## 12.15 Correção de drift e RC alinhado ao HEAD — 2026-08-14T13:51:47-03:00
+
+O rehearsal local restaurou uma imagem com `CVG_SOURCE_SHA=unknown`; a inspeção detectou o drift e a evidência foi descartada. O RC foi reconstruído no HEAD `2e7a96b39c60139fc0bd0c642fb77800f5c6c00a`, tag `cvg-trainee-vet:rc-head-2e7a96b39c60`, digest `sha256:6d0d64b722a45d307ea36b9bbfbb4946b3ba4d0e2d0255e00e3aebb610898e27`. API-A/API-B e worker-A/worker-B estão alinhados, com health `200/200/200`, HA e edge verdes.
+
+O marco fecha somente a proveniência/reversibilidade local de BLK-06; os gates externos, clínicos, UAT/operação e a reauditoria continuam abertos.
+
+## 12.16 Guardas fail-closed de SHA no rehearsal — 2026-08-14T14:04:54-03:00
+
+O controlador local exige SHA explícito, compara o label da imagem e restaura por digest imutável. Testes focais `6/6`, ausência de SHA falhou antes de qualquer alteração e rehearsal real passou no commit executável `e70d3f4`; o RC final reporta digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c` e health `200/200/200`.
+
+Esse resultado fecha apenas a correção local de BLK-06; não fecha prova produtiva de CI/registry/deploy/rollback nem os gates externos/humanos.

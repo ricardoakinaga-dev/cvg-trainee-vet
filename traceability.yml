@@ -3186,6 +3186,42 @@ artifacts:
       ]
     commit: "7777876a86b8bef8dff5714d127281a25a4c8b6d"
     status: "r1-r6-local-verified-production-gates-pending"
+  - id: "LOCAL-RELEASE-SHA-GUARD-128"
+    requirements: ["SPEC-0118", "AUD-P1-005", "AGENTS-TRACEABILITY"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0305_sub80_to_95_executive_plan.md",
+        "BRIEFING/04.AUDIT/0510_sub80_to_95_roadmap.md",
+        "docs/112_current_construction_report_2026-08-14.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "scripts/local-release-rehearsal.mjs",
+        "infra/production/Dockerfile",
+        "infra/production/docker-compose.ha.yml",
+      ]
+    tests:
+      [
+        "tests/integration/local-release-rehearsal.test.ts",
+        "pnpm verify",
+        "pnpm ops:rehearse-local-release",
+      ]
+    verification:
+      [
+        "missing CVG_SOURCE_SHA fails before Docker execution",
+        "image OCI revision must match CVG_SOURCE_SHA",
+        "runtime restoration uses image@digest",
+        "four HA processes report the same source SHA and digest",
+        "health live/ready/dependencies 200/200/200",
+        "pnpm ops:verify-ha",
+        "pnpm ops:verify-edge-security",
+        "git diff --check",
+      ]
+    commit: "e70d3f415f38a5443a059c9800d023f95949957f"
+    status: "implemented-verified-local-runtime-not-release-approved"
   - id: "ACCESS-ADMIN-TRAINING-26"
     requirements:
       [

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-01/BLK-05 revalidados localmente: fila clínica live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; manifesto, deploy e rollback locais foram revalidados em modo seguro (`PASS`/`DRY_RUN`/`DRY_RUN`); RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: fila clínica live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; rehearsal local agora exige SHA explícito, valida o label da imagem e restaura por `image@digest`; runtime foi reconstruído no commit executável atual e os quatro processos HA carregam a mesma imagem/digest; manifesto, deploy e rollback locais foram revalidados em modo seguro (`PASS`/`DRY_RUN`/`DRY_RUN`); RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; manifesto de release passou, deploy/rollback ficaram em `DRY_RUN` fail-safe e o gate produtivo permaneceu `NOT_EXECUTED`; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; health live/ready/dependencies `200/200/200`, HA/edge passaram; fila live `796` total/`763` pendentes/`0` aprovados/`0` falhas técnicas e gate estrito falhou de forma esperada; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
+- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada no commit local `9bfa2c1`; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; o rehearsal local foi corrigido no commit executável `e70d3f4` para exigir `CVG_SOURCE_SHA`, validar a proveniência da imagem e restaurar por referência imutável; `pnpm verify` passou com `162` arquivos/`713` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; runtime HA reconstruído no SHA executável `e70d3f415f38a5443a059c9800d023f95949957f`, imagem `cvg-trainee-vet@sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c` e digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`; os quatro processos carregam o mesmo SHA/digest, health live/ready/dependencies `200/200/200`, HA/edge passaram; fila live `796` total/`763` pendentes/`0` aprovados/`0` falhas técnicas e gate estrito falhou de forma esperada; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,43 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T13:39:26-03:00
+- last_update: 2026-08-14T14:04:54-03:00
+
+## 2026-08-14T14:04:54-03:00 — LOCAL-REHEARSAL-SHA-GUARD-128
+
+### RESULTADO
+
+- o controlador local de release agora exige `CVG_SOURCE_SHA` como SHA Git de 40 caracteres, valida o label `org.opencontainers.image.revision` contra o SHA solicitado e rejeita `unknown`/mismatch antes de executar Docker;
+- a restauração foi alterada de tag mutável para referência imutável `image@digest`; o resultado do rehearsal inclui o SHA validado;
+- RED/GREEN: `6/6` testes focais passaram; sem SHA explícito o comando falhou antes de alterar o runtime; com SHA explícito o rehearsal passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`;
+- novo RC executável: commit `e70d3f415f38a5443a059c9800d023f95949957f`, digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`, quatro serviços alinhados, health `200/200/200`;
+- fila live `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; gate estrito continua falhando com `763` pendências.
+
+### DECISÃO
+
+O subproblema local de proveniência/reversibilidade foi corrigido e validado no runtime. Isso não é CI/registry/deploy/rollback produtivo e não fecha os gates externos, clínicos, UAT ou `0/145`.
+
+### NEXT ACTION
+
+Usar o RC executável `e70d3f4` como referência dos próximos gates autorizados; não publicar nem reauditar enquanto os ambientes externos e a revisão beta não existirem.
+
+## 2026-08-14T13:51:47-03:00 — LOCAL-RC-PROVENANCE-REBUILD-127
+
+### RESULTADO
+
+- o ensaio de release local havia restaurado deliberadamente a imagem de rehearsal `cvg-trainee-vet:local` com `CVG_SOURCE_SHA=unknown`; essa divergência foi detectada por inspeção direta e não foi aceita como evidência de proveniência;
+- a imagem foi reconstruída a partir do HEAD `2e7a96b39c60139fc0bd0c642fb77800f5c6c00a` como `cvg-trainee-vet:rc-head-2e7a96b39c60`, digest `sha256:6d0d64b722a45d307ea36b9bbfbb4946b3ba4d0e2d0255e00e3aebb610898e27`;
+- API-A/API-B e worker-A/worker-B reportaram o mesmo label/env de SHA e o mesmo digest; health live/ready/dependencies `200/200/200`, `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram;
+- a fila live continua com `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o modo estrito falhou com `clinical review queue is incomplete: 763 pending items`;
+- `pnpm ops:verify-durable-traces` passou somente em modo estático, com volume local Tempo e retenção local padrão de 14 dias; isso não fecha retenção externa/produtiva.
+
+### DECISÃO
+
+A proveniência local foi corrigida e está alinhada ao SHA atual. Nenhum ambiente externo foi escrito, e a revalidação não promove CI, registry, deploy, rollback produtivo, beta clínico ou rastreabilidade.
+
+### NEXT ACTION
+
+Preservar este RC local como referência para os gates autorizados; depois provisionar os ambientes humanos/externos e reauditar sem aceitar drift de SHA, digest ou configuração.
 
 ## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
 

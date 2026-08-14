@@ -264,3 +264,19 @@ O probe foi executado no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`; o work
 O edge local respondeu `200` em `/health/live`, `/health/ready` e `/health/dependencies`; `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram. Dentro da rede do PostgreSQL HA, a fila clínica foi lida em modo somente leitura: `796` conteúdos, `763` pendentes, `763` não revisados, `0` aprovados, `0` ajustes solicitados e `0` falhas técnicas. O modo estrito falhou com `clinical review queue is incomplete: 763 pending items` e exit `1`, preservando o bloqueio de publicação.
 
 Essa evidência confirma que a infraestrutura do beta está preparada para revisão por veterinários, mas não substitui as decisões clínicas humanas. Nenhum conteúdo foi aprovado, alterado ou publicado; a nota permanece `83,24/100`, o estado `WAITING_HUMAN_APPROVAL`, `0/145` cadeias completas e `PILOT_BLOCKED`.
+
+## 34. Correção de drift e reconstrução do RC no SHA atual — 2026-08-14T13:51:47-03:00
+
+O ensaio local de release havia restaurado a imagem `cvg-trainee-vet:local` com `CVG_SOURCE_SHA=unknown`; a divergência foi detectada antes de qualquer promoção e não foi tratada como prova de proveniência. A imagem foi reconstruída do HEAD `2e7a96b39c60139fc0bd0c642fb77800f5c6c00a`, com tag local `cvg-trainee-vet:rc-head-2e7a96b39c60` e digest `sha256:6d0d64b722a45d307ea36b9bbfbb4946b3ba4d0e2d0255e00e3aebb610898e27`.
+
+API-A/API-B e worker-A/worker-B carregam exatamente o mesmo SHA e digest; health `200/200/200`, HA e edge passaram. A fila live permaneceu em `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o modo estrito continua falhando para impedir publicação sem decisão clínica. A nota permanece `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+O resultado fecha o subproblema local de proveniência no RC atual, mas não prova CI/registry/deploy/rollback produtivos, retenção externa, IdP/MFA, DNS/TLS público, beta veterinário, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria independente.
+
+## 35. Rehearsal fail-closed por SHA e digest — 2026-08-14T14:04:54-03:00
+
+O controlador `scripts/local-release-rehearsal.mjs` foi corrigido no commit executável `e70d3f415f38a5443a059c9800d023f95949957f`. Ele agora exige `CVG_SOURCE_SHA` explícito, valida o label OCI da imagem contra esse SHA e rejeita `unknown` ou mismatch antes de tocar no Docker; a restauração usa `image@digest`, não uma tag mutável.
+
+Os testes focais passaram `6/6`; sem SHA o comando falhou antes de alterar o runtime. Com o SHA atual, o rehearsal passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`. O RC final local foi reconstruído no SHA `e70d3f415f38a5443a059c9800d023f95949957f`, com digest comum `sha256:63ac637774932b127f584745fda236bdc99a61c0a6a4c8ac12ca675ee7b6597c`; API-A/API-B e worker-A/worker-B reportaram o mesmo SHA/digest e health `200/200/200`.
+
+Isso corrige o subproblema local de proveniência/reversibilidade, mas não transforma rehearsal em CI/registry/deploy/rollback produtivo. A nota permanece `83,24/100`, a rastreabilidade `0/145`, o estado `WAITING_HUMAN_APPROVAL` e a disposição `PILOT_BLOCKED`.
