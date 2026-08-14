@@ -339,3 +339,9 @@ O RC local final está alinhado no SHA `e70d3f415f38a5443a059c9800d023f95949957f
 ## 17.19 Reconsulta do CI remoto — 2026-08-14T14:09:16-03:00
 
 O GitHub permanece sem capacidade de promoção: PR `#1` aberto no head remoto antigo, checks `quality` falhos e `0` secrets/variables/environments/deployments. O plano mantém BLK-05/B-G5 bloqueado até haver bundle clínico licenciado, runner/variáveis autorizadas, registry, deploy e rollback produtivos no RC `e70d3f4`.
+
+## 17.20 Gate de proveniência do runtime — 2026-08-14T14:24:40-03:00
+
+Foi implementado o gate reutilizável `scripts/verify-runtime-provenance.mjs` com TDD (`6/6`). Uma recriação por tag mutável foi rejeitada; o rehearsal local restaurou por digest e passou deploy, rollback e restauração. O RC executável atual é `be43fc8f7f410435a40550eb70e9b2a700882355`, digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos HA alinhados e health `200/200/200`.
+
+Esse marco reforça BLK-06-D somente no ambiente local e mantém BLK-01/BLK-05, gates externos, clínicos, UAT, operação e `0/145` abertos. Próximo passo: provisionar os ambientes autorizados e reauditar exatamente este RC.

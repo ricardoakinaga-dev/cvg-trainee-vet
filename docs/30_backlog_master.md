@@ -1659,3 +1659,12 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **resultado:** prepara a resolução de BLK-05 sem alegar CI remoto; `0/145` cadeias completas, baseline `83,24/100` e `PILOT_BLOCKED` permanecem;
 - **próxima ação:** aprovar/provisionar bundle, credencial read-only, retenção, runner, registry, deploy e rollback; executar o pipeline e reauditar no mesmo RC.
 - **commit local:** `9bfa2c1` (`fix: support external clinical source bundle`), sem push.
+
+## 2026-08-14T14:24:40-03:00 — RUNTIME-PROVENANCE-GATE-130
+
+- **entrega:** `scripts/verify-runtime-provenance.mjs` e testes focais `6/6`; o gate exige SHA explícito, `running/healthy`, imagem `@sha256`, digest comum, label OCI e `CVG_SOURCE_SHA` alinhados;
+- **evidência:** recriação direta por tag foi rejeitada; rehearsal local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; runtime final no SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos HA e health `200/200/200`;
+- **clínico:** fila live `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; modo estrito falhou de forma esperada, sem publicação;
+- **aceite:** reforça somente BLK-06 local; não fecha revisão clínica, IdP/MFA, DNS/TLS público, backup/RPO/RTO, CI/registry/deploy/rollback externo, UAT, WCAG manual, Web Vitals reais, soak, DR ou `0/145`;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar dependências externas e reauditar o mesmo RC sem drift;
+- **commit local:** `be43fc8` (`feat: add runtime provenance gate`), sem push.

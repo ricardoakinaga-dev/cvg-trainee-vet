@@ -188,3 +188,9 @@ O gate de fontes ganhou suporte explícito a `CVG_CLINICAL_SOURCES_DIRECTORY`: c
 O teste focal passou `11/11`, `verify:ci-contract` passou e a execução local do pré-voo passou. Isso fecha somente o contrato local de materialização segura. O bundle licenciado, a credencial read-only, a retenção do artefato e o run remoto verde no RC continuam ausentes; `completeChains=0/145`, baseline `83,24/100` e `PILOT_BLOCKED` permanecem.
 
 A alteração foi consolidada no commit local `9bfa2c1`, sem push; o commit é evidência da mudança de contrato, não prova do bundle ou do CI remoto.
+
+## Gate de proveniência do runtime — 2026-08-14T14:24:40-03:00
+
+O gate `scripts/verify-runtime-provenance.mjs` foi implementado com teste primeiro (`6/6`). Ele rejeita SHA ausente/unknown, containers não saudáveis, referências mutáveis, divergência de digest, label OCI ou `CVG_SOURCE_SHA`. Uma recriação por tag falhou como esperado; o rehearsal local passou deploy, rollback e restauração por digest.
+
+O runtime local final está no commit executável `be43fc8f7f410435a40550eb70e9b2a700882355`, com a referência `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` em API-A/API-B/worker-A/worker-B e health `200/200/200`. Isso fortalece o elo local `HEAD → imagem → runtime → rollback`, mas não altera `completeChains=0/145`: estado/release aprovados, CI/registry/deploy externo, revisão clínica, IdP/MFA, edge público, backup/RPO/RTO, UAT/operação e reauditoria permanecem ausentes.

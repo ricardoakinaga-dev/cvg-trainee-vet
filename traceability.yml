@@ -4550,6 +4550,42 @@ artifacts:
     commit: "4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9"
     artifact: ["PREMIUM-ENTERPRISE-95-JOURNEY-CORRECTION-065"]
     status: "implemented-verified-local-working-tree-pilot-blocked"
+  - id: "RUNTIME-PROVENANCE-GATE-130"
+    requirements: ["SPEC-0118", "AUD-P1-005", "AGENTS-TRACEABILITY"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0305_sub80_to_95_executive_plan.md",
+        "BRIEFING/04.AUDIT/0510_sub80_to_95_roadmap.md",
+        "BRIEFING/04.AUDIT/0511_sub80_to_95_backlog.md",
+        "docs/112_current_construction_report_2026-08-14.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/114_traceability_gap_analysis_2026-08-14.md",
+      ]
+    code: ["scripts/verify-runtime-provenance.mjs", "package.json"]
+    tests:
+      [
+        "tests/integration/runtime-provenance.test.ts",
+        "pnpm verify",
+        "pnpm ops:verify-runtime-provenance",
+        "pnpm ops:rehearse-local-release",
+      ]
+    verification:
+      [
+        "explicit 40-character source SHA is required and unknown is rejected",
+        "mutable image reference is rejected",
+        "four HA containers are running and healthy",
+        "all application containers use the same image@sha256 digest",
+        "OCI revision label and CVG_SOURCE_SHA match the expected executable SHA",
+        "health live/ready/dependencies 200/200/200",
+        "local rehearsal deploy/rollback/runtime restoration PASS",
+        "pnpm ops:verify-ha",
+        "pnpm ops:verify-edge-security",
+        "git diff --check",
+      ]
+    commit: "be43fc8f7f410435a40550eb70e9b2a700882355"
+    status: "implemented-verified-local-runtime-not-release-approved"
 scope_control:
   decision_sources:
     - "BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0020_alinhamento_produto_pre_spec.md"

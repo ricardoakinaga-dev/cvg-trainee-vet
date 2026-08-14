@@ -297,3 +297,9 @@ Esse resultado fecha apenas a correção local de BLK-06; não fecha prova produ
 ## 12.17 Reconsulta do CI remoto — 2026-08-14T14:09:16-03:00
 
 PR `#1` continua aberto no head remoto anterior; os checks `quality` continuam falhos e não há secrets, variables, environments ou deployments. B-G5 e G-S80-9 permanecem abertos; o próximo marco exige provisionamento autorizado e run verde no mesmo RC.
+
+## 12.18 Gate de proveniência do runtime — 2026-08-14T14:24:40-03:00
+
+O gate local de proveniência passou após rejeitar uma recriação por tag mutável: source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, imagem `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos HA alinhados e health `200/200/200`; rehearsal `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`.
+
+O roadmap não promove B-G6/G-S80-9: CI/registry/deploy/rollback externo, identidade, edge público, backup/RPO/RTO, revisão veterinária, UAT, WCAG manual, RUM/Web Vitals, soak, DR e reauditoria continuam necessários.

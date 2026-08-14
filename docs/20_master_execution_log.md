@@ -6957,3 +6957,29 @@ Nenhuma escrita, push, trigger de workflow ou alteração remota foi executada. 
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar bundle/licença, runner/variáveis, registry, deploy e rollback autorizados e então reauditar o mesmo RC.
+
+## 2026-08-14T14:24:40-03:00 — RUNTIME-PROVENANCE-GATE-130
+
+### ENGINE
+
+BUILD / AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-06-D runtime provenance gate
+
+### ACTION
+
+Escrito primeiro o teste do gate de proveniência e implementado `scripts/verify-runtime-provenance.mjs`. Recriado o RC no commit executável atual, executado o rehearsal local de deploy/rollback/restauração e inspecionados os quatro containers HA, health, HA, edge e fila clínica.
+
+### RESULT
+
+Os testes focais passaram `6/6`; uma recriação direta por tag mutável foi rejeitada pelo gate. O rehearsal local passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`. O runtime final usa source SHA `be43fc8f7f410435a40550eb70e9b2a700882355` e `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`; API-A/API-B e worker-A/worker-B reportaram a mesma imagem/digest, label/env e estado saudável. Health live/ready/dependencies `200/200/200`, `pnpm ops:verify-ha` e `pnpm ops:verify-edge-security` passaram. A fila live observou `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o modo estrito falhou com `clinical review queue is incomplete: 763 pending items`.
+
+### DECISIONS
+
+O gate fecha o subproblema local de aceitar somente runtime executável no SHA esperado e digest imutável. Não é CI/registry/deploy/rollback produtivo; nenhum ambiente externo foi escrito, nenhum push foi realizado e nenhum score, release, piloto ou cadeia foi promovido.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar ambiente clínico, IdP/MFA, DNS/TLS, storage/backup/RPO/RTO, CI/registry/deploy/rollback e UAT/DR, mantendo a reauditoria no mesmo RC.

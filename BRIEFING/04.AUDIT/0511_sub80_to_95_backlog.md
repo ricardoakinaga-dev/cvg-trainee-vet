@@ -782,3 +782,11 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **carga:** `20.000/20.000` requests, concorrência `50`, throughput `889,41 req/s`, p95 `119,82 ms`, zero erros;
 - **limite:** RUM público, UAT/manual WCAG, screen reader, soak 24h, SLO, DR e CI de budgets continuam pendentes;
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
+
+## 16.25 Gate de proveniência do runtime — 2026-08-14T14:24:40-03:00
+
+- **entrega:** `scripts/verify-runtime-provenance.mjs` exige SHA Git explícito, containers saudáveis, imagem `@sha256`, digest comum e label/env de revisão coincidentes; testes focais `6/6`;
+- **evidência:** tag mutável rejeitada; rehearsal local passou deploy/rollback/restauração; RC `be43fc8f7f410435a40550eb70e9b2a700882355`, digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos HA, health `200/200/200`;
+- **aceite:** fecha somente a fatia local de BLK-06-D; não promove release, não fecha `0/145` e não substitui CI/registry/deploy/rollback externo, clínica, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar dependências autorizadas e repetir a reauditoria no mesmo RC;
+- **commit local:** `be43fc8` (`feat: add runtime provenance gate`), sem push.
