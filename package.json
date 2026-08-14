@@ -67,6 +67,7 @@
     "ops:rehearse-local-release": "CVG_RUN_LOCAL_RELEASE_REHEARSAL=true node scripts/local-release-rehearsal.mjs",
     "ops:create-postgres-backup": "node scripts/create-postgres-backup.mjs",
     "ops:verify-ha": "node scripts/verify-ha-topology.mjs",
+    "ops:verify-runtime-provenance": "node scripts/verify-runtime-provenance.mjs",
     "verify:operational-config": "pnpm ops:verify-ha",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
     "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm verify:clinical-sources && pnpm verify:curriculum-inventory && pnpm verify:observability-governance && pnpm verify:operational-config && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:critical-decisions && pnpm verify:scope-drift && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:premium-traceability && pnpm verify:test-risk-matrix && pnpm verify:skip-governance && pnpm verify:test-evidence-governance && pnpm verify:change-control-governance && pnpm verify:accessibility-governance && pnpm verify:capacity-governance && pnpm verify:web-performance-governance && pnpm verify:journey-correction-governance && pnpm verify:sub80-program && pnpm verify:architecture && pnpm verify:hotspots && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
