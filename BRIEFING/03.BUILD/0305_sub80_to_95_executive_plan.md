@@ -309,3 +309,9 @@ Foi medida a aplicação no Chromium local em mobile/desktop, com LCP `232/172 m
 ## 17.14 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
 
 O PR `#1` continua aberto no head remoto antigo `d3964a9…`; os checks `quality` falham e o repositório não possui secrets, variables, environments ou deployments. O plano mantém BLK-05/B-G5 aberto até bundle licenciado, CI verde no RC, registry, deploy e rollback por digest serem provisionados e autorizados.
+
+## 17.15 Contrato local para bundle clínico privado — 2026-08-14T13:18:25-03:00
+
+Foi implementado o contrato de materialização segura do bundle: `CVG_CLINICAL_SOURCES_DIRECTORY` é opcional, mas quando usado exige caminho absoluto fora do repositório; nomes de arquivo são basenames e traversal falha. O workflow expõe `vars.CVG_CLINICAL_SOURCES_DIRECTORY`, mantendo PDFs fora do Git e de artefatos públicos.
+
+RED/GREEN passou `11/11`, `verify:ci-contract` e `verify:clinical-sources` localmente. Isso reduz o risco de integração do B-G5, mas não fecha o gate: ainda faltam provedor/licença, bundle, credencial read-only, retenção e run remoto verde no RC. Baseline `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.

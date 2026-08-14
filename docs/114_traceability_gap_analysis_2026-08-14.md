@@ -180,3 +180,9 @@ Isso adiciona evidência local aos requisitos de experiência/capacidade, mas n�
 ## Reconsulta read-only do CI remoto — 2026-08-14T13:07:52-03:00
 
 O PR `#1` continua aberto no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, com os dois checks `quality` mais recentes falhos. O repositório permanece sem secrets, variables, environments ou deployments (`0/0/0/0`); o commit local atual não foi publicado. O gap de bundle licenciado, CI verde no RC, registry, deploy e rollback remoto permanece explícito.
+
+## Fronteira de bundle clínico privado — 2026-08-14T13:18:25-03:00
+
+O gate de fontes ganhou suporte explícito a `CVG_CLINICAL_SOURCES_DIRECTORY`: caminho absoluto, fora do repositório, com validação de basename e rejeição de traversal. O CI documenta a variável opcional por `vars.CVG_CLINICAL_SOURCES_DIRECTORY`; os PDFs continuam fora do Git e o pré-voo mantém os três nomes/SHA-256 exatos.
+
+O teste focal passou `11/11`, `verify:ci-contract` passou e a execução local do pré-voo passou. Isso fecha somente o contrato local de materialização segura. O bundle licenciado, a credencial read-only, a retenção do artefato e o run remoto verde no RC continuam ausentes; `completeChains=0/145`, baseline `83,24/100` e `PILOT_BLOCKED` permanecem.

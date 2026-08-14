@@ -3,10 +3,18 @@ import { readFile, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import process from "node:process";
 
+import {
+  resolveClinicalSourceFile,
+  resolveClinicalSourcesDirectory,
+} from "./clinical-source-location.mjs";
+
 const root = process.cwd();
 const manifest = JSON.parse(
   await readFile(join(root, "clinical-sources.json"), "utf8"),
 );
+const sourcesDirectory = resolveClinicalSourcesDirectory({
+  rootDirectory: root,
+});
 
 if (!Array.isArray(manifest.sources) || manifest.sources.length !== 3) {
   throw new Error(
@@ -18,7 +26,7 @@ const allowedCodes = new Set(manifest.sources.map((source) => source.code));
 const errors = [];
 
 for (const source of manifest.sources) {
-  const filePath = join(root, source.fileName);
+  const filePath = resolveClinicalSourceFile(sourcesDirectory, source.fileName);
   try {
     const file = await readFile(filePath);
     const hash = createHash("sha256").update(file).digest("hex");

@@ -745,6 +745,14 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **rollback:** não escrever no host até aprovação; após provisionamento, remover somente recursos do projeto por manifest explícito e retornar ao digest anterior;
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
 
+## 16.24 Fronteira segura para bundle clínico privado — 2026-08-14T13:18:25-03:00
+
+- **entrega local:** `scripts/clinical-source-location.mjs` resolve somente diretório absoluto externo e rejeita path relativo, diretório dentro do repositório e filename com traversal; `.github/workflows/quality.yml` expõe `vars.CVG_CLINICAL_SOURCES_DIRECTORY`;
+- **teste:** `tests/integration/clinical-source-location.test.ts` e `tests/integration/ci-governance.test.ts`, `11/11` aprovados; `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente;
+- **restrição:** não versionar PDFs, não aceitar bundle sem os três SHA-256 e não marcar B-G5 como verde sem run remoto no RC;
+- **dependências:** provedor/licença, bundle privado, credencial read-only, materialização no runner, retenção de artefato, registry/deploy/rollback;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar a fronteira externa autorizada e reexecutar o CI no mesmo RC.
+
 ## 16.23 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
 
 - **evidência:** PR `#1` permanece aberto no head remoto anterior, com checks `quality` falhos;

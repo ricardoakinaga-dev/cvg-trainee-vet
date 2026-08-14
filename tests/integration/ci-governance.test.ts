@@ -61,4 +61,11 @@ describe("CI reproducibility contract", () => {
     );
     expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
   });
+
+  it("documents the external licensed clinical source bundle boundary", async () => {
+    const contract = await readCiContract();
+
+    expect(contract.envExample).toMatch(/^CVG_CLINICAL_SOURCES_DIRECTORY=/mu);
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
 });

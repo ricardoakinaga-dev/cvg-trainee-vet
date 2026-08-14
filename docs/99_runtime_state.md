@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-06-D local revalidado no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`; RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético passaram; inventário read-only do Hostinger confirmou capacidade genérica de edge, mas nenhum projeto/route do Trainee Vet; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-05 ganhou fronteira local segura para bundle clínico privado fora do checkout; `CVG_CLINICAL_SOURCES_DIRECTORY` absoluto, basename/traversal protegidos, workflow parametrizado e testes focais verdes; RC local, E2E web/HA, Web Vitals observados, carga delimitada, failover controlado, restore live e rollback sintético continuam comprovados; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; web recompilado/reiniciado; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500` com uma réplica parada, restore live `2/2`, health `200/200`, HA/edge/manifesto e documentação verificados; `pnpm verify` passou novamente com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto reconsultado sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); evidências novas consolidadas em commit local, sem push e com worktree limpo
+- last_completed_action: fronteira `CVG_CLINICAL_SOURCES_DIRECTORY` implementada e documentada; `11/11` testes focais, `verify:ci-contract` e `verify:clinical-sources` passaram localmente; runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; Web Vitals local observado em mobile/desktop, carga delimitada `20.000/20.000`, E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2`, health `200/200`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem mudança (`0` secrets, `0` variables, `0` environments, `0` deployments); alterações locais aguardando commit desta rodada, sem push ou escrita remota
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T13:09:29-03:00
+- last_update: 2026-08-14T13:18:25-03:00
 
 ## 2026-08-14T12:46:44-03:00 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
 
@@ -2735,3 +2735,16 @@ Scorecard 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 25 `READY_FOR_NEXT_STEP
 ### LIMITES / STATUS / NEXT
 
 O resultado não altera a nota `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` ou `PILOT_BLOCKED`. Os gates clínicos, externos, humanos, UAT, WCAG manual, Web Vitals reais, soak, DR, CI/deploy remoto e reauditoria continuam pendentes.
+
+## 2026-08-14T13:18:25-03:00 — CLINICAL-SOURCE-BUNDLE-BOUNDARY-123
+
+### RESULTADO
+
+- `CVG_CLINICAL_SOURCES_DIRECTORY` foi adicionado ao contrato de CI e ao `.env.example`; quando configurado, exige caminho absoluto fora do repositório;
+- `scripts/clinical-source-location.mjs` rejeita path relativo, diretório interno e filename com traversal; `verify-clinical-sources` mantém os nomes/SHA-256 do manifesto;
+- testes focais `11/11`, `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente; nenhum PDF foi adicionado ou copiado para o Git;
+- workflow, relatório, política de fontes, traceability, plano, roadmap, backlog e remediação foram atualizados.
+
+### STATUS / NEXT
+
+O contrato local está pronto, mas bundle privado/licenciado, credencial read-only, retenção, CI remoto verde no RC, registry/deploy/rollback, revisão clínica, IdP/MFA, edge público, backup/RPO/RTO, UAT, soak/DR e reauditoria continuam ausentes. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; `completeChains=0/145`.

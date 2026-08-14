@@ -244,3 +244,9 @@ O GitHub foi reconsultado sem escrita. O PR `#1` continua aberto e seu head remo
 O commit local desta rodada não foi publicado, portanto não há evidência de CI, registry, deploy ou rollback do RC atual. Nenhuma alteração remota foi realizada. A nota permanece `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
 
 As evidências desta reconsulta e da medição local foram consolidadas em commit local, sem alteração do código executável.
+
+## 31. Fronteira segura para bundle clínico privado — 2026-08-14T13:18:25-03:00
+
+Foi implementada uma fronteira parametrizada para que o CI autorizado materialize os três PDFs licenciados fora do checkout: `CVG_CLINICAL_SOURCES_DIRECTORY` aceita somente caminho absoluto externo ao repositório; os nomes de arquivo são tratados como basenames e traversal é rejeitado. O workflow `quality` expõe a variável opcional `vars.CVG_CLINICAL_SOURCES_DIRECTORY`, sem incluir conteúdo protegido no Git, no log ou em artefato público.
+
+RED/GREEN passou com `11/11` testes focados (`ci-governance` e `clinical-source-location`), `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` local. Essa mudança torna o contrato de bundle reproduzível, mas não inventa o bundle remoto: a execução GitHub ainda não foi repetida no RC, não há provider/credencial configurado e o CI continua `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`. A baseline permanece `83,24/100` e `0/145` cadeias completas.

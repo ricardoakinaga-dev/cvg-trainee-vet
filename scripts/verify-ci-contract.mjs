@@ -20,6 +20,7 @@ const requiredEnvironmentKeys = Object.freeze([
   "CVG_TEST_QDRANT_URL",
   "CVG_TEST_QDRANT_API_KEY",
   "AI_ENABLED",
+  "CVG_CLINICAL_SOURCES_DIRECTORY",
 ]);
 const requiredWorkflowChecks = Object.freeze([
   ["PostgreSQL service", /image:\s*postgres:16/u],

@@ -2599,6 +2599,7 @@ artifacts:
         ".env.example",
         "package.json",
         "pnpm-lock.yaml",
+        "scripts/clinical-source-location.mjs",
         "scripts/verify-ci-contract.mjs",
         ".github/workflows/quality.yml",
         "playwright.config.ts",
@@ -2642,6 +2643,7 @@ artifacts:
         "packages/contracts/src/authoring.ts",
         "packages/domain/src/content.ts",
         "packages/persistence/src/content-repository.ts",
+        "scripts/clinical-source-location.mjs",
         "scripts/verify-clinical-sources.mjs",
       ]
     tests:
@@ -2651,10 +2653,13 @@ artifacts:
         "packages/application/src/authoring-use-cases.test.ts",
         "packages/domain/src/content.test.ts",
         "apps/api/src/http.test.ts",
+        "tests/integration/clinical-source-location.test.ts",
+        "tests/integration/ci-governance.test.ts",
       ]
     verification:
       [
         "pnpm verify:clinical-sources",
+        "pnpm exec vitest run --project integration tests/integration/clinical-source-location.test.ts tests/integration/ci-governance.test.ts",
         "pnpm exec vitest run --project unit packages/curriculum/src/source-registry.test.ts packages/curriculum/src/learning-runtime.test.ts packages/application/src/authoring-use-cases.test.ts packages/domain/src/content.test.ts apps/api/src/http.test.ts",
         "pnpm typecheck",
         "pnpm build",

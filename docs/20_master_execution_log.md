@@ -6787,3 +6787,29 @@ Essa evidência melhora BLK-07 localmente, mas não é RUM público nem soak apr
 - **resultado:** evidência de Web Vitals/carga, reconciliação do preflight e reconsulta do CI foram consolidadas com as atualizações de relatório, estado, log, backlog, roadmap, plano e rastreabilidade;
 - **restrição:** nenhum push, alteração de código executável ou escrita remota; worktree limpo;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; obter bundle licenciado/CI, alvo/FQDN/IdP/storage e equipe clínica autorizados antes da reauditoria externa.
+
+## 2026-08-14T13:18:25-03:00 — CLINICAL-SOURCE-BUNDLE-BOUNDARY-123
+
+### ENGINE
+
+BUILD / AUDIT
+
+### PHASE / SPRINT / TASK
+
+SUB80→95 / S0 / BLK-05-A — fronteira segura de bundle clínico privado
+
+### ACTION
+
+Criada a resolução parametrizada de fontes clínicas externas ao checkout, documentada no contrato do CI, `.env.example`, política de fontes e workflow. O resolver exige caminho absoluto fora do repositório e rejeita traversal; o pré-voo continua validando nome e SHA-256 do manifesto.
+
+### RESULT
+
+Testes focais `11/11`, `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente. PDFs não foram adicionados ao Git, logs ou artefatos públicos.
+
+### DECISIONS
+
+O bundle privado, provedor/licença, credencial read-only, retenção e run remoto no RC continuam decisões/recursos externos; não alterar `PASS_WITH_GAPS`, `0/145`, baseline `83,24/100` ou `PILOT_BLOCKED`.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL`. Próxima ação: provisionamento autorizado do bundle/runner, depois CI verde, registry/deploy/rollback e reauditoria no mesmo RC.

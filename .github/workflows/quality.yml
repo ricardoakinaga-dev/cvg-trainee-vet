@@ -42,6 +42,7 @@ jobs:
       QDRANT_URL: http://127.0.0.1:6333
       CVG_TEST_QDRANT_URL: http://127.0.0.1:6333
       AI_ENABLED: "false"
+      CVG_CLINICAL_SOURCES_DIRECTORY: ${{ vars.CVG_CLINICAL_SOURCES_DIRECTORY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

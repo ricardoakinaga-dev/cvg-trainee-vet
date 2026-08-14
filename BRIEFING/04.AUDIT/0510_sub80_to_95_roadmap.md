@@ -269,3 +269,9 @@ O runtime local passou medição Chromium em dois viewports (LCP `232/172 ms`, C
 ## 12.12 Reconsulta do CI remoto — 2026-08-14T13:07:52-03:00
 
 O GitHub continua sem infraestrutura de promoção: PR `#1` aberto no head remoto anterior, checks `quality` falhos e `0` secrets/variables/environments/deployments. B-G5 e G-S80-9 permanecem abertos; o próximo passo exige bundle licenciado, CI read-only, registry imutável, ambiente de deploy e rollback autorizado.
+
+## 12.13 Contrato de bundle clínico privado — 2026-08-14T13:18:25-03:00
+
+O CI agora declara `vars.CVG_CLINICAL_SOURCES_DIRECTORY` e o verificador aceita um diretório absoluto externo, validando nomes exatos e SHA-256 sem copiar PDFs para o repositório. Os testes focais passaram `11/11` e o pré-voo local passou.
+
+Critério de saída do B-G5 continua: bundle licenciado provisionado, acesso read-only, materialização temporária, retenção, run remoto verde no mesmo RC e depois registry/deploy/rollback por digest. A mudança não promove o gate nem a baseline.

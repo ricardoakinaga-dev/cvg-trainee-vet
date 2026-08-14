@@ -21,6 +21,14 @@ pnpm verify:clinical-sources
 clinical source governance: PASS (3 immutable PDFs, hashes verified)
 ```
 
+## Bundle privado para CI
+
+Os PDFs licenciados não devem ser versionados no Git, publicados em artefatos públicos ou registrados em logs. Quando o CI não tiver os arquivos no checkout, o executor autorizado pode materializar uma cópia somente leitura em um diretório temporário fora do repositório e definir `CVG_CLINICAL_SOURCES_DIRECTORY` com um caminho absoluto para esse diretório.
+
+O resolver em [`scripts/clinical-source-location.mjs`](../scripts/clinical-source-location.mjs) rejeita caminhos relativos, diretórios dentro do repositório e nomes de arquivo com traversal. O pré-voo continua exigindo os nomes exatos e os três SHA-256 deste manifesto; apontar para um diretório externo não reduz o controle de integridade nem substitui a licença. Ao terminar o job, o executor deve remover o diretório temporário conforme a política do provedor.
+
+O contrato foi coberto por `tests/integration/clinical-source-location.test.ts` e `tests/integration/ci-governance.test.ts`. A variável foi documentada no `.env.example` e exposta no workflow como `vars.CVG_CLINICAL_SOURCES_DIRECTORY`. No estado atual, o bundle privado e a execução remota verde ainda não existem; portanto o gate de CI permanece aberto.
+
 ## Publicação e bloqueios
 
 - B-07 e os 24 packs do currículo passam por registro de fonte, pré-voo técnico, revisão item a item, aprovação clínica independente e projeção pública redigida.

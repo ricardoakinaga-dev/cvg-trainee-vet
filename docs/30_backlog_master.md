@@ -2,7 +2,7 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
-**Estado atual (2026-08-14):** `ENT95-PROGRAM` — programa, roadmap e backlog Premium Enterprise 95 em execução controlada sobre a baseline vigente de **83/100**; 18 tasks estão `COMPLETED` localmente, 25 `READY_FOR_NEXT_STEP`, 9 `IN_PROGRESS` e 18 `WAITING_HUMAN_APPROVAL`, todos com gaps explícitos quando aplicável. O gate de rastreabilidade confirma 135/145 linhas com evidência local de módulo/contrato/teste/artefato, incluindo 82/87 RF P0/P1; 0/145 cadeias estão completas e 10 linhas ainda têm gaps locais. O scorecard ponderado permanece 83,24/100, com 1/16 itens no alvo. O relatório foi salvo em `docs/112_current_construction_report_2026-08-14.md`, o overlay BLK-01…BLK-08 foi incorporado ao plano `0305`, roadmap `0510` e backlog `0511`, e o preflight BLK-06-A/BLK-08-A foi registrado em `docs/113_blocker_preflight_2026-08-14.md`. A auditoria local confirmou testes, E2E e runtime local, sem promover score. Commit/SHA, release, mobilização, capacidade enterprise/clínica, T0 e recursos externos aguardam aprovação.
+**Estado atual (2026-08-14):** `ENT95-PROGRAM` — programa, roadmap e backlog Premium Enterprise 95 em execução controlada sobre a baseline vigente de **83/100**; gates locais de construção e runtime passam, enquanto os gates externos/humanos permanecem `WAITING_HUMAN_APPROVAL`. O gate de rastreabilidade confirma 145/145 linhas com evidência local de módulo/contrato/teste/artefato, incluindo 87/87 RF P0/P1; 0/145 cadeias estão completas porque estado/release, artefato remoto e reauditoria ainda não foram aprovados. O scorecard ponderado permanece 83,24/100, com 1/16 itens no alvo. O relatório foi salvo em `docs/112_current_construction_report_2026-08-14.md`, o overlay BLK-01…BLK-08 foi incorporado ao plano `0305`, roadmap `0510` e backlog `0511`, e a fronteira segura de bundle clínico foi registrada na política, CI e `traceability.yml`. A auditoria local confirmou testes, E2E, Web Vitals delimitados, carga, failover, restore e runtime local sem promover score. Bundle licenciado, CI/registry/deploy, mobilização clínica, T0 e recursos externos aguardam aprovação.
 
 **Baseline canônica:** `BRIEFING/04.AUDIT/0491_full_construction_audit.md` — 16 itens entre 65 e 95, nota ponderada 83/100, release/piloto/publicação clínica não aprovados.
 
@@ -1610,3 +1610,10 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **resultado:** novo artefato de Web Vitals/carga, reconciliação do preflight e inventário CI foram consolidados com relatório, estado, log, backlog, roadmap, plano e rastreabilidade;
 - **restrição:** nenhum push, alteração de código executável ou escrita remota; worktree limpo;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar dependências externas/humanas e reauditar o mesmo RC.
+
+## 2026-08-14T13:18:25-03:00 — CLINICAL-SOURCE-BUNDLE-BOUNDARY-123
+
+- **entrega:** fronteira segura para bundle privado/licenciado em `CVG_CLINICAL_SOURCES_DIRECTORY`, com caminho absoluto externo, basename sem traversal, variável documentada no CI e PDFs mantidos fora do Git;
+- **checks:** testes focais `11/11`, `pnpm verify:ci-contract` e `pnpm verify:clinical-sources` passaram localmente;
+- **resultado:** prepara a resolução de BLK-05 sem alegar CI remoto; `0/145` cadeias completas, baseline `83,24/100` e `PILOT_BLOCKED` permanecem;
+- **próxima ação:** aprovar/provisionar bundle, credencial read-only, retenção, runner, registry, deploy e rollback; executar o pipeline e reauditar no mesmo RC.

@@ -342,3 +342,9 @@ O runtime HA foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bda
 ## 12. Web Vitals e carga delimitada — 2026-08-14T13:00:56-03:00
 
 Chromium local observou LCP `232/172 ms`, CLS `0/0` e INP proxy `120/144 ms`; carga delimitada de `20.000/20.000` requests passou com p95 `119,82 ms`. A evidência é local e não fecha R3–R5, RUM público, UAT manual, soak de 24 horas, SLO ou DR.
+
+## 13. Contrato de bundle clínico privado — 2026-08-14T13:18:25-03:00
+
+O gate de fontes agora suporta `CVG_CLINICAL_SOURCES_DIRECTORY` como diretório absoluto externo, com proteção contra traversal e validação posterior dos três nomes/SHA-256. O workflow usa `vars.CVG_CLINICAL_SOURCES_DIRECTORY`; a política continua proibindo PDFs no Git, logs e artefatos públicos. Os testes focalizados passaram `11/11` e os verificadores locais passaram.
+
+Esse é um avanço de preparação de CI, não uma prova externa: o bundle licenciado, a credencial read-only, a retenção e a execução verde do RC ainda precisam ser provisionados e auditados.
