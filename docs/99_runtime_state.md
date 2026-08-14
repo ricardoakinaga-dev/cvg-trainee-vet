@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: gate de proveniência do runtime implementado com TDD no commit executável `be43fc8f7f410435a40550eb70e9b2a700882355`; `6/6` testes focais e `pnpm verify` integral (`163` arquivos/`719` testes/`18` skips; cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`) passaram; uma recriação por tag foi rejeitada pelo gate e o rehearsal restaurou por digest com `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; runtime HA final em `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos alinhados ao mesmo SHA/digest, health live/ready/dependencies `200/200/200`, HA/edge verdes; fila live `796` total/`763` pendentes/`0` aprovados/`0` falhas técnicas e gate estrito falhou de forma esperada; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem infraestrutura (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
-- next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
+- next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
 
@@ -32,7 +32,24 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T14:24:40-03:00
+- last_update: 2026-08-14T14:38:49-03:00
+
+## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
+
+### RESULTADO
+
+- `gh auth status` confirmou sessão autenticada somente para leitura operacional; o inspetor de checks confirmou PR `#1` no head remoto antigo `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`;
+- o run `31402470511`/job `93500569913` falhou em `verify:clinical-sources` por ausência dos três arquivos licenciados: `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`;
+- `0` secrets, `0` variables, `0` environments e `0` deployments foram observados; não houve push, dispatch, provisionamento ou escrita remota;
+- a correção local `CVG_CLINICAL_SOURCES_DIRECTORY` está em `9bfa2c1`; falta bundle/provider autorizado e execução do mesmo RC no head remoto.
+
+### DECISÃO
+
+BLK-05/B-G5 permanece `WAITING_HUMAN_APPROVAL`; a causa está confirmada, mas a resolução externa não pode ser fabricada nem executada sem autorização.
+
+### NEXT ACTION
+
+Ricardo deve aprovar bundle/licença, credencial/variável, push do RC, registry, ambiente de deploy, domínio/IdP/storage e rollback; depois repetir CI e todos os gates externos no mesmo SHA.
 
 ## 2026-08-14T14:24:40-03:00 — RUNTIME-PROVENANCE-GATE-130
 

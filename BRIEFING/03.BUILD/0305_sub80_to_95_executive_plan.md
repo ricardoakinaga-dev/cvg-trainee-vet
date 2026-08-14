@@ -345,3 +345,9 @@ O GitHub permanece sem capacidade de promoção: PR `#1` aberto no head remoto a
 Foi implementado o gate reutilizável `scripts/verify-runtime-provenance.mjs` com TDD (`6/6`). Uma recriação por tag mutável foi rejeitada; o rehearsal local restaurou por digest e passou deploy, rollback e restauração. O RC executável atual é `be43fc8f7f410435a40550eb70e9b2a700882355`, digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos HA alinhados e health `200/200/200`.
 
 Esse marco reforça BLK-06-D somente no ambiente local e mantém BLK-01/BLK-05, gates externos, clínicos, UAT, operação e `0/145` abertos. Próximo passo: provisionar os ambientes autorizados e reauditar exatamente este RC.
+
+## 17.21 Diagnóstico do CI remoto — 2026-08-14T14:38:49-03:00
+
+O run remoto confirmou a causa de BLK-05: o head `d3964a9…` falha em `verify:clinical-sources` porque o checkout não possui os três PDFs licenciados. A correção local de `CVG_CLINICAL_SOURCES_DIRECTORY` já está pronta em `9bfa2c1`, mas o repositório não possui secrets, variables, environments ou deployments e o RC `be43fc8f` não foi publicado.
+
+O plano não transforma esse diagnóstico em fechamento. A saída exige decisão de provider/licença, bundle privado, credencial read-only, autorização de push, run verde no mesmo RC, registry imutável, deploy/rollback por digest e reauditoria.

@@ -303,3 +303,7 @@ PR `#1` continua aberto no head remoto anterior; os checks `quality` continuam f
 O gate local de proveniência passou após rejeitar uma recriação por tag mutável: source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, imagem `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos HA alinhados e health `200/200/200`; rehearsal `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`.
 
 O roadmap não promove B-G6/G-S80-9: CI/registry/deploy/rollback externo, identidade, edge público, backup/RPO/RTO, revisão veterinária, UAT, WCAG manual, RUM/Web Vitals, soak, DR e reauditoria continuam necessários.
+
+## 12.19 Diagnóstico do CI remoto — 2026-08-14T14:38:49-03:00
+
+O PR `#1` continua apontando para o head remoto antigo, e o run `31402470511` falhou porque os três arquivos licenciados não estão no checkout. B-G5/G-S80-9 permanecem abertos: a correção local de bundle externo está pronta, mas faltam provider/licença, credencial, autorização de publicação, CI verde no RC, registry, deploy/rollback e reauditoria.

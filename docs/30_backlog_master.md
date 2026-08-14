@@ -1660,6 +1660,14 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **próxima ação:** aprovar/provisionar bundle, credencial read-only, retenção, runner, registry, deploy e rollback; executar o pipeline e reauditar no mesmo RC.
 - **commit local:** `9bfa2c1` (`fix: support external clinical source bundle`), sem push.
 
+## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
+
+- **evidência:** GitHub Actions run `31402470511`/job `93500569913` no PR `#1` falhou em `verify:clinical-sources` por ausência dos três arquivos licenciados no checkout remoto;
+- **head:** remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, enquanto o worktree local está em `67552e4` e o RC executável está em `be43fc8f`;
+- **infraestrutura:** `0` secrets, `0` variables, `0` environments e `0` deployments; nenhum push, dispatch ou provisionamento foi executado;
+- **correção local:** `9bfa2c1` implementa `CVG_CLINICAL_SOURCES_DIRECTORY` absoluto, externo e hash-verificado, mas ainda aguarda publicação autorizada e bundle privado/licenciado;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar provider/bundle/push, publicar o RC, executar CI/registry/deploy/rollback e reauditar.
+
 ## 2026-08-14T14:24:40-03:00 — RUNTIME-PROVENANCE-GATE-130
 
 - **entrega:** `scripts/verify-runtime-provenance.mjs` e testes focais `6/6`; o gate exige SHA explícito, `running/healthy`, imagem `@sha256`, digest comum, label OCI e `CVG_SOURCE_SHA` alinhados;

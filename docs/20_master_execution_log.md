@@ -6958,6 +6958,32 @@ Nenhuma escrita, push, trigger de workflow ou alteração remota foi executada. 
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar bundle/licença, runner/variáveis, registry, deploy e rollback autorizados e então reauditar o mesmo RC.
 
+## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-05 external CI diagnosis
+
+### ACTION
+
+Confirmada a autenticação read-only do GitHub CLI e executado o inspetor de checks no PR `#1`, sem disparar workflow, fazer push ou alterar configuração.
+
+### RESULT
+
+O PR continua no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. O run `31402470511`, job `93500569913`, falhou no `verify:clinical-sources` porque faltam no checkout remoto `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o artifact de cobertura não foi produzido. O inventário read-only confirmou `0` secrets, `0` variables, `0` environments e `0` deployments. A correção local `CVG_CLINICAL_SOURCES_DIRECTORY` está no commit `9bfa2c1`, mas ainda não está no head remoto; o RC `be43fc8f` também não foi publicado.
+
+### DECISIONS
+
+BLK-05 está diagnosticado, mas não pode ser marcado como resolvido sem bundle privado/licenciado, credencial/variável aprovada, publicação autorizada e run verde no mesmo RC. Nenhuma escrita externa foi realizada.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar provider/bundle e a autorização de push; então publicar o RC, executar CI, registry, deploy/rollback por digest e reauditar.
+
 ## 2026-08-14T14:24:40-03:00 — RUNTIME-PROVENANCE-GATE-130
 
 ### ENGINE

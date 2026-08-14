@@ -790,3 +790,11 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **aceite:** fecha somente a fatia local de BLK-06-D; não promove release, não fecha `0/145` e não substitui CI/registry/deploy/rollback externo, clínica, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar dependências autorizadas e repetir a reauditoria no mesmo RC;
 - **commit local:** `be43fc8` (`feat: add runtime provenance gate`), sem push.
+
+## 16.26 Diagnóstico do CI remoto — 2026-08-14T14:38:49-03:00
+
+- **evidência:** PR `#1`, head remoto `d3964a9…`, run `31402470511`/job `93500569913`; falha determinística em `verify:clinical-sources` por ausência dos três arquivos licenciados;
+- **correção local:** `CVG_CLINICAL_SOURCES_DIRECTORY` em `9bfa2c1` aceita bundle externo absoluto com hashes, sem versionar PDFs;
+- **dependências:** provider/licença, bundle privado, credencial/variável autorizada, push do RC, CI verde, registry, deploy/rollback e retenção de artefatos;
+- **restrição:** não usar segredo real, não disparar workflow, não publicar ou marcar B-G5 como concluído sem autorização;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar e reauditar o mesmo RC.

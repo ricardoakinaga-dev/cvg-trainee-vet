@@ -39,20 +39,20 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 |---:|---|---:|---|
 | 1 | Documentação, gates e governança | 90 | Estrutura documental forte e gates automatizados; aprovações e evidências externas continuam pendentes. |
 | 2 | Discovery, PRD e definição do produto | 95 | Cadeia Discovery → PRD → SPEC consistente e produto bem definido. |
-| 3 | Currículo e conteúdo clínico | 72 | Catálogo materializado com 24 módulos, 96 sessões e 796 conteúdos; 763 itens aguardam revisão clínica independente. |
+| 3 | Currículo e conteúdo clínico | 72 | Catálogo materializado com 24 módulos, 96 sessões e 796 conteúdos; 763 itens aguardam revisão clínica independente no beta com veterinários. |
 | 4 | Arquitetura e modularidade | 92 | Monorepo modular e fronteiras PostgreSQL/Qdrant/IA adequadas; há hotspots de código grandes. |
 | 5 | Domínio, contratos e regras | 88 | Invariantes e decisões críticas bem cobertos; faltam provas completas para todos os requisitos P0/P1. |
 | 6 | Persistência, migrations e integridade | 90 | 29 migrations verificadas, incluindo estado persistente do caso digital e recálculo; evidência produtiva autorizada ainda ausente. |
 | 7 | API e backend | 82 | API funcional e protegida; alguns entrypoints e fluxos operacionais têm cobertura inferior. |
 | 8 | Segurança, identidade e privacidade | 86 | Autorização server-side, RLS, CSRF, cookies e redaction presentes; IdP/MFA real não executado. |
 | 9 | Jornada do participante | 75 | Fluxos principais funcionam localmente; jornada integral, UAT e métricas reais não comprovados. |
-| 10 | Autoria, revisão e governança clínica | 68 | Workflow técnico existe; revisão humana independente do corpus liberável ainda não foi concluída. |
+| 10 | Autoria, revisão e governança clínica | 68 | Workflow técnico existe; revisão humana independente do corpus liberável será concluída no beta com veterinários e ainda não foi executada. |
 | 11 | Worker, Qdrant, IA e resiliência | 88 | Worker, projeções derivadas, IA assistiva e failover local funcionam; DR externo falta. |
 | 12 | Observabilidade e operação | 78 | Sinais, alertas e stack local existem; retenção e telemetria externas ainda não comprovadas. |
 | 13 | Web, UX e acessibilidade | 78 | Rotas e fluxos principais funcionam; há cinco gaps manuais de WCAG e Web Vitals reais pendentes. |
 | 14 | Testes, cobertura e evidências | 93 | Cobertura global forte e suíte ampla; skips e evidências sintéticas ainda não fecham o release. |
 | 15 | CI e reprodutibilidade | 86 | Contratos, lint, typecheck e build locais passam; o PR remoto falhou porque o checkout não contém o bundle licenciado das três fontes, e registry, deploy e rollback externos continuam não comprovados. |
-| 16 | Rastreabilidade e controle de mudanças | 65 | Existem 145 requisitos e 145 linhas de evidência local ancoradas no commit local `4d8618d`; 0/145 cadeias estão completas porque estado/release, gates externos e reauditoria ainda não foram aprovados. |
+| 16 | Rastreabilidade e controle de mudanças | 65 | Existem 145 requisitos e 145 linhas de evidência local; 0/145 cadeias estão completas porque estado/release, gates externos e reauditoria ainda não foram aprovados. |
 
 ## 4. Bloqueios que exigem resolução
 
@@ -294,3 +294,11 @@ Foi criado o gate `scripts/verify-runtime-provenance.mjs`, com teste primeiro e 
 O rehearsal local foi então executado no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355` e passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`. A verificação final encontrou API-A/API-B e worker-A/worker-B na referência `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, com o mesmo digest, SHA e estado saudável. Health live/ready/dependencies retornou `200/200/200`; HA e edge passaram.
 
 No PostgreSQL live, a fila continua em `796` conteúdos, `763` pendentes/não revisados, `0` aprovados, `0` ajustes e `0` falhas técnicas. O modo estrito falhou com `clinical review queue is incomplete: 763 pending items`, sem alterar ou publicar conteúdo. A nota permanece `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`; CI/registry/deploy externo, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak/DR, beta clínico e reauditoria continuam pendentes.
+
+## 38. Diagnóstico do CI remoto e causa do bloqueio — 2026-08-14T14:38:49-03:00
+
+O diagnóstico read-only do GitHub Actions confirmou que o PR `#1` ainda executa o head remoto antigo `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. O run `31402470511`/job `93500569913` falhou no `verify:clinical-sources` porque os três arquivos licenciados (`BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`) não existem no checkout remoto. O log também confirma que o artifact não foi produzido porque a etapa falhou antes da cobertura.
+
+O contrato local já foi corrigido no commit `9bfa2c1` para aceitar `CVG_CLINICAL_SOURCES_DIRECTORY` absoluto, externo ao repositório, com validação de nomes e hashes. Porém, esse commit e o RC `be43fc8f…` ainda não estão no head remoto. A API read-only confirmou `0` secrets, `0` variables, `0` environments e `0` deployments; nenhum push, workflow dispatch, provisionamento ou alteração remota foi feito.
+
+Resultado: o bloqueio de CI está diagnosticado e a correção local está pronta, mas o gate externo permanece `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL` até existir bundle privado/licenciado, credencial/variável autorizada, push aprovado e execução verde no mesmo RC. A revisão clínica continua planejada para o beta com veterinários; não houve aprovação ou publicação automática.
