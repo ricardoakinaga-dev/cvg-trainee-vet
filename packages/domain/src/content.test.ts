@@ -32,6 +32,12 @@ describe("content editorial state machine", () => {
     const draft = createContent(contentInput);
 
     expect(() =>
+      transitionContent(null as never, { type: "AUTOVERIFICAR" }),
+    ).toThrow("object");
+    expect(() =>
+      transitionContent({ ...draft, contentId: "" }, { type: "AUTOVERIFICAR" }),
+    ).toThrow("contentId");
+    expect(() =>
       transitionContent({ ...draft, version: 0 }, { type: "AUTOVERIFICAR" }),
     ).toThrow("version");
     expect(() =>
@@ -40,6 +46,12 @@ describe("content editorial state machine", () => {
         { type: "AUTOVERIFICAR" },
       ),
     ).toThrow("status");
+  });
+
+  it("rejects an empty content identity before creating a version", () => {
+    expect(() => createContent({ ...contentInput, contentId: "" })).toThrow(
+      "contentId",
+    );
   });
 
   it("requires clinical review and explicit authorization before publication", () => {
@@ -113,5 +125,60 @@ describe("content editorial state machine", () => {
     expect(transitionContent(published, { type: "VENCER" }).status).toBe(
       "VENCIDO",
     );
+  });
+
+  it("validates withdrawal metadata and preserves the affected count", () => {
+    const published = [
+      "AUTOVERIFICAR",
+      "VERIFICAR_PROJECAO",
+      "ENVIAR_PARA_REVISAO_CLINICA",
+      "APROVAR_CLINICAMENTE",
+      "AUTORIZAR_PUBLICACAO",
+      "PUBLICAR",
+    ].reduce(
+      (state, type) =>
+        transitionContent(state, { type } as Parameters<
+          typeof transitionContent
+        >[1]),
+      createContent(contentInput),
+    );
+
+    expect(
+      transitionContent(published, {
+        type: "RETIRAR",
+        withdrawalReasonCode: "ERRO_CONTEUDO",
+      }),
+    ).toMatchObject({
+      status: "RETIRADO",
+      withdrawalReasonCode: "ERRO_CONTEUDO",
+    });
+    expect(() =>
+      transitionContent(
+        { ...published, withdrawnAt: "not-a-timestamp" },
+        { type: "VENCER" },
+      ),
+    ).toThrow("withdrawnAt");
+    expect(() =>
+      transitionContent(
+        { ...published, affectedParticipantCount: -1 },
+        { type: "VENCER" },
+      ),
+    ).toThrow("affectedParticipantCount");
+    expect(() =>
+      transitionContent(
+        { ...published, affectedParticipantCount: 1.5 },
+        { type: "VENCER" },
+      ),
+    ).toThrow("affectedParticipantCount");
+    expect(
+      transitionContent(
+        {
+          ...published,
+          withdrawnAt: "2026-08-14T12:00:00.000Z",
+          affectedParticipantCount: 2,
+        },
+        { type: "VENCER" },
+      ),
+    ).toMatchObject({ status: "VENCIDO", affectedParticipantCount: 2 });
   });
 });

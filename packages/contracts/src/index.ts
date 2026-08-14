@@ -16,16 +16,22 @@ export type {
   SubmitAttemptRequest,
 } from "./assessment.js";
 export {
+  digitalCaseAdvanceRequestSchema,
+  digitalCaseScopeQuerySchema,
   curriculumRuntimeEvaluationRequestSchema,
+  parseParticipantDigitalCaseRuntime,
   parseParticipantActivity,
   parseParticipantCurriculumRuntime,
   participantActivityProjectionSchema,
   participantCurriculumRuntimeProjectionSchema,
+  participantDigitalCaseRuntimeProjectionSchema,
 } from "./learning.js";
 export type {
   CurriculumRuntimeEvaluationRequest,
+  DigitalCaseAdvanceRequest,
   ParticipantActivityProjection,
   ParticipantCurriculumRuntimeProjection,
+  ParticipantDigitalCaseRuntimeProjection,
 } from "./learning.js";
 export { contentTransitionRequestSchema } from "./content.js";
 export type { ContentTransitionRequest } from "./content.js";
@@ -49,6 +55,58 @@ export {
   correctionResultProjectionSchema,
 } from "./correction.js";
 export type { CorrectOpenResponseRequest } from "./correction.js";
+export {
+  operationalAiConfirmationProjectionSchema,
+  operationalAiConfirmationRequestSchema,
+  operationalAiProposalProjectionSchema,
+  operationalAiProposalRequestSchema,
+} from "./operational-ai.js";
+export type {
+  OperationalAiConfirmationRequest,
+  OperationalAiProposalProjection,
+  OperationalAiProposalRequest,
+} from "./operational-ai.js";
+export {
+  observedItemStatisticsProjectionSchema,
+  observedItemStatisticsRequestSchema,
+  parseObservedItemStatistics,
+} from "./item-statistics.js";
+export type { ObservedItemStatisticsProjection } from "./item-statistics.js";
+export {
+  parseSourceConflictDecision,
+  sourceConflictDecisionProjectionSchema,
+  sourceConflictDecisionRequestSchema,
+} from "./source-conflict.js";
+export type {
+  SourceConflictDecisionProjection,
+  SourceConflictDecisionRequest,
+} from "./source-conflict.js";
+export {
+  assessmentRecalculationBatchRequestSchema,
+  assessmentRecalculationCandidateSchema,
+  assessmentRecalculationRequestSchema,
+  assessmentRecalculationResultSchema,
+  parseAssessmentRecalculationResult,
+} from "./assessment-recalculation.js";
+export type {
+  AssessmentRecalculationBatchRequest,
+  AssessmentRecalculationCandidateRequest,
+  AssessmentRecalculationRequest,
+  AssessmentRecalculationResult,
+} from "./assessment-recalculation.js";
+export {
+  maintenanceWindowDecisionSchema,
+  maintenanceWindowRequestSchema,
+} from "./maintenance-window.js";
+export type {
+  MaintenanceWindowDecision,
+  MaintenanceWindowRequest,
+} from "./maintenance-window.js";
+export {
+  moderatorDashboardProjectionSchema,
+  parseModeratorDashboard,
+} from "./moderator-dashboard.js";
+export type { ModeratorDashboardProjection } from "./moderator-dashboard.js";
 export {
   acceptInvitationRequestSchema,
   createInvitationRequestSchema,
@@ -78,9 +136,13 @@ export {
   assessmentWorkflowScopedTransitionRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
   feedbackTicketCreateRequestSchema,
+  feedbackTicketListProjectionSchema,
+  feedbackTicketListQuerySchema,
   feedbackTicketParticipantCreateRequestSchema,
+  feedbackTechnicalContextSchema,
   feedbackTicketScopedTransitionRequestSchema,
   feedbackTicketTransitionRequestSchema,
+  internalFeedbackTicketProjectionSchema,
   learningAssignmentCreateRequestSchema,
   learningAssignmentScopedTransitionRequestSchema,
   learningAssignmentTransitionRequestSchema,
@@ -97,9 +159,13 @@ export type {
   AssessmentWorkflowScopedTransitionRequest,
   AssessmentWorkflowTransitionRequest,
   FeedbackTicketCreateRequest,
+  FeedbackTicketListProjection,
+  FeedbackTicketListQuery,
   FeedbackTicketParticipantCreateRequest,
+  FeedbackTechnicalContext,
   FeedbackTicketScopedTransitionRequest,
   FeedbackTicketTransitionRequest,
+  InternalFeedbackTicketProjection,
   LearningAssignmentCreateRequest,
   LearningAssignmentScopedTransitionRequest,
   LearningAssignmentTransitionRequest,
@@ -136,6 +202,33 @@ export type {
   ParticipantDashboardProjection,
 } from "./dashboard.js";
 export {
+  adminDashboardProjectionSchema,
+  parseAdminDashboard,
+} from "./admin-dashboard.js";
+export type { AdminDashboardProjection } from "./admin-dashboard.js";
+export {
+  adminOperationsDashboardProjectionSchema,
+  parseAdminOperationsDashboard,
+} from "./admin-operations-dashboard.js";
+export type { AdminOperationsDashboardProjection } from "./admin-operations-dashboard.js";
+export { auditTrailProjectionSchema, parseAuditTrail } from "./audit.js";
+export type { AuditEntryProjection, AuditTrailProjection } from "./audit.js";
+export {
+  accountManagementListQuerySchema,
+  accountManagementUpdateRequestSchema,
+  managedAccountPageProjectionSchema,
+  accountSessionRevokeRequestSchema,
+  revokedAccountSessionsProjectionSchema,
+} from "./account-management.js";
+export type {
+  AccountManagementListQuery,
+  AccountManagementUpdateRequest,
+  ManagedAccountPageProjection,
+  ManagedAccountProjection,
+  AccountSessionRevokeRequest,
+  RevokedAccountSessionsProjection,
+} from "./account-management.js";
+export {
   apiErrorCodeSchema,
   apiErrorResponse,
   apiSuccessResponse,
@@ -148,3 +241,14 @@ export type {
   ApiSuccessEnvelope,
   PaginationQuery,
 } from "./api.js";
+export {
+  API_SURFACE,
+  materializeApiSurfacePath,
+  validateApiSurface,
+} from "./api-surface.js";
+export type {
+  ApiSurfaceAuth,
+  ApiSurfaceMethod,
+  ApiSurfaceRoute,
+  ApiSurfaceScope,
+} from "./api-surface.js";

@@ -6,6 +6,10 @@ import type {
   ParticipantActivityItem,
   ParticipantActivityState,
 } from "@cvg/application";
+import type {
+  PublicAssessmentInteraction,
+  PublicDigitalCaseStage,
+} from "@cvg/curriculum";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
 import {
@@ -32,10 +36,18 @@ export type ActivityRowShape = Readonly<{
   readonly responseMode: string;
   readonly choices?: unknown;
   readonly selectionMode?: unknown;
+  readonly interaction?: unknown;
+  readonly digitalCaseStage?: unknown;
 }>;
 
 const supportedKinds = ["LEITURA", "QUESTAO", "CASO", "REFLEXAO"] as const;
-const supportedResponseModes = ["TEXT", "CHOICE", "NONE"] as const;
+const supportedResponseModes = [
+  "TEXT",
+  "CHOICE",
+  "STRUCTURED_FIELDS",
+  "DOSE_INFUSION",
+  "NONE",
+] as const;
 
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) {
@@ -129,6 +141,169 @@ function parseSelectionMode(value: unknown): "SINGLE" | "MULTIPLE" | undefined {
   return value;
 }
 
+function parseInteraction(
+  value: unknown,
+): PublicAssessmentInteraction | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!isRecord(value)) {
+    throw new PersistenceMappingError("content interaction is invalid");
+  }
+  const kind = value.kind;
+  const evaluationMode = value.evaluationMode;
+  if (
+    (kind !== "STRUCTURED_FIELDS" && kind !== "DOSE_INFUSION") ||
+    evaluationMode !== "AUTOMATIC"
+  ) {
+    throw new PersistenceMappingError("content interaction is invalid");
+  }
+  const rawFields = value.fields;
+  if (
+    !Array.isArray(rawFields) ||
+    rawFields.length < 1 ||
+    rawFields.length > 20
+  ) {
+    throw new PersistenceMappingError("content interaction fields are invalid");
+  }
+  const fieldIds = new Set<string>();
+  const fields = rawFields.map((candidate, index) => {
+    if (!isRecord(candidate)) {
+      throw new PersistenceMappingError(
+        `content field ${index + 1} is invalid`,
+      );
+    }
+    const id = candidate.id;
+    const label = candidate.label;
+    const valueType = candidate.valueType;
+    if (
+      typeof id !== "string" ||
+      typeof label !== "string" ||
+      (valueType !== "NUMBER" &&
+        valueType !== "TEXT" &&
+        valueType !== "BOOLEAN") ||
+      fieldIds.has(id)
+    ) {
+      throw new PersistenceMappingError(
+        `content field ${index + 1} is invalid`,
+      );
+    }
+    fieldIds.add(id);
+    const min = candidate.min;
+    const max = candidate.max;
+    if (
+      (min !== undefined &&
+        (typeof min !== "number" || !Number.isFinite(min))) ||
+      (max !== undefined && (typeof max !== "number" || !Number.isFinite(max)))
+    ) {
+      throw new PersistenceMappingError(
+        `content field ${index + 1} range is invalid`,
+      );
+    }
+    return Object.freeze({
+      id: id.trim(),
+      label: parsePlainText(label, `content field ${index + 1} label`),
+      valueType,
+      ...(typeof candidate.unit === "string"
+        ? {
+            unit: parsePlainText(
+              candidate.unit,
+              `content field ${index + 1} unit`,
+            ),
+          }
+        : {}),
+      required: true as const,
+      ...(min === undefined ? {} : { min }),
+      ...(max === undefined ? {} : { max }),
+    });
+  });
+  if (fields.some((field) => !field.required)) {
+    throw new PersistenceMappingError("content fields must be required");
+  }
+  if (kind === "STRUCTURED_FIELDS") {
+    return Object.freeze({
+      kind,
+      evaluationMode,
+      fields,
+    });
+  }
+  const inputs = value.calculationInputs;
+  if (!isRecord(inputs)) {
+    throw new PersistenceMappingError("dose interaction inputs are invalid");
+  }
+  const inputKeys = [
+    "weightKg",
+    "doseMgPerKg",
+    "concentrationMgPerMl",
+    "durationHours",
+  ] as const;
+  if (
+    inputKeys.some(
+      (key) => typeof inputs[key] !== "number" || !Number.isFinite(inputs[key]),
+    )
+  ) {
+    throw new PersistenceMappingError("dose interaction inputs are invalid");
+  }
+  if (typeof value.formulaLabel !== "string") {
+    throw new PersistenceMappingError("dose interaction formula is invalid");
+  }
+  return Object.freeze({
+    kind,
+    evaluationMode,
+    fields,
+    calculationInputs: Object.freeze({
+      weightKg: inputs.weightKg as number,
+      doseMgPerKg: inputs.doseMgPerKg as number,
+      concentrationMgPerMl: inputs.concentrationMgPerMl as number,
+      durationHours: inputs.durationHours as number,
+    }),
+    formulaLabel: parsePlainText(value.formulaLabel, "dose formula"),
+  });
+}
+
+function parseDigitalCaseStage(
+  value: unknown,
+): PublicDigitalCaseStage | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!isRecord(value)) {
+    throw new PersistenceMappingError("digital case stage is invalid");
+  }
+  if (
+    typeof value.caseId !== "string" ||
+    ![1, 2, 3].includes(value.stage as number) ||
+    !Array.isArray(value.examSeries)
+  ) {
+    throw new PersistenceMappingError("digital case stage is invalid");
+  }
+  const examSeries = value.examSeries.map((candidate, index) => {
+    if (!isRecord(candidate)) {
+      throw new PersistenceMappingError(`case exam ${index + 1} is invalid`);
+    }
+    const modality = candidate.modality;
+    if (
+      typeof candidate.id !== "string" ||
+      typeof candidate.label !== "string" ||
+      (modality !== "RADIOGRAFIA" &&
+        modality !== "POCUS" &&
+        modality !== "ECG") ||
+      typeof candidate.observationCount !== "number" ||
+      !Number.isInteger(candidate.observationCount) ||
+      candidate.observationCount < 2
+    ) {
+      throw new PersistenceMappingError(`case exam ${index + 1} is invalid`);
+    }
+    return Object.freeze({
+      id: candidate.id.trim(),
+      modality,
+      label: parsePlainText(candidate.label, `case exam ${index + 1} label`),
+      observationCount: candidate.observationCount,
+    });
+  });
+  return Object.freeze({
+    caseId: value.caseId.trim(),
+    stage: value.stage as 1 | 2 | 3,
+    examSeries: Object.freeze(examSeries),
+  });
+}
+
 export function activityRowsToState(
   rows: readonly ActivityRowShape[],
 ): ParticipantActivityState | null {
@@ -164,6 +339,8 @@ export function activityRowsToState(
     const choices = parseChoices(row.choices);
     const responseMode = parseResponseMode(row.responseMode);
     const selectionMode = parseSelectionMode(row.selectionMode);
+    const interaction = parseInteraction(row.interaction);
+    const digitalCaseStage = parseDigitalCaseStage(row.digitalCaseStage);
     if (
       responseMode === "CHOICE" &&
       (choices === undefined || selectionMode === undefined)
@@ -181,6 +358,8 @@ export function activityRowsToState(
       responseMode,
       ...(choices === undefined ? {} : { choices }),
       ...(selectionMode === undefined ? {} : { selectionMode }),
+      ...(interaction === undefined ? {} : { interaction }),
+      ...(digitalCaseStage === undefined ? {} : { digitalCaseStage }),
     });
   });
 
@@ -222,6 +401,8 @@ export function createActivityReadRepository(
             responseMode: contentVersions.responseMode,
             choices: contentVersions.participantOptions,
             selectionMode: contentVersions.participantSelectionMode,
+            interaction: contentVersions.participantInteraction,
+            digitalCaseStage: contentVersions.digitalCaseStage,
           })
           .from(activityAssignments)
           .innerJoin(

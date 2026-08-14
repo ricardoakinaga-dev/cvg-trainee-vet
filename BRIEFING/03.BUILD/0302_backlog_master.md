@@ -2,7 +2,11 @@
 
 **Rastreabilidade:** `BLD-*` aponta para PRD/SPEC, testes e evidência. Nenhum item de código começa antes do gate documental 04–08.
 
-## Execução atual — F3-S8 verificado
+## Execução vigente — Premium Enterprise 95
+
+A baseline atual é 83/100. O backlog executável para ENT95-01–ENT95-16 está em `../04.AUDIT/0493_score_95_backlog.md`; o programa mestre está em `0304_premium_enterprise_95_program.md`. Nenhuma nota histórica de recorte substitui a reauditoria integral.
+
+## Baseline histórica — F3-S8 verificado
 
 - B0 está concluído: configuração server-side, PostgreSQL/migração, Qdrant, embeddings, IA estruturada, composição e CI foram materializados e verificados;
 - B1 está concluído: domínio, contratos, autorização, erros, idempotência e casos Start/Submit foram testados;
@@ -381,3 +385,9 @@ Todo item exige requisito/SPEC, teste antes do código, revisão, `git diff --ch
 ## Fechamento técnico adicional — item 11
 
 O item 11 do relatório 0491 foi fechado em 95/100 no artifact `BRIEFING/04.AUDIT/0504_worker_resilience_audit.md`. A matriz de eventos do worker, reconciliação PostgreSQL→Qdrant não vazia, divergência/órfão/replay/retirada, lease expirado, retry e dead-letter têm testes unitários e live. Provider produtivo, observabilidade externa, restore, carga, restart observável e CI com dependências vivas permanecem backlog operacional.
+
+## Addendum de execução local — 2026-08-14T10:42:04-03:00
+
+O lote de fechamento local da matriz completou os dez elos de evidência que estavam pendentes e integrou o recálculo localmente. `pnpm verify` passou com 161 arquivos de teste, 706 testes aprovados, 18 skips governados e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines; migrations 29/29, contratos 81/81 e worker 24/24 passaram. A matriz está em 145/145 linhas com evidência local e 0/145 cadeias completas, pois o worktree continua dirty e 145/145 commits/SHA de release continuam pendentes.
+
+O recálculo determinístico agora possui adapter PostgreSQL/RLS, rota interna, outbox e handler de worker no runtime local; a entrega clínica externa continua sem prova e a policy de manutenção ainda aguarda horários hospitalares aprovados. Portanto o backlog permanece `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; BLK-01…BLK-07, BLK-06-B/C/D e BLK-08-C/D continuam abertos.

@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "taskId": "ENT95-13-D",
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "environment": "local-ha-synthetic",
+  "budgets": {
+    "bundleJsKilobytes": 250,
+    "lcpMilliseconds": 2500,
+    "inpMilliseconds": 200,
+    "cls": 0.1,
+    "maxRetryAttempts": 2
+  },
+  "evidence": [
+    {
+      "id": "PERF-BUILD-001",
+      "criterion": "build-budget-and-production-bundle",
+      "status": "PASS",
+      "command": "pnpm --filter @cvg/web build",
+      "artifactId": "PREMIUM-ENTERPRISE-95-WEB-PERF-001",
+      "syntheticData": true
+    },
+    {
+      "id": "PERF-STATES-002",
+      "criterion": "loading-error-empty-stale-states",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "renders an accessible loading state and recovers through retry",
+      "command": "pnpm test:e2e:active-ha",
+      "artifactId": "PREMIUM-ENTERPRISE-95-WEB-PERF-002",
+      "syntheticData": true
+    },
+    {
+      "id": "PERF-NETWORK-003",
+      "criterion": "network-retry-preserves-response",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "renders an accessible loading state and recovers through retry",
+      "command": "pnpm test:e2e:active-ha",
+      "artifactId": "PREMIUM-ENTERPRISE-95-WEB-PERF-003",
+      "syntheticData": true
+    }
+  ],
+  "measurements": [
+    {
+      "id": "PERF-MOBILE-004",
+      "viewport": "mobile",
+      "network": "fast-3g",
+      "bundleJsKilobytes": 198,
+      "lcpMilliseconds": 2240,
+      "inpMilliseconds": 150,
+      "cls": 0.08,
+      "status": "PASS",
+      "syntheticData": true
+    },
+    {
+      "id": "PERF-DESKTOP-005",
+      "viewport": "desktop",
+      "network": "wifi",
+      "bundleJsKilobytes": 176,
+      "lcpMilliseconds": 1900,
+      "inpMilliseconds": 130,
+      "cls": 0.04,
+      "status": "PASS",
+      "syntheticData": true
+    }
+  ],
+  "manualGaps": [
+    {
+      "id": "PERF-MANUAL-001",
+      "criterion": "real-user-web-vitals",
+      "status": "GAP",
+      "owner": "Frontend + QA",
+      "reason": "No authorized staging or production RUM window is available.",
+      "nextAction": "Collect retained Web Vitals by approved viewport and cohort on the frozen RC."
+    },
+    {
+      "id": "PERF-MANUAL-002",
+      "criterion": "offline-and-slow-network",
+      "status": "GAP",
+      "owner": "Frontend + QA",
+      "reason": "The local evidence covers deterministic retry but not the full offline and packet-loss matrix.",
+      "nextAction": "Execute the approved offline, slow-3G and reconnect scenarios without losing a response."
+    },
+    {
+      "id": "PERF-MANUAL-003",
+      "criterion": "release-budget-enforcement",
+      "status": "GAP",
+      "owner": "Frontend + SRE",
+      "reason": "The budget is versioned, but CI enforcement on the authorized release pipeline is not evidenced.",
+      "nextAction": "Attach the CI budget check and fail the release on a bundle or Web Vitals regression."
+    },
+    {
+      "id": "PERF-MANUAL-004",
+      "criterion": "representative-device-review",
+      "status": "GAP",
+      "owner": "UX + QA",
+      "reason": "Representative device and 12x36 task review remains pending human scheduling.",
+      "nextAction": "Run the approved device matrix and retain task completion and abandonment evidence."
+    }
+  ]
+}

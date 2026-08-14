@@ -1,4 +1,8 @@
 import { isValidIsoTimestamp } from "./timestamp.js";
+import {
+  FEEDBACK_TEXT_MAX_LENGTH,
+  inspectFeedbackContent,
+} from "./feedback-safety.js";
 
 export type LearningAssignmentStatus =
   | "NAO_ATRIBUIDO"
@@ -14,6 +18,9 @@ export type LearningAssignmentStatus =
 export type LearningAssignmentBlockReason =
   "PRE_REQUISITO" | "CONTEUDO_RETIRADO" | "OBJETIVO_EM_REMEDIACAO";
 
+export type LearningAssignmentPauseReason =
+  "AFASTAMENTO" | "ACOMODACAO" | "JANELA_OPERACIONAL";
+
 export type LearningAssignmentState = Readonly<{
   readonly assignmentId: string;
   readonly participantId: string;
@@ -23,6 +30,8 @@ export type LearningAssignmentState = Readonly<{
   readonly version: number;
   readonly blockReason?: LearningAssignmentBlockReason;
   readonly pausedFrom?: Exclude<LearningAssignmentStatus, "PAUSADO">;
+  readonly pauseReason?: LearningAssignmentPauseReason;
+  readonly resumeAt?: string;
 }>;
 
 export type LearningAssignmentEvent =
@@ -35,8 +44,12 @@ export type LearningAssignmentEvent =
   | { readonly type: "AGENDAR_RETENCAO" }
   | { readonly type: "RETENCAO_APROVADA" }
   | { readonly type: "RETENCAO_REFORCO" }
-  | { readonly type: "PAUSAR" }
-  | { readonly type: "RETOMAR" }
+  | {
+      readonly type: "PAUSAR";
+      readonly reason: LearningAssignmentPauseReason;
+      readonly resumeAt?: string;
+    }
+  | { readonly type: "RETOMAR"; readonly now: string }
   | {
       readonly type: "BLOQUEAR";
       readonly reason: LearningAssignmentBlockReason;
@@ -65,6 +78,12 @@ function assertNonEmpty(
     throw new LearningAssignmentDomainError(`${field} must not be empty`);
   }
 }
+
+const assignmentPauseReasons = [
+  "AFASTAMENTO",
+  "ACOMODACAO",
+  "JANELA_OPERACIONAL",
+] as const;
 
 function assertValidState(state: LearningAssignmentState): void {
   if (state === null || typeof state !== "object") {
@@ -99,9 +118,38 @@ function assertValidState(state: LearningAssignmentState): void {
       "paused assignment must preserve its previous state",
     );
   }
+  if (state.status === "PAUSADO") {
+    if (state.pauseReason === undefined) {
+      throw new LearningAssignmentDomainError(
+        "paused assignment must declare a pause reason",
+      );
+    }
+    if (!assignmentPauseReasons.includes(state.pauseReason)) {
+      throw new LearningAssignmentDomainError(
+        "paused assignment pause reason is not supported",
+      );
+    }
+  }
+  if (state.status === "PAUSADO" && state.resumeAt !== undefined) {
+    if (!isValidIsoTimestamp(state.resumeAt)) {
+      throw new LearningAssignmentDomainError(
+        "resumeAt must be a valid timestamp",
+      );
+    }
+  }
   if (state.status !== "PAUSADO" && state.pausedFrom !== undefined) {
     throw new LearningAssignmentDomainError(
       "pausedFrom is only allowed for paused assignments",
+    );
+  }
+  if (state.status !== "PAUSADO" && state.pauseReason !== undefined) {
+    throw new LearningAssignmentDomainError(
+      "pauseReason is only allowed for paused assignments",
+    );
+  }
+  if (state.status !== "PAUSADO" && state.resumeAt !== undefined) {
+    throw new LearningAssignmentDomainError(
+      "resumeAt is only allowed for paused assignments",
     );
   }
   if (state.status === "BLOQUEADO" && state.blockReason === undefined) {
@@ -161,9 +209,30 @@ function assertTransition(
   state: LearningAssignmentState,
   event: LearningAssignmentEvent,
 ): LearningAssignmentStatus {
+  if (event.type === "PAUSAR") {
+    if (!assignmentPauseReasons.includes(event.reason)) {
+      throw new LearningAssignmentDomainError("pause reason is not supported");
+    }
+    if (event.resumeAt !== undefined && !isValidIsoTimestamp(event.resumeAt)) {
+      throw new LearningAssignmentDomainError(
+        "resumeAt must be a valid timestamp",
+      );
+    }
+  }
   if (event.type === "RETOMAR" && state.status === "PAUSADO") {
     if (state.pausedFrom === undefined) {
       throw new LearningAssignmentDomainError("paused state is incomplete");
+    }
+    if (!isValidIsoTimestamp(event.now)) {
+      throw new LearningAssignmentDomainError("now must be a valid timestamp");
+    }
+    if (
+      state.resumeAt !== undefined &&
+      Date.parse(event.now) < Date.parse(state.resumeAt)
+    ) {
+      throw new LearningAssignmentDomainError(
+        "assignment cannot resume before the resume window",
+      );
     }
     return state.pausedFrom;
   }
@@ -183,7 +252,12 @@ function stableAssignmentFields(
   state: LearningAssignmentState,
 ): Omit<
   LearningAssignmentState,
-  "status" | "version" | "blockReason" | "pausedFrom"
+  | "status"
+  | "version"
+  | "blockReason"
+  | "pausedFrom"
+  | "pauseReason"
+  | "resumeAt"
 > {
   return {
     assignmentId: state.assignmentId,
@@ -247,6 +321,8 @@ export function transitionLearningAssignment(
             LearningAssignmentStatus,
             "PAUSADO"
           >,
+          pauseReason: event.reason,
+          ...(event.resumeAt === undefined ? {} : { resumeAt: event.resumeAt }),
         }
       : {}),
   };
@@ -365,12 +441,39 @@ export type FeedbackTicketStatus =
   | "NAO_REPRODUZIDO"
   | "NAO_PLANEJADO";
 
+export type FeedbackTechnicalContext = Readonly<{
+  readonly logicalPage: string;
+  readonly appVersion: string;
+  readonly occurredAt?: string;
+  readonly errorCode?: string;
+}>;
+
+export type FeedbackTicketPriority = "BAIXA" | "NORMAL" | "ALTA" | "URGENTE";
+
+export type FeedbackTicketHistoryEntry = Readonly<{
+  readonly status: FeedbackTicketStatus;
+  readonly changedAt: string;
+  readonly actorId?: string;
+}>;
+
+export type FeedbackTicketResponse = Readonly<{
+  readonly message: string;
+  readonly respondedAt: string;
+  readonly respondedBy?: string;
+}>;
+
 export interface FeedbackTicketState {
   readonly ticketId: string;
   readonly participantId: string;
   readonly type: FeedbackTicketType;
   readonly description: string;
   readonly createdAt: string;
+  readonly alertedAt?: string;
+  readonly technicalContext?: FeedbackTechnicalContext;
+  readonly priority?: FeedbackTicketPriority;
+  readonly assigneeId?: string;
+  readonly response?: FeedbackTicketResponse;
+  readonly history?: readonly FeedbackTicketHistoryEntry[];
   readonly version: number;
   readonly status: FeedbackTicketStatus;
 }
@@ -383,15 +486,72 @@ const feedbackTicketTypes: readonly FeedbackTicketType[] = [
   "CONTESTACAO",
 ];
 
+const feedbackTicketPriorities: readonly FeedbackTicketPriority[] = [
+  "BAIXA",
+  "NORMAL",
+  "ALTA",
+  "URGENTE",
+];
+
 export type FeedbackTicketEvent =
-  | { readonly type: "TRIAR" }
-  | { readonly type: "INICIAR_TRATAMENTO" }
-  | { readonly type: "AGUARDAR_USUARIO" }
-  | { readonly type: "RESOLVER" }
-  | { readonly type: "MARCAR_DUPLICADO" }
-  | { readonly type: "MARCAR_NAO_REPRODUZIDO" }
-  | { readonly type: "MARCAR_NAO_PLANEJADO" }
-  | { readonly type: "RETOMAR_TRATAMENTO" };
+  | {
+      readonly type: "TRIAR";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "INICIAR_TRATAMENTO";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "AGUARDAR_USUARIO";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "RESOLVER";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "MARCAR_DUPLICADO";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "MARCAR_NAO_REPRODUZIDO";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "MARCAR_NAO_PLANEJADO";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "RETOMAR_TRATAMENTO";
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "PRIORIZAR";
+      readonly priority: FeedbackTicketPriority;
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "ATRIBUIR";
+      readonly assigneeId: string;
+      readonly now?: string;
+      readonly actorId?: string;
+    }
+  | {
+      readonly type: "RESPONDER";
+      readonly response: string;
+      readonly now?: string;
+      readonly actorId?: string;
+    };
 
 const feedbackTransitions: Readonly<
   Record<
@@ -400,15 +560,27 @@ const feedbackTransitions: Readonly<
   >
 > = {
   NOVO: { TRIAR: "TRIADO" },
-  TRIADO: { INICIAR_TRATAMENTO: "EM_TRATAMENTO" },
+  TRIADO: {
+    INICIAR_TRATAMENTO: "EM_TRATAMENTO",
+    PRIORIZAR: "TRIADO",
+    ATRIBUIR: "TRIADO",
+  },
   EM_TRATAMENTO: {
     AGUARDAR_USUARIO: "AGUARDA_USUARIO",
     RESOLVER: "RESOLVIDO",
     MARCAR_DUPLICADO: "DUPLICADO",
     MARCAR_NAO_REPRODUZIDO: "NAO_REPRODUZIDO",
     MARCAR_NAO_PLANEJADO: "NAO_PLANEJADO",
+    PRIORIZAR: "EM_TRATAMENTO",
+    ATRIBUIR: "EM_TRATAMENTO",
+    RESPONDER: "EM_TRATAMENTO",
   },
-  AGUARDA_USUARIO: { RETOMAR_TRATAMENTO: "EM_TRATAMENTO" },
+  AGUARDA_USUARIO: {
+    RETOMAR_TRATAMENTO: "EM_TRATAMENTO",
+    PRIORIZAR: "AGUARDA_USUARIO",
+    ATRIBUIR: "AGUARDA_USUARIO",
+    RESPONDER: "AGUARDA_USUARIO",
+  },
   RESOLVIDO: {},
   DUPLICADO: {},
   NAO_REPRODUZIDO: {},
@@ -420,9 +592,156 @@ function assertPlainText(
   field: string,
 ): asserts value is string {
   assertNonEmpty(value, field);
-  if (value.length > 10_000 || /<[^>]*>/u.test(value)) {
+  if (value.length > FEEDBACK_TEXT_MAX_LENGTH) {
+    throw new LearningAssignmentDomainError(
+      `${field} exceeds the maximum length`,
+    );
+  }
+  if (!inspectFeedbackContent(value).safe) {
+    throw new LearningAssignmentDomainError(
+      `${field} contains prohibited content`,
+    );
+  }
+  if (/<[^>]*>/u.test(value)) {
     throw new LearningAssignmentDomainError(`${field} must be plain text`);
   }
+}
+
+const feedbackTechnicalContextKeys = new Set([
+  "logicalPage",
+  "appVersion",
+  "occurredAt",
+  "errorCode",
+]);
+
+function assertFeedbackTechnicalContext(
+  value: unknown,
+): asserts value is FeedbackTechnicalContext {
+  if (value === undefined) return;
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new LearningAssignmentDomainError(
+      "technicalContext must be an object",
+    );
+  }
+  for (const key of Object.keys(value)) {
+    if (!feedbackTechnicalContextKeys.has(key)) {
+      throw new LearningAssignmentDomainError(
+        "technicalContext contains an unsupported field",
+      );
+    }
+  }
+  const context = value as Record<string, unknown>;
+  if (
+    typeof context.logicalPage !== "string" ||
+    !/^\/[A-Za-z0-9][A-Za-z0-9/_:-]{0,127}$/u.test(context.logicalPage)
+  ) {
+    throw new LearningAssignmentDomainError(
+      "technicalContext.logicalPage is invalid",
+    );
+  }
+  if (
+    typeof context.appVersion !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$/u.test(context.appVersion)
+  ) {
+    throw new LearningAssignmentDomainError(
+      "technicalContext.appVersion is invalid",
+    );
+  }
+  if (
+    context.occurredAt !== undefined &&
+    (typeof context.occurredAt !== "string" ||
+      !isValidIsoTimestamp(context.occurredAt))
+  ) {
+    throw new LearningAssignmentDomainError(
+      "technicalContext.occurredAt is invalid",
+    );
+  }
+  if (
+    context.errorCode !== undefined &&
+    (typeof context.errorCode !== "string" ||
+      !/^[A-Z0-9][A-Z0-9_.:-]{0,63}$/u.test(context.errorCode))
+  ) {
+    throw new LearningAssignmentDomainError(
+      "technicalContext.errorCode is invalid",
+    );
+  }
+}
+
+function freezeFeedbackTechnicalContext(
+  value: FeedbackTechnicalContext | undefined,
+): FeedbackTechnicalContext | undefined {
+  if (value === undefined) return undefined;
+  return freeze({
+    logicalPage: value.logicalPage,
+    appVersion: value.appVersion,
+    ...(value.occurredAt === undefined ? {} : { occurredAt: value.occurredAt }),
+    ...(value.errorCode === undefined ? {} : { errorCode: value.errorCode }),
+  });
+}
+
+function assertFeedbackTicketPriority(
+  value: unknown,
+): asserts value is FeedbackTicketPriority {
+  if (!feedbackTicketPriorities.includes(value as FeedbackTicketPriority)) {
+    throw new LearningAssignmentDomainError(
+      "feedback ticket priority is not supported",
+    );
+  }
+}
+
+function assertFeedbackTicketResponse(
+  value: FeedbackTicketResponse | undefined,
+): void {
+  if (value === undefined) return;
+  assertPlainText(value.message, "response");
+  if (!isValidIsoTimestamp(value.respondedAt)) {
+    throw new LearningAssignmentDomainError(
+      "response respondedAt must be a valid timestamp",
+    );
+  }
+  if (value.respondedBy !== undefined) {
+    assertNonEmpty(value.respondedBy, "response respondedBy");
+  }
+}
+
+function normalizeFeedbackTicketHistory(
+  state: FeedbackTicketState,
+): readonly FeedbackTicketHistoryEntry[] {
+  const history =
+    state.history ??
+    ([
+      {
+        status: state.status,
+        changedAt: state.createdAt,
+      },
+    ] as const);
+  if (history.length === 0 || history.length > 100) {
+    throw new LearningAssignmentDomainError(
+      "feedback ticket history must contain between 1 and 100 entries",
+    );
+  }
+  return freeze(
+    history.map((entry) => {
+      if (
+        !Object.prototype.hasOwnProperty.call(feedbackTransitions, entry.status)
+      ) {
+        throw new LearningAssignmentDomainError(
+          "feedback ticket history status is not supported",
+        );
+      }
+      if (!isValidIsoTimestamp(entry.changedAt)) {
+        throw new LearningAssignmentDomainError(
+          "feedback ticket history changedAt must be a valid timestamp",
+        );
+      }
+      if (entry.actorId !== undefined) assertNonEmpty(entry.actorId, "actorId");
+      return freeze({
+        status: entry.status,
+        changedAt: entry.changedAt,
+        ...(entry.actorId === undefined ? {} : { actorId: entry.actorId }),
+      });
+    }),
+  );
 }
 
 export function createFeedbackTicket(
@@ -432,6 +751,7 @@ export function createFeedbackTicket(
     readonly type: FeedbackTicketType;
     readonly description: string;
     readonly createdAt: string;
+    readonly technicalContext?: FeedbackTechnicalContext;
   }>,
 ): FeedbackTicketState {
   assertNonEmpty(input.ticketId, "ticketId");
@@ -445,8 +765,26 @@ export function createFeedbackTicket(
   if (!feedbackTicketTypes.includes(input.type)) {
     throw new LearningAssignmentDomainError("ticket type is not supported");
   }
+  assertFeedbackTechnicalContext(input.technicalContext);
+  const technicalContext = freezeFeedbackTechnicalContext(
+    input.technicalContext,
+  );
+  const history = freeze([
+    freeze({ status: "NOVO" as const, changedAt: input.createdAt }),
+  ]);
   return freeze({
-    ...input,
+    ticketId: input.ticketId,
+    participantId: input.participantId,
+    type: input.type,
+    description: input.description,
+    createdAt: input.createdAt,
+    ...(technicalContext === undefined ? {} : { technicalContext }),
+    priority:
+      input.type === "ERRO_CONTEUDO"
+        ? ("URGENTE" as const)
+        : ("NORMAL" as const),
+    ...(input.type === "ERRO_CONTEUDO" ? { alertedAt: input.createdAt } : {}),
+    history,
     status: "NOVO" as const,
     version: 0,
   });
@@ -462,9 +800,22 @@ export function transitionFeedbackTicket(
   assertNonEmpty(state.ticketId, "ticketId");
   assertNonEmpty(state.participantId, "participantId");
   assertPlainText(state.description, "description");
+  assertFeedbackTechnicalContext(state.technicalContext);
+  const priority = state.priority ?? "NORMAL";
+  assertFeedbackTicketPriority(priority);
+  if (state.assigneeId !== undefined) {
+    assertNonEmpty(state.assigneeId, "assigneeId");
+  }
+  assertFeedbackTicketResponse(state.response);
+  const history = normalizeFeedbackTicketHistory(state);
   if (!isValidIsoTimestamp(state.createdAt)) {
     throw new LearningAssignmentDomainError(
       "createdAt must be a valid timestamp",
+    );
+  }
+  if (state.alertedAt !== undefined && !isValidIsoTimestamp(state.alertedAt)) {
+    throw new LearningAssignmentDomainError(
+      "alertedAt must be a valid timestamp",
     );
   }
   if (!Number.isInteger(state.version) || state.version < 0) {
@@ -477,11 +828,59 @@ export function transitionFeedbackTicket(
   ) {
     throw new LearningAssignmentDomainError("ticket status is not supported");
   }
+  if (event === null || typeof event !== "object") {
+    throw new LearningAssignmentDomainError("ticket event must be an object");
+  }
+  if (event.actorId !== undefined) assertNonEmpty(event.actorId, "actorId");
+  const now = event.now ?? state.createdAt;
+  if (!isValidIsoTimestamp(now)) {
+    throw new LearningAssignmentDomainError(
+      "event now must be a valid timestamp",
+    );
+  }
+  if (event.type === "PRIORIZAR") assertFeedbackTicketPriority(event.priority);
+  if (event.type === "ATRIBUIR") {
+    assertNonEmpty(event.assigneeId, "assigneeId");
+  }
+  if (event.type === "RESPONDER") assertPlainText(event.response, "response");
   const nextStatus = feedbackTransitions[state.status][event.type];
   if (nextStatus === undefined) {
     throw new LearningAssignmentDomainError(
       `Event ${event.type} is not allowed from state ${state.status}`,
     );
   }
-  return freeze({ ...state, status: nextStatus, version: state.version + 1 });
+  const nextResponse =
+    event.type === "RESPONDER"
+      ? freeze({
+          message: event.response,
+          respondedAt: now,
+          ...(event.actorId === undefined
+            ? {}
+            : { respondedBy: event.actorId }),
+        })
+      : state.response;
+  const nextHistoryEntry = freeze({
+    status: nextStatus,
+    changedAt: now,
+    ...(event.actorId === undefined ? {} : { actorId: event.actorId }),
+  });
+  const nextHistory = freeze([...history, nextHistoryEntry]);
+  if (nextHistory.length > 100) {
+    throw new LearningAssignmentDomainError(
+      "feedback ticket history cannot exceed 100 entries",
+    );
+  }
+  return freeze({
+    ...state,
+    priority: event.type === "PRIORIZAR" ? event.priority : priority,
+    ...(event.type === "ATRIBUIR"
+      ? { assigneeId: event.assigneeId }
+      : state.assigneeId === undefined
+        ? {}
+        : { assigneeId: state.assigneeId }),
+    ...(nextResponse === undefined ? {} : { response: nextResponse }),
+    history: nextHistory,
+    status: nextStatus,
+    version: state.version + 1,
+  });
 }

@@ -2,6 +2,10 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { LoginMascot } from "./login-mascot";
+import {
+  operationalNotice,
+  operationalNoticeTitle,
+} from "./operational-notice";
 
 type ActivityItem = Readonly<{
   readonly itemId: string;
@@ -9,13 +13,44 @@ type ActivityItem = Readonly<{
   readonly kind: string;
   readonly title: string;
   readonly text: string;
-  readonly responseMode: "TEXT" | "CHOICE" | "NONE";
+  readonly responseMode:
+    "TEXT" | "CHOICE" | "STRUCTURED_FIELDS" | "DOSE_INFUSION" | "NONE";
   readonly choices?: readonly Readonly<{
     readonly id: string;
     readonly label: string;
     readonly text: string;
   }>[];
   readonly selectionMode?: "SINGLE" | "MULTIPLE";
+  readonly interaction?: Readonly<{
+    readonly kind: "STRUCTURED_FIELDS" | "DOSE_INFUSION";
+    readonly evaluationMode: "AUTOMATIC";
+    readonly fields: readonly Readonly<{
+      readonly id: string;
+      readonly label: string;
+      readonly valueType: "NUMBER" | "TEXT" | "BOOLEAN";
+      readonly unit?: string;
+      readonly required: true;
+      readonly min?: number;
+      readonly max?: number;
+    }>[];
+    readonly calculationInputs?: Readonly<{
+      readonly weightKg: number;
+      readonly doseMgPerKg: number;
+      readonly concentrationMgPerMl: number;
+      readonly durationHours: number;
+    }>;
+    readonly formulaLabel?: string;
+  }>;
+  readonly digitalCaseStage?: Readonly<{
+    readonly caseId: string;
+    readonly stage: 1 | 2 | 3;
+    readonly examSeries: readonly Readonly<{
+      readonly id: string;
+      readonly modality: "RADIOGRAFIA" | "POCUS" | "ECG";
+      readonly label: string;
+      readonly observationCount: number;
+    }>[];
+  }>;
 }>;
 
 type ActivityProjection = Readonly<{
@@ -57,6 +92,29 @@ type CurriculumRuntimeProjection = Readonly<{
     readonly status: "PENDENTE";
   }>[];
   readonly practicalCompetenceClaim: "PROIBIDO_MVP";
+}>;
+
+type DigitalCaseRuntimeProjection = Readonly<{
+  readonly moduleId: string;
+  readonly caseId: string;
+  readonly version: number;
+  readonly currentStage: 1 | 2 | 3 | "CONCLUIDO";
+  readonly state: Readonly<Record<string, string | number | boolean>>;
+  readonly revealedExamSeries: readonly Readonly<{
+    readonly id: string;
+    readonly modality: "RADIOGRAFIA" | "POCUS" | "ECG";
+    readonly label: string;
+    readonly observations: readonly Readonly<{
+      readonly sequence: number;
+      readonly syntheticSummary: string;
+    }>[];
+  }>[];
+  readonly consequences: readonly Readonly<{
+    readonly branchId: string;
+    readonly consequence: string;
+    readonly recordedAt: string;
+  }>[];
+  readonly updatedAt: string;
 }>;
 
 type JourneyActivityProjection = Readonly<{
@@ -119,6 +177,67 @@ function isChoice(value: unknown): value is Readonly<{
   );
 }
 
+function isStructuredInteraction(
+  value: unknown,
+): value is NonNullable<ActivityItem["interaction"]> {
+  if (!isRecord(value)) return false;
+  if (
+    (value.kind !== "STRUCTURED_FIELDS" && value.kind !== "DOSE_INFUSION") ||
+    value.evaluationMode !== "AUTOMATIC" ||
+    !Array.isArray(value.fields) ||
+    value.fields.length === 0
+  ) {
+    return false;
+  }
+  const fieldsValid = value.fields.every((field) => {
+    if (!isRecord(field)) return false;
+    return (
+      isString(field.id) &&
+      isString(field.label) &&
+      (field.valueType === "NUMBER" ||
+        field.valueType === "TEXT" ||
+        field.valueType === "BOOLEAN") &&
+      field.required === true &&
+      (field.min === undefined || typeof field.min === "number") &&
+      (field.max === undefined || typeof field.max === "number")
+    );
+  });
+  if (!fieldsValid) return false;
+  if (value.kind === "STRUCTURED_FIELDS") return true;
+  return (
+    isRecord(value.calculationInputs) &&
+    typeof value.calculationInputs.weightKg === "number" &&
+    typeof value.calculationInputs.doseMgPerKg === "number" &&
+    typeof value.calculationInputs.concentrationMgPerMl === "number" &&
+    typeof value.calculationInputs.durationHours === "number" &&
+    isString(value.formulaLabel)
+  );
+}
+
+function isDigitalCaseStage(
+  value: unknown,
+): value is NonNullable<ActivityItem["digitalCaseStage"]> {
+  if (!isRecord(value)) return false;
+  return (
+    isString(value.caseId) &&
+    (value.stage === 1 || value.stage === 2 || value.stage === 3) &&
+    Array.isArray(value.examSeries) &&
+    value.examSeries.length === 3 &&
+    value.examSeries.every(
+      (exam) =>
+        isRecord(exam) &&
+        isString(exam.id) &&
+        isString(exam.label) &&
+        (exam.modality === "RADIOGRAFIA" ||
+          exam.modality === "POCUS" ||
+          exam.modality === "ECG") &&
+        typeof exam.observationCount === "number" &&
+        Number.isInteger(exam.observationCount) &&
+        exam.observationCount >= 2,
+    )
+  );
+}
+
 function isActivity(value: unknown): value is ActivityProjection {
   if (!isRecord(value)) return false;
   if (
@@ -140,6 +259,8 @@ function isActivity(value: unknown): value is ActivityProjection {
       isString(item.text) &&
       (item.responseMode === "TEXT" ||
         item.responseMode === "CHOICE" ||
+        item.responseMode === "STRUCTURED_FIELDS" ||
+        item.responseMode === "DOSE_INFUSION" ||
         item.responseMode === "NONE");
     if (!basicShape) return false;
     if (
@@ -153,6 +274,22 @@ function isActivity(value: unknown): value is ActivityProjection {
       if (!Array.isArray(item.choices) || !item.choices.every(isChoice)) {
         return false;
       }
+    }
+    if (
+      item.responseMode === "STRUCTURED_FIELDS" ||
+      item.responseMode === "DOSE_INFUSION"
+    ) {
+      if (!isStructuredInteraction(item.interaction)) return false;
+      if (item.interaction.kind !== item.responseMode) return false;
+      if (item.choices !== undefined || item.selectionMode !== undefined) {
+        return false;
+      }
+    }
+    if (
+      item.digitalCaseStage !== undefined &&
+      !isDigitalCaseStage(item.digitalCaseStage)
+    ) {
+      return false;
     }
     return (
       item.responseMode !== "CHOICE" ||
@@ -237,6 +374,62 @@ function isJourneyActivity(value: unknown): value is JourneyActivityProjection {
   );
 }
 
+function isDigitalCaseRuntime(
+  value: unknown,
+): value is DigitalCaseRuntimeProjection {
+  if (!isRecord(value)) return false;
+  if (
+    !isString(value.moduleId) ||
+    !/^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(value.moduleId) ||
+    !isString(value.caseId) ||
+    typeof value.version !== "number" ||
+    !Number.isInteger(value.version) ||
+    value.version < 0 ||
+    (value.currentStage !== 1 &&
+      value.currentStage !== 2 &&
+      value.currentStage !== 3 &&
+      value.currentStage !== "CONCLUIDO") ||
+    !isRecord(value.state) ||
+    !Array.isArray(value.revealedExamSeries) ||
+    !Array.isArray(value.consequences) ||
+    !isString(value.updatedAt)
+  ) {
+    return false;
+  }
+  const stateValid = Object.entries(value.state).every(
+    ([key, candidate]) =>
+      key.trim().length > 0 &&
+      (isString(candidate) ||
+        typeof candidate === "number" ||
+        typeof candidate === "boolean"),
+  );
+  const examsValid = value.revealedExamSeries.every(
+    (exam) =>
+      isRecord(exam) &&
+      isString(exam.id) &&
+      isString(exam.label) &&
+      (exam.modality === "RADIOGRAFIA" ||
+        exam.modality === "POCUS" ||
+        exam.modality === "ECG") &&
+      Array.isArray(exam.observations) &&
+      exam.observations.every(
+        (observation) =>
+          isRecord(observation) &&
+          typeof observation.sequence === "number" &&
+          Number.isInteger(observation.sequence) &&
+          isString(observation.syntheticSummary),
+      ),
+  );
+  const consequencesValid = value.consequences.every(
+    (consequence) =>
+      isRecord(consequence) &&
+      isString(consequence.branchId) &&
+      isString(consequence.consequence) &&
+      isString(consequence.recordedAt),
+  );
+  return stateValid && examsValid && consequencesValid;
+}
+
 function isJourney(value: unknown): value is LearningJourneyProjection {
   if (!isRecord(value)) return false;
   return (
@@ -268,9 +461,41 @@ function nextActionLabel(value: string): string {
   return labels[value] ?? value;
 }
 
-function moduleIdFromActivity(activity: ActivityProjection): string | null {
+function moduleIdFromActivity(
+  activity: Readonly<{ readonly slug: string }>,
+): string | null {
   const match = /(?:^|-)m(0[1-9]|1[0-9]|2[0-4])(?:-|$)/iu.exec(activity.slug);
   return match?.[1] === undefined ? null : `M${match[1]}`;
+}
+
+function journeyActivityOrder(activity: JourneyActivityProjection): number {
+  const moduleId = moduleIdFromActivity(activity);
+  if (moduleId === null) return Number.POSITIVE_INFINITY;
+  return Number(moduleId.slice(1));
+}
+
+function orderedJourneyActivities(
+  activities: readonly JourneyActivityProjection[],
+): readonly JourneyActivityProjection[] {
+  return [...activities].sort((left, right) => {
+    const moduleDifference =
+      journeyActivityOrder(left) - journeyActivityOrder(right);
+    if (moduleDifference !== 0) return moduleDifference;
+    const slugDifference = left.slug.localeCompare(right.slug);
+    if (slugDifference !== 0) return slugDifference;
+    return left.activityId.localeCompare(right.activityId);
+  });
+}
+
+function canAutoOpenJourneyActivity(
+  journey: LearningJourneyProjection,
+): boolean {
+  return (
+    journey.nextAction === "INICIAR_ATIVIDADE" ||
+    journey.nextAction === "RETOMAR_ATIVIDADE" ||
+    journey.nextAction === "AGUARDAR_CORRECAO" ||
+    journey.nextAction === "REVISAR_PROXIMO_CONTEUDO"
+  );
 }
 
 function publicErrorMessage(error: unknown): string {
@@ -301,8 +526,58 @@ function selectedChoiceIds(
   }
 }
 
+type StructuredAnswerValue = string | number | boolean;
+
+function structuredValues(
+  value: string | undefined,
+): Readonly<Record<string, StructuredAnswerValue>> {
+  if (value === undefined || value.trim().length === 0) return {};
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!isRecord(parsed)) return {};
+    const entries: [string, StructuredAnswerValue][] = [];
+    for (const [key, candidate] of Object.entries(parsed)) {
+      if (
+        typeof candidate === "string" ||
+        typeof candidate === "number" ||
+        typeof candidate === "boolean"
+      ) {
+        entries.push([key, candidate]);
+      }
+    }
+    return Object.fromEntries(entries);
+  } catch {
+    return {};
+  }
+}
+
+function structuredAnswerValue(
+  value: string | undefined,
+  fieldId: string,
+): StructuredAnswerValue | undefined {
+  return structuredValues(value)[fieldId];
+}
+
+function updateStructuredAnswer(
+  current: string | undefined,
+  fieldId: string,
+  value: StructuredAnswerValue | undefined,
+): string {
+  const previous = structuredValues(current);
+  const next =
+    value === undefined
+      ? Object.fromEntries(
+          Object.entries(previous).filter(([key]) => key !== fieldId),
+        )
+      : { ...previous, [fieldId]: value };
+  return JSON.stringify(next);
+}
+
 const ITEMS_PER_BLOCK = 3;
 type PageSaveState = "idle" | "saving" | "saved";
+type FeedbackType =
+  "BUG_TECNICO" | "USABILIDADE" | "ERRO_CONTEUDO" | "MELHORIA" | "CONTESTACAO";
+type FeedbackState = "idle" | "sending" | "sent";
 
 function answersFromAttempt(
   attempt: AttemptProjection | null,
@@ -331,6 +606,22 @@ function isAnswerComplete(
   if (item.responseMode === "NONE") return true;
   if (item.responseMode === "CHOICE") {
     return selectedChoiceIds(item, value).length > 0;
+  }
+  if (
+    item.responseMode === "STRUCTURED_FIELDS" ||
+    item.responseMode === "DOSE_INFUSION"
+  ) {
+    if (item.interaction === undefined) return false;
+    const values = structuredValues(value);
+    return item.interaction.fields.every((field) => {
+      const candidate = values[field.id];
+      if (candidate === undefined) return false;
+      if (field.valueType === "NUMBER") {
+        return typeof candidate === "number" && Number.isFinite(candidate);
+      }
+      if (field.valueType === "BOOLEAN") return typeof candidate === "boolean";
+      return typeof candidate === "string" && candidate.trim().length > 0;
+    });
   }
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -394,6 +685,8 @@ export default function HomePage() {
   const [runtime, setRuntime] = useState<CurriculumRuntimeProjection | null>(
     null,
   );
+  const [digitalCase, setDigitalCase] =
+    useState<DigitalCaseRuntimeProjection | null>(null);
   const [attempt, setAttempt] = useState<AttemptProjection | null>(null);
   const [answers, setAnswers] = useState<Readonly<Record<string, string>>>({});
   const [questionPage, setQuestionPage] = useState(0);
@@ -402,6 +695,9 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>("BUG_TECNICO");
+  const [feedbackDescription, setFeedbackDescription] = useState("");
+  const [feedbackState, setFeedbackState] = useState<FeedbackState>("idle");
   const [journeyState, setJourneyState] = useState<ExperienceState>("idle");
   const [activityState, setActivityState] = useState<ExperienceState>("idle");
   const [retryAction, setRetryAction] = useState<RetryAction>(null);
@@ -433,6 +729,7 @@ export default function HomePage() {
       const moduleId = moduleIdFromActivity(data);
       if (moduleId === null) {
         setRuntime(null);
+        setDigitalCase(null);
         setActivityState("ready");
         setRetryAction(null);
         return;
@@ -446,6 +743,21 @@ export default function HomePage() {
       } catch (caught) {
         if (caught instanceof PublicApiError && caught.code === "not_found") {
           setRuntime(null);
+        } else {
+          throw caught;
+        }
+      }
+      try {
+        const digitalCaseData = await requestJson(
+          `/api/v1/curriculum/modules/${moduleId}/case`,
+          { method: "GET" },
+        );
+        setDigitalCase(
+          isDigitalCaseRuntime(digitalCaseData) ? digitalCaseData : null,
+        );
+      } catch (caught) {
+        if (caught instanceof PublicApiError && caught.code === "not_found") {
+          setDigitalCase(null);
         } else {
           throw caught;
         }
@@ -496,9 +808,10 @@ export default function HomePage() {
       );
       return;
     }
-    const nextActivity = loadedJourney.activities.find(
-      (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-    );
+    if (!canAutoOpenJourneyActivity(loadedJourney)) return;
+    const nextActivity = orderedJourneyActivities(
+      loadedJourney.activities,
+    ).find((item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO");
     if (nextActivity !== undefined) {
       setActivityId(nextActivity.activityId);
       await loadActivity(
@@ -543,6 +856,34 @@ export default function HomePage() {
     void signIn();
   }
 
+  async function handleFeedbackSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+    if (feedbackDescription.trim().length === 0) {
+      setError("Descreva o problema ou a melhoria antes de enviar.");
+      return;
+    }
+    setFeedbackState("sending");
+    setError(null);
+    setNotice(null);
+    try {
+      await requestJson("/api/v1/feedback", {
+        method: "POST",
+        body: {
+          type: feedbackType,
+          description: feedbackDescription.trim(),
+        },
+      });
+      setFeedbackDescription("");
+      setFeedbackState("sent");
+      setNotice("Relato registrado.");
+    } catch (caught) {
+      setFeedbackState("idle");
+      setError(publicErrorMessage(caught));
+    }
+  }
+
   async function restoreSession(): Promise<void> {
     try {
       await requestJson("/api/v1/session", { method: "GET" });
@@ -568,9 +909,11 @@ export default function HomePage() {
       const nextActivityId =
         activityId.trim().length > 0
           ? activityId
-          : loadedJourney.activities.find(
-              (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-            )?.activityId;
+          : canAutoOpenJourneyActivity(loadedJourney)
+            ? orderedJourneyActivities(loadedJourney.activities).find(
+                (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
+              )?.activityId
+            : undefined;
       if (nextActivityId !== undefined && nextActivityId.length > 0) {
         setActivityId(nextActivityId);
         const nextActivity = loadedJourney.activities.find(
@@ -668,6 +1011,59 @@ export default function HomePage() {
     }));
   }
 
+  async function handleAdvanceDigitalCase(item: ActivityItem): Promise<void> {
+    if (
+      activity === null ||
+      attempt === null ||
+      item.responseMode !== "CHOICE" ||
+      item.digitalCaseStage === undefined ||
+      digitalCase === null
+    ) {
+      return;
+    }
+    if (
+      digitalCase.caseId !== item.digitalCaseStage.caseId ||
+      digitalCase.currentStage !== item.digitalCaseStage.stage
+    ) {
+      setError("Esta etapa já foi registrada ou ainda não está liberada.");
+      return;
+    }
+    const selected = selectedChoiceIds(item, answers[item.itemId]);
+    if (selected.length === 0) {
+      setError("Selecione uma decisão antes de liberar a próxima etapa.");
+      focusAnswer(item);
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const answerData = await persistAnswer(item, attempt);
+      const nextAttempt = mergeAttemptProjection(attempt, answerData);
+      setAttempt(nextAttempt);
+      const data = await requestJson(
+        `/api/v1/curriculum/modules/${digitalCase.moduleId}/case/advance`,
+        {
+          method: "POST",
+          body: {
+            selectedChoiceIds: [...selected],
+            expectedVersion: digitalCase.version,
+          },
+        },
+      );
+      if (!isDigitalCaseRuntime(data)) {
+        throw new PublicApiError("internal_error", "invalid case projection");
+      }
+      setDigitalCase(data);
+      setNotice("Decisão registrada. A próxima informação foi liberada.");
+    } catch (caught) {
+      setError(publicErrorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function currentBlockItems(): readonly ActivityItem[] {
     if (activity === null) return [];
     const start = questionPage * ITEMS_PER_BLOCK;
@@ -678,9 +1074,14 @@ export default function HomePage() {
     const target =
       item.responseMode === "TEXT"
         ? document.getElementById("answer-" + item.itemId)
-        : document.querySelector<HTMLInputElement>(
-            'input[name="answer-' + item.itemId + '"]',
-          );
+        : item.responseMode === "STRUCTURED_FIELDS" ||
+            item.responseMode === "DOSE_INFUSION"
+          ? document.querySelector<HTMLInputElement>(
+              'input[name="answer-' + item.itemId + '"]',
+            )
+          : document.querySelector<HTMLInputElement>(
+              'input[name="answer-' + item.itemId + '"]',
+            );
     target?.focus();
   }
 
@@ -862,11 +1263,10 @@ export default function HomePage() {
           <p className="eyebrow">CVG · academia interna</p>
           <span className="brand">Treinamento veterinário</span>
         </div>
-        {!authenticated ? (
-          <span className="status-pill">
-            <span className="status-dot" aria-hidden="true" />
-            Acesso protegido
-          </span>
+        {authenticated ? (
+          <a className="admin-nav-link" href="/admin">
+            Centro de controle
+          </a>
         ) : null}
       </header>
 
@@ -938,17 +1338,26 @@ export default function HomePage() {
           <div className="login-form-panel">
             <div className="form-panel-meta">
               <span className="form-panel-label">Acesso interno</span>
-              <span className="form-panel-security">
-                <span className="security-lock" aria-hidden="true">
-                  ◈
-                </span>
-                Sessão protegida
-              </span>
             </div>
             <h2>Bem-vindo de volta</h2>
             <p className="form-panel-intro">
               Entre com o e-mail profissional e continue de onde parou.
             </p>
+
+            <section
+              className="operational-notice"
+              aria-labelledby="operational-notice-title"
+            >
+              <h3 id="operational-notice-title">{operationalNoticeTitle}</h3>
+              <div className="operational-notice-grid">
+                {operationalNotice.map((notice) => (
+                  <div className="operational-notice-item" key={notice.id}>
+                    <h4>{notice.heading}</h4>
+                    <p>{notice.text}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
 
             <form className="access-form login-form" onSubmit={handleLogin}>
               <label htmlFor="login">E-mail profissional</label>
@@ -1009,8 +1418,8 @@ export default function HomePage() {
                 ✦
               </span>
               <p>
-                <strong>Primeiro acesso?</strong> Acesso por convite da
-                operação. Solicite seu convite à coordenação.
+                <strong>Primeiro acesso?</strong> O superadmin cria seu acesso e
+                envia um link individual para você definir sua senha.
               </p>
             </div>
             <p className="login-footer">
@@ -1202,6 +1611,31 @@ export default function HomePage() {
                   </div>
                   <h2>{item.title}</h2>
                   <p>{item.text}</p>
+                  {item.digitalCaseStage !== undefined ? (
+                    <aside
+                      className="case-stage-note"
+                      aria-label="Caso digital"
+                    >
+                      <strong>
+                        Caso digital · etapa {item.digitalCaseStage.stage} de 3
+                      </strong>
+                      {digitalCase?.caseId === item.digitalCaseStage.caseId ? (
+                        <span>
+                          Estado salvo: etapa {digitalCase.currentStage} ·
+                          versão {digitalCase.version}.
+                        </span>
+                      ) : null}
+                      <span>Exames seriados disponíveis no cenário:</span>
+                      <ul>
+                        {item.digitalCaseStage.examSeries.map((exam) => (
+                          <li key={exam.id}>
+                            {exam.modality} · {exam.label} (
+                            {exam.observationCount} leituras)
+                          </li>
+                        ))}
+                      </ul>
+                    </aside>
+                  ) : null}
                   {item.responseMode === "CHOICE" &&
                   attempt !== null &&
                   item.choices !== undefined ? (
@@ -1249,6 +1683,25 @@ export default function HomePage() {
                       >
                         Salvar resposta
                       </button>
+                      {item.digitalCaseStage !== undefined ? (
+                        <button
+                          type="button"
+                          className="secondary-button case-advance-button"
+                          onClick={() => void handleAdvanceDigitalCase(item)}
+                          disabled={
+                            busy ||
+                            digitalCase === null ||
+                            digitalCase.caseId !==
+                              item.digitalCaseStage.caseId ||
+                            digitalCase.currentStage !==
+                              item.digitalCaseStage.stage ||
+                            selectedChoiceIds(item, answers[item.itemId])
+                              .length === 0
+                          }
+                        >
+                          Registrar decisão e liberar próxima etapa
+                        </button>
+                      ) : null}
                     </fieldset>
                   ) : item.responseMode === "TEXT" && attempt !== null ? (
                     <div className="answer-area">
@@ -1267,6 +1720,119 @@ export default function HomePage() {
                         maxLength={10_000}
                         rows={5}
                       />
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => void handleSaveAnswer(item)}
+                        disabled={
+                          busy || !isAnswerComplete(item, answers[item.itemId])
+                        }
+                      >
+                        Salvar resposta
+                      </button>
+                    </div>
+                  ) : (item.responseMode === "STRUCTURED_FIELDS" ||
+                      item.responseMode === "DOSE_INFUSION") &&
+                    attempt !== null &&
+                    item.interaction !== undefined ? (
+                    <div className="answer-area structured-answer-area">
+                      {item.interaction.kind === "DOSE_INFUSION" ? (
+                        <p className="structured-formula">
+                          Dados do exercício: peso{" "}
+                          {item.interaction.calculationInputs?.weightKg} kg ·
+                          dose/kg{" "}
+                          {item.interaction.calculationInputs?.doseMgPerKg}{" "}
+                          mg/kg · concentração{" "}
+                          {
+                            item.interaction.calculationInputs
+                              ?.concentrationMgPerMl
+                          }{" "}
+                          mg/mL · tempo{" "}
+                          {item.interaction.calculationInputs?.durationHours} h.
+                          <br />
+                          Fórmula: {item.interaction.formulaLabel}
+                        </p>
+                      ) : null}
+                      {item.interaction.fields.map((field) => {
+                        const currentValue = structuredAnswerValue(
+                          answers[item.itemId],
+                          field.id,
+                        );
+                        return (
+                          <label
+                            className="structured-field"
+                            htmlFor={"answer-" + item.itemId + "-" + field.id}
+                            key={field.id}
+                          >
+                            <span>
+                              {field.label}
+                              {field.unit === undefined
+                                ? ""
+                                : " (" + field.unit + ")"}
+                            </span>
+                            {field.valueType === "BOOLEAN" ? (
+                              <input
+                                id={"answer-" + item.itemId + "-" + field.id}
+                                name={"answer-" + item.itemId}
+                                type="checkbox"
+                                checked={currentValue === true}
+                                onChange={(event) =>
+                                  setAnswers((previous) => ({
+                                    ...previous,
+                                    [item.itemId]: updateStructuredAnswer(
+                                      previous[item.itemId],
+                                      field.id,
+                                      event.target.checked,
+                                    ),
+                                  }))
+                                }
+                              />
+                            ) : (
+                              <input
+                                id={"answer-" + item.itemId + "-" + field.id}
+                                name={"answer-" + item.itemId}
+                                type={
+                                  field.valueType === "NUMBER"
+                                    ? "number"
+                                    : "text"
+                                }
+                                value={
+                                  currentValue === undefined
+                                    ? ""
+                                    : String(currentValue)
+                                }
+                                min={field.min}
+                                max={field.max}
+                                step={
+                                  field.valueType === "NUMBER"
+                                    ? "any"
+                                    : undefined
+                                }
+                                onChange={(event) => {
+                                  const rawValue = event.target.value;
+                                  const parsedNumber = Number(rawValue);
+                                  const nextValue =
+                                    rawValue.trim().length === 0
+                                      ? undefined
+                                      : field.valueType === "NUMBER"
+                                        ? Number.isFinite(parsedNumber)
+                                          ? parsedNumber
+                                          : undefined
+                                        : rawValue;
+                                  setAnswers((previous) => ({
+                                    ...previous,
+                                    [item.itemId]: updateStructuredAnswer(
+                                      previous[item.itemId],
+                                      field.id,
+                                      nextValue,
+                                    ),
+                                  }));
+                                }}
+                              />
+                            )}
+                          </label>
+                        );
+                      })}
                       <button
                         type="button"
                         className="secondary-button"
@@ -1374,6 +1940,65 @@ export default function HomePage() {
           </aside>
         </section>
       )}
+
+      {authenticated ? (
+        <section
+          className="feedback-report-card"
+          aria-labelledby="feedback-report-title"
+        >
+          <div>
+            <p className="eyebrow">Canal protegido</p>
+            <h2 id="feedback-report-title">Relatar um problema ou melhoria</h2>
+            <p>
+              Envie somente contexto do treinamento. Não inclua prontuários,
+              dados de tutores, fotos, PDFs, respostas ou outros dados reais.
+            </p>
+          </div>
+          <form
+            className="feedback-report-form"
+            onSubmit={(event) => void handleFeedbackSubmit(event)}
+          >
+            <label htmlFor="feedback-type">Tipo do relato</label>
+            <select
+              id="feedback-type"
+              value={feedbackType}
+              onChange={(event) =>
+                setFeedbackType(event.target.value as FeedbackType)
+              }
+              disabled={feedbackState === "sending"}
+            >
+              <option value="BUG_TECNICO">Bug técnico</option>
+              <option value="USABILIDADE">Usabilidade</option>
+              <option value="ERRO_CONTEUDO">Erro de conteúdo</option>
+              <option value="MELHORIA">Melhoria</option>
+              <option value="CONTESTACAO">Contestação</option>
+            </select>
+            <label htmlFor="feedback-description">Descrição</label>
+            <textarea
+              id="feedback-description"
+              value={feedbackDescription}
+              onChange={(event) => setFeedbackDescription(event.target.value)}
+              maxLength={10_000}
+              rows={4}
+              placeholder="Descreva o que aconteceu ou o que poderia melhorar."
+              disabled={feedbackState === "sending"}
+              required
+            />
+            <button
+              type="submit"
+              className="secondary-button"
+              disabled={feedbackState === "sending"}
+            >
+              {feedbackState === "sending" ? "Enviando…" : "Enviar relato"}
+            </button>
+            {feedbackState === "sent" ? (
+              <p className="feedback success" role="status">
+                Relato registrado.
+              </p>
+            ) : null}
+          </form>
+        </section>
+      ) : null}
 
       {error !== null ? (
         <div className="feedback-group">

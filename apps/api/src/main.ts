@@ -4,8 +4,10 @@ import {
   authenticateSessionCookie,
   acceptInvitation,
   advanceContent,
+  createAuditEntry,
   createAppealState,
   createAssessmentWorkflowState,
+  advanceParticipantDigitalCase,
   createFeedbackTicketState,
   createLearningAssignmentState,
   createInvitation,
@@ -13,14 +15,28 @@ import {
   evaluateAndPersistCurriculumModule,
   getParticipantActivity,
   getParticipantCurriculumRuntime,
+  getParticipantDigitalCase,
+  getInternalAdminDashboard,
+  getInternalAdminOperationsDashboard,
+  getInternalModeratorDashboard,
   getAttemptFeedback,
   getParticipantLearningJourney,
   getParticipantProgress,
+  listAuditEntries,
+  listManagedAccounts,
+  listFeedbackTicketStates,
+  revokeManagedAccountSessions,
+  updateManagedAccount,
   createHttpIdentityProvider,
   createUnavailableIdentityProvider,
   loginWithPassword,
   publishAuthoringContent,
   reviewAuthoringContent,
+  recordObservedItemStatistics,
+  recalculateAffectedAssessments,
+  registerAssessmentRecalculationCandidates,
+  recordSourceConflictDecision,
+  runOperationalAiProposal,
   saveAnswer,
   setAccountPassword,
   startAttempt,
@@ -32,6 +48,7 @@ import {
   revokeSessionCookie,
   rotateSession as rotateSessionCookie,
 } from "@cvg/application";
+import { confirmOperationalAiProposal as confirmOperationalAiProposalPolicy } from "@cvg/domain";
 import { loadRuntimeConfig } from "@cvg/config";
 import {
   createServerIntegrations,
@@ -43,7 +60,9 @@ import {
 } from "@cvg/observability";
 import {
   createActivityScopeResolver,
+  createAccountManagementUseCaseDependencies,
   createActivityReadRepository,
+  createAuditRepository,
   createAuthoringRepository,
   createClinicalReviewQueueRepository,
   createAnswerUseCaseDependencies,
@@ -52,13 +71,20 @@ import {
   createCorrectionUseCaseDependencies,
   createCorrectionReadRepository,
   createCurriculumRuntimeRepository,
+  createDigitalCaseRuntimeRepository,
   createInvitationUseCaseDependencies,
+  createItemStatisticsRepository,
+  createAdminOperationsRepository,
   createLearningStateRepository,
+  createModeratorDashboardRepository,
   createPostgresRateLimiter,
   createProgressReadRepository,
   createParticipantJourneyRepository,
+  createTrainingParticipantRepository,
   createPasswordAuthUseCaseDependencies,
   createSessionRepository,
+  createSourceConflictDecisionRepository,
+  createAssessmentRecalculationRepository,
 } from "@cvg/persistence";
 
 import type { ApiHttpDependencies, ApiPrincipal } from "./http.js";
@@ -94,6 +120,7 @@ export function createApiRuntime(
 }> {
   const config = loadRuntimeConfig(environment);
   const integrations = createServerIntegrations(config);
+  const operationalAi = integrations.ai;
   const identityProvider = config.identityProvider.configured
     ? createHttpIdentityProvider({
         baseUrl: config.identityProvider.url,
@@ -136,6 +163,11 @@ export function createApiRuntime(
     integrations.database.db,
     randomUUID,
   );
+  const accountManagementDependencies =
+    createAccountManagementUseCaseDependencies(
+      integrations.database.db,
+      randomUUID,
+    );
   const sessionRepository = createSessionRepository(integrations.database.db);
   const activityReadRepository = createActivityReadRepository(
     integrations.database.db,
@@ -146,9 +178,28 @@ export function createApiRuntime(
   const curriculumRuntimeRepository = createCurriculumRuntimeRepository(
     integrations.database.db,
   );
+  const digitalCaseRuntimeRepository = createDigitalCaseRuntimeRepository(
+    integrations.database.db,
+  );
   const participantJourneyRepository = createParticipantJourneyRepository(
     integrations.database.db,
   );
+  const trainingParticipantRepository = createTrainingParticipantRepository(
+    integrations.database.db,
+  );
+  const moderatorDashboardRepository = createModeratorDashboardRepository(
+    integrations.database.db,
+  );
+  const adminOperationsRepository = createAdminOperationsRepository(
+    integrations.database.db,
+  );
+  const itemStatisticsRepository = createItemStatisticsRepository(
+    integrations.database.db,
+  );
+  const sourceConflictDecisionRepository =
+    createSourceConflictDecisionRepository(integrations.database.db);
+  const assessmentRecalculationRepository =
+    createAssessmentRecalculationRepository(integrations.database.db);
   const authoringRepository = createAuthoringRepository(
     integrations.database.db,
   );
@@ -158,6 +209,7 @@ export function createApiRuntime(
   const learningStateRepository = createLearningStateRepository(
     integrations.database.db,
   );
+  const auditRepository = createAuditRepository(integrations.database.db);
   const rateLimiter = createPostgresRateLimiter(integrations.database.db);
   const apiDependencies: ApiHttpDependencies = {
     requestIdFactory: randomUUID,
@@ -194,6 +246,12 @@ export function createApiRuntime(
       createInvitation(command, invitationDependencies),
     acceptInvitation: (command) =>
       acceptInvitation(command, invitationDependencies),
+    listManagedAccounts: (command) =>
+      listManagedAccounts(command, accountManagementDependencies),
+    updateManagedAccount: (command) =>
+      updateManagedAccount(command, accountManagementDependencies),
+    revokeManagedAccountSessions: (command) =>
+      revokeManagedAccountSessions(command, accountManagementDependencies),
     loginWithPassword: (command) =>
       loginWithPassword(command, passwordAuthDependencies),
     setAccountPassword: (command) =>
@@ -218,6 +276,32 @@ export function createApiRuntime(
       createFeedbackTicketState(command, learningStateRepository),
     transitionFeedbackTicket: (command) =>
       transitionFeedbackTicketState(command, learningStateRepository),
+    listFeedbackTickets: (context) =>
+      listFeedbackTicketStates(context, {
+        list: learningStateRepository.listFeedbackTickets,
+      }),
+    recordFeedbackSafetyEvent: async ({
+      principalId,
+      scopeId,
+      ticketId,
+      requestId,
+      action,
+    }) =>
+      auditRepository.append(
+        createAuditEntry({
+          auditId: randomUUID(),
+          principalId,
+          action: `FEEDBACK_${action}`,
+          resourceType: "feedback_ticket",
+          resourceId: ticketId,
+          scopeId,
+          outcome: "SUCCESS",
+          reasonCode: "feedback_content_safety",
+          requestId,
+          correlationId: requestId,
+          occurredAt: new Date().toISOString(),
+        }),
+      ),
     createAppeal: (command) =>
       createAppealState(command, learningStateRepository),
     transitionAppeal: (command) =>
@@ -260,6 +344,67 @@ export function createApiRuntime(
         { participantId, scopeIds },
         participantJourneyRepository,
       ),
+    getInternalAdminDashboard: (scopeIds) =>
+      getInternalAdminDashboard(scopeIds, {
+        listParticipants: trainingParticipantRepository.listParticipants,
+        getParticipantLearningJourney: (participantId, participantScopes) =>
+          getParticipantLearningJourney(
+            { participantId, scopeIds: participantScopes },
+            participantJourneyRepository,
+          ),
+      }),
+    getInternalAdminOperationsDashboard: (scopeIds) =>
+      getInternalAdminOperationsDashboard(scopeIds, {
+        getAdminDashboard: (requestedScopeIds) =>
+          getInternalAdminDashboard(requestedScopeIds, {
+            listParticipants: trainingParticipantRepository.listParticipants,
+            getParticipantLearningJourney: (participantId, participantScopes) =>
+              getParticipantLearningJourney(
+                { participantId, scopeIds: participantScopes },
+                participantJourneyRepository,
+              ),
+          }),
+        readSignals: (requestedScopeIds, now) =>
+          adminOperationsRepository.readSignals(requestedScopeIds, now),
+      }),
+    getInternalModeratorDashboard: (moderatorId, scopeIds) =>
+      getInternalModeratorDashboard(moderatorId, scopeIds, {
+        listAssignedWork: moderatorDashboardRepository.listAssignedWork,
+        getParticipantLearningJourney: (participantId, participantScopes) =>
+          getParticipantLearningJourney(
+            { participantId, scopeIds: participantScopes },
+            participantJourneyRepository,
+          ),
+      }),
+    ...(operationalAi === null
+      ? {}
+      : {
+          runOperationalAiProposal: (command) =>
+            runOperationalAiProposal(
+              {
+                ...command,
+                costCeilingUsd: config.operationalAiCostCeilingUsd,
+              },
+              operationalAi,
+            ),
+        }),
+    confirmOperationalAiProposal: (proposal, confirmation) =>
+      confirmOperationalAiProposalPolicy(proposal, confirmation),
+    recordObservedItemStatistics: (input) =>
+      recordObservedItemStatistics(input, itemStatisticsRepository),
+    recordSourceConflictDecision: (command) =>
+      recordSourceConflictDecision(command, sourceConflictDecisionRepository),
+    registerAssessmentRecalculationCandidates: (command) =>
+      registerAssessmentRecalculationCandidates(
+        command,
+        assessmentRecalculationRepository,
+      ),
+    recalculateAffectedAssessments: (command) =>
+      recalculateAffectedAssessments(
+        command,
+        assessmentRecalculationRepository,
+      ),
+    listAuditEntries: () => listAuditEntries(auditRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>
       getParticipantCurriculumRuntime(
         { participantId, moduleId },
@@ -267,6 +412,10 @@ export function createApiRuntime(
       ),
     evaluateCurriculumRuntime: (command) =>
       evaluateAndPersistCurriculumModule(command, curriculumRuntimeRepository),
+    getParticipantDigitalCase: (command) =>
+      getParticipantDigitalCase(command, digitalCaseRuntimeRepository),
+    advanceParticipantDigitalCase: (command) =>
+      advanceParticipantDigitalCase(command, digitalCaseRuntimeRepository),
     getAttemptFeedback: (participantId, attemptId) =>
       getAttemptFeedback(
         { participantId, attemptId },

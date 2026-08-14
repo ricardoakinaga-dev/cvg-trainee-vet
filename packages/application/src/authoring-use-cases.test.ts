@@ -214,6 +214,44 @@ describe("authoring and clinical review use cases", () => {
     ).rejects.toMatchObject({ code: "forbidden" });
   });
 
+  it("records requested adjustments before a later clinical approval", async () => {
+    const repositoryPort = repository({
+      ...record,
+      contentStatus: "PROJECAO_VERIFICADA",
+    });
+    const transition = vi
+      .fn()
+      .mockResolvedValueOnce(workflow("EM_REVISAO_CLINICA"))
+      .mockResolvedValueOnce(workflow("AJUSTES_SOLICITADOS"));
+
+    const result = await reviewAuthoringContent(
+      {
+        principalId: "99999999-9999-4999-8999-999999999999",
+        accountStatus: "ACTIVE",
+        roles: ["CLINICAL_APPROVER"],
+        scopes: [scopeId],
+        contentId,
+        version: 1,
+        scopeId,
+        decision: "SOLICITAR_AJUSTES",
+        rationale: "Ajustar a explicação sintética antes da aprovação.",
+        correlationId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      },
+      {
+        repository: repositoryPort,
+        transition,
+        idFactory: () => "review-adjustments-1",
+      },
+    );
+
+    expect(result.record.contentStatus).toBe("AJUSTES_SOLICITADOS");
+    expect(result.review.decision).toBe("SOLICITAR_AJUSTES");
+    expect(transition).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ event: "SOLICITAR_AJUSTES" }),
+    );
+  });
+
   it("covers text and non-response correction policies", () => {
     const choiceFreeRecord = Object.fromEntries(
       Object.entries(record).filter(

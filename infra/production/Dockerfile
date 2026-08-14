@@ -1,5 +1,7 @@
 FROM node:22.22.0-bookworm-slim AS build
 
+ARG SOURCE_SHA=unknown
+
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
@@ -14,7 +16,11 @@ RUN pnpm --filter @cvg/worker... build
 
 FROM node:22.22.0-bookworm-slim AS runtime
 
-ENV NODE_ENV=production
+ARG SOURCE_SHA=unknown
+
+ENV NODE_ENV=production \
+    CVG_SOURCE_SHA=$SOURCE_SHA
+LABEL org.opencontainers.image.revision=$SOURCE_SHA
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 

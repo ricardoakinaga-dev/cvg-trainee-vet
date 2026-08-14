@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "current": {
+    "program": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+    "audit": "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+    "roadmap": "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+    "backlog": "BRIEFING/04.AUDIT/0493_score_95_backlog.md"
+  },
+  "documents": [
+    {
+      "path": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+      "role": "program",
+      "status": "CURRENT"
+    },
+    {
+      "path": "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+      "role": "audit",
+      "status": "CURRENT"
+    },
+    {
+      "path": "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+      "role": "roadmap",
+      "status": "CURRENT"
+    },
+    {
+      "path": "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+      "role": "backlog",
+      "status": "CURRENT"
+    },
+    {
+      "path": "BRIEFING/04.AUDIT/0490_audit_report.md",
+      "role": "audit",
+      "status": "HISTORICAL",
+      "supersededBy": "BRIEFING/04.AUDIT/0491_full_construction_audit.md"
+    },
+    {
+      "path": "BRIEFING/03.BUILD/0303_remediation_program.md",
+      "role": "program",
+      "status": "SUPERSEDED",
+      "supersededBy": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md"
+    }
+  ]
+}

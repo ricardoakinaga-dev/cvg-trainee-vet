@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "service": "cvg",
+  "dashboard": "infra/observability/grafana/dashboards/cvg-overview.json",
+  "alertRules": "infra/observability/prometheus-alerts.yml",
+  "externalEvidenceRequired": true,
+  "productionAcknowledgement": "NOT_CONFIGURED",
+  "signals": [
+    {
+      "id": "api_availability",
+      "category": "availability",
+      "metric": "api_requests_total",
+      "dashboardPanelTitle": "Core availability",
+      "owner": "sre",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos",
+      "acknowledgementWindowMinutes": 15,
+      "instrumentationMarkers": ["api.requests.total"],
+      "piiSafe": true
+    },
+    {
+      "id": "api_latency",
+      "category": "latency",
+      "target": { "readP95Ms": 800, "mutationP95Ms": 1500 },
+      "metric": "api_request_duration_ms_p95",
+      "dashboardPanelTitle": "API p95 latency",
+      "owner": "sre",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo",
+      "acknowledgementWindowMinutes": 15,
+      "instrumentationMarkers": ["api.request.duration_ms"],
+      "piiSafe": true
+    },
+    {
+      "id": "api_errors",
+      "category": "errors",
+      "metric": "api_requests_total",
+      "dashboardPanelTitle": "API error rate",
+      "owner": "sre",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados",
+      "acknowledgementWindowMinutes": 15,
+      "instrumentationMarkers": ["requestOutcome", "server_error"],
+      "piiSafe": true
+    },
+    {
+      "id": "content_indexing",
+      "category": "indexing",
+      "metric": "worker_events_processed",
+      "dashboardPanelTitle": "Internal indexing",
+      "owner": "backend",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados",
+      "acknowledgementWindowMinutes": 30,
+      "instrumentationMarkers": [
+        "content.published.v1",
+        "worker.events.processed"
+      ],
+      "piiSafe": true
+    },
+    {
+      "id": "ai_assistive",
+      "category": "ai",
+      "metric": "worker_events_processed",
+      "dashboardPanelTitle": "Assistive AI jobs",
+      "owner": "integrations",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos",
+      "acknowledgementWindowMinutes": 30,
+      "instrumentationMarkers": [
+        "ai.suggestion.requested.v1",
+        "worker.events.failed"
+      ],
+      "piiSafe": true
+    },
+    {
+      "id": "worker_queue",
+      "category": "queue",
+      "metric": "worker_events_claimed",
+      "dashboardPanelTitle": "Worker queue throughput",
+      "owner": "backend",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#backup-rpo-e-rto",
+      "acknowledgementWindowMinutes": 15,
+      "instrumentationMarkers": [
+        "worker.events.claimed",
+        "worker.batch.completed"
+      ],
+      "piiSafe": true
+    },
+    {
+      "id": "participant_experience",
+      "category": "experience",
+      "metric": "api_requests_total",
+      "dashboardPanelTitle": "Participant experience",
+      "owner": "product",
+      "escalation": "on-call-product",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo",
+      "acknowledgementWindowMinutes": 30,
+      "instrumentationMarkers": ["api.requests.total", "routeTemplate"],
+      "piiSafe": true
+    }
+  ],
+  "alerts": [
+    {
+      "name": "CvgCoreAvailabilityBreach",
+      "signalId": "api_availability",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos",
+      "acknowledgementWindowMinutes": 15,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgApiLatencyBreach",
+      "signalId": "api_latency",
+      "severity": "warning",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo",
+      "acknowledgementWindowMinutes": 15,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgApiErrorRateBreach",
+      "signalId": "api_errors",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados",
+      "acknowledgementWindowMinutes": 15,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgIndexingFailures",
+      "signalId": "content_indexing",
+      "severity": "warning",
+      "owner": "backend",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados",
+      "acknowledgementWindowMinutes": 30,
+      "dedupeWindowMinutes": 15,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgAssistiveAiFailures",
+      "signalId": "ai_assistive",
+      "severity": "warning",
+      "owner": "integrations",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos",
+      "acknowledgementWindowMinutes": 30,
+      "dedupeWindowMinutes": 15,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgWorkerQueueBacklog",
+      "signalId": "worker_queue",
+      "severity": "critical",
+      "owner": "backend",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#backup-rpo-e-rto",
+      "acknowledgementWindowMinutes": 15,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgParticipantExperienceErrors",
+      "signalId": "participant_experience",
+      "severity": "warning",
+      "owner": "product",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo",
+      "acknowledgementWindowMinutes": 30,
+      "dedupeWindowMinutes": 15,
+      "piiSafe": true
+    }
+  ]
+}

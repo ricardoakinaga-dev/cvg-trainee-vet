@@ -39,6 +39,7 @@ type FakeBuilder = {
 type FakeSelectBuilder = {
   from: () => FakeSelectBuilder;
   where: () => FakeSelectBuilder;
+  orderBy: () => FakeSelectBuilder;
   limit: () => Promise<readonly unknown[]>;
 };
 
@@ -55,6 +56,7 @@ function createFakeDatabase(
 ) {
   const selectQueue = [...selectRows];
   const returningQueue = [...returningRows];
+  const executions: unknown[] = [];
   const createBuilder = (): FakeBuilder => {
     const builder: FakeBuilder = {
       values: () => builder,
@@ -69,12 +71,16 @@ function createFakeDatabase(
     const builder: FakeSelectBuilder = {
       from: () => builder,
       where: () => builder,
+      orderBy: () => builder,
       limit: async () => selectQueue.shift() ?? [],
     };
     return builder;
   };
   const tx: FakeTransaction = {
-    execute: async () => [] as const,
+    execute: async (...args: readonly unknown[]) => {
+      executions.push(args);
+      return [] as const;
+    },
     insert: () => createBuilder(),
     update: () => createBuilder(),
     select: () => createSelectBuilder(),
@@ -83,7 +89,10 @@ function createFakeDatabase(
     action(tx);
   return {
     transaction,
-  } as unknown as Parameters<typeof createLearningStateRepository>[0];
+    executions,
+  } as unknown as Parameters<typeof createLearningStateRepository>[0] & {
+    readonly executions: readonly unknown[];
+  };
 }
 
 function assignmentRow(
@@ -101,6 +110,8 @@ function assignmentRow(
     version,
     blockReason: null,
     pausedFrom: null,
+    pauseReason: null,
+    resumeAt: null,
     createdAt: new Date(now),
     updatedAt: new Date(now),
   };
@@ -137,6 +148,18 @@ function ticketRow(
     description: "Solicitação sintética de revisão.",
     createdAt: new Date(now),
     status,
+    priority: "NORMAL",
+    assigneeId: null,
+    response: null,
+    responseAt: null,
+    responseBy: null,
+    history:
+      status === "NOVO"
+        ? [{ status: "NOVO", changedAt: now }]
+        : [
+            { status: "NOVO", changedAt: now },
+            { status: status as "TRIADO", changedAt: now },
+          ],
     version,
     updatedAt: new Date(now),
   };
@@ -192,6 +215,8 @@ describe("learning state persistence mappings", () => {
       version: 2,
       blockReason: "PRE_REQUISITO",
       pausedFrom: null,
+      pauseReason: null,
+      resumeAt: null,
     });
     expect(
       learningAssignmentRowToState({
@@ -201,6 +226,39 @@ describe("learning state persistence mappings", () => {
         updatedAt: new Date(now),
       }),
     ).toEqual({ scopeId, state: blocked });
+  });
+
+  it("round-trips pause accommodation context without collapsing it to status", () => {
+    const initial = createLearningAssignment({
+      assignmentId: "55555555-5555-4555-8555-555555555555",
+      participantId,
+      moduleId: "M03",
+      availableAt: now,
+    });
+    const paused = transitionLearningAssignment(
+      transitionLearningAssignment(initial, { type: "ATRIBUIR" }),
+      {
+        type: "PAUSAR",
+        reason: "ACOMODACAO",
+        resumeAt: "2026-08-12T12:00:00.000Z",
+      },
+    );
+    const row = learningAssignmentStateToRow({ scopeId, state: paused });
+
+    expect(row).toMatchObject({
+      status: "PAUSADO",
+      pausedFrom: "ATRIBUIDO",
+      pauseReason: "ACOMODACAO",
+      resumeAt: new Date("2026-08-12T12:00:00.000Z"),
+    });
+    expect(
+      learningAssignmentRowToState({
+        ...row,
+        availableAt: new Date(row.availableAt),
+        createdAt: new Date(now),
+        updatedAt: new Date(now),
+      }),
+    ).toEqual({ scopeId, state: paused });
   });
 
   it("rejects malformed persisted assignment context before it reaches SQL", () => {
@@ -215,6 +273,8 @@ describe("learning state persistence mappings", () => {
         version: 1,
         blockReason: null,
         pausedFrom: null,
+        pauseReason: null,
+        resumeAt: null,
         createdAt: new Date(now),
         updatedAt: new Date(now),
       }),
@@ -503,5 +563,32 @@ describe("learning state persistence mappings", () => {
         createFakeDatabase([[]], [[{ id: appeal.appealId }]]),
       ).saveAppeal(context, appeal),
     ).rejects.toBeInstanceOf(LearningStatePersistenceConflictError);
+  });
+
+  it("reads feedback through participant and staff RLS contexts with allowlisted filters", async () => {
+    const ticketId = "77777777-7777-4777-8777-777777777777";
+    const fakeDatabase = createFakeDatabase(
+      [[ticketRow(ticketId, "TRIADO", 1)], [ticketRow(ticketId, "TRIADO", 1)]],
+      [],
+    );
+    const repository = createLearningStateRepository(fakeDatabase);
+
+    await expect(
+      repository.listFeedbackTickets({
+        audience: "PARTICIPANT",
+        participantId,
+        scopeId,
+        status: "TRIADO",
+        priority: "NORMAL",
+      }),
+    ).resolves.toMatchObject([
+      { scopeId, state: { ticketId, participantId, status: "TRIADO" } },
+    ]);
+    await expect(
+      repository.listFeedbackTickets({ audience: "STAFF", scopeId }),
+    ).resolves.toMatchObject([
+      { scopeId, state: { ticketId, participantId, status: "TRIADO" } },
+    ]);
+    expect(fakeDatabase.executions).toHaveLength(2);
   });
 });

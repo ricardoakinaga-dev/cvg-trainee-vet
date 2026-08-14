@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "taskId": "ENT95-14-D",
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "evidence": [
+    {
+      "id": "LOCAL-VERIFY-048",
+      "requirementIds": ["SPEC-0118", "AUD-ITEM-14"],
+      "taskIds": ["ENT95-14-A", "ENT95-14-C", "ENT95-14-D"],
+      "artifactId": "PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049",
+      "command": "pnpm verify",
+      "timestamp": "2026-08-12T05:23:28-03:00",
+      "environment": "local-worktree-node22-pnpm10",
+      "seed": "synthetic-vitest-fixtures-only",
+      "syntheticData": true,
+      "sanitization": "redacted",
+      "teardown": "verified",
+      "retention": "GAP:ci-retention-pending",
+      "commit": "GAP:worktree-sha-pending",
+      "artifact": "GAP:ci-artifact-pending",
+      "paths": [
+        "test-evidence-governance.json",
+        "scripts/verify-test-evidence-governance.mjs",
+        "tests/integration/test-evidence-governance.test.ts"
+      ]
+    },
+    {
+      "id": "LIVE-POSTGRES-048",
+      "requirementIds": ["SPEC-0108", "SPEC-0118"],
+      "taskIds": ["ENT95-06-C", "ENT95-11-A", "ENT95-14-D"],
+      "artifactId": "PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049",
+      "command": "CVG_TEST_DATABASE_URL=<synthetic> pnpm test:integration:live",
+      "timestamp": "2026-08-12T05:12:26-03:00",
+      "environment": "ephemeral-postgresql16",
+      "seed": "randomUUID-synthetic-records",
+      "syntheticData": true,
+      "sanitization": "redacted",
+      "teardown": "verified",
+      "retention": "GAP:ci-retention-pending",
+      "commit": "GAP:worktree-sha-pending",
+      "artifact": "GAP:ci-artifact-pending",
+      "paths": [
+        "scripts/run-live-integration.mjs",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "tests/integration/postgres-worker.test.ts"
+      ]
+    },
+    {
+      "id": "LIVE-QDRANT-RESTORE-048",
+      "requirementIds": ["SPEC-0112", "SPEC-0113", "SPEC-0118"],
+      "taskIds": ["ENT95-06-D", "ENT95-11-B", "ENT95-14-D"],
+      "artifactId": "PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049",
+      "command": "CVG_INCLUDE_LIVE_QDRANT=true pnpm test:integration:live",
+      "timestamp": "2026-08-12T05:14:13-03:00",
+      "environment": "ephemeral-postgresql16-qdrant1.15.5",
+      "seed": "randomUUID-synthetic-qdrant-points",
+      "syntheticData": true,
+      "sanitization": "redacted",
+      "teardown": "verified",
+      "retention": "GAP:ci-retention-pending",
+      "commit": "GAP:worktree-sha-pending",
+      "artifact": "GAP:ci-artifact-pending",
+      "paths": [
+        "tests/integration/qdrant-live.test.ts",
+        "tests/integration/worker-qdrant-live.test.ts",
+        "tests/integration/postgres-restore.test.ts"
+      ]
+    }
+  ]
+}

@@ -68,6 +68,8 @@ const assignmentRow = {
   version: 0,
   blockReason: null,
   pausedFrom: null,
+  pauseReason: null,
+  resumeAt: null,
   createdAt: new Date("2026-08-10T05:00:00.000Z"),
   updatedAt: new Date("2026-08-10T05:00:00.000Z"),
 };

@@ -21,3 +21,7 @@ Evidência parcial: apiErrorResponse, toApplicationError, scans de segredo e tes
 ## Nível
 
 `PARTIAL`: estrutura, correlação local e redaction passam; retenção, acesso mínimo ao sink e reprodução de incidente distribuído aguardam a integração operacional.
+
+## Resultado vigente — 2026-08-11
+
+`PARTIAL`. Logs live da API registraram JSON com timestamp, serviço, evento, `requestId`, `correlationId`, rota, status, outcome e duração; o worker registrou batches sem payload. Não foram observados senha, token, cookie, prompt, fonte, PDF, foto, gabarito ou dado clínico. O sink/retention/acesso operacional externo não foram comprovados.

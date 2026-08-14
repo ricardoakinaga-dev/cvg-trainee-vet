@@ -2,8 +2,10 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fonte de verdade:** `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0190_spec_validation.md`  
-**Status:** `BUILD F3-S8 IMPLEMENTADO E VERIFICADO; AUDITORIA SCOPED F3-S3 + COMPLEMENTOS F3-S4/F3-S5/F3-S6/F3-S7/F3-S8 EM CONSOLIDAÇÃO`
+**Status:** `BUILD — PREMIUM ENTERPRISE 95 / E0 MOBILIZAÇÃO — WAITING_HUMAN_APPROVAL`
 **Regra:** o código foi autorizado somente depois do fechamento documental 04–08 no gate 0391; cada fase seguinte ainda exige o respectivo critério de aceite.
+
+**Extensão vigente:** a baseline técnica deste master permanece válida; o programa de elevação da auditoria atual de 83/100 para >=95 em cada item está em `0304_premium_enterprise_95_program.md`, com roadmap 0492 e backlog 0493.
 
 ## 1. Objetivo da construção
 

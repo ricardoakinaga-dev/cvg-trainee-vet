@@ -21,6 +21,13 @@ export type ParticipantDashboardModule = Readonly<{
   readonly nextAction: string;
 }>;
 
+export type ParticipantDashboardRecommendation = Readonly<{
+  readonly id: "NEXT_STUDY" | "ACCOUNT_SECURITY" | "REPORT_FEEDBACK";
+  readonly title: string;
+  readonly description: string;
+  readonly href: "/dashboard" | "/account" | "/#feedback-report-title";
+}>;
+
 export type ParticipantDashboard = Readonly<{
   readonly curriculumId: string;
   readonly curriculumVersion: string;
@@ -31,7 +38,46 @@ export type ParticipantDashboard = Readonly<{
   readonly activeModuleId?: string;
   readonly nextAction: string;
   readonly roadmap: readonly ParticipantDashboardModule[];
+  readonly recommendations: readonly ParticipantDashboardRecommendation[];
 }>;
+
+const nextActionDescription: Readonly<Record<string, string>> = {
+  INICIAR_ATIVIDADE: "Abra a próxima atividade digital disponível.",
+  INICIAR_BASELINE: "Comece a próxima atividade digital da sua jornada.",
+  RETOMAR_ATIVIDADE: "Retome a atividade digital que ficou em andamento.",
+  EXECUTAR_REMEDIACAO: "Revise o reforço digital indicado para o objetivo.",
+  REVISAR_RETENCAO: "Confira a revisão de retenção que está pendente.",
+  AGUARDAR_CORRECAO_HUMANA:
+    "Acompanhe o status enquanto a correção humana é realizada.",
+  AGUARDAR_PUBLICACAO: "Aguarde a publicação clínica autorizada do conteúdo.",
+};
+
+function buildRecommendations(
+  nextAction: string,
+): readonly ParticipantDashboardRecommendation[] {
+  return Object.freeze([
+    Object.freeze({
+      id: "NEXT_STUDY" as const,
+      title: "Acompanhe sua próxima ação",
+      description:
+        nextActionDescription[nextAction] ??
+        "Veja a próxima ação digital indicada para sua jornada.",
+      href: "/dashboard" as const,
+    }),
+    Object.freeze({
+      id: "ACCOUNT_SECURITY" as const,
+      title: "Revise sua conta",
+      description: "Confira recuperação, MFA e sessões da sua conta.",
+      href: "/account" as const,
+    }),
+    Object.freeze({
+      id: "REPORT_FEEDBACK" as const,
+      title: "Relate um problema ou melhoria",
+      description: "Envie um relato sem anexos ou dados sensíveis.",
+      href: "/#feedback-report-title" as const,
+    }),
+  ]);
+}
 
 function moduleProjection(
   module: (typeof curriculumV3.modules)[number],
@@ -182,6 +228,10 @@ export function buildParticipantDashboard(
       module.status !== "BLOQUEADO_PRE_REQUISITO" &&
       module.status !== "AGUARDANDO_PUBLICACAO",
   );
+  const nextAction =
+    state.nextAction ??
+    firstActionable?.nextAction ??
+    "CONSULTAR_PROXIMO_PASSO";
 
   return Object.freeze({
     curriculumId: curriculumV3.id,
@@ -193,10 +243,8 @@ export function buildParticipantDashboard(
     ...(activeModule === undefined
       ? {}
       : { activeModuleId: activeModule.moduleId }),
-    nextAction:
-      state.nextAction ??
-      firstActionable?.nextAction ??
-      "CONSULTAR_PROXIMO_PASSO",
+    nextAction,
     roadmap,
+    recommendations: buildRecommendations(nextAction),
   });
 }

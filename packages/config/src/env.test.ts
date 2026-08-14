@@ -18,6 +18,7 @@ describe("loadRuntimeConfig", () => {
       nodeEnv: "test",
       databaseUrl: "postgresql://cvg:cvg@localhost:5432/cvg",
       requireDatabaseLeastPrivilege: false,
+      operationalAiCostCeilingUsd: 0.25,
       approvedClinicalApproverId: "ricardo-account",
       identityProvider: { configured: false },
       identityProviderRequired: false,
@@ -25,6 +26,36 @@ describe("loadRuntimeConfig", () => {
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
     });
+  });
+
+  it("accepts a bounded operational AI cost ceiling and fails closed outside it", () => {
+    const config = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      AI_OPERATIONAL_COST_CEILING_USD: "1.5",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+    });
+
+    expect(config.operationalAiCostCeilingUsd).toBe(1.5);
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        AI_OPERATIONAL_COST_CEILING_USD: "0",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+      }),
+    ).toThrow(ConfigError);
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        AI_OPERATIONAL_COST_CEILING_USD: "100.01",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+      }),
+    ).toThrow(ConfigError);
   });
 
   it("requires a valid database URL", () => {

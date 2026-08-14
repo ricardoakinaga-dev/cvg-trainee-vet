@@ -5,6 +5,7 @@ import type { AuditEntry } from "@cvg/application";
 import {
   PersistenceMappingError,
   auditEntryToRow,
+  auditRowToEntry,
 } from "./audit-repository.js";
 import { auditEntries } from "./schema.js";
 
@@ -45,5 +46,26 @@ describe("audit PostgreSQL mapping", () => {
 
   it("keeps the append-only audit table explicit", () => {
     expect(auditEntries).toBeDefined();
+  });
+
+  it("maps a stored row back to a read-only metadata projection", () => {
+    const mapped = auditRowToEntry({
+      id: entry.auditId,
+      principalId: entry.principalId,
+      action: entry.action,
+      resourceType: entry.resourceType,
+      resourceId: entry.resourceId,
+      scopeId: entry.scopeId ?? null,
+      outcome: entry.outcome,
+      reasonCode: entry.reasonCode ?? null,
+      requestId: entry.requestId,
+      correlationId: entry.correlationId,
+      beforeHash: null,
+      afterHash: null,
+      occurredAt: new Date(entry.occurredAt),
+    });
+
+    expect(mapped).toEqual(entry);
+    expect(Object.isFrozen(mapped)).toBe(true);
   });
 });

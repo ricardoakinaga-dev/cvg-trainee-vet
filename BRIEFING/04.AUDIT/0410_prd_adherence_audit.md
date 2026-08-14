@@ -27,3 +27,7 @@ Para cada requisito: ID, comportamento observado, evidência, status, divergênc
 - PASS: dados sintéticos, sessão server-side/revogável, tentativa e resposta idempotentes, submissão única no agregado, atividade atribuída/publicada lida por escopo, transição editorial deny-by-default, progresso/retomada e projeções sem `participantId`/`scopeId`/gabarito/fonte;
 - PARTIAL: trilha/atividade existem em schema mínimo e leitura/progresso, convite, rotação/revogação, correção humana e feedback básico estão prontos; autoria web, recuperação além do convite, correção automática, remediação, retenção e contestação ainda não;
 - PARTIAL: E2E sintético da superfície participante cobre convite, erro limitado, projeção sem campos proibidos e iniciar–salvar–submeter; API real, acessibilidade completa e fluxo de usuário completo ainda não.
+
+## Resultado vigente — 2026-08-11
+
+`PARTIAL`. O núcleo de acesso, convite, atividade, resposta, submissão, próxima ação, dashboard administrativo inicial e projeções protegidas possui evidência local. O programa declarado no PRD ainda não está completo: trilha de 24 meses operacional, avaliação/remediação/contestação integral, analytics históricos, lifecycle de usuários, piloto e aprovação clínica em escala permanecem pendentes. Nota consolidada do programa: item 2 = `95/100`, item 7 = `82/100`, item 9 = `75/100`.

@@ -69,9 +69,8 @@ test.describe("participant access and learning projection", () => {
       page.getByRole("heading", { name: "Entrar no treinamento" }),
     ).toBeVisible();
     await expect(page.getByText("Sua missão começa aqui")).toBeVisible();
-    await expect(
-      page.getByText("Acesso por convite da operação"),
-    ).toBeVisible();
+    await expect(page.getByText("O superadmin cria seu acesso")).toBeVisible();
+    await expect(page.getByText("Acesso protegido")).toHaveCount(0);
 
     const password = page.getByLabel("Senha");
     await expect(password).toHaveAttribute("type", "password");
@@ -80,6 +79,94 @@ test.describe("participant access and learning projection", () => {
     await expect(
       page.getByRole("button", { name: "Ocultar senha" }),
     ).toBeVisible();
+  });
+
+  test("presents the operational data notice before first use", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/session", async (route) => {
+      await route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          error: { code: "unauthenticated", message: "Não autenticado." },
+        }),
+      });
+    });
+
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("heading", { name: "Antes de começar" }),
+    ).toBeVisible();
+    await expect(page.getByText("Finalidade do treinamento")).toBeVisible();
+    await expect(page.getByText("Dados mínimos")).toBeVisible();
+    await expect(page.getByText("Acesso e proteção")).toBeVisible();
+    await expect(page.getByText("Retenção e descarte")).toBeVisible();
+    await expect(
+      page.getByText(/não inclua prontuários, tutores, fotos ou PDFs/iu),
+    ).toBeVisible();
+  });
+
+  test("shows and submits a participant feedback report without exposing scope", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/auth/login", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/feedback", async (route) => {
+      const body = route.request().postDataJSON() as Record<string, unknown>;
+      expect(body).not.toHaveProperty("scopeId");
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            ticketId: "66666666-6666-4666-8666-666666666666",
+            type: "MELHORIA",
+            description: body.description,
+            createdAt: "2026-08-10T17:00:00.000Z",
+            status: "NOVO",
+            version: 0,
+          }),
+        ),
+      });
+    });
+
+    await page.goto("/");
+    await signIn(page);
+
+    await expect(
+      page.getByRole("heading", { name: "Relatar um problema ou melhoria" }),
+    ).toBeVisible();
+    await page.getByLabel("Tipo do relato").selectOption("MELHORIA");
+    await page
+      .getByLabel("Descrição")
+      .fill("A próxima ação poderia ficar mais clara.");
+    await page.getByRole("button", { name: "Enviar relato" }).click();
+
+    await expect(
+      page.getByRole("status").filter({ hasText: "Relato registrado." }),
+    ).toHaveCount(2);
   });
 
   test("loads the learning path and starts with its next action", async ({
@@ -137,6 +224,84 @@ test.describe("participant access and learning projection", () => {
       page.getByRole("heading", { name: "Emergência" }),
     ).toBeVisible();
     await expect(page.getByText("Retomar atividade").first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Centro de controle" }),
+    ).toHaveAttribute("href", "/admin");
+  });
+
+  test("does not auto-open M02 while M01 awaits publication", async ({
+    page,
+  }) => {
+    let activityRequested = false;
+    await page.route("**/api/v1/auth/login", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "m02-emergencia-terapia-intensiva-v1",
+                title: "M02 — Emergência e terapia intensiva",
+                status: "DISPONIVEL",
+                nextAction: "INICIAR_ATIVIDADE",
+              },
+            ],
+            results: [],
+            runtimes: [
+              {
+                moduleId: "M01",
+                version: 1,
+                status: "PENDENTE",
+                nextAction: "INICIAR_BASELINE",
+                remediationCount: 0,
+                retentionReviews: [],
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+            ],
+            nextAction: "AGUARDAR_PUBLICACAO",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      activityRequested = true;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "m02-emergencia-terapia-intensiva-v1",
+            title: "M02 — Emergência e terapia intensiva",
+            items: [],
+          }),
+        ),
+      });
+    });
+
+    await page.goto("/");
+    await signIn(page);
+
+    await expect(
+      page.getByRole("heading", { name: "Acesso ativado" }),
+    ).toBeVisible();
+    await expect(page.getByText("Aguardar publicação clínica")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "M02 — Emergência e terapia intensiva",
+      }),
+    ).toHaveCount(0);
+    expect(activityRequested).toBe(false);
   });
 
   test("accepts an internal invitation and renders only the participant activity", async ({
@@ -561,8 +726,8 @@ test.describe("participant access and learning projection", () => {
               remediationCount: 0,
               retentionReviews: [
                 {
-                  day: 7,
-                  dueAt: "2026-08-17T01:00:00.000Z",
+                  day: 30,
+                  dueAt: "2026-09-09T01:00:00.000Z",
                   status: "PENDENTE",
                 },
               ],

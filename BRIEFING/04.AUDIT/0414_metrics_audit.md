@@ -26,3 +26,7 @@ Ativação, próxima ação, conclusão, correção no SLA, remediação, reten�
 Evidência disponível somente como comandos de verificação e resultados de testes; isso não constitui telemetria de produção.
 
 É possível verificar o comportamento técnico do processo no recorte, mas ainda não acompanhar saúde histórica sem abrir o código/consultar o processo; collector, retenção e dashboards são lacuna em 0420. Métricas nunca devem revelar fonte ou dados internos ao participante.
+
+## Resultado vigente — 2026-08-11
+
+`PASS_WITH_GAPS`. Smoke no edge local: 200/200, 100%, concorrência 20, p95 122,37 ms. `/internal/metrics/prometheus` respondeu 401 sem credencial no edge interno e o edge público redirecionou 308. HA/topologia e Tempo local passaram; alertas, SLO publicado, retenção externa e capacidade de produção permanecem `NOT_EXECUTED`.

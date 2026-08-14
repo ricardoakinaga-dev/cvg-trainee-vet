@@ -669,7 +669,7 @@ const transferMetricLabels: Readonly<Record<number, string>> = Object.freeze({
   24: "integracao_do_plano_de_desenvolvimento",
 });
 
-const spacedReviewDays = freeze([7, 30, 90] as const);
+const spacedReviewDays = freeze([30, 60, 90] as const);
 const masteryRule: MasteryRule = freeze({
   knowledgeMinimumPercent: 70,
   criticalObjectiveMinimumPercent: 80,

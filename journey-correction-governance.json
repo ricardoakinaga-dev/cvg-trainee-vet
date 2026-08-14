@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "programId": "CVG-SUB80-TO-95",
+  "taskIds": ["ENT95-09-A", "ENT95-09-C", "ENT95-09-D", "ENT95-10-C"],
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "environment": "local-ha-synthetic",
+  "scopePolicy": "Participant projections, feedback and correction decisions remain owner- and scope-scoped; internal clinical identities are not published.",
+  "invariants": [
+    {
+      "id": "JCG-INVARIANT-001",
+      "name": "ordered-owner-scoped-journey",
+      "status": "PASS",
+      "evidenceIds": ["JCG-EVIDENCE-001"],
+      "assertion": "The first incomplete curriculum module determines the next action and later activities cannot bypass a pending baseline, remediation, correction or retention state."
+    },
+    {
+      "id": "JCG-INVARIANT-002",
+      "name": "non-punitive-assessment-runtime",
+      "status": "PASS",
+      "evidenceIds": ["JCG-EVIDENCE-002"],
+      "assertion": "Incomplete or human-review states do not receive an invented result or punitive global score."
+    },
+    {
+      "id": "JCG-INVARIANT-003",
+      "name": "independent-appeal-transition",
+      "status": "PASS",
+      "evidenceIds": ["JCG-EVIDENCE-003"],
+      "assertion": "Appeals require an independent reviewer, a valid decision transition and a versioned state history."
+    },
+    {
+      "id": "JCG-INVARIANT-004",
+      "name": "immutable-human-correction",
+      "status": "PASS",
+      "evidenceIds": ["JCG-EVIDENCE-004"],
+      "assertion": "Human correction appends a new result version, preserves the original attempt facts, emits metadata-only audit/event data and replays idempotently."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "JCG-EVIDENCE-001",
+      "taskIds": ["ENT95-09-A", "ENT95-09-C"],
+      "criterion": "ordered journey, pause/resume, remediation and retention",
+      "status": "PASS",
+      "testPaths": [
+        "packages/application/src/journey-use-cases.test.ts",
+        "packages/persistence/src/journey-repository.test.ts",
+        "packages/contracts/src/journey.test.ts",
+        "apps/api/src/http.test.ts"
+      ],
+      "command": "pnpm exec vitest run packages/application/src/journey-use-cases.test.ts packages/persistence/src/journey-repository.test.ts packages/contracts/src/journey.test.ts --project unit",
+      "syntheticData": true,
+      "ownerScope": "participant identity and requested scope ids are checked at application and persistence boundaries",
+      "teardown": "in-memory fixtures are discarded after the test process",
+      "artifact": "GAP:artifact-retention-pending"
+    },
+    {
+      "id": "JCG-EVIDENCE-002",
+      "taskIds": ["ENT95-09-C"],
+      "criterion": "assessment result, remediation and retention do not fabricate mastery",
+      "status": "PASS",
+      "testPaths": [
+        "packages/domain/src/assessment-policy.test.ts",
+        "packages/curriculum/src/learning-runtime.test.ts",
+        "packages/application/src/journey-use-cases.test.ts",
+        "packages/contracts/src/journey.test.ts"
+      ],
+      "command": "pnpm exec vitest run packages/domain/src/assessment-policy.test.ts packages/curriculum/src/learning-runtime.test.ts packages/application/src/journey-use-cases.test.ts --project unit",
+      "syntheticData": true,
+      "ownerScope": "participant-facing projections contain only the public result contract",
+      "teardown": "synthetic states remain in process memory and are discarded after the test process",
+      "artifact": "GAP:artifact-retention-pending"
+    },
+    {
+      "id": "JCG-EVIDENCE-003",
+      "taskIds": ["ENT95-09-D"],
+      "criterion": "feedback, appeal, independent review and safe public projection",
+      "status": "PASS",
+      "testPaths": [
+        "packages/domain/src/learning-state.test.ts",
+        "packages/domain/src/appeal.test.ts",
+        "packages/application/src/feedback-use-cases.test.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "apps/api/src/http.test.ts"
+      ],
+      "command": "pnpm exec vitest run packages/domain/src/learning-state.test.ts packages/domain/src/appeal.test.ts packages/application/src/feedback-use-cases.test.ts packages/contracts/src/learning-state.test.ts --project unit",
+      "syntheticData": true,
+      "ownerScope": "participant creation and staff transitions require the declared scope and server-side capability",
+      "teardown": "synthetic ticket and appeal states are discarded after the test process",
+      "artifact": "GAP:artifact-retention-pending"
+    },
+    {
+      "id": "JCG-EVIDENCE-004",
+      "taskIds": ["ENT95-10-C"],
+      "criterion": "human correction, append-only result version and idempotent replay",
+      "status": "PASS",
+      "testPaths": [
+        "packages/application/src/correction-use-cases.test.ts",
+        "packages/persistence/src/correction-repository.test.ts",
+        "packages/contracts/src/correction.test.ts",
+        "tests/integration/postgres-correction.test.ts"
+      ],
+      "command": "pnpm exec vitest run packages/application/src/correction-use-cases.test.ts packages/persistence/src/correction-repository.test.ts packages/contracts/src/correction.test.ts --project unit",
+      "syntheticData": true,
+      "ownerScope": "clinical correction capability is checked server-side and persistence writes use a transaction boundary",
+      "teardown": "synthetic correction records are discarded after the test process",
+      "artifact": "GAP:artifact-retention-pending"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "JCG-GAP-001",
+      "area": "authorized-live-database",
+      "status": "GAP",
+      "owner": "QA + Database",
+      "reason": "The local slice does not claim a live PostgreSQL execution with the authorized migration and RLS environment.",
+      "nextAction": "Run the approved live integration suite with synthetic fixtures and retain teardown evidence."
+    },
+    {
+      "id": "JCG-GAP-002",
+      "area": "participant-UAT",
+      "status": "GAP",
+      "owner": "Product + UX",
+      "reason": "Turn-based, device and representative-user acceptance has not been executed in the approved staging cohort.",
+      "nextAction": "Obtain D-ENT-08 and run the consented journey, correction and appeal scenarios."
+    },
+    {
+      "id": "JCG-GAP-003",
+      "area": "appeal-SLA",
+      "status": "GAP",
+      "owner": "Product Operations",
+      "reason": "The due date is modeled, but a production alert, acknowledgement and escalation drill is not configured.",
+      "nextAction": "Connect the approved ticket/alert backend and execute an SLA breach drill without participant data."
+    },
+    {
+      "id": "JCG-GAP-004",
+      "area": "clinical-communication",
+      "status": "GAP",
+      "owner": "Clinical Governance",
+      "reason": "Affected-participant communication after a clinical correction or annulment still requires an approved policy and rehearsal.",
+      "nextAction": "Approve the communication template and verify recipient selection from synthetic affected-attempt fixtures."
+    },
+    {
+      "id": "JCG-GAP-005",
+      "area": "release-provenance",
+      "status": "GAP",
+      "owner": "Tech Lead + Auditor",
+      "reason": "The worktree has no approved immutable SHA and no independent re-audit of the four local task slices.",
+      "nextAction": "Separate and review the worktree, create an authorized SHA, then rerun the evidence pack and independent audit."
+    }
+  ]
+}

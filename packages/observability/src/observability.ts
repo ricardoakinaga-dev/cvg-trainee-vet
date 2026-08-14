@@ -122,10 +122,25 @@ export type ObservabilityOptions = Readonly<{
   readonly traceSink?: TraceSink;
 }>;
 
+export type CollectionPolicy = Readonly<{
+  readonly screenRecording: false;
+  readonly sessionReplay: false;
+  readonly behavioralProfiling: false;
+  readonly rawPayloads: false;
+}>;
+
+export const nonInvasiveCollectionPolicy: CollectionPolicy = Object.freeze({
+  screenRecording: false,
+  sessionReplay: false,
+  behavioralProfiling: false,
+  rawPayloads: false,
+});
+
 export type Observability = Readonly<{
   readonly logger: Logger;
   readonly metrics: MetricsPort;
   readonly traces: TracesPort;
+  readonly collectionPolicy: CollectionPolicy;
 }>;
 
 const MAX_STRING_LENGTH = 160;
@@ -393,7 +408,14 @@ function prometheusLabels(labels: MetricLabels): string {
     .join(",")}}`;
 }
 
-export function renderPrometheusMetrics(snapshot: MetricsSnapshot): string {
+export function renderPrometheusMetrics(
+  snapshot: MetricsSnapshot,
+  quantileResolver?: (
+    name: string,
+    quantile: number,
+    labels: MetricLabels,
+  ) => number | null,
+): string {
   const lines: string[] = [];
   for (const counter of snapshot.counters) {
     const name = prometheusMetricName(counter.name);
@@ -407,6 +429,12 @@ export function renderPrometheusMetrics(snapshot: MetricsSnapshot): string {
     lines.push(`${name}_count${labels} ${histogram.count}`);
     lines.push(`# TYPE ${name}_sum gauge`);
     lines.push(`${name}_sum${labels} ${histogram.sum}`);
+    const p95 = quantileResolver?.(histogram.name, 0.95, histogram.labels);
+    if (p95 !== null && p95 !== undefined) {
+      const p95Name = prometheusMetricName(`${histogram.name}_p95`);
+      lines.push(`# TYPE ${p95Name} gauge`);
+      lines.push(`${p95Name}${labels} ${p95}`);
+    }
   }
   return lines.length === 0 ? "" : `${lines.join("\n")}\n`;
 }
@@ -555,7 +583,7 @@ function createMetrics(): MetricsPort {
     increment,
     observe,
     snapshot,
-    prometheus: () => renderPrometheusMetrics(snapshot()),
+    prometheus: () => renderPrometheusMetrics(snapshot(), quantile),
     quantile,
   });
 }
@@ -706,5 +734,6 @@ export function createObservability(
     logger: createLogger(options),
     metrics: createMetrics(),
     traces: createTraces(options),
+    collectionPolicy: nonInvasiveCollectionPolicy,
   });
 }

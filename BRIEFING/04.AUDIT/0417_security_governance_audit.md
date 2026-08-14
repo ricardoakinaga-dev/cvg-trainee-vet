@@ -26,3 +26,7 @@ Achado crítico de segredo, acesso cruzado, exposição autoral ou alteração n
 - PASS: CSRF por origem/referer/metadado Fetch, rate limit local bounded, `Retry-After`, health isento e rejeição antes do caso de uso foram construídos e testados;
 - PARTIAL: recuperação além do convite administrativo, rate limit compartilhado para escala horizontal e RLS contextual completo por participante/escopo ainda não foram construídos;
 - NOT_EXECUTED: análise dinâmica web contra API real, axe/revisão manual, collector/retention de observabilidade, restore e rotação real de segredo.
+
+## Resultado vigente — 2026-08-11
+
+`PARTIAL`, sem P0 observado. `pnpm verify:secrets`, `pnpm audit`, autorização server-side, RLS, CSRF, cookie protegido, convite hash-only, projeções sem internals, headers internos e métricas protegidas passaram. IdP/MFA/recovery real, rate limit em múltiplas réplicas produtivas, domínio/certificado público, rotação real de segredo, storage externo e deploy autorizado permanecem `NOT_EXECUTED`.

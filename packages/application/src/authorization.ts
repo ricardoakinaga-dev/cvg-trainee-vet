@@ -22,10 +22,14 @@ export type Capability =
   | "VIEW_INTERNAL_SOURCE"
   | "VIEW_CLINICAL_REVIEW_QUEUE"
   | "VIEW_INTERNAL_AUDIT"
+  | "VIEW_MODERATOR_DASHBOARD"
+  | "VIEW_ADMIN_DASHBOARD"
+  | "MANAGE_ACCOUNTS"
   | "MANAGE_ROLES"
   | "MANAGE_LEARNING_ASSIGNMENTS"
   | "MANAGE_ASSESSMENT_WORKFLOWS"
   | "CREATE_FEEDBACK_TICKET"
+  | "VIEW_FEEDBACK_TICKETS"
   | "TRANSITION_FEEDBACK_TICKET"
   | "CREATE_APPEAL"
   | "REVIEW_APPEAL";
@@ -96,6 +100,13 @@ export function canAccess(request: AuthorizationRequest): boolean {
         ownsResource(request) &&
         hasScope(request)
       );
+    case "VIEW_FEEDBACK_TICKETS":
+      return (
+        (hasRole(request, "PARTICIPANT") &&
+          ownsResource(request) &&
+          hasScope(request)) ||
+        (hasScopedStaffRole(request) && hasScope(request))
+      );
     case "MANAGE_LEARNING_ASSIGNMENTS":
     case "MANAGE_ASSESSMENT_WORKFLOWS":
     case "TRANSITION_FEEDBACK_TICKET":
@@ -129,8 +140,14 @@ export function canAccess(request: AuthorizationRequest): boolean {
       );
     case "VIEW_CLINICAL_REVIEW_QUEUE":
       return isApprovedClinicalIdentity(request) && hasScope(request);
+    case "VIEW_MODERATOR_DASHBOARD":
+      return hasScopedStaffRole(request) && hasScope(request);
     case "VIEW_INTERNAL_AUDIT":
       return hasRole(request, "AUDITOR") || hasRole(request, "ADMIN");
+    case "VIEW_ADMIN_DASHBOARD":
+      return hasRole(request, "ADMIN");
+    case "MANAGE_ACCOUNTS":
+      return hasRole(request, "ADMIN");
     case "MANAGE_ROLES":
       return hasRole(request, "ADMIN");
     default:

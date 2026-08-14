@@ -44,6 +44,22 @@ describe("participant dashboard use case", () => {
       month: 2,
       status: "BLOQUEADO_PRE_REQUISITO",
     });
+    expect(dashboard.recommendations).toEqual([
+      expect.objectContaining({
+        id: "NEXT_STUDY",
+        href: "/dashboard",
+      }),
+      expect.objectContaining({
+        id: "ACCOUNT_SECURITY",
+        href: "/account",
+      }),
+      expect.objectContaining({
+        id: "REPORT_FEEDBACK",
+        href: "/#feedback-report-title",
+      }),
+    ]);
+    expect(dashboard).not.toHaveProperty("ranking");
+    expect(JSON.stringify(dashboard)).not.toContain("ranking");
     expect(JSON.stringify(dashboard)).not.toContain("sourceRefs");
     expect(JSON.stringify(dashboard)).not.toContain("correctChoiceIds");
   });
@@ -72,6 +88,10 @@ describe("participant dashboard use case", () => {
     });
     expect(dashboard.completedModules).toBe(0);
     expect(dashboard.activeModuleId).toBeUndefined();
+    expect(dashboard.recommendations[0]).toMatchObject({
+      id: "NEXT_STUDY",
+      title: "Acompanhe sua próxima ação",
+    });
   });
 
   it("maps runtime, assignment and prerequisite states to deterministic actions", () => {
@@ -158,7 +178,7 @@ describe("participant dashboard use case", () => {
           version: 1,
           updatedAt: "2026-08-10T00:00:00.000Z",
           evaluation: runtime("M03", "DOMINIO_DIGITAL", [
-            { day: 7, dueAt: "2026-08-17T00:00:00.000Z", status: "PENDENTE" },
+            { day: 30, dueAt: "2026-09-09T00:00:00.000Z", status: "PENDENTE" },
           ]),
         },
         {

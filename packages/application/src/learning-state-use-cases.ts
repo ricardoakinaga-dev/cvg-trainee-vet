@@ -12,6 +12,7 @@ import {
   type AssessmentWorkflowEvent,
   type AssessmentWorkflowState,
   type FeedbackTicketEvent,
+  type FeedbackTechnicalContext,
   type FeedbackTicketState,
   type LearningAssignmentEvent,
   type LearningAssignmentState,
@@ -119,6 +120,7 @@ export type TicketCreateCommand = Readonly<{
   readonly type: FeedbackTicketState["type"];
   readonly description: string;
   readonly createdAt: string;
+  readonly technicalContext?: FeedbackTechnicalContext;
 }>;
 
 export type TicketTransitionCommand = Readonly<{

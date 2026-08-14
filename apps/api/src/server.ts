@@ -185,6 +185,21 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "POST" && path === "/api/v1/internal/invitations") {
     return "/api/v1/internal/invitations";
   }
+  if (method === "GET" && path === "/api/v1/internal/accounts") {
+    return "/api/v1/internal/accounts";
+  }
+  if (
+    method === "PATCH" &&
+    /^\/api\/v1\/internal\/accounts\/[^/]+$/u.test(path)
+  ) {
+    return "/api/v1/internal/accounts/:accountId";
+  }
+  if (
+    method === "POST" &&
+    /^\/api\/v1\/internal\/accounts\/[^/]+\/sessions\/revoke$/u.test(path)
+  ) {
+    return "/api/v1/internal/accounts/:accountId/sessions/revoke";
+  }
   if (method === "POST" && path === "/api/v1/internal/learning-assignments") {
     return "/api/v1/internal/learning-assignments";
   }
@@ -192,6 +207,9 @@ export function routeTemplate(method: string, path: string): string {
     return "/api/v1/internal/assessment-workflows";
   }
   if (method === "POST" && path === "/api/v1/feedback") {
+    return "/api/v1/feedback";
+  }
+  if (method === "GET" && path === "/api/v1/feedback") {
     return "/api/v1/feedback";
   }
   if (method === "POST" && path === "/api/v1/appeals") {
@@ -224,6 +242,45 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/api/v1/internal/dashboard") {
     return "/api/v1/internal/dashboard";
   }
+  if (method === "GET" && path === "/api/v1/internal/audit") {
+    return "/api/v1/internal/audit";
+  }
+  if (method === "GET" && path === "/api/v1/internal/admin/dashboard") {
+    return "/api/v1/internal/admin/dashboard";
+  }
+  if (method === "GET" && path === "/api/v1/internal/admin/operations") {
+    return "/api/v1/internal/admin/operations";
+  }
+  if (method === "GET" && path === "/api/v1/internal/moderator/dashboard") {
+    return "/api/v1/internal/moderator/dashboard";
+  }
+  if (
+    method === "POST" &&
+    path === "/api/v1/internal/operational-ai/proposals"
+  ) {
+    return "/api/v1/internal/operational-ai/proposals";
+  }
+  if (
+    method === "POST" &&
+    path === "/api/v1/internal/operational-ai/proposals/confirm"
+  ) {
+    return "/api/v1/internal/operational-ai/proposals/confirm";
+  }
+  if (method === "POST" && path === "/api/v1/internal/item-statistics") {
+    return "/api/v1/internal/item-statistics";
+  }
+  if (
+    method === "POST" &&
+    path === "/api/v1/internal/source-conflicts/decisions"
+  ) {
+    return "/api/v1/internal/source-conflicts/decisions";
+  }
+  if (
+    method === "POST" &&
+    path === "/api/v1/internal/assessment-recalculations"
+  ) {
+    return "/api/v1/internal/assessment-recalculations";
+  }
   if (/^\/api\/v1\/activities\/[^/]+$/u.test(path)) {
     return "/api/v1/activities/:activityId";
   }
@@ -232,6 +289,18 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (/^\/api\/v1\/curriculum\/modules\/[^/]+\/runtime$/u.test(path)) {
     return "/api/v1/curriculum/modules/:moduleId/runtime";
+  }
+  if (
+    method === "GET" &&
+    /^\/api\/v1\/curriculum\/modules\/[^/]+\/case$/u.test(path)
+  ) {
+    return "/api/v1/curriculum/modules/:moduleId/case";
+  }
+  if (
+    method === "POST" &&
+    /^\/api\/v1\/curriculum\/modules\/[^/]+\/case\/advance$/u.test(path)
+  ) {
+    return "/api/v1/curriculum/modules/:moduleId/case/advance";
   }
   if (/^\/api\/v1\/attempts\/[^/]+\/answers$/u.test(path)) {
     return "/api/v1/attempts/:attemptId/answers";
@@ -258,6 +327,12 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (method === "GET" && path === "/api/v1/internal/authoring/review-queue") {
     return "/api/v1/internal/authoring/review-queue";
+  }
+  if (
+    method === "POST" &&
+    /^\/api\/v1\/internal\/content\/[^/]+\/review$/u.test(path)
+  ) {
+    return "/api/v1/internal/content/:contentId/review";
   }
   if (
     method === "POST" &&

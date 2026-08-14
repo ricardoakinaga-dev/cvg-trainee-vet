@@ -11,12 +11,16 @@ import {
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   accounts,
+  activityAssignments,
   contentEditorialRecords,
   contentReviewDecisions,
+  contentWithdrawalAffected,
   contentVersions,
   createAuthoringRepository,
   createContentRepository,
   createContentUseCaseDependencies,
+  learningActivities,
+  learningActivityItems,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
 
@@ -33,11 +37,13 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const database = createPostgresDatabase(databaseUrl);
       const authorId = randomUUID();
       const reviewerId = randomUUID();
+      const participantId = randomUUID();
       const contentId = randomUUID();
       const contentVersionId = randomUUID();
       const editorialRecordId = randomUUID();
       const scopeId = randomUUID();
       const requestId = randomUUID();
+      const activityId = randomUUID();
       const bankItem = {
         title: "Prioridade sintética",
         prompt: "Escolha a próxima ação segura em um caso fictício.",
@@ -97,6 +103,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             professionalEmail: `${reviewerId}@example.invalid`,
             status: "ACTIVE",
           },
+          {
+            id: participantId,
+            professionalEmail: `${participantId}@example.invalid`,
+            status: "ACTIVE",
+          },
         ]);
         await database.db.insert(contentVersions).values({
           id: contentVersionId,
@@ -123,6 +134,23 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           authorId,
           item: bankItem,
           preflight,
+        });
+        await database.db.insert(learningActivities).values({
+          id: activityId,
+          scopeId,
+          slug: `synthetic-withdrawal-${activityId}`,
+          title: "Atividade sintética",
+          status: "PUBLISHED",
+        });
+        await database.db.insert(learningActivityItems).values({
+          activityId,
+          contentVersionId,
+          ordinal: 1,
+        });
+        await database.db.insert(activityAssignments).values({
+          participantId,
+          activityId,
+          status: "DISPONIVEL",
         });
 
         const authoringRepository = createAuthoringRepository(database.db);
@@ -186,7 +214,56 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           decision: "APROVAR_CLINICAMENTE",
         });
         expect(JSON.stringify(stored)).not.toContain("correctChoiceIds");
+
+        const retired = await advanceContent(
+          {
+            principalId: reviewerId,
+            accountStatus: "ACTIVE",
+            roles: ["CLINICAL_APPROVER"],
+            scopes: [scopeId],
+            contentId,
+            version: 1,
+            scopeId,
+            event: "RETIRAR",
+            withdrawalReasonCode: "ERRO_CONTEUDO",
+            approvedClinicalApproverId: reviewerId,
+            correlationId: randomUUID(),
+          },
+          contentDependencies,
+        );
+        expect(retired).toMatchObject({
+          status: "RETIRADO",
+          withdrawalReasonCode: "ERRO_CONTEUDO",
+          affectedParticipantCount: 1,
+        });
+        const affected = await database.db
+          .select({ participantId: contentWithdrawalAffected.participantId })
+          .from(contentWithdrawalAffected)
+          .where(eq(contentWithdrawalAffected.contentId, contentId));
+        expect(affected).toEqual([{ participantId }]);
+        const workflowEvents = await database.db
+          .select({ eventType: outboxEvents.eventType })
+          .from(outboxEvents)
+          .where(eq(outboxEvents.aggregateId, contentId));
+        expect(workflowEvents.map((event) => event.eventType)).toEqual(
+          expect.arrayContaining([
+            "content.published.v1",
+            "content.withdrawn.v1",
+          ]),
+        );
       } finally {
+        await database.db
+          .delete(contentWithdrawalAffected)
+          .where(eq(contentWithdrawalAffected.contentId, contentId));
+        await database.db
+          .delete(activityAssignments)
+          .where(eq(activityAssignments.activityId, activityId));
+        await database.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.activityId, activityId));
+        await database.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, activityId));
         await database.db
           .delete(contentReviewDecisions)
           .where(eq(contentReviewDecisions.contentId, contentId));
@@ -206,6 +283,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           );
         await database.db.delete(accounts).where(eq(accounts.id, authorId));
         await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
+        await database.db
+          .delete(accounts)
+          .where(eq(accounts.id, participantId));
         await database.close();
       }
     });

@@ -60,6 +60,12 @@ const rawEnvironmentSchema = z.object({
   AI_PROVIDER: z.literal("openai").default("openai"),
   AI_API_KEY: z.string().min(1).optional(),
   AI_MODEL: z.string().min(1).optional(),
+  AI_OPERATIONAL_COST_CEILING_USD: z.coerce
+    .number()
+    .finite()
+    .positive()
+    .max(100)
+    .default(0.25),
   IDENTITY_PROVIDER_REQUIRED: booleanString.default(false),
   IDENTITY_PROVIDER_URL: optionalHttpUrl,
   IDENTITY_PROVIDER_TOKEN: optionalNonEmptyString,
@@ -80,6 +86,7 @@ export type RuntimeConfig = {
   nodeEnv: "development" | "test" | "production";
   databaseUrl: string;
   requireDatabaseLeastPrivilege: boolean;
+  operationalAiCostCeilingUsd: number;
   approvedClinicalApproverId?: string;
   identityProvider:
     { configured: false } | { configured: true; url: string; token: string };
@@ -198,6 +205,7 @@ export function loadRuntimeConfig(
     nodeEnv: value.NODE_ENV,
     databaseUrl: value.DATABASE_URL,
     requireDatabaseLeastPrivilege: value.NODE_ENV === "production",
+    operationalAiCostCeilingUsd: value.AI_OPERATIONAL_COST_CEILING_USD,
     ...(value.CLINICAL_APPROVER_ID === undefined
       ? {}
       : { approvedClinicalApproverId: value.CLINICAL_APPROVER_ID }),

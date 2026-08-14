@@ -43,3 +43,16 @@ Correção P0 interrompe release. Toda remediação atualiza backlog, teste, log
 | GAP-F3-001 | transição editorial interna existe, mas criação web, revisão E2E e RLS contextual faltam | implementar autoria draft→revisão Ricardo→publicação/retirada, UI/API completa, auditoria e projeções de cada estado | P1 | content/authorization | CONTENT-*, SEC-AUTH-*, E2E-CONTENT-* | manter leitura da versão publicada anterior | PARTIAL |
 | GAP-F3-002 | sessão, convite, CSRF, rate limit local e rotação/revogação existem; faltam E2E de login contra API real, recuperação além do convite e contador compartilhado somente se o runtime ganhar múltiplas réplicas | manter convite administrativo controlado, adicionar E2E real e avaliar contador compartilhado apenas com escala horizontal | P1 | API/identity | AUTH-*, SEC-SESSION-*, E2E auth | desabilitar rota mutável e revogar sessões | PARTIAL |
 | GAP-F3-003 | correção humana/feedback mínimo, superfície participante E2E sintética e projeções existem, mas avaliação completa não existe | construir rubrica automática quando necessária, remediação, contestação, API web real, autoria/operação, E2E completo e progressão integral | P1 | assessment/learning | ASSESSMENT-*, PROGRESS-*, E2E-* | manter submissão em `AGUARDA_CORRECAO_HUMANA` | PARTIAL |
+
+## Plano vigente — auditoria 2026-08-11
+
+| Gap | Ação imediata | Owner | Critério de encerramento |
+|---|---|---|---|
+| AUD-2026-001 | Executar revisão independente item a item pela fila paginada; não publicar automaticamente. | Ricardo/aprovador clínico | 763 decisões registradas, preflight estrito e publicação autorizada por item. |
+| AUD-2026-002 | Escolher IdP/política e executar probe + E2E em sandbox com secret manager. | identity/ops | `PASS` live de prontidão e ciclo provider-mediated real. |
+| AUD-2026-003 | Provisionar domínio/DNS/certificado gerenciado e testar origem externa. | ops/release | HTTPS público, renovação e smoke redigido. |
+| AUD-2026-004 | Definir storage, retenção, criptografia, owner e janela; executar restore e medir RPO/RTO. | ops/data | Drill reproduzível no ambiente declarado. |
+| AUD-2026-005 | Congelar artefato, executar CI remoto e rehearsal/deploy/rollback autorizado. | release | workflow e manifest no mesmo SHA, artefatos e rollback verificados. |
+| AUD-2026-006 | Revisar diff, criar commit intencional e repetir gates no SHA. | engenharia | worktree limpo e `traceability.yml` apontando para o SHA auditado. |
+| AUD-2026-007 | Priorizar lifecycle/analytics conforme decisão de Ricardo, mantendo PRD íntegro. | produto/web | API, persistência, UX e E2E por requisito. |
+| AUD-2026-008 | Definir carga de aceitação, soak, failover e critérios de SLO. | runtime/ops | métricas persistentes, thresholds e relatório de capacidade. |

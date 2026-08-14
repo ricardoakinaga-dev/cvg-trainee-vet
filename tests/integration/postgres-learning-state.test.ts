@@ -47,6 +47,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const activityId = randomUUID();
       const attemptId = randomUUID();
       const assignmentId = randomUUID();
+      const raceAssignmentId = randomUUID();
       const resultId = randomUUID();
       const ticketId = randomUUID();
       const appealId = randomUUID();
@@ -117,6 +118,53 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await expect(
           repository.saveLearningAssignment(context, available),
         ).rejects.toBeInstanceOf(LearningStatePersistenceConflictError);
+
+        const raceCreatedAssignment = createLearningAssignment({
+          assignmentId: raceAssignmentId,
+          participantId,
+          moduleId: "M04",
+          availableAt: "2026-08-10T10:00:00.000Z",
+        });
+        const raceAssignedAssignment = transitionLearningAssignment(
+          raceCreatedAssignment,
+          { type: "ATRIBUIR" },
+        );
+        const raceAvailableAssignment = transitionLearningAssignment(
+          raceAssignedAssignment,
+          { type: "DISPONIBILIZAR", now: "2026-08-10T12:00:00.000Z" },
+        );
+        const raceStartedAssignment = transitionLearningAssignment(
+          raceAvailableAssignment,
+          { type: "INICIAR" },
+        );
+        await repository.saveLearningAssignment(context, raceCreatedAssignment);
+        await repository.saveLearningAssignment(
+          context,
+          raceAssignedAssignment,
+        );
+        await repository.saveLearningAssignment(
+          context,
+          raceAvailableAssignment,
+        );
+        const raceResults = await Promise.allSettled([
+          repository.saveLearningAssignment(context, raceStartedAssignment),
+          repository.saveLearningAssignment(context, raceStartedAssignment),
+        ]);
+        expect(
+          raceResults.filter((result) => result.status === "fulfilled"),
+        ).toHaveLength(1);
+        expect(
+          raceResults.filter(
+            (result) =>
+              result.status === "rejected" &&
+              result.reason instanceof LearningStatePersistenceConflictError,
+          ),
+        ).toHaveLength(1);
+        await expect(
+          repository.findLearningAssignment(context, raceAssignmentId),
+        ).resolves.toMatchObject({
+          state: { status: "EM_ANDAMENTO", version: 3 },
+        });
 
         const initialWorkflow = createAssessmentWorkflowResult({
           resultId,
@@ -240,7 +288,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               id: rollbackAssignmentId,
               participantId,
               scopeId,
-              moduleId: "M04",
+              moduleId: "M05",
               availableAt: new Date("2026-08-10T12:00:00.000Z"),
               status: "ATRIBUIDO",
               version: 0,
@@ -281,6 +329,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           await tx
             .delete(learningAssignments)
             .where(eq(learningAssignments.id, assignmentId));
+          await tx
+            .delete(learningAssignments)
+            .where(eq(learningAssignments.id, raceAssignmentId));
         });
         await database.db.delete(attempts).where(eq(attempts.id, attemptId));
         await database.db

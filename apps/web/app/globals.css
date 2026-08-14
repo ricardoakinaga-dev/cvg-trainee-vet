@@ -47,7 +47,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -127,6 +128,14 @@ button:disabled {
   white-space: nowrap;
 }
 
+.admin-nav-link {
+  color: var(--green-dark);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
 .hero-card {
   align-items: end;
   background: var(--card);
@@ -181,7 +190,8 @@ label {
 }
 
 input,
-textarea {
+textarea,
+select {
   background: #fbfcfa;
   border: 1px solid var(--line);
   border-radius: 0.75rem;
@@ -192,6 +202,34 @@ textarea {
 
 textarea {
   resize: vertical;
+}
+
+.feedback-report-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  display: grid;
+  gap: 1rem;
+  margin: 2rem auto 0;
+  max-width: 920px;
+  padding: 1.5rem;
+}
+
+.feedback-report-card h2,
+.feedback-report-card p {
+  margin-top: 0;
+}
+
+.feedback-report-card > div > p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.feedback-report-form {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 680px;
 }
 
 .learning-layout {
@@ -325,6 +363,52 @@ textarea {
   font-size: 0.88rem;
   margin: 0;
   padding: 0.7rem 0 0;
+}
+
+.dashboard-recommendations {
+  align-items: stretch;
+  display: block;
+  margin-top: 1.5rem;
+}
+
+.dashboard-recommendations h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.recommendation-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
+}
+
+.recommendation-card {
+  background: var(--mint);
+  border: 1px solid rgba(14, 76, 59, 0.16);
+  border-radius: 1rem;
+  color: var(--green-dark);
+  display: block;
+  padding: 1rem;
+  text-decoration: none;
+}
+
+.recommendation-card:hover,
+.recommendation-card:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+
+.recommendation-card h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.recommendation-card p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0.6rem 0 0;
 }
 
 .item-card h2,
@@ -849,6 +933,47 @@ main:focus {
   margin: 0;
 }
 
+.operational-notice {
+  background: #f4f8f3;
+  border: 1px solid rgba(24, 93, 70, 0.12);
+  border-radius: 0.95rem;
+  margin-top: 1.05rem;
+  padding: 0.9rem;
+}
+
+.operational-notice h3 {
+  color: var(--green-dark);
+  font-size: 0.82rem;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.operational-notice-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.7rem;
+}
+
+.operational-notice-item {
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 0.7rem;
+  padding: 0.65rem;
+}
+
+.operational-notice-item h4 {
+  color: var(--ink);
+  font-size: 0.7rem;
+  margin: 0;
+}
+
+.operational-notice-item p {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  margin: 0.3rem 0 0;
+}
+
 .login-form {
   margin-top: 1.65rem;
 }
@@ -1035,6 +1160,10 @@ main:focus {
 
   .login-form-panel h2 {
     margin-top: 1.5rem;
+  }
+
+  .operational-notice-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1263,6 +1392,72 @@ main:focus {
   margin-top: 0.25rem;
 }
 
+.case-stage-note {
+  background: #f3f8f4;
+  border: 1px solid #cfe3d5;
+  border-radius: 0.8rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0.85rem;
+}
+
+.case-stage-note strong {
+  color: var(--ink);
+}
+
+.case-stage-note ul {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.structured-answer-area {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.structured-formula {
+  background: #f8faf8;
+  border-left: 3px solid var(--green);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+}
+
+.structured-field {
+  color: var(--ink);
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.case-advance-button {
+  margin-top: 0.75rem;
+}
+
+.structured-field input[type="text"],
+.structured-field input[type="number"] {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.structured-field input:focus {
+  border-color: var(--green);
+  outline: 3px solid rgba(71, 150, 106, 0.2);
+}
+
 .question-navigation {
   align-items: center;
   background: rgba(255, 255, 255, 0.96);
@@ -1344,5 +1539,336 @@ main:focus {
 
   .learning-layout .privacy-card {
     position: static;
+  }
+}
+
+/* Superadmin and first-access flows */
+.admin-dashboard-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  box-shadow: 0 12px 30px rgba(31, 62, 49, 0.07);
+  margin-top: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.admin-dashboard-card > .section-heading {
+  margin-bottom: 1.25rem;
+}
+
+.admin-dashboard-card h2 {
+  color: var(--green-dark);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  letter-spacing: -0.055em;
+  margin: 0.35rem 0 0;
+}
+
+.admin-summary-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-summary-grid > div {
+  background: #f4faf6;
+  border: 1px solid #d9ece0;
+  border-radius: 0.9rem;
+  display: grid;
+  gap: 0.35rem;
+  min-height: 8.5rem;
+  padding: 1rem;
+}
+
+.admin-summary-grid span,
+.admin-summary-grid small,
+.admin-table small {
+  color: var(--muted);
+}
+
+.admin-summary-grid span {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.admin-summary-grid strong {
+  color: var(--green-dark);
+  font-size: clamp(1.7rem, 4vw, 2.45rem);
+  letter-spacing: -0.06em;
+}
+
+.admin-summary-grid small,
+.admin-table small {
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.admin-section-count {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  border-collapse: collapse;
+  min-width: 680px;
+  width: 100%;
+}
+
+.admin-table th {
+  color: var(--green);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0 0.85rem 0.75rem;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  padding: 0.9rem 0.85rem;
+  vertical-align: top;
+}
+
+.admin-table td:first-child,
+.admin-table th:first-child {
+  padding-left: 0;
+}
+
+.admin-table td:last-child,
+.admin-table th:last-child {
+  padding-right: 0;
+}
+
+.admin-table td > strong,
+.admin-table td > small {
+  display: block;
+}
+
+.admin-table td > small {
+  margin-top: 0.25rem;
+}
+
+.admin-status {
+  background: var(--mint);
+  border-radius: 99rem;
+  color: var(--green-dark);
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.4rem 0.6rem;
+  white-space: nowrap;
+}
+
+.admin-catalog-table {
+  min-width: 780px;
+}
+
+.admin-catalog-table td:nth-child(n + 3),
+.admin-catalog-table th:nth-child(n + 3) {
+  text-align: right;
+}
+
+.admin-training-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-training-form select,
+.admin-user-form select {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--ink);
+  min-height: 3.1rem;
+  padding: 0.75rem 0.85rem;
+  width: 100%;
+}
+
+.admin-training-form select:focus,
+.admin-user-form select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(24, 117, 86, 0.12);
+  outline: none;
+}
+
+.admin-training-form button {
+  justify-self: start;
+  margin-top: 0.35rem;
+}
+
+.admin-management-card {
+  align-items: start;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(230, 120, 94, 0.12),
+      transparent 18rem
+    ),
+    #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  box-shadow: 0 12px 30px rgba(31, 62, 49, 0.07);
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 0.95fr) minmax(18rem, 1.05fr);
+  margin-top: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.admin-management-copy h2,
+.invite-result h2 {
+  color: var(--green-dark);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  letter-spacing: -0.055em;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.admin-management-copy p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.admin-user-form,
+.first-access-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-user-form select:focus,
+.first-access-form input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(24, 117, 86, 0.12);
+  outline: none;
+}
+
+.admin-user-form .field-help {
+  margin: 0.15rem 0 0.65rem;
+}
+
+.admin-user-form button {
+  justify-self: start;
+  margin-top: 0.35rem;
+}
+
+.invite-result {
+  background: #eaf7ef;
+  border: 1px solid #b8ddc6;
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+}
+
+.invite-result p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.invite-result a,
+.first-access-complete a {
+  color: var(--green-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.invite-result small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.first-access-shell {
+  min-height: 100vh;
+}
+
+.first-access-card {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(230, 120, 94, 0.14),
+      transparent 18rem
+    ),
+    #fffdf9;
+  border: 1px solid var(--line);
+  border-radius: 1.35rem;
+  box-shadow: 0 18px 45px rgba(31, 62, 49, 0.09);
+  margin: clamp(2rem, 8vh, 5rem) auto 0;
+  max-width: 48rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.first-access-card h1 {
+  color: var(--ink);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: -0.07em;
+  line-height: 0.98;
+  margin: 0.75rem 0 0.85rem;
+  max-width: 12ch;
+}
+
+.first-access-card > div > p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+  max-width: 38rem;
+}
+
+.first-access-form {
+  margin-top: 2rem;
+}
+
+.first-access-form input {
+  background: #ffffff;
+  min-height: 3.2rem;
+  margin-bottom: 0.55rem;
+}
+
+.first-access-form button {
+  justify-self: start;
+  margin-top: 0.55rem;
+}
+
+.first-access-complete {
+  background: #eaf7ef;
+  border: 1px solid #b8ddc6;
+  border-radius: 0.9rem;
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.first-access-complete span {
+  color: var(--muted);
+}
+
+.first-access-invalid {
+  color: var(--muted);
+  margin-top: 2rem;
+}
+
+@media (max-width: 760px) {
+  .admin-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-management-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-training-form button,
+  .admin-user-form button,
+  .first-access-form button {
+    justify-self: stretch;
+    width: 100%;
   }
 }

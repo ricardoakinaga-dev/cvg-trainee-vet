@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql, type SQL } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AppealDecision,
@@ -8,13 +8,19 @@ import type {
   AppealStatus,
   AssessmentWorkflowState,
   AssessmentWorkflowStatus,
+  FeedbackTechnicalContext,
+  FeedbackTicketHistoryEntry,
+  FeedbackTicketPriority,
+  FeedbackTicketResponse,
   FeedbackTicketState,
   FeedbackTicketStatus,
   FeedbackTicketType,
   LearningAssignmentBlockReason,
+  LearningAssignmentPauseReason,
   LearningAssignmentState,
   LearningAssignmentStatus,
 } from "@cvg/domain";
+import { inspectFeedbackContent } from "@cvg/domain";
 
 import {
   appeals,
@@ -48,6 +54,14 @@ export type PersistenceContext = Readonly<{
   readonly scopeId: string;
 }>;
 
+export type FeedbackTicketListContext = Readonly<{
+  readonly audience: "PARTICIPANT" | "STAFF";
+  readonly participantId?: string;
+  readonly scopeId: string;
+  readonly status?: FeedbackTicketStatus;
+  readonly priority?: FeedbackTicketPriority;
+}>;
+
 export type ScopedLearningAssignment = Readonly<{
   readonly scopeId: string;
   readonly state: LearningAssignmentState;
@@ -79,6 +93,8 @@ export type LearningAssignmentRowShape = Readonly<{
   readonly version: number;
   readonly blockReason: string | null;
   readonly pausedFrom: string | null;
+  readonly pauseReason: string | null;
+  readonly resumeAt: Date | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }>;
@@ -93,6 +109,8 @@ export type LearningAssignmentInsertRow = Readonly<{
   readonly version: number;
   readonly blockReason: LearningAssignmentBlockReason | null;
   readonly pausedFrom: Exclude<LearningAssignmentStatus, "PAUSADO"> | null;
+  readonly pauseReason: LearningAssignmentPauseReason | null;
+  readonly resumeAt: Date | null;
 }>;
 
 export type AssessmentWorkflowRowShape = Readonly<{
@@ -124,8 +142,19 @@ export type FeedbackTicketRowShape = Readonly<{
   readonly type: string;
   readonly description: string;
   readonly createdAt: Date;
+  readonly alertedAt?: Date | null;
   readonly version: number;
   readonly status: string;
+  readonly priority?: string | null;
+  readonly assigneeId?: string | null;
+  readonly response?: string | null;
+  readonly responseAt?: Date | null;
+  readonly responseBy?: string | null;
+  readonly history?: readonly FeedbackTicketHistoryEntry[] | null;
+  readonly logicalPage?: string | null;
+  readonly appVersion?: string | null;
+  readonly occurredAt?: Date | null;
+  readonly errorCode?: string | null;
   readonly updatedAt: Date;
 }>;
 
@@ -136,8 +165,19 @@ export type FeedbackTicketInsertRow = Readonly<{
   readonly type: FeedbackTicketType;
   readonly description: string;
   readonly createdAt: Date;
+  readonly alertedAt: Date | null;
   readonly version: number;
   readonly status: FeedbackTicketStatus;
+  readonly priority: FeedbackTicketPriority;
+  readonly assigneeId: string | null;
+  readonly response: string | null;
+  readonly responseAt: Date | null;
+  readonly responseBy: string | null;
+  readonly history: readonly FeedbackTicketHistoryEntry[];
+  readonly logicalPage: string | null;
+  readonly appVersion: string | null;
+  readonly occurredAt: Date | null;
+  readonly errorCode: string | null;
 }>;
 
 export type AppealRowShape = Readonly<{
@@ -187,6 +227,11 @@ const blockReasons: readonly LearningAssignmentBlockReason[] = [
   "CONTEUDO_RETIRADO",
   "OBJETIVO_EM_REMEDIACAO",
 ];
+const pauseReasons: readonly LearningAssignmentPauseReason[] = [
+  "AFASTAMENTO",
+  "ACOMODACAO",
+  "JANELA_OPERACIONAL",
+];
 const pausedFromStatuses: readonly Exclude<
   LearningAssignmentStatus,
   "PAUSADO"
@@ -223,6 +268,12 @@ const ticketStatuses: readonly FeedbackTicketStatus[] = [
   "DUPLICADO",
   "NAO_REPRODUZIDO",
   "NAO_PLANEJADO",
+];
+const ticketPriorities: readonly FeedbackTicketPriority[] = [
+  "BAIXA",
+  "NORMAL",
+  "ALTA",
+  "URGENTE",
 ];
 const appealStatuses: readonly AppealStatus[] = [
   "ABERTA",
@@ -290,6 +341,199 @@ function assertPlainText(value: string, field: string): void {
   if (value.length > 10_000 || /<[^>]*>/u.test(value)) {
     throw new LearningStateMappingError(`${field} must be plain text`);
   }
+}
+
+function assertFeedbackTechnicalContext(
+  context: FeedbackTechnicalContext,
+): void {
+  if (!/^\/[A-Za-z0-9][A-Za-z0-9/_:-]{0,127}$/u.test(context.logicalPage)) {
+    throw new LearningStateMappingError(
+      "technicalContext.logicalPage is invalid",
+    );
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$/u.test(context.appVersion)) {
+    throw new LearningStateMappingError(
+      "technicalContext.appVersion is invalid",
+    );
+  }
+  if (context.occurredAt !== undefined) {
+    assertTimestamp(context.occurredAt, "technicalContext.occurredAt");
+  }
+  if (
+    context.errorCode !== undefined &&
+    !/^[A-Z0-9][A-Z0-9_.:-]{0,63}$/u.test(context.errorCode)
+  ) {
+    throw new LearningStateMappingError(
+      "technicalContext.errorCode is invalid",
+    );
+  }
+}
+
+function feedbackTechnicalContextToColumns(
+  context: FeedbackTechnicalContext | undefined,
+): Pick<
+  FeedbackTicketInsertRow,
+  "logicalPage" | "appVersion" | "occurredAt" | "errorCode"
+> {
+  if (context === undefined) {
+    return {
+      logicalPage: null,
+      appVersion: null,
+      occurredAt: null,
+      errorCode: null,
+    };
+  }
+  assertFeedbackTechnicalContext(context);
+  return {
+    logicalPage: context.logicalPage,
+    appVersion: context.appVersion,
+    occurredAt:
+      context.occurredAt === undefined ? null : new Date(context.occurredAt),
+    errorCode: context.errorCode ?? null,
+  };
+}
+
+function feedbackTechnicalContextFromRow(
+  row: FeedbackTicketRowShape,
+): FeedbackTechnicalContext | undefined {
+  const logicalPage = row.logicalPage ?? null;
+  const appVersion = row.appVersion ?? null;
+  const occurredAt = row.occurredAt ?? null;
+  const errorCode = row.errorCode ?? null;
+  if (
+    logicalPage === null &&
+    appVersion === null &&
+    occurredAt === null &&
+    errorCode === null
+  ) {
+    return undefined;
+  }
+  if (logicalPage === null || appVersion === null) {
+    throw new LearningStateMappingError(
+      "technical context requires logicalPage and appVersion",
+    );
+  }
+  const context = {
+    logicalPage,
+    appVersion,
+    ...(occurredAt === null
+      ? {}
+      : { occurredAt: dateToIso(occurredAt, "technicalContext.occurredAt") }),
+    ...(errorCode === null ? {} : { errorCode }),
+  } satisfies FeedbackTechnicalContext;
+  assertFeedbackTechnicalContext(context);
+  return Object.freeze(context);
+}
+
+function feedbackTicketHistoryToColumns(
+  state: FeedbackTicketState,
+): readonly FeedbackTicketHistoryEntry[] {
+  const history: readonly FeedbackTicketHistoryEntry[] =
+    state.history ??
+    Object.freeze([
+      Object.freeze({
+        status: state.status,
+        changedAt: state.createdAt,
+      }),
+    ]);
+  if (history.length === 0 || history.length > 100) {
+    throw new LearningStateMappingError(
+      "feedback ticket history must contain between 1 and 100 entries",
+    );
+  }
+  return Object.freeze(
+    history.map((entry) => {
+      assertOneOf(entry.status, ticketStatuses, "history status");
+      const changedAt = assertTimestamp(entry.changedAt, "history changedAt");
+      if (entry.actorId !== undefined) assertNonEmpty(entry.actorId, "actorId");
+      return Object.freeze({
+        status: entry.status,
+        changedAt: changedAt.toISOString(),
+        ...(entry.actorId === undefined ? {} : { actorId: entry.actorId }),
+      });
+    }),
+  );
+}
+
+function feedbackTicketHistoryFromRow(
+  row: FeedbackTicketRowShape,
+): readonly FeedbackTicketHistoryEntry[] {
+  const persisted = row.history ?? null;
+  if (persisted === null || persisted.length === 0) {
+    return Object.freeze([
+      Object.freeze({
+        status: row.status as FeedbackTicketStatus,
+        changedAt: dateToIso(row.updatedAt, "updatedAt"),
+      }),
+    ]);
+  }
+  if (persisted.length > 100) {
+    throw new LearningStateMappingError(
+      "feedback ticket history cannot exceed 100 entries",
+    );
+  }
+  return Object.freeze(
+    persisted.map((entry) => {
+      if (entry === null || typeof entry !== "object") {
+        throw new LearningStateMappingError(
+          "feedback ticket history is invalid",
+        );
+      }
+      assertOneOf(entry.status, ticketStatuses, "history status");
+      const changedAt = assertTimestamp(entry.changedAt, "history changedAt");
+      if (entry.actorId !== undefined) assertNonEmpty(entry.actorId, "actorId");
+      return Object.freeze({
+        status: entry.status,
+        changedAt: changedAt.toISOString(),
+        ...(entry.actorId === undefined ? {} : { actorId: entry.actorId }),
+      });
+    }),
+  );
+}
+
+function feedbackTicketResponseToColumns(
+  response: FeedbackTicketResponse | undefined,
+): Pick<FeedbackTicketInsertRow, "response" | "responseAt" | "responseBy"> {
+  if (response === undefined) {
+    return { response: null, responseAt: null, responseBy: null };
+  }
+  assertPlainText(response.message, "response");
+  if (!inspectFeedbackContent(response.message).safe) {
+    throw new LearningStateMappingError("response contains prohibited content");
+  }
+  const responseAt = assertTimestamp(response.respondedAt, "respondedAt");
+  if (response.respondedBy !== undefined) {
+    assertNonEmpty(response.respondedBy, "respondedBy");
+  }
+  return {
+    response: response.message,
+    responseAt,
+    responseBy: response.respondedBy ?? null,
+  };
+}
+
+function feedbackTicketResponseFromRow(
+  row: FeedbackTicketRowShape,
+): FeedbackTicketResponse | undefined {
+  const response = row.response ?? null;
+  const responseAt = row.responseAt ?? null;
+  const responseBy = row.responseBy ?? null;
+  if (response === null && responseAt === null && responseBy === null) {
+    return undefined;
+  }
+  if (response === null || responseAt === null) {
+    throw new LearningStateMappingError(
+      "feedback ticket response requires message and respondedAt",
+    );
+  }
+  assertNonEmpty(response, "response");
+  const result = {
+    message: response,
+    respondedAt: dateToIso(responseAt, "respondedAt"),
+    ...(responseBy === null ? {} : { respondedBy: responseBy }),
+  } satisfies FeedbackTicketResponse;
+  if (responseBy !== null) assertNonEmpty(responseBy, "respondedBy");
+  return Object.freeze(result);
 }
 
 function assertContext(context: PersistenceContext): void {
@@ -362,6 +606,27 @@ export function learningAssignmentStateToRow(
       "pausedFrom is only valid for paused assignments",
     );
   }
+  let resumeAt: Date | null = null;
+  if (input.state.status === "PAUSADO") {
+    if (
+      input.state.pauseReason === undefined ||
+      !pauseReasons.includes(input.state.pauseReason)
+    ) {
+      throw new LearningStateMappingError(
+        "paused assignment requires a supported pauseReason",
+      );
+    }
+    if (input.state.resumeAt !== undefined) {
+      resumeAt = assertTimestamp(input.state.resumeAt, "resumeAt");
+    }
+  } else if (
+    input.state.pauseReason !== undefined ||
+    input.state.resumeAt !== undefined
+  ) {
+    throw new LearningStateMappingError(
+      "pause context is only valid for paused assignments",
+    );
+  }
   return Object.freeze({
     id: input.state.assignmentId,
     participantId: input.state.participantId,
@@ -372,6 +637,8 @@ export function learningAssignmentStateToRow(
     version: input.state.version,
     blockReason: input.state.blockReason ?? null,
     pausedFrom: input.state.pausedFrom ?? null,
+    pauseReason: input.state.pauseReason ?? null,
+    resumeAt,
   });
 }
 
@@ -404,9 +671,20 @@ export function learningAssignmentRowToState(
       );
     }
     assertOneOf(row.pausedFrom, pausedFromStatuses, "pausedFrom");
+    if (row.pauseReason === null) {
+      throw new LearningStateMappingError(
+        "paused assignment requires pauseReason",
+      );
+    }
+    assertOneOf(row.pauseReason, pauseReasons, "pauseReason");
+    if (row.resumeAt !== null) dateToIso(row.resumeAt, "resumeAt");
   } else if (row.pausedFrom !== null) {
     throw new LearningStateMappingError(
       "pausedFrom is only valid for paused assignments",
+    );
+  } else if (row.pauseReason !== null || row.resumeAt !== null) {
+    throw new LearningStateMappingError(
+      "pause context is only valid for paused assignments",
     );
   }
   dateToIso(row.createdAt, "createdAt");
@@ -422,6 +700,12 @@ export function learningAssignmentRowToState(
       version: row.version,
       ...(row.blockReason === null ? {} : { blockReason: row.blockReason }),
       ...(row.pausedFrom === null ? {} : { pausedFrom: row.pausedFrom }),
+      ...(row.pauseReason === null
+        ? {}
+        : { pauseReason: row.pauseReason as LearningAssignmentPauseReason }),
+      ...(row.resumeAt === null
+        ? {}
+        : { resumeAt: row.resumeAt.toISOString() }),
     }),
   });
 }
@@ -481,9 +765,21 @@ export function feedbackTicketStateToRow(
   assertNonEmpty(input.state.ticketId, "ticketId");
   assertOneOf(input.state.type, ticketTypes, "type");
   assertPlainText(input.state.description, "description");
+  if (!inspectFeedbackContent(input.state.description).safe) {
+    throw new LearningStateMappingError(
+      "description contains prohibited content",
+    );
+  }
   assertTimestamp(input.state.createdAt, "createdAt");
   assertVersion(input.state.version, "ticket version");
   assertOneOf(input.state.status, ticketStatuses, "status");
+  const priority = input.state.priority ?? "NORMAL";
+  assertOneOf(priority, ticketPriorities, "priority");
+  const technicalContext = feedbackTechnicalContextToColumns(
+    input.state.technicalContext,
+  );
+  const response = feedbackTicketResponseToColumns(input.state.response);
+  const history = feedbackTicketHistoryToColumns(input.state);
   return Object.freeze({
     id: input.state.ticketId,
     participantId: input.state.participantId,
@@ -491,8 +787,17 @@ export function feedbackTicketStateToRow(
     type: input.state.type,
     description: input.state.description,
     createdAt: new Date(input.state.createdAt),
+    alertedAt:
+      input.state.alertedAt === undefined
+        ? null
+        : new Date(input.state.alertedAt),
     version: input.state.version,
     status: input.state.status,
+    priority,
+    assigneeId: input.state.assigneeId ?? null,
+    ...response,
+    history,
+    ...technicalContext,
   });
 }
 
@@ -503,11 +808,16 @@ export function feedbackTicketRowToState(
   assertNonEmpty(row.participantId, "participantId");
   assertNonEmpty(row.scopeId, "scopeId");
   assertOneOf(row.type, ticketTypes, "type");
-  assertPlainText(row.description, "description");
+  assertNonEmpty(row.description, "description");
   assertTimestamp(dateToIso(row.createdAt, "createdAt"), "createdAt");
   assertVersion(row.version, "ticket version");
   assertOneOf(row.status, ticketStatuses, "status");
+  const priority = row.priority ?? "NORMAL";
+  assertOneOf(priority, ticketPriorities, "priority");
   dateToIso(row.updatedAt, "updatedAt");
+  const technicalContext = feedbackTechnicalContextFromRow(row);
+  const response = feedbackTicketResponseFromRow(row);
+  const history = feedbackTicketHistoryFromRow(row);
   return Object.freeze({
     scopeId: row.scopeId,
     state: Object.freeze({
@@ -516,8 +826,18 @@ export function feedbackTicketRowToState(
       type: row.type,
       description: row.description,
       createdAt: row.createdAt.toISOString(),
+      ...(row.alertedAt === null || row.alertedAt === undefined
+        ? {}
+        : { alertedAt: row.alertedAt.toISOString() }),
+      priority,
+      ...(row.assigneeId === null || row.assigneeId === undefined
+        ? {}
+        : { assigneeId: row.assigneeId }),
+      ...(response === undefined ? {} : { response }),
+      history,
       version: row.version,
       status: row.status,
+      ...(technicalContext === undefined ? {} : { technicalContext }),
     }),
   });
 }
@@ -630,7 +950,21 @@ async function withContext<T>(
   assertPersistenceContext(context);
   return db.transaction(async (tx) => {
     await tx.execute(
-      sql`select set_config('cvg.participant_id', ${context.participantId}, true), set_config('cvg.scope_id', ${context.scopeId}, true)`,
+      sql`select set_config('cvg.participant_id', ${context.participantId}, true), set_config('cvg.scope_id', ${context.scopeId}, true), set_config('cvg.feedback_staff_read', 'false', true)`,
+    );
+    return action(tx);
+  });
+}
+
+async function withFeedbackStaffContext<T>(
+  db: DatabaseExecutor,
+  scopeId: string,
+  action: (tx: DatabaseTransaction) => Promise<T>,
+): Promise<T> {
+  assertNonEmpty(scopeId, "scopeId");
+  return db.transaction(async (tx) => {
+    await tx.execute(
+      sql`select set_config('cvg.participant_id', '', true), set_config('cvg.scope_id', ${scopeId}, true), set_config('cvg.feedback_staff_read', 'true', true)`,
     );
     return action(tx);
   });
@@ -661,6 +995,9 @@ export type LearningStateRepository = Readonly<{
     context: PersistenceContext,
     ticketId: string,
   ) => Promise<ScopedFeedbackTicket | null>;
+  listFeedbackTickets: (
+    context: FeedbackTicketListContext,
+  ) => Promise<readonly ScopedFeedbackTicket[]>;
   saveAppeal: (
     context: PersistenceContext,
     state: AppealState,
@@ -708,6 +1045,8 @@ export function createLearningStateRepository(
             version: row.version,
             blockReason: row.blockReason,
             pausedFrom: row.pausedFrom,
+            pauseReason: row.pauseReason,
+            resumeAt: row.resumeAt,
             updatedAt: now,
           })
           .where(
@@ -849,8 +1188,19 @@ export function createLearningStateRepository(
             scopeId: row.scopeId,
             type: row.type,
             description: row.description,
+            alertedAt: row.alertedAt,
             status: row.status,
             version: row.version,
+            priority: row.priority,
+            assigneeId: row.assigneeId,
+            response: row.response,
+            responseAt: row.responseAt,
+            responseBy: row.responseBy,
+            history: row.history,
+            logicalPage: row.logicalPage,
+            appVersion: row.appVersion,
+            occurredAt: row.occurredAt,
+            errorCode: row.errorCode,
             updatedAt: now,
           })
           .where(
@@ -893,6 +1243,58 @@ export function createLearningStateRepository(
       const row = rows[0];
       return row === undefined ? null : feedbackTicketRowToState(row);
     });
+
+  const listFeedbackTickets = async (
+    context: FeedbackTicketListContext,
+  ): Promise<readonly ScopedFeedbackTicket[]> => {
+    const listRows = async (
+      tx: DatabaseTransaction,
+      filters: readonly SQL<unknown>[],
+    ): Promise<readonly ScopedFeedbackTicket[]> => {
+      const rows = await tx
+        .select()
+        .from(feedbackTickets)
+        .where(and(...filters))
+        .orderBy(desc(feedbackTickets.createdAt), desc(feedbackTickets.id))
+        .limit(100);
+      return Object.freeze(rows.map((row) => feedbackTicketRowToState(row)));
+    };
+
+    if (context.audience === "PARTICIPANT") {
+      assertNonEmpty(context.participantId, "participantId");
+      const participantId = context.participantId;
+      return withContext(
+        db,
+        { participantId, scopeId: context.scopeId },
+        (tx) => {
+          const filters: SQL<unknown>[] = [
+            eq(feedbackTickets.participantId, participantId),
+            eq(feedbackTickets.scopeId, context.scopeId),
+          ];
+          if (context.status !== undefined) {
+            filters.push(eq(feedbackTickets.status, context.status));
+          }
+          if (context.priority !== undefined) {
+            filters.push(eq(feedbackTickets.priority, context.priority));
+          }
+          return listRows(tx, filters);
+        },
+      );
+    }
+
+    return withFeedbackStaffContext(db, context.scopeId, (tx) => {
+      const filters: SQL<unknown>[] = [
+        eq(feedbackTickets.scopeId, context.scopeId),
+      ];
+      if (context.status !== undefined) {
+        filters.push(eq(feedbackTickets.status, context.status));
+      }
+      if (context.priority !== undefined) {
+        filters.push(eq(feedbackTickets.priority, context.priority));
+      }
+      return listRows(tx, filters);
+    });
+  };
 
   const saveAppealState = async (
     context: PersistenceContext,
@@ -973,6 +1375,7 @@ export function createLearningStateRepository(
     findAssessmentWorkflow: findWorkflow,
     saveFeedbackTicket: saveTicket,
     findFeedbackTicket: findTicket,
+    listFeedbackTickets,
     saveAppeal: saveAppealState,
     findAppeal: findAppealState,
   });

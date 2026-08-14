@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "programId": "CVG-PREMIUM-ENTERPRISE-95",
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "decisions": [
+    {
+      "id": "DEC-ENT95-BASELINE-001",
+      "sprintId": "S0",
+      "owner": "Program + Auditor",
+      "reason": "Preservar a baseline oficial até existir reauditoria independente no mesmo SHA.",
+      "impact": "Impede promoção silenciosa de score, release ou piloto.",
+      "acceptance": "Scorecard reproduzível mantém 83,24/100 e registra qualquer mudança futura como decisão explícita.",
+      "rollback": "Reverter apenas a atualização documental desta decisão, mantendo o scorecard anterior e seus gaps.",
+      "status": "RECORDED_LOCAL",
+      "approvalStatus": "HUMAN_REVIEW_REQUIRED",
+      "artifactIds": ["ENT95-FINAL-VERIFICATION-050"]
+    },
+    {
+      "id": "DEC-ENT95-EVIDENCE-002",
+      "sprintId": "S0",
+      "owner": "QA + Security",
+      "reason": "Exigir evidência sintética, sanitizada, reproduzível e ligada a task antes de aceitar um gate.",
+      "impact": "Mantém lacunas de SHA, retention e CI visíveis sem inventar proveniência.",
+      "acceptance": "Manifesto e verificador rejeitam dados não sintéticos, path ausente, teardown ausente, segredo e commit inválido.",
+      "rollback": "Remover o novo registro local somente junto com seu teste e atualizar o log; não apagar evidência anterior.",
+      "status": "RECORDED_LOCAL",
+      "approvalStatus": "HUMAN_REVIEW_REQUIRED",
+      "artifactIds": ["PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049"]
+    }
+  ],
+  "risks": [
+    {
+      "id": "RISK-ENT95-RELEASE-001",
+      "sprintId": "S0",
+      "owner": "Ricardo + Auditor",
+      "severity": "P0",
+      "reason": "Release ou piloto antes de fechar os gates clínicos, externos e de proveniência.",
+      "impact": "Pode transformar evidência local sintética em decisão operacional indevida.",
+      "acceptance": "Nenhum release ou piloto é aceito enquanto os gates P0 e a reauditoria não estiverem verdes.",
+      "rollback": "Cancelar a promoção proposta e retornar o programa para WAITING_HUMAN_APPROVAL.",
+      "mitigation": "Manter PILOT_BLOCKED, WAITING_HUMAN_APPROVAL e score oficial 83/100.",
+      "trigger": "Qualquer proposta de promoção sem SHA, CI artifact e reauditoria independente.",
+      "contingency": "Bloquear a mudança, registrar a divergência e reabrir o change request.",
+      "status": "OPEN",
+      "artifactIds": ["ENT95-FINAL-VERIFICATION-050"]
+    },
+    {
+      "id": "RISK-ENT95-WORKTREE-002",
+      "sprintId": "S0",
+      "owner": "Tech lead + Ricardo",
+      "severity": "P1",
+      "reason": "O worktree contém alterações não commitadas e não constitui um SHA de release.",
+      "impact": "A evidência pode não ser reproduzível no mesmo conjunto de arquivos.",
+      "acceptance": "A release só pode apontar para um SHA limpo e para artifacts produzidos no mesmo conjunto de arquivos.",
+      "rollback": "Descartar a tentativa de release e manter GAP:worktree-sha-pending até autorização de commit.",
+      "mitigation": "Revisar diff, preservar alterações do usuário e manter GAP:worktree-sha-pending.",
+      "trigger": "Execução ou aprovação que exija um commit final sem autorização explícita.",
+      "contingency": "Pausar release, separar escopos e solicitar aprovação de commit.",
+      "status": "OPEN",
+      "artifactIds": ["ENT95-FINAL-VERIFICATION-050"]
+    }
+  ],
+  "changeRequests": [
+    {
+      "id": "CR-ENT95-14-D-049",
+      "sprintId": "S0",
+      "owner": "QA + Security",
+      "changeType": "GOVERNANCE",
+      "reason": "Adicionar manifesto e gate de evidência imutável e dados de teste.",
+      "impact": "Aumenta a auditabilidade local sem alterar nota, estado clínico ou disposição de release.",
+      "acceptance": "2/2 testes TDD, gate PASS_WITH_GAPS e três registros sintéticos com teardown verificado.",
+      "rollback": "Reverter os arquivos do artefato 049 e remover o comando do gate, preservando os logs anteriores.",
+      "status": "IMPLEMENTED_LOCAL",
+      "approvalStatus": "HUMAN_REVIEW_REQUIRED",
+      "decisionId": "DEC-ENT95-EVIDENCE-002",
+      "affectedTasks": ["ENT95-14-D"],
+      "artifactIds": ["PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049"],
+      "scoreImpact": {
+        "sprintId": "S0",
+        "baselineScore": 83.24,
+        "weightedScore": 83.24,
+        "targetFloor": 95,
+        "itemScoreChanges": [],
+        "scoreChanged": false,
+        "releaseDisposition": "PILOT_BLOCKED"
+      }
+    },
+    {
+      "id": "CR-ENT95-VERIFY-050",
+      "sprintId": "S0",
+      "owner": "QA + Auditor",
+      "changeType": "VERIFICATION",
+      "reason": "Reexecutar os gates após ENT95-14-D e registrar build, E2E e dependências.",
+      "impact": "Confirma o estado local sem converter smoke ou dados sintéticos em prova produtiva.",
+      "acceptance": "pnpm verify, build, E2E HA e audit de dependências passam no worktree atual.",
+      "rollback": "Marcar a verificação como histórica se qualquer arquivo mudar; não reutilizar o resultado em outro SHA.",
+      "status": "VERIFIED_LOCAL",
+      "approvalStatus": "HUMAN_REVIEW_REQUIRED",
+      "decisionId": "DEC-ENT95-BASELINE-001",
+      "affectedTasks": ["ENT95-14-D", "ENT95-14-E", "ENT95-16-D"],
+      "artifactIds": ["ENT95-FINAL-VERIFICATION-050"],
+      "scoreImpact": {
+        "sprintId": "S0",
+        "baselineScore": 83.24,
+        "weightedScore": 83.24,
+        "targetFloor": 95,
+        "itemScoreChanges": [],
+        "scoreChanged": false,
+        "releaseDisposition": "PILOT_BLOCKED"
+      }
+    }
+  ]
+}

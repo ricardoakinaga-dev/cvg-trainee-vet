@@ -65,6 +65,11 @@ export async function processOutboxOnce(
   if (Number.isNaN(now.getTime())) throw new RangeError("now must be valid");
 
   const events = await repository.claim(batchSize, now, leaseSeconds);
+  options.observability?.metrics.increment(
+    "worker.events.claimed",
+    {},
+    events.length,
+  );
   let processed = 0;
   let failed = 0;
 

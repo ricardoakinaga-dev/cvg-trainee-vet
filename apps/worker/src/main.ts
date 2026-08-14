@@ -1,5 +1,10 @@
 import { randomUUID } from "node:crypto";
 
+import {
+  expireDueContent,
+  type ExpireContentCommand,
+  type ExpireContentResult,
+} from "@cvg/application";
 import { loadRuntimeConfig } from "@cvg/config";
 import {
   createServerIntegrations,
@@ -11,6 +16,7 @@ import {
 } from "@cvg/observability";
 import {
   createAiSuggestionSink,
+  createContentExpiryUseCaseDependencies,
   createContentIndexSourceRepository,
   createOutboxRepository,
 } from "@cvg/persistence";
@@ -33,6 +39,9 @@ export function createWorkerRuntime(
   processOnce: (
     options?: WorkerLoopOptions,
   ) => ReturnType<typeof processOutboxOnce>;
+  expireContent: (
+    command: ExpireContentCommand,
+  ) => Promise<ExpireContentResult>;
   run: () => Promise<void>;
   close: () => Promise<void>;
 }> {
@@ -48,6 +57,10 @@ export function createWorkerRuntime(
   });
   const outbox = createOutboxRepository(integrations.database.db);
   const source = createContentIndexSourceRepository(integrations.database.db);
+  const contentExpiryDependencies = createContentExpiryUseCaseDependencies(
+    integrations.database.db,
+    randomUUID,
+  );
   const workerDependencies = {
     source,
     embedding: integrations.embedding,
@@ -72,6 +85,10 @@ export function createWorkerRuntime(
       ...options,
       observability: options.observability ?? observability,
     });
+  const expireContent = (
+    command: ExpireContentCommand,
+  ): Promise<ExpireContentResult> =>
+    expireDueContent(command, contentExpiryDependencies);
   const reconcile = (): Promise<VectorReconciliationResult> =>
     reconcileVectorIndex(workerDependencies);
   const run = async (): Promise<void> => {
@@ -93,6 +110,7 @@ export function createWorkerRuntime(
     initialize,
     reconcile,
     processOnce,
+    expireContent,
     run,
     close: async () => {
       stopped = true;

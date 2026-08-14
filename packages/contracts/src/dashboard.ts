@@ -19,6 +19,23 @@ const dashboardNextActionSchema = z
   .max(80)
   .refine((value) => !/<[^>]*>/u.test(value), "nextAction must be plain text");
 
+const dashboardRecommendationSchema = z
+  .object({
+    id: z.enum(["NEXT_STUDY", "ACCOUNT_SECURITY", "REPORT_FEEDBACK"]),
+    title: z.string().trim().min(1).max(120),
+    description: z
+      .string()
+      .trim()
+      .min(1)
+      .max(300)
+      .refine(
+        (value) => !/<[^>]*>/u.test(value),
+        "description must be plain text",
+      ),
+    href: z.enum(["/dashboard", "/account", "/#feedback-report-title"]),
+  })
+  .strict();
+
 const dashboardModuleSchema = z
   .object({
     moduleId: moduleIdSchema,
@@ -42,6 +59,7 @@ export const participantDashboardProjectionSchema = z
     activeModuleId: moduleIdSchema.optional(),
     nextAction: dashboardNextActionSchema,
     roadmap: z.array(dashboardModuleSchema).length(24),
+    recommendations: z.array(dashboardRecommendationSchema).length(3),
   })
   .strict()
   .superRefine((value, context) => {

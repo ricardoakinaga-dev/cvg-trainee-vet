@@ -46,4 +46,19 @@ describe("production edge contract", () => {
     expect(collector).toContain("insecure: false");
     expect(collector).toContain("${env:CVG_TRACE_AUTHORIZATION}");
   });
+
+  it("propagates the source SHA into the application image and runtime", async () => {
+    const [dockerfile, compose] = await Promise.all([
+      readFile("infra/production/Dockerfile", "utf8"),
+      readFile("infra/production/docker-compose.ha.yml", "utf8"),
+    ]);
+
+    expect(dockerfile).toContain("ARG SOURCE_SHA=unknown");
+    expect(dockerfile).toContain(
+      "org.opencontainers.image.revision=$SOURCE_SHA",
+    );
+    expect(dockerfile).toContain("CVG_SOURCE_SHA=$SOURCE_SHA");
+    expect(compose).toContain("SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}");
+    expect(compose).toContain("CVG_SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}");
+  });
 });

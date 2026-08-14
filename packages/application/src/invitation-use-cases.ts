@@ -161,6 +161,20 @@ export async function createInvitation(
   ) {
     throw new ApplicationError("forbidden", "Invitation is not authorized");
   }
+  if (command.invitedRoles.includes("ADMIN")) {
+    throw new ApplicationError(
+      "forbidden",
+      "The superadmin role can only be provisioned out of band",
+    );
+  }
+  if (
+    command.invitedScopes.some((scopeId) => !command.scopes.includes(scopeId))
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Invitation scope is outside the creator scope",
+    );
+  }
 
   const token = (command.tokenFactory ?? defaultTokenFactory)();
   if (!/^[A-Za-z0-9_-]{32,256}$/u.test(token)) {

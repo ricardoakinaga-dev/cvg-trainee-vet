@@ -197,6 +197,8 @@ async function main() {
 
     const fixture = JSON.parse(await readFile(hostFixtureFile, "utf8"));
     if (
+      typeof fixture.adminLogin !== "string" ||
+      typeof fixture.adminPassword !== "string" ||
       typeof fixture.login !== "string" ||
       typeof fixture.password !== "string" ||
       typeof fixture.activityId !== "string" ||
@@ -236,6 +238,21 @@ async function main() {
         exitStatus.code !== 0 ||
         exitStatus.stdout.trim() !== "0"
       ) {
+        const fixtureLogs = await run(
+          "docker",
+          ["logs", "--tail", "120", fixtureContainerId],
+          { cwd: projectRoot, env: composeEnvironment, capture: true },
+        ).catch(() => ({ code: 1, signal: null, stdout: "", stderr: "" }));
+        console.error(
+          JSON.stringify({
+            status: "FAIL",
+            code: "active_ha_e2e_fixture_teardown",
+            stopCode: stop.code,
+            inspectCode: exitStatus.code,
+            fixtureExitCode: exitStatus.stdout.trim(),
+            fixtureLogs: `${fixtureLogs.stdout}${fixtureLogs.stderr}`.trim(),
+          }),
+        );
         testCode = testCode === 0 ? 1 : testCode;
       }
     }

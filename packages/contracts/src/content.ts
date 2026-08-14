@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 const idSchema = z.string().uuid();
+const withdrawalReasonCodeSchema = z.enum([
+  "ERRO_CLINICO",
+  "ERRO_CONTEUDO",
+  "RISCO_SEGURANCA",
+]);
 
 export const contentTransitionRequestSchema = z
   .object({
@@ -18,8 +23,25 @@ export const contentTransitionRequestSchema = z
       "RETIRAR",
       "VENCER",
     ]),
+    withdrawalReasonCode: withdrawalReasonCodeSchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (value.event === "RETIRAR" && value.withdrawalReasonCode === undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["withdrawalReasonCode"],
+        message: "withdrawalReasonCode is required when withdrawing content",
+      });
+    }
+    if (value.event !== "RETIRAR" && value.withdrawalReasonCode !== undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["withdrawalReasonCode"],
+        message: "withdrawalReasonCode is only valid when withdrawing content",
+      });
+    }
+  });
 
 export type ContentTransitionRequest = z.infer<
   typeof contentTransitionRequestSchema

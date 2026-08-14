@@ -1,4 +1,5 @@
 import type { AttemptStatus, LearningAssignmentStatus } from "@cvg/domain";
+import { curriculumV3 } from "@cvg/curriculum";
 
 import { ApplicationError } from "./errors.js";
 import type { CurriculumRuntimeState } from "./curriculum-runtime-use-cases.js";
@@ -118,25 +119,139 @@ function cloneRuntime(value: CurriculumRuntimeState): CurriculumRuntimeState {
   });
 }
 
+const moduleSlugPattern = /(?:^|-)m(0[1-9]|1[0-9]|2[0-4])(?:-|$)/iu;
+
+function moduleIdFromActivitySlug(slug: string): string | null {
+  const match = moduleSlugPattern.exec(slug);
+  return match?.[1] === undefined ? null : `M${match[1]}`;
+}
+
+function moduleOrder(moduleId: string): number {
+  const moduleIndex = curriculumV3.modules.findIndex(
+    (module) => module.id === moduleId,
+  );
+  return moduleIndex < 0 ? Number.POSITIVE_INFINITY : moduleIndex;
+}
+
+function compareActivities(
+  left: ParticipantJourneyActivity,
+  right: ParticipantJourneyActivity,
+): number {
+  const orderDifference =
+    moduleOrder(moduleIdFromActivitySlug(left.slug) ?? "") -
+    moduleOrder(moduleIdFromActivitySlug(right.slug) ?? "");
+  if (orderDifference !== 0) return orderDifference;
+  const slugDifference = left.slug.localeCompare(right.slug);
+  if (slugDifference !== 0) return slugDifference;
+  return left.activityId.localeCompare(right.activityId);
+}
+
+function runtimeForModule(
+  state: ParticipantLearningJourneyState,
+  moduleId: string,
+): CurriculumRuntimeState | undefined {
+  return state.runtimes.find(
+    (runtime) => runtime.evaluation.moduleId === moduleId,
+  );
+}
+
+function assignmentForModule(
+  state: ParticipantLearningJourneyState,
+  moduleId: string,
+): ScopedLearningAssignment | undefined {
+  return state.assignments.find(
+    ({ state: assignment }) => assignment.moduleId === moduleId,
+  );
+}
+
+function moduleIsComplete(
+  state: ParticipantLearningJourneyState,
+  moduleId: string,
+): boolean {
+  const runtime = runtimeForModule(state, moduleId);
+  if (runtime !== undefined) {
+    return (
+      runtime.evaluation.status === "DOMINIO_DIGITAL" &&
+      runtime.evaluation.retentionReviews.length === 0
+    );
+  }
+
+  return assignmentForModule(state, moduleId)?.state.status === "CONCLUIDO";
+}
+
+function firstIncompleteModuleId(
+  state: ParticipantLearningJourneyState,
+): string | undefined {
+  return curriculumV3.modules.find(
+    (module) => !moduleIsComplete(state, module.id),
+  )?.id;
+}
+
+/**
+ * Returns only the activity belonging to the first incomplete curriculum
+ * module. A later published activity is intentionally not a fallback when
+ * the current module is still pending publication, evaluation, or retention.
+ */
+export function getNextParticipantJourneyActivity(
+  state: ParticipantLearningJourneyState,
+): ParticipantJourneyActivity | undefined {
+  const currentModuleId = firstIncompleteModuleId(state);
+  if (currentModuleId === undefined) return undefined;
+
+  // The persisted runtime is authoritative for the current module. An
+  // activity cannot bypass a pending baseline, remediation, correction, or
+  // retention action just because its projection is published.
+  if (runtimeForModule(state, currentModuleId) !== undefined) return undefined;
+
+  return [...state.activities]
+    .sort(compareActivities)
+    .find(
+      (activity) =>
+        moduleIdFromActivitySlug(activity.slug) === currentModuleId &&
+        activity.nextAction !== "CONSULTAR_PROXIMO_PASSO",
+    );
+}
+
+/**
+ * Keeps direct activity reads/starts aligned with the same ordered journey.
+ * Non-curriculum diagnostic activities do not participate in the M01–M24
+ * sequence and retain their existing scoped-assignment authorization.
+ */
+export function isParticipantJourneyActivityCurrent(
+  state: ParticipantLearningJourneyState,
+  activityId: string,
+): boolean {
+  const activity = state.activities.find(
+    (candidate) => candidate.activityId === activityId,
+  );
+  if (activity === undefined) return false;
+  if (moduleIdFromActivitySlug(activity.slug) === null) {
+    return activity.nextAction !== "CONSULTAR_PROXIMO_PASSO";
+  }
+  return getNextParticipantJourneyActivity(state)?.activityId === activityId;
+}
+
 export function deriveJourneyNextAction(
   state: ParticipantLearningJourneyState,
 ): JourneyNextAction {
-  const runtimeAction = state.runtimes.find(
-    (runtime) => runtime.evaluation.nextAction !== undefined,
-  )?.evaluation.nextAction;
+  const currentModuleId = firstIncompleteModuleId(state);
+  const runtimeAction =
+    currentModuleId === undefined
+      ? undefined
+      : runtimeForModule(state, currentModuleId)?.evaluation.nextAction;
   if (runtimeAction === "INICIAR_BASELINE") return "AGUARDAR_PUBLICACAO";
   if (runtimeAction !== undefined) return runtimeAction;
 
-  const activityAction = state.activities.find(
-    (activity) => activity.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-  )?.nextAction;
+  const activityAction = getNextParticipantJourneyActivity(state)?.nextAction;
   if (activityAction !== undefined) return activityAction;
 
+  const currentAssignment =
+    currentModuleId === undefined
+      ? undefined
+      : assignmentForModule(state, currentModuleId)?.state;
   if (
-    state.assignments.some(
-      ({ state: assignment }) =>
-        assignment.status === "DISPONIVEL" || assignment.status === "ATRIBUIDO",
-    )
+    currentAssignment?.status === "DISPONIVEL" ||
+    currentAssignment?.status === "ATRIBUIDO"
   ) {
     return "INICIAR_ATIVIDADE";
   }
@@ -147,6 +262,19 @@ export function deriveJourneyNextAction(
     )
   ) {
     return "AGUARDAR_CORRECAO_HUMANA";
+  }
+
+  if (
+    currentModuleId !== undefined &&
+    state.activities.some((activity) => {
+      const activityModuleId = moduleIdFromActivitySlug(activity.slug);
+      return (
+        activityModuleId !== null &&
+        moduleOrder(activityModuleId) > moduleOrder(currentModuleId)
+      );
+    })
+  ) {
+    return "AGUARDAR_PUBLICACAO";
   }
 
   return "CONSULTAR_PROXIMO_PASSO";

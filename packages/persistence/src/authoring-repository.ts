@@ -37,6 +37,9 @@ type ParsedAuthoringItem = Readonly<{
   readonly choices?: NonNullable<AuthoringRecord["choices"]>;
   readonly correctChoiceIds?: readonly string[];
   readonly rubric?: NonNullable<AuthoringRecord["rubric"]>;
+  readonly interaction?: NonNullable<AuthoringRecord["interaction"]>;
+  readonly humanCorrectionOwner?: "RICARDO";
+  readonly digitalCaseStage?: NonNullable<AuthoringRecord["digitalCaseStage"]>;
   readonly feedback: string;
   readonly critical: boolean;
   readonly remediationTargetObjectiveId: string;
@@ -102,6 +105,8 @@ function parseItem(value: unknown): ParsedAuthoringItem {
   if (
     responseMode !== "CHOICE" &&
     responseMode !== "TEXT" &&
+    responseMode !== "STRUCTURED_FIELDS" &&
+    responseMode !== "DOSE_INFUSION" &&
     responseMode !== "NONE"
   ) {
     throw new PersistenceMappingError("authoring response mode is invalid");
@@ -109,7 +114,9 @@ function parseItem(value: unknown): ParsedAuthoringItem {
   const participantResponseMode = participant.responseMode;
   if (
     participantResponseMode !== "CHOICE" &&
-    participantResponseMode !== "TEXT"
+    participantResponseMode !== "TEXT" &&
+    participantResponseMode !== "STRUCTURED_FIELDS" &&
+    participantResponseMode !== "DOSE_INFUSION"
   ) {
     throw new PersistenceMappingError("participant response mode is invalid");
   }
@@ -152,6 +159,23 @@ function parseItem(value: unknown): ParsedAuthoringItem {
     ...(value.rubric === undefined
       ? {}
       : { rubric: value.rubric as NonNullable<AuthoringRecord["rubric"]> }),
+    ...(value.interaction === undefined
+      ? {}
+      : {
+          interaction: value.interaction as NonNullable<
+            AuthoringRecord["interaction"]
+          >,
+        }),
+    ...(value.humanCorrectionOwner === undefined
+      ? {}
+      : { humanCorrectionOwner: value.humanCorrectionOwner as "RICARDO" }),
+    ...(value.digitalCaseStage === undefined
+      ? {}
+      : {
+          digitalCaseStage: value.digitalCaseStage as NonNullable<
+            AuthoringRecord["digitalCaseStage"]
+          >,
+        }),
     feedback: requiredString(value.feedback, "item.feedback"),
     critical: requiredBoolean(value.critical, "item.critical"),
     remediationTargetObjectiveId: requiredString(
@@ -201,6 +225,20 @@ function parseItem(value: unknown): ParsedAuthoringItem {
                       "item.participant.selectionMode is invalid",
                     );
                   })(),
+          }),
+      ...(participant.interaction === undefined
+        ? {}
+        : {
+            interaction: participant.interaction as NonNullable<
+              AuthoringRecord["participant"]["interaction"]
+            >,
+          }),
+      ...(participant.digitalCaseStage === undefined
+        ? {}
+        : {
+            digitalCaseStage: participant.digitalCaseStage as NonNullable<
+              AuthoringRecord["participant"]["digitalCaseStage"]
+            >,
           }),
     },
   };

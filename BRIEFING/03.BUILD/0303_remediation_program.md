@@ -1,5 +1,7 @@
 # 0303 — Projeto de Remediação Integral das Limitações
 
+> **Registro histórico do ciclo R0–R6.** Para a elevação vigente da baseline de 83/100 até o piso de 95 em cada item, usar `0304_premium_enterprise_95_program.md`, `0492_score_95_roadmap.md` e `0493_score_95_backlog.md`. Este documento não altera a auditoria atual nem autoriza release/publicação.
+
 **Projeto:** CVG Trainee Vet
 **Origem:** reauditoria AUD-2026-08-11-WORKTREE-LOGIN
 **Status:** EM EXECUÇÃO — gates locais R1–R6 comprovados; gates externos e aprovação clínica pendentes

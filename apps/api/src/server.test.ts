@@ -81,6 +81,18 @@ describe("API node server adapter", () => {
     expect(routeTemplate("POST", "/api/v1/internal/invitations")).toBe(
       "/api/v1/internal/invitations",
     );
+    expect(routeTemplate("GET", "/api/v1/internal/admin/dashboard")).toBe(
+      "/api/v1/internal/admin/dashboard",
+    );
+    expect(routeTemplate("GET", "/api/v1/internal/moderator/dashboard")).toBe(
+      "/api/v1/internal/moderator/dashboard",
+    );
+    expect(routeTemplate("GET", "/api/v1/internal/admin/operations")).toBe(
+      "/api/v1/internal/admin/operations",
+    );
+    expect(
+      routeTemplate("POST", "/api/v1/internal/assessment-recalculations"),
+    ).toBe("/api/v1/internal/assessment-recalculations");
     expect(routeTemplate("POST", "/api/v1/internal/learning-assignments")).toBe(
       "/api/v1/internal/learning-assignments",
     );
@@ -100,6 +112,7 @@ describe("API node server adapter", () => {
       ),
     ).toBe("/api/v1/internal/assessment-workflows/:resultId/transition");
     expect(routeTemplate("POST", "/api/v1/feedback")).toBe("/api/v1/feedback");
+    expect(routeTemplate("GET", "/api/v1/feedback")).toBe("/api/v1/feedback");
     expect(routeTemplate("PATCH", "/api/v1/internal/feedback/ticket")).toBe(
       "/api/v1/internal/feedback/:ticketId",
     );
@@ -117,6 +130,12 @@ describe("API node server adapter", () => {
     expect(routeTemplate("GET", "/api/v1/curriculum/modules/M03/runtime")).toBe(
       "/api/v1/curriculum/modules/:moduleId/runtime",
     );
+    expect(routeTemplate("GET", "/api/v1/curriculum/modules/M24/case")).toBe(
+      "/api/v1/curriculum/modules/:moduleId/case",
+    );
+    expect(
+      routeTemplate("POST", "/api/v1/curriculum/modules/M24/case/advance"),
+    ).toBe("/api/v1/curriculum/modules/:moduleId/case/advance");
     expect(routeTemplate("POST", "/api/v1/attempts/attempt/answers")).toBe(
       "/api/v1/attempts/:attemptId/answers",
     );
@@ -134,7 +153,7 @@ describe("API node server adapter", () => {
     ).toBe("/api/v1/internal/content/:contentId/transition");
     expect(
       routeTemplate("POST", "/api/v1/internal/content/content/review"),
-    ).toBe("unmatched");
+    ).toBe("/api/v1/internal/content/:contentId/review");
     expect(
       routeTemplate("GET", "/api/v1/internal/authoring/review-queue"),
     ).toBe("/api/v1/internal/authoring/review-queue");

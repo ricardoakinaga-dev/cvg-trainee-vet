@@ -18,7 +18,7 @@ const row = {
   participantText: "Texto interno sintético.",
 };
 
-function fakeDatabase(rows: readonly (typeof row)[]) {
+function fakeDatabase(rows: readonly Record<string, unknown>[]) {
   const query = {
     from: () => query,
     where: () => query,
@@ -38,6 +38,39 @@ function fakeDatabase(rows: readonly (typeof row)[]) {
 }
 
 describe("content persistence mapping", () => {
+  it("maps editorial validity timestamps without exposing participant text", () => {
+    const validUntil = new Date("2026-08-12T11:59:59.000Z");
+    const nextReviewAt = new Date("2026-09-01T00:00:00.000Z");
+
+    expect(
+      contentRowToRecord({ ...row, validUntil, nextReviewAt }),
+    ).toMatchObject({
+      contentId: row.contentId,
+      validUntil: validUntil.toISOString(),
+      nextReviewAt: nextReviewAt.toISOString(),
+    });
+  });
+
+  it("maps emergency withdrawal metadata without exposing affected identities", () => {
+    const withdrawnAt = new Date("2026-08-14T12:00:00.000Z");
+
+    expect(
+      contentRowToRecord({
+        ...row,
+        status: "RETIRADO",
+        withdrawalReasonCode: "ERRO_CONTEUDO",
+        withdrawnAt,
+      }),
+    ).toEqual({
+      contentId: row.contentId,
+      version: row.version,
+      scopeId: row.scopeId,
+      status: "RETIRADO",
+      withdrawalReasonCode: "ERRO_CONTEUDO",
+      withdrawnAt: withdrawnAt.toISOString(),
+    });
+  });
+
   it("maps a content version without carrying participant or source data", () => {
     expect(contentRowToRecord(row)).toEqual({
       contentId: row.contentId,
@@ -66,6 +99,37 @@ describe("content persistence mapping", () => {
     await repository.save(current, next);
 
     expect(next.status).toBe("PUBLICADO");
+  });
+
+  it("lists only published content whose validity window has elapsed", async () => {
+    const validUntil = new Date("2026-08-12T11:59:59.000Z");
+    const repository = createContentRepository(
+      fakeDatabase([
+        {
+          ...row,
+          status: "PUBLICADO",
+          validUntil,
+          nextReviewAt: new Date("2026-08-01T00:00:00.000Z"),
+        },
+      ]),
+    );
+    if (repository.listPublishedDueForExpiry === undefined) {
+      throw new Error("expiry repository port is required");
+    }
+
+    await expect(
+      repository.listPublishedDueForExpiry(
+        "2026-08-12T12:00:00.000Z",
+        [row.scopeId],
+        10,
+      ),
+    ).resolves.toMatchObject([
+      {
+        contentId: row.contentId,
+        status: "PUBLICADO",
+        validUntil: validUntil.toISOString(),
+      },
+    ]);
   });
 
   it("returns null when a content version is not found", async () => {

@@ -4,6 +4,8 @@ x-api-common: &api-common
   build:
     context: ../..
     dockerfile: infra/production/Dockerfile
+    args:
+      SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
   image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
   restart: unless-stopped
   environment: &api-environment
@@ -16,6 +18,7 @@ x-api-common: &api-common
     AI_ENABLED: "false"
     METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    CVG_SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
     IDENTITY_PROVIDER_REQUIRED: ${IDENTITY_PROVIDER_REQUIRED:-false}
     IDENTITY_PROVIDER_URL: ${IDENTITY_PROVIDER_URL:-}
     IDENTITY_PROVIDER_TOKEN: ${IDENTITY_PROVIDER_TOKEN:-}
@@ -71,6 +74,8 @@ services:
     build:
       context: ../..
       dockerfile: infra/production/Dockerfile
+      args:
+        SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
     image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
     restart: "no"
     command: ["pnpm", "db:migrate"]
@@ -117,6 +122,8 @@ services:
     build:
       context: ../..
       dockerfile: infra/production/Dockerfile
+      args:
+        SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
     image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
     restart: unless-stopped
     command: ["node", "apps/worker/dist/main.js"]
@@ -139,6 +146,7 @@ services:
       AI_ENABLED: "false"
       METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      CVG_SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
     depends_on:
       migrate:
         condition: service_completed_successfully

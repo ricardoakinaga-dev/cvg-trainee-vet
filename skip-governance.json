@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "taskId": "ENT95-14-C",
+  "requiredRuns": 20,
+  "flakyRateLimitPercent": 1,
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "skips": [
+    {
+      "path": "tests/integration/api-core-health.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a live PostgreSQL endpoint"
+    },
+    {
+      "path": "tests/integration/api-health.test.ts",
+      "testCount": 1,
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_QDRANT_URL"
+      ],
+      "reason": "requires live PostgreSQL and Qdrant endpoints"
+    },
+    {
+      "path": "tests/integration/curriculum-runtime.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-activity-content.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-answer-session.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-attempt-repository.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-authoring-workflow.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-content-workflow.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-correction.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-invitation.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-learning-state.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/postgres-restore.test.ts",
+      "testCount": 2,
+      "guard": ["CVG_RUN_LIVE_RESTORE_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires isolated backup and restore tooling"
+    },
+    {
+      "path": "tests/integration/postgres-security-isolation.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database and roles"
+    },
+    {
+      "path": "tests/integration/postgres-worker.test.ts",
+      "testCount": 2,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "reason": "requires a disposable live PostgreSQL database"
+    },
+    {
+      "path": "tests/integration/qdrant-live.test.ts",
+      "testCount": 1,
+      "guard": ["CVG_RUN_LIVE_QDRANT_TESTS", "CVG_TEST_QDRANT_URL"],
+      "reason": "requires a disposable live Qdrant endpoint"
+    },
+    {
+      "path": "tests/integration/worker-qdrant-live.test.ts",
+      "testCount": 1,
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_RUN_LIVE_QDRANT_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_QDRANT_URL"
+      ],
+      "reason": "requires disposable live PostgreSQL and Qdrant endpoints"
+    }
+  ],
+  "observedRuns": [
+    {
+      "mode": "default-coverage",
+      "command": "pnpm test:coverage",
+      "skippedTests": 18,
+      "flakyFailures": 0,
+      "evidence": "118 test files, 550 passed, 18 skipped"
+    },
+    {
+      "mode": "live-postgres-isolated",
+      "command": "CVG_TEST_DATABASE_URL=<synthetic> pnpm test:integration:live",
+      "skippedTests": 0,
+      "flakyFailures": 0,
+      "evidence": "38 test files, 95 passed"
+    },
+    {
+      "mode": "live-postgres-qdrant-isolated",
+      "command": "CVG_INCLUDE_LIVE_QDRANT=true pnpm test:integration:live",
+      "skippedTests": 0,
+      "flakyFailures": 0,
+      "evidence": "41 test files, 98 passed"
+    }
+  ]
+}

@@ -44,6 +44,7 @@ export const WORKER_RECOGNIZED_EVENT_TYPES = [
   "attempt.submitted.v1",
   "answer.saved.v1",
   "assessment.corrected.v1",
+  "assessment.recalculated.v1",
   "ai.suggestion.requested.v1",
 ] as const;
 
@@ -196,6 +197,7 @@ export function createIntegrationHandlers(
   readonly "attempt.submitted.v1": WorkerEventHandler;
   readonly "answer.saved.v1": WorkerEventHandler;
   readonly "assessment.corrected.v1": WorkerEventHandler;
+  readonly "assessment.recalculated.v1": WorkerEventHandler;
   readonly "ai.suggestion.requested.v1": WorkerEventHandler;
 } {
   return Object.freeze({
@@ -205,6 +207,7 @@ export function createIntegrationHandlers(
     "attempt.submitted.v1": learningEventAcknowledgementHandler,
     "answer.saved.v1": learningEventAcknowledgementHandler,
     "assessment.corrected.v1": learningEventAcknowledgementHandler,
+    "assessment.recalculated.v1": learningEventAcknowledgementHandler,
     "ai.suggestion.requested.v1": aiSuggestionHandler(dependencies),
   });
 }

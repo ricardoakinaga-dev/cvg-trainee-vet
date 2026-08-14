@@ -40,8 +40,6 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
----
-
 ## 2026-08-09 — SPEC COMPLETA E HANDOFF PARA BUILD DOCUMENTAL
 
 ### TIMESTAMP
@@ -459,6 +457,38 @@ Manter o diagnóstico sem aprovação/reprovação, sem dispensa no piloto e sem
 ### STATUS
 
 WAITING_HUMAN_APPROVAL
+
+## 2026-08-12T09:16:15-03:00 — PREMIUM-ENTERPRISE-95-JOURNEY-CORRECTION-065
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 local controlado; `ENT95-09-A`, `ENT95-09-C`, `ENT95-09-D` e `ENT95-10-C`.
+
+### AÇÃO / RESULTADO
+
+Criado `journey-correction-governance.json` com quatro invariantes verificáveis para jornada ordenada, runtime não punitivo, contestação com revisão independente e correção humana append-only/idempotente. O verificador também exige quatro evidências sintéticas, paths existentes, owner/scope boundary, teardown e cinco gaps manuais/externalizados. `traceability.yml` foi reconciliado com o artifact `PREMIUM-ENTERPRISE-95-JOURNEY-CORRECTION-065`.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu a ausência de `scripts/verify-journey-correction-governance.mjs`; GREEN passou 2/2 no teste de governança e o gate reportou `taskCount=4`, `evidencePassCount=4`, `gapCount=5`, `PASS_WITH_GAPS/PILOT_BLOCKED`. A bateria focal de jornada/correção/feedback/contestação passou 33/35, sendo 2 testes live condicionais pulados pela governança. Os gates estáticos operacionais executados no mesmo worktree passaram.
+
+### DECISÕES / LIMITES / STATUS
+
+Não houve promoção de score, mudança de task canônica, commit ou release. DB live autorizado, UAT, SLA/alerta, comunicação clínica, SHA e reauditoria seguem pendentes. Estado `WAITING_HUMAN_APPROVAL`; próxima ação D-ENT-01/07/09 → G-S80-0 → `ENT95-03-B`.
+
+## 2026-08-12T09:20:30-03:00 — ENT95-FINAL-VERIFICATION-066
+
+### AÇÃO / RESULTADO
+
+Reexecutada a cadeia integral após a governança de jornada/correção. `pnpm verify` passou com 127 arquivos/577 testes/18 skips condicionais e cobertura 86,53% statements / 82,52% branches / 87,31% functions / 87,28% lines. Os gates de formato, lint, typecheck, contracts, worker, migrations, secrets, traceability, score sub-80, architecture, documentation, product e exposure passaram.
+
+### RUNTIME / SEGURANÇA
+
+Build dos 12 workspaces passou; E2E HA real 3/3 passou com fixture sintético removido; audit de dependências de produção não encontrou vulnerabilidades conhecidas; `git diff --check` passou.
+
+### STATUS / LIMITES
+
+Nenhum commit, score promotion, release ou fechamento de gate foi realizado. Baseline 83,24, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem. D-ENT-01/04/05/06/07/08/09, revisão clínica, DB/RLS autorizado, UAT, SLA, comunicação clínica, WCAG manual, Web Vitals/CI, soak/DR, SHA/RC e reauditoria continuam pendentes.
 
 ---
 
@@ -4359,3 +4389,2215 @@ O teste E2E foi escrito para falhar na ausência do novo cartão de início e pa
 ### DECISÃO / LIMITE
 
 A entrega permanece restrita à experiência do participante na atividade e reutiliza o contrato server-side existente. Não foi criado cadastro público nem bypass de autorização. Área de usuário, dashboard de trilha, administração de usuários/treinamentos e mascote com comunicação dinâmica continuam como próximos incrementos.
+
+## 2026-08-11T18:24:17-03:00 — ACCESS-SUPERADMIN-25
+
+### CONTEXTO
+
+O login apresentava dois indicadores de proteção com a mesma função e não deixava claro quem criava a conta. O requisito foi fechado como bootstrap exclusivo do superadmin: sem cadastro público, com criação administrativa dos demais acessos e senha definida pelo próprio usuário no primeiro acesso.
+
+### EXECUÇÃO
+
+Removidos os indicadores redundantes da entrada e atualizada a orientação para explicar o convite do superadmin. A área `/admin` passou a apresentar gestão de primeiro acesso, e-mail profissional e perfil limitado. O backend manteve o papel `ADMIN` como superadmin atual, aplicou o escopo do criador quando o pedido não informa escopos, rejeitou escopo externo e bloqueou convite com papel `ADMIN`. A rota `/invite` aceita o token de uso único e chama a rotação autenticada de senha. A conta interna existente foi promovida fora do repositório para `ADMIN` + `PARTICIPANT`, com revogação das sessões antigas.
+
+### VERIFICAÇÃO
+
+Os testes foram escritos antes da implementação e falharam no RED contra a superfície antiga. Depois, `apps/api/src/http.test.ts` e `packages/application/src/invitation-use-cases.test.ts` passaram 43/43. O E2E Chromium de administração, login, atividade e acessibilidade passou 15/15. Typecheck, lint, build web, `pnpm test:coverage` (464 testes, 18 skips; 85,07% statements / 80,37% branches) e `/health/live` retornaram sucesso. As telas de entrada, superadmin e primeiro acesso foram inspecionadas em viewport desktop.
+
+### DECISÃO / LIMITE
+
+O link de convite é entregue manualmente pelo superadmin porque não há fornecedor de e-mail autorizado nesta rodada. A gestão completa de usuários (lista, edição, desativação, auditoria) e o controle editorial dos treinamentos permanecem backlog. Não foram armazenados senha, token bruto ou dado real nos artefatos do repositório.
+
+## 2026-08-11T19:13:04-03:00 — RUNTIME-LOCAL-VERIFY
+
+### CONTEXTO
+
+Foi solicitada a leitura da documentação e a subida local do programa com preservação de portas e serviços existentes.
+
+### EXECUÇÃO
+
+Foram consultados `docs/`, o estado/log/backlog, o inventário operacional de portas e Docker, e o estado live da máquina. Como o runtime já estava ativo, não foi executado `up`, restart, build ou criação de uma segunda instância.
+
+### VERIFICAÇÃO
+
+`cvg-trainee-vet-web.service` está ativo em `*:3100`; o edge está disponível nas portas já existentes `3180`, `3181` e `127.0.0.1:3182`. APIs, workers e PostgreSQL estão `healthy`; os demais serviços HA estão `running`. Web root, readiness, dependências e as rotas `/admin`, `/dashboard`, `/operations`, `/authoring` e `/account` retornaram HTTP `200`.
+
+### DECISÃO / LIMITE
+
+O programa já estava funcionando e nenhuma porta nova foi aberta. O status do projeto permanece `WAITING_HUMAN_APPROVAL`; a próxima ação é a validação manual autenticada de `/admin` e `/invite` pelo operador. Não houve alteração de código, configuração, banco, containers ou roteamento nesta rodada.
+
+## 2026-08-11T19:49:12-03:00 — ACCESS-ADMIN-TRAINING-26
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+BUILD-REMEDIATION-R6 — superfície administrativa autenticada
+
+### SPRINT
+
+ACCESS-ADMIN-TRAINING-26
+
+### TASK
+
+Entregar o dashboard administrativo para validar acesso de admin, acompanhar veterinários em treinamento e customizar atribuições sem abrir novas portas ou ampliar a exposição clínica.
+
+### ACTION
+
+Foi criado o contrato interno `admin-dashboard`, o caso de uso agregado, o repositório de contas participantes com limite de 200 registros, a capability `VIEW_ADMIN_DASHBOARD`, a rota `GET /api/v1/internal/admin/dashboard` e a composição no runtime API. A web `/admin` recebeu resumo, lista de veterinários, progresso, catálogo dos 24 módulos e o fluxo de atribuição/disponibilização. O link de navegação autenticada para `/admin` foi preservado no cabeçalho do participante, sem substituir autorização server-side.
+
+### RESULT
+
+O endpoint administrativo sem sessão retornou `401`; a página `/admin` retornou `200`. A imagem `cvg-trainee-vet:local-admin-dashboard` foi construída e aplicada gradualmente em `api-a`, `api-b`, `worker-a` e `worker-b`; migration terminou com exit `0`, todos ficaram `healthy` e o serviço web existente foi reiniciado em `3100`. Nenhum serviço externo ou porta nova foi criado.
+
+### VERIFICATION
+
+Testes RED foram escritos antes da implementação. GREEN: 52 testes focados; suíte unitária 416/416; cobertura 471 passantes e 18 skips, 84,93% statements / 80,17% branches; typecheck; build web e API; `git diff --check`; Prettier. E2E novo do dashboard 1/1 e regressão admin/participante 10/10 contra `http://127.0.0.1:3100`.
+
+### DECISIONS
+
+O dashboard é somente administrativo e por escopo; não expõe fontes, gabaritos, respostas, notas clínicas ou autonomia de IA. A customização desta rodada usa apenas transições de assignment já existentes. A lista/edição/desativação/auditoria completa de usuários e analytics históricos permanecem backlog. Não foi criado commit, pois o worktree já contém alterações do usuário e o commit intencional deve ser separado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve autenticar em `http://localhost:3100/`, validar visualmente `/admin`, criar um convite sintético e atribuir um módulo; depois escolher entre ciclo de vida de usuários e analytics histórico.
+
+## 2026-08-11T19:54:38-03:00 — ACCESS-ADMIN-TRAINING-26-CLOSE
+
+### ENGINE
+
+AUDIT
+
+### ACTION
+
+Executados os gates finais após a publicação controlada do dashboard: secret scan, fronteiras de arquitetura, exposição pública, formatação e integridade do diff.
+
+### RESULT
+
+Todos passaram. O runtime permanece na topologia existente: web `3100`, edge `3180/3181`, API interna `127.0.0.1:3182`; `api-a`, `api-b`, `worker-a`, `worker-b` e PostgreSQL seguem saudáveis. Nenhuma porta ou programa externo à composição CVG foi criado ou alterado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Validação manual do admin em `/admin`, convite em `/invite` e atribuição sintética; em seguida, priorizar ciclo de vida de usuários ou analytics histórico.
+
+## 2026-08-11T20:09:21-03:00 — ACCESS-SUPERADMIN-CREDENTIAL-26
+
+### ENGINE
+
+RUNTIME CONTROLLER / SECURITY REVIEW
+
+### ACTION
+
+Confirmada a identidade interna `ricardo@cvg.internal` como conta ativa com `ADMIN` + `PARTICIPANT`. Uma senha temporária foi redefinida fora do repositório usando a operação de autenticação existente; o valor bruto não foi persistido.
+
+### RESULT
+
+Probe real em `http://localhost:3100/api/v1/auth/login` retornou `200`, houve cookie HttpOnly e `GET /api/v1/internal/admin/dashboard` autenticado retornou `200`. A sessão técnica criada pela prova foi revogada depois da validação. A conta permanece no runtime HA atual; não houve nova porta, novo processo ou alteração fora da composição CVG.
+
+### SECURITY
+
+O segredo foi entregue somente ao operador nesta resposta e não foi incluído em documentação, traceability, truth source, logs ou código. MFA/recuperação externa continuam `NOT_CONFIGURED`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve validar visualmente `/admin` com a credencial temporária e depois solicitar/realizar a rotação operacional da senha.
+
+## 2026-08-11T21:48:30-03:00 — REMEDIATION-WEB-TSC-CHECK-27
+
+### ENGINE
+
+BUILD / AUDIT
+
+### PHASE
+
+BUILD-REMEDIATION-R6 — convergência do build web
+
+### SPRINT
+
+REMEDIATION-WEB-TSC-CHECK-27
+
+### TASK
+
+Reproduzir e fechar a falha do build web causada pelo verificador TypeScript CLI do Next 16.3, sem relaxar a checagem de tipos nem abrir nova porta.
+
+### ACTION
+
+O RED foi adicionado em `apps/web/src/build-config.test.ts` para exigir `experimental.useTypeScriptCli: false`; o teste falhou 1/5 contra a configuração antiga. Depois, `apps/web/next.config.ts` foi atualizado conforme a documentação oficial do Next para usar a API JavaScript do TypeScript durante o build.
+
+### RESULT
+
+O teste de configuração passou 5/5 e `CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm --filter @cvg/web build` concluiu com as rotas `/`, `/account`, `/admin`, `/authoring`, `/dashboard`, `/invite` e `/operations`. A cobertura com acesso local passou 100 arquivos, 475 testes, 18 skips e 84,93% statements / 80,05% branches / 86,70% functions / 85,71% lines. O E2E HA oficial passou 2/2; typecheck, lint, secret scan, arquitetura, exposição e `git diff --check` passaram. O gate composto `pnpm verify` também passou integralmente.
+
+### EVIDENCE
+
+`apps/web/next.config.ts`; `apps/web/src/build-config.test.ts`; `pnpm test:coverage`; `pnpm test:e2e:active-ha`; configuração Context7 oficial do Next para `useTypeScriptCli`; worktree atual sem commit novo.
+
+### LIMITS
+
+O E2E genérico não foi usado contra o serviço operacional porque tenta iniciar uma segunda web em `3100` com `reuseExistingServer: false`; a execução oficial HA preservou a topologia e removeu somente sua fixture sintética. A validação manual do operador em `/admin`, `/invite` e da atribuição permanece necessária.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve autenticar, validar semanticamente o dashboard e rotacionar a credencial temporária; depois escolher entre ciclo de vida de usuários e analytics histórico.
+
+## 2026-08-11T22:15:31-03:00 — AUD-2026-08-11-CURRENT
+
+### ENGINE
+
+AUDIT ENGINE
+
+### PHASE
+
+AUDIT — auditoria integral atual da documentação, construção e runtime
+
+### SPRINT
+
+BUILD-REMEDIATION-R6 / AUDIT-CURRENT
+
+### TASK
+
+Ler `docs/`, confrontar PRD/SPEC/BUILD com o código e runtime e emitir nota 0–100 por dimensão analisada.
+
+### ACTION
+
+Executada a leitura do corpus documental e dos templates de AUDIT. Verificados `pnpm verify`, `pnpm audit --audit-level=high`, systemd web, containers HA, health/readiness/dependencies, headers/redirect, métricas protegidas, logs JSON, `pnpm test:e2e:active-ha`, 15 cenários E2E web focados, smoke de carga e trace sintético após restart do Tempo. Consultas administrativas read-only confirmaram o catálogo e a fila clínica sem alterar dados.
+
+### RESULT
+
+`PASS_WITH_GAPS`; nota ponderada **83/100**. `pnpm verify`: 475 testes passados, 18 skips, 84,93% statements, 80,05% branches, 86,70% functions, 85,71% lines; contratos 48/48; worker 24/24; migrações 16; secret/dependency/architecture/documentation/product/exposure gates verdes. E2E HA 2/2; E2E web focado 15/15; load 200/200 com p95 122,37 ms; trace local após restart; APIs/workers/PostgreSQL/edge/observabilidade local saudáveis. PostgreSQL: 24 atribuições, 24 estados, 796 conteúdos, 33 publicados, 763 pendentes, 0 aprovações clínicas.
+
+### GAPS
+
+Revisão clínica dos 763 itens; IdP/MFA/recovery real; domínio/DNS/certificado público; storage/retention externo de traces/backups; RPO/RTO produtivo; CI remoto/deploy/rollback autorizado; produto integral de 24 meses; worktree sem commit final. Não foi observado P0.
+
+### EVIDENCE
+
+`BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `BRIEFING/04.AUDIT/0400_audit_scope.md`–`0421_remediation_plan.md`; `docs/100_full_program_audit_2026-08-10.md`–`docs/111_current_remediation_audit_2026-08-11.md`; `traceability.yml`; logs/runtime/commands registrados nesta entrada.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo validar `/admin` e `/invite`, rotacionar senha transitória e escolher lifecycle/analytics. Fechar os gates P1 externos/clínicos e repetir a auditoria no mesmo SHA antes de qualquer release.
+
+## 2026-08-11T22:56:09-03:00 — ENT95-PROGRAM-PLANNING
+
+### ENGINE
+
+BUILD ENGINE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — PREMIUM ENTERPRISE 95 / E0 MOBILIZAÇÃO
+
+### SPRINT
+
+S0 — charter, baseline e capacidade
+
+### TASK
+
+Converter a auditoria vigente de 83/100 em projeto, roadmap e backlog capazes de levar cada um dos 16 itens a pelo menos 95/100.
+
+### ACTION
+
+Foram confrontados o 0491 vigente, PRD funcional/não funcional, SPEC aprovada, master/roadmap/backlog BUILD e os artefatos históricos de score 95. Os artefatos 0492/0493 obsoletos foram substituídos por uma baseline única. Foi criado o programa mestre 0304 com escopo premium enterprise, score contract, formação de equipe, estimativa, governança, gates, riscos e decisões externas. O roadmap foi organizado em sete fases e 14 sprints; o backlog foi detalhado em 70 tasks para ENT95-01–ENT95-16.
+
+### TDD / GOVERNANCE
+
+Foi escrito primeiro um teste RED que demonstrou que o verificador aceitava programa incompleto, baseline 82 e ausência dos 16 itens. O verificador documental foi ampliado para exigir `0304`, baseline 83, piso 95 por item, ENT95-01–16 no roadmap/backlog e artifact `PREMIUM-ENTERPRISE-95-PROGRAM`; o teste passou GREEN.
+
+### RESULT
+
+O programa recomenda 28 semanas após T0, trabalho técnico e clínico paralelo, capacidade de revisão de 40–60 itens/semana após calibração e gates G0–G9. A meta só é aceita quando os 16 itens tiverem evidência completa no mesmo SHA; a média não compensa item abaixo de 95.
+
+### VERIFICATION
+
+`pnpm verify` passou com 100 arquivos de teste aprovados, 16 arquivos condicionalmente pulados, 476 testes aprovados e 18 skips. Cobertura: 84,93% statements, 80,05% branches, 86,70% functions e 85,71% lines. Contratos 48/48, worker 24/24, 16 migrações, secret scan, traceability, arquitetura, documentação, product definition e public boundary passaram. `pnpm format:check` e `git diff --check` passaram.
+
+### EVIDENCE
+
+`BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md`; `BRIEFING/04.AUDIT/0492_score_95_roadmap.md`; `BRIEFING/04.AUDIT/0493_score_95_backlog.md`; `scripts/verify-documentation.mjs`; `tests/integration/documentation-governance.test.ts`; `docs/99_runtime_state.md`; `docs/30_backlog_master.md`; `traceability.yml`.
+
+### LIMITS
+
+O planejamento não altera a baseline de **83/100**, não aprova release/piloto/publicação e não modifica o runtime. Equipe/T0, capacidade de Ricardo, IdP/MFA/recovery, domínio/TLS, telemetria, backup, deploy/rollback, piloto, 763 revisões clínicas e fechamento do worktree dependem de execução ou decisão futura.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo aprovar D-ENT-01/D-ENT-07/D-ENT-09 e encaminhar D-ENT-02–06; depois abrir S0 por ENT95-01-A/B e ENT95-02-A, mantendo a nota oficial inalterada até nova auditoria independente.
+
+## 2026-08-12T00:28:25-03:00 — ENT95-LOCAL-EXECUTION-022
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E0–E2 local controlado; S0/S3; `ENT95-00-C` + `ENT95-07-B`.
+
+### AÇÃO
+
+Executado o scorecard canônico e implementado o lifecycle administrativo de contas em contracts, application, persistence, API e web. Foi criada e aplicada a migração `0016_account_lifecycle_version.sql`; a imagem HA foi reconstruída e `api-a`, `api-b`, `worker-a` e `worker-b` foram recriados. O E2E real recebeu fixture sintética temporária de ADMIN para provar login, suspensão, reativação e revogação de sessões persistidas.
+
+### RESULTADO
+
+`pnpm verify:premium-scorecard` reproduziu baseline 83,24/100, 16 itens, 70 tasks, 3 tasks `COMPLETED`, 49 `READY_FOR_NEXT_STEP` e 18 `WAITING_HUMAN_APPROVAL`, com `scoreChanged: false`. A fatia de lifecycle respeita deny-by-default, escopo, bloqueio de escalada para `ADMIN`, optimistic locking, auditoria sem token e revogação de sessões ao suspender/desativar.
+
+### VERIFICAÇÃO
+
+`pnpm verify` passou com 104 arquivos de teste, 500 testes, 18 skips condicionais e cobertura 85,32% statements / 80,55% branches / 87,13% functions / 86,11% lines. Também passaram a suíte focal 71/71, `pnpm build` com `CVG_API_INTERNAL_URL`, `pnpm verify:migrations` (17 migrações, índice 16), `pnpm verify:documentation`, `pnpm verify:traceability`, `pnpm ops:verify-ha`, `pnpm ops:verify-edge-security`, health live/ready, E2E administrativo 4/4 e `pnpm test:e2e:active-ha` 3/3. O fixture e suas credenciais sintéticas foram removidos pelo teardown.
+
+### LIMITES / DECISÕES
+
+A nota oficial permanece **83/100** e o programa não está concluído. G0, equipe/T0/capacidade, 763 revisões clínicas, IdP/MFA/recovery, TLS público, telemetria/backups externos, deploy/rollback, SHA imutável e reauditoria independente >=95 continuam abertos. Nenhum release, piloto ou publicação clínica foi aprovado.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL`. Revisar o diff e congelar um SHA; Ricardo deve aprovar D-ENT-01/D-ENT-07/D-ENT-09 e encaminhar D-ENT-02–06, depois executar as tasks dependentes preservando os gates clínicos e externos.
+
+## 2026-08-12T00:32:02-03:00 — ENT95-FINAL-VERIFY-023
+
+### AÇÃO / RESULTADO
+
+Reexecutado o gate completo após a inclusão do E2E real de lifecycle e a reconciliação dos documentos canônicos. O resultado permaneceu verde: `pnpm verify` passou, scorecard sem drift, documentação/rastreabilidade válidas e nenhum score promovido.
+
+### EVIDÊNCIA
+
+104 arquivos de teste, 500 testes passados, 18 skips condicionais; cobertura 85,32% statements / 80,55% branches / 87,13% functions / 86,11% lines; contratos 51/51, worker 24/24, 17 migrações com índice 16, lint, typecheck, build, secrets, arquitetura, product definition e public boundary verdes. E2E HA real 3/3 e health live/ready permanecem verdes.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL`: a execução local desta rodada está evidenciada; o próximo passo é decisão humana e provisionamento externo, seguido de reauditoria independente no SHA congelado. A baseline oficial continua 83/100 e não há autorização de release, piloto ou publicação clínica.
+
+## 2026-08-12T00:43:56-03:00 — ENT95-WORKER-RESILIENCE-024
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E4 local controlado; S7; `ENT95-11-A` + `ENT95-11-B`.
+
+### AÇÃO
+
+Reexecutadas as provas live com banco administrativo sintético efêmero contra PostgreSQL e Qdrant do HA local. O teste de worker cobriu claim/lease expirado, retry bounded, dead-letter e replay; o teste de reconciliação cobriu rebuild não vazio, divergência, órfão, retirada, replay determinístico e segunda execução idempotente.
+
+### RESULTADO / VERIFICAÇÃO
+
+`tests/integration/postgres-worker.test.ts` e `tests/integration/worker-qdrant-live.test.ts` passaram 3/3 testes live. O proxy TCP usado apenas para alcançar o PostgreSQL sem expor a porta do container foi encerrado ao fim; os registros sintéticos e a coleção Qdrant temporária foram removidos pelos teardowns. `ENT95-11-A` e `ENT95-11-B` foram atualizadas para `COMPLETED` no backlog Premium Enterprise 95.
+
+### LIMITES / STATUS / NEXT
+
+A baseline oficial permanece 83/100; isso não é reauditoria nem autorização de release. Provider real de IA, carga/backpressure, telemetria externa, DR produtivo, worktree/SHA e gates clínicos continuam abertos. Estado: `WAITING_HUMAN_APPROVAL`; próxima ação: preservar as duas tasks fechadas, revisar o diff e avançar somente após decisão humana/provisionamento dos gates dependentes.
+
+## 2026-08-12T00:55:30-03:00 — ENT95-TRACEABILITY-MATRIX-025
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E1 local controlado; S0–S1; `ENT95-02-A`, `ENT95-02-B` e `ENT95-16-B` em andamento.
+
+### AÇÃO
+
+Criada a matriz `PREMIUM-ENTERPRISE-95-REQUIREMENTS-MATRIX` no `traceability.yml`. O gate lê os PRDs funcionais e não funcionais, o SPEC master e o backlog canônico, e valida omissão, duplicidade, prioridade, destino inexistente, decisão, estado e contradição de release. O teste TDD cobre matriz válida, RF P0 omitido, destino de task ausente, destino de SPEC ausente e estado de release contraditório.
+
+### RESULTADO / VERIFICAÇÃO
+
+São 145 requisitos (87 RF P0/P1 + 58 RNF sem prioridade explícita). Os 5 testes focados passaram; `verify:premium-traceability` e `verify:traceability` passaram. O resultado é `PASS_WITH_GAPS`, com 0 cadeia completa e 145 gaps explícitos de módulo/contrato/teste.
+
+### LIMITES / STATUS / NEXT
+
+Os gaps permanecem explícitos, sem links fictícios. `ENT95-02-A/B` e `ENT95-16-B` continuam `IN_PROGRESS`. Próximo passo local: preencher elos reais por fatia vertical e fazer o gate falhar quando qualquer destino material não existir; a promoção de score continua condicionada a evidência de código, teste, commit e artefato no mesmo SHA.
+
+## 2026-08-12T01:02:30-03:00 — ENT95-ACCESSIBILITY-026
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E5 local controlado; S10; `ENT95-13-B` em andamento.
+
+### AÇÃO
+
+Ampliada a prova E2E de acessibilidade com reflow equivalente a 200%/400% de zoom, mantendo os checks existentes de teclado, foco, landmarks, labels, IDs únicos, erros, estado vazio e retry.
+
+### RESULTADO / VERIFICAÇÃO
+
+No HA local ativo, `tests/e2e/experience-accessibility.spec.ts` passou 6/6. O axe não encontrou violações nas superfícies de participante e autoria; os testes de viewport estreito e 640/320px não encontraram overflow horizontal.
+
+### LIMITES / STATUS / NEXT
+
+`ENT95-13-B` permanece `IN_PROGRESS`: ainda faltam checklist manual nas jornadas P0, contraste/zoom real, motion, leitores de tela e usuários representativos. A baseline permanece 83/100; nenhuma nota, release, piloto ou publicação foi promovida.
+
+## 2026-08-12T01:05:38-03:00 — ENT95-VERIFY-027
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E5 local controlado; S10–S13 de verificação; `ENT95-13-B`, `ENT95-02-A/B` e `ENT95-16-B`.
+
+### AÇÃO / RESULTADO
+
+Executada auditoria de dependências, E2E HA real e o gate completo após as alterações de acessibilidade e rastreabilidade. `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades conhecidas; `pnpm test:e2e:active-ha` passou 3/3; `pnpm verify` passou com 105 arquivos, 505 testes, 18 skips condicionais, cobertura 85,32% statements / 80,55% branches / 87,13% functions / 86,11% lines, contratos 51/51 e worker 24/24.
+
+### LIMITES / STATUS / NEXT
+
+O scorecard permanece 83,24/100, com 5 tasks concluídas, 4 em andamento, 43 prontas e 18 aguardando aprovação. A matriz permanece `PASS_WITH_GAPS`, com 145 requisitos e 0 cadeias completas. Acessibilidade manual, leitores de tela, gates clínicos/externos, SHA congelado e reauditoria independente continuam pendentes; não há release, piloto ou publicação aprovada.
+
+## 2026-08-12T01:09:08-03:00 — ENT95-CONCURRENCY-028
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S3–S6; `ENT95-06-C` em andamento.
+
+### AÇÃO / RESULTADO
+
+Adicionada prova live ao `tests/integration/postgres-learning-state.test.ts`. Duas gravações concorrentes da mesma versão foram executadas contra o PostgreSQL HA: uma venceu, uma retornou conflito estável, o estado final foi único (`EM_ANDAMENTO`, versão 3) e o rollback transacional não deixou resíduo. A falha inicial do fixture por colisão de módulo foi corrigida sem alterar o comportamento de produção.
+
+### LIMITES / STATUS / NEXT
+
+`ENT95-06-C` foi marcada `COMPLETED` no escopo local após a suíte PostgreSQL live 29/29 arquivos e 76/76 testes. Scorecard: 83,24/100, 6 concluídas, 4 em andamento, 42 prontas, 18 aguardando aprovação; nenhuma nota ou autorização foi promovida.
+
+## 2026-08-12T01:18:55-03:00 — ENT95-VERIFY-029
+
+### AÇÃO / VERIFICAÇÃO
+
+Reexecutado o gate completo após fechar `ENT95-06-C` e registrar `PREMIUM-ENTERPRISE-95-CONCURRENCY-028`. `pnpm verify` passou com 105 arquivos de teste, 505 testes, 18 skips condicionais, cobertura 85,32% statements / 80,55% branches / 87,13% functions / 86,11% lines, contratos 51/51, worker 24/24, 17 migrações, secret scan, rastreabilidade, arquitetura, documentação, produto e exposição pública verdes.
+
+### STATUS / NEXT
+
+Scorecard permanece 83,24/100, com 6 tasks concluídas, 4 em andamento, 42 prontas e 18 aguardando aprovação. A matriz permanece `PASS_WITH_GAPS`, com 145 requisitos e 0 cadeias completas; acessibilidade manual, gates clínicos/externos, worktree/SHA e reauditoria independente continuam abertos.
+
+## 2026-08-12T01:21:41-03:00 — ENT95-AUTHORIZATION-030
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E1/E2 local controlado; S2–S6; `ENT95-08-B`.
+
+### AÇÃO / RESULTADO
+
+Executados 48 testes focados de autorização/API e a integração live `tests/integration/postgres-security-isolation.test.ts` 1/1 no HA, com timeout operacional de 20s. A prova confirmou deny-by-default, papéis, scopes, ownership, RLS forçada, role sem `SUPERUSER/BYPASSRLS`, ausência de contexto, isolamento participante/escopo, operações staff e projeções sem internals; `pnpm verify:exposure` passou.
+
+### LIMITES / STATUS / NEXT
+
+`ENT95-08-B` foi marcada `COMPLETED` no escopo local e o artefato `PREMIUM-ENTERPRISE-95-AUTHORIZATION-030` foi registrado. IdP/MFA/recovery da 08-A, gates externos, SHA e reauditoria independente permanecem pendentes. Scorecard: 83,24/100, 7 concluídas, 4 em andamento, 41 prontas, 18 aguardando aprovação.
+
+## 2026-08-12T01:30:20-03:00 — ENT95-TRACEABILITY-031
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E1/E5 local controlado; S0–S10; `ENT95-02-A/B`, `ENT95-13-B` e `ENT95-16-B`.
+
+### AÇÃO / RESULTADO
+
+Fortalecida a `PREMIUM-ENTERPRISE-95-REQUIREMENTS-MATRIX`: as 145 linhas passaram a exigir 12 campos, incluindo `commit` e `artifact`; RF-008/RF-009 receberam links locais explícitos de módulo, contrato, teste e `PREMIUM-ENTERPRISE-95-AUTHORIZATION-030`. O teste TDD passou 5/5; `pnpm verify:premium-traceability` passou com `PASS_WITH_GAPS`, 145 requisitos, 0 cadeias completas e 145 gaps explícitos.
+
+### VERIFICAÇÃO
+
+`pnpm verify` passou com 105 arquivos/505 testes, 18 skips condicionais, cobertura 85,32% statements / 80,55% branches / 87,13% functions / 86,11% lines, contratos 51/51, worker 24/24 e 17 migrações; lint, typecheck, arquitetura, documentação, definição de produto, secrets e fronteira pública passaram. `pnpm test:e2e:active-ha` passou 3/3 e `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades conhecidas. `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard permanece 83,24/100, com 7 tasks concluídas, 4 em andamento, 41 prontas e 18 aguardando aprovação. O commit/SHA final, os elos restantes da matriz, a checklist manual de acessibilidade, os gates clínicos/externos e a reauditoria independente continuam pendentes. Estado: `WAITING_HUMAN_APPROVAL`; não há release, piloto ou publicação clínica aprovada.
+
+## 2026-08-12T01:33:29-03:00 — ENT95-FINAL-VERIFY-032
+
+### AÇÃO / RESULTADO
+
+Reexecutado o `pnpm verify` depois da sincronização final de `0304`, `0491`, `0492`, `0493`, `docs/30` e `docs/99`. O gate terminou com exit code 0: 105 arquivos de teste passaram, 16 foram pulados por configuração, 505 testes passaram, 18 skips condicionais; cobertura 85,32% statements / 80,55% branches / 87,13% functions / 86,11% lines; contratos 51/51, worker 24/24, 17 migrações/índice 16, lint, typecheck, arquitetura, documentação, produto, secrets e fronteira pública verdes.
+
+### EVIDÊNCIA / STATUS / NEXT
+
+`pnpm verify:premium-scorecard` permanece em 83,24/100, 7 `COMPLETED`, 4 `IN_PROGRESS`, 41 `READY_FOR_NEXT_STEP` e 18 `WAITING_HUMAN_APPROVAL`; `pnpm verify:premium-traceability` permanece `PASS_WITH_GAPS` com 145 requisitos, 0 cadeias completas e 145 gaps. Estado: `WAITING_HUMAN_APPROVAL`; próxima ação é obter decisões/recursos externos, fechar os elos e SHA autorizados e repetir a auditoria independente. Não há release, piloto ou publicação clínica aprovada.
+
+## 2026-08-12T01:55:30-03:00 — ENT95-EDITORIAL-WORKFLOW-033
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S2–S4; `ENT95-10-A`.
+
+### AÇÃO
+
+Fechado o workflow editorial atômico com teste RED/GREEN: autoria, revisão clínica independente, solicitação de ajustes, aprovação, autorização, publicação e retirada passam pelo domínio/application/persistence/outbox. A publicação passou a exigir contexto explícito de aprovação e confirmação transacional de uma decisão persistida `APROVAR_CLINICAMENTE` para o conteúdo, versão e revisor; contexto ausente ou decisão não persistida falha sem salvar estado/evento.
+
+### RESULTADO / VERIFICAÇÃO
+
+`packages/application/src/content-use-cases.test.ts` e `packages/application/src/authoring-use-cases.test.ts` passaram 15/15; `tests/integration/postgres-content-workflow.test.ts` e `tests/integration/postgres-authoring-workflow.test.ts` passaram na suíte HA live; a integração live completa passou 32 arquivos/79 testes com PostgreSQL e Qdrant. Também passaram `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm verify:premium-scorecard` e `pnpm verify:premium-traceability`. O artifact `PREMIUM-ENTERPRISE-95-EDITORIAL-WORKFLOW-033` foi registrado e os elos de RF-034/RF-035/RF-036/RF-039/RF-096 foram materializados na matriz.
+
+### LIMITES / STATUS / NEXT
+
+`ENT95-10-A` está `COMPLETED` somente no escopo local verificável. Scorecard: 83,24/100, 8 concluídas, 4 em andamento, 40 prontas e 18 aguardando aprovação; matriz: 145 requisitos, 0 cadeias completas e 145 gaps explícitos. O corpus de 763 itens, gates externos, SHA/release, piloto, publicação clínica e reauditoria independente continuam bloqueados. Estado: `WAITING_HUMAN_APPROVAL`; próxima fatia local: `ENT95-05-A`.
+
+## 2026-08-12T02:04:30-03:00 — ENT95-INVARIANT-MATRIX-034
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S1; `ENT95-05-A`.
+
+### AÇÃO / RESULTADO
+
+Criado `packages/domain/src/invariant-catalog.ts` com catálogo imutável de 24 invariantes críticas. Cada registro liga requisito, autoridade, código de falha, módulo, contrato e teste; o validador rejeita duplicidade, ausência de requisito/evidência e ausência de teste executável. O teste RED foi observado antes da implementação pelo módulo inexistente; depois, a implementação GREEN passou 2/2.
+
+### VERIFICAÇÃO
+
+`pnpm verify:invariants` passou 2/2; a suíte da fatia domínio/contratos/aplicação passou 46 arquivos/198 testes; `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm verify:documentation`, `pnpm verify:premium-scorecard` e `pnpm verify:premium-traceability` passaram. O artifact `PREMIUM-ENTERPRISE-95-INVARIANT-MATRIX-034` foi adicionado à `traceability.yml`.
+
+### LIMITES / STATUS / NEXT
+
+`ENT95-05-A` está `COMPLETED` no escopo local verificável do núcleo atual. Scorecard: 83,24/100, 9 concluídas, 4 em andamento, 39 prontas e 18 aguardando aprovação; matriz de requisitos: 145 linhas, 0 cadeias completas e 145 gaps explícitos. Regras ainda não implementadas, gates clínicos/externos, SHA, release, piloto e reauditoria permanecem abertos. Estado: `WAITING_HUMAN_APPROVAL`; próxima fatia local: `ENT95-05-B`.
+
+## 2026-08-12T02:40:00-03:00 — ENT95-LEARNING-RULES-035
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S2–S6; `ENT95-05-B`.
+
+### AÇÃO / RESULTADO
+
+Implementadas as regras locais faltantes do ciclo educacional: pré-requisito fail-closed; pausa por afastamento, acomodação ou janela operacional com contexto de retomada; formas equivalentes distintas em D+30/D+60/D+90; remediação digital na primeira tentativa e plano individual com mentor a partir da segunda, sem punição. Appeal e withdrawal existentes permanecem no domínio; contratos, repositório e migration `0017_assignment_pause_context.sql` foram sincronizados. O estado rejeita `pauseReason` persistido fora da allowlist.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED foi reproduzido antes do GREEN nos cenários de pausa, pré-requisito, retenção, contrato e módulo de política ausente; a implementação passou na fatia focada de 7 arquivos/47 testes. `pnpm verify:invariants` passou 2/2 com 31 invariantes; `pnpm verify:migrations` passou com 18 migrações e índice 17; typecheck, lint e format check passaram. Com proxy loopback descartável e execução serial, a integração live PostgreSQL/Qdrant passou 32 arquivos/79 testes, com 1 arquivo/2 testes condicionais pulados. O artefato `PREMIUM-ENTERPRISE-95-LEARNING-RULES-035` foi registrado na `traceability.yml`.
+
+### LIMITES / STATUS / NEXT
+
+`ENT95-05-B` está `COMPLETED` no escopo local verificável; scorecard: 83,24/100, 10 concluídas, 4 em andamento, 38 prontas e 18 aguardando aprovação; matriz: 145 requisitos, 0 cadeias completas e 145 gaps explícitos. Os resíduos sintéticos do ensaio paralelo foram removidos por filtros nominais e não há roles `cvg_rls_*` ou contas `*.invalid` residuais. `ENT95-05-C`, cobertura mutation/decisão, API/E2E integral, conteúdo clínico, corpus de 763 itens, gates externos, SHA, release, piloto e reauditoria independente continuam abertos. Estado: `WAITING_HUMAN_APPROVAL`; próxima fatia local: `ENT95-05-C`.
+
+## 2026-08-12T03:01:38-03:00 — ENT95-DECISION-COVERAGE-036
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S6/S11; `ENT95-05-C`.
+
+### AÇÃO / RESULTADO
+
+Implementada a matriz imutável `packages/domain/src/critical-decision-matrix.ts` com 13 casos para nota, gabarito, publicação, permissão, estado, replay idempotente e conflito de chave. A integração `tests/integration/critical-decision-coverage.test.ts` executa os casos contra as regras reais; o gate de cobertura foi incorporado aos scripts e ao `pnpm verify`.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED foi reproduzido antes da matriz e do verificador; o GREEN passou em 3 arquivos/5 testes focados. `pnpm test:coverage` passou 110 arquivos/530 testes, com 16 arquivos/18 testes condicionais pulados; cobertura 86,40% statements / 82,35% branches / 87,30% functions / 87,18% lines. `pnpm verify:critical-decisions` passou: nota 98,85%, publicação 100%, permissão 98,46%, estado 96,15%, idempotência 85%, contrato de estado 90,16% e matriz 100% de branches. Scorecard, rastreabilidade, documentação, invariantes e `git diff --check` passaram.
+
+### LIMITES / STATUS / NEXT
+
+O artifact `PREMIUM-ENTERPRISE-95-DECISION-COVERAGE-036` foi registrado. Scorecard: 83,24/100, 11 concluídas, 4 em andamento, 37 prontas e 18 aguardando aprovação; matriz: 145 requisitos, 0 cadeias completas e 145 gaps. `ENT95-05-C` está `COMPLETED` no escopo local verificável; mutation independente, idempotência persistida integral, API/E2E completo, conteúdo clínico, corpus de 763 itens, gates externos, SHA, release, piloto e reauditoria independente continuam abertos. Estado: `WAITING_HUMAN_APPROVAL`; próxima fatia local: `ENT95-02-A/B`.
+
+## 2026-08-12T03:17:12-03:00 — ENT95-SCOPE-DRIFT-037
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0/S1; `ENT95-02-B`.
+
+### AÇÃO / RESULTADO
+
+Criado o catálogo `scope_control` no manifesto de rastreabilidade: dez capacidades, cinco fontes canônicas de decisão e 27 requisitos RF/RNF. O gate `scripts/verify-scope-drift.mjs` bloqueia capacidade sem decisão, decisão/requisito desconhecido, duplicidade e status não aprovado.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED foi reproduzido com o verificador ausente; o GREEN passou em 3/3 testes TDD, incluindo omissão, drift e duplicidade. `pnpm verify:scope-drift` passou com 10 capacidades, 26 decisões usadas e 27 requisitos; typecheck, lint, format check e `git diff --check` passaram.
+
+### LIMITES / STATUS / NEXT
+
+O artefato `PREMIUM-ENTERPRISE-95-SCOPE-DRIFT-037` foi registrado. Scorecard: 83,24/100, 12 concluídas, 3 em andamento, 37 prontas e 18 aguardando aprovação; matriz: 145 requisitos, 0 cadeias completas e 145 gaps. `ENT95-02-B` está `COMPLETED` no escopo local; `ENT95-02-A` continua aberta para os elos de módulo/contrato/teste, commit/SHA e release. Estado: `WAITING_HUMAN_APPROVAL`; próxima fatia local: `ENT95-02-A`.
+
+## 2026-08-12T03:39:53-03:00 — ENT95-TRACEABILITY-LINKS-038
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0/S1; `ENT95-02-A` e `ENT95-16-B`.
+
+### AÇÃO / RESULTADO
+
+Fortalecido `scripts/verify-premium-enterprise-traceability.mjs`: além da matriz de 12 campos, o gate agora verifica que cada caminho local de módulo/contrato/teste e cada ID de artefato referenciado existe. `scripts/verify-traceability.mjs` passou a executar também o gate de scope drift e reportar os indicadores de evidência local.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED do novo controle foi reproduzido com caminho de módulo inexistente; o GREEN passou 6/6 testes de rastreabilidade e 3/3 de scope drift. Os gates passaram: `pnpm verify:premium-traceability`, `pnpm verify:traceability`, `pnpm verify:scope-drift`, `pnpm verify:premium-scorecard`, `pnpm verify:documentation`, `pnpm typecheck`, `pnpm lint` e `pnpm format:check`.
+
+### EVIDÊNCIA / LIMITES / STATUS
+
+A matriz enumera 145 requisitos, com 49 linhas de evidência local de módulo/contrato/teste/artefato e 43/87 RF P0/P1 nesse estado; permanece `0/145` cadeia completa e `145` gaps porque nenhum commit/SHA ou release foi inventado. Scorecard: baseline 83,24/100, 12 tasks `COMPLETED`, 37 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS` e 18 `WAITING_HUMAN_APPROVAL`. Estado: `WAITING_HUMAN_APPROVAL`; próxima ação: continuar somente com elos respaldados, manter os gaps e não liberar release/piloto/publicação clínica.
+
+## 2026-08-12T03:47:41-03:00 — ENT95-FINAL-VERIFICATION
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0/S1; entrega documental e fechamento da rodada.
+
+### AÇÃO / RESULTADO
+
+Executada a verificação final das entregas `BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md`, `BRIEFING/04.AUDIT/0491_full_construction_audit.md`, `BRIEFING/04.AUDIT/0492_score_95_roadmap.md`, `BRIEFING/04.AUDIT/0493_score_95_backlog.md` e `docs/99_runtime_state.md`. Passaram `pnpm format:check`, `pnpm verify:documentation`, `pnpm verify:traceability`, `pnpm verify:premium-scorecard`, `pnpm verify:premium-traceability` e `git diff --check`.
+
+### EVIDÊNCIA / LIMITES / STATUS
+
+A rastreabilidade permanece `PASS_WITH_GAPS`: 145 requisitos, 49 linhas com evidência local, 43/87 RF P0/P1 com evidência, 0 cadeias completas e 145 gaps explícitos. O scorecard permanece 83,24/100, com 12 tasks `COMPLETED`, 37 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS` e 18 `WAITING_HUMAN_APPROVAL`. Estado: `WAITING_HUMAN_APPROVAL`; a rodada local foi verificada, porém SHA, release, gates externos, revisão clínica, piloto e reauditoria independente continuam abertos.
+
+## 2026-08-12T03:59:40-03:00 — ENT95-07-A-API-SURFACE-039
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0/S1; `ENT95-07-A`.
+
+### AÇÃO / RESULTADO
+
+Concluída a fatia local `ENT95-07-A`: `packages/contracts/src/api-surface.ts` enumera 46 rotas existentes com método, caminho parametrizado, capability, autenticação, escopo, caso de uso, contrato de entrada e projeção de saída. A rota `POST /api/v1/internal/content/:contentId/review` foi adicionada ao `routeTemplate`, removendo a divergência de telemetria `unmatched`.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED reproduziu inventário ausente e template de rota incompleto; o GREEN passou 13/13 testes focados. Também passaram `pnpm --filter @cvg/contracts typecheck`, `pnpm lint`, `pnpm verify:traceability` e `pnpm verify:premium-traceability`. Artefato: `PREMIUM-ENTERPRISE-95-API-SURFACE-039`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 14 tasks `COMPLETED`, 35 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS` e 18 `WAITING_HUMAN_APPROVAL`. Estado: `WAITING_HUMAN_APPROVAL`; `ENT95-02-A` permanece aberta, e a API integral, conteúdo clínico, gates externos, SHA, release, piloto e reauditoria independente continuam pendentes.
+
+## 2026-08-12T04:14:04-03:00 — ENT95-04-A/B — arquitetura e hotspots
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0/S1; `ENT95-04-A` e `ENT95-04-B`.
+
+### AÇÃO / RESULTADO
+
+Reconciliada a fundação arquitetural local e concluído o inventário/governança de hotspots. `code-hotspot-policy.json` classifica os 7 arquivos de produção acima de 800 linhas com owner, severidade, plano de decomposição, orçamento-alvo e testes de caracterização. `scripts/verify-code-hotspots.mjs` percorre `apps`, `packages` e `scripts` e falha quando há hotspot não classificado, duplicidade, teste ausente ou regressão abaixo do limiar.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED de 04-B reproduziu o verificador ausente; o GREEN passou 2/2 em `tests/integration/code-hotspot-policy.test.ts`. Passaram `pnpm verify:hotspots`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck` e `git diff --check`; 04-A permanece verde em `pnpm verify:architecture` 2/2. Artefato: `PREMIUM-ENTERPRISE-95-HOTSPOT-POLICY-040`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 16 `COMPLETED`, 33 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`, baseline 83,24/100 sem promoção. A decomposição física dos 7 hotspots segue planejada em fatias reversíveis; capacidade/carga/failover, telemetria/backup externos, deploy/rollback, SHA, revisão clínica, release, piloto e reauditoria continuam pendentes. Estado: `WAITING_HUMAN_APPROVAL`; próxima ação: `ENT95-02-A` e uma próxima fatia local respaldada por evidência.
+
+## 2026-08-12T04:22:20-03:00 — ENT95-FINAL-VERIFICATION-041
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; verificação transversal após `ENT95-04-A/B`.
+
+### AÇÃO / RESULTADO
+
+`pnpm verify` passou com 114 arquivos de teste, 540 testes, 18 skips condicionais, cobertura 86,60% statements / 82,59% branches / 87,34% functions / 87,38% lines, contratos 55/55, worker 24/24, 18 migrações com índice 17, decisões críticas, rastreabilidade, arquitetura 2/2, hotspots, documentação, produto, secrets e fronteira pública verdes.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 cenários de navegador contra persistência real sintética; `pnpm audit --prod --audit-level high` retornou `No known vulnerabilities found`; `git diff --check` passou. O build sem a variável foi rejeitado pelo contrato explícito de ambiente e não constitui falha de implementação.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 16 `COMPLETED`, 33 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`. Estado: `WAITING_HUMAN_APPROVAL`; a próxima ação é continuar `ENT95-02-A` e avaliar `ENT95-14-A`/`ENT95-03-A`. Gates humanos/externos, revisão clínica, SHA/release e tasks restantes continuam pendentes.
+
+## 2026-08-12T04:28:58-03:00 — ENT95-01-A-DOCUMENT-REGISTRY-042
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0; `ENT95-01-A`.
+
+### AÇÃO / RESULTADO
+
+Criado `docs/canonical-document-registry.json`, com uma única fonte `CURRENT` para programa `0304`, auditoria `0491`, roadmap `0492` e backlog `0493`; os documentos `0490` e `0303` foram ligados como históricos/substituídos com sucessores explícitos. `scripts/verify-documentation.mjs` valida caminho, papel, status, duplicidade, sucessor e marcador histórico.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED reproduziu a ausência do export; o GREEN passou 3/3 em `tests/integration/canonical-document-governance.test.ts`. Passaram `pnpm verify:documentation`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck` e `git diff --check`. Artefato: `PREMIUM-ENTERPRISE-95-DOCUMENT-REGISTRY-042`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 17 `COMPLETED`, 32 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`, baseline 83,24/100 sem promoção. Estado: `WAITING_HUMAN_APPROVAL`; a governança documental não congela SHA/worktree, não substitui reauditoria independente e não fecha gates clínicos/externos. Próxima ação: `ENT95-02-A` e `ENT95-14-A`/`ENT95-03-A` conforme evidência local.
+
+## 2026-08-12T04:36:57-03:00 — ENT95-03-A-CURRICULUM-INVENTORY-043
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; S0–S1; `ENT95-03-A`.
+
+### AÇÃO / RESULTADO
+
+Criado `curriculum-inventory.json` versão 1 e o gate `scripts/verify-curriculum-inventory.mjs`. A execução compara o inventário ao materialization plan canônico e reconcilia 24 módulos, 96 sessões e 796 registros, incluindo objetivos, itens críticos, status de projeção e ordem de prioridade de risco. A disposição permanece `PILOT_BLOCKED`.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O RED reproduziu o módulo de verificação ausente; o GREEN passou 2/2 em `tests/integration/curriculum-inventory-governance.test.ts`. Passaram `pnpm verify:curriculum-inventory`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck` e `git diff --check`. Artefato: `PREMIUM-ENTERPRISE-95-CURRICULUM-INVENTORY-043`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 18 `COMPLETED`, 31 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`, baseline 83,24/100 sem promoção. Estado: `WAITING_HUMAN_APPROVAL`; a reconciliação estrutural não aprova os 763 itens clínicos nem fecha `ENT95-03-B/C/D`, release, piloto, SHA ou reauditoria. Próxima ação: `ENT95-02-A` e outra fatia local respaldada.
+
+## 2026-08-12T04:39:47-03:00 — ENT95-FINAL-VERIFICATION-044
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; verificação transversal após `ENT95-03-A`.
+
+### AÇÃO / RESULTADO
+
+Reexecutado `pnpm verify` com `verify:curriculum-inventory` integrado. Passaram 116 arquivos de teste, 545 testes, 18 skips condicionais, cobertura 86,60% statements / 82,59% branches / 87,34% functions / 87,38% lines, contratos 55/55, worker 24/24, migrações 18/17, decisões críticas, arquitetura, hotspots, inventário curricular, documentação, produto, secrets, rastreabilidade e fronteira pública.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 cenários de navegador com persistência sintética; `pnpm audit --prod --audit-level high` retornou `No known vulnerabilities found`; `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 18 `COMPLETED`, 31 `READY_FOR_NEXT_STEP`, 3 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`. Estado: `WAITING_HUMAN_APPROVAL`; gates humanos/externos, revisão clínica dos 763 itens, tasks restantes, SHA/worktree, release, piloto e reauditoria independente continuam pendentes.
+
+## 2026-08-12T04:55:15-03:00 — ENT95-12-B-OBSERVABILITY-GOVERNANCE-045
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; `ENT95-12-B`.
+
+### AÇÃO / RESULTADO
+
+Implementada a policy `observability-governance.json` com sete sinais e sete alertas, owners, escalation, runbooks, acknowledgement/deduplicação e `piiSafe`; dashboard Grafana ampliado; regras Prometheus versionadas e redigidas; gauge p95 derivado de amostras limitadas no exporter; métrica `worker.events.claimed` adicionada ao loop.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu o verificador ausente e o GREEN passou 2/2 em `tests/integration/observability-governance.test.ts` e 10/10 em `packages/observability/src/observability.test.ts`. Passaram `pnpm verify:observability-governance`, lint, typecheck e `git diff --check`. Artefato: `PREMIUM-ENTERPRISE-95-OBSERVABILITY-GOVERNANCE-045`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 18 `COMPLETED`, 30 `READY_FOR_NEXT_STEP`, 4 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; resultado `PASS_WITH_EXTERNAL_OPERATIONAL_GAPS`. Estado: `WAITING_HUMAN_APPROVAL`. Collector/backend externo, retenção, acknowledgement produtivo, medição de ruído, D-ENT-04, SHA, release, piloto e reauditoria continuam pendentes. Próxima ação: obter ambiente externo autorizado e manter `ENT95-12-B` em andamento.
+
+## 2026-08-12T05:03:34-03:00 — ENT95-14-A-TEST-RISK-MATRIX-046
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; `ENT95-14-A`.
+
+### AÇÃO / RESULTADO
+
+Criado `test-risk-matrix.json` e o gate `scripts/verify-test-risk-matrix.mjs`. A execução deriva 87 RF P0/P1 da matriz canônica, exige quatro provas (`success`, `error`, `denied`, `conflict`) e classifica oito camadas de teste sem converter caminho de teste em cobertura completa.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu a ausência da matriz/verificador; GREEN passou 2/2 em `tests/integration/test-risk-matrix-governance.test.ts`. `pnpm verify:test-risk-matrix` reportou `PASS_WITH_GAPS`: 43/87 success, 0/87 error, 8/87 denied, 24/87 conflict e 0/87 linhas completas. Artefato: `PREMIUM-ENTERPRISE-95-TEST-RISK-MATRIX-046`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 18 `COMPLETED`, 29 `READY_FOR_NEXT_STEP`, 5 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; estado `WAITING_HUMAN_APPROVAL`. Os 44 RF P0/P1, tags completas, SHA, release, gates externos, piloto e reauditoria permanecem pendentes. Próxima ação: completar somente evidência de teste/runtime realmente executada.
+
+## 2026-08-12T05:19:15-03:00 — ENT95-14-C-SKIP-GOVERNANCE-047
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; `ENT95-14-C`.
+
+### AÇÃO / RESULTADO
+
+Criados `skip-governance.json` e `scripts/verify-skip-governance.mjs`. A policy encontrou e classificou 16 arquivos/18 testes condicionais; o gate exige guarda explícita, justificativa, caminho existente, limite flaky inferior a 1% e 20 execuções qualificadas antes de considerar a task concluída.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu a ausência do verificador; GREEN passou 2/2 em `tests/integration/skip-governance.test.ts`. `pnpm verify:skip-governance` passou com 0 skips inexplicados, 0 falhas flaky e 3 execuções observadas de 20. A integração PostgreSQL isolada passou 38/38 arquivos/95 testes; a variante PostgreSQL/Qdrant passou 41/41 arquivos/98 testes; restore isolado passou 2/2.
+
+### LIMITES / STATUS / NEXT
+
+Artefato: `PREMIUM-ENTERPRISE-95-SKIP-GOVERNANCE-047`. Scorecard: baseline 83,24/100, 18 `COMPLETED`, 28 `READY_FOR_NEXT_STEP`, 6 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; estado `WAITING_HUMAN_APPROVAL`. Faltam 17 execuções qualificadas, CI remoto, SHA/worktree, release, gates externos, revisão clínica e reauditoria independente.
+
+## 2026-08-12T05:23:28-03:00 — ENT95-FINAL-VERIFICATION-048
+
+### AÇÃO / RESULTADO
+
+Reexecutada a verificação transversal depois de `ENT95-14-C`. `pnpm verify` passou com 119 arquivos de teste, 552 testes passantes, 18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Scorecard, documentação, rastreabilidade, matriz de risco e governança de skips passaram; rastreabilidade continua `0/145` cadeias completas e `145` gaps explícitos.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 cenários reais sintéticos; `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades. A prova live efêmera passou PostgreSQL 95/95, PostgreSQL/Qdrant 98/98 e restore 2/2.
+
+`CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live CVG_LOAD_REQUESTS=200 CVG_LOAD_CONCURRENCY=20 pnpm ops:load-smoke` passou 200/200 respostas HTTP 200, taxa 100%, throughput 458,14 req/s e p95 102,37 ms. Isso é smoke local; não fecha saturação, soak, failover ou capacidade de produção.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 18 `COMPLETED`, 28 `READY_FOR_NEXT_STEP`, 6 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`, baseline 83,24/100 sem promoção. Estado: `WAITING_HUMAN_APPROVAL`; seguem pendentes 17 execuções qualificadas de `ENT95-14-C`, CI remoto, SHA/worktree, revisão clínica, IdP/MFA, telemetria/backup externos, deploy/rollback, piloto e reauditoria independente.
+
+## 2026-08-12T05:31:24-03:00 — ENT95-14-D-TEST-EVIDENCE-049
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / E2 local controlado; `ENT95-14-D`.
+
+### AÇÃO / RESULTADO
+
+Criado `test-evidence-governance.json` com três registros de evidência sintética e `scripts/verify-test-evidence-governance.mjs`. O contrato exige requisito/task, artifact ID, comando reproduzível, timestamp, ambiente, seed, `syntheticData`, sanitização, teardown, retenção, commit e paths; gaps de SHA, artifact e retention permanecem declarados, sem invenção de evidência.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu a ausência do verificador; GREEN passou 2/2 em `tests/integration/test-evidence-governance.test.ts`. `pnpm verify:test-evidence-governance` reportou `PASS_WITH_GAPS`, 3 evidências sintéticas, 3 teardowns verificados, 0 evidências completas e 3 gaps explícitos.
+
+### LIMITES / STATUS / NEXT
+
+Artefato: `PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049`. Scorecard: baseline 83,24/100, 18 `COMPLETED`, 27 `READY_FOR_NEXT_STEP`, 7 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; estado `WAITING_HUMAN_APPROVAL`. CI artifact/retention, SHA/worktree, `ENT95-15-A/B`, revisão clínica, gates externos, release, piloto e reauditoria independente continuam pendentes.
+
+## 2026-08-12T05:39:40-03:00 — ENT95-FINAL-VERIFICATION-050
+
+### AÇÃO / RESULTADO
+
+Reexecutada a verificação transversal após `ENT95-14-D`. `pnpm verify` passou com 120 arquivos/554 testes/18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Scorecard, matriz de risco, skips, evidência de teste, rastreabilidade, arquitetura, hotspots, documentação, produto, secrets e exposição pública passaram nos respectivos gates.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 fluxos reais com dados sintéticos; `pnpm audit --prod --audit-level high` retornou `No known vulnerabilities found`; `git diff --check` passou. As evidências live sintéticas já registradas permanecem: PostgreSQL 95/95, PostgreSQL/Qdrant 98/98, restore 2/2 e smoke HA 200/200 HTTP 200 com p95 102,37 ms; elas não substituem retenção/CI, saturação, soak, failover ou operação produtiva.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 27 `READY_FOR_NEXT_STEP`, 7 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade `0/145` cadeias completas, 145 gaps explícitos e 49 linhas com evidência local. O estado permanece `WAITING_HUMAN_APPROVAL`: CI artifact/retention, SHA/worktree, 17 execuções qualificadas de `ENT95-14-C`, `ENT95-15-A/B`, revisão clínica dos 763 itens, IdP/MFA, TLS, telemetria/backup externos, deploy/rollback, release, piloto e reauditoria independente continuam pendentes.
+
+## 2026-08-12T05:45:05-03:00 — ENT95-01-C-CHANGE-CONTROL-051
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / S0–S1 local controlado; `ENT95-01-C`.
+
+### AÇÃO / RESULTADO
+
+Criado `change-control-governance.json` com dois decision records, dois riscos abertos e dois change requests. Todos registram owner, motivo, impacto, aceite, rollback, artifact e sprint; cada mudança possui score impact separado e não promove o score.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu a ausência do verificador; GREEN passou 2/2 em `tests/integration/change-control-governance.test.ts`. `pnpm verify:change-control-governance` reportou 2 decisões, 2 riscos, 2 mudanças, 2 impactos de sprint e 0 mudanças de score; o gate bloqueia rollback/score impact ausente, decisão desconhecida e promoção sem `HUMAN_APPROVED`. Artefato: `PREMIUM-ENTERPRISE-95-CHANGE-CONTROL-051`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 18 `COMPLETED`, 26 `READY_FOR_NEXT_STEP`, 8 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; estado `WAITING_HUMAN_APPROVAL`. Decisão humana/independente, worktree/SHA, release, riscos externos, piloto e reauditoria permanecem pendentes.
+
+## 2026-08-12T05:50:58-03:00 — ENT95-FINAL-VERIFICATION-052
+
+### AÇÃO / RESULTADO
+
+Reexecutada a verificação transversal após `ENT95-01-C`. `pnpm verify` passou com 121 arquivos/556 testes/18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Os gates de change control, scorecard, rastreabilidade, risco, skips, evidência, arquitetura, hotspots, documentação, produto, secrets e exposição pública passaram.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 fluxos reais sintéticos; `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades; `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 26 `READY_FOR_NEXT_STEP`, 8 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade `0/145` cadeias completas, 145 gaps e 49 linhas com evidência local. Estado `WAITING_HUMAN_APPROVAL`; SHA/worktree, CI artifact/retention, revisão clínica dos 763 itens, IdP/MFA, TLS, telemetria/backup, deploy/rollback, release, piloto e reauditoria independente continuam pendentes.
+
+## 2026-08-12T05:54:52-03:00 — ENT95-FINAL-VERIFICATION-053
+
+### AÇÃO / RESULTADO
+
+Após a atualização do manifesto 052, `pnpm verify` foi reexecutado e passou com 121 arquivos/556 testes/18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Scorecard, change control, rastreabilidade, risco, skips, evidência, arquitetura, hotspots, documentação, produto, secrets e exposição pública passaram.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+No mesmo estado do worktree, `CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces, `pnpm test:e2e:active-ha` passou 3/3 fluxos reais sintéticos, `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades e `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard permanece 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 26 `READY_FOR_NEXT_STEP`, 8 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade permanece `0/145` cadeias completas e 145 gaps. Estado `WAITING_HUMAN_APPROVAL`; SHA/worktree, CI artifact/retention, revisão clínica, IdP/MFA, TLS, telemetria/backup, deploy/rollback, release, piloto e reauditoria independente continuam pendentes.
+
+## 2026-08-12T05:58:22-03:00 — ENT95-13-B-ACCESSIBILITY-GOVERNANCE-054
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / S10 local controlado; `ENT95-13-B`.
+
+### AÇÃO / RESULTADO
+
+Criado `accessibility-governance.json` e `scripts/verify-accessibility-governance.mjs`. A policy registra seis evidências automatizadas nas superfícies de participante/autoria e cinco gaps manuais nomeados; caminhos, status PASS, dados sintéticos, padrão WCAG-2.2-AA e disposição `PILOT_BLOCKED` são verificados.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED reproduziu a ausência do verificador; GREEN passou 2/2 em `tests/integration/accessibility-governance.test.ts`. `pnpm verify:accessibility-governance` reportou 6/6 evidências automatizadas, 5 gaps manuais, `PASS_WITH_GAPS` e `PILOT_BLOCKED`. Artefato: `PREMIUM-ENTERPRISE-95-ACCESSIBILITY-GOVERNANCE-054`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard não muda: baseline 83,24/100, 18 `COMPLETED`, 26 `READY_FOR_NEXT_STEP`, 8 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`. Checklist manual P0, contraste/zoom/motion, screen reader, usuários autorizados, SHA, release e reauditoria permanecem pendentes.
+
+## 2026-08-12T06:03:36-03:00 — ENT95-FINAL-VERIFICATION-055
+
+### AÇÃO / RESULTADO
+
+Após `ENT95-13-B`, `pnpm verify` passou com 122 arquivos/558 testes/18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Os gates de acessibilidade, change control, scorecard, rastreabilidade, risco, skips, evidência, arquitetura, hotspots, documentação, produto, secrets e exposição pública passaram.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 fluxos reais sintéticos; `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades; `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 26 `READY_FOR_NEXT_STEP`, 8 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade `0/145` cadeias completas e 145 gaps. Estado `WAITING_HUMAN_APPROVAL`; 5 gaps manuais de acessibilidade, SHA/worktree, CI artifact/retention, revisão clínica, IdP/MFA, TLS, telemetria/backup, deploy/rollback, release, piloto e reauditoria continuam pendentes.
+
+## 2026-08-12T06:06:13-03:00 — ENT95-04-C-CAPACITY-GOVERNANCE-056
+
+### PHASE / SPRINT / TASK
+
+BUILD — PREMIUM ENTERPRISE 95 / S11 local controlado; `ENT95-04-C`.
+
+### AÇÃO / RESULTADO
+
+Criado `capacity-governance.json` e `scripts/verify-capacity-governance.mjs`. O manifesto registra o smoke HA sintético 200/200 HTTP 200, concorrência 20, throughput 458,14 req/s, p95 102,37 ms, teardown verificado e quatro gaps explícitos.
+
+### RED / GREEN / VERIFICAÇÃO
+
+O teste focal passou 2/2 em `tests/integration/capacity-governance.test.ts`; `pnpm verify:capacity-governance` reportou 100% de sucesso, `PASS_WITH_GAPS` e `PILOT_BLOCKED`. O gate rejeita métrica inconsistente e gap ausente. Artefato: `PREMIUM-ENTERPRISE-95-CAPACITY-GOVERNANCE-056`.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: baseline 83,24/100, 18 `COMPLETED`, 25 `READY_FOR_NEXT_STEP`, 9 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`. Saturação, soak, failover/recuperação, perfil/SLO produtivo, SHA, gates externos, release, piloto e reauditoria permanecem pendentes.
+
+## 2026-08-12T06:10:14-03:00 — ENT95-FINAL-VERIFICATION-057
+
+### AÇÃO / RESULTADO
+
+Após `ENT95-04-C`, `pnpm verify` passou com 123 arquivos/560 testes/18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Os gates de capacidade, acessibilidade, change control, scorecard, rastreabilidade, risco, skips, evidência, arquitetura, hotspots, documentação, produto, secrets e exposição pública passaram.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 fluxos reais sintéticos; `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades; `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 25 `READY_FOR_NEXT_STEP`, 9 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade `0/145` cadeias completas e 145 gaps. Estado `WAITING_HUMAN_APPROVAL`; capacidade enterprise, 5 gaps manuais de acessibilidade, SHA/worktree, CI artifact/retention, revisão clínica, IdP/MFA, TLS, telemetria/backup, deploy/rollback, release, piloto e reauditoria continuam pendentes.
+
+## 2026-08-12T06:31:30-03:00 — ENT95-04-C-CAPACITY-EXPLORATION-058
+
+### AÇÃO / RESULTADO
+
+Executadas cargas HA sintéticas escalonadas de 200/20, 1.000/50 e 5.000/100, todas com 100% HTTP 200; p95/throughput: 91,41 ms/466,72 req/s, 115,47 ms/716,71 req/s e 160,80 ms/1.014,10 req/s. Em failover controlado, `api-a` foi parado, 1.000/50 passou 100% HTTP 200 com p95 106,91 ms e 565,82 req/s, e a réplica foi restaurada saudável.
+
+### RED / GREEN / LIMITES
+
+`tests/integration/capacity-governance.test.ts` passou 3/3; `pnpm verify:capacity-governance` reporta 3 cargas escalonadas, failover 100%, `soakStatus=NOT_EXECUTED`, `PASS_WITH_GAPS` e `PILOT_BLOCKED`. Saturação, soak, perfil/SLO aprovado, CI/SHA e capacidade produtiva permanecem pendentes; scorecard 83,24/100 sem promoção.
+
+## 2026-08-12T06:40:13-03:00 — ENT95-FINAL-VERIFICATION-059
+
+### AÇÃO / RESULTADO
+
+Após a exploração de capacidade, `pnpm verify` passou com 123 arquivos/561 testes/18 skips condicionais e cobertura 86,63% statements / 82,61% branches / 87,34% functions / 87,39% lines. Gates de scorecard, rastreabilidade, risco, skips, evidência, change control, acessibilidade, capacidade, arquitetura, hotspots, documentação, produto, secrets e exposição pública passaram.
+
+### RUNTIME / BUILD / SEGURANÇA
+
+`CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` passou nos 12 workspaces; `pnpm test:e2e:active-ha` passou 3/3 fluxos reais sintéticos; `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades; `git diff --check` passou.
+
+### LIMITES / STATUS / NEXT
+
+Scorecard: 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 25 `READY_FOR_NEXT_STEP`, 9 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade `0/145` cadeias completas e 145 gaps. Estado `WAITING_HUMAN_APPROVAL`; soak/SLO, 5 gaps manuais WCAG, CI artifact/retention, SHA/worktree, revisão clínica, IdP/MFA, TLS, telemetria/backup, deploy/rollback, release, piloto e reauditoria continuam pendentes.
+
+## 2026-08-12T07:52:17-03:00 — CVG-SUB80-TO-95-PLAN-060
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 planejamento; `CVG-SUB80-TO-95`.
+
+### AÇÃO / RESULTADO
+
+A auditoria 0491 foi filtrada por `score < 80`, sem incluir os dez itens acima ou iguais a 80. Foram criados plano executivo `0305`, roadmap `0510`, backlog `0511` e manifesto executável com os itens 3/9/10/12/13/16, 29 tasks canônicas, 13 janelas S0–S12/24 semanas, 10 gates, capacidade clínica 40–60 itens/semana, owners, dependências, evidência, rollback e critérios de 95.
+
+### RED / GREEN / VERIFICAÇÃO
+
+RED: o teste focal falhou pela ausência de `scripts/verify-sub80-to-95-program.mjs`, pela aceitação de drift na baseline/estado canônicos e pela inconsistência de calendário. GREEN: 5/5 testes passaram e `pnpm verify:sub80-program` reportou `items=6 tasks=29 gates=10 target=95 disposition=PILOT_BLOCKED`. O gate foi incorporado ao `pnpm verify`.
+
+### LIMITES / STATUS / NEXT
+
+Não houve alteração de produto, runtime, score ou release. Baseline oficial 83,24; a projeção matemática com os seis itens exatamente em 95 é 92,54 global. Status `WAITING_HUMAN_APPROVAL`: Ricardo decidir D-ENT-01/07/09 para abrir G-S80-0 e depois executar 03-B; D-ENT-04/05/06/08, revisão dos 763 itens, UAT, WCAG humana, SHA/RC e reauditoria seguem obrigatórios.
+
+## 2026-08-12T08:21:36-03:00 — CVG-SUB80-TO-95-FINAL-VERIFICATION-061
+
+### AÇÃO / RESULTADO
+
+Reexecutada a verificação integral após todos os documentos, registros e os endurecimentos contra drift de baseline, estado e calendário do recorte sub-80. `pnpm verify` passou com 124 arquivos/566 testes/18 skips condicionais e cobertura 86,63% statements, 82,61% branches, 87,34% functions e 87,39% lines.
+
+### GATES
+
+Formatação, lint, typecheck, CI contract, fontes clínicas, inventário curricular, observabilidade, HA config, decisões críticas, scope drift, contratos, worker, migrations, secrets, traceability, matriz de risco, skips, evidência, change control, acessibilidade, capacidade, programa sub-80, arquitetura, hotspots, documentação, produto e exposição pública passaram. O gate sub-80 reportou 6 itens/29 tasks/10 gates/alvo 95/`PILOT_BLOCKED`.
+
+### LIMITES / STATUS / NEXT
+
+Baseline 83,24, notas oficiais, release e runtime não mudam. A tarefa de planejamento está concluída; a execução permanece `WAITING_HUMAN_APPROVAL` em D-ENT-01/07/09 e depois `ENT95-03-B`, sem dispensar D-ENT-04/05/06/08, revisão clínica, UAT, WCAG humana, SHA/RC e reauditoria.
+
+## 2026-08-12T08:59:53-03:00 — CVG-SUB80-TO-95-EXECUTION-064
+
+### TIMESTAMP
+
+2026-08-12 08:59:53 -03:00
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+SUB80→95 / fatias locais controladas
+
+### SPRINT
+
+S0 — mobilização e preparação local
+
+### TASK
+
+`ENT95-10-D` + `ENT95-13-D`
+
+### ACTION
+
+Implementada a fatia local de validade/retirada: migration 0018 adiciona `valid_until` e `next_review_at`; persistência lista somente conteúdo publicado vencido por escopo; aplicação valida operador, escopo, janela e limite, transiciona para `VENCIDO`, registra auditoria e publica evento redigido; replay e conflito não duplicam a operação; o worker expõe a composição do scheduler e o handler de retirada remove a projeção derivada. Implementada também a policy executável de performance web com budgets de bundle/LCP/INP/CLS, retry, estados, duas medições sintéticas e quatro gaps manuais explícitos.
+
+### RESULT
+
+RED reproduziu a ausência do caso de uso de expiração e do verificador web. GREEN passou 4/4 no teste de ciclo de vida, 7/7 no repositório e 3/3 na governança web. `pnpm verify` passou com 126 arquivos/575 testes/18 skips condicionais, cobertura 86,52% statements / 82,53% branches / 87,31% functions / 87,28% lines; migration count 19/latest 0018, contratos 55/55, worker 24/24, arquitetura 2/2, `CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` nos 12 workspaces, `pnpm test:e2e:active-ha` 3/3, `pnpm audit --prod --audit-level high` sem vulnerabilidades e `git diff --check` sem erro.
+
+### DECISIONS
+
+Não promover notas nem fechar as tasks canônicas por evidência sintética. `ENT95-10-D` permanece dependente de ambiente autorizado, dashboard/drill e evidência operacional; `ENT95-13-D` permanece dependente de Web Vitals reais, CI budget, offline/dispositivo e RC. D-ENT-01/07/09, revisão clínica de 763 itens, D-ENT-04/05/06/08, SHA, gates e reauditoria independente continuam obrigatórios.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-08-14T02:20:10-03:00 — AUDIT-LOCAL-067
+
+### TIMESTAMP
+
+2026-08-14 02:20:10 -03:00
+
+### ENGINE
+
+AUDIT
+
+### PHASE
+
+BUILD — verificação local controlada / auditoria documental e técnica
+
+### SPRINT
+
+S0 — leitura integral, evidência de runtime e reconciliação de estado
+
+### TASK
+
+Auditar a documentação de `docs/` e verificar o que está construído no worktree/runtime atual.
+
+### ACTION
+
+Foram lidos os 15 arquivos de `docs/` (incluindo estado, log, backlog e registro canônico), revisados PRD/SPEC/BUILD/AUDIT, inspecionados código, rotas, testes, configuração e runtime, e executadas verificações seguras sem commit ou alteração de produto.
+
+### RESULT
+
+`pnpm verify` passou com 127 arquivos/577 testes/18 skips e cobertura 86,53% statements, 82,52% branches, 87,31% functions e 87,28% lines. O build dos 12 workspaces passou; `pnpm test:e2e:active-ha` passou 3/3 fluxos sintéticos reais com teardown; edge security passou com 7 diretivas estáticas e 2 alvos live; smoke HA passou 200/200 com p95 186,68 ms; `pnpm audit --prod --audit-level high` não encontrou vulnerabilidades.
+
+### DECISIONS
+
+O scorecard oficial permanece 83,24/100. A evidência confirma funcionamento local e observável, mas não prova produção: o gate de segurança produtiva falhou fechado por 11 referências externas ausentes; não há IdP/MFA real, DNS/TLS público gerenciado, telemetria/backup externos com RPO/RTO, CI/registry/deploy/rollback atuais, SHA imutável do worktree, revisão clínica independente dos 763 itens ou reauditoria no mesmo RC.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL; release/piloto/publicação clínica permanecem `PILOT_BLOCKED`.
+
+### NEXT
+
+Ricardo revisar o relatório, decidir D-ENT-01/D-ENT-07/D-ENT-09, abrir G-S80-0 e só então executar `ENT95-03-B`; manter gates clínicos, humanos e externos sem promoção de nota.
+
+## 2026-08-14T02:36:43-03:00 — BLOCKER-PLAN-068
+
+### TIMESTAMP
+
+2026-08-14 02:36:43 -03:00
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+SUB80→95 / overlay de resolução dos oito bloqueios
+
+### SPRINT
+
+S0 — planejamento executivo e preparação controlada
+
+### TASK
+
+Salvar o relatório atual e estruturar plano executivo, roadmap e backlog para BLK-01…BLK-08.
+
+### ACTION
+
+Salvo `docs/112_current_construction_report_2026-08-14.md`. O `0305` recebeu o plano executivo de resolução, o `0510` recebeu o overlay de roadmap em 24 semanas e o `0511` recebeu o backlog detalhado de oito frentes, com owners, dependências, critérios, testes, evidência, rollback e gates.
+
+### RESULT
+
+O bloqueio clínico foi convertido em beta controlado com veterinários autorizados: calibração de 25 itens, decisões independentes, lotes de 40–60 por semana, limite de rework, concordância medida, zero autopublicação e ausência de dados clínicos reais. Os demais overlays cobrem IdP/MFA/recovery, DNS/TLS, backup/RPO/RTO/DR, CI/registry/deploy/rollback, SHA/runtime, UAT/WCAG/Web Vitals/soak e rastreabilidade 145/145.
+
+### DECISIONS
+
+Nenhum score foi promovido, nenhuma task canônica foi encerrada e nenhum commit/release foi criado. O plano depende de D-ENT-01/07/09 para T0 e mantém `PILOT_BLOCKED` até B-G1…B-G8 e G-S80-9.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar BLK-06-A e BLK-08-A somente como preparações locais seguras; aguardar decisões humanas, abrir G-S80-0 e então iniciar BLK-01-B/ENT95-03-B.
+
+## 2026-08-14T02:43:04-03:00 — BLOCKER-PREFLIGHT-069
+
+### TIMESTAMP
+
+2026-08-14 02:43:04 -03:00
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+SUB80→95 / preflight local de worktree e rastreabilidade
+
+### SPRINT
+
+S0 — preparação sem commit ou alteração destrutiva
+
+### TASK
+
+Executar BLK-06-A e BLK-08-A com evidência reproduzível.
+
+### ACTION
+
+Inventariados o worktree, o SHA atual, a identidade da imagem/runtime e a matriz premium de requisitos. Nenhuma alteração de código, commit, reset, deploy ou limpeza destrutiva foi realizada.
+
+### RESULT
+
+O preflight registrou 95 alterações rastreadas, 81 arquivos não rastreados, 176 entries no status e `git diff --check` verde. O runtime usa uma imagem local criada em 12/08 sem label de source SHA atual. `pnpm verify:premium-traceability` reportou 145 requisitos, 49 linhas de evidência local, 43/87 P0/P1 e 0/145 cadeias completas. Evidência: `docs/113_blocker_preflight_2026-08-14.md`.
+
+### DECISIONS
+
+BLK-06-A e BLK-08-A permanecem `IN_PROGRESS`; não é permitido declarar worktree limpo ou rastreabilidade completa por ausência de commit/RC e artifacts. A revisão do diff e as decisões externas permanecem humanas.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Classificar os 176 entries sem descarte, fechar owner/risco/task da matriz e aguardar D-ENT-01/07/09 para G-S80-0.
+
+## 2026-08-14T02:44:41-03:00 — BLOCKER-EXTERNAL-READINESS-070
+
+### TIMESTAMP
+
+2026-08-14 02:44:41 -03:00
+
+### ENGINE
+
+AUDIT
+
+### PHASE
+
+SUB80→95 / readiness de gates externos
+
+### SPRINT
+
+S0 — verificação sem credenciais reais
+
+### TASK
+
+Verificar os gates de IdP, segurança produtiva e release manifest sem inventar ambiente externo.
+
+### ACTION
+
+Executados `pnpm ops:verify-identity-provider`, `pnpm ops:verify-production-security` e `pnpm ops:verify-release-manifest`.
+
+### RESULT
+
+IdP e segurança produtiva retornaram `NOT_EXECUTED` por ausência de ambiente aprovado. O manifest retornou `PASS` somente para `infra/production/release-manifest.example.json`, não para um release real. O resultado foi anexado ao preflight `docs/113_blocker_preflight_2026-08-14.md`.
+
+### DECISIONS
+
+Não promover nenhum gate, score ou status. IdP/MFA, DNS/TLS público, storage/backup externo, CI/registry/deploy/rollback e UAT/DR continuam dependentes de ambientes e decisões autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Disponibilizar os ambientes externos autorizados, continuar BLK-06-A/BLK-08-A localmente e só iniciar os testes reais correspondentes após configuração verificável.
+
+## 2026-08-14T02:48:14-03:00 — BLOCKER-TRACEABILITY-GAP-071
+
+### TIMESTAMP
+
+2026-08-14 02:48:14 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / BLK-08 rastreabilidade premium
+
+### SPRINT
+
+S0 — decomposição local sem promoção
+
+### TASK
+
+Executar BLK-08-B preparatório: transformar o resultado 0/145 em um mapa de lotes e dependências verificáveis.
+
+### ACTION
+
+Analisadas as 145 linhas do artefato `PREMIUM-ENTERPRISE-95-REQUIREMENTS-MATRIX` e seus campos de módulo, contrato, teste, estado, release, commit e artefato. Criado `docs/114_traceability_gap_analysis_2026-08-14.md` sem alterar a matriz ou o código.
+
+### RESULT
+
+Foram confirmados 0/145 cadeias completas, 49/145 linhas com evidência local, 43/87 requisitos P0/P1 com evidência local, 96/145 linhas com campos locais pendentes e 145/145 com commit pendente. A análise separa os lotes T-01…T-05 e o que depende de revisão do worktree, decisão de produto ou release candidate.
+
+### DECISIONS
+
+Não preencher links por inferência, não promover `VERIFIED`/`RELEASE_READY` e não criar commit abrangente sobre o worktree sujo sem fronteira aprovada.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Mapear BLK-08-B por lotes com evidência real; disponibilizar decisões e ambientes para BLK-02/03/04/05/07; manter release, piloto e publicação clínica bloqueados.
+
+## 2026-08-14T02:50:34-03:00 — BLOCKER-TRACEABILITY-VALIDATION-072
+
+### TIMESTAMP
+
+2026-08-14 02:50:34 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / validação documental pós-BLK-08-B
+
+### SPRINT
+
+S0 — governança local
+
+### TASK
+
+Validar os artefatos de documentação e a matriz de rastreabilidade após a análise de gaps.
+
+### ACTION
+
+Executados `pnpm verify:documentation`, `pnpm verify:premium-traceability` e `git diff --check`.
+
+### RESULT
+
+Os três checks passaram. A matriz continua explicitamente em `PASS_WITH_GAPS`: 145 requisitos, 0 cadeias completas, 49 linhas com evidência local, 43/87 P0/P1 com evidência local e 145 commits pendentes.
+
+### DECISIONS
+
+Nenhuma promoção de estado, release, score ou piloto; o relatório e os planos permanecem consistentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar BLK-08-B por lotes com evidência real e aguardar ambientes/decisões para BLK-02/03/04/05/07.
+
+## 2026-08-14T02:52:21-03:00 — GOVERNANCE-ARTIFACTS-VALIDATION-073
+
+### TIMESTAMP
+
+2026-08-14 02:52:21 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / validação dos artefatos de execução
+
+### SPRINT
+
+S0 — governança documental
+
+### TASK
+
+Verificar que o relatório, plano executivo, roadmap, backlog e matriz continuam coerentes após os updates.
+
+### ACTION
+
+Executados `pnpm verify:sub80-program`, `pnpm exec prettier --check` nos artefatos alterados, `pnpm verify:documentation`, `pnpm verify:premium-traceability` e `git diff --check`.
+
+### RESULT
+
+Todos passaram: programa com 6 itens/29 tasks/13 sprints/24 semanas/10 gates; documentação e rastreabilidade estruturais verdes; formatação verde. A matriz continua com `PASS_WITH_GAPS`, 0/145 cadeias completas e `PILOT_BLOCKED`.
+
+### DECISIONS
+
+Nenhuma promoção de score, release, piloto ou publicação clínica. A validação de artefatos não substitui execução real, SHA, IdP, DNS/TLS, backup/DR, CI/deploy/rollback, UAT/WCAG/Web Vitals/soak ou revisão veterinária.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Prosseguir somente com evidência local não ambígua; obter decisões e ambientes autorizados para os gates externos, clínicos e operacionais.
+
+## 2026-08-14T02:53:27-03:00 — FINAL-LOCAL-VALIDATION-074
+
+### TIMESTAMP
+
+2026-08-14 02:53:27 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / encerramento da rodada local
+
+### SPRINT
+
+S0 — validação e handoff controlado
+
+### TASK
+
+Revalidar os artefatos antes de pausar por dependência externa/humana.
+
+### ACTION
+
+Executados `pnpm verify:documentation`, `pnpm verify:premium-traceability` e `git diff --check`.
+
+### RESULT
+
+Documentação e diff passaram. A rastreabilidade continua `PASS_WITH_GAPS`: 145 requisitos, 0/145 cadeias completas, 49/145 evidências locais, 43/87 P0/P1 com evidência local e 145 commits pendentes.
+
+### DECISIONS
+
+Não marcar o objetivo como concluído. A pausa é causada por autoridade/ambiente ausente, não por falha de governança local: faltam decisões de equipe/capacidade/orçamento, ambiente IdP/DNS/storage/CI/registry/UAT/DR, veterinários beta e fronteira aprovada do worktree.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Retomar BLK-01/02/03/04/05/07 e BLK-08-B/C/D quando os inputs autorizados estiverem disponíveis, sempre no mesmo RC/SHA.
+
+## 2026-08-14T03:06:24-03:00 — TRACEABILITY-EVIDENCE-BATCH-076
+
+### TIMESTAMP
+
+2026-08-14 03:06:24 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / BLK-08 rastreabilidade
+
+### SPRINT
+
+S0 — lote local de evidência
+
+### TASK
+
+Executar a microfatia seguinte de BLK-08-B para requisitos com evidência local direta, sem criar evidência artificial.
+
+### ACTION
+
+Atualizada a matriz em `traceability.yml` para `RF-006`, adicionando somente paths existentes e o artifact de autorização já presente, com os blocos de artifact reconciliados. O lote acumulado desta retomada agora cobre onze requisitos: RF-003, RF-004, RF-006, RF-011, RF-012, RF-032, RF-037, RF-051, RF-095, RF-098 e RNF-085.
+
+### RESULT
+
+`pnpm verify:premium-traceability` passou com `completeChains=0`, `localEvidenceRows=60`, `p0p1LocalEvidenceRows=53` e 85 linhas ainda sem links locais. `pnpm verify:traceability`, `pnpm verify:documentation` e `git diff --check` também passaram.
+
+### DECISIONS
+
+Nenhuma linha recebeu commit/SHA ou `RELEASE_READY`; o lote local não autoriza release, piloto ou publicação clínica.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Mapear os 85 requisitos restantes por evidência direta; resolver a fronteira aprovada do worktree e os gates externos antes de BLK-08-C/D.
+
+## 2026-08-14T03:02:16-03:00 — TRACEABILITY-EVIDENCE-BATCH-075
+
+### TIMESTAMP
+
+2026-08-14 03:02:16 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / BLK-08 rastreabilidade
+
+### SPRINT
+
+S0 — lote local de evidência
+
+### TASK
+
+Executar BLK-08-B para requisitos com evidência local direta, sem criar evidência artificial.
+
+### ACTION
+
+Atualizada a matriz em `traceability.yml` para dez requisitos: RF-003, RF-004, RF-011, RF-012, RF-032, RF-037, RF-051, RF-095, RF-098 e RNF-085. Foram adicionados somente paths existentes e artifacts já presentes, com os blocos de artifact reconciliados.
+
+### RESULT
+
+Testes focalizados: 13 arquivos, 80 testes passados e 5 skips condicionais. `pnpm verify:traceability` passou. `pnpm verify:premium-traceability` passou naquele momento com `completeChains=0`, `localEvidenceRows=59`, `p0p1LocalEvidenceRows=52` e 86 linhas ainda sem links locais.
+
+### DECISIONS
+
+Nenhuma linha recebeu commit/SHA ou `RELEASE_READY`; RNF-085 mantém prioridade pendente. O lote local não autoriza release, piloto ou publicação clínica.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Mapear os 86 requisitos restantes por evidência direta; resolver a fronteira aprovada do worktree e os gates externos antes de BLK-08-C/D.
+
+## 2026-08-14T03:26:41-03:00 — TRACEABILITY-EVIDENCE-BATCH-077
+
+### TIMESTAMP
+
+2026-08-14 03:26:41 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / BLK-08 rastreabilidade
+
+### SPRINT
+
+S0 — lote local de evidência
+
+### TASK
+
+Executar a microfatia seguinte de BLK-08-B para requisitos com evidência local direta, sem criar evidência artificial.
+
+### ACTION
+
+Atualizada a matriz em `traceability.yml` para `RF-042`, adicionando somente `packages/curriculum/src/catalog.ts`, `packages/curriculum/src/learning-runtime.ts`, `packages/contracts/src/learning.ts`, o teste focal de runtime/catálogo e o artifact curricular já existente. O teste focal passou após cobrir explicitamente os três estágios progressivos e suas consequências simuladas.
+
+### RESULT
+
+`pnpm verify:premium-traceability` passou com `completeChains=0`, `localEvidenceRows=97`, `p0p1LocalEvidenceRows=60` e 48 linhas ainda sem links locais. `pnpm verify:traceability` também passou.
+
+### DECISIONS
+
+Nenhuma linha recebeu commit/SHA ou `RELEASE_READY`; o lote local não autoriza release, piloto ou publicação clínica.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Mapear os 48 requisitos restantes por evidência direta; resolver a fronteira aprovada do worktree e os gates externos antes de BLK-08-C/D.
+
+## 2026-08-14T03:30:14-03:00 — FULL-LOCAL-VERIFICATION-078
+
+### TIMESTAMP
+
+2026-08-14 03:30:14 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / validação local final da microfatia
+
+### SPRINT
+
+S0 — verificação e handoff controlado
+
+### TASK
+
+Reexecutar a suíte completa após a inclusão do teste de RF-042 e a reconciliação dos documentos canônicos.
+
+### ACTION
+
+Executado `pnpm verify` e conferidos os gates de formatação, lint, typecheck, cobertura, contratos, worker, migrações, secrets, rastreabilidade, governança, arquitetura e documentação.
+
+### RESULT
+
+`pnpm verify` passou com 127 arquivos, 578 testes passados, 18 skips condicionais e cobertura de 86,53% statements, 82,52% branches, 87,31% functions e 87,28% lines. A matriz permanece com `completeChains=0`, `localEvidenceRows=97` e `p0p1LocalEvidenceRows=60`.
+
+### DECISIONS
+
+Nenhuma promoção de score, commit/SHA, release, piloto ou publicação clínica. Os verificadores mantêm `PASS_WITH_GAPS` e `PILOT_BLOCKED` para os gates externos, clínicos e humanos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Continuar as tasks locais seguras; obter decisões/ambientes autorizados e executar os gates clínicos, externos, release, UAT, DR e rastreabilidade no mesmo RC/SHA.
+
+## 2026-08-14T03:32:12-03:00 — REPORT-RECONCILIATION-079
+
+### TIMESTAMP
+
+2026-08-14 03:32:12 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / documentação e handoff
+
+### SPRINT
+
+S0 — relatório e estado reconciliados
+
+### TASK
+
+Atualizar o relatório salvo para refletir a verificação completa e o snapshot atual de rastreabilidade.
+
+### ACTION
+
+O relatório `docs/112_current_construction_report_2026-08-14.md` foi reconciliado para 19 documentos inspecionados, 578 testes passados e 97 linhas de evidência local. O item 16 continua em 65/100; nenhuma nota foi promovida.
+
+### RESULT
+
+`pnpm verify:documentation` e `git diff --check` passaram. O pacote atual mantém 83,24/100, `0/145` cadeias completas, `60/87` P0/P1 com evidência local, 48 gaps de evidência e `PILOT_BLOCKED`.
+
+### DECISIONS
+
+Não marcar `COMPLETED`, não criar commit/SHA e não liberar release, piloto ou publicação clínica sem os gates externos, clínicos e humanos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Entregar o relatório, plano executivo, roadmap e backlog; retomar BLK-01…BLK-08 quando decisões, ambientes autorizados e a fronteira de commit estiverem disponíveis.
+
+## 2026-08-14T03:35:53-03:00 — EXTERNAL-READINESS-PREFLIGHT-080
+
+### TIMESTAMP
+
+2026-08-14 03:35:53 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / gates externos e RC
+
+### SPRINT
+
+S0 — preflight de autoridade e ambiente
+
+### TASK
+
+Revalidar se os gates externos possuem ambiente autorizado e registrar a condição real do runtime sem expor segredos.
+
+### ACTION
+
+Consultada a fonte de verdade operacional do VPS, verificados containers/portas live e executados `pnpm ops:verify-identity-provider`, `pnpm ops:verify-production-security` e `pnpm ops:verify-release-manifest`.
+
+### RESULT
+
+A stack está em modo local/LAN/Tailscale: `:3180` HTTP, `:3181` HTTPS com `tls internal` e `:3182` loopback. IdP e segurança produtiva retornaram `NOT_EXECUTED`; o manifesto de exemplo passou com digest de rollback, mas não é um release real.
+
+### DECISIONS
+
+Não ativar DNS/TLS público, não provisionar credenciais, não publicar imagem, não alterar Caddy e não executar deploy/rollback sem autorização e ambiente correspondentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter domínio/IdP/storage/registry/CI/coorte e decisões D-ENT-01/04/05/06/07/08/09; executar BLK-02…BLK-07 e BLK-08-C/D somente no mesmo RC/SHA.
+
+## 2026-08-14T03:49:16-03:00 — TRACEABILITY-SHA-PREFLIGHT-081
+
+### TIMESTAMP
+
+2026-08-14 03:49:16 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / evidência local e preparação de RC
+
+### SPRINT
+
+S0 — microfatia de rastreabilidade e identidade de build
+
+### TASK
+
+Executar BLK-08-B somente com evidência direta e reforçar a propagação do SHA de origem no caminho local de imagem/runtime.
+
+### ACTION
+
+Foram mapeados `RF-005`, `RF-052`, `RF-054`, `RF-055`, `RF-075`, `RF-076`, `RNF-031`, `RNF-040`, `RNF-042` e `RNF-081`. O Dockerfile e o Compose HA passaram a propagar `SOURCE_SHA` para o label OCI e `CVG_SOURCE_SHA`; o teste de contrato foi escrito em RED e passou em GREEN.
+
+### RESULT
+
+`pnpm verify:premium-traceability` e `pnpm verify:traceability` passaram com `107/145` linhas de evidência local, `66/87` P0/P1, `0/145` cadeias completas e `38` gaps locais. `pnpm ops:verify-ha`, o teste focal de contrato de produção e `git diff --check` passaram.
+
+### DECISIONS
+
+Não promover score, release, piloto ou publicação clínica. O contrato de SHA local não equivale a commit/RC aprovado nem prova de runtime reconstruído; o worktree permanece sujo e os gates externos, clínicos e humanos continuam pendentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Reexecutar `pnpm verify` e `pnpm verify:documentation`; depois obter domínio, IdP, storage, registry, CI, coorte clínica e decisões D-ENT-01/04/05/06/07/08/09 para BLK-02…BLK-07 e BLK-08-C/D no mesmo RC/SHA.
+
+## 2026-08-14T03:54:24-03:00 — FULL-LOCAL-VERIFICATION-082
+
+### TIMESTAMP
+
+2026-08-14 03:54:24 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / verificação local pós-microfatia
+
+### SPRINT
+
+S0 — validação transversal
+
+### TASK
+
+Reexecutar o gate completo depois das alterações de rastreabilidade e propagação de `SOURCE_SHA`.
+
+### ACTION
+
+Executado `pnpm verify`, com os gates de formatação, CI contract, fontes clínicas, inventário curricular, observabilidade, configuração operacional, lint, typecheck, cobertura, contratos, worker, migrações, secrets, rastreabilidade, governança, arquitetura, documentação, produto e fronteira pública.
+
+### RESULT
+
+Passaram 127 arquivos de teste, 579 testes, 18 skips condicionais e cobertura 86,53% statements / 82,52% branches / 87,31% functions / 87,28% lines. A matriz permaneceu em `0/145` cadeias completas, `107/145` evidências locais, `66/87` P0/P1 e `38` gaps locais.
+
+### DECISIONS
+
+Nenhum score, release, piloto ou publicação clínica foi promovido. `PASS_WITH_GAPS`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem; os resultados locais não substituem gates externos, clínicos, humanos ou a fronteira de RC/SHA.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter domínio, IdP, storage, registry, CI, coorte clínica e decisões D-ENT-01/04/05/06/07/08/09 para executar BLK-02…BLK-07 e BLK-08-C/D no mesmo RC/SHA.
+
+## 2026-08-14T03:56:21-03:00 — DOCUMENTATION-RECONCILIATION-083
+
+### TIMESTAMP
+
+2026-08-14 03:56:21 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / handoff documental
+
+### SPRINT
+
+S0 — reconciliação do gap residual
+
+### TASK
+
+Registrar nominalmente os requisitos ainda sem elo local verificável depois da verificação completa.
+
+### ACTION
+
+Atualizado `docs/114_traceability_gap_analysis_2026-08-14.md` com os 38 IDs residuais. Nenhuma linha foi preenchida por proximidade temática.
+
+### RESULT
+
+`pnpm verify:documentation` e `git diff --check` passaram; `0/145` cadeias completas, `107/145` evidências locais, `66/87` P0/P1 e `38` gaps locais permanecem.
+
+### DECISIONS
+
+Manter score 83,24/100, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`; não promover release, piloto ou publicação clínica.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Retomar os 38 requisitos somente com evidência direta; executar os gates externos/clínicos somente após disponibilização de autorizações, ambientes e fronteira de RC/SHA.
+
+## 2026-08-14T04:08:04-03:00 — TRACEABILITY-EVIDENCE-BATCH-084
+
+- **status:** microfatia local de BLK-08-B concluída; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
+- **entrega:** RF-007 recebeu aviso operacional de primeiro acesso com E2E ativo; RF-092 foi ligado à fronteira estrita de projeção pública; RF-075 e RNF-083 receberam prova de ausência de ranking no dashboard;
+- **checks:** RED/GREEN do aviso operacional passou `1/1`, teste focal de dashboard passou `4/4`, typecheck, lint, Prettier e os verificadores de rastreabilidade passaram;
+- **resultado:** matriz em `110/145` linhas com evidência local, `68/87` P0/P1, `35` gaps de módulo/contrato/teste/artefato, `0/145` cadeias completas e `145/145` commits/SHA pendentes;
+- **limite:** nenhum requisito, score, release, piloto ou publicação clínica foi promovido; IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, beta clínico, UAT/WCAG/Web Vitals/soak/DR e RC/SHA continuam pendentes;
+- **próxima ação:** reexecutar `pnpm verify`, `pnpm verify:documentation`, `pnpm verify:premium-traceability`, `pnpm verify:traceability` e `git diff --check`; depois retomar os 35 gaps somente com evidência direta ou aguardar autorizações externas/clínicas.
+
+## 2026-08-14T04:13:59-03:00 — FULL-LOCAL-VERIFICATION-085
+
+- **status:** verificação transversal pós-microfatia concluída; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
+- **checks:** `pnpm verify` passou com 127 arquivos de teste, 579 testes, 18 skips condicionais e cobertura 86,53% statements / 82,52% branches / 87,31% functions / 87,28% lines; todos os gates encadeados passaram;
+- **resultado:** matriz em `0/145` cadeias completas, `110/145` evidências locais, `68/87` P0/P1, `35` gaps de módulo/contrato/teste/artefato e `145/145` commits/SHA pendentes;
+- **limite:** não houve regressão nem promoção de score, release, piloto ou publicação clínica; os gates de IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, beta clínico, UAT/WCAG/Web Vitals/soak/DR e RC/SHA permanecem abertos;
+- **próxima ação:** executar a próxima microfatia de BLK-08-B somente com RED/GREEN e evidência requisito-específica.
+## 2026-08-14T04:42:52-03:00 — FULL-LOCAL-VERIFICATION-086
+
+### TIMESTAMP
+
+2026-08-14 04:42:52 -03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+SUB80→95 / verificação integral e reconciliação de evidência
+
+### SPRINT
+
+S0 — BLK-08-B e preflight externo
+
+### TASK
+
+Reexecutar a suíte integral após as microfatias de feedback, prova somativa, telemetria não invasiva, identidade/dados e autoria; reconciliar o estado canônico sem fabricar evidência externa.
+
+### ACTION
+
+Executado `pnpm verify` e recalculada a matriz canônica de rastreabilidade. O verifier confirmou 145 requisitos, 0 cadeias completas, 126 linhas com evidência local, 73/87 P0/P1 com evidência local, 19 gaps de módulo/contrato/teste/artefato e 145/145 commits/SHA pendentes.
+
+### RESULT
+
+`pnpm verify` passou com 128 arquivos de teste, 583 testes, 18 skips condicionais e cobertura 86,51% statements / 82,42% branches / 87,44% functions / 87,25% lines. Os gates encadeados de lint, typecheck, build/contratos, worker, migrations, secrets, risco, governança, acessibilidade, capacidade, Web Performance, jornada/correção, arquitetura, hotspots, documentação, produto e fronteira pública passaram.
+
+### DECISIONS
+
+Manter baseline 83,24/100, item 16 em 65/100, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`. Não promover requisito a `RELEASE_READY`, não criar commit/SHA artificial e não liberar release, piloto ou publicação clínica. Os 763 itens continuam dependentes do beta com veterinários; os gates de IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG/Web Vitals/soak/DR e RC/SHA continuam externos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar apenas os 19 gaps locais restantes com evidência direta e, após autorização, fechar BLK-01…BLK-08 no mesmo RC/SHA.
+
+## 2026-08-14T04:56:03-03:00 — TRACEABILITY-EVIDENCE-BATCH-087
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / RF-071 — recomendações do dashboard do participante.
+
+### ACTION
+
+Aplicado TDD para fechar a evidência direta de RF-071. O RED reproduziu a ausência de `recommendations` no caso de uso, contrato e E2E. O GREEN implementou três recomendações allowlisted com descrições de próxima ação, contrato estrito, links internos e apresentação acessível no dashboard.
+
+### VERIFICATION
+
+Passaram os testes unitários focalizados de aplicação e contrato (6/6), typecheck, lint, Prettier e E2E ativo do dashboard (1/1). `pnpm verify:traceability` e `pnpm verify:premium-traceability` confirmaram `145` requisitos, `0` cadeias completas, `127/145` linhas com evidência local, `74/87` P0/P1, `18` gaps locais e `145/145` commits/SHA pendentes.
+
+### DECISIONS / LIMITES
+
+O artefato `PARTICIPANT-DASHBOARD-RECOMMENDATIONS-071` foi adicionado à matriz; RF-071 continua `MAPPED_PARTIAL` por depender de commit/SHA e release aprovados. Não houve promoção de score, release, piloto ou publicação clínica. Permanecem pendentes a revisão dos 763 conteúdos, IdP/MFA, DNS/TLS público, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG/Web Vitals/soak/DR e RC/SHA.
+
+### NEXT
+
+Executar os 18 gaps locais restantes somente com evidência requisito-específica, reexecutar a verificação integral e aguardar ambientes/decisões autorizados para fechar BLK-01…BLK-08 no mesmo RC/SHA.
+
+## 2026-08-14T04:58:37-03:00 — FULL-LOCAL-VERIFICATION-088
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / verificação integral pós-RF-071.
+
+### ACTION
+
+Executado `pnpm verify` após a implementação das recomendações do dashboard. A suíte passou com 128 arquivos de teste, 583 testes, 18 skips condicionais e cobertura 86,50% statements / 82,41% branches / 87,46% functions / 87,24% lines.
+
+### VERIFICATION
+
+Passaram os gates encadeados de CI contract, fontes clínicas, inventário curricular, operação, lint, typecheck, cobertura, decisões críticas, contratos, worker, migrations, secrets, rastreabilidade, risco, skips, evidências, change control, acessibilidade, capacidade, Web Performance, jornada/correção, arquitetura, hotspots, documentação, produto e exposição. O E2E ativo focalizado do dashboard passou 1/1 e `git diff --check` passou.
+
+### RESULT / LIMITES
+
+Rastreabilidade: `0/145` cadeias completas, `127/145` evidências locais, `74/87` P0/P1, `18` gaps de módulo/contrato/teste/artefato e `145/145` commits/SHA pendentes. Não houve promoção de score, release, piloto ou publicação clínica; os 763 conteúdos e os gates externos, clínicos, humanos e de RC/SHA permanecem abertos.
+
+### NEXT
+
+Executar os 18 gaps locais restantes somente com evidência requisito-específica e aguardar ambientes/decisões autorizados para fechar BLK-01…BLK-08 no mesmo RC/SHA.
+
+## 2026-08-14T05:09:07-03:00 — TRACEABILITY-EVIDENCE-BATCH-089
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / RF-082 — leitura controlada da trilha de auditoria.
+
+### ACTION
+
+Aplicado TDD para fechar a evidência direta de RF-082. O RED reproduziu a ausência da função de leitura, contrato, mapeamento de persistência, rota HTTP e inventário canônico. O GREEN implementou `GET /api/v1/internal/audit`, autorizado server-side para `AUDITOR/ADMIN`, com repositório read-only, contexto RLS `cvg.audit_read`, ordenação limitada e projeção estrita de metadados.
+
+### VERIFICATION
+
+Passaram 56/56 testes focalizados de aplicação, contrato, persistência, HTTP e inventário de API, além de typecheck, lint e Prettier. A matriz passou a registrar `0/145` cadeias completas, `128/145` linhas com evidência local, `75/87` P0/P1, `17` gaps locais e `145/145` commits/SHA pendentes.
+
+### DECISIONS / LIMITES
+
+O artefato `INTERNAL-AUDIT-READ-082` foi adicionado à matriz; RF-082 continua `MAPPED_PARTIAL` por depender de commit/SHA e release aprovados. A trilha não possui endpoint de edição/exclusão e o contrato recusa payloads de participante. Não houve promoção de score, release, piloto ou publicação clínica.
+
+### NEXT
+
+Reexecutar `pnpm verify`, reconciliar os documentos operacionais e continuar os 17 gaps locais somente com evidência requisito-específica.
+
+## 2026-08-14T05:11:05-03:00 — FULL-LOCAL-VERIFICATION-090
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / verificação integral pós-RF-082.
+
+### ACTION
+
+Executado `pnpm verify` após a implementação da leitura controlada da auditoria. A suíte passou com 129 arquivos de teste, 589 testes, 18 skips condicionais e cobertura 86,39% statements / 82,27% branches / 87,16% functions / 87,11% lines.
+
+### VERIFICATION
+
+Passaram os gates encadeados de CI contract, fontes clínicas, inventário curricular, operação, lint, typecheck, cobertura, decisões críticas, contratos, worker, migrations, secrets, rastreabilidade, risco, skips, evidências, change control, acessibilidade, capacidade, Web Performance, jornada/correção, arquitetura, hotspots, documentação, produto e exposição. `git diff --check` passou.
+
+### RESULT / LIMITES
+
+Rastreabilidade: `0/145` cadeias completas, `128/145` evidências locais, `75/87` P0/P1, `17` gaps de módulo/contrato/teste/artefato e `145/145` commits/SHA pendentes. Não houve promoção de score, release, piloto ou publicação clínica; os 763 conteúdos e os gates externos, clínicos, humanos e de RC/SHA permanecem abertos.
+
+### NEXT
+
+Executar os 17 gaps locais restantes somente com evidência requisito-específica e aguardar ambientes/decisões autorizados para fechar BLK-01…BLK-08 no mesmo RC/SHA.
+
+## 2026-08-14T05:23:31-03:00 — TRACEABILITY-EVIDENCE-BATCH-091
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / RF-107 — contexto técnico mínimo para relatos.
+
+### ACTION
+
+Aplicado TDD para fechar a evidência direta de RF-107. O RED reproduziu a ausência do schema de contexto, validação, mapeamento de persistência e projeção HTTP. O GREEN implementou uma allowlist estrita com página lógica, versão da aplicação, data opcional do evento e código de erro opcional; a migração 0019 materializa as colunas sem capturar anexos, URLs sensíveis ou dados de paciente/tutor. Quando omitido pelo cliente, o endpoint injeta somente o contexto padrão `/feedback`, versão `api-0.1.0` e o timestamp do relato.
+
+### VERIFICATION
+
+Passaram 78/78 testes focalizados de domínio, contrato, persistência e HTTP, typecheck, lint, Prettier, migrações e `git diff --check`. A matriz passou a registrar `0/145` cadeias completas, `129/145` linhas com evidência local, `76/87` P0/P1, `16` gaps locais e `145/145` commits/SHA pendentes.
+
+### DECISIONS / LIMITES
+
+O artefato `FEEDBACK-TECHNICAL-CONTEXT-107` foi adicionado à matriz; RF-107 continua `MAPPED_PARTIAL` por depender de commit/SHA e release aprovados. Não houve promoção de score, release, piloto ou publicação clínica.
+
+### NEXT
+
+Reexecutar `pnpm verify`, reconciliar os documentos operacionais e continuar os 16 gaps locais somente com evidência requisito-específica.
+
+## 2026-08-14T05:27:19-03:00 — FULL-LOCAL-VERIFICATION-092
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / verificação integral pós-RF-107.
+
+### ACTION
+
+Executado `pnpm verify` após a implementação do contexto técnico mínimo para relatos.
+
+### VERIFICATION
+
+Passou com 132 arquivos de teste, 595 testes, 18 skips e cobertura 86,40% statements / 82,25% branches / 87,21% functions / 87,09% lines. Também passaram CI contract, fontes clínicas, inventário curricular, operação/HA, lint, typecheck, contratos, worker, migrations 20/20, secrets, rastreabilidade, risco, skips, evidências, change control, acessibilidade, capacidade, Web Performance, jornada/correção, arquitetura, hotspots, documentação, produto e exposição pública. `git diff --check` passou.
+
+### RESULT / LIMITES
+
+Rastreabilidade: `0/145` cadeias completas, `129/145` evidências locais, `76/87` P0/P1, `16` gaps de módulo/contrato/teste/artefato e `145/145` commits/SHA pendentes. Não houve promoção de score, release, piloto ou publicação clínica; os 763 conteúdos e os gates externos, clínicos, humanos, UAT, DR e RC/SHA permanecem abertos.
+
+### NEXT
+
+Executar os 16 gaps locais restantes somente com evidência requisito-específica e aguardar ambientes/decisões autorizados para fechar BLK-01…BLK-08 no mesmo RC/SHA.
+
+## 2026-08-14T05:56:10-03:00 — TRACEABILITY-EVIDENCE-BATCH-093
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / RF-103 + RF-104 — leitura escopada e workflow de feedback.
+
+### ACTION
+
+Aplicado TDD para implementar lista de relatos do participante e do staff autorizado, projeção pública/interna, capability dedicada, filtros allowlist, RLS read-only para consulta staff, prioridade, atribuição, resposta e histórico imutável. A migração `0020_feedback_ticket_workflow` materializa os campos de workflow sem anexos ou dados clínicos sensíveis.
+
+### VERIFICATION
+
+Passaram 83/83 testes focalizados, typecheck, lint, Prettier, `pnpm verify:migrations` (21/21), `pnpm verify:hotspots`, `pnpm verify:traceability`, `pnpm verify:premium-traceability` e `git diff --check`. A cobertura completa local passou 604 testes, 18 skips e 134 arquivos, com 86,03% statements / 81,52% branches / 87,22% functions / 86,74% lines.
+
+### DECISIONS / LIMITES
+
+O artefato `FEEDBACK-TICKET-LIST-WORKFLOW-103-104` foi adicionado à matriz; RF-103/RF-104 continuam `MAPPED_PARTIAL` por dependerem de commit/SHA aprovado e release. A projeção do participante não contém `participantId`, `scopeId`, `assigneeId`, `respondedBy` ou `actorId`; não houve promoção de score, release, piloto ou publicação clínica.
+
+### NEXT
+
+Reexecutar `pnpm verify` integral após a reconciliação documental e continuar os 14 gaps locais somente com evidência requisito-específica.
+
+## 2026-08-14T06:07:56-03:00 — FULL-LOCAL-VERIFICATION-094
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / verificação integral pós-RF-103 + RF-104.
+
+### ACTION
+
+Executado `pnpm verify` após a implementação do fluxo de consulta e triagem de feedback, com a documentação operacional reconciliada.
+
+### VERIFICATION
+
+`pnpm verify` terminou com `exit 0`: 134 arquivos de teste, 606 testes passados, 18 skips governados e cobertura 86,53% statements / 82,28% branches / 87,30% functions / 87,26% lines. Passaram também migrações 21/21, decisões críticas, documentação, produto, exposição pública, arquitetura, hotspots, rastreabilidade, lint, typecheck e `git diff --check`.
+
+### RESULT / LIMITES
+
+Rastreabilidade: `0/145` cadeias completas, `131/145` evidências locais, `78/87` P0/P1, `14` gaps locais e `145/145` commits/SHA pendentes. `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem; não houve promoção de score, release, piloto ou publicação clínica.
+
+### NEXT
+
+Iniciar RF-105/RF-106 com TDD, revisão de segurança e evidência requisito-específica. Manter em paralelo os gates externos, clínicos, humanos, UAT/DR e RC/SHA.
+
+## 2026-08-14T06:40:25-03:00 — TRACEABILITY-EVIDENCE-BATCH-095 / FULL-LOCAL-VERIFICATION-096
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / RF-105 + RF-106 — segurança de feedback e retirada emergencial de conteúdo.
+
+### ACTION
+
+Aplicado TDD e revisão de segurança para fechar localmente RF-105/RF-106. O fluxo de erro de conteúdo agora exige motivo, capability clínica e identidade de aprovador configurada; calcula participantes afetados a partir de assignments, persiste o registro de retirada, publica outbox redigido e audita a operação. O fluxo de feedback limita descrição/resposta a 2.000 caracteres, bloqueia marcadores de prontuário, paciente/tutor, contato, URL sensível, mídia e anexos, registra somente evento de segurança sem conteúdo bruto e redige dados legados na saída.
+
+### VERIFICATION
+
+O RED focalizado reproduziu 6 suítes/8 falhas esperadas. O GREEN passou 9 arquivos/99 testes focados; `pnpm typecheck`, `pnpm lint`, Prettier, `pnpm verify:migrations` (22/22), `pnpm verify:traceability`, `pnpm verify:premium-traceability`, `pnpm verify:critical-decisions`, cobertura integral e `git diff --check` passaram. `pnpm verify` terminou com `exit 0`: 135 arquivos de teste, 621 testes passados, 18 skips governados e cobertura 86,25% statements / 82,37% branches / 86,95% functions / 86,99% lines.
+
+### RESULT / LIMITES
+
+O artefato `FEEDBACK-SAFETY-EMERGENCY-WITHDRAWAL-105-106` foi adicionado à matriz. A rastreabilidade passou a `133/145` evidências locais e `80/87` P0/P1, com `0/145` cadeias completas, 12 gaps locais e `145/145` commits/SHA pendentes. `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem; não houve promoção de score, release, piloto ou publicação clínica. A integração PostgreSQL permanece governada por teste live condicionado a `CVG_RUN_LIVE_DB_TESTS=true` e URL autorizada.
+
+### NEXT
+
+Executar os 12 gaps locais restantes com evidência requisito-específica e manter em paralelo os gates externos, clínicos, humanos, UAT/DR e RC/SHA.
+
+## 2026-08-14T06:43:41-03:00 — BUILD-LOCAL-097
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — verificação de build dos workspaces após RF-105/RF-106.
+
+### ACTION / VERIFICATION
+
+Executado `CVG_API_INTERNAL_URL=http://127.0.0.1:3000 pnpm build`. Os 12 workspaces concluíram sem erro; o Next.js compilou e gerou as sete rotas web estáticas (`/`, `/account`, `/admin`, `/authoring`, `/dashboard`, `/invite`, `/operations`) e API/worker/pacotes TypeScript foram compilados.
+
+### RESULT / LIMITES
+
+Build local confirmado. A URL é somente de build e não representa DNS/TLS público, registry, deploy, rollback ou runtime vinculado a SHA imutável. `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
+
+### NEXT
+
+Continuar os 12 gaps locais restantes com TDD, revisão de segurança e evidência requisito-específica, sem promover score ou release.
+
+## 2026-08-14T07:42:06-03:00 — TRACEABILITY-EVIDENCE-BATCH-098
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / RF-057 + RF-058 — interação rica e caso digital persistente.
+
+### ACTION
+
+Aplicado TDD e revisão de segurança para transformar as atividades do currículo em interações estruturadas de baixo risco e para materializar o caso digital M24 como fluxo persistente. A fatia inclui campos estruturados e dose/infusão com avaliação automática determinística, caso sintético de três etapas com decisões ramificadas e consequências persistentes, projeção pública sem rubricas/gabaritos/ramificações internas, migration `0023_digital_case_runtime_states`, repository com transação/RLS/versionamento otimista, contratos de API, rotas GET/POST autenticadas e avanço no dashboard do participante.
+
+### VERIFICATION
+
+Passaram 6 arquivos/79 testes focalizados, typecheck/build dos workspaces afetados, inventário de superfície da API, `pnpm verify:migrations` (24/24), `pnpm verify:traceability`, `pnpm verify:premium-traceability` e `git diff --check`. A persistência falha fechado para JSON corrompido e o endpoint usa identidade do servidor, sem aceitar `participantId` do cliente; a projeção pública omite `nextStage` e `statePatch`.
+
+### RESULT / LIMITES
+
+O artefato `RICH-DIGITAL-CASE-INTERACTIONS-057-058` foi adicionado à matriz. A rastreabilidade está em `135/145` evidências locais e `82/87` P0/P1, com `0/145` cadeias completas, `10` gaps locais e `145/145` commits/SHA pendentes. RF-057/RF-058 continuam `MAPPED_PARTIAL`: a evidência é local, sintética e no worktree, sem SHA/RC, gates clínicos, UAT, DR, CI, deploy ou operação externa. `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem; não houve promoção de score, release, piloto ou publicação clínica.
+
+### NEXT
+
+Reexecutar `pnpm verify` integral e continuar os 10 gaps locais restantes com evidência requisito-específica, mantendo em paralelo os gates externos, clínicos, humanos, UAT/DR e RC/SHA.
+
+## 2026-08-14T07:51:44-03:00 — FULL-LOCAL-VERIFICATION-099
+
+### PHASE / SPRINT / TASK
+
+BUILD / SUB80→95 / S0 — BLK-08-B / verificação integral pós-RF-057 + RF-058.
+
+### ACTION / VERIFICATION
+
+Reexecutado `pnpm verify` após a implementação do caso digital persistente, da interação rica e das correções que o próprio gate revelou. A execução passou com 138 arquivos de teste, 639 testes aprovados e 18 skips governados; cobertura 85,28% statements / 81,36% branches / 86,88% functions / 85,99% lines. Passaram migrations 24/24, lint, typecheck, cobertura de decisões críticas, contratos 66/66, worker 24/24, secrets, rastreabilidade, risco/skips/evidências, change control, acessibilidade, capacidade, Web Performance, jornada/correção, arquitetura, hotspots, documentação, produto e fronteira pública.
+
+### CORREÇÕES CAPTURADAS
+
+O inventário canônico passou a refletir M24 com 12 itens críticos e ordem M02→M24→M12; o inventário da superfície da API passou a exigir 50 rotas; a anotação de tipo dinâmica foi substituída por type import explícito; e o teste de escopo único passou a omitir a query, respeitando `exactOptionalPropertyTypes`. Nenhuma dessas correções promoveu score ou release.
+
+### RESULT / LIMITES
+
+O artefato `RICH-DIGITAL-CASE-INTERACTIONS-057-058` permanece `MAPPED_PARTIAL`. A rastreabilidade está em `135/145` evidências locais e `82/87` P0/P1, com `0/145` cadeias completas, `10` gaps locais e `145/145` commits/SHA pendentes. `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem; os 763 conteúdos ainda aguardam revisão clínica independente em beta autorizado, e IdP/MFA, DNS/TLS, backup/DR, CI/deploy/rollback, UAT, Web Vitals reais, soak e RC/SHA continuam sem evidência externa.
+
+### NEXT
+
+Executar os 10 gaps locais restantes com TDD e revisão de segurança, sem alterar a nota oficial 83,24/100; em paralelo, aguardar decisões, ambientes e autorizações para os gates externos, clínicos, humanos e de release.
+
+## 2026-08-14T08:24:53-03:00 — ACTIVE-HA-RUNTIME-100
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — SUB80→95 / validação de runtime local e evidência operacional
+
+### SPRINT
+
+S0 — BLK-06-A/BLK-08-B
+
+### TASK
+
+Reconciliar imagem, serviços HA, web proxy e E2E real após RF-057/RF-058.
+
+### ACTION
+
+Corrigido o teardown do fixture para remover `curriculum_runtime_states`, `learning_assignments` e `digital_case_runtime_states`; reconstruída a imagem uma única vez para evitar divergência de digest; API-A/API-B e worker-A/worker-B recriados gradualmente; serviço web reconstruído com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` e reiniciado. A credencial local de métricas que apareceu no diagnóstico foi rotacionada sem registrar o valor.
+
+### RESULT
+
+Migração 0023 aplicada; quatro processos saudáveis no digest `sha256:51582f1cdfabf7deddd4a55c230526d19936ef139fc4171721c7cfafb43ccf01`, origem `worktree-9803c85ca62cda0684802aaa68a5dd3418f43c88-dirty`; `/health/dependencies` 200; `pnpm test:e2e:active-ha` passou 3/3 com teardown código 0; dashboard/acessibilidade passaram 7/7; build dos 12 workspaces, audit de dependências e `git diff --check` passaram.
+
+### DECISIONS / LIMITES
+
+O runtime local está observável e consistente, mas a origem continua dirty e não constitui RC/SHA imutável. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` permanecem. A rastreabilidade continua em 135/145 evidências locais, 82/87 P0/P1, 10 gaps de elo e 0/145 cadeias completas; não houve promoção da nota 83,24/100.
+
+### NEXT
+
+Executar os 10 gaps locais restantes com TDD e revisão de segurança; obter os ambientes/autorizações para revisão clínica, IdP/MFA, DNS/TLS, backup/DR, CI/registry/deploy/rollback, UAT e RC/SHA.
+
+## 2026-08-14T08:44:18-03:00 — FULL-LOCAL-VERIFICATION-102
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — SUB80→95 / verificação integral após higiene do fixture E2E
+
+### SPRINT
+
+S0 — BLK-06-A/BLK-08-B
+
+### TASK
+
+Revalidar o worktree e registrar o resultado final após o fixture purgar resíduos somente do namespace sintético autorizado.
+
+### ACTION
+
+O fixture foi endurecido para limpar apenas `real-e2e-*` e dependências mutáveis associadas. O runtime HA foi reconstruído no digest comum `sha256:e9401f16ab08bcef018c916967990ef41cfb648fc4c055c49d40dab0702007f2`; o E2E ativo passou 3/3 com teardown código 0 e a inspeção posterior confirmou zero resíduos sintéticos escopados.
+
+### RESULT
+
+`pnpm verify` passou com 138 arquivos/639 testes/18 skips e cobertura 85,28% statements / 81,36% branches / 86,88% functions / 85,99% lines. Contratos 66/66, worker 24/24, migrations 24/24, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública passaram. Rastreabilidade: 135/145 evidências locais, 82/87 P0/P1, 10 gaps de elo, 0/145 cadeias completas e 145/145 commits/SHA pendentes.
+
+### DECISIONS / LIMITES
+
+Higiene local e repetibilidade melhoradas; score 83,24/100, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` preservados. Worktree dirty, RC/SHA, revisão clínica, IdP/MFA, DNS/TLS, backup/DR, CI/deploy/rollback, UAT e demais gates externos continuam pendentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar os 10 gaps locais restantes somente com evidência direta e obter autorizações/ambientes para os gates clínicos, externos, humanos e de release.
+
+## 2026-08-14T08:46:10-03:00 — WEB-RUNTIME-VERIFICATION-103
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — SUB80→95 / confirmação web e de serviços no runtime HA
+
+### SPRINT
+
+S0 — BLK-06-A / BLK-08-B
+
+### TASK
+
+Confirmar a experiência web automatizada e a saúde dos serviços após a verificação integral.
+
+### ACTION
+
+Executado Playwright com `tests/e2e/participant-dashboard.spec.ts` e `tests/e2e/experience-accessibility.spec.ts` contra `BASE_URL=http://127.0.0.1:3100` e runtime HA ativo.
+
+### RESULT
+
+7/7 testes passaram; serviço web systemd ativo; web HTTP 200; `/health/dependencies` HTTP 200; API-A/API-B e worker-A/worker-B saudáveis no digest `sha256:e9401f16ab08bcef018c916967990ef41cfb648fc4c055c49d40dab0702007f2`.
+
+### DECISIONS / LIMITES
+
+Evidência local automatizada confirmada. Não fecha WCAG manual, Web Vitals reais, UAT, soak, DR, CI/deploy/rollback, RC/SHA ou aprovação humana. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` permanecem.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar os 10 gaps locais restantes com evidência direta e obter autorizações/ambientes para os gates clínicos, externos, humanos e de release.
+
+## 2026-08-14T10:15:55-03:00 — LOCAL-GAPS-AND-TRACEABILITY-104
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — SUB80→95 / fechamento local da matriz e verificação integral
+
+### SPRINT
+
+S0 — BLK-08-B / preparação de BLK-06 e gates externos
+
+### TASK
+
+Fechar os dez elos locais restantes com TDD, revisão de segurança e evidência direta, sem promover release ou piloto.
+
+### ACTION
+
+Implementados e ligados ao manifesto: governança de IA operacional assistiva com confirmação humana e teto de custo; estatísticas observadas de item com dificuldade/discriminação/distratores/anomalias; decisão auditável de conflito de fontes; recálculo determinístico de avaliações com notificação obrigatória; painel interno de moderador com escopo e filas atribuídas; painel operacional administrativo; policy fail-closed de janela de manutenção; contrato Zod e teste da janela de manutenção. Migrations 0024–0027 foram aplicadas no PostgreSQL local. O teste de contrato da janela foi executado em RED antes do módulo e em GREEN após a implementação.
+
+### RESULT
+
+`pnpm verify` passou com 160 arquivos de teste, 701 testes aprovados, 18 skips governados e cobertura 84,26% statements / 80,62% branches / 85,64% functions / 85,06% lines. Também passaram lint, typecheck, contratos 81/81, worker 24/24, migrations 28/28, secrets, governanças, arquitetura, documentação, produto e fronteira pública. `pnpm verify:premium-traceability` passou com 145/145 linhas de evidência local e 87/87 P0/P1; `completeChains=0` permanece correto porque 145/145 commits/SHA continuam pendentes.
+
+### RUNTIME / SEGURANÇA
+
+API-A/API-B e worker-A/worker-B foram recriados localmente com o digest comum `sha256:7b6ea1e95c518f8d199e857ad1550fa0df325a59cf3acc29df70e536c2e7a257`. As rotas novas de dashboard interno retornaram 401 sem autenticação quando sondadas dentro do container, confirmando superfície protegida. O segredo local de métricas continua rotacionado e seu valor não foi registrado.
+
+### LIMITES / STATUS / NEXT
+
+O worktree continua dirty e não existe RC/SHA imutável. A recalculação está implementada como domínio/aplicação/contrato com port, mas ainda não possui adapter PostgreSQL, rota operacional ou handler de worker; a policy de manutenção ainda aguarda horários hospitalares aprovados. Permanecem pendentes revisão clínica dos 763 conteúdos, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, commit/artefato de release e reauditoria. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
+
+### NEXT
+
+Revisar o diff completo e obter a fronteira autorizada de commit/RC; depois executar os gates externos, clínicos, humanos e operacionais no mesmo SHA, sem substituir evidência real por smoke local.
+
+## 2026-08-14T10:48:35-03:00 — WEB-RUNTIME-REPAIR-106
+
+### ACTION
+
+A E2E HA inicial encontrou uma inconsistência de runtime: o processo Next estava ativo com um manifesto antigo, enquanto `.next` havia sido regenerado com destino de API incompatível. O chunk carregado pelo `/admin` retornava HTTP 500 antes da chamada à API. O web foi recompilado com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` e o serviço `cvg-trainee-vet-web.service` foi reiniciado.
+
+### RESULT
+
+`pnpm test:e2e:active-ha` passou 3/3: browser via proxy, atividade sintética persistida e ciclo administrativo de login, dashboard, suspensão, reativação e revogação de sessões. O fixture foi removido ao final. A correção é local e não promove release, score ou piloto.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`. Permanecem pendentes domínio/TLS gerenciado, IdP/MFA, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/manual WCAG/Web Vitals/soak/DR, revisão clínica dos 763 conteúdos, RC/SHA e reauditoria. Próxima ação: revisar o diff e obter autorização para commit/RC antes dos gates externos no mesmo SHA.
+
+## 2026-08-14T10:51:57-03:00 — FINAL-LOCAL-VERIFICATION-107
+
+### RESULT
+
+`pnpm verify` integral passou com 161 arquivos de teste, 706 testes aprovados, 18 skips governados e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines. Contratos 81/81, worker 24/24, migrations 29/29, secrets, lint, typecheck, governanças, arquitetura, documentação, produto e fronteira pública passaram. `pnpm test:e2e:active-ha` passou 3/3 e `git diff --check` passou.
+
+### TRACEABILITY / STATUS
+
+`traceability.yml` está em 145/145 linhas com evidência local e 87/87 P0/P1; `completeChains=0` e `GAP:commit-pending` permanecem corretos porque o worktree está dirty e não há RC/SHA nem artefato de release no mesmo SHA. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
+
+### LIMITES / NEXT
+
+Ainda dependem de autorização/ambiente externo: revisão clínica dos 763 conteúdos, IdP/MFA/recovery, DNS/TLS gerenciado, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/manual WCAG/Web Vitals/soak/DR, horários hospitalares aprovados e reauditoria. Próxima ação: revisar o diff e obter autorização explícita para commit/RC antes de qualquer gate externo no mesmo SHA.
+
+## 2026-08-14T10:42:04-03:00 — ASSESSMENT-RECALCULATION-LOCAL-INTEGRATION-105
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — SUB80→95 / integração local do fluxo de recálculo
+
+### TASK
+
+Fechar a integração local do recálculo determinístico com persistência, autorização, API, outbox e worker, sem promover release ou piloto.
+
+### ACTION
+
+Aplicados TDD e revisão de segurança ao fluxo: tabela/RLS PostgreSQL para candidatos, registro idempotente por estado, atualização otimista para `CALCULATED`, publicação transacional em outbox como `assessment.recalculated.v1`, rota interna protegida por aprovação clínica e reconhecimento no worker. A migration `0028_assessment_recalculation_candidates` foi aplicada no PostgreSQL local. O manifesto de rastreabilidade foi ampliado para incluir schema, migration, repositório, API, superfície de rotas e worker.
+
+### RESULT
+
+`pnpm verify` passou com 161 arquivos de teste, 706 testes aprovados, 18 skips governados e cobertura 83,78% statements / 80,41% branches / 84,95% functions / 84,55% lines. Também passaram lint, typecheck, contratos 81/81, worker 24/24, migrations 29/29, secrets, governanças, arquitetura, documentação, produto e fronteira pública. `pnpm verify:premium-traceability` passou com 145/145 linhas de evidência local e 87/87 P0/P1; `completeChains=0` permanece correto porque 145/145 commits/SHA continuam pendentes.
+
+### RUNTIME / SEGURANÇA
+
+API-A/API-B e worker-A/worker-B foram recriados localmente com o digest comum `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`. `/health/live` e `/health/dependencies` retornaram 200; as rotas internas de recálculo, moderador e administração retornaram 401 sem autenticação. O segredo local de métricas continua rotacionado e seu valor não foi registrado.
+
+### LIMITES / STATUS / NEXT
+
+O worktree continua dirty e não existe RC/SHA imutável. A integração local não prova entrega clínica externa, produção, UAT, horários hospitalares aprovados, revisão clínica dos 763 conteúdos, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, WCAG manual, Web Vitals reais, soak, DR ou reauditoria independente. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
+
+### NEXT
+
+Revisar o diff completo e obter a fronteira autorizada de commit/RC; depois executar os gates externos, clínicos, humanos e operacionais no mesmo SHA, sem substituir evidência real por smoke local.

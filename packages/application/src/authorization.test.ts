@@ -52,6 +52,30 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
+  it("allows only active scoped staff to read the moderator dashboard", () => {
+    expect(
+      canAccess(
+        participant({
+          principalId: "moderator-1",
+          roles: ["MODERATOR"],
+          capability: "VIEW_MODERATOR_DASHBOARD",
+          resource: { scopeId: "curriculum-1" },
+          scopes: ["curriculum-1"],
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      canAccess(
+        participant({
+          roles: ["PARTICIPANT"],
+          capability: "VIEW_MODERATOR_DASHBOARD",
+          resource: { scopeId: "curriculum-1" },
+          scopes: ["curriculum-1"],
+        }),
+      ),
+    ).toBe(false);
+  });
+
   it("allows scoped authors to request publication while keeping the clinical gate", () => {
     const request = participant({
       principalId: "author-account",
@@ -68,6 +92,74 @@ describe("authorization policy", () => {
         scopes: [],
       }),
     ).toBe(false);
+  });
+
+  it("covers staff alternatives for publication, internal source, and audit", () => {
+    const scoped = {
+      accountStatus: "ACTIVE" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"],
+    };
+
+    expect(
+      canAccess({
+        principalId: "moderator-1",
+        roles: ["MODERATOR"],
+        capability: "PUBLISH_CONTENT",
+        ...scoped,
+      }),
+    ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "admin-1",
+        roles: ["ADMIN"],
+        capability: "PUBLISH_CONTENT",
+        ...scoped,
+      }),
+    ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "viewer-1",
+        roles: [],
+        capability: "PUBLISH_CONTENT",
+        ...scoped,
+      }),
+    ).toBe(false);
+    expect(
+      canAccess({
+        principalId: "author-1",
+        roles: ["AUTHOR"],
+        capability: "VIEW_INTERNAL_SOURCE",
+        ...scoped,
+      }),
+    ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "approver-1",
+        roles: ["CLINICAL_APPROVER"],
+        approvedClinicalApproverId: "approver-1",
+        capability: "VIEW_INTERNAL_SOURCE",
+        ...scoped,
+      }),
+    ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "approver-1",
+        roles: ["CLINICAL_APPROVER"],
+        approvedClinicalApproverId: "other-approver",
+        capability: "VIEW_INTERNAL_SOURCE",
+        ...scoped,
+      }),
+    ).toBe(false);
+    expect(
+      canAccess({
+        principalId: "admin-1",
+        accountStatus: "ACTIVE",
+        roles: ["ADMIN"],
+        capability: "VIEW_INTERNAL_AUDIT",
+        scopes: [],
+      }),
+    ).toBe(true);
   });
 
   it("allows an active clinical approver to submit a scoped review decision", () => {
@@ -157,6 +249,45 @@ describe("authorization policy", () => {
         accountStatus: "ACTIVE",
         roles: ["MODERATOR"],
         capability: "REVIEW_APPEAL",
+        resource: { scopeId: "other-scope" },
+        scopes: ["curriculum-1"],
+      }),
+    ).toBe(false);
+  });
+
+  it("allows feedback reads for the owner or scoped staff only", () => {
+    expect(
+      canAccess(
+        participant({
+          capability: "VIEW_FEEDBACK_TICKETS",
+          resource: { ownerId: "participant-1", scopeId: "curriculum-1" },
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      canAccess(
+        participant({
+          capability: "VIEW_FEEDBACK_TICKETS",
+          resource: { ownerId: "participant-2", scopeId: "curriculum-1" },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      canAccess({
+        principalId: "moderator-1",
+        accountStatus: "ACTIVE",
+        roles: ["MODERATOR"],
+        capability: "VIEW_FEEDBACK_TICKETS",
+        resource: { scopeId: "curriculum-1" },
+        scopes: ["curriculum-1"],
+      }),
+    ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "moderator-1",
+        accountStatus: "ACTIVE",
+        roles: ["MODERATOR"],
+        capability: "VIEW_FEEDBACK_TICKETS",
         resource: { scopeId: "other-scope" },
         scopes: ["curriculum-1"],
       }),

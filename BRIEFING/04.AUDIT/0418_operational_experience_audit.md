@@ -19,3 +19,7 @@ Resultado: PARTIAL no recorte F3-S3 + complementos F3-S4/F3-S6 — há fluxo E2E
 Registrar tarefa, papel, ambiente, passo, resultado, fricção, severidade e sugestão. Não usar session replay, gravação ou caso real.
 
 Evidência limitada: API health, envelopes públicos e três fluxos Playwright sintéticos foram testados; loading completo, empty, keyboard, leitor de tela, mobile, mensagens por papel e API real aguardam fases seguintes.
+
+## Resultado vigente — 2026-08-11
+
+`PARTIAL`. Quinze cenários Chromium focados passaram contra a web ativa, cobrindo participante, conta provider-mediated sintética, autoria, fila clínica, dashboard administrativo, convite, foco/fluxo e ausência de campos internos. A revisão manual com usuários/leitor de tela, mobile completo, operação integral, analytics e todas as jornadas do PRD continuam não executados.

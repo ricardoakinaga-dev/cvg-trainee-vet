@@ -10,9 +10,14 @@ import type {
 } from "@cvg/domain";
 import {
   ApplicationError,
+  type AuditEntry,
   type AuthoringRecord,
+  type AdminDashboard,
+  type AdminOperationsDashboard,
+  type ModeratorDashboard,
   type ContentRecord,
   type CurriculumRuntimeState,
+  type DigitalCaseRuntimeRecord,
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
@@ -81,10 +86,25 @@ const curriculumRuntime: CurriculumRuntimeState = {
     unansweredChoiceItemIds: [],
     openResponseItemIds: [],
     retentionReviews: [
-      { day: 7, dueAt: "2026-08-17T01:00:00.000Z", status: "PENDENTE" },
+      { day: 30, dueAt: "2026-09-09T01:00:00.000Z", status: "PENDENTE" },
     ],
     practicalCompetenceClaim: "PROIBIDO_MVP",
     scorePercent: 100,
+  },
+};
+
+const digitalCaseRuntime: DigitalCaseRuntimeRecord = {
+  participantId: attempt.participantId,
+  scopeId: "22222222-2222-4222-8222-222222222222",
+  moduleId: "M24",
+  state: {
+    caseId: "M24-DIGITAL-CASE-V1",
+    version: 0,
+    currentStage: 1,
+    state: {},
+    revealedExamSeriesIds: [],
+    consequences: [],
+    updatedAt: "2026-08-14T09:00:00.000Z",
   },
 };
 
@@ -219,6 +239,103 @@ function dependencies(
     })),
     healthcheck: async () => undefined,
     ...overrides,
+  };
+}
+
+function adminDashboardFixture(): AdminDashboard {
+  return {
+    curriculumId: "CVG-CURRICULUM-24M",
+    curriculumVersion: "3.0.0",
+    summary: {
+      participantsTotal: 1,
+      activeParticipants: 1,
+      invitedParticipants: 0,
+      participantsInProgress: 1,
+      averageProgressPercent: 4,
+      assignedModules: 1,
+      completedModules: 0,
+    },
+    participants: [
+      {
+        participantId: attempt.participantId,
+        professionalEmail: "vet@example.test",
+        accountStatus: "ACTIVE",
+        scopeIds: ["scope-1"],
+        assignedModules: 1,
+        completedModules: 0,
+        progressPercent: 4,
+        activeModuleId: "M01",
+        activeModuleTitle: "Fundamentos",
+        nextAction: "INICIAR_BASELINE",
+      },
+    ],
+    trainingCatalog: Array.from({ length: 24 }, (_, index) => ({
+      moduleId: `M${String(index + 1).padStart(2, "0")}`,
+      month: index + 1,
+      title: index === 0 ? "Fundamentos" : `Módulo ${index + 1}`,
+      competence: "Raciocínio clínico digital seguro.",
+      assignedParticipants: index === 0 ? 1 : 0,
+      activeParticipants: index === 0 ? 1 : 0,
+      completedParticipants: 0,
+    })),
+  };
+}
+
+function moderatorDashboardFixture(): ModeratorDashboard {
+  return {
+    moderatorId: "88888888-8888-4888-8888-888888888888",
+    scopeIds: ["scope-1"],
+    participants: [
+      {
+        participantId: attempt.participantId,
+        professionalEmail: "vet@example.test",
+        scopeIds: ["scope-1"],
+        progressPercent: 25,
+        nextAction: "INICIAR_BASELINE",
+        gapCount: 0,
+        remediationObjectiveIds: [],
+        correctionPendingCount: 1,
+        feedbackOpenCount: 1,
+        technicalFailureCount: 1,
+        digitalReinforcementPlan: [],
+      },
+    ],
+    queues: [
+      {
+        queueId: "CORRECTION:scope-1",
+        scopeId: "scope-1",
+        kind: "CORRECTION",
+        openCount: 1,
+        overdueCount: 0,
+      },
+    ],
+    practiceValidation: "NOT_AVAILABLE",
+    summary: {
+      participantsTotal: 1,
+      correctionPending: 1,
+      feedbackOpen: 1,
+      technicalFailures: 1,
+      overdueQueues: 0,
+    },
+  };
+}
+
+function adminOperationsDashboardFixture(): AdminOperationsDashboard {
+  return {
+    dashboard: adminDashboardFixture(),
+    operations: {
+      accounts: {
+        invited: 0,
+        active: 1,
+        suspended: 0,
+        deactivated: 0,
+        inactiveOver14Days: 0,
+      },
+      corrections: { open: 1, overdue: 0, slaBreaches: 0 },
+      remediation: { participants: 1, objectives: 2 },
+      contentValidity: { valid: 24, dueForReview: 0, expired: 0, withdrawn: 0 },
+      feedback: { open: 0, technicalFailures: 0 },
+    },
   };
 }
 
@@ -564,6 +681,60 @@ describe("API HTTP boundary", () => {
       data: { token: "a".repeat(32) },
     });
     expect(JSON.stringify(response.body)).not.toContain("accountId");
+  });
+
+  it("defaults invitations to the admin scope and rejects cross-scope access", async () => {
+    const createInvitation = vi.fn(async (command) => ({
+      invitationId: "99999999-9999-4999-8999-999999999999",
+      accountId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      professionalEmail: command.professionalEmail,
+      token: "a".repeat(32),
+      expiresAt: new Date("2026-08-09T18:00:00.000Z"),
+    }));
+    const authenticate = async () => ({
+      principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      accountStatus: "ACTIVE" as const,
+      roles: ["ADMIN" as const],
+      scopes: ["11111111-1111-4111-8111-111111111111"],
+    });
+
+    const defaulted = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/invitations",
+        body: {
+          professionalEmail: "trainee@cvg.example",
+          invitedRoles: ["PARTICIPANT"],
+          invitedScopes: [],
+          expiresInSeconds: 3600,
+        },
+      },
+      dependencies({ authenticate, createInvitation }),
+    );
+
+    expect(defaulted.status).toBe(201);
+    expect(createInvitation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        invitedScopes: ["11111111-1111-4111-8111-111111111111"],
+      }),
+    );
+
+    const crossScope = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/invitations",
+        body: {
+          professionalEmail: "outside@cvg.example",
+          invitedRoles: ["PARTICIPANT"],
+          invitedScopes: ["22222222-2222-4222-8222-222222222222"],
+          expiresInSeconds: 3600,
+        },
+      },
+      dependencies({ authenticate, createInvitation }),
+    );
+
+    expect(crossScope.status).toBe(403);
+    expect(createInvitation).toHaveBeenCalledTimes(1);
   });
 
   it("accepts an invitation without authentication and sets a secure session cookie", async () => {
@@ -932,6 +1103,91 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(response.body)).not.toContain("source");
   });
 
+  it("blocks a later module when the first module is still pending", async () => {
+    const getParticipantActivity = vi.fn(async () => activity);
+    const startAttempt = vi.fn(async () => attempt);
+    const getParticipantLearningJourney = vi.fn(
+      async (): Promise<ParticipantLearningJourneyState> => ({
+        participantId: attempt.participantId,
+        assignments: [
+          {
+            scopeId: "scope-1",
+            state: {
+              assignmentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+              participantId: attempt.participantId,
+              moduleId: "M02",
+              availableAt: "2026-08-10T05:00:00.000Z",
+              status: "DISPONIVEL",
+              version: 0,
+            },
+          },
+        ],
+        activities: [
+          {
+            scopeId: "scope-1",
+            activityId: activity.activityId,
+            slug: "m02-emergencia-terapia-intensiva-v1",
+            title: activity.title,
+            status: "DISPONIVEL",
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        results: [],
+        runtimes: [
+          {
+            participantId: attempt.participantId,
+            scopeId: "scope-1",
+            version: 1,
+            updatedAt: "2026-08-10T05:00:00.000Z",
+            evaluation: {
+              moduleId: "M01",
+              status: "PENDENTE",
+              nextAction: "INICIAR_BASELINE",
+              objectiveResults: [],
+              remediationObjectiveIds: [],
+              criticalErrorItemIds: [],
+              invalidAnswerItemIds: [],
+              unansweredChoiceItemIds: [],
+              openResponseItemIds: [],
+              retentionReviews: [],
+              practicalCompetenceClaim: "PROIBIDO_MVP",
+            },
+          },
+        ],
+      }),
+    );
+    const overrides = {
+      getParticipantActivity,
+      getParticipantLearningJourney,
+      startAttempt,
+    };
+
+    const activityResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/activities/${activity.activityId}`,
+        body: undefined,
+      },
+      dependencies(overrides),
+    );
+    const startResponse = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/attempts",
+        body: {
+          activityId: activity.activityId,
+          idempotencyKey: "blocked-later-module-2026",
+        },
+      },
+      dependencies(overrides),
+    );
+
+    expect(activityResponse.status).toBe(403);
+    expect(startResponse.status).toBe(403);
+    expect(getParticipantActivity).not.toHaveBeenCalled();
+    expect(startAttempt).not.toHaveBeenCalled();
+  });
+
   it("reads only the participant progress projection", async () => {
     const getParticipantProgress = vi.fn(async () => progress);
     const response = await handleApiRequest(
@@ -1087,6 +1343,471 @@ describe("API HTTP boundary", () => {
         },
       },
     });
+  });
+
+  it("allows auditors to read the append-only audit trail and denies participants", async () => {
+    const auditEntry: AuditEntry = {
+      auditId: "11111111-1111-4111-8111-111111111111",
+      principalId: "22222222-2222-4222-8222-222222222222",
+      action: "CONTENT_PUBLISHED",
+      resourceType: "content_version",
+      resourceId: "33333333-3333-4333-8333-333333333333",
+      scopeId: "44444444-4444-4444-8444-444444444444",
+      outcome: "SUCCESS",
+      requestId: "55555555-5555-4555-8555-555555555555",
+      correlationId: "66666666-6666-4666-8666-666666666666",
+      occurredAt: "2026-08-14T08:00:00.000Z",
+    };
+    const listAuditEntries = vi.fn(async () => [auditEntry]);
+    const allowed = await handleApiRequest(
+      { method: "GET", path: "/api/v1/internal/audit", body: undefined },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "77777777-7777-4777-8777-777777777777",
+          accountStatus: "ACTIVE",
+          roles: ["AUDITOR"],
+          scopes: [],
+        }),
+        listAuditEntries,
+      }),
+    );
+
+    expect(allowed).toMatchObject({
+      status: 200,
+      body: {
+        success: true,
+        data: { entries: [{ action: "CONTENT_PUBLISHED" }] },
+      },
+    });
+    expect(listAuditEntries).toHaveBeenCalledOnce();
+
+    const forbidden = await handleApiRequest(
+      { method: "GET", path: "/api/v1/internal/audit", body: undefined },
+      dependencies({ listAuditEntries }),
+    );
+    expect(forbidden.status).toBe(403);
+    expect(listAuditEntries).toHaveBeenCalledOnce();
+  });
+
+  it("allows only admins to read the training dashboard", async () => {
+    const getInternalAdminDashboard = vi.fn(async () =>
+      adminDashboardFixture(),
+    );
+    const forbidden = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/admin/dashboard",
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: attempt.participantId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["scope-1"],
+        }),
+        getInternalAdminDashboard,
+      }),
+    );
+    expect(forbidden.status).toBe(403);
+    expect(getInternalAdminDashboard).not.toHaveBeenCalled();
+
+    const allowed = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/admin/dashboard",
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "88888888-8888-4888-8888-888888888888",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        getInternalAdminDashboard,
+      }),
+    );
+    expect(allowed.status).toBe(200);
+    expect(allowed.body).toMatchObject({
+      success: true,
+      data: { summary: { participantsTotal: 1 } },
+    });
+    expect(getInternalAdminDashboard).toHaveBeenCalledWith(["scope-1"]);
+  });
+
+  it("exposes operational controls only to administrators", async () => {
+    const getInternalAdminOperationsDashboard = vi.fn(async () =>
+      adminOperationsDashboardFixture(),
+    );
+    const denied = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/admin/operations",
+        body: undefined,
+      },
+      dependencies({ getInternalAdminOperationsDashboard }),
+    );
+    expect(denied.status).toBe(403);
+    expect(getInternalAdminOperationsDashboard).not.toHaveBeenCalled();
+
+    const allowed = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/admin/operations",
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "88888888-8888-4888-8888-888888888888",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        getInternalAdminOperationsDashboard,
+      }),
+    );
+    expect(allowed.status).toBe(200);
+    expect(allowed.body).toMatchObject({
+      success: true,
+      data: { operations: { remediation: { objectives: 2 } } },
+    });
+    expect(getInternalAdminOperationsDashboard).toHaveBeenCalledWith([
+      "scope-1",
+    ]);
+  });
+
+  it("allows scoped moderators to read only their assigned dashboard", async () => {
+    const getInternalModeratorDashboard = vi.fn(async () =>
+      moderatorDashboardFixture(),
+    );
+    const forbidden = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/moderator/dashboard",
+        body: undefined,
+      },
+      dependencies({ getInternalModeratorDashboard }),
+    );
+    expect(forbidden.status).toBe(403);
+    expect(getInternalModeratorDashboard).not.toHaveBeenCalled();
+
+    const allowed = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/moderator/dashboard",
+        query: { scopeId: "scope-1" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "88888888-8888-4888-8888-888888888888",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["scope-1"],
+        }),
+        getInternalModeratorDashboard,
+      }),
+    );
+    expect(allowed.status).toBe(200);
+    expect(allowed.body).toMatchObject({
+      success: true,
+      data: {
+        practiceValidation: "NOT_AVAILABLE",
+        participants: [{ correctionPendingCount: 1 }],
+      },
+    });
+    expect(getInternalModeratorDashboard).toHaveBeenCalledWith(
+      "88888888-8888-4888-8888-888888888888",
+      ["scope-1"],
+    );
+  });
+
+  it("keeps operational AI behind internal authorization and human confirmation", async () => {
+    const proposal = {
+      requestId: "request-123",
+      tool: "DRAFT_OPERATIONAL_SUMMARY" as const,
+      impact: "IMPACTFUL" as const,
+      estimatedCostUsd: 0.03,
+      costCeilingUsd: 0.25,
+      generatedAt: "2026-08-14T12:00:00.000Z",
+      output: {
+        action: "Review queue",
+        rationale: "The queue exceeds the threshold.",
+        evidence: ["queue_depth=12"],
+        stateMutation: false as const,
+        clinicalAuthority: false as const,
+      },
+      requiresHumanReview: true,
+      stateSource: false as const,
+      clinicalAuthority: false as const,
+    };
+    const run = vi.fn(async () => proposal);
+    const denied = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/operational-ai/proposals",
+        body: {
+          tool: "DRAFT_OPERATIONAL_SUMMARY",
+          impact: "IMPACTFUL",
+          input: "queue_depth=12",
+          instructions: "Return an operational summary only.",
+          estimatedCostUsd: 0.03,
+        },
+      },
+      dependencies({ runOperationalAiProposal: run }),
+    );
+    expect(denied.status).toBe(403);
+    expect(run).not.toHaveBeenCalled();
+
+    const adminDependencies = dependencies({
+      authenticate: async () => ({
+        principalId: "88888888-8888-4888-8888-888888888888",
+        accountStatus: "ACTIVE" as const,
+        roles: ["ADMIN"] as const,
+        scopes: ["scope-1"],
+      }),
+      runOperationalAiProposal: run,
+    });
+    const allowed = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/operational-ai/proposals",
+        body: {
+          tool: "DRAFT_OPERATIONAL_SUMMARY",
+          impact: "IMPACTFUL",
+          input: "queue_depth=12",
+          instructions: "Return an operational summary only.",
+          estimatedCostUsd: 0.03,
+        },
+      },
+      adminDependencies,
+    );
+    expect(allowed.status).toBe(200);
+    expect(run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestId: "request-123",
+        generatedAt: expect.any(String),
+      }),
+    );
+
+    const confirmation = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/operational-ai/proposals/confirm",
+        body: {
+          proposal,
+          confirmedAt: "2026-08-14T12:01:00.000Z",
+          rationale: "Reviewed by operations.",
+        },
+      },
+      adminDependencies,
+    );
+    expect(confirmation).toMatchObject({
+      status: 200,
+      body: {
+        success: true,
+        data: {
+          status: "CONFIRMED",
+          confirmedBy: "88888888-8888-4888-8888-888888888888",
+        },
+      },
+    });
+  });
+
+  it("records only redacted item aggregates and flags anomalies for human review", async () => {
+    const statistics = {
+      statisticsId: "stats-1",
+      itemId: "item-1",
+      scopeId: "scope-1",
+      contentVersion: 2,
+      observedAt: "2026-08-14T12:00:00.000Z",
+      sampleSize: 20,
+      correctCount: 12,
+      appealCount: 1,
+      difficulty: 0.6,
+      appealRate: 0.05,
+      discrimination: 0.35,
+      distractorCounts: [{ key: "A", count: 8 }],
+      anomalyCodes: [],
+      requiresHumanReview: false,
+      automaticDecision: "NONE" as const,
+    };
+    const record = vi.fn(async () => statistics);
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/item-statistics",
+        body: {
+          itemId: "item-1",
+          scopeId: "scope-1",
+          contentVersion: 2,
+          observedAt: "2026-08-14T12:00:00.000Z",
+          sampleSize: 20,
+          correctCount: 12,
+          appealCount: 1,
+          discrimination: 0.35,
+          distractorCounts: [{ key: "A", count: 8 }],
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "88888888-8888-4888-8888-888888888888",
+          accountStatus: "ACTIVE" as const,
+          roles: ["ADMIN"] as const,
+          scopes: ["scope-1"],
+        }),
+        recordObservedItemStatistics: record,
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { automaticDecision: "NONE", requiresHumanReview: false },
+    });
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: "item-1", sampleSize: 20 }),
+    );
+    expect(JSON.stringify(response.body)).not.toContain("participantId");
+  });
+
+  it("requires the approved clinical identity for source conflict decisions", async () => {
+    const decision = {
+      conflictId: "conflict-1",
+      contentId: "content-1",
+      contentVersion: 2,
+      scopeId: "scope-1",
+      sourceCodes: ["SOURCE_A", "SOURCE_B"],
+      description: "As fontes divergem.",
+      decision: "ESCALATE_CLINICAL_REVIEW" as const,
+      rationale: "Revisão clínica necessária.",
+      decidedBy: "reviewer-1",
+      decidedAt: "2026-08-14T12:00:00.000Z",
+      humanReviewRequired: true,
+    };
+    const record = vi.fn(async () => decision);
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/source-conflicts/decisions",
+        body: {
+          conflictId: "conflict-1",
+          contentId: "content-1",
+          contentVersion: 2,
+          scopeId: "scope-1",
+          sourceCodes: ["SOURCE_A", "SOURCE_B"],
+          description: "As fontes divergem.",
+          decision: "ESCALATE_CLINICAL_REVIEW",
+          rationale: "Revisão clínica necessária.",
+          decidedAt: "2026-08-14T12:00:00.000Z",
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "reviewer-1",
+          accountStatus: "ACTIVE" as const,
+          roles: ["CLINICAL_APPROVER"] as const,
+          scopes: ["scope-1"],
+        }),
+        approvedClinicalApproverId: "reviewer-1",
+        recordSourceConflictDecision: record,
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        conflictId: "conflict-1",
+        decidedBy: "reviewer-1",
+        humanReviewRequired: true,
+      },
+    });
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        principalId: "reviewer-1",
+        approvedClinicalApproverId: "reviewer-1",
+      }),
+    );
+  });
+
+  it("registers and recalculates affected assessments only for an approved clinical identity", async () => {
+    const scopeId = "00000000-0000-4000-8000-000000000003";
+    const candidate = {
+      candidateId: "00000000-0000-4000-8000-000000000001",
+      participantId: "00000000-0000-4000-8000-000000000002",
+      scopeId,
+      attemptId: "00000000-0000-4000-8000-000000000004",
+      itemId: "00000000-0000-4000-8000-000000000005",
+      previousVersion: 2,
+      previousScore: 50,
+      previousOutcome: "REFORCO" as const,
+      correctCount: 8,
+      eligibleItemCount: 10,
+    };
+    const recalculated = {
+      ...candidate,
+      passingScore: 70,
+      reason: "ITEM_ANNULLED" as const,
+      recalculatedAt: "2026-08-14T12:00:00.000Z",
+      recalculatedVersion: 3,
+      recalculatedScore: 80,
+      recalculatedOutcome: "APROVADO" as const,
+      notificationRequired: true as const,
+      automaticDecision: "NONE" as const,
+    };
+    const register = vi.fn(async () => ({ registeredCount: 1 }));
+    const recalculate = vi.fn(async () => ({
+      processedCount: 1,
+      notificationsQueued: 1,
+      results: [recalculated],
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/assessment-recalculations",
+        body: {
+          scopeId,
+          itemId: candidate.itemId,
+          reason: "ITEM_ANNULLED",
+          passingScore: 70,
+          recalculatedAt: "2026-08-14T12:00:00.000Z",
+          candidates: [candidate],
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "00000000-0000-4000-8000-000000000006",
+          accountStatus: "ACTIVE" as const,
+          roles: ["CLINICAL_APPROVER"] as const,
+          scopes: [scopeId],
+        }),
+        approvedClinicalApproverId: "00000000-0000-4000-8000-000000000006",
+        registerAssessmentRecalculationCandidates: register,
+        recalculateAffectedAssessments: recalculate,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { processedCount: 1, notificationsQueued: 1 },
+    });
+    expect(register).toHaveBeenCalledWith(
+      expect.objectContaining({
+        candidates: [
+          expect.objectContaining({ candidateId: candidate.candidateId }),
+        ],
+      }),
+    );
+    expect(recalculate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        principalId: "00000000-0000-4000-8000-000000000006",
+        scopeId,
+        approvedClinicalApproverId: "00000000-0000-4000-8000-000000000006",
+      }),
+    );
   });
 
   it("delegates recovery and MFA enrollment without storing authentication secrets", async () => {
@@ -1335,6 +2056,75 @@ describe("API HTTP boundary", () => {
     expect(forbidden.status).toBe(403);
   });
 
+  it("reads and advances a participant digital case without exposing branch internals", async () => {
+    const scopeId = digitalCaseRuntime.scopeId;
+    const getParticipantDigitalCase = vi.fn(async () => digitalCaseRuntime);
+    const advanceParticipantDigitalCase = vi.fn(async () => ({
+      ...digitalCaseRuntime,
+      state: {
+        ...digitalCaseRuntime.state,
+        version: 1,
+        currentStage: 2 as const,
+        state: { path: "ESTABILIZACAO" },
+        revealedExamSeriesIds: ["RADIOGRAFIA-SERIES"],
+        consequences: [
+          {
+            branchId: "S1-A",
+            consequence: "Ramo simulado liberado.",
+            recordedAt: "2026-08-14T09:01:00.000Z",
+          },
+        ],
+        updatedAt: "2026-08-14T09:01:00.000Z",
+      },
+    }));
+    const authenticate = async () => ({
+      principalId: attempt.participantId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["PARTICIPANT"] as const,
+      scopes: [scopeId],
+    });
+
+    const read = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/curriculum/modules/M24/case",
+        body: undefined,
+      },
+      dependencies({ authenticate, getParticipantDigitalCase }),
+    );
+    expect(read.status).toBe(200);
+    expect(getParticipantDigitalCase).toHaveBeenCalledWith({
+      participantId: attempt.participantId,
+      scopeId,
+      moduleId: "M24",
+      now: expect.any(String),
+    });
+    expect(JSON.stringify(read.body)).not.toContain("nextStage");
+    expect(JSON.stringify(read.body)).not.toContain("statePatch");
+
+    const advance = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/curriculum/modules/M24/case/advance",
+        body: { selectedChoiceIds: ["a"], expectedVersion: 0 },
+      },
+      dependencies({ authenticate, advanceParticipantDigitalCase }),
+    );
+    expect(advance.status).toBe(200);
+    expect(advanceParticipantDigitalCase).toHaveBeenCalledWith({
+      participantId: attempt.participantId,
+      scopeId,
+      moduleId: "M24",
+      selectedChoiceIds: ["a"],
+      expectedVersion: 0,
+      now: expect.any(String),
+    });
+    expect(advance.body).toMatchObject({
+      success: true,
+      data: { moduleId: "M24", version: 1, currentStage: 2 },
+    });
+  });
+
   it("protects learning-state routes by capability, scope, version and public projection", async () => {
     const scopeId = "11111111-1111-4111-8111-111111111111";
     const participantId = "22222222-2222-4222-8222-222222222222";
@@ -1492,7 +2282,15 @@ describe("API HTTP boundary", () => {
     );
     expect(feedbackResponse.status).toBe(201);
     expect(createFeedbackTicket).toHaveBeenCalledWith(
-      expect.objectContaining({ participantId, scopeId }),
+      expect.objectContaining({
+        participantId,
+        scopeId,
+        technicalContext: {
+          logicalPage: "/feedback",
+          appVersion: "api-0.1.0",
+          occurredAt: expect.any(String),
+        },
+      }),
     );
     expect(JSON.stringify(feedbackResponse.body)).not.toContain(
       "participantId",
@@ -1760,6 +2558,231 @@ describe("API HTTP boundary", () => {
     expect(missingDependency.status).toBe(500);
   });
 
+  it("accepts and returns only the minimal technical context for a feedback report", async () => {
+    const participantId = "11111111-1111-4111-8111-111111111111";
+    const scopeId = "22222222-2222-4222-8222-222222222222";
+    const technicalContext = {
+      logicalPage: "/dashboard",
+      appVersion: "web-0.1.0",
+      occurredAt: "2026-08-14T08:00:00.000Z",
+      errorCode: "FEEDBACK_TIMEOUT",
+    } as const;
+    const ticket: FeedbackTicketState = {
+      ticketId: "33333333-3333-4333-8333-333333333333",
+      participantId,
+      type: "BUG_TECNICO",
+      description: "Falha sintética de teste.",
+      createdAt: technicalContext.occurredAt,
+      technicalContext,
+      status: "NOVO",
+      version: 0,
+    };
+    const createFeedbackTicket = vi.fn(async (command) => ({
+      ...ticket,
+      technicalContext: command.technicalContext,
+    }));
+
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/feedback",
+        body: {
+          scopeId,
+          type: "BUG_TECNICO",
+          description: ticket.description,
+          technicalContext,
+        },
+      },
+      dependencies({
+        createFeedbackTicket,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(createFeedbackTicket).toHaveBeenCalledWith(
+      expect.objectContaining({ technicalContext }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { technicalContext },
+    });
+
+    const forbiddenField = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/feedback",
+        body: {
+          scopeId,
+          type: "BUG_TECNICO",
+          description: ticket.description,
+          technicalContext: { ...technicalContext, patientId: participantId },
+        },
+      },
+      dependencies({
+        createFeedbackTicket,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(forbiddenField.status).toBe(422);
+  });
+
+  it("blocks prohibited feedback content and records only a redacted safety audit", async () => {
+    const participantId = "11111111-1111-4111-8111-111111111111";
+    const scopeId = "22222222-2222-4222-8222-222222222222";
+    const createFeedbackTicket = vi.fn(async () => {
+      throw new Error("must not persist blocked feedback");
+    });
+    const recordFeedbackSafetyEvent = vi.fn(async () => undefined);
+
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/feedback",
+        body: {
+          scopeId,
+          type: "BUG_TECNICO",
+          description: "prontuário: synthetic-001",
+        },
+      },
+      dependencies({
+        createFeedbackTicket,
+        recordFeedbackSafetyEvent,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(422);
+    expect(createFeedbackTicket).not.toHaveBeenCalled();
+    expect(recordFeedbackSafetyEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "BLOCKED",
+        principalId: participantId,
+        scopeId,
+      }),
+    );
+    expect(JSON.stringify(recordFeedbackSafetyEvent.mock.calls)).not.toContain(
+      "prontuário",
+    );
+  });
+
+  it("redacts legacy feedback escapes in every projection and audits the escape", async () => {
+    const participantId = "11111111-1111-4111-8111-111111111111";
+    const scopeId = "22222222-2222-4222-8222-222222222222";
+    const listFeedbackTickets = vi.fn(async () => [
+      {
+        scopeId,
+        state: {
+          ticketId: "33333333-3333-4333-8333-333333333333",
+          participantId,
+          type: "BUG_TECNICO" as const,
+          description: "patientId: synthetic-id",
+          createdAt: "2026-08-14T08:00:00.000Z",
+          status: "NOVO" as const,
+          version: 0,
+        },
+      },
+    ]);
+    const recordFeedbackSafetyEvent = vi.fn(async () => undefined);
+
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/feedback",
+        query: { scopeId },
+        body: undefined,
+      },
+      dependencies({
+        listFeedbackTickets,
+        recordFeedbackSafetyEvent,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(JSON.stringify(response.body)).not.toContain("patientId");
+    expect(JSON.stringify(response.body)).toContain("CONTEUDO_REDACTED");
+    expect(recordFeedbackSafetyEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "REDACTED" }),
+    );
+  });
+
+  it("infers a participant feedback scope only for a single authorized scope", async () => {
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const participantId = "22222222-2222-4222-8222-222222222222";
+    const ticket: FeedbackTicketState = {
+      ticketId: "33333333-3333-4333-8333-333333333333",
+      participantId,
+      type: "MELHORIA",
+      description: "Relato sintético.",
+      createdAt: "2026-08-10T17:00:00.000Z",
+      status: "NOVO",
+      version: 0,
+    };
+    const createFeedbackTicket = vi.fn(async () => ticket);
+
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/feedback",
+        body: { type: "MELHORIA", description: ticket.description },
+      },
+      dependencies({
+        createFeedbackTicket,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(createFeedbackTicket).toHaveBeenCalledWith(
+      expect.objectContaining({ participantId, scopeId }),
+    );
+
+    const ambiguous = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/feedback",
+        body: { type: "MELHORIA", description: ticket.description },
+      },
+      dependencies({
+        createFeedbackTicket,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId, "44444444-4444-4444-8444-444444444444"],
+        }),
+      }),
+    );
+
+    expect(ambiguous.status).toBe(403);
+  });
+
   it("allows only the configured internal correction route and projects no internal actor data", async () => {
     const correctionScope = "99999999-9999-4999-8999-999999999999";
     const correctOpenResponse = vi.fn(async () => ({
@@ -1947,6 +2970,56 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(response.body)).not.toContain("participantText");
   });
 
+  it("passes an emergency withdrawal reason and configured clinical identity to content workflow", async () => {
+    const internalScopeId = "22222222-2222-4222-8222-222222222222";
+    const advanceContent = vi.fn(async (command) => ({
+      contentId: command.contentId,
+      version: command.version,
+      scopeId: command.scopeId,
+      status: "RETIRADO" as const,
+      withdrawalReasonCode: command.withdrawalReasonCode,
+      affectedParticipantCount: 2,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/content/${activity.activityId}/transition`,
+        body: {
+          version: 1,
+          scopeId: internalScopeId,
+          event: "RETIRAR",
+          withdrawalReasonCode: "ERRO_CLINICO",
+        },
+      },
+      dependencies({
+        approvedClinicalApproverId: "ricardo-account",
+        authenticate: async () => ({
+          principalId: "ricardo-account",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [internalScopeId],
+        }),
+        advanceContent,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(advanceContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "RETIRAR",
+        withdrawalReasonCode: "ERRO_CLINICO",
+        approvedClinicalApproverId: "ricardo-account",
+      }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        status: "RETIRADO",
+        affectedParticipantCount: 2,
+      },
+    });
+  });
+
   it("returns readiness failure without exposing infrastructure details", async () => {
     const response = await handleApiRequest(
       { method: "GET", path: "/health/ready", body: undefined },
@@ -1963,5 +3036,367 @@ describe("API HTTP boundary", () => {
       error: { code: "internal_error" },
     });
     expect(JSON.stringify(response.body)).not.toContain("secret");
+  });
+
+  it("lists managed accounts through the admin-scoped contract", async () => {
+    const listManagedAccounts = vi.fn(async (command) => ({
+      accounts: [
+        {
+          accountId: "11111111-1111-4111-8111-111111111111",
+          professionalEmail: "trainee@example.test",
+          accountStatus: "ACTIVE" as const,
+          roles: ["PARTICIPANT" as const],
+          scopes: ["scope-1"],
+          version: 2,
+          createdAt: new Date("2026-08-11T20:00:00.000Z"),
+          updatedAt: new Date("2026-08-11T21:00:00.000Z"),
+        },
+      ],
+      nextCursor: null,
+      command,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/accounts",
+        query: { limit: "25", status: "ACTIVE", scopeId: "scope-1" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "99999999-9999-4999-8999-999999999999",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        listManagedAccounts,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(listManagedAccounts).toHaveBeenCalledWith({
+      principalId: "99999999-9999-4999-8999-999999999999",
+      accountStatus: "ACTIVE",
+      roles: ["ADMIN"],
+      scopes: ["scope-1"],
+      limit: 25,
+      status: "ACTIVE",
+      scopeId: "scope-1",
+      correlationId: "request-123",
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { accounts: [{ professionalEmail: "trainee@example.test" }] },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("passwordHash");
+  });
+
+  it("updates an account with an optimistic version and never accepts ADMIN escalation", async () => {
+    const updateManagedAccount = vi.fn(async (command) => ({
+      accountId: command.targetAccountId,
+      professionalEmail: "trainee@example.test",
+      accountStatus: "SUSPENDED" as const,
+      roles: ["PARTICIPANT" as const],
+      scopes: ["scope-1"],
+      version: 3,
+      createdAt: new Date("2026-08-11T20:00:00.000Z"),
+      updatedAt: new Date("2026-08-11T21:00:00.000Z"),
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: "/api/v1/internal/accounts/11111111-1111-4111-8111-111111111111",
+        body: { expectedVersion: 2, status: "SUSPENDED" },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "99999999-9999-4999-8999-999999999999",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        updateManagedAccount,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateManagedAccount).toHaveBeenCalledWith({
+      principalId: "99999999-9999-4999-8999-999999999999",
+      accountStatus: "ACTIVE",
+      roles: ["ADMIN"],
+      scopes: ["scope-1"],
+      targetAccountId: "11111111-1111-4111-8111-111111111111",
+      expectedVersion: 2,
+      nextStatus: "SUSPENDED",
+      correlationId: "request-123",
+    });
+
+    const escalated = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: "/api/v1/internal/accounts/11111111-1111-4111-8111-111111111111",
+        body: { expectedVersion: 2, roles: ["ADMIN"] },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "99999999-9999-4999-8999-999999999999",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        updateManagedAccount,
+      }),
+    );
+    expect(escalated.status).toBe(403);
+    expect(updateManagedAccount).toHaveBeenCalledTimes(1);
+  });
+
+  it("revokes managed sessions through an allowlisted projection", async () => {
+    const revokeManagedAccountSessions = vi.fn(async (command) => ({
+      accountId: command.targetAccountId,
+      revokedCount: 3,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/accounts/11111111-1111-4111-8111-111111111111/sessions/revoke",
+        body: {},
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "99999999-9999-4999-8999-999999999999",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        revokeManagedAccountSessions,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        accountId: "11111111-1111-4111-8111-111111111111",
+        revokedCount: 3,
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("token");
+  });
+
+  it("lists participant feedback privately and staff feedback with scoped internal context", async () => {
+    const participantId = "11111111-1111-4111-8111-111111111111";
+    const otherParticipantId = "22222222-2222-4222-8222-222222222222";
+    const scopeId = "33333333-3333-4333-8333-333333333333";
+    const staffId = "44444444-4444-4444-8444-444444444444";
+    const ticket: FeedbackTicketState = {
+      ticketId: "55555555-5555-4555-8555-555555555555",
+      participantId,
+      type: "BUG_TECNICO",
+      description: "Falha sintética de teste.",
+      createdAt: "2026-08-14T08:00:00.000Z",
+      status: "EM_TRATAMENTO",
+      priority: "URGENTE",
+      assigneeId: staffId,
+      response: {
+        message: "Recebemos o relato.",
+        respondedAt: "2026-08-14T08:05:00.000Z",
+        respondedBy: staffId,
+      },
+      history: [
+        { status: "NOVO", changedAt: "2026-08-14T08:00:00.000Z" },
+        {
+          status: "EM_TRATAMENTO",
+          changedAt: "2026-08-14T08:04:00.000Z",
+          actorId: staffId,
+        },
+      ],
+      version: 3,
+    };
+    const listFeedbackTickets = vi.fn(async () => [{ scopeId, state: ticket }]);
+
+    const participantResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/feedback",
+        body: undefined,
+        query: { scopeId, status: "EM_TRATAMENTO", priority: "URGENTE" },
+      },
+      dependencies({
+        listFeedbackTickets,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(participantResponse.status).toBe(200);
+    expect(listFeedbackTickets).toHaveBeenCalledWith({
+      audience: "PARTICIPANT",
+      participantId,
+      scopeId,
+      status: "EM_TRATAMENTO",
+      priority: "URGENTE",
+    });
+    expect(participantResponse.body).toMatchObject({
+      success: true,
+      data: {
+        tickets: [
+          {
+            ticketId: ticket.ticketId,
+            priority: "URGENTE",
+            response: {
+              message: "Recebemos o relato.",
+              respondedAt: "2026-08-14T08:05:00.000Z",
+            },
+          },
+        ],
+      },
+    });
+    for (const forbidden of [
+      "participantId",
+      "scopeId",
+      "assigneeId",
+      "respondedBy",
+      "actorId",
+    ]) {
+      expect(JSON.stringify(participantResponse.body)).not.toContain(forbidden);
+    }
+
+    const staffResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/feedback",
+        body: undefined,
+        query: { scopeId },
+      },
+      dependencies({
+        listFeedbackTickets,
+        authenticate: async () => ({
+          principalId: staffId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(staffResponse.status).toBe(200);
+    expect(staffResponse.body).toMatchObject({
+      success: true,
+      data: {
+        tickets: [
+          {
+            participantId,
+            scopeId,
+            assigneeId: staffId,
+            response: { respondedBy: staffId },
+            history: expect.arrayContaining([
+              expect.objectContaining({ actorId: staffId }),
+            ]),
+          },
+        ],
+      },
+    });
+    expect(listFeedbackTickets).toHaveBeenLastCalledWith({
+      audience: "STAFF",
+      scopeId,
+    });
+
+    const crossParticipantResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/feedback",
+        body: undefined,
+        query: { scopeId },
+      },
+      dependencies({
+        listFeedbackTickets: vi.fn(async () => [
+          { scopeId, state: { ...ticket, participantId: otherParticipantId } },
+        ]),
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(crossParticipantResponse.status).toBe(403);
+
+    const unauthorizedScopeResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/feedback",
+        body: undefined,
+        query: { scopeId: "66666666-6666-4666-8666-666666666666" },
+      },
+      dependencies({
+        listFeedbackTickets,
+        authenticate: async () => ({
+          principalId: staffId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(unauthorizedScopeResponse.status).toBe(403);
+  });
+
+  it("passes staff identity server-side for feedback triage events", async () => {
+    const ticketId = "77777777-7777-4777-8777-777777777777";
+    const participantId = "88888888-8888-4888-8888-888888888888";
+    const scopeId = "99999999-9999-4999-8999-999999999999";
+    const staffId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const transitionFeedbackTicket = vi.fn(async () => ({
+      ticketId,
+      participantId,
+      type: "BUG_TECNICO" as const,
+      description: "Falha sintética.",
+      createdAt: "2026-08-14T08:00:00.000Z",
+      status: "EM_TRATAMENTO" as const,
+      priority: "URGENTE" as const,
+      version: 1,
+    }));
+
+    const response = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/feedback/${ticketId}`,
+        body: {
+          ticketId,
+          participantId,
+          scopeId,
+          version: 0,
+          event: "PRIORIZAR",
+          priority: "URGENTE",
+        },
+      },
+      dependencies({
+        transitionFeedbackTicket,
+        authenticate: async () => ({
+          principalId: staffId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(transitionFeedbackTicket).toHaveBeenCalledWith({
+      ticketId,
+      participantId,
+      scopeId,
+      version: 0,
+      event: {
+        type: "PRIORIZAR",
+        priority: "URGENTE",
+        actorId: staffId,
+      },
+    });
   });
 });

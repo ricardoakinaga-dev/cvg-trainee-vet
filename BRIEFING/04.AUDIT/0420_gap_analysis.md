@@ -41,3 +41,18 @@ Cobertura abaixo de 80%, contrato incompatível, retry incorreto, Qdrant não re
 UX, performance, dashboard, ergonomia editorial ou custo sem impacto de segurança/consistência.
 
 Cada gap contém `gap_id`, evidência, requisito/SPEC, causa provável, impacto, severidade, owner, prazo e status. Auditoria sem sistema funcional registra `AUDIT_NOT_EXECUTED`, não gaps fictícios.
+
+## Gaps vigentes — auditoria 2026-08-11
+
+| ID | Evidência atual | Severidade | Estado |
+|---|---|---|---|
+| AUD-2026-001 | Fila live: 796 totais, 763 pendentes/não revisados, 0 aprovações; modo estrito permanece fechado. | P1 clínico | OPEN |
+| AUD-2026-002 | IdP/probe real, enrollment, challenge, recovery, step-up e sincronização de papéis não executados. | P1 segurança | OPEN |
+| AUD-2026-003 | HTTPS interno/headers passam; domínio, DNS, certificado gerenciado e E2E público não observados. | P1 operação | OPEN |
+| AUD-2026-004 | Tempo/restore local passam; traces/backups externos, criptografia, retenção, RPO/RTO e restore produtivo não. | P1 operação | OPEN |
+| AUD-2026-005 | Contrato de CI e gates locais passam; CI remoto atual, registry, deploy e rollback autorizado não foram exercitados. | P1 release | OPEN |
+| AUD-2026-006 | `git status` mostra código/docs/testes sem SHA final auditável. | P1 governança | OPEN |
+| AUD-2026-007 | Dashboard/admin é primeira fatia; lifecycle completo, analytics histórico e jornada integral de 24 meses não. | P1 produto | OPEN |
+| AUD-2026-008 | Smoke 200/200 é curto e não mede soak, capacidade, múltiplas falhas ou SLO externo. | P2 operação | OPEN |
+
+Nenhum P0 foi observado na rodada. O release segue bloqueado pelos gaps P1 e pelas decisões humanas listadas no estado do runtime.

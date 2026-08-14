@@ -25,6 +25,7 @@
     "@cvg/worker": {
       "manifest": "apps/worker/package.json",
       "allowedWorkspaceDependencies": [
+        "@cvg/application",
         "@cvg/config",
         "@cvg/integrations",
         "@cvg/observability",
@@ -163,7 +164,6 @@
     {
       "root": "apps/worker/src",
       "forbiddenImports": [
-        "@cvg/application",
         "@cvg/contracts",
         "@cvg/web",
         "@cvg/ui",

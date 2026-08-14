@@ -60,6 +60,108 @@ const rubricSchema = z
   })
   .strict();
 
+const structuredFieldSchema = z
+  .object({
+    id: plainTextSchema.max(64),
+    label: plainTextSchema.max(200),
+    valueType: z.enum(["NUMBER", "TEXT", "BOOLEAN"]),
+    unit: plainTextSchema.max(32).optional(),
+    required: z.literal(true),
+    min: z.number().finite().optional(),
+    max: z.number().finite().optional(),
+  })
+  .strict();
+const structuredValueSchema = z.union([
+  z.string().trim().min(1).max(2_000),
+  z.number().finite(),
+  z.boolean(),
+]);
+const publicAssessmentInteractionSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("STRUCTURED_FIELDS"),
+      evaluationMode: z.literal("AUTOMATIC"),
+      fields: z.array(structuredFieldSchema).min(1).max(20),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("DOSE_INFUSION"),
+      evaluationMode: z.literal("AUTOMATIC"),
+      fields: z.array(structuredFieldSchema).min(1).max(20),
+      calculationInputs: z
+        .object({
+          weightKg: z.number().finite().positive().max(1_000_000),
+          doseMgPerKg: z.number().finite().nonnegative().max(1_000_000),
+          concentrationMgPerMl: z.number().finite().positive().max(1_000_000),
+          durationHours: z.number().finite().positive().max(1_000_000),
+        })
+        .strict(),
+      formulaLabel: plainTextSchema.max(500),
+    })
+    .strict(),
+]);
+const internalAssessmentInteractionSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("STRUCTURED_FIELDS"),
+      fields: z.array(structuredFieldSchema).min(1).max(20),
+      rubric: z
+        .object({
+          criteria: z
+            .array(
+              z
+                .object({
+                  fieldId: plainTextSchema.max(64),
+                  expectedValue: structuredValueSchema,
+                  tolerance: z.number().finite().nonnegative().optional(),
+                  points: z.number().int().positive().max(100),
+                })
+                .strict(),
+            )
+            .min(1)
+            .max(20),
+          passScore: z.number().finite().nonnegative().max(2_000),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("DOSE_INFUSION"),
+      fields: z.array(structuredFieldSchema).min(1).max(20),
+      calculationInputs: z
+        .object({
+          weightKg: z.number().finite().positive().max(1_000_000),
+          doseMgPerKg: z.number().finite().nonnegative().max(1_000_000),
+          concentrationMgPerMl: z.number().finite().positive().max(1_000_000),
+          durationHours: z.number().finite().positive().max(1_000_000),
+        })
+        .strict(),
+      formulaLabel: plainTextSchema.max(500),
+      tolerance: z.number().finite().nonnegative().max(1_000_000),
+    })
+    .strict(),
+]);
+const digitalCaseStageSchema = z
+  .object({
+    caseId: plainTextSchema.max(128),
+    stage: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+    examSeries: z
+      .array(
+        z
+          .object({
+            id: plainTextSchema.max(128),
+            modality: z.enum(["RADIOGRAFIA", "POCUS", "ECG"]),
+            label: plainTextSchema.max(300),
+            observationCount: z.number().int().min(2).max(20),
+          })
+          .strict(),
+      )
+      .length(3),
+  })
+  .strict();
+
 const participantItemSchema = z
   .object({
     id: plainTextSchema.max(128),
@@ -67,9 +169,16 @@ const participantItemSchema = z
     kind: z.enum(["QUESTAO", "CASO"]),
     title: plainTextSchema.max(1_000),
     prompt: plainTextSchema.max(10_000),
-    responseMode: z.enum(["CHOICE", "TEXT"]),
+    responseMode: z.enum([
+      "CHOICE",
+      "TEXT",
+      "STRUCTURED_FIELDS",
+      "DOSE_INFUSION",
+    ]),
     choices: z.array(choiceSchema).min(2).max(12).optional(),
     selectionMode: z.enum(["SINGLE", "MULTIPLE"]).optional(),
+    interaction: publicAssessmentInteractionSchema.optional(),
+    digitalCaseStage: digitalCaseStageSchema.optional(),
   })
   .strict();
 
@@ -77,7 +186,13 @@ const internalAuthoringItemSchema = z
   .object({
     title: plainTextSchema.max(1_000),
     prompt: plainTextSchema.max(10_000),
-    responseMode: z.enum(["CHOICE", "TEXT", "NONE"]),
+    responseMode: z.enum([
+      "CHOICE",
+      "TEXT",
+      "STRUCTURED_FIELDS",
+      "DOSE_INFUSION",
+      "NONE",
+    ]),
     choices: z.array(choiceSchema).min(2).max(12).optional(),
     correctChoiceIds: z
       .array(plainTextSchema.max(64))
@@ -85,6 +200,9 @@ const internalAuthoringItemSchema = z
       .max(12)
       .optional(),
     rubric: rubricSchema.optional(),
+    interaction: internalAssessmentInteractionSchema.optional(),
+    humanCorrectionOwner: z.literal("RICARDO").optional(),
+    digitalCaseStage: digitalCaseStageSchema.optional(),
     feedback: plainTextSchema.max(10_000),
     critical: z.boolean(),
     remediationTargetObjectiveId: plainTextSchema.max(128),

@@ -49,7 +49,7 @@ Preencher antes de redigir o item ou a unidade:
 | `team_audience` | veterinário, enfermagem/técnico ou multiprofissional |
 | `team_behaviors` | comunicação fechada, handoff, monitoramento, apoio mútuo ou liderança |
 | `assessment_modes` | recuperação ativa, raciocínio em caso, simulação digital, debriefing e retenção |
-| `spaced_review_days` | padrão CVG: D+7, D+30 e D+90 |
+| `spaced_review_days` | padrão CVG: D+30, D+60 e D+90 |
 | `transfer_metric` | indicador agregado/manual do piloto, sem prontuário ou dado identificável |
 | `mastery_rule` | 70% geral, 80% em objetivo crítico e gate de comportamento crítico digital |
 
@@ -88,7 +88,7 @@ Preencher somente no documento ou sistema interno de autoria/revisão:
 | `clinical_review` | `PENDENTE`, `EM_REVISAO`, `APROVADO` ou estado equivalente definido pelo workflow |
 | `publication_authorized` | booleano interno; deve permanecer falso até aprovação de Ricardo |
 | `remediation_target_objective` | objetivo que recebe reforço quando houver erro crítico |
-| `retention_forms` | formas equivalentes previstas para D+7, D+30 e D+90 |
+| `retention_forms` | formas equivalentes previstas para D+30, D+60 e D+90 |
 | `technical_preflight` | resultado de contagem, campos, correção, projeção e bloqueio de publicação |
 
 A hierarquia interna é: legislação/bula aplicável, protocolo CVG aprovado, diretriz atual, fonte clínica atualizada e obras estáticas. A hierarquia orienta a construção; nunca aparece como bibliografia na experiência do participante.

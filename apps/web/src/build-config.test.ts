@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveApiInternalUrl } from "../next.config.js";
+import nextConfig, { resolveApiInternalUrl } from "../next.config.js";
 
 describe("web build proxy contract", () => {
+  it("uses the TypeScript compiler API during production builds", () => {
+    expect(nextConfig.experimental?.useTypeScriptCli).toBe(false);
+  });
+
   it("requires the API internal URL for production builds", () => {
     expect(() => resolveApiInternalUrl({ NODE_ENV: "production" })).toThrow(
       "CVG_API_INTERNAL_URL",

@@ -1,3 +1,11 @@
+import type {
+  DigitalCaseDefinition,
+  InternalAssessmentInteraction,
+  PublicAssessmentInteraction,
+  PublicDigitalCaseStage,
+  StructuredScalar,
+} from "./learning-interactions.js";
+
 export type CurriculumPart = "PARTE_1" | "PARTE_2";
 
 export type TrainingAudience =
@@ -24,6 +32,11 @@ export type TransferMetric = Readonly<{
   readonly collectionMode: "PILOTO_MANUAL" | "FUTURA_INTEGRACAO";
 }>;
 
+export type CurriculumStructuredValue = StructuredScalar;
+export type CurriculumDigitalCaseDefinition = DigitalCaseDefinition;
+
+export type SpacedReviewDay = 30 | 60 | 90;
+
 export type MasteryRule = Readonly<{
   readonly knowledgeMinimumPercent: 70;
   readonly criticalObjectiveMinimumPercent: 80;
@@ -36,7 +49,7 @@ export type HospitalTrainingDesign = Readonly<{
   readonly hospitalBehaviors: readonly string[];
   readonly teamBehaviors: readonly HospitalTeamBehavior[];
   readonly assessmentModes: readonly TrainingAssessmentMode[];
-  readonly spacedReviewDays: readonly [7, 30, 90];
+  readonly spacedReviewDays: readonly [30, 60, 90];
   readonly transferMetric: TransferMetric;
   readonly masteryRule: MasteryRule;
 }>;
@@ -53,7 +66,7 @@ export type HospitalTrainingBlueprint = Readonly<{
     "RETENCAO_ESPACADA",
     "TRANSFERENCIA_PILOTO",
   ];
-  readonly defaultSpacedReviewDays: readonly [7, 30, 90];
+  readonly defaultSpacedReviewDays: readonly [30, 60, 90];
   readonly digitalBoundary: "CONHECIMENTO_RACIOCINIO_COMUNICACAO_SIMULADA";
   readonly practicalBoundary: "NAO_COMPROVA_COMPETENCIA_PRATICA";
 }>;
@@ -130,6 +143,7 @@ export type AssessmentQuestion = Readonly<{
   readonly kind: QuestionKind;
   readonly choices: readonly Choice[];
   readonly correctChoiceIds: readonly string[];
+  readonly interaction?: InternalAssessmentInteraction;
   readonly feedback: string;
   readonly critical: boolean;
   readonly sourceRefs: readonly InternalSourceRef[];
@@ -154,6 +168,7 @@ export type OpenResponse = Readonly<{
   }>;
   readonly feedback: string;
   readonly sourceRefs: readonly InternalSourceRef[];
+  readonly humanCorrectionOwner?: "RICARDO";
 }>;
 
 export type Assessment = Readonly<{
@@ -193,8 +208,11 @@ export type ParticipantActivity = Readonly<{
     readonly kind: "QUESTAO" | "CASO";
     readonly title: string;
     readonly text: string;
-    readonly responseMode: "CHOICE" | "TEXT";
+    readonly responseMode:
+      "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
     readonly choices?: readonly Choice[];
     readonly selectionMode?: "SINGLE" | "MULTIPLE";
+    readonly interaction?: PublicAssessmentInteraction;
+    readonly digitalCaseStage?: PublicDigitalCaseStage;
   }>[];
 }>;

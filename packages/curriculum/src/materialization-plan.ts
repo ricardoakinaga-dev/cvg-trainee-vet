@@ -10,6 +10,7 @@ import {
   type ModuleEvaluationResult,
 } from "./learning-runtime.js";
 import { toParticipantActivityFromDraft } from "./projection.js";
+import type { ParticipantActivity } from "./types.js";
 
 export type CurriculumMaterializationInput = Readonly<{
   readonly scopeId: string;
@@ -27,13 +28,16 @@ export type CurriculumMaterializationItemPlan = Readonly<{
   readonly ordinal: number;
   readonly title: string;
   readonly participantText: string;
-  readonly responseMode: "CHOICE" | "TEXT";
+  readonly responseMode:
+    "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
   readonly participantOptions?: readonly Readonly<{
     readonly id: string;
     readonly label: string;
     readonly text: string;
   }>[];
   readonly participantSelectionMode?: "SINGLE" | "MULTIPLE";
+  readonly participantInteraction?: ParticipantActivity["items"][number]["interaction"];
+  readonly digitalCaseStage?: ParticipantActivity["items"][number]["digitalCaseStage"];
   readonly authoringItem: AuthoringItem;
 }>;
 
@@ -126,6 +130,12 @@ export function createCurriculumMaterializationPlan(
         ...(projectedItem.selectionMode === undefined
           ? {}
           : { participantSelectionMode: projectedItem.selectionMode }),
+        ...(projectedItem.interaction === undefined
+          ? {}
+          : { participantInteraction: projectedItem.interaction }),
+        ...(projectedItem.digitalCaseStage === undefined
+          ? {}
+          : { digitalCaseStage: projectedItem.digitalCaseStage }),
         authoringItem,
       });
     });

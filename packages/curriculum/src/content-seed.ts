@@ -21,13 +21,16 @@ export type CurriculumContentVersionSeed = Readonly<{
   readonly kind: "QUESTAO" | "CASO";
   readonly title: string;
   readonly participantText: string;
-  readonly responseMode: "CHOICE" | "TEXT";
+  readonly responseMode:
+    "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
   readonly participantOptions?: readonly Readonly<{
     readonly id: string;
     readonly label: string;
     readonly text: string;
   }>[];
   readonly participantSelectionMode?: "SINGLE" | "MULTIPLE";
+  readonly participantInteraction?: ParticipantActivity["items"][number]["interaction"];
+  readonly digitalCaseStage?: ParticipantActivity["items"][number]["digitalCaseStage"];
 }>;
 
 export type CurriculumActivitySeed = Readonly<{
@@ -82,6 +85,12 @@ function toContentVersion(
     ...(selectionMode === undefined
       ? {}
       : { participantSelectionMode: selectionMode }),
+    ...(item.interaction === undefined
+      ? {}
+      : { participantInteraction: item.interaction }),
+    ...(item.digitalCaseStage === undefined
+      ? {}
+      : { digitalCaseStage: item.digitalCaseStage }),
   });
 }
 

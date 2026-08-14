@@ -3,6 +3,7 @@ import {
   transitionContent,
   type ContentEvent,
   type ContentState,
+  type ContentWithdrawalReasonCode,
 } from "@cvg/domain";
 
 import {
@@ -19,6 +20,11 @@ export type ContentRecord = Readonly<{
   readonly version: number;
   readonly scopeId: string;
   readonly status: ContentState["status"];
+  readonly withdrawalReasonCode?: ContentWithdrawalReasonCode;
+  readonly withdrawnAt?: string;
+  readonly affectedParticipantCount?: number;
+  readonly validUntil?: string;
+  readonly nextReviewAt?: string;
   readonly publicationReady?: boolean;
   readonly publicationBlockReasons?: readonly string[];
 }>;
@@ -32,8 +38,10 @@ export type AdvanceContentCommand = Readonly<{
   readonly version: number;
   readonly scopeId: string;
   readonly event: ContentEvent["type"];
+  readonly withdrawalReasonCode?: ContentWithdrawalReasonCode;
   readonly correlationId: string;
   readonly approvedClinicalApproverId?: string;
+  readonly approvedClinicalReviewerId?: string;
 }>;
 
 export interface ContentRepositoryPort {
@@ -42,7 +50,51 @@ export interface ContentRepositoryPort {
     version: number,
   ) => Promise<ContentRecord | null>;
   readonly save: (current: ContentRecord, next: ContentRecord) => Promise<void>;
+  readonly listPublishedDueForExpiry?: (
+    now: string,
+    scopeIds: readonly string[],
+    limit: number,
+  ) => Promise<readonly ContentRecord[]>;
+  readonly listAffectedParticipantIds?: (
+    contentId: string,
+    version: number,
+    scopeId: string,
+  ) => Promise<readonly string[]>;
+  readonly recordWithdrawalAffected?: (
+    participantIds: readonly string[],
+    metadata: Readonly<{
+      readonly contentId: string;
+      readonly version: number;
+      readonly scopeId: string;
+      readonly withdrawnAt: string;
+      readonly correlationId: string;
+    }>,
+  ) => Promise<number>;
 }
+
+export type ExpireContentCommand = Readonly<{
+  readonly principalId: string;
+  readonly accountStatus: AccountStatus;
+  readonly roles: readonly Role[];
+  readonly scopes: readonly string[];
+  readonly now: string;
+  readonly limit?: number;
+  readonly correlationId: string;
+}>;
+
+export type ExpireContentResult = Readonly<{
+  readonly requested: number;
+  readonly expiredCount: number;
+  readonly skipped: number;
+  readonly expired: readonly ContentRecord[];
+}>;
+
+export type ContentExpiryUseCaseDependencies = ContentUseCaseDependencies & {
+  readonly expiryRepository: Pick<
+    ContentRepositoryPort,
+    "listPublishedDueForExpiry"
+  >;
+};
 
 export type ContentWorkflowEvent = Readonly<{
   readonly eventId: string;
@@ -59,6 +111,8 @@ export type ContentWorkflowEvent = Readonly<{
     readonly content_id: string;
     readonly version: string;
     readonly status: ContentState["status"];
+    readonly reason_code?: ContentWithdrawalReasonCode;
+    readonly affected_count?: number;
   }>;
 }>;
 
@@ -66,10 +120,19 @@ export interface ContentEventPublisherPort {
   readonly publish: (event: ContentWorkflowEvent) => Promise<void>;
 }
 
+export interface ClinicalReviewPort {
+  readonly hasApproved: (
+    contentId: string,
+    version: number,
+    reviewerId: string,
+  ) => Promise<boolean>;
+}
+
 export interface ContentTransactionalOperations {
   readonly content: ContentRepositoryPort;
   readonly eventPublisher: ContentEventPublisherPort;
   readonly audit: AuditPort;
+  readonly clinicalReview: ClinicalReviewPort;
 }
 
 export interface ContentTransactionPort {
@@ -92,7 +155,7 @@ const capabilityByEvent: Readonly<Record<ContentEvent["type"], Capability>> = {
   AUTORIZAR_PUBLICACAO: "PUBLISH_CONTENT",
   PUBLICAR: "PUBLISH_CONTENT",
   PUBLICAR_AUTOMATICAMENTE: "PUBLISH_CONTENT",
-  RETIRAR: "PUBLISH_CONTENT",
+  RETIRAR: "APPROVE_CLINICAL_CONTENT",
   VENCER: "PUBLISH_CONTENT",
 };
 
@@ -137,6 +200,38 @@ export async function advanceContent(
     throw new ApplicationError("validation_error", "version is invalid");
   }
 
+  if (
+    command.event === "RETIRAR" &&
+    command.withdrawalReasonCode === undefined
+  ) {
+    throw new ApplicationError(
+      "validation_error",
+      "withdrawalReasonCode is required when withdrawing content",
+    );
+  }
+  if (
+    command.event !== "RETIRAR" &&
+    command.withdrawalReasonCode !== undefined
+  ) {
+    throw new ApplicationError(
+      "validation_error",
+      "withdrawalReasonCode is only valid when withdrawing content",
+    );
+  }
+
+  if (
+    (command.event === "AUTORIZAR_PUBLICACAO" ||
+      command.event === "PUBLICAR" ||
+      command.event === "PUBLICAR_AUTOMATICAMENTE") &&
+    (command.approvedClinicalReviewerId === undefined ||
+      command.approvedClinicalReviewerId.trim().length === 0)
+  ) {
+    throw new ApplicationError(
+      "state_conflict",
+      "Clinical approval context is required before publication",
+    );
+  }
+
   const capability = capabilityByEvent[command.event];
   const authorized = canAccess({
     principalId: command.principalId,
@@ -175,31 +270,124 @@ export async function advanceContent(
         );
       }
 
-      if (
-        (command.event === "AUTORIZAR_PUBLICACAO" ||
-          command.event === "PUBLICAR" ||
-          command.event === "PUBLICAR_AUTOMATICAMENTE") &&
-        current.publicationReady !== true
-      ) {
-        throw new ApplicationError(
-          "state_conflict",
-          "Content publication gate is incomplete",
-        );
+      const isPublicationEvent =
+        command.event === "AUTORIZAR_PUBLICACAO" ||
+        command.event === "PUBLICAR" ||
+        command.event === "PUBLICAR_AUTOMATICAMENTE";
+      if (isPublicationEvent) {
+        if (current.publicationReady !== true) {
+          throw new ApplicationError(
+            "state_conflict",
+            "Content publication gate is incomplete",
+          );
+        }
+
+        const reviewerId = command.approvedClinicalReviewerId;
+        if (
+          reviewerId === undefined ||
+          !(await operations.clinicalReview.hasApproved(
+            command.contentId,
+            command.version,
+            reviewerId,
+          ))
+        ) {
+          throw new ApplicationError(
+            "state_conflict",
+            "Persisted clinical approval is required before publication",
+          );
+        }
       }
+
+      const isEmergencyWithdrawal = command.event === "RETIRAR";
+      const affectedParticipantIds = isEmergencyWithdrawal
+        ? await (async () => {
+            const listAffectedParticipantIds =
+              operations.content.listAffectedParticipantIds;
+            if (listAffectedParticipantIds === undefined) {
+              throw new ApplicationError(
+                "internal_error",
+                "Content withdrawal repository is not configured",
+              );
+            }
+            return Object.freeze([
+              ...new Set(
+                await listAffectedParticipantIds(
+                  command.contentId,
+                  command.version,
+                  command.scopeId,
+                ),
+              ),
+            ]);
+          })()
+        : Object.freeze([] as string[]);
+      const withdrawnAt = isEmergencyWithdrawal
+        ? new Date().toISOString()
+        : undefined;
 
       const nextState = transitionContent(
         {
           contentId: current.contentId,
           version: current.version,
           status: current.status,
+          ...(current.withdrawalReasonCode === undefined
+            ? {}
+            : { withdrawalReasonCode: current.withdrawalReasonCode }),
+          ...(current.withdrawnAt === undefined
+            ? {}
+            : { withdrawnAt: current.withdrawnAt }),
+          ...(current.affectedParticipantCount === undefined
+            ? {}
+            : { affectedParticipantCount: current.affectedParticipantCount }),
         },
-        { type: command.event },
+        {
+          type: command.event,
+          ...(command.withdrawalReasonCode === undefined
+            ? {}
+            : { withdrawalReasonCode: command.withdrawalReasonCode }),
+        },
       );
       const next = Object.freeze({
         ...current,
         status: nextState.status,
+        ...(command.withdrawalReasonCode === undefined
+          ? {}
+          : { withdrawalReasonCode: command.withdrawalReasonCode }),
+        ...(withdrawnAt === undefined ? {} : { withdrawnAt }),
+        ...(isEmergencyWithdrawal
+          ? { affectedParticipantCount: affectedParticipantIds.length }
+          : {}),
       });
       await operations.content.save(current, next);
+
+      if (isEmergencyWithdrawal) {
+        const recordWithdrawalAffected =
+          operations.content.recordWithdrawalAffected;
+        if (
+          recordWithdrawalAffected === undefined ||
+          withdrawnAt === undefined
+        ) {
+          throw new ApplicationError(
+            "internal_error",
+            "Content withdrawal audit repository is not configured",
+          );
+        }
+        const recordedCount = await recordWithdrawalAffected(
+          affectedParticipantIds,
+          {
+            contentId: command.contentId,
+            version: command.version,
+            scopeId: command.scopeId,
+            withdrawnAt,
+            correlationId: command.correlationId,
+          },
+        );
+        if (recordedCount !== affectedParticipantIds.length) {
+          throw new ApplicationError(
+            "internal_error",
+            "Content withdrawal affected participant count is inconsistent",
+          );
+        }
+      }
 
       const occurredAt = new Date().toISOString();
       await operations.eventPublisher.publish({
@@ -214,6 +402,12 @@ export async function advanceContent(
           content_id: next.contentId,
           version: String(next.version),
           status: next.status,
+          ...(command.withdrawalReasonCode === undefined
+            ? {}
+            : { reason_code: command.withdrawalReasonCode }),
+          ...(isEmergencyWithdrawal
+            ? { affected_count: affectedParticipantIds.length }
+            : {}),
         },
       });
       await operations.audit.append(
@@ -225,7 +419,9 @@ export async function advanceContent(
           resourceId: next.contentId,
           scopeId: next.scopeId,
           outcome: "SUCCESS",
-          reasonCode: "content_workflow_transition",
+          reasonCode: isEmergencyWithdrawal
+            ? "emergency_withdrawal"
+            : "content_workflow_transition",
           requestId: command.correlationId,
           correlationId: command.correlationId,
           occurredAt,
@@ -237,4 +433,121 @@ export async function advanceContent(
   } catch (error) {
     throw normalizeContentError(error);
   }
+}
+
+function parseIsoTimestamp(value: string, field: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new ApplicationError("validation_error", `${field} is invalid`);
+  }
+  return parsed.toISOString();
+}
+
+function normalizedScopeIds(scopes: readonly string[]): readonly string[] {
+  return Object.freeze([
+    ...new Set(
+      scopes.map((scopeId) => scopeId.trim()).filter((scopeId) => scopeId),
+    ),
+  ]);
+}
+
+export async function expireDueContent(
+  command: ExpireContentCommand,
+  dependencies: ContentExpiryUseCaseDependencies,
+): Promise<ExpireContentResult> {
+  assertNonEmpty(command.principalId, "principalId");
+  assertNonEmpty(command.correlationId, "correlationId");
+
+  const now = parseIsoTimestamp(command.now, "now");
+  const limit = command.limit ?? 100;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new ApplicationError(
+      "validation_error",
+      "limit must be an integer between 1 and 100",
+    );
+  }
+
+  const scopeIds = normalizedScopeIds(command.scopes);
+  if (
+    scopeIds.length === 0 ||
+    scopeIds.some(
+      (scopeId) =>
+        !canAccess({
+          principalId: command.principalId,
+          accountStatus: command.accountStatus,
+          roles: command.roles,
+          capability: "PUBLISH_CONTENT",
+          resource: { scopeId },
+          scopes: scopeIds,
+        }),
+    )
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Content expiry is outside the current authorization scope",
+    );
+  }
+
+  const listDue = dependencies.expiryRepository.listPublishedDueForExpiry;
+  if (listDue === undefined) {
+    throw new ApplicationError(
+      "internal_error",
+      "Content expiry repository is not configured",
+    );
+  }
+
+  const candidates = await listDue(now, scopeIds, limit);
+  const expired: ContentRecord[] = [];
+  let skipped = 0;
+  const nowMs = new Date(now).getTime();
+
+  for (const candidate of candidates) {
+    const validUntil = candidate.validUntil;
+    const validUntilMs =
+      validUntil === undefined ? Number.NaN : new Date(validUntil).getTime();
+    if (
+      candidate.status !== "PUBLICADO" ||
+      validUntil === undefined ||
+      Number.isNaN(validUntilMs) ||
+      validUntilMs > nowMs
+    ) {
+      skipped += 1;
+      continue;
+    }
+
+    try {
+      const next = await advanceContent(
+        {
+          principalId: command.principalId,
+          accountStatus: command.accountStatus,
+          roles: command.roles,
+          scopes: scopeIds,
+          contentId: candidate.contentId,
+          version: candidate.version,
+          scopeId: candidate.scopeId,
+          event: "VENCER",
+          correlationId: command.correlationId,
+        },
+        dependencies,
+      );
+      expired.push(next);
+    } catch (error) {
+      const normalized = toApplicationError(error);
+      if (
+        normalized.code === "state_conflict" ||
+        normalized.code === "not_found"
+      ) {
+        skipped += 1;
+        continue;
+      }
+      throw normalized;
+    }
+  }
+
+  return Object.freeze({
+    requested: candidates.length,
+    expiredCount: expired.length,
+    skipped,
+    expired: Object.freeze([...expired]),
+  });
 }

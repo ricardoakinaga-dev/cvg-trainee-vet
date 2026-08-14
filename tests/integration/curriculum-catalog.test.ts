@@ -3,6 +3,7 @@ import { expect, it } from "vitest";
 import {
   b07Blueprint,
   createM02ContentSeed,
+  curriculumDraftPacks,
   curriculumV3,
   hospitalTrainingBlueprint,
   moduleAssessmentBlueprints,
@@ -35,7 +36,7 @@ it("materializes the 24-month curriculum and its session cadence", () => {
   expect(
     curriculumV3.modules.every(
       (module) =>
-        module.hospitalTraining.spacedReviewDays.join(",") === "7,30,90" &&
+        module.hospitalTraining.spacedReviewDays.join(",") === "30,60,90" &&
         module.hospitalTraining.assessmentModes.includes("SIMULACAO_DIGITAL") &&
         module.hospitalTraining.assessmentModes.includes("RETENCAO_ESPACADA") &&
         module.hospitalTraining.transferMetric.id.length > 0 &&
@@ -98,6 +99,20 @@ it("builds the M02 question bank and B-07 diagnostic blueprint", () => {
           .length,
     ),
   ).toEqual([40, 40, 40]);
+  expect(new Set(b07Blueprint.items.map((item) => item.format))).toEqual(
+    new Set(["MELHOR_RESPOSTA", "ASSOCIACAO", "INTERPRETACAO"]),
+  );
+  expect(m02Assessment.openResponses.length).toBeGreaterThan(0);
+  const curriculumKinds = new Set(
+    curriculumDraftPacks.flatMap((pack) => pack.items.map((item) => item.kind)),
+  );
+  expect([...curriculumKinds]).toEqual(
+    expect.arrayContaining([
+      "CASO_PROGRESSIVO",
+      "SIMULACAO_DIGITAL",
+      "DEBRIEFING",
+    ]),
+  );
 });
 
 it("projects M02 without internal source, answer-key, or rubric fields", () => {

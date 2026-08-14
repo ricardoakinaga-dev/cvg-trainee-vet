@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const defaultRequiredFiles = Object.freeze([
   "AGENTS.md",
   "docs/99_runtime_state.md",
+  "docs/canonical-document-registry.json",
   "docs/20_master_execution_log.md",
   "docs/30_backlog_master.md",
   "BRIEFING/00.DiSCOVERY/DISCOVERY ENGINE ENTERPRISE",
@@ -16,6 +17,8 @@ const defaultRequiredFiles = Object.freeze([
   "BRIEFING/03.BUILD/0300_build_engineer_master.md",
   "BRIEFING/03.BUILD/0301_roadmap.md",
   "BRIEFING/03.BUILD/0302_backlog_master.md",
+  "BRIEFING/03.BUILD/0303_remediation_program.md",
+  "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
   "BRIEFING/03.BUILD/0390_build_readiness.md",
   "BRIEFING/03.BUILD/0391_documentation_gate.md",
   "BRIEFING/04.AUDIT/0400_audit_scope.md",
@@ -68,14 +71,125 @@ const requiredBacklogIds = Object.freeze([
   "AUD-P1-003",
   "AUD-P1-004",
   "AUD-P1-005",
+  "ENT95-PROGRAM",
 ]);
+
+const premiumItemIds = Object.freeze(
+  Array.from(
+    { length: 16 },
+    (_, index) => `ENT95-${String(index + 1).padStart(2, "0")}`,
+  ),
+);
 
 const reportRowPattern =
   /^\|\s*(\d+)\.\s*.+?\|\s*(\d+)%\s*\|\s*\*\*(\d+)\*\*\s*\|/;
 
+const canonicalRoles = Object.freeze([
+  "program",
+  "audit",
+  "roadmap",
+  "backlog",
+]);
+const canonicalStatuses = new Set(["CURRENT", "HISTORICAL", "SUPERSEDED"]);
+
 function readSnapshotValue(snapshot, path) {
   const value = snapshot.get(path);
   return typeof value === "string" ? value : null;
+}
+
+export function validateCanonicalDocumentSnapshot(snapshot) {
+  const raw = readSnapshotValue(
+    snapshot,
+    "docs/canonical-document-registry.json",
+  );
+  if (raw === null || raw.trim().length === 0) return Object.freeze([]);
+
+  let registry;
+  try {
+    registry = JSON.parse(raw);
+  } catch {
+    return Object.freeze(["canonical document registry is invalid JSON"]);
+  }
+
+  const errors = [];
+  if (registry.version !== 1) {
+    errors.push("canonical document registry version must be 1");
+  }
+
+  const current = registry.current;
+  if (current === null || typeof current !== "object") {
+    errors.push("canonical registry has no current sources");
+  } else {
+    for (const role of canonicalRoles) {
+      if (typeof current[role] !== "string" || current[role].trim() === "") {
+        errors.push(`canonical registry must define current ${role}`);
+      }
+    }
+  }
+
+  if (!Array.isArray(registry.documents)) {
+    errors.push("canonical registry has no documents");
+    return Object.freeze(errors);
+  }
+
+  const paths = new Set();
+  const currentRoles = new Set();
+  for (const document of registry.documents) {
+    if (document === null || typeof document !== "object") {
+      errors.push("canonical registry has an invalid document entry");
+      continue;
+    }
+
+    const { path, role, status } = document;
+    if (typeof path !== "string" || path.trim() === "") {
+      errors.push("canonical registry document has no path");
+      continue;
+    }
+    if (paths.has(path))
+      errors.push(`canonical registry has duplicate path ${path}`);
+    paths.add(path);
+
+    if (!canonicalRoles.includes(role)) {
+      errors.push(
+        `canonical registry document ${path} has invalid role ${role}`,
+      );
+    }
+    if (!canonicalStatuses.has(status)) {
+      errors.push(
+        `canonical registry document ${path} has invalid status ${status}`,
+      );
+    }
+    if (status === "CURRENT") {
+      if (currentRoles.has(role)) {
+        errors.push(`canonical registry has duplicate current role ${role}`);
+      }
+      currentRoles.add(role);
+    }
+
+    const content = readSnapshotValue(snapshot, path);
+    if (content === null || content.trim().length === 0) {
+      errors.push(`canonical registry path is missing: ${path}`);
+    }
+
+    if (status === "HISTORICAL" || status === "SUPERSEDED") {
+      if (
+        typeof document.supersededBy !== "string" ||
+        document.supersededBy.trim() === ""
+      ) {
+        errors.push(`historical document ${path} must declare supersededBy`);
+      }
+      if (
+        content !== null &&
+        !/(registro histórico|historical|superseded)/iu.test(content)
+      ) {
+        errors.push(
+          `historical document ${path} must contain a historical marker`,
+        );
+      }
+    }
+  }
+
+  return Object.freeze(errors);
 }
 
 function validateReport(report, errors) {
@@ -141,6 +255,64 @@ function validateTraceability(manifest, errors) {
   } else if (!auditBlock.includes("verification:")) {
     errors.push("AUD-0491 traceability artifact has no verification command");
   }
+
+  const premiumProgramBlock = artifactBlocks.find((block) =>
+    block.startsWith(' "PREMIUM-ENTERPRISE-95-PROGRAM"'),
+  );
+  if (premiumProgramBlock === undefined) {
+    errors.push("traceability has no PREMIUM-ENTERPRISE-95-PROGRAM artifact");
+  } else if (!premiumProgramBlock.includes("verification:")) {
+    errors.push(
+      "PREMIUM-ENTERPRISE-95-PROGRAM traceability artifact has no verification command",
+    );
+  }
+}
+
+function validatePremiumEnterpriseProgram(snapshot, errors) {
+  const program = readSnapshotValue(
+    snapshot,
+    "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+  );
+  if (program !== null) {
+    if (!program.includes("program_id: CVG-PREMIUM-ENTERPRISE-95")) {
+      errors.push("premium program has no canonical program_id");
+    }
+    if (!program.includes("baseline_score: 83/100")) {
+      errors.push("premium program baseline must be 83/100");
+    }
+    if (!program.includes("target_floor_per_item: 95/100")) {
+      errors.push("premium program target floor must be 95/100 per item");
+    }
+  }
+
+  const roadmap = readSnapshotValue(
+    snapshot,
+    "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+  );
+  if (roadmap !== null) {
+    if (!roadmap.includes("0491_full_construction_audit.md")) {
+      errors.push(
+        "premium roadmap must reference 0491_full_construction_audit.md",
+      );
+    }
+    for (const itemId of premiumItemIds) {
+      if (!roadmap.includes(itemId)) {
+        errors.push(`premium roadmap has no item ${itemId}`);
+      }
+    }
+  }
+
+  const premiumBacklog = readSnapshotValue(
+    snapshot,
+    "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+  );
+  if (premiumBacklog !== null) {
+    for (const itemId of premiumItemIds) {
+      if (!premiumBacklog.includes(`${itemId}-`)) {
+        errors.push(`premium backlog has no task for item ${itemId}`);
+      }
+    }
+  }
 }
 
 export function validateDocumentationSnapshot(snapshot, options = {}) {
@@ -205,6 +377,10 @@ export function validateDocumentationSnapshot(snapshot, options = {}) {
 
   const manifest = readSnapshotValue(snapshot, "traceability.yml");
   if (manifest !== null) validateTraceability(manifest, errors);
+
+  errors.push(...validateCanonicalDocumentSnapshot(snapshot));
+
+  validatePremiumEnterpriseProgram(snapshot, errors);
 
   return Object.freeze(errors);
 }

@@ -47,6 +47,131 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 4,
+      "title": "Core availability",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "100 * sum(rate(api_requests_total{outcome!=\"server_error\"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1)",
+          "legendFormat": "availability",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 5,
+      "title": "API p95 latency",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "max by (route) (api_request_duration_ms_p95{route=~\"/api/v1/.*\"})",
+          "legendFormat": "{{route}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 6,
+      "title": "API error rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "100 * sum(rate(api_requests_total{outcome=\"server_error\"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1)",
+          "legendFormat": "server errors",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "id": 7,
+      "title": "Worker queue throughput",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(worker_events_claimed[5m]))",
+          "legendFormat": "claimed",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(worker_events_processed[5m]))",
+          "legendFormat": "processed",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(worker_events_failed[5m]))",
+          "legendFormat": "failed",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 8,
+      "title": "Internal indexing",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (outcome) (rate(worker_events_processed{event_type=\"content.published.v1\"}[5m]))",
+          "legendFormat": "{{outcome}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (outcome) (rate(worker_events_failed{event_type=\"content.published.v1\"}[5m]))",
+          "legendFormat": "failed / {{outcome}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 9,
+      "title": "Assistive AI jobs",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (outcome) (rate(worker_events_processed{event_type=\"ai.suggestion.requested.v1\"}[5m]))",
+          "legendFormat": "processed / {{outcome}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (outcome) (rate(worker_events_failed{event_type=\"ai.suggestion.requested.v1\"}[5m]))",
+          "legendFormat": "failed / {{outcome}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 },
+      "id": 10,
+      "title": "Participant experience",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (route, outcome) (rate(api_requests_total{route=~\"/api/v1/(activities|learning|attempts).*\"}[5m]))",
+          "legendFormat": "{{route}} — {{outcome}}",
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "15s",

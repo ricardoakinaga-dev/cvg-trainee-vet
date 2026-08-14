@@ -8,6 +8,16 @@ import {
   toParticipantActivityFromDiagnosticDraft,
   toParticipantActivityFromDraft,
 } from "./projection.js";
+import {
+  createDigitalCaseDefinition,
+  evaluateDoseInfusion,
+  evaluateStructuredFields,
+  projectPublicDigitalCaseStage,
+  type DigitalCaseDefinition,
+  type InternalAssessmentInteraction,
+  type PublicDigitalCaseStage,
+  type StructuredFieldValues,
+} from "./learning-interactions.js";
 import { validateClinicalSourceRefs } from "./source-registry.js";
 import type {
   AssessmentQuestion,
@@ -35,7 +45,8 @@ export type DraftItemKind =
   | "DEBRIEFING"
   | "RETENCAO_ESPACADA";
 
-export type DraftResponseMode = "CHOICE" | "TEXT";
+export type DraftResponseMode =
+  "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
 
 export type DiagnosticSessionId = "B07-S1" | "B07-S2" | "B07-S3";
 
@@ -58,6 +69,9 @@ export type CurriculumDraftItem = Readonly<{
   readonly choices?: readonly Choice[];
   readonly correctChoiceIds?: readonly string[];
   readonly rubric?: DraftRubric;
+  readonly interaction?: InternalAssessmentInteraction;
+  readonly humanCorrectionOwner?: "RICARDO";
+  readonly digitalCaseStage?: PublicDigitalCaseStage;
   readonly feedback: string;
   readonly critical: boolean;
   readonly remediationTargetObjectiveId: string;
@@ -65,7 +79,9 @@ export type CurriculumDraftItem = Readonly<{
 }>;
 
 export type RetentionTemplate = Readonly<{
-  readonly day: 7 | 30 | 90;
+  readonly day: 30 | 60 | 90;
+  readonly blueprintId: string;
+  readonly formId: string;
   readonly objectiveIds: readonly string[];
   readonly itemIds: readonly string[];
   readonly equivalentForm: true;
@@ -85,6 +101,7 @@ export type ModuleLearningLoop = Readonly<{
     readonly criticalBehaviorIds: readonly string[];
     readonly practicalCompetenceClaim: "PROIBIDO_MVP";
   }>;
+  readonly digitalCase: DigitalCaseDefinition;
   readonly debriefPrompts: readonly string[];
   readonly retention: readonly [
     RetentionTemplate,
@@ -154,6 +171,7 @@ export type ModuleAnswer = Readonly<{
   readonly itemId: string;
   readonly selectedChoiceIds?: readonly string[];
   readonly text?: string;
+  readonly structuredValues?: StructuredFieldValues;
 }>;
 
 export type ModuleEvaluationMode = "FORMATIVE_CHOICE" | "MODULE_COMPLETION";
@@ -168,7 +186,7 @@ export type ObjectiveRuntimeResult = Readonly<{
 }>;
 
 export type RetentionReviewResult = Readonly<{
-  readonly day: 7 | 30 | 90;
+  readonly day: 30 | 60 | 90;
   readonly dueAt: string;
   readonly status: "PENDENTE";
 }>;
@@ -229,6 +247,7 @@ export type DraftPreflightModuleResult = Readonly<{
     readonly blueprintCount: boolean;
     readonly requiredFields: boolean;
     readonly correctionMetadata: boolean;
+    readonly equivalentRetentionForms: boolean;
     readonly publicBoundary: boolean;
     readonly publicationBlocked: boolean;
   }>;
@@ -383,6 +402,137 @@ function genericQuestion(
   });
 }
 
+function genericStructuredFieldsItem(
+  module: CurriculumModule,
+  sessionId: string,
+  ordinal: number,
+  sourceRefs: readonly InternalSourceRef[],
+): CurriculumDraftItem {
+  const objectiveId = objectiveFor(module, ordinal);
+  const interaction: InternalAssessmentInteraction = freeze({
+    kind: "STRUCTURED_FIELDS",
+    fields: freeze([
+      freeze({
+        id: "priority",
+        label: "Prioridade simulada",
+        valueType: "TEXT" as const,
+        required: true as const,
+      }),
+      freeze({
+        id: "reassessmentMinutes",
+        label: "Intervalo de reavaliação",
+        valueType: "NUMBER" as const,
+        unit: "min",
+        required: true as const,
+        min: 1,
+        max: 240,
+      }),
+    ]),
+    rubric: {
+      criteria: freeze([
+        freeze({
+          fieldId: "priority",
+          expectedValue: "IMEDIATA" as const,
+          points: 1,
+        }),
+        freeze({
+          fieldId: "reassessmentMinutes",
+          expectedValue: 15,
+          tolerance: 1,
+          points: 1,
+        }),
+      ]),
+      passScore: 2,
+    },
+  });
+  return freeze({
+    id: `${module.id}-${sessionId}-SF${String(ordinal).padStart(2, "0")}`,
+    moduleId: module.id,
+    sessionId,
+    ordinal,
+    objectiveId,
+    kind: "CASO_PROGRESSIVO",
+    responseMode: "STRUCTURED_FIELDS",
+    title: `${module.id} — campos estruturados de decisão`,
+    prompt:
+      "No caso fictício, registre a prioridade e o intervalo de reavaliação. Os campos são avaliados automaticamente no exercício.",
+    interaction,
+    feedback:
+      "A atividade compara os campos estruturados com a avaliação automática versionada; não representa competência prática.",
+    critical: true,
+    remediationTargetObjectiveId: objectiveId,
+    sourceRefs: freeze([...sourceRefs]),
+  });
+}
+
+function genericDoseInfusionItem(
+  module: CurriculumModule,
+  sessionId: string,
+  ordinal: number,
+  sourceRefs: readonly InternalSourceRef[],
+): CurriculumDraftItem {
+  const objectiveId = objectiveFor(module, ordinal);
+  const interaction: InternalAssessmentInteraction = freeze({
+    kind: "DOSE_INFUSION",
+    fields: freeze([
+      freeze({
+        id: "doseMg",
+        label: "Dose calculada",
+        valueType: "NUMBER" as const,
+        unit: "mg",
+        required: true as const,
+        min: 0,
+        max: 100_000,
+      }),
+      freeze({
+        id: "volumeMl",
+        label: "Volume calculado",
+        valueType: "NUMBER" as const,
+        unit: "mL",
+        required: true as const,
+        min: 0,
+        max: 100_000,
+      }),
+      freeze({
+        id: "rateMlPerHour",
+        label: "Velocidade de infusão",
+        valueType: "NUMBER" as const,
+        unit: "mL/h",
+        required: true as const,
+        min: 0,
+        max: 100_000,
+      }),
+    ]),
+    calculationInputs: freeze({
+      weightKg: 10,
+      doseMgPerKg: 2,
+      concentrationMgPerMl: 4,
+      durationHours: 2,
+    }),
+    formulaLabel:
+      "dose = peso × dose/kg; volume = dose ÷ concentração; taxa = volume ÷ tempo",
+    tolerance: 0.01,
+  });
+  return freeze({
+    id: `${module.id}-${sessionId}-DI${String(ordinal).padStart(2, "0")}`,
+    moduleId: module.id,
+    sessionId,
+    ordinal,
+    objectiveId,
+    kind: "SIMULACAO_DIGITAL",
+    responseMode: "DOSE_INFUSION",
+    title: `${module.id} — cálculo de dose e infusão`,
+    prompt:
+      "Resolva o cálculo do cenário fictício preenchendo dose, volume e velocidade de infusão. Os valores são educacionais e não autorizam prescrição.",
+    interaction,
+    feedback:
+      "A rubrica automática verifica a aritmética, as unidades declaradas e a tolerância definida no exercício.",
+    critical: false,
+    remediationTargetObjectiveId: objectiveId,
+    sourceRefs: freeze([...sourceRefs]),
+  });
+}
+
 function genericOpenResponse(
   module: CurriculumModule,
   sessionId: string,
@@ -432,6 +582,7 @@ function genericOpenResponse(
     feedback:
       "A correção humana deve procurar prioridade, meta, reavaliação, comunicação e escalonamento — não estilo ou citação bibliográfica.",
     critical: true,
+    humanCorrectionOwner: "RICARDO",
     remediationTargetObjectiveId: objectiveId,
     sourceRefs: freeze([...sourceRefs]),
   });
@@ -543,11 +694,19 @@ function fromAuthoredQuestion(
     ordinal,
     objectiveId,
     kind,
-    responseMode: "CHOICE",
+    responseMode:
+      question.interaction?.kind === "STRUCTURED_FIELDS"
+        ? "STRUCTURED_FIELDS"
+        : question.interaction?.kind === "DOSE_INFUSION"
+          ? "DOSE_INFUSION"
+          : "CHOICE",
     title: question.title,
     prompt: question.prompt,
     choices: question.choices,
     correctChoiceIds: question.correctChoiceIds,
+    ...(question.interaction === undefined
+      ? {}
+      : { interaction: question.interaction }),
     feedback: question.feedback,
     critical: question.critical,
     remediationTargetObjectiveId: objectiveId,
@@ -574,6 +733,7 @@ function fromAuthoredOpenResponse(
     rubric: response.rubric,
     feedback: response.feedback,
     critical: true,
+    humanCorrectionOwner: response.humanCorrectionOwner ?? "RICARDO",
     remediationTargetObjectiveId: objectiveId,
     sourceRefs: response.sourceRefs,
   });
@@ -605,6 +765,28 @@ function createItems(module: CurriculumModule): readonly CurriculumDraftItem[] {
       genericQuestion(module, session.id, index + 1, sourceRefs),
     );
   });
+  const interactionQuestions =
+    module.id === "M24"
+      ? questions.map((item, index) => {
+          if (index === 0) {
+            return genericStructuredFieldsItem(
+              module,
+              item.sessionId,
+              item.ordinal,
+              sourceRefs,
+            );
+          }
+          if (index === 1) {
+            return genericDoseInfusionItem(
+              module,
+              item.sessionId,
+              item.ordinal,
+              sourceRefs,
+            );
+          }
+          return item;
+        })
+      : questions;
   const openResponses = Array.from(
     { length: blueprint.openResponseCount },
     (_, index) =>
@@ -616,9 +798,11 @@ function createItems(module: CurriculumModule): readonly CurriculumDraftItem[] {
       ),
   );
   return freeze([
-    ...questions.map((item, index) => freeze({ ...item, ordinal: index + 1 })),
+    ...interactionQuestions.map((item, index) =>
+      freeze({ ...item, ordinal: index + 1 }),
+    ),
     ...openResponses.map((item, index) =>
-      freeze({ ...item, ordinal: questions.length + index + 1 }),
+      freeze({ ...item, ordinal: interactionQuestions.length + index + 1 }),
     ),
   ]);
 }
@@ -651,14 +835,22 @@ function createLearningLoop(
       });
     }),
   );
+  const digitalCase = createDigitalCaseDefinition({
+    caseId: `${module.id}-DIGITAL-CASE-V1`,
+    stageItemIds: [
+      caseStages[0]!.itemId,
+      caseStages[1]!.itemId,
+      caseStages[2]!.itemId,
+    ],
+  });
+  const retentionBlueprintId = `${module.id}-RETENTION-BLUEPRINT-V1`;
   const retention = freeze(
-    ([7, 30, 90] as const).map((day, index) =>
+    ([30, 60, 90] as const).map((day, index) =>
       freeze({
         day,
-        objectiveIds: freeze([
-          firstObjectiveIds[index % firstObjectiveIds.length] ??
-            firstObjectiveIds[0]!,
-        ]),
+        blueprintId: retentionBlueprintId,
+        formId: `${module.id}-RETENTION-FORM-${day}`,
+        objectiveIds: freeze([firstObjectiveIds[0]!]),
         itemIds: freeze([
           choiceItems[index % choiceItems.length]?.id ?? choiceItems[0]!.id,
         ]),
@@ -671,6 +863,7 @@ function createLearningLoop(
     baselineItemIds: freeze(choiceItems.slice(0, 3).map((item) => item.id)),
     microlearningObjectiveIds: freeze([...firstObjectiveIds]),
     caseStages,
+    digitalCase,
     simulation: freeze({
       itemIds: freeze(simulationItems.map((item) => item.id)),
       criticalBehaviorIds: freeze([
@@ -689,7 +882,28 @@ function createLearningLoop(
 }
 
 function createDraftPack(module: CurriculumModule): CurriculumDraftPack {
-  const items = createItems(module);
+  const rawItems = createItems(module);
+  const learningLoop = createLearningLoop(module, rawItems);
+  const stageByItemId = new Map(
+    learningLoop.digitalCase.stageItemIds.map((itemId, index) => [
+      itemId,
+      (index + 1) as 1 | 2 | 3,
+    ]),
+  );
+  const items = freeze(
+    rawItems.map((item) => {
+      const stage = stageByItemId.get(item.id);
+      return stage === undefined
+        ? item
+        : freeze({
+            ...item,
+            digitalCaseStage: projectPublicDigitalCaseStage(
+              learningLoop.digitalCase,
+              stage,
+            ),
+          });
+    }),
+  );
   return freeze({
     moduleId: module.id,
     version: "1.0.0",
@@ -699,7 +913,7 @@ function createDraftPack(module: CurriculumModule): CurriculumDraftPack {
     publicProjectionReady: true,
     clinicalReviewRequired: true,
     items,
-    learningLoop: createLearningLoop(module, items),
+    learningLoop,
   });
 }
 
@@ -847,6 +1061,51 @@ function assertPlainTextResponse(value: string): void {
   }
 }
 
+type AutomaticItemEvaluation = Readonly<{
+  readonly answered: boolean;
+  readonly passed: boolean;
+  readonly invalid: boolean;
+}>;
+
+function evaluateAutomaticItem(
+  item: CurriculumDraftItem,
+  answer: ModuleAnswer | undefined,
+): AutomaticItemEvaluation {
+  if (item.responseMode === "CHOICE") {
+    const selected = answer?.selectedChoiceIds;
+    return freeze({
+      answered: selected !== undefined,
+      passed:
+        selected !== undefined &&
+        sameChoiceSet(selected, item.correctChoiceIds ?? []),
+      invalid: false,
+    });
+  }
+  if (
+    item.responseMode !== "STRUCTURED_FIELDS" &&
+    item.responseMode !== "DOSE_INFUSION"
+  ) {
+    return freeze({ answered: false, passed: false, invalid: false });
+  }
+  const values = answer?.structuredValues;
+  if (values === undefined || item.interaction === undefined) {
+    return freeze({ answered: false, passed: false, invalid: false });
+  }
+  if (item.interaction.kind !== item.responseMode) {
+    return freeze({ answered: true, passed: false, invalid: true });
+  }
+  const result =
+    item.interaction.kind === "STRUCTURED_FIELDS"
+      ? evaluateStructuredFields(item.interaction, values)
+      : evaluateDoseInfusion(item.interaction, values);
+  return freeze({
+    answered: true,
+    passed: result.passed,
+    invalid:
+      result.missingFieldIds.length > 0 || result.invalidFieldIds.length > 0,
+  });
+}
+
 export function evaluateModuleAttempt(
   input: Readonly<{
     readonly moduleId: string;
@@ -874,22 +1133,45 @@ export function evaluateModuleAttempt(
   const choiceItems = pack.items.filter(
     (item) => item.responseMode === "CHOICE",
   );
+  const automaticItems = pack.items.filter(
+    (item) => item.responseMode !== "TEXT",
+  );
   const openResponseItems = pack.items.filter(
     (item) => item.responseMode === "TEXT",
   );
   for (const answer of input.answers) {
-    if (answer.text !== undefined) assertPlainTextResponse(answer.text);
     const item = pack.items.find((candidate) => candidate.id === answer.itemId);
-    if (
-      item?.responseMode !== "CHOICE" ||
-      answer.selectedChoiceIds === undefined
-    )
-      continue;
-    const allowedChoiceIds = new Set(
-      (item.choices ?? []).map((choice) => choice.id),
-    );
-    if (answer.selectedChoiceIds.some((id) => !allowedChoiceIds.has(id))) {
-      throw new LearningRuntimeError("answer contains an unknown choice");
+    if (item === undefined) continue;
+    if (answer.text !== undefined) {
+      if (item.responseMode !== "TEXT") {
+        throw new LearningRuntimeError(
+          "text answer does not match the item response mode",
+        );
+      }
+      assertPlainTextResponse(answer.text);
+    }
+    if (answer.selectedChoiceIds !== undefined) {
+      if (item.responseMode !== "CHOICE") {
+        throw new LearningRuntimeError(
+          "choice answer does not match the item response mode",
+        );
+      }
+      const allowedChoiceIds = new Set(
+        (item.choices ?? []).map((choice) => choice.id),
+      );
+      if (answer.selectedChoiceIds.some((id) => !allowedChoiceIds.has(id))) {
+        throw new LearningRuntimeError("answer contains an unknown choice");
+      }
+    }
+    if (answer.structuredValues !== undefined) {
+      if (
+        item.responseMode !== "STRUCTURED_FIELDS" &&
+        item.responseMode !== "DOSE_INFUSION"
+      ) {
+        throw new LearningRuntimeError(
+          "structured answer does not match the item response mode",
+        );
+      }
     }
   }
   const unansweredChoiceItemIds = choiceItems
@@ -897,18 +1179,28 @@ export function evaluateModuleAttempt(
       (item) => answerByItem.get(item.id)?.selectedChoiceIds === undefined,
     )
     .map((item) => item.id);
+  const automaticEvaluationByItemId = new Map(
+    automaticItems.map((item) => [
+      item.id,
+      evaluateAutomaticItem(item, answerByItem.get(item.id)),
+    ]),
+  );
+  const unansweredAutomaticItemIds = automaticItems
+    .filter((item) => !automaticEvaluationByItemId.get(item.id)?.answered)
+    .map((item) => item.id);
+  for (const item of automaticItems) {
+    if (automaticEvaluationByItemId.get(item.id)?.invalid) {
+      invalidAnswerItemIds.push(item.id);
+    }
+  }
   const openResponseItemIds =
     input.mode === "FORMATIVE_CHOICE"
       ? []
       : openResponseItems.map((item) => item.id);
-  const criticalErrorItemIds = choiceItems
+  const criticalErrorItemIds = automaticItems
     .filter((item) => {
-      const selected = answerByItem.get(item.id)?.selectedChoiceIds;
-      return (
-        item.critical &&
-        selected !== undefined &&
-        !sameChoiceSet(selected, item.correctChoiceIds ?? [])
-      );
+      const evaluation = automaticEvaluationByItemId.get(item.id);
+      return item.critical && evaluation?.answered && !evaluation.passed;
     })
     .map((item) => item.id);
 
@@ -918,28 +1210,23 @@ export function evaluateModuleAttempt(
     const existing = results.find(
       (result) => result.objectiveId === item.objectiveId,
     );
-    const itemIsChoice = item.responseMode === "CHOICE";
-    const itemAnswer = answerByItem.get(item.id)?.selectedChoiceIds;
-    const earned =
-      itemIsChoice &&
-      itemAnswer !== undefined &&
-      sameChoiceSet(itemAnswer, item.correctChoiceIds ?? [])
-        ? 1
-        : 0;
+    const itemIsAutomatic = item.responseMode !== "TEXT";
+    const itemEvaluation = automaticEvaluationByItemId.get(item.id);
+    const earned = itemEvaluation?.passed ? 1 : 0;
     if (existing === undefined) {
       return [
         ...results,
         freeze({
           objectiveId: item.objectiveId,
           earnedPoints: earned,
-          possiblePoints: itemIsChoice ? 1 : 0,
-          percent: itemIsChoice ? earned * 100 : 0,
+          possiblePoints: itemIsAutomatic ? 1 : 0,
+          percent: itemIsAutomatic ? earned * 100 : 0,
           critical: item.critical,
           requiredPercent: item.critical ? 80 : 70,
         }),
       ];
     }
-    const possiblePoints = existing.possiblePoints + (itemIsChoice ? 1 : 0);
+    const possiblePoints = existing.possiblePoints + (itemIsAutomatic ? 1 : 0);
     const earnedPoints = existing.earnedPoints + earned;
     return [
       ...results.filter((result) => result !== existing),
@@ -1005,12 +1292,12 @@ export function evaluateModuleAttempt(
   const scorePercent =
     scorePossible === 0 ? 0 : Math.round((scoreEarned / scorePossible) * 100);
   const mastered =
-    unansweredChoiceItemIds.length === 0 &&
+    unansweredAutomaticItemIds.length === 0 &&
     scorePercent >= 70 &&
     remediationObjectiveIds.length === 0;
   const retentionReviews = mastered
     ? freeze(
-        ([7, 30, 90] as const).map((day) =>
+        ([30, 60, 90] as const).map((day) =>
           freeze({
             day,
             dueAt: datePlusDays(completedAt, day),
@@ -1044,6 +1331,14 @@ export function buildPersonalizedCurriculumPath(
   return freeze(
     curriculumV3.modules.map((module, index) => {
       const previousModule = curriculumV3.modules[index - 1];
+      if (previousModule !== undefined && !mastered.has(previousModule.id)) {
+        return freeze({
+          moduleId: module.id,
+          month: module.month,
+          status: "BLOQUEADO_PRE_REQUISITO" as const,
+          nextAction: "CONCLUIR_PRE_REQUISITO" as const,
+        });
+      }
       if (remediation.has(module.id)) {
         return freeze({
           moduleId: module.id,
@@ -1068,14 +1363,6 @@ export function buildPersonalizedCurriculumPath(
           nextAction: "REVISAR_PROXIMO_MODULO" as const,
         });
       }
-      if (previousModule !== undefined && !mastered.has(previousModule.id)) {
-        return freeze({
-          moduleId: module.id,
-          month: module.month,
-          status: "BLOQUEADO_PRE_REQUISITO" as const,
-          nextAction: "CONCLUIR_PRE_REQUISITO" as const,
-        });
-      }
       return freeze({
         moduleId: module.id,
         month: module.month,
@@ -1090,7 +1377,7 @@ export const curriculumDraftCounts = freeze(
   curriculumDraftPacks.map((pack) => ({
     moduleId: pack.moduleId,
     itemCount: pack.items.length,
-    questionCount: pack.items.filter((item) => item.responseMode === "CHOICE")
+    questionCount: pack.items.filter((item) => item.responseMode !== "TEXT")
       .length,
     openResponseCount: pack.items.filter((item) => item.responseMode === "TEXT")
       .length,
@@ -1104,10 +1391,37 @@ function publicBoundaryIsClean(pack: CurriculumDraftPack): boolean {
   const serialized = JSON.stringify(projection);
   return (
     !/source|chapter|page|answer|rubric|critical|pdf/iu.test(serialized) &&
-    projection.items.every((item) =>
-      item.responseMode === "TEXT"
-        ? item.choices === undefined && item.selectionMode === undefined
-        : item.choices !== undefined && item.selectionMode !== undefined,
+    projection.items.every((item) => {
+      if (item.responseMode === "TEXT") {
+        return item.choices === undefined && item.selectionMode === undefined;
+      }
+      if (item.responseMode === "CHOICE") {
+        return item.choices !== undefined && item.selectionMode !== undefined;
+      }
+      return (
+        item.choices === undefined &&
+        item.selectionMode === undefined &&
+        item.interaction?.kind === item.responseMode
+      );
+    })
+  );
+}
+
+function equivalentRetentionFormsAreValid(pack: CurriculumDraftPack): boolean {
+  const forms = pack.learningLoop.retention;
+  const blueprintIds = new Set(forms.map((form) => form.blueprintId));
+  const formIds = new Set(forms.map((form) => form.formId));
+  const itemIds = forms.flatMap((form) => form.itemIds);
+  return (
+    forms.map((form) => form.day).join(",") === "30,60,90" &&
+    blueprintIds.size === 1 &&
+    formIds.size === forms.length &&
+    new Set(itemIds).size === itemIds.length &&
+    forms.every(
+      (form) =>
+        form.equivalentForm &&
+        form.objectiveIds.length > 0 &&
+        form.itemIds.length > 0,
     )
   );
 }
@@ -1137,7 +1451,7 @@ export function preflightCurriculumDrafts(
       (item) => item.moduleId === pack.moduleId,
     );
     const questionCount = pack.items.filter(
-      (item) => item.responseMode === "CHOICE",
+      (item) => item.responseMode !== "TEXT",
     ).length;
     const openResponseCount = pack.items.filter(
       (item) => item.responseMode === "TEXT",
@@ -1158,17 +1472,27 @@ export function preflightCurriculumDrafts(
         validateClinicalSourceRefs(item.sourceRefs).valid &&
         item.remediationTargetObjectiveId.length > 0,
     );
-    const correctionMetadata = pack.items.every((item) =>
-      item.responseMode === "CHOICE"
-        ? item.choices !== undefined &&
+    const correctionMetadata = pack.items.every((item) => {
+      if (item.responseMode === "CHOICE") {
+        return (
+          item.choices !== undefined &&
           item.choices.length >= 2 &&
           item.correctChoiceIds !== undefined &&
           item.correctChoiceIds.length > 0 &&
           item.correctChoiceIds.every((id) =>
             item.choices?.some((choice) => choice.id === id),
           )
-        : item.rubric !== undefined && item.rubric.passScore > 0,
-    );
+        );
+      }
+      if (item.responseMode === "TEXT") {
+        return (
+          item.rubric !== undefined &&
+          item.rubric.passScore > 0 &&
+          item.humanCorrectionOwner === "RICARDO"
+        );
+      }
+      return item.interaction?.kind === item.responseMode;
+    });
     const publicationBlocked =
       !pack.publicationAuthorized ||
       !pack.publicProjectionReady ||
@@ -1177,6 +1501,7 @@ export function preflightCurriculumDrafts(
       blueprintCount,
       requiredFields,
       correctionMetadata,
+      equivalentRetentionForms: equivalentRetentionFormsAreValid(pack),
       publicBoundary: publicBoundaryIsClean(pack),
       publicationBlocked,
     });
@@ -1186,6 +1511,7 @@ export function preflightCurriculumDrafts(
         checks.blueprintCount &&
         checks.requiredFields &&
         checks.correctionMetadata &&
+        checks.equivalentRetentionForms &&
         checks.publicBoundary,
       questionCount,
       openResponseCount,

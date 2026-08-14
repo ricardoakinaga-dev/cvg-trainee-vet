@@ -164,6 +164,27 @@ test.describe("web experience and accessibility contract", () => {
     expect(horizontalOverflow).toBe(false);
   });
 
+  test("preserves reflow at the 200% and 400% zoom-equivalent widths", async ({
+    page,
+  }) => {
+    for (const width of [640, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto("/");
+
+      await expect(
+        page.getByRole("heading", { name: "Entrar no treinamento" }),
+      ).toBeVisible();
+      const horizontalOverflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth,
+      );
+      expect(horizontalOverflow, `unexpected overflow at ${width}px`).toBe(
+        false,
+      );
+    }
+  });
+
   test("has no axe violations on participant and authoring entry surfaces", async ({
     page,
   }) => {

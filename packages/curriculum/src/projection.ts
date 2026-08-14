@@ -8,6 +8,7 @@ import type {
   CurriculumDraftPack,
   DiagnosticDraftPack,
 } from "./learning-runtime.js";
+import { toPublicAssessmentInteraction } from "./learning-interactions.js";
 
 function publicItemId(ordinal: number, moduleNumber = 2): string {
   return `10000000-0000-4000-8000-${String(moduleNumber * 1000 + ordinal).padStart(12, "0")}`;
@@ -81,7 +82,11 @@ export function toParticipantActivityFromDraft(
     itemId: publicItemId(index + 1, moduleNumber),
     ordinal: index + 1,
     kind:
-      item.responseMode === "TEXT" ? ("CASO" as const) : ("QUESTAO" as const),
+      item.responseMode === "TEXT" ||
+      item.kind === "CASO_PROGRESSIVO" ||
+      item.kind === "SIMULACAO_DIGITAL"
+        ? ("CASO" as const)
+        : ("QUESTAO" as const),
     title: item.title,
     text: item.prompt,
     responseMode: item.responseMode,
@@ -95,6 +100,12 @@ export function toParticipantActivityFromDraft(
               ? ("MULTIPLE" as const)
               : ("SINGLE" as const),
         }),
+    ...(item.interaction === undefined
+      ? {}
+      : { interaction: toPublicAssessmentInteraction(item.interaction) }),
+    ...(item.digitalCaseStage === undefined
+      ? {}
+      : { digitalCaseStage: item.digitalCaseStage }),
   }));
   return Object.freeze({
     activityId: publicActivityId(moduleNumber),

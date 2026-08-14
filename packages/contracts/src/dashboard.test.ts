@@ -33,6 +33,26 @@ describe("dashboard public contracts", () => {
       activeModuleId: "M01",
       nextAction: "INICIAR_BASELINE",
       roadmap: roadmap(),
+      recommendations: [
+        {
+          id: "NEXT_STUDY",
+          title: "Acompanhe sua próxima ação",
+          description: "Veja a próxima atividade digital da sua jornada.",
+          href: "/dashboard",
+        },
+        {
+          id: "ACCOUNT_SECURITY",
+          title: "Revise sua conta",
+          description: "Confira recuperação, MFA e sessões da sua conta.",
+          href: "/account",
+        },
+        {
+          id: "REPORT_FEEDBACK",
+          title: "Relate um problema ou melhoria",
+          description: "Envie um relato sem anexos ou dados sensíveis.",
+          href: "/#feedback-report-title",
+        },
+      ],
     });
     expect(participant.roadmap).toHaveLength(24);
 

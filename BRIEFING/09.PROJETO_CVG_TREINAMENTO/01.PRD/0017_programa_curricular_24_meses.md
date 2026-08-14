@@ -63,7 +63,7 @@ A grade V3 mantém os 24 módulos, mas cada módulo passa a declarar uma camada 
 
 ```text
 baseline → microaprendizagem → caso progressivo → simulação digital
-→ debriefing → recuperação em D+7/D+30/D+90 → métrica piloto de transferência
+→ debriefing → recuperação em D+30/D+60/D+90 → métrica piloto de transferência
 ```
 
 O catálogo executável em `packages/curriculum` materializa, por módulo:
@@ -79,7 +79,7 @@ O MVP continua integralmente digital. Observação de trabalho, prática presenc
 
 No M02, o banco inicial contém 31 itens objetivos/estruturados e duas respostas abertas. A projeção pública agora transporta as alternativas e diferencia seleção simples de múltipla; gabarito, feedback interno, rubrica, criticidade e referências permanecem somente no workflow interno. O seed técnico permanece em `PROJECAO_VERIFICADA` até revisão clínica e não publica conteúdo automaticamente.
 
-O runtime técnico complementar em `packages/curriculum/src/learning-runtime.ts` materializa packs versionados para os 24 módulos, um draft diagnóstico B-07 com 120 itens (40 por sessão), preflight de contagem/correção/projeção, perfil diagnóstico por tema sem nota global, domínio digital por objetivo, remediação dirigida, trilha por pré-requisito e retenção D+7/D+30/D+90. Os packs que ainda não passaram pela autoria clínica são `RASCUNHO`; respostas abertas aguardam correção humana e nenhum resultado digital declara competência prática. O runtime é uma base executável de autoria e ensaio, não autorização de aplicação hospitalar.
+O runtime técnico complementar em `packages/curriculum/src/learning-runtime.ts` materializa packs versionados para os 24 módulos, um draft diagnóstico B-07 com 120 itens (40 por sessão), preflight de contagem/correção/projeção, perfil diagnóstico por tema sem nota global, domínio digital por objetivo, remediação dirigida, trilha por pré-requisito e retenção D+30/D+60/D+90. Os packs que ainda não passaram pela autoria clínica são `RASCUNHO`; respostas abertas aguardam correção humana e nenhum resultado digital declara competência prática. O runtime é uma base executável de autoria e ensaio, não autorização de aplicação hospitalar.
 
 ## 4. Mix de atividades e correção
 

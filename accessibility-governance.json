@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "taskId": "ENT95-13-B",
+  "standard": "WCAG-2.2-AA",
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "surfaces": ["participant-entry", "authoring-entry"],
+  "automatedEvidence": [
+    {
+      "id": "A11Y-KEYBOARD-001",
+      "criterion": "keyboard-and-focus",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "provides a keyboard skip path, landmarks, labels, and unique ids",
+      "command": "pnpm test:e2e:active-ha",
+      "syntheticData": true
+    },
+    {
+      "id": "A11Y-ERROR-002",
+      "criterion": "error-retry-and-status",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "renders an accessible loading state and recovers through retry",
+      "command": "pnpm test:e2e:active-ha",
+      "syntheticData": true
+    },
+    {
+      "id": "A11Y-EMPTY-003",
+      "criterion": "empty-state-and-refresh",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "shows an explicit empty journey and refresh action",
+      "command": "pnpm test:e2e:active-ha",
+      "syntheticData": true
+    },
+    {
+      "id": "A11Y-REFLOW-004",
+      "criterion": "narrow-viewport",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "keeps the entry surface usable at a narrow viewport",
+      "command": "pnpm test:e2e:active-ha",
+      "syntheticData": true
+    },
+    {
+      "id": "A11Y-ZOOM-005",
+      "criterion": "reflow-200-400-percent-equivalent",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "preserves reflow at the 200% and 400% zoom-equivalent widths",
+      "command": "pnpm test:e2e:active-ha",
+      "syntheticData": true
+    },
+    {
+      "id": "A11Y-AXE-006",
+      "criterion": "automated-axe",
+      "status": "PASS",
+      "testPath": "tests/e2e/experience-accessibility.spec.ts",
+      "testName": "has no axe violations on participant and authoring entry surfaces",
+      "command": "pnpm test:e2e:active-ha",
+      "syntheticData": true
+    }
+  ],
+  "manualGaps": [
+    {
+      "id": "A11Y-MANUAL-001",
+      "criterion": "all-P0-journeys",
+      "status": "GAP",
+      "owner": "Accessibility specialist",
+      "reason": "Manual checklist for every P0 journey has not been executed.",
+      "nextAction": "Execute and retain the WCAG checklist in an authorized staging environment."
+    },
+    {
+      "id": "A11Y-MANUAL-002",
+      "criterion": "contrast",
+      "status": "GAP",
+      "owner": "Accessibility specialist",
+      "reason": "Contrast sampling was not independently measured in this local slice.",
+      "nextAction": "Measure text, focus and non-text contrast across approved P0 surfaces."
+    },
+    {
+      "id": "A11Y-MANUAL-003",
+      "criterion": "real-zoom-and-motion",
+      "status": "GAP",
+      "owner": "Accessibility specialist",
+      "reason": "Real browser zoom and motion review remain manual evidence.",
+      "nextAction": "Run zoom, reduced-motion and animation review on the full P0 surface set."
+    },
+    {
+      "id": "A11Y-MANUAL-004",
+      "criterion": "screen-reader",
+      "status": "GAP",
+      "owner": "Accessibility specialist",
+      "reason": "NVDA/VoiceOver task execution with an approved matrix was not run.",
+      "nextAction": "Execute the approved screen-reader scenarios with synthetic data and retained findings."
+    },
+    {
+      "id": "A11Y-MANUAL-005",
+      "criterion": "representative-user-review",
+      "status": "GAP",
+      "owner": "Product + Accessibility",
+      "reason": "Representative-user validation requires human approval and scheduling.",
+      "nextAction": "Obtain approval, run consented tasks and re-test all P0/P1 findings."
+    }
+  ]
+}

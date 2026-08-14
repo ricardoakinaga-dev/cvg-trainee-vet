@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { createInitialModuleEvaluation } from "@cvg/curriculum";
 
 import {
   deriveJourneyNextAction,
+  getNextParticipantJourneyActivity,
   getParticipantLearningJourney,
+  isParticipantJourneyActivityCurrent,
   type ParticipantJourneyActivity,
   type ParticipantLearningJourneyState,
   type ParticipantJourneyReadPort,
@@ -12,10 +15,24 @@ const participantId = "11111111-1111-4111-8111-111111111111";
 const scopeId = "22222222-2222-4222-8222-222222222222";
 const assignmentId = "33333333-3333-4333-8333-333333333333";
 const activityId = "44444444-4444-4444-8444-444444444444";
+const completedM01AssignmentId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+const completedM01Assignment = {
+  scopeId,
+  state: {
+    assignmentId: completedM01AssignmentId,
+    participantId,
+    moduleId: "M01",
+    availableAt: "2026-08-10T05:00:00.000Z",
+    status: "CONCLUIDO" as const,
+    version: 1,
+  },
+} as const;
 
 const state: ParticipantLearningJourneyState = {
   participantId,
   assignments: [
+    completedM01Assignment,
     {
       scopeId,
       state: {
@@ -64,12 +81,16 @@ describe("participant learning journey use case", () => {
   it("prioritizes an available assignment, a pending result, then consultation", () => {
     const availableAssignment = {
       ...assignment,
-      state: { ...assignment.state, status: "DISPONIVEL" as const },
+      state: {
+        ...assignment.state,
+        moduleId: "M01",
+        status: "DISPONIVEL" as const,
+      },
     } satisfies ParticipantLearningJourneyState["assignments"][number];
     const noActionActivity = {
       scopeId: activity.scopeId,
       activityId: activity.activityId,
-      slug: activity.slug,
+      slug: "m01-training-v1",
       title: activity.title,
       status: activity.status,
       nextAction: "CONSULTAR_PROXIMO_PASSO" as const,
@@ -110,6 +131,87 @@ describe("participant learning journey use case", () => {
         results: [],
       }),
     ).toBe("CONSULTAR_PROXIMO_PASSO");
+  });
+
+  it("never selects M02 while M01 is pending", () => {
+    const m02Activity = {
+      ...activity,
+      slug: "m02-emergencia-terapia-intensiva-v1",
+      nextAction: "INICIAR_ATIVIDADE" as const,
+    };
+    const pendingM01 = createInitialModuleEvaluation("M01");
+    const pendingM02 = createInitialModuleEvaluation("M02");
+    const laterModuleState: ParticipantLearningJourneyState = {
+      participantId,
+      assignments: [
+        {
+          ...assignment,
+          state: { ...assignment.state, status: "DISPONIVEL" as const },
+        },
+      ],
+      activities: [m02Activity],
+      results: [],
+      runtimes: [
+        {
+          participantId,
+          scopeId,
+          version: 1,
+          updatedAt: "2026-08-10T05:00:00.000Z",
+          evaluation: pendingM02,
+        },
+        {
+          participantId,
+          scopeId,
+          version: 1,
+          updatedAt: "2026-08-10T05:00:00.000Z",
+          evaluation: pendingM01,
+        },
+      ],
+    };
+
+    expect(deriveJourneyNextAction(laterModuleState)).toBe(
+      "AGUARDAR_PUBLICACAO",
+    );
+    expect(getNextParticipantJourneyActivity(laterModuleState)).toBeUndefined();
+    expect(
+      isParticipantJourneyActivityCurrent(laterModuleState, activityId),
+    ).toBe(false);
+  });
+
+  it("selects M01 before M02 when both activities are available", () => {
+    const m01Activity = {
+      ...activity,
+      activityId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      slug: "m01-training-v1",
+      title: "M01 — Fundamentos",
+      nextAction: "INICIAR_ATIVIDADE" as const,
+    };
+    const m02Activity = {
+      ...activity,
+      slug: "m02-emergencia-terapia-intensiva-v1",
+      nextAction: "INICIAR_ATIVIDADE" as const,
+    };
+    const journey: ParticipantLearningJourneyState = {
+      participantId,
+      assignments: [
+        {
+          ...completedM01Assignment,
+          state: { ...completedM01Assignment.state, status: "DISPONIVEL" },
+        },
+        {
+          ...assignment,
+          state: { ...assignment.state, status: "DISPONIVEL" as const },
+        },
+      ],
+      activities: [m02Activity, m01Activity],
+      results: [],
+      runtimes: [],
+    };
+
+    expect(getNextParticipantJourneyActivity(journey)?.activityId).toBe(
+      m01Activity.activityId,
+    );
+    expect(deriveJourneyNextAction(journey)).toBe("INICIAR_ATIVIDADE");
   });
 
   it("fails closed for empty identity and data returned outside requested scopes", async () => {

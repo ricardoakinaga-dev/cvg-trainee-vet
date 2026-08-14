@@ -30,6 +30,7 @@ export {
   aiSuggestions,
   assessmentIdempotency,
   assessmentResults,
+  assessmentRecalculationCandidates,
   answerIdempotency,
   answers,
   appeals,
@@ -42,6 +43,9 @@ export {
   contentVersions,
   contentEditorialRecords,
   contentReviewDecisions,
+  contentWithdrawalAffected,
+  itemStatistics,
+  sourceConflictDecisions,
   learningActivityItems,
   rateLimitBuckets,
 } from "./schema.js";
@@ -68,6 +72,7 @@ export {
   attemptIdempotency,
   attempts,
   curriculumRuntimeStates,
+  digitalCaseRuntimeStates,
   learningActivities,
   outboxEvents,
 } from "./schema.js";
@@ -75,6 +80,7 @@ export type {
   PersistedAnswerSnapshot,
   PersistedAttemptSnapshot,
   PersistedCorrectionSnapshot,
+  PersistedDigitalCaseRuntimeState,
 } from "./schema.js";
 export {
   createLearningStateRepository,
@@ -128,6 +134,7 @@ export {
 export type { ActivityRowShape } from "./activity-repository.js";
 export {
   ContentMappingError,
+  createContentExpiryUseCaseDependencies,
   createContentIndexSourceRepository,
   contentRowToRecord,
   createContentRepository,
@@ -154,7 +161,49 @@ export type {
   CurriculumRuntimeInsertRow,
   CurriculumRuntimeRowShape,
 } from "./curriculum-runtime-repository.js";
+export {
+  createDigitalCaseRuntimeRepository,
+  digitalCaseRuntimeRowToState,
+  digitalCaseRuntimeStateToRow,
+  DigitalCaseRuntimeMappingError,
+  DigitalCaseRuntimePersistenceConflictError,
+} from "./digital-case-repository.js";
+export type {
+  DigitalCaseRuntimeInsertRow,
+  DigitalCaseRuntimeRowShape,
+} from "./digital-case-repository.js";
 export { createParticipantJourneyRepository } from "./journey-repository.js";
+export {
+  createTrainingParticipantRepository,
+  filterTrainingParticipantAccounts,
+  MAX_ADMIN_DASHBOARD_ACCOUNTS,
+} from "./admin-dashboard-repository.js";
+export type { TrainingParticipantAccountRow } from "./admin-dashboard-repository.js";
+export {
+  buildModeratorAssignedWork,
+  createModeratorDashboardRepository,
+} from "./moderator-dashboard-repository.js";
+export type {
+  ModeratorAssignedAccountRow,
+  ModeratorAssignedWorkRow,
+} from "./moderator-dashboard-repository.js";
+export {
+  buildAdminOperationsSignals,
+  createAdminOperationsRepository,
+} from "./admin-operations-repository.js";
+export type {
+  AdminAccountOperationalRow,
+  AdminContentValidityRow,
+  AdminCorrectionRow,
+  AdminFeedbackRow,
+  AdminRemediationRow,
+} from "./admin-operations-repository.js";
+export {
+  createAccountManagementRepositories,
+  createAccountManagementUseCaseDependencies,
+  managedAccountRowToRecord,
+} from "./account-management-repository.js";
+export type { ManagedAccountRowShape } from "./account-management-repository.js";
 export {
   authoringRowToRecord,
   createAuthoringRepository,
@@ -191,6 +240,34 @@ export {
   createCorrectionUseCaseDependencies,
 } from "./correction-repository.js";
 export type { AssessmentResultRowShape } from "./correction-repository.js";
-export { auditEntryToRow, createAuditRepository } from "./audit-repository.js";
-export type { AuditInsertRow } from "./audit-repository.js";
+export {
+  auditEntryToRow,
+  auditRowToEntry,
+  createAuditRepository,
+} from "./audit-repository.js";
+export type { AuditInsertRow, AuditRowShape } from "./audit-repository.js";
 export { createPasswordAuthUseCaseDependencies } from "./password-auth-repository.js";
+export {
+  createItemStatisticsRepository,
+  itemStatisticsRowToState,
+  itemStatisticsStateToRow,
+  ItemStatisticsMappingError,
+} from "./item-statistics-repository.js";
+export type {
+  ItemStatisticsInsertRow,
+  ItemStatisticsRowShape,
+} from "./item-statistics-repository.js";
+export {
+  createSourceConflictDecisionRepository,
+  sourceConflictDecisionRowToState,
+  sourceConflictDecisionStateToRow,
+  SourceConflictMappingError,
+} from "./source-conflict-repository.js";
+export type { SourceConflictDecisionRowShape } from "./source-conflict-repository.js";
+export {
+  AssessmentRecalculationMappingError,
+  assessmentRecalculationCandidateRowToCandidate,
+  assessmentRecalculationStateToUpdate,
+  createAssessmentRecalculationRepository,
+} from "./assessment-recalculation-repository.js";
+export type { AssessmentRecalculationCandidateRowShape } from "./assessment-recalculation-repository.js";

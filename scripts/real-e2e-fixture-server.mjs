@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { unlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, like } from "drizzle-orm";
 
 import { createInvitation } from "../packages/application/dist/invitation-use-cases.js";
 import { hashPassword } from "../packages/application/dist/password-auth.js";
@@ -12,13 +12,22 @@ import {
   accountInvitations,
   accounts,
   activityAssignments,
+  appeals,
   answerIdempotency,
   answers,
   attemptIdempotency,
   attempts,
+  assessmentIdempotency,
+  assessmentResults,
+  assessmentWorkflows,
+  contentWithdrawalAffected,
   contentVersions,
+  curriculumRuntimeStates,
+  digitalCaseRuntimeStates,
+  feedbackTickets,
   learningActivities,
   learningActivityItems,
+  learningAssignments,
   outboxEvents,
   sessions,
 } from "../packages/persistence/dist/schema.js";
@@ -61,6 +70,7 @@ const activityId = randomUUID();
 const contentId = randomUUID();
 const contentVersionId = randomUUID();
 const token = randomBytes(32).toString("base64url");
+const adminPassword = randomBytes(18).toString("base64url");
 const participantPassword = randomBytes(18).toString("base64url");
 let participantId;
 let cleanupStarted = false;
@@ -71,6 +81,9 @@ async function seed() {
     id: adminId,
     professionalEmail: `real-e2e-admin-${adminId}@cvg.example`,
     status: "ACTIVE",
+    passwordHash: await hashPassword(adminPassword),
+    roles: ["ADMIN"],
+    scopes: [scopeId],
   });
 
   const participantEmail = `real-e2e-participant-${activityId}@cvg.example`;
@@ -130,6 +143,8 @@ async function seed() {
   await writeFile(
     fixtureFile,
     JSON.stringify({
+      adminLogin: `real-e2e-admin-${adminId}@cvg.example`,
+      adminPassword,
       login: participantEmail,
       password: participantPassword,
       activityId,
@@ -137,6 +152,129 @@ async function seed() {
     }),
     "utf8",
   );
+}
+
+async function cleanupStaleSyntheticResidue() {
+  const staleAccounts = await database.db
+    .select({ id: accounts.id })
+    .from(accounts)
+    .where(like(accounts.professionalEmail, "real-e2e-%"));
+  const staleAccountIds = staleAccounts.map((row) => row.id);
+  const staleActivities = await database.db
+    .select({ id: learningActivities.id })
+    .from(learningActivities)
+    .where(like(learningActivities.slug, "real-e2e-%"));
+  const staleActivityIds = staleActivities.map((row) => row.id);
+  const staleContentVersionRows =
+    staleActivityIds.length === 0
+      ? []
+      : await database.db
+          .select({ contentVersionId: learningActivityItems.contentVersionId })
+          .from(learningActivityItems)
+          .where(inArray(learningActivityItems.activityId, staleActivityIds));
+  const staleContentVersionIds = staleContentVersionRows.map(
+    (row) => row.contentVersionId,
+  );
+
+  if (staleAccountIds.length > 0) {
+    const staleAttempts = await database.db
+      .select({ id: attempts.id })
+      .from(attempts)
+      .where(inArray(attempts.participantId, staleAccountIds));
+    const staleAttemptIds = staleAttempts.map((row) => row.id);
+    if (staleAttemptIds.length > 0) {
+      await database.db
+        .delete(assessmentIdempotency)
+        .where(inArray(assessmentIdempotency.attemptId, staleAttemptIds));
+      await database.db
+        .delete(assessmentResults)
+        .where(inArray(assessmentResults.attemptId, staleAttemptIds));
+      await database.db
+        .delete(assessmentWorkflows)
+        .where(inArray(assessmentWorkflows.attemptId, staleAttemptIds));
+      await database.db
+        .delete(appeals)
+        .where(inArray(appeals.attemptId, staleAttemptIds));
+      await database.db
+        .delete(answerIdempotency)
+        .where(inArray(answerIdempotency.attemptId, staleAttemptIds));
+      await database.db
+        .delete(attemptIdempotency)
+        .where(inArray(attemptIdempotency.attemptId, staleAttemptIds));
+      await database.db
+        .delete(answers)
+        .where(inArray(answers.attemptId, staleAttemptIds));
+      await database.db
+        .delete(outboxEvents)
+        .where(inArray(outboxEvents.aggregateId, staleAttemptIds));
+      await database.db
+        .delete(attempts)
+        .where(inArray(attempts.id, staleAttemptIds));
+    }
+    await database.db
+      .delete(sessions)
+      .where(inArray(sessions.accountId, staleAccountIds));
+    await database.db
+      .delete(accountInvitations)
+      .where(inArray(accountInvitations.accountId, staleAccountIds));
+    await database.db
+      .delete(accountInvitations)
+      .where(inArray(accountInvitations.createdBy, staleAccountIds));
+    await database.db
+      .delete(activityAssignments)
+      .where(inArray(activityAssignments.participantId, staleAccountIds));
+    await database.db
+      .delete(curriculumRuntimeStates)
+      .where(inArray(curriculumRuntimeStates.participantId, staleAccountIds));
+    await database.db
+      .delete(digitalCaseRuntimeStates)
+      .where(inArray(digitalCaseRuntimeStates.participantId, staleAccountIds));
+    await database.db
+      .delete(learningAssignments)
+      .where(inArray(learningAssignments.participantId, staleAccountIds));
+    await database.db
+      .delete(assessmentWorkflows)
+      .where(inArray(assessmentWorkflows.participantId, staleAccountIds));
+    await database.db
+      .delete(feedbackTickets)
+      .where(inArray(feedbackTickets.participantId, staleAccountIds));
+    await database.db
+      .delete(appeals)
+      .where(inArray(appeals.participantId, staleAccountIds));
+    await database.db
+      .delete(contentWithdrawalAffected)
+      .where(inArray(contentWithdrawalAffected.participantId, staleAccountIds));
+  }
+
+  if (staleActivityIds.length > 0) {
+    await database.db
+      .delete(activityAssignments)
+      .where(inArray(activityAssignments.activityId, staleActivityIds));
+    await database.db
+      .delete(learningActivityItems)
+      .where(inArray(learningActivityItems.activityId, staleActivityIds));
+    await database.db
+      .delete(learningActivities)
+      .where(inArray(learningActivities.id, staleActivityIds));
+  }
+  if (staleContentVersionIds.length > 0) {
+    await database.db
+      .delete(contentWithdrawalAffected)
+      .where(
+        inArray(
+          contentWithdrawalAffected.contentVersionId,
+          staleContentVersionIds,
+        ),
+      );
+    await database.db
+      .delete(contentVersions)
+      .where(inArray(contentVersions.id, staleContentVersionIds));
+  }
+  if (staleAccountIds.length > 0) {
+    await database.db
+      .delete(accounts)
+      .where(inArray(accounts.id, staleAccountIds));
+  }
 }
 
 async function cleanup() {
@@ -174,6 +312,18 @@ async function cleanup() {
       await database.db
         .delete(accountInvitations)
         .where(eq(accountInvitations.accountId, participantId));
+      cleanupStep = "participant_digital_case_runtime_states";
+      await database.db
+        .delete(digitalCaseRuntimeStates)
+        .where(eq(digitalCaseRuntimeStates.participantId, participantId));
+      cleanupStep = "participant_curriculum_runtime_states";
+      await database.db
+        .delete(curriculumRuntimeStates)
+        .where(eq(curriculumRuntimeStates.participantId, participantId));
+      cleanupStep = "participant_learning_assignments";
+      await database.db
+        .delete(learningAssignments)
+        .where(eq(learningAssignments.participantId, participantId));
       await database.db
         .delete(activityAssignments)
         .where(eq(activityAssignments.participantId, participantId));
@@ -194,6 +344,8 @@ async function cleanup() {
       cleanupStep = "participant_account";
       await database.db.delete(accounts).where(eq(accounts.id, participantId));
     }
+    cleanupStep = "admin_sessions";
+    await database.db.delete(sessions).where(eq(sessions.accountId, adminId));
     cleanupStep = "admin_account";
     await database.db.delete(accounts).where(eq(accounts.id, adminId));
   } catch (error) {
@@ -211,6 +363,7 @@ async function cleanup() {
   }
 }
 
+await cleanupStaleSyntheticResidue();
 await seed();
 const server = createServer((request, response) => {
   if (request.method === "GET" && request.url === "/ready") {

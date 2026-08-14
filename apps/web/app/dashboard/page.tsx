@@ -12,6 +12,13 @@ type DashboardModule = Readonly<{
   readonly nextAction: string;
 }>;
 
+type DashboardRecommendation = Readonly<{
+  readonly id: "NEXT_STUDY" | "ACCOUNT_SECURITY" | "REPORT_FEEDBACK";
+  readonly title: string;
+  readonly description: string;
+  readonly href: "/dashboard" | "/account" | "/#feedback-report-title";
+}>;
+
 type Dashboard = Readonly<{
   readonly curriculumVersion: string;
   readonly totalMonths: 24;
@@ -21,6 +28,7 @@ type Dashboard = Readonly<{
   readonly activeModuleId?: string;
   readonly nextAction: string;
   readonly roadmap: readonly DashboardModule[];
+  readonly recommendations: readonly DashboardRecommendation[];
 }>;
 
 type ApiRecord = Readonly<Record<string, unknown>>;
@@ -40,6 +48,16 @@ function isDashboard(value: unknown): value is Dashboard {
     typeof value.progressPercent === "number" &&
     typeof value.nextAction === "string" &&
     value.roadmap.length === 24 &&
+    Array.isArray(value.recommendations) &&
+    value.recommendations.length === 3 &&
+    value.recommendations.every(
+      (recommendation) =>
+        isRecord(recommendation) &&
+        typeof recommendation.id === "string" &&
+        typeof recommendation.title === "string" &&
+        typeof recommendation.description === "string" &&
+        typeof recommendation.href === "string",
+    ) &&
     value.roadmap.every(
       (module) =>
         isRecord(module) &&
@@ -134,6 +152,30 @@ export default function DashboardPage() {
               aria-label={`${dashboard.progressPercent}% da jornada digital concluída`}
             />
             <p>{dashboard.progressPercent}% concluído no digital</p>
+          </section>
+
+          <section
+            className="hero-card dashboard-recommendations"
+            aria-labelledby="recommendations-title"
+          >
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Acesso rápido</p>
+                <h2 id="recommendations-title">Recomendações para você</h2>
+              </div>
+            </div>
+            <div className="recommendation-grid">
+              {dashboard.recommendations.map((recommendation) => (
+                <a
+                  className="recommendation-card"
+                  href={recommendation.href}
+                  key={recommendation.id}
+                >
+                  <h3>{recommendation.title}</h3>
+                  <p>{recommendation.description}</p>
+                </a>
+              ))}
+            </div>
           </section>
 
           <section className="journey-list" aria-labelledby="roadmap-title">

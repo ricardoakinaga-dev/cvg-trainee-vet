@@ -121,6 +121,79 @@ describe("published activity persistence mapping", () => {
     ).toThrow(PersistenceMappingError);
   });
 
+  it("maps structured and dose interactions while keeping automatic answers out of the projection", () => {
+    const state = activityRowsToState([
+      {
+        ...rows[0],
+        responseMode: "DOSE_INFUSION",
+        interaction: {
+          kind: "DOSE_INFUSION",
+          evaluationMode: "AUTOMATIC",
+          fields: [
+            {
+              id: "doseMg",
+              label: "Dose calculada",
+              valueType: "NUMBER",
+              unit: "mg",
+              required: true,
+            },
+          ],
+          calculationInputs: {
+            weightKg: 10,
+            doseMgPerKg: 2,
+            concentrationMgPerMl: 4,
+            durationHours: 2,
+          },
+          formulaLabel: "dose = peso × dose/kg",
+        },
+        digitalCaseStage: {
+          caseId: "M24-DIGITAL-CASE-V1",
+          stage: 1,
+          examSeries: [
+            {
+              id: "RADIOGRAFIA-SERIES",
+              modality: "RADIOGRAFIA",
+              label: "Radiografia seriada — caso fictício",
+              observationCount: 2,
+            },
+            {
+              id: "POCUS-SERIES",
+              modality: "POCUS",
+              label: "POCUS seriado — caso fictício",
+              observationCount: 2,
+            },
+            {
+              id: "ECG-SERIES",
+              modality: "ECG",
+              label: "ECG seriado — caso fictício",
+              observationCount: 2,
+            },
+          ],
+        },
+      },
+    ]);
+
+    expect(state?.items[0]).toMatchObject({
+      responseMode: "DOSE_INFUSION",
+      interaction: { kind: "DOSE_INFUSION", evaluationMode: "AUTOMATIC" },
+      digitalCaseStage: { stage: 1 },
+    });
+    expect(JSON.stringify(state)).not.toContain("correctChoiceIds");
+    expect(() =>
+      activityRowsToState([
+        {
+          ...rows[0],
+          responseMode: "STRUCTURED_FIELDS",
+          interaction: {
+            kind: "STRUCTURED_FIELDS",
+            evaluationMode: "INVALID",
+            fields: [],
+          },
+        },
+      ]),
+    ).toThrow(PersistenceMappingError);
+  });
+
   it("keeps content and activity-item tables explicit", () => {
     expect(contentVersions).toBeDefined();
     expect(learningActivityItems).toBeDefined();

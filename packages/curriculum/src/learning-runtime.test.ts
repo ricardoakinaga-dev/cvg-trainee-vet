@@ -66,7 +66,11 @@ describe("curriculum learning runtime", () => {
         (pack) =>
           pack.learningLoop.retention.length === 3 &&
           pack.learningLoop.retention.map((item) => item.day).join(",") ===
-            "7,30,90" &&
+            "30,60,90" &&
+          new Set(pack.learningLoop.retention.map((item) => item.formId))
+            .size === 3 &&
+          new Set(pack.learningLoop.retention.flatMap((item) => item.itemIds))
+            .size === 3 &&
           pack.learningLoop.simulation.practicalCompetenceClaim ===
             "PROIBIDO_MVP",
       ),
@@ -106,6 +110,23 @@ describe("curriculum learning runtime", () => {
     );
   });
 
+  it("materializes three fictitious progressive case stages with recorded consequences", () => {
+    const pack = getModuleDraftPack("M03");
+    const itemIds = new Set(pack.items.map((item) => item.id));
+
+    expect(pack.learningLoop.caseStages.map((stage) => stage.stage)).toEqual([
+      1, 2, 3,
+    ]);
+    expect(
+      pack.learningLoop.caseStages.every(
+        (stage) =>
+          itemIds.has(stage.itemId) &&
+          stage.consequence.includes("simulada") &&
+          stage.consequence.includes("conduta prática"),
+      ),
+    ).toBe(true);
+  });
+
   it("creates remediation for a critical error and only the affected objectives", () => {
     const pack = getModuleDraftPack("M02");
     const firstChoice = pack.items.find(
@@ -142,7 +163,7 @@ describe("curriculum learning runtime", () => {
     expect(result.criticalErrorItemIds).toContain(firstChoice.id);
   });
 
-  it("schedules D+7, D+30 and D+90 after digital mastery", () => {
+  it("schedules D+30, D+60 and D+90 after digital mastery", () => {
     const pack = getModuleDraftPack("M03");
     const answers: readonly ModuleAnswer[] = pack.items
       .filter((item) => item.responseMode === "CHOICE")
@@ -161,8 +182,8 @@ describe("curriculum learning runtime", () => {
     expect(result.status).toBe("DOMINIO_DIGITAL");
     expect(result.nextAction).toBe("REVISAR_RETENCAO");
     expect(result.retentionReviews).toEqual([
-      { day: 7, dueAt: "2026-08-17T12:00:00.000Z", status: "PENDENTE" },
       { day: 30, dueAt: "2026-09-09T12:00:00.000Z", status: "PENDENTE" },
+      { day: 60, dueAt: "2026-10-09T12:00:00.000Z", status: "PENDENTE" },
       { day: 90, dueAt: "2026-11-08T12:00:00.000Z", status: "PENDENTE" },
     ]);
     expect(result.objectiveResults.every((item) => item.percent === 100)).toBe(
@@ -206,6 +227,19 @@ describe("curriculum learning runtime", () => {
       nextAction: "INICIAR_BASELINE",
     });
     expect(path.find((item) => item.moduleId === "M03")).toMatchObject({
+      status: "BLOQUEADO_PRE_REQUISITO",
+      nextAction: "CONCLUIR_PRE_REQUISITO",
+    });
+  });
+
+  it("does not accept a mastered module while its prerequisite is incomplete", () => {
+    const path = buildPersonalizedCurriculumPath({
+      masteredModuleIds: ["M02"],
+      remediationModuleIds: [],
+      retentionDueModuleIds: [],
+    });
+
+    expect(path.find((item) => item.moduleId === "M02")).toMatchObject({
       status: "BLOQUEADO_PRE_REQUISITO",
       nextAction: "CONCLUIR_PRE_REQUISITO",
     });
@@ -323,6 +357,7 @@ describe("curriculum learning runtime", () => {
           module.checks.blueprintCount &&
           module.checks.requiredFields &&
           module.checks.correctionMetadata &&
+          module.checks.equivalentRetentionForms &&
           module.checks.publicBoundary &&
           module.checks.publicationBlocked,
       ),

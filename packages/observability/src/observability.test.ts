@@ -3,13 +3,27 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createOtlpHttpTraceSink,
   createObservability,
-  renderPrometheusMetrics,
   sanitizeCorrelationId,
   type LogRecord,
   type TraceSpan,
 } from "./observability.js";
 
 describe("observability", () => {
+  it("exposes an immutable non-invasive collection policy", () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+
+    expect(observability.collectionPolicy).toEqual({
+      screenRecording: false,
+      sessionReplay: false,
+      behavioralProfiling: false,
+      rawPayloads: false,
+    });
+    expect(Object.isFrozen(observability.collectionPolicy)).toBe(true);
+  });
+
   it("emits only bounded, redacted structured fields", () => {
     const records: LogRecord[] = [];
     const observability = createObservability({
@@ -238,7 +252,7 @@ describe("observability", () => {
       outcome: "success",
     });
 
-    const rendered = renderPrometheusMetrics(observability.metrics.snapshot());
+    const rendered = observability.metrics.prometheus();
 
     expect(rendered).toContain("# TYPE worker_events_processed counter");
     expect(rendered).toContain(
@@ -248,6 +262,21 @@ describe("observability", () => {
     expect(rendered).toContain("worker_batch_duration_ms_sum");
     expect(rendered).not.toContain("participant");
     expect(observability.metrics.prometheus()).toBe(rendered);
+  });
+
+  it("exports a bounded p95 gauge for latency SLO dashboards", () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+
+    observability.metrics.observe("api.request.duration_ms", 100);
+    observability.metrics.observe("api.request.duration_ms", 200);
+    observability.metrics.observe("api.request.duration_ms", 300);
+
+    expect(observability.metrics.prometheus()).toContain(
+      "api_request_duration_ms_p95 300",
+    );
   });
 
   it("records bounded request spans and preserves route attributes", () => {

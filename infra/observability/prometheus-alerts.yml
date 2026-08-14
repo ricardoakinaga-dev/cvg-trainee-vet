@@ -1,0 +1,74 @@
+groups:
+  - name: cvg.operational
+    interval: 30s
+    rules:
+      - alert: CvgCoreAvailabilityBreach
+        expr: sum(rate(api_requests_total{outcome!="server_error"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1) < 0.995
+        for: 5m
+        labels:
+          severity: critical
+          owner: sre
+          signal: api_availability
+        annotations:
+          summary: CVG core availability is below the approved floor
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos
+      - alert: CvgApiLatencyBreach
+        expr: max(api_request_duration_ms_p95{route=~"/api/v1/.*"}) > 800
+        for: 5m
+        labels:
+          severity: warning
+          owner: sre
+          signal: api_latency
+        annotations:
+          summary: CVG API p95 latency is above the read SLO
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo
+      - alert: CvgApiErrorRateBreach
+        expr: sum(rate(api_requests_total{outcome="server_error"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          owner: sre
+          signal: api_errors
+        annotations:
+          summary: CVG API server error rate is above the operational threshold
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados
+      - alert: CvgIndexingFailures
+        expr: sum(rate(worker_events_failed{event_type="content.published.v1"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          owner: backend
+          signal: content_indexing
+        annotations:
+          summary: Internal content indexing is failing
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados
+      - alert: CvgAssistiveAiFailures
+        expr: sum(rate(worker_events_failed{event_type="ai.suggestion.requested.v1"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          owner: integrations
+          signal: ai_assistive
+        annotations:
+          summary: Assistive AI jobs are failing; the educational core remains authoritative
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos
+      - alert: CvgWorkerQueueBacklog
+        expr: sum(rate(worker_events_claimed[5m])) > sum(rate(worker_events_processed[5m]))
+        for: 10m
+        labels:
+          severity: critical
+          owner: backend
+          signal: worker_queue
+        annotations:
+          summary: Worker claimed throughput is above processed throughput
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#backup-rpo-e-rto
+      - alert: CvgParticipantExperienceErrors
+        expr: sum(rate(api_requests_total{route=~"/api/v1/(activities|learning|attempts).*",outcome="server_error"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          owner: product
+          signal: participant_experience
+        annotations:
+          summary: Participant journey server errors require product and SRE review
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo

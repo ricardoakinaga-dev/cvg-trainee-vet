@@ -96,6 +96,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@cvg/application':
+        specifier: workspace:*
+        version: link:../../packages/application
       '@cvg/config':
         specifier: workspace:*
         version: link:../../packages/config

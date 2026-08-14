@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "taskId": "ENT95-04-C",
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "environment": "local-ha-synthetic",
+  "smokeEvidence": {
+    "id": "CAPACITY-SMOKE-055",
+    "target": "http://127.0.0.1:3180/health/live",
+    "command": "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live CVG_LOAD_REQUESTS=200 CVG_LOAD_CONCURRENCY=20 pnpm ops:load-smoke",
+    "requestCount": 200,
+    "concurrency": 20,
+    "successCount": 200,
+    "httpStatus": 200,
+    "throughputRequestsPerSecond": 458.14,
+    "p95Milliseconds": 102.37,
+    "status": "PASS",
+    "syntheticData": true,
+    "teardownVerified": true,
+    "artifactId": "PREMIUM-ENTERPRISE-95-CAPACITY-GOVERNANCE-056"
+  },
+  "explorationEvidence": {
+    "recordedAt": "2026-08-12",
+    "syntheticData": true,
+    "teardownVerified": true,
+    "loadRuns": [
+      {
+        "id": "CAPACITY-STEP-200-C20",
+        "target": "http://127.0.0.1:3180/health/live",
+        "command": "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live CVG_LOAD_REQUESTS=200 CVG_LOAD_CONCURRENCY=20 pnpm ops:load-smoke",
+        "requestCount": 200,
+        "concurrency": 20,
+        "successCount": 200,
+        "successRatePercent": 100,
+        "throughputRequestsPerSecond": 466.72,
+        "p95Milliseconds": 91.41,
+        "status": "PASS"
+      },
+      {
+        "id": "CAPACITY-STEP-1000-C50",
+        "target": "http://127.0.0.1:3180/health/live",
+        "command": "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live CVG_LOAD_REQUESTS=1000 CVG_LOAD_CONCURRENCY=50 pnpm ops:load-smoke",
+        "requestCount": 1000,
+        "concurrency": 50,
+        "successCount": 1000,
+        "successRatePercent": 100,
+        "throughputRequestsPerSecond": 716.71,
+        "p95Milliseconds": 115.47,
+        "status": "PASS"
+      },
+      {
+        "id": "CAPACITY-STEP-5000-C100",
+        "target": "http://127.0.0.1:3180/health/live",
+        "command": "CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live CVG_LOAD_REQUESTS=5000 CVG_LOAD_CONCURRENCY=100 pnpm ops:load-smoke",
+        "requestCount": 5000,
+        "concurrency": 100,
+        "successCount": 5000,
+        "successRatePercent": 100,
+        "throughputRequestsPerSecond": 1014.1,
+        "p95Milliseconds": 160.8,
+        "status": "PASS"
+      }
+    ],
+    "failover": {
+      "id": "CAPACITY-FAILOVER-API-A-058",
+      "target": "http://127.0.0.1:3180/health/live",
+      "command": "stop api-a; run CVG_LOAD_REQUESTS=1000 CVG_LOAD_CONCURRENCY=50 pnpm ops:load-smoke; restore api-a with docker compose up --detach --wait api-a",
+      "stoppedReplica": "api-a",
+      "requestCount": 1000,
+      "concurrency": 50,
+      "successCount": 1000,
+      "successRatePercent": 100,
+      "throughputRequestsPerSecond": 565.82,
+      "p95Milliseconds": 106.91,
+      "restoredHealthy": true,
+      "status": "PASS"
+    },
+    "soak": {
+      "status": "NOT_EXECUTED",
+      "reason": "No approved sustained-load window was executed.",
+      "nextAction": "Run the approved soak profile with queue, latency, error and recovery telemetry."
+    }
+  },
+  "gaps": [
+    {
+      "id": "CAPACITY-GAP-001",
+      "criterion": "saturation",
+      "status": "GAP",
+      "owner": "SRE + QA",
+      "reason": "Short smoke does not identify the saturation boundary.",
+      "nextAction": "Run an approved stepped load profile and retain the first bounded failure point."
+    },
+    {
+      "id": "CAPACITY-GAP-002",
+      "criterion": "soak",
+      "status": "GAP",
+      "owner": "SRE",
+      "reason": "No sustained load window was executed.",
+      "nextAction": "Run the approved soak profile with queue, latency and error telemetry."
+    },
+    {
+      "id": "CAPACITY-GAP-003",
+      "criterion": "failover-and-recovery",
+      "status": "GAP",
+      "owner": "SRE + QA",
+      "reason": "The smoke target does not prove replica failover or recovery under load.",
+      "nextAction": "Execute controlled failover and recovery with retained synthetic evidence."
+    },
+    {
+      "id": "CAPACITY-GAP-004",
+      "criterion": "approved-capacity-and-SLO",
+      "status": "GAP",
+      "owner": "SRE + Product",
+      "reason": "No approved enterprise capacity profile or productive SLO was supplied.",
+      "nextAction": "Approve the profile, SLO and staging equivalence before capacity acceptance."
+    }
+  ]
+}

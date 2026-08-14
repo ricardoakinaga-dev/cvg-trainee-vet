@@ -12,6 +12,7 @@ import {
   accounts,
   contentVersions,
   contentEditorialRecords,
+  contentReviewDecisions,
   createContentUseCaseDependencies,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
@@ -33,6 +34,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const correlationId = randomUUID();
       const approverId = randomUUID();
       const editorialRecordId = randomUUID();
+      const reviewDecisionId = randomUUID();
 
       try {
         await database.db.insert(accounts).values({
@@ -110,16 +112,31 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             checkedAt: new Date().toISOString(),
           },
         });
+        await database.db.insert(contentReviewDecisions).values({
+          id: reviewDecisionId,
+          contentEditorialRecordId: editorialRecordId,
+          contentVersionId: versionId,
+          contentId,
+          version: 1,
+          scopeId,
+          reviewerId: approverId,
+          decision: "APROVAR_CLINICAMENTE",
+          rationale: "Aprovação clínica sintética para teste de integração.",
+          correlationId,
+          reviewedAt: new Date("2026-08-10T12:00:00.000Z"),
+        });
         const command: AdvanceContentCommand = {
           principalId: approverId,
           accountStatus: "ACTIVE",
-          roles: ["CLINICAL_APPROVER"],
+          roles: ["AUTHOR"],
           scopes: [scopeId],
+          approvedClinicalApproverId: approverId,
           contentId,
           version: 1,
           scopeId,
           event: "PUBLICAR",
           correlationId,
+          approvedClinicalReviewerId: approverId,
         };
         const dependencies = createContentUseCaseDependencies(
           database.db,
@@ -146,6 +163,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await database.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
+        await database.db
+          .delete(contentReviewDecisions)
+          .where(eq(contentReviewDecisions.id, reviewDecisionId));
         await database.db
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));

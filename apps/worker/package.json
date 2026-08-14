@@ -10,6 +10,7 @@
     "reconcile:qdrant": "CVG_WORKER_AUTOSTART=false node dist/reconcile-command.js"
   },
   "dependencies": {
+    "@cvg/application": "workspace:*",
     "@cvg/config": "workspace:*",
     "@cvg/integrations": "workspace:*",
     "@cvg/observability": "workspace:*",

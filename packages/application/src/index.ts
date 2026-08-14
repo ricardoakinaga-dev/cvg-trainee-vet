@@ -6,6 +6,27 @@ export type {
   Capability,
   Role,
 } from "./authorization.js";
+export {
+  listManagedAccounts,
+  revokeManagedAccountSessions,
+  updateManagedAccount,
+} from "./account-management-use-cases.js";
+export type {
+  AccountManagementAccountPort,
+  AccountManagementListQuery,
+  AccountManagementListResult,
+  AccountManagementPrincipal,
+  AccountManagementSessionPort,
+  AccountManagementTransactionPort,
+  AccountManagementTransactionalOperations,
+  AccountManagementUpdateInput,
+  AccountManagementUseCaseDependencies,
+  ListManagedAccountsCommand,
+  ManagedAccount,
+  RevokeManagedAccountSessionsCommand,
+  RevokedManagedAccountSessions,
+  UpdateManagedAccountCommand,
+} from "./account-management-use-cases.js";
 export type {
   ClinicalReviewQueueFilter,
   ClinicalReviewQueueItem,
@@ -15,12 +36,13 @@ export type {
 } from "./authoring-review-queue.js";
 export { ApplicationError, toApplicationError } from "./errors.js";
 export type { ApplicationErrorCode, ApplicationErrorDetail } from "./errors.js";
-export { createAuditEntry } from "./audit.js";
+export { createAuditEntry, listAuditEntries } from "./audit.js";
 export type {
   AuditEntry,
   AuditEntryInput,
   AuditOutcome,
   AuditPort,
+  AuditReadPort,
 } from "./audit.js";
 export { startAttempt, submitAttempt } from "./attempt-use-cases.js";
 export type {
@@ -69,6 +91,37 @@ export type {
   FeedbackReadPort,
   GetAttemptFeedbackCommand,
 } from "./feedback-use-cases.js";
+export { listFeedbackTicketStates } from "./feedback-list.js";
+export type {
+  FeedbackTicketListAudience,
+  FeedbackTicketListContext,
+  FeedbackTicketReadPort,
+} from "./feedback-list.js";
+export { recordObservedItemStatistics } from "./item-statistics-use-cases.js";
+export type { ItemStatisticsWritePort } from "./item-statistics-use-cases.js";
+export {
+  recalculateAffectedAssessments,
+  registerAssessmentRecalculationCandidates,
+} from "./assessment-recalculation-use-cases.js";
+export type {
+  AssessmentRecalculationCandidate,
+  AssessmentRecalculationCandidateWritePort,
+  AssessmentRecalculationNotification,
+  AssessmentRecalculationPort,
+  RecalculateAffectedAssessmentsCommand,
+  RecalculateAffectedAssessmentsResult,
+  RegisterAssessmentRecalculationCandidatesCommand,
+} from "./assessment-recalculation-use-cases.js";
+export { runOperationalAiProposal } from "./operational-ai-agent.js";
+export type {
+  OperationalAiGenerator,
+  RunOperationalAiProposalCommand,
+} from "./operational-ai-agent.js";
+export { recordSourceConflictDecision } from "./source-conflict-use-cases.js";
+export type {
+  RecordSourceConflictDecisionCommand,
+  SourceConflictDecisionWritePort,
+} from "./source-conflict-use-cases.js";
 export { acceptInvitation, createInvitation } from "./invitation-use-cases.js";
 export type {
   AcceptInvitationCommand,
@@ -110,9 +163,23 @@ export type {
   EvaluateCurriculumModuleCommand,
   GetParticipantCurriculumRuntimeCommand,
 } from "./curriculum-runtime-use-cases.js";
-export { advanceContent } from "./content-use-cases.js";
+export {
+  advanceParticipantDigitalCase,
+  getParticipantDigitalCase,
+  projectParticipantDigitalCaseRuntime,
+} from "./digital-case-use-cases.js";
+export type {
+  AdvanceParticipantDigitalCaseCommand,
+  DigitalCaseRuntimeRecord,
+  DigitalCaseRuntimeReadPort,
+  DigitalCaseRuntimeRepositoryPort,
+  DigitalCaseRuntimeWriteInput,
+  GetParticipantDigitalCaseCommand,
+} from "./digital-case-use-cases.js";
+export { advanceContent, expireDueContent } from "./content-use-cases.js";
 export type {
   AdvanceContentCommand,
+  ContentExpiryUseCaseDependencies,
   ContentEventPublisherPort,
   ContentRecord,
   ContentRepositoryPort,
@@ -120,6 +187,8 @@ export type {
   ContentTransactionalOperations,
   ContentUseCaseDependencies,
   ContentWorkflowEvent,
+  ExpireContentCommand,
+  ExpireContentResult,
 } from "./content-use-cases.js";
 export {
   publishAuthoringContent,
@@ -189,7 +258,9 @@ export type {
 } from "./learning-state-use-cases.js";
 export {
   deriveJourneyNextAction,
+  getNextParticipantJourneyActivity,
   getParticipantLearningJourney,
+  isParticipantJourneyActivityCurrent,
 } from "./journey-use-cases.js";
 export { buildParticipantDashboard } from "./dashboard-use-cases.js";
 export type {
@@ -197,6 +268,42 @@ export type {
   ParticipantDashboardModule,
   ParticipantDashboardModuleStatus,
 } from "./dashboard-use-cases.js";
+export {
+  buildAdminDashboard,
+  getInternalAdminDashboard,
+} from "./admin-dashboard-use-cases.js";
+export type {
+  AdminDashboard,
+  AdminDashboardParticipant,
+  AdminDashboardParticipantAccount,
+  AdminDashboardParticipantSnapshot,
+  AdminDashboardReadDependencies,
+  AdminDashboardSummary,
+  AdminDashboardTrainingModule,
+} from "./admin-dashboard-use-cases.js";
+export {
+  buildAdminOperationsDashboard,
+  getInternalAdminOperationsDashboard,
+} from "./admin-operations-dashboard-use-cases.js";
+export type {
+  AdminOperationsDashboard,
+  AdminOperationsDashboardReadDependencies,
+  AdminOperationsSignals,
+} from "./admin-operations-dashboard-use-cases.js";
+export {
+  buildModeratorDashboard,
+  getInternalModeratorDashboard,
+} from "./moderator-dashboard-use-cases.js";
+export type {
+  ModeratorDashboard,
+  ModeratorDashboardParticipant,
+  ModeratorAssignedParticipantSnapshot,
+  ModeratorDashboardReadData,
+  ModeratorDashboardReadDependencies,
+  ModeratorParticipantSnapshot,
+  ModeratorQueueKind,
+  ModeratorQueueSnapshot,
+} from "./moderator-dashboard-use-cases.js";
 export {
   createHttpIdentityProvider,
   createUnavailableIdentityProvider,

@@ -1,0 +1,271 @@
+# 0305 — Plano executivo dos itens abaixo de 80 para elegibilidade 95
+
+## 1. Mandato
+
+Este documento é um recorte executivo suplementar do programa `0304`. Ele atua **somente** nos seis itens cuja nota oficial no `0491` é inferior a 80/100 e reutiliza as tasks canônicas do `0493`; não cria um segundo backlog concorrente, não reabre itens com nota igual ou superior a 80 e não altera a baseline auditada.
+
+O objetivo é tornar cada um dos itens 3, 9, 10, 12, 13 e 16 **elegível a 95/100**, mediante implementação, prova em runtime autorizado, fechamento dos critérios de saída e reauditoria independente no mesmo SHA. Planejamento, código local ou evidência parcial não promovem nota.
+
+Fontes obrigatórias: `0304_premium_enterprise_95_program.md`, `0491_full_construction_audit.md`, `0492_score_95_roadmap.md`, `0493_score_95_backlog.md`, `docs/99_runtime_state.md`, `docs/20_master_execution_log.md` e `traceability.yml`.
+
+## 2. Baseline congelada e efeito esperado
+
+| Item | Dimensão | Nota atual | Alvo | Gap | Peso | Ganho ponderado máximo |
+|---:|---|---:|---:|---:|---:|---:|
+| 3 | currículo e conteúdo clínico | 72 | 95 | 23 | 10% | 2,30 |
+| 9 | jornada do participante | 75 | 95 | 20 | 8% | 1,60 |
+| 10 | autoria, revisão e governança clínica | 68 | 95 | 27 | 8% | 2,16 |
+| 12 | observabilidade e operação | 78 | 95 | 17 | 6% | 1,02 |
+| 13 | web, UX e acessibilidade | 78 | 95 | 17 | 6% | 1,02 |
+| 16 | rastreabilidade e controle de mudanças | 65 | 95 | 30 | 4% | 1,20 |
+| **Total do recorte** | **6 itens / 42% do score** | — | **95 por item** | — | **42%** | **9,30** |
+
+A baseline global oficial permanece **83,24/100**. Se — e somente se — a reauditoria conceder exatamente 95 aos seis itens e mantiver todas as outras notas, a projeção global será **92,54/100**. A declaração “programa inteiro ≥95” está fora deste recorte.
+
+Snapshot das 29 tasks reutilizadas: **3 `COMPLETED`, 3 `IN_PROGRESS`, 12 `READY_FOR_NEXT_STEP` e 11 `WAITING_HUMAN_APPROVAL`**. As três concluídas são fundações já verificadas, não aceite dos itens.
+
+## 3. Resultado executivo contratado
+
+O programa termina quando todos os resultados abaixo coexistirem:
+
+1. os seis itens recebem nota ≥95 em reauditoria independente;
+2. cada critério de saída possui evidência verificável ligada ao mesmo SHA, ambiente e release candidate;
+3. não existe finding P0/P1, pendência clínica liberável, cadeia de rastreabilidade incompleta ou evidência de ambiente divergente;
+4. worktree, tag, digest, CI, SBOM, release manifest e relatório de auditoria apontam para o mesmo commit;
+5. a disposição deixa de ser `PILOT_BLOCKED` apenas por decisão humana registrada após G-S80-9.
+
+Até lá, o estado oficial é `WAITING_HUMAN_APPROVAL` e a disposição é `PILOT_BLOCKED`.
+
+## 4. Estratégia de execução
+
+### 4.1. WS-CLINICAL-CONTENT — item 3
+
+- usar o inventário já concluído para priorizar risco e criticidade;
+- calibrar 25 itens antes de escalar a produção;
+- completar 24 módulos/96 sessões e revisar os 763 itens em lotes de 40–60 por semana;
+- validar o blueprint B-07 sem caráter punitivo;
+- medir eficácia no piloto, com anomalia apenas sinalizando revisão humana.
+
+Saída: conteúdo estruturalmente completo, clinicamente decidido, reproduzível e sem autopublicação.
+
+### 4.2. WS-PARTICIPANT-JOURNEY — item 9
+
+- implementar diagnóstico, perfil e trilha recomendada;
+- fechar avaliação, resultado, remediação, retenção D+30/60/90 e contestação;
+- integrar os estados ao progresso de 24 meses já existente;
+- executar UAT em celular, desktop e contexto 12x36 com dados sintéticos e consentimento.
+
+Saída: jornada integral do convite ao histórico, com isolamento, retomada e próxima ação determinística.
+
+### 4.3. WS-CLINICAL-GOVERNANCE — item 10
+
+- conservar o workflow editorial atômico já concluído;
+- compartilhar a fábrica de 763 decisões com o item 3, sem duplicar fila ou estado;
+- fechar correção, recurso, anulação, recálculo, validade e retirada emergencial;
+- executar QA editorial independente e amostragem pós-publicação.
+
+Saída: corpus com decisão humana, versionamento, retirada segura e trilha append-only.
+
+### 4.4. WS-OPERATIONS — item 12
+
+- provisionar telemetria externa redigida, retenção, RBAC e consulta correlacionada;
+- completar SLOs, dashboards e alertas com acknowledgement e ruído medidos;
+- provar backup/restore, RPO ≤1h e RTO ≤4h em ambiente autorizado;
+- executar dois drills, soak de 24h e failover sem perda ou duplicidade.
+
+Saída: operação observável, recuperável e ensaiada, sem declarar SLO/RPO/RTO antes da medição.
+
+### 4.5. WS-EXPERIENCE — item 13
+
+- completar design system, estados e superfícies das jornadas P0;
+- ampliar axe/Playwright já verdes com checklist manual WCAG 2.2 AA;
+- testar NVDA/VoiceOver e usuários representativos;
+- validar budgets de LCP/INP/CLS, rede lenta, retry e preservação de resposta.
+
+Saída: experiência consistente e demonstravelmente acessível, sem tratar automação como conformidade completa.
+
+### 4.6. WS-EVIDENCE-CONTROL — item 16
+
+- fechar alterações em commits intencionais após autorização e revisão do diff;
+- completar requirement→SPEC→task→module→contract→test→commit→artifact para 100% do escopo P0/P1;
+- manter change record e release manifest por incremento;
+- congelar RC e reauditar sem drift de SHA ou ambiente.
+
+Saída: evidência imutável, reprodutível e suficiente para decisão independente.
+
+## 5. Organização e capacidade
+
+### 5.1. Célula mínima protegida
+
+| Papel | Capacidade de planejamento | Responsabilidade no recorte |
+|---|---:|---|
+| Product/Program | 1,0 FTE | sequência, escopo, decisões, UAT e gates |
+| Backend/Domain | 2,0 FTE | jornada, governança, eventos e contratos |
+| Frontend | 1,5 FTE | jornada, design system, acessibilidade e performance |
+| QA/Automation | 2,0 FTE | TDD, integração, E2E, evidência e regressão |
+| SRE/Security | 1,5 FTE | telemetria, DR, drills, soak, RC e segurança |
+| Content/Instructional Design | 1,5 FTE | módulos, sessões, pré-revisão e rework |
+| Ricardo/Clinical approver | 12 h/semana protegidas | calibração e decisão independente |
+| Accessibility/UX research | 1,0 FTE nas S9–S11 | checklist manual, screen reader e UAT |
+| Auditor independente | 0,25 FTE, maior em S12 | critérios, amostragem e nota final |
+
+O manifesto executável reserva envelope de até 8 FTE de núcleo, 3,5 FTE especialistas e 20% de contingência. A capacidade clínica planejada é 50 itens/semana, faixa aceitável 40–60. A 50/semana, 763 decisões exigem aproximadamente 15,3 semanas antes de rework; por isso a fábrica clínica inicia após G-S80-1 e permanece no caminho crítico até S9.
+
+### 5.2. Orçamento paramétrico
+
+Enquanto `D-ENT-09` não registrar rates e teto, não existe valor financeiro aprovado. O forecast deve usar:
+
+`custo = Σ(dias por papel × rate aprovado) + infraestrutura autorizada + 20% de contingência`
+
+O steering atualiza consumo, previsão para concluir e variação semanalmente. Nenhuma contratação, fornecedor ou gasto externo é autorizado por este documento.
+
+## 6. Fases e horizonte
+
+| Fase | Semanas relativas | Sprints | Objetivo | Gate de saída |
+|---|---|---|---|---|
+| P-S80-0 | 0–1 | S0 | mobilizar, congelar recorte, owners, T0 e capacidade | G-S80-0 |
+| P-S80-1 | 1–5 | S1–S2 | fundações de evidência, operação, design e calibração | G-S80-1 |
+| P-S80-2 | 1–19 | S1–S9 | fábrica curricular e governança clínica | G-S80-3 |
+| P-S80-3 | 5–13 | S3–S6 | jornada integral e experiência | G-S80-2 |
+| P-S80-4 | 13–19 | S7–S9 | telemetria externa, DR e resiliência | G-S80-4 |
+| P-S80-5 | 19–23 | S10–S11 | acessibilidade manual, UAT, soak e piloto | G-S80-7 |
+| P-S80-6 | 23–24 | S12 | RC, SHA imutável e reauditoria | G-S80-9 |
+
+T0 ocorre somente após G-S80-0. Atraso em decisão externa desloca o calendário; não comprime revisão clínica, soak, UAT ou reauditoria.
+
+## 7. Gates decisórios
+
+| Gate | Decisão binária | Bloqueia se |
+|---|---|---|
+| G-S80-0 | scope/capacity ready | D-ENT-01/07/09 sem decisão, owner ou capacidade ausente |
+| G-S80-1 | clinical calibration ready | lote de 25 sem concordância, checklist ou throughput |
+| G-S80-2 | participant journey ready | 09-A–D incompletas ou P0/P1 técnico aberto |
+| G-S80-3 | clinical release ready | 24/96 inválidos, pendência clínica ou B-07 sem aceite |
+| G-S80-4 | operations ready | telemetria/retention/DR/drills/soak/failover sem prova externa |
+| G-S80-5 | accessibility ready | WCAG manual, screen reader ou usuário representativo pendente |
+| G-S80-6 | traceability ready | cadeia P0/P1, artifact ou path incompleto |
+| G-S80-7 | UAT/pilot ready | coorte sem autorização ou finding P0/P1 |
+| G-S80-8 | RC ready | CI, SHA, tag, digest, SBOM ou rollback divergente |
+| G-S80-9 | independent re-audit passed | qualquer um dos seis itens abaixo de 95 |
+
+## 8. Caminho crítico e paralelismo
+
+O caminho clínico é G-S80-0 → 03-B → 03-D/10-B → 03-E → 09-A/09-C. O caminho humano de experiência é 09-A/09-C → 13-B → 13-C → UAT. O caminho externo é D-ENT-04/05 → 12-A/12-C → 12-D/12-E. Os três convergem em G-S80-7 → 16-A/16-B → 16-D → G-S80-9.
+
+Podem avançar em paralelo, sem fingir fechamento de gate: 03-C, 10-C/D, 09-A/C/D, 13-A/D, 12-B/D/E e 16-B/C. Uma task dependente de ambiente ou decisão humana permanece `WAITING_HUMAN_APPROVAL` até a evidência real existir.
+
+## 9. Modelo de execução e qualidade
+
+Cada task segue `RED → GREEN → REFACTOR → REVIEW → AUDIT`:
+
+1. registrar requisito, risco, owner, dependência e teste que falha;
+2. implementar a menor fatia vertical;
+3. executar unit, application, contract, integration, worker, web, E2E e security conforme risco;
+4. manter cobertura global ≥80% e decisão crítica integral;
+5. revisar segurança, privacidade, autorização server-side e rollback;
+6. anexar evidência redigida ao SHA; atualizar backlog, log, runtime e `traceability.yml`;
+7. somente auditor independente altera nota no `0491` ou sucessor canônico.
+
+WIP máximo: três tasks de engenharia e um lote clínico simultâneos. Falha P0/P1 interrompe entrada de nova task no workstream afetado.
+
+## 10. Riscos e respostas
+
+| Risco | Indicador precoce | Resposta | Owner |
+|---|---|---|---|
+| capacidade clínica abaixo de 40 itens/semana | backlog cresce por duas semanas | reduzir WIP, ampliar pré-revisão, replanejar sem reduzir independência | Content + Ricardo |
+| rework clínico >20% | lote retorna repetidamente | recalibrar checklist e amostra antes do próximo lote | Clinical lead |
+| D-ENT-04/05 atrasadas | S7 inicia sem backend/storage | manter mocks locais apenas como prova parcial e escalar decisão | SRE + Program |
+| jornada cresce além do PRD | RF/RNF novo sem decisão | bloquear scope creep e abrir change request | Product |
+| automação mascara barreira | axe verde e checklist manual vermelho | manter item 13 aberto e corrigir por severidade | Accessibility |
+| evidência deriva do RC | SHA/ambiente divergente | invalidar evidência afetada e reexecutar gate | QA + Auditor |
+| pressão para promover nota | critério incompleto com pedido de aceite | preservar baseline e registrar exceção rejeitada | Auditor |
+
+## 11. Governança e cadência
+
+- daily de 15 minutos por workstream;
+- triagem clínica duas vezes por semana;
+- review de sprint com demonstração e evidência, não apresentação narrativa;
+- steering semanal para decisões, capacidade, custo, risco e caminho crítico;
+- auditoria de sprint independente do autor para P0;
+- rebaseline apenas por change record aprovado, sem alterar retrospectivamente evidência.
+
+KPIs: throughput/rework clínico, módulos/sessões válidos, tarefas críticas UAT, findings P0/P1, cobertura WCAG manual, success/latency/error, MTTD/MTTA/MTTR, RPO/RTO, completude de rastreabilidade, lead time e variação de capacidade.
+
+## 12. Decisões requeridas para iniciar T0
+
+Ricardo precisa registrar: equipe/T0 (`D-ENT-01`), 12 h/semana e 40–60 itens (`D-ENT-07`), rates/teto (`D-ENT-09`). Antes dos gates posteriores também são obrigatórios telemetria (`D-ENT-04`), backup (`D-ENT-05`), deploy/rollback (`D-ENT-06`) e piloto (`D-ENT-08`).
+
+Enquanto essas decisões não forem tomadas, o plano está completo e executável no que é local, mas o programa permanece `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 13. Artefatos de controle
+
+- manifesto executável: `sub80-to-95-program.json`;
+- gate: `scripts/verify-sub80-to-95-program.mjs`;
+- teste: `tests/integration/sub80-to-95-program.test.ts`;
+- roadmap: `BRIEFING/04.AUDIT/0510_sub80_to_95_roadmap.md`;
+- backlog filtrado: `BRIEFING/04.AUDIT/0511_sub80_to_95_backlog.md`.
+
+Este documento não substitui os canônicos `0304/0491/0492/0493`; é a visão executiva estrita do recorte sub-80.
+
+## 14. Execução local registrada — 2026-08-12
+
+Foram executadas duas fatias verticais sem alterar score, release ou critérios humanos:
+
+- `ENT95-10-D`: validade editorial persistida (`valid_until`/`next_review_at`), expiração autorizada e idempotente, evento de retirada e composição no worker; migration 0018 e artefato `PREMIUM-ENTERPRISE-95-CONTENT-LIFECYCLE-062`.
+- `ENT95-13-D`: budgets de bundle/LCP/INP/CLS/retry, medição sintética por viewport/rede e gaps manuais versionados; artefato `PREMIUM-ENTERPRISE-95-WEB-PERF-063`.
+
+A cadeia passou com 126 arquivos/575 testes/18 skips condicionais, cobertura 86,52/82,53/87,31/87,28, build 12 workspaces e E2E HA 3/3. As tasks continuam `READY_FOR_NEXT_STEP` até scheduler/dashboard/drill autorizado, Web Vitals/CI/RC, UAT, SHA e reauditoria; o programa permanece `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 15. Execução local — jornada, contestação e correção — 2026-08-12
+
+Foi executada a fatia local correspondente a `ENT95-09-A`, `ENT95-09-C`, `ENT95-09-D` e `ENT95-10-C` por meio de um gate de evidência dedicado. O manifesto valida quatro invariantes, quatro evidências sintéticas PASS, paths de domínio/aplicação/contrato/persistência/API, owner/scope boundary e cinco gaps: DB/RLS live autorizado, UAT representativo, SLA/alerta, comunicação clínica de afetados e proveniência por SHA.
+
+RED reproduziu a ausência do verificador; GREEN passou 2/2 no teste focal e `pnpm verify:journey-correction-governance`. A bateria focal passou 33/35, com as duas integrações live condicionais mantidas como skips governados. O artifact `PREMIUM-ENTERPRISE-95-JOURNEY-CORRECTION-065` foi ligado ao `traceability.yml`.
+
+Essa execução não altera baseline 83,24, notas, status das 29 tasks, release ou gates humanos. O programa segue `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`.
+
+## 16. Verificação final da rodada — 2026-08-12
+
+`pnpm verify` passou com 127 arquivos/577 testes/18 skips e cobertura 86,53/82,52/87,31/87,28. Build dos 12 workspaces, E2E HA 3/3, audit de dependências e `git diff --check` passaram. O worktree continua sem commit intencional; baseline 83,24, status `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem, pois a evidência externa/humana do backlog ainda não existe.
+
+## 17. Addendum executivo — resolução dos oito bloqueios — 2026-08-14
+
+Este addendum transforma os bloqueios do relatório `docs/112_current_construction_report_2026-08-14.md` em uma frente de execução única. Ele complementa o programa `0304` e não promove nota, fecha task ou libera release por documentação.
+
+### 17.1 Resultado contratado
+
+O programa só será considerado satisfatório quando os oito gates abaixo estiverem verdes no mesmo release candidate, sem P0/P1 aberto, com rollback ensaiado, evidência redigida e reauditoria independente:
+
+| ID | Bloqueio | Resultado obrigatório | Gate |
+|---|---|---|---|
+| BLK-01 | 763 conteúdos | beta clínico controlado com veterinários autorizados, 763 decisões registradas e fila liberável zerada | B-G1 |
+| BLK-02 | IdP/MFA/recovery | tenant autorizado, login real, MFA privilegiado, recovery de uso único, revogação e auditoria | B-G2 |
+| BLK-03 | DNS/TLS | DNS público controlado, certificado gerenciado, HTTPS público, redirect, renovação e probes externos | B-G3 |
+| BLK-04 | backup/RPO/RTO | backup externo criptografado, retenção aplicada, restore íntegro, RPO ≤1h e RTO ≤4h medidos | B-G4 |
+| BLK-05 | CI/registry/deploy/rollback | pipeline remoto verde, imagem imutável com SBOM, deploy controlado e rollback pelo digest anterior | B-G5 |
+| BLK-06 | SHA/runtime | worktree revisado e limpo, SHA/tag/digest/manifest alinhados e runtime comprovadamente derivado do mesmo SHA | B-G6 |
+| BLK-07 | UAT/UX/operação | UAT autorizado, WCAG manual, screen reader, Web Vitals reais, soak de 24h e DR/failover aprovados | B-G7 |
+| BLK-08 | rastreabilidade | 145/145 cadeias requisito→SPEC→task→módulo→contrato→teste→commit→artefato completas | B-G8 |
+
+### 17.2 Beta clínico com veterinários
+
+A revisão dos 763 conteúdos será executada como beta clínico controlado, com veterinários autorizados e sem dados de pacientes, tutores, prontuários, fotos ou casos identificáveis.
+
+- Antes da escala, um lote de 25 itens será revisado por pelo menos dois veterinários independentes e pelo aprovador clínico definido em `D-ENT-07`.
+- A coorte beta operacional, a lista nominal de revisores, os conflitos de interesse, o horário protegido e a autorização de ambiente serão registrados em `D-ENT-07`/`D-ENT-08`; o plano recomenda 5–10 veterinários revisores, sem presumir contratação antes da decisão humana.
+- Cada item terá decisão explícita `APROVAR`, `RETRABALHAR` ou `REJEITAR`, com revisor, data, versão, justificativa, risco e eventual conflito. A IA pode auxiliar a triagem, mas não decide, publica ou altera estado.
+- O fluxo será em lotes de 40–60 decisões por semana. O lote de calibração exige concordância mínima de 90% e rework máximo de 20%; abaixo desses limites, a equipe recalibra antes de continuar.
+- Conteúdo sem decisão clínica permanece fora da publicação. Rejeição ou retrabalho cria nova versão e preserva a decisão anterior.
+- O beta só fecha quando os 763 itens tiverem decisão auditável, nenhum P0/P1 clínico estiver aberto, o preflight estrito estiver verde e a amostra pós-revisão estiver aprovada.
+
+### 17.3 Critério comum de execução
+
+Cada task do addendum seguirá `RED → GREEN → REFACTOR → REVIEW → AUDIT`, com teste proporcional, segurança, evidência no mesmo SHA, rollback e atualização de `docs/99_runtime_state.md`, `docs/20_master_execution_log.md`, `docs/30_backlog_master.md` e `traceability.yml`. Qualquer ambiente externo indisponível mantém a task em `WAITING_HUMAN_APPROVAL`; nenhuma evidência sintética será apresentada como produção.
+
+### 17.4 Dependências humanas
+
+O início do T0 continua condicionado a `D-ENT-01` (equipe), `D-ENT-07` (capacidade clínica/revisores veterinários) e `D-ENT-09` (rates/teto). `D-ENT-02`/IdP, `D-ENT-04`/telemetria, `D-ENT-05`/backup, `D-ENT-06`/deploy e `D-ENT-08`/coorte beta serão gates posteriores. A existência dessa dependência não autoriza simular o resultado.
+
+### 17.5 Definição de conclusão
+
+O objetivo não é apenas reduzir a lista de gaps: é produzir evidência auditável suficiente para a reauditoria. Enquanto qualquer BLK-01…BLK-08 estiver vermelho, a baseline 83,24 permanece, o programa fica `WAITING_HUMAN_APPROVAL` e a disposição fica `PILOT_BLOCKED`.

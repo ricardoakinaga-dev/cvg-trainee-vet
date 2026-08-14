@@ -46,6 +46,28 @@ describe("internal authoring banks", () => {
     expect(JSON.stringify(diagnostic)).toContain("RASCUNHO");
   });
 
+  it("keeps rich interaction scoring internal while publishing field metadata", () => {
+    const bank = createCurriculumAuthoringBank(scopeId, authorId).find(
+      (candidate) => candidate.moduleId === "M24",
+    );
+    const doseItem = bank?.items.find(
+      (item) => item.responseMode === "DOSE_INFUSION",
+    );
+
+    expect(doseItem).toMatchObject({
+      responseMode: "DOSE_INFUSION",
+      interaction: {
+        kind: "DOSE_INFUSION",
+        calculationInputs: expect.any(Object),
+      },
+      participant: {
+        responseMode: "DOSE_INFUSION",
+        interaction: { kind: "DOSE_INFUSION", evaluationMode: "AUTOMATIC" },
+      },
+    });
+    expect(JSON.stringify(doseItem?.participant)).not.toContain("rubric");
+  });
+
   it("does not expose internal authoring fields in the participant projection input", () => {
     const bank = createM02AuthoringBank(scopeId, authorId);
     const participantItem = bank.items[0]?.participant;

@@ -16,7 +16,7 @@ it("accepts the canonical documentation and current audit evidence", () => {
       ],
       [
         "docs/30_backlog_master.md",
-        "AUD-C0-001 AUD-C0-002 AUD-P1-001 AUD-P1-002 AUD-P1-003 AUD-P1-004 AUD-P1-005",
+        "AUD-C0-001 AUD-C0-002 AUD-P1-001 AUD-P1-002 AUD-P1-003 AUD-P1-004 AUD-P1-005 ENT95-PROGRAM",
       ],
       [
         "BRIEFING/04.AUDIT/0490_audit_report.md",
@@ -45,6 +45,12 @@ it("accepts the canonical documentation and current audit evidence", () => {
           '    tests: ["DOC-GOV-001"]',
           '    verification: ["pnpm verify:documentation"]',
           '    status: "verified"',
+          '  - id: "PREMIUM-ENTERPRISE-95-PROGRAM"',
+          '    requirements: ["PRD-0013"]',
+          '    documents: ["BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md"]',
+          '    tests: ["DOC-GOV-001"]',
+          '    verification: ["pnpm verify:documentation"]',
+          '    status: "planned"',
         ].join("\n"),
       ],
     ]),
@@ -80,4 +86,34 @@ it("reports missing required evidence and incomplete traceability", () => {
 
   expect(result).toContain("missing required file: docs/99_runtime_state.md");
   expect(result).toContain("traceability has no artifact entries");
+});
+
+it("rejects an incomplete premium enterprise 95 program", () => {
+  const result = validateDocumentationSnapshot(
+    new Map<string, string>([
+      [
+        "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+        "program_id: CVG-PREMIUM-ENTERPRISE-95\nbaseline_score: 82/100\ntarget_floor_per_item: 95/100",
+      ],
+      [
+        "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+        "baseline_report: outro.md\nENT95-01",
+      ],
+      ["BRIEFING/04.AUDIT/0493_score_95_backlog.md", "ENT95-01-A"],
+    ]),
+    {
+      requiredFiles: [
+        "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+        "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+        "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+      ],
+    },
+  );
+
+  expect(result).toContain("premium program baseline must be 83/100");
+  expect(result).toContain(
+    "premium roadmap must reference 0491_full_construction_audit.md",
+  );
+  expect(result).toContain("premium roadmap has no item ENT95-16");
+  expect(result).toContain("premium backlog has no task for item ENT95-16");
 });

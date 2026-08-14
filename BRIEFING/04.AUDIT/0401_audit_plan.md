@@ -40,3 +40,17 @@ Uma afirmação só é `PASS` com teste/telemetria/reprodução identificável. 
 | logs/métricas/traces | `AUD-F3-009` | `PARTIAL`: logger/redaction, correlação local e métricas em memória passam; collector, retenção, alertas e traces distribuídos pendentes |
 | experiência web/E2E | `AUD-F3-007` | `PARTIAL`: 3 fluxos de participante passam em build de produção com fixtures sintéticas e API interceptada; API real, autoria/operação, axe e revisão manual permanecem pendentes |
 | proteção de borda | `AUD-F3-010`/`F3-S8` | `PASS` para CSRF/origem, rate limit local, `Retry-After`, health isento, bloqueio antes do caso de uso e rotação/revogação; escala horizontal e E2E real permanecem pendentes |
+
+## Reexecução vigente — 2026-08-11
+
+| Fase | Execução atual | Resultado |
+|---|---|---|
+| congelamento/escopo | HEAD `9803c85`, worktree explicitamente não commitado | `PARTIAL` — score de rastreabilidade reduzido |
+| documentação/gates | leitura de `docs/`, PRD, SPEC, BUILD, AUDIT; `pnpm verify` | `PASS` |
+| runtime/integrações | systemd web, Docker HA, health, E2E real, PostgreSQL/Qdrant/Tempo | `PASS_WITH_GAPS` |
+| logs/métricas/segurança | logs JSON, métricas protegidas, headers, edge, secret/dependency scan | `PASS_WITH_GAPS` |
+| dados/conteúdo | contagens live, fila de 763 pendências, role sem bypass | `PASS_WITH_GAPS` |
+| produto/experiência | 15 E2E focados e rotas administrativas | `PARTIAL` — produto completo não entregue |
+| integração externa | IdP, domínio/TLS público, traces/backups externos, deploy/rollback autorizado | `NOT_EXECUTED`/`FAIL-CLOSED` |
+
+O relatório e a matriz vigente estão em `0491_full_construction_audit.md`; gaps e remediações correspondentes foram atualizados nesta rodada.

@@ -26,3 +26,7 @@ Toda inconsistência deve gerar evidência reproduzível e plano de correção, 
 - PASS: Qdrant live confirmou upsert e remoção determinística sem texto no payload; o sink IA usa upsert por conteúdo/versão e a projeção participante não lê a tabela interna;
 - PARTIAL: RLS/trigger append-only, mutação negativa contextual, backup/restore, retenção e reconciliação completa ainda pendentes;
 - NOT_EXECUTED: cálculo automático/rubrica completa, remediação, contestação, retenção de produção, backup/restore e dados de produção.
+
+## Resultado vigente — 2026-08-11
+
+`PASS_WITH_GAPS`. Consulta administrativa read-only no PostgreSQL HA observou 1 atividade publicada, 23 retiradas, 796 itens/conteúdos/editoriais, 24 atribuições `NAO_ATRIBUIDO`, 24 estados `PENDENTE`, 1 tentativa, 2 sessões e 104 entradas de auditoria. Conteúdo: 33 `PUBLICADO` e 763 `PROJECAO_VERIFICADA`; fila clínica: 763 pendentes, 0 falhas técnicas. `cvg_app` não possui `SUPERUSER`/`BYPASSRLS`. Backup criptografado, retenção/anonimização produtiva e RPO/RTO externo permanecem pendentes.

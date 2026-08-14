@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task": "ENT95-14-A",
+  "sourceMatrix": "traceability.yml",
+  "requiredPriorities": ["P0", "P1"],
+  "proofTypes": [
+    { "id": "success", "label": "happy path / accepted result" },
+    { "id": "error", "label": "invalid input / bounded failure" },
+    { "id": "denied", "label": "authorization / privacy denial" },
+    { "id": "conflict", "label": "concurrency / replay / state conflict" }
+  ],
+  "testLayers": [
+    "unit",
+    "application",
+    "contract",
+    "integration",
+    "worker",
+    "web",
+    "e2e",
+    "security"
+  ],
+  "status": "PASS_WITH_GAPS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "notes": [
+    "The matrix derives obligations from the canonical premium requirements matrix.",
+    "A local test path is evidence of a test destination, not proof that every risk branch is complete.",
+    "Missing proof types remain explicit gaps until a real test or runtime artifact is linked."
+  ]
+}

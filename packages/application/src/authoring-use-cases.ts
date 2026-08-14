@@ -1,5 +1,10 @@
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
-import { validateClinicalSourceRefs } from "@cvg/curriculum";
+import {
+  validateClinicalSourceRefs,
+  type InternalAssessmentInteraction,
+  type PublicAssessmentInteraction,
+  type PublicDigitalCaseStage,
+} from "@cvg/curriculum";
 import { ApplicationError } from "./errors.js";
 import type {
   AdvanceContentCommand,
@@ -35,9 +40,12 @@ export type AuthoringParticipantItem = Readonly<{
   readonly kind: "QUESTAO" | "CASO";
   readonly title: string;
   readonly prompt: string;
-  readonly responseMode: "CHOICE" | "TEXT";
+  readonly responseMode:
+    "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
   readonly choices?: readonly AuthoringChoice[];
   readonly selectionMode?: "SINGLE" | "MULTIPLE";
+  readonly interaction?: PublicAssessmentInteraction;
+  readonly digitalCaseStage?: PublicDigitalCaseStage;
 }>;
 
 export type AuthoringPreflight = Readonly<{
@@ -67,10 +75,14 @@ export type AuthoringRecord = Readonly<{
   readonly authorId: string;
   readonly title: string;
   readonly prompt: string;
-  readonly responseMode: "CHOICE" | "TEXT" | "NONE";
+  readonly responseMode:
+    "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION" | "NONE";
   readonly choices?: readonly AuthoringChoice[];
   readonly correctChoiceIds?: readonly string[];
   readonly rubric?: AuthoringRubric;
+  readonly interaction?: InternalAssessmentInteraction;
+  readonly humanCorrectionOwner?: "RICARDO";
+  readonly digitalCaseStage?: PublicDigitalCaseStage;
   readonly feedback: string;
   readonly critical: boolean;
   readonly remediationTargetObjectiveId: string;
@@ -166,6 +178,12 @@ function isText(value: string): boolean {
 }
 
 function hasCorrectionMetadata(record: AuthoringRecord): boolean {
+  if (
+    record.responseMode === "STRUCTURED_FIELDS" ||
+    record.responseMode === "DOSE_INFUSION"
+  ) {
+    return record.interaction !== undefined;
+  }
   if (record.responseMode === "CHOICE") {
     if (
       record.choices === undefined ||
@@ -201,6 +219,8 @@ function hasPublicBoundary(record: AuthoringRecord): boolean {
     "responseMode",
     "choices",
     "selectionMode",
+    "interaction",
+    "digitalCaseStage",
   ]);
   return Object.keys(record.participant).every((key) => publicKeys.has(key));
 }
@@ -327,6 +347,7 @@ export async function publishAuthoringContent(
     scopeId: command.scopeId,
     event: "AUTORIZAR_PUBLICACAO",
     correlationId: command.correlationId,
+    approvedClinicalReviewerId: latestReview.reviewerId,
   });
   const transitioned = await dependencies.transition({
     principalId: command.principalId,
@@ -338,6 +359,7 @@ export async function publishAuthoringContent(
     scopeId: command.scopeId,
     event: "PUBLICAR",
     correlationId: command.correlationId,
+    approvedClinicalReviewerId: latestReview.reviewerId,
   });
   return Object.freeze({
     record: Object.freeze({

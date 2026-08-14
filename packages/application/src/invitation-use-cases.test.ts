@@ -143,6 +143,21 @@ describe("invitation identity use cases", () => {
     ).rejects.toMatchObject({ code: "not_found" });
   });
 
+  it("does not allow an invitation to escape the creator scope or bootstrap another admin", async () => {
+    await expect(
+      createInvitation(
+        {
+          ...admin,
+          invitedScopes: ["66666666-6666-4666-8666-666666666666"],
+        },
+        dependencies(),
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+    await expect(
+      createInvitation({ ...admin, invitedRoles: ["ADMIN"] }, dependencies()),
+    ).rejects.toMatchObject({ code: "forbidden" });
+  });
+
   it("rejects malformed invitation inputs before any persistence call", async () => {
     const cases: readonly Partial<typeof admin>[] = [
       { professionalEmail: "not-an-email" },

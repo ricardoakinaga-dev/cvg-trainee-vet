@@ -41,6 +41,9 @@ const nextConfig: NextConfig = {
   distDir: process.env.CVG_WEB_DIST_DIR ?? ".next",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    useTypeScriptCli: false,
+  },
   async headers() {
     const securityHeaders = [
       { key: "X-Content-Type-Options", value: "nosniff" },

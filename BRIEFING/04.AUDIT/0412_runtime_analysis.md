@@ -32,3 +32,7 @@ Resultado: PARTIAL — F3-S3 + complementos F3-S4/F3-S5/F3-S6/F3-S7/F3-S8.
 - CSRF/origens, rate limit local bounded, `Retry-After`, health isento, bloqueio antes do caso de uso e rotação/revogação: PASS nos complementos AUD-F3-010/F3-S8; rate limit distribuído e E2E navegador→API real: NOT_EXECUTED.
 
 Traces por `request_id`/`correlation_id`, métricas p95/p99, eventos de erro, jobs presos, replay sintético, teste de concorrência, healthchecks e restore. Classificar causa raiz, frequência, impacto e condição de recuperação.
+
+## Resultado vigente — 2026-08-11T22:15:31-03:00
+
+`PASS_WITH_GAPS`. O serviço web está ativo em `3100`; edge HTTP/HTTPS/internal em `3180/3181/3182`; duas APIs e dois workers estão saudáveis; health web/edge/Tempo retornou 200. O E2E HA passou 2/2. Smoke local passou 200/200 com p95 de 122,37 ms. O trace sintético foi consultável após restart do Tempo. Crash de processo, capacidade/soak, ambiente público e recovery produtivo permanecem `NOT_EXECUTED`.

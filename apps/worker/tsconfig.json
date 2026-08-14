@@ -5,6 +5,7 @@
     "outDir": "dist"
   },
   "references": [
+    { "path": "../../packages/application" },
     { "path": "../../packages/config" },
     { "path": "../../packages/integrations" },
     { "path": "../../packages/observability" }

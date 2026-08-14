@@ -42,3 +42,11 @@ O auditor não altera dados, nota, gabarito, papel ou conteúdo durante a coleta
 - `AUD-F3-011`: quality gate pós-F3-S6 — verify, build, E2E, audit de dependências, 9 integrações live e diff-check — `PASS`; cobertura global 86,03% statements / 81,70% branches / 84,69% functions / 87,06% lines.
 - `AUD-F3-012`: quality gate pós-F3-S7 — verify, build, E2E, audit de dependências, 9 integrações live, comando de reconciliação desabilitado com segurança e diff-check — `PASS`; cobertura global 85,82% statements / 81,12% branches / 85,14% functions / 86,79% lines.
 - `AUD-F3-013`: quality gate pós-F3-S8 — `pnpm verify`, build de produção web, `pnpm build`, E2E, audit de dependências, 9 integrações live PostgreSQL/Qdrant, `git diff --check` e Prettier — `PASS`; 52 arquivos passaram, 224 testes passaram, 8 foram ignorados por configuração live da cobertura; cobertura global 85,03% statements / 80,38% branches / 84,45% functions / 86,24% lines; três cenários Playwright passaram com API interceptada e sem dados reais.
+
+## Rodada vigente — 2026-08-11T22:15:31-03:00
+
+Escopo congelado para a auditoria atual: documentação completa de `docs/`, gates Discovery→PRD→SPEC→BUILD→AUDIT, worktree no HEAD `9803c85`, runtime HA local/LAN/Tailscale, PostgreSQL/Qdrant/worker/API/web, segurança, dados, integrações, observabilidade, experiência e prontidão do programa curricular. Foram incluídos os incrementos administrativos e o contrato de build web presentes no worktree.
+
+Evidências principais: `pnpm verify`, `pnpm audit --audit-level=high`, `pnpm test:e2e:active-ha` 2/2, E2E web focado 15/15, smoke 200/200, trace após restart do Tempo, health/headers/métricas, consultas administrativas read-only e logs redigidos. Dados reais, prontuários, tutores, fotos, PDFs, segredos, credenciais e publicação clínica não fazem parte do escopo.
+
+Resultado de escopo: `PASS_WITH_GAPS`; release `WAITING_HUMAN_APPROVAL`.

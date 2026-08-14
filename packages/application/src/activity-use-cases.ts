@@ -1,4 +1,8 @@
 import { ApplicationError } from "./errors.js";
+import type {
+  PublicAssessmentInteraction,
+  PublicDigitalCaseStage,
+} from "@cvg/curriculum";
 
 export type ParticipantActivityChoice = Readonly<{
   readonly id: string;
@@ -12,9 +16,12 @@ export type ParticipantActivityItem = Readonly<{
   readonly kind: "LEITURA" | "QUESTAO" | "CASO" | "REFLEXAO";
   readonly title: string;
   readonly text: string;
-  readonly responseMode: "TEXT" | "CHOICE" | "NONE";
+  readonly responseMode:
+    "TEXT" | "CHOICE" | "STRUCTURED_FIELDS" | "DOSE_INFUSION" | "NONE";
   readonly choices?: readonly ParticipantActivityChoice[];
   readonly selectionMode?: "SINGLE" | "MULTIPLE";
+  readonly interaction?: PublicAssessmentInteraction;
+  readonly digitalCaseStage?: PublicDigitalCaseStage;
 }>;
 
 export type ParticipantActivityState = Readonly<{

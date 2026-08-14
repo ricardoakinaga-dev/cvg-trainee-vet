@@ -22,8 +22,8 @@ const state = {
     openResponseItemIds: [],
     retentionReviews: [
       {
-        day: 7 as const,
-        dueAt: "2026-08-17T01:00:00.000Z",
+        day: 30 as const,
+        dueAt: "2026-09-09T01:00:00.000Z",
         status: "PENDENTE" as const,
       },
     ],

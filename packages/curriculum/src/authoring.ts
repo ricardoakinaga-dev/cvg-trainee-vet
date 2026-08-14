@@ -13,6 +13,10 @@ import type {
   InternalSourceRef,
   OpenResponse,
 } from "./types.js";
+import {
+  toPublicAssessmentInteraction,
+  type InternalAssessmentInteraction,
+} from "./learning-interactions.js";
 
 export type AuthoringParticipantItem = Readonly<{
   readonly id: string;
@@ -20,9 +24,12 @@ export type AuthoringParticipantItem = Readonly<{
   readonly kind: "QUESTAO" | "CASO";
   readonly title: string;
   readonly prompt: string;
-  readonly responseMode: "CHOICE" | "TEXT";
+  readonly responseMode:
+    "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
   readonly choices?: readonly Choice[];
   readonly selectionMode?: "SINGLE" | "MULTIPLE";
+  readonly interaction?: ReturnType<typeof toPublicAssessmentInteraction>;
+  readonly digitalCaseStage?: CurriculumDraftItem["digitalCaseStage"];
 }>;
 
 export type AuthoringItem = Readonly<{
@@ -44,10 +51,14 @@ export type AuthoringItem = Readonly<{
     | "CASO";
   readonly title: string;
   readonly prompt: string;
-  readonly responseMode: "CHOICE" | "TEXT";
+  readonly responseMode:
+    "CHOICE" | "TEXT" | "STRUCTURED_FIELDS" | "DOSE_INFUSION";
   readonly choices?: readonly Choice[];
   readonly correctChoiceIds?: readonly string[];
   readonly rubric?: DraftRubric;
+  readonly interaction?: InternalAssessmentInteraction;
+  readonly humanCorrectionOwner?: "RICARDO";
+  readonly digitalCaseStage?: CurriculumDraftItem["digitalCaseStage"];
   readonly feedback: string;
   readonly critical: boolean;
   readonly remediationTargetObjectiveId: string;
@@ -118,6 +129,15 @@ function fromDraftItem(
       ? {}
       : { correctChoiceIds: freeze([...item.correctChoiceIds]) }),
     ...(item.rubric === undefined ? {} : { rubric: item.rubric }),
+    ...(item.interaction === undefined
+      ? {}
+      : { interaction: item.interaction }),
+    ...(item.humanCorrectionOwner === undefined
+      ? {}
+      : { humanCorrectionOwner: item.humanCorrectionOwner }),
+    ...(item.digitalCaseStage === undefined
+      ? {}
+      : { digitalCaseStage: item.digitalCaseStage }),
     feedback: item.feedback,
     critical: item.critical,
     remediationTargetObjectiveId: item.remediationTargetObjectiveId,
@@ -131,6 +151,14 @@ function fromDraftItem(
       responseMode: item.responseMode,
       ...(choices === undefined ? {} : { choices: freeze([...choices]) }),
       ...(selectionMode === undefined ? {} : { selectionMode }),
+      ...(item.interaction === undefined
+        ? {}
+        : {
+            interaction: toPublicAssessmentInteraction(item.interaction),
+          }),
+      ...(item.digitalCaseStage === undefined
+        ? {}
+        : { digitalCaseStage: item.digitalCaseStage }),
     }),
   });
 }
@@ -194,6 +222,7 @@ function fromOpenResponse(
     prompt: response.prompt,
     responseMode: "TEXT",
     rubric: freeze({ ...response.rubric }),
+    humanCorrectionOwner: response.humanCorrectionOwner ?? "RICARDO",
     feedback: response.feedback,
     critical: true,
     remediationTargetObjectiveId: objectiveId,

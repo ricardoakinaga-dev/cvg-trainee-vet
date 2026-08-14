@@ -1,0 +1,794 @@
+{
+  "version": 1,
+  "programId": "CVG-SUB80-TO-95",
+  "name": "Programa executivo dos itens abaixo de 80 para elegibilidade 95",
+  "createdAt": "2026-08-12T07:45:00-03:00",
+  "status": "WAITING_HUMAN_APPROVAL",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "baselineWeightedScore": 83.24,
+  "targetFloor": 95,
+  "durationWeeks": 24,
+  "sprintCount": 13,
+  "sourceDocuments": [
+    "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+    "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+    "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+    "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+    "docs/99_runtime_state.md",
+    "docs/20_master_execution_log.md",
+    "traceability.yml"
+  ],
+  "deliverables": {
+    "executivePlan": "BRIEFING/03.BUILD/0305_sub80_to_95_executive_plan.md",
+    "roadmap": "BRIEFING/04.AUDIT/0510_sub80_to_95_roadmap.md",
+    "backlog": "BRIEFING/04.AUDIT/0511_sub80_to_95_backlog.md"
+  },
+  "scopePolicy": {
+    "rule": "ONLY_AUDITED_ITEMS_BELOW_80",
+    "includedItems": [3, 9, 10, 12, 13, 16],
+    "excludedItems": [1, 2, 4, 5, 6, 7, 8, 11, 14, 15],
+    "externalDependenciesMayBeReferenced": true,
+    "excludedItemsMayNotReceiveProgramTasks": true
+  },
+  "scorePolicy": {
+    "currentScoresFrozen": true,
+    "targetMeaning": "ELIGIBLE_FOR_95",
+    "promotionAuthority": "INDEPENDENT_REAUDIT",
+    "promotionRequires": [
+      "all item exit criteria satisfied",
+      "all required evidence attached to the frozen SHA",
+      "no open P0 or P1 finding for the item",
+      "runtime evidence from the authorized environment",
+      "independent auditor decision"
+    ]
+  },
+  "capacity": {
+    "coreFte": 8,
+    "specialistFte": 3.5,
+    "clinicalReviewItemsPerWeek": {
+      "minimum": 40,
+      "planned": 50,
+      "maximum": 60
+    },
+    "protectedClinicalHoursPerWeek": 12,
+    "contingencyPercent": 20
+  },
+  "externalDecisions": [
+    {
+      "id": "D-ENT-01",
+      "description": "aprovar equipe, capacidade e T0",
+      "blocks": ["G-S80-0"]
+    },
+    {
+      "id": "D-ENT-04",
+      "description": "escolher backend e retenção de telemetria",
+      "blocks": ["G-S80-4"]
+    },
+    {
+      "id": "D-ENT-05",
+      "description": "aprovar storage, criptografia e backup",
+      "blocks": ["G-S80-4"]
+    },
+    {
+      "id": "D-ENT-06",
+      "description": "definir registry e ambiente de deploy/rollback",
+      "blocks": ["G-S80-8"]
+    },
+    {
+      "id": "D-ENT-07",
+      "description": "reservar capacidade semanal de revisão clínica",
+      "blocks": ["G-S80-1", "G-S80-3"]
+    },
+    {
+      "id": "D-ENT-08",
+      "description": "definir coorte, janela e critérios do piloto",
+      "blocks": ["G-S80-7"]
+    },
+    {
+      "id": "D-ENT-09",
+      "description": "aprovar rates, cotações e teto orçamentário",
+      "blocks": ["G-S80-0"]
+    }
+  ],
+  "items": [
+    {
+      "item": 3,
+      "name": "Currículo e conteúdo clínico",
+      "baselineScore": 72,
+      "targetScore": 95,
+      "gap": 23,
+      "weight": 10,
+      "workstream": "WS-CLINICAL-CONTENT",
+      "owner": "Content Lead + Ricardo",
+      "dependencies": ["D-ENT-01", "D-ENT-07", "ENT95-03-A"],
+      "taskIds": [
+        "ENT95-03-A",
+        "ENT95-03-B",
+        "ENT95-03-C",
+        "ENT95-03-D",
+        "ENT95-03-E",
+        "ENT95-03-F"
+      ],
+      "exitCriteria": [
+        "24 de 24 módulos e 96 de 96 sessões passam validação estrutural e pedagógica",
+        "zero item liberável sem decisão clínica humana independente",
+        "blueprint B-07 e formas diagnósticas passam cobertura e exposição",
+        "eficácia, saúde e anomalias dos itens são medidas no piloto autorizado",
+        "não existe conteúdo de terceiro, dado real ou metadado bibliográfico projetado ao participante"
+      ],
+      "evidenceRequired": [
+        "inventário curricular versionado",
+        "ata de calibração do lote de 25 itens",
+        "export da fila clínica com zero pendência de release",
+        "relatório de blueprint B-07",
+        "relatório de eficácia do piloto no SHA congelado"
+      ]
+    },
+    {
+      "item": 9,
+      "name": "Jornada do participante",
+      "baselineScore": 75,
+      "targetScore": 95,
+      "gap": 20,
+      "weight": 8,
+      "workstream": "WS-PARTICIPANT-JOURNEY",
+      "owner": "Product Lead + Full-stack Lead",
+      "dependencies": ["ENT95-03-E", "ENT95-10-C", "D-ENT-08"],
+      "taskIds": [
+        "ENT95-09-A",
+        "ENT95-09-B",
+        "ENT95-09-C",
+        "ENT95-09-D",
+        "ENT95-09-E"
+      ],
+      "exitCriteria": [
+        "diagnóstico B-07 preserva pausa e retomada e produz perfil não punitivo",
+        "progresso de 24 meses e próxima ação são determinísticos",
+        "avaliação, resultado, remediação e D+30/60/90 passam E2E",
+        "contestação tem SLA, revisão independente, justificativa e histórico owner-scoped",
+        "UAT representativo fecha tarefas críticas sem P0/P1 aberto"
+      ],
+      "evidenceRequired": [
+        "contratos e testes de domínio/aplicação/API",
+        "E2E da jornada integral com dados sintéticos",
+        "provas de isolamento e ausência de dado administrativo",
+        "relatório de UAT em celular, desktop e contexto 12x36"
+      ]
+    },
+    {
+      "item": 10,
+      "name": "Autoria, revisão e governança clínica",
+      "baselineScore": 68,
+      "targetScore": 95,
+      "gap": 27,
+      "weight": 8,
+      "workstream": "WS-CLINICAL-GOVERNANCE",
+      "owner": "Clinical Governance Lead + Backend Lead",
+      "dependencies": ["D-ENT-07", "ENT95-03-B", "ENT95-10-A"],
+      "taskIds": [
+        "ENT95-10-A",
+        "ENT95-10-B",
+        "ENT95-10-C",
+        "ENT95-10-D",
+        "ENT95-10-E"
+      ],
+      "exitCriteria": [
+        "workflow editorial permanece atômico, versionado e fail-closed",
+        "100% do corpus de release possui decisão clínica humana independente",
+        "correção, recurso, anulação e recálculo preservam a tentativa original",
+        "validade e retirada emergencial geram evento idempotente e removem projeção",
+        "QA pós-publicação fecha amostra estratificada sem P0/P1"
+      ],
+      "evidenceRequired": [
+        "trilha editorial transacional e append-only",
+        "export de decisões humanas dos 763 itens",
+        "testes de recálculo, comunicação e retirada",
+        "relatório de QA editorial independente"
+      ]
+    },
+    {
+      "item": 12,
+      "name": "Observabilidade e operação",
+      "baselineScore": 78,
+      "targetScore": 95,
+      "gap": 17,
+      "weight": 6,
+      "workstream": "WS-OPERATIONS",
+      "owner": "SRE Lead + Security Lead",
+      "dependencies": ["D-ENT-04", "D-ENT-05", "D-ENT-06"],
+      "taskIds": [
+        "ENT95-12-A",
+        "ENT95-12-B",
+        "ENT95-12-C",
+        "ENT95-12-D",
+        "ENT95-12-E"
+      ],
+      "exitCriteria": [
+        "logs, métricas e traces redigidos chegam ao backend externo com RBAC e retenção",
+        "SLOs, dashboards e alertas são acionáveis e têm acknowledgement medido",
+        "restore isolado comprova RPO menor ou igual a 1 hora e RTO menor ou igual a 4 horas",
+        "segundo drill de incidentes fecha gaps do primeiro",
+        "soak de 24 horas e failover passam sem perda, duplicidade ou lacuna de telemetria"
+      ],
+      "evidenceRequired": [
+        "consulta correlacionada ponta a ponta",
+        "histórico de alertas e acknowledgements sem PII",
+        "relatório de restore e integridade funcional",
+        "relatórios dos dois incident drills",
+        "relatório de soak e failover do ambiente autorizado"
+      ]
+    },
+    {
+      "item": 13,
+      "name": "Web, UX e acessibilidade",
+      "baselineScore": 78,
+      "targetScore": 95,
+      "gap": 17,
+      "weight": 6,
+      "workstream": "WS-EXPERIENCE",
+      "owner": "UX Lead + Accessibility Specialist",
+      "dependencies": ["ENT95-09-A", "ENT95-09-C", "D-ENT-08"],
+      "taskIds": ["ENT95-13-A", "ENT95-13-B", "ENT95-13-C", "ENT95-13-D"],
+      "exitCriteria": [
+        "todas as jornadas P0 usam estados completos e design system consistente",
+        "auditoria WCAG 2.2 AA automatizada e manual fecha sem violação A/AA",
+        "screen reader e usuários representativos completam tarefas críticas sem P0/P1",
+        "budgets web passam e interrupção de rede não perde nem duplica resposta"
+      ],
+      "evidenceRequired": [
+        "inventário de superfícies e estados",
+        "relatório axe e checklist manual WCAG 2.2 AA",
+        "relatório NVDA/VoiceOver e UAT consentido",
+        "relatório de performance e resiliência de rede"
+      ]
+    },
+    {
+      "item": 16,
+      "name": "Rastreabilidade e controle de mudanças",
+      "baselineScore": 65,
+      "targetScore": 95,
+      "gap": 30,
+      "weight": 4,
+      "workstream": "WS-EVIDENCE-CONTROL",
+      "owner": "Tech Lead + QA Lead",
+      "dependencies": ["D-ENT-01", "D-ENT-06", "all program gates"],
+      "taskIds": ["ENT95-16-A", "ENT95-16-B", "ENT95-16-C", "ENT95-16-D"],
+      "exitCriteria": [
+        "worktree aprovado e limpo aponta para SHA intencional",
+        "100% dos RF/RNF P0/P1 e tarefas ENT95 têm cadeia completa sem caminho inexistente",
+        "cada incremento possui change record, release manifest e rollback verificável",
+        "RC, CI, artefatos, ambiente e auditoria independente usam o mesmo SHA"
+      ],
+      "evidenceRequired": [
+        "commits convencionais aprovados e worktree limpo",
+        "traceability.yml com cadeias completas",
+        "change records e release manifests por sprint",
+        "tag, digest, SBOM, CI e relatório de reauditoria do mesmo SHA"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "id": "P-S80-0",
+      "weeks": "0-1",
+      "sprints": ["S0"],
+      "name": "Mobilização e congelamento do escopo",
+      "exitGate": "G-S80-0"
+    },
+    {
+      "id": "P-S80-1",
+      "weeks": "1-5",
+      "sprints": ["S1", "S2"],
+      "name": "Fundações de evidência, UX e operação",
+      "exitGate": "G-S80-1"
+    },
+    {
+      "id": "P-S80-2",
+      "weeks": "1-19",
+      "sprints": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9"],
+      "name": "Fábrica curricular e governança clínica",
+      "exitGate": "G-S80-3"
+    },
+    {
+      "id": "P-S80-3",
+      "weeks": "5-13",
+      "sprints": ["S3", "S4", "S5", "S6"],
+      "name": "Jornada integral e experiência",
+      "exitGate": "G-S80-2"
+    },
+    {
+      "id": "P-S80-4",
+      "weeks": "13-19",
+      "sprints": ["S7", "S8", "S9"],
+      "name": "Operação externa e resiliência",
+      "exitGate": "G-S80-4"
+    },
+    {
+      "id": "P-S80-5",
+      "weeks": "19-23",
+      "sprints": ["S10", "S11"],
+      "name": "Validação humana, UAT e piloto",
+      "exitGate": "G-S80-7"
+    },
+    {
+      "id": "P-S80-6",
+      "weeks": "23-24",
+      "sprints": ["S12"],
+      "name": "RC, evidência imutável e reauditoria",
+      "exitGate": "G-S80-9"
+    }
+  ],
+  "gates": [
+    {
+      "id": "G-S80-0",
+      "name": "scope-capacity",
+      "criteria": [
+        "D-ENT-01, D-ENT-07 e D-ENT-09 decididos",
+        "baseline e IDs congelados",
+        "owners e capacidade aceitos"
+      ]
+    },
+    {
+      "id": "G-S80-1",
+      "name": "clinical-calibration",
+      "criteria": [
+        "lote estratificado de 25 itens revisado",
+        "rubrica e checklist aprovados",
+        "throughput recalculado"
+      ]
+    },
+    {
+      "id": "G-S80-2",
+      "name": "participant-journey",
+      "criteria": [
+        "ENT95-09-A a 09-D verdes",
+        "jornada integral em staging",
+        "sem P0/P1 técnico aberto"
+      ]
+    },
+    {
+      "id": "G-S80-3",
+      "name": "clinical-release-readiness",
+      "criteria": [
+        "24 módulos e 96 sessões válidos",
+        "763 decisões concluídas",
+        "blueprint B-07 aprovado"
+      ]
+    },
+    {
+      "id": "G-S80-4",
+      "name": "operational-readiness",
+      "criteria": [
+        "telemetria externa e retenção comprovadas",
+        "RPO/RTO medidos",
+        "drills, soak e failover verdes"
+      ]
+    },
+    {
+      "id": "G-S80-5",
+      "name": "accessibility-readiness",
+      "criteria": [
+        "WCAG 2.2 AA automatizada e manual",
+        "screen reader e usuários representativos",
+        "zero P0/P1"
+      ]
+    },
+    {
+      "id": "G-S80-6",
+      "name": "traceability-readiness",
+      "criteria": [
+        "100% das cadeias P0/P1 completas",
+        "change control por incremento",
+        "nenhum path ou artifact inexistente"
+      ]
+    },
+    {
+      "id": "G-S80-7",
+      "name": "uat-pilot",
+      "criteria": [
+        "D-ENT-08 decidido",
+        "UAT crítico concluído",
+        "piloto autorizado sem P0/P1"
+      ]
+    },
+    {
+      "id": "G-S80-8",
+      "name": "release-candidate",
+      "criteria": [
+        "CI verde",
+        "worktree limpo",
+        "tag, digest, SBOM e rollback no mesmo SHA"
+      ]
+    },
+    {
+      "id": "G-S80-9",
+      "name": "independent-reaudit",
+      "criteria": [
+        "itens 3, 9, 10, 12, 13 e 16 reavaliados",
+        "cada item recebe pelo menos 95",
+        "nenhuma evidência pertence a SHA ou ambiente divergente"
+      ]
+    }
+  ],
+  "criticalPath": [
+    "G-S80-0",
+    "ENT95-03-B",
+    "ENT95-03-D",
+    "ENT95-10-B",
+    "ENT95-03-E",
+    "ENT95-09-A",
+    "ENT95-09-C",
+    "ENT95-13-B",
+    "ENT95-13-C",
+    "ENT95-12-A",
+    "ENT95-12-C",
+    "G-S80-7",
+    "ENT95-16-A",
+    "ENT95-16-B",
+    "ENT95-16-D",
+    "G-S80-9"
+  ],
+  "tasks": [
+    {
+      "id": "ENT95-03-A",
+      "item": 3,
+      "title": "Inventariar e estratificar o corpus",
+      "priority": "P0",
+      "status": "COMPLETED",
+      "owner": "Content Lead + QA",
+      "sprints": ["S0"],
+      "dependsOn": [],
+      "gate": "G-S80-1"
+    },
+    {
+      "id": "ENT95-03-B",
+      "item": 3,
+      "title": "Calibrar padrão clínico em 25 itens",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Content + Ricardo",
+      "sprints": ["S0"],
+      "dependsOn": ["ENT95-03-A", "D-ENT-07"],
+      "gate": "G-S80-1"
+    },
+    {
+      "id": "ENT95-03-C",
+      "item": 3,
+      "title": "Completar 24 módulos e 96 sessões",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Instructional Design + Content",
+      "sprints": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"],
+      "dependsOn": ["ENT95-03-B"],
+      "gate": "G-S80-3"
+    },
+    {
+      "id": "ENT95-03-D",
+      "item": 3,
+      "title": "Revisar e decidir 763 itens",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Pre-review + Ricardo",
+      "sprints": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9"],
+      "dependsOn": ["ENT95-03-B", "D-ENT-07"],
+      "gate": "G-S80-3"
+    },
+    {
+      "id": "ENT95-03-E",
+      "item": 3,
+      "title": "Validar B-07 e blueprint diagnóstico",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Clinical + Psychometrics + Ricardo",
+      "sprints": ["S3", "S4", "S5", "S6"],
+      "dependsOn": ["ENT95-03-B"],
+      "gate": "G-S80-3"
+    },
+    {
+      "id": "ENT95-03-F",
+      "item": 3,
+      "title": "Medir eficácia e saúde no piloto",
+      "priority": "P1",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Product Analytics + Clinical",
+      "sprints": ["S11"],
+      "dependsOn": ["ENT95-03-D", "ENT95-03-E", "D-ENT-08"],
+      "gate": "G-S80-7"
+    },
+    {
+      "id": "ENT95-09-A",
+      "item": 9,
+      "title": "Diagnóstico, perfil e trilha recomendada",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Product + Full-stack",
+      "sprints": ["S3", "S4"],
+      "dependsOn": ["ENT95-03-E"],
+      "gate": "G-S80-2"
+    },
+    {
+      "id": "ENT95-09-B",
+      "item": 9,
+      "title": "Estudo, progresso e próxima ação",
+      "priority": "P0",
+      "status": "COMPLETED",
+      "owner": "Full-stack + UX",
+      "sprints": ["S4"],
+      "dependsOn": [],
+      "gate": "G-S80-2"
+    },
+    {
+      "id": "ENT95-09-C",
+      "item": 9,
+      "title": "Avaliação, resultado, remediação e retenção",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Full-stack + QA",
+      "sprints": ["S5", "S6"],
+      "dependsOn": ["ENT95-03-D"],
+      "gate": "G-S80-2"
+    },
+    {
+      "id": "ENT95-09-D",
+      "item": 9,
+      "title": "Contestação, feedback e histórico",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Full-stack + Product",
+      "sprints": ["S5", "S6", "S7"],
+      "dependsOn": ["ENT95-10-C"],
+      "gate": "G-S80-2"
+    },
+    {
+      "id": "ENT95-09-E",
+      "item": 9,
+      "title": "UAT da jornada em turnos e dispositivos",
+      "priority": "P1",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "UX + Product + usuários",
+      "sprints": ["S10", "S11"],
+      "dependsOn": [
+        "ENT95-09-A",
+        "ENT95-09-B",
+        "ENT95-09-C",
+        "ENT95-09-D",
+        "D-ENT-08"
+      ],
+      "gate": "G-S80-7"
+    },
+    {
+      "id": "ENT95-10-A",
+      "item": 10,
+      "title": "Completar workflow editorial atômico",
+      "priority": "P0",
+      "status": "COMPLETED",
+      "owner": "Backend + Database",
+      "sprints": ["S2"],
+      "dependsOn": [],
+      "gate": "G-S80-3"
+    },
+    {
+      "id": "ENT95-10-B",
+      "item": 10,
+      "title": "Executar governança clínica do corpus",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Ricardo + Content",
+      "sprints": ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9"],
+      "dependsOn": ["ENT95-10-A", "ENT95-03-B", "D-ENT-07"],
+      "gate": "G-S80-3"
+    },
+    {
+      "id": "ENT95-10-C",
+      "item": 10,
+      "title": "Correção, recurso, anulação e recálculo",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Domain + Backend + Clinical",
+      "sprints": ["S5", "S6", "S7"],
+      "dependsOn": ["ENT95-10-A"],
+      "gate": "G-S80-2"
+    },
+    {
+      "id": "ENT95-10-D",
+      "item": 10,
+      "title": "Validade e retirada emergencial",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Content Ops + Backend",
+      "sprints": ["S7", "S8", "S9"],
+      "dependsOn": ["ENT95-10-A"],
+      "gate": "G-S80-3"
+    },
+    {
+      "id": "ENT95-10-E",
+      "item": 10,
+      "title": "QA editorial pós-publicação",
+      "priority": "P1",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Clinical QA + QA",
+      "sprints": ["S9", "S10", "S11"],
+      "dependsOn": ["ENT95-10-B", "ENT95-10-C", "ENT95-10-D"],
+      "gate": "G-S80-7"
+    },
+    {
+      "id": "ENT95-12-A",
+      "item": 12,
+      "title": "Telemetria externa, retenção e acesso",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "SRE + Security",
+      "sprints": ["S7"],
+      "dependsOn": ["D-ENT-04"],
+      "gate": "G-S80-4"
+    },
+    {
+      "id": "ENT95-12-B",
+      "item": 12,
+      "title": "SLOs, dashboards e alertas",
+      "priority": "P0",
+      "status": "IN_PROGRESS",
+      "owner": "SRE + Product",
+      "sprints": ["S7", "S8"],
+      "dependsOn": ["ENT95-12-A"],
+      "gate": "G-S80-4"
+    },
+    {
+      "id": "ENT95-12-C",
+      "item": 12,
+      "title": "Backup, restore, RPO/RTO e DR",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "SRE + Database",
+      "sprints": ["S8", "S9"],
+      "dependsOn": ["D-ENT-05"],
+      "gate": "G-S80-4"
+    },
+    {
+      "id": "ENT95-12-D",
+      "item": 12,
+      "title": "Incident drills e on-call readiness",
+      "priority": "P1",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "SRE + Security + Product",
+      "sprints": ["S9", "S10"],
+      "dependsOn": ["ENT95-12-B", "ENT95-12-C"],
+      "gate": "G-S80-4"
+    },
+    {
+      "id": "ENT95-12-E",
+      "item": 12,
+      "title": "Soak e failover de aceitação",
+      "priority": "P1",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "SRE + QA",
+      "sprints": ["S10", "S11"],
+      "dependsOn": ["ENT95-12-A", "ENT95-12-B"],
+      "gate": "G-S80-4"
+    },
+    {
+      "id": "ENT95-13-A",
+      "item": 13,
+      "title": "Design system e estados completos",
+      "priority": "P1",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "UX + Frontend",
+      "sprints": ["S3", "S4", "S5", "S6"],
+      "dependsOn": [],
+      "gate": "G-S80-5"
+    },
+    {
+      "id": "ENT95-13-B",
+      "item": 13,
+      "title": "Auditoria WCAG 2.2 AA automatizada e manual",
+      "priority": "P0",
+      "status": "IN_PROGRESS",
+      "owner": "Accessibility Specialist + QA",
+      "sprints": ["S9", "S10"],
+      "dependsOn": ["ENT95-13-A", "ENT95-09-A", "ENT95-09-C"],
+      "gate": "G-S80-5"
+    },
+    {
+      "id": "ENT95-13-C",
+      "item": 13,
+      "title": "Screen reader e usuários representativos",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "UX + Accessibility + usuários",
+      "sprints": ["S10", "S11"],
+      "dependsOn": ["ENT95-13-B", "D-ENT-08"],
+      "gate": "G-S80-5"
+    },
+    {
+      "id": "ENT95-13-D",
+      "item": 13,
+      "title": "Performance web e resiliência de rede",
+      "priority": "P1",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Frontend + QA",
+      "sprints": ["S10", "S11"],
+      "dependsOn": ["ENT95-13-A"],
+      "gate": "G-S80-5"
+    },
+    {
+      "id": "ENT95-16-A",
+      "item": 16,
+      "title": "Fechar worktree em commits intencionais",
+      "priority": "P0",
+      "status": "WAITING_HUMAN_APPROVAL",
+      "owner": "Tech Lead + Ricardo",
+      "sprints": ["S0", "S12"],
+      "dependsOn": ["D-ENT-01"],
+      "gate": "G-S80-8"
+    },
+    {
+      "id": "ENT95-16-B",
+      "item": 16,
+      "title": "Traceability 100% automatizada",
+      "priority": "P0",
+      "status": "IN_PROGRESS",
+      "owner": "QA + Tech Lead",
+      "sprints": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S10",
+        "S11",
+        "S12"
+      ],
+      "dependsOn": ["ENT95-16-A"],
+      "gate": "G-S80-6"
+    },
+    {
+      "id": "ENT95-16-C",
+      "item": 16,
+      "title": "Change control e release manifest",
+      "priority": "P1",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Program + SRE",
+      "sprints": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S10",
+        "S11",
+        "S12"
+      ],
+      "dependsOn": ["ENT95-16-B"],
+      "gate": "G-S80-6"
+    },
+    {
+      "id": "ENT95-16-D",
+      "item": 16,
+      "title": "Congelar RC e executar auditoria no mesmo SHA",
+      "priority": "P0",
+      "status": "READY_FOR_NEXT_STEP",
+      "owner": "Auditor + QA + SRE",
+      "sprints": ["S12"],
+      "dependsOn": [
+        "G-S80-0",
+        "G-S80-1",
+        "G-S80-2",
+        "G-S80-3",
+        "G-S80-4",
+        "G-S80-5",
+        "G-S80-6",
+        "G-S80-7",
+        "G-S80-8"
+      ],
+      "gate": "G-S80-9"
+    }
+  ]
+}

@@ -34,4 +34,23 @@ describe("content workflow contract", () => {
       }),
     ).toThrow();
   });
+
+  it("requires a controlled reason for emergency withdrawal", () => {
+    expect(
+      contentTransitionRequestSchema.parse({
+        version: 1,
+        scopeId: "22222222-2222-4222-8222-222222222222",
+        event: "RETIRAR",
+        withdrawalReasonCode: "ERRO_CONTEUDO",
+      }),
+    ).toMatchObject({ withdrawalReasonCode: "ERRO_CONTEUDO" });
+
+    expect(() =>
+      contentTransitionRequestSchema.parse({
+        version: 1,
+        scopeId: "22222222-2222-4222-8222-222222222222",
+        event: "RETIRAR",
+      }),
+    ).toThrow();
+  });
 });

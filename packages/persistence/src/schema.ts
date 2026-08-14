@@ -1,17 +1,24 @@
 import {
+  boolean,
   check,
   index,
   integer,
   jsonb,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { ModuleEvaluationResult } from "@cvg/curriculum";
+import type {
+  DigitalCaseRuntimeState,
+  ModuleEvaluationResult,
+  PublicAssessmentInteraction,
+  PublicDigitalCaseStage,
+} from "@cvg/curriculum";
 import type {
   AuthoringChoice,
   AuthoringParticipantItem,
@@ -19,6 +26,12 @@ import type {
   AuthoringRubric,
   AuthoringSourceRef,
 } from "@cvg/application";
+import type {
+  DistractorObservation,
+  FeedbackTicketHistoryEntry,
+  ItemAnomalyCode,
+  SourceConflictDecision,
+} from "@cvg/domain";
 
 export type InternalKnowledgeMetadata = Readonly<{
   curriculumArea: string;
@@ -69,6 +82,7 @@ export type PersistedCorrectionSnapshot = Readonly<{
 }>;
 
 export type PersistedCurriculumRuntimeState = ModuleEvaluationResult;
+export type PersistedDigitalCaseRuntimeState = DigitalCaseRuntimeState;
 
 export type PersistedAuthoringItem = Readonly<{
   readonly title: string;
@@ -123,6 +137,7 @@ export const accounts = pgTable(
       .$type<readonly string[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
+    version: integer("version").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -135,6 +150,7 @@ export const accounts = pgTable(
       "accounts_status_check",
       sql`${table.status} in ('INVITED', 'ACTIVE', 'SUSPENDED', 'DEACTIVATED')`,
     ),
+    check("accounts_version_check", sql`${table.version} >= 0`),
   ],
 );
 
@@ -186,6 +202,15 @@ export const contentVersions = pgTable(
       readonly PublicChoiceMetadata[]
     >(),
     participantSelectionMode: text("participant_selection_mode"),
+    participantInteraction: jsonb(
+      "participant_interaction",
+    ).$type<PublicAssessmentInteraction>(),
+    digitalCaseStage:
+      jsonb("digital_case_stage").$type<PublicDigitalCaseStage>(),
+    validUntil: timestamp("valid_until", { withTimezone: true }),
+    nextReviewAt: timestamp("next_review_at", { withTimezone: true }),
+    withdrawalReasonCode: text("withdrawal_reason_code"),
+    withdrawnAt: timestamp("withdrawn_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -199,6 +224,11 @@ export const contentVersions = pgTable(
       table.version,
     ),
     index("content_versions_scope_status_idx").on(table.scopeId, table.status),
+    index("content_versions_expiry_idx").on(
+      table.status,
+      table.validUntil,
+      table.scopeId,
+    ),
     check(
       "content_versions_status_check",
       sql`${table.status} in ('RASCUNHO', 'AUTOVERIFICADO', 'EM_REVISAO_CLINICA', 'AJUSTES_SOLICITADOS', 'APROVADO_CLINICAMENTE', 'PROJECAO_VERIFICADA', 'AUTORIZADO_PARA_PUBLICACAO', 'PUBLICADO', 'RETIRADO', 'VENCIDO')`,
@@ -209,11 +239,15 @@ export const contentVersions = pgTable(
     ),
     check(
       "content_versions_response_mode_check",
-      sql`${table.responseMode} in ('TEXT', 'CHOICE', 'NONE')`,
+      sql`${table.responseMode} in ('TEXT', 'CHOICE', 'STRUCTURED_FIELDS', 'DOSE_INFUSION', 'NONE')`,
     ),
     check(
       "content_versions_selection_mode_check",
       sql`${table.participantSelectionMode} is null or ${table.participantSelectionMode} in ('SINGLE', 'MULTIPLE')`,
+    ),
+    check(
+      "content_versions_withdrawal_reason_check",
+      sql`${table.withdrawalReasonCode} is null or ${table.withdrawalReasonCode} in ('ERRO_CLINICO', 'ERRO_CONTEUDO', 'RISCO_SEGURANCA')`,
     ),
     check("content_versions_version_check", sql`${table.version} >= 1`),
   ],
@@ -405,6 +439,151 @@ export const activityAssignments = pgTable(
   ],
 );
 
+export const contentWithdrawalAffected = pgTable(
+  "content_withdrawal_affected",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    contentVersionId: uuid("content_version_id")
+      .notNull()
+      .references(() => contentVersions.id, { onDelete: "restrict" }),
+    contentId: uuid("content_id").notNull(),
+    version: integer("version").notNull(),
+    scopeId: uuid("scope_id").notNull(),
+    participantId: uuid("participant_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    withdrawnAt: timestamp("withdrawn_at", { withTimezone: true }).notNull(),
+    correlationId: text("correlation_id").notNull(),
+  },
+  (table) => [
+    uniqueIndex("content_withdrawal_affected_version_participant_idx").on(
+      table.contentVersionId,
+      table.participantId,
+    ),
+    index("content_withdrawal_affected_scope_idx").on(
+      table.scopeId,
+      table.withdrawnAt,
+    ),
+    check(
+      "content_withdrawal_affected_version_check",
+      sql`${table.version} >= 1`,
+    ),
+  ],
+);
+
+export const itemStatistics = pgTable(
+  "item_statistics",
+  {
+    id: text("id").primaryKey(),
+    itemId: text("item_id").notNull(),
+    scopeId: text("scope_id").notNull(),
+    contentVersion: integer("content_version").notNull(),
+    observedAt: timestamp("observed_at", { withTimezone: true }).notNull(),
+    sampleSize: integer("sample_size").notNull(),
+    correctCount: integer("correct_count").notNull(),
+    appealCount: integer("appeal_count").notNull(),
+    difficulty: real("difficulty").notNull(),
+    appealRate: real("appeal_rate").notNull(),
+    discrimination: real("discrimination"),
+    distractorCounts: jsonb("distractor_counts")
+      .$type<readonly DistractorObservation[]>()
+      .notNull(),
+    anomalyCodes: jsonb("anomaly_codes")
+      .$type<readonly ItemAnomalyCode[]>()
+      .notNull(),
+    requiresHumanReview: boolean("requires_human_review").notNull(),
+    automaticDecision: text("automatic_decision").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("item_statistics_scope_item_idx").on(
+      table.scopeId,
+      table.itemId,
+      table.contentVersion,
+      table.observedAt,
+    ),
+    check(
+      "item_statistics_content_version_check",
+      sql`${table.contentVersion} >= 1`,
+    ),
+    check("item_statistics_sample_size_check", sql`${table.sampleSize} >= 1`),
+    check(
+      "item_statistics_correct_count_check",
+      sql`${table.correctCount} >= 0 and ${table.correctCount} <= ${table.sampleSize}`,
+    ),
+    check(
+      "item_statistics_appeal_count_check",
+      sql`${table.appealCount} >= 0 and ${table.appealCount} <= ${table.sampleSize}`,
+    ),
+    check(
+      "item_statistics_difficulty_check",
+      sql`${table.difficulty} >= 0 and ${table.difficulty} <= 1`,
+    ),
+    check(
+      "item_statistics_appeal_rate_check",
+      sql`${table.appealRate} >= 0 and ${table.appealRate} <= 1`,
+    ),
+    check(
+      "item_statistics_discrimination_check",
+      sql`${table.discrimination} is null or (${table.discrimination} >= -1 and ${table.discrimination} <= 1)`,
+    ),
+    check(
+      "item_statistics_decision_check",
+      sql`${table.automaticDecision} = 'NONE'`,
+    ),
+    check(
+      "item_statistics_distractors_object_check",
+      sql`jsonb_typeof(${table.distractorCounts}) = 'array'`,
+    ),
+    check(
+      "item_statistics_anomalies_object_check",
+      sql`jsonb_typeof(${table.anomalyCodes}) = 'array'`,
+    ),
+  ],
+);
+
+export const sourceConflictDecisions = pgTable(
+  "source_conflict_decisions",
+  {
+    id: text("id").primaryKey(),
+    contentId: text("content_id").notNull(),
+    contentVersion: integer("content_version").notNull(),
+    scopeId: text("scope_id").notNull(),
+    sourceCodes: jsonb("source_codes").$type<readonly string[]>().notNull(),
+    description: text("description").notNull(),
+    decision: text("decision").$type<SourceConflictDecision>().notNull(),
+    rationale: text("rationale").notNull(),
+    decidedBy: text("decided_by").notNull(),
+    decidedAt: timestamp("decided_at", { withTimezone: true }).notNull(),
+    humanReviewRequired: boolean("human_review_required").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("source_conflict_decisions_scope_content_idx").on(
+      table.scopeId,
+      table.contentId,
+      table.contentVersion,
+      table.decidedAt,
+    ),
+    check(
+      "source_conflict_decisions_version_check",
+      sql`${table.contentVersion} >= 1`,
+    ),
+    check(
+      "source_conflict_decisions_decision_check",
+      sql`${table.decision} in ('ACCEPT_SOURCE_A', 'ACCEPT_SOURCE_B', 'ESCALATE_CLINICAL_REVIEW', 'DEFER_PUBLICATION')`,
+    ),
+    check(
+      "source_conflict_decisions_sources_array_check",
+      sql`jsonb_typeof(${table.sourceCodes}) = 'array' and jsonb_array_length(${table.sourceCodes}) >= 2`,
+    ),
+  ],
+);
+
 export const curriculumRuntimeStates = pgTable(
   "curriculum_runtime_states",
   {
@@ -438,6 +617,43 @@ export const curriculumRuntimeStates = pgTable(
       sql`${table.moduleId} ~ '^M(0[1-9]|1[0-9]|2[0-4])$'`,
     ),
     check("curriculum_runtime_version_check", sql`${table.version} >= 1`),
+  ],
+);
+
+export const digitalCaseRuntimeStates = pgTable(
+  "digital_case_runtime_states",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    participantId: uuid("participant_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    moduleId: text("module_id").notNull(),
+    caseId: text("case_id").notNull(),
+    version: integer("version").notNull().default(0),
+    state: jsonb("state").$type<PersistedDigitalCaseRuntimeState>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("digital_case_runtime_participant_scope_module_idx").on(
+      table.participantId,
+      table.scopeId,
+      table.moduleId,
+    ),
+    index("digital_case_runtime_participant_scope_idx").on(
+      table.participantId,
+      table.scopeId,
+    ),
+    check(
+      "digital_case_runtime_module_id_check",
+      sql`${table.moduleId} ~ '^M(0[1-9]|1[0-9]|2[0-4])$'`,
+    ),
+    check("digital_case_runtime_version_check", sql`${table.version} >= 0`),
   ],
 );
 
@@ -519,6 +735,92 @@ export const assessmentResults = pgTable(
       sql`${table.score} >= 0 and ${table.score} <= 100`,
     ),
     check("assessment_results_version_check", sql`${table.version} >= 1`),
+  ],
+);
+
+export const assessmentRecalculationCandidates = pgTable(
+  "assessment_recalculation_candidates",
+  {
+    id: uuid("id").primaryKey(),
+    participantId: uuid("participant_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    attemptId: uuid("attempt_id")
+      .notNull()
+      .references(() => attempts.id, { onDelete: "restrict" }),
+    itemId: uuid("item_id").notNull(),
+    previousVersion: integer("previous_version").notNull(),
+    previousScore: integer("previous_score").notNull(),
+    previousOutcome: text("previous_outcome").notNull(),
+    correctCount: integer("correct_count").notNull(),
+    eligibleItemCount: integer("eligible_item_count").notNull(),
+    triggerReason: text("trigger_reason").notNull(),
+    status: text("status").notNull().default("PENDING"),
+    recalculatedVersion: integer("recalculated_version"),
+    recalculatedScore: integer("recalculated_score"),
+    recalculatedOutcome: text("recalculated_outcome"),
+    recalculatedAt: timestamp("recalculated_at", { withTimezone: true }),
+    notificationQueuedAt: timestamp("notification_queued_at", {
+      withTimezone: true,
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("assessment_recalculation_scope_item_status_idx").on(
+      table.scopeId,
+      table.itemId,
+      table.status,
+    ),
+    index("assessment_recalculation_attempt_idx").on(
+      table.attemptId,
+      table.previousVersion,
+    ),
+    check(
+      "assessment_recalculation_previous_version_check",
+      sql`${table.previousVersion} >= 1`,
+    ),
+    check(
+      "assessment_recalculation_previous_score_check",
+      sql`${table.previousScore} >= 0 and ${table.previousScore} <= 100`,
+    ),
+    check(
+      "assessment_recalculation_counts_check",
+      sql`${table.correctCount} >= 0 and ${table.correctCount} <= ${table.eligibleItemCount} and ${table.eligibleItemCount} >= 1`,
+    ),
+    check(
+      "assessment_recalculation_outcome_check",
+      sql`${table.previousOutcome} in ('APROVADO', 'REFORCO')`,
+    ),
+    check(
+      "assessment_recalculation_reason_check",
+      sql`${table.triggerReason} in ('ITEM_ANNULLED', 'ANSWER_KEY_CHANGED')`,
+    ),
+    check(
+      "assessment_recalculation_status_check",
+      sql`${table.status} in ('PENDING', 'CALCULATED', 'NOTIFICATION_QUEUED')`,
+    ),
+    check(
+      "assessment_recalculation_processed_fields_check",
+      sql`(
+        (${table.status} = 'PENDING' and ${table.recalculatedVersion} is null and ${table.recalculatedScore} is null and ${table.recalculatedOutcome} is null and ${table.recalculatedAt} is null and ${table.notificationQueuedAt} is null)
+        or
+        (${table.status} in ('CALCULATED', 'NOTIFICATION_QUEUED') and ${table.recalculatedVersion} is not null and ${table.recalculatedScore} is not null and ${table.recalculatedOutcome} is not null and ${table.recalculatedAt} is not null)
+      )`,
+    ),
+    check(
+      "assessment_recalculation_score_check",
+      sql`${table.recalculatedScore} is null or (${table.recalculatedScore} >= 0 and ${table.recalculatedScore} <= 100)`,
+    ),
+    check(
+      "assessment_recalculation_result_outcome_check",
+      sql`${table.recalculatedOutcome} is null or ${table.recalculatedOutcome} in ('APROVADO', 'REFORCO')`,
+    ),
   ],
 );
 
@@ -733,6 +1035,8 @@ export const learningAssignments = pgTable(
     version: integer("version").notNull().default(0),
     blockReason: text("block_reason"),
     pausedFrom: text("paused_from"),
+    pauseReason: text("pause_reason"),
+    resumeAt: timestamp("resume_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -767,6 +1071,10 @@ export const learningAssignments = pgTable(
     check(
       "learning_assignments_paused_from_check",
       sql`((${table.status} = 'PAUSADO' and ${table.pausedFrom} is not null and ${table.pausedFrom} in ('NAO_ATRIBUIDO', 'ATRIBUIDO', 'DISPONIVEL', 'EM_ANDAMENTO', 'CONCLUIDO', 'EM_REFORCO', 'CONCLUIDO_COM_RETENCAO_PENDENTE', 'BLOQUEADO')) or (${table.status} <> 'PAUSADO' and ${table.pausedFrom} is null))`,
+    ),
+    check(
+      "learning_assignments_pause_context_check",
+      sql`((${table.status} = 'PAUSADO' and ${table.pauseReason} is not null and ${table.pauseReason} in ('AFASTAMENTO', 'ACOMODACAO', 'JANELA_OPERACIONAL')) or (${table.status} <> 'PAUSADO' and ${table.pauseReason} is null and ${table.resumeAt} is null))`,
     ),
   ],
 );
@@ -825,8 +1133,26 @@ export const feedbackTickets = pgTable(
     type: text("type").notNull(),
     description: text("description").notNull(),
     status: text("status").notNull(),
+    priority: text("priority").notNull().default("NORMAL"),
+    assigneeId: uuid("assignee_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
+    response: text("response"),
+    responseAt: timestamp("response_at", { withTimezone: true }),
+    responseBy: uuid("response_by").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
+    history: jsonb("history")
+      .$type<readonly FeedbackTicketHistoryEntry[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     version: integer("version").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    logicalPage: text("logical_page"),
+    appVersion: text("app_version"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }),
+    errorCode: text("error_code"),
+    alertedAt: timestamp("alerted_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -846,8 +1172,29 @@ export const feedbackTickets = pgTable(
       sql`${table.status} in ('NOVO', 'TRIADO', 'EM_TRATAMENTO', 'AGUARDA_USUARIO', 'RESOLVIDO', 'DUPLICADO', 'NAO_REPRODUZIDO', 'NAO_PLANEJADO')`,
     ),
     check(
+      "feedback_tickets_priority_check",
+      sql`${table.priority} in ('BAIXA', 'NORMAL', 'ALTA', 'URGENTE')`,
+    ),
+    check(
+      "feedback_tickets_response_check",
+      sql`((${table.response} is null and ${table.responseAt} is null and ${table.responseBy} is null) or (${table.response} is not null and ${table.responseAt} is not null))`,
+    ),
+    check(
       "feedback_tickets_description_check",
       sql`length(trim(${table.description})) between 1 and 10000 and ${table.description} not like '%<%>'`,
+    ),
+    check(
+      "feedback_tickets_technical_context_check",
+      sql`(
+        (${table.logicalPage} is null and ${table.appVersion} is null and ${table.occurredAt} is null and ${table.errorCode} is null)
+        or (
+          ${table.logicalPage} is not null
+          and ${table.appVersion} is not null
+          and ${table.logicalPage} ~ '^/[A-Za-z0-9][A-Za-z0-9/_:-]{0,127}$'
+          and ${table.appVersion} ~ '^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$'
+          and (${table.errorCode} is null or ${table.errorCode} ~ '^[A-Z0-9][A-Z0-9_.:-]{0,63}$')
+        )
+      )`,
     ),
     check("feedback_tickets_version_check", sql`${table.version} >= 0`),
   ],

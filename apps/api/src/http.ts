@@ -9,7 +9,19 @@ import type {
   LearningAssignmentState,
 } from "@cvg/domain";
 import {
+  confirmOperationalAiProposal,
+  inspectFeedbackContent,
+  redactFeedbackContent,
+  type OperationalAiConfirmation,
+  type OperationalAiProposal,
+  type ObservedItemStatistics,
+  type ObservedItemStatisticsInput,
+  type SourceConflictDecisionState,
+} from "@cvg/domain";
+import {
   ApplicationError,
+  type AdvanceParticipantDigitalCaseCommand,
+  type AuditEntry,
   clearSessionCookie,
   type CorrectionResult,
   type CorrectOpenResponseCommand,
@@ -29,10 +41,20 @@ import {
   type ReviewAuthoringCommand,
   canAccess,
   type AccountStatus,
+  type AccountManagementListResult,
+  type ListManagedAccountsCommand,
+  type ManagedAccount,
+  type RevokeManagedAccountSessionsCommand,
+  type RevokedManagedAccountSessions,
+  type UpdateManagedAccountCommand,
+  type AdminDashboard,
+  type AdminOperationsDashboard,
+  type ModeratorDashboard,
   buildParticipantDashboard,
   type Capability,
   type ContentRecord,
   type CurriculumRuntimeState,
+  type DigitalCaseRuntimeRecord,
   type EvaluateCurriculumModuleCommand,
   type AppealCreateCommand,
   type AppealTransitionCommand,
@@ -42,27 +64,46 @@ import {
   type WorkflowTransitionCommand,
   type TicketCreateCommand,
   type TicketTransitionCommand,
+  type FeedbackTicketListContext,
+  type ScopedFeedbackTicket,
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
+  isParticipantJourneyActivityCurrent,
   type IdentityProviderOperation,
   type IdentityProviderPort,
+  projectParticipantDigitalCaseRuntime,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
   type StartAttemptCommand,
   type SubmitAttemptCommand,
   type TransactionSecurityContext,
+  type RunOperationalAiProposalCommand,
+  type RecordSourceConflictDecisionCommand,
+  type RecalculateAffectedAssessmentsCommand,
+  type RecalculateAffectedAssessmentsResult,
+  type RegisterAssessmentRecalculationCandidatesCommand,
 } from "@cvg/application";
 import {
   apiErrorResponse,
   accountActionRequestSchema,
+  accountManagementListQuerySchema,
+  accountManagementUpdateRequestSchema,
   accountOperationProjectionSchema,
   accountVerificationRequestSchema,
   apiSuccessResponse,
+  digitalCaseAdvanceRequestSchema,
+  digitalCaseScopeQuerySchema,
+  parseAuditTrail,
   parseAccountSecurity,
+  parseAdminDashboard,
+  parseAdminOperationsDashboard,
+  parseModeratorDashboard,
   parseOperationsDashboard,
   parseParticipantDashboard,
+  managedAccountPageProjectionSchema,
+  revokedAccountSessionsProjectionSchema,
   authoringPublicationRequestSchema,
   authoringReviewRequestSchema,
   createAttemptRequestSchema,
@@ -70,9 +111,20 @@ import {
   parseParticipantActivity,
   curriculumRuntimeEvaluationRequestSchema,
   parseParticipantCurriculumRuntime,
+  parseParticipantDigitalCaseRuntime,
   parseParticipantAttempt,
   parseParticipantProgress,
   parseParticipantLearningJourney,
+  operationalAiConfirmationProjectionSchema,
+  operationalAiConfirmationRequestSchema,
+  operationalAiProposalProjectionSchema,
+  operationalAiProposalRequestSchema,
+  observedItemStatisticsRequestSchema,
+  parseObservedItemStatistics,
+  parseSourceConflictDecision,
+  sourceConflictDecisionRequestSchema,
+  assessmentRecalculationBatchRequestSchema,
+  parseAssessmentRecalculationResult,
   parseInternalAuthoringRecordProjection,
   clinicalReviewQueueQuerySchema,
   parseClinicalReviewQueuePage,
@@ -80,6 +132,7 @@ import {
   correctionResultProjectionSchema,
   acceptInvitationRequestSchema,
   activeSessionProjectionSchema,
+  accountSessionRevokeRequestSchema,
   rotateSessionRequestSchema,
   createInvitationRequestSchema,
   loginRequestSchema,
@@ -89,7 +142,10 @@ import {
   appealCreateRequestSchema,
   appealScopedTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
+  feedbackTicketListProjectionSchema,
+  feedbackTicketListQuerySchema,
   feedbackTicketScopedTransitionRequestSchema,
+  internalFeedbackTicketProjectionSchema,
   learningAssignmentCreateRequestSchema,
   learningAssignmentScopedTransitionRequestSchema,
   participantAppealProjectionSchema,
@@ -139,6 +195,7 @@ export type ApiPrincipal = Readonly<{
 
 export interface ApiHttpDependencies {
   readonly requestIdFactory: () => string;
+  readonly applicationVersion?: string;
   readonly observability?: Observability;
   readonly metricsScrapeToken?: string;
   readonly operationalEvidence?: OperationalEvidence;
@@ -149,6 +206,15 @@ export interface ApiHttpDependencies {
   readonly acceptInvitation: (
     command: AcceptInvitationCommand,
   ) => Promise<AcceptedInvitation>;
+  readonly listManagedAccounts?: (
+    command: ListManagedAccountsCommand,
+  ) => Promise<AccountManagementListResult>;
+  readonly updateManagedAccount?: (
+    command: UpdateManagedAccountCommand,
+  ) => Promise<ManagedAccount>;
+  readonly revokeManagedAccountSessions?: (
+    command: RevokeManagedAccountSessionsCommand,
+  ) => Promise<RevokedManagedAccountSessions>;
   readonly loginWithPassword?: (
     command: LoginWithPasswordCommand,
   ) => Promise<LoggedInPassword>;
@@ -178,6 +244,19 @@ export interface ApiHttpDependencies {
   readonly transitionFeedbackTicket?: (
     command: TicketTransitionCommand,
   ) => Promise<FeedbackTicketState>;
+  readonly listFeedbackTickets?: (
+    context: FeedbackTicketListContext,
+  ) => Promise<readonly ScopedFeedbackTicket[]>;
+  readonly recordFeedbackSafetyEvent?: (
+    input: Readonly<{
+      readonly principalId: string;
+      readonly scopeId: string;
+      readonly ticketId: string;
+      readonly requestId: string;
+      readonly action: "BLOCKED" | "REDACTED";
+      readonly reasonCodes: readonly string[];
+    }>,
+  ) => Promise<void>;
   readonly createAppeal?: (
     command: AppealCreateCommand,
   ) => Promise<AppealState>;
@@ -225,6 +304,55 @@ export interface ApiHttpDependencies {
     participantId: string,
     scopeIds: readonly string[],
   ) => Promise<ParticipantLearningJourneyState>;
+  readonly getInternalAdminDashboard?: (
+    scopeIds: readonly string[],
+  ) => Promise<AdminDashboard>;
+  readonly getInternalAdminOperationsDashboard?: (
+    scopeIds: readonly string[],
+  ) => Promise<AdminOperationsDashboard>;
+  readonly getInternalModeratorDashboard?: (
+    moderatorId: string,
+    scopeIds: readonly string[],
+  ) => Promise<ModeratorDashboard>;
+  readonly runOperationalAiProposal?: (
+    command: Omit<RunOperationalAiProposalCommand, "costCeilingUsd">,
+  ) => Promise<OperationalAiProposal>;
+  readonly confirmOperationalAiProposal?: (
+    proposal: OperationalAiProposal,
+    confirmation: Readonly<{
+      readonly confirmedBy: string;
+      readonly confirmedAt: string;
+      readonly rationale?: string;
+    }>,
+  ) => OperationalAiConfirmation;
+  readonly recordObservedItemStatistics?: (
+    input: ObservedItemStatisticsInput,
+  ) => Promise<ObservedItemStatistics>;
+  readonly recordSourceConflictDecision?: (
+    command: Omit<
+      RecordSourceConflictDecisionCommand,
+      | "principalId"
+      | "accountStatus"
+      | "roles"
+      | "scopes"
+      | "approvedClinicalApproverId"
+    > &
+      Pick<
+        RecordSourceConflictDecisionCommand,
+        | "principalId"
+        | "accountStatus"
+        | "roles"
+        | "scopes"
+        | "approvedClinicalApproverId"
+      >,
+  ) => Promise<SourceConflictDecisionState>;
+  readonly registerAssessmentRecalculationCandidates?: (
+    command: RegisterAssessmentRecalculationCandidatesCommand,
+  ) => Promise<Readonly<{ readonly registeredCount: number }>>;
+  readonly recalculateAffectedAssessments?: (
+    command: RecalculateAffectedAssessmentsCommand,
+  ) => Promise<RecalculateAffectedAssessmentsResult>;
+  readonly listAuditEntries?: () => Promise<readonly AuditEntry[]>;
   readonly getParticipantCurriculumRuntime?: (
     participantId: string,
     moduleId: string,
@@ -232,6 +360,17 @@ export interface ApiHttpDependencies {
   readonly evaluateCurriculumRuntime?: (
     command: EvaluateCurriculumModuleCommand,
   ) => Promise<CurriculumRuntimeState>;
+  readonly getParticipantDigitalCase?: (
+    command: Readonly<{
+      readonly participantId: string;
+      readonly scopeId: string;
+      readonly moduleId: string;
+      readonly now: string;
+    }>,
+  ) => Promise<DigitalCaseRuntimeRecord>;
+  readonly advanceParticipantDigitalCase?: (
+    command: AdvanceParticipantDigitalCaseCommand,
+  ) => Promise<DigitalCaseRuntimeRecord>;
   readonly getAttemptFeedback: (
     participantId: string,
     attemptId: string,
@@ -372,6 +511,16 @@ function publicCurriculumRuntimeProjection(
   });
 }
 
+function publicDigitalCaseRuntimeProjection(
+  state: DigitalCaseRuntimeRecord,
+): ApiSuccessEnvelope<unknown>["data"] {
+  const projection = projectParticipantDigitalCaseRuntime(state);
+  return parseParticipantDigitalCaseRuntime({
+    moduleId: state.moduleId,
+    ...projection,
+  });
+}
+
 function publicCorrectionProjection(
   correction: CorrectionResult,
 ): ApiSuccessEnvelope<unknown>["data"] {
@@ -397,6 +546,7 @@ function publicLearningAssignmentProjection(
     ...(state.blockReason === undefined
       ? {}
       : { blockReason: state.blockReason }),
+    ...(state.resumeAt === undefined ? {} : { resumeAt: state.resumeAt }),
   });
 }
 
@@ -410,16 +560,107 @@ function publicAssessmentWorkflowProjection(
   });
 }
 
+function feedbackSafetyReasonCodes(
+  state: FeedbackTicketState,
+): readonly string[] {
+  const values = [
+    inspectFeedbackContent(state.description),
+    ...(state.response === undefined
+      ? []
+      : [inspectFeedbackContent(state.response.message)]),
+  ];
+  return Object.freeze([
+    ...new Set(values.flatMap((inspection) => inspection.reasons)),
+  ]);
+}
+
+async function recordFeedbackSafetyEventIfNeeded(
+  state: FeedbackTicketState,
+  principalId: string,
+  scopeId: string,
+  requestId: string,
+  action: "REDACTED",
+  dependencies: ApiHttpDependencies,
+): Promise<void> {
+  const reasonCodes = feedbackSafetyReasonCodes(state);
+  if (
+    reasonCodes.length === 0 ||
+    dependencies.recordFeedbackSafetyEvent === undefined
+  ) {
+    return;
+  }
+  await dependencies.recordFeedbackSafetyEvent({
+    principalId,
+    scopeId,
+    ticketId: state.ticketId,
+    requestId,
+    action,
+    reasonCodes,
+  });
+}
+
 function publicFeedbackTicketProjection(
   state: FeedbackTicketState,
 ): ApiSuccessEnvelope<unknown>["data"] {
   return participantFeedbackTicketProjectionSchema.parse({
     ticketId: state.ticketId,
     type: state.type,
-    description: state.description,
+    description: redactFeedbackContent(state.description),
     createdAt: state.createdAt,
+    ...(state.alertedAt === undefined ? {} : { alertedAt: state.alertedAt }),
     status: state.status,
     version: state.version,
+    priority: state.priority ?? "NORMAL",
+    history: (
+      state.history ?? [{ status: state.status, changedAt: state.createdAt }]
+    ).map(({ status, changedAt }) => ({ status, changedAt })),
+    ...(state.technicalContext === undefined
+      ? {}
+      : { technicalContext: state.technicalContext }),
+    ...(state.response === undefined
+      ? {}
+      : {
+          response: {
+            message: redactFeedbackContent(state.response.message),
+            respondedAt: state.response.respondedAt,
+          },
+        }),
+  });
+}
+
+function internalFeedbackTicketProjection(
+  scoped: ScopedFeedbackTicket,
+): ApiSuccessEnvelope<unknown>["data"] {
+  const state = scoped.state;
+  return internalFeedbackTicketProjectionSchema.parse({
+    ticketId: state.ticketId,
+    participantId: state.participantId,
+    scopeId: scoped.scopeId,
+    type: state.type,
+    description: redactFeedbackContent(state.description),
+    createdAt: state.createdAt,
+    ...(state.alertedAt === undefined ? {} : { alertedAt: state.alertedAt }),
+    status: state.status,
+    version: state.version,
+    priority: state.priority ?? "NORMAL",
+    history: state.history ?? [
+      { status: state.status, changedAt: state.createdAt },
+    ],
+    ...(state.assigneeId === undefined ? {} : { assigneeId: state.assigneeId }),
+    ...(state.technicalContext === undefined
+      ? {}
+      : { technicalContext: state.technicalContext }),
+    ...(state.response === undefined
+      ? {}
+      : {
+          response: {
+            message: redactFeedbackContent(state.response.message),
+            respondedAt: state.response.respondedAt,
+            ...(state.response.respondedBy === undefined
+              ? {}
+              : { respondedBy: state.response.respondedBy }),
+          },
+        }),
   });
 }
 
@@ -485,13 +726,32 @@ function isAllowed(
     ...(capability === "PUBLISH_CONTENT" ||
     capability === "VIEW_INTERNAL_SOURCE" ||
     capability === "APPROVE_CLINICAL_CONTENT" ||
-    capability === "VIEW_CLINICAL_REVIEW_QUEUE"
+    capability === "VIEW_CLINICAL_REVIEW_QUEUE" ||
+    capability === "VIEW_FEEDBACK_TICKETS"
       ? {
           approvedClinicalApproverId:
             approvedClinicalApproverId ?? principal.principalId,
         }
       : {}),
   });
+}
+
+function resolveDigitalCaseScope(
+  principal: ApiPrincipal,
+  requestedScopeId: string | undefined,
+): string | null {
+  const scopeId =
+    requestedScopeId ??
+    (principal.scopes.length === 1 ? principal.scopes[0] : undefined);
+  if (
+    scopeId === undefined ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+      scopeId,
+    )
+  ) {
+    return null;
+  }
+  return scopeId;
 }
 
 function internalAuthoringProjection(
@@ -576,6 +836,19 @@ async function handleStart(
     return errorResponse("forbidden", requestId);
   }
 
+  if (dependencies.getParticipantLearningJourney !== undefined) {
+    const journey = await dependencies.getParticipantLearningJourney(
+      principal.principalId,
+      principal.scopes,
+    );
+    if (
+      journey.participantId !== principal.principalId ||
+      !isParticipantJourneyActivityCurrent(journey, parsed.data.activityId)
+    ) {
+      return errorResponse("forbidden", requestId);
+    }
+  }
+
   const state = await dependencies.startAttempt({
     participantId: principal.principalId,
     activityId: parsed.data.activityId,
@@ -640,6 +913,19 @@ async function handleActivity(
   principal: ApiPrincipal,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
+  if (dependencies.getParticipantLearningJourney !== undefined) {
+    const journey = await dependencies.getParticipantLearningJourney(
+      principal.principalId,
+      principal.scopes,
+    );
+    if (
+      journey.participantId !== principal.principalId ||
+      !isParticipantJourneyActivityCurrent(journey, activityId)
+    ) {
+      return errorResponse("forbidden", requestId);
+    }
+  }
+
   const activity = await dependencies.getParticipantActivity(
     principal.principalId,
     activityId,
@@ -709,6 +995,85 @@ async function handleCurriculumRuntime(
     status: 200,
     body: apiSuccessResponse(
       publicCurriculumRuntimeProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleDigitalCaseRuntime(
+  request: ApiHttpRequest,
+  moduleId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getParticipantDigitalCase === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsedScope = digitalCaseScopeQuerySchema.safeParse({
+    scopeId: request.query?.scopeId,
+  });
+  if (!parsedScope.success) return validationResponse(requestId, "scopeId");
+  const scopeId = resolveDigitalCaseScope(principal, parsedScope.data.scopeId);
+  if (scopeId === null) return validationResponse(requestId, "scopeId");
+  if (
+    !isAllowed(principal, "VIEW_OWN_ACTIVITY", {
+      ownerId: principal.principalId,
+      scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getParticipantDigitalCase({
+    participantId: principal.principalId,
+    scopeId,
+    moduleId,
+    now: new Date().toISOString(),
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicDigitalCaseRuntimeProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleDigitalCaseAdvance(
+  request: ApiHttpRequest,
+  moduleId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.advanceParticipantDigitalCase === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = digitalCaseAdvanceRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const scopeId = resolveDigitalCaseScope(principal, parsed.data.scopeId);
+  if (scopeId === null) return validationResponse(requestId, "scopeId");
+  if (
+    !isAllowed(principal, "VIEW_OWN_ACTIVITY", {
+      ownerId: principal.principalId,
+      scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const command = {
+    participantId: principal.principalId,
+    scopeId,
+    moduleId,
+    selectedChoiceIds: [...parsed.data.selectedChoiceIds],
+    expectedVersion: parsed.data.expectedVersion,
+    now: new Date().toISOString(),
+  } satisfies AdvanceParticipantDigitalCaseCommand;
+  const state = await dependencies.advanceParticipantDigitalCase(command);
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicDigitalCaseRuntimeProjection(state),
       requestId,
     ),
   };
@@ -844,6 +1209,429 @@ async function handleOperationsDashboard(
   };
 }
 
+async function handleAuditTrail(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (
+    !canAccess({
+      principalId: principal.principalId,
+      accountStatus: principal.accountStatus,
+      roles: principal.roles,
+      capability: "VIEW_INTERNAL_AUDIT",
+      scopes: principal.scopes,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (dependencies.listAuditEntries === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const entries = await dependencies.listAuditEntries();
+  return {
+    status: 200,
+    body: apiSuccessResponse(parseAuditTrail({ entries }), requestId),
+  };
+}
+
+async function handleAdminDashboard(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!isAllowed(principal, "VIEW_ADMIN_DASHBOARD", {})) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (dependencies.getInternalAdminDashboard === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const dashboard = await dependencies.getInternalAdminDashboard(
+    principal.scopes,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(parseAdminDashboard(dashboard), requestId),
+  };
+}
+
+async function handleAdminOperationsDashboard(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!isAllowed(principal, "VIEW_ADMIN_DASHBOARD", {})) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (dependencies.getInternalAdminOperationsDashboard === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const dashboard = await dependencies.getInternalAdminOperationsDashboard(
+    principal.scopes,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      parseAdminOperationsDashboard(dashboard),
+      requestId,
+    ),
+  };
+}
+
+async function handleModeratorDashboard(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getInternalModeratorDashboard === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const requestedScopeId = request.query?.scopeId;
+  if (requestedScopeId !== undefined && requestedScopeId.trim().length === 0) {
+    return validationResponse(requestId, "scopeId");
+  }
+  const scopeIds =
+    requestedScopeId === undefined
+      ? principal.scopes
+      : [requestedScopeId.trim()];
+  if (
+    scopeIds.length === 0 ||
+    scopeIds.some(
+      (scopeId) =>
+        !isAllowed(principal, "VIEW_MODERATOR_DASHBOARD", { scopeId }),
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const dashboard = await dependencies.getInternalModeratorDashboard(
+    principal.principalId,
+    scopeIds,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(parseModeratorDashboard(dashboard), requestId),
+  };
+}
+
+function canViewOperationalAi(principal: ApiPrincipal): boolean {
+  return canAccess({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    capability: "VIEW_INTERNAL_AUDIT",
+    scopes: principal.scopes,
+  });
+}
+
+async function handleOperationalAiProposal(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!canViewOperationalAi(principal)) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (dependencies.runOperationalAiProposal === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = operationalAiProposalRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const proposal = await dependencies.runOperationalAiProposal({
+    requestId,
+    tool: parsed.data.tool,
+    impact: parsed.data.impact,
+    input: parsed.data.input,
+    instructions: parsed.data.instructions,
+    estimatedCostUsd: parsed.data.estimatedCostUsd,
+    generatedAt: new Date().toISOString(),
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      operationalAiProposalProjectionSchema.parse(proposal),
+      requestId,
+    ),
+  };
+}
+
+async function handleOperationalAiConfirmation(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!canViewOperationalAi(principal)) {
+    return errorResponse("forbidden", requestId);
+  }
+  const parsed = operationalAiConfirmationRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const confirmation = (
+    dependencies.confirmOperationalAiProposal ?? confirmOperationalAiProposal
+  )(parsed.data.proposal, {
+    confirmedBy: principal.principalId,
+    confirmedAt: parsed.data.confirmedAt,
+    ...(parsed.data.rationale === undefined
+      ? {}
+      : { rationale: parsed.data.rationale }),
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      operationalAiConfirmationProjectionSchema.parse(confirmation),
+      requestId,
+    ),
+  };
+}
+
+async function handleObservedItemStatistics(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!canViewOperationalAi(principal)) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (dependencies.recordObservedItemStatistics === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = observedItemStatisticsRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (!principal.scopes.includes(parsed.data.scopeId)) {
+    return errorResponse("forbidden", requestId);
+  }
+  const statistics = await dependencies.recordObservedItemStatistics({
+    statisticsId: randomUUID(),
+    itemId: parsed.data.itemId,
+    scopeId: parsed.data.scopeId,
+    contentVersion: parsed.data.contentVersion,
+    observedAt: parsed.data.observedAt,
+    sampleSize: parsed.data.sampleSize,
+    correctCount: parsed.data.correctCount,
+    appealCount: parsed.data.appealCount,
+    ...(parsed.data.discrimination === undefined
+      ? {}
+      : { discrimination: parsed.data.discrimination }),
+    distractorCounts: parsed.data.distractorCounts,
+  });
+  return {
+    status: 201,
+    body: apiSuccessResponse(
+      parseObservedItemStatistics(statistics),
+      requestId,
+    ),
+  };
+}
+
+async function handleSourceConflictDecision(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.recordSourceConflictDecision === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = sourceConflictDecisionRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (!principal.scopes.includes(parsed.data.scopeId)) {
+    return errorResponse("forbidden", requestId);
+  }
+  const decision = await dependencies.recordSourceConflictDecision({
+    ...parsed.data,
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+  });
+  return {
+    status: 201,
+    body: apiSuccessResponse(parseSourceConflictDecision(decision), requestId),
+  };
+}
+
+async function handleAssessmentRecalculation(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.approvedClinicalApproverId === undefined) {
+    return errorResponse("forbidden", requestId);
+  }
+  const parsed = assessmentRecalculationBatchRequestSchema.safeParse(
+    request.body,
+  );
+  if (!parsed.success) return validationResponse(requestId);
+  if (!principal.scopes.includes(parsed.data.scopeId)) {
+    return errorResponse("forbidden", requestId);
+  }
+  const command = {
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+    scopeId: parsed.data.scopeId,
+    itemId: parsed.data.itemId,
+    reason: parsed.data.reason,
+    passingScore: parsed.data.passingScore,
+    recalculatedAt: parsed.data.recalculatedAt,
+  } satisfies RecalculateAffectedAssessmentsCommand;
+  if (parsed.data.candidates.length > 0) {
+    if (dependencies.registerAssessmentRecalculationCandidates === undefined) {
+      return errorResponse("internal_error", requestId);
+    }
+    await dependencies.registerAssessmentRecalculationCandidates({
+      ...command,
+      candidates: parsed.data.candidates,
+    });
+  }
+  if (dependencies.recalculateAffectedAssessments === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const result = await dependencies.recalculateAffectedAssessments(command);
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      parseAssessmentRecalculationResult(result),
+      requestId,
+    ),
+  };
+}
+
+function managedAccountProjection(account: ManagedAccount) {
+  return {
+    accountId: account.accountId,
+    professionalEmail: account.professionalEmail,
+    accountStatus: account.accountStatus,
+    roles: [...account.roles],
+    scopes: [...account.scopes],
+    version: account.version,
+    createdAt: account.createdAt.toISOString(),
+    updatedAt: account.updatedAt.toISOString(),
+  };
+}
+
+async function handleListManagedAccounts(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.listManagedAccounts === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = accountManagementListQuerySchema.safeParse(
+    request.query ?? {},
+  );
+  if (!parsed.success) return validationResponse(requestId);
+  const result = await dependencies.listManagedAccounts({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    limit: parsed.data.limit,
+    ...(parsed.data.status === undefined ? {} : { status: parsed.data.status }),
+    ...(parsed.data.scopeId === undefined
+      ? {}
+      : { scopeId: parsed.data.scopeId }),
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      managedAccountPageProjectionSchema.parse({
+        accounts: result.accounts.map(managedAccountProjection),
+        nextCursor: result.nextCursor,
+      }),
+      requestId,
+    ),
+  };
+}
+
+async function handleUpdateManagedAccount(
+  request: ApiHttpRequest,
+  accountId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.updateManagedAccount === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = accountManagementUpdateRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (parsed.data.roles?.includes("ADMIN") === true) {
+    return errorResponse("forbidden", requestId);
+  }
+  const updated = await dependencies.updateManagedAccount({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    targetAccountId: accountId,
+    expectedVersion: parsed.data.expectedVersion,
+    ...(parsed.data.status === undefined
+      ? {}
+      : { nextStatus: parsed.data.status }),
+    ...(parsed.data.roles === undefined
+      ? {}
+      : { nextRoles: parsed.data.roles }),
+    ...(parsed.data.scopes === undefined
+      ? {}
+      : { nextScopes: parsed.data.scopes }),
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      managedAccountPageProjectionSchema.shape.accounts.element.parse(
+        managedAccountProjection(updated),
+      ),
+      requestId,
+    ),
+  };
+}
+
+async function handleRevokeManagedAccountSessions(
+  request: ApiHttpRequest,
+  accountId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.revokeManagedAccountSessions === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = accountSessionRevokeRequestSchema.safeParse(
+    request.body ?? {},
+  );
+  if (!parsed.success) return validationResponse(requestId);
+  const result = await dependencies.revokeManagedAccountSessions({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    targetAccountId: accountId,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      revokedAccountSessionsProjectionSchema.parse(result),
+      requestId,
+    ),
+  };
+}
+
 async function handleAccountSecurity(
   requestId: string,
   principal: ApiPrincipal,
@@ -956,6 +1744,9 @@ async function handleCurriculumRuntimeEvaluation(
         ? {}
         : { selectedChoiceIds: [...answer.selectedChoiceIds] }),
       ...(answer.text === undefined ? {} : { text: answer.text }),
+      ...(answer.structuredValues === undefined
+        ? {}
+        : { structuredValues: { ...answer.structuredValues } }),
     })),
     completedAt: parsed.data.completedAt,
     ...(parsed.data.mode === undefined ? {} : { mode: parsed.data.mode }),
@@ -990,6 +1781,14 @@ async function handleContentTransition(
     scopeId: parsed.data.scopeId,
     event: parsed.data.event,
     correlationId: requestId,
+    ...(parsed.data.event === "RETIRAR" &&
+    parsed.data.withdrawalReasonCode !== undefined
+      ? { withdrawalReasonCode: parsed.data.withdrawalReasonCode }
+      : {}),
+    ...(parsed.data.event === "RETIRAR" &&
+    dependencies.approvedClinicalApproverId !== undefined
+      ? { approvedClinicalApproverId: dependencies.approvedClinicalApproverId }
+      : {}),
   } satisfies AdvanceContentCommand;
   const result = await dependencies.advanceContent(command);
 
@@ -1000,6 +1799,15 @@ async function handleContentTransition(
         contentId: result.contentId,
         version: result.version,
         status: result.status,
+        ...(result.withdrawalReasonCode === undefined
+          ? {}
+          : { withdrawalReasonCode: result.withdrawalReasonCode }),
+        ...(result.withdrawnAt === undefined
+          ? {}
+          : { withdrawnAt: result.withdrawnAt }),
+        ...(result.affectedParticipantCount === undefined
+          ? {}
+          : { affectedParticipantCount: result.affectedParticipantCount }),
       },
       requestId,
     ),
@@ -1225,6 +2033,13 @@ async function handleCreateInvitation(
 ): Promise<ApiHttpResponse> {
   const parsed = createInvitationRequestSchema.safeParse(request.body);
   if (!parsed.success) return validationResponse(requestId);
+  const invitedScopes =
+    parsed.data.invitedScopes.length === 0
+      ? Object.freeze([...principal.scopes])
+      : parsed.data.invitedScopes;
+  if (invitedScopes.some((scopeId) => !principal.scopes.includes(scopeId))) {
+    return errorResponse("forbidden", requestId);
+  }
 
   const created = await dependencies.createInvitation({
     principalId: principal.principalId,
@@ -1233,7 +2048,7 @@ async function handleCreateInvitation(
     scopes: principal.scopes,
     professionalEmail: parsed.data.professionalEmail,
     invitedRoles: parsed.data.invitedRoles,
-    invitedScopes: parsed.data.invitedScopes,
+    invitedScopes,
     expiresInSeconds: parsed.data.expiresInSeconds,
     correlationId: requestId,
   });
@@ -1465,6 +2280,9 @@ async function handleTransitionLearningAssignment(
     type: parsed.data.event,
     ...(parsed.data.now === undefined ? {} : { now: parsed.data.now }),
     ...(parsed.data.reason === undefined ? {} : { reason: parsed.data.reason }),
+    ...(parsed.data.resumeAt === undefined
+      ? {}
+      : { resumeAt: parsed.data.resumeAt }),
     ...(parsed.data.to === undefined ? {} : { to: parsed.data.to }),
   } as AssignmentTransitionCommand["event"];
   const state = await dependencies.transitionLearningAssignment({
@@ -1563,25 +2381,137 @@ async function handleCreateFeedbackTicket(
     request.body,
   );
   if (!parsed.success) return validationResponse(requestId);
+  const scopeId =
+    parsed.data.scopeId ??
+    (principal.scopes.length === 1 ? principal.scopes[0] : undefined);
+  if (scopeId === undefined) return errorResponse("forbidden", requestId);
   if (
     !isAllowed(principal, "CREATE_FEEDBACK_TICKET", {
       ownerId: principal.principalId,
-      scopeId: parsed.data.scopeId,
+      scopeId,
     })
   ) {
     return errorResponse("forbidden", requestId);
   }
+  const contentInspection = inspectFeedbackContent(parsed.data.description);
+  if (!contentInspection.safe) {
+    if (dependencies.recordFeedbackSafetyEvent !== undefined) {
+      await dependencies.recordFeedbackSafetyEvent({
+        principalId: principal.principalId,
+        scopeId,
+        ticketId: "blocked",
+        requestId,
+        action: "BLOCKED",
+        reasonCodes: contentInspection.reasons,
+      });
+    }
+    return validationResponse(requestId, "description");
+  }
+  const createdAt = new Date().toISOString();
+  const suppliedTechnicalContext = parsed.data.technicalContext;
+  const technicalContext =
+    suppliedTechnicalContext === undefined
+      ? ({
+          logicalPage: "/feedback",
+          appVersion: dependencies.applicationVersion ?? "api-0.1.0",
+          occurredAt: createdAt,
+        } as const)
+      : {
+          logicalPage: suppliedTechnicalContext.logicalPage,
+          appVersion: suppliedTechnicalContext.appVersion,
+          ...(suppliedTechnicalContext.occurredAt === undefined
+            ? {}
+            : { occurredAt: suppliedTechnicalContext.occurredAt }),
+          ...(suppliedTechnicalContext.errorCode === undefined
+            ? {}
+            : { errorCode: suppliedTechnicalContext.errorCode }),
+        };
   const state = await dependencies.createFeedbackTicket({
     ticketId: randomUUID(),
     participantId: principal.principalId,
-    scopeId: parsed.data.scopeId,
+    scopeId,
     type: parsed.data.type,
     description: parsed.data.description,
-    createdAt: new Date().toISOString(),
+    createdAt,
+    technicalContext,
   });
   return {
     status: 201,
     body: apiSuccessResponse(publicFeedbackTicketProjection(state), requestId),
+  };
+}
+
+async function handleListFeedbackTickets(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.listFeedbackTickets === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = feedbackTicketListQuerySchema.safeParse(request.query ?? {});
+  if (!parsed.success) return validationResponse(requestId);
+
+  const scopeId =
+    parsed.data.scopeId ??
+    (principal.scopes.length === 1 ? principal.scopes[0] : undefined);
+  if (scopeId === undefined) return errorResponse("forbidden", requestId);
+
+  const isStaff = principal.roles.some((role) =>
+    ["MODERATOR", "ADMIN", "CLINICAL_APPROVER"].includes(role),
+  );
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_FEEDBACK_TICKETS",
+      isStaff ? { scopeId } : { ownerId: principal.principalId, scopeId },
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+
+  const context: FeedbackTicketListContext = {
+    audience: isStaff ? "STAFF" : "PARTICIPANT",
+    scopeId,
+    ...(isStaff ? {} : { participantId: principal.principalId }),
+    ...(parsed.data.status === undefined ? {} : { status: parsed.data.status }),
+    ...(parsed.data.priority === undefined
+      ? {}
+      : { priority: parsed.data.priority }),
+  };
+  const tickets = await dependencies.listFeedbackTickets(context);
+  if (
+    !isStaff &&
+    tickets.some(
+      (ticket) => ticket.state.participantId !== principal.principalId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (tickets.some((ticket) => ticket.scopeId !== scopeId)) {
+    return errorResponse("internal_error", requestId);
+  }
+  for (const ticket of tickets) {
+    await recordFeedbackSafetyEventIfNeeded(
+      ticket.state,
+      principal.principalId,
+      ticket.scopeId,
+      requestId,
+      "REDACTED",
+      dependencies,
+    );
+  }
+  const projection = feedbackTicketListProjectionSchema.parse({
+    tickets: tickets.map((ticket) =>
+      isStaff
+        ? internalFeedbackTicketProjection(ticket)
+        : publicFeedbackTicketProjection(ticket.state),
+    ),
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(projection, requestId),
   };
 }
 
@@ -1608,12 +2538,26 @@ async function handleTransitionFeedbackTicket(
   ) {
     return errorResponse("forbidden", requestId);
   }
+  const event = {
+    type: parsed.data.event,
+    actorId: principal.principalId,
+    ...(parsed.data.now === undefined ? {} : { now: parsed.data.now }),
+    ...(parsed.data.priority === undefined
+      ? {}
+      : { priority: parsed.data.priority }),
+    ...(parsed.data.assigneeId === undefined
+      ? {}
+      : { assigneeId: parsed.data.assigneeId }),
+    ...(parsed.data.response === undefined
+      ? {}
+      : { response: parsed.data.response }),
+  } as TicketTransitionCommand["event"];
   const state = await dependencies.transitionFeedbackTicket({
     ticketId,
     participantId: parsed.data.participantId,
     scopeId: parsed.data.scopeId,
     version: parsed.data.version,
-    event: { type: parsed.data.event },
+    event,
   });
   return {
     status: 200,
@@ -1839,6 +2783,173 @@ export async function handleApiRequest(
 
     if (
       request.method === "GET" &&
+      request.path === "/api/v1/internal/admin/dashboard"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAdminDashboard(requestId, principal, dependencies);
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/admin/operations"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAdminOperationsDashboard(
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/moderator/dashboard"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleModeratorDashboard(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/internal/operational-ai/proposals"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleOperationalAiProposal(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/internal/operational-ai/proposals/confirm"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleOperationalAiConfirmation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/internal/item-statistics"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleObservedItemStatistics(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/internal/source-conflicts/decisions"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleSourceConflictDecision(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/internal/assessment-recalculations"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAssessmentRecalculation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/accounts"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleListManagedAccounts(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const managedAccountUpdateMatch = request.path.match(
+      /^\/api\/v1\/internal\/accounts\/([^/]+)$/u,
+    );
+    if (
+      request.method === "PATCH" &&
+      managedAccountUpdateMatch?.[1] !== undefined
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleUpdateManagedAccount(
+        request,
+        managedAccountUpdateMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const managedAccountSessionRevokeMatch = request.path.match(
+      /^\/api\/v1\/internal\/accounts\/([^/]+)\/sessions\/revoke$/u,
+    );
+    if (
+      request.method === "POST" &&
+      managedAccountSessionRevokeMatch?.[1] !== undefined
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleRevokeManagedAccountSessions(
+        request,
+        managedAccountSessionRevokeMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
       request.path === "/api/v1/internal/dashboard"
     ) {
       const principal = await dependencies.authenticate(request);
@@ -1849,6 +2960,13 @@ export async function handleApiRequest(
         principal,
         dependencies,
       );
+    }
+
+    if (request.method === "GET" && request.path === "/api/v1/internal/audit") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAuditTrail(requestId, principal, dependencies);
     }
 
     if (
@@ -2052,6 +3170,18 @@ export async function handleApiRequest(
       );
     }
 
+    if (request.method === "GET" && request.path === "/api/v1/feedback") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleListFeedbackTickets(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
     if (request.method === "POST" && request.path === "/api/v1/feedback") {
       const principal = await dependencies.authenticate(request);
       if (principal === null)
@@ -2157,6 +3287,38 @@ export async function handleApiRequest(
         return errorResponse("unauthenticated", requestId);
       return await handleCurriculumRuntime(
         curriculumRuntimeMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const digitalCaseAdvanceMatch = request.path.match(
+      /^\/api\/v1\/curriculum\/modules\/([^/]+)\/case\/advance$/u,
+    );
+    if (request.method === "POST" && digitalCaseAdvanceMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleDigitalCaseAdvance(
+        request,
+        digitalCaseAdvanceMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const digitalCaseRuntimeMatch = request.path.match(
+      /^\/api\/v1\/curriculum\/modules\/([^/]+)\/case$/u,
+    );
+    if (request.method === "GET" && digitalCaseRuntimeMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleDigitalCaseRuntime(
+        request,
+        digitalCaseRuntimeMatch[1],
         requestId,
         principal,
         dependencies,

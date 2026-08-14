@@ -10,6 +10,9 @@ export type ContentStatus =
   | "RETIRADO"
   | "VENCIDO";
 
+export type ContentWithdrawalReasonCode =
+  "ERRO_CLINICO" | "ERRO_CONTEUDO" | "RISCO_SEGURANCA";
+
 export interface ContentIdentity {
   readonly contentId: string;
   readonly version: number;
@@ -17,6 +20,9 @@ export interface ContentIdentity {
 
 export interface ContentState extends ContentIdentity {
   readonly status: ContentStatus;
+  readonly withdrawalReasonCode?: ContentWithdrawalReasonCode;
+  readonly withdrawnAt?: string;
+  readonly affectedParticipantCount?: number;
 }
 
 export type ContentEvent =
@@ -28,7 +34,10 @@ export type ContentEvent =
   | { readonly type: "AUTORIZAR_PUBLICACAO" }
   | { readonly type: "PUBLICAR" }
   | { readonly type: "PUBLICAR_AUTOMATICAMENTE" }
-  | { readonly type: "RETIRAR" }
+  | {
+      readonly type: "RETIRAR";
+      readonly withdrawalReasonCode?: ContentWithdrawalReasonCode;
+    }
   | { readonly type: "VENCER" };
 
 export class ContentDomainError extends Error {
@@ -53,6 +62,21 @@ function assertValidState(state: ContentState): void {
   }
   if (!Object.prototype.hasOwnProperty.call(transitions, state.status)) {
     throw new ContentDomainError("content status is not supported");
+  }
+  if (
+    state.withdrawnAt !== undefined &&
+    Number.isNaN(Date.parse(state.withdrawnAt))
+  ) {
+    throw new ContentDomainError("withdrawnAt must be a valid timestamp");
+  }
+  if (
+    state.affectedParticipantCount !== undefined &&
+    (!Number.isInteger(state.affectedParticipantCount) ||
+      state.affectedParticipantCount < 0)
+  ) {
+    throw new ContentDomainError(
+      "affectedParticipantCount must be a non-negative integer",
+    );
   }
 }
 
@@ -115,5 +139,11 @@ export function transitionContent(
     );
   }
 
-  return Object.freeze({ ...state, status: nextStatus });
+  return Object.freeze({
+    ...state,
+    status: nextStatus,
+    ...(event.type === "RETIRAR" && event.withdrawalReasonCode !== undefined
+      ? { withdrawalReasonCode: event.withdrawalReasonCode }
+      : {}),
+  });
 }

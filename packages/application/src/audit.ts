@@ -22,6 +22,10 @@ export interface AuditPort {
   readonly append: (entry: AuditEntry) => Promise<void>;
 }
 
+export interface AuditReadPort {
+  readonly list: () => Promise<readonly AuditEntry[]>;
+}
+
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) throw new Error(`${field} is required`);
 }
@@ -72,4 +76,14 @@ export function createAuditEntry(input: AuditEntryInput): AuditEntry {
     ...(input.afterHash === undefined ? {} : { afterHash: input.afterHash }),
     occurredAt: input.occurredAt,
   });
+}
+
+export async function listAuditEntries(
+  repository: AuditReadPort,
+): Promise<readonly AuditEntry[]> {
+  const entries = await repository.list();
+  if (!Array.isArray(entries)) {
+    throw new TypeError("audit entries must be an array");
+  }
+  return Object.freeze(entries.map((entry) => createAuditEntry(entry)));
 }

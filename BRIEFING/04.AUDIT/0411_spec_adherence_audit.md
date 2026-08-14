@@ -27,3 +27,7 @@ Resultado da janela F3-S3 + complementos F3-S4/F3-S6/F3-S7/F3-S8: PARTIAL.
 ## Classificação
 
 `PASS` quando implementação e evidência coincidem; `PARTIAL` quando há cobertura com desvio controlado; `FAIL` quando há violação; `NOT_EXECUTED` sem sistema/evidência.
+
+## Resultado vigente — 2026-08-11
+
+`PASS_WITH_GAPS`. `pnpm verify`, arquitetura, contratos, typecheck, build, PostgreSQL/Qdrant/HA local e E2E real mínimo passaram. Persistem como não executados: provider externo, operação pública, traces/backups externos, RPO/RTO produtivo, CI/deploy autorizados e as superfícies completas do PRD. Nota consolidada do programa: item 4 = `92/100`, item 5 = `88/100`.

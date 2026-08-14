@@ -1,13 +1,14 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lte } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   ContentRecord,
   ContentTransactionalOperations,
+  ContentExpiryUseCaseDependencies,
   ContentUseCaseDependencies,
   ContentRepositoryPort,
   ContentWorkflowEvent,
 } from "@cvg/application";
-import type { ContentStatus } from "@cvg/domain";
+import type { ContentStatus, ContentWithdrawalReasonCode } from "@cvg/domain";
 
 import {
   createOutboxInsert,
@@ -17,7 +18,10 @@ import { createAuditRepository } from "./audit-repository.js";
 import {
   contentEditorialRecords,
   contentReviewDecisions,
+  contentWithdrawalAffected,
   contentVersions,
+  activityAssignments,
+  learningActivityItems,
   outboxEvents,
 } from "./schema.js";
 import type * as schema from "./schema.js";
@@ -34,6 +38,10 @@ export type ContentRowShape = Readonly<{
   readonly version: number;
   readonly scopeId: string;
   readonly status: string;
+  readonly withdrawalReasonCode?: string | null;
+  readonly withdrawnAt?: Date | string | null;
+  readonly validUntil?: Date | string | null;
+  readonly nextReviewAt?: Date | string | null;
   readonly publicationReady?: boolean;
   readonly publicationBlockReasons?: readonly string[];
 }>;
@@ -83,6 +91,33 @@ function assertStatus(value: string): ContentStatus {
   return value as ContentStatus;
 }
 
+function optionalWithdrawalReason(
+  value: string | null | undefined,
+): ContentWithdrawalReasonCode | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (
+    value !== "ERRO_CLINICO" &&
+    value !== "ERRO_CONTEUDO" &&
+    value !== "RISCO_SEGURANCA"
+  ) {
+    throw new ContentMappingError("withdrawalReasonCode is not supported");
+  }
+  return value;
+}
+
+function optionalTimestamp(
+  value: Date | string | null | undefined,
+  field: string,
+): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  const timestamp =
+    value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  if (Number.isNaN(timestamp.getTime())) {
+    throw new ContentMappingError(`${field} must be a valid timestamp`);
+  }
+  return timestamp.toISOString();
+}
+
 export function contentRowToRecord(row: ContentRowShape): ContentRecord {
   assertNonEmpty(row.contentId, "contentId");
   assertNonEmpty(row.scopeId, "scopeId");
@@ -90,11 +125,22 @@ export function contentRowToRecord(row: ContentRowShape): ContentRecord {
     throw new ContentMappingError("content version must be positive");
   }
 
+  const validUntil = optionalTimestamp(row.validUntil, "validUntil");
+  const nextReviewAt = optionalTimestamp(row.nextReviewAt, "nextReviewAt");
+  const withdrawnAt = optionalTimestamp(row.withdrawnAt, "withdrawnAt");
+  const withdrawalReasonCode = optionalWithdrawalReason(
+    row.withdrawalReasonCode,
+  );
+
   return Object.freeze({
     contentId: row.contentId,
     version: row.version,
     scopeId: row.scopeId,
     status: assertStatus(row.status),
+    ...(withdrawalReasonCode === undefined ? {} : { withdrawalReasonCode }),
+    ...(withdrawnAt === undefined ? {} : { withdrawnAt }),
+    ...(validUntil === undefined ? {} : { validUntil }),
+    ...(nextReviewAt === undefined ? {} : { nextReviewAt }),
     ...(row.publicationReady === undefined
       ? {}
       : { publicationReady: row.publicationReady }),
@@ -143,6 +189,10 @@ export function createContentRepository(
           version: contentVersions.version,
           scopeId: contentVersions.scopeId,
           status: contentVersions.status,
+          withdrawalReasonCode: contentVersions.withdrawalReasonCode,
+          withdrawnAt: contentVersions.withdrawnAt,
+          validUntil: contentVersions.validUntil,
+          nextReviewAt: contentVersions.nextReviewAt,
         })
         .from(contentVersions)
         .where(
@@ -199,6 +249,114 @@ export function createContentRepository(
         publicationBlockReasons: publicationBlockReasons,
       });
     },
+    listPublishedDueForExpiry: async (
+      now: string,
+      scopeIds: readonly string[],
+      limit: number,
+    ): Promise<readonly ContentRecord[]> => {
+      const nowDate = new Date(now);
+      if (Number.isNaN(nowDate.getTime())) {
+        throw new ContentMappingError("now must be a valid timestamp");
+      }
+      if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+        throw new ContentMappingError("limit must be between 1 and 100");
+      }
+      const normalizedScopeIds = [
+        ...new Set(scopeIds.map((scopeId) => scopeId.trim()).filter(Boolean)),
+      ];
+      if (normalizedScopeIds.length === 0) return Object.freeze([]);
+
+      const rows = await db
+        .select({
+          contentId: contentVersions.contentId,
+          version: contentVersions.version,
+          scopeId: contentVersions.scopeId,
+          status: contentVersions.status,
+          withdrawalReasonCode: contentVersions.withdrawalReasonCode,
+          withdrawnAt: contentVersions.withdrawnAt,
+          validUntil: contentVersions.validUntil,
+          nextReviewAt: contentVersions.nextReviewAt,
+        })
+        .from(contentVersions)
+        .where(
+          and(
+            inArray(contentVersions.scopeId, normalizedScopeIds),
+            eq(contentVersions.status, "PUBLICADO"),
+            lte(contentVersions.validUntil, nowDate),
+          ),
+        )
+        .orderBy(
+          asc(contentVersions.validUntil),
+          asc(contentVersions.contentId),
+        )
+        .limit(limit);
+
+      return Object.freeze(rows.map((row) => contentRowToRecord(row)));
+    },
+    listAffectedParticipantIds: async (
+      contentId: string,
+      version: number,
+      scopeId: string,
+    ): Promise<readonly string[]> => {
+      const rows = await db
+        .select({ participantId: activityAssignments.participantId })
+        .from(activityAssignments)
+        .innerJoin(
+          learningActivityItems,
+          eq(activityAssignments.activityId, learningActivityItems.activityId),
+        )
+        .innerJoin(
+          contentVersions,
+          eq(learningActivityItems.contentVersionId, contentVersions.id),
+        )
+        .where(
+          and(
+            eq(contentVersions.contentId, contentId),
+            eq(contentVersions.version, version),
+            eq(contentVersions.scopeId, scopeId),
+          ),
+        );
+      return Object.freeze([...new Set(rows.map((row) => row.participantId))]);
+    },
+    recordWithdrawalAffected: async (
+      participantIds: readonly string[],
+      metadata,
+    ): Promise<number> => {
+      const contentRows = await db
+        .select({ id: contentVersions.id })
+        .from(contentVersions)
+        .where(
+          and(
+            eq(contentVersions.contentId, metadata.contentId),
+            eq(contentVersions.version, metadata.version),
+            eq(contentVersions.scopeId, metadata.scopeId),
+          ),
+        )
+        .limit(1);
+      const contentVersion = contentRows[0];
+      if (contentVersion === undefined) {
+        throw new ContentMappingError(
+          "content version was not found for withdrawal audit",
+        );
+      }
+      if (participantIds.length === 0) return 0;
+      const rows = await db
+        .insert(contentWithdrawalAffected)
+        .values(
+          participantIds.map((participantId) => ({
+            contentVersionId: contentVersion.id,
+            contentId: metadata.contentId,
+            version: metadata.version,
+            scopeId: metadata.scopeId,
+            participantId,
+            withdrawnAt: new Date(metadata.withdrawnAt),
+            correlationId: metadata.correlationId,
+          })),
+        )
+        .onConflictDoNothing()
+        .returning({ id: contentWithdrawalAffected.id });
+      return rows.length;
+    },
     save: async (
       current: ContentRecord,
       next: ContentRecord,
@@ -215,7 +373,13 @@ export function createContentRepository(
 
       const rows = await db
         .update(contentVersions)
-        .set({ status: next.status, updatedAt: new Date() })
+        .set({
+          status: next.status,
+          withdrawalReasonCode: next.withdrawalReasonCode ?? null,
+          withdrawnAt:
+            next.withdrawnAt === undefined ? null : new Date(next.withdrawnAt),
+          updatedAt: new Date(),
+        })
         .where(
           and(
             eq(contentVersions.contentId, current.contentId),
@@ -311,6 +475,27 @@ function createOperations(
       },
     },
     audit: createAuditRepository(db),
+    clinicalReview: {
+      hasApproved: async (
+        contentId: string,
+        version: number,
+        reviewerId: string,
+      ): Promise<boolean> => {
+        const rows = await db
+          .select({ id: contentReviewDecisions.id })
+          .from(contentReviewDecisions)
+          .where(
+            and(
+              eq(contentReviewDecisions.contentId, contentId),
+              eq(contentReviewDecisions.version, version),
+              eq(contentReviewDecisions.reviewerId, reviewerId),
+              eq(contentReviewDecisions.decision, "APROVAR_CLINICAMENTE"),
+            ),
+          )
+          .limit(1);
+        return rows.length === 1;
+      },
+    },
   });
 }
 
@@ -328,5 +513,15 @@ export function createContentUseCaseDependencies(
           work(createOperations(transaction as unknown as DatabaseExecutor)),
         ),
     },
+  });
+}
+
+export function createContentExpiryUseCaseDependencies(
+  db: DatabaseExecutor,
+  idFactory: () => string,
+): ContentExpiryUseCaseDependencies {
+  return Object.freeze({
+    ...createContentUseCaseDependencies(db, idFactory),
+    expiryRepository: createContentRepository(db),
   });
 }
