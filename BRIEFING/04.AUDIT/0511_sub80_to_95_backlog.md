@@ -744,3 +744,18 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **próxima task:** `BLK-EXT-115` — Ricardo aprovar alvo/FQDN/IdP/registry/storage/retention/janela/rollback; SRE provisionar em change control; executar probes e reauditar o mesmo RC;
 - **rollback:** não escrever no host até aprovação; após provisionamento, remover somente recursos do projeto por manifest explícito e retornar ao digest anterior;
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
+
+## 16.20 RC atual e recuperação local — 2026-08-14T12:46:44-03:00
+
+- **entrega local:** RC reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; web E2E `25/25`, HA E2E `3/3`, failover `500/500` e restore `2/2` passaram;
+- **RTO local:** execução direta do marcador sintético observou `3.832 ms` em banco descartável isolado; não é RTO produtivo;
+- **aceite:** apenas BLK-06-D local fortalecido; `completeChains=0/145`, sem promoção para `VERIFIED`/`RELEASE_READY`;
+- **limite:** revisão clínica dos 763, IdP/MFA, DNS/TLS, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR e reauditoria continuam dependentes de autorização e ambiente;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; repetir `pnpm verify`, revisar diff e aguardar provisionamento externo autorizado.
+
+## 16.21 Verificação integral pós-registro — 2026-08-14T12:51:24-03:00
+
+- **checks:** `pnpm verify` passou com 161 arquivos/706 testes/18 skips, cobertura 83,78%/80,41%/84,95%/84,55%, contratos 81/81, worker 24/24 e migrations 29/29; `git diff --check` passou;
+- **aceite:** somente consistência local; `145/145` linhas locais, `87/87` P0/P1 e `0/145` cadeias completas;
+- **limite:** não fecha os gates clínicos, IdP/MFA, DNS/TLS, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR ou reauditoria;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar decisões/provisionamento e reauditar no mesmo RC.

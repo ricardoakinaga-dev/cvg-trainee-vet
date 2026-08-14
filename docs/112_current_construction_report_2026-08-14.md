@@ -6,7 +6,7 @@
 
 ## 1. Conclusão executiva
 
-O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi validado no SHA executável imutável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest comum `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`; os commits `6190e9c` e `87b48ee` são documentais e posteriores à validação. Isso não equivale a um RC publicado ou aprovado.
+O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, com digest comum `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; qualquer commit posterior desta atualização é apenas documental e não altera o artefato executável. Isso não equivale a um RC publicado ou aprovado.
 
 Estado: `WAITING_HUMAN_APPROVAL`.
 Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
@@ -18,13 +18,19 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 - A fatia local adicional de RF-057/RF-058 e o recálculo de avaliações estão integrados: interação estruturada e dose/infusão, caso digital progressivo, projeção pública segura, persistência PostgreSQL versionada com RLS, recálculo/outbox/worker e rotas autenticadas. A matriz possui 145/145 linhas com evidência local e 87/87 P0/P1; isso não transforma as linhas em cadeias completas.
 - A verificação integral subsequente passou após a atualização do inventário M24 e da expectativa de rotas: 138 arquivos de teste, 639 testes aprovados, 18 skips governados; cobertura de 85,28% statements, 81,36% branches, 86,88% functions e 85,99% lines; migrations 24/24 e todos os gates locais do `pnpm verify` verdes. A disposição continua `PILOT_BLOCKED`.
 - Build dos 12 workspaces concluído.
+- Build web de produção concluído com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`; o serviço systemd foi reiniciado e voltou a servir a aplicação.
+- E2E web sintético: 25/25 testes aprovados contra o serviço web ativo, incluindo axe, teclado, landmarks, reflow, zoom, jornadas do participante, administração e autoria; E2E HA com fixture real: 3/3 fluxos aprovados com teardown concluído.
 - E2E HA ativo: 3/3 fluxos sintéticos aprovados com teardown código 0, incluindo caso digital persistente e ciclo administrativo.
 - E2E ativo de dashboard e acessibilidade: 7/7 fluxos aprovados, incluindo axe, teclado, landmarks, reflow e zoom equivalente.
 - Edge security: 7 diretivas estáticas e 2 destinos live aprovados.
 - Smoke live: 200/200 requisições aprovadas, p95 de 186,68 ms.
 - `pnpm audit --prod --audit-level high`: nenhuma vulnerabilidade conhecida.
-- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`, com label `org.opencontainers.image.revision=8cf40e567d02149b9f5714c8b1084b60bd291426`; E2E HA 3/3 e rollback local `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true` passaram.
-- Gate de segurança produtiva: falhou fechado pela ausência das 11 referências externas obrigatórias; não houve tentativa de contornar o gate.
+- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`, com label `org.opencontainers.image.revision=16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e `CVG_SOURCE_SHA` correspondente.
+- Failover controlado: `api-a` foi parado, o edge respondeu `500/500` requests com 100% de sucesso, média de 104,81 ms e p95 de 626,14 ms; `api-a` foi restaurado e voltou saudável no mesmo digest.
+- Restore PostgreSQL live: `pnpm test:integration:restore` passou 2/2 com conexão administrativa e container Docker declarado; execução direta do marcador confirmou banco descartável isolado e RTO local de 3.832 ms. Isso não comprova backup externo nem RPO/RTO de produção.
+- `pnpm ops:verify-ha`, `pnpm ops:verify-edge-security` e `pnpm ops:verify-release-manifest` passaram; o edge permanece interno/staging (`liveTargets=[]`) e o gate de segurança produtiva retorna `NOT_EXECUTED` sem ambiente aprovado.
+- Rollback local no RC atual: `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, com rollback sintético `sha256:56b55d205b8766097c0f07d51d9f216650de911c7af4ae9720f730b990f87f8c`.
+- Gate de segurança produtiva: permanece `NOT_EXECUTED`/fail-closed fora do ambiente aprovado, sem as referências externas obrigatórias; não houve tentativa de contornar o gate.
 - Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas porque estado/release externos e gates clínicos ainda não estão aprovados; as linhas estão ancoradas no SHA local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`.
 
 ## 3. Notas por item
@@ -202,3 +208,23 @@ Nenhuma escrita remota, criação de segredo, alteração de Caddy, deploy, rest
 `pnpm verify` foi repetido depois das atualizações documentais e terminou com `exit 0`: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública aprovados.
 
 Essa execução confirma consistência local, não prontidão externa. A baseline continua `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`; os gates clínicos, IdP/MFA, DNS/TLS, backup externo, CI/registry/deploy, UAT, WCAG manual, Web Vitals reais, soak, DR e reauditoria seguem sem evidência autorizada.
+
+## 27. RC atual, E2E web, failover e restore — 2026-08-14T12:46:44-03:00
+
+O runtime HA foi reconstruído a partir do HEAD executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, usando a imagem `cvg-trainee-vet:rc-head-16dcc2a` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`. API-A/API-B e worker-A/worker-B reportaram a mesma revisão, o mesmo digest e `health/ready=200` e `health/dependencies=200`.
+
+O web foi recompilado com o proxy interno correto e reiniciado. A bateria sintética web passou `25/25`; os três testes dependentes do fixture de persistência passaram `3/3` em `pnpm test:e2e:active-ha`. A execução ampla que misturava o modo fixture com o modo ativo teve dois testes negativos por pré-condição de fixture ausente; ela foi descartada e os testes foram repetidos pelos comandos corretos, sem falha de produto. O failover controlado de uma réplica passou `500/500` requests, 100% de sucesso, média de `104,81 ms` e p95 de `626,14 ms`; a réplica foi restaurada no mesmo digest.
+
+O restore live oficial passou `2/2` usando o procedimento do runbook, container PostgreSQL declarado e conexão administrativa fornecida somente por ambiente. A execução direta confirmou marcador sintético em banco isolado e RTO local de `3.832 ms`. O teste não fecha backup externo, retenção, RPO/RTO produtivos ou DR.
+
+Os gates atuais de documentação e rastreabilidade permanecem verdes com gaps explícitos: `verify:documentation=PASS`, `verify:premium-traceability=PASS_WITH_GAPS`, `145/145` linhas locais, `87/87` P0/P1 e `0/145` cadeias completas; Web Performance permanece `PASS_WITH_GAPS` (`3` evidências, `2` medições, `4` gaps). O HA e o manifesto local passam, mas edge público, IdP/MFA, CI/registry/deploy externo, UAT manual, Web Vitals reais, soak, DR, revisão clínica e reauditoria ainda não têm evidência autorizada.
+
+A baseline permanece `83,24/100`, estado `WAITING_HUMAN_APPROVAL` e disposição `PILOT_BLOCKED`. O próximo passo válido é provisionamento autorizado dos gates externos/humanos e reauditoria no mesmo RC; não há autorização para promoção por evidência local.
+
+## 28. Verificação integral após o registro do RC atual — 2026-08-14T12:51:24-03:00
+
+`pnpm verify` passou com `exit 0` após o registro do runtime atual e das evidências de failover/restore: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, fontes clínicas locais, lint, typecheck, secrets, decisões críticas, arquitetura, governanças, documentação, produto e fronteira pública passaram. `git diff --check` também passou.
+
+O resultado confirma a consistência do snapshot local e não promove a nota. `verify:premium-traceability` permanece `PASS_WITH_GAPS` com `145/145` linhas locais, `87/87` P0/P1 e `0/145` cadeias completas; o CI remoto, revisão clínica, produção pública, IdP/MFA, backup/RPO/RTO, UAT manual, Web Vitals reais, soak, DR e reauditoria continuam sem prova autorizada. Baseline `83,24/100`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
+
+Os artefatos desta atualização foram consolidados no commit local convencional desta rodada, sem push e sem alteração do código executável; o worktree ficou limpo.

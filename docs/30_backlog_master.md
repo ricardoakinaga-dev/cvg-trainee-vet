@@ -1568,3 +1568,24 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **resultado:** qualidade e governança locais preservadas; `145/145` linhas têm evidência local, mas `0/145` cadeias completas;
 - **status:** gates externos e humanos continuam `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`;
 - **próxima ação:** aprovar/provisionar alvo, FQDN, IdP, registry/CI, storage, retenção, janela e rollback antes de qualquer escrita remota.
+
+## 2026-08-14 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
+
+- **evidência:** runtime HA reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; APIs e workers na mesma revisão, health `200/200`;
+- **checks:** build/restart web; E2E web sintético `25/25`; E2E HA com fixture `3/3`; failover com `api-a` parada `500/500`, 100% e p95 `626,14 ms`; restore live `2/2`, RTO local direto `3.832 ms`;
+- **governança:** documentação `PASS`, rastreabilidade `PASS_WITH_GAPS` (`145/145` linhas, `0/145` cadeias), Web Performance `PASS_WITH_GAPS`; edge permanece interno/staging;
+- **limite:** evidência não fecha revisão clínica, IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback remoto, UAT/WCAG manual/Web Vitals reais, soak, DR ou reauditoria;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; próxima ação é revisão final do diff e provisionamento autorizado.
+
+## 2026-08-14 — FULL-VERIFY-POST-RC-DOC-118
+
+- **evidência:** `pnpm verify` passou com 161 arquivos/706 testes/18 skips, cobertura 83,78%/80,41%/84,95%/84,55%, contratos 81/81, worker 24/24, migrations 29/29 e gates locais verdes; `git diff --check` passou;
+- **rastreabilidade:** `verify:premium-traceability=PASS_WITH_GAPS`, 145/145 linhas locais, 87/87 P0/P1 e 0/145 cadeias completas;
+- **limite:** a execução não fecha revisão clínica, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback remoto, UAT/manual WCAG/Web Vitals, soak, DR ou reauditoria;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; próxima ação é revisão final e provisionamento autorizado no mesmo RC.
+
+## 2026-08-14 — DOCUMENTATION-COMMIT-119
+
+- **resultado:** relatório, estado, log, backlog, roadmap, plano executivo, remediação e análise de rastreabilidade consolidados no commit local convencional desta rodada;
+- **restrição:** nenhuma alteração de código executável, push ou escrita remota; worktree limpo;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar os ambientes/provedores autorizados e reauditar o mesmo RC.

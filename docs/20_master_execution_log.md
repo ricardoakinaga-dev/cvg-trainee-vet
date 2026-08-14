@@ -6727,3 +6727,38 @@ O gate terminou com `exit 0`: `161` arquivos/`706` testes/`18` skips, cobertura 
 ### STATUS / NEXT
 
 A verificação fecha apenas a consistência local; não fecha os gates clínicos, externos, humanos ou de produção. Estado `WAITING_HUMAN_APPROVAL`; próxima ação é provisionamento autorizado e reauditoria no mesmo RC.
+
+## 2026-08-14T12:46:44-03:00 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
+
+### ACTION
+
+Reconstruído o runtime HA a partir do HEAD executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, com imagem `cvg-trainee-vet:rc-head-16dcc2a`; recompilado/reiniciado o web com proxy interno correto; repetidos E2E, failover e restore sem alterar infraestrutura externa.
+
+### RESULT
+
+- imagem comum de API-A/API-B e worker-A/worker-B: digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`, label/source SHA correspondente; health `ready/dependencies=200/200`;
+- E2E web sintético `25/25`; E2E HA com fixture `3/3`; failover controlado com `api-a` parada: `500/500`, 100% de sucesso, p95 `626,14 ms`; réplica restaurada no mesmo digest;
+- `pnpm test:integration:restore` passou `2/2` com container PostgreSQL declarado e credencial administrativa somente por ambiente; execução direta do marcador confirmou destino isolado e RTO local `3.832 ms`;
+- `verify:documentation=PASS`, `verify:premium-traceability=PASS_WITH_GAPS` (`145/145` linhas, `87/87` P0/P1, `0/145` cadeias), Web Performance `PASS_WITH_GAPS`; HA, edge interno e manifesto passaram;
+- a execução ampla de E2E que misturou modo ativo e fixture foi descartada por pré-condição ausente; os comandos corretos foram repetidos e passaram.
+
+### STATUS / NEXT
+
+Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; baseline `83,24/100`. Evidência local/sintética não fecha revisão clínica dos `763`, IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback remoto, UAT/WCAG manual, Web Vitals reais, soak, DR ou reauditoria. Próxima ação: revisão final do diff e provisionamento/autorização dos gates externos e humanos.
+
+## 2026-08-14T12:51:24-03:00 — FULL-VERIFY-POST-RC-DOC-118
+
+### RESULTADO
+
+`pnpm verify` terminou com `exit 0`: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, fontes clínicas locais, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública passaram. `git diff --check` passou.
+
+### STATUS / NEXT
+
+O gate confirma consistência local, mantendo `145/145` linhas de evidência e `0/145` cadeias completas. Baseline `83,24/100`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem; revisão clínica, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/manual WCAG/Web Vitals, soak, DR e reauditoria continuam pendentes.
+
+## 2026-08-14T12:54:15-03:00 — DOCUMENTATION-COMMIT-119
+
+- **resultado:** nove artefatos documentais foram consolidados no commit local convencional desta rodada;
+- **escopo:** relatório, estado, log, backlog, roadmap, plano executivo, remediação e análise de rastreabilidade; nenhuma alteração de código executável, push ou escrita remota;
+- **verificação:** worktree limpo, `git diff --check`, `verify:documentation` e `verify:premium-traceability` verdes antes da consolidação;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar os gates externos/humanos e reauditar no mesmo RC.

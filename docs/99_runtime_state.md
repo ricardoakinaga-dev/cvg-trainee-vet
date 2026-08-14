@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-06-D local revalidado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`; RC local, E2E HA e rollback sintético passaram; inventário read-only do Hostinger confirmou capacidade genérica de edge, mas nenhum projeto/route do Trainee Vet; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-06-D local revalidado no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`; RC local, E2E web/HA, failover controlado, restore live e rollback sintético passaram; inventário read-only do Hostinger confirmou capacidade genérica de edge, mas nenhum projeto/route do Trainee Vet; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: após registrar o inventário remoto, `pnpm verify` integral passou novamente com `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24`, migrations `29/29`, documentação consistente, lint, typecheck e governanças verdes; o RC local segue ancorado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426` e digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`
-- next_action: obter decisão sobre o alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
+- last_completed_action: runtime HA reconstruído no SHA executável `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be` e digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; web recompilado/reiniciado; E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500` com uma réplica parada, restore live `2/2`, health `200/200`, HA/edge/manifesto e documentação verificados; `pnpm verify` passou novamente com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; documentação consolidada no commit local desta rodada, sem push e com worktree limpo
+- next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
 
@@ -32,7 +32,41 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T12:23:45-03:00
+- last_update: 2026-08-14T12:54:15-03:00
+
+## 2026-08-14T12:46:44-03:00 — LOCAL-RC-REBUILD-E2E-FAILOVER-RESTORE-117
+
+### RESULTADO
+
+- imagem HA atual reconstruída no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`; API-A/API-B e worker-A/worker-B reportaram a mesma revisão e health `200/200`;
+- build web com proxy interno correto e restart do serviço concluídos; E2E web sintético `25/25` e E2E HA com fixture `3/3` passaram;
+- failover controlado de `api-a`: `500/500` requests, 100% sucesso, p95 `626,14 ms`; a réplica foi restaurada no mesmo digest;
+- `pnpm test:integration:restore` passou `2/2` com conexão administrativa e container PostgreSQL declarado; execução direta do marcador confirmou destino isolado e RTO local `3.832 ms`;
+- `verify:documentation=PASS`, `verify:premium-traceability=PASS_WITH_GAPS` (`145/145` linhas, `0/145` cadeias), Web Performance `PASS_WITH_GAPS`; HA, edge interno e manifesto passaram.
+
+### LIMITES / STATUS / NEXT
+
+A evidência é local, sintética e reproduzível. A execução ampla do E2E foi descartada por misturar o modo ativo com testes que exigem fixture; as baterias corretas foram repetidas sem falha de produto. Não há evidência autorizada de revisão clínica dos 763 conteúdos, IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback externo, UAT manual, Web Vitals reais, soak, DR ou reauditoria. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; próxima ação é revisão final do diff e provisionamento autorizado dos gates externos/humanos.
+
+## 2026-08-14T12:51:24-03:00 — FULL-VERIFY-POST-RC-DOC-118
+
+### RESULTADO
+
+`pnpm verify` passou com `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, fontes clínicas locais, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública. `git diff --check` passou.
+
+### STATUS / NEXT
+
+O verify fecha a consistência local, não a prontidão externa. `145/145` linhas locais e `0/145` cadeias completas permanecem; os gates clínicos, humanos, públicos e de produção seguem `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`. Próxima ação: revisão final do diff e provisionamento autorizado, sem nova tentativa externa sem domínio, IdP, storage, CI/registry e owner clínico definidos.
+
+## 2026-08-14T12:54:15-03:00 — DOCUMENTATION-COMMIT-119
+
+### RESULTADO
+
+Os nove artefatos de relatório, estado, log, backlog, roadmap e plano foram consolidados no commit local convencional desta rodada. Não houve push, alteração de código executável ou escrita remota; o worktree ficou limpo.
+
+### STATUS / NEXT
+
+Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; baseline `83,24/100`. Próxima ação: obter decisões e provisionamento autorizados para os gates clínicos, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy, UAT/operação e reauditoria.
 
 ## 2026-08-14T11:42:45-03:00 — REMOTE-CI-INFRASTRUCTURE-INVENTORY-112
 

@@ -253,3 +253,11 @@ O marco fortalece B-L4/B-G6 somente no ambiente local. B-G1–B-G5 e B-G7–B-G8
 ## 12.8 Inventário do Hostinger candidato — 2026-08-14T12:17:30-03:00
 
 O Hostinger tem capacidade genérica de edge (Caddy válido, 80/443 e certificados Let's Encrypt para outros subdomínios), porém não possui projeto/container/route/FQDN do Trainee Vet. Os backups existentes são locais e de outro produto; não foi observada ferramenta ou agenda de backup externo. O roadmap, portanto, não avança B-G2/B-G3/B-G4/B-G5/B-G7: a próxima janela depende de decisões de alvo, domínio, IdP, registry/CI, storage, retenção e rollback.
+
+## 12.9 RC atual, failover e restore local — 2026-08-14T12:46:44-03:00
+
+O RC foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`. O web sintético passou `25/25`, o E2E HA passou `3/3`, o failover controlado passou `500/500` com 100% de sucesso e o restore live passou `2/2`, com RTO local direto de `3.832 ms`. O dado melhora a evidência local de B-L4/B-L5, mas não promove gates: produção pública, revisão veterinária, backup externo, CI/deploy/rollback remoto, UAT manual, Web Vitals reais, soak, DR e reauditoria continuam pendentes.
+
+## 12.10 Verificação integral pós-registro — 2026-08-14T12:51:24-03:00
+
+`pnpm verify` passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; o roadmap permanece sem promoção de gate, pois `145/145` cadeias completas, revisão clínica, operação pública e aceite humano ainda não existem.

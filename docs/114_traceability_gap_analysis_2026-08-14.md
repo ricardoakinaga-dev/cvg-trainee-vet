@@ -157,6 +157,16 @@ Foram encontrados apenas backups locais de outro sistema em `/var/backups/cvg-hi
 
 Classificação: evidência `NOT_EXECUTED` para B-G2/B-G3/B-G4/B-G5/B-G7; evidência de infraestrutura candidata, sem autorização de escrita. Nenhum recurso remoto foi criado ou alterado. `completeChains=0/145` e `PILOT_BLOCKED` permanecem.
 
+## RC atual, E2E, failover e restore — 2026-08-14T12:46:44-03:00
+
+O vínculo local `source SHA → imagem → réplicas → rollback` foi revalidado no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`. API-A/API-B e worker-A/worker-B reportaram a mesma revisão; health live/dependencies retornou `200/200`. O E2E web sintético passou `25/25`, o E2E HA com fixture passou `3/3`, o failover com `api-a` parada passou `500/500` e o restore live passou `2/2`, com RTO local direto de `3.832 ms`.
+
+Essa evidência completa os elos locais de execução e recuperação, mas não os elos de estado/release aprovados. O verifier atual permanece `PASS_WITH_GAPS`: `145/145` linhas com evidência local, `87/87` P0/P1 e `0/145` cadeias completas. Não alterar `VERIFIED` ou `RELEASE_READY` sem registry/deploy externo, artefato retido, revisão clínica, IdP/MFA, DNS/TLS, backup/RPO/RTO produtivos, UAT/operação e reauditoria.
+
+## Verificação integral após o registro — 2026-08-14T12:51:24-03:00
+
+`pnpm verify` passou com `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29` e governanças locais verdes; `git diff --check` passou. A matriz não muda: `145/145` linhas com evidência local, `87/87` P0/P1 e `0/145` cadeias completas. O novo runtime/rollback local é evidência adicional de execução, não prova de estado/release aprovado ou dos gates externos.
+
 ## Verificação integral após o inventário — 2026-08-14T12:23:45-03:00
 
 O `pnpm verify` subsequente passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, documentação e governanças passaram. A matriz permanece `145/145` linhas com evidência local e `0/145` cadeias completas. A execução não converte infraestrutura candidata em ambiente autorizado nem altera `PILOT_BLOCKED`.

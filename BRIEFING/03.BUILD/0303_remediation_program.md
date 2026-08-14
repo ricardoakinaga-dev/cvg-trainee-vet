@@ -330,3 +330,11 @@ Até esse gate, o status oficial é WAITING_HUMAN_APPROVAL ou IN_PROGRESS, nunca
 O Hostinger candidato foi verificado em modo read-only. Há Caddy/80/443 e certificados para outros produtos, mas não há projeto, imagem, container, route ou FQDN do Trainee Vet. Os backups locais encontrados pertencem a outro serviço e não há ferramenta/agendamento de backup externo do produto.
 
 O inventário não fecha R3–R5: BLK-02/03/04/05/07 continuam `WAITING_HUMAN_APPROVAL`. Antes de qualquer escrita, Ricardo deve aprovar alvo, FQDN, IdP, registry/CI, storage, retenção, janela de manutenção e rollback; depois a execução deve ocorrer no mesmo RC e ser reauditada.
+
+## 10. RC atual e recuperação local — 2026-08-14T12:46:44-03:00
+
+O runtime HA foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`. O build/restart web, E2E sintético web `25/25`, E2E HA `3/3`, failover `500/500`, restore live `2/2` e rollback local passaram; o RTO direto do marcador foi `3.832 ms`. A evidência é local e não fecha R3–R5: faltam backend externo, retenção, RPO/RTO produtivos, DNS/TLS público, IdP/MFA, CI/registry/deploy externo, UAT, soak, DR e reauditoria. Estado `WAITING_HUMAN_APPROVAL`; nenhum gate foi promovido.
+
+## 11. Verify integral pós-registro — 2026-08-14T12:51:24-03:00
+
+`pnpm verify` passou com `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29` e documentação/governanças verdes. O fechamento é local; R3–R5, revisão clínica, identidade, edge público, UAT, Web Vitals, soak, DR e reauditoria continuam pendentes.

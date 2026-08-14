@@ -293,3 +293,11 @@ Este checkpoint fecha somente a evidência local de `HEAD → imagem → runtime
 O Hostinger foi inspecionado sem escrita. Caddy, 80/443 e certificados públicos de outros produtos estão operacionais, mas o host não possui projeto, imagem, container, route ou FQDN do Trainee Vet. Os backups observados são locais e de outro serviço; não há ferramenta/agendamento de backup externo do produto.
 
 Decisão de execução: tratar o Hostinger apenas como candidato até Ricardo aprovar alvo, domínio, IdP, registry/CI, storage, retenção, janela e rollback. O plano mantém BLK-02/03/04/05/07 e B-G2/B-G3/B-G4/B-G5/B-G7 abertos; nenhuma operação remota será inferida a partir da infraestrutura de outros produtos.
+
+## 17.11 RC atual e recuperação local — 2026-08-14T12:46:44-03:00
+
+O RC local foi reconstruído no source SHA `16dcc2afda04866b1ecfaeb6017fe30bdadaa8be`, digest `sha256:55709f235fa8487dbd8d17727f4da175b3c73d6f0fe129b1fff997a1522c3402`. E2E web sintético `25/25`, E2E HA `3/3`, failover `500/500` com uma réplica parada, restore live `2/2` e RTO local direto `3.832 ms` passaram. Isso fortalece BLK-06-D localmente, mas não avança B-G1/B-G2/B-G3/B-G4/B-G5/B-G7/B-G8: o beta clínico, identidade real, edge público, backup externo, CI/deploy remoto, UAT manual, Web Vitals reais, soak, DR e reauditoria continuam sem evidência autorizada. O plano mantém baseline `83,24/100`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 17.12 Verificação integral pós-registro — 2026-08-14T12:51:24-03:00
+
+`pnpm verify` passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, documentação, fontes clínicas locais, segurança e governanças passaram. O resultado confirma apenas a consistência local; os oito gates e a reauditoria continuam condicionados a decisões e ambientes autorizados.
