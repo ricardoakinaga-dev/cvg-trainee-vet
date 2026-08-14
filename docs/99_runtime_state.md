@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-08-B local encerrado; integração local do recálculo e jornada HA validadas; aguardar autorização para commit/RC e executar gates externos, clínicos, humanos e de release
+- current_task: BLK-08-B local encerrado; runtime RC local ancorado em SHA/digest imutáveis e rollback local validado; aguardar autorização para executar gates externos, clínicos, humanos e de release
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9` criado após verify, diff-check e secret scan; 145 linhas da matriz foram ancoradas nesse SHA; ensaio local de release/deploy/rollback passou com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd` e runtime restaurado; score e release externo não foram promovidos
-- next_action: reconstruir o runtime com `CVG_SOURCE_SHA` do RC local e repetir health/E2E; depois executar IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR e beta clínico; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC e reauditoria
+- last_completed_action: implementação consolidada em `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, documentação/rastreabilidade consolidada no `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; RC local construído com digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, label de revisão igual ao `HEAD`, E2E HA 3/3, ensaio deploy/rollback/restore local aprovado e `pnpm verify` integral final verde; score e release externo não foram promovidos
+- next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC
 
 ## BLOQUEIOS
 
-- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; commit local e rollback local comprovados, mas registry/deploy externo, estado/release do RC e reauditoria independente dos seis itens continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
+- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; commit, digest e rollback locais comprovados, mas registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,24 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T11:02:00-03:00
+- last_update: 2026-08-14T11:15:28-03:00
+
+## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
+
+### RESULTADO
+
+- `HEAD` atual: `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; o commit de implementação referenciado pelas 145 linhas da matriz permanece `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`;
+- a imagem `cvg-trainee-vet:rc-local` foi construída com `CVG_SOURCE_SHA` igual ao `HEAD`; digest comum de API-A/API-B e worker-A/worker-B: `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`;
+- migration local confirmada em `29/29`; todos os quatro processos ficaram saudáveis e carregaram o mesmo digest e a mesma label `org.opencontainers.image.revision=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`;
+- dentro do API-A: `/health/live=200`, `/health/dependencies=200`, recálculo interno `401`, dashboard interno de moderador `401` e operações internas de administração `401` sem sessão;
+- `pnpm test:e2e:active-ha` passou `3/3` contra o runtime ativo;
+- `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true CVG_LOCAL_RELEASE_IMAGE=cvg-trainee-vet:rc-local CVG_APP_IMAGE=cvg-trainee-vet:rc-local pnpm ops:rehearse-local-release` passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, release digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea` e rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`;
+- `pnpm verify` integral final passou com `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24` e migrations `29/29`;
+- `git status --short` permaneceu vazio e `git diff --check` passou.
+
+### STATUS / LIMITES / NEXT
+
+O runtime local está reproduzível e ancorado em SHA/digest, mas isso ainda é uma prova local. `completeChains=0/145` permanece correto porque as linhas ainda não estão em estado `VERIFIED`/`RELEASE_READY` e não há prova de registry/deploy externo, IdP/MFA real, DNS/TLS público, backup/RPO/RTO, beta clínico, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`. Próxima ação: provisionar/aprovar os gates externos e humanos sem promover a publicação clínica por inferência.
 
 ## 2026-08-14T11:02:00-03:00 — LOCAL-RC-COMMIT-AND-ROLLBACK-108
 

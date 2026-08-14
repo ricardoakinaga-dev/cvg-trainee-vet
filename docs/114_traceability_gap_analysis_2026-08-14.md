@@ -91,7 +91,7 @@ Não pode ser declarado resolvido somente pelo worktree:
 
 ## Conclusão
 
-O resultado atual é rastreável e honesto, mas ainda não é rastreabilidade fechada. O número correto para o gate permanece `0/145` cadeias completas, com `145/145` evidências locais, `87/87` requisitos P0/P1 com evidência local, `0/145` gaps de elos locais e `145/145` commits pendentes. A propagação local de `SOURCE_SHA` para a imagem e o runtime foi preparada e testada, mas não substitui um RC/commit aprovado e uma prova de runtime. Qualquer nota 100 ou autorização de piloto antes das ações acima seria evidência fabricada.
+O resultado atual é rastreável e honesto, mas ainda não é rastreabilidade fechada. O número correto para o gate permanece `0/145` cadeias completas, com `145/145` evidências locais, `87/87` requisitos P0/P1 com evidência local, `0/145` gaps de elos locais e nenhum `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O vínculo local `HEAD → imagem → runtime → rollback` foi provado no digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, mas isso não substitui estado/release aprovados, gates externos e reauditoria. Qualquer nota 100 ou autorização de piloto antes das ações acima seria evidência fabricada.
 
 Referências: [preflight dos bloqueadores](113_blocker_preflight_2026-08-14.md), [plano executivo](../BRIEFING/03.BUILD/0305_sub80_to_95_executive_plan.md), [roadmap](../BRIEFING/04.AUDIT/0510_sub80_to_95_roadmap.md) e [backlog](../BRIEFING/04.AUDIT/0511_sub80_to_95_backlog.md).
 
@@ -124,3 +124,9 @@ O fechamento local não promove `VERIFIED` ou `RELEASE_READY`: o worktree está 
 O worktree foi consolidado no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push. A matriz não possui mais `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O ensaio `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true pnpm ops:rehearse-local-release` passou deploy, canário, rollback sintético e restauração com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`.
 
 Isso reduz o gap local de mudança/rollback, mas `completeChains=0` permanece correto: estado `VERIFIED`, release `RELEASE_READY`, revisão clínica, identidade real, edge público, backup externo, CI/registry, UAT, operação e reauditoria ainda não foram comprovados.
+
+## Runtime RC local e rollback no mesmo artefato — 2026-08-14T11:15:28-03:00
+
+O `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` foi propagado por `CVG_SOURCE_SHA` para a imagem `cvg-trainee-vet:rc-local`; API-A/API-B e worker-A/worker-B carregaram a mesma revisão e o mesmo digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`. Migrations `29/29`, health live/dependencies `200/200`, proteção das três superfícies internas `401/401/401`, E2E HA `3/3` e ensaio local `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true` foram confirmados. O rollback sintético usado no ensaio foi `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`.
+
+O fechamento é local e não promove as linhas para `VERIFIED`/`RELEASE_READY`: os gates de clínica, identidade, edge público, backup externo, CI/registry/deploy externo, UAT, operação, estado/release e reauditoria continuam pendentes. Disposição `PILOT_BLOCKED`.

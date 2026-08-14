@@ -1508,3 +1508,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **evidência:** ensaio local de release/deploy/rollback passou e restaurou o runtime com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`;
 - **limite:** isso não comprova registry/deploy externo, IdP/MFA, DNS/TLS público, backup/RPO/RTO, beta clínico, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria;
 - **próxima ação:** reconstruir o runtime com `CVG_SOURCE_SHA` do RC e executar apenas os gates externos autorizados.
+
+## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
+
+- **status:** `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`, worktree limpo; implementação da matriz ancorada no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
+- **runtime:** `cvg-trainee-vet:rc-local` comum em API-A/API-B e worker-A/worker-B, digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, label de revisão igual ao `HEAD`, migrations `29/29`;
+- **checks:** health live/dependencies `200/200`, três superfícies internas sensíveis `401/401/401` sem sessão, E2E HA `3/3`;
+- **rollback:** ensaio local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`;
+- **verificação final:** `pnpm verify` passou com `161` arquivos, `706` testes, `18` skips governados, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24` e migrations `29/29`;
+- **rastreabilidade:** `145/145` evidências locais, `87/87` P0/P1, `0/145` cadeias completas; não há gaps de commit/worktree, mas estado/release e gates externos continuam pendentes;
+- **próxima ação:** provisionar e executar os gates externos, clínicos, humanos e operacionais sem promover o piloto por inferência local.

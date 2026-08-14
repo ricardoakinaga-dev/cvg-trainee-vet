@@ -397,3 +397,9 @@ O recálculo determinístico agora possui adapter PostgreSQL/RLS, rota interna, 
 As alterações verificadas foram consolidadas no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push; o worktree está limpo. As 145 linhas da matriz foram ancoradas no SHA e não há mais gaps de commit/worktree. O ensaio local de release/deploy/rollback passou com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524` e rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd`.
 
 Esse fechamento é local: não promove estado `VERIFIED`/`RELEASE_READY` e não substitui beta clínico, IdP/MFA, DNS/TLS, backup/RPO/RTO, CI/registry/deploy externo, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.
+
+## Addendum de runtime RC ancorado — 2026-08-14T11:15:28-03:00
+
+O RC local foi reconstruído com `CVG_SOURCE_SHA=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`. API-A/API-B e worker-A/worker-B estão saudáveis no digest comum `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, com label de revisão exatamente igual ao `HEAD`; migrations `29/29` passaram. Health live/dependencies retornou `200/200`, as superfícies internas de recálculo, moderador e administração retornaram `401` sem sessão, e a E2E HA passou `3/3`.
+
+O ensaio local com a imagem RC passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`, usando rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`. Esse resultado fecha somente o vínculo local de SHA/digest/runtime/rollback; não promove `VERIFIED`/`RELEASE_READY` nem substitui os gates externos, clínicos, humanos, UAT, operação e reauditoria.

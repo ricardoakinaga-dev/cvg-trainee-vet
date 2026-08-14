@@ -710,3 +710,9 @@ O lote não altera os estados de `BLK-01`–`BLK-07`, não fecha `BLK-06`/`BLK-0
 O worktree foi limpo no commit local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, sem push. As 145 linhas da matriz estão ancoradas no SHA e não há `GAP:commit-pending` ou `GAP:worktree-sha-pending`. O ensaio local de release/deploy/rollback passou com release digest `sha256:8c3b2acd13236eefed6f5d639f133eb9e0dc28acd63fd4c861cb9d81d0684524`, rollback digest `sha256:cf03cb172580d36c7eecb1f706bbf1605c46f0377ca55061a2c1b870b27143dd` e runtime restaurado.
 
 Esse resultado fecha somente a parte local de mudança/rollback. O backlog permanece `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` até haver 763 decisões clínicas auditáveis, identidade/edge/backup/CI/deploy reais, UAT/operação aprovados, 145/145 cadeias em `VERIFIED`/`RELEASE_READY` e reauditoria independente.
+
+## 16.14 Runtime RC ancorado e rollback local — 2026-08-14T11:15:28-03:00
+
+O RC local foi reconstruído com `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` e `CVG_SOURCE_SHA` idêntico. API-A/API-B e worker-A/worker-B carregaram o digest comum `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`; migrations `29/29`, health live/dependencies `200/200`, proteção interna `401/401/401` e E2E HA `3/3` foram confirmados. O ensaio local passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`, com rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`.
+
+O backlog continua `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`: a prova local não substitui 763 decisões clínicas auditáveis, identidade/edge/backup/CI/deploy reais, UAT/operação aprovados, estado/release `VERIFIED`/`RELEASE_READY`, Web Vitals/soak/DR e reauditoria independente.
