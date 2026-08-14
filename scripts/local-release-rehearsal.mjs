@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { assertReleaseManifest } from "./release-manifest.mjs";
 
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/iu;
+const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/iu;
 const LOCAL_IMAGE_PATTERN = /^cvg-trainee-vet(?::[a-z0-9._-]+)?$/iu;
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1", "localhost"]);
 const DEFAULT_LOCAL_IMAGE = "cvg-trainee-vet:local";
@@ -22,6 +23,37 @@ export function assertLocalReleaseRehearsalEnabled(environment = process.env) {
       "local release rehearsal requires CVG_RUN_LOCAL_RELEASE_REHEARSAL=true",
     );
   }
+}
+
+export function assertSourceSha(sourceSha) {
+  if (typeof sourceSha !== "string" || !SOURCE_SHA_PATTERN.test(sourceSha)) {
+    throw new Error(
+      "local release rehearsal requires CVG_SOURCE_SHA to be a 40-character git SHA",
+    );
+  }
+  return sourceSha.toLowerCase();
+}
+
+export function assertLocalImageSourceSha({
+  expectedSourceSha,
+  actualSourceSha,
+}) {
+  const actual =
+    typeof actualSourceSha === "string" &&
+    SOURCE_SHA_PATTERN.test(actualSourceSha)
+      ? actualSourceSha.toLowerCase()
+      : null;
+  const expected =
+    expectedSourceSha === undefined
+      ? undefined
+      : assertSourceSha(expectedSourceSha);
+
+  if (actual === null || (expected !== undefined && actual !== expected)) {
+    throw new Error(
+      "local image source SHA does not match the requested release SHA",
+    );
+  }
+  return actual;
 }
 
 export function parseRepositoryDigest(reference) {
@@ -76,6 +108,7 @@ export function resolveLocalRollbackImage(environment = {}) {
 export async function runLocalReleaseRehearsal(environment = process.env) {
   assertLocalReleaseRehearsalEnabled(environment);
 
+  const sourceSha = assertSourceSha(environment.CVG_SOURCE_SHA);
   const localImage = environment.CVG_LOCAL_RELEASE_IMAGE ?? DEFAULT_LOCAL_IMAGE;
   assertLocalImage(localImage);
   const rollbackSourceImage = resolveLocalRollbackImage(environment);
@@ -94,7 +127,7 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
     throw new Error(`local rehearsal env file not found: ${composeEnvFile}`);
   }
 
-  const releaseImage = await inspectRepositoryDigest(localImage);
+  const releaseImage = await inspectRepositoryDigest(localImage, sourceSha);
   const rehearsalId = `${process.pid}-${Date.now()}`;
   const rehearsalContainer = `cvg-release-rehearsal-${rehearsalId}`;
   const rollbackTag = `cvg-trainee-vet:local-rollback-${rehearsalId}`;
@@ -156,8 +189,9 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
       composeEnvFile,
       composeFile,
       healthTarget,
-      image: localImage,
+      imageReference: releaseImage.reference,
       project,
+      sourceSha,
       environment,
     });
     runtimeRestored = true;
@@ -166,6 +200,7 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
       status: "PASS",
       mode: "LOCAL_REHEARSAL",
       releaseId: manifest.releaseId,
+      sourceSha,
       releaseDigest: manifest.imageDigest,
       rollbackDigest: manifest.rollbackImageDigest,
       rollbackMode: rollbackSourceImage
@@ -193,24 +228,36 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
   }
 }
 
-async function inspectRepositoryDigest(image) {
+async function inspectRepositoryDigest(image, expectedSourceSha) {
   const result = await runCommand("docker", ["image", "inspect", image], {
     capture: true,
   });
   const records = JSON.parse(result.stdout);
-  const repositoryDigest = records[0]?.RepoDigests?.[0];
+  const record = records[0];
+  const repositoryDigest = record?.RepoDigests?.[0];
   if (typeof repositoryDigest !== "string") {
     throw new Error(`image has no immutable repository digest: ${image}`);
   }
-  return parseRepositoryDigest(repositoryDigest);
+  const parsed = parseRepositoryDigest(repositoryDigest);
+  const sourceSha = assertLocalImageSourceSha({
+    expectedSourceSha,
+    actualSourceSha:
+      record?.Config?.Labels?.["org.opencontainers.image.revision"],
+  });
+  return Object.freeze({
+    ...parsed,
+    reference: `${parsed.image}@${parsed.digest}`,
+    sourceSha,
+  });
 }
 
 async function restoreLocalRuntime({
   composeEnvFile,
   composeFile,
   healthTarget,
-  image,
+  imageReference,
   project,
+  sourceSha,
   environment,
 }) {
   await runCompose(
@@ -218,7 +265,11 @@ async function restoreLocalRuntime({
     {
       composeEnvFile,
       composeFile,
-      environment: { ...environment, CVG_APP_IMAGE: image },
+      environment: {
+        ...environment,
+        CVG_APP_IMAGE: imageReference,
+        CVG_SOURCE_SHA: sourceSha,
+      },
       project,
     },
   );

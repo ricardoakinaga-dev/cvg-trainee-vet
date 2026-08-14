@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  assertLocalImageSourceSha,
+  assertSourceSha,
   assertLocalReleaseRehearsalEnabled,
   buildLocalReleaseEnvironment,
   createLocalReleaseManifest,
@@ -11,6 +13,41 @@ import { assertReleaseManifest } from "../../scripts/release-manifest.mjs";
 import { resolveReleasePullMode } from "../../scripts/release-execution.mjs";
 
 describe("local release rehearsal contract", () => {
+  it("requires an explicit source SHA and matching image provenance", () => {
+    const sourceSha = "a".repeat(40);
+
+    expect(() => assertSourceSha(undefined)).toThrow(
+      "local release rehearsal requires CVG_SOURCE_SHA to be a 40-character git SHA",
+    );
+    expect(() => assertSourceSha("unknown")).toThrow(
+      "local release rehearsal requires CVG_SOURCE_SHA to be a 40-character git SHA",
+    );
+    expect(assertSourceSha(sourceSha)).toBe(sourceSha);
+
+    expect(() =>
+      assertLocalImageSourceSha({
+        expectedSourceSha: sourceSha,
+        actualSourceSha: "unknown",
+      }),
+    ).toThrow(
+      "local image source SHA does not match the requested release SHA",
+    );
+    expect(() =>
+      assertLocalImageSourceSha({
+        expectedSourceSha: sourceSha,
+        actualSourceSha: "b".repeat(40),
+      }),
+    ).toThrow(
+      "local image source SHA does not match the requested release SHA",
+    );
+    expect(
+      assertLocalImageSourceSha({
+        expectedSourceSha: sourceSha,
+        actualSourceSha: sourceSha,
+      }),
+    ).toBe(sourceSha);
+  });
+
   it("requires an explicit local-only execution flag", () => {
     expect(() => assertLocalReleaseRehearsalEnabled({})).toThrow(
       "local release rehearsal requires CVG_RUN_LOCAL_RELEASE_REHEARSAL=true",
