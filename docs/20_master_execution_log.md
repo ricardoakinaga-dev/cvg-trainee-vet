@@ -7245,3 +7245,33 @@ Verificação local final sem regressão; `0/145`, revisão clínica humana, CI/
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar os gates reais no mesmo RC somente após autorização e provisionamento.
+
+## 2026-08-14T15:57:52-03:00 — REMOTE-CI-RECHECK-141
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-05-B-G5
+
+### ACTION
+
+Rechecagem read-only do PR `#1`, checks e logs dos dois runs remotos de qualidade, sem push, dispatch ou alteração de configuração.
+
+### RESULT
+
+Os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` continuam em `FAILURE` no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. Ambos falham em `verify:clinical-sources` porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` estão ausentes no checkout. O worktree local está limpo em `08c0aa8`; a correção de bundle externo/licenciado permanece apenas local.
+
+### DECISIONS
+
+O diagnóstico está fechado, mas o CI não pode ser promovido. A nota `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Obter bundle/licença, variável/credencial, runner, registry/deploy e autorização de push; executar o mesmo RC e reauditar sem drift.

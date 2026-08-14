@@ -368,3 +368,11 @@ Com a flag explícita `CVG_VERIFY_RUNTIME_PROVENANCE=true`, `pnpm ops:verify-run
 As probes atuais retornaram `200` em live, ready e dependencies (`127.0.0.1:3182`) e `200` em live/ready HTTPS local (`https://localhost:3181`). O gate de edge continua apenas estático (`liveTargets=[]`) quando não recebe destinos aprovados; o certificado e o endpoint são locais, portanto DNS público e CA gerenciada continuam `NOT_EXECUTED`. A fila clínica não foi alterada: revisão humana efetiva continua `NOT_EXECUTED`, com `763` pendências.
 
 Essa rechecagem corrige o cabeçalho do relatório para o RC executável vigente, sem promover nota, release, piloto ou cadeia de rastreabilidade. Os gates externos/humanos permanecem `WAITING_HUMAN_APPROVAL` e a disposição permanece `PILOT_BLOCKED`.
+
+## 48. Rechecagem read-only do CI remoto — 2026-08-14T15:57:52-03:00
+
+`gh pr checks` e `gh run view` confirmaram que o PR `#1` ainda está no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. Os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` continuam em `FAILURE`, ambos parando em `verify:clinical-sources` porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` estão ausentes no checkout remoto.
+
+O worktree local permanece limpo no commit documental `08c0aa8`, enquanto o RC executável local continua ancorado no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`. A correção local para bundle privado/licenciado existe, mas não foi publicada; nenhuma escrita remota foi feita.
+
+Classificação: CI remoto `FAIL`/`WAITING_HUMAN_APPROVAL`; baseline `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem inalterados. Para avançar, faltam bundle/licença e variável/credencial autorizados, push do RC, registry/deploy/rollback produtivos e, em paralelo, roster clínico/T0, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria.

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: beta técnico possui fila escopada, `CLINICAL_APPROVER`, decisão persistida e gate de publicação; fila live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; edge recebeu histerese de health-check em TDD; runtime reconstruído no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` mantém os quatro processos HA no digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; manifesto, deploy, rollback, proveniência e E2E locais passaram; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: beta técnico possui fila escopada, `CLINICAL_APPROVER`, decisão persistida e gate de publicação; fila live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; edge recebeu histerese de health-check em TDD; runtime reconstruído no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` mantém os quatro processos HA no digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; manifesto, deploy, rollback, proveniência e E2E locais passaram; rechecagem read-only confirmou os runs remotos `31402470511` e `31402464508` falhando por ausência das três fontes licenciadas no head remoto `d3964a9e…`; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: TDD do edge passou RED/GREEN, fix `8859c6c` foi commitado, imagem/runtime foram reancorados no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; rehearsal deploy/rollback/restauração passou, verificação final passou com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, E2E HA `3/3`, live/ready/dependencies e HTTPS local `200`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
+- last_completed_action: TDD do edge passou RED/GREEN, fix `8859c6c` foi commitado, imagem/runtime foram reancorados no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; rehearsal deploy/rollback/restauração passou, verificação final passou com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, E2E HA `3/3`, live/ready/dependencies e HTTPS local `200`; rechecagem read-only do GitHub às `15:57:52` confirmou os dois checks `quality` falhos no head remoto antigo por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,23 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T15:51:33-03:00
+- last_update: 2026-08-14T15:57:52-03:00
+
+## 2026-08-14T15:57:52-03:00 — REMOTE-CI-RECHECK-141
+
+### RESULTADO
+
+- `gh pr checks` e `gh run view` confirmaram os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` em `FAILURE`, ambos no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`;
+- `verify:clinical-sources` continua falhando porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` não estão no checkout remoto; os demais passos posteriores foram pulados;
+- o worktree local continua limpo em `08c0aa89fd4fe74ed27a058245c530ccf013d1ff`, com a correção de bundle externo/licenciado pronta localmente em commits posteriores ao head remoto; nenhum push, dispatch, secret, variable, environment ou deployment foi criado.
+
+### DECISÃO
+
+BLK-05/B-G5 permanece `FAIL`/`WAITING_HUMAN_APPROVAL`; a causa está confirmada, mas a resolução depende do bundle/licença e da autorização de publicação do RC.
+
+### NEXT ACTION
+
+Obter bundle privado/licenciado, variável/credencial autorizada, runner/registry/deploy e autorização explícita de push; então executar o CI no mesmo SHA e reauditar sem drift.
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 

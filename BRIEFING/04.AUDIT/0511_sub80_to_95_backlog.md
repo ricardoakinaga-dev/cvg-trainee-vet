@@ -856,3 +856,9 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **runtime:** source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`, proveniência PASS, rehearsal PASS e E2E HA `3/3`;
 - **gaps:** `0/145`, revisão veterinária, CI/registry/deploy externo, DNS/TLS público, IdP/MFA, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria continuam abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar somente gates reais autorizados no mesmo RC.
+
+## 16.35 Rechecagem read-only do CI remoto — 2026-08-14T15:57:52-03:00
+
+- **evidência:** `quality` continua `FAILURE` nos runs `31402470511` e `31402464508`, ambos no head remoto `d3964a9e…`, com falha determinística em `verify:clinical-sources` por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`;
+- **estado:** a correção local para diretório externo/licenciado está pronta, mas o worktree local não foi publicado e não houve escrita remota;
+- **pronto:** B-G5 só pode avançar após bundle/licença, credencial/variável, runner, registry/deploy e execução verde no mesmo SHA; `0/145` e os demais gates permanecem abertos.

@@ -6,6 +6,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Baseline canônica:** `BRIEFING/04.AUDIT/0491_full_construction_audit.md` — 16 itens entre 65 e 95, nota ponderada 83/100, release/piloto/publicação clínica não aprovados.
 
+## 2026-08-14T15:57:52-03:00 — 16.35 Rechecagem do CI remoto
+
+- **evidência:** os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` continuam `FAILURE` no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`, ambos em `verify:clinical-sources` por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`;
+- **local:** o worktree permanece limpo no commit `08c0aa8`; o RC executável local está no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e a correção para bundle externo/licenciado não foi publicada;
+- **limite:** nenhum push, dispatch ou provisionamento foi executado; `0/145`, bundle/licença, CI/registry/deploy externo, revisão clínica, identidade, edge público, backup, UAT, soak, DR e reauditoria continuam abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar insumos/provedores e autorização de publicação antes de executar o CI no mesmo RC.
+
 ## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
 
 - **evidência:** `pnpm ops:verify-release-manifest` passou; `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`; `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado; worktree limpo no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`;

@@ -395,3 +395,7 @@ O RC foi reconstruído no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, digest
 `git diff --check` e `pnpm verify` passaram no RC do edge: `163` arquivos/`720` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets e governanças verdes; E2E HA `3/3` e proveniência no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` também passaram.
 
 O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`: o resultado não substitui revisão clínica, CI/registry/deploy/rollback externo, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.
+
+## 17.30 Rechecagem read-only do CI remoto — 2026-08-14T15:57:52-03:00
+
+Os dois runs `quality` remotos continuam falhando em `verify:clinical-sources` no head `d3964a9e…`, pela ausência das três fontes licenciadas. A correção de boundary para `CVG_CLINICAL_SOURCES_DIRECTORY` permanece local e o worktree está limpo; não houve push/dispatch. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED` até bundle/licença, variável autorizada e publicação do mesmo RC.

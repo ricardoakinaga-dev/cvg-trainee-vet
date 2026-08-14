@@ -347,3 +347,7 @@ Classificação: resiliência local do edge `PASS` no recorte pós-restart; edge
 O roadmap registra `pnpm verify` e `git diff --check` verdes no RC `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`, com `163/720/18`, cobertura `83,78%/80,41%/84,95%/84,55%`, contratos/worker/migrations verdes, E2E HA `3/3` e proveniência no digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`.
 
 Nenhuma promoção é inferida: revisão humana, edge público, identidade, backup, CI/release externo, UAT/manual accessibility, Web Vitals reais, soak, DR e `0/145` permanecem abertos.
+
+## 12.28 Rechecagem read-only do CI remoto — 2026-08-14T15:57:52-03:00
+
+O CI remoto permanece `FAIL`: os runs `31402470511` e `31402464508` executam o head `d3964a9e…` e falham em `verify:clinical-sources` pelas três fontes licenciadas ausentes. A correção local existe, porém ainda não há bundle/variável autorizados nem publicação do RC. B-G5 permanece `WAITING_HUMAN_APPROVAL`; nenhuma promoção é inferida.
