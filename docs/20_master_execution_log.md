@@ -6699,3 +6699,31 @@ Evidência local de proveniência e reversibilidade passou. A baseline permanece
 ### STATUS / NEXT
 
 O resultado confirma a qualidade local automatizada, não a prontidão externa. Mantêm-se `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`; executar os gates externos e humanos somente com autorização.
+
+## 2026-08-14T12:17:30-03:00 — HOSTINGER-REMOTE-INVENTORY-115
+
+### ACTION
+
+Executado inventário read-only no Hostinger candidato, além da verificação pública de DNS/TLS dos subdomínios já existentes. Nenhuma alteração remota foi feita.
+
+### RESULT
+
+O host possui Ubuntu 24.04, Docker Compose, Caddy validado, UFW liberando 80/443 e certificados Let's Encrypt para outros produtos. Não há projeto Compose, container, imagem, route ou FQDN do CVG Trainee Vet. Existem backups locais em `/var/backups/cvg-his-v2` de outro serviço; não foram encontrados `restic`, `rclone`, `aws` ou agendamento de backup externo específico do Trainee Vet.
+
+### STATUS / NEXT
+
+O Hostinger é um candidato técnico, não um ambiente autorizado. BLK-02/03/04/05/07 permanecem `WAITING_HUMAN_APPROVAL`; faltam alvo, domínio, IdP, registry/CI, storage externo, retenção, rollback e janela de mudança aprovados. `completeChains=0/145`, baseline `83,24/100` e `PILOT_BLOCKED` permanecem.
+
+## 2026-08-14T12:23:45-03:00 — FULL-VERIFY-DOC-116
+
+### ACTION
+
+Reexecutado `pnpm verify` depois do registro do inventário do Hostinger e da atualização dos artefatos de estado, relatório, roadmap e backlog.
+
+### RESULT
+
+O gate terminou com `exit 0`: `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública verdes. `verify:premium-traceability` manteve `145` requisitos, `145` linhas com evidência local, `0` cadeias completas e `PILOT_BLOCKED`.
+
+### STATUS / NEXT
+
+A verificação fecha apenas a consistência local; não fecha os gates clínicos, externos, humanos ou de produção. Estado `WAITING_HUMAN_APPROVAL`; próxima ação é provisionamento autorizado e reauditoria no mesmo RC.

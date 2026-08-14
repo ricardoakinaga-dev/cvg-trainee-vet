@@ -287,3 +287,9 @@ O inventário read-only do GitHub não encontrou secrets, variables, environment
 O runtime foi reconstruído e revalidado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`; quatro processos HA carregaram a mesma revisão, health passou `200/200`, E2E HA `3/3` e o ensaio local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`. O rollback sintético foi `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
 
 Este checkpoint fecha somente a evidência local de `HEAD → imagem → runtime → rollback`. Não promove score, release ou gate: `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem até os gates externos, clínicos, humanos e a reauditoria independente.
+
+## 17.10 Inventário do Hostinger candidato — 2026-08-14T12:17:30-03:00
+
+O Hostinger foi inspecionado sem escrita. Caddy, 80/443 e certificados públicos de outros produtos estão operacionais, mas o host não possui projeto, imagem, container, route ou FQDN do Trainee Vet. Os backups observados são locais e de outro serviço; não há ferramenta/agendamento de backup externo do produto.
+
+Decisão de execução: tratar o Hostinger apenas como candidato até Ricardo aprovar alvo, domínio, IdP, registry/CI, storage, retenção, janela e rollback. O plano mantém BLK-02/03/04/05/07 e B-G2/B-G3/B-G4/B-G5/B-G7 abertos; nenhuma operação remota será inferida a partir da infraestrutura de outros produtos.

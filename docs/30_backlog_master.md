@@ -1551,3 +1551,20 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 ## Verificação integral no HEAD — 2026-08-14T12:03:46-03:00
 
 `pnpm verify` passou com `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29` e todos os verificadores locais previstos. O resultado não fecha os gates externos nem promove a baseline; `completeChains=0/145` e `PILOT_BLOCKED` permanecem.
+
+## 2026-08-14 — HOSTINGER-REMOTE-INVENTORY-115
+
+- **item:** verificar se o Hostinger disponível pode fechar os gates externos do Trainee Vet;
+- **evidência:** SSH read-only; Ubuntu 24.04; Docker Compose; Caddy válido; UFW com 80/443; certificados Let's Encrypt e routes de outros produtos; ausência de projeto/container/imagem/route/FQDN do Trainee Vet; backups locais somente de outro sistema; ausência observada de `restic`, `rclone`, `aws` e agendamento específico de backup externo;
+- **resultado:** Hostinger é candidato técnico, não ambiente autorizado. A capacidade genérica de edge não fecha DNS/TLS do produto; backups locais não fecham retenção externa, RPO/RTO ou DR; CI/registry/deploy/rollback continuam sem prova;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`;
+- **owner/dependência:** Ricardo + SRE; decisão de alvo, FQDN, IdP, registry/CI, storage externo, retenção, janela de mudança e rollback;
+- **critério de saída:** provisionamento autorizado no mesmo RC, HTTPS público renovável, IdP/MFA/recovery real, backup externo/restore/RPO/RTO, pipeline/registry/deploy/rollback por digest, UAT/DR e reauditoria;
+- **restrição:** nenhuma escrita remota foi realizada; não ler ou registrar segredos; não reutilizar os backups de outro produto.
+
+## 2026-08-14 — FULL-VERIFY-DOC-116
+
+- **evidência:** `pnpm verify` após o inventário remoto passou com 161 arquivos/706 testes/18 skips, cobertura 83,78%/80,41%/84,95%/84,55%, contratos 81/81, worker 24/24, migrations 29/29 e gate de documentação consistente;
+- **resultado:** qualidade e governança locais preservadas; `145/145` linhas têm evidência local, mas `0/145` cadeias completas;
+- **status:** gates externos e humanos continuam `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`;
+- **próxima ação:** aprovar/provisionar alvo, FQDN, IdP, registry/CI, storage, retenção, janela e rollback antes de qualquer escrita remota.

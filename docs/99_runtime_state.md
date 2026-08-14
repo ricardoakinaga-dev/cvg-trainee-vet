@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-06-D local revalidado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`; RC local, E2E HA e rollback sintético passaram; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-06-D local revalidado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`; RC local, E2E HA e rollback sintético passaram; inventário read-only do Hostinger confirmou capacidade genérica de edge, mas nenhum projeto/route do Trainee Vet; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `pnpm verify` integral passou no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426` com `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, governanças, documentação, produto e fronteira pública; o RC local continua ancorado no digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb` e E2E/rollback locais passaram; score e release externo não foram promovidos
-- next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
+- last_completed_action: após registrar o inventário remoto, `pnpm verify` integral passou novamente com `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24`, migrations `29/29`, documentação consistente, lint, typecheck e governanças verdes; o RC local segue ancorado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426` e digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`
+- next_action: obter decisão sobre o alvo de deploy, FQDN, IdP, registry/CI, storage externo e equipe clínica; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
 
-- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; PR #1 do GitHub falha no `verify:clinical-sources` por ausência dos três PDFs licenciados no checkout remoto; inventário remoto read-only não encontrou secrets, variables, environments ou deployments e listou somente o workflow `quality`; commit, digest e rollback locais comprovados, mas bundle privado/licenciado de fontes para CI, registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
+- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; PR #1 do GitHub falha no `verify:clinical-sources` por ausência dos três PDFs licenciados no checkout remoto; inventário remoto read-only não encontrou secrets, variables, environments ou deployments e listou somente o workflow `quality`; Hostinger read-only tem Caddy/80/443 e rotas de outros produtos, mas não tem projeto/container/route/FQDN do Trainee Vet; backups locais existentes são de outro serviço e não há ferramenta/agendamento de backup externo observado; commit, digest e rollback locais comprovados, mas bundle privado/licenciado de fontes para CI, registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T12:03:46-03:00
+- last_update: 2026-08-14T12:23:45-03:00
 
 ## 2026-08-14T11:42:45-03:00 — REMOTE-CI-INFRASTRUCTURE-INVENTORY-112
 
@@ -45,6 +45,30 @@
 ### STATUS / LIMITES / NEXT
 
 O inventário confirma ausência de infraestrutura remota necessária para fechar B-G5: ainda faltam bundle licenciado de fontes, acesso CI read-only, registry imutável, ambiente de deploy, rollback por digest e execução verde no RC. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
+
+## 2026-08-14T12:17:30-03:00 — HOSTINGER-REMOTE-INVENTORY-115
+
+### RESULTADO
+
+- acesso SSH read-only ao Hostinger foi confirmado; o host é Ubuntu 24.04 com Docker Compose e Caddy ativos;
+- UFW permite 80/443, Caddy valida a configuração e há certificados Let's Encrypt válidos para subdomínios de outros produtos; não existe FQDN, route, container, compose project ou imagem do CVG Trainee Vet no host;
+- os projetos observados são de outros serviços (`chatwoot`, `evolution-api`, `gateway-evochatwoot` e `odoo`); não houve criação, alteração, restart ou deploy;
+- existem snapshots locais em `/var/backups/cvg-his-v2` de outro sistema, mas não foram observados `restic`, `rclone`, `aws`, unidade de backup específica do Trainee Vet ou timer/cron de backup externo; portanto isso não prova retenção fora do host, RPO/RTO ou DR;
+- o DNS público consultado aponta os subdomínios existentes para o host, mas não há FQDN aprovado para o Trainee Vet; a capacidade genérica de Caddy/ACME não fecha B-G3.
+
+### STATUS / LIMITES / NEXT
+
+O Hostinger é apenas um candidato técnico de infraestrutura, não um ambiente autorizado do produto. BLK-02, BLK-03, BLK-04, BLK-05 e BLK-07 permanecem `WAITING_HUMAN_APPROVAL`; é necessário aprovar alvo, FQDN, IdP, registry/CI, storage externo, backup/retention, janela de mudança e rollback antes de qualquer escrita remota. Nenhuma alteração remota foi executada; `completeChains=0/145` e `PILOT_BLOCKED` permanecem.
+
+## 2026-08-14T12:23:45-03:00 — FULL-VERIFY-DOC-116
+
+### RESULTADO
+
+Após a atualização documental do inventário remoto, `pnpm verify` passou integralmente: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública passaram.
+
+### STATUS / NEXT
+
+O gate valida a consistência local e não altera a classificação externa: `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`. Próxima ação: decisões e provisionamento autorizados para os gates externos/humanos, sem declarar o Hostinger candidato como produção.
 
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 

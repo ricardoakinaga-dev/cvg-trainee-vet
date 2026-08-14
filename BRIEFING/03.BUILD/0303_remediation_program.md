@@ -324,3 +324,9 @@ O projeto só é encerrado quando:
 - worktree está limpo, commit contém código/docs/testes/manifesto e a auditoria foi repetida no SHA.
 
 Até esse gate, o status oficial é WAITING_HUMAN_APPROVAL ou IN_PROGRESS, nunca COMPLETED.
+
+## 9. Inventário remoto do Hostinger — 2026-08-14T12:17:30-03:00
+
+O Hostinger candidato foi verificado em modo read-only. Há Caddy/80/443 e certificados para outros produtos, mas não há projeto, imagem, container, route ou FQDN do Trainee Vet. Os backups locais encontrados pertencem a outro serviço e não há ferramenta/agendamento de backup externo do produto.
+
+O inventário não fecha R3–R5: BLK-02/03/04/05/07 continuam `WAITING_HUMAN_APPROVAL`. Antes de qualquer escrita, Ricardo deve aprovar alvo, FQDN, IdP, registry/CI, storage, retenção, janela de manutenção e rollback; depois a execução deve ocorrer no mesmo RC e ser reauditada.

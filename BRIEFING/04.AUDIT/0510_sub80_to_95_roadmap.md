@@ -249,3 +249,7 @@ Read-only no GitHub: nenhum secret, variable, environment ou deployment configur
 O RC local foi reconstruído no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`. API-A/API-B e worker-A/worker-B ficaram saudáveis na mesma revisão; health `ready/dependencies=200/200`, E2E HA `3/3` e ensaio local `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`. O rollback sintético foi `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
 
 O marco fortalece B-L4/B-G6 somente no ambiente local. B-G1–B-G5 e B-G7–B-G8 continuam abertos: não há aprovação clínica dos `763`, IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy remoto, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.
+
+## 12.8 Inventário do Hostinger candidato — 2026-08-14T12:17:30-03:00
+
+O Hostinger tem capacidade genérica de edge (Caddy válido, 80/443 e certificados Let's Encrypt para outros subdomínios), porém não possui projeto/container/route/FQDN do Trainee Vet. Os backups existentes são locais e de outro produto; não foi observada ferramenta ou agenda de backup externo. O roadmap, portanto, não avança B-G2/B-G3/B-G4/B-G5/B-G7: a próxima janela depende de decisões de alvo, domínio, IdP, registry/CI, storage, retenção e rollback.

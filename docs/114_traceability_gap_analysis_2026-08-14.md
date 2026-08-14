@@ -148,3 +148,15 @@ O inventário read-only do GitHub não encontrou secrets, variables, environment
 O RC local atual está ancorado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`, com quatro processos HA reportando a mesma revisão. Health `ready/dependencies` passou `200/200`, E2E HA passou `3/3` e o ensaio local reportou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; rollback sintético: `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
 
 Isso fecha a evidência local do elo `HEAD → imagem → runtime → rollback`, mas não altera a matriz: `completeChains=0/145`, `145/145` linhas com evidência local e `87/87` P0/P1 com evidência local. Estado/release aprovados, CI/registry/deploy externos, gates clínicos e reauditoria continuam ausentes.
+
+## Inventário remoto do Hostinger — 2026-08-14T12:17:30-03:00
+
+O acesso read-only ao Hostinger confirmou infraestrutura pública genérica: Caddy validado, portas 80/443 abertas e certificados Let's Encrypt para outros subdomínios. Não foi encontrado nenhum projeto, container, imagem, route ou FQDN do CVG Trainee Vet. Os projetos ativos pertencem a outros produtos.
+
+Foram encontrados apenas backups locais de outro sistema em `/var/backups/cvg-his-v2`; não há ferramenta observada de backup externo (`restic`, `rclone` ou `aws`), timer/cron específico do Trainee Vet, registry, deployment ou rollback do produto. A capacidade genérica de Caddy não constitui DNS/TLS do Trainee Vet e os backups existentes não constituem RPO/RTO/DR do produto.
+
+Classificação: evidência `NOT_EXECUTED` para B-G2/B-G3/B-G4/B-G5/B-G7; evidência de infraestrutura candidata, sem autorização de escrita. Nenhum recurso remoto foi criado ou alterado. `completeChains=0/145` e `PILOT_BLOCKED` permanecem.
+
+## Verificação integral após o inventário — 2026-08-14T12:23:45-03:00
+
+O `pnpm verify` subsequente passou com `161` arquivos/`706` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, documentação e governanças passaram. A matriz permanece `145/145` linhas com evidência local e `0/145` cadeias completas. A execução não converte infraestrutura candidata em ambiente autorizado nem altera `PILOT_BLOCKED`.

@@ -188,3 +188,17 @@ Essa é a melhor evidência local de proveniência e reversibilidade até agora;
 `pnpm verify` passou integralmente no SHA do RC `8cf40e567d02149b9f5714c8b1084b60bd291426`: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram. A documentação desta evidência foi consolidada depois, sem alteração de código executável.
 
 É uma validação local automatizada. Ela não fecha revisão veterinária, identidade real, edge público, backup externo, CI/registry/deploy, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria; a nota e o disposition permanecem `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`.
+
+## 25. Inventário remoto do Hostinger — 2026-08-14T12:17:30-03:00
+
+Foi feita inspeção read-only no Hostinger candidato. O host tem Ubuntu 24.04, Docker Compose, Caddy válido, UFW liberando 80/443 e certificados Let's Encrypt para outros subdomínios. Isso confirma capacidade genérica de edge, mas não a prontidão do Trainee Vet: não há projeto Compose, container, imagem, route ou FQDN do produto; os projetos existentes são de outros serviços.
+
+Há backups locais de outro sistema em `/var/backups/cvg-his-v2`, mas não foram encontrados `restic`, `rclone`, `aws`, unidade específica do Trainee Vet nem agendamento de backup externo. Logo, não há prova de storage externo, retenção, RPO/RTO ou DR para este produto. O DNS existente aponta somente subdomínios já publicados; nenhum FQDN do Trainee Vet foi aprovado ou configurado.
+
+Nenhuma escrita remota, criação de segredo, alteração de Caddy, deploy, restart ou modificação de backup foi realizada. A capacidade encontrada não muda as notas: a baseline permanece `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`. O próximo passo é uma decisão humana sobre alvo, domínio, IdP, registry/CI, storage e rollback, seguida de provisionamento autorizado e reauditoria no mesmo RC.
+
+## 26. Verificação integral após o inventário remoto — 2026-08-14T12:23:45-03:00
+
+`pnpm verify` foi repetido depois das atualizações documentais e terminou com `exit 0`: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, documentação, produto e fronteira pública aprovados.
+
+Essa execução confirma consistência local, não prontidão externa. A baseline continua `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`; os gates clínicos, IdP/MFA, DNS/TLS, backup externo, CI/registry/deploy, UAT, WCAG manual, Web Vitals reais, soak, DR e reauditoria seguem sem evidência autorizada.

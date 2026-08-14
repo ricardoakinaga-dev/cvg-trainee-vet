@@ -736,3 +736,11 @@ O inventário read-only do GitHub retornou zero secrets, zero variables, zero en
 BLK-06-D foi revalidado com o RC local construído no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, imagem `cvg-trainee-vet:rc-head-8cf40e567d02`, digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb` e quatro processos HA na mesma label de revisão. Health `ready/dependencies` passou `200/200`, E2E HA passou `3/3` e o ensaio local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; rollback sintético `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
 
 Essa evidência fecha apenas o subproblema local de proveniência/reversibilidade. O backlog continua `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` e `completeChains=0/145`: os gates clínicos, externos, humanos, UAT/operação, estado/release e reauditoria independente permanecem necessários.
+
+## 16.19 Inventário do Hostinger candidato — 2026-08-14T12:17:30-03:00
+
+- **evidência:** SSH read-only confirmou Caddy/80/443 e certificados de outros produtos; ausência de projeto, imagem, container, route e FQDN do Trainee Vet; backups locais apenas de outro sistema; sem `restic`, `rclone`, `aws` ou agendamento específico observado;
+- **classificação:** candidato técnico, não ambiente autorizado; B-G2/B-G3/B-G4/B-G5/B-G7 permanecem abertos;
+- **próxima task:** `BLK-EXT-115` — Ricardo aprovar alvo/FQDN/IdP/registry/storage/retention/janela/rollback; SRE provisionar em change control; executar probes e reauditar o mesmo RC;
+- **rollback:** não escrever no host até aprovação; após provisionamento, remover somente recursos do projeto por manifest explícito e retornar ao digest anterior;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
