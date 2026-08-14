@@ -730,3 +730,9 @@ O PR `#1` continua com `quality` falho no `verify:clinical-sources`: os três PD
 ## 16.17 Inventário de infraestrutura remota — 2026-08-14T11:42:45-03:00
 
 O inventário read-only do GitHub retornou zero secrets, zero variables, zero environments e zero deployments; o único workflow ativo/listado é `quality`. BLK-05 continua sem prova de bundle licenciado acessível, credencial CI, registry, deploy ou rollback remoto. Nenhuma alteração remota foi feita; a resolução requer aprovação e provisionamento pelo responsável autorizado.
+
+## 16.18 RC validado no SHA executável e rollback local — 2026-08-14T11:57:48-03:00
+
+BLK-06-D foi revalidado com o RC local construído no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, imagem `cvg-trainee-vet:rc-head-8cf40e567d02`, digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb` e quatro processos HA na mesma label de revisão. Health `ready/dependencies` passou `200/200`, E2E HA passou `3/3` e o ensaio local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; rollback sintético `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
+
+Essa evidência fecha apenas o subproblema local de proveniência/reversibilidade. O backlog continua `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` e `completeChains=0/145`: os gates clínicos, externos, humanos, UAT/operação, estado/release e reauditoria independente permanecem necessários.

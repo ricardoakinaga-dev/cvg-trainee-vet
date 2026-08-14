@@ -281,3 +281,9 @@ O PR `#1` falhou nos runs `quality` porque o checkout remoto não possui os trê
 ## 17.8 Inventário de infraestrutura remota — 2026-08-14T11:42:45-03:00
 
 O inventário read-only do GitHub não encontrou secrets, variables, environments ou deployments configurados; somente o workflow `quality` está listado. O plano permanece dependente de provedor/licença para o bundle de fontes, credencial CI read-only, registry imutável, ambiente de deploy e rollback por digest. Nenhuma alteração remota foi executada.
+
+## 17.9 RC validado no SHA executável e rollback local — 2026-08-14T11:57:48-03:00
+
+O runtime foi reconstruído e revalidado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`; quatro processos HA carregaram a mesma revisão, health passou `200/200`, E2E HA `3/3` e o ensaio local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`. O rollback sintético foi `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
+
+Este checkpoint fecha somente a evidência local de `HEAD → imagem → runtime → rollback`. Não promove score, release ou gate: `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem até os gates externos, clínicos, humanos e a reauditoria independente.

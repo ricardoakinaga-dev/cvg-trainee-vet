@@ -6677,3 +6677,25 @@ O worktree continua dirty e não existe RC/SHA imutável. A integração local n
 ### NEXT
 
 Revisar o diff completo e obter a fronteira autorizada de commit/RC; depois executar os gates externos, clínicos, humanos e operacionais no mesmo SHA, sem substituir evidência real por smoke local.
+
+## 2026-08-14T11:57:48-03:00 — RC-SOURCE-SHA-E2E-ROLLBACK-113
+
+### RESULTADO
+
+O RC foi reconstruído no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com imagem `cvg-trainee-vet:rc-head-8cf40e567d02` e digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`. API-A/API-B e worker-A/worker-B carregaram a mesma revisão; health `ready/dependencies` passou `200/200`.
+
+`pnpm test:e2e:active-ha` passou `3/3`. O ensaio local de release/rollback passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, com rollback sintético `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`. Não houve push, alteração remota ou promoção de release.
+
+### STATUS / NEXT
+
+Evidência local de proveniência e reversibilidade passou. A baseline permanece `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`. Próxima ação: obter autorização/provisionamento dos gates externos e humanos, sem tratar o RC local como produção.
+
+## 2026-08-14T12:03:46-03:00 — FULL-VERIFY-RC-SOURCE-114
+
+### RESULTADO
+
+`pnpm verify` integral passou no SHA executável do RC `8cf40e567d02149b9f5714c8b1084b60bd291426` com `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, rastreabilidade, governanças, arquitetura, documentação, produto e fronteira pública passaram. O commit desta documentação é posterior e não altera o código executável.
+
+### STATUS / NEXT
+
+O resultado confirma a qualidade local automatizada, não a prontidão externa. Mantêm-se `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`; executar os gates externos e humanos somente com autorização.

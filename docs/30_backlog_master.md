@@ -1541,3 +1541,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **impacto:** não há prova de registry, credencial CI, bundle licenciado acessível, ambiente de deploy ou alvo remoto de rollback;
 - **ação necessária:** aprovar e provisionar essas dependências, sem versionar PDFs de terceiros e sem remover `verify:clinical-sources`;
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; nenhum recurso remoto foi criado ou alterado.
+
+## Snapshot operacional — RC no SHA executável e rollback local — 2026-08-14T11:57:48-03:00
+
+BLK-06-D foi revalidado localmente: imagem `cvg-trainee-vet:rc-head-8cf40e567d02`, source SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`, quatro processos HA na mesma revisão, health `200/200`, E2E HA `3/3` e ensaio `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`.
+
+O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`) e não prova registry, deploy, rollback ou RPO/RTO externos. BLK-01–BLK-05, BLK-07 e BLK-08-D permanecem dependentes de revisão veterinária, provedores, ambientes autorizados, UAT/operação e reauditoria; `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem.
+
+## Verificação integral no HEAD — 2026-08-14T12:03:46-03:00
+
+`pnpm verify` passou com `161` arquivos/`706` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29` e todos os verificadores locais previstos. O resultado não fecha os gates externos nem promove a baseline; `completeChains=0/145` e `PILOT_BLOCKED` permanecem.

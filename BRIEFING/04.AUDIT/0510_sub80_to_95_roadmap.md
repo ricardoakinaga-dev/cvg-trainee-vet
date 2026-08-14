@@ -243,3 +243,9 @@ O gate B-G5 ganhou uma dependência explícita: os PDFs licenciados não serão 
 ## 12.6 Inventário remoto do CI — 2026-08-14T11:42:45-03:00
 
 Read-only no GitHub: nenhum secret, variable, environment ou deployment configurado; somente `quality` aparece como workflow. B-G5 continua vermelho até haver bundle licenciado acessível, credencial read-only, registry, deploy e rollback por digest comprovados no RC.
+
+## 12.7 RC validado no SHA executável e rollback local — 2026-08-14T11:57:48-03:00
+
+O RC local foi reconstruído no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`. API-A/API-B e worker-A/worker-B ficaram saudáveis na mesma revisão; health `ready/dependencies=200/200`, E2E HA `3/3` e ensaio local `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`. O rollback sintético foi `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
+
+O marco fortalece B-L4/B-G6 somente no ambiente local. B-G1–B-G5 e B-G7–B-G8 continuam abertos: não há aprovação clínica dos `763`, IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy remoto, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.

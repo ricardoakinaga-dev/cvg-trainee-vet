@@ -174,3 +174,17 @@ O PR remoto `#1` possui runs `quality` falhos nos commits `d3964a9…`/`738906e�
 A falha não deve ser resolvida versionando obras de terceiros nem removendo o gate. O caminho pendente é provisionar um bundle licenciado em armazenamento/artefato privado, com acesso CI read-only, materialização em diretório temporário e verificação dos hashes antes do `pnpm verify`. Até essa decisão/credencial existir, o CI remoto permanece não comprovado e a nota global não é promovida.
 
 O inventário remoto read-only também retornou zero secrets, zero variables, zero environments e zero deployments configurados no repositório; `gh workflow list --all` mostrou somente `quality`. Portanto, não existe hoje evidência de registry, credencial de CI ou destino remoto de deploy/rollback. Nenhuma alteração remota foi executada.
+
+## 23. RC validado no SHA executável e rollback local — 2026-08-14T11:57:48-03:00
+
+O runtime foi reconstruído a partir do SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com a imagem `cvg-trainee-vet:rc-head-8cf40e567d02` e digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`. API-A/API-B e worker-A/worker-B ficaram saudáveis, todos reportando a mesma label `org.opencontainers.image.revision=8cf40e567d02149b9f5714c8b1084b60bd291426`; `/health/ready` e `/health/dependencies` retornaram `200/200` após a restauração.
+
+`pnpm test:e2e:active-ha` passou `3/3` no RC atual. O ensaio local de release/rollback passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, com `releaseDigest=sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb` e rollback sintético `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
+
+Essa é a melhor evidência local de proveniência e reversibilidade até agora; não é CI/registry/deploy produtivo. A nota oficial permanece `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`, pois revisão clínica dos `763` conteúdos, IdP/MFA/recovery real, DNS/TLS público, backup externo/RPO/RTO, CI remoto, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria continuam sem prova autorizada.
+
+## 24. Verificação integral no SHA do RC — 2026-08-14T12:03:46-03:00
+
+`pnpm verify` passou integralmente no SHA do RC `8cf40e567d02149b9f5714c8b1084b60bd291426`: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram. A documentação desta evidência foi consolidada depois, sem alteração de código executável.
+
+É uma validação local automatizada. Ela não fecha revisão veterinária, identidade real, edge público, backup externo, CI/registry/deploy, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria; a nota e o disposition permanecem `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`.

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-08-B local encerrado; runtime RC local e probes operacionais locais validados; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-06-D local revalidado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`; RC local, E2E HA e rollback sintético passaram; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: além do RC local imutável e `pnpm verify` verde, fila clínica live confirmou `796` conteúdos com `763` pendentes/não revisados e `0` falhas técnicas; carga local `5.000/5.000` passou; backup administrativo externo ao repositório e restore isolado passaram com artefato verificado, RPO-alvo `PT1H` e RTO observado `4.583 ms`; diagnóstico remoto do PR `#1` identificou ausência do bundle licenciado no checkout CI e confirmou que não há secrets, variables, environments ou deployments configurados no repositório; score e release externo não foram promovidos
-- next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC
+- last_completed_action: `pnpm verify` integral passou no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426` com `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, governanças, documentação, produto e fronteira pública; o RC local continua ancorado no digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb` e E2E/rollback locais passaram; score e release externo não foram promovidos
+- next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T11:42:45-03:00
+- last_update: 2026-08-14T12:03:46-03:00
 
 ## 2026-08-14T11:42:45-03:00 — REMOTE-CI-INFRASTRUCTURE-INVENTORY-112
 
@@ -2633,3 +2633,13 @@ Após a exploração de capacidade, `pnpm verify` passou com 123 arquivos/561 te
 ### LIMITES / STATUS / NEXT
 
 Scorecard 83,24/100, 1/16 itens no alvo, 18 `COMPLETED`, 25 `READY_FOR_NEXT_STEP`, 9 `IN_PROGRESS`, 18 `WAITING_HUMAN_APPROVAL`; rastreabilidade `0/145` cadeias completas e 145 gaps. Estado `WAITING_HUMAN_APPROVAL`; soak/SLO, CI artifact/retention, SHA/worktree, revisão clínica, gates externos, release, piloto e reauditoria continuam pendentes.
+
+## 2026-08-14T12:03:46-03:00 — FULL-VERIFY-HEAD-114
+
+### AÇÃO / RESULTADO
+
+`pnpm verify` integral passou no `HEAD` atual: `161` arquivos de teste, `706` testes aprovados, `18` skips governados, cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, rastreabilidade, governanças, arquitetura, documentação, produto e fronteira pública também passaram.
+
+### LIMITES / STATUS / NEXT
+
+O resultado não altera a nota `83,24/100`, `completeChains=0/145`, `WAITING_HUMAN_APPROVAL` ou `PILOT_BLOCKED`. Os gates clínicos, externos, humanos, UAT, WCAG manual, Web Vitals reais, soak, DR, CI/deploy remoto e reauditoria continuam pendentes.

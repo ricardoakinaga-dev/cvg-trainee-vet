@@ -142,3 +142,9 @@ Isso melhora a prova de preparação do beta, capacidade e recuperação local, 
 O PR `#1` foi inspecionado por `gh`: os runs `quality` falharam no commit remoto `d3964a9…` durante `verify:clinical-sources`, com ausência dos três PDFs licenciados no checkout. O workspace local passa porque os arquivos estão fora do Git. O requisito de artefato da cadeia continua aberto: falta bundle privado/licenciado, retenção do artefato, acesso CI read-only e prova de execução no mesmo RC. `completeChains=0/145` permanece correto.
 
 O inventário read-only do GitHub não encontrou secrets, variables, environments ou deployments configurados e listou somente o workflow `quality`. Assim, também falta a infraestrutura remota mínima para provar registry, credencial CI, deploy e rollback do RC; nenhuma alteração remota foi realizada.
+
+## RC validado no SHA executável e rollback local — 2026-08-14T11:57:48-03:00
+
+O RC local atual está ancorado no SHA executável `8cf40e567d02149b9f5714c8b1084b60bd291426`, digest `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`, com quatro processos HA reportando a mesma revisão. Health `ready/dependencies` passou `200/200`, E2E HA passou `3/3` e o ensaio local reportou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; rollback sintético: `sha256:32a8b4dfca1e383354b439cb9118229ea4dcd3824c33496efee30d10af81d5a4`.
+
+Isso fecha a evidência local do elo `HEAD → imagem → runtime → rollback`, mas não altera a matriz: `completeChains=0/145`, `145/145` linhas com evidência local e `87/87` P0/P1 com evidência local. Estado/release aprovados, CI/registry/deploy externos, gates clínicos e reauditoria continuam ausentes.
