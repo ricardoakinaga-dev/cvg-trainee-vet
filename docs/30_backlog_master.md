@@ -1511,8 +1511,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
-- **status:** `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`, worktree limpo; implementação da matriz ancorada no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
-- **runtime:** `cvg-trainee-vet:rc-local` comum em API-A/API-B e worker-A/worker-B, digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, label de revisão igual ao `HEAD`, migrations `29/29`;
+- **status:** snapshot documental `1501070`, worktree limpo; implementação da matriz ancorada no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` preservados;
+- **runtime:** `cvg-trainee-vet:rc-local` comum em API-A/API-B e worker-A/worker-B, source SHA `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`, digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, migrations `29/29`;
 - **checks:** health live/dependencies `200/200`, três superfícies internas sensíveis `401/401/401` sem sessão, E2E HA `3/3`;
 - **rollback:** ensaio local passou `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`;
 - **verificação final:** `pnpm verify` passou com `161` arquivos, `706` testes, `18` skips governados, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24` e migrations `29/29`;

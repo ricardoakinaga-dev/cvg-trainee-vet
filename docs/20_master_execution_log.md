@@ -6544,11 +6544,11 @@ Revisar o diff completo e obter a fronteira autorizada de commit/RC; depois exec
 
 ### ACTION
 
-Reconstruído o RC local com `CVG_SOURCE_SHA=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` e `CVG_APP_IMAGE=cvg-trainee-vet:rc-local`, depois de o worktree estar limpo. O commit de implementação usado na matriz permanece `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; o `HEAD` atual contém a atualização documental e do manifesto.
+Reconstruído o RC local com `CVG_SOURCE_SHA=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` e `CVG_APP_IMAGE=cvg-trainee-vet:rc-local`, depois de o worktree estar limpo. O commit de implementação usado na matriz permanece `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; o snapshot documental posterior foi consolidado em `1501070` e não alterou código.
 
 ### RESULT
 
-A imagem comum de API-A/API-B e worker-A/worker-B ficou no digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, com `org.opencontainers.image.revision` exatamente igual ao `HEAD`. Migrations `29/29` passaram. Dentro do API-A, health live/dependencies retornou `200/200` e recálculo interno, dashboard interno de moderador e operações internas de administração retornaram `401` sem sessão. `pnpm test:e2e:active-ha` passou `3/3`.
+A imagem comum de API-A/API-B e worker-A/worker-B ficou no digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, com `org.opencontainers.image.revision` exatamente igual ao source SHA imutável `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`. Migrations `29/29` passaram. Dentro do API-A, health live/dependencies retornou `200/200` e recálculo interno, dashboard interno de moderador e operações internas de administração retornaram `401` sem sessão. `pnpm test:e2e:active-ha` passou `3/3`.
 
 O ensaio `CVG_RUN_LOCAL_RELEASE_REHEARSAL=true CVG_LOCAL_RELEASE_IMAGE=cvg-trainee-vet:rc-local CVG_APP_IMAGE=cvg-trainee-vet:rc-local pnpm ops:rehearse-local-release` passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`, com rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`. Worktree permaneceu limpo e `git diff --check` passou.
 

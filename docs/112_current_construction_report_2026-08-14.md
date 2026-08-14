@@ -6,7 +6,7 @@
 
 ## 1. Conclusão executiva
 
-O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O worktree está limpo no `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`, com implementação referenciada no commit `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; isso não equivale a um RC publicado ou aprovado.
+O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime está ancorado no source SHA imutável `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; o snapshot documental posterior está no commit `1501070`, com worktree limpo e sem alteração de código no snapshot. Isso não equivale a um RC publicado ou aprovado.
 
 Estado: `WAITING_HUMAN_APPROVAL`.
 Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
@@ -23,7 +23,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 - Edge security: 7 diretivas estáticas e 2 destinos live aprovados.
 - Smoke live: 200/200 requisições aprovadas, p95 de 186,68 ms.
 - `pnpm audit --prod --audit-level high`: nenhuma vulnerabilidade conhecida.
-- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, com label de revisão igual ao `HEAD`.
+- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, com label de revisão igual ao source SHA imutável do runtime.
 - Gate de segurança produtiva: falhou fechado pela ausência das 11 referências externas obrigatórias; não houve tentativa de contornar o gate.
 - Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas porque estado/release externos e gates clínicos ainda não estão aprovados; as linhas estão ancoradas no SHA local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`.
 
@@ -151,8 +151,8 @@ Essa evidência fecha o subproblema local de worktree/commit/rollback, mas não 
 
 ## 20. Runtime RC local ancorado — 2026-08-14T11:15:28-03:00
 
-Após o commit local, o RC foi reconstruído com `CVG_SOURCE_SHA=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` e validado no digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`. API-A/API-B e worker-A/worker-B ficaram saudáveis com a mesma imagem e label de revisão; migrations `29/29` passaram. Health live/dependencies retornou `200/200`, enquanto as três superfícies internas sensíveis retornaram `401` sem autenticação. A E2E HA passou `3/3` e o ensaio local de release/rollback/restore passou com release digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea` e rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`.
+Após o commit de implementação, o RC foi reconstruído com `CVG_SOURCE_SHA=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` e validado no digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`. API-A/API-B e worker-A/worker-B ficaram saudáveis com a mesma imagem e label de revisão; migrations `29/29` passaram. O snapshot documental posterior foi consolidado em `1501070` sem mudança de código. Health live/dependencies retornou `200/200`, enquanto as três superfícies internas sensíveis retornaram `401` sem autenticação. A E2E HA passou `3/3` e o ensaio local de release/rollback/restore passou com release digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea` e rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`.
 
 Às 11:20:56, `pnpm verify` integral final passou novamente com `161` arquivos, `706` testes, `18` skips governados, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças e documentação verdes.
 
-Essa evidência fecha o vínculo local entre `HEAD`, imagem, runtime e rollback, mas não promove o RC. A nota permanece `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`; continuam pendentes revisão clínica dos 763 conteúdos, IdP/MFA/recovery real, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy externo, UAT, WCAG manual, Web Vitals reais, soak, DR, aprovação de manutenção e reauditoria independente.
+Essa evidência fecha o vínculo local entre source SHA imutável, imagem, runtime e rollback, mas não promove o RC. A nota permanece `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`; continuam pendentes revisão clínica dos 763 conteúdos, IdP/MFA/recovery real, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy externo, UAT, WCAG manual, Web Vitals reais, soak, DR, aprovação de manutenção e reauditoria independente.

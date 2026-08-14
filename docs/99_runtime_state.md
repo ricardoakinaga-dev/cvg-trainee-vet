@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: implementação consolidada em `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`, documentação/rastreabilidade consolidada no `HEAD=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; RC local construído com digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, label de revisão igual ao `HEAD`, E2E HA 3/3, ensaio deploy/rollback/restore local aprovado e `pnpm verify` integral final verde; score e release externo não foram promovidos
+- last_completed_action: implementação consolidada em `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; o snapshot documental/rastreabilidade posterior foi consolidado no commit `1501070`; RC local construído a partir do source SHA imutável `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`, digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, E2E HA 3/3, ensaio deploy/rollback/restore local aprovado e `pnpm verify` integral final verde; score e release externo não foram promovidos
 - next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC
 
 ## BLOQUEIOS
@@ -32,14 +32,14 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T11:15:28-03:00
+- last_update: 2026-08-14T11:23:17-03:00
 
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
 ### RESULTADO
 
-- `HEAD` atual: `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; o commit de implementação referenciado pelas 145 linhas da matriz permanece `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`;
-- a imagem `cvg-trainee-vet:rc-local` foi construída com `CVG_SOURCE_SHA` igual ao `HEAD`; digest comum de API-A/API-B e worker-A/worker-B: `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`;
+- o source SHA imutável do runtime é `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; o commit de implementação referenciado pelas 145 linhas da matriz permanece `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; o snapshot documental posterior foi consolidado no commit `1501070` sem alteração de código;
+- a imagem `cvg-trainee-vet:rc-local` foi construída com `CVG_SOURCE_SHA=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; digest comum de API-A/API-B e worker-A/worker-B: `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`;
 - migration local confirmada em `29/29`; todos os quatro processos ficaram saudáveis e carregaram o mesmo digest e a mesma label `org.opencontainers.image.revision=e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`;
 - dentro do API-A: `/health/live=200`, `/health/dependencies=200`, recálculo interno `401`, dashboard interno de moderador `401` e operações internas de administração `401` sem sessão;
 - `pnpm test:e2e:active-ha` passou `3/3` contra o runtime ativo;
