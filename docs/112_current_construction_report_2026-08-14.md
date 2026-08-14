@@ -156,3 +156,13 @@ Após o commit de implementação, o RC foi reconstruído com `CVG_SOURCE_SHA=e3
 Às 11:20:56, `pnpm verify` integral final passou novamente com `161` arquivos, `706` testes, `18` skips governados, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças e documentação verdes.
 
 Essa evidência fecha o vínculo local entre source SHA imutável, imagem, runtime e rollback, mas não promove o RC. A nota permanece `83,24/100`, `completeChains=0/145` e `PILOT_BLOCKED`; continuam pendentes revisão clínica dos 763 conteúdos, IdP/MFA/recovery real, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy externo, UAT, WCAG manual, Web Vitals reais, soak, DR, aprovação de manutenção e reauditoria independente.
+
+## 21. Probes operacionais e preparação do beta — 2026-08-14T11:32:02-03:00
+
+A fila clínica foi verificada contra o PostgreSQL live do runtime local: `796` conteúdos no escopo, `763` pendentes e não revisados, `0` aprovados e `0` falhas técnicas. A distribuição está pronta para a revisão clínica em beta com veterinários; isso não constitui aprovação clínica humana.
+
+O load smoke local contra `/health/live` passou `5.000/5.000` requests com concorrência `100`, taxa de sucesso de `100%`, throughput `770,79 req/s`, média `127,19 ms` e p95 `300,56 ms`. Esse resultado amplia a evidência de capacidade local, mas não substitui soak produtivo de 24 horas.
+
+Foi gerado backup PostgreSQL fora do repositório usando a conta administrativa de backup, com artefato `cvg-backup-20260814143123-a5642b64`, `284.640` bytes, SHA-256 `f7e45a90783fe1416133879cd148c466e9342199fa2cc2b59b39dc58bc9f83ea` e alvo RPO `PT1H`. O restore isolado passou com `artifactVerified=true`, `targetIsolated=true`, `32` objetos restaurados e RTO observado de `4.583 ms`. A tentativa com a conta de aplicação foi negada no schema `drizzle`, confirmando a separação de privilégios.
+
+Os probes de IdP e segurança produtiva continuam `NOT_EXECUTED`; release manifest, traces locais e edge interno passam apenas em modo de exemplo/staging. A nota permanece `83,24/100`, a rastreabilidade `0/145` cadeias completas e o release `PILOT_BLOCKED` até os gates externos e humanos existirem.

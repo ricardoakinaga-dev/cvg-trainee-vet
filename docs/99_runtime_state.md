@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-08-B local encerrado; runtime RC local ancorado em SHA/digest imutáveis e rollback local validado; aguardar autorização para executar gates externos, clínicos, humanos e de release
+- current_task: BLK-08-B local encerrado; runtime RC local e probes operacionais locais validados; beta clínico está preparado com 763 pendências auditáveis; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: implementação consolidada em `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`; o snapshot documental/rastreabilidade posterior foi consolidado no commit `1501070`; RC local construído a partir do source SHA imutável `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`, digest `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, E2E HA 3/3, ensaio deploy/rollback/restore local aprovado e `pnpm verify` integral final verde; score e release externo não foram promovidos
+- last_completed_action: além do RC local imutável e `pnpm verify` verde, fila clínica live confirmou `796` conteúdos com `763` pendentes/não revisados e `0` falhas técnicas; carga local `5.000/5.000` passou; backup administrativo externo ao repositório e restore isolado passaram com artefato verificado, RPO-alvo `PT1H` e RTO observado `4.583 ms`; score e release externo não foram promovidos
 - next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T11:23:17-03:00
+- last_update: 2026-08-14T11:32:02-03:00
 
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
@@ -50,6 +50,20 @@
 ### STATUS / LIMITES / NEXT
 
 O runtime local está reproduzível e ancorado em SHA/digest, mas isso ainda é uma prova local. `completeChains=0/145` permanece correto porque as linhas ainda não estão em estado `VERIFIED`/`RELEASE_READY` e não há prova de registry/deploy externo, IdP/MFA real, DNS/TLS público, backup/RPO/RTO, beta clínico, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`. Próxima ação: provisionar/aprovar os gates externos e humanos sem promover a publicação clínica por inferência.
+
+## 2026-08-14T11:32:02-03:00 — LOCAL-OPERATING-EVIDENCE-110
+
+### RESULTADO
+
+- a verificação live da fila clínica no escopo sintético autorizado encontrou `total=796`, `pending=763`, `unreviewed=763`, `approved=0`, `adjustmentsRequested=0`, `technicalFailures=0`; a fila está pronta para o beta com veterinários, mas nenhuma decisão clínica humana foi registrada;
+- `CVG_LOAD_TARGET=http://127.0.0.1:3180/health/live CVG_LOAD_REQUESTS=5000 CVG_LOAD_CONCURRENCY=100 pnpm ops:load-smoke` passou `5000/5000`, `100%`, status `200`, throughput `770,79 req/s`, média `127,19 ms` e p95 `300,56 ms`;
+- tentativa de backup com a conta de aplicação falhou corretamente por falta de permissão no schema `drizzle`; o mesmo procedimento com a conta administrativa de backup passou e gerou `cvg-backup-20260814143123-a5642b64`, `284640` bytes, SHA-256 `f7e45a90783fe1416133879cd148c466e9342199fa2cc2b59b39dc58bc9f83ea`, alvo RPO `PT1H`;
+- `verify-postgres-restore` validou o artefato fora do repositório, restaurou `32` objetos em banco isolado, confirmou `artifactVerified=true`, `targetIsolated=true` e RTO observado `4583 ms`;
+- `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` por ausência de ambiente aprovado; manifesto de release passou somente como exemplo, traces passaram em volume local de staging com retenção padrão de `14d`, e edge passou apenas no modo staging/interno.
+
+### STATUS / LIMITES / NEXT
+
+Essas provas fecham preparação clínica, carga e restore local. Não comprovam veterinários no beta, retenção externa, RPO/RTO produtivos, IdP/MFA, DNS/TLS público, registry/deploy/rollback remoto, UAT, WCAG manual, Web Vitals reais, soak de 24h ou DR. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`. Próxima ação: obter decisões humanas e provisionar os ambientes externos dos gates B-G1 a B-G8.
 
 ## 2026-08-14T11:02:00-03:00 — LOCAL-RC-COMMIT-AND-ROLLBACK-108
 

@@ -1518,3 +1518,11 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **verificação final:** `pnpm verify` passou com `161` arquivos, `706` testes, `18` skips governados, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`, contratos `81/81`, worker `24/24` e migrations `29/29`;
 - **rastreabilidade:** `145/145` evidências locais, `87/87` P0/P1, `0/145` cadeias completas; não há gaps de commit/worktree, mas estado/release e gates externos continuam pendentes;
 - **próxima ação:** provisionar e executar os gates externos, clínicos, humanos e operacionais sem promover o piloto por inferência local.
+
+## 2026-08-14T11:32:02-03:00 — LOCAL-OPERATING-EVIDENCE-110
+
+- **fila clínica live:** `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; beta com veterinários preparado, revisão humana não executada;
+- **capacidade local:** load smoke `5000/5000`, concorrência `100`, sucesso `100%`, throughput `770,79 req/s`, p95 `300,56 ms`;
+- **backup/restore local:** backup administrativo fora do repositório verificado por SHA `f7e45a90783fe1416133879cd148c466e9342199fa2cc2b59b39dc58bc9f83ea`; restore isolado `PASS`, `32` objetos, RTO `4583 ms`; a conta de aplicação foi negada no schema `drizzle`;
+- **gates:** IdP e segurança produtiva `NOT_EXECUTED`; manifest, traces e edge somente exemplo/staging;
+- **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`, `0/145` cadeias completas; próximos itens dependem de veterinários e ambientes/provedores externos.

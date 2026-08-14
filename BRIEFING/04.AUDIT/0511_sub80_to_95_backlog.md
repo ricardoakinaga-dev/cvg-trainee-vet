@@ -716,3 +716,9 @@ Esse resultado fecha somente a parte local de mudança/rollback. O backlog perma
 O RC local foi reconstruído com source SHA `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229` e `CVG_SOURCE_SHA` idêntico. API-A/API-B e worker-A/worker-B carregaram o digest comum `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`; o snapshot documental posterior foi consolidado em `1501070` sem alteração de código; migrations `29/29`, health live/dependencies `200/200`, proteção interna `401/401/401` e E2E HA `3/3` foram confirmados. O ensaio local passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`, com rollback sintético `sha256:76b84ecd58011cbbffca2594cd2ce75b23b7ab57e66ebc7ea384b8d30f7567a4`.
 
 O backlog continua `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`: a prova local não substitui 763 decisões clínicas auditáveis, identidade/edge/backup/CI/deploy reais, UAT/operação aprovados, estado/release `VERIFIED`/`RELEASE_READY`, Web Vitals/soak/DR e reauditoria independente.
+
+## 16.15 Probes operacionais locais — 2026-08-14T11:32:02-03:00
+
+BLK-01 agora possui fila live confirmada para o beta: `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas. BLK-04 possui evidência local adicional: backup administrativo externo ao repositório, manifest/SHA válidos e restore isolado de `32` objetos com RTO observado `4583 ms`. BLK-07 possui carga local de `5000/5000` requests, concorrência `100` e p95 `300,56 ms`.
+
+Essas evidências não fecham os gates: veterinários ainda precisam revisar, retenção externa/RPO/RTO produtivos não foram provados, IdP/DNS/TLS/CI/deploy/UAT/WCAG manual/Web Vitals/soak/DR permanecem abertos e `0/145` cadeias continuam corretas. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.

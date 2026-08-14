@@ -231,3 +231,7 @@ Este overlay mantém o calendário relativo de 24 semanas e explicita a sequênc
 | B-G8 | 145/145 cadeias completas, change control e artifact retention comprovados | QA + auditor independente |
 
 Se um gate vermelho persistir, as tarefas seguintes não são comprimidas nem declaradas concluídas; o atraso desloca T0/RC e mantém `PILOT_BLOCKED`.
+
+## 12.4 Checkpoint de evidência local — 2026-08-14T11:32:02-03:00
+
+O roadmap agora tem evidência local adicional para as linhas B-L1, B-L3 e B-L5: fila clínica `796` total/`763` pendentes sem falha técnica, load smoke `5000/5000` com p95 `300,56 ms`, e backup/restore isolado com `32` objetos e RTO `4583 ms`. Esses dados não avançam S0–S12 nem os gates B-G1/B-G4/B-G7, pois revisão veterinária, retenção externa, produção, UAT, soak, DR e aceite humano continuam ausentes.

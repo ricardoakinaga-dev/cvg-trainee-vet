@@ -6540,6 +6540,22 @@ O worktree continua dirty e não existe RC/SHA imutável. A recalculação está
 
 Revisar o diff completo e obter a fronteira autorizada de commit/RC; depois executar os gates externos, clínicos, humanos e operacionais no mesmo SHA, sem substituir evidência real por smoke local.
 
+## 2026-08-14T11:32:02-03:00 — LOCAL-OPERATING-EVIDENCE-110
+
+### ACTION
+
+Executados probes locais requisito-específicos para os bloqueios ainda abertos: fila clínica live, carga, backup/restore, IdP, segurança produtiva, release manifest, traces e edge.
+
+### RESULT
+
+A fila clínica reportou `total=796`, `pending=763`, `unreviewed=763`, `approved=0` e `technicalFailures=0`, deixando o beta preparado para os veterinários sem fabricar decisões clínicas. Load smoke em `/health/live` passou `5000/5000`, concorrência `100`, throughput `770,79 req/s`, média `127,19 ms` e p95 `300,56 ms`. Backup com conta administrativa criou o artefato `cvg-backup-20260814143123-a5642b64` de `284640` bytes, SHA-256 `f7e45a90783fe1416133879cd148c466e9342199fa2cc2b59b39dc58bc9f83ea`, alvo RPO `PT1H`; restore isolado verificou o artefato, restaurou `32` objetos e observou RTO `4583 ms`. A conta de aplicação foi corretamente impedida de ler o schema `drizzle`.
+
+IdP e segurança produtiva retornaram `NOT_EXECUTED` por ausência de ambiente aprovado. Manifesto de release, traces e edge passaram somente em escopo de exemplo/staging. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; `completeChains=0/145` preservado.
+
+### NEXT
+
+Obter veterinários/revisores e decisões D-ENT, provisionar IdP/DNS/storage/registry/CI/ambiente UAT e executar os gates externos no mesmo RC, sem tratar os probes locais como produção.
+
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
 ### ACTION

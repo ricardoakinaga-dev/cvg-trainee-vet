@@ -269,3 +269,7 @@ O início do T0 continua condicionado a `D-ENT-01` (equipe), `D-ENT-07` (capacid
 ### 17.5 Definição de conclusão
 
 O objetivo não é apenas reduzir a lista de gaps: é produzir evidência auditável suficiente para a reauditoria. Enquanto qualquer BLK-01…BLK-08 estiver vermelho, a baseline 83,24 permanece, o programa fica `WAITING_HUMAN_APPROVAL` e a disposição fica `PILOT_BLOCKED`.
+
+## 17.6 Checkpoint operacional — 2026-08-14T11:32:02-03:00
+
+Preparação local comprovada: fila clínica live `796/763` (total/pendentes), `0` falhas técnicas; carga `5000/5000` com p95 `300,56 ms`; backup/restore isolado com artefato verificado, `32` objetos e RTO observado `4583 ms`. O beta com veterinários, retenção externa, IdP, DNS/TLS, CI/registry/deploy, UAT, soak/DR e reauditoria continuam dependentes de decisões e ambientes externos. Nenhum gate foi promovido.
