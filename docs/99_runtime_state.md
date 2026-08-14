@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: E2E focal do beta local passou `2/2` contra web ativo após build com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`; mecanismo de revisão está pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho; proveniência local continua PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`
+- last_completed_action: rechecagem local explícita passou proveniência, HA, edge estático, fontes clínicas, rastreabilidade premium e diff-check; o runtime continua no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, com live/ready/dependencies e HTTPS local `200`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T15:21:52-03:00
+- last_update: 2026-08-14T15:27:56-03:00
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 

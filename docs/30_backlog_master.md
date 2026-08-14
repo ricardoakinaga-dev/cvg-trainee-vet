@@ -1720,3 +1720,10 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **E2E:** `tests/e2e/authoring-review.spec.ts` passou `2/2` contra o web local ativo: publicação condicionada e fila paginada sem exposição de internals;
 - **limite:** prova técnica local; não comprova roster, revisão humana dos `763`, calibração, CI/registry/deploy produtivo ou publicação;
 - **status/next:** `PASS` para a superfície técnica, `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` para o beta e release.
+
+## 2026-08-14T15:27:56-03:00 — LOCAL-RUNTIME-RECHECK-138
+
+- **evidência:** proveniência explícita passou nos quatro containers no SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; HA, edge estático, fontes clínicas, premium traceability e diff-check passaram;
+- **health:** live/ready/dependencies `200` em `127.0.0.1:3182` e HTTPS local live/ready `200` em `localhost:3181`;
+- **limite:** `145/145` linhas locais e `0/145` cadeias completas; revisão dos `763` itens, CI/registry/deploy externo, edge público, identidade, backup, UAT e reauditoria permanecem abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar autorização/provisionamento e executar somente os gates reais no mesmo RC.

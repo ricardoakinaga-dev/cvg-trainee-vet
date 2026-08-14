@@ -834,3 +834,10 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **cobertura:** autoria/publicação condicionada e fila paginada sem exposição de internals;
 - **limite:** não substitui roster, calibração, revisão veterinária dos `763`, CI/registry/deploy produtivo ou publicação;
 - **status/next:** superfície técnica `PASS`; beta humano/release `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
+
+## 16.32 Rechecagem do RC local vigente — 2026-08-14T15:27:56-03:00
+
+- **proveniência:** gate explícito passou nos quatro containers no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest comum `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, label OCI/env alinhados;
+- **gates locais:** HA, edge estático, fontes clínicas, premium traceability e `git diff --check` passaram; health local live/ready/dependencies e HTTPS local `200`;
+- **gaps:** `0/145` cadeias completas, revisão veterinária dos `763`, CI/registry/deploy externo, DNS/TLS público, IdP/MFA, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria permanecem abertos;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar gates reais no mesmo RC após autorização e provisionamento.

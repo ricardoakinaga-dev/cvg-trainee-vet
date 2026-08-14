@@ -377,3 +377,9 @@ O PR remoto permanece no head antigo `d3964a9e…`; os checks falham por ausênc
 ## 17.26 E2E focal do beta local — 2026-08-14T15:21:52-03:00
 
 O build web com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182` passou e o Playwright passou `2/2` em `tests/e2e/authoring-review.spec.ts` contra o web local ativo. A evidência comprova a superfície técnica de autoria/revisão e publicação condicionada; não executa a revisão veterinária dos `763` itens nem fecha os gates externos.
+
+## 17.27 Rechecagem do RC local vigente — 2026-08-14T15:27:56-03:00
+
+Após corrigir a âncora do relatório, os verificadores condicionais foram executados com flags explícitas. A proveniência passou nos quatro containers no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; HA, edge estático, fontes clínicas, rastreabilidade premium e `git diff --check` passaram; health local retornou `200` nas três superfícies e no HTTPS local.
+
+O plano permanece fail-closed: isso confirma somente o RC local. Não promove revisão humana, `0/145`, CI/registry/deploy/rollback produtivos, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT, WCAG manual, Web Vitals reais, soak, DR ou reauditoria.

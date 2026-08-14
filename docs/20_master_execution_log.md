@@ -7167,3 +7167,29 @@ Classificar a superfície técnica do beta como `PASS`; revisão humana dos `763
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar o beta com veterinários e provisionar o CI/infraestrutura autorizada antes da reauditoria.
+
+## 2026-08-14T15:27:56-03:00 — LOCAL-RUNTIME-RECHECK-138
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / rechecagem do RC local vigente
+
+### ACTION
+
+Reexecutados os gates locais condicionais com flags explícitas após a correção do cabeçalho do relatório, sem reconstruir, publicar ou alterar ambiente externo.
+
+### RESULT
+
+`CVG_VERIFY_RUNTIME_PROVENANCE=true pnpm ops:verify-runtime-provenance` passou nos quatro containers HA: SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest comum `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, estado `running/healthy`, label OCI e `CVG_SOURCE_SHA` alinhados. `ops:verify-ha`, `ops:verify-edge-security`, `verify:clinical-sources`, `verify:premium-traceability` e `git diff --check` passaram; premium permanece `145/145` evidências locais, `87/87` P0/P1 e `0/145` cadeias completas. Probes retornaram `200` em live/ready/dependencies via `127.0.0.1:3182` e em live/ready HTTPS local via `localhost:3181`.
+
+### DECISIONS
+
+O cabeçalho do relatório foi reancorado no RC executável vigente. A evidência continua local; não fecha DNS público/CA gerenciada, IdP/MFA/recovery, backup externo/RPO/RTO, CI/registry/deploy/rollback produtivos, revisão clínica humana, UAT/WCAG manual, Web Vitals reais, soak, DR ou reauditoria. Nenhuma escrita externa foi realizada.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; obter autorizações e dependências externas, executar o beta com veterinários e reauditar o mesmo RC sem drift.

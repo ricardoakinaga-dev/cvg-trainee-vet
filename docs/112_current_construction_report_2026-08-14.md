@@ -6,7 +6,7 @@
 
 ## 1. Conclusão executiva
 
-O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi reconstruído no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355`, com digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`; qualquer commit posterior desta atualização é apenas documental e não altera o artefato executável. Isso não equivale a um RC publicado ou aprovado.
+O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi reancorado no SHA executável `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, com digest comum `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; os commits documentais posteriores não alteram esse artefato executável. Isso não equivale a um RC publicado ou aprovado.
 
 Estado: `WAITING_HUMAN_APPROVAL`.
 Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
@@ -14,7 +14,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 ## 2. Evidências executadas
 
 - Foram lidos e reconciliados os 20 arquivos da pasta `docs/`, incluindo estado, log, backlog, registro canônico e a nova evidência local de Web Vitals/carga.
-- `pnpm verify` integral no SHA executável do RC `be43fc8f7f410435a40550eb70e9b2a700882355`: passou com 163 arquivos, 719 testes aprovados, 18 skips governados; cobertura de 83,78% statements, 80,41% branches, 84,95% functions e 84,55% lines. Também passaram contratos 81/81, worker 24/24, migrations 29/29, lint, typecheck, decisões críticas, documentação, arquitetura, governanças, produto, fronteira pública e `git diff --check`.
+- `pnpm verify` integral no SHA executável do RC `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`: passou com 163 arquivos, 719 testes aprovados, 18 skips governados; cobertura de 83,78% statements, 80,41% branches, 84,95% functions e 84,55% lines. Também passaram contratos 81/81, worker 24/24, migrations 29/29, lint, typecheck, decisões críticas, documentação, arquitetura, governanças, produto, fronteira pública e `git diff --check`.
 - A fatia local adicional de RF-057/RF-058 e o recálculo de avaliações estão integrados: interação estruturada e dose/infusão, caso digital progressivo, projeção pública segura, persistência PostgreSQL versionada com RLS, recálculo/outbox/worker e rotas autenticadas. A matriz possui 145/145 linhas com evidência local e 87/87 P0/P1; isso não transforma as linhas em cadeias completas.
 - A verificação integral subsequente passou após a atualização do inventário M24 e da expectativa de rotas: 138 arquivos de teste, 639 testes aprovados, 18 skips governados; cobertura de 85,28% statements, 81,36% branches, 86,88% functions e 85,99% lines; migrations 24/24 e todos os gates locais do `pnpm verify` verdes. A disposição continua `PILOT_BLOCKED`.
 - Build dos 12 workspaces concluído.
@@ -25,13 +25,13 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 - Edge security: 7 diretivas estáticas e 2 destinos live aprovados.
 - Smoke live: 200/200 requisições aprovadas, p95 de 186,68 ms.
 - `pnpm audit --prod --audit-level high`: nenhuma vulnerabilidade conhecida.
-- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, com label `org.opencontainers.image.revision=be43fc8f7f410435a40550eb70e9b2a700882355` e `CVG_SOURCE_SHA` correspondente. O novo `pnpm ops:verify-runtime-provenance` passou para os quatro processos HA e rejeitou referências por tag mutável.
+- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `cvg-trainee-vet@sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, com label `org.opencontainers.image.revision=1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e `CVG_SOURCE_SHA` correspondente. O `pnpm ops:verify-runtime-provenance` passou explicitamente para os quatro processos HA e rejeita referências por tag mutável.
 - Failover controlado: `api-a` foi parado, o edge respondeu `500/500` requests com 100% de sucesso, média de 104,81 ms e p95 de 626,14 ms; `api-a` foi restaurado e voltou saudável no mesmo digest.
 - Restore PostgreSQL live: `pnpm test:integration:restore` passou 2/2 com conexão administrativa e container Docker declarado; execução direta do marcador confirmou banco descartável isolado e RTO local de 3.832 ms. Isso não comprova backup externo nem RPO/RTO de produção.
 - `pnpm ops:verify-ha`, `pnpm ops:verify-edge-security` e `pnpm ops:verify-release-manifest` passaram; o edge permanece interno/staging (`liveTargets=[]`) e o gate de segurança produtiva retorna `NOT_EXECUTED` sem ambiente aprovado.
-- Rollback local no RC atual: `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, com release digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` e rollback sintético `sha256:1fad2d102d3f927015d7facb9c2a10d1e507977d924a58b556cb5ed618d256f8`.
+- Rollback local no RC atual: `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`, com release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b` e rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`.
 - Gate de segurança produtiva: permanece `NOT_EXECUTED`/fail-closed fora do ambiente aprovado, sem as referências externas obrigatórias; não houve tentativa de contornar o gate.
-- Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas porque estado/release externos e gates clínicos ainda não estão aprovados; o novo gate de proveniência está ancorado no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355`.
+- Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas porque estado/release externos e gates clínicos ainda não estão aprovados; o gate de proveniência está ancorado no SHA executável `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`.
 
 ## 3. Notas por item
 
@@ -344,3 +344,11 @@ Classificação: beta clínico `READY_FOR_HUMAN_EXECUTION`, revisão efetiva `NO
 O build web passou com `CVG_API_INTERNAL_URL=http://127.0.0.1:3182`. Contra o web local ativo em `127.0.0.1:3100`, o Playwright executou `tests/e2e/authoring-review.spec.ts` em modo controlado e passou `2/2`: autoria/publicação condicionada e fila paginada para revisor aprovado sem exposição de internals.
 
 Essa evidência cobre a superfície técnica do beta, não a execução humana, o roster, a calibração, a revisão dos `763` itens ou a publicação produtiva. A nota, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem inalterados.
+
+## 45. Rechecagem local após a reancoragem documental — 2026-08-14T15:27:56-03:00
+
+Com a flag explícita `CVG_VERIFY_RUNTIME_PROVENANCE=true`, `pnpm ops:verify-runtime-provenance` passou: os quatro containers HA estão `running/healthy`, todos usam `cvg-trainee-vet@sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, e label OCI, `CVG_SOURCE_SHA` e SHA esperado convergem em `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`. `pnpm ops:verify-ha`, `pnpm ops:verify-edge-security`, `pnpm verify:clinical-sources`, `pnpm verify:premium-traceability` e `git diff --check` também passaram; a rastreabilidade permanece `145/145` linhas locais, `87/87` P0/P1 e `0/145` cadeias completas.
+
+As probes atuais retornaram `200` em live, ready e dependencies (`127.0.0.1:3182`) e `200` em live/ready HTTPS local (`https://localhost:3181`). O gate de edge continua apenas estático (`liveTargets=[]`) quando não recebe destinos aprovados; o certificado e o endpoint são locais, portanto DNS público e CA gerenciada continuam `NOT_EXECUTED`. A fila clínica não foi alterada: revisão humana efetiva continua `NOT_EXECUTED`, com `763` pendências.
+
+Essa rechecagem corrige o cabeçalho do relatório para o RC executável vigente, sem promover nota, release, piloto ou cadeia de rastreabilidade. Os gates externos/humanos permanecem `WAITING_HUMAN_APPROVAL` e a disposição permanece `PILOT_BLOCKED`.

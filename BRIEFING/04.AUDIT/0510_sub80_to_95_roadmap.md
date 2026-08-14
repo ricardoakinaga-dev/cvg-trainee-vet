@@ -329,3 +329,9 @@ O roadmap classifica a fatia técnica do beta como `READY_FOR_HUMAN_EXECUTION`: 
 ## 12.24 E2E focal do beta local — 2026-08-14T15:21:52-03:00
 
 O build web e os dois cenários Playwright de autoria/revisão passaram contra o web local ativo. O roadmap marca a superfície técnica como `PASS`, mas preserva B-G1 como `NOT_EXECUTED` até roster, calibração e revisão humana dos `763` itens; B-G5/G-S80-9 permanecem abertos.
+
+## 12.25 Rechecagem do RC local vigente — 2026-08-14T15:27:56-03:00
+
+O gate explícito de proveniência confirmou os quatro containers HA no mesmo digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`, alinhados ao source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; HA, edge estático, fontes clínicas, premium traceability e diff-check passaram. Live/ready/dependencies e HTTPS local retornaram `200`.
+
+Classificação permanece: proveniência local `PASS`; edge público, CI/registry/deploy/rollback externo, IdP/MFA, backup/RPO/RTO, beta humano, UAT, WCAG manual, Web Vitals reais, soak, DR e `0/145` `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`. Nenhuma promoção foi inferida.
