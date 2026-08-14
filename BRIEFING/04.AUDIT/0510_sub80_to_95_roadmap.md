@@ -359,3 +359,7 @@ O RC local passou proveniência, HA, edge, health, `pnpm verify` `163/720/18` e 
 ## 12.30 Prontidão dos gates externos — 2026-08-14T16:09:22-03:00
 
 Os probes de identidade e segurança produtiva retornaram `NOT_EXECUTED` sem ambiente aprovado. B-G2, B-G3, B-G4 e B-G5 permanecem `WAITING_HUMAN_APPROVAL`; nenhuma promoção é inferida.
+
+## 12.31 Inventário remoto de CI e release — 2026-08-14T16:11:08-03:00
+
+O inventário read-only confirmou ausência de secrets, variables, environments e deployments; somente `quality` está ativo. B-G5 permanece aberto e nenhuma promoção é inferida.

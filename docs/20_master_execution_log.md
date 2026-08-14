@@ -7335,3 +7335,33 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Provisionar/aprovar os provedores e executar os probes no ambiente real, depois reauditar o mesmo RC.
+
+## 2026-08-14T16:11:08-03:00 — REMOTE-RELEASE-INVENTORY-144
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / inventário remoto de CI e release
+
+### ACTION
+
+Consulta read-only do GitHub para secrets, variables, environments, deployments e workflows, sem alterar configuração.
+
+### RESULT
+
+O repositório possui `0` secrets, `0` variables, `0` environments, `0` deployments e somente o workflow `quality`. Os checks remotos continuam falhando no head antigo por ausência das três fontes licenciadas. O manifesto local passa estruturalmente, mas não há prova de provisionamento remoto.
+
+### DECISIONS
+
+CI/registry/deploy/rollback produtivos permanecem `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`; nenhuma escrita externa foi realizada.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Definir e autorizar registry, runner, environments, referências de secrets/variables e alvo de deploy; publicar o mesmo RC e reauditar.

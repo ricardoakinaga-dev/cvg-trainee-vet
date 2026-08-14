@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: auditoria live do RC passou `CVG_VERIFY_RUNTIME_PROVENANCE` nos quatro containers, HA, edge, health live/ready/dependencies `200/200/200`, HTTPS local `200/200`, `pnpm verify` com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, além de E2E HA `3/3` com teardown limpo; `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` fora de ambiente aprovado; rechecagem read-only do GitHub confirmou os dois checks `quality` falhos no head remoto antigo por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
+- last_completed_action: auditoria live do RC passou `CVG_VERIFY_RUNTIME_PROVENANCE` nos quatro containers, HA, edge, health live/ready/dependencies `200/200/200`, HTTPS `200/200`, `pnpm verify` com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, além de E2E HA `3/3` com teardown limpo; `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` fora de ambiente aprovado; inventário remoto atual confirmou `0` secrets, `0` variables, `0` environments, `0` deployments e somente o workflow `quality`; rechecagem read-only do GitHub confirmou os dois checks `quality` falhos no head remoto antigo por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,23 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T16:09:22-03:00
+- last_update: 2026-08-14T16:11:08-03:00
+
+## 2026-08-14T16:11:08-03:00 — REMOTE-RELEASE-INVENTORY-144
+
+### RESULTADO
+
+- inventário read-only do GitHub confirmou `0` secrets, `0` variables, `0` environments e `0` deployments;
+- o repositório possui somente o workflow `quality`, e os checks remotos continuam falhos no head antigo por ausência das fontes licenciadas;
+- nenhuma configuração, workflow, secret, environment, deployment, push ou dispatch foi alterado.
+
+### DECISÃO
+
+CI/registry/deploy/rollback produtivos permanecem `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`; o manifesto local de release não é prova de provisionamento remoto.
+
+### NEXT ACTION
+
+Definir registry, runner, ambientes, secrets/variables por referência e autoridade de deploy; publicar o mesmo RC somente após aprovação e então repetir CI, deploy e rollback.
 
 ## 2026-08-14T16:09:22-03:00 — EXTERNAL-GATES-READINESS-143
 

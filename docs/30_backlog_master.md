@@ -25,6 +25,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **interpretação:** IdP/MFA/recovery, origem HTTPS pública, storage/retention, backup/chave e release/rollback produtivos continuam sem prova real;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar/aprovar provedores e executar os probes no mesmo RC.
 
+## 2026-08-14T16:11:08-03:00 — 16.38 Inventário remoto de CI e release
+
+- **evidência:** GitHub read-only retornou `0` secrets, `0` variables, `0` environments, `0` deployments e somente workflow `quality`;
+- **interpretação:** manifesto local não equivale a registry/runner/deploy/rollback produtivos; os checks remotos seguem falhos no head antigo;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; definir provedor, ambientes e referências seguras e executar o mesmo RC após autorização.
+
 ## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
 
 - **evidência:** `pnpm ops:verify-release-manifest` passou; `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`; `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado; worktree limpo no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`;

@@ -390,3 +390,9 @@ Resultado: nenhuma regressão local foi encontrada, mas a nota permanece `83,24/
 Os probes `pnpm ops:verify-identity-provider` e `pnpm ops:verify-production-security` foram executados sem tentar contornar os guardrails. Ambos retornaram `NOT_EXECUTED`: o primeiro exige ambiente IdP aprovado com URL HTTPS, token e principal de probe; o segundo exige ambiente de release aprovado com origem HTTPS pública, storage e retenção de traces, URI de backup, referência de chave e digests distintos de release/rollback.
 
 Essa saída é evidência de fail-closed, não evidência de implementação produtiva. Nenhum segredo foi exibido, nenhum ambiente foi provisionado e nenhuma escrita externa foi feita. A nota permanece `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.
+
+## 51. Inventário remoto de CI e release — 2026-08-14T16:11:08-03:00
+
+O inventário read-only atual do GitHub confirmou `0` secrets, `0` variables, `0` environments e `0` deployments no repositório; há somente o workflow `quality`. O PR continua no head remoto antigo e os checks seguem falhando por ausência das três fontes licenciadas.
+
+O manifesto local de release passa sua validação estrutural, mas não comprova registry, runner, ambiente, deploy ou rollback produtivo. Nenhuma configuração remota foi alterada. CI/registry/deploy/rollback continuam `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`; a nota e a disposição permanecem inalteradas.

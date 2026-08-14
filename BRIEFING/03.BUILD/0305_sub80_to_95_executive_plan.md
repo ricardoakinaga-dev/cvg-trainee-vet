@@ -407,3 +407,7 @@ Proveniência, HA, edge, health local, `pnpm verify` e E2E HA `3/3` passaram no 
 ## 17.32 Prontidão dos gates externos — 2026-08-14T16:09:22-03:00
 
 Os probes de IdP e segurança produtiva retornaram `NOT_EXECUTED` em modo fail-closed por falta de ambiente e referências aprovados. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`; nenhum resultado local substitui IdP/MFA/recovery, DNS/TLS público, backup/RPO/RTO ou release produtivo.
+
+## 17.33 Inventário remoto de CI e release — 2026-08-14T16:11:08-03:00
+
+O GitHub não possui secrets, variables, environments ou deployments configurados e expõe somente o workflow `quality`. O plano mantém B-G5 em `WAITING_HUMAN_APPROVAL` até registry/runner/ambiente/rollback e referências seguras serem aprovados.
