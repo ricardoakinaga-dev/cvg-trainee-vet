@@ -6,7 +6,7 @@
 
 ## 1. Conclusão executiva
 
-O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime está ancorado no source SHA imutável `e3aff802fe7ec104917e8cc6aa77bb0aea4f6229`; o snapshot documental posterior está no commit `1501070`, com worktree limpo e sem alteração de código no snapshot. Isso não equivale a um RC publicado ou aprovado.
+O CVG está funcional e observável em ambiente local, mas ainda não está pronto para produção, piloto ou publicação clínica. A nota oficial permanece congelada em 83,24/100 porque a evidência atual é local/sintética, sem operação externa comprovada e sem os gates humanos/clínicos necessários. O runtime local foi validado no SHA executável imutável `8cf40e567d02149b9f5714c8b1084b60bd291426`, com digest comum `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`; o commit `6190e9c` é somente documental e posterior à validação. Isso não equivale a um RC publicado ou aprovado.
 
 Estado: `WAITING_HUMAN_APPROVAL`.
 Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
@@ -14,8 +14,8 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 ## 2. Evidências executadas
 
 - Foram lidos e reconciliados os 19 arquivos da pasta `docs/`, incluindo estado, log, backlog e registro canônico.
-- `pnpm verify` integral (após RF-105/RF-106 e reconciliação da matriz): passou com 135 arquivos, 621 testes aprovados, 18 skips governados; cobertura de 86,25% statements, 82,37% branches, 86,95% functions e 86,99% lines. Também passaram os gates de migrações 22/22, decisões críticas, documentação, arquitetura, hotspots, rastreabilidade e `git diff --check`.
-- Após essa verificação integral, RF-057/RF-058 receberam uma fatia local adicional: interação estruturada e dose/infusão com avaliação automática, caso digital progressivo, projeção pública segura, persistência PostgreSQL versionada com RLS e rotas GET/POST autenticadas. A verificação focalizada passou em 6 arquivos/79 testes; a matriz passou a 135/145 evidências locais, 82/87 P0/P1 e 10 gaps de elo local. A suíte integral ainda precisa ser reexecutada antes de qualquer nova fotografia de cobertura.
+- `pnpm verify` integral no SHA executável do RC `8cf40e567d02149b9f5714c8b1084b60bd291426`: passou com 161 arquivos, 706 testes aprovados, 18 skips governados; cobertura de 83,78% statements, 80,41% branches, 84,95% functions e 84,55% lines. Também passaram contratos 81/81, worker 24/24, migrations 29/29, lint, typecheck, decisões críticas, documentação, arquitetura, governanças, produto, fronteira pública e `git diff --check`.
+- A fatia local adicional de RF-057/RF-058 e o recálculo de avaliações estão integrados: interação estruturada e dose/infusão, caso digital progressivo, projeção pública segura, persistência PostgreSQL versionada com RLS, recálculo/outbox/worker e rotas autenticadas. A matriz possui 145/145 linhas com evidência local e 87/87 P0/P1; isso não transforma as linhas em cadeias completas.
 - A verificação integral subsequente passou após a atualização do inventário M24 e da expectativa de rotas: 138 arquivos de teste, 639 testes aprovados, 18 skips governados; cobertura de 85,28% statements, 81,36% branches, 86,88% functions e 85,99% lines; migrations 24/24 e todos os gates locais do `pnpm verify` verdes. A disposição continua `PILOT_BLOCKED`.
 - Build dos 12 workspaces concluído.
 - E2E HA ativo: 3/3 fluxos sintéticos aprovados com teardown código 0, incluindo caso digital persistente e ciclo administrativo.
@@ -23,7 +23,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 - Edge security: 7 diretivas estáticas e 2 destinos live aprovados.
 - Smoke live: 200/200 requisições aprovadas, p95 de 186,68 ms.
 - `pnpm audit --prod --audit-level high`: nenhuma vulnerabilidade conhecida.
-- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `sha256:ac7eac66e96c38cc31ccf01c9911cd112dae1ae6bac79dba6f98f3821c7637ea`, com label de revisão igual ao source SHA imutável do runtime.
+- Runtime local: duas APIs, dois workers, PostgreSQL, Qdrant, Caddy, OTel, Tempo, Prometheus e Grafana ativos; API/worker no RC local comum `sha256:aa5dc1b767745734f92b10359bb35920b6ab2096ed7cc5c6ce4927e592ad92bb`, com label `org.opencontainers.image.revision=8cf40e567d02149b9f5714c8b1084b60bd291426`; E2E HA 3/3 e rollback local `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true` passaram.
 - Gate de segurança produtiva: falhou fechado pela ausência das 11 referências externas obrigatórias; não houve tentativa de contornar o gate.
 - Rastreabilidade local: `PASS_WITH_GAPS`, com 145/145 linhas de evidência, 87/87 requisitos P0/P1 com evidência local, zero gaps de módulo/contrato/teste/artefato e 0/145 cadeias completas porque estado/release externos e gates clínicos ainda não estão aprovados; as linhas estão ancoradas no SHA local `4d8618dfcf3aea2cab610842dbe1f7ea74cd33a9`.
 
@@ -55,7 +55,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 3. DNS público e TLS gerenciado não comprovados.
 4. Backups externos, retenção e RPO/RTO produtivos pendentes.
 5. CI, registry, deploy e rollback atuais não comprovados.
-6. Worktree local agora limpo e commitado; falta vincular o runtime ao SHA do RC e comprovar registry/deploy externo.
+6. Worktree local agora limpo e commitado; o runtime local está vinculado ao SHA executável do RC, mas registry/deploy/rollback externo e publicação do RC ainda não foram comprovados.
 7. UAT, acessibilidade manual, Web Vitals reais, soak e DR pendentes.
 8. 0/145 cadeias de rastreabilidade completas porque o estado/release e os gates externos ainda não foram aprovados, apesar do commit local já estar ancorado.
 9. Recálculo de avaliações integrado localmente; entrega clínica externa e produção ainda não comprovadas.
@@ -63,7 +63,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 
 ## 5. Limites da evidência
 
-O runtime local não representa produção: a imagem em execução ainda precisa ser reconstruída com o label do SHA do RC local, o TLS live é interno/local, os dados do E2E são sintéticos e o gate produtivo permanece fail-closed. A revisão clínica deve ocorrer em beta controlado com veterinários autorizados, sem prontuários, pacientes, tutores, fotos, PDFs de terceiros ou dados identificáveis.
+O runtime local não representa produção: a imagem em execução está ancorada no SHA executável do RC local, mas o TLS live é interno/local, os dados do E2E são sintéticos e os gates produtivos permanecem fail-closed. A revisão clínica deve ocorrer em beta controlado com veterinários autorizados, sem prontuários, pacientes, tutores, fotos, PDFs de terceiros ou dados identificáveis.
 
 ## 6. Decisão
 
