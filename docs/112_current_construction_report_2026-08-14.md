@@ -376,3 +376,17 @@ Essa rechecagem corrige o cabeçalho do relatório para o RC executável vigente
 Na rechecagem, o worktree local estava limpo no commit documental `08c0aa8`; o registro foi consolidado localmente depois, sem publicação remota. O RC executável local continua ancorado no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`. A correção local para bundle privado/licenciado existe, mas não foi publicada.
 
 Classificação: CI remoto `FAIL`/`WAITING_HUMAN_APPROVAL`; baseline `83,24/100`, `0/145` cadeias completas, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED` permanecem inalterados. Para avançar, faltam bundle/licença e variável/credencial autorizados, push do RC, registry/deploy/rollback produtivos e, em paralelo, roster clínico/T0, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak, DR e reauditoria.
+
+## 49. Auditoria live do RC vigente — 2026-08-14T16:07:16-03:00
+
+A auditoria live atual passou a proveniência explícita dos quatro containers, `ops:verify-ha`, `ops:verify-edge-security`, health local live/ready/dependencies `200/200/200`, HTTPS local live/ready `200/200` e o E2E HA `3/3` com teardown limpo. Não houve erro recente de DNS/upstream no recorte do edge. O worktree permaneceu limpo e o runtime segue ancorado no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`.
+
+`pnpm verify` passou com `163` arquivos/`720` testes/`18` skips e cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines. Os gates de governança preservam as lacunas honestas: revisão clínica planejada para `763` conteúdos, observabilidade externa e acknowledgement produtivo não configurados, `0/145` cadeias completas, cinco gaps manuais de WCAG, quatro gaps de performance, soak `NOT_EXECUTED` e CI remoto `FAIL`.
+
+Resultado: nenhuma regressão local foi encontrada, mas a nota permanece `83,24/100`, o estado `WAITING_HUMAN_APPROVAL` e a disposição `PILOT_BLOCKED`. A prova live local não substitui IdP/MFA, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback produtivos, revisão veterinária efetiva, UAT humano, acessibilidade manual, Web Vitals reais, soak/DR ou reauditoria externa.
+
+## 50. Probes de identidade e segurança produtiva — 2026-08-14T16:09:22-03:00
+
+Os probes `pnpm ops:verify-identity-provider` e `pnpm ops:verify-production-security` foram executados sem tentar contornar os guardrails. Ambos retornaram `NOT_EXECUTED`: o primeiro exige ambiente IdP aprovado com URL HTTPS, token e principal de probe; o segundo exige ambiente de release aprovado com origem HTTPS pública, storage e retenção de traces, URI de backup, referência de chave e digests distintos de release/rollback.
+
+Essa saída é evidência de fail-closed, não evidência de implementação produtiva. Nenhum segredo foi exibido, nenhum ambiente foi provisionado e nenhuma escrita externa foi feita. A nota permanece `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.

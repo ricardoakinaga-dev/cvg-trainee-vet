@@ -7275,3 +7275,63 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Obter bundle/licença, variável/credencial, runner, registry/deploy e autorização de push; executar o mesmo RC e reauditar sem drift.
+
+## 2026-08-14T16:07:16-03:00 — LIVE-AUDIT-RC-142
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / auditoria live do RC vigente
+
+### ACTION
+
+Reexecutados proveniência, HA, edge, health local, `pnpm verify`, E2E HA ativo e rechecagem read-only dos checks remotos, preservando dados sintéticos e sem escrita externa.
+
+### RESULT
+
+Proveniência passou nos quatro containers no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; HA/edge passaram; health local `200/200/200`, HTTPS local `200/200`; `pnpm verify` passou `163/720/18` com cobertura `83,78%/80,41%/84,95%/84,55%`; E2E HA passou `3/3` com teardown limpo. Os checks remotos continuam falhos no head `d3964a9e…` pela ausência das três fontes licenciadas.
+
+### DECISIONS
+
+Nenhuma regressão local foi encontrada. A evidência não promove score, release ou piloto: `0/145`, revisão clínica, gates produtivos, UAT humano, acessibilidade manual, Web Vitals reais, soak e DR continuam abertos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Provisionar/aprovar os ambientes externos e humanos e executar os gates no mesmo RC, sem drift.
+
+## 2026-08-14T16:09:22-03:00 — EXTERNAL-GATES-READINESS-143
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / prontidão dos gates externos
+
+### ACTION
+
+Executados os probes de identidade e segurança produtiva em modo fail-closed, sem exibir segredos e sem escrever em ambientes externos.
+
+### RESULT
+
+`pnpm ops:verify-identity-provider` e `pnpm ops:verify-production-security` retornaram `NOT_EXECUTED` por ausência de ambiente aprovado e referências obrigatórias. O primeiro exige IdP HTTPS, token e principal; o segundo exige origem pública, storage/retention de traces, backup/chave e digests de release/rollback.
+
+### DECISIONS
+
+Não há evidência suficiente para classificar identidade, MFA, recovery, edge público ou segurança produtiva como PASS. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED` permanecem.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Provisionar/aprovar os provedores e executar os probes no ambiente real, depois reauditar o mesmo RC.

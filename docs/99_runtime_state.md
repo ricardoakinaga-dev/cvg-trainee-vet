@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: beta técnico possui fila escopada, `CLINICAL_APPROVER`, decisão persistida e gate de publicação; fila live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; edge recebeu histerese de health-check em TDD; runtime reconstruído no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` mantém os quatro processos HA no digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; manifesto, deploy, rollback, proveniência e E2E locais passaram; rechecagem read-only confirmou os runs remotos `31402470511` e `31402464508` falhando por ausência das três fontes licenciadas no head remoto `d3964a9e…`; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: beta técnico possui fila escopada, `CLINICAL_APPROVER`, decisão persistida e gate de publicação; fila live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; edge recebeu histerese de health-check em TDD; runtime reconstruído no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` mantém os quatro processos HA no digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; auditoria live atual passou proveniência, HA, health, edge, `pnpm verify` e E2E HA `3/3`; rechecagem read-only confirmou os runs remotos `31402470511` e `31402464508` falhando por ausência das três fontes licenciadas no head remoto `d3964a9e…`; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: TDD do edge passou RED/GREEN, fix `8859c6c` foi commitado, imagem/runtime foram reancorados no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; rehearsal deploy/rollback/restauração passou, verificação final passou com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, E2E HA `3/3`, live/ready/dependencies e HTTPS local `200`; rechecagem read-only do GitHub às `15:57:52` confirmou os dois checks `quality` falhos no head remoto antigo por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
+- last_completed_action: auditoria live do RC passou `CVG_VERIFY_RUNTIME_PROVENANCE` nos quatro containers, HA, edge, health live/ready/dependencies `200/200/200`, HTTPS local `200/200`, `pnpm verify` com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, além de E2E HA `3/3` com teardown limpo; `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` fora de ambiente aprovado; rechecagem read-only do GitHub confirmou os dois checks `quality` falhos no head remoto antigo por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,40 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T16:01:58-03:00
+- last_update: 2026-08-14T16:09:22-03:00
+
+## 2026-08-14T16:09:22-03:00 — EXTERNAL-GATES-READINESS-143
+
+### RESULTADO
+
+- `pnpm ops:verify-identity-provider` retornou `NOT_EXECUTED`, exigindo IdP aprovado, URL HTTPS, token e principal de probe;
+- `pnpm ops:verify-production-security` retornou `NOT_EXECUTED`, exigindo ambiente de release aprovado com origem HTTPS pública, storage de traces, retenção, URI de backup, referência de chave, digest de release e digest de rollback;
+- nenhum segredo foi exibido, nenhum ambiente foi provisionado e nenhuma escrita externa foi executada.
+
+### DECISÃO
+
+Os gates permanecem fail-closed e não podem ser classificados como PASS por ausência de configuração.
+
+### NEXT ACTION
+
+Obter os valores/provedores autorizados e executar os probes no ambiente real; depois reauditar identidade, edge público, backup e release no mesmo RC.
+
+## 2026-08-14T16:07:16-03:00 — LIVE-AUDIT-RC-142
+
+### RESULTADO
+
+- proveniência passou nos quatro containers no source SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` e digest comum `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`;
+- HA, edge e health passaram; live/ready/dependencies retornaram `200/200/200`, HTTPS local live/ready `200/200`, sem erros recentes de DNS/upstream no recorte do edge;
+- `pnpm verify` passou com `163` arquivos/`720` testes/`18` skips, cobertura `83,78%/80,41%/84,95%/84,55%`; `pnpm test:e2e:active-ha` passou `3/3` com teardown limpo;
+- os gates honestos continuam `PASS_WITH_GAPS`: curriculum `796` conteúdos/`763` revisão clínica planejada, observabilidade externa `NOT_CONFIGURED`, rastreabilidade `0/145`, acessibilidade manual `5` gaps, soak `NOT_EXECUTED` e CI remoto `FAIL`.
+
+### DECISÃO
+
+A rodada live não encontrou regressão local, mas não promove release, piloto ou score. O runtime local está comprovado; produção, beta clínico efetivo e evidências humanas/externas permanecem pendentes.
+
+### NEXT ACTION
+
+Obter as autorizações e ambientes externos, executar os gates no mesmo RC e reauditar cada requisito sem drift.
 
 ## 2026-08-14T15:57:52-03:00 — REMOTE-CI-RECHECK-141
 

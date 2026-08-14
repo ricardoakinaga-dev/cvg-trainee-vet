@@ -399,3 +399,11 @@ O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`: o resultado não subst
 ## 17.30 Rechecagem read-only do CI remoto — 2026-08-14T15:57:52-03:00
 
 Os dois runs `quality` remotos continuam falhando em `verify:clinical-sources` no head `d3964a9e…`, pela ausência das três fontes licenciadas. A correção de boundary para `CVG_CLINICAL_SOURCES_DIRECTORY` permanece local e o worktree está limpo; não houve push/dispatch. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED` até bundle/licença, variável autorizada e publicação do mesmo RC.
+
+## 17.31 Auditoria live do RC vigente — 2026-08-14T16:07:16-03:00
+
+Proveniência, HA, edge, health local, `pnpm verify` e E2E HA `3/3` passaram no RC `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`; nenhum erro recente de edge foi observado. O plano não promove score: revisão clínica, CI/release externo, identidade, edge público, backup, UAT/manual accessibility, Web Vitals reais, soak, DR e `0/145` permanecem gates abertos.
+
+## 17.32 Prontidão dos gates externos — 2026-08-14T16:09:22-03:00
+
+Os probes de IdP e segurança produtiva retornaram `NOT_EXECUTED` em modo fail-closed por falta de ambiente e referências aprovados. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`; nenhum resultado local substitui IdP/MFA/recovery, DNS/TLS público, backup/RPO/RTO ou release produtivo.

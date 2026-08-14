@@ -862,3 +862,15 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **evidência:** `quality` continua `FAILURE` nos runs `31402470511` e `31402464508`, ambos no head remoto `d3964a9e…`, com falha determinística em `verify:clinical-sources` por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`;
 - **estado:** a correção local para diretório externo/licenciado está pronta, mas o worktree local não foi publicado e não houve escrita remota;
 - **pronto:** B-G5 só pode avançar após bundle/licença, credencial/variável, runner, registry/deploy e execução verde no mesmo SHA; `0/145` e os demais gates permanecem abertos.
+
+## 16.36 Auditoria live do RC vigente — 2026-08-14T16:07:16-03:00
+
+- **evidência:** proveniência nos quatro containers, HA, edge, health local, HTTPS local, `pnpm verify` `163/720/18` e E2E HA `3/3` passaram; o runtime segue no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`/digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`;
+- **classificação:** local `PASS`; clínica beta efetiva, IdP/MFA, DNS/TLS público, backup/RPO/RTO externo, CI/release produtivo, UAT, WCAG manual, Web Vitals reais, soak, DR e rastreabilidade completa `NOT_EXECUTED`/`PASS_WITH_GAPS`;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar somente gates reais autorizados e reauditar no mesmo RC.
+
+## 16.37 Prontidão dos gates externos — 2026-08-14T16:09:22-03:00
+
+- **evidência:** os probes de IdP e segurança produtiva retornaram `NOT_EXECUTED` fail-closed, sem credenciais ou ambientes fornecidos;
+- **gaps:** URL/token/principal do IdP, origem pública, storage/retention, backup/chave e digests de release/rollback produtivos continuam ausentes;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar após provisionamento aprovado e reauditar no mesmo RC.

@@ -13,6 +13,18 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **limite:** nenhum push, dispatch ou provisionamento foi executado; `0/145`, bundle/licença, CI/registry/deploy externo, revisão clínica, identidade, edge público, backup, UAT, soak, DR e reauditoria continuam abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar insumos/provedores e autorização de publicação antes de executar o CI no mesmo RC.
 
+## 2026-08-14T16:07:16-03:00 — 16.36 Auditoria live do RC vigente
+
+- **evidência:** proveniência `PASS` nos quatro containers no SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6`/digest `sha256:e5d9d7a2c6673f5988919a3708f8f7816aea97989fac8c0bf7b681f318f22b94`; HA, edge, health local `200/200/200`, HTTPS local `200/200`, `pnpm verify` `163/720/18` e E2E HA `3/3` passaram;
+- **limite:** gates honestos continuam `PASS_WITH_GAPS`: `763` revisões clínicas planejadas, `0/145` cadeias completas, observabilidade externa não configurada, cinco gaps WCAG manuais, soak não executado, CI remoto falho e produção não comprovada;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar gates externos/humanos no mesmo RC após autorização e provisionamento.
+
+## 2026-08-14T16:09:22-03:00 — 16.37 Prontidão dos gates externos
+
+- **evidência:** `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` fora do ambiente aprovado, sem exibir segredos;
+- **interpretação:** IdP/MFA/recovery, origem HTTPS pública, storage/retention, backup/chave e release/rollback produtivos continuam sem prova real;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar/aprovar provedores e executar os probes no mesmo RC.
+
 ## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
 
 - **evidência:** `pnpm ops:verify-release-manifest` passou; `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`; `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado; worktree limpo no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`;

@@ -351,3 +351,11 @@ Nenhuma promoção é inferida: revisão humana, edge público, identidade, back
 ## 12.28 Rechecagem read-only do CI remoto — 2026-08-14T15:57:52-03:00
 
 O CI remoto permanece `FAIL`: os runs `31402470511` e `31402464508` executam o head `d3964a9e…` e falham em `verify:clinical-sources` pelas três fontes licenciadas ausentes. A correção local existe, porém ainda não há bundle/variável autorizados nem publicação do RC. B-G5 permanece `WAITING_HUMAN_APPROVAL`; nenhuma promoção é inferida.
+
+## 12.29 Auditoria live do RC vigente — 2026-08-14T16:07:16-03:00
+
+O RC local passou proveniência, HA, edge, health, `pnpm verify` `163/720/18` e E2E HA `3/3`; o worktree está limpo e não houve erro recente do edge. O roadmap mantém `PILOT_BLOCKED`: revisão dos `763`, identidade, edge público, backup, CI/release externo, UAT/manual accessibility, Web Vitals reais, soak, DR e `0/145` não estão comprovados.
+
+## 12.30 Prontidão dos gates externos — 2026-08-14T16:09:22-03:00
+
+Os probes de identidade e segurança produtiva retornaram `NOT_EXECUTED` sem ambiente aprovado. B-G2, B-G3, B-G4 e B-G5 permanecem `WAITING_HUMAN_APPROVAL`; nenhuma promoção é inferida.
