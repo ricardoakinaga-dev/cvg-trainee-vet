@@ -273,3 +273,7 @@ O objetivo não é apenas reduzir a lista de gaps: é produzir evidência audit�
 ## 17.6 Checkpoint operacional — 2026-08-14T11:32:02-03:00
 
 Preparação local comprovada: fila clínica live `796/763` (total/pendentes), `0` falhas técnicas; carga `5000/5000` com p95 `300,56 ms`; backup/restore isolado com artefato verificado, `32` objetos e RTO observado `4583 ms`. O beta com veterinários, retenção externa, IdP, DNS/TLS, CI/registry/deploy, UAT, soak/DR e reauditoria continuam dependentes de decisões e ambientes externos. Nenhum gate foi promovido.
+
+## 17.7 Checkpoint de CI remoto — 2026-08-14T11:38:12-03:00
+
+O PR `#1` falhou nos runs `quality` porque o checkout remoto não possui os três PDFs licenciados exigidos pelo pré-voo de fontes. A ação planejada é provisionar bundle privado/licenciado e acesso CI read-only, mantendo hash-check e a proibição de versionar PDFs. O plano não considera o CI fechado até um run remoto verde no RC publicado.

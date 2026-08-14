@@ -722,3 +722,7 @@ O backlog continua `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`: a prova local nã
 BLK-01 agora possui fila live confirmada para o beta: `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas. BLK-04 possui evidência local adicional: backup administrativo externo ao repositório, manifest/SHA válidos e restore isolado de `32` objetos com RTO observado `4583 ms`. BLK-07 possui carga local de `5000/5000` requests, concorrência `100` e p95 `300,56 ms`.
 
 Essas evidências não fecham os gates: veterinários ainda precisam revisar, retenção externa/RPO/RTO produtivos não foram provados, IdP/DNS/TLS/CI/deploy/UAT/WCAG manual/Web Vitals/soak/DR permanecem abertos e `0/145` cadeias continuam corretas. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`.
+
+## 16.16 CI remoto e bundle de fontes licenciadas — 2026-08-14T11:38:12-03:00
+
+O PR `#1` continua com `quality` falho no `verify:clinical-sources`: os três PDFs existem somente fora do Git local e não estão disponíveis no checkout remoto. A task deve provisionar bundle privado/licenciado, acesso read-only, materialização temporária e hash-check; não deve adicionar PDFs ao repositório nem desabilitar o gate. Sem run remoto verde no RC, BLK-05 e BLK-08-C/D permanecem `WAITING_HUMAN_APPROVAL`.

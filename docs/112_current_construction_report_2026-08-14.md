@@ -45,7 +45,7 @@ Disposição de release/piloto/publicação clínica: `PILOT_BLOCKED`.
 | 12 | Observabilidade e operação | 78 | Sinais, alertas e stack local existem; retenção e telemetria externas ainda não comprovadas. |
 | 13 | Web, UX e acessibilidade | 78 | Rotas e fluxos principais funcionam; há cinco gaps manuais de WCAG e Web Vitals reais pendentes. |
 | 14 | Testes, cobertura e evidências | 93 | Cobertura global forte e suíte ampla; skips e evidências sintéticas ainda não fecham o release. |
-| 15 | CI e reprodutibilidade | 86 | Contratos, lint, typecheck e build locais passam; CI remoto, registry, deploy e rollback não comprovados. |
+| 15 | CI e reprodutibilidade | 86 | Contratos, lint, typecheck e build locais passam; o PR remoto falhou porque o checkout não contém o bundle licenciado das três fontes, e registry, deploy e rollback externos continuam não comprovados. |
 | 16 | Rastreabilidade e controle de mudanças | 65 | Existem 145 requisitos e 145 linhas de evidência local ancoradas no commit local `4d8618d`; 0/145 cadeias estão completas porque estado/release, gates externos e reauditoria ainda não foram aprovados. |
 
 ## 4. Bloqueios que exigem resolução
@@ -166,3 +166,9 @@ O load smoke local contra `/health/live` passou `5.000/5.000` requests com conco
 Foi gerado backup PostgreSQL fora do repositório usando a conta administrativa de backup, com artefato `cvg-backup-20260814143123-a5642b64`, `284.640` bytes, SHA-256 `f7e45a90783fe1416133879cd148c466e9342199fa2cc2b59b39dc58bc9f83ea` e alvo RPO `PT1H`. O restore isolado passou com `artifactVerified=true`, `targetIsolated=true`, `32` objetos restaurados e RTO observado de `4.583 ms`. A tentativa com a conta de aplicação foi negada no schema `drizzle`, confirmando a separação de privilégios.
 
 Os probes de IdP e segurança produtiva continuam `NOT_EXECUTED`; release manifest, traces locais e edge interno passam apenas em modo de exemplo/staging. A nota permanece `83,24/100`, a rastreabilidade `0/145` cadeias completas e o release `PILOT_BLOCKED` até os gates externos e humanos existirem.
+
+## 22. Diagnóstico de CI remoto — 2026-08-14T11:38:12-03:00
+
+O PR remoto `#1` possui runs `quality` falhos nos commits `d3964a9…`/`738906e…`. Os logs mostram que formato e contrato de CI passam, mas `pnpm verify:clinical-sources` falha porque o checkout do GitHub não contém os três PDFs licenciados registrados em `clinical-sources.json`. No workspace local, esses arquivos existem fora do Git e os hashes passam; `git ls-files` não contém PDFs.
+
+A falha não deve ser resolvida versionando obras de terceiros nem removendo o gate. O caminho pendente é provisionar um bundle licenciado em armazenamento/artefato privado, com acesso CI read-only, materialização em diretório temporário e verificação dos hashes antes do `pnpm verify`. Até essa decisão/credencial existir, o CI remoto permanece não comprovado e a nota global não é promovida.

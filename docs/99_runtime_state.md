@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: além do RC local imutável e `pnpm verify` verde, fila clínica live confirmou `796` conteúdos com `763` pendentes/não revisados e `0` falhas técnicas; carga local `5.000/5.000` passou; backup administrativo externo ao repositório e restore isolado passaram com artefato verificado, RPO-alvo `PT1H` e RTO observado `4.583 ms`; score e release externo não foram promovidos
+- last_completed_action: além do RC local imutável e `pnpm verify` verde, fila clínica live confirmou `796` conteúdos com `763` pendentes/não revisados e `0` falhas técnicas; carga local `5.000/5.000` passou; backup administrativo externo ao repositório e restore isolado passaram com artefato verificado, RPO-alvo `PT1H` e RTO observado `4.583 ms`; diagnóstico remoto do PR `#1` identificou ausência do bundle licenciado no checkout CI; score e release externo não foram promovidos
 - next_action: executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; manter `PILOT_BLOCKED` até as cadeias também terem estado/release aprovados no mesmo RC
 
 ## BLOQUEIOS
 
-- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; commit, digest e rollback locais comprovados, mas registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
+- blockers: G-S80-0 aguarda equipe/T0, capacidade clínica protegida e orçamento; revisão humana dos 763 itens; integração local do recálculo está comprovada, mas notificação clínica externa, UAT e produção ainda não; janela de manutenção fail-closed ainda não está configurada com horários hospitalares aprovados; DB/RLS autorizado para jornada/correção; UAT de turnos/dispositivos; SLA/alerta de contestação; política de comunicação clínica de afetados; backend/retention de telemetria; storage/backup e medição RPO/RTO; ambiente de deploy/rollback externo e coorte de piloto; checklist WCAG/screen reader/usuários; quatro gaps manuais de performance; CI budget e Web Vitals reais; PR #1 do GitHub falha no `verify:clinical-sources` por ausência dos três PDFs licenciados no checkout remoto; commit, digest e rollback locais comprovados, mas bundle privado/licenciado de fontes para CI, registry/deploy externo, IdP/MFA, DNS/TLS público, backup externo, estado/release aprovado do RC, beta clínico e reauditoria independente continuam pendentes; evidência local sintética não substitui gates externos, clínicos ou humanos
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T11:32:02-03:00
+- last_update: 2026-08-14T11:38:12-03:00
 
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
@@ -64,6 +64,19 @@ O runtime local está reproduzível e ancorado em SHA/digest, mas isso ainda é 
 ### STATUS / LIMITES / NEXT
 
 Essas provas fecham preparação clínica, carga e restore local. Não comprovam veterinários no beta, retenção externa, RPO/RTO produtivos, IdP/MFA, DNS/TLS público, registry/deploy/rollback remoto, UAT, WCAG manual, Web Vitals reais, soak de 24h ou DR. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`. Próxima ação: obter decisões humanas e provisionar os ambientes externos dos gates B-G1 a B-G8.
+
+## 2026-08-14T11:38:12-03:00 — REMOTE-CI-SOURCE-BUNDLE-111
+
+### RESULTADO
+
+- `gh pr view` identificou o PR `#1`; os checks remotos mais recentes disponíveis são dos commits antigos `d3964a9...` e `738906e...`, não do `HEAD` local atual;
+- os dois runs `quality` falharam em `pnpm verify:clinical-sources` porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` não existem no checkout remoto;
+- localmente os PDFs existem fora do Git e `git ls-files` não contém PDFs, em conformidade com a política de não versionar obras de terceiros;
+- a correção necessária é um bundle licenciado em armazenamento/artefato privado, acesso somente leitura no CI, diretório temporário parametrizado e verificação dos três hashes; não houve push, alteração remota ou inclusão de PDF no repositório.
+
+### STATUS / LIMITES / NEXT
+
+O CI remoto permanece não comprovado. A falha é reproduzível por evidência remota, mas a escolha do provedor/bundle e a autorização de credenciais são decisões externas; estado `WAITING_HUMAN_APPROVAL`, disposição `PILOT_BLOCKED`.
 
 ## 2026-08-14T11:02:00-03:00 — LOCAL-RC-COMMIT-AND-ROLLBACK-108
 

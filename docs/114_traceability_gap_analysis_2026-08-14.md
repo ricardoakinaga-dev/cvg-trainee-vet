@@ -136,3 +136,7 @@ O fechamento é local e não promove as linhas para `VERIFIED`/`RELEASE_READY`: 
 Evidência nova, ainda local: fila PostgreSQL com `796` conteúdos, `763` pendências não revisadas, `0` aprovações e `0` falhas técnicas; load smoke de `5000/5000` requests, concorrência `100`, p95 `300,56 ms`; backup externo ao repositório com manifest/SHA verificados; restore isolado de `32` objetos, `targetIsolated=true` e RTO observado `4583 ms`.
 
 Isso melhora a prova de preparação do beta, capacidade e recuperação local, mas não altera `completeChains=0/145`: não há decisões veterinárias, retenção externa, RPO/RTO produtivos, IdP/MFA, DNS/TLS público, CI/registry/deploy/rollback remoto, UAT, operação ou reauditoria no mesmo RC.
+
+## CI remoto e proveniência das fontes — 2026-08-14T11:38:12-03:00
+
+O PR `#1` foi inspecionado por `gh`: os runs `quality` falharam no commit remoto `d3964a9…` durante `verify:clinical-sources`, com ausência dos três PDFs licenciados no checkout. O workspace local passa porque os arquivos estão fora do Git. O requisito de artefato da cadeia continua aberto: falta bundle privado/licenciado, retenção do artefato, acesso CI read-only e prova de execução no mesmo RC. `completeChains=0/145` permanece correto.

@@ -1526,3 +1526,11 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **backup/restore local:** backup administrativo fora do repositório verificado por SHA `f7e45a90783fe1416133879cd148c466e9342199fa2cc2b59b39dc58bc9f83ea`; restore isolado `PASS`, `32` objetos, RTO `4583 ms`; a conta de aplicação foi negada no schema `drizzle`;
 - **gates:** IdP e segurança produtiva `NOT_EXECUTED`; manifest, traces e edge somente exemplo/staging;
 - **status:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`, `0/145` cadeias completas; próximos itens dependem de veterinários e ambientes/provedores externos.
+
+## 2026-08-14T11:38:12-03:00 — REMOTE-CI-SOURCE-BUNDLE-111
+
+- **evidência:** PR `#1` e runs `quality` remotos falharam em `verify:clinical-sources` por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` no checkout;
+- **causa:** os PDFs licenciados existem somente fora do Git local; o gate local passa e o checkout remoto não consegue reproduzir a fonte;
+- **ação necessária:** aprovar bundle privado/licenciado, armazenamento/artefato, credencial read-only e diretório temporário no CI; validar hashes antes do `pnpm verify`;
+- **restrição:** não versionar PDF de terceiros e não remover o gate de fontes;
+- **status:** CI remoto `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; nenhum push ou alteração remota executado.

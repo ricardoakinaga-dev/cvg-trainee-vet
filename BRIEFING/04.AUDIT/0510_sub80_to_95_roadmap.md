@@ -235,3 +235,7 @@ Se um gate vermelho persistir, as tarefas seguintes não são comprimidas nem de
 ## 12.4 Checkpoint de evidência local — 2026-08-14T11:32:02-03:00
 
 O roadmap agora tem evidência local adicional para as linhas B-L1, B-L3 e B-L5: fila clínica `796` total/`763` pendentes sem falha técnica, load smoke `5000/5000` com p95 `300,56 ms`, e backup/restore isolado com `32` objetos e RTO `4583 ms`. Esses dados não avançam S0–S12 nem os gates B-G1/B-G4/B-G7, pois revisão veterinária, retenção externa, produção, UAT, soak, DR e aceite humano continuam ausentes.
+
+## 12.5 Dependência de CI para fontes licenciadas — 2026-08-14T11:38:12-03:00
+
+O gate B-G5 ganhou uma dependência explícita: os PDFs licenciados não serão versionados; o CI deverá baixar um bundle privado autorizado, verificar os três SHA-256 e executar o pré-voo em diretório temporário. Até existir provedor, credencial read-only e run remoto verde no RC, B-G5 e G-S80-9 permanecem abertos.

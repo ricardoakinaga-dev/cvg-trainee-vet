@@ -6556,6 +6556,20 @@ IdP e segurança produtiva retornaram `NOT_EXECUTED` por ausência de ambiente a
 
 Obter veterinários/revisores e decisões D-ENT, provisionar IdP/DNS/storage/registry/CI/ambiente UAT e executar os gates externos no mesmo RC, sem tratar os probes locais como produção.
 
+## 2026-08-14T11:38:12-03:00 — REMOTE-CI-SOURCE-BUNDLE-111
+
+### ACTION
+
+Inspecionados PR, checks e logs do GitHub Actions do PR `#1`, sem push ou alteração remota.
+
+### RESULT
+
+Os runs `quality` remotos disponíveis, nos commits antigos `d3964a9…` e `738906e…`, falharam em `pnpm verify:clinical-sources`: os três PDFs licenciados do manifesto não estão no checkout remoto. Formato e contrato de CI passaram antes da falha. Localmente os PDFs existem fora do Git; `git ls-files` confirma que nenhuma obra PDF está versionada.
+
+### LIMITES / NEXT
+
+Não adicionar PDFs de terceiros ao repositório e não remover o gate. Para fechar o CI, Ricardo precisa aprovar provedor/bundle privado licenciado, acesso read-only e materialização temporária com hashes verificados; só então a branch poderá ser publicada e o workflow reexecutado.
+
 ## 2026-08-14T11:15:28-03:00 — LOCAL-RC-RUNTIME-109
 
 ### ACTION
