@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T15:57:52-03:00
+- last_update: 2026-08-14T16:01:58-03:00
 
 ## 2026-08-14T15:57:52-03:00 — REMOTE-CI-RECHECK-141
 
@@ -40,7 +40,7 @@
 
 - `gh pr checks` e `gh run view` confirmaram os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` em `FAILURE`, ambos no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`;
 - `verify:clinical-sources` continua falhando porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` não estão no checkout remoto; os demais passos posteriores foram pulados;
-- o worktree local continua limpo em `08c0aa89fd4fe74ed27a058245c530ccf013d1ff`, com a correção de bundle externo/licenciado pronta localmente em commits posteriores ao head remoto; nenhum push, dispatch, secret, variable, environment ou deployment foi criado.
+- a rechecagem encontrou o worktree local limpo em `08c0aa89fd4fe74ed27a058245c530ccf013d1ff`; o registro foi consolidado localmente depois e a árvore segue limpa, com a correção de bundle externo/licenciado pronta localmente em commits posteriores ao head remoto; nenhum push, dispatch, secret, variable, environment ou deployment foi criado.
 
 ### DECISÃO
 

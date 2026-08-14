@@ -7262,7 +7262,7 @@ Rechecagem read-only do PR `#1`, checks e logs dos dois runs remotos de qualidad
 
 ### RESULT
 
-Os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` continuam em `FAILURE` no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. Ambos falham em `verify:clinical-sources` porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` estão ausentes no checkout. O worktree local está limpo em `08c0aa8`; a correção de bundle externo/licenciado permanece apenas local.
+Os runs `31402470511`/job `93500569913` e `31402464508`/job `93500550866` continuam em `FAILURE` no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. Ambos falham em `verify:clinical-sources` porque `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` estão ausentes no checkout. A rechecagem encontrou o worktree local limpo em `08c0aa8`; o registro foi consolidado depois e a correção de bundle externo/licenciado permanece apenas local.
 
 ### DECISIONS
 
