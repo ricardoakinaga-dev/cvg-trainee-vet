@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: gate de proveniência do runtime implementado com TDD no commit executável `be43fc8f7f410435a40550eb70e9b2a700882355`; `6/6` testes focais e `pnpm verify` integral (`163` arquivos/`719` testes/`18` skips; cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`) passaram; uma recriação por tag foi rejeitada pelo gate e o rehearsal restaurou por digest com `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; runtime HA final em `cvg-trainee-vet@sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro processos alinhados ao mesmo SHA/digest, health live/ready/dependencies `200/200/200`, HA/edge verdes; fila live `796` total/`763` pendentes/`0` aprovados/`0` falhas técnicas e gate estrito falhou de forma esperada; `verify:premium-traceability` permanece `145/145` linhas e `0/145` cadeias completas; CI remoto sem infraestrutura (`0` secrets, `0` variables, `0` environments, `0` deployments); sem push ou escrita remota
+- last_completed_action: diagnóstico read-only do CI remoto registrado no commit documental `fffd49f`; o run `31402470511`/job `93500569913` confirmou a ausência dos três arquivos licenciados no head remoto antigo, sem secrets/variables/environments/deployments e sem escrita externa; a correção local `CVG_CLINICAL_SOURCES_DIRECTORY` permanece em `9bfa2c1`; a revalidação final local passou proveniência no SHA executável `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf`, quatro containers, HA/edge e gates de documentação/rastreabilidade
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T14:38:49-03:00
+- last_update: 2026-08-14T14:46:03-03:00
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 
@@ -2870,3 +2870,15 @@ O resultado não altera a nota `83,24/100`, `completeChains=0/145`, `WAITING_HUM
 ### STATUS / NEXT
 
 O contrato local está pronto, mas bundle privado/licenciado, credencial read-only, retenção, CI remoto verde no RC, registry/deploy/rollback, revisão clínica, IdP/MFA, edge público, backup/RPO/RTO, UAT, soak/DR e reauditoria continuam ausentes. Estado `WAITING_HUMAN_APPROVAL`; disposição `PILOT_BLOCKED`; `completeChains=0/145`.
+
+## 2026-08-14T14:46:03-03:00 — FINAL-LOCAL-REVALIDATION-132
+
+### RESULTADO
+
+- `ops:verify-runtime-provenance` passou com source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest comum `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` e quatro containers alinhados;
+- `ops:verify-ha` e `ops:verify-edge-security` passaram; `verify:documentation`, `verify:traceability` e `verify:premium-traceability` passaram;
+- worktree está limpo no commit documental `fffd49f`; nenhum ambiente externo foi alterado.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar somente após autorização o bundle/licença, push/CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/Web Vitals/soak/DR, beta clínico e reauditoria no mesmo RC.

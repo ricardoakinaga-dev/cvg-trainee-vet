@@ -7009,3 +7009,29 @@ O gate fecha o subproblema local de aceitar somente runtime executável no SHA e
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar ambiente clínico, IdP/MFA, DNS/TLS, storage/backup/RPO/RTO, CI/registry/deploy/rollback e UAT/DR, mantendo a reauditoria no mesmo RC.
+
+## 2026-08-14T14:46:03-03:00 — FINAL-LOCAL-REVALIDATION-132
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / final local cross-check
+
+### ACTION
+
+Reexecutados os gates read-only após registrar o diagnóstico do CI remoto e consolidar a documentação no commit `fffd49f`.
+
+### RESULT
+
+`ops:verify-runtime-provenance`, `ops:verify-ha`, `ops:verify-edge-security`, `verify:documentation`, `verify:traceability` e `verify:premium-traceability` passaram. O runtime continua no source SHA `be43fc8f7f410435a40550eb70e9b2a700882355`, digest `sha256:0ec956ffa267fd4534feaaf1000bd85adbacab77ce105775ea15a4af20b73fcf` e quatro containers HA alinhados; worktree limpo. A matriz continua `0/145` cadeias completas e `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`.
+
+### DECISIONS
+
+Nenhum gate externo, clínico ou humano foi inferido como concluído. Não houve push, workflow dispatch, provisionamento, deploy ou alteração remota.
+
+### STATUS / NEXT
+
+Obter as autorizações e dependências registradas no backlog; executar CI/registry/deploy/rollback e os gates clínicos, de identidade, edge, backup, UAT, performance, DR e reauditoria no mesmo RC.
