@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: fila clínica live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o rehearsal local exige SHA explícito, valida o label da imagem e restaura por `image@digest`; runtime reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` mantém os quatro processos HA na mesma imagem/digest; manifesto, deploy, rollback e proveniência locais passaram; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: beta técnico possui fila escopada, `CLINICAL_APPROVER`, decisão persistida e gate de publicação; fila live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; runtime reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` mantém os quatro processos HA na mesma imagem/digest; manifesto, deploy, rollback e proveniência locais passaram; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: `pnpm verify` integral passou após reancoragem: `163` arquivos/`719` testes/`18` skips, cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets e governanças passaram; proveniência continua PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`
+- last_completed_action: recheck read-only do beta/CI: mecanismo local de revisão clínica está pronto para execução humana, mas `763` itens ainda aguardam decisão; PR remoto `#1` permanece em `d3964a9e…` com dois checks falhos por bundle ausente; proveniência local continua PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T15:10:35-03:00
+- last_update: 2026-08-14T15:16:10-03:00
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 
@@ -2919,3 +2919,15 @@ Classificar BLK-03/BLK-07 local como `PARTIAL`; investigar a intermitência em j
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; qualidade local confirmada, mas `0/145` cadeias completas e os gates externos, clínicos e humanos permanecem pendentes.
+
+## 2026-08-14T15:16:10-03:00 — REMOTE-CI-BETA-RECHECK-136
+
+### RESULTADO
+
+- beta técnico local pronto para execução humana: fila escopada/paginada, `CLINICAL_APPROVER`, decisão persistida e publicação bloqueada sem revisão;
+- live: `796` total, `763` pendentes/não revisados, `0` aprovados, `0` falhas técnicas;
+- GitHub read-only: PR `#1` no head `d3964a9e…`, dois checks `quality` falhos em `verify:clinical-sources`, três fontes licenciadas ausentes e `0` secrets/variables/environments/deployments.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar roster/T0 e execução beta, bundle/licença/variável de CI, push, registry/deploy e os demais provedores antes da reauditoria.

@@ -367,3 +367,9 @@ O gate de proveniência pós-restauração confirmou os quatro containers no mes
 `pnpm verify` passou com `163` arquivos/`719` testes/`18` skips e cobertura `83,78%`/`80,41%`/`84,95%`/`84,55%`; contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram. A proveniência do RC continuou PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`.
 
 A verificação confirma qualidade local, mas não promove `0/145`, revisão clínica, CI/registry/deploy/rollback produtivos, identidade, edge público, backup, UAT, performance real, soak, DR ou reauditoria.
+
+## 17.25 Rechecagem do beta clínico e CI remoto — 2026-08-14T15:16:10-03:00
+
+O código local está pronto para a revisão beta com veterinários: fila escopada/paginada, `CLINICAL_APPROVER`, decisão persistida, interface de autoria e gate de publicação antes da aprovação, sustentados por `c7a591b` e `8670def`. A evidência live ainda mostra `763` pendências; nenhuma revisão humana foi simulada ou inferida.
+
+O PR remoto permanece no head antigo `d3964a9e…`; os checks falham por ausência do bundle licenciado e o repositório continua sem secrets, variables, environments ou deployments. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED` até autorização do beta, bundle/runner, push e infraestrutura de promoção.

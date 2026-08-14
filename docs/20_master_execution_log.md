@@ -7113,3 +7113,31 @@ Qualidade local confirmada; nenhum gap externo, clínico ou humano foi inferido 
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar as autorizações e dependências externas para executar a reauditoria final do mesmo RC.
+
+## 2026-08-14T15:16:10-03:00 — REMOTE-CI-BETA-RECHECK-136
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-01 + BLK-05 recheck read-only
+
+### ACTION
+
+Rechecados o código local do beta clínico, a ancestralidade em relação ao head remoto e os checks do PR `#1` com GitHub read-only e logs de Actions.
+
+### RESULT
+
+Localmente existem fila escopada/paginada, papel `CLINICAL_APPROVER`, `POST /api/v1/internal/content/:contentId/review`, persistência da decisão e gate de publicação; os commits locais `c7a591b` e `8670def` sustentam esse caminho. A fila live segue `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas.
+
+O PR remoto permanece no head `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; os runs `31402470511` e `31402464508` falham em `verify:clinical-sources` por ausência dos três arquivos licenciados. `0` secrets/variables/environments/deployments foram observados. O head remoto é ancestral do worktree local, mas não houve push ou dispatch.
+
+### DECISIONS
+
+Classificar a infraestrutura local do beta como `READY_FOR_HUMAN_EXECUTION`, a revisão efetiva como `NOT_EXECUTED` e o CI remoto como `FAIL`/`WAITING_HUMAN_APPROVAL`. Nenhum conteúdo foi aprovado automaticamente e nenhuma escrita externa foi realizada.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar roster/T0/beta veterinário, bundle/licença/variável de CI e autorização de publicação; depois executar no mesmo RC e reauditar.

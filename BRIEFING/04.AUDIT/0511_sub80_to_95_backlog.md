@@ -820,3 +820,10 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **proveniência:** runtime continua PASS no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`, digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`;
 - **aceite:** qualidade local confirmada; não fecha `0/145` nem gates externos, clínicos ou humanos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aguardar autorização/provisionamento e reauditar o mesmo RC.
+
+## 16.30 Rechecagem do beta clínico e CI remoto — 2026-08-14T15:16:10-03:00
+
+- **beta:** technical path `READY_FOR_HUMAN_EXECUTION`; fila escopada/paginada, `CLINICAL_APPROVER`, decisão persistida e publicação fail-closed presentes;
+- **fila:** `796` total, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; revisão veterinária real `NOT_EXECUTED`;
+- **CI:** PR `#1` no head remoto `d3964a9e…`; dois checks `quality` falham por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; sem secrets/variables/environments/deployments;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar roster/T0, bundle/licença/runner, push, registry/deploy e reauditoria no mesmo RC.

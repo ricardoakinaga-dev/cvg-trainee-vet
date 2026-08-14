@@ -328,3 +328,13 @@ Isso fecha a evidência local de proveniência/reversibilidade de BLK-06, mas n�
 `pnpm verify` concluiu sem falhas: `163` arquivos de teste, `719` testes aprovados, `18` skips governados; cobertura `83,78%` statements / `80,41%` branches / `84,95%` functions / `84,55%` lines. Contratos `81/81`, worker `24/24`, migrations `29/29`, lint, typecheck, secrets, governanças, arquitetura, documentação, produto e fronteira pública passaram.
 
 Os gates que ainda são deliberadamente condicionais permanecem com lacunas explícitas: `0/145` cadeias completas, `0/87` linhas de prova completa, revisão clínica item a item, CI/registry/deploy/rollback produtivos, IdP/MFA, DNS/TLS público, backup/RPO/RTO, UAT/WCAG manual, Web Vitals reais, soak/DR e reauditoria. A execução integral confirma qualidade local; não altera a nota `83,24/100`, `WAITING_HUMAN_APPROVAL` ou `PILOT_BLOCKED`.
+
+## 43. Rechecagem do beta clínico e do CI remoto — 2026-08-14T15:16:10-03:00
+
+A inspeção do código local confirmou que o beta com veterinários possui mecanismo técnico de execução: fila escopada e paginada em `GET /api/v1/internal/authoring/review-queue`, decisão em `POST /api/v1/internal/content/:contentId/review`, autorização server-side para `CLINICAL_APPROVER`, persistência da decisão e bloqueio da publicação sem aprovação independente. Esses caminhos estão cobertos por `c7a591b` (gate de revisão antes da publicação), `8670def` (fila de revisão clínica), testes de API/persistência/E2E e pela tela `apps/web/app/authoring/page.tsx`.
+
+Isso prova prontidão técnica para a revisão beta, não a revisão dos `763` itens. A fila live permanece em `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; nenhuma decisão clínica foi fabricada.
+
+O recheck read-only do GitHub confirmou PR `#1` aberto/draft no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`; os dois checks `quality` continuam falhando em `verify:clinical-sources` por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`. O head remoto é ancestral do worktree local, mas os commits locais posteriores ainda não foram publicados; permanecem `0` secrets, `0` variables, `0` environments e `0` deployments observados. Nenhum push, dispatch ou provisionamento foi executado.
+
+Classificação: beta clínico `READY_FOR_HUMAN_EXECUTION`, revisão efetiva `NOT_EXECUTED`; CI remoto `FAIL`/`WAITING_HUMAN_APPROVAL`. A nota permanece `83,24/100`, `0/145`, `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`.

@@ -1705,3 +1705,11 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **proveniência:** gate continuou `PASS` para os quatro containers no source SHA executável `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` e digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`;
 - **aceite:** confirma qualidade local; `0/145` cadeias completas e gates externos/clínicos/humanos continuam abertos;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar a reauditoria do mesmo RC somente após provisionamento e autorização.
+
+## 2026-08-14T15:16:10-03:00 — REMOTE-CI-BETA-RECHECK-136
+
+- **beta local:** fila escopada/paginada, `CLINICAL_APPROVER`, rota de decisão, persistência e bloqueio de publicação estão implementados nos commits `c7a591b` e `8670def`;
+- **evidência live:** `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; revisão veterinária efetiva ainda não executada;
+- **CI remoto:** PR `#1` continua no head `d3964a9e…`; runs `31402470511` e `31402464508` falham por ausência dos três arquivos licenciados; `0` secrets/variables/environments/deployments;
+- **divergência:** o head remoto é ancestral do worktree local; as correções locais posteriores não foram publicadas e não houve push/dispatch;
+- **status/next:** `READY_FOR_HUMAN_EXECUTION` para o beta técnico, `FAIL` para o CI remoto e `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`; aprovar veterinários, bundle/licença, variável/runner e publicação do RC.
