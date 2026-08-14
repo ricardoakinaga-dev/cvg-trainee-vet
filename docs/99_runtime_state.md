@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: auditoria live do RC passou `CVG_VERIFY_RUNTIME_PROVENANCE` nos quatro containers, HA, edge, health live/ready/dependencies `200/200/200`, HTTPS `200/200`, `pnpm verify` com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, além de E2E HA `3/3` com teardown limpo; `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` fora de ambiente aprovado; inventário remoto atual confirmou `0` secrets, `0` variables, `0` environments, `0` deployments e somente o workflow `quality`; rechecagem read-only do GitHub confirmou os dois checks `quality` falhos no head remoto antigo por ausência de `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
+- last_completed_action: auditoria live do RC passou `CVG_VERIFY_RUNTIME_PROVENANCE` nos quatro containers, HA, edge, health live/ready/dependencies `200/200/200`, HTTPS `200/200`, `pnpm verify` com `163/720/18` e cobertura `83,78%/80,41%/84,95%/84,55%`, além de E2E HA `3/3` com teardown limpo; `ops:verify-identity-provider` e `ops:verify-production-security` retornaram `NOT_EXECUTED` fora de ambiente aprovado; inventário remoto atual confirmou `0` secrets, `0` variables, `0` environments, `0` deployments e somente o workflow `quality`; inspeção detalhada dos logs confirmou que formato e contrato CI passam, mas `verify:clinical-sources` falha nos três arquivos licenciados ausentes; o beta técnico continua pronto para execução humana, mas `763` itens aguardam decisão e CI remoto continua falho
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,23 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T16:11:08-03:00
+- last_update: 2026-08-14T16:13:42-03:00
+
+## 2026-08-14T16:13:42-03:00 — REMOTE-CI-LOG-RECHECK-145
+
+### RESULTADO
+
+- o inspetor de checks confirmou que os dois runs `quality` continuam em `failure` no head `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`;
+- `format:check` e `verify:ci-contract` passam no log remoto; a falha determinística ocorre em `verify:clinical-sources` pelos arquivos ausentes `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS`;
+- os passos posteriores foram pulados e não houve push, dispatch ou alteração remota.
+
+### DECISÃO
+
+O diagnóstico de BLK-05/B-G5 está confirmado; a correção local de diretório externo/licenciado ainda não pode ser validada remotamente sem publicação e bundle autorizado.
+
+### NEXT ACTION
+
+Obter bundle/licença e autorização explícita de push; publicar o RC, executar o workflow e reauditar o mesmo SHA.
 
 ## 2026-08-14T16:11:08-03:00 — REMOTE-RELEASE-INVENTORY-144
 

@@ -880,3 +880,9 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **evidência:** `0` secrets, `0` variables, `0` environments, `0` deployments e somente o workflow `quality` foram observados read-only;
 - **gap:** não existe prova remota de runner, registry, deploy ou rollback produtivo;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; provisionar e autorizar a cadeia de release antes da reauditoria.
+
+## 16.39 Diagnóstico detalhado do CI remoto — 2026-08-14T16:13:42-03:00
+
+- **evidência:** os logs remotos passam `format:check` e `verify:ci-contract`, mas falham em `verify:clinical-sources` pelos três arquivos licenciados ausentes;
+- **gap:** bundle privado/licenciado, publicação e execução no mesmo SHA continuam pendentes;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; executar após autorização.

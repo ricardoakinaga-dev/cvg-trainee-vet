@@ -396,3 +396,9 @@ Essa saída é evidência de fail-closed, não evidência de implementação pro
 O inventário read-only atual do GitHub confirmou `0` secrets, `0` variables, `0` environments e `0` deployments no repositório; há somente o workflow `quality`. O PR continua no head remoto antigo e os checks seguem falhando por ausência das três fontes licenciadas.
 
 O manifesto local de release passa sua validação estrutural, mas não comprova registry, runner, ambiente, deploy ou rollback produtivo. Nenhuma configuração remota foi alterada. CI/registry/deploy/rollback continuam `NOT_EXECUTED`/`WAITING_HUMAN_APPROVAL`; a nota e a disposição permanecem inalteradas.
+
+## 52. Diagnóstico detalhado do CI remoto — 2026-08-14T16:13:42-03:00
+
+O inspetor de checks confirmou novamente os dois runs `quality` em `failure`, ambos no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. O log mostra `format:check` e `verify:ci-contract` aprovados; a falha ocorre deterministicamente em `verify:clinical-sources` porque os três arquivos licenciados `BOOK_ETTINGER_9E`, `BOOK_FOSSUM_4E` e `BOOK_JERICO_CAES_GATOS` não estão no checkout remoto. Os passos posteriores foram pulados.
+
+A correção local para montar um bundle privado/licenciado por referência existe, mas não foi publicada. Sem bundle autorizado, push e workflow no mesmo RC, CI/registry/deploy/rollback continuam sem prova; nenhum score ou release foi promovido.

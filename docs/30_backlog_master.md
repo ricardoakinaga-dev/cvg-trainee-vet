@@ -31,6 +31,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - **interpretação:** manifesto local não equivale a registry/runner/deploy/rollback produtivos; os checks remotos seguem falhos no head antigo;
 - **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; definir provedor, ambientes e referências seguras e executar o mesmo RC após autorização.
 
+## 2026-08-14T16:13:42-03:00 — 16.39 Diagnóstico detalhado do CI remoto
+
+- **evidência:** `format:check` e `verify:ci-contract` passam nos logs remotos; `verify:clinical-sources` falha pelos três arquivos licenciados ausentes no head `d3964a9e…`;
+- **limite:** passos posteriores foram pulados; a correção local de bundle externo não foi publicada nem validada remotamente;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; aprovar bundle/licença e push, executar CI no mesmo RC e reauditar.
+
 ## 2026-08-14T13:32:36-03:00 — RELEASE-PRIMITIVES-RECHECK-124
 
 - **evidência:** `pnpm ops:verify-release-manifest` passou; `pnpm ops:deploy-release` e `pnpm ops:rollback-release` passaram em `DRY_RUN`; `pnpm ops:verify-production-security` permaneceu `NOT_EXECUTED` sem ambiente produtivo aprovado; worktree limpo no HEAD `eb3ad76ebbd7f9e189907fb263009bf6f3a9137a`;

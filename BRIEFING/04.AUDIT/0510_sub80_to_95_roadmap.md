@@ -363,3 +363,7 @@ Os probes de identidade e segurança produtiva retornaram `NOT_EXECUTED` sem amb
 ## 12.31 Inventário remoto de CI e release — 2026-08-14T16:11:08-03:00
 
 O inventário read-only confirmou ausência de secrets, variables, environments e deployments; somente `quality` está ativo. B-G5 permanece aberto e nenhuma promoção é inferida.
+
+## 12.32 Diagnóstico detalhado do CI remoto — 2026-08-14T16:13:42-03:00
+
+O CI remoto passa formato/contrato e falha em `verify:clinical-sources` por ausência das três fontes licenciadas. B-G5 permanece `WAITING_HUMAN_APPROVAL`; nenhuma promoção é inferida.

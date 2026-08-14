@@ -7365,3 +7365,33 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Definir e autorizar registry, runner, environments, referências de secrets/variables e alvo de deploy; publicar o mesmo RC e reauditar.
+
+## 2026-08-14T16:13:42-03:00 — REMOTE-CI-LOG-RECHECK-145
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-05-B-G5
+
+### ACTION
+
+Inspeção detalhada read-only dos logs dos dois checks `quality` via inspetor GitHub Actions.
+
+### RESULT
+
+Ambos os runs falham no head remoto `d3964a9e45b624a4e3c3967ca8f684cb00210e8c`. `format:check` e `verify:ci-contract` passam; `verify:clinical-sources` falha pelos três arquivos licenciados ausentes. Os passos posteriores são pulados.
+
+### DECISIONS
+
+Diagnóstico confirmado; não houve push, dispatch ou alteração remota. A correção local só pode ser validada no CI após bundle/licença e publicação autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Autorizar bundle/push e executar o workflow no mesmo RC antes da reauditoria.

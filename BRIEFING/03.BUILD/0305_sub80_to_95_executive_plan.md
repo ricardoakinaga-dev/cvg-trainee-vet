@@ -411,3 +411,7 @@ Os probes de IdP e segurança produtiva retornaram `NOT_EXECUTED` em modo fail-c
 ## 17.33 Inventário remoto de CI e release — 2026-08-14T16:11:08-03:00
 
 O GitHub não possui secrets, variables, environments ou deployments configurados e expõe somente o workflow `quality`. O plano mantém B-G5 em `WAITING_HUMAN_APPROVAL` até registry/runner/ambiente/rollback e referências seguras serem aprovados.
+
+## 17.34 Diagnóstico detalhado do CI remoto — 2026-08-14T16:13:42-03:00
+
+O log remoto confirma que formato e contrato passam e a falha está isolada em `verify:clinical-sources` pelas três fontes licenciadas ausentes. A correção local permanece pronta, mas B-G5 não avança sem bundle, autorização de push e execução verde no mesmo RC.
