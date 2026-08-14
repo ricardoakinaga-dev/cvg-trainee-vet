@@ -311,3 +311,9 @@ O PR `#1` continua apontando para o head remoto antigo, e o run `31402470511` fa
 ## 12.20 Revalidação live do edge — 2026-08-14T14:53:34-03:00
 
 O edge local respondeu `60/60` probes HTTP de readiness com `200` e HTTPS local com `200` sob `localhost`, porém o certificado é interno do Caddy e os logs evidenciam falhas intermitentes de resolução Docker com janelas `503`. O roadmap mantém B-G3/B-G7 como `PARTIAL`: reproduzir e resolver a intermitência, depois validar FQDN público e CA gerenciada no ambiente autorizado.
+
+## 12.21 Reancoragem do RC no SHA executável atual — 2026-08-14T15:03:15-03:00
+
+O RC local foi reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; rehearsal `PASS` em deploy/rollback/restauração, release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b` e rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`. Proveniência confirmou quatro containers alinhados e health `200/200/200`.
+
+O roadmap marca BLK-06 local como `PASS`, sem promover B-G5/G-S80-9 nem os gates humanos/externos. Edge público/CA, CI/registry/deploy/rollback, IdP/MFA, backup/RPO/RTO, beta clínico, UAT, WCAG manual, Web Vitals reais, soak/DR e `0/145` continuam abertos.

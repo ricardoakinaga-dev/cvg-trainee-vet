@@ -7061,3 +7061,29 @@ Classificar a evidência como `PARTIAL`: TLS interno/local não prova DNS públi
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; investigar/reproduzir a intermitência em janela controlada e, com autorização, comprovar FQDN público, CA gerenciada, IdP, backup, CI/deploy e demais gates no mesmo RC.
+
+## 2026-08-14T15:03:15-03:00 — RUNTIME-HEAD-REANCHOR-134
+
+### ENGINE
+
+AUDIT
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / S0 / BLK-06 reancoragem do RC e rollback local
+
+### ACTION
+
+Reconstruído o RC no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; executado o rehearsal local completo e, depois da restauração, reexecutados proveniência, Compose, health, HA e edge security.
+
+### RESULT
+
+Rehearsal `PASS`: `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`. O gate de proveniência confirmou os quatro containers da aplicação no mesmo digest e SHA; live/ready/dependencies `200/200/200`; HA e edge security passaram.
+
+### DECISIONS
+
+Classificar BLK-06 local como evidência `PASS`, sem inferir CI/registry/deploy/rollback produtivos. A consolidação documental posterior é somente documental e não altera o código executável do RC. Nenhuma escrita externa foi realizada.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; investigar o resolver do edge e aguardar provider/bundle/licença, IdP, FQDN/CA, storage/backup, CI/registry/deploy e demais gates humanos antes da reauditoria final.

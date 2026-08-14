@@ -355,3 +355,9 @@ O plano não transforma esse diagnóstico em fechamento. A saída exige decisão
 ## 17.22 Revalidação live do edge — 2026-08-14T14:53:34-03:00
 
 O Compose com `.env.local` confirmou a topologia local saudável e `60/60` probes HTTP readiness `200`; HTTPS local respondeu `200` com o hostname `localhost`, mas usa a autoridade interna do Caddy. Logs ainda mostram falhas transitórias de DNS Docker e `503` durante health checks, portanto o plano classifica o edge como `PARTIAL` e exige investigação controlada antes de promoção. DNS público, CA gerenciada, IdP, backup e demais gates externos continuam condicionados a autorização e provisionamento.
+
+## 17.23 Reancoragem do RC no SHA executável atual — 2026-08-14T15:03:15-03:00
+
+O RC foi reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`. O rehearsal local passou `deploy`, `rollback` e `runtimeRestored=true`, com release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b` e rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`.
+
+O gate de proveniência pós-restauração confirmou os quatro containers no mesmo digest/SHA; Compose, health `200/200/200`, HA e edge security passaram. Isso encerra somente a evidência local de BLK-06. O plano mantém `WAITING_HUMAN_APPROVAL`/`PILOT_BLOCKED`: edge público, CI/registry/deploy/rollback produtivos, IdP/MFA, backup externo, revisão veterinária, UAT, WCAG manual, Web Vitals reais, soak/DR e `0/145` continuam abertos.

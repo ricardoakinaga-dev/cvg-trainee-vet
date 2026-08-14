@@ -1690,3 +1690,11 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **limite:** certificado é `Caddy Local Authority - ECC Intermediate`; não comprova CA pública, DNS público ou TLS gerenciado;
 - **risco observado:** logs do edge registram falhas intermitentes de resolução Docker de `api-a/api-b` e janelas `503 no upstreams available`, não reproduzidas na amostra curta;
 - **status/next:** `PARTIAL` / `WAITING_HUMAN_APPROVAL`; investigar a intermitência e provisionar/verificar o edge público autorizado antes de promover BLK-03/BLK-07.
+
+## 2026-08-14T15:03:15-03:00 — RUNTIME-HEAD-REANCHOR-134
+
+- **entrega:** RC reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; rehearsal local passou `deploy`, `rollback` e `runtimeRestored=true`;
+- **proveniência:** release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`; quatro containers alinhados no mesmo digest/SHA;
+- **health:** Compose `healthy`; live/ready/dependencies `200/200/200`; `ops:verify-ha` e `ops:verify-edge-security` passaram;
+- **aceite:** fecha somente BLK-06 local; não prova promoção produtiva, edge público, CI remoto, backup, IdP/MFA, beta, UAT, soak/DR ou `0/145`;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; manter o RC imutável, investigar a intermitência do edge e aguardar as autorizações/provisionamentos externos.

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — SUB80→95 / fatias locais executadas; gates externos condicionantes
 - current_sprint: S0 — overlay de resolução dos oito bloqueios e gate G-S80-0
-- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: fila clínica live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o rehearsal local exige SHA explícito, valida o label da imagem e restaura por `image@digest`; o novo gate de proveniência rejeitou a recriação por tag e passou após o rehearsal; runtime reconstruído no commit executável `be43fc8f` mantém os quatro processos HA na mesma imagem/digest; manifesto, deploy e rollback locais passaram; aguardar veterinários, provedores e ambientes autorizados para os gates externos
+- current_task: BLK-01/BLK-05/BLK-06 revalidados localmente: fila clínica live confirmou `796` conteúdos, `763` pendentes/não revisados, `0` aprovados e `0` falhas técnicas; o rehearsal local exige SHA explícito, valida o label da imagem e restaura por `image@digest`; runtime reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa` mantém os quatro processos HA na mesma imagem/digest; manifesto, deploy, rollback e proveniência locais passaram; aguardar veterinários, provedores e ambientes autorizados para os gates externos
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: edge local revalidado com Compose usando `infra/production/.env.local`; API-A/API-B e worker-A/worker-B `healthy` no digest comum, `60/60` probes HTTP readiness `200` e HTTPS local `200` com hostname `localhost`; certificado é autoridade interna do Caddy e logs registram falhas intermitentes de DNS Docker/`503`, portanto edge permanece `PARTIAL`; CI remoto continua sem bundle/licença/infraestrutura e a proveniência local segue PASS no SHA `be43fc8f7f410435a40550eb70e9b2a700882355`
+- last_completed_action: RC reconstruído e restaurado no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; rehearsal `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`; digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; quatro containers alinhados; live/ready/dependencies `200/200/200`; edge local permanece `PARTIAL` por TLS interno e logs intermitentes de DNS Docker/`503`
 - next_action: obter decisão sobre alvo de deploy, FQDN, IdP, registry/CI, storage externo, bundle clínico e autorização de push; depois executar, somente com autorização e ambientes correspondentes, IdP/MFA/recovery, DNS/TLS público, backup externo/RPO/RTO, CI/registry/deploy/rollback, UAT/WCAG manual/Web Vitals/soak/DR, beta clínico e reauditoria; atualizar as cadeias apenas quando estado/release forem aprovados no mesmo RC; manter `PILOT_BLOCKED`
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-14T14:53:34-03:00
+- last_update: 2026-08-14T15:03:15-03:00
 
 ## 2026-08-14T14:38:49-03:00 — REMOTE-CI-DIAGNOSTIC-131
 
@@ -2894,3 +2894,16 @@ O contrato local está pronto, mas bundle privado/licenciado, credencial read-on
 ### DECISÃO / NEXT
 
 Classificar BLK-03/BLK-07 local como `PARTIAL`; investigar a intermitência em janela controlada e manter DNS público/CA gerenciada, IdP, backup, CI/deploy e demais gates como pendentes até autorização e evidência externa.
+
+## 2026-08-14T15:03:15-03:00 — RUNTIME-HEAD-REANCHOR-134
+
+### RESULTADO
+
+- RC reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`;
+- rehearsal local `PASS`: `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`;
+- release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`;
+- proveniência confirmou quatro containers no mesmo digest/SHA; Compose `healthy`; health `200/200/200`; HA e edge security passaram.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; BLK-06 local está comprovado, mas CI/registry/deploy/rollback produtivos, edge público, IdP/MFA, backup, beta clínico, UAT, soak/DR e reauditoria permanecem pendentes.

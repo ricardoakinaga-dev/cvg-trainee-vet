@@ -805,3 +805,11 @@ Essa evidência fecha apenas o subproblema local de proveniência/reversibilidad
 - **limite:** certificado `Caddy Local Authority - ECC Intermediate`; DNS público e CA gerenciada continuam não executados;
 - **risco:** logs mostram erros intermitentes do resolver Docker e `503 no upstreams available`, apesar de a amostra curta não reproduzir falhas;
 - **aceite:** não fecha BLK-03/BLK-07 nem promove score; exige investigação controlada e validação externa autorizada.
+
+## 16.28 Reancoragem do RC no SHA executável atual — 2026-08-14T15:03:15-03:00
+
+- **entrega:** RC reconstruído no source SHA `1e41369f4ac62f1587ac41c789f53fb5d4fef2fa`; rehearsal local `deploy=PASS`, `rollback=PASS`, `runtimeRestored=true`;
+- **proveniência:** release digest `sha256:74d9483fbbfd0ed97fd20079c44559cecb7eedc7268e620da8e23b9d8c8fdc6b`; rollback sintético `sha256:b293b4235e2c2b614bfeec1887a509dbf0d1dcbb51d55344ba591f72a144ebc9`; quatro containers no mesmo digest/SHA;
+- **health:** Compose `healthy`, live/ready/dependencies `200/200/200`, HA e edge security passaram;
+- **aceite:** BLK-06 local comprovado; não fecha CI/registry/deploy/rollback produtivo, edge público, IdP/MFA, backup, beta, UAT, soak/DR ou `0/145`;
+- **status/next:** `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; manter o RC, investigar a intermitência do edge e aguardar provisionamentos/autorização externa.
