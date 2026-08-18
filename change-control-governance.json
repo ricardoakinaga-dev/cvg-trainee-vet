@@ -27,6 +27,18 @@
       "status": "RECORDED_LOCAL",
       "approvalStatus": "HUMAN_REVIEW_REQUIRED",
       "artifactIds": ["PREMIUM-ENTERPRISE-95-TEST-EVIDENCE-049"]
+    },
+    {
+      "id": "DEC-ENT95-M02-PILOT-003",
+      "sprintId": "S0",
+      "owner": "Ricardo (sponsor)",
+      "reason": "Reconciliar os 33 itens de M02 com status PUBLICADO em lote (2026-08-10 16:35:26 UTC) e zero decisões clínicas registradas: trata-se de artefato de seed/desenvolvimento, não de publicação clínica.",
+      "impact": "Reconhece M02 como recorte piloto de desenvolvimento; mantém status PUBLICADO sem alegar aprovação clínica independente.",
+      "acceptance": "ADR documenta o reconhecimento; a fila clínica real permanece 763 pendentes (PROJECAO_VERIFICADA), excluindo M02.",
+      "rollback": "Reverter o reconhecimento e resetar os 33 itens para PROJECAO_VERIFICADA para revisão clínica normal.",
+      "status": "RECORDED_LOCAL",
+      "approvalStatus": "PENDING_CLINICAL_REVIEW",
+      "artifactIds": ["CVG-M02-PILOT-CUTOVER-ADR"]
     }
   ],
   "risks": [
@@ -62,6 +74,30 @@
     }
   ],
   "changeRequests": [
+    {
+      "id": "CR-ENT95-M02-PILOT-004",
+      "sprintId": "S0",
+      "owner": "Ricardo (sponsor)",
+      "changeType": "PRODUCT",
+      "reason": "Documentar o M02 (33 itens, 26 críticos) como recorte piloto sintético já PUBLICADO por seed, reconciliando o drift entre curriculum-inventory.json (796 pendentes) e o PostgreSQL (763 PROJECAO_VERIFICADA + 33 PUBLICADO).",
+      "impact": "Alinha o denominador clínico real a 763 pendentes e impede que M02 seja contado duplamente como pendente.",
+      "acceptance": "ADR registrada; snapshot read-only confirma 763 pendentes e 0 aprovações clínicas; nenhum item é aprovado automaticamente.",
+      "rollback": "Remover o reconhecimento e resetar M02 para PROJECAO_VERIFICADA (decisão humana em change control).",
+      "status": "IMPLEMENTED_LOCAL",
+      "approvalStatus": "HUMAN_REVIEW_REQUIRED",
+      "decisionId": "DEC-ENT95-M02-PILOT-003",
+      "affectedTasks": ["U98-401"],
+      "artifactIds": ["CVG-M02-PILOT-CUTOVER-ADR"],
+      "scoreImpact": {
+        "sprintId": "S0",
+        "baselineScore": 83.24,
+        "weightedScore": 83.24,
+        "targetFloor": 98,
+        "itemScoreChanges": [],
+        "scoreChanged": false,
+        "releaseDisposition": "PILOT_BLOCKED"
+      }
+    },
     {
       "id": "CR-ENT95-14-D-049",
       "sprintId": "S0",
