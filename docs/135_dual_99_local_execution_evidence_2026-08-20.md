@@ -807,6 +807,8 @@ segue `IN_PROGRESS / PILOT_BLOCKED`.
   módulo não introduz import runtime circular;
 - código/testes foram commitados em `7c46ad3`
   (`fix: harden API surface malformed input handling`);
+- evidence pack, estado, backlog, roadmap, log e traceability foram publicados
+  em `a4840eb` (`docs: record b99-308 bounded API fuzz evidence`);
 - `pnpm verify` no worktree final passou formato, CI contract, fontes clínicas,
   inventário, observabilidade, configuração HA, Prometheus, traces, lint,
   typecheck, cobertura `204/1091/21`, decisões `7/7`, mutation `7/7`, scope

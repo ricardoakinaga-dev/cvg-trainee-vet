@@ -97,7 +97,7 @@ dívida. B99-308 fica `READY_FOR_NEXT_STEP` localmente; o corpus não substitui
 fuzz property-based, ambiente live/RC, secret manager, clínica, `0/145` ou
 reauditoria. O `pnpm verify` final passou todos os gates até migration safety e
 parou fail-closed nos quatro valores redigidos de `.env.local`. Código/testes
-estão no commit `7c46ad3`. Programa
+estão no commit `7c46ad3` e a documentação/evidence pack em `a4840eb`. Programa
 `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## F99-4 — RC e supply chain

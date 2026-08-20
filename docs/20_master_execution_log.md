@@ -10427,7 +10427,8 @@ contratos `86/86`, worker `51/51`, migrations `33/33` e migration safety; parou
 fail-closed em `verify:secrets` pelos quatro valores redigidos de
 `infra/production/.env.local`, sem ler ou alterar o arquivo. Código e testes
 foram commitados em `7c46ad3` (`fix: harden API surface malformed input
-handling`).
+handling`). A documentação e o evidence pack foram publicados em `a4840eb`
+(`docs: record b99-308 bounded API fuzz evidence`).
 
 ### DECISIONS
 

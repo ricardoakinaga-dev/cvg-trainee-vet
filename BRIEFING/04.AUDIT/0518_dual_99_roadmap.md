@@ -152,7 +152,8 @@ Focais `6/6`, inventário `11/11`, contratos `86/86`, arquitetura `2/2`, build
 passaram. A primeira execução ampla encontrou hotspot não classificado, que foi
 removido por extração estrutural e revalidado.
 
-O código/testes de B99-308 foram commitados em `7c46ad3`; o avanço permanece
+O código/testes de B99-308 foram commitados em `7c46ad3` e a evidência rastreada
+em `a4840eb`; o avanço permanece
 local e não altera a disposição `IN_PROGRESS` / `PILOT_BLOCKED`.
 
 O avanço é local e não fecha B99-306, RC/proveniência, secret manager,

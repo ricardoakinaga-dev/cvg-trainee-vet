@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-308 sob RED/GREEN: o corpus bounded encontrou `TypeError` em descritores e lookup malformados; a validação foi extraída para `packages/contracts/src/api-surface-validation.ts`, o foco passou `6/6`, o inventário `11/11`, contratos `86/86`, cobertura `204/1091/21` em `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato e diff-check passaram; código/testes estão no commit local `7c46ad3`; `.gauntlet/` continua local e não rastreado
+- last_completed_action: executou B99-308 sob RED/GREEN: o corpus bounded encontrou `TypeError` em descritores e lookup malformados; a validação foi extraída para `packages/contracts/src/api-surface-validation.ts`, o foco passou `6/6`, o inventário `11/11`, contratos `86/86`, cobertura `204/1091/21` em `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato e diff-check passaram; código/testes estão no commit `7c46ad3` e a evidência rastreada em `a4840eb`; `.gauntlet/` continua local e não rastreado
 - next_action: revisar o diff e publicar o lote autorizado; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS

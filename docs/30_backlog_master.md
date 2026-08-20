@@ -17,7 +17,8 @@ classificado, corrigido pela extração e repetido com gate verde. O corpus não
 substitui property-based fuzz, HA/API/DB ativo, RC/SHA, secret manager,
 clínica, `0/145`, gates externos ou reauditoria. O `pnpm verify` final passou
 todos os gates até migration safety e parou fail-closed nos quatro valores
-redigidos de `.env.local`. Código/testes estão no commit `7c46ad3`; B99-308 permanece
+redigidos de `.env.local`. Código/testes estão no commit `7c46ad3` e a
+documentação/evidence pack em `a4840eb`; B99-308 permanece
 `READY_FOR_NEXT_STEP` localmente e o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
