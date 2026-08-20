@@ -669,6 +669,11 @@ function readBatchOutput(buffer, objects, source = "history") {
       offset = buffer.length;
       continue;
     }
+    if (!objects.has(objectId)) {
+      addUnreadable(logicalPath, "unexpected git object response");
+      offset = buffer.length;
+      continue;
+    }
     if (type === "missing" || type === "error") {
       addUnreadable(logicalPath, header);
       continue;

@@ -631,6 +631,31 @@ describe("secret scanner", () => {
     ]);
   });
 
+  it("rejects unexpected cat-file object responses before scanning", () => {
+    const requestedId = "e".repeat(40);
+    const unexpectedId = "f".repeat(40);
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    const body = Buffer.from(
+      [["client", "_secret"].join(""), '="', secret, '"'].join(""),
+    );
+    const findings = readBatchOutput(
+      Buffer.concat([
+        Buffer.from(`${unexpectedId} blob ${body.byteLength}\n`),
+        body,
+        Buffer.from("\n"),
+      ]),
+      new Map([[requestedId, "requested.txt"]]),
+    );
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: `history:${unexpectedId}`,
+        rule: "git-object-unreadable",
+      }),
+    ]);
+    expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
   it.each(["blob", "tag"])(
     "reports a %s object without its batch delimiter before scanning content",
     (type) => {
