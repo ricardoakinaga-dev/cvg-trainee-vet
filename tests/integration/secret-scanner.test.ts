@@ -16,6 +16,7 @@ import {
   planGitBatchRequests,
   readBatchOutput,
 } from "../../scripts/secret-scanner.mjs";
+import { runGitBatch } from "../../scripts/secret-scanner-git-batch.mjs";
 
 const temporaryDirectories: string[] = [];
 
@@ -441,6 +442,58 @@ describe("secret scanner", () => {
     expect(JSON.stringify(historyFindings)).not.toContain(secret);
   });
 
+  it("preserves findings across bounded Git body batches", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-batched-history-"),
+    );
+    temporaryDirectories.push(directory);
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["config", "user.email", "synthetic@example.invalid"],
+      { cwd: directory },
+    );
+    await execFileAsync("git", ["config", "user.name", "Synthetic Test"], {
+      cwd: directory,
+    });
+    const paths = Array.from(
+      { length: 5 },
+      (_, index) => `history-batch-${index}.txt`,
+    );
+    await Promise.all(
+      paths.map((path, index) => {
+        const filler = Buffer.alloc(1_800_000, 0x20);
+        filler[filler.length - 1] = index + 1;
+        return writeFile(
+          join(directory, path),
+          Buffer.concat([
+            Buffer.from(`client_secret="${secret.repeat(4)}"\n`),
+            filler,
+          ]),
+        );
+      }),
+    );
+    await execFileAsync("git", ["add", "."], { cwd: directory });
+    await execFileAsync("git", ["commit", "-qm", "synthetic batched history"], {
+      cwd: directory,
+    });
+    await Promise.all(paths.map((path) => rm(join(directory, path))));
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: true,
+    });
+
+    expect(
+      findings.filter((finding) => finding.rule === "sensitive-assignment"),
+    ).toHaveLength(5);
+    expect(findings.map((finding) => finding.path)).toEqual(
+      expect.arrayContaining(paths.map((path) => `history:${path}`)),
+    );
+    expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
   it("preserves boundary whitespace in staged paths", async () => {
     const directory = await mkdtemp(join(tmpdir(), "cvg-secret-scanner-path-"));
     temporaryDirectories.push(directory);
@@ -606,6 +659,57 @@ describe("secret scanner", () => {
         rule: "oversize-file",
       }),
     ]);
+  });
+
+  it("partitions bounded Git body requests by aggregate budget", () => {
+    const objectIds = ["a", "b", "c", "d", "e"].map((prefix) =>
+      prefix.repeat(40),
+    );
+    const plan = planGitBatchRequests(
+      Buffer.from(
+        objectIds
+          .map((objectId) => `${objectId} blob 2097152`)
+          .concat("")
+          .join("\n"),
+      ),
+      new Map(
+        objectIds.map((objectId, index) => [objectId, `history-${index}.txt`]),
+      ),
+    );
+
+    expect(plan.objectIds).toEqual(objectIds);
+    expect(plan.batches).toEqual([objectIds.slice(0, 4), objectIds.slice(4)]);
+    expect(plan.batchSizes).toEqual([8 * 1024 * 1024, 2 * 1024 * 1024]);
+  });
+
+  it("rejects Git batch output above its configured cap", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "cvg-secret-scanner-cap-"));
+    temporaryDirectories.push(directory);
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["config", "user.email", "synthetic@example.invalid"],
+      { cwd: directory },
+    );
+    await execFileAsync("git", ["config", "user.name", "Synthetic Test"], {
+      cwd: directory,
+    });
+    await writeFile(join(directory, "payload.txt"), "synthetic batch body\n");
+    await execFileAsync("git", ["add", "payload.txt"], { cwd: directory });
+    await execFileAsync("git", ["commit", "-qm", "synthetic batch cap"], {
+      cwd: directory,
+    });
+    const { stdout } = await execFileAsync(
+      "git",
+      ["rev-parse", "HEAD:payload.txt"],
+      { cwd: directory },
+    );
+
+    await expect(
+      runGitBatch(directory, ["cat-file", "--batch"], [stdout.trim()], {
+        maxOutputBytes: 16,
+      }),
+    ).rejects.toThrow(/output exceeds configured limit/iu);
   });
 
   it("does not report git tree or commit objects as unreadable blobs", () => {

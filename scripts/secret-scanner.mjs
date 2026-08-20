@@ -5,7 +5,7 @@ import { promisify, TextDecoder } from "node:util";
 import { execFile } from "node:child_process";
 import {
   planGitBatchRequests as planGitBatchRequestsInternal,
-  runGitBatch,
+  readGitBlobs as readGitBlobsInternal,
 } from "./secret-scanner-git-batch.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -20,6 +20,8 @@ const ignoredDirectories = new Set([
 ]);
 
 const MAX_SCAN_BYTES = 2 * 1024 * 1024;
+const MAX_GIT_BATCH_BODY_BYTES = 8 * 1024 * 1024;
+const MAX_GIT_BATCH_HEADER_BYTES = 128;
 
 // Asset paths are still enumerated so text content cannot bypass scanning by
 // using an asset extension; binary bytes remain outside text scanning.
@@ -707,30 +709,10 @@ function readBatchOutput(buffer, objects, source = "history") {
   return findings;
 }
 
-async function readGitBlobs(root, objects) {
-  if (objects.size === 0) return [];
-  const objectIds = [...objects.keys()];
-  const checkOutput = await runGitBatch(
-    root,
-    ["cat-file", "--batch-check"],
-    objectIds,
-  );
-  const plan = planGitBatchRequests(checkOutput, objects);
-  if (!plan.complete || plan.objectIds.length === 0) return plan.findings;
-  const requestedObjects = new Map(
-    plan.objectIds.map((objectId) => [objectId, objects.get(objectId)]),
-  );
-  const bodyOutput = await runGitBatch(
-    root,
-    ["cat-file", "--batch"],
-    plan.objectIds,
-  );
-  return [...plan.findings, ...readBatchOutput(bodyOutput, requestedObjects)];
-}
-
 function planGitBatchRequests(buffer, objects, source = "history") {
   return planGitBatchRequestsInternal(buffer, objects, {
     maxScanBytes: MAX_SCAN_BYTES,
+    maxBatchBytes: MAX_GIT_BATCH_BODY_BYTES,
     isIgnoredBinaryAssetPath,
     source,
     unscannedFinding,
@@ -741,7 +723,14 @@ async function scanHistory(root) {
   const objects = parseObjectList(
     await git(root, ["rev-list", "--objects", "--all"]),
   );
-  return readGitBlobs(root, objects);
+  return readGitBlobsInternal(root, objects, {
+    maxScanBytes: MAX_SCAN_BYTES,
+    maxBatchBytes: MAX_GIT_BATCH_BODY_BYTES,
+    maxHeaderBytes: MAX_GIT_BATCH_HEADER_BYTES,
+    isIgnoredBinaryAssetPath,
+    unscannedFinding,
+    readBatchOutput,
+  });
 }
 
 export async function scanProject(
