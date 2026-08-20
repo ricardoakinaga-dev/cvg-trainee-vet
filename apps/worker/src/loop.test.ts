@@ -44,9 +44,11 @@ function outbox(events: readonly OutboxEventRecord[]): OutboxRepositoryPort & {
     claim: vi.fn(async () => events),
     markProcessed: vi.fn(async (eventId: string) => {
       processed.push(eventId);
+      return true;
     }),
     markFailed: vi.fn(async (eventId: string) => {
       failures.push(eventId);
+      return true;
     }),
   };
 }
@@ -94,7 +96,7 @@ function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
       return current;
     }),
     claim: vi.fn(async () => (current === null ? [] : [current])),
-    markProcessed: vi.fn(async (eventId, now) => {
+    markProcessed: vi.fn(async (eventId, _attempts, now) => {
       if (failOnProcess) throw new Error("synthetic acknowledgement failure");
       const snapshot = current;
       if (snapshot === null || snapshot.id !== eventId) {
@@ -106,6 +108,7 @@ function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
         processedAt: now,
         lockedUntil: null,
       };
+      return true;
     }),
     markFailed: vi.fn(async (eventId, _attempts, errorCode, now) => {
       const snapshot = current;
@@ -120,6 +123,7 @@ function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
         lockedUntil: null,
         availableAt: now,
       };
+      return true;
     }),
     removeProbe: vi.fn(async (eventId) => {
       removed.push(eventId);
@@ -162,6 +166,76 @@ describe("outbox worker loop", () => {
     expect(handler).toHaveBeenCalledWith(event);
     expect(repository.processed).toEqual([event.id]);
     expect(repository.failures).toEqual([]);
+  });
+
+  it("does not count an acknowledgement rejected by the lease fence", async () => {
+    const markProcessed = vi.fn(async () => false);
+    const markFailed = vi.fn(async () => true);
+    const repository = {
+      claim: vi.fn(async () => [event]),
+      markProcessed,
+      markFailed,
+    } as unknown as OutboxRepositoryPort;
+
+    await expect(
+      processOutboxOnce(repository, {
+        "content.published.v1": vi.fn(async () => undefined),
+      }),
+    ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
+    expect(markProcessed).toHaveBeenCalledWith(
+      event.id,
+      event.attempts,
+      expect.any(Date),
+    );
+    expect(markFailed).not.toHaveBeenCalled();
+  });
+
+  it("uses the current clock value when acknowledging a claimed event", async () => {
+    const claimedAt = new Date("2026-08-20T11:00:00.000Z");
+    const acknowledgedAt = new Date("2026-08-20T11:00:30.000Z");
+    const clock = vi
+      .fn<() => Date>()
+      .mockReturnValueOnce(claimedAt)
+      .mockReturnValueOnce(acknowledgedAt);
+    const markProcessed = vi.fn(async () => true);
+    const repository = {
+      claim: vi.fn(async (_limit: number, now: Date) => {
+        expect(now).toEqual(claimedAt);
+        return [event];
+      }),
+      markProcessed,
+      markFailed: vi.fn(async () => true),
+    } as unknown as OutboxRepositoryPort;
+
+    await expect(
+      processOutboxOnce(
+        repository,
+        { "content.published.v1": vi.fn(async () => undefined) },
+        { clock },
+      ),
+    ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
+    expect(markProcessed).toHaveBeenCalledWith(
+      event.id,
+      event.attempts,
+      acknowledgedAt,
+    );
+  });
+
+  it("cleans terminal outbox events after processing a batch", async () => {
+    const cleanup = vi.fn(async () => 2);
+    const repository = { ...outbox([event]), cleanup };
+    const now = new Date("2026-08-09T17:00:00.000Z");
+
+    await processOutboxOnce(
+      repository,
+      { "content.published.v1": vi.fn(async () => undefined) },
+      { now },
+    );
+
+    expect(cleanup).toHaveBeenCalledWith(
+      new Date(now.getTime() - 86_400_000),
+      100,
+    );
   });
 
   it("records a retryable failure with bounded exponential backoff", async () => {

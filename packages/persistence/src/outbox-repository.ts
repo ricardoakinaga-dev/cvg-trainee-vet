@@ -35,7 +35,11 @@ export interface OutboxRepositoryPort {
     now: Date,
     leaseSeconds: number,
   ) => Promise<readonly OutboxEventRecord[]>;
-  readonly markProcessed: (eventId: string, now: Date) => Promise<void>;
+  readonly markProcessed: (
+    eventId: string,
+    attempts: number,
+    now: Date,
+  ) => Promise<boolean>;
   readonly markFailed: (
     eventId: string,
     attempts: number,
@@ -43,7 +47,8 @@ export interface OutboxRepositoryPort {
     now: Date,
     retryAfterSeconds: number,
     maxAttempts: number,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
+  readonly cleanup?: (before: Date, limit: number) => Promise<number>;
   /** The probe methods are deliberately scoped to the readiness event type. */
   readonly insertProbe?: (input: OutboxEventInput) => Promise<void>;
   readonly claimProbe?: (
@@ -168,6 +173,16 @@ function assertPositiveInteger(value: number, field: string): void {
   }
 }
 
+function affectedRows(value: unknown): number {
+  if (typeof value === "object" && value !== null && "count" in value) {
+    const count = (value as { readonly count?: unknown }).count;
+    if (typeof count === "number" && Number.isSafeInteger(count)) {
+      return count;
+    }
+  }
+  return Array.isArray(value) ? value.length : 0;
+}
+
 function assertEventId(eventId: string): void {
   if (eventId.trim().length === 0) {
     throw new TypeError("eventId is required");
@@ -232,17 +247,26 @@ function createClaim(db: DatabaseExecutor): OutboxRepositoryPort["claim"] {
 function createMarkProcessed(
   db: DatabaseExecutor,
 ): OutboxRepositoryPort["markProcessed"] {
-  return async (eventId: string, now: Date): Promise<void> => {
+  return async (
+    eventId: string,
+    attempts: number,
+    now: Date,
+  ): Promise<boolean> => {
     assertEventId(eventId);
+    assertPositiveInteger(attempts, "attempts");
     assertDate(now, "now");
     const nowIso = now.toISOString();
-    await db.execute(sql`
+    const result = await db.execute(sql`
       update outbox_events
       set status = 'PROCESSED',
           processed_at = ${nowIso}::timestamptz,
           locked_until = null
-      where id = ${eventId} and status = 'PROCESSING'
+      where id = ${eventId}
+        and status = 'PROCESSING'
+        and attempts = ${attempts}
+        and locked_until > ${nowIso}::timestamptz
     `);
+    return affectedRows(result) > 0;
   };
 }
 
@@ -256,7 +280,7 @@ function createMarkFailed(
     now: Date,
     retryAfterSeconds: number,
     maxAttempts: number,
-  ): Promise<void> => {
+  ): Promise<boolean> => {
     assertEventId(eventId);
     assertErrorCode(errorCode);
     assertPositiveInteger(attempts, "attempts");
@@ -268,16 +292,48 @@ function createMarkFailed(
     const nextStatus: OutboxStatus =
       attempts >= maxAttempts ? "FAILED" : "PENDING";
     const availableAt = new Date(now.getTime() + retryAfterSeconds * 1_000);
+    const nowIso = now.toISOString();
     const availableAtIso = availableAt.toISOString();
-    await db.execute(sql`
+    const result = await db.execute(sql`
       update outbox_events
       set status = ${nextStatus},
           available_at = ${availableAtIso}::timestamptz,
           locked_until = null,
           last_error_code = ${errorCode},
           processed_at = null
-      where id = ${eventId} and status = 'PROCESSING'
+      where id = ${eventId}
+        and status = 'PROCESSING'
+        and attempts = ${attempts}
+        and locked_until > ${nowIso}::timestamptz
     `);
+    return affectedRows(result) > 0;
+  };
+}
+
+function createCleanup(
+  db: DatabaseExecutor,
+): NonNullable<OutboxRepositoryPort["cleanup"]> {
+  return async (before: Date, limit: number): Promise<number> => {
+    assertDate(before, "before");
+    assertPositiveInteger(limit, "limit");
+    const beforeIso = before.toISOString();
+    const result = await db.execute(sql`
+      with candidates as (
+        select id
+        from outbox_events
+        where status in ('PROCESSED', 'FAILED')
+          and locked_until is null
+          and coalesce(processed_at, available_at) < ${beforeIso}::timestamptz
+        order by created_at asc
+        for update skip locked
+        limit ${limit}
+      )
+      delete from outbox_events as event
+      using candidates
+      where event.id = candidates.id
+      returning event.id
+    `);
+    return affectedRows(result);
   };
 }
 
@@ -347,6 +403,7 @@ export function createOutboxRepository(
     claim: createClaim(db),
     markProcessed: createMarkProcessed(db),
     markFailed: createMarkFailed(db),
+    cleanup: createCleanup(db),
     insertProbe: createInsertProbe(db),
     claimProbe: createClaimProbe(db),
     removeProbe: createRemoveProbe(db),

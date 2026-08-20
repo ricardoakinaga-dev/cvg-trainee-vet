@@ -19,7 +19,10 @@ export type WorkerLoopOptions = Readonly<{
   readonly baseRetrySeconds?: number;
   readonly maxRetrySeconds?: number;
   readonly maxAttempts?: number;
+  readonly cleanupRetentionSeconds?: number;
+  readonly cleanupLimit?: number;
   readonly now?: Date;
+  readonly clock?: () => Date;
   readonly observability?: Observability;
 }>;
 
@@ -52,6 +55,13 @@ function nonNegativeInteger(value: number, field: string): void {
   }
 }
 
+function copyValidDate(value: Date, field: string): Date {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    throw new RangeError(`${field} must be valid`);
+  }
+  return new Date(value.getTime());
+}
+
 function retryDelay(
   attempts: number,
   baseRetrySeconds: number,
@@ -67,7 +77,10 @@ type WorkerRuntimeOptions = Readonly<{
   readonly baseRetrySeconds: number;
   readonly maxRetrySeconds: number;
   readonly maxAttempts: number;
+  readonly cleanupRetentionSeconds: number;
+  readonly cleanupLimit: number;
   readonly now: Date;
+  readonly clock: () => Date;
   readonly startedAt: number;
   readonly observability: Observability | undefined;
 }>;
@@ -90,14 +103,24 @@ function resolveWorkerOptions(
   const baseRetrySeconds = options.baseRetrySeconds ?? 5;
   const maxRetrySeconds = options.maxRetrySeconds ?? 300;
   const maxAttempts = options.maxAttempts ?? 5;
-  const now = options.now ?? new Date();
+  const cleanupRetentionSeconds = options.cleanupRetentionSeconds ?? 86_400;
+  const cleanupLimit = options.cleanupLimit ?? 100;
+  const fixedNow =
+    options.now === undefined ? undefined : copyValidDate(options.now, "now");
+  const clock =
+    options.clock ??
+    (fixedNow === undefined
+      ? () => new Date()
+      : () => new Date(fixedNow.getTime()));
+  const now = fixedNow ?? copyValidDate(clock(), "clock");
 
   positiveInteger(batchSize, "batchSize");
   positiveInteger(leaseSeconds, "leaseSeconds");
   nonNegativeInteger(baseRetrySeconds, "baseRetrySeconds");
   positiveInteger(maxRetrySeconds, "maxRetrySeconds");
   positiveInteger(maxAttempts, "maxAttempts");
-  if (Number.isNaN(now.getTime())) throw new RangeError("now must be valid");
+  positiveInteger(cleanupRetentionSeconds, "cleanupRetentionSeconds");
+  positiveInteger(cleanupLimit, "cleanupLimit");
 
   return Object.freeze({
     batchSize,
@@ -105,10 +128,17 @@ function resolveWorkerOptions(
     baseRetrySeconds,
     maxRetrySeconds,
     maxAttempts,
+    cleanupRetentionSeconds,
+    cleanupLimit,
     now,
+    clock,
     startedAt: Date.now(),
     observability: options.observability,
   });
+}
+
+function currentWorkerTime(options: WorkerRuntimeOptions): Date {
+  return copyValidDate(options.clock(), "clock");
 }
 
 async function processClaimedEvent(
@@ -121,7 +151,18 @@ async function processClaimedEvent(
   try {
     if (handler === undefined) throw new Error("unhandled event");
     await handler(event);
-    await repository.markProcessed(event.id, options.now);
+    const acknowledged = await repository.markProcessed(
+      event.id,
+      event.attempts,
+      currentWorkerTime(options),
+    );
+    if (!acknowledged) {
+      return {
+        outcome: "failed",
+        terminal: false,
+        errorCode: "worker_lease_lost",
+      };
+    }
     return { outcome: "processed" };
   } catch {
     const terminal = event.attempts >= options.maxAttempts;
@@ -129,11 +170,11 @@ async function processClaimedEvent(
       handler === undefined
         ? "worker_event_unhandled"
         : "worker_handler_failed";
-    await repository.markFailed(
+    const recorded = await repository.markFailed(
       event.id,
       event.attempts,
       errorCode,
-      options.now,
+      currentWorkerTime(options),
       terminal
         ? 0
         : retryDelay(
@@ -143,6 +184,13 @@ async function processClaimedEvent(
           ),
       options.maxAttempts,
     );
+    if (!recorded) {
+      return {
+        outcome: "failed",
+        terminal: false,
+        errorCode: "worker_lease_lost",
+      };
+    }
     return { outcome: "failed", terminal, errorCode };
   }
 }
@@ -235,6 +283,13 @@ export async function processOutboxOnce(
     recordEventOutcome(runtime.observability, event, result);
   }
   recordBatchOutcome(runtime.observability, events, results, runtime.startedAt);
+  if (repository.cleanup !== undefined) {
+    const cleanupNow = currentWorkerTime(runtime);
+    await repository.cleanup(
+      new Date(cleanupNow.getTime() - runtime.cleanupRetentionSeconds * 1_000),
+      runtime.cleanupLimit,
+    );
+  }
 
   const processed = results.filter(
     (result) => result.outcome === "processed",

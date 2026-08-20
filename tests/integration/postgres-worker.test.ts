@@ -31,10 +31,10 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         throw new Error("test database URL is required");
 
       const database = createPostgresDatabase(databaseUrl);
+      const cleanupEventId = randomUUID();
       try {
-        const result = await runWorkerClaimAckProbe(
-          createOutboxRepository(database.db),
-        );
+        const repository = createOutboxRepository(database.db);
+        const result = await runWorkerClaimAckProbe(repository);
 
         expect(result).toEqual({
           claimed: 1,
@@ -42,10 +42,37 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           failed: 0,
           acknowledged: true,
         });
+
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId: cleanupEventId,
+            eventType: "worker.cleanup.probe.v1",
+            aggregateType: "worker_readiness_probe",
+            aggregateId: randomUUID(),
+            occurredAt: "2020-01-01T00:00:00.000Z",
+            schemaVersion: 1,
+            correlationId: randomUUID(),
+            payload: { probe: "worker_cleanup_v1" },
+          }),
+          status: "PROCESSED",
+          attempts: 1,
+          availableAt: new Date("2020-01-01T00:00:00.000Z"),
+          processedAt: new Date("2020-01-01T00:00:00.000Z"),
+          createdAt: new Date("2020-01-01T00:00:00.000Z"),
+        });
+        if (repository.cleanup === undefined) {
+          throw new Error("outbox cleanup is not configured");
+        }
+        await expect(
+          repository.cleanup(new Date("2020-01-02T00:00:00.000Z"), 10),
+        ).resolves.toBe(1);
       } finally {
         await database.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.eventType, "worker.readiness.probe.v1"));
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.id, cleanupEventId));
         await database.close();
       }
     });
@@ -261,8 +288,18 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             attempts: 2,
           }),
         ]);
+        const firstLeaseEvent = firstLease[0];
         const reclaimed = reclaimedLease[0];
-        if (reclaimed === undefined) throw new Error("lease was not reclaimed");
+        if (firstLeaseEvent === undefined || reclaimed === undefined) {
+          throw new Error("lease was not reclaimed");
+        }
+        await expect(
+          repository.markProcessed(
+            firstLeaseEvent.id,
+            firstLeaseEvent.attempts,
+            retryNow,
+          ),
+        ).resolves.toBe(false);
         await repository.markFailed(
           reclaimed.id,
           reclaimed.attempts,

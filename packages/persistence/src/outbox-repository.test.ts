@@ -120,11 +120,11 @@ describe("outbox persistence", () => {
       outboxRowToRecord(row),
     ]);
     await expect(
-      repository.markProcessed(row.id, now),
-    ).resolves.toBeUndefined();
+      repository.markProcessed(row.id, row.attempts, now),
+    ).resolves.toBe(true);
     await expect(
       repository.markFailed(row.id, 1, "handler_failed", now, 30, 3),
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(true);
     expect(database.execute).toHaveBeenCalledTimes(3);
   });
 
@@ -137,10 +137,12 @@ describe("outbox persistence", () => {
     await expect(repository.claim(0, now, 1)).rejects.toThrow("limit");
     await expect(repository.claim(1, now, 0)).rejects.toThrow("leaseSeconds");
     await expect(repository.claim(1, invalidDate, 1)).rejects.toThrow("now");
-    await expect(repository.markProcessed("", now)).rejects.toThrow("eventId");
-    await expect(repository.markProcessed(row.id, invalidDate)).rejects.toThrow(
-      "now",
+    await expect(repository.markProcessed("", 1, now)).rejects.toThrow(
+      "eventId",
     );
+    await expect(
+      repository.markProcessed(row.id, row.attempts, invalidDate),
+    ).rejects.toThrow("now");
     await expect(
       repository.markFailed("", 1, "failure", now, 0, 2),
     ).rejects.toThrow("eventId");
@@ -170,5 +172,31 @@ describe("outbox persistence", () => {
     await repository.markFailed(row.id, 2, "terminal_failure", now, 0, 2);
 
     expect(database.execute).toHaveBeenCalledTimes(2);
+  });
+
+  it("reports a lease-fenced mutation that matched no row", async () => {
+    const database = fakeDatabase([]);
+    const repository = createOutboxRepository(database);
+    const now = new Date("2026-08-09T17:00:00.000Z");
+
+    await expect(repository.markProcessed(row.id, 1, now)).resolves.toBe(false);
+    await expect(
+      repository.markFailed(row.id, 1, "lease_lost", now, 0, 2),
+    ).resolves.toBe(false);
+  });
+
+  it("cleans only terminal events older than the retention boundary", async () => {
+    const database = fakeDatabase([row]);
+    const repository = createOutboxRepository(database);
+    const cleanup = repository.cleanup;
+    if (cleanup === undefined) throw new Error("cleanup is not configured");
+
+    await expect(
+      cleanup(new Date("2026-08-10T17:00:00.000Z"), 10),
+    ).resolves.toBe(1);
+    await expect(cleanup(new Date("invalid"), 10)).rejects.toThrow("before");
+    await expect(
+      cleanup(new Date("2026-08-10T17:00:00.000Z"), 0),
+    ).rejects.toThrow("limit");
   });
 });
