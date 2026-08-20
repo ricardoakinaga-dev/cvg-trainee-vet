@@ -217,18 +217,20 @@ async function revokeAllSessions(
 ): Promise<number> {
   assertNonEmpty(accountId, "accountId");
   assertDate(revokedAt, "revokedAt");
-  await db
-    .update(accounts)
-    .set({
-      sessionGeneration: sql`${accounts.sessionGeneration} + 1`,
-    })
-    .where(eq(accounts.id, accountId));
-  const revoked = await db
-    .update(sessions)
-    .set({ revokedAt })
-    .where(and(eq(sessions.accountId, accountId), isNull(sessions.revokedAt)))
-    .returning({ id: sessions.id });
-  return revoked.length;
+  return db.transaction(async (transaction) => {
+    await transaction
+      .update(accounts)
+      .set({
+        sessionGeneration: sql`${accounts.sessionGeneration} + 1`,
+      })
+      .where(eq(accounts.id, accountId));
+    const revoked = await transaction
+      .update(sessions)
+      .set({ revokedAt })
+      .where(and(eq(sessions.accountId, accountId), isNull(sessions.revokedAt)))
+      .returning({ id: sessions.id });
+    return revoked.length;
+  });
 }
 
 async function rotateSession(

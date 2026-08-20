@@ -96,6 +96,124 @@ Obter autoridade e ambiente para secret manager, mutation integral,
 browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145`, operação externa
 e aprovação humana; depois executar reauditoria independente no mesmo RC.
 
+## 2026-08-20T08:55:50-03:00 — DUAL99-B99-103-SESSION-REVOCATION-ATOMICITY
+
+### TIMESTAMP
+
+2026-08-20 08:55:50 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+B99-103 — sessão, senha e generation
+
+### TASK
+
+Garantir que o avanço de `accounts.session_generation` e a revogação em massa
+de `sessions` sejam atômicos no repositório, sem alegar prova live indisponível.
+
+### ACTION
+
+Sob TDD, foi adicionado o teste de regressão que exige entrada em
+`db.transaction`; após o RED, `revokeAllSessions` passou a executar as duas
+atualizações no mesmo transaction executor. A validação preservou os
+predicados, a parametrização SQL, o retorno da quantidade revogada e as guards
+de entrada.
+
+### RESULT
+
+O focal de persistência passou `8/8`. A cobertura integral teve um primeiro
+timeout de `5s` no teste preexistente de hotspots sob instrumentação; o foco
+isolado passou `3/3` e a repetição integral passou `200` arquivos, `1.050`
+testes e `21` testes guardados, com `95,06%` statements, `91,06%` branches,
+`95,35%` functions e `95,77%` lines. Lint, typecheck, formato, audit,
+documentação, Dual99, rastreabilidade, skips `20/20`, decisões críticas `7/7`,
+mutation dirigida `7/7`, hotspots e diff-check passaram. `verify:secrets`
+continua falhando de forma fail-closed somente nos quatro valores redigidos do
+`.env.local` ignorado.
+
+### DECISIONS
+
+O arquivo `.env.local` não foi lido, alterado ou publicado. B99-103 continua
+`IN_PROGRESS` até concorrência/generation/TTL/logout/replay serem exercitados
+em PostgreSQL live autorizado; nenhuma baseline, threshold, score, release,
+piloto, decisão clínica ou reauditoria foi promovida.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter ambiente live para a matriz de sessão e, em paralelo, manter abertos
+secret manager, mutation integral, browsers/HA/API/DB ativos, RC/proveniência,
+clínica, `0/145`, operação externa, aprovação humana e reauditoria independente.
+
+## 2026-08-20T08:35:37-03:00 — DUAL99-B99-101-RHS-EXPRESSION-HARDENING
+
+### TIMESTAMP
+
+2026-08-20 08:35:37 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+B99-101 — scanner de segredos e regressão histórica
+
+### TASK
+
+Fechar o bypass de literais hardcoded escondidos em expressões RHS sem relaxar
+o fail-closed ou mascarar os quatro valores do ambiente local.
+
+### ACTION
+
+Foi aplicado RED/GREEN/REFACTOR em `scripts/secret-scanner.mjs` e
+`tests/integration/secret-scanner.test.ts`. A implementação passou a percorrer
+literais quoted depois de chaves sensíveis em fallback, concatenação, array e
+chamada; comparações e setas não são tratadas como atribuição. Combinações
+sintéticas históricas só são toleradas quando o RHS é literal-only, o caminho é
+fixture e o valor combinado é um placeholder delimitado.
+
+### RESULT
+
+O teste focal passou `17/17`. O scan de worktree/index/history falhou apenas
+nas quatro atribuições redigidas de `infra/production/.env.local`, sem achados
+adicionais em código atual ou blobs históricos. A cobertura passou `200/1049/21`
+com floors `95,06/91,06/95,35/95,77`; decisões críticas `7/7`, mutation
+direcionada `7/7`, documentação, Dual99, rastreabilidade, skips, hotspots,
+lint, typecheck e `git diff --check` passaram.
+
+### DECISIONS
+
+Os valores do `.env.local` não foram lidos, alterados, rotacionados ou
+publicados. B99-101 continua `IN_PROGRESS` até secret manager/rotação e
+autoridade de ambiente; nenhuma baseline, threshold, score, release, piloto,
+decisão clínica ou reauditoria foi promovida.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter autoridade para o ciclo de secrets do ambiente e, em paralelo, manter
+abertos mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica,
+`0/145`, operação externa, aprovação humana e reauditoria independente.
+
 ## 2026-08-20T03:48:50-03:00 — DUAL99-FINAL-RECONCILIATION
 
 ### TIMESTAMP

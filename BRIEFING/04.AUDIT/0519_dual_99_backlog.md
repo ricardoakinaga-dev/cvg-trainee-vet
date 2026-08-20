@@ -188,6 +188,41 @@
   clínica, operação externa, aprovação humana e reauditoria continuam abertos.
   Estado global: `IN_PROGRESS` / `PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T08:35:37-03:00
+
+- `B99-101` recebeu RED/GREEN/REFACTOR para detectar literais hardcoded em
+  fallback, concatenação, array e chamada no RHS de chaves sensíveis; a
+  expressão de atribuição agora não confunde comparações/setas com assignment;
+- o teste focal passou `17/17`, e a execução de worktree/index/history não
+  encontrou achados além das quatro atribuições redigidas do
+  `infra/production/.env.local`; o scanner continua fail-closed;
+- `pnpm test:coverage` passou `200/1049/21`, com floors
+  `95,06/91,06/95,35/95,77`; decisões críticas `7/7`, mutation direcionada
+  `7/7`, documentação, Dual99, rastreabilidade, skips, hotspots, lint,
+  typecheck e diff-check passaram;
+- a parte local de código/teste está pronta para revisão, mas `B99-101` fica
+  `IN_PROGRESS` até secret manager, rotação e autorização do ambiente. Nenhum
+  score, release, piloto ou decisão clínica foi promovido.
+
+## Atualização de execução — 2026-08-20T08:55:50-03:00
+
+- `B99-103` recebeu RED/GREEN para a atomicidade de `revokeAll`: o incremento
+  de `accounts.session_generation` e a revogação de `sessions` agora usam o
+  mesmo transaction executor, preservando predicados, parametrização, retorno
+  e validação fail-closed;
+- o teste focal do repositório passou `8/8`. A primeira execução de cobertura
+  excedeu o timeout fixo de `5s` do teste existente de hotspots sob
+  instrumentação; o teste isolado passou `3/3` e a repetição integral passou
+  `200` arquivos / `1.050` testes / `21` guardados, com floors
+  `95,06/91,06/95,35/95,77`;
+- lint, typecheck, formato, audit, documentação, Dual99, rastreabilidade,
+  skips `20/20`, decisões críticas `7/7`, mutation dirigida `7/7`, hotspots e
+  diff-check passaram. `verify:secrets` segue fail-closed pelos quatro valores
+  redigidos de `infra/production/.env.local`;
+- B99-103 continua `IN_PROGRESS`: concorrência PostgreSQL, generation, TTL,
+  logout e replay dependem de ambiente live autorizado. O estado global segue
+  `IN_PROGRESS` / `PILOT_BLOCKED`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,

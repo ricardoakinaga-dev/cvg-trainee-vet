@@ -61,6 +61,8 @@ const boundedSyntheticPlaceholders = new Set([
   "fixture-value-not-a-secret",
   "postgres_test_password",
   "cvg_app_password",
+  "Acesso-CVG-2026!Seguro",
+  "Novo-Acesso-CVG-2026!",
 ]);
 
 const textExtensions = new Set([
@@ -99,6 +101,10 @@ const unquotedHighEntropyAssignmentPattern =
   /\b(?:credential|api[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|refresh[_-]?token|database[_-]?url|[_-]?auth[_-]?token)\w*\s*[:=]\s*([^\s#"'`]{24,})/giu;
 const quotedHighEntropyAssignmentPattern =
   /["'`](?:credential|api[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|refresh[_-]?token|database[_-]?url|[_-]?auth[_-]?token)\w*["'`]\s*[:=]\s*(["'`])([^"'`\\\r\n]{24,})\1/giu;
+const sensitiveAssignmentKeyPattern =
+  /\b(?:(?:[A-Za-z0-9]+[_-])+(?:password|secret|token|key)|api[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|refresh[_-]?token|database[_-]?url|[_-]?auth[_-]?token|[_-]?(?:password|secret|token))\b\s*(?:[:=](?![=>]))/giu;
+const quotedExpressionLiteralPattern = /(["'`])([^"'`\\\r\n]+)\1/gu;
+const quotedRhsLiteralPattern = /(["'`])([^"'`\\\r\n]{12,})\1/gu;
 const providerTokenPattern =
   /\b(?:sk|rk)-[A-Za-z0-9]{20,}\b|\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b|\bgithub_pat_[A-Za-z0-9_]{20,}\b|\bxox[baprs]-[A-Za-z0-9-]{20,}\b|\bAKIA[0-9A-Z]{16}\b/gu;
 const jwtPattern =
@@ -459,10 +465,44 @@ function scanSecretAssignments(line, path, lineNumber, findings) {
   );
 }
 
+function scanSensitiveExpressionLiterals(line, path, lineNumber, findings) {
+  for (const assignment of line.matchAll(sensitiveAssignmentKeyPattern)) {
+    const assignmentEnd = (assignment.index ?? 0) + assignment[0].length;
+    const rhs = line.slice(assignmentEnd);
+    const literals = [...rhs.matchAll(quotedExpressionLiteralPattern)];
+    const nonLiteralExpression = rhs.replace(
+      quotedExpressionLiteralPattern,
+      "",
+    );
+    const isBoundedSyntheticExpression =
+      literals.length > 1 &&
+      !/[^+\s,;()[\]{}]/u.test(nonLiteralExpression) &&
+      isSyntheticPlaceholder(
+        literals.map((literal) => literal[2] ?? "").join(""),
+        path,
+      );
+    for (const literal of rhs.matchAll(quotedRhsLiteralPattern)) {
+      const literalStart = literal.index ?? 0;
+      const expressionPrefix = rhs.slice(0, literalStart);
+      if (
+        isBoundedSyntheticExpression ||
+        !/(?:\|\||\?\?|&&|\+|\?|\[|\()/u.test(expressionPrefix)
+      ) {
+        continue;
+      }
+      const value = literal[2];
+      if (value !== undefined && isSecretAssignmentValue(value, path, line)) {
+        findings.push(finding(path, lineNumber, "sensitive-assignment", value));
+      }
+    }
+  }
+}
+
 function scanLine(line, path, lineNumber) {
   const findings = [];
   scanSecretShapes(line, path, lineNumber, findings);
   scanSecretAssignments(line, path, lineNumber, findings);
+  scanSensitiveExpressionLiterals(line, path, lineNumber, findings);
   return findings;
 }
 

@@ -2,6 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T03:48:50-03:00`
+- última atualização: `2026-08-20T08:55:50-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -68,6 +69,46 @@ para `127.0.0.1:3101` não constituem evidência de API/DB/HA real.
 | `CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm build` | PASS, `12/12` workspaces |
 | `CVG_E2E_WEB_PORT=3112 CVG_E2E_BROWSERS=chromium CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm test:e2e` | PASS, build `12/12` e `27/27` Chromium sintéticos |
 | `pnpm test:e2e:active-ha` | FAIL controlado: fixture isolado iniciou e foi removido; runtime web não alcançou prontidão em `127.0.0.1:3100` |
+
+## Round 12 — B99-101 / RHS expression hardening — 2026-08-20T08:35:37-03:00
+
+- RED reproduziu literais hardcoded não detectados depois de fallback, chamada,
+  concatenação e array em uma atribuição sensível; a mesma rodada identificou
+  falsos positivos em comparações, campos adjacentes e concatenações sintéticas
+  de blobs históricos;
+- GREEN passou `17/17` no scanner focal, cobrindo os quatro formatos adversariais
+  e a tolerância estreita de combinações sintéticas delimitadas em fixtures;
+- `pnpm verify:secrets` agora falha somente nas quatro atribuições redigidas de
+  `infra/production/.env.local`; o scanner não encontrou achados adicionais no
+  worktree, index ou histórico alcançável;
+- `pnpm test:coverage` passou `200` arquivos / `1.049` testes / `17` arquivos e
+  `21` testes guardados, com cobertura `95,06%` / `91,06%` / `95,35%` /
+  `95,77%` (statements / branches / functions / lines);
+- decisões críticas `7/7`, mutation direcionada `7/7`, documentação, Dual99,
+  rastreabilidade, skips `20/20`, hotspots, lint, typecheck e diff-check
+  passaram. A resolução do `.env.local` continua dependente de secret manager,
+  rotação e autorização; nenhum score ou release foi promovido.
+
+## Round 13 — B99-103 / session revocation atomicity — 2026-08-20T08:55:50-03:00
+
+- RED reproduziu que `revokeAll` não tinha uma transação observável envolvendo
+  o avanço de `accounts.session_generation` e a revogação das linhas de
+  `sessions`;
+- GREEN colocou as duas atualizações no mesmo `db.transaction`, mantendo
+  predicados de generation, SQL parametrizado, contagem retornada e validação
+  fail-closed; o focal de persistência passou `8/8`;
+- `pnpm test:coverage` teve um primeiro timeout de `5s` no teste existente de
+  hotspots sob instrumentação; o foco isolado passou `3/3` e a repetição
+  integral passou `200` arquivos / `1.050` testes / `21` guardados, com floors
+  `95,06%` statements / `91,06%` branches / `95,35%` functions / `95,77%`
+  lines;
+- lint, typecheck, formato, audit, documentação, Dual99, rastreabilidade,
+  skips `20/20`, decisões críticas `7/7`, mutation dirigida `7/7`, hotspots e
+  diff-check passaram. `verify:secrets` permanece fail-closed somente nos
+  quatro valores redigidos de `infra/production/.env.local`;
+- limite: a concorrência PostgreSQL, generation, TTL, logout e replay seguem
+  sem execução por falta de ambiente live autorizado; B99-103 continua
+  `IN_PROGRESS` e o release `PILOT_BLOCKED`.
 
 ## Gaps que permanecem abertos
 

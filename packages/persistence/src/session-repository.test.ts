@@ -155,7 +155,29 @@ describe("PostgreSQL session mapping", () => {
     expect(database.insert).toHaveBeenCalled();
     expect(database.select).toHaveBeenCalled();
     expect(database.update).toHaveBeenCalled();
+    expect(database.transaction).toHaveBeenCalledTimes(2);
+  });
+
+  it("runs bulk revocation and generation advancement in one transaction", async () => {
+    const update = vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn(async () => [{ id: record.sessionId }]),
+        })),
+      })),
+    }));
+    const database = {
+      update,
+      transaction: vi.fn(async (work: (tx: typeof database) => unknown) =>
+        work(database),
+      ),
+    };
+    const repository = createSessionRepository(database as never);
+
+    await expect(repository.revokeAll(record.accountId, now)).resolves.toBe(1);
+
     expect(database.transaction).toHaveBeenCalledOnce();
+    expect(database.update).toHaveBeenCalledTimes(2);
   });
 
   it("returns null for an inactive lookup and rejects inactive rotation", async () => {

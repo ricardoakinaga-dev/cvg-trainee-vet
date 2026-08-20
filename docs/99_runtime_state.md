@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; cobertura `200/1041/21`, floors `95,01/91,02/95,19/95,73`, ratchet `144/113`, build `12/12`, E2E Chromium `27/27`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/32`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-1 local hardening; B99-103 teve a revogação em massa de sessão tornada atômica sob TDD, enquanto B99-101 mantém o bypass de literais no RHS corrigido; cobertura `200/1050/21`, floors `95,06/91,06/95,35/95,77`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/32`, `0/145` e `PILOT_BLOCKED` continuam congelados
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: consolidou o lote Dual99 no commit `8eb6578` e publicou a branch `agent/publish-production-hardening` em `origin`; verificações locais, cobertura e gates de segurança/governança foram registradas sem promover release
-- next_action: preservar `IN_PROGRESS`/`PILOT_BLOCKED`, obter autoridade e ambiente para secret manager, mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; só então executar reauditoria independente
+- last_completed_action: fechou B99-103 localmente com incremento de generation e revogação de sessões no mesmo transaction executor; repositório focal `8/8`, cobertura `200/1050/21`, floors `95,06/91,06/95,35/95,77` e gates locais relevantes passaram, sem alterar `.env.local`
+- next_action: preservar `IN_PROGRESS`/`PILOT_BLOCKED`, obter autoridade e ambiente para secret manager, concorrência PostgreSQL, mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,64 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T08:10:50-03:00
+- last_update: 2026-08-20T08:55:50-03:00
+
+## 2026-08-20T08:55:50-03:00 — DUAL99-B99-103-SESSION-REVOCATION-ATOMICITY
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu que `revokeAll` atualizava `accounts.session_generation` e
+  `sessions.revoked_at` fora de uma transação observável pelo repositório;
+- GREEN passou a executar as duas atualizações no mesmo `db.transaction`, sem
+  alterar predicados de generation, parametrização SQL, contagem retornada ou
+  validação fail-closed; o teste focal do repositório passou `8/8`;
+- a cobertura integral teve uma primeira falha ambiental de timeout de `5s` no
+  teste existente de hotspots sob instrumentação; o foco isolado passou `3/3`
+  e a repetição integral passou `200` arquivos, `1.050` testes e `21` testes
+  guardados, com floors `95,06/91,06/95,35/95,77`;
+- lint, typecheck, formato, audit de produção, documentação, Dual99,
+  rastreabilidade, skips `20/20`, decisões críticas `7/7`, mutation dirigida
+  `7/7`, hotspots e `git diff --check` passaram. `verify:secrets` permanece
+  fail-closed apenas nos quatro valores redigidos de
+  `infra/production/.env.local`.
+
+### LIMITES / STATUS / NEXT
+
+B99-103 permanece `IN_PROGRESS`: a atomicidade local está coberta, mas a
+concorrência PostgreSQL, generation, TTL, logout e replay continuam guardados
+pela ausência de ambiente live autorizado. O resultado não promove score,
+release, piloto, segredo, decisão clínica ou reauditoria. Estado
+`IN_PROGRESS`; release `PILOT_BLOCKED`.
+
+## 2026-08-20T08:35:37-03:00 — DUAL99-B99-101-RHS-EXPRESSION-HARDENING
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu o bypass de `process.env`/fallback, chamada e array: o scanner
+  encontrava a atribuição sensível, mas não o literal hardcoded posterior no
+  RHS; também reproduziu falsos positivos em comparações, campos adjacentes e
+  concatenações sintéticas de blobs históricos;
+- GREEN adicionou inspeção fail-closed dos literais quoted no RHS de uma chave
+  sensível, rejeição de `==`/`=>` e tolerância somente para combinações sintéticas
+  delimitadas em caminhos de fixture; o teste focal passou `17/17`;
+- a execução integral de `pnpm verify:secrets` agora acusa somente as quatro
+  atribuições redigidas de `infra/production/.env.local`; nenhum achado atual
+  ou histórico adicional permaneceu;
+- `pnpm test:coverage` passou `200` arquivos, `1.049` testes, `17` arquivos e
+  `21` testes guardados, com `95,06%` statements / `91,06%` branches /
+  `95,35%` functions / `95,77%` lines; decisões críticas `7/7`, mutation
+  direcionada `7/7`, documentação, Dual99, rastreabilidade, skips, hotspots,
+  lint, typecheck e `git diff --check` passaram.
+
+### LIMITES / STATUS / NEXT
+
+B99-101 permanece `IN_PROGRESS`: a parte de código/teste e o scan histórico
+local foram fechados, mas os quatro valores do `.env.local` exigem secret
+manager, rotação e autoridade de ambiente. O resultado não promove score,
+release, piloto, segredo, decisão clínica ou reauditoria; `0/145`, mutation
+integral, live/RC, clínica, operação externa, aprovação humana e reauditoria
+independente continuam pendentes. Estado `IN_PROGRESS`; release
+`PILOT_BLOCKED`.
 
 ## 2026-08-20T08:10:50-03:00 — GIT-PUBLISH-DUAL99
 

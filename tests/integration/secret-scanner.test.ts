@@ -140,6 +140,53 @@ describe("secret scanner", () => {
     ).toBe(true);
   });
 
+  it("detects hardcoded literals hidden in sensitive RHS expressions", () => {
+    const secret = ["Qz7m", "P4xL", "9sT2", "vK8n"].join("").repeat(4);
+    const findings = scanText(
+      [
+        `password = process.env.PASSWORD || "${secret}"`,
+        `token = process.env.TOKEN ?? "${secret}"`,
+        `client_secret = getSecret() ?? "${secret}"`,
+        `password = [process.env.PASSWORD, "${secret}"].find(Boolean)`,
+      ].join("\n"),
+      "apps/api/src/runtime.ts",
+    );
+
+    expect(
+      findings.filter((finding) => finding.rule === "sensitive-assignment"),
+    ).toHaveLength(4);
+  });
+
+  it("does not report bounded synthetic credentials split across fixture literals", () => {
+    const field = ["pass", "word"].join("");
+    const firstPrefix = ["Acesso", ""].join("-");
+    const firstSuffix = ["CVG", "2026!Seguro"].join("-");
+    const secondPrefix = "N";
+    const secondSuffix = ["ovo", "Acesso", "CVG", "2026!"].join("-");
+    const findings = scanText(
+      [
+        `${field}: "${firstPrefix}" + "${firstSuffix}",`,
+        `body: { ${field}: "${secondPrefix}" + "${secondSuffix}" },`,
+      ].join("\n"),
+      "apps/api/src/http.test.ts",
+    );
+
+    expect(findings).toEqual([]);
+  });
+
+  it("does not treat comparisons or adjacent object fields as RHS literals", () => {
+    const findings = scanText(
+      [
+        'expect(token === "synthetic-token-value").toBe(true);',
+        'password: config.password, model: "synthetic-model-name",',
+        'password = process.env.PASSWORD, model: "synthetic-model-name",',
+      ].join("\n"),
+      "apps/api/src/runtime.ts",
+    );
+
+    expect(findings).toEqual([]);
+  });
+
   it("does not report unquoted code references or calls as secret literals", () => {
     const secret = ["Qz7m", "P4xL", "9sT2", "vK8n"].join("").repeat(3);
     const findings = scanText(
