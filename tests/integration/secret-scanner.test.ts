@@ -450,6 +450,42 @@ describe("secret scanner", () => {
     );
   });
 
+  it.each(["blob", "tag"])(
+    "reports a %s object without its batch delimiter before scanning content",
+    (type) => {
+      const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+      const body = Buffer.from(`client_secret="${secret}"`);
+      const objectId = `${type}-without-delimiter`;
+      const findings = readBatchOutput(
+        Buffer.concat([
+          Buffer.from(`${objectId} ${type} ${body.byteLength}\n`),
+          body,
+        ]),
+        new Map([[objectId, `${type}.txt`]]),
+      );
+
+      expect(findings).toEqual([
+        expect.objectContaining({
+          path: `history:${type}.txt`,
+          rule: "git-object-unreadable",
+        }),
+      ]);
+      expect(JSON.stringify(findings)).not.toContain(secret);
+
+      const validBody = Buffer.from("synthetic-valid-body");
+      expect(
+        readBatchOutput(
+          Buffer.concat([
+            Buffer.from(`${objectId} ${type} ${validBody.byteLength}\n`),
+            validBody,
+            Buffer.from("\n"),
+          ]),
+          new Map([[objectId, `${type}.txt`]]),
+        ),
+      ).toEqual([]);
+    },
+  );
+
   it("reports stable, redacted summaries suitable for CI output", () => {
     const findings: readonly SecretFinding[] = [
       {

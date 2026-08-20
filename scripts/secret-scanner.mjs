@@ -18,9 +18,7 @@ const ignoredDirectories = new Set([
 
 const MAX_SCAN_BYTES = 2 * 1024 * 1024;
 
-// These are deliberately limited to repository assets that cannot contain
-// source/configuration credentials in a form this scanner can inspect. Git
-// tracked files and security-shaped names are still scanned below.
+// Tracked and security-shaped paths remain scanned.
 const ignoredBinaryAssetExtensions = new Set([
   ".7z",
   ".avi",
@@ -172,8 +170,7 @@ function isSyntheticPlaceholder(value, path) {
 }
 
 function isCodeExpression(value) {
-  // Code expressions are not secret literals; high-entropy credential
-  // literals remain findings even when followed by method-like syntax.
+  // Code expressions are not literals; high-entropy credentials still trigger.
   if (
     /\$\{|\b(?:process|import\.meta)\.env\b/u.test(value) ||
     /^\??[A-Z][A-Z0-9_]*(?:\s+is\s+required)?$/u.test(value.trim()) ||
@@ -208,8 +205,7 @@ function isCodeExpression(value) {
 function isBareIdentifierExpression(value) {
   const normalized = value.trim().replace(/[;,}\]]+$/gu, "");
   if (entropy(normalized) >= 4.0) {
-    // A syntactically recognizable call/property expression is still code,
-    // even when its serialized spelling has high character entropy.
+    // Recognizable call/property expressions remain code at high entropy.
     const expressionPattern =
       /^[a-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*(?:\([^()]*\))?(?:\.[A-Za-z_$][A-Za-z0-9_$]*(?:\([^()]*\))?)*(?:\s+as\s+[A-Za-z_$][A-Za-z0-9_$]*)?$/u;
     return (
@@ -708,20 +704,25 @@ function readBatchOutput(buffer, objects, source = "history") {
         unscannedFinding(logicalPath, "oversize-file", `${size} bytes`),
       );
     }
-    const body = buffer.subarray(offset, offset + size);
-    offset += size;
-    if (buffer[offset] === 0x0a) offset += 1;
-    if (path === undefined || size > MAX_SCAN_BYTES) continue;
-    if (body.length !== size) {
+    const bodyEnd = offset + size;
+    const body = buffer.subarray(offset, Math.min(bodyEnd, buffer.length));
+    const hasDelimiter =
+      Number.isSafeInteger(bodyEnd) &&
+      bodyEnd < buffer.length &&
+      buffer[bodyEnd] === 0x0a;
+    if (body.length !== size || !hasDelimiter) {
       findings.push(
         unscannedFinding(
           logicalPath,
           "git-object-unreadable",
-          "truncated git object",
+          "truncated or missing git object delimiter",
         ),
       );
+      offset = buffer.length;
       continue;
     }
+    offset = bodyEnd + 1;
+    if (path === undefined || size > MAX_SCAN_BYTES) continue;
     findings.push(...scanBuffer(body, logicalPath));
   }
   return findings;
