@@ -12,6 +12,8 @@ const migrationDirectoryName = "packages/persistence/drizzle";
 const destructivePatterns = [
   { name: "drop-column", pattern: /\bDROP\s+COLUMN\b/iu },
   { name: "drop-table", pattern: /\bDROP\s+TABLE\b/iu },
+  { name: "truncate-table", pattern: /\bTRUNCATE(?:\s+TABLE)?\b/iu },
+  { name: "delete-data", pattern: /\bDELETE\s+FROM\b/iu },
   {
     name: "alter-column-type",
     pattern: /\bALTER\s+COLUMN\b[\s\S]{0,80}?\bTYPE\b/iu,
@@ -23,6 +25,32 @@ const destructivePatterns = [
   },
 ];
 
+const setNotNullPattern =
+  /\bALTER\s+TABLE\b[\s\S]{0,120}?\bALTER\s+COLUMN\b[\s\S]{0,80}?\bSET\s+NOT\s+NULL\b/iu;
+const backfillGuardPattern =
+  /\bIF\s+EXISTS\s*\([\s\S]{0,1600}?\b(?:IS\s+NULL|!~|<=)\b[\s\S]{0,600}?\bRAISE\s+EXCEPTION\b/iu;
+
+function requiredColumnWithoutDefaultFindings(sqlContent, migrationName) {
+  const findings = [];
+  const addColumnPattern =
+    /\bALTER\s+TABLE\b[\s\S]{0,120}?\bADD\s+COLUMN\b[\s\S]*?(?:;|$)/giu;
+  for (const match of sqlContent.matchAll(addColumnPattern)) {
+    const statement = match[0];
+    if (
+      /\bNOT\s+NULL\b/iu.test(statement) &&
+      !/\bDEFAULT\b/iu.test(statement)
+    ) {
+      findings.push(
+        Object.freeze({
+          migrationName,
+          rule: "required-column-without-default",
+        }),
+      );
+    }
+  }
+  return findings;
+}
+
 export function validateMigrationSafety(sqlContent, migrationName) {
   const findings = [];
   for (const { name, pattern } of destructivePatterns) {
@@ -30,6 +58,20 @@ export function validateMigrationSafety(sqlContent, migrationName) {
       findings.push(Object.freeze({ migrationName, rule: name }));
     }
   }
+  if (
+    setNotNullPattern.test(sqlContent) &&
+    !backfillGuardPattern.test(sqlContent)
+  ) {
+    findings.push(
+      Object.freeze({
+        migrationName,
+        rule: "set-not-null-without-backfill-guard",
+      }),
+    );
+  }
+  findings.push(
+    ...requiredColumnWithoutDefaultFindings(sqlContent, migrationName),
+  );
   return Object.freeze(findings);
 }
 

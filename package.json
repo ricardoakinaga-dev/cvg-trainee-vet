@@ -51,6 +51,7 @@
     "verify:sub80-program": "node scripts/verify-sub80-to-95-program.mjs",
     "verify:invariants": "vitest run packages/domain/src/invariant-catalog.test.ts --pool=forks --maxWorkers=1",
     "verify:migrations": "node scripts/verify-migrations.mjs",
+    "verify:migration-safety": "node scripts/verify-migration-safety.mjs",
     "verify:product-definition": "node scripts/verify-product-definition.mjs",
     "verify:clinical-sources": "node scripts/verify-clinical-sources.mjs",
     "verify:curriculum-inventory": "node scripts/verify-curriculum-inventory.mjs",
@@ -75,7 +76,7 @@
     "ops:verify-runtime-provenance": "node scripts/verify-runtime-provenance.mjs",
     "verify:operational-config": "pnpm ops:verify-ha",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
-    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm verify:clinical-sources && pnpm verify:curriculum-inventory && pnpm verify:observability-governance && pnpm verify:operational-config && pnpm ops:verify-prometheus-rules && pnpm ops:verify-durable-traces && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:critical-decisions && pnpm verify:critical-mutation && pnpm verify:scope-drift && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:premium-traceability && pnpm verify:dual99-program && pnpm verify:test-risk-matrix && pnpm verify:skip-governance && pnpm verify:test-evidence-governance && pnpm verify:change-control-governance && pnpm verify:accessibility-governance && pnpm verify:capacity-governance && pnpm verify:web-performance-governance && pnpm verify:journey-correction-governance && pnpm verify:sub80-program && pnpm verify:architecture && pnpm verify:hotspots && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm verify:clinical-sources && pnpm verify:curriculum-inventory && pnpm verify:observability-governance && pnpm verify:operational-config && pnpm ops:verify-prometheus-rules && pnpm ops:verify-durable-traces && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:critical-decisions && pnpm verify:critical-mutation && pnpm verify:scope-drift && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:migration-safety && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:premium-traceability && pnpm verify:dual99-program && pnpm verify:test-risk-matrix && pnpm verify:skip-governance && pnpm verify:test-evidence-governance && pnpm verify:change-control-governance && pnpm verify:accessibility-governance && pnpm verify:capacity-governance && pnpm verify:web-performance-governance && pnpm verify:journey-correction-governance && pnpm verify:sub80-program && pnpm verify:architecture && pnpm verify:hotspots && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
