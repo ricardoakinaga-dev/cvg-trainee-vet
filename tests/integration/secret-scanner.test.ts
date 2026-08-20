@@ -210,16 +210,17 @@ describe("secret scanner", () => {
   });
 
   it("scans annotated tag bodies without classifying the tag object as unreadable", () => {
+    const objectId = "1".repeat(40);
     const body = Buffer.from(
       `object 1111111111111111111111111111111111111111\ntype commit\ntag synthetic-release\ntagger Synthetic <synthetic@example.invalid> 0 +0000\n\nrelease notes\n`,
     );
     const findings = readBatchOutput(
       Buffer.concat([
-        Buffer.from(`tagid tag ${body.byteLength}\n`),
+        Buffer.from(`${objectId} tag ${body.byteLength}\n`),
         body,
         Buffer.from("\n"),
       ]),
-      new Map([["tagid", "synthetic-release"]]),
+      new Map([[objectId, "synthetic-release"]]),
     );
 
     expect(findings).toEqual([]);
@@ -415,21 +416,21 @@ describe("secret scanner", () => {
 
   it("reports malformed, binary and oversized history objects instead of silently skipping them", () => {
     const binaryObject = Buffer.concat([
-      Buffer.from("binaryid blob 3\n"),
+      Buffer.from(`${"2".repeat(40)} blob 3\n`),
       Buffer.from([0, 1, 2]),
       Buffer.from("\n"),
     ]);
-    const oversizedObject = Buffer.from("largeid blob 2097153\n");
+    const oversizedObject = Buffer.from(`${"3".repeat(40)} blob 2097153\n`);
     const findings = readBatchOutput(
       Buffer.concat([
-        Buffer.from("missingid missing\n"),
+        Buffer.from(`${"4".repeat(40)} missing\n`),
         binaryObject,
         oversizedObject,
       ]),
       new Map([
-        ["missingid", "missing.txt"],
-        ["binaryid", "binary.bin"],
-        ["largeid", "large.txt"],
+        ["4".repeat(40), "missing.txt"],
+        ["2".repeat(40), "binary.bin"],
+        ["3".repeat(40), "large.txt"],
       ]),
     );
 
@@ -444,20 +445,20 @@ describe("secret scanner", () => {
 
   it("does not report git tree or commit objects as unreadable blobs", () => {
     const treeObject = Buffer.concat([
-      Buffer.from("treeid tree 8\n"),
+      Buffer.from(`${"5".repeat(40)} tree 8\n`),
       Buffer.from("100644 x"),
       Buffer.from("\n"),
     ]);
     const commitObject = Buffer.concat([
-      Buffer.from("commitid commit 11\n"),
+      Buffer.from(`${"6".repeat(40)} commit 11\n`),
       Buffer.from("tree abcdef"),
       Buffer.from("\n"),
     ]);
     const findings = readBatchOutput(
       Buffer.concat([treeObject, commitObject]),
       new Map([
-        ["treeid", "src"],
-        ["commitid", "docs"],
+        ["5".repeat(40), "src"],
+        ["6".repeat(40), "docs"],
       ]),
     );
 
@@ -467,23 +468,26 @@ describe("secret scanner", () => {
   });
 
   it("reports malformed tree and commit objects instead of silently skipping them", () => {
+    const treeId = "7".repeat(40);
+    const commitId = "8".repeat(40);
+    const missingDelimiterId = "9".repeat(40);
     const malformedHeaderFindings = readBatchOutput(
-      Buffer.from("malformed-tree tree not-a-size\n"),
-      new Map([["malformed-tree", "src"]]),
+      Buffer.from(`${treeId} tree not-a-size\n`),
+      new Map([[treeId, "src"]]),
     );
     const truncatedBodyFindings = readBatchOutput(
       Buffer.concat([
-        Buffer.from("truncated-commit commit 12\n"),
+        Buffer.from(`${commitId} commit 12\n`),
         Buffer.from("tree abcde"),
       ]),
-      new Map([["truncated-commit", "docs"]]),
+      new Map([[commitId, "docs"]]),
     );
     const missingDelimiterFindings = readBatchOutput(
       Buffer.concat([
-        Buffer.from("missing-delimiter tree 8\n"),
+        Buffer.from(`${missingDelimiterId} tree 8\n`),
         Buffer.from("100644 x"),
       ]),
-      new Map([["missing-delimiter", "missing-tree"]]),
+      new Map([[missingDelimiterId, "missing-tree"]]),
     );
 
     expect(malformedHeaderFindings).toEqual(
@@ -512,12 +516,83 @@ describe("secret scanner", () => {
     );
   });
 
+  it("rejects malformed cat-file headers before scanning their bodies", () => {
+    const syntheticValue = ["synthetic", "-secret", "-value"].join("");
+    const body = Buffer.from(
+      [["client", "_secret"].join(""), '="', syntheticValue, '"'].join(""),
+    );
+    const cases = [
+      {
+        objectId: "z".repeat(40),
+        path: "malformed-id.txt",
+        header: (objectId: string, size: number) => `${objectId} blob ${size}`,
+      },
+      {
+        objectId: "a".repeat(40),
+        path: "extra-field.txt",
+        header: (objectId: string, size: number) =>
+          `${objectId} blob ${size} extra`,
+      },
+      {
+        objectId: "b".repeat(40),
+        path: "non-decimal-size.txt",
+        header: (objectId: string, size: number) => `${objectId} blob +${size}`,
+      },
+    ];
+
+    for (const testCase of cases) {
+      const findings = readBatchOutput(
+        Buffer.concat([
+          Buffer.from(
+            `${testCase.header(testCase.objectId, body.byteLength)}\n`,
+          ),
+          body,
+          Buffer.from("\n"),
+        ]),
+        new Map([[testCase.objectId, testCase.path]]),
+      );
+
+      expect(findings).toEqual([
+        expect.objectContaining({
+          path: `history:${testCase.path}`,
+          rule: "git-object-unreadable",
+        }),
+      ]);
+      expect(JSON.stringify(findings)).not.toContain("synthetic-secret-value");
+    }
+  });
+
+  it("preserves valid missing and error batch responses", () => {
+    const missingId = "c".repeat(40);
+    const errorId = "d".repeat(40);
+    const findings = readBatchOutput(
+      Buffer.from(
+        `${missingId} missing\n${errorId} error object unavailable\n`,
+      ),
+      new Map([
+        [missingId, "missing.txt"],
+        [errorId, "error.txt"],
+      ]),
+    );
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: "history:missing.txt",
+        rule: "git-object-unreadable",
+      }),
+      expect.objectContaining({
+        path: "history:error.txt",
+        rule: "git-object-unreadable",
+      }),
+    ]);
+  });
+
   it.each(["blob", "tag"])(
     "reports a %s object without its batch delimiter before scanning content",
     (type) => {
       const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
       const body = Buffer.from(`client_secret="${secret}"`);
-      const objectId = `${type}-without-delimiter`;
+      const objectId = type === "blob" ? "a".repeat(40) : "b".repeat(40);
       const findings = readBatchOutput(
         Buffer.concat([
           Buffer.from(`${objectId} ${type} ${body.byteLength}\n`),

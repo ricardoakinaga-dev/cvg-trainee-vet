@@ -640,6 +640,8 @@ function parseObjectList(output) {
 
 function readBatchOutput(buffer, objects, source = "history") {
   const findings = [];
+  const addUnreadable = (path, evidence) =>
+    findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
   let offset = 0;
   while (offset < buffer.length) {
     const headerEnd = buffer.indexOf(0x0a, offset);
@@ -657,12 +659,18 @@ function readBatchOutput(buffer, objects, source = "history") {
     const header = buffer.subarray(offset, headerEnd).toString("utf8");
     offset = headerEnd + 1;
     const [objectId, type, sizeText] = header.split(/\s+/u);
+    const validHeader =
+      /^[0-9a-f]{40} (?:blob|tag|tree|commit) [0-9]+$/u.test(header) ||
+      /^[0-9a-f]{40} (?:missing|error)(?: .*)?$/u.test(header);
     const path = objects.get(objectId);
     const logicalPath = `${source}:${path ?? (objectId || "unknown")}`;
+    if (!validHeader) {
+      addUnreadable(logicalPath, "malformed git object header");
+      offset = buffer.length;
+      continue;
+    }
     if (type === "missing" || type === "error") {
-      findings.push(
-        unscannedFinding(logicalPath, "git-object-unreadable", header),
-      );
+      addUnreadable(logicalPath, header);
       continue;
     }
     const size = Number(sizeText);
@@ -675,13 +683,7 @@ function readBatchOutput(buffer, objects, source = "history") {
         bodyEnd > buffer.length ||
         buffer[bodyEnd] !== 0x0a
       ) {
-        findings.push(
-          unscannedFinding(
-            logicalPath,
-            "git-object-unreadable",
-            "malformed or truncated git object body",
-          ),
-        );
+        addUnreadable(logicalPath, "malformed or truncated git object body");
         offset = buffer.length;
         continue;
       }
@@ -693,9 +695,7 @@ function readBatchOutput(buffer, objects, source = "history") {
       !Number.isSafeInteger(size) ||
       size < 0
     ) {
-      findings.push(
-        unscannedFinding(logicalPath, "git-object-unreadable", header),
-      );
+      addUnreadable(logicalPath, header);
       continue;
     }
     if (size > MAX_SCAN_BYTES) {
@@ -710,13 +710,7 @@ function readBatchOutput(buffer, objects, source = "history") {
       bodyEnd < buffer.length &&
       buffer[bodyEnd] === 0x0a;
     if (body.length !== size || !hasDelimiter) {
-      findings.push(
-        unscannedFinding(
-          logicalPath,
-          "git-object-unreadable",
-          "truncated or missing git object delimiter",
-        ),
-      );
+      addUnreadable(logicalPath, "truncated or missing git object delimiter");
       offset = buffer.length;
       continue;
     }
