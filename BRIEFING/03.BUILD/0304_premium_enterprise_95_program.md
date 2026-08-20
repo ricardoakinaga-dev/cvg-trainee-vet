@@ -1,5 +1,7 @@
 # 0304 — Programa CVG Premium Enterprise 95
 
+> **Trilha de maturidade preservada:** este programa continua como baseline `ENT95-*`. A execução transversal e a regra final `32/32 ≥95` são coordenadas por `0307_dual_95_executive_program.md`; não há mistura com a nota de qualidade `64,20/100`.
+
 - program_id: CVG-PREMIUM-ENTERPRISE-95
 - status: IN_PROGRESS
 - baseline_report: BRIEFING/04.AUDIT/0491_full_construction_audit.md

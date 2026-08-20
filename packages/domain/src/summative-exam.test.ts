@@ -94,4 +94,134 @@ describe("summative exam selection", () => {
     expect(Object.isFrozen(selection)).toBe(true);
     expect(Object.isFrozen(selection.items)).toBe(true);
   });
+
+  it("rejects malformed blueprint, bank, timestamp and random boundaries", () => {
+    const invalidBlueprints: readonly [unknown, string][] = [
+      [{ ...blueprint, id: " " }, "blueprint.id"],
+      [{ ...blueprint, version: " " }, "blueprint.version"],
+      [{ ...blueprint, itemCount: 0 }, "itemCount"],
+      [{ ...blueprint, timeLimitMinutes: 0 }, "timeLimitMinutes"],
+      [{ ...blueprint, objectiveItemCounts: {} }, "objectiveItemCounts"],
+      [{ ...blueprint, itemCount: 21 }, "equal"],
+    ];
+    for (const [invalidBlueprint, message] of invalidBlueprints) {
+      expect(() =>
+        createSummativeExamSelection({
+          blueprint: invalidBlueprint as never,
+          bank: bank(),
+          now: "2026-08-14T12:00:00.000Z",
+          random: () => 0.5,
+        }),
+      ).toThrow(message);
+    }
+
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank().map((item, index) =>
+          index === 0 ? { ...item, id: " " } : item,
+        ),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("bank item id");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank().map((item, index) =>
+          index === 0 ? { ...item, objectiveId: " " } : item,
+        ),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("objectiveId");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank().map((item, index) =>
+          index === 0 ? { ...item, choices: [{ id: "a", text: "A" }] } : item,
+        ),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("at least two");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank().map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                choices: [
+                  { id: "a", text: "A" },
+                  { id: "a", text: "B" },
+                ],
+              }
+            : item,
+        ),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("unique");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank().map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                choices: [
+                  { id: "a", text: "<b>A</b>" },
+                  { id: "b", text: "B" },
+                ],
+              }
+            : item,
+        ),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("plain text");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank().map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                choices: [
+                  { id: " ", text: "A" },
+                  { id: "b", text: "B" },
+                ],
+              }
+            : item,
+        ),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("choice id");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank(),
+        now: "invalid",
+        random: () => 0.5,
+      }),
+    ).toThrow("timestamp");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: bank(),
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 1,
+      }),
+    ).toThrow("random");
+    expect(() =>
+      createSummativeExamSelection({
+        blueprint,
+        bank: [...bank(), bank()[0]!],
+        now: "2026-08-14T12:00:00.000Z",
+        random: () => 0.5,
+      }),
+    ).toThrow("bank item ids");
+  });
 });

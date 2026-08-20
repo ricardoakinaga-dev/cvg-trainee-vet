@@ -1,5 +1,7 @@
 # 0492 — Roadmap Premium Enterprise para 95/100 por item
 
+> **Roadmap da trilha de maturidade:** os marcos `ENT95-*` permanecem válidos; o sequenciamento executivo corrente e os achados pós-S4-173 estão em `0514_dual_95_roadmap.md`.
+
 - program_id: CVG-PREMIUM-ENTERPRISE-95
 - status: IN_PROGRESS
 - baseline_report: 0491_full_construction_audit.md

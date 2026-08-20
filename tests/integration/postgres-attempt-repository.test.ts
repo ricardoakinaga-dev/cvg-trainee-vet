@@ -107,5 +107,101 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await database.close();
       }
     });
+
+    it("returns one winner and one conflict for concurrent open-attempt starts", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+      const database = createPostgresDatabase(databaseUrl);
+      const activityId = randomUUID();
+      const participantId = randomUUID();
+      let winningAttemptId: string | null = null;
+
+      try {
+        await database.db.insert(learningActivities).values({
+          id: activityId,
+          scopeId: randomUUID(),
+          slug: `synthetic-race-${activityId}`,
+          status: "PUBLISHED",
+        });
+        await database.db.insert(activityAssignments).values({
+          participantId,
+          activityId,
+          status: "DISPONIVEL",
+        });
+
+        const dependencies = createAttemptUseCaseDependencies(
+          database.db,
+          randomUUID,
+        );
+        const settled = await Promise.allSettled([
+          startAttempt(
+            {
+              participantId,
+              activityId,
+              idempotencyKey: `race-a-${activityId}`,
+              correlationId: randomUUID(),
+            },
+            dependencies,
+          ),
+          startAttempt(
+            {
+              participantId,
+              activityId,
+              idempotencyKey: `race-b-${activityId}`,
+              correlationId: randomUUID(),
+            },
+            dependencies,
+          ),
+        ]);
+        const fulfilled = settled.filter(
+          (
+            result,
+          ): result is PromiseFulfilledResult<
+            Awaited<ReturnType<typeof startAttempt>>
+          > => result.status === "fulfilled",
+        );
+        const rejected = settled.filter(
+          (result): result is PromiseRejectedResult =>
+            result.status === "rejected",
+        );
+
+        expect(fulfilled).toHaveLength(1);
+        expect(rejected).toHaveLength(1);
+        expect(rejected[0]?.reason).toMatchObject({
+          code: "state_conflict",
+          status: 409,
+        });
+        winningAttemptId = fulfilled[0]?.value.attemptId ?? null;
+        expect(winningAttemptId).not.toBeNull();
+
+        const storedAttempts = await database.db
+          .select()
+          .from(attempts)
+          .where(eq(attempts.activityId, activityId));
+        const storedIdempotency = await database.db
+          .select()
+          .from(attemptIdempotency)
+          .where(eq(attemptIdempotency.attemptId, winningAttemptId as string));
+
+        expect(storedAttempts).toHaveLength(1);
+        expect(storedIdempotency).toHaveLength(1);
+      } finally {
+        if (winningAttemptId !== null) {
+          await database.db
+            .delete(attemptIdempotency)
+            .where(eq(attemptIdempotency.attemptId, winningAttemptId));
+          await database.db
+            .delete(attempts)
+            .where(eq(attempts.id, winningAttemptId));
+        }
+        await database.db
+          .delete(activityAssignments)
+          .where(eq(activityAssignments.activityId, activityId));
+        await database.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, activityId));
+        await database.close();
+      }
+    });
   },
 );

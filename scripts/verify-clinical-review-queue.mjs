@@ -4,6 +4,14 @@ import { sql } from "drizzle-orm";
 
 import { createPostgresDatabase } from "../packages/persistence/dist/database.js";
 
+const RELEASED_CONTENT_STATUSES = sql`(
+  'APROVADO_CLINICAMENTE',
+  'AUTORIZADO_PARA_PUBLICACAO',
+  'PUBLICADO',
+  'RETIRADO',
+  'VENCIDO'
+)`;
+
 export function summarizeClinicalReviewQueueSnapshot(snapshot, options = {}) {
   const errors = [];
   const fields = [
@@ -101,44 +109,43 @@ export async function runClinicalReviewQueueVerification(
   }
 }
 
-async function readClinicalReviewQueueSnapshot(database, scopeId) {
-  const rows = await database.db.execute(sql`
-    with latest_reviews as (
-      select distinct on (content_id, version, scope_id)
-        content_id,
-        version,
-        scope_id,
-        decision,
-        reviewed_at
-      from content_review_decisions
-      where scope_id = ${scopeId}
-      order by content_id, version, scope_id, reviewed_at desc, created_at desc
-    ), queue as (
-      select
-        editorial.module_id as module_id,
-        version.status as content_status,
-        latest.decision as latest_decision,
-        coalesce(editorial.preflight ->> 'technicalChecksPassed', 'false')
-          = 'true' as technical_checks_passed
-      from content_editorial_records editorial
-      inner join content_versions version
-        on version.id = editorial.content_version_id
-      left join latest_reviews latest
-        on latest.content_id = editorial.content_id
-        and latest.version = editorial.version
-        and latest.scope_id = editorial.scope_id
-      where editorial.scope_id = ${scopeId}
-    )
+function latestReviewsSql(scopeId) {
+  return sql`
+    select distinct on (content_id, version, scope_id)
+      content_id, version, scope_id, decision, reviewed_at
+    from content_review_decisions
+    where scope_id = ${scopeId}
+    order by content_id, version, scope_id, reviewed_at desc, created_at desc
+  `;
+}
+
+function queueRowsSql(scopeId) {
+  return sql`
+    select
+      editorial.module_id as module_id,
+      version.status as content_status,
+      latest.decision as latest_decision,
+      coalesce(editorial.preflight ->> 'technicalChecksPassed', 'false')
+        = 'true' as technical_checks_passed
+    from content_editorial_records editorial
+    inner join content_versions version
+      on version.id = editorial.content_version_id
+    left join latest_reviews latest
+      on latest.content_id = editorial.content_id
+      and latest.version = editorial.version
+      and latest.scope_id = editorial.scope_id
+    where editorial.scope_id = ${scopeId}
+  `;
+}
+
+function queueCountsSql(scopeId) {
+  return sql`
+    with latest_reviews as (${latestReviewsSql(scopeId)}),
+    queue as (${queueRowsSql(scopeId)})
     select
       count(*)::int as total,
       count(*) filter (
-        where content_status not in (
-          'APROVADO_CLINICAMENTE',
-          'AUTORIZADO_PARA_PUBLICACAO',
-          'PUBLICADO',
-          'RETIRADO',
-          'VENCIDO'
-        )
+        where content_status not in ${RELEASED_CONTENT_STATUSES}
         and (latest_decision is null or latest_decision = 'SOLICITAR_AJUSTES')
       )::int as pending,
       count(*) filter (where latest_decision = 'APROVAR_CLINICAMENTE')::int
@@ -146,37 +153,21 @@ async function readClinicalReviewQueueSnapshot(database, scopeId) {
       count(*) filter (where latest_decision = 'SOLICITAR_AJUSTES')::int
         as adjustments_requested,
       count(*) filter (
-        where content_status not in (
-          'APROVADO_CLINICAMENTE',
-          'AUTORIZADO_PARA_PUBLICACAO',
-          'PUBLICADO',
-          'RETIRADO',
-          'VENCIDO'
-        )
+        where content_status not in ${RELEASED_CONTENT_STATUSES}
         and latest_decision is null
       )::int as unreviewed,
       count(*) filter (
-        where content_status not in (
-          'APROVADO_CLINICAMENTE',
-          'AUTORIZADO_PARA_PUBLICACAO',
-          'PUBLICADO',
-          'RETIRADO',
-          'VENCIDO'
-        )
+        where content_status not in ${RELEASED_CONTENT_STATUSES}
         and (latest_decision is null or latest_decision = 'SOLICITAR_AJUSTES')
         and not technical_checks_passed
       )::int as technical_failures
     from queue
-  `);
-  const row = rows[0] ?? {};
-  const moduleRows = await database.db.execute(sql`
-    with latest_reviews as (
-      select distinct on (content_id, version, scope_id)
-        content_id, version, scope_id, decision, reviewed_at
-      from content_review_decisions
-      where scope_id = ${scopeId}
-      order by content_id, version, scope_id, reviewed_at desc, created_at desc
-    )
+  `;
+}
+
+function pendingByModuleSql(scopeId) {
+  return sql`
+    with latest_reviews as (${latestReviewsSql(scopeId)})
     select editorial.module_id as "moduleId", count(*)::int as "count"
     from content_editorial_records editorial
     inner join content_versions version
@@ -186,17 +177,23 @@ async function readClinicalReviewQueueSnapshot(database, scopeId) {
       and latest.version = editorial.version
       and latest.scope_id = editorial.scope_id
     where editorial.scope_id = ${scopeId}
-      and version.status not in (
-        'APROVADO_CLINICAMENTE',
-        'AUTORIZADO_PARA_PUBLICACAO',
-        'PUBLICADO',
-        'RETIRADO',
-        'VENCIDO'
-      )
+      and version.status not in ${RELEASED_CONTENT_STATUSES}
       and (latest.decision is null or latest.decision = 'SOLICITAR_AJUSTES')
     group by editorial.module_id
     order by editorial.module_id
-  `);
+  `;
+}
+
+async function readQueueCounts(database, scopeId) {
+  const rows = await database.db.execute(queueCountsSql(scopeId));
+  return rows[0] ?? {};
+}
+
+async function readPendingByModule(database, scopeId) {
+  return database.db.execute(pendingByModuleSql(scopeId));
+}
+
+export function buildClinicalReviewQueueSnapshot(row, moduleRows) {
   return Object.freeze({
     total: normalizeCount(row.total),
     pending: normalizeCount(row.pending),
@@ -213,6 +210,12 @@ async function readClinicalReviewQueueSnapshot(database, scopeId) {
       ),
     ),
   });
+}
+
+async function readClinicalReviewQueueSnapshot(database, scopeId) {
+  const row = await readQueueCounts(database, scopeId);
+  const moduleRows = await readPendingByModule(database, scopeId);
+  return buildClinicalReviewQueueSnapshot(row, moduleRows);
 }
 
 function normalizeCount(value) {

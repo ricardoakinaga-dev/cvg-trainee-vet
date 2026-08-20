@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { EmbeddingPort, VectorStorePort } from "@cvg/integrations";
 import type { ContentIndexSourcePort } from "@cvg/persistence";
 
+import { createInternalVectorPoint } from "./indexing.js";
 import { reconcileVectorIndex } from "./reconcile.js";
 
 const publishedContent = [
@@ -80,5 +81,28 @@ describe("Qdrant reconciliation", () => {
 
     expect(result).toEqual({ expected: 0, upserted: 0, removed: 0 });
     expect(deps.source.listPublishedIndexable).not.toHaveBeenCalled();
+  });
+
+  it("skips unchanged points and rejects incomplete embedding batches", async () => {
+    const deps = dependencies();
+    const point = createInternalVectorPoint(publishedContent[0], [0.1, 0.2]);
+    vi.mocked(deps.vectorStore.list).mockResolvedValue([point]);
+    vi.mocked(deps.embedding.embed).mockResolvedValue([[0.1, 0.2]]);
+
+    const unchanged = await reconcileVectorIndex(deps);
+    expect(unchanged.upserted).toBe(0);
+    expect(unchanged.removed).toBe(0);
+    expect(deps.vectorStore.upsert).not.toHaveBeenCalled();
+    expect(deps.vectorStore.delete).not.toHaveBeenCalled();
+
+    vi.mocked(deps.embedding.embed).mockResolvedValue([]);
+    await expect(reconcileVectorIndex(deps)).rejects.toThrow(
+      "unexpected vector count",
+    );
+
+    vi.mocked(deps.embedding.embed).mockResolvedValue([undefined as never]);
+    await expect(reconcileVectorIndex(deps)).rejects.toThrow(
+      "incomplete vector set",
+    );
   });
 });

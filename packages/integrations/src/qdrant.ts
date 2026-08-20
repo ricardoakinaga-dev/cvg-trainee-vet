@@ -69,6 +69,250 @@ type QdrantScrollOffset = Exclude<
   null | undefined
 >;
 
+function validateQdrantConfig(config: QdrantIntegrationConfig): void {
+  if (!config.collection.trim()) {
+    throw new TypeError("Qdrant collection is required");
+  }
+  if (
+    !Number.isInteger(config.embeddingDimension) ||
+    config.embeddingDimension < 1
+  ) {
+    throw new RangeError(
+      "Qdrant embeddingDimension must be a positive integer",
+    );
+  }
+}
+
+async function ensureCollection(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+): Promise<void> {
+  const existence = await client.collectionExists(config.collection);
+  if (!existence.exists) {
+    await client.createCollection(config.collection, {
+      vectors: {
+        size: config.embeddingDimension,
+        distance: "Cosine",
+      },
+      on_disk_payload: true,
+    });
+  }
+
+  const collection = await client.getCollection(config.collection);
+  validateCollectionVectorConfig(collection, config.embeddingDimension);
+  const indexedFields = new Set(Object.keys(collection.payload_schema));
+  const fields = ["index_version", "visibility", "status", "scope_id"];
+  await Promise.all(
+    fields
+      .filter((field) => !indexedFields.has(field))
+      .map((field) =>
+        client.createPayloadIndex(config.collection, {
+          field_name: field,
+          field_schema: "keyword",
+          wait: true,
+        }),
+      ),
+  );
+}
+
+async function healthcheck(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+): Promise<void> {
+  const collection = await client.getCollection(config.collection);
+  validateCollectionVectorConfig(collection, config.embeddingDimension);
+}
+
+function toQdrantPoint(
+  config: QdrantIntegrationConfig,
+  point: InternalVectorPoint,
+) {
+  validateVectorDimension(point.vector, config.embeddingDimension);
+  return {
+    id: point.id,
+    vector: [...point.vector],
+    payload: {
+      index_version: config.indexVersion,
+      embedding_model: config.embeddingModel,
+      visibility: "INTERNAL",
+      status: point.status,
+      knowledge_id: point.knowledgeId,
+      section_id: point.sectionId,
+      scope_id: point.scopeId,
+      content_hash: point.contentHash,
+    },
+  };
+}
+
+async function upsert(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+  points: readonly InternalVectorPoint[],
+): Promise<void> {
+  const qdrantPoints = points.map((point) => toQdrantPoint(config, point));
+  if (qdrantPoints.length === 0) return;
+  await client.upsert(config.collection, {
+    wait: true,
+    points: qdrantPoints,
+  });
+}
+
+function searchFilter(config: QdrantIntegrationConfig, scopeId: string) {
+  return {
+    must: [
+      { key: "index_version", match: { value: config.indexVersion } },
+      { key: "visibility", match: { value: "INTERNAL" } },
+      {
+        key: "status",
+        match: { value: "APPROVED_FOR_INTERNAL_SEARCH" },
+      },
+      { key: "scope_id", match: { value: scopeId } },
+    ],
+  };
+}
+
+function searchPayloadFields(): string[] {
+  return [
+    "knowledge_id",
+    "section_id",
+    "scope_id",
+    "content_hash",
+    "index_version",
+    "visibility",
+    "status",
+  ];
+}
+
+function toSearchMatch(
+  config: QdrantIntegrationConfig,
+  scopeId: string,
+  point: Schemas["ScoredPoint"],
+): VectorSearchMatch | undefined {
+  const payload = point.payload;
+  if (
+    !isInternalPayload(payload) ||
+    payload.index_version !== config.indexVersion ||
+    payload.scope_id !== scopeId
+  ) {
+    return undefined;
+  }
+  return {
+    id: String(point.id),
+    score: point.score,
+    knowledgeId: payload.knowledge_id,
+    sectionId: payload.section_id,
+    scopeId: payload.scope_id,
+    contentHash: payload.content_hash,
+  };
+}
+
+async function search(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+  input: VectorSearchInput,
+): Promise<readonly VectorSearchMatch[]> {
+  validateVectorDimension(input.vector, config.embeddingDimension);
+  if (!Number.isInteger(input.limit) || input.limit < 1) {
+    throw new RangeError("Qdrant search limit must be a positive integer");
+  }
+  const result = await client.query(config.collection, {
+    query: [...input.vector],
+    filter: searchFilter(config, input.scopeId),
+    limit: input.limit,
+    ...(input.scoreThreshold === undefined
+      ? {}
+      : { score_threshold: input.scoreThreshold }),
+    with_payload: searchPayloadFields(),
+    with_vector: false,
+  });
+  return result.points.flatMap((point) => {
+    const match = toSearchMatch(config, input.scopeId, point);
+    return match === undefined ? [] : [match];
+  });
+}
+
+function toPointMetadata(
+  config: QdrantIntegrationConfig,
+  point: Schemas["Record"] | Schemas["ScoredPoint"],
+): VectorPointMetadata | undefined {
+  const payload = point.payload;
+  if (
+    !isInternalPayload(payload) ||
+    payload.index_version !== config.indexVersion
+  ) {
+    return undefined;
+  }
+  return {
+    id: String(point.id),
+    knowledgeId: payload.knowledge_id,
+    sectionId: payload.section_id,
+    scopeId: payload.scope_id,
+    contentHash: payload.content_hash,
+  };
+}
+
+async function list(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+): Promise<readonly VectorPointMetadata[]> {
+  const points: VectorPointMetadata[] = [];
+  let offset: QdrantScrollOffset | undefined;
+  while (true) {
+    const result = await client.scroll(config.collection, {
+      limit: 100,
+      ...(offset === undefined ? {} : { offset }),
+      filter: {
+        must: [
+          { key: "visibility", match: { value: "INTERNAL" } },
+          {
+            key: "status",
+            match: { value: "APPROVED_FOR_INTERNAL_SEARCH" },
+          },
+        ],
+      },
+      with_payload: true,
+      with_vector: false,
+    });
+    for (const point of result.points) {
+      const metadata = toPointMetadata(config, point);
+      if (metadata !== undefined) points.push(metadata);
+    }
+    const nextOffset = result.next_page_offset;
+    if (nextOffset === null || nextOffset === undefined) break;
+    offset = nextOffset;
+  }
+  return Object.freeze(points);
+}
+
+async function remove(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+  ids: readonly string[],
+): Promise<void> {
+  if (ids.length === 0) return;
+  if (ids.some((id) => id.trim().length === 0)) {
+    throw new TypeError("Qdrant point ids must not be empty");
+  }
+  await client.delete(config.collection, {
+    wait: true,
+    points: [...ids],
+  });
+}
+
+export function createQdrantVectorStoreMethods(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+): VectorStorePort {
+  return Object.freeze({
+    healthcheck: () => healthcheck(config, client),
+    ensureCollection: () => ensureCollection(config, client),
+    list: () => list(config, client),
+    upsert: (points) => upsert(config, client, points),
+    delete: (ids) => remove(config, client, ids),
+    search: (input) => search(config, client, input),
+  });
+}
+
 export function validateVectorDimension(
   vector: readonly number[],
   expectedDimension: number,
@@ -93,216 +337,8 @@ export function createQdrantVectorStore(
     checkCompatibility: false,
   }),
 ): VectorStorePort {
-  if (!config.collection.trim()) {
-    throw new TypeError("Qdrant collection is required");
-  }
-
-  if (
-    !Number.isInteger(config.embeddingDimension) ||
-    config.embeddingDimension < 1
-  ) {
-    throw new RangeError(
-      "Qdrant embeddingDimension must be a positive integer",
-    );
-  }
-
-  const ensureCollection = async (): Promise<void> => {
-    const existence = await client.collectionExists(config.collection);
-    if (!existence.exists) {
-      await client.createCollection(config.collection, {
-        vectors: {
-          size: config.embeddingDimension,
-          distance: "Cosine",
-        },
-        on_disk_payload: true,
-      });
-    }
-
-    const collection = await client.getCollection(config.collection);
-    validateCollectionVectorConfig(collection, config.embeddingDimension);
-    const indexedFields = new Set(Object.keys(collection.payload_schema));
-    const fields = ["index_version", "visibility", "status", "scope_id"];
-    await Promise.all(
-      fields
-        .filter((field) => !indexedFields.has(field))
-        .map((field) =>
-          client.createPayloadIndex(config.collection, {
-            field_name: field,
-            field_schema: "keyword",
-            wait: true,
-          }),
-        ),
-    );
-  };
-
-  const healthcheck = async (): Promise<void> => {
-    const collection = await client.getCollection(config.collection);
-    validateCollectionVectorConfig(collection, config.embeddingDimension);
-  };
-
-  const upsert = async (
-    points: readonly InternalVectorPoint[],
-  ): Promise<void> => {
-    const qdrantPoints = points.map((point) => {
-      validateVectorDimension(point.vector, config.embeddingDimension);
-      return {
-        id: point.id,
-        vector: [...point.vector],
-        payload: {
-          index_version: config.indexVersion,
-          embedding_model: config.embeddingModel,
-          visibility: "INTERNAL",
-          status: point.status,
-          knowledge_id: point.knowledgeId,
-          section_id: point.sectionId,
-          scope_id: point.scopeId,
-          content_hash: point.contentHash,
-        },
-      };
-    });
-
-    if (qdrantPoints.length === 0) return;
-
-    await client.upsert(config.collection, {
-      wait: true,
-      points: qdrantPoints,
-    });
-  };
-
-  const search = async (
-    input: VectorSearchInput,
-  ): Promise<readonly VectorSearchMatch[]> => {
-    validateVectorDimension(input.vector, config.embeddingDimension);
-    if (!Number.isInteger(input.limit) || input.limit < 1) {
-      throw new RangeError("Qdrant search limit must be a positive integer");
-    }
-
-    const result = await client.query(config.collection, {
-      query: [...input.vector],
-      filter: {
-        must: [
-          {
-            key: "index_version",
-            match: { value: config.indexVersion },
-          },
-          {
-            key: "visibility",
-            match: { value: "INTERNAL" },
-          },
-          {
-            key: "status",
-            match: { value: "APPROVED_FOR_INTERNAL_SEARCH" },
-          },
-          {
-            key: "scope_id",
-            match: { value: input.scopeId },
-          },
-        ],
-      },
-      limit: input.limit,
-      ...(input.scoreThreshold === undefined
-        ? {}
-        : { score_threshold: input.scoreThreshold }),
-      with_payload: [
-        "knowledge_id",
-        "section_id",
-        "scope_id",
-        "content_hash",
-        "index_version",
-        "visibility",
-        "status",
-      ],
-      with_vector: false,
-    });
-
-    return result.points.flatMap((point) => {
-      const payload = point.payload;
-      if (
-        !isInternalPayload(payload) ||
-        payload.index_version !== config.indexVersion ||
-        payload.scope_id !== input.scopeId
-      ) {
-        return [];
-      }
-
-      return [
-        {
-          id: String(point.id),
-          score: point.score,
-          knowledgeId: payload.knowledge_id,
-          sectionId: payload.section_id,
-          scopeId: payload.scope_id,
-          contentHash: payload.content_hash,
-        },
-      ];
-    });
-  };
-
-  const list = async (): Promise<readonly VectorPointMetadata[]> => {
-    const points: VectorPointMetadata[] = [];
-    let offset: QdrantScrollOffset | undefined;
-
-    while (true) {
-      const result = await client.scroll(config.collection, {
-        limit: 100,
-        ...(offset === undefined ? {} : { offset }),
-        filter: {
-          must: [
-            { key: "visibility", match: { value: "INTERNAL" } },
-            {
-              key: "status",
-              match: { value: "APPROVED_FOR_INTERNAL_SEARCH" },
-            },
-          ],
-        },
-        with_payload: true,
-        with_vector: false,
-      });
-
-      for (const point of result.points) {
-        const payload = point.payload;
-        if (
-          !isInternalPayload(payload) ||
-          payload.index_version !== config.indexVersion
-        ) {
-          continue;
-        }
-        points.push({
-          id: String(point.id),
-          knowledgeId: payload.knowledge_id,
-          sectionId: payload.section_id,
-          scopeId: payload.scope_id,
-          contentHash: payload.content_hash,
-        });
-      }
-
-      const nextOffset = result.next_page_offset;
-      if (nextOffset === null || nextOffset === undefined) break;
-      offset = nextOffset;
-    }
-
-    return Object.freeze(points);
-  };
-
-  const remove = async (ids: readonly string[]): Promise<void> => {
-    if (ids.length === 0) return;
-    if (ids.some((id) => id.trim().length === 0)) {
-      throw new TypeError("Qdrant point ids must not be empty");
-    }
-    await client.delete(config.collection, {
-      wait: true,
-      points: [...ids],
-    });
-  };
-
-  return Object.freeze({
-    healthcheck,
-    ensureCollection,
-    list,
-    upsert,
-    search,
-    delete: remove,
-  });
+  validateQdrantConfig(config);
+  return createQdrantVectorStoreMethods(config, client);
 }
 
 function validateCollectionVectorConfig(

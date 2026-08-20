@@ -30,13 +30,32 @@ describe("authentication contracts", () => {
       }).success,
     ).toBe(false);
     expect(
-      passwordUpdateRequestSchema.safeParse({ password: "short" }).success,
+      passwordUpdateRequestSchema.safeParse({
+        currentPassword: "short",
+        password: "short",
+      }).success,
+    ).toBe(false);
+    expect(
+      passwordUpdateRequestSchema.safeParse({
+        currentPassword: validCredential,
+        password: validCredential,
+      }).success,
     ).toBe(false);
   });
 
   it("keeps the session projection intentionally minimal", () => {
     expect(activeSessionProjectionSchema.parse({ status: "active" })).toEqual({
       status: "active",
+      canAccessAdmin: false,
+    });
+    expect(
+      activeSessionProjectionSchema.parse({
+        status: "active",
+        canAccessAdmin: true,
+      }),
+    ).toEqual({
+      status: "active",
+      canAccessAdmin: true,
     });
     expect(
       activeSessionProjectionSchema.safeParse({

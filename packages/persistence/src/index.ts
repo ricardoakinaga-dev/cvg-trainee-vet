@@ -27,6 +27,7 @@ export type {
 export {
   accountInvitations,
   accounts,
+  authoringWorkflowIdempotency,
   aiSuggestions,
   assessmentIdempotency,
   assessmentResults,
@@ -138,6 +139,7 @@ export {
   createContentIndexSourceRepository,
   contentRowToRecord,
   createContentRepository,
+  createContentTransactionalOperations,
   createContentUseCaseDependencies,
 } from "./content-repository.js";
 export type {
@@ -207,6 +209,8 @@ export type { ManagedAccountRowShape } from "./account-management-repository.js"
 export {
   authoringRowToRecord,
   createAuthoringRepository,
+  createAuthoringTransactionPort,
+  createClinicalApproverPort,
 } from "./authoring-repository.js";
 export type { AuthoringRowShape } from "./authoring-repository.js";
 export { createClinicalReviewQueueRepository } from "./clinical-review-queue-repository.js";

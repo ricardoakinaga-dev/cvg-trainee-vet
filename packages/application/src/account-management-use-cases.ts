@@ -200,6 +200,15 @@ function normalizeScopes(
   return normalizeStringArray(values, "scopes", 32);
 }
 
+function sameStringSet(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  if (left.length !== right.length) return false;
+  const rightSet = new Set(right);
+  return left.every((value) => rightSet.has(value));
+}
+
 function assertManageAccounts(principal: AccountManagementPrincipal): void {
   assertNonEmpty(principal.principalId, "principalId");
   if (
@@ -301,6 +310,100 @@ async function findScopedTarget(
   return target;
 }
 
+type ManagedAccountUpdateContext = Readonly<{
+  readonly roles: readonly Role[] | undefined;
+  readonly scopes: readonly string[] | undefined;
+  readonly now: Date;
+}>;
+
+function validateManagedAccountUpdate(
+  command: UpdateManagedAccountCommand,
+): ManagedAccountUpdateContext {
+  if (
+    !Number.isInteger(command.expectedVersion) ||
+    command.expectedVersion < 0
+  ) {
+    throw new ApplicationError(
+      "validation_error",
+      "expectedVersion is invalid",
+    );
+  }
+  assertAccountStatus(command.nextStatus, "status");
+  const roles = normalizeRoles(command.nextRoles);
+  const scopes = normalizeScopes(command.nextScopes);
+  if (
+    command.nextStatus === undefined &&
+    roles === undefined &&
+    scopes === undefined
+  ) {
+    throw new ApplicationError(
+      "validation_error",
+      "at least one account field is required",
+    );
+  }
+  const now = command.now ?? new Date();
+  assertDate(now, "now");
+  return Object.freeze({ roles, scopes, now });
+}
+
+async function updateAccountAndRevokeSessions(
+  command: UpdateManagedAccountCommand,
+  target: ManagedAccount,
+  context: ManagedAccountUpdateContext,
+  operations: AccountManagementTransactionalOperations,
+): Promise<ManagedAccount> {
+  const updated = await operations.accounts.update({
+    accountId: target.accountId,
+    expectedVersion: command.expectedVersion,
+    ...(command.nextStatus === undefined ? {} : { status: command.nextStatus }),
+    ...(context.roles === undefined ? {} : { roles: context.roles }),
+    ...(context.scopes === undefined ? {} : { scopes: context.scopes }),
+  });
+  if (updated === null) {
+    throw new ApplicationError(
+      "state_conflict",
+      "Account was changed by another operation",
+    );
+  }
+  const accessChanged =
+    !sameStringSet(target.roles, updated.roles) ||
+    !sameStringSet(target.scopes, updated.scopes);
+  if (updated.accountStatus !== "ACTIVE" || accessChanged) {
+    await operations.sessions.revokeAll(updated.accountId, context.now);
+  }
+  return updated;
+}
+
+async function auditAccountUpdate(
+  command: UpdateManagedAccountCommand,
+  target: ManagedAccount,
+  updated: ManagedAccount,
+  now: Date,
+  dependencies: AccountManagementUseCaseDependencies,
+  operations: AccountManagementTransactionalOperations,
+): Promise<void> {
+  const auditScopeId = updated.scopes.find((scope) =>
+    command.scopes.includes(scope),
+  );
+  await operations.audit.append(
+    createAuditEntry({
+      auditId: dependencies.idFactory(),
+      principalId: command.principalId,
+      action: "account.updated",
+      resourceType: "account",
+      resourceId: updated.accountId,
+      ...(auditScopeId === undefined ? {} : { scopeId: auditScopeId }),
+      outcome: "SUCCESS",
+      reasonCode: "admin_account_lifecycle",
+      requestId: command.correlationId,
+      correlationId: command.correlationId,
+      beforeHash: accountHash(target),
+      afterHash: accountHash(updated),
+      occurredAt: now.toISOString(),
+    }),
+  );
+}
+
 export async function listManagedAccounts(
   command: ListManagedAccountsCommand,
   dependencies: AccountManagementUseCaseDependencies,
@@ -348,30 +451,7 @@ export async function updateManagedAccount(
 ): Promise<ManagedAccount> {
   assertManageAccounts(command);
   assertCorrelationId(command.correlationId);
-  if (
-    !Number.isInteger(command.expectedVersion) ||
-    command.expectedVersion < 0
-  ) {
-    throw new ApplicationError(
-      "validation_error",
-      "expectedVersion is invalid",
-    );
-  }
-  assertAccountStatus(command.nextStatus, "status");
-  const roles = normalizeRoles(command.nextRoles);
-  const scopes = normalizeScopes(command.nextScopes);
-  if (
-    command.nextStatus === undefined &&
-    roles === undefined &&
-    scopes === undefined
-  ) {
-    throw new ApplicationError(
-      "validation_error",
-      "at least one account field is required",
-    );
-  }
-  const now = command.now ?? new Date();
-  assertDate(now, "now");
+  const context = validateManagedAccountUpdate(command);
 
   return dependencies.transaction.run(async (operations) => {
     const target = await findScopedTarget(
@@ -380,44 +460,20 @@ export async function updateManagedAccount(
       operations,
     );
     assertMutableTarget(target, command);
-    assertTargetInScope(target, command, scopes);
-    const updated = await operations.accounts.update({
-      accountId: target.accountId,
-      expectedVersion: command.expectedVersion,
-      ...(command.nextStatus === undefined
-        ? {}
-        : { status: command.nextStatus }),
-      ...(roles === undefined ? {} : { roles }),
-      ...(scopes === undefined ? {} : { scopes }),
-    });
-    if (updated === null) {
-      throw new ApplicationError(
-        "state_conflict",
-        "Account was changed by another operation",
-      );
-    }
-    if (updated.accountStatus !== "ACTIVE") {
-      await operations.sessions.revokeAll(updated.accountId, now);
-    }
-    const auditScopeId = updated.scopes.find((scope) =>
-      command.scopes.includes(scope),
+    assertTargetInScope(target, command, context.scopes);
+    const updated = await updateAccountAndRevokeSessions(
+      command,
+      target,
+      context,
+      operations,
     );
-    await operations.audit.append(
-      createAuditEntry({
-        auditId: dependencies.idFactory(),
-        principalId: command.principalId,
-        action: "account.updated",
-        resourceType: "account",
-        resourceId: updated.accountId,
-        ...(auditScopeId === undefined ? {} : { scopeId: auditScopeId }),
-        outcome: "SUCCESS",
-        reasonCode: "admin_account_lifecycle",
-        requestId: command.correlationId,
-        correlationId: command.correlationId,
-        beforeHash: accountHash(target),
-        afterHash: accountHash(updated),
-        occurredAt: now.toISOString(),
-      }),
+    await auditAccountUpdate(
+      command,
+      target,
+      updated,
+      context.now,
+      dependencies,
+      operations,
     );
     return updated;
   });

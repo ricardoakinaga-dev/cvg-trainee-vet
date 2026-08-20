@@ -66,6 +66,17 @@ function testReferences(row) {
   return testField.split(",").filter((reference) => reference.length > 0);
 }
 
+function configuredProofReferences(policy, proofType) {
+  const references = policy?.proofReferencePaths?.[proofType];
+  return new Set(
+    Array.isArray(references)
+      ? references.filter(
+          (reference) => typeof reference === "string" && reference.length > 0,
+        )
+      : [],
+  );
+}
+
 function layersForReference(reference) {
   const normalized = reference.toLowerCase();
   const layers = new Set();
@@ -90,12 +101,13 @@ function layersForReference(reference) {
   return layers;
 }
 
-function proofCoverage(row) {
+function proofCoverage(row, policy) {
   const references = testReferences(row);
   const joined = references.join(" ").toLowerCase();
+  const errorReferences = configuredProofReferences(policy, "error");
   return Object.freeze({
     success: references.length > 0,
-    error: false,
+    error: references.some((reference) => errorReferences.has(reference)),
     denied:
       /(security|auth|rls|forbidden|access|authorization|exposure|public-boundary)/u.test(
         joined,
@@ -107,12 +119,13 @@ function proofCoverage(row) {
   });
 }
 
-function analyzeRows(rows) {
+function analyzeRows(rows, policy) {
   const requiredRows = rows.filter((row) => ["P0", "P1"].includes(row[1]));
   const proofCoverageByType = Object.fromEntries(
     REQUIRED_PROOF_TYPES.map((proofType) => [
       proofType,
-      requiredRows.filter((row) => proofCoverage(row)[proofType]).length,
+      requiredRows.filter((row) => proofCoverage(row, policy)[proofType])
+        .length,
     ]),
   );
   const layerCoverage = Object.fromEntries(
@@ -126,7 +139,9 @@ function analyzeRows(rows) {
     ]),
   );
   const completeProofRows = requiredRows.filter((row) =>
-    REQUIRED_PROOF_TYPES.every((proofType) => proofCoverage(row)[proofType]),
+    REQUIRED_PROOF_TYPES.every(
+      (proofType) => proofCoverage(row, policy)[proofType],
+    ),
   ).length;
   return Object.freeze({
     requirements: requiredRows.length,
@@ -182,11 +197,28 @@ export function validateTestRiskMatrix(snapshot) {
       errors.push(`risk matrix source row ${row[0]} is duplicated`);
     ids.add(row[0]);
   }
-  const analysis = analyzeRows(rows);
+  const analysis = analyzeRows(rows, policy);
   if (analysis.requirements !== 87)
     errors.push(
       `risk matrix must derive 87 P0/P1 requirements, found ${analysis.requirements}`,
     );
+  const errorReferences = policy.proofReferencePaths?.error;
+  if (!Array.isArray(errorReferences) || errorReferences.length === 0) {
+    errors.push(
+      "test risk matrix must declare explicit error proof references",
+    );
+  } else {
+    const matrixTestReferences = new Set(
+      rows.flatMap((row) => testReferences(row)),
+    );
+    for (const reference of errorReferences) {
+      if (!matrixTestReferences.has(reference)) {
+        errors.push(
+          `error proof reference is not linked from the premium matrix: ${reference}`,
+        );
+      }
+    }
+  }
   return Object.freeze(errors);
 }
 
@@ -194,7 +226,7 @@ export function buildTestRiskMatrixReport(snapshot) {
   const errors = validateTestRiskMatrix(snapshot);
   if (errors.length > 0) throw new Error(errors.join("; "));
   const policy = JSON.parse(snapshot.get(POLICY_PATH));
-  const analysis = analyzeRows(matrixRows(snapshot.get(MATRIX_PATH)));
+  const analysis = analyzeRows(matrixRows(snapshot.get(MATRIX_PATH)), policy);
   return Object.freeze({
     status: policy.status,
     task: policy.task,

@@ -142,170 +142,194 @@ function setRecalculationContext(
   return executor.execute(sql`select set_config(${setting}, 'true', true)`);
 }
 
+type AssessmentRecalculationOperations = AssessmentRecalculationPort &
+  AssessmentRecalculationCandidateWritePort;
+
+function createRegisterOperation(
+  db: DatabaseExecutor,
+): AssessmentRecalculationOperations["register"] {
+  return async (
+    candidate: AssessmentRecalculationCandidate,
+    reason: AssessmentRecalculationReason,
+  ): Promise<void> => {
+    await db.transaction(async (transaction) => {
+      const executor = transaction;
+      await setDatabaseSecurityContext(executor, {
+        scopeId: candidate.scopeId,
+      });
+      await setRecalculationContext(executor, "write");
+      await executor.insert(assessmentRecalculationCandidates).values({
+        id: candidate.candidateId,
+        participantId: candidate.participantId,
+        scopeId: candidate.scopeId,
+        attemptId: candidate.attemptId,
+        itemId: candidate.itemId,
+        previousVersion: candidate.previousVersion,
+        previousScore: candidate.previousScore,
+        previousOutcome: candidate.previousOutcome,
+        correctCount: candidate.correctCount,
+        eligibleItemCount: candidate.eligibleItemCount,
+        triggerReason: reason,
+        status: "PENDING",
+      });
+    });
+  };
+}
+
+function createListAffectedOperation(
+  db: DatabaseExecutor,
+): AssessmentRecalculationOperations["listAffected"] {
+  return async (
+    scopeId: string,
+    itemId: string,
+    reason?: AssessmentRecalculationReason,
+  ): Promise<readonly AssessmentRecalculationCandidate[]> => {
+    return db.transaction(async (transaction) => {
+      const executor = transaction;
+      await setDatabaseSecurityContext(executor, { scopeId });
+      await setRecalculationContext(executor, "read");
+      const rows = await executor
+        .select({
+          id: assessmentRecalculationCandidates.id,
+          participantId: assessmentRecalculationCandidates.participantId,
+          scopeId: assessmentRecalculationCandidates.scopeId,
+          attemptId: assessmentRecalculationCandidates.attemptId,
+          itemId: assessmentRecalculationCandidates.itemId,
+          previousVersion: assessmentRecalculationCandidates.previousVersion,
+          previousScore: assessmentRecalculationCandidates.previousScore,
+          previousOutcome: assessmentRecalculationCandidates.previousOutcome,
+          correctCount: assessmentRecalculationCandidates.correctCount,
+          eligibleItemCount:
+            assessmentRecalculationCandidates.eligibleItemCount,
+          triggerReason: assessmentRecalculationCandidates.triggerReason,
+          status: assessmentRecalculationCandidates.status,
+          createdAt: assessmentRecalculationCandidates.createdAt,
+          updatedAt: assessmentRecalculationCandidates.updatedAt,
+        })
+        .from(assessmentRecalculationCandidates)
+        .where(
+          and(
+            eq(assessmentRecalculationCandidates.scopeId, scopeId),
+            eq(assessmentRecalculationCandidates.itemId, itemId),
+            eq(assessmentRecalculationCandidates.status, "PENDING"),
+            ...(reason === undefined
+              ? []
+              : [eq(assessmentRecalculationCandidates.triggerReason, reason)]),
+          ),
+        )
+        .orderBy(asc(assessmentRecalculationCandidates.createdAt));
+      return Object.freeze(
+        rows.map((row) => assessmentRecalculationCandidateRowToCandidate(row)),
+      );
+    });
+  };
+}
+
+function createSaveOperation(
+  db: DatabaseExecutor,
+): AssessmentRecalculationOperations["save"] {
+  return async (state: AssessmentRecalculationState): Promise<void> => {
+    await db.transaction(async (transaction) => {
+      const executor = transaction;
+      await setDatabaseSecurityContext(executor, { scopeId: state.scopeId });
+      await setRecalculationContext(executor, "write");
+      const update = assessmentRecalculationStateToUpdate(state);
+      const rows = await executor
+        .update(assessmentRecalculationCandidates)
+        .set(update)
+        .where(
+          and(
+            eq(assessmentRecalculationCandidates.id, state.candidateId),
+            eq(assessmentRecalculationCandidates.scopeId, state.scopeId),
+            eq(assessmentRecalculationCandidates.status, "PENDING"),
+            eq(
+              assessmentRecalculationCandidates.previousVersion,
+              state.previousVersion,
+            ),
+          ),
+        )
+        .returning({ id: assessmentRecalculationCandidates.id });
+      if (rows.length === 0) {
+        throw new PersistenceConflictError(
+          "assessment recalculation candidate changed concurrently",
+        );
+      }
+    });
+  };
+}
+
+function createNotifyOperation(
+  db: DatabaseExecutor,
+): AssessmentRecalculationOperations["notify"] {
+  return async (
+    notification: AssessmentRecalculationNotification,
+  ): Promise<void> => {
+    await db.transaction(async (transaction) => {
+      const executor = transaction;
+      await setDatabaseSecurityContext(executor, {
+        scopeId: notification.scopeId,
+      });
+      await setRecalculationContext(executor, "write");
+      await executor.insert(outboxEvents).values(
+        createOutboxInsert({
+          eventId: randomUUID(),
+          eventType: "assessment.recalculated.v1",
+          aggregateType: "assessment_recalculation",
+          aggregateId: notification.attemptId,
+          occurredAt: notification.occurredAt,
+          schemaVersion: 1,
+          correlationId: randomUUID(),
+          payload: {
+            notification_id: notification.notificationId,
+            candidate_id: notification.candidateId,
+            participant_id: notification.participantId,
+            scope_id: notification.scopeId,
+            attempt_id: notification.attemptId,
+            item_id: notification.itemId,
+            recalculated_version: String(notification.recalculatedVersion),
+          },
+        }),
+      );
+      const updated = await executor
+        .update(assessmentRecalculationCandidates)
+        .set({
+          status: "NOTIFICATION_QUEUED",
+          notificationQueuedAt: new Date(notification.occurredAt),
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(assessmentRecalculationCandidates.id, notification.candidateId),
+            eq(assessmentRecalculationCandidates.status, "CALCULATED"),
+            eq(
+              assessmentRecalculationCandidates.recalculatedVersion,
+              notification.recalculatedVersion,
+            ),
+          ),
+        )
+        .returning({ id: assessmentRecalculationCandidates.id });
+      if (updated.length === 0) {
+        throw new PersistenceConflictError(
+          "assessment recalculation notification state changed concurrently",
+        );
+      }
+    });
+  };
+}
+
+export function createAssessmentRecalculationMethods(
+  db: DatabaseExecutor,
+): AssessmentRecalculationOperations {
+  return Object.freeze({
+    register: createRegisterOperation(db),
+    listAffected: createListAffectedOperation(db),
+    save: createSaveOperation(db),
+    notify: createNotifyOperation(db),
+  });
+}
+
 export function createAssessmentRecalculationRepository(
   db: DatabaseExecutor,
-): AssessmentRecalculationPort & AssessmentRecalculationCandidateWritePort {
-  const repository = {
-    register: async (
-      candidate: AssessmentRecalculationCandidate,
-      reason: AssessmentRecalculationReason,
-    ): Promise<void> => {
-      await db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, {
-          scopeId: candidate.scopeId,
-        });
-        await setRecalculationContext(executor, "write");
-        await executor.insert(assessmentRecalculationCandidates).values({
-          id: candidate.candidateId,
-          participantId: candidate.participantId,
-          scopeId: candidate.scopeId,
-          attemptId: candidate.attemptId,
-          itemId: candidate.itemId,
-          previousVersion: candidate.previousVersion,
-          previousScore: candidate.previousScore,
-          previousOutcome: candidate.previousOutcome,
-          correctCount: candidate.correctCount,
-          eligibleItemCount: candidate.eligibleItemCount,
-          triggerReason: reason,
-          status: "PENDING",
-        });
-      });
-    },
-    listAffected: async (
-      scopeId: string,
-      itemId: string,
-      reason?: AssessmentRecalculationReason,
-    ): Promise<readonly AssessmentRecalculationCandidate[]> => {
-      return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, { scopeId });
-        await setRecalculationContext(executor, "read");
-        const rows = await executor
-          .select({
-            id: assessmentRecalculationCandidates.id,
-            participantId: assessmentRecalculationCandidates.participantId,
-            scopeId: assessmentRecalculationCandidates.scopeId,
-            attemptId: assessmentRecalculationCandidates.attemptId,
-            itemId: assessmentRecalculationCandidates.itemId,
-            previousVersion: assessmentRecalculationCandidates.previousVersion,
-            previousScore: assessmentRecalculationCandidates.previousScore,
-            previousOutcome: assessmentRecalculationCandidates.previousOutcome,
-            correctCount: assessmentRecalculationCandidates.correctCount,
-            eligibleItemCount:
-              assessmentRecalculationCandidates.eligibleItemCount,
-            triggerReason: assessmentRecalculationCandidates.triggerReason,
-            status: assessmentRecalculationCandidates.status,
-            createdAt: assessmentRecalculationCandidates.createdAt,
-            updatedAt: assessmentRecalculationCandidates.updatedAt,
-          })
-          .from(assessmentRecalculationCandidates)
-          .where(
-            and(
-              eq(assessmentRecalculationCandidates.scopeId, scopeId),
-              eq(assessmentRecalculationCandidates.itemId, itemId),
-              eq(assessmentRecalculationCandidates.status, "PENDING"),
-              ...(reason === undefined
-                ? []
-                : [
-                    eq(assessmentRecalculationCandidates.triggerReason, reason),
-                  ]),
-            ),
-          )
-          .orderBy(asc(assessmentRecalculationCandidates.createdAt));
-        return Object.freeze(
-          rows.map((row) =>
-            assessmentRecalculationCandidateRowToCandidate(row),
-          ),
-        );
-      });
-    },
-    save: async (state: AssessmentRecalculationState): Promise<void> => {
-      await db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, { scopeId: state.scopeId });
-        await setRecalculationContext(executor, "write");
-        const update = assessmentRecalculationStateToUpdate(state);
-        const rows = await executor
-          .update(assessmentRecalculationCandidates)
-          .set(update)
-          .where(
-            and(
-              eq(assessmentRecalculationCandidates.id, state.candidateId),
-              eq(assessmentRecalculationCandidates.scopeId, state.scopeId),
-              eq(assessmentRecalculationCandidates.status, "PENDING"),
-              eq(
-                assessmentRecalculationCandidates.previousVersion,
-                state.previousVersion,
-              ),
-            ),
-          )
-          .returning({ id: assessmentRecalculationCandidates.id });
-        if (rows.length === 0) {
-          throw new PersistenceConflictError(
-            "assessment recalculation candidate changed concurrently",
-          );
-        }
-      });
-    },
-    notify: async (
-      notification: AssessmentRecalculationNotification,
-    ): Promise<void> => {
-      await db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, {
-          scopeId: notification.scopeId,
-        });
-        await setRecalculationContext(executor, "write");
-        await executor.insert(outboxEvents).values(
-          createOutboxInsert({
-            eventId: randomUUID(),
-            eventType: "assessment.recalculated.v1",
-            aggregateType: "assessment_recalculation",
-            aggregateId: notification.attemptId,
-            occurredAt: notification.occurredAt,
-            schemaVersion: 1,
-            correlationId: randomUUID(),
-            payload: {
-              notification_id: notification.notificationId,
-              candidate_id: notification.candidateId,
-              participant_id: notification.participantId,
-              scope_id: notification.scopeId,
-              attempt_id: notification.attemptId,
-              item_id: notification.itemId,
-              recalculated_version: String(notification.recalculatedVersion),
-            },
-          }),
-        );
-        const updated = await executor
-          .update(assessmentRecalculationCandidates)
-          .set({
-            status: "NOTIFICATION_QUEUED",
-            notificationQueuedAt: new Date(notification.occurredAt),
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(
-                assessmentRecalculationCandidates.id,
-                notification.candidateId,
-              ),
-              eq(assessmentRecalculationCandidates.status, "CALCULATED"),
-              eq(
-                assessmentRecalculationCandidates.recalculatedVersion,
-                notification.recalculatedVersion,
-              ),
-            ),
-          )
-          .returning({ id: assessmentRecalculationCandidates.id });
-        if (updated.length === 0) {
-          throw new PersistenceConflictError(
-            "assessment recalculation notification state changed concurrently",
-          );
-        }
-      });
-    },
-  } satisfies AssessmentRecalculationPort &
-    AssessmentRecalculationCandidateWritePort;
-  return Object.freeze(repository);
+): AssessmentRecalculationOperations {
+  return createAssessmentRecalculationMethods(db);
 }

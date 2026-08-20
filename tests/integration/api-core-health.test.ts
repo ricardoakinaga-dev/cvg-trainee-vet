@@ -21,6 +21,7 @@ describe.skipIf(!runLiveHealthTest || databaseUrl === undefined)(
         WEB_ORIGINS: "http://127.0.0.1:0",
         QDRANT_ENABLED: "false",
         AI_ENABLED: "false",
+        METRICS_SCRAPE_TOKEN: "m".repeat(32),
       });
 
       await runtime.listen();
@@ -29,7 +30,9 @@ describe.skipIf(!runLiveHealthTest || databaseUrl === undefined)(
         if (address === null || typeof address === "string") return;
         const baseUrl = `http://127.0.0.1:${address.port}`;
         const ready = await fetch(`${baseUrl}/health/ready`);
-        const dependencies = await fetch(`${baseUrl}/health/dependencies`);
+        const dependencies = await fetch(`${baseUrl}/health/dependencies`, {
+          headers: { authorization: `Bearer ${"m".repeat(32)}` },
+        });
         const body = (await dependencies.json()) as {
           data: {
             status: string;

@@ -18,7 +18,7 @@ function isRecord(value: unknown): value is ApiRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function isDependencyState(value: unknown): value is DependencyState {
+export function isDependencyState(value: unknown): value is DependencyState {
   if (!isRecord(value) || !isRecord(value.dependencies)) return false;
   return (
     (value.status === "READY" ||
@@ -34,6 +34,73 @@ function isDependencyState(value: unknown): value is DependencyState {
   );
 }
 
+async function requestDependencyState(): Promise<DependencyState> {
+  const response = await fetch("/health/dependencies", {
+    cache: "no-store",
+    credentials: "include",
+  });
+  const payload: unknown = await response.json().catch(() => null);
+  if (!isRecord(payload) || payload.success !== true) throw new Error();
+  if (!isDependencyState(payload.data)) throw new Error();
+  return payload.data;
+}
+
+type DependencyExperienceProps = Readonly<{
+  readonly state: LoadState;
+  readonly dependencies: DependencyState | null;
+  readonly onRetry: () => void;
+}>;
+
+function DependencyExperience({
+  state,
+  dependencies,
+  onRetry,
+}: DependencyExperienceProps) {
+  if (state === "loading") {
+    return (
+      <div
+        className="experience-panel"
+        data-testid="operations-loading"
+        role="status"
+      >
+        Consultando dependências…
+      </div>
+    );
+  }
+  if (state === "error") {
+    return (
+      <div className="experience-panel error-panel" role="alert">
+        <p>Não foi possível consultar o estado operacional.</p>
+        <button type="button" onClick={onRetry}>
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
+  if (dependencies === null) return null;
+  return (
+    <div className="experience-panel" data-testid="operations-ready">
+      <p className="operations-status">
+        Estado geral: <strong>{dependencies.status}</strong>
+      </p>
+      <dl className="dependency-list">
+        <div>
+          <dt>PostgreSQL</dt>
+          <dd>{dependencies.dependencies.postgres}</dd>
+        </div>
+        <div>
+          <dt>Qdrant</dt>
+          <dd>{dependencies.dependencies.qdrant}</dd>
+        </div>
+        <div>
+          <dt>IA assistiva</dt>
+          <dd>{dependencies.dependencies.ai}</dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
 export default function OperationsPage() {
   const [state, setState] = useState<LoadState>("loading");
   const [dependencies, setDependencies] = useState<DependencyState | null>(
@@ -43,14 +110,7 @@ export default function OperationsPage() {
   const loadDependencies = useCallback(async () => {
     setState("loading");
     try {
-      const response = await fetch("/health/dependencies", {
-        cache: "no-store",
-        credentials: "include",
-      });
-      const payload: unknown = await response.json().catch(() => null);
-      if (!isRecord(payload) || payload.success !== true) throw new Error();
-      if (!isDependencyState(payload.data)) throw new Error();
-      setDependencies(payload.data);
+      setDependencies(await requestDependencyState());
       setState("ready");
     } catch {
       setDependencies(null);
@@ -92,42 +152,11 @@ export default function OperationsPage() {
           </p>
         </div>
 
-        {state === "loading" ? (
-          <div
-            className="experience-panel"
-            data-testid="operations-loading"
-            role="status"
-          >
-            Consultando dependências…
-          </div>
-        ) : state === "error" ? (
-          <div className="experience-panel error-panel" role="alert">
-            <p>Não foi possível consultar o estado operacional.</p>
-            <button type="button" onClick={() => void loadDependencies()}>
-              Tentar novamente
-            </button>
-          </div>
-        ) : dependencies !== null ? (
-          <div className="experience-panel" data-testid="operations-ready">
-            <p className="operations-status">
-              Estado geral: <strong>{dependencies.status}</strong>
-            </p>
-            <dl className="dependency-list">
-              <div>
-                <dt>PostgreSQL</dt>
-                <dd>{dependencies.dependencies.postgres}</dd>
-              </div>
-              <div>
-                <dt>Qdrant</dt>
-                <dd>{dependencies.dependencies.qdrant}</dd>
-              </div>
-              <div>
-                <dt>IA assistiva</dt>
-                <dd>{dependencies.dependencies.ai}</dd>
-              </div>
-            </dl>
-          </div>
-        ) : null}
+        <DependencyExperience
+          state={state}
+          dependencies={dependencies}
+          onRetry={() => void loadDependencies()}
+        />
       </section>
     </main>
   );

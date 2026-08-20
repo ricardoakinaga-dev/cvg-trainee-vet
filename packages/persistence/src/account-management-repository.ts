@@ -125,103 +125,129 @@ function scopePredicate(scopeId: string | undefined) {
   return sql`${accounts.scopes} ?| ARRAY[${scopeId}]`;
 }
 
+type AccountListQuery = Parameters<AccountManagementAccountPort["list"]>[0];
+type AccountListResult = Awaited<
+  ReturnType<AccountManagementAccountPort["list"]>
+>;
+type AccountId = Parameters<AccountManagementAccountPort["findById"]>[0];
+type SessionAccountId = Parameters<
+  AccountManagementSessionPort["revokeAll"]
+>[0];
+type SessionRevokedAt = Parameters<
+  AccountManagementSessionPort["revokeAll"]
+>[1];
+
+async function listManagedAccounts(
+  executor: DatabaseExecutor,
+  query: AccountListQuery,
+): Promise<AccountListResult> {
+  const conditions = [
+    scopePredicate(query.scopeId),
+    query.status === undefined ? undefined : eq(accounts.status, query.status),
+  ].filter(
+    (condition): condition is NonNullable<typeof condition> =>
+      condition !== undefined,
+  );
+  const rows = await accountSelection(executor)
+    .where(conditions.length === 0 ? undefined : and(...conditions))
+    .orderBy(asc(accounts.professionalEmail))
+    .limit(query.limit + 1);
+  const pageRows = rows.slice(0, query.limit);
+  return Object.freeze({
+    accounts: Object.freeze(pageRows.map(managedAccountRowToRecord)),
+    nextCursor:
+      rows.length > query.limit
+        ? (pageRows.at(-1)?.professionalEmail ?? null)
+        : null,
+  });
+}
+
+async function findManagedAccount(
+  executor: DatabaseExecutor,
+  accountId: string,
+): ReturnType<AccountManagementAccountPort["findById"]> {
+  assertNonEmpty(accountId, "accountId");
+  const rows = await accountSelection(executor)
+    .where(eq(accounts.id, accountId))
+    .limit(1);
+  const row = rows[0];
+  return row === undefined ? null : managedAccountRowToRecord(row);
+}
+
+async function updateManagedAccount(
+  executor: DatabaseExecutor,
+  input: AccountManagementUpdateInput,
+): ReturnType<AccountManagementAccountPort["update"]> {
+  assertNonEmpty(input.accountId, "accountId");
+  if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 0) {
+    throw new PersistenceMappingError("expectedVersion is invalid");
+  }
+  const values = {
+    ...(input.status === undefined ? {} : { status: input.status }),
+    ...(input.roles === undefined ? {} : { roles: input.roles }),
+    ...(input.scopes === undefined ? {} : { scopes: input.scopes }),
+    sessionGeneration: sql`${accounts.sessionGeneration} + 1`,
+    version: sql`${accounts.version} + 1`,
+    updatedAt: new Date(),
+  };
+  const rows = await executor
+    .update(accounts)
+    .set(values)
+    .where(
+      and(
+        eq(accounts.id, input.accountId),
+        eq(accounts.version, input.expectedVersion),
+      ),
+    )
+    .returning({
+      accountId: accounts.id,
+      professionalEmail: accounts.professionalEmail,
+      accountStatus: accounts.status,
+      roles: accounts.roles,
+      scopes: accounts.scopes,
+      version: accounts.version,
+      createdAt: accounts.createdAt,
+      updatedAt: accounts.updatedAt,
+    });
+  const row = rows[0];
+  return row === undefined ? null : managedAccountRowToRecord(row);
+}
+
+async function revokeManagedSessions(
+  executor: DatabaseExecutor,
+  accountId: string,
+  revokedAt: Date,
+): ReturnType<AccountManagementSessionPort["revokeAll"]> {
+  assertNonEmpty(accountId, "accountId");
+  if (Number.isNaN(revokedAt.getTime())) {
+    throw new PersistenceMappingError("revokedAt is invalid");
+  }
+  const rows = await executor
+    .update(sessions)
+    .set({ revokedAt })
+    .where(and(eq(sessions.accountId, accountId), isNull(sessions.revokedAt)))
+    .returning({ id: sessions.id });
+  return rows.length;
+}
+
 export function createAccountManagementRepositories(
   executor: DatabaseExecutor,
 ): Readonly<{
   readonly accounts: AccountManagementAccountPort;
   readonly sessions: AccountManagementSessionPort;
 }> {
-  const accountRepository: AccountManagementAccountPort = {
-    list: async (query) => {
-      const conditions = [
-        scopePredicate(query.scopeId),
-        query.status === undefined
-          ? undefined
-          : eq(accounts.status, query.status),
-      ].filter(
-        (condition): condition is NonNullable<typeof condition> =>
-          condition !== undefined,
-      );
-      const rows = await accountSelection(executor)
-        .where(conditions.length === 0 ? undefined : and(...conditions))
-        .orderBy(asc(accounts.professionalEmail))
-        .limit(query.limit + 1);
-      const pageRows = rows.slice(0, query.limit);
-      return Object.freeze({
-        accounts: Object.freeze(pageRows.map(managedAccountRowToRecord)),
-        nextCursor:
-          rows.length > query.limit
-            ? (pageRows.at(-1)?.professionalEmail ?? null)
-            : null,
-      });
-    },
-    findById: async (accountId) => {
-      assertNonEmpty(accountId, "accountId");
-      const rows = await accountSelection(executor)
-        .where(eq(accounts.id, accountId))
-        .limit(1);
-      const row = rows[0];
-      return row === undefined ? null : managedAccountRowToRecord(row);
-    },
-    update: async (input: AccountManagementUpdateInput) => {
-      assertNonEmpty(input.accountId, "accountId");
-      if (
-        !Number.isInteger(input.expectedVersion) ||
-        input.expectedVersion < 0
-      ) {
-        throw new PersistenceMappingError("expectedVersion is invalid");
-      }
-      const values = {
-        ...(input.status === undefined ? {} : { status: input.status }),
-        ...(input.roles === undefined ? {} : { roles: input.roles }),
-        ...(input.scopes === undefined ? {} : { scopes: input.scopes }),
-        version: sql`${accounts.version} + 1`,
-        updatedAt: new Date(),
-      };
-      const rows = await executor
-        .update(accounts)
-        .set(values)
-        .where(
-          and(
-            eq(accounts.id, input.accountId),
-            eq(accounts.version, input.expectedVersion),
-          ),
-        )
-        .returning({
-          accountId: accounts.id,
-          professionalEmail: accounts.professionalEmail,
-          accountStatus: accounts.status,
-          roles: accounts.roles,
-          scopes: accounts.scopes,
-          version: accounts.version,
-          createdAt: accounts.createdAt,
-          updatedAt: accounts.updatedAt,
-        });
-      const row = rows[0];
-      return row === undefined ? null : managedAccountRowToRecord(row);
-    },
-  };
-
-  const sessionRepository: AccountManagementSessionPort = {
-    revokeAll: async (accountId, revokedAt) => {
-      assertNonEmpty(accountId, "accountId");
-      if (Number.isNaN(revokedAt.getTime())) {
-        throw new PersistenceMappingError("revokedAt is invalid");
-      }
-      const rows = await executor
-        .update(sessions)
-        .set({ revokedAt })
-        .where(
-          and(eq(sessions.accountId, accountId), isNull(sessions.revokedAt)),
-        )
-        .returning({ id: sessions.id });
-      return rows.length;
-    },
-  };
-
   return Object.freeze({
-    accounts: accountRepository,
-    sessions: sessionRepository,
+    accounts: Object.freeze({
+      list: (query: AccountListQuery) => listManagedAccounts(executor, query),
+      findById: (accountId: AccountId) =>
+        findManagedAccount(executor, accountId),
+      update: (input: AccountManagementUpdateInput) =>
+        updateManagedAccount(executor, input),
+    }),
+    sessions: Object.freeze({
+      revokeAll: (accountId: SessionAccountId, revokedAt: SessionRevokedAt) =>
+        revokeManagedSessions(executor, accountId, revokedAt),
+    }),
   });
 }
 
@@ -240,14 +266,10 @@ export function createAccountManagementUseCaseDependencies(
         }) => Promise<Result>,
       ): Promise<Result> =>
         db.transaction(async (transaction) => {
-          const repositories = createAccountManagementRepositories(
-            transaction as unknown as DatabaseExecutor,
-          );
+          const repositories = createAccountManagementRepositories(transaction);
           return work({
             ...repositories,
-            audit: createAuditRepository(
-              transaction as unknown as DatabaseExecutor,
-            ),
+            audit: createAuditRepository(transaction),
           });
         }),
     },

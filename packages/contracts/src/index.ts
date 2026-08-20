@@ -243,11 +243,13 @@ export type {
 } from "./api.js";
 export {
   API_SURFACE,
+  findApiSurfaceRoute,
   materializeApiSurfacePath,
   validateApiSurface,
 } from "./api-surface.js";
 export type {
   ApiSurfaceAuth,
+  ApiSurfaceHandlerGroup,
   ApiSurfaceMethod,
   ApiSurfaceRoute,
   ApiSurfaceScope,

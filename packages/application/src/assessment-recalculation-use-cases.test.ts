@@ -5,6 +5,16 @@ import {
   registerAssessmentRecalculationCandidates,
   type RecalculateAffectedAssessmentsCommand,
 } from "./assessment-recalculation-use-cases.js";
+import type { ClinicalApproverPort } from "./authoring-use-cases.js";
+
+const activeApprover: ClinicalApproverPort = {
+  findById: async (accountId) => ({
+    accountId,
+    accountStatus: "ACTIVE",
+    roles: ["CLINICAL_APPROVER"],
+    scopes: ["scope-1"],
+  }),
+};
 
 const command: RecalculateAffectedAssessmentsCommand = {
   principalId: "reviewer-1",
@@ -38,6 +48,7 @@ describe("affected assessment recalculation", () => {
     const result = await registerAssessmentRecalculationCandidates(
       { ...command, candidates: [candidate] },
       { register },
+      activeApprover,
     );
 
     expect(result).toEqual({ registeredCount: 1 });
@@ -47,11 +58,15 @@ describe("affected assessment recalculation", () => {
   it("recalculates every affected attempt and queues a scoped notification", async () => {
     const save = vi.fn(async () => undefined);
     const notify = vi.fn(async () => undefined);
-    const result = await recalculateAffectedAssessments(command, {
-      listAffected: async () => [candidate],
-      save,
-      notify,
-    });
+    const result = await recalculateAffectedAssessments(
+      command,
+      {
+        listAffected: async () => [candidate],
+        save,
+        notify,
+      },
+      activeApprover,
+    );
 
     expect(result).toMatchObject({
       processedCount: 1,
@@ -86,11 +101,39 @@ describe("affected assessment recalculation", () => {
     } as const;
     const listAffected = vi.fn();
     await expect(
-      recalculateAffectedAssessments(withoutApproval, {
-        listAffected,
-        save: vi.fn(),
-        notify: vi.fn(),
+      recalculateAffectedAssessments(
+        withoutApproval,
+        {
+          listAffected,
+          save: vi.fn(),
+          notify: vi.fn(),
+        },
+        activeApprover,
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+    expect(listAffected).not.toHaveBeenCalled();
+  });
+
+  it("revalidates the current clinical approver before persisting recalculation", async () => {
+    const suspendedApprover: ClinicalApproverPort = {
+      findById: async (accountId) => ({
+        accountId,
+        accountStatus: "SUSPENDED",
+        roles: ["CLINICAL_APPROVER"],
+        scopes: ["scope-1"],
       }),
+    };
+    const listAffected = vi.fn(async () => [candidate]);
+    await expect(
+      recalculateAffectedAssessments(
+        command,
+        {
+          listAffected,
+          save: vi.fn(),
+          notify: vi.fn(),
+        },
+        suspendedApprover,
+      ),
     ).rejects.toMatchObject({ code: "forbidden" });
     expect(listAffected).not.toHaveBeenCalled();
   });

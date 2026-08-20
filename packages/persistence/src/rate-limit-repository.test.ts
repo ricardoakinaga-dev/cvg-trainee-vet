@@ -91,6 +91,17 @@ describe("shared rate-limit repository", () => {
     );
   });
 
+  it("fails closed when an exhausted bucket has an invalid expiry", async () => {
+    const limiter = createPostgresRateLimiter(
+      fakeDatabase([{ count: 3, expiresAt: "invalid" }]),
+      { maxRequests: 2, windowMs: 1_000 },
+    );
+
+    await expect(limiter.check("synthetic", 1_000)).rejects.toThrow(
+      "rate-limit bucket expiry is invalid",
+    );
+  });
+
   it("rejects invalid clock values before opening a transaction", async () => {
     const limiter = createPostgresRateLimiter(fakeDatabase([]));
 

@@ -1,7 +1,12 @@
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-import { validateOutboxPayload } from "./attempt-repository.js";
+import {
+  createOutboxInsert,
+  validateOutboxPayload,
+  type OutboxEventInput,
+} from "./attempt-repository.js";
+import { outboxEvents } from "./schema.js";
 import type * as schema from "./schema.js";
 
 export type OutboxStatus = "PENDING" | "PROCESSING" | "PROCESSED" | "FAILED";
@@ -39,6 +44,14 @@ export interface OutboxRepositoryPort {
     retryAfterSeconds: number,
     maxAttempts: number,
   ) => Promise<void>;
+  /** The probe methods are deliberately scoped to the readiness event type. */
+  readonly insertProbe?: (input: OutboxEventInput) => Promise<void>;
+  readonly claimProbe?: (
+    eventId: string,
+    now: Date,
+    leaseSeconds: number,
+  ) => Promise<OutboxEventRecord | null>;
+  readonly removeProbe?: (eventId: string) => Promise<void>;
 }
 
 export class OutboxMappingError extends Error {
@@ -155,92 +168,188 @@ function assertPositiveInteger(value: number, field: string): void {
   }
 }
 
-export function createOutboxRepository(
+function assertEventId(eventId: string): void {
+  if (eventId.trim().length === 0) {
+    throw new TypeError("eventId is required");
+  }
+}
+
+function assertErrorCode(errorCode: string): void {
+  if (errorCode.trim().length === 0) {
+    throw new TypeError("errorCode is required");
+  }
+}
+
+function leaseWindow(
+  now: Date,
+  leaseSeconds: number,
+): Readonly<{ nowIso: string; lockedUntilIso: string }> {
+  const lockedUntil = new Date(now.getTime() + leaseSeconds * 1_000);
+  return {
+    nowIso: now.toISOString(),
+    lockedUntilIso: lockedUntil.toISOString(),
+  };
+}
+
+function createClaim(db: DatabaseExecutor): OutboxRepositoryPort["claim"] {
+  return async (
+    limit: number,
+    now: Date,
+    leaseSeconds: number,
+  ): Promise<readonly OutboxEventRecord[]> => {
+    assertPositiveInteger(limit, "limit");
+    assertPositiveInteger(leaseSeconds, "leaseSeconds");
+    assertDate(now, "now");
+    const { nowIso, lockedUntilIso } = leaseWindow(now, leaseSeconds);
+    const result = await db.execute(sql`
+      with candidates as (
+        select id
+        from outbox_events
+        where (
+          status = 'PENDING' and available_at <= ${nowIso}::timestamptz
+        ) or (
+          status = 'PROCESSING'
+          and locked_until is not null
+          and locked_until <= ${nowIso}::timestamptz
+        )
+        order by created_at asc
+        for update skip locked
+        limit ${limit}
+      )
+      update outbox_events as event
+      set status = 'PROCESSING',
+          attempts = event.attempts + 1,
+          locked_until = ${lockedUntilIso}::timestamptz,
+          last_error_code = null
+      from candidates
+      where event.id = candidates.id
+      returning event.*
+    `);
+    return (result as unknown[]).map(outboxRowToRecord);
+  };
+}
+
+function createMarkProcessed(
   db: DatabaseExecutor,
-): OutboxRepositoryPort {
-  const repository: OutboxRepositoryPort = {
-    claim: async (
-      limit: number,
-      now: Date,
-      leaseSeconds: number,
-    ): Promise<readonly OutboxEventRecord[]> => {
-      assertPositiveInteger(limit, "limit");
-      assertPositiveInteger(leaseSeconds, "leaseSeconds");
-      assertDate(now, "now");
-      const lockedUntil = new Date(now.getTime() + leaseSeconds * 1_000);
-      const nowIso = now.toISOString();
-      const lockedUntilIso = lockedUntil.toISOString();
-      const result = await db.execute(sql`
-        with candidates as (
-          select id
-          from outbox_events
-          where (
-            status = 'PENDING' and available_at <= ${nowIso}::timestamptz
-          ) or (
+): OutboxRepositoryPort["markProcessed"] {
+  return async (eventId: string, now: Date): Promise<void> => {
+    assertEventId(eventId);
+    assertDate(now, "now");
+    const nowIso = now.toISOString();
+    await db.execute(sql`
+      update outbox_events
+      set status = 'PROCESSED',
+          processed_at = ${nowIso}::timestamptz,
+          locked_until = null
+      where id = ${eventId} and status = 'PROCESSING'
+    `);
+  };
+}
+
+function createMarkFailed(
+  db: DatabaseExecutor,
+): OutboxRepositoryPort["markFailed"] {
+  return async (
+    eventId: string,
+    attempts: number,
+    errorCode: string,
+    now: Date,
+    retryAfterSeconds: number,
+    maxAttempts: number,
+  ): Promise<void> => {
+    assertEventId(eventId);
+    assertErrorCode(errorCode);
+    assertPositiveInteger(attempts, "attempts");
+    assertPositiveInteger(maxAttempts, "maxAttempts");
+    if (!Number.isInteger(retryAfterSeconds) || retryAfterSeconds < 0) {
+      throw new RangeError("retryAfterSeconds must be non-negative");
+    }
+    assertDate(now, "now");
+    const nextStatus: OutboxStatus =
+      attempts >= maxAttempts ? "FAILED" : "PENDING";
+    const availableAt = new Date(now.getTime() + retryAfterSeconds * 1_000);
+    const availableAtIso = availableAt.toISOString();
+    await db.execute(sql`
+      update outbox_events
+      set status = ${nextStatus},
+          available_at = ${availableAtIso}::timestamptz,
+          locked_until = null,
+          last_error_code = ${errorCode},
+          processed_at = null
+      where id = ${eventId} and status = 'PROCESSING'
+    `);
+  };
+}
+
+function createInsertProbe(
+  db: DatabaseExecutor,
+): NonNullable<OutboxRepositoryPort["insertProbe"]> {
+  return async (input: OutboxEventInput): Promise<void> => {
+    await db.insert(outboxEvents).values(createOutboxInsert(input));
+  };
+}
+
+function createClaimProbe(
+  db: DatabaseExecutor,
+): NonNullable<OutboxRepositoryPort["claimProbe"]> {
+  return async (
+    eventId: string,
+    now: Date,
+    leaseSeconds: number,
+  ): Promise<OutboxEventRecord | null> => {
+    assertEventId(eventId);
+    assertPositiveInteger(leaseSeconds, "leaseSeconds");
+    assertDate(now, "now");
+    const { nowIso, lockedUntilIso } = leaseWindow(now, leaseSeconds);
+    const result = await db.execute(sql`
+      update outbox_events
+      set status = 'PROCESSING',
+          attempts = attempts + 1,
+          locked_until = ${lockedUntilIso}::timestamptz,
+          last_error_code = null
+      where id = ${eventId}
+        and event_type = 'worker.readiness.probe.v1'
+        and (
+          (status = 'PENDING' and available_at <= ${nowIso}::timestamptz)
+          or (
             status = 'PROCESSING'
             and locked_until is not null
             and locked_until <= ${nowIso}::timestamptz
           )
-          order by created_at asc
-          for update skip locked
-          limit ${limit}
         )
-        update outbox_events as event
-        set status = 'PROCESSING',
-            attempts = event.attempts + 1,
-            locked_until = ${lockedUntilIso}::timestamptz,
-            last_error_code = null
-        from candidates
-        where event.id = candidates.id
-        returning event.*
-      `);
-      return (result as unknown[]).map(outboxRowToRecord);
-    },
-    markProcessed: async (eventId: string, now: Date): Promise<void> => {
-      if (eventId.trim().length === 0)
-        throw new TypeError("eventId is required");
-      assertDate(now, "now");
-      const nowIso = now.toISOString();
-      await db.execute(sql`
-        update outbox_events
-        set status = 'PROCESSED',
-            processed_at = ${nowIso}::timestamptz,
-            locked_until = null
-        where id = ${eventId} and status = 'PROCESSING'
-      `);
-    },
-    markFailed: async (
-      eventId: string,
-      attempts: number,
-      errorCode: string,
-      now: Date,
-      retryAfterSeconds: number,
-      maxAttempts: number,
-    ): Promise<void> => {
-      if (eventId.trim().length === 0)
-        throw new TypeError("eventId is required");
-      if (errorCode.trim().length === 0)
-        throw new TypeError("errorCode is required");
-      assertPositiveInteger(attempts, "attempts");
-      assertPositiveInteger(maxAttempts, "maxAttempts");
-      if (!Number.isInteger(retryAfterSeconds) || retryAfterSeconds < 0) {
-        throw new RangeError("retryAfterSeconds must be non-negative");
-      }
-      assertDate(now, "now");
-      const nextStatus: OutboxStatus =
-        attempts >= maxAttempts ? "FAILED" : "PENDING";
-      const availableAt = new Date(now.getTime() + retryAfterSeconds * 1_000);
-      const availableAtIso = availableAt.toISOString();
-      await db.execute(sql`
-        update outbox_events
-        set status = ${nextStatus},
-            available_at = ${availableAtIso}::timestamptz,
-            locked_until = null,
-            last_error_code = ${errorCode},
-            processed_at = null
-        where id = ${eventId} and status = 'PROCESSING'
-      `);
-    },
+      returning *
+    `);
+    const row = (result as unknown[])[0];
+    return row === undefined ? null : outboxRowToRecord(row);
+  };
+}
+
+function createRemoveProbe(
+  db: DatabaseExecutor,
+): NonNullable<OutboxRepositoryPort["removeProbe"]> {
+  return async (eventId: string): Promise<void> => {
+    assertEventId(eventId);
+    await db
+      .delete(outboxEvents)
+      .where(
+        and(
+          eq(outboxEvents.id, eventId),
+          eq(outboxEvents.eventType, "worker.readiness.probe.v1"),
+        ),
+      );
+  };
+}
+
+export function createOutboxRepository(
+  db: DatabaseExecutor,
+): OutboxRepositoryPort {
+  const repository: OutboxRepositoryPort = {
+    claim: createClaim(db),
+    markProcessed: createMarkProcessed(db),
+    markFailed: createMarkFailed(db),
+    insertProbe: createInsertProbe(db),
+    claimProbe: createClaimProbe(db),
+    removeProbe: createRemoveProbe(db),
   };
   return Object.freeze(repository);
 }

@@ -96,6 +96,7 @@ describe("loadRuntimeConfig", () => {
     const config = loadRuntimeConfig({
       NODE_ENV: "production",
       DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      CLINICAL_APPROVER_ID: "ricardo-account",
       QDRANT_ENABLED: "true",
       QDRANT_URL: "https://qdrant.example.test",
       QDRANT_API_KEY: "test-key",
@@ -182,9 +183,22 @@ describe("loadRuntimeConfig", () => {
       QDRANT_ENABLED: "false",
       AI_ENABLED: "false",
       METRICS_SCRAPE_TOKEN: "m".repeat(32),
+      CLINICAL_APPROVER_ID: "ricardo-account",
     });
     expect(config.metricsScrapeToken).toBe("m".repeat(32));
     expect(JSON.stringify(config)).not.toContain("METRICS_SCRAPE_TOKEN");
+  });
+
+  it("requires a designated clinical approver in production", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+        METRICS_SCRAPE_TOKEN: "m".repeat(32),
+      }),
+    ).toThrow("CLINICAL_APPROVER_ID");
   });
 
   it("fails closed when an external identity provider is required", () => {
@@ -208,6 +222,7 @@ describe("loadRuntimeConfig", () => {
       QDRANT_ENABLED: "false",
       AI_ENABLED: "false",
       METRICS_SCRAPE_TOKEN: "m".repeat(32),
+      CLINICAL_APPROVER_ID: "ricardo-account",
     });
     expect(config.identityProviderRequired).toBe(true);
     expect(config.identityProvider.configured).toBe(true);

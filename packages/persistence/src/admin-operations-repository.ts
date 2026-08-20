@@ -68,6 +68,85 @@ function unique(values: readonly string[]): readonly string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
+function buildAccountSignals(
+  rows: readonly AdminAccountOperationalRow[],
+  inactiveBefore: number,
+) {
+  return Object.freeze({
+    invited: rows.filter((row) => row.status === "INVITED").length,
+    active: rows.filter((row) => row.status === "ACTIVE").length,
+    suspended: rows.filter((row) => row.status === "SUSPENDED").length,
+    deactivated: rows.filter((row) => row.status === "DEACTIVATED").length,
+    inactiveOver14Days: rows.filter(
+      (row) =>
+        participantAccount(row) &&
+        (row.lastSeenAt === null || row.lastSeenAt.getTime() < inactiveBefore),
+    ).length,
+  });
+}
+
+function buildCorrectionSignals(
+  rows: readonly AdminCorrectionRow[],
+  now: Date,
+) {
+  const open = rows.filter((row) =>
+    openCorrectionStatuses.includes(
+      row.status as (typeof openCorrectionStatuses)[number],
+    ),
+  );
+  const overdue = open.filter(
+    (row) => row.dueAt.getTime() < now.getTime(),
+  ).length;
+  return Object.freeze({ open: open.length, overdue, slaBreaches: overdue });
+}
+
+function buildRemediationSignals(rows: readonly AdminRemediationRow[]) {
+  return Object.freeze({
+    participants: new Set(rows.map((row) => row.participantId)).size,
+    objectives: unique(rows.flatMap((row) => row.objectiveIds)).length,
+  });
+}
+
+function buildContentValiditySignals(
+  rows: readonly AdminContentValidityRow[],
+  now: Date,
+) {
+  const active = rows.filter(
+    (row) => row.status !== "RETIRADO" && row.status !== "VENCIDO",
+  );
+  const expired = rows.filter(
+    (row) =>
+      row.status === "VENCIDO" ||
+      (row.validUntil !== null && row.validUntil.getTime() <= now.getTime()),
+  );
+  const valid = active.filter(
+    (row) =>
+      row.validUntil === null || row.validUntil.getTime() > now.getTime(),
+  );
+  const dueForReview = rows.filter(
+    (row) =>
+      row.nextReviewAt !== null && row.nextReviewAt.getTime() <= now.getTime(),
+  );
+  return Object.freeze({
+    valid: valid.length,
+    dueForReview: dueForReview.length,
+    expired: expired.length,
+    withdrawn: rows.filter((row) => row.status === "RETIRADO").length,
+  });
+}
+
+function buildFeedbackSignals(rows: readonly AdminFeedbackRow[]) {
+  const open = rows.filter((row) =>
+    openFeedbackStatuses.includes(
+      row.status as (typeof openFeedbackStatuses)[number],
+    ),
+  );
+  return Object.freeze({
+    open: open.length,
+    technicalFailures: open.filter((row) => row.type === "BUG_TECNICO").length,
+  });
+}
+
 export function buildAdminOperationsSignals(
   accountRows: readonly AdminAccountOperationalRow[],
   correctionRows: readonly AdminCorrectionRow[],
@@ -78,76 +157,13 @@ export function buildAdminOperationsSignals(
 ): AdminOperationsSignals {
   if (Number.isNaN(now.getTime())) throw new TypeError("now is invalid");
   const inactiveBefore = now.getTime() - inactivityWindowMs;
-  const openCorrections = correctionRows.filter((row) =>
-    openCorrectionStatuses.includes(
-      row.status as (typeof openCorrectionStatuses)[number],
-    ),
-  );
-  const openFeedback = feedbackRows.filter((row) =>
-    openFeedbackStatuses.includes(
-      row.status as (typeof openFeedbackStatuses)[number],
-    ),
-  );
-  const activeContent = contentRows.filter(
-    (row) => row.status !== "RETIRADO" && row.status !== "VENCIDO",
-  );
-  const expiredContent = contentRows.filter(
-    (row) =>
-      row.status === "VENCIDO" ||
-      (row.validUntil !== null && row.validUntil.getTime() <= now.getTime()),
-  );
-  const validContent = activeContent.filter(
-    (row) =>
-      row.validUntil === null || row.validUntil.getTime() > now.getTime(),
-  );
-  const dueForReview = contentRows.filter(
-    (row) =>
-      row.nextReviewAt !== null && row.nextReviewAt.getTime() <= now.getTime(),
-  );
-  const remediationObjectives = unique(
-    remediationRows.flatMap((row) => row.objectiveIds),
-  );
 
   return Object.freeze({
-    accounts: Object.freeze({
-      invited: accountRows.filter((row) => row.status === "INVITED").length,
-      active: accountRows.filter((row) => row.status === "ACTIVE").length,
-      suspended: accountRows.filter((row) => row.status === "SUSPENDED").length,
-      deactivated: accountRows.filter((row) => row.status === "DEACTIVATED")
-        .length,
-      inactiveOver14Days: accountRows.filter(
-        (row) =>
-          participantAccount(row) &&
-          (row.lastSeenAt === null ||
-            row.lastSeenAt.getTime() < inactiveBefore),
-      ).length,
-    }),
-    corrections: Object.freeze({
-      open: openCorrections.length,
-      overdue: openCorrections.filter(
-        (row) => row.dueAt.getTime() < now.getTime(),
-      ).length,
-      slaBreaches: openCorrections.filter(
-        (row) => row.dueAt.getTime() < now.getTime(),
-      ).length,
-    }),
-    remediation: Object.freeze({
-      participants: new Set(remediationRows.map((row) => row.participantId))
-        .size,
-      objectives: remediationObjectives.length,
-    }),
-    contentValidity: Object.freeze({
-      valid: validContent.length,
-      dueForReview: dueForReview.length,
-      expired: expiredContent.length,
-      withdrawn: contentRows.filter((row) => row.status === "RETIRADO").length,
-    }),
-    feedback: Object.freeze({
-      open: openFeedback.length,
-      technicalFailures: openFeedback.filter(
-        (row) => row.type === "BUG_TECNICO",
-      ).length,
-    }),
+    accounts: buildAccountSignals(accountRows, inactiveBefore),
+    corrections: buildCorrectionSignals(correctionRows, now),
+    remediation: buildRemediationSignals(remediationRows),
+    contentValidity: buildContentValiditySignals(contentRows, now),
+    feedback: buildFeedbackSignals(feedbackRows),
   });
 }
 
@@ -161,6 +177,24 @@ async function readOperationalRows(
   readonly content: readonly AdminContentValidityRow[];
   readonly feedback: readonly AdminFeedbackRow[];
 }> {
+  const accountsRows = await readAccountOperationalRows(tx, scopeId);
+  const corrections = await readCorrectionRows(tx, scopeId);
+  const remediation = await readRemediationRows(tx, scopeId);
+  const content = await readContentRows(tx, scopeId);
+  const feedback = await readFeedbackRows(tx, scopeId);
+  return {
+    accounts: accountsRows,
+    corrections,
+    remediation,
+    content,
+    feedback,
+  };
+}
+
+async function readAccountOperationalRows(
+  tx: DatabaseTransaction,
+  scopeId: string,
+): Promise<readonly AdminAccountOperationalRow[]> {
   const accountRows = await tx
     .select({
       accountId: accounts.id,
@@ -192,7 +226,18 @@ async function readOperationalRows(
       lastSeenByAccount.set(row.accountId, row.lastSeenAt);
     }
   }
-  const correctionRows = await tx
+  return accountRows.map((row) => ({
+    status: row.status,
+    roles: Array.isArray(row.roles) ? [...row.roles] : [],
+    lastSeenAt: lastSeenByAccount.get(row.accountId) ?? null,
+  }));
+}
+
+async function readCorrectionRows(
+  tx: DatabaseTransaction,
+  scopeId: string,
+): Promise<readonly AdminCorrectionRow[]> {
+  return tx
     .select({ status: appeals.status, dueAt: appeals.dueAt })
     .from(appeals)
     .where(
@@ -201,6 +246,12 @@ async function readOperationalRows(
         inArray(appeals.status, openCorrectionStatuses),
       ),
     );
+}
+
+async function readRemediationRows(
+  tx: DatabaseTransaction,
+  scopeId: string,
+): Promise<readonly AdminRemediationRow[]> {
   const assignmentRows = await tx
     .select({
       participantId: learningAssignments.participantId,
@@ -220,7 +271,25 @@ async function readOperationalRows(
     })
     .from(curriculumRuntimeStates)
     .where(eq(curriculumRuntimeStates.scopeId, scopeId));
-  const contentRows = await tx
+  return [
+    ...assignmentRows.map((row) => ({
+      participantId: row.participantId,
+      objectiveIds: [row.moduleId],
+    })),
+    ...runtimeRows.map((row) => ({
+      participantId: row.participantId,
+      objectiveIds: Array.isArray(row.state.remediationObjectiveIds)
+        ? [...row.state.remediationObjectiveIds]
+        : [],
+    })),
+  ];
+}
+
+async function readContentRows(
+  tx: DatabaseTransaction,
+  scopeId: string,
+): Promise<readonly AdminContentValidityRow[]> {
+  return tx
     .select({
       status: contentVersions.status,
       validUntil: contentVersions.validUntil,
@@ -228,33 +297,16 @@ async function readOperationalRows(
     })
     .from(contentVersions)
     .where(eq(contentVersions.scopeId, scopeId));
-  const feedbackRows = await tx
+}
+
+async function readFeedbackRows(
+  tx: DatabaseTransaction,
+  scopeId: string,
+): Promise<readonly AdminFeedbackRow[]> {
+  return tx
     .select({ status: feedbackTickets.status, type: feedbackTickets.type })
     .from(feedbackTickets)
     .where(eq(feedbackTickets.scopeId, scopeId));
-
-  return {
-    accounts: accountRows.map((row) => ({
-      status: row.status,
-      roles: Array.isArray(row.roles) ? [...row.roles] : [],
-      lastSeenAt: lastSeenByAccount.get(row.accountId) ?? null,
-    })),
-    corrections: correctionRows,
-    remediation: [
-      ...assignmentRows.map((row) => ({
-        participantId: row.participantId,
-        objectiveIds: [row.moduleId],
-      })),
-      ...runtimeRows.map((row) => ({
-        participantId: row.participantId,
-        objectiveIds: Array.isArray(row.state.remediationObjectiveIds)
-          ? [...row.state.remediationObjectiveIds]
-          : [],
-      })),
-    ],
-    content: contentRows,
-    feedback: feedbackRows,
-  };
 }
 
 export function createAdminOperationsRepository(

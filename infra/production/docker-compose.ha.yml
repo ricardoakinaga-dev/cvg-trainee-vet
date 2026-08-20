@@ -8,12 +8,20 @@ x-api-common: &api-common
       SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
   image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
   restart: unless-stopped
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
   environment: &api-environment
     NODE_ENV: production
     API_HOST: 0.0.0.0
     API_PORT: "3000"
+    TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:?set TRUSTED_PROXY_CIDRS}
     DATABASE_URL: postgresql://${CVG_DB_USER:?set CVG_DB_USER}:${CVG_DB_APP_PASSWORD:?set CVG_DB_APP_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
     WEB_ORIGINS: ${WEB_ORIGINS:?set WEB_ORIGINS}
+    CLINICAL_APPROVER_ID: ${CLINICAL_APPROVER_ID:?set CLINICAL_APPROVER_ID}
     QDRANT_ENABLED: "false"
     AI_ENABLED: "false"
     METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
@@ -29,7 +37,7 @@ x-api-common: &api-common
         CMD,
         node,
         -e,
-        "fetch('http://127.0.0.1:3000/health/live').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        "fetch('http://127.0.0.1:3000/health/ready').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
       ]
     interval: 10s
     timeout: 3s
@@ -94,8 +102,8 @@ services:
     volumes:
       - ../observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
     ports:
-      - "4317:4317"
-      - "4318:4318"
+      - "127.0.0.1:${CVG_OTEL_GRPC_PORT:-4317}:4317"
+      - "127.0.0.1:${CVG_OTEL_HTTP_PORT:-4318}:4318"
     depends_on:
       tempo:
         condition: service_started
@@ -126,6 +134,12 @@ services:
         SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
     image: ${CVG_APP_IMAGE:-cvg-trainee-vet:local}
     restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
     command: ["node", "apps/worker/dist/main.js"]
     healthcheck:
       test:
@@ -133,7 +147,7 @@ services:
           CMD,
           node,
           -e,
-          "try { process.kill(1, 0); process.exit(0); } catch { process.exit(1); }",
+          "fetch('http://127.0.0.1:9091/health/ready').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 10s
       timeout: 3s
@@ -141,15 +155,20 @@ services:
       retries: 5
     environment:
       NODE_ENV: production
+      CLINICAL_APPROVER_ID: ${CLINICAL_APPROVER_ID:?set CLINICAL_APPROVER_ID}
       DATABASE_URL: postgresql://${CVG_DB_USER:?set CVG_DB_USER}:${CVG_DB_APP_PASSWORD:?set CVG_DB_APP_PASSWORD}@postgres:5432/${CVG_DB_NAME:?set CVG_DB_NAME}
       QDRANT_ENABLED: "false"
       AI_ENABLED: "false"
       METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:?set METRICS_SCRAPE_TOKEN}
+      WORKER_METRICS_HOST: 0.0.0.0
+      WORKER_METRICS_PORT: "9091"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       CVG_SOURCE_SHA: ${CVG_SOURCE_SHA:-unknown}
     depends_on:
       migrate:
         condition: service_completed_successfully
+      otel-collector:
+        condition: service_started
       tempo:
         condition: service_started
     networks: [backend]
@@ -199,9 +218,32 @@ services:
         condition: service_healthy
     networks: [backend]
 
+  prometheus-secret-init:
+    image: prom/prometheus:v2.55.1
+    restart: "no"
+    user: "0:0"
+    entrypoint: ["/bin/sh"]
+    command:
+      - -ec
+      - >-
+        install -m 0440 -o 65534 -g 65534
+        /run/secrets/metrics_scrape_token /output/metrics_scrape_token
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER]
+    security_opt:
+      - no-new-privileges:true
+    network_mode: none
+    secrets: [metrics_scrape_token]
+    volumes:
+      - prometheus-secret-data:/output
+
   prometheus:
     image: prom/prometheus:v2.55.1
     restart: unless-stopped
+    user: "65534:65534"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=15d
@@ -209,15 +251,47 @@ services:
       - --web.enable-lifecycle
     volumes:
       - ../observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../observability/prometheus-alerts.yml:/etc/prometheus/prometheus-alerts.yml:ro
       - prometheus-data:/prometheus
-    secrets: [metrics_scrape_token]
+      - prometheus-secret-data:/run/secrets:ro
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:9090/-/ready]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
     depends_on:
+      prometheus-secret-init:
+        condition: service_completed_successfully
       api-a:
         condition: service_healthy
       api-b:
         condition: service_healthy
+      worker-a:
+        condition: service_healthy
+      worker-b:
+        condition: service_healthy
       otel-collector:
         condition: service_started
+      alertmanager:
+        condition: service_healthy
+    networks: [backend]
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    volumes:
+      - ../observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:9093/-/ready]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
     networks: [backend]
 
   grafana:
@@ -232,7 +306,7 @@ services:
       - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       prometheus:
-        condition: service_started
+        condition: service_healthy
       tempo:
         condition: service_started
     networks: [backend]
@@ -241,10 +315,12 @@ volumes:
   postgres-data:
   qdrant-data:
   prometheus-data:
+  prometheus-secret-data:
   grafana-data:
   caddy-data:
   caddy-config:
   tempo-data:
+  alertmanager-data:
 
 secrets:
   metrics_scrape_token:

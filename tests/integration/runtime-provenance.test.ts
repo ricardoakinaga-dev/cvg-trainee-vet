@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   assertRuntimeSourceSha,
+  assertGitSourceShaExists,
   validateRuntimeProvenanceRecords,
 } from "../../scripts/verify-runtime-provenance.mjs";
 
@@ -23,6 +24,12 @@ function buildRecord(overrides: Record<string, unknown> = {}) {
 }
 
 describe("runtime provenance verifier", () => {
+  it("rejects a source SHA that is not a Git commit in the checkout", () => {
+    expect(() => assertGitSourceShaExists("f".repeat(40))).toThrow(
+      "runtime provenance source SHA is not a Git commit",
+    );
+  });
+
   it("requires a concrete git source SHA", () => {
     expect(() => assertRuntimeSourceSha(undefined)).toThrow(
       "runtime provenance requires a 40-character git SHA",
@@ -42,14 +49,28 @@ describe("runtime provenance verifier", () => {
         buildRecord({ Name: "/cvg-trainee-vet-ha-worker-b-1" }),
       ],
       sourceSha,
+      commonDigest,
     );
 
     expect(result).toMatchObject({
       status: "PASS",
       expectedSourceSha: sourceSha,
       commonDigest,
+      expectedDigest: commonDigest,
       containerCount: 4,
     });
+  });
+
+  it("rejects a runtime digest that is not the release manifest digest", () => {
+    expect(() =>
+      validateRuntimeProvenanceRecords(
+        [buildRecord()],
+        sourceSha,
+        `sha256:${"c".repeat(64)}`,
+      ),
+    ).toThrow(
+      "runtime provenance digest does not match expected manifest digest",
+    );
   });
 
   it.each([

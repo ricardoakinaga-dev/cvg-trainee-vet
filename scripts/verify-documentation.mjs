@@ -6,6 +6,7 @@ const defaultRequiredFiles = Object.freeze([
   "AGENTS.md",
   "docs/99_runtime_state.md",
   "docs/canonical-document-registry.json",
+  "dual-99-program.json",
   "docs/20_master_execution_log.md",
   "docs/30_backlog_master.md",
   "BRIEFING/00.DiSCOVERY/DISCOVERY ENGINE ENTERPRISE",
@@ -19,6 +20,8 @@ const defaultRequiredFiles = Object.freeze([
   "BRIEFING/03.BUILD/0302_backlog_master.md",
   "BRIEFING/03.BUILD/0303_remediation_program.md",
   "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+  "BRIEFING/03.BUILD/0305_sub80_to_95_executive_plan.md",
+  "BRIEFING/03.BUILD/0309_dual_99_executive_program.md",
   "BRIEFING/03.BUILD/0390_build_readiness.md",
   "BRIEFING/03.BUILD/0391_documentation_gate.md",
   "BRIEFING/04.AUDIT/0400_audit_scope.md",
@@ -38,6 +41,8 @@ const defaultRequiredFiles = Object.freeze([
   "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
   "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
   "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+  "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
+  "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
   "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0500_loop_session_persistence_master.md",
   "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0501_runtime_state_contract.md",
   "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0502_execution_log_and_backlog_contract.md",
@@ -90,11 +95,122 @@ const canonicalRoles = Object.freeze([
   "roadmap",
   "backlog",
 ]);
-const canonicalStatuses = new Set(["CURRENT", "HISTORICAL", "SUPERSEDED"]);
+const canonicalStatuses = new Set([
+  "CURRENT",
+  "HISTORICAL",
+  "SUPERSEDED",
+  "ACTIVE_EXECUTION_OVERLAY",
+]);
 
 function readSnapshotValue(snapshot, path) {
   const value = snapshot.get(path);
   return typeof value === "string" ? value : null;
+}
+
+function validateCanonicalRegistryHeader(registry, errors) {
+  if (registry.version !== 1) {
+    errors.push("canonical document registry version must be 1");
+  }
+
+  const current = registry.current;
+  if (current === null || typeof current !== "object") {
+    errors.push("canonical registry has no current sources");
+    return;
+  }
+
+  for (const role of canonicalRoles) {
+    if (typeof current[role] !== "string" || current[role].trim() === "") {
+      errors.push(`canonical registry must define current ${role}`);
+    }
+  }
+}
+
+function readCanonicalDocumentReference(document, paths, currentRoles, errors) {
+  if (document === null || typeof document !== "object") {
+    errors.push("canonical registry has an invalid document entry");
+    return null;
+  }
+
+  const { path, role, status } = document;
+  if (typeof path !== "string" || path.trim() === "") {
+    errors.push("canonical registry document has no path");
+    return null;
+  }
+  if (paths.has(path))
+    errors.push(`canonical registry has duplicate path ${path}`);
+  paths.add(path);
+
+  if (!canonicalRoles.includes(role)) {
+    errors.push(`canonical registry document ${path} has invalid role ${role}`);
+  }
+  if (!canonicalStatuses.has(status)) {
+    errors.push(
+      `canonical registry document ${path} has invalid status ${status}`,
+    );
+  }
+  if (status === "CURRENT") {
+    if (currentRoles.has(role)) {
+      errors.push(`canonical registry has duplicate current role ${role}`);
+    }
+    currentRoles.add(role);
+  }
+
+  return { document, path, status };
+}
+
+function validateCanonicalDocumentContent(snapshot, reference, errors) {
+  const { document, path, status } = reference;
+  const content = readSnapshotValue(snapshot, path);
+  if (content === null || content.trim().length === 0) {
+    errors.push(`canonical registry path is missing: ${path}`);
+  }
+
+  if (status !== "HISTORICAL" && status !== "SUPERSEDED") return;
+
+  if (
+    typeof document.supersededBy !== "string" ||
+    document.supersededBy.trim() === ""
+  ) {
+    errors.push(`historical document ${path} must declare supersededBy`);
+  }
+  if (
+    content !== null &&
+    !/(registro histórico|historical|superseded)/iu.test(content)
+  ) {
+    errors.push(`historical document ${path} must contain a historical marker`);
+  }
+}
+
+function validateCanonicalDocumentEntry(
+  snapshot,
+  document,
+  paths,
+  currentRoles,
+  errors,
+) {
+  const reference = readCanonicalDocumentReference(
+    document,
+    paths,
+    currentRoles,
+    errors,
+  );
+  if (reference !== null) {
+    validateCanonicalDocumentContent(snapshot, reference, errors);
+  }
+}
+
+function validateCanonicalDocuments(snapshot, documents, errors) {
+  const paths = new Set();
+  const currentRoles = new Set();
+  for (const document of documents) {
+    validateCanonicalDocumentEntry(
+      snapshot,
+      document,
+      paths,
+      currentRoles,
+      errors,
+    );
+  }
 }
 
 export function validateCanonicalDocumentSnapshot(snapshot) {
@@ -112,83 +228,14 @@ export function validateCanonicalDocumentSnapshot(snapshot) {
   }
 
   const errors = [];
-  if (registry.version !== 1) {
-    errors.push("canonical document registry version must be 1");
-  }
-
-  const current = registry.current;
-  if (current === null || typeof current !== "object") {
-    errors.push("canonical registry has no current sources");
-  } else {
-    for (const role of canonicalRoles) {
-      if (typeof current[role] !== "string" || current[role].trim() === "") {
-        errors.push(`canonical registry must define current ${role}`);
-      }
-    }
-  }
+  validateCanonicalRegistryHeader(registry, errors);
 
   if (!Array.isArray(registry.documents)) {
     errors.push("canonical registry has no documents");
     return Object.freeze(errors);
   }
 
-  const paths = new Set();
-  const currentRoles = new Set();
-  for (const document of registry.documents) {
-    if (document === null || typeof document !== "object") {
-      errors.push("canonical registry has an invalid document entry");
-      continue;
-    }
-
-    const { path, role, status } = document;
-    if (typeof path !== "string" || path.trim() === "") {
-      errors.push("canonical registry document has no path");
-      continue;
-    }
-    if (paths.has(path))
-      errors.push(`canonical registry has duplicate path ${path}`);
-    paths.add(path);
-
-    if (!canonicalRoles.includes(role)) {
-      errors.push(
-        `canonical registry document ${path} has invalid role ${role}`,
-      );
-    }
-    if (!canonicalStatuses.has(status)) {
-      errors.push(
-        `canonical registry document ${path} has invalid status ${status}`,
-      );
-    }
-    if (status === "CURRENT") {
-      if (currentRoles.has(role)) {
-        errors.push(`canonical registry has duplicate current role ${role}`);
-      }
-      currentRoles.add(role);
-    }
-
-    const content = readSnapshotValue(snapshot, path);
-    if (content === null || content.trim().length === 0) {
-      errors.push(`canonical registry path is missing: ${path}`);
-    }
-
-    if (status === "HISTORICAL" || status === "SUPERSEDED") {
-      if (
-        typeof document.supersededBy !== "string" ||
-        document.supersededBy.trim() === ""
-      ) {
-        errors.push(`historical document ${path} must declare supersededBy`);
-      }
-      if (
-        content !== null &&
-        !/(registro histórico|historical|superseded)/iu.test(content)
-      ) {
-        errors.push(
-          `historical document ${path} must contain a historical marker`,
-        );
-      }
-    }
-  }
-
+  validateCanonicalDocuments(snapshot, registry.documents, errors);
   return Object.freeze(errors);
 }
 

@@ -204,6 +204,27 @@
       "when": 1786709000000,
       "tag": "0028_assessment_recalculation_candidates",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1786894288000,
+      "tag": "0029_authoring_workflow_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1786894289000,
+      "tag": "0030_authoring_workflow_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1786936219000,
+      "tag": "0031_session_generation_revocation",
+      "breakpoints": true
     }
   ]
 }

@@ -4,8 +4,10 @@ import type { AttemptState } from "@cvg/domain";
 
 import {
   PersistenceMappingError,
+  PersistenceConflictError,
   attemptRowToState,
   attemptStateToRow,
+  createAttemptOperationsMethods,
   idempotencyRowToRecord,
   outboxEventToRow,
   validateOutboxPayload,
@@ -23,6 +25,19 @@ const state: AttemptState = {
 };
 
 describe("PostgreSQL attempt mapping", () => {
+  it("composes frozen attempt transaction operations", () => {
+    const methods = createAttemptOperationsMethods({} as never);
+
+    expect(Object.isFrozen(methods)).toBe(true);
+    expect(Object.keys(methods).sort()).toEqual([
+      "activity",
+      "attemptsPort",
+      "audit",
+      "eventPublisher",
+      "idempotency",
+    ]);
+  });
+
   it("maps a domain state to a persistence row without mutating it", () => {
     const row = attemptStateToRow(state);
 
@@ -80,12 +95,78 @@ describe("PostgreSQL attempt mapping", () => {
         submittedAt: null,
       }),
     ).toThrow("version");
+    expect(() => attemptStateToRow({ ...state, attemptId: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => attemptStateToRow({ ...state, participantId: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => attemptStateToRow({ ...state, activityId: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() =>
+      attemptStateToRow({ ...state, status: "UNKNOWN" as never }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      attemptRowToState({
+        id: state.attemptId,
+        participantId: state.participantId,
+        activityId: state.activityId,
+        status: "SALVA",
+        version: 2,
+        submittedAt: new Date("invalid"),
+      }),
+    ).toThrow("submittedAt");
   });
 
   it("keeps the schema contract explicit for attempts, assignments, and outbox", () => {
     expect(attempts).toBeDefined();
     expect(activityAssignments).toBeDefined();
     expect(outboxEvents).toBeDefined();
+  });
+
+  it("maps a concurrent unique-attempt insert to a persistence conflict", async () => {
+    const duplicate = Object.assign(new Error("duplicate open attempt"), {
+      code: "23505",
+    });
+    const database = {
+      insert: () => ({
+        values: async () => {
+          throw duplicate;
+        },
+      }),
+    } as never;
+
+    await expect(
+      createAttemptOperationsMethods(database).attemptsPort.insert(state),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+  });
+
+  it("maps a concurrent idempotency insert to a persistence conflict", async () => {
+    const duplicate = Object.assign(new Error("duplicate idempotency key"), {
+      code: "23505",
+    });
+    const database = {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: async () => [],
+          }),
+        }),
+      }),
+      insert: () => ({
+        values: async () => {
+          throw duplicate;
+        },
+      }),
+    } as never;
+
+    await expect(
+      createAttemptOperationsMethods(database).idempotency.store("key", {
+        fingerprint: "fingerprint",
+        attempt: state,
+      }),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
   });
 });
 
@@ -130,11 +211,38 @@ describe("outbox and idempotency protection", () => {
     });
 
     expect(record).toEqual({ fingerprint: "fingerprint-1", attempt: state });
+    expect(
+      idempotencyRowToRecord({
+        fingerprint: "fingerprint-2",
+        response: { ...state, submittedAt: undefined },
+      }),
+    ).toMatchObject({
+      fingerprint: "fingerprint-2",
+      attempt: { status: state.status },
+    });
   });
 
   it("rejects malformed idempotency snapshots", () => {
     expect(() =>
       idempotencyRowToRecord({ fingerprint: "", response: {} }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      idempotencyRowToRecord({
+        fingerprint: "fingerprint",
+        response: { ...state, status: "INVALID" },
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      idempotencyRowToRecord({
+        fingerprint: "fingerprint",
+        response: { ...state, submittedAt: 1 },
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      idempotencyRowToRecord({
+        fingerprint: "fingerprint",
+        response: { ...state, version: "1" },
+      }),
     ).toThrow(PersistenceMappingError);
   });
 
@@ -168,5 +276,71 @@ describe("outbox and idempotency protection", () => {
         a: { b: { c: { d: { e: { f: { g: "too deep" } } } } } },
       }),
     ).toThrow("deep");
+    expect(() =>
+      validateOutboxPayload({
+        toJSON: () => {
+          throw new Error("not serializable");
+        },
+      }),
+    ).toThrow("serializable");
+  });
+
+  it("covers empty reads, non-conflict writes and idempotency replay", async () => {
+    const emptySelectDatabase = {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: async () => [],
+          }),
+        }),
+      }),
+      insert: () => ({
+        values: async () => undefined,
+      }),
+      update: () => ({
+        set: () => ({
+          where: () => ({
+            returning: async () => [],
+          }),
+        }),
+      }),
+    } as never;
+    const methods = createAttemptOperationsMethods(emptySelectDatabase);
+    await expect(
+      methods.attemptsPort.findOpenByParticipantAndActivity(
+        state.participantId,
+        state.activityId,
+      ),
+    ).resolves.toBeNull();
+    await expect(
+      methods.attemptsPort.findById(state.attemptId),
+    ).resolves.toBeNull();
+    const stateWithoutSubmission = { ...state };
+    delete stateWithoutSubmission.submittedAt;
+    await expect(
+      methods.attemptsPort.insert(stateWithoutSubmission),
+    ).resolves.toBeUndefined();
+    await expect(
+      methods.idempotency.store("key", {
+        fingerprint: "fingerprint",
+        attempt: state,
+      }),
+    ).resolves.toBeUndefined();
+
+    const existingDatabase = {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: async () => [{ fingerprint: "fingerprint" }],
+          }),
+        }),
+      }),
+    } as never;
+    await expect(
+      createAttemptOperationsMethods(existingDatabase).idempotency.store(
+        "key",
+        { fingerprint: "fingerprint", attempt: state },
+      ),
+    ).resolves.toBeUndefined();
   });
 });

@@ -7,7 +7,10 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit",
-          include: ["packages/**/src/**/*.test.ts", "apps/**/src/**/*.test.ts"],
+          include: [
+            "packages/**/src/**/*.test.{ts,tsx}",
+            "apps/**/src/**/*.test.{ts,tsx}",
+          ],
           environment: "node",
           clearMocks: true,
           restoreMocks: true,
@@ -27,8 +30,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      include: ["packages/**/src/**/*.ts", "apps/**/src/**/*.ts"],
-      exclude: ["**/*.test.ts", "**/index.ts"],
+      include: [
+        "packages/**/src/**/*.ts",
+        "apps/**/src/**/*.ts",
+        "apps/web/app/**/*.{ts,tsx}",
+      ],
+      exclude: ["**/*.test.{ts,tsx}", "**/index.ts"],
       thresholds: {
         lines: 80,
         functions: 80,

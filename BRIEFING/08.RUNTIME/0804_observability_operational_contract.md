@@ -1,6 +1,6 @@
 # 0804 — Contrato Operacional de Observabilidade
 
-**Status:** implementado e verificado com gaps de infraestrutura externa.  
+**Status:** implementado e verificado no HA local, com gaps de infraestrutura externa.
 **Escopo:** sinais técnicos do CVG, sem payload clínico, prontuário, foto, PDF, tutor, participante identificável ou fonte protegida.
 
 ## Exporter e collector
@@ -10,6 +10,13 @@
 - O collector de ambiente deve consultar a rota com credencial de serviço somente leitura, extrair data.text, rejeitar resposta sem format: prometheus e enviar os samples ao armazenamento de métricas do ambiente. O collector não deve encaminhar cookies de participante.
 - Logs saem como JSON já redigido pelo sink do processo. O agente de coleta deve transportar stdout/stderr como registro estruturado, sem reidratar campos removidos.
 - Métricas e logs de processo são sinais operacionais; PostgreSQL continua sendo a fonte dos estados educacionais e da auditoria de domínio.
+
+No Compose HA, API A/B e worker A/B são coletados com bearer token somente de
+leitura; rules são montadas explicitamente; Prometheus aguarda Alertmanager
+saudável; e o token é preparado por `prometheus-secret-init` para o processo
+não-root. A evidência local de targets, rules, permissão negativa e ciclo
+`fire → ack → resolve` está em
+[`docs/119_dual_95_u95_102_observability_evidence_2026-08-16.md`](../../docs/119_dual_95_u95_102_observability_evidence_2026-08-16.md).
 
 ## SLOs e alertas mínimos
 
@@ -23,6 +30,16 @@
 | ausência de amostra | dados insuficientes | slo_no_data de atenção |
 
 evaluateSlo e evaluateOperationalAlerts são funções puras, testadas e redigidas. NO_DATA não é tratado como sucesso. Nenhum alerta altera nota, gabarito, publicação ou estado educacional.
+
+## Loss of signal
+
+Prometheus coleta explicitamente `cvg-api`, `cvg-worker` e `alertmanager` e
+mantém sete regras de perda de sinal: API target down/ausente, worker target
+down/ausente, Alertmanager desconectado, watchdog contínuo e watchdog ausente.
+`up == 0` detecta uma réplica que deixou de responder; `absent(up{...})`
+detecta o caso em que o target inteiro desapareceu. O watchdog é um dead-man
+operacional e não contém dados de usuário. Cada regra usa este runbook, owner
+SRE e janela de acknowledgement de cinco minutos.
 
 ## Dashboard mínimo
 
@@ -53,6 +70,7 @@ request_id e correlation_id são validados na borda, propagados ao worker quando
 |---|---|---|
 | health/readiness/dependencies | tests/integration/api-health.test.ts e apps/api/src/server.test.ts | PostgreSQL/Qdrant UP live; degradação redigida em teste HTTP |
 | exportação e redaction | apps/api/src/http.test.ts e packages/observability/src/observability.test.ts | auditor autorizado recebe métrica; participante recebe 401/403; campos proibidos não aparecem |
+| scrape, rules e Alertmanager HA | `scripts/verify-ha-topology.mjs`, `tests/integration/production-edge-contract.test.ts`, evidência U95-102 e `docs/133` | arquivo atual com 12 rules passa validação estática, mas o Prometheus ativo ainda expõe 7 rules antigas; cinco regras novas, API loss-of-signal e fire→notify→ack→resolve permanecem `NOT_EXECUTED` |
 | SLO/alertas | packages/observability/src/operations.test.ts | PASS, BREACHED, NO_DATA, dependência crítica e degradação cobertos |
 | backup/restore | scripts/verify-postgres-restore.mjs e tests/integration/postgres-restore.test.ts | marcador sintético restaurado em banco descartável isolado |
 | Qdrant rebuild/reconcile | tests/integration/worker-qdrant-live.test.ts e pnpm reconcile:qdrant | fonte PostgreSQL, contadores técnicos, replay idempotente e remoção de órfão |

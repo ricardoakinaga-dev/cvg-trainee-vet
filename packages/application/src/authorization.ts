@@ -77,67 +77,76 @@ function hasScopedStaffRole(request: AuthorizationRequest): boolean {
   );
 }
 
-export function canAccess(request: AuthorizationRequest): boolean {
-  if (request.accountStatus !== "ACTIVE" || request.principalId.trim() === "") {
-    return false;
-  }
+function hasParticipantResourceAccess(request: AuthorizationRequest): boolean {
+  return (
+    hasRole(request, "PARTICIPANT") &&
+    ownsResource(request) &&
+    hasScope(request)
+  );
+}
 
+function hasScopedStaffAccess(request: AuthorizationRequest): boolean {
+  return hasScopedStaffRole(request) && hasScope(request);
+}
+
+function hasContentModerationAccess(request: AuthorizationRequest): boolean {
+  return (
+    (hasRole(request, "MODERATOR") ||
+      hasRole(request, "ADMIN") ||
+      isApprovedClinicalIdentity(request)) &&
+    hasScope(request)
+  );
+}
+
+function hasPublicationAccess(request: AuthorizationRequest): boolean {
+  return (
+    (hasRole(request, "AUTHOR") ||
+      hasRole(request, "MODERATOR") ||
+      hasRole(request, "ADMIN")) &&
+    hasScope(request)
+  );
+}
+
+function hasInternalSourceAccess(request: AuthorizationRequest): boolean {
+  return (
+    (hasRole(request, "AUTHOR") || isApprovedClinicalIdentity(request)) &&
+    hasScope(request)
+  );
+}
+
+function canAccessCapability(request: AuthorizationRequest): boolean {
   switch (request.capability) {
     case "VIEW_OWN_ACTIVITY":
     case "START_OWN_ATTEMPT":
     case "SAVE_OWN_ANSWER":
     case "SUBMIT_OWN_ATTEMPT":
     case "VIEW_OWN_FEEDBACK":
-      return (
-        hasRole(request, "PARTICIPANT") &&
-        ownsResource(request) &&
-        hasScope(request)
-      );
+      return hasParticipantResourceAccess(request);
     case "CREATE_FEEDBACK_TICKET":
     case "CREATE_APPEAL":
-      return (
-        hasRole(request, "PARTICIPANT") &&
-        ownsResource(request) &&
-        hasScope(request)
-      );
+      return hasParticipantResourceAccess(request);
     case "VIEW_FEEDBACK_TICKETS":
       return (
-        (hasRole(request, "PARTICIPANT") &&
-          ownsResource(request) &&
-          hasScope(request)) ||
-        (hasScopedStaffRole(request) && hasScope(request))
+        hasParticipantResourceAccess(request) || hasScopedStaffAccess(request)
       );
     case "MANAGE_LEARNING_ASSIGNMENTS":
     case "MANAGE_ASSESSMENT_WORKFLOWS":
     case "TRANSITION_FEEDBACK_TICKET":
-      return hasScopedStaffRole(request) && hasScope(request);
+      return hasScopedStaffAccess(request);
     case "REVIEW_APPEAL":
-      return hasScopedStaffRole(request) && hasScope(request);
+      return hasScopedStaffAccess(request);
     case "CORRECT_ATTEMPT":
       return isApprovedClinicalIdentity(request) && hasScope(request);
     case "MODERATE_CONTENT":
-      return (
-        (hasRole(request, "MODERATOR") ||
-          hasRole(request, "ADMIN") ||
-          isApprovedClinicalIdentity(request)) &&
-        hasScope(request)
-      );
+      return hasContentModerationAccess(request);
     case "APPROVE_CLINICAL_CONTENT":
       return isApprovedClinicalIdentity(request) && hasScope(request);
     case "AUTHOR_CONTENT":
       return hasRole(request, "AUTHOR") && hasScope(request);
     case "PUBLISH_CONTENT":
-      return (
-        (hasRole(request, "AUTHOR") ||
-          hasRole(request, "MODERATOR") ||
-          hasRole(request, "ADMIN")) &&
-        hasScope(request)
-      );
+      return hasPublicationAccess(request);
     case "VIEW_INTERNAL_SOURCE":
-      return (
-        (hasRole(request, "AUTHOR") || isApprovedClinicalIdentity(request)) &&
-        hasScope(request)
-      );
+      return hasInternalSourceAccess(request);
     case "VIEW_CLINICAL_REVIEW_QUEUE":
       return isApprovedClinicalIdentity(request) && hasScope(request);
     case "VIEW_MODERATOR_DASHBOARD":
@@ -153,4 +162,11 @@ export function canAccess(request: AuthorizationRequest): boolean {
     default:
       return false;
   }
+}
+
+export function canAccess(request: AuthorizationRequest): boolean {
+  if (request.accountStatus !== "ACTIVE" || request.principalId.trim() === "") {
+    return false;
+  }
+  return canAccessCapability(request);
 }

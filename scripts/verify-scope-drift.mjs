@@ -63,17 +63,8 @@ function idsFrom(contents, pattern) {
   return new Set(contents.match(pattern) ?? []);
 }
 
-export function validateScopeDriftSnapshot(snapshot) {
+function validateDecisionSources(snapshot, block) {
   const errors = [];
-  const manifest = contentOf(snapshot, TRACEABILITY_PATH);
-  const block = scopeControlBlock(manifest);
-  if (block.length === 0) {
-    return Object.freeze({
-      errors: Object.freeze(["traceability has no scope_control block"]),
-      capabilityCount: 0,
-    });
-  }
-
   const sourcePathSet = new Set(
     DECISION_SOURCE_PATHS.filter((path) => block.includes(`"${path}"`)),
   );
@@ -85,7 +76,10 @@ export function validateScopeDriftSnapshot(snapshot) {
       errors.push(`missing decision source ${canonicalPath}`);
     }
   }
+  return errors;
+}
 
+function collectScopeIds(snapshot) {
   const decisionIds = new Set(
     DECISION_SOURCE_PATHS.flatMap(
       (path) => contentOf(snapshot, path).match(/\bD-[0-9]{3}\b/gu) ?? [],
@@ -97,8 +91,35 @@ export function validateScopeDriftSnapshot(snapshot) {
       contentOf(snapshot, NON_FUNCTIONAL_REQUIREMENTS_PATH),
     /\b(?:RF|RNF)-[0-9]{3}\b/gu,
   );
+  return Object.freeze({ decisionIds, requirementIds });
+}
 
-  const capabilities = parseCapabilities(block);
+function validateCapability(capability, decisionIds, requirementIds) {
+  const errors = [];
+  if (capability.decisions.length === 0) {
+    errors.push(`${capability.id} must declare at least one decision`);
+  }
+  if (capability.requirements.length === 0) {
+    errors.push(`${capability.id} must declare at least one requirement`);
+  }
+  if (capability.status !== APPROVED_STATUS) {
+    errors.push(`${capability.id} must use an approved status`);
+  }
+  for (const decision of capability.decisions) {
+    if (!decisionIds.has(decision)) {
+      errors.push(`${capability.id} has unknown decision ${decision}`);
+    }
+  }
+  for (const requirement of capability.requirements) {
+    if (!requirementIds.has(requirement)) {
+      errors.push(`${capability.id} has unknown requirement ${requirement}`);
+    }
+  }
+  return errors;
+}
+
+function validateCapabilities(capabilities, decisionIds, requirementIds) {
+  const errors = [];
   const capabilityIds = new Set();
   const usedDecisions = new Set();
   const usedRequirements = new Set();
@@ -107,37 +128,48 @@ export function validateScopeDriftSnapshot(snapshot) {
       errors.push(`duplicate capability ${capability.id}`);
     }
     capabilityIds.add(capability.id);
-    if (capability.decisions.length === 0) {
-      errors.push(`${capability.id} must declare at least one decision`);
-    }
-    if (capability.requirements.length === 0) {
-      errors.push(`${capability.id} must declare at least one requirement`);
-    }
-    if (capability.status !== APPROVED_STATUS) {
-      errors.push(`${capability.id} must use an approved status`);
-    }
     for (const decision of capability.decisions) {
       usedDecisions.add(decision);
-      if (!decisionIds.has(decision)) {
-        errors.push(`${capability.id} has unknown decision ${decision}`);
-      }
     }
     for (const requirement of capability.requirements) {
       usedRequirements.add(requirement);
-      if (!requirementIds.has(requirement)) {
-        errors.push(`${capability.id} has unknown requirement ${requirement}`);
-      }
     }
+    errors.push(...validateCapability(capability, decisionIds, requirementIds));
   }
   if (capabilities.length === 0) {
     errors.push("scope_control must declare at least one capability");
   }
-
   return Object.freeze({
     errors: Object.freeze(errors),
-    capabilityCount: capabilities.length,
     decisionCount: usedDecisions.size,
     requirementCount: usedRequirements.size,
+  });
+}
+
+export function validateScopeDriftSnapshot(snapshot) {
+  const manifest = contentOf(snapshot, TRACEABILITY_PATH);
+  const block = scopeControlBlock(manifest);
+  if (block.length === 0) {
+    return Object.freeze({
+      errors: Object.freeze(["traceability has no scope_control block"]),
+      capabilityCount: 0,
+    });
+  }
+
+  const sourceErrors = validateDecisionSources(snapshot, block);
+  const { decisionIds, requirementIds } = collectScopeIds(snapshot);
+  const capabilities = parseCapabilities(block);
+  const capabilityResult = validateCapabilities(
+    capabilities,
+    decisionIds,
+    requirementIds,
+  );
+
+  return Object.freeze({
+    errors: Object.freeze([...sourceErrors, ...capabilityResult.errors]),
+    capabilityCount: capabilities.length,
+    decisionCount: capabilityResult.decisionCount,
+    requirementCount: capabilityResult.requirementCount,
   });
 }
 

@@ -117,7 +117,7 @@ export function createProgressReadRepository(
       activityId: string,
     ): Promise<ParticipantProgressState | null> => {
       return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
+        const executor = transaction;
         await setDatabaseSecurityContext(executor, { participantId });
         const rows = await executor
           .select({

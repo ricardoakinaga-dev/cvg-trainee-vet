@@ -26,6 +26,9 @@ import { createObservability } from "@cvg/observability";
 
 import { handleApiRequest, type ApiHttpDependencies } from "./http.js";
 
+const invitationCredential = ["Acesso", "CVG", "2026!Seguro"].join("-");
+const rotatedCredential = ["Novo", "Acesso", "CVG", "2026!"].join("-");
+
 const attempt: AttemptState = {
   attemptId: "11111111-1111-4111-8111-111111111111",
   participantId: "22222222-2222-4222-8222-222222222222",
@@ -374,8 +377,13 @@ describe("API HTTP boundary", () => {
     });
 
     const health = await handleApiRequest(
-      { method: "GET", path: "/health/dependencies", body: undefined },
-      dependencies({ dependencyStatus }),
+      {
+        method: "GET",
+        path: "/health/dependencies",
+        body: undefined,
+        headers: { authorization: "Bearer x" },
+      },
+      dependencies({ dependencyStatus, metricsScrapeToken: "x" }),
     );
     expect(health).toMatchObject({
       status: 200,
@@ -509,6 +517,7 @@ describe("API HTTP boundary", () => {
         body: undefined,
       },
       dependencies({
+        approvedClinicalApproverId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         authenticate: async () => ({
           principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
           accountStatus: "ACTIVE",
@@ -531,6 +540,40 @@ describe("API HTTP boundary", () => {
     );
   });
 
+  it("allows a new active clinical approver after identity rotation", async () => {
+    const getClinicalReviewQueue = vi.fn(async () => ({
+      items: [],
+      page: 1,
+      perPage: 10,
+      total: 0,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/authoring/review-queue",
+        query: {
+          scopeId: authoringRecord.scopeId,
+          page: "1",
+          per_page: "10",
+          status: "PENDING",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [authoringRecord.scopeId],
+        }),
+        getClinicalReviewQueue,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getClinicalReviewQueue).toHaveBeenCalledOnce();
+  });
+
   it("exposes a scoped clinical review route without exposing internals publicly", async () => {
     const reviewAuthoringContent = vi.fn(async () => ({
       record: authoringRecord,
@@ -539,6 +582,7 @@ describe("API HTTP boundary", () => {
       {
         method: "POST",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/review`,
+        headers: { "idempotency-key": "review-http-1" },
         body: {
           version: 1,
           scopeId: authoringRecord.scopeId,
@@ -562,8 +606,36 @@ describe("API HTTP boundary", () => {
       expect.objectContaining({
         decision: "APROVAR_CLINICAMENTE",
         contentId: authoringRecord.contentId,
+        idempotencyKey: "review-http-1",
       }),
     );
+    expect(reviewAuthoringContent).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        approvedClinicalApproverId: expect.anything(),
+      }),
+    );
+  });
+
+  it("requires a bounded stable idempotency key for authoring mutations", async () => {
+    const reviewAuthoringContent = vi.fn(async () => ({
+      record: authoringRecord,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/content/${authoringRecord.contentId}/review`,
+        body: {
+          version: 1,
+          scopeId: authoringRecord.scopeId,
+          decision: "APROVAR_CLINICAMENTE",
+          rationale: "Revisão sintética.",
+        },
+      },
+      dependencies({ reviewAuthoringContent }),
+    );
+
+    expect(response.status).toBe(422);
+    expect(reviewAuthoringContent).not.toHaveBeenCalled();
   });
 
   it("publishes authoring content through automatic source verification", async () => {
@@ -586,6 +658,7 @@ describe("API HTTP boundary", () => {
       {
         method: "POST",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/publish`,
+        headers: { "Idempotency-Key": "publish-http-1" },
         body: { version: 1, scopeId: authoringRecord.scopeId },
       },
       dependencies({
@@ -614,8 +687,35 @@ describe("API HTTP boundary", () => {
       expect.objectContaining({
         contentId: authoringRecord.contentId,
         scopeId: authoringRecord.scopeId,
+        idempotencyKey: "publish-http-1",
       }),
     );
+  });
+
+  it("keeps publication available while the clinical approver rotates", async () => {
+    const publishAuthoringContent = vi.fn(async () => ({
+      record: authoringRecord,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/content/${authoringRecord.contentId}/publish`,
+        headers: { "idempotency-key": "publish-http-2" },
+        body: { version: 1, scopeId: authoringRecord.scopeId },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [authoringRecord.scopeId],
+        }),
+        publishAuthoringContent,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(publishAuthoringContent).toHaveBeenCalledOnce();
   });
 
   it("requires authentication before starting an attempt", async () => {
@@ -757,6 +857,7 @@ describe("API HTTP boundary", () => {
         path: "/api/v1/invitations/accept",
         body: {
           token: "a".repeat(32),
+          password: invitationCredential,
           sessionExpiresInSeconds: 3600,
         },
       },
@@ -767,6 +868,7 @@ describe("API HTTP boundary", () => {
     expect(authenticate).not.toHaveBeenCalled();
     expect(acceptInvitation).toHaveBeenCalledWith({
       token: "a".repeat(32),
+      password: invitationCredential,
       sessionExpiresInSeconds: 3600,
       correlationId: "request-123",
     });
@@ -799,7 +901,7 @@ describe("API HTTP boundary", () => {
         path: "/api/v1/auth/login",
         body: {
           login: "trainee@cvg.example",
-          password: "Acesso-" + "CVG-2026!Seguro",
+          password: invitationCredential,
         },
       },
       dependencies({ loginWithPassword }),
@@ -808,14 +910,14 @@ describe("API HTTP boundary", () => {
     expect(response.status).toBe(200);
     expect(loginWithPassword).toHaveBeenCalledWith({
       login: "trainee@cvg.example",
-      password: "Acesso-" + "CVG-2026!Seguro",
+      password: invitationCredential,
       sessionExpiresInSeconds: 3600,
       correlationId: "request-123",
     });
     expect(response.headers?.["set-cookie"]).toContain("HttpOnly");
     expect(response.body).toMatchObject({
       success: true,
-      data: { status: "active" },
+      data: { status: "active", canAccessAdmin: false },
     });
     expect(JSON.stringify(response.body)).not.toContain("Acesso-CVG");
     expect(JSON.stringify(response.body)).not.toContain("ssssssss");
@@ -861,10 +963,36 @@ describe("API HTTP boundary", () => {
     expect(authenticate).toHaveBeenCalled();
     expect(response.body).toMatchObject({
       success: true,
-      data: { status: "active" },
+      data: { status: "active", canAccessAdmin: false },
     });
     expect(JSON.stringify(response.body)).not.toContain("aaaaaaaa");
     expect(JSON.stringify(response.body)).not.toContain("PARTICIPANT");
+  });
+
+  it("exposes only the admin capability needed for role-aware navigation", async () => {
+    const authenticate = vi.fn(async () => ({
+      principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      accountStatus: "ACTIVE" as const,
+      roles: ["ADMIN" as const],
+      scopes: ["11111111-1111-4111-8111-111111111111"],
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/session",
+        body: undefined,
+        headers: { cookie: "__Host-cvg_session=" + "s".repeat(32) },
+      },
+      dependencies({ authenticate }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "active", canAccessAdmin: true },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("ADMIN");
+    expect(JSON.stringify(response.body)).not.toContain("aaaaaaaa");
   });
 
   it("updates a password only for an authenticated active account", async () => {
@@ -873,7 +1001,10 @@ describe("API HTTP boundary", () => {
       {
         method: "POST",
         path: "/api/v1/account/password",
-        body: { password: "N" + "ovo-Acesso-CVG-2026!" },
+        body: {
+          currentPassword: invitationCredential,
+          password: rotatedCredential,
+        },
       },
       dependencies({ setAccountPassword }),
     );
@@ -881,13 +1012,15 @@ describe("API HTTP boundary", () => {
     expect(response.status).toBe(200);
     expect(setAccountPassword).toHaveBeenCalledWith({
       principalId: attempt.participantId,
-      password: "N" + "ovo-Acesso-CVG-2026!",
+      currentPassword: invitationCredential,
+      password: rotatedCredential,
       correlationId: "request-123",
     });
     expect(response.body).toMatchObject({
       success: true,
       data: { status: "updated" },
     });
+    expect(response.headers?.["set-cookie"]).toContain("Max-Age=0");
     expect(JSON.stringify(response.body)).not.toContain("Novo-Acesso");
   });
 

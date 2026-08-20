@@ -1,6 +1,6 @@
 # 0301 — Roadmap de Construção — CVG
 
-> **Extensão vigente:** este roadmap preserva as fases estruturais originais. A execução Premium Enterprise 95 derivada da auditoria atual está detalhada em `../04.AUDIT/0492_score_95_roadmap.md` e no programa `0304_premium_enterprise_95_program.md`.
+> **Extensão vigente:** este roadmap preserva as fases estruturais originais. A execução corrente das duas rubricas de 16 itens está em `0307_dual_95_executive_program.md`, `../04.AUDIT/0514_dual_95_roadmap.md` e `../04.AUDIT/0515_dual_95_backlog.md`; `0304/0492/0493` preservam a baseline de maturidade.
 
 ## PHASE -1 — Fechamento documental
 

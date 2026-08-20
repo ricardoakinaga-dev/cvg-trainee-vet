@@ -199,7 +199,7 @@ export function createItemStatisticsRepository(
   return Object.freeze({
     save: async (state: ObservedItemStatistics): Promise<void> => {
       await db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
+        const executor = transaction;
         await setDatabaseSecurityContext(executor, {
           scopeId: state.scopeId,
         });

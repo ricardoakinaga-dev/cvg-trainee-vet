@@ -176,7 +176,11 @@ export type {
   DigitalCaseRuntimeWriteInput,
   GetParticipantDigitalCaseCommand,
 } from "./digital-case-use-cases.js";
-export { advanceContent, expireDueContent } from "./content-use-cases.js";
+export {
+  advanceContent,
+  advanceContentWithinTransaction,
+  expireDueContent,
+} from "./content-use-cases.js";
 export type {
   AdvanceContentCommand,
   ContentExpiryUseCaseDependencies,
@@ -197,6 +201,8 @@ export {
 } from "./authoring-use-cases.js";
 export type {
   AuthoringChoice,
+  AuthoringIdempotencyPort,
+  AuthoringIdempotencyRecord,
   AuthoringParticipantItem,
   AuthoringPreflight,
   AuthoringPreflightResult,
@@ -205,7 +211,14 @@ export type {
   AuthoringRubric,
   AuthoringSourceRef,
   AuthoringPublicationDependencies,
+  AuthoringPublicationResult,
   AuthoringReviewDependencies,
+  AuthoringReviewResult,
+  AuthoringTransactionPort,
+  AuthoringTransactionalOperations,
+  AuthoringWorkflowOperation,
+  ClinicalApproverPort,
+  ClinicalApproverRecord,
   ClinicalReviewDecision,
   ClinicalReviewRecord,
   PublishAuthoringCommand,

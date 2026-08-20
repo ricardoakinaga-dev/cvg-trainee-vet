@@ -18,6 +18,7 @@ import {
   createLearningStateRepository,
   feedbackTicketRowToState,
   feedbackTicketStateToRow,
+  LearningStateMappingError,
   LearningStatePersistenceConflictError,
   learningAssignmentRowToState,
   learningAssignmentStateToRow,
@@ -259,6 +260,41 @@ describe("learning state persistence mappings", () => {
         updatedAt: new Date(now),
       }),
     ).toEqual({ scopeId, state: paused });
+  });
+
+  it("characterizes the complete immutable assignment row projection", () => {
+    const initial = createLearningAssignment({
+      assignmentId: "66666666-6666-4666-8666-666666666666",
+      participantId,
+      moduleId: "M03",
+      availableAt: now,
+    });
+    const paused = transitionLearningAssignment(
+      transitionLearningAssignment(initial, { type: "ATRIBUIR" }),
+      {
+        type: "PAUSAR",
+        reason: "ACOMODACAO",
+        resumeAt: "2026-08-12T12:00:00.000Z",
+      },
+    );
+    const scoped = { scopeId, state: paused } as const;
+    const row = learningAssignmentStateToRow(scoped);
+
+    expect(row).toEqual({
+      id: "66666666-6666-4666-8666-666666666666",
+      participantId,
+      scopeId,
+      moduleId: "M03",
+      availableAt: new Date(now),
+      status: "PAUSADO",
+      version: 2,
+      blockReason: null,
+      pausedFrom: "ATRIBUIDO",
+      pauseReason: "ACOMODACAO",
+      resumeAt: new Date("2026-08-12T12:00:00.000Z"),
+    });
+    expect(Object.isFrozen(row)).toBe(true);
+    expect(scoped).toEqual({ scopeId, state: paused });
   });
 
   it("rejects malformed persisted assignment context before it reaches SQL", () => {
@@ -590,5 +626,366 @@ describe("learning state persistence mappings", () => {
       { scopeId, state: { ticketId, participantId, status: "TRIADO" } },
     ]);
     expect(fakeDatabase.executions).toHaveLength(2);
+  });
+
+  it("fails closed on invalid assignment, feedback and appeal transition metadata", () => {
+    const assignment = createLearningAssignment({
+      assignmentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      participantId,
+      moduleId: "M03",
+      availableAt: now,
+    });
+    const scopedAssignment = { scopeId, state: assignment };
+    const expectMappingError = (operation: () => unknown) => {
+      expect(operation).toThrow(LearningStateMappingError);
+    };
+
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, assignmentId: " " } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, version: -1 } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, availableAt: "invalid" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, status: "UNKNOWN" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, status: "BLOQUEADO", version: 1 } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, blockReason: "PRE_REQUISITO" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, status: "PAUSADO", version: 1 } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: {
+          ...assignment,
+          status: "PAUSADO",
+          version: 1,
+          pausedFrom: "ATRIBUIDO",
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, pauseReason: "ACOMODACAO" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, moduleId: "M99" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      learningAssignmentStateToRow({
+        scopeId,
+        state: { ...assignment, pausedFrom: "ATRIBUIDO" } as never,
+      }),
+    );
+
+    expectMappingError(() =>
+      learningAssignmentRowToState({
+        ...assignmentRow("assignment-1", "ATRIBUIDO", 1),
+        blockReason: "PRE_REQUISITO",
+      } as never),
+    );
+    expectMappingError(() =>
+      learningAssignmentRowToState({
+        ...assignmentRow("assignment-1", "PAUSADO", 1),
+        pausedFrom: null,
+      } as never),
+    );
+    expectMappingError(() =>
+      learningAssignmentRowToState({
+        ...assignmentRow("assignment-1", "ATRIBUIDO", 1),
+        pausedFrom: "ATRIBUIDO",
+      } as never),
+    );
+    expectMappingError(() =>
+      learningAssignmentRowToState({
+        ...assignmentRow("assignment-1", "ATRIBUIDO", 1),
+        pauseReason: "ACOMODACAO",
+      } as never),
+    );
+    expectMappingError(() =>
+      learningAssignmentRowToState({
+        ...assignmentRow("assignment-1", "PAUSADO", 1),
+        pausedFrom: "ATRIBUIDO",
+        pauseReason: null,
+      } as never),
+    );
+    expect(scopedAssignment.scopeId).toBe(scopeId);
+
+    const ticket = createFeedbackTicket({
+      ticketId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      participantId,
+      type: "BUG_TECNICO",
+      description: "Falha sintética controlada.",
+      createdAt: now,
+    });
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          technicalContext: { logicalPage: "dashboard", appVersion: "web-1" },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          response: { message: "patientId: synthetic", respondedAt: now },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          technicalContext: { logicalPage: "/feedback", appVersion: " " },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          technicalContext: {
+            logicalPage: "/feedback",
+            appVersion: "web-1",
+            occurredAt: "invalid",
+          },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          technicalContext: {
+            logicalPage: "/feedback",
+            appVersion: "web-1",
+            errorCode: "invalid code",
+          },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: { ...ticket, description: "patientId: synthetic" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          response: { message: "<b>unsafe</b>", respondedAt: now },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          response: { message: "Resposta sintética.", respondedAt: "invalid" },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          response: {
+            message: "Resposta sintética.",
+            respondedAt: now,
+            respondedBy: " ",
+          },
+        } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: { ...ticket, history: [] } as never,
+      }),
+    );
+    expectMappingError(() =>
+      feedbackTicketStateToRow({
+        scopeId,
+        state: {
+          ...ticket,
+          history: Array.from({ length: 101 }, () => ({
+            status: "NOVO",
+            changedAt: now,
+          })),
+        } as never,
+      }),
+    );
+
+    const ticketRowBase = ticketRow("ticket-1", "NOVO", 0);
+    expectMappingError(() =>
+      feedbackTicketRowToState({
+        ...ticketRowBase,
+        logicalPage: "/feedback",
+        appVersion: null,
+        occurredAt: null,
+        errorCode: null,
+      } as never),
+    );
+    expectMappingError(() =>
+      feedbackTicketRowToState({
+        ...ticketRowBase,
+        history: Array.from({ length: 101 }, () => ({
+          status: "NOVO",
+          changedAt: now,
+        })),
+      } as never),
+    );
+    expectMappingError(() =>
+      feedbackTicketRowToState({ ...ticketRowBase, history: [null] } as never),
+    );
+    expectMappingError(() =>
+      feedbackTicketRowToState({
+        ...ticketRowBase,
+        response: "Resposta",
+        responseAt: null,
+      } as never),
+    );
+    expectMappingError(() =>
+      feedbackTicketRowToState({
+        ...ticketRowBase,
+        response: " ",
+        responseAt: new Date(now),
+      } as never),
+    );
+    expect(
+      feedbackTicketRowToState({
+        ...ticketRowBase,
+        assigneeId: reviewerId,
+        response: "Resposta sintética.",
+        responseAt: new Date(now),
+        responseBy: reviewerId,
+        history: [{ status: "NOVO", changedAt: now, actorId: reviewerId }],
+      } as never),
+    ).toMatchObject({
+      state: {
+        assigneeId: reviewerId,
+        response: { respondedBy: reviewerId },
+        history: [{ actorId: reviewerId }],
+      },
+    });
+    expectMappingError(() =>
+      feedbackTicketRowToState({
+        ...ticketRowBase,
+        createdAt: new Date("invalid"),
+      } as never),
+    );
+
+    expectMappingError(() =>
+      assessmentWorkflowStateToRow({
+        scopeId,
+        participantId: " ",
+        state: {
+          resultId: "workflow-1",
+          attemptId: "attempt-1",
+          ruleVersion: "v1",
+          version: 0,
+          status: "RESULTADO_EM_PROCESSAMENTO",
+        },
+      } as never),
+    );
+
+    const appeal = createAppeal({
+      appealId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      participantId,
+      attemptId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      itemId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      justification: "Justificativa sintética.",
+      createdAt: now,
+    });
+    expectMappingError(() =>
+      appealStateToRow({
+        scopeId,
+        state: { ...appeal, dueAt: "2026-08-01T12:00:00.000Z" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      appealStateToRow({
+        scopeId,
+        state: { ...appeal, reviewerId: participantId } as never,
+      }),
+    );
+    expectMappingError(() =>
+      appealStateToRow({
+        scopeId,
+        state: { ...appeal, status: "EM_REVISAO" } as never,
+      }),
+    );
+    expectMappingError(() =>
+      appealStateToRow({
+        scopeId,
+        state: { ...appeal, status: "DECIDIDA", reviewerId } as never,
+      }),
+    );
+    expectMappingError(() =>
+      appealRowToState({
+        ...appealRow("appeal-1", "EM_REVISAO", 1, participantId, null),
+      } as never),
+    );
+    expectMappingError(() =>
+      appealRowToState({
+        ...appealRow("appeal-1", "EM_REVISAO", 1, null, null),
+      } as never),
+    );
+    expectMappingError(() =>
+      appealRowToState({
+        ...appealRow("appeal-1", "DECIDIDA", 1, reviewerId, null),
+      } as never),
+    );
+    expectMappingError(() =>
+      appealRowToState({
+        ...appealRow("appeal-1", "ABERTA", 1, null, null),
+        dueAt: new Date("2026-08-01T12:00:00.000Z"),
+      } as never),
+    );
   });
 });

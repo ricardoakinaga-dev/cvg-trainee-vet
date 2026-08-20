@@ -14,6 +14,9 @@ const environment = {
     process.env.CVG_DB_APP_PASSWORD ?? "synthetic-app-password",
   CVG_DB_NAME: process.env.CVG_DB_NAME ?? "cvg",
   WEB_ORIGINS: process.env.WEB_ORIGINS ?? "http://localhost:8080",
+  TRUSTED_PROXY_CIDRS: process.env.TRUSTED_PROXY_CIDRS ?? "127.0.0.1/32",
+  CLINICAL_APPROVER_ID:
+    process.env.CLINICAL_APPROVER_ID ?? "synthetic-clinical-approver",
   METRICS_SCRAPE_TOKEN: process.env.METRICS_SCRAPE_TOKEN ?? "m".repeat(32),
   GRAFANA_ADMIN_PASSWORD:
     process.env.GRAFANA_ADMIN_PASSWORD ?? "synthetic-grafana-password",
@@ -34,7 +37,9 @@ const requiredServices = [
   "worker-a",
   "worker-b",
   "edge",
+  "prometheus-secret-init",
   "prometheus",
+  "alertmanager",
   "grafana",
 ];
 const missing = requiredServices.filter(
@@ -97,12 +102,70 @@ if (
 ) {
   throw new Error("Prometheus retention must be configured to 15 days");
 }
+const secretInit = services["prometheus-secret-init"];
 if (
-  services.prometheus.secrets?.some(
+  secretInit.user !== "0:0" ||
+  secretInit.restart !== "no" ||
+  secretInit.read_only !== true ||
+  secretInit.network_mode !== "none" ||
+  secretInit.cap_drop?.includes("ALL") !== true ||
+  ["CHOWN", "DAC_READ_SEARCH", "FOWNER"].some(
+    (capability) => secretInit.cap_add?.includes(capability) !== true,
+  ) ||
+  secretInit.secrets?.some(
     (secret) => secret.source === "metrics_scrape_token",
   ) !== true
 ) {
-  throw new Error("Prometheus must use the dedicated metrics scrape secret");
+  throw new Error(
+    "Prometheus secret init must read the dedicated metrics scrape secret as a one-shot hardened root helper",
+  );
+}
+if (
+  secretInit.volumes?.some(
+    (volume) =>
+      String(volume.target) === "/output" &&
+      String(volume.source).includes("prometheus-secret-data"),
+  ) !== true
+) {
+  throw new Error(
+    "Prometheus secret init must populate the secret data volume",
+  );
+}
+if (String(secretInit.command).includes("65534") !== true) {
+  throw new Error(
+    "Prometheus secret init must assign the non-root runtime owner",
+  );
+}
+if (
+  services.prometheus.user !== "65534:65534" ||
+  services.prometheus.healthcheck === undefined
+) {
+  throw new Error("Prometheus must run non-root with a readiness healthcheck");
+}
+if (
+  services.prometheus.volumes?.some(
+    (volume) =>
+      String(volume.target) === "/run/secrets" &&
+      String(volume.source).includes("prometheus-secret-data"),
+  ) !== true
+) {
+  throw new Error("Prometheus must read the prepared secret data volume");
+}
+if (
+  services.prometheus.depends_on?.["prometheus-secret-init"]?.condition !==
+  "service_completed_successfully"
+) {
+  throw new Error(
+    "Prometheus must wait for the secret preparation to complete",
+  );
+}
+if (services.alertmanager.healthcheck === undefined) {
+  throw new Error("Alertmanager must have a readiness healthcheck");
+}
+if (
+  services.prometheus.depends_on?.alertmanager?.condition !== "service_healthy"
+) {
+  throw new Error("Prometheus must wait for a healthy Alertmanager");
 }
 if (
   services["api-a"].environment?.OTEL_EXPORTER_OTLP_ENDPOINT !==

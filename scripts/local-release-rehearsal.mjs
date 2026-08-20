@@ -5,7 +5,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { assertReleaseManifest } from "./release-manifest.mjs";
+import {
+  assertDistinctRollbackProvenance,
+  assertReleaseManifest,
+} from "./release-manifest.mjs";
 
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/iu;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/iu;
@@ -74,17 +77,23 @@ export function createLocalReleaseManifest({
   rollbackDigest,
   releaseId = "cvg-local-rehearsal",
   image = "cvg-trainee-vet",
-  canarySeconds = 30,
+  canarySeconds = 90,
+  canaryStableProbes = 3,
+  sourceSha,
+  rollbackSourceSha,
 }) {
   const manifest = {
     releaseId,
     image,
     imageDigest: releaseDigest,
     rollbackImageDigest: rollbackDigest,
+    sourceSha,
+    rollbackSourceSha,
     migrationStrategy: "EXPAND_CONTRACT",
     canaryService: "api-a",
     healthPath: "/health/ready",
     canarySeconds,
+    canaryStableProbes,
   };
   return Object.freeze(assertReleaseManifest(manifest));
 }
@@ -105,13 +114,20 @@ export function resolveLocalRollbackImage(environment = {}) {
   return rollbackImage;
 }
 
-export async function runLocalReleaseRehearsal(environment = process.env) {
+export function resolveLocalRehearsalConfiguration(environment = process.env) {
   assertLocalReleaseRehearsalEnabled(environment);
 
   const sourceSha = assertSourceSha(environment.CVG_SOURCE_SHA);
   const localImage = environment.CVG_LOCAL_RELEASE_IMAGE ?? DEFAULT_LOCAL_IMAGE;
   assertLocalImage(localImage);
   const rollbackSourceImage = resolveLocalRollbackImage(environment);
+  const requireVersionedRollback =
+    environment.CVG_REQUIRE_VERSIONED_ROLLBACK === "true";
+  if (requireVersionedRollback && rollbackSourceImage === null) {
+    throw new Error(
+      "versioned rollback rehearsal requires CVG_LOCAL_RELEASE_ROLLBACK_IMAGE",
+    );
+  }
 
   const composeFile = environment.CVG_COMPOSE_FILE ?? DEFAULT_COMPOSE_FILE;
   const composeEnvFile =
@@ -127,104 +143,220 @@ export async function runLocalReleaseRehearsal(environment = process.env) {
     throw new Error(`local rehearsal env file not found: ${composeEnvFile}`);
   }
 
-  const releaseImage = await inspectRepositoryDigest(localImage, sourceSha);
+  return Object.freeze({
+    sourceSha,
+    localImage,
+    rollbackSourceImage,
+    requireVersionedRollback,
+    composeFile,
+    composeEnvFile,
+    project,
+    healthTarget,
+  });
+}
+
+export async function runLocalReleaseRehearsal(environment = process.env) {
+  const configuration = resolveLocalRehearsalConfiguration(environment);
+  const releaseImage = await inspectRepositoryDigest(
+    configuration.localImage,
+    configuration.sourceSha,
+  );
   const rehearsalId = `${process.pid}-${Date.now()}`;
   const rehearsalContainer = `cvg-release-rehearsal-${rehearsalId}`;
   const rollbackTag = `cvg-trainee-vet:local-rollback-${rehearsalId}`;
+  const rehearsal = await runLocalReleaseCycle({
+    configuration,
+    environment,
+    releaseImage,
+    rehearsalContainer,
+    rollbackTag,
+  });
+  const result = buildLocalRehearsalResult({
+    configuration,
+    manifest: rehearsal.manifest,
+    rollbackMode: rehearsal.rollbackMode,
+  });
+  console.log(JSON.stringify(result));
+  return Object.freeze(result);
+}
+
+async function runLocalReleaseCycle({
+  configuration,
+  environment,
+  releaseImage,
+  rehearsalContainer,
+  rollbackTag,
+}) {
   let temporaryManifestDirectory;
   let rollbackImageCreated = false;
   let runtimeRestored = false;
-
   try {
-    let rollbackImage;
-    if (rollbackSourceImage) {
-      rollbackImage = await inspectRepositoryDigest(rollbackSourceImage);
-    } else {
-      await runCommand("docker", [
-        "create",
-        "--name",
-        rehearsalContainer,
-        localImage,
-      ]);
-      await runCommand("docker", [
-        "commit",
-        "--change",
-        "LABEL cvg.local.rehearsal=rollback",
-        rehearsalContainer,
-        rollbackTag,
-      ]);
-      rollbackImageCreated = true;
-      rollbackImage = await inspectRepositoryDigest(rollbackTag);
-    }
-    const manifest = createLocalReleaseManifest({
-      releaseDigest: releaseImage.digest,
-      rollbackDigest: rollbackImage.digest,
-      image: releaseImage.image,
+    rollbackImageCreated = configuration.rollbackSourceImage === null;
+    const rollback = await prepareRollbackImage({
+      configuration,
+      rehearsalContainer,
+      rollbackTag,
     });
+    const manifest = buildRehearsalManifest({
+      releaseImage,
+      rollbackImage: rollback.image,
+    });
+    if (configuration.requireVersionedRollback) {
+      assertDistinctRollbackProvenance(manifest);
+    }
 
     temporaryManifestDirectory = await mkdtemp(
       join(tmpdir(), "cvg-local-release-"),
     );
     const manifestPath = join(temporaryManifestDirectory, "manifest.json");
     await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-
-    const releaseEnvironment = {
-      ...buildLocalReleaseEnvironment(environment),
-      CVG_RELEASE_MANIFEST: manifestPath,
-      CVG_COMPOSE_FILE: composeFile,
-      CVG_COMPOSE_ENV_FILE: composeEnvFile,
-      CVG_COMPOSE_PROJECT: project,
-      CVG_CANARY_HEALTH_URL: healthTarget,
-      CVG_ROLLBACK_HEALTH_URL: healthTarget,
-    };
-
-    await runCommand(process.execPath, ["scripts/deploy-release.mjs"], {
-      environment: releaseEnvironment,
-    });
-    await runCommand(process.execPath, ["scripts/rollback-release.mjs"], {
-      environment: releaseEnvironment,
-    });
-
-    await restoreLocalRuntime({
-      composeEnvFile,
-      composeFile,
-      healthTarget,
-      imageReference: releaseImage.reference,
-      project,
-      sourceSha,
+    await executeReleaseRollbackAndRestore({
+      configuration,
       environment,
+      imageReference: releaseImage.reference,
+      manifest,
+      manifestPath,
     });
     runtimeRestored = true;
-
-    const result = {
-      status: "PASS",
-      mode: "LOCAL_REHEARSAL",
-      releaseId: manifest.releaseId,
-      sourceSha,
-      releaseDigest: manifest.imageDigest,
-      rollbackDigest: manifest.rollbackImageDigest,
-      rollbackMode: rollbackSourceImage
-        ? "EXISTING_LOCAL_IMAGE"
-        : "SYNTHETIC_CLONE",
-      deploy: "PASS",
-      rollback: "PASS",
-      runtimeRestored: true,
-      healthTarget,
-    };
-    console.log(JSON.stringify(result));
-    return Object.freeze(result);
+    return Object.freeze({
+      manifest,
+      rollbackMode: rollback.mode,
+    });
   } finally {
-    await removeContainer(rehearsalContainer);
-    if (temporaryManifestDirectory) {
-      await rm(temporaryManifestDirectory, { force: true, recursive: true });
-    }
-    if (rollbackImageCreated && runtimeRestored) {
-      await removeImage(rollbackTag);
-    } else if (rollbackImageCreated) {
-      console.error(
-        `rollback rehearsal image retained for recovery: ${rollbackTag}`,
-      );
-    }
+    await cleanupLocalReleaseCycle({
+      rehearsalContainer,
+      rollbackTag,
+      rollbackImageCreated,
+      runtimeRestored,
+      temporaryManifestDirectory,
+    });
+  }
+}
+
+function buildRehearsalManifest({ releaseImage, rollbackImage }) {
+  return createLocalReleaseManifest({
+    releaseDigest: releaseImage.digest,
+    rollbackDigest: rollbackImage.digest,
+    image: releaseImage.image,
+    sourceSha: releaseImage.sourceSha,
+    rollbackSourceSha: rollbackImage.sourceSha,
+  });
+}
+
+async function executeReleaseRollbackAndRestore({
+  configuration,
+  environment,
+  imageReference,
+  manifest,
+  manifestPath,
+}) {
+  const releaseEnvironment = buildRehearsalEnvironment({
+    configuration,
+    environment,
+    manifestPath,
+  });
+  await runCommand(process.execPath, ["scripts/deploy-release.mjs"], {
+    environment: releaseEnvironment,
+  });
+  await runCommand(process.execPath, ["scripts/rollback-release.mjs"], {
+    environment: releaseEnvironment,
+  });
+  await restoreLocalRuntime({
+    composeEnvFile: configuration.composeEnvFile,
+    composeFile: configuration.composeFile,
+    healthTarget: configuration.healthTarget,
+    imageReference,
+    project: configuration.project,
+    sourceSha: manifest.sourceSha,
+    environment,
+  });
+}
+
+async function prepareRollbackImage({
+  configuration,
+  rehearsalContainer,
+  rollbackTag,
+}) {
+  if (configuration.rollbackSourceImage) {
+    return Object.freeze({
+      image: await inspectRepositoryDigest(configuration.rollbackSourceImage),
+      created: false,
+      mode: "EXISTING_LOCAL_IMAGE",
+    });
+  }
+  await runCommand("docker", [
+    "create",
+    "--name",
+    rehearsalContainer,
+    configuration.localImage,
+  ]);
+  await runCommand("docker", [
+    "commit",
+    "--change",
+    "LABEL cvg.local.rehearsal=rollback",
+    rehearsalContainer,
+    rollbackTag,
+  ]);
+  return Object.freeze({
+    image: await inspectRepositoryDigest(rollbackTag),
+    created: true,
+    mode: "SYNTHETIC_CLONE",
+  });
+}
+
+function buildRehearsalEnvironment({
+  configuration,
+  environment,
+  manifestPath,
+}) {
+  return {
+    ...buildLocalReleaseEnvironment(environment),
+    CVG_RELEASE_MANIFEST: manifestPath,
+    CVG_COMPOSE_FILE: configuration.composeFile,
+    CVG_COMPOSE_ENV_FILE: configuration.composeEnvFile,
+    CVG_COMPOSE_PROJECT: configuration.project,
+    CVG_CANARY_HEALTH_URL: configuration.healthTarget,
+    CVG_ROLLBACK_HEALTH_URL: configuration.healthTarget,
+  };
+}
+
+function buildLocalRehearsalResult({ configuration, manifest, rollbackMode }) {
+  return Object.freeze({
+    status: "PASS",
+    mode: "LOCAL_REHEARSAL",
+    releaseId: manifest.releaseId,
+    sourceSha: configuration.sourceSha,
+    releaseSourceSha: manifest.sourceSha,
+    rollbackSourceSha: manifest.rollbackSourceSha,
+    releaseDigest: manifest.imageDigest,
+    rollbackDigest: manifest.rollbackImageDigest,
+    rollbackMode,
+    versionedRollback: manifest.sourceSha !== manifest.rollbackSourceSha,
+    attestation: "PASS",
+    deploy: "PASS",
+    rollback: "PASS",
+    runtimeRestored: true,
+    healthTarget: configuration.healthTarget,
+  });
+}
+
+async function cleanupLocalReleaseCycle({
+  rehearsalContainer,
+  rollbackTag,
+  rollbackImageCreated,
+  runtimeRestored,
+  temporaryManifestDirectory,
+}) {
+  await removeContainer(rehearsalContainer);
+  if (temporaryManifestDirectory) {
+    await rm(temporaryManifestDirectory, { force: true, recursive: true });
+  }
+  if (rollbackImageCreated && runtimeRestored) {
+    await removeImage(rollbackTag);
+  } else if (rollbackImageCreated) {
+    console.error(
+      `rollback rehearsal image retained for recovery: ${rollbackTag}`,
+    );
   }
 }
 

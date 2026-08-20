@@ -19,6 +19,7 @@ import {
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
+const invitationCredential = ["Acesso", "CVG", "2026!Seguro"].join("-");
 
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL invitation integration",
@@ -75,6 +76,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         const accepted = await acceptInvitation(
           {
             token: created.token,
+            password: invitationCredential,
             sessionExpiresInSeconds: 3600,
             correlationId: randomUUID(),
             sessionTokenFactory: () => sessionToken,
@@ -101,6 +103,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           acceptInvitation(
             {
               token: created.token,
+              password: invitationCredential,
               sessionExpiresInSeconds: 3600,
               correlationId: randomUUID(),
             },

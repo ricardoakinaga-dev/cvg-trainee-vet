@@ -7,6 +7,7 @@ import {
 
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { ApplicationError } from "./errors.js";
+import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 
 export type RecordSourceConflictDecisionCommand = Readonly<{
   readonly principalId: string;
@@ -31,6 +32,11 @@ export interface SourceConflictDecisionWritePort {
   ) => Promise<SourceConflictDecisionState>;
 }
 
+export type SourceConflictDecisionDependencies = Readonly<{
+  readonly save: SourceConflictDecisionWritePort["save"];
+  readonly approver: ClinicalApproverPort;
+}>;
+
 function normalizeError(error: unknown): ApplicationError {
   if (error instanceof ApplicationError) return error;
   if (error instanceof SourceConflictDomainError) {
@@ -42,9 +48,27 @@ function normalizeError(error: unknown): ApplicationError {
   );
 }
 
+async function assertCurrentClinicalApprover(
+  command: RecordSourceConflictDecisionCommand,
+  approver: ClinicalApproverPort,
+): Promise<void> {
+  const current = await approver.findById(command.principalId);
+  if (
+    current === null ||
+    current.accountStatus !== "ACTIVE" ||
+    !current.roles.includes("CLINICAL_APPROVER") ||
+    !current.scopes.includes(command.scopeId)
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Current clinical approver is not active in the requested scope",
+    );
+  }
+}
+
 export async function recordSourceConflictDecision(
   command: RecordSourceConflictDecisionCommand,
-  repository: SourceConflictDecisionWritePort,
+  dependencies: SourceConflictDecisionDependencies,
 ): Promise<SourceConflictDecisionState> {
   if (
     !canAccess({
@@ -65,6 +89,10 @@ export async function recordSourceConflictDecision(
     );
   }
 
+  // The static approvedClinicalApproverId is a hint, not proof: revalidate the
+  // current persisted identity so suspension/role/scope revocation is honored.
+  await assertCurrentClinicalApprover(command, dependencies.approver);
+
   try {
     const state = buildSourceConflictDecision({
       conflictId: command.conflictId,
@@ -78,7 +106,7 @@ export async function recordSourceConflictDecision(
       decidedBy: command.principalId,
       decidedAt: command.decidedAt,
     });
-    return await repository.save(state);
+    return await dependencies.save(state);
   } catch (error) {
     throw normalizeError(error);
   }

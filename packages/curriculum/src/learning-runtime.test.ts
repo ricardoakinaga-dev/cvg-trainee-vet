@@ -5,6 +5,7 @@ import {
   buildPersonalizedCurriculumPath,
   curriculumDraftPacks,
   createInitialModuleEvaluation,
+  createModuleAttemptEvaluationMethods,
   evaluateDiagnosticAttempt,
   evaluateModuleAttempt,
   getModuleDraftPack,
@@ -20,8 +21,74 @@ import {
   toParticipantActivityFromDiagnosticDraft,
   toParticipantActivityFromDraft,
 } from "./projection.js";
+import { createCurriculumDraftPreflightMethods } from "./learning-runtime-preflight-checks.js";
 
 describe("curriculum learning runtime", () => {
+  it("composes frozen curriculum draft preflight methods", () => {
+    const methods = createCurriculumDraftPreflightMethods();
+
+    expect(Object.isFrozen(methods)).toBe(true);
+    expect(Object.keys(methods).sort()).toEqual([
+      "buildDiagnosticPreflight",
+      "buildModulePreflight",
+    ]);
+  });
+
+  it("keeps every publication preflight branch fail-closed", () => {
+    const methods = createCurriculumDraftPreflightMethods();
+    const module = getModuleDraftPack("M03");
+    const moduleProjectionBlocked = {
+      ...module,
+      publicationAuthorized: true,
+      publicProjectionReady: false,
+    } as unknown as typeof module;
+    const moduleSourceBlocked = {
+      ...module,
+      publicationAuthorized: true,
+      publicProjectionReady: true,
+      sourceVerification: "PENDENTE",
+    } as unknown as typeof module;
+    const diagnosticProjectionBlocked = {
+      ...b07DiagnosticDraftPack,
+      publicationAuthorized: true,
+      publicProjectionReady: false,
+    } as unknown as typeof b07DiagnosticDraftPack;
+    const diagnosticSourceBlocked = {
+      ...b07DiagnosticDraftPack,
+      publicationAuthorized: true,
+      publicProjectionReady: true,
+      sourceVerification: "PENDENTE",
+    } as unknown as typeof b07DiagnosticDraftPack;
+
+    expect(
+      methods.buildModulePreflight(moduleProjectionBlocked).checks
+        .publicationBlocked,
+    ).toBe(true);
+    expect(
+      methods.buildModulePreflight(moduleSourceBlocked).checks
+        .publicationBlocked,
+    ).toBe(true);
+    expect(
+      methods.buildDiagnosticPreflight(diagnosticProjectionBlocked).checks
+        .publicationBlocked,
+    ).toBe(true);
+    expect(
+      methods.buildDiagnosticPreflight(diagnosticSourceBlocked).checks
+        .publicationBlocked,
+    ).toBe(true);
+  });
+
+  it("composes frozen module-attempt evaluation operations", () => {
+    const methods = createModuleAttemptEvaluationMethods();
+
+    expect(Object.isFrozen(methods)).toBe(true);
+    expect(Object.keys(methods).sort()).toEqual([
+      "classifyItems",
+      "evaluateAutomaticItems",
+      "validateAnswers",
+    ]);
+  });
+
   it("creates an honest not-started state without mastery or score", () => {
     expect(createInitialModuleEvaluation("M01")).toEqual({
       moduleId: "M01",
@@ -411,5 +478,159 @@ describe("curriculum learning runtime", () => {
         completedAt: "2026-08-10T12:00:00.000Z",
       }),
     ).toThrow("plain text");
+  });
+
+  it("keeps the diagnostic non-punitive while handling partial and invalid answers", () => {
+    const firstItem = b07DiagnosticDraftPack.items[0];
+    if (firstItem === undefined) throw new Error("diagnostic item is required");
+    const wrongChoice = firstItem.choices?.find(
+      (choice) => !firstItem.correctChoiceIds?.includes(choice.id),
+    );
+    if (wrongChoice === undefined)
+      throw new Error("diagnostic choice required");
+
+    const partial = evaluateDiagnosticAttempt({
+      answers: [
+        {
+          itemId: firstItem.id,
+          selectedChoiceIds: [wrongChoice.id],
+        },
+      ],
+    });
+    expect(partial.themeResults).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          answeredItemCount: 1,
+          possiblePoints: 1,
+          percent: 0,
+        }),
+        expect.objectContaining({ answeredItemCount: 0, percent: 0 }),
+      ]),
+    );
+    expect(partial.remediationObjectiveIds.length).toBeGreaterThan(0);
+
+    expect(() =>
+      evaluateDiagnosticAttempt({
+        answers: [{ itemId: "unknown", selectedChoiceIds: ["a"] }],
+      }),
+    ).toThrow("unknown diagnostic item");
+    expect(() =>
+      evaluateDiagnosticAttempt({
+        answers: [{ itemId: firstItem.id, text: "not allowed" }],
+      }),
+    ).toThrow("choice response mode");
+    expect(() =>
+      evaluateDiagnosticAttempt({
+        answers: [{ itemId: firstItem.id }],
+      }),
+    ).toThrow("unknown choice");
+    expect(() =>
+      evaluateDiagnosticAttempt({
+        answers: [{ itemId: firstItem.id, selectedChoiceIds: ["unknown"] }],
+      }),
+    ).toThrow("unknown choice");
+  });
+
+  it("fails closed for module answer modes, timestamps and incomplete automatic work", () => {
+    const pack = getModuleDraftPack("M24");
+    const choice = pack.items.find((item) => item.responseMode === "CHOICE");
+    const text = pack.items.find((item) => item.responseMode === "TEXT");
+    const structured = pack.items.find(
+      (item) => item.responseMode === "STRUCTURED_FIELDS",
+    );
+    if (
+      choice === undefined ||
+      text === undefined ||
+      structured === undefined
+    ) {
+      throw new Error("expected all response modes");
+    }
+
+    expect(() =>
+      evaluateModuleAttempt({
+        moduleId: "M24",
+        answers: [],
+        completedAt: "invalid",
+        mode: "FORMATIVE_CHOICE",
+      }),
+    ).toThrow("valid timestamp");
+    expect(() =>
+      evaluateModuleAttempt({
+        moduleId: "M24",
+        answers: [{ itemId: choice.id, text: "wrong mode" }],
+        completedAt: "2026-08-10T12:00:00.000Z",
+      }),
+    ).toThrow("does not match the item response mode");
+    expect(() =>
+      evaluateModuleAttempt({
+        moduleId: "M24",
+        answers: [{ itemId: text.id, selectedChoiceIds: ["a"] }],
+        completedAt: "2026-08-10T12:00:00.000Z",
+      }),
+    ).toThrow("choice answer does not match");
+    expect(() =>
+      evaluateModuleAttempt({
+        moduleId: "M24",
+        answers: [{ itemId: choice.id, structuredValues: { value: 1 } }],
+        completedAt: "2026-08-10T12:00:00.000Z",
+      }),
+    ).toThrow("structured answer does not match");
+    expect(() =>
+      evaluateModuleAttempt({
+        moduleId: "M24",
+        answers: [{ itemId: text.id, text: "<unsafe>" }],
+        completedAt: "2026-08-10T12:00:00.000Z",
+      }),
+    ).toThrow("plain text");
+
+    const incomplete = evaluateModuleAttempt({
+      moduleId: "M24",
+      answers: [],
+      completedAt: "2026-08-10T12:00:00.000Z",
+      mode: "FORMATIVE_CHOICE",
+    });
+    expect(incomplete).toMatchObject({
+      status: "EM_REMEDIACAO",
+      nextAction: "EXECUTAR_REMEDIACAO",
+      scorePercent: 0,
+    });
+    expect(incomplete.unansweredChoiceItemIds.length).toBeGreaterThan(0);
+
+    const invalidAutomatic = evaluateModuleAttempt({
+      moduleId: "M24",
+      answers: [
+        {
+          itemId: structured.id,
+          structuredValues: { unexpected: true },
+        },
+      ],
+      completedAt: "2026-08-10T12:00:00.000Z",
+      mode: "FORMATIVE_CHOICE",
+    });
+    expect(invalidAutomatic.invalidAnswerItemIds).toContain(structured.id);
+  });
+
+  it("prioritizes remediation, retention and mastery in the personalized path", () => {
+    const path = buildPersonalizedCurriculumPath({
+      masteredModuleIds: ["M01", "M02", "M03"],
+      remediationModuleIds: ["M02"],
+      retentionDueModuleIds: ["M03"],
+    });
+    expect(path.find((item) => item.moduleId === "M01")).toMatchObject({
+      status: "CONCLUIDO",
+      nextAction: "REVISAR_PROXIMO_MODULO",
+    });
+    expect(path.find((item) => item.moduleId === "M02")).toMatchObject({
+      status: "EM_REMEDIACAO",
+      nextAction: "EXECUTAR_REMEDIACAO",
+    });
+    expect(path.find((item) => item.moduleId === "M03")).toMatchObject({
+      status: "RETENCAO_PENDENTE",
+      nextAction: "EXECUTAR_RETENCAO",
+    });
+    expect(path.find((item) => item.moduleId === "M04")).toMatchObject({
+      status: "DISPONIVEL",
+      nextAction: "INICIAR_BASELINE",
+    });
   });
 });

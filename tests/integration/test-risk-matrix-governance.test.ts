@@ -17,6 +17,9 @@ describe("test risk matrix governance", () => {
       requiredProofTypes: 4,
       status: "PASS_WITH_GAPS",
       releaseDisposition: "PILOT_BLOCKED",
+      proofCoverageByType: {
+        error: 63,
+      },
     });
   });
 
@@ -34,6 +37,26 @@ describe("test risk matrix governance", () => {
 
     expect(errors).toContain(
       "required proof types must be success,error,denied,conflict",
+    );
+  });
+
+  it("rejects an error proof destination that is not linked from the matrix", async () => {
+    const snapshot = await loadTestRiskMatrixSnapshot(process.cwd());
+    const policy = JSON.parse(
+      snapshot.get("test-risk-matrix.json") ?? "{}",
+    ) as { proofReferencePaths?: { error?: string[] } };
+    policy.proofReferencePaths = {
+      error: [
+        ...(policy.proofReferencePaths?.error ?? []),
+        "tests/integration/not-linked-error-proof.test.ts",
+      ],
+    };
+    snapshot.set("test-risk-matrix.json", JSON.stringify(policy));
+
+    const errors = validateTestRiskMatrix(snapshot);
+
+    expect(errors).toContain(
+      "error proof reference is not linked from the premium matrix: tests/integration/not-linked-error-proof.test.ts",
     );
   });
 });

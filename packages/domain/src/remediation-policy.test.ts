@@ -53,4 +53,16 @@ describe("remediation policy", () => {
       createRemediationPlan({ ...base, objectiveIds: ["OBJ-01", "OBJ-01"] }),
     ).toThrow("unique");
   });
+
+  it("rejects malformed attempt counts, critical flags and objective identifiers", () => {
+    expect(() => createRemediationPlan({ ...base, attemptCount: 0 })).toThrow(
+      "attemptCount",
+    );
+    expect(() =>
+      createRemediationPlan({ ...base, criticalError: "yes" as never }),
+    ).toThrow("criticalError");
+    expect(() =>
+      createRemediationPlan({ ...base, objectiveIds: [" "] }),
+    ).toThrow("text");
+  });
 });

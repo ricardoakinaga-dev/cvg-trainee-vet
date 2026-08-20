@@ -22,7 +22,7 @@
       "id": "api_latency",
       "category": "latency",
       "target": { "readP95Ms": 800, "mutationP95Ms": 1500 },
-      "metric": "api_request_duration_ms_p95",
+      "metric": "api_request_duration_seconds_p95",
       "dashboardPanelTitle": "API p95 latency",
       "owner": "sre",
       "escalation": "on-call-sre",
@@ -46,7 +46,7 @@
     {
       "id": "content_indexing",
       "category": "indexing",
-      "metric": "worker_events_processed",
+      "metric": "worker_events_processed_total",
       "dashboardPanelTitle": "Internal indexing",
       "owner": "backend",
       "escalation": "on-call-sre",
@@ -61,7 +61,7 @@
     {
       "id": "ai_assistive",
       "category": "ai",
-      "metric": "worker_events_processed",
+      "metric": "worker_events_processed_total",
       "dashboardPanelTitle": "Assistive AI jobs",
       "owner": "integrations",
       "escalation": "on-call-sre",
@@ -76,7 +76,7 @@
     {
       "id": "worker_queue",
       "category": "queue",
-      "metric": "worker_events_claimed",
+      "metric": "worker_events_claimed_total",
       "dashboardPanelTitle": "Worker queue throughput",
       "owner": "backend",
       "escalation": "on-call-sre",
@@ -98,6 +98,18 @@
       "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo",
       "acknowledgementWindowMinutes": 30,
       "instrumentationMarkers": ["api.requests.total", "routeTemplate"],
+      "piiSafe": true
+    },
+    {
+      "id": "observability_integrity",
+      "category": "loss_of_signal",
+      "metric": "up",
+      "dashboardPanelTitle": "Observability signal integrity",
+      "owner": "sre",
+      "escalation": "on-call-sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "instrumentationMarkers": [],
       "piiSafe": true
     }
   ],
@@ -170,6 +182,76 @@
       "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo",
       "acknowledgementWindowMinutes": 30,
       "dedupeWindowMinutes": 15,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgApiTargetDown",
+      "signalId": "observability_integrity",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgApiTargetAbsent",
+      "signalId": "observability_integrity",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgWorkerTargetDown",
+      "signalId": "observability_integrity",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgWorkerTargetAbsent",
+      "signalId": "observability_integrity",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgAlertmanagerDisconnected",
+      "signalId": "observability_integrity",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 10,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgObservabilityWatchdog",
+      "signalId": "observability_integrity",
+      "severity": "warning",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 60,
+      "piiSafe": true
+    },
+    {
+      "name": "CvgObservabilityWatchdogMissing",
+      "signalId": "observability_integrity",
+      "severity": "critical",
+      "owner": "sre",
+      "runbook": "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal",
+      "acknowledgementWindowMinutes": 5,
+      "dedupeWindowMinutes": 10,
       "piiSafe": true
     }
   ]

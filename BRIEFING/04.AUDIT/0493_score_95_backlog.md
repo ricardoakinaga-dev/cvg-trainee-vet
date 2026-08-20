@@ -1,5 +1,7 @@
 # 0493 — Backlog executável do Programa Premium Enterprise 95
 
+> **Backlog da trilha de maturidade:** os requisitos `ENT95-*` permanecem válidos; o status executivo transversal é coordenado pelos IDs `U95-*` em `0515_dual_95_backlog.md`.
+
 - program_id: CVG-PREMIUM-ENTERPRISE-95
 - status: IN_PROGRESS
 - baseline: 0491_full_construction_audit.md — 83/100

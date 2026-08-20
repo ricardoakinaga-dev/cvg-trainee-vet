@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+import type { CurriculumRuntimeState } from "@cvg/application";
 
 import {
+  CurriculumRuntimeMappingError,
+  createCurriculumRuntimeRepository,
   curriculumRuntimeRowToState,
   curriculumRuntimeStateToRow,
 } from "./curriculum-runtime-repository.js";
@@ -31,6 +35,45 @@ const state = {
     scorePercent: 100,
   },
 };
+
+const runtimeState: CurriculumRuntimeState = state;
+
+function fakeDatabase(selectResults: readonly unknown[][]) {
+  const results = [...selectResults];
+  const inserted: unknown[] = [];
+  const createQuery = (result: readonly unknown[]) => {
+    const query = {
+      from: vi.fn(),
+      where: vi.fn(),
+      limit: vi.fn(),
+    };
+    query.from.mockReturnValue(query);
+    query.where.mockReturnValue(query);
+    query.limit.mockResolvedValue(result);
+    return query;
+  };
+  const tx = {
+    execute: vi.fn(async () => undefined),
+    select: vi.fn(() => createQuery(results.shift() ?? [])),
+    insert: vi.fn(() => {
+      const insertQuery = {
+        values: vi.fn((value: unknown) => {
+          inserted.push(value);
+          return insertQuery;
+        }),
+        onConflictDoUpdate: vi.fn(),
+      };
+      insertQuery.onConflictDoUpdate.mockReturnValue(insertQuery);
+      return insertQuery;
+    }),
+  };
+  const db = {
+    transaction: vi.fn(async (work: (executor: typeof tx) => unknown) =>
+      work(tx),
+    ),
+  };
+  return { db, tx, inserted };
+}
 
 describe("curriculum runtime persistence mapping", () => {
   it("maps the internal state to a row without public projection fields", () => {
@@ -63,5 +106,120 @@ describe("curriculum runtime persistence mapping", () => {
     expect(result).toEqual(state);
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.evaluation)).toBe(true);
+  });
+
+  it("rejects invalid runtime identity, module, version and timestamps", () => {
+    const id = "33333333-3333-4333-8333-333333333333";
+    expect(() =>
+      curriculumRuntimeStateToRow({ ...runtimeState, participantId: " " }, id),
+    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() =>
+      curriculumRuntimeStateToRow({ ...runtimeState, scopeId: " " }, id),
+    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() =>
+      curriculumRuntimeStateToRow({ ...runtimeState, version: 0 }, id),
+    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() =>
+      curriculumRuntimeStateToRow(
+        { ...runtimeState, updatedAt: "invalid" },
+        id,
+      ),
+    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() =>
+      curriculumRuntimeStateToRow(
+        {
+          ...runtimeState,
+          evaluation: { ...runtimeState.evaluation, moduleId: "M25" },
+        },
+        id,
+      ),
+    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() =>
+      curriculumRuntimeRowToState({
+        id,
+        participantId: state.participantId,
+        scopeId: state.scopeId,
+        moduleId: "M03",
+        version: state.version,
+        state: { ...state.evaluation, moduleId: "M04" },
+        updatedAt: new Date(state.updatedAt),
+      }),
+    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() =>
+      curriculumRuntimeRowToState({
+        id,
+        participantId: state.participantId,
+        scopeId: state.scopeId,
+        moduleId: "M03",
+        version: state.version,
+        state: state.evaluation,
+        updatedAt: new Date("invalid"),
+      }),
+    ).toThrow(CurriculumRuntimeMappingError);
+  });
+
+  it("reads and persists curriculum runtime inside participant and scope transactions", async () => {
+    const id = "33333333-3333-4333-8333-333333333333";
+    const row = {
+      id,
+      participantId: state.participantId,
+      scopeId: state.scopeId,
+      moduleId: state.evaluation.moduleId,
+      version: state.version,
+      state: state.evaluation,
+      updatedAt: new Date(state.updatedAt),
+    };
+    const readDatabase = fakeDatabase([[row]]);
+    const repository = createCurriculumRuntimeRepository(
+      readDatabase.db as never,
+      () => id,
+    );
+    await expect(
+      repository.findCurriculumRuntime(
+        state.participantId,
+        state.evaluation.moduleId,
+      ),
+    ).resolves.toEqual(runtimeState);
+    expect(readDatabase.tx.execute).toHaveBeenCalledTimes(1);
+
+    const missingDatabase = fakeDatabase([[]]);
+    const missingRepository = createCurriculumRuntimeRepository(
+      missingDatabase.db as never,
+      () => id,
+    );
+    await expect(
+      missingRepository.findCurriculumRuntime(
+        state.participantId,
+        state.evaluation.moduleId,
+      ),
+    ).resolves.toBeNull();
+
+    const saveDatabase = fakeDatabase([[row]]);
+    const saveRepository = createCurriculumRuntimeRepository(
+      saveDatabase.db as never,
+      () => id,
+    );
+    await expect(
+      saveRepository.saveCurriculumRuntime({
+        participantId: state.participantId,
+        scopeId: state.scopeId,
+        evaluation: state.evaluation,
+      }),
+    ).resolves.toEqual(runtimeState);
+    expect(saveDatabase.inserted).toHaveLength(1);
+    expect(saveDatabase.tx.execute).toHaveBeenCalledTimes(1);
+
+    const failedSave = fakeDatabase([[]]);
+    const failedRepository = createCurriculumRuntimeRepository(
+      failedSave.db as never,
+      () => id,
+    );
+    await expect(
+      failedRepository.saveCurriculumRuntime({
+        participantId: state.participantId,
+        scopeId: state.scopeId,
+        evaluation: state.evaluation,
+      }),
+    ).rejects.toThrow(CurriculumRuntimeMappingError);
   });
 });

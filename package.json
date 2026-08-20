@@ -28,6 +28,7 @@
     "test:e2e:active-ha": "node scripts/active-ha-e2e.mjs",
     "test:coverage": "vitest run --coverage",
     "verify:critical-decisions": "node scripts/verify-critical-decision-coverage.mjs",
+    "verify:critical-mutation": "node scripts/verify-critical-mutation.mjs",
     "verify:scope-drift": "node scripts/verify-scope-drift.mjs",
     "reconcile:qdrant": "pnpm --filter @cvg/worker build && pnpm --dir apps/worker reconcile:qdrant",
     "verify:ci-contract": "node scripts/verify-ci-contract.mjs",
@@ -37,6 +38,7 @@
     "verify:hotspots": "node scripts/verify-code-hotspots.mjs",
     "verify:documentation": "node scripts/verify-documentation.mjs",
     "verify:premium-scorecard": "node scripts/verify-premium-enterprise-scorecard.mjs",
+    "verify:dual99-program": "node scripts/verify-dual-99-program.mjs",
     "verify:premium-traceability": "node scripts/verify-premium-enterprise-traceability.mjs",
     "verify:test-risk-matrix": "node scripts/verify-test-risk-matrix.mjs",
     "verify:skip-governance": "node scripts/verify-skip-governance.mjs",
@@ -70,7 +72,7 @@
     "ops:verify-runtime-provenance": "node scripts/verify-runtime-provenance.mjs",
     "verify:operational-config": "pnpm ops:verify-ha",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
-    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm verify:clinical-sources && pnpm verify:curriculum-inventory && pnpm verify:observability-governance && pnpm verify:operational-config && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:critical-decisions && pnpm verify:scope-drift && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:premium-traceability && pnpm verify:test-risk-matrix && pnpm verify:skip-governance && pnpm verify:test-evidence-governance && pnpm verify:change-control-governance && pnpm verify:accessibility-governance && pnpm verify:capacity-governance && pnpm verify:web-performance-governance && pnpm verify:journey-correction-governance && pnpm verify:sub80-program && pnpm verify:architecture && pnpm verify:hotspots && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm verify:clinical-sources && pnpm verify:curriculum-inventory && pnpm verify:observability-governance && pnpm verify:operational-config && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:critical-decisions && pnpm verify:critical-mutation && pnpm verify:scope-drift && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:premium-traceability && pnpm verify:dual99-program && pnpm verify:test-risk-matrix && pnpm verify:skip-governance && pnpm verify:test-evidence-governance && pnpm verify:change-control-governance && pnpm verify:accessibility-governance && pnpm verify:capacity-governance && pnpm verify:web-performance-governance && pnpm verify:journey-correction-governance && pnpm verify:sub80-program && pnpm verify:architecture && pnpm verify:hotspots && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",

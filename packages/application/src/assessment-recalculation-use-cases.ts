@@ -8,6 +8,7 @@ import {
 
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { ApplicationError } from "./errors.js";
+import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 
 export type AssessmentRecalculationCandidate = Omit<
   AssessmentRecalculationInput,
@@ -104,11 +105,30 @@ function assertApprovedRecalculationAccess(
   }
 }
 
+async function assertCurrentClinicalApproverIdentity(
+  command: RecalculateAffectedAssessmentsCommand,
+  approver: ClinicalApproverPort,
+): Promise<void> {
+  const current = await approver.findById(command.principalId);
+  if (
+    current === null ||
+    current.accountStatus !== "ACTIVE" ||
+    !current.scopes.includes(command.scopeId)
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Current clinical approver is not active in the requested scope",
+    );
+  }
+}
+
 export async function registerAssessmentRecalculationCandidates(
   command: RegisterAssessmentRecalculationCandidatesCommand,
   repository: AssessmentRecalculationCandidateWritePort,
+  approver: ClinicalApproverPort,
 ): Promise<Readonly<{ readonly registeredCount: number }>> {
   assertApprovedRecalculationAccess(command);
+  await assertCurrentClinicalApproverIdentity(command, approver);
   try {
     for (const candidate of command.candidates) {
       if (
@@ -137,8 +157,10 @@ export async function registerAssessmentRecalculationCandidates(
 export async function recalculateAffectedAssessments(
   command: RecalculateAffectedAssessmentsCommand,
   repository: AssessmentRecalculationPort,
+  approver: ClinicalApproverPort,
 ): Promise<RecalculateAffectedAssessmentsResult> {
   assertApprovedRecalculationAccess(command);
+  await assertCurrentClinicalApproverIdentity(command, approver);
 
   try {
     const candidates = await repository.listAffected(

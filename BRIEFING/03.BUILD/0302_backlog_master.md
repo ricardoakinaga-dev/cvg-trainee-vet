@@ -2,9 +2,11 @@
 
 **Rastreabilidade:** `BLD-*` aponta para PRD/SPEC, testes e evidência. Nenhum item de código começa antes do gate documental 04–08.
 
-## Execução vigente — Premium Enterprise 95
+## Execução vigente — Dual 95
 
-A baseline atual é 83/100. O backlog executável para ENT95-01–ENT95-16 está em `../04.AUDIT/0493_score_95_backlog.md`; o programa mestre está em `0304_premium_enterprise_95_program.md`. Nenhuma nota histórica de recorte substitui a reauditoria integral.
+A execução corrente coordena duas baselines congeladas: maturidade `83,24/100` (`0491`, 16 itens) e qualidade independente `64,20/100` (`docs/116`, 16 itens). O programa `0307_dual_95_executive_program.md`, roadmap `../04.AUDIT/0514_dual_95_roadmap.md` e backlog `../04.AUDIT/0515_dual_95_backlog.md` exigem `32/32` células ≥95 no mesmo RC. Nenhuma média ou task concluída substitui as duas reauditorias.
+
+`ENT95-*`, `AUD-CQ-*` e `BLK-*` permanecem aliases/requisitos de origem. O status executivo vive em `U95-*`. A fotografia pós-S4-173 está em `docs/117_dual_95_readiness_assessment_2026-08-16.md`; score, `PILOT_BLOCKED` e `0/145` cadeias permanecem sem promoção.
 
 ## Baseline histórica — F3-S8 verificado
 
@@ -409,3 +411,37 @@ O ensaio local com a imagem RC passou `deploy=PASS`, `rollback=PASS` e `runtimeR
 A fila clínica live confirmou `796` conteúdos, `763` pendências não revisadas e `0` falhas técnicas; o beta está preparado para a revisão com veterinários, sem decisão clínica fabricada. A carga local passou `5000/5000` requests, concorrência `100`, p95 `300,56 ms`. Backup PostgreSQL administrativo fora do repositório e restore isolado passaram com SHA verificado, `32` objetos restaurados e RTO observado `4583 ms`.
 
 Esses resultados fecham preparação e recuperação local, não backup externo com retenção/RPO/RTO produtivos, IdP/MFA, DNS/TLS público, CI/registry/deploy remoto, UAT, soak/DR ou reauditoria. O backlog permanece `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`.
+
+## Addendum de qualidade local — CODE-QUALITY-REVALIDATION-S4-173 — 2026-08-16T10:39:29-03:00
+
+`apps/web/app/dashboard/page.tsx::DashboardPage` foi reduzido de `217` para `21` linhas sob TDD, com modelo/loader, estado, apresentação e composição de estados separados; RED/GREEN passou `3/3`, a caracterização focal passou `6/6`, `pnpm verify` passou com `177` arquivos, `790` testes e `16` skips, build passou nos `12` workspaces e Playwright passou `26/26`. O dashboard preserva loading, erro bounded, retry, conteúdo, roadmap, landmarks e limites de exposição.
+
+Este avanço é evidência local do worktree não comitado. O backlog mantém score `64,20/100`, `0/145` cadeias completas e `PILOT_BLOCKED`; SHA/RC, runtime HA final, gates externos/humanos, revisão clínica, UAT/WCAG manual, soak/DR e reauditoria independente permanecem pendentes.
+
+## Addendum Dual 95 — U95-003 — 2026-08-16T11:38:28-03:00
+
+O inventário `docs/118_dual_95_worktree_inventory_2026-08-16.md` revisou as `221` entradas correntes (`116` modificadas rastreadas + `105` não rastreadas), classificando origem, risco, segredo/dado, ownership, intenção e lotes reversíveis. `pnpm verify:secrets` e `git diff --check` passaram; não houve staging, commit, release, score ou publicação. O próximo gate local é `U95-101–106`; os seis achados altos, `0/145` e `PILOT_BLOCKED` permanecem.
+
+## Addendum Dual 95 — U95-101 — 2026-08-16T11:49:35-03:00
+
+O renderer Prometheus foi corrigido sob RED/GREEN: descritores HELP/TYPE únicos, ordering determinístico, counters `_total` e histogramas em segundos/tipo `histogram`. Os testes focais de observability `13/13`, worker `1/1`, API `71/71`, governança e `promtool check metrics` passaram. D95-H01 fica tratado localmente, sujeito à revalidação no RC; D95-H02–H06, score, `0/145` e `PILOT_BLOCKED` permanecem.
+
+## Addendum Dual 95 — U95-102 — 2026-08-16T12:10:55-03:00
+
+O Compose HA passou a preparar o token em helper one-shot sem rede, com volume `0440` para Prometheus `65534:65534`; Prometheus e Alertmanager ganharam readiness gates e o Prometheus aguarda API/worker A/B saudáveis. RED `1/6` → GREEN `6/6`; `pnpm ops:verify-ha`, build local, `promtool` config/rules/metrics e `amtool` passaram. O runtime mostrou cinco targets `up`, 7 rules `health=ok`, bearer negativo `401` e fire→ack→resolve sintético. Evidência: `docs/119_dual_95_u95_102_observability_evidence_2026-08-16.md`. D95-H02/U95-102 estão concluídos localmente, condicionados a RC imutável/ambiente aprovado; H03–H06, score, `0/145` e `PILOT_BLOCKED` permanecem.
+
+## Addendum Dual 95 — U95-103 — 2026-08-16T12:55:43-03:00
+
+Review + decisão e authorize + publish passaram a compartilhar uma fronteira transacional PostgreSQL, com idempotência por `correlationId`/fingerprint e replay fail-closed em conflito. Fault injection após a segunda transição em ambos os fluxos confirmou rollback sem decisão, outbox ou publicação parcial; o retry retornou resposta igual sem duplicidade. O teste live PostgreSQL passou `1/1`, os unitários focais `14/14`, a migração `0029` foi aplicada, API/worker A/B foram recriados como `healthy` e `pnpm ops:verify-ha` retornou `PASS`. Evidência: `docs/120_dual_95_u95_103_authoring_atomicity_evidence_2026-08-16.md`. D95-H03/U95-103 está concluído localmente, condicionado a RC imutável/ambiente aprovado; próximo U95-104; H04–H06, score, `0/145` e `PILOT_BLOCKED` permanecem.
+
+## Addendum Dual 95 — U95-104 — 2026-08-16T13:13:20-03:00
+
+Publicação agora exige `approvedClinicalApproverId`, a rota bloqueia `403` sem `CLINICAL_APPROVER_ID` corrente e o use case compara esse ID com o `reviewerId` da decisão clínica persistida antes de qualquer transição. O ID também integra o fingerprint de idempotência. RED `3` falhas → GREEN; os focais passaram `74/74`, a integração PostgreSQL `1/1` comprovou divergência/rotação fail-closed e caminho correto, `pnpm test:coverage` passou com `799` testes e `80,05%` de branches, e o `pnpm verify` completo passou. Evidência: `docs/121_dual_95_u95_104_current_clinical_approver_evidence_2026-08-16.md`. D95-H04/U95-104 está concluído localmente, condicionado a RC imutável/ambiente aprovado; próximo U95-105; H05–H06, score, `0/145` e `PILOT_BLOCKED` permanecem.
+
+## Addendum Dual 95 — U95-105 — 2026-08-16T13:21:48-03:00
+
+O fixture PostgreSQL autoral passou a declarar explicitamente autor, aprovador clínico e participante sintéticos, a usar `approvedClinicalApproverId` designado e a separar role administrativa de preparação/limpeza da role da aplicação no workflow. O caso negativo live com reviewer/aprovador divergente falhou `forbidden` antes de transição; a suíte live passou `1/1` sem skip, com caminho correto, fault/replay e teardown limpo. Evidência: `docs/122_dual_95_u95_105_postgres_authoring_fixture_evidence_2026-08-16.md`. D95-H05/U95-105 está concluído localmente, condicionado a RC imutável/ambiente aprovado; próximo U95-106; H06, score, `0/145` e `PILOT_BLOCKED` permanecem.
+
+## Addendum Dual 95 — U95-106 — 2026-08-16T13:40:08-03:00
+
+O controlador de deploy/rollback passou a exigir `api-a`, `api-b`, `worker-a` e `worker-b` em `running/healthy`. O deploy faz gate do canário API/worker, só promove o edge após o gate das quatro réplicas e mantém health final; o rollback faz o mesmo gate antes de declarar sucesso. RED/GREEN passou `9/9`; cada processo foi injetado como `unhealthy`, `worker-a` foi parado live e o gate falhou fechado, com restauração saudável. O rehearsal local passou `deploy=PASS`, `rollback=PASS` e `runtimeRestored=true`; `pnpm verify` passou com `801` testes, `80,05%` de branches e migrações `30/30`. Evidência: `docs/123_dual_95_u95_106_worker_health_gate_evidence_2026-08-16.md`. D95-H06/U95-106 está concluído localmente, condicionado a RC imutável/CI/registry/ambiente aprovado; próximo U95-107; score, `0/145` e `PILOT_BLOCKED` permanecem.

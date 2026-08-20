@@ -12,6 +12,7 @@ import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { createAuditEntry, type AuditPort } from "./audit.js";
 import { ApplicationError, toApplicationError } from "./errors.js";
 import type { TransactionSecurityContext } from "./transaction-context.js";
+import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 
 export type CorrectOpenResponseCommand = Readonly<{
   readonly principalId: string;
@@ -80,6 +81,7 @@ export interface CorrectionTransactionalOperations {
   readonly idempotency: CorrectionIdempotencyPort;
   readonly eventPublisher: CorrectionEventPublisherPort;
   readonly audit: AuditPort;
+  readonly approver: ClinicalApproverPort;
 }
 
 export interface CorrectionTransactionPort {
@@ -137,10 +139,7 @@ function normalizeCorrectionError(error: unknown): ApplicationError {
   return toApplicationError(error);
 }
 
-export async function correctOpenResponse(
-  command: CorrectOpenResponseCommand,
-  dependencies: CorrectionUseCaseDependencies,
-): Promise<CorrectionResult> {
+function validateCorrectionCommand(command: CorrectOpenResponseCommand): void {
   for (const [value, field] of [
     [command.principalId, "principalId"],
     [command.scopeId, "scopeId"],
@@ -151,7 +150,9 @@ export async function correctOpenResponse(
   ] as const) {
     assertNonEmpty(value, field);
   }
+}
 
+function assertCorrectionAccess(command: CorrectOpenResponseCommand): void {
   if (
     !canAccess({
       principalId: command.principalId,
@@ -170,91 +171,189 @@ export async function correctOpenResponse(
       "Correction is outside the current authorization scope",
     );
   }
+}
 
+async function findCorrectionAttempt(
+  operations: CorrectionTransactionalOperations,
+  attemptId: string,
+): Promise<AttemptState> {
+  const current = await operations.attempts.findById(attemptId);
+  if (current === null) {
+    throw new ApplicationError("not_found", "Attempt was not found");
+  }
+  return current;
+}
+
+function prepareCorrectionAttempt(current: AttemptState): Readonly<{
+  readonly waiting: AttemptState;
+  readonly corrected: AttemptState;
+}> {
+  const waiting =
+    current.status === "SUBMETIDA"
+      ? transitionAttempt(current, { type: "AGUARDAR_CORRECAO_HUMANA" })
+      : current;
+  return Object.freeze({
+    waiting,
+    corrected: transitionAttempt(waiting, { type: "CORRIGIR_HUMANAMENTE" }),
+  });
+}
+
+function buildCorrectionResult(
+  command: CorrectOpenResponseCommand,
+  dependencies: CorrectionUseCaseDependencies,
+  corrected: AttemptState,
+  latest: AssessmentResultState | null,
+  correctedAt: string,
+): AssessmentResultState {
+  return createAssessmentResult({
+    resultId: dependencies.idFactory(),
+    attemptId: corrected.attemptId,
+    version: (latest?.version ?? 0) + 1,
+    kind: "HUMANA",
+    score: command.score,
+    outcome: command.outcome,
+    feedback: command.feedback,
+    ruleVersion: command.ruleVersion,
+    correctedBy: command.principalId,
+    correctedAt,
+  });
+}
+
+function buildCorrectionEvent(
+  command: CorrectOpenResponseCommand,
+  corrected: AttemptState,
+  result: AssessmentResultState,
+  occurredAt: string,
+  idFactory: () => string,
+): AssessmentCorrectedEvent {
+  return {
+    eventId: idFactory(),
+    eventType: "assessment.corrected.v1",
+    aggregateType: "attempt",
+    aggregateId: corrected.attemptId,
+    occurredAt,
+    schemaVersion: 1,
+    correlationId: command.correlationId,
+    payload: {
+      attempt_id: corrected.attemptId,
+      result_id: result.resultId,
+      status: corrected.status,
+      score: String(result.score),
+      outcome: result.outcome,
+      result_version: String(result.version),
+      rule_version: result.ruleVersion,
+    },
+  };
+}
+
+function buildCorrectionAudit(
+  command: CorrectOpenResponseCommand,
+  corrected: AttemptState,
+  occurredAt: string,
+  idFactory: () => string,
+) {
+  return createAuditEntry({
+    auditId: idFactory(),
+    principalId: command.principalId,
+    action: "ATTEMPT_CORRECTED",
+    resourceType: "attempt",
+    resourceId: corrected.attemptId,
+    scopeId: command.scopeId,
+    outcome: "SUCCESS",
+    reasonCode: "human_correction_saved",
+    requestId: command.correlationId,
+    correlationId: command.correlationId,
+    occurredAt,
+  });
+}
+
+async function assertCurrentCorrectorIdentity(
+  command: CorrectOpenResponseCommand,
+  operations: CorrectionTransactionalOperations,
+): Promise<void> {
+  const current = await operations.approver.findById(command.principalId);
+  if (
+    current === null ||
+    current.accountStatus !== "ACTIVE" ||
+    !current.scopes.includes(command.scopeId)
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Current corrector identity is not active in the requested scope",
+    );
+  }
+}
+
+async function applyCorrection(
+  command: CorrectOpenResponseCommand,
+  dependencies: CorrectionUseCaseDependencies,
+  operations: CorrectionTransactionalOperations,
+  expectedFingerprint: string,
+): Promise<CorrectionResult> {
+  const replay = replayOrThrow(
+    await operations.idempotency.find(command.idempotencyKey),
+    expectedFingerprint,
+  );
+  if (replay !== null) return replay;
+
+  // Revalidate the persisted current identity: suspension or scope/role change
+  // must be honored even when the static approvedClinicalApproverId is present.
+  await assertCurrentCorrectorIdentity(command, operations);
+
+  const current = await findCorrectionAttempt(operations, command.attemptId);
+  const { waiting, corrected } = prepareCorrectionAttempt(current);
+  if (waiting !== current) await operations.attempts.update(waiting);
+
+  const latest = await operations.results.findLatest(current.attemptId);
+  const correctedAt = new Date().toISOString();
+  const result = buildCorrectionResult(
+    command,
+    dependencies,
+    corrected,
+    latest,
+    correctedAt,
+  );
+
+  await operations.attempts.update(corrected);
+  await operations.results.insert(result);
+  await operations.eventPublisher.publish(
+    buildCorrectionEvent(
+      command,
+      corrected,
+      result,
+      correctedAt,
+      dependencies.idFactory,
+    ),
+  );
+  await operations.audit.append(
+    buildCorrectionAudit(
+      command,
+      corrected,
+      correctedAt,
+      dependencies.idFactory,
+    ),
+  );
+
+  const response = Object.freeze({ attempt: corrected, result });
+  await operations.idempotency.store(command.idempotencyKey, {
+    fingerprint: expectedFingerprint,
+    result: response,
+  });
+  return response;
+}
+
+export async function correctOpenResponse(
+  command: CorrectOpenResponseCommand,
+  dependencies: CorrectionUseCaseDependencies,
+): Promise<CorrectionResult> {
+  validateCorrectionCommand(command);
+  assertCorrectionAccess(command);
   const expectedFingerprint = fingerprint(command);
 
   try {
     return await dependencies.transaction.run(
-      async (operations) => {
-        const replay = replayOrThrow(
-          await operations.idempotency.find(command.idempotencyKey),
-          expectedFingerprint,
-        );
-        if (replay !== null) return replay;
-
-        const current = await operations.attempts.findById(command.attemptId);
-        if (current === null) {
-          throw new ApplicationError("not_found", "Attempt was not found");
-        }
-
-        const waiting =
-          current.status === "SUBMETIDA"
-            ? transitionAttempt(current, { type: "AGUARDAR_CORRECAO_HUMANA" })
-            : current;
-        if (waiting !== current) {
-          await operations.attempts.update(waiting);
-        }
-        const corrected = transitionAttempt(waiting, {
-          type: "CORRIGIR_HUMANAMENTE",
-        });
-        const latest = await operations.results.findLatest(current.attemptId);
-        const correctedAt = new Date().toISOString();
-        const result = createAssessmentResult({
-          resultId: dependencies.idFactory(),
-          attemptId: corrected.attemptId,
-          version: (latest?.version ?? 0) + 1,
-          kind: "HUMANA",
-          score: command.score,
-          outcome: command.outcome,
-          feedback: command.feedback,
-          ruleVersion: command.ruleVersion,
-          correctedBy: command.principalId,
-          correctedAt,
-        });
-
-        await operations.attempts.update(corrected);
-        await operations.results.insert(result);
-        await operations.eventPublisher.publish({
-          eventId: dependencies.idFactory(),
-          eventType: "assessment.corrected.v1",
-          aggregateType: "attempt",
-          aggregateId: corrected.attemptId,
-          occurredAt: correctedAt,
-          schemaVersion: 1,
-          correlationId: command.correlationId,
-          payload: {
-            attempt_id: corrected.attemptId,
-            result_id: result.resultId,
-            status: corrected.status,
-            score: String(result.score),
-            outcome: result.outcome,
-            result_version: String(result.version),
-            rule_version: result.ruleVersion,
-          },
-        });
-        await operations.audit.append(
-          createAuditEntry({
-            auditId: dependencies.idFactory(),
-            principalId: command.principalId,
-            action: "ATTEMPT_CORRECTED",
-            resourceType: "attempt",
-            resourceId: corrected.attemptId,
-            scopeId: command.scopeId,
-            outcome: "SUCCESS",
-            reasonCode: "human_correction_saved",
-            requestId: command.correlationId,
-            correlationId: command.correlationId,
-            occurredAt: correctedAt,
-          }),
-        );
-
-        const response = Object.freeze({ attempt: corrected, result });
-        await operations.idempotency.store(command.idempotencyKey, {
-          fingerprint: expectedFingerprint,
-          result: response,
-        });
-        return response;
-      },
+      (operations) =>
+        applyCorrection(command, dependencies, operations, expectedFingerprint),
       { scopeId: command.scopeId },
     );
   } catch (error) {

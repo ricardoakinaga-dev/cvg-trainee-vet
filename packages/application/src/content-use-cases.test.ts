@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   advanceContent,
+  advanceContentWithinTransaction,
   type ContentRecord,
+  type ContentTransactionalOperations,
   type ContentUseCaseDependencies,
 } from "./content-use-cases.js";
 
@@ -121,6 +123,49 @@ describe("content workflow use cases", () => {
     expect(deps.events.current).toBeUndefined();
   });
 
+  it("rejects invalid withdrawal metadata before opening a transaction", async () => {
+    const deps = dependencies();
+
+    await expect(
+      advanceContent(
+        {
+          ...publishCommand,
+          event: "RETIRAR",
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    expect(deps.saved.current).toBeUndefined();
+  });
+
+  it("rejects an empty correlation id before opening a transaction", async () => {
+    const deps = dependencies();
+
+    await expect(
+      advanceContent({ ...publishCommand, correlationId: " " }, deps),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    expect(deps.saved.current).toBeUndefined();
+  });
+
+  it("rejects invalid versions and withdrawal metadata before persistence", async () => {
+    const deps = dependencies();
+
+    await expect(
+      advanceContent({ ...publishCommand, version: 0 }, deps),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    await expect(
+      advanceContent(
+        {
+          ...publishCommand,
+          event: "VERIFICAR_PROJECAO",
+          withdrawalReasonCode: "ERRO_CONTEUDO",
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    expect(deps.saved.current).toBeUndefined();
+  });
+
   it("rejects a publication context that is not backed by a persisted approval", async () => {
     const deps = dependencies(content, false);
 
@@ -176,6 +221,91 @@ describe("content workflow use cases", () => {
     await expect(
       advanceContent({ ...publishCommand, version: 2 }, deps),
     ).rejects.toMatchObject({ code: "not_found" });
+
+    await expect(
+      advanceContent(
+        {
+          ...publishCommand,
+          scopeId: "other-scope",
+          scopes: [content.scopeId, "other-scope"],
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+  });
+
+  it("normalizes unexpected transactional failures without leaking internals", async () => {
+    const base = dependencies();
+    const deps: ContentUseCaseDependencies = {
+      ...base,
+      transaction: {
+        run: async () => {
+          throw new Error("synthetic storage failure");
+        },
+      },
+    };
+
+    await expect(advanceContent(publishCommand, deps)).rejects.toMatchObject({
+      code: "internal_error",
+    });
+  });
+
+  it("fails closed when withdrawal audit operations are incomplete", async () => {
+    const published: ContentRecord = { ...content, status: "PUBLICADO" };
+    const command = {
+      principalId: "clinical-approver",
+      accountStatus: "ACTIVE" as const,
+      roles: ["CLINICAL_APPROVER"] as const,
+      scopes: [published.scopeId],
+      contentId: published.contentId,
+      version: published.version,
+      scopeId: published.scopeId,
+      event: "RETIRAR" as const,
+      withdrawalReasonCode: "ERRO_CONTEUDO" as const,
+      approvedClinicalApproverId: "clinical-approver",
+      correlationId: "33333333-3333-4333-8333-333333333333",
+    };
+    const operations = (overrides: Record<string, unknown>) =>
+      ({
+        content: {
+          find: vi.fn(async () => published),
+          save: vi.fn(async () => undefined),
+          ...overrides,
+        },
+        eventPublisher: { publish: vi.fn(async () => undefined) },
+        audit: { append: vi.fn(async () => undefined) },
+        clinicalReview: { hasApproved: vi.fn(async () => true) },
+      }) as unknown as ContentTransactionalOperations;
+
+    await expect(
+      advanceContentWithinTransaction(
+        command,
+        operations({}),
+        () => "event-id",
+      ),
+    ).rejects.toMatchObject({ code: "internal_error" });
+    await expect(
+      advanceContentWithinTransaction(
+        command,
+        operations({
+          listAffectedParticipantIds: vi.fn(async () => ["participant-1"]),
+        }),
+        () => "event-id",
+      ),
+    ).rejects.toMatchObject({ code: "internal_error" });
+    await expect(
+      advanceContentWithinTransaction(
+        command,
+        operations({
+          listAffectedParticipantIds: vi.fn(async () => [
+            "participant-1",
+            "participant-2",
+          ]),
+          recordWithdrawalAffected: vi.fn(async () => 1),
+        }),
+        () => "event-id",
+      ),
+    ).rejects.toMatchObject({ code: "internal_error" });
   });
 
   it("allows an authorized author to publish source-verified content without a clinical approver", async () => {

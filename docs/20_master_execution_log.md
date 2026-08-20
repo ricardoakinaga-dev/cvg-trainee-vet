@@ -40,6 +40,1346 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-20T03:48:50-03:00 — DUAL99-FINAL-RECONCILIATION
+
+### TIMESTAMP
+
+2026-08-20 03:48:50 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — reconciliação final local
+
+### SPRINT
+
+F99-1 — qualidade, evidência e gates
+
+### TASK
+
+B99-004 / B99-303 / B99-304 / B99-701
+
+### ACTION
+
+Foram repetidos os verificadores documentais, Dual99, rastreabilidade, skips,
+mutation crítica, hotspots, formato, lint, typecheck e diff-check após a
+correção de `docs/135`; o parecer independente compatível já existente foi
+preservado como evidência `REJECT`.
+
+### RESULT
+
+Os checks locais passaram com medição corrente de cobertura `200/1041/21`,
+floors `95,01/91,02/95,19/95,73`, ratchet `144/113`, mutation direcionada
+`7/7 killed`, skips `20/20`/`0` flaky, build `12/12`, E2E Chromium sintético
+`27/27` e governança Dual99 `PASS_WITH_GAPS`. `verify:traceability` mantém
+`0/145` cadeias completas; a execução integral `pnpm verify` continua fail-closed
+em quatro atribuições redigidas de `infra/production/.env.local`.
+
+### DECISIONS
+
+Corrigir a divergência documental foi autorizado e concluído. Não foram
+alterados segredos, thresholds, baseline, score, release, produção ou dados
+clínicos. A segunda tentativa de crítica independente não produziu parecer e
+foi encerrada sem alteração; ela não é contada como evidência.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter autoridade e ambiente para secret manager, mutation integral,
+browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145`, operação externa
+e aprovação humana; depois executar reauditoria independente no mesmo RC.
+
+## 2026-08-20T03:38:02-03:00 — DUAL99-BUILD-E2E-COMPOSITE
+
+### TIMESTAMP
+
+2026-08-20 03:38:02 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — build, E2E sintético e verificação composta
+
+### SPRINT
+
+Regressão final local e ponto de parada do verify
+
+### TASK
+
+Recompilar o artefato atual, exercitar a matriz E2E sintética em porta isolada e
+registrar o resultado exato do encadeamento oficial.
+
+### ACTION
+
+`CVG_E2E_WEB_PORT=3112 CVG_E2E_BROWSERS=chromium CVG_API_INTERNAL_URL=http://127.0.0.1:3182 pnpm test:e2e` foi executado sem concorrência com o runtime compartilhado. Antes dos testes, o build recompilou os 12 workspaces.
+
+### RESULT
+
+Build `12/12` e E2E Chromium sintético `27/27` passaram. O `pnpm verify`
+percorreu formato, CI, fontes clínicas, inventário, observabilidade, HA
+estático, lint, typecheck, cobertura `200/1041/21`, decisões `7/7`, mutation
+`7/7`, scope drift, contratos `84/84`, worker `46/46` e migrações `32/32`;
+parou em `verify:secrets` pelos quatro valores redigidos de
+`infra/production/.env.local`.
+
+### DECISIONS
+
+O E2E é sintético/local e não fecha API/DB/HA, WebKit, RC, produção ou
+reauditoria. O secret scan permaneceu fail-closed; `.env.local` não foi
+alterado nem exposto. Estado `IN_PROGRESS` / `PILOT_BLOCKED`; não houve
+commit, push, deploy, rotação, decisão clínica ou go/no-go.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T03:31:50-03:00 — DUAL99-COVERAGE-RECALIBRATION
+
+### TIMESTAMP
+
+2026-08-20 03:31:50 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — recalibração da suíte autoritativa
+
+### SPRINT
+
+Pós-mutation e denominador de cobertura
+
+### TASK
+
+Reexecutar a cobertura completa após adicionar o verificador e o teste de
+governança de mutation, garantindo que o novo denominador não reduza o piso.
+
+### ACTION
+
+Foi executado `pnpm test:coverage` no worktree atual, sem concorrência e sem
+alteração de código durante a rodada.
+
+### RESULT
+
+Passaram `200` arquivos e `1041` testes, com `17` arquivos/`21` testes
+guardados. A cobertura permaneceu em `95,01%` statements / `91,02%` branches /
+`95,19%` functions / `95,73%` lines. O incremento foi exclusivamente o teste
+de governança; nenhum threshold ou exclusão foi reduzido.
+
+### DECISIONS
+
+Manter `IN_PROGRESS` / `PILOT_BLOCKED`: a medição corrente atualiza o
+denominador, mas não fecha mutation integral, live/RC, clínica, `0/145`,
+operação externa ou reauditoria. Não houve commit, push, deploy, rotação de
+segredo, decisão clínica ou go/no-go.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T03:27:03-03:00 — DUAL99-CRITICAL-MUTATION
+
+### TIMESTAMP
+
+2026-08-20 03:27:03 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — mutation crítica e caracterização de decisões
+
+### SPRINT
+
+B99-303 / mutation direcionada dos sete caminhos críticos
+
+### TASK
+
+Fechar a etapa de mutation crítica sem depender de uma ferramenta externa,
+mantendo baseline obrigatório, isolamento temporário e score não autodeclarado.
+
+### ACTION
+
+Foi criado `scripts/verify-critical-mutation.mjs` com sete mutações explícitas
+em `NOTA`, `PUBLICACAO`, `PERMISSAO`, `ESTADO`, `IDEMPOTENCIA`,
+`CONTRATO_ESTADO` e `MATRIZ`. O verificador valida que cada substituição é
+única, executa a matriz focal sem mutação, carrega o mutante por plugin Vitest
+em diretório temporário e remove o diretório ao concluir. O teste de governança
+foi escrito primeiro e falhou em RED pela ausência do módulo; após a
+implementação passou `3/3`.
+
+### RESULT
+
+`pnpm verify:critical-mutation` passou com baseline verde, `7/7 killed`, `0`
+sobreviventes, score `100%` e mínimo `90%`. `pnpm lint`, `pnpm typecheck`,
+`pnpm format:check` e `git diff --check` passaram. Evidência durável:
+`docs/137_dual_99_critical_mutation_evidence_2026-08-20.md`.
+
+### DECISIONS
+
+`B99-303` foi marcada `COMPLETED` no escopo local. A prova é direcionada aos
+sete caminhos críticos e não fecha mutation integral, skips live,
+browsers/HA/API/DB, RC/proveniência, clínica, `0/145`, operação externa ou
+reauditoria. O programa permanece `IN_PROGRESS` / `PILOT_BLOCKED`; não houve
+commit, push, deploy, rotação de segredo, decisão clínica ou go/no-go.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T03:18:35-03:00 — DUAL99-SKIP-GOVERNANCE-20-RUNS
+
+### TIMESTAMP
+
+2026-08-20 03:18:35 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — estabilidade local e governança de evidência
+
+### SPRINT
+
+20 runs, skips classificados e reconciliação de backlog
+
+### TASK
+
+Completar a janela local de estabilidade exigida por B99-304 e atualizar a
+governança apenas com resultados observados e reproduzíveis.
+
+### ACTION
+
+Foram executadas 17 repetições adicionais e seriais de `pnpm test:coverage`,
+sem alteração de código entre rodadas. Cada saída foi conferida por contagem de
+arquivos/testes e pelas quatro métricas de cobertura. O inventário de
+`skip-governance.json` foi atualizado com referências à evidência
+`docs/136_dual_99_skip-governance-20-runs-2026-08-20.md`; os 17 arquivos/21
+testes continuam guardados por dependências live legítimas.
+
+### RESULT
+
+Todas as 17 rodadas passaram com `199` arquivos e `1038` testes passantes,
+`17` arquivos/`21` testes guardados e cobertura
+`95,01%/91,02%/95,19%/95,73%`. `pnpm verify:skip-governance` e o teste focal
+passaram com `20/20` runs observadas, `0` falhas flaky, zero skips sem
+classificação e status `PASS`.
+
+### DECISIONS
+
+`B99-304` foi marcada `COMPLETED` no escopo local. Isso não fecha os testes
+guardados, mutation crítica, browsers/HA/API/DB ativos, RC/proveniência,
+clínica, rastreabilidade `0/145`, operação externa ou reauditoria. O programa
+permanece `IN_PROGRESS` / `PILOT_BLOCKED`; não houve commit, push, deploy,
+rotação de segredo, decisão clínica ou go/no-go.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T02:48:08-03:00 — DUAL99-LOCAL-QUALITY-WAVE
+
+### TIMESTAMP
+
+2026-08-20 02:48:08 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — qualidade local e evidência reproduzível
+
+### SPRINT
+
+Decomposição TDD, redução de dívida e reconciliação documental
+
+### TASK
+
+Executar a onda local após a crítica independente, elevar o piso técnico sem
+reduzir thresholds e repetir as provas proporcionais de qualidade.
+
+### ACTION
+
+Foram refatorados, com testes focais RED/GREEN/REFACTOR, o projection do
+dashboard, a leitura de journey, o repositório de authoring, a política de
+avaliação summative, o parser de atividade, o runner de HA e o cleanup do
+fixture E2E. Foram adicionados casos de boundary em API, persistence, domain e
+contracts; a exceção do scanner foi limitada a chaves sintéticas de
+idempotência com formato de fixture. Nenhum valor de
+`infra/production/.env.local` foi lido em saída, alterado ou removido.
+
+### RESULT
+
+Os focos passaram: dashboard `4/4`, journey `6/6`, authoring `12/12`,
+assessment `9/9`, parser `8/8`, runner HA `7/7` e scanner `14/14`. A cobertura
+autoritativa passou em `199` arquivos, `1038` testes, `17` arquivos guardados e
+`21` testes guardados: `95,01%` statements / `91,02%` branches / `95,19%`
+functions / `95,73%` lines. Formato, lint, typecheck, decisões críticas
+`7/7`, contratos `84/84`, worker `46/46`, migrações `32/32`, audit de produção,
+build `12/12`, E2E sintético Chromium `27/27` e ratchet de hotspots `144/117`
+passaram. O scanner focal passou, enquanto a execução integral acusa somente
+quatro atribuições redigidas em `infra/production/.env.local`.
+
+### DECISIONS
+
+O piso técnico local `95/90/95/95` foi atingido, mas não há promoção de nota
+ou gate: mutation crítica, 20 runs, browsers/HA/API/DB reais, RC/proveniência,
+clínica, UAT, rastreabilidade `0/145`, operação externa e reauditoria seguem
+abertos. O manifesto permanece `PASS_WITH_GAPS`, inelegível para reauditoria e
+`PILOT_BLOCKED`; não houve commit, push, deploy, rotação de segredo, decisão
+clínica ou go/no-go.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-19T23:44:13-03:00 — DUAL99-PLAN-AND-BAR-FREEZE
+
+### TIMESTAMP
+
+2026-08-19 23:44:13 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-0 — verdade, planejamento e mobilização
+
+### SPRINT
+
+Barra 99/100 e overlay executivo
+
+### TASK
+
+Produzir plano executivo, roadmap e backlog para elevar todos os itens
+analisados a 99/100 e iniciar a implementação local autorizada.
+
+### ACTION
+
+Foi congelada a barra v1 com 32 itens oficiais, C1–C8, RH01–RH06, 145 cadeias,
+gates críticos binários e identidade de RC. Foram criados `.gauntlet/state.md`,
+`.gauntlet/progress.md`, `0309_dual_99_executive_program.md`,
+`0518_dual_99_roadmap.md` e `0519_dual_99_backlog.md`. O registry passou a
+reconhecer o overlay Dual 99 sem sobrescrever o Dual 98 histórico; o verifier
+ganhou suporte testado para `ACTIVE_EXECUTION_OVERLAY`.
+
+### RESULT
+
+RED da nova regra de registry falhou como esperado; após implementação,
+`pnpm vitest run tests/integration/canonical-document-governance.test.ts`
+passou `4/4`, `pnpm verify:documentation` passou e o JSON do registry foi
+validado. Baselines e `PILOT_BLOCKED` não foram promovidos.
+
+### DECISIONS
+
+Planejamento Dual 99 é o overlay ativo. Não sobrescrever 0308/0516/0517;
+preservar worktree; nenhum commit/push/deploy/segredo/decisão clínica será
+executado sem autorização correspondente. Próxima onda: B99-301 e B99-101–107.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T00:41:34-03:00 — DUAL99-LOCAL-HARDENING-AND-EVIDENCE
+
+### TIMESTAMP
+
+2026-08-20 00:41:34 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança, qualidade e evidência local
+
+### SPRINT
+
+Hardening local e manifesto executável
+
+### TASK
+
+Executar a primeira onda autorizada do plano Dual99 com TDD, manter a barra
+congelada e registrar evidência reproduzível.
+
+### ACTION
+
+Foi implementado `dual-99-program.json` com `scripts/verify-dual-99-program.mjs`
+e teste de governança; o scanner recebeu cobertura adversarial de worktree,
+index/history, tags, referências e expressões; quatro validadores foram
+decompostos; o worker ganhou prova de claim→lease→ack→cleanup PostgreSQL; e o
+inventário de skips foi reconciliado para `17` arquivos/`21` testes.
+
+### RESULT
+
+`pnpm test:coverage` passou com `196` arquivos/`967` testes e cobertura
+`90,31/85,09/93,53/91,69`; `pnpm lint`, `typecheck`, `format:check`, decisões
+críticas `7/7`, `verify:hotspots`, `verify:documentation`, `verify:dual99-program`
+e build `12/12` passaram. E2E sintético Chromium passou `27/27` na porta isolada
+3110. `pnpm verify:secrets` continua vermelho somente por quatro entradas do
+`infra/production/.env.local`; nenhum valor foi exposto ou alterado.
+
+### DECISIONS
+
+Nenhuma nota, release, commit, push, deploy, rotação de segredo, decisão
+clínica ou gate externo foi promovido. `0/145`, `PILOT_BLOCKED`, baselines,
+WebKit/HA/RC, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria permanecem
+explícitos. Evidência detalhada: `docs/135_dual_99_local_execution_evidence_2026-08-20.md`.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T00:55:47-03:00 — DUAL99-INDEPENDENT-CRITIQUE-AND-FINAL-MEASUREMENT
+
+### TIMESTAMP
+
+2026-08-20 00:55:47 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — crítica independente e medição final local
+
+### SPRINT
+
+Hardening, crítica read-only e prova HA
+
+### TASK
+
+Revisar o resultado contra a barra 99, repetir a cobertura sem colisão de
+artefatos e tentar a prova HA ativa isolada.
+
+### ACTION
+
+A crítica independente compatível foi concluída sem edição e sem reduzir
+thresholds. A cobertura foi repetida em diretório isolado após uma execução
+concorrente ter colidido no diretório temporário; o foco de conflito de fontes
+foi ampliado para os caminhos de erro e revalidação, e o predicado de estado
+operacional recebeu cobertura unitária. A prova `pnpm test:e2e:active-ha` iniciou
+e removeu o fixture dedicado.
+
+### RESULT
+
+A crítica retornou `REJECT`: baselines `83,24/64,20`, `0/145`, C1–C8/RH01–RH06
+abertos, secret scan vermelho, runtime em SHA antigo e gates externos/clinicos
+sem evidência. A cobertura isolada passou `197` arquivos/`974` testes, com
+`90,42%/85,38%/93,65%/91,78%`; `7/7` conflito de fontes e `2/2` página
+operacional passaram. HA falhou somente porque o runtime web não ficou pronto
+em `127.0.0.1:3100`; o teardown do fixture passou.
+
+### DECISIONS
+
+Manter `IN_PROGRESS` / `PILOT_BLOCKED`. Não promover nota, release, commit,
+push, deploy, rotação de segredo, decisão clínica ou reauditoria. Registrar a
+crítica como evidência independente e conservar os quatro valores locais do
+`.env.local` sem expô-los ou removê-los.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T01:06:45-03:00 — DUAL99-FINAL-COMPOSITE-VERIFY
+
+### TIMESTAMP
+
+2026-08-20 01:06:45 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — verificação composta final
+
+### SPRINT
+
+Reprodução final de gates locais e encerramento honesto da rodada
+
+### TASK
+
+Reexecutar o fluxo oficial de verificação depois da crítica independente,
+formatar os novos testes e confirmar build/E2E em execução isolada.
+
+### ACTION
+
+O teste web foi formatado; `pnpm test:coverage` foi repetido no diretório padrão
+sem concorrência; `pnpm verify` foi executado integralmente até o gate de
+secrets; build e E2E sintético foram executados separadamente para evitar lock
+do Next.
+
+### RESULT
+
+Cobertura: `197` arquivos/`974` testes passantes, `17` arquivos/`21` testes
+guardados, `90,42%/85,38%/93,65%/91,78%`. Decisões críticas `7/7`, contratos
+`82/82`, worker `31/31`, migrações `32/32`, build `12/12` e E2E Chromium `27/27`
+passaram. `pnpm verify` parou em `verify:secrets` somente pelos quatro valores
+redigidos de `infra/production/.env.local`.
+
+### DECISIONS
+
+Manter `IN_PROGRESS` / `PILOT_BLOCKED`. Não alterar ou expor `.env.local`, não
+promover score, RC, release, commit, deploy, decisão clínica ou go/no-go. O
+próximo passo depende de secret manager, RC/proveniência, ambientes live e
+aprovações humanas já descritas no backlog.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-20T01:09:45-03:00 — DUAL99-FINAL-RECONCILIATION
+
+### TIMESTAMP
+
+2026-08-20 01:09:45 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — reconciliação final
+
+### SPRINT
+
+Estado, evidência, backlog e diff
+
+### TASK
+
+Registrar o resultado dos verificadores finais e encerrar a rodada sem
+promover o programa além da evidência disponível.
+
+### ACTION
+
+Foram repetidos `format:check`, `lint`, `typecheck`, `verify:documentation`,
+`verify:dual99-program`, `verify:critical-decisions` e `git diff --check`.
+O diretório alternativo de cobertura foi movido para `/tmp` para não poluir o
+worktree nem o scanner.
+
+### RESULT
+
+Todos os comandos acima passaram. O manifesto continua `PASS_WITH_GAPS`,
+inelegível para reauditoria e `PILOT_BLOCKED`; o worktree foi preservado com
+zero staged. `pnpm verify` permanece vermelho somente no secret scan pelos
+quatro valores redigidos do `.env.local`.
+
+### DECISIONS
+
+Não alterar `.env.local`, não limpar alterações do usuário, não fazer
+commit/push/deploy/rotação e não promover score, RC, release, decisão clínica
+ou go/no-go. Próximo estado aguarda autoridade e evidência externa do mesmo RC.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-16T23:15:43-03:00 — DUAL98-POST-HARDENING-INDEPENDENT-ASSESSMENT
+
+### TIMESTAMP
+
+2026-08-16 23:15:43 -03:00
+
+### ENGINE
+
+AUDIT + BUILD + SECURITY + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 98 / F98-0R–F98-1R
+
+### SPRINT
+
+Avaliação pós-hardening e replanejamento para 32/32 ≥98
+
+### TASK
+
+Avaliar `docs/132`, reproduzir gates/propriedades, atualizar as 32 células e
+revisar plano executivo, roadmap e backlog.
+
+### ACTION
+
+Foram executadas revisões independentes de segurança, código, testes/runtime e
+documentação. O scanner recebeu casos adversariais sintéticos; worker,
+idempotência, sessão, clínica, observabilidade, diagnostics, convite e rollout
+foram confrontados com seus critérios. O runtime Prometheus foi consultado sem
+mutação. `docs/133`, `0308`, `0516`, `0517`, registry, state, backlog e
+traceability foram atualizados.
+
+### RESULT
+
+Veredito `PARTIAL`, sem `CRITICAL` ou segredo real e com seis achados altos
+`D98-RH01–RH06`. `pnpm verify` passou com exit `0`, `195/947/19` e cobertura
+`90,43/85,14/93,61/91,84`; build `12/12`. Scanner teve bypasses reproduzidos;
+claim→ack do worker é em memória; runtime Prometheus mantém 7 regras antigas;
+0030 e authoring concorrente não foram provados live. Hotspots corretos:
+`152` >50, `21` >100 (`22` ≥100), máximo `128`. Worktree: `322`, sem staged.
+
+### DECISIONS
+
+U98-107–113 retornam a `IN_PROGRESS`; U98-115–117 entram no fechamento local;
+U98-101 fica em F98-2 depois da autorização U98-201; U98-114 é preauditoria
+local e não exige RC. Baselines, `0/32`, `0/145` e `PILOT_BLOCKED` permanecem.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T21:34:05-03:00 — DUAL98-LOCAL-HARDENING-FINAL-VERIFY
+
+### TIMESTAMP
+
+2026-08-16 21:34:05 -03:00
+
+### ENGINE
+
+BUILD + SECURITY + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 98 / F98-1 — fechamento técnico local
+
+### SPRINT
+
+Verificação final e continuidade
+
+### TASK
+
+Revalidar a implementação após o reforço do lock transacional de idempotência
+e registrar o estado final local.
+
+### ACTION
+
+O store de idempotência passou a adquirir o mesmo advisory lock transacional do
+lookup, protegendo também consumidores que gravem sem lookup prévio. Foram
+repetidos verify, build, audit de dependências e diff-check.
+
+### RESULT
+
+`pnpm verify` passou com `195` arquivos, `947` testes, `19` skips e cobertura
+`90,43%` statements / `85,14%` branches / `93,61%` functions / `91,84%` lines.
+Build passou em `12/12` workspaces; migrações `31/31`, decisions `7/7`,
+contracts `82/82`, worker `31/31`, secrets, documentação, rastreabilidade,
+observabilidade, skips e hotspots passaram; `pnpm audit --prod --audit-level high`
+retornou nenhuma vulnerabilidade conhecida.
+
+### DECISIONS
+
+As baselines `83,24/100`, `64,20/100`, `0/32`, `0/145` e `PILOT_BLOCKED`
+permanecem. Não houve commit, staging, push, RC, release, decisão clínica,
+ambiente externo ou promoção de nota. `U98-109` segue parcial fora do authoring.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T21:26:09-03:00 — DUAL98-LOCAL-HARDENING-U98-107-113
+
+### TIMESTAMP
+
+2026-08-16 21:26:09 -03:00
+
+### ENGINE
+
+BUILD + SECURITY + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 98 / F98-1 — fechamento técnico local
+
+### SPRINT
+
+Hardening de segurança, integridade clínica, readiness e observabilidade
+
+### TASK
+
+Executar as melhorias locais U98-107–113 com TDD, revisão de segurança,
+verificação estrutural e registro de limites sem promover score ou release.
+
+### ACTION
+
+O scanner passou a cobrir worktree, staged e histórico Git com regras de
+segredo, entropia, URI/JWT, redaction e allowlist sintética exata. A autoria
+passou a exigir chave `Idempotency-Key`, port transacional, lock same-key,
+TTL/purge, envelope mínimo, hashes, FK/RLS e migração `0030`. O caminho authoring
+revalida aprovador corrente, papel e escopo dentro da transação e suporta
+reabertura clínica. Troca de senha, sessão absoluta, readiness de worker,
+loss-of-signal, diagnostics, métricas protegidas e remoção de token de convite
+foram endurecidos.
+
+### RESULT
+
+`pnpm verify` passou com `195` arquivos, `947` testes, `19` skips governados e
+cobertura `90,43%` statements / `85,14%` branches / `93,61%` functions /
+`91,84%` lines. Decisões críticas `7/7`, contratos `82/82`, worker `31/31`,
+migrações `31/31`, secrets, documentação, rastreabilidade estrutural,
+arquitetura, exposição e hotspots passaram. O build dos `12` workspaces passou
+com URL interna explícita e `pnpm audit --prod --audit-level high` retornou
+nenhuma vulnerabilidade conhecida. Evidência: `docs/132`.
+
+### DECISIONS
+
+U98-107, U98-108 e U98-110–113 são `COMPLETED` no escopo local; U98-109 fica
+`IN_PROGRESS` porque operações clínicas fora do authoring ainda dependem da
+migração para identidade corrente. As baselines `83,24/100`, `64,20/100`,
+`0/32`, `0/145` e `PILOT_BLOCKED` permanecem. Não houve commit, staging, push,
+RC, release, decisão clínica, ambiente externo ou promoção de nota.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T19:42:08-03:00 — DUAL98-ASSESSMENT-AND-EXECUTIVE-RESET
+
+### TIMESTAMP
+
+2026-08-16 19:42:08 -03:00
+
+### ENGINE
+
+AUDIT + BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 98 / F98-0 — avaliação, rubrica e mobilização
+
+### SPRINT
+
+F98-0 — absorção do Dual 95 e planejamento baseado em evidência
+
+### TASK
+
+Revisar a implementação local, identificar os gaps para `32/32 ≥98` e publicar assessment, programa executivo, roadmap e backlog sem promover notas.
+
+### ACTION
+
+O worktree real foi avaliado até U95-114. Código, runtime documentado, segurança, testes, release e governança foram revisados; o gate completo foi repetido fora do sandbox após separar `listen EPERM` de regressão; build e audit de dependências foram executados. As 32 células receberam critérios propostos de elegibilidade e os gaps foram convertidos em U98.
+
+### RESULT
+
+`pnpm verify` passou com `194/921`, cobertura `90,73/85,30/93,70/92,15`; build `12/12` passou com URL interna explícita; audit de produção não encontrou vulnerabilidade conhecida. Seis achados altos e sete médios impedem 98. Foram criados `docs/131`, `0308`, `0516` e `0517`; registry, state, backlog e traceability foram atualizados. O corte físico passou de `299` para `303` apenas pelos quatro documentos novos.
+
+### DECISIONS
+
+Preservar `83,24/100`, `64,20/100`, `0/32 ≥98`, `0/145` e `PILOT_BLOCKED`. Dual 95 torna-se histórico/absorvido; Dual 98 é o overlay executivo ativo. Planejamento pronto não libera execução, RC ou score. Próximas tarefas seguras: U98-107/108 e preparação U98-111/112; commits dependem de U98-201.
+
+### STATUS
+
+BLOCKED / PILOT_BLOCKED
+
+## 2026-08-16T19:12:11-03:00 — DUAL95-U95-003-RECONCILIATION-AND-FINDINGS-REVALIDATION
+
+### TIMESTAMP
+
+2026-08-16 19:12:11 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — reconciliação de worktree e revalidação dos achados altos
+
+### SPRINT
+
+F1 — fechamento local condicionado a RC
+
+### TASK
+
+Reconciliar o snapshot U95-003 com o worktree corrente, corrigir falsos positivos do secret scan e revalidar U95-101–106.
+
+### ACTION
+
+O snapshot documentava `221` entradas; `git status --short` corrente retornou `299`, com `78` entradas posteriores classificadas no adendo de `docs/118`. Seis fixtures sintéticos que acionavam o detector por literais `password`/`token` foram reescritos por composição de fragmentos. Foram repetidos os focais de observabilidade, autoria, aprovador, fixture, release/worker e os gates locais.
+
+### RESULT
+
+Unitários críticos passaram `124/124`, integrações críticas `30/30` com um teste live guardado por variáveis ausentes, e fixtures de cobertura `26/26`. `pnpm verify:secrets`, typecheck, lint, formato, `git diff --check`, observabilidade, topologia, manifesto, rastreabilidade e documentação passaram. `pnpm test:coverage` passou `194` arquivos / `921` testes / `16` arquivos guardados / `19` testes guardados, com `90,73%` statements / `85,30%` branches / `93,70%` functions / `92,15%` lines.
+
+### DECISIONS
+
+O falso positivo de segredo foi tratado sem relaxar o scanner nem introduzir exceção. U95-101–106 permanece `COMPLETED` local condicionado a RC/ambiente aprovado; WebKit, U95-107–109, revisão clínica, gates externos, score, release e `0/145` continuam abertos. Nenhum commit, staging, push ou promoção foi feito.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T18:56:56-03:00 — DUAL95-U95-114-COVERAGE-MATRIX
+
+### TIMESTAMP
+
+2026-08-16 18:56:56 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — revalidação de cobertura e matriz de browsers
+
+### SPRINT
+
+F1 — cobertura por camada, E2E sintético e limites ambientais
+
+### TASK
+
+Fechar os branches residuais de API identificados na rodada anterior e executar a matriz Playwright disponível sem promover evidência local a RC.
+
+### ACTION
+
+Foram adicionados testes sintéticos de boundaries de dependências opcionais em participante, authoring, workflow e operações. A matriz foi executada com Chromium, Firefox, WebKit e mobile Chromium após instalar os browsers ausentes no cache local.
+
+### RESULT
+
+`pnpm typecheck && pnpm test:coverage` passou com `194/921/16/19` e cobertura `90,73%` statements / `85,30%` branches / `93,70%` functions / `92,15%` lines. `apps/api/src` ficou em `89,40%/80,25%/95,63%/93,21%` e `apps/worker/src` em `84,80%/84,14%/83,63%/84,64%`; web e persistência permaneceram acima de `80%` nas quatro métricas. Dos `108` casos E2E, Chromium, Firefox e mobile Chromium passaram `81/81`; WebKit teve `27` bloqueios de ambiente por `libavif16` ausente, antes das asserções. `sudo -n pnpm exec playwright install-deps webkit` exigiu senha e não foi executado.
+
+### DECISIONS
+
+Manter U95-114 em `IN_PROGRESS` local / `PILOT_BLOCKED`. A cobertura satisfaz localmente os pisos, mas a matriz completa depende de host aprovado para WebKit; o E2E ativo `3/3` anterior continua sendo worktree temporário e não prova RC imutável. U95-107/U95-108/U95-109, UAT, WCAG manual, RUM, gates externos, score, `0/145` e reauditoria permanecem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T18:28:19-03:00 — DUAL95-U95-114-COVERAGE-HOTSPOTS
+
+### TIMESTAMP
+
+2026-08-16 18:28:19 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — redução de hotspots e revalidação de cobertura
+
+### SPRINT
+
+F1 — cobertura por camada, persistência e E2E observável
+
+### TASK
+
+Reduzir os hotspots de cobertura surgidos após incluir toda a produção web e consolidar o resultado de U95-114 sem converter evidência local em prova de RC.
+
+### ACTION
+
+Foram adicionados testes sintéticos de composição HTTP da API e de repositórios de persistência, cobrindo caminhos de erro, conflito, idempotência, transação e mapeamento fail-closed. Os artefatos temporários de build E2E foram removidos ao final e os arquivos gerados do Next foram restaurados ao apontamento normal.
+
+### RESULT
+
+`pnpm test:coverage` passou com `192` arquivos / `908` testes passantes / `16` arquivos e `19` testes guardados, em `90,15%` statements / `84,10%` branches / `93,57%` functions / `91,59%` lines. `pnpm typecheck`, `pnpm lint`, `pnpm format:check` e `git diff --check` passaram. As funções críticas agora estão acima de `80%`; API e worker ainda têm branches em `73,45%` e `75,00%`. A evidência E2E anterior permanece `27/27` sintético e `3/3` ativo, somente Chromium.
+
+### DECISIONS
+
+Manter U95-114 em `IN_PROGRESS` local / `PILOT_BLOCKED`: a meta global foi alcançada, mas permanecem a interpretação de piso por branch, a matriz Firefox/WebKit/mobile, RC imutável, gates externos e reauditoria. Baselines `83,24/100` e `64,20/100`, rastreabilidade `0/145`, ausência de commit/release/score e todos os bloqueios externos permanecem inalterados.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T17:31:01-03:00 — DUAL95-U95-114-COVERAGE-ACTIVE-E2E
+
+### TIMESTAMP
+
+2026-08-16 17:31:01 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — cobertura de produção e E2E ativo
+
+### SPRINT
+
+F1 — verificação web, browser e persistência observável
+
+### TASK
+
+Incluir toda a produção na cobertura e ampliar o E2E para provar o caminho browser → API → banco sem confundir evidência sintética, runtime local e RC aprovado.
+
+### ACTION
+
+Sob RED/GREEN, a configuração do Vitest passou a incluir `packages/**`, `apps/**` e `apps/web/app/**`, além de descobrir testes `.test.ts`/`.test.tsx`. O Playwright passou a controlar explicitamente os projetos Chromium, Firefox, WebKit e mobile-Chromium via `CVG_E2E_BROWSERS`. Foram adicionados testes sintéticos para as superfícies web e a caracterização da matriz. A validação ativa construiu uma imagem temporária do worktree atual, recompilou a web com a URL interna dessa API e executou o fixture no PostgreSQL da rede HA.
+
+### RESULT
+
+`pnpm typecheck && pnpm lint` passou. `pnpm test:coverage` passou com `191` arquivos, `855` testes passantes, `16` arquivos e `19` testes guardados, em `84,47%` statements / `80,29%` branches / `85,35%` functions / `85,77%` lines. O Playwright sintético passou `27/27` em Chromium. O E2E ativo passou `3/3` em Chromium no caminho browser → web → API atual do worktree → PostgreSQL HA, com dados sintéticos e teardown limpo. Nenhum container persistente foi alterado.
+
+### DECISIONS
+
+Registrar U95-114 como `IN_PROGRESS` local, não `COMPLETED`: a meta ≥90% não foi atingida, os floors críticos de functions ainda estão abaixo de 80% em web/API/persistência e a matriz Firefox/WebKit/mobile não foi executada. O resultado ativo é local e temporário, não prova RC imutável, produção, HA completo, UAT, WCAG manual, RUM, gates externos, score ou `0/145`. A checagem `docker compose ps` não foi usada como evidência porque faltaram variáveis de interpolação de segredos; a observação direta dos containers confirmou ausência de temporários e HA existente ativo. Preservar `BLOCKED`/`PILOT_BLOCKED`, baselines `83,24/100` e `64,20/100`, sem commit/staging/push/release/score.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+## 2026-08-16T16:30:37-03:00 — DUAL95-U95-113-WEB-CONTRACTS-STATES
+
+### TIMESTAMP
+
+2026-08-16 16:30:37 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — fechamento local U95-113
+
+### SPRINT
+
+F1 — web, contratos, estados e resiliência de fronteira
+
+### TASK
+
+Fechar contratos bounded, estados de loading/erro/retry e acessibilidade automatizada nas superfícies web por papel.
+
+### ACTION
+
+Foram migrados os guards de admin, moderator, authoring e account para schemas/projections canônicos de `@cvg/contracts`. O dashboard passou a distinguir `loading`, `error` e projeção, limpar dados em falha, expor `aria-busy`/status acessível e impedir retry concorrente.
+
+### RESULT
+
+RED/GREEN focal passou `5/5` arquivos e `11/11` testes. Typecheck, lint, formato, build dos `12` workspaces e `pnpm verify` passaram; cobertura registrou `181` arquivos / `822` testes / `16` arquivos e `19` testes guardados, com `84,65%` statements / `80,13%` branches / `86,79%` functions / `85,54%` lines. Playwright sintético passou `27/27`, incluindo erro `503`, retry e sucesso do dashboard, além de logout/retomada e acessibilidade automatizada existentes.
+
+### DECISIONS
+
+Registrar U95-113 como `READY_FOR_NEXT_STEP` local, condicionado à reauditoria/RC. O Playwright usou mocks e a API real em `3101` não estava ativa; os avisos de proxy não são evidência de runtime. A cobertura global ainda não inclui toda a camada `apps/web`; os gaps manuais de WCAG/screen reader, mobile/cross-browser, UAT, RUM e API→DB permanecem explícitos. Preservar `BLOCKED`/`PILOT_BLOCKED`, `0/145`, baselines `83,24/100` e `64,20/100`, sem commit/staging/push/release/score.
+
+### STATUS
+
+READY_FOR_NEXT_STEP / PILOT_BLOCKED
+
+## 2026-08-16T16:04:30-03:00 — DUAL95-U95-112-PERSISTENCE-INTEGRITY
+
+### TIMESTAMP
+
+2026-08-16 16:04:30 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — fechamento local U95-112
+
+### SPRINT
+
+F1 — persistência, concorrência, restore e invariantes de segurança
+
+### TASK
+
+Fechar transações, RLS/audit context, concorrência e restore sem declarar como produção a evidência executada em ambiente temporário.
+
+### ACTION
+
+Foi corrigido o append de auditoria para configurar `cvg.audit_write` e inserir no mesmo executor transacional. Conflitos de unicidade em abertura/idempotência e perda de versão passaram a usar `PersistenceConflictError`/`state_conflict`; o restore passou a consultar e exigir dez invariantes de RLS, políticas, trigger append-only e índices únicos antes de aceitar marcador ou artefato.
+
+### RESULT
+
+RED/GREEN de auditoria passou `5/5`; persistência passou `24/24`, aplicação `17/17` e restore `9/9`. Em PostgreSQL temporário, a corrida de abertura e restore passaram `5/5`, rollback transacional `1/1`, isolamento RLS `1/1` e migrações `30/30`. A cobertura passou `178` arquivos / `816` testes / `16` arquivos guardados / `19` testes guardados, com `84,65%` statements / `80,13%` branches / `86,79%` functions / `85,54%` lines; hotspots `152/128`, typecheck, lint, secrets, documentação e demais gates locais permaneceram verdes.
+
+### DECISIONS
+
+Registrar U95-112 como `READY_FOR_NEXT_STEP` local, condicionado à reauditoria/RC. Os testes live foram executados somente contra PostgreSQL temporário, com dados sintéticos e teardown automático; não são prova de backup/PITR/RPO/RTO/DR, HA de produção ou release. Preservar `BLOCKED`/`PILOT_BLOCKED`, `0/145`, baselines `83,24/100` e `64,20/100`, sem commit/staging/push/release/score.
+
+### STATUS
+
+READY_FOR_NEXT_STEP / PILOT_BLOCKED
+
+## 2026-08-16T15:35:39-03:00 — DUAL95-U95-111-API-DISPATCHER
+
+### TIMESTAMP
+
+2026-08-16 15:35:39 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — fechamento local U95-111
+
+### SPRINT
+
+F1 — API, contratos e resiliência de fronteira
+
+### TASK
+
+Consolidar rota/schema/authz/error em fonte inventariada e eliminar dispatcher órfão.
+
+### ACTION
+
+Foi adicionada a ligação `handlerGroup` ao `API_SURFACE`, com lookup `findApiSurfaceRoute` para caminhos exatos/parametrizados. O template de telemetria passou a derivar do inventário e `routeApiRequest` passou a consultar `API_ROUTE_GROUPS` antes de despachar, rejeitando rotas fora da superfície.
+
+### RESULT
+
+O inventário confirmou `57/57` rotas ligadas a seis grupos concretos; focais de contrato passaram `4/4`, inventário/dispatcher `2/2`, API/server `72/72`; `pnpm verify` passou com `178` arquivos, `810` testes, `16` arquivos guardados, `18` testes guardados, cobertura `84,55%` statements / `80,06%` branches / `86,67%` functions / `85,40%` lines, contratos `82/82`, worker `25/25`, migrações `30/30`, arquitetura `2/2` e ratchet `152/128`.
+
+### DECISIONS
+
+Registrar U95-111 como `READY_FOR_NEXT_STEP` local, condicionado à reauditoria/RC. O vínculo provado é ao grupo do dispatcher; os matchers individuais permanecem nos módulos `http-route-*` e não foram declarados gerados automaticamente. Preservar `BLOCKED`/`PILOT_BLOCKED`, `0/145`, baselines `83,24/100` e `64,20/100`, sem commit/staging/push/release/score.
+
+### STATUS
+
+READY_FOR_NEXT_STEP / PILOT_BLOCKED
+
+## 2026-08-16T15:09:12-03:00 — DUAL95-U95-110-TYPE-SAFETY-CONTRACTS
+
+### TIMESTAMP
+
+2026-08-16 15:09:12 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — fechamento local U95-110
+
+### SPRINT
+
+F1 — qualidade interna e contratos
+
+### TASK
+
+Remover double assertions evitáveis, tipar transações e usar contratos compartilhados no web.
+
+### ACTION
+
+Foi adicionada uma caracterização RED para a guarda do dashboard e uma governança estática para casts transacionais. A guarda passou a usar `parseParticipantDashboard`/`ParticipantDashboardProjection` de `@cvg/contracts`, o workspace web declarou a dependência e o boundary, e as `22` double assertions de transação foram removidas da persistência, além de uma assertion residual em convites.
+
+### RESULT
+
+Os focais web passaram `7/7`, a suíte unitária de persistência passou `127/127`, arquitetura/governança passou `3/3` e `pnpm verify` passou com `178` arquivos, `808` testes, `16` arquivos guardados, `18` testes guardados, cobertura `84,55%` statements / `80,05%` branches / `86,58%` functions / `85,36%` lines, contratos `81/81`, worker `25/25`, migrações `30/30` e arquitetura `2/2`.
+
+### DECISIONS
+
+Registrar U95-110 como `READY_FOR_NEXT_STEP` local, condicionado à reauditoria/RC. Não declarar todas as superfícies web por papel como canônicas: o dashboard foi saneado nesta fatia e as demais permanecem no trabalho posterior de U95-113. Preservar `BLOCKED`/`PILOT_BLOCKED`, as baselines `83,24/100` e `64,20/100`, `0/145` e a ausência de commit/staging/push/release/score.
+
+### STATUS
+
+READY_FOR_NEXT_STEP / PILOT_BLOCKED
+
+## 2026-08-16T14:50:01-03:00 — DUAL95-U95-108-109-FINAL-VERIFY
+
+### TIMESTAMP
+
+2026-08-16 14:50:01 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — verificação final do worktree atual
+
+### SPRINT
+
+F1 — fechamento local dos achados altos e médios
+
+### TASK
+
+Revisão do diff e verificação final de U95-108/U95-109.
+
+### ACTION
+
+Corrigida a marcação de cleanup do rehearsal quando `docker commit` termina e `inspect` falha; repetidos focais, hotspots, typecheck/lint, dry-runs e `pnpm verify`.
+
+### RESULT
+
+Tudo passou no worktree atual: `177` arquivos, `806` testes, `18` skips, cobertura `84,55%` statements / `80,05%` branches / `86,58%` functions / `85,36%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrações `30/30`, governanças, documentação, hotspots `152/128` e exposição.
+
+### DECISIONS
+
+Manter U95-108 e U95-109 abertas pelos gaps já registrados; manter U95-107 bloqueada por artefato histórico compatível. Preservar score, `0/145`, `PILOT_BLOCKED` e ausência de commit/staging/push/release.
+
+### STATUS
+
+BLOCKED / PILOT_BLOCKED
+
+## 2026-08-16T14:45:38-03:00 — DUAL95-U95-108-109-FULL-VERIFY
+
+### TIMESTAMP
+
+2026-08-16 14:45:38 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — verificação transversal pós-refatoração
+
+### SPRINT
+
+F1 — fechamento local dos achados altos e médios
+
+### TASK
+
+Verificação final de U95-108/U95-109.
+
+### ACTION
+
+Executado `pnpm verify` depois da refatoração de release/proveniência e da atualização do ratchet.
+
+### RESULT
+
+Todos os gates da cadeia passaram: `177` arquivos, `806` testes, `18` skips, cobertura `84,55%` statements / `80,05%` branches / `86,58%` functions / `85,36%` lines, contratos `81/81`, worker `25/25`, migrações `30/30`, decisões críticas `7/7`, typecheck/lint, governanças, arquitetura, documentação, hotspots e exposição. A matriz continua `PASS_WITH_GAPS` com `11/87` linhas completas e o ratchet `152/128` passou.
+
+### DECISIONS
+
+Não promover U95-108/U95-109: provas por linha/N/A aprovado e governança das `22` funções >100 continuam pendentes. Preservar U95-107 bloqueada pelo artefato histórico, `PILOT_BLOCKED`, baselines, score e `0/145`; não houve commit, staging, push ou release.
+
+### STATUS
+
+BLOCKED / PILOT_BLOCKED
+
+## 2026-08-16T14:39:26-03:00 — DUAL95-U95-108-109-RISK-QUALITY
+
+### TIMESTAMP
+
+2026-08-16 14:39:26 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — risco P0/P1 e dívida estrutural local
+
+### SPRINT
+
+F1 — fechamento local dos achados altos e médios
+
+### TASK
+
+U95-108 — matriz de risco; U95-109 — ratchet de funções longas.
+
+### ACTION
+
+Auditada a matriz sem converter destino de teste em prova de risco e sem inventar `N/A`; em paralelo, o rehearsal local, o manifesto e o verificador de proveniência foram decompostos sob TDD e o ratchet foi apertado para `152/128`.
+
+### RESULT
+
+`pnpm verify:test-risk-matrix` reporta `87/87` success, `63/87` error, `26/87` denied, `36/87` conflict e `11/87` linhas completas. O focal de release/proveniência/hotspot passou `24/24`; `pnpm test:coverage` passou `177` arquivos, `806` testes e `18` skips, com `84,55%` statements, `80,05%` branches, `86,58%` functions e `85,36%` lines. `pnpm verify:hotspots`, typecheck, lint, dry-runs e atestação dos quatro containers passaram; a leitura atual é `152` funções longas e maior função de `128` linhas.
+
+### DECISIONS
+
+Manter U95-108 aberta até haver prova por linha ou justificativa `N/A` aprovada. Manter U95-109 em andamento porque `22` funções excedem `100` linhas sem exceção governada por owner/prazo. Preservar `PILOT_BLOCKED`, baselines, `0/145` e o bloqueio de U95-107; não houve commit, staging, push, release ou score.
+
+### STATUS
+
+BLOCKED / PILOT_BLOCKED
+
+## 2026-08-16T14:20:21-03:00 — DUAL95-U95-107-RELEASE-PROVENANCE
+
+### TIMESTAMP
+
+2026-08-16 14:20:21 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — fechamento local dos achados de release
+
+### SPRINT
+
+F1 — proveniência, warm-up e rollback
+
+### TASK
+
+U95-107 — corrigir recuperação transitória do canário, vínculo digest↔SHA e rollback entre versões.
+
+### ACTION
+
+Aplicado TDD nos contratos de manifesto, máquina de estabilidade do canário, verificador de proveniência, deploy, rollback e rehearsal local. Adicionadas asserções para `sourceSha`/`rollbackSourceSha`, digest esperado, label OCI, `CVG_SOURCE_SHA`, três probes consecutivos e rejeição de rollback same-version fora do modo local.
+
+### RESULT
+
+RED produziu `6` falhas; GREEN passou `20/20`. `pnpm test:coverage` passou `177` arquivos, `805` testes e `18` skips, com `84,55%` statements, `80,05%` branches, `86,58%` functions e `85,36%` lines. Manifest verification, deploy/rollback dry-run, rehearsal sintético e verificação de proveniência no runtime atual passaram. O rehearsal sintético reporta `versionedRollback=false`; as duas imagens históricas disponíveis deixaram os workers `unhealthy`, o gate recusou o rollback e o runtime foi restaurado no digest `sha256:231bb5733b51eb8a20fada20eae86af6ff082dd442ec52323b6ec286f76fe4cf` com quatro serviços `running/healthy`.
+
+### DECISIONS
+
+Não reduzir o health gate, não aceitar `worktree-uncommitted` como SHA e não declarar G95-2. A atestação local é vínculo OCI label/env/digest, não assinatura Cosign/Sigstore. Evidência em `docs/124_dual_95_u95_107_release_provenance_evidence_2026-08-16.md`; obter/aprovar artefato histórico imutável compatível com o health contract atual antes de repetir o rollback versionado.
+
+### STATUS
+
+BLOCKED / PILOT_BLOCKED
+
+## 2026-08-16T11:25:39 — DUAL95-DOCUMENT-GATES
+
+### TIMESTAMP
+
+2026-08-16 11:25:39 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — verificação do pacote executivo
+
+### SPRINT
+
+F0 — gate documental
+
+### TASK
+
+Validar assessment, programa, roadmap, backlog, registry, estado, log e rastreabilidade.
+
+### ACTION
+
+Executados `pnpm verify:documentation`, `pnpm verify:traceability`, `pnpm verify:premium-traceability`, `pnpm verify:product-definition`, Prettier focal e `git diff --check`.
+
+### RESULT
+
+Todos os gates passaram. A matriz permanece `PASS_WITH_GAPS`, com `145/145` evidências locais e `0/145` cadeias completas. A recontagem pós-relatório registrou `116` entradas rastreadas/modificadas e `105` não rastreadas, total `221`.
+
+### DECISIONS
+
+Preservar o corte técnico inicial de `212` no assessment e usar `221` como estado corrente para `U95-003`; não promover score, release ou piloto.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-16T11:15:29 — DUAL95-READINESS-AND-EXECUTIVE-RESET
+
+### TIMESTAMP
+
+2026-08-16 11:15:29 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F0 — verdade, triagem e mobilização
+
+### SPRINT
+
+F0 — reavaliação pós-S4-173 e consolidação executiva
+
+### TASK
+
+Avaliar melhorias, reconciliar evidência real e criar assessment, programa, roadmap e backlog para `32/32` itens ≥95.
+
+### ACTION
+
+- revalidada a S4-173 em código, testes e limites de cobertura;
+- executados `pnpm verify`, build dos 12 workspaces, Playwright web e audit de dependências;
+- inspecionados worktree, runtime Docker/Prometheus e fila clínica PostgreSQL;
+- revisadas, separadamente, as rubricas de maturidade `0491` e qualidade `docs/116`;
+- criados `docs/117`, `0307`, `0514` e `0515`; atualizados registry, master BUILD, estado, log, backlog e rastreabilidade.
+
+### RESULT
+
+- S4-173 aceita como melhoria estrutural parcial: `DashboardPage` `217→21`, focal `6/6`, sem regressão crítica;
+- verificação local: `177` arquivos / `790` testes / `16` skips, cobertura `84,81/80,18/87,13/85,65`, build `12/12`, Playwright `26/26` classificado `PASS_LOCAL_WEB`;
+- limitações: cobertura não mede `apps/web/app/**`; API `3101` ausente no Playwright; worktree no corte técnico `212` entradas; `0/145` cadeias;
+- runtime: Prometheus não coleta API A/B, não carregou rules e não tem Alertmanager efetivo; PostgreSQL confirma `796` versões, `763` pendentes e `0` decisões;
+- seis achados altos foram abertos para Prometheus, atomicidade/aprovador clínico, fixture live e worker health de release;
+- baselines permanecem `83,24/100` e `64,20/100`; meta única `32/32 ≥95` no mesmo RC.
+
+### DECISIONS
+
+- a entrada de 10:58 que tratava `AUD-CQ-001–014` como localmente prontos para reauditoria fica corrigida por evidência posterior: existem P1 locais e `U95-101–106` devem fechar antes da preauditoria;
+- `0306/0512/0513` ficam como registros históricos absorvidos; `ENT95-*`, `AUD-CQ-*` e `BLK-*` continuam aliases, sem status concorrente;
+- nenhuma nota, cadeia, release, piloto ou publicação clínica foi promovida;
+- próxima ação: `U95-003`, depois `U95-101–106` com TDD e revisão de segurança.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-16T10:58:12 — CODE-QUALITY-REVALIDATION-95-EXEC-ROADMAP
+
+### TIMESTAMP
+
+2026-08-16 10:58:12 -03:00
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+Build / remediação de qualidade / objetivo 95 nos 16 itens
+
+### SPRINT
+
+S4-173 e preparação para W0 (qualidade+proveniência)
+
+### TASK
+
+S4-173 formalizada no `0306`/`0512`/`0513` e replanejamento de remediação da nota `64,20/100` para 95/100 por item.
+
+### ACTION
+
+- encerramento local de `S4-173` já registrado como evidência técnica (`DashboardPage` com estado/modelo/apresentação e `RED/GREEN/6`),
+- atualização do ciclo atual: `AUD-CQ-001` a `AUD-CQ-014` em execução de bloqueio técnico local e `AUD-CQ-015` como bloqueio externo/humano,
+- definição de plano de execução em ondas:
+  1. cadeia de confiança (SHA/approver/session/e2e),
+  2. operação local segura (alertas/canário/OTLP/ready),
+  3. qualidade de decisão + UX,
+  4. gates externos + reauditoria independente.
+
+### RESULT
+
+Status geral permanece `WAITING_HUMAN_APPROVAL` e `PILOT_BLOCKED`. `0/145` cadeias completas seguem impeditivas; não houve alteração de score oficial.
+
+### DECISIONS
+
+- manter `docs/99_runtime_state.md`, `docs/30_backlog_master.md`, `BRIEFING/03.BUILD/0306_code_quality_95_executive_plan.md`, `BRIEFING/04.AUDIT/0512_code_quality_95_roadmap.md` e `BRIEFING/04.AUDIT/0513_code_quality_95_backlog.md` consistentes,
+- não promover nota, release ou piloto sem SHA/artefato/release único e reauditoria independente.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## 2026-08-09 — SPEC COMPLETA E HANDOFF PARA BUILD DOCUMENTAL
 
 ### TIMESTAMP
@@ -7395,3 +8735,847 @@ WAITING_HUMAN_APPROVAL
 ### NEXT
 
 Autorizar bundle/push e executar o workflow no mesmo RC antes da reauditoria.
+
+## 2026-08-16T00:57:25-03:00 — CODE-QUALITY-AUDIT-146
+
+### ENGINE
+
+AUDIT ENGINE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT / TASK
+
+BUILD — SUB80→95 / auditoria independente de documentação e qualidade do código
+
+### ACTION
+
+Lidos os 19 arquivos de `docs/`, os gates e documentos canônicos de Discovery/PRD/SPEC/BUILD/AUDIT, o manifesto e as matrizes de governança. Foram executadas trilhas independentes de arquitetura, segurança, testes/runtime, operações, frontend e rastreabilidade, seguidas de checks locais reproduzíveis. Nenhuma mutação de runtime, banco ou serviço remoto foi realizada.
+
+### RESULT
+
+- nota ponderada independente `64,20/100`;
+- recorte de documentação, aderência e qualidade interna `70,62/100`;
+- recorte de runtime, operação, release e proveniência `43,88/100`;
+- nenhum P0; P1 locais em proveniência, aprovador clínico, revogação de privilégios, request lifecycle, E2E, readiness, alertas, canário, credenciais/OTLP, web e completude de decisões críticas;
+- o SHA `8859c6c1ae1f11ff9a0ae55f79027469aaf21ee6` declarado pelo runtime não existe no Git; o commit real de prefixo `8859c6c` é `8859c6c5cc2409441689ed1cdd00c0a15e77e05a`, e o gate atual não verifica existência do objeto;
+- `pnpm verify` passou 163 arquivos/720 testes/18 skips com cobertura agregada acima de 80%; build, lint, tipos, testes focais, arquitetura e dependency audit passaram; `pnpm test:e2e` canônico falhou antes do Playwright por ausência de `CVG_API_INTERNAL_URL`;
+- artefato: `docs/116_code_quality_audit_2026-08-16.md`.
+
+### DECISIONS
+
+A baseline histórica `83,24/100` não foi alterada; a nota desta rodada mede qualidade/evidência atual em outra rubrica. O runtime local permanece utilizável para desenvolvimento, mas segurança, operação e release estão `FAIL` enquanto os P1 estiverem abertos. `PILOT_BLOCKED` permanece.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL para dependências humanas/externas; AUD-CQ-001–AUD-CQ-015 READY_FOR_NEXT_STEP para remediação local.
+
+### NEXT
+
+Executar AUD-CQ-001–AUD-CQ-010 em TDD, reconstruir um RC atribuível ao SHA Git real, reexecutar `pnpm verify`, build, E2E canônico, segurança, runtime e proveniência, e só depois executar gates externos autorizados e nova auditoria independente.
+
+## 2026-08-16T01:45:00-03:00 — CODE-QUALITY-REMEDIATION-S1-148
+
+### ENGINE / PHASE / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S1 / AUD-CQ-001–AUD-CQ-008
+
+### RESULT
+
+- RED/GREEN focais passaram para proveniência Git, aprovador clínico fail-closed, revogação de sessões, request lifecycle e E2E;
+- readiness substituiu liveness no Caddy, Dockerfile e Compose; worker ganhou health/metrics HTTP autenticado; Prometheus passou a carregar `prometheus-alerts.yml`, coletar `worker-a/b` e encaminhar para Alertmanager local;
+- release canary passou a sondar `api-a` diretamente por `docker compose exec`, com janela sustentada; OTLP foi limitado a loopback; API/worker foram endurecidos com usuário non-root/read-only/tmpfs/capabilities mínimas; credenciais locais ficaram `0600`;
+- `pnpm test:e2e` com `CVG_E2E_WEB_PORT=3110` passou `25/25`; `promtool`, `amtool` e `docker compose config -q` passaram; nenhum processo local pré-existente foi interrompido.
+
+### LIMITES / DECISÃO
+
+Esta é evidência local de implementação e verificação, não prova de Alertmanager externo, canário produtivo, soak, DR, CI remoto ou release. Baseline `64,20/100` e `PILOT_BLOCKED` permanecem.
+
+### NEXT
+
+Executar auditoria de runtime do lote S1 em ambiente descartável autorizado; depois implementar e verificar `AUD-CQ-009`–`AUD-CQ-010`.
+
+## 2026-08-16T03:14:46-03:00 — CODE-QUALITY-REMEDIATION-S2-149
+
+### ENGINE / PHASE / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S2 / AUD-CQ-009–AUD-CQ-014
+
+### ACTION
+
+Decomposição TDD de API, currículo, persistência e frontend; correção documental de supersessão; reconciliação de rastreabilidade e execução de cobertura integral local.
+
+### RESULT
+
+- páginas participante/admin ficaram em `780`/`435` linhas; o inventário de hotspots não possui arquivo de produção acima de `800` linhas;
+- API, currículo, schema e repositório foram separados em módulos focados sem alterar a superfície pública; typecheck/lint focais passaram;
+- `pnpm test:coverage`: `166` arquivos passaram, `16` foram pulados, `742` testes passaram, `18` skips; cobertura `84,30%` statements / `80,82%` branches / `85,26%` functions / `85,15%` lines;
+- `pnpm verify:critical-decisions` passou `7/7` decisões a `100%`; `pnpm verify:hotspots` e o teste de política passaram; `CODE-QUALITY-REMEDIATION-S2-149` foi adicionado ao `traceability.yml` sem SHA fictício.
+
+### LIMITES / DECISÃO
+
+O trabalho é evidência local no worktree não comitado. E2E canônico após a decomposição, build e verificação global ainda estão pendentes; gates externos/humanos de CI, registry/deploy, IdP/MFA, DNS/TLS, backup/DR, UAT/WCAG manual, soak, revisão clínica e reauditoria continuam não executados. Baseline `64,20/100`, `0/145` cadeias completas e `PILOT_BLOCKED` permanecem.
+
+### STATUS / NEXT
+
+`IN_PROGRESS`; executar a verificação global e revalidar runtime/RC antes de alterar qualquer score ou declarar fechamento.
+
+## 2026-08-16T03:39:55-03:00 — CODE-QUALITY-REVALIDATION-S3-150
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S3 / AUD-CQ-001–AUD-CQ-015
+
+### ACTION
+
+Revalidação local após a decomposição de API, currículo, persistência e frontend; correção do contrato de teste com `exactOptionalPropertyTypes`, estabilização do Chromium headless para o harness E2E, restauração dos estados acessíveis de erro no login e scan de segredos em fixtures.
+
+### RESULT
+
+- build completo com `CVG_API_INTERNAL_URL` sintético passou nos 12 workspaces;
+- `CVG_E2E_WEB_PORT=3120 pnpm test:e2e`: `26/26` E2E aprovados; focais de erro/login `2/2` aprovados;
+- `CLINICAL_APPROVER_ID=local-verification-approver TRUSTED_PROXY_CIDRS=127.0.0.1/32 pnpm verify`: exit `0`; cobertura `84,30%` statements / `80,82%` branches / `85,26%` functions / `85,15%` lines; `742` testes aprovados, `18` skips governados; decisões críticas `7/7` a `100%`; contratos `81/81`; worker `25/25`; migrations `29/29`; secrets, documentação, produto, arquitetura, hotspots e fronteira pública passaram;
+- verificação de rastreabilidade continua estruturalmente válida, mas explicitamente incompleta (`0/145` complete chains, `145` gaps); governanças externas/manuais continuam `PASS_WITH_GAPS` e release `PILOT_BLOCKED`.
+
+### DECISIONS
+
+O score histórico `64,20/100` não foi alterado e não foi criada nota substituta sem auditor independente. Valores de ambiente usados na verificação são sintéticos locais, não segredos. O worktree permanece não comitado; nenhum runtime externo, CI, registry, deploy, banco ou serviço de terceiro foi mutado.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL`; registrar a evidência S3 no manifesto, manter AUD-CQ-001–014 como `READY_FOR_NEXT_STEP` para auditoria/runtime audit, e aguardar autorização/provisionamento para AUD-CQ-015 e a reauditoria independente dos 16 itens no mesmo RC.
+
+## 2026-08-16T03:44:34-03:00 — CODE-QUALITY-REVALIDATION-S3-CLOSE-151
+
+### RESULT
+
+Após a atualização documental, `git diff --check`, `pnpm verify:documentation` e `pnpm verify:traceability` passaram. O backlog, o estado, o log e o manifesto permanecem consistentes; `0/145` cadeias completas e `PILOT_BLOCKED` seguem explícitos.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL`; não promover score, release ou fechamento de AUD-CQ-015 sem autorização/provisionamento externo e reauditoria independente dos 16 itens.
+
+## 2026-08-16T05:18:37-03:00 — CODE-QUALITY-REVALIDATION-S4-152
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-009–AUD-CQ-014
+
+### ACTION
+
+Extrações TDD adicionais de Account, Authoring, Participant/Admin e dos agregados do repositório de learning state, seguidas de build, E2E canônico, verificação integral e reconciliação documental.
+
+### RESULT
+
+- o teste de composição do `learning-state-repository` foi RED antes da implementação e GREEN depois com `9/9` testes focais; os módulos extraídos preservaram os contratos públicos;
+- build passou nos `12` workspaces e `CVG_E2E_WEB_PORT=3120 pnpm test:e2e` passou `26/26`;
+- `CLINICAL_APPROVER_ID=local-verification-approver TRUSTED_PROXY_CIDRS=127.0.0.1/32 pnpm verify` passou com `168` arquivos de teste, `750` testes aprovados, `18` skips governados, cobertura `84,59%` statements / `80,60%` branches / `86,00%` functions / `85,38%` lines; decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29`, secrets, documentação, produto e exposição passaram;
+- hotspots: `0` arquivos acima de `800` linhas, `175` funções longas e maior função com `346` linhas; `git diff --check`, `verify:documentation` e `verify:traceability` passaram;
+- nenhuma mutação externa, publicação, alteração de banco real, commit ou SHA de release foi realizada/alegada.
+
+### DECISIONS
+
+O score histórico `64,20/100` não foi alterado. A evidência HA/proveniência anterior à última extração não é atribuída ao worktree final sem repetição no mesmo RC. `0/145` cadeias completas, dependências humanas/externas e `PILOT_BLOCKED` permanecem explícitos.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL`; repetir runtime/proveniência no RC final e, após autorização, executar CI/registry/deploy/rollback reais, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/soak/beta e reauditoria independente dos 16 itens. AUD-CQ-001–014 continuam com implementação/evidência local e prontas para a próxima auditoria; AUD-CQ-015 permanece aguardando aprovação e ambiente.
+
+## 2026-08-16T05:29:57-03:00 — ACTIVE-HA-REVALIDATION-S4-153
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-005–AUD-CQ-008
+
+### ACTION
+
+Reconstrução de uma imagem descartável do worktree final, recriação dos quatro serviços HA de aplicação e execução do fluxo E2E ativo pelo web proxy apontando para o edge interno.
+
+### RESULT
+
+- a imagem `cvg-trainee-vet:worktree-s4` foi construída com `SOURCE_SHA=worktree-uncommitted`; `api-a`, `api-b`, `worker-a` e `worker-b` foram recriados sem alterar os serviços de dados/observabilidade;
+- live/ready/dependencies retornaram `200/200/200`;
+- `pnpm test:e2e:active-ha` passou `3/3`: browser via API real, atividade participante persistida e lifecycle administrativo persistido; fixture removido com teardown limpo;
+- web server e build temporários foram encerrados/removidos do workspace; não houve publicação, escrita externa ou dado clínico real.
+
+### DECISIONS
+
+O resultado fecha somente a evidência funcional local no worktree. `worktree-uncommitted` não é SHA Git e não fecha proveniência, release, rollback ou cadeia de rastreabilidade.
+
+### STATUS / NEXT
+
+`WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; gerar RC com commit SHA existente, executar `ops:verify-runtime-provenance` e os gates externos/humanos, e então reauditar os 16 itens. A baseline `64,20/100` e `0/145` cadeias completas permanecem inalteradas.
+
+## 2026-08-16T06:36:55-03:00 — CODE-QUALITY-REVALIDATION-S4-154
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-009–AUD-CQ-014
+
+### ACTION
+
+Extrações TDD de composição do runtime/API e decomposição de `advanceContent`, seguidas de rebuild, verificação integral, E2E canônico e diagnóstico controlado do 403 no HA ativo.
+
+### RESULT
+
+- `api-runtime-resources` e `api-http-dependencies` retiraram a composição de recursos/dependências de `createApiRuntime`; `advanceContent` foi separado em funções de validação, carregamento, persistência e publicação; testes focais RED/GREEN passaram;
+- `CVG_API_INTERNAL_URL=http://127.0.0.1:3101 pnpm build` passou nos `12` workspaces; a imagem final local `cvg-trainee-vet:worktree-s8` foi construída sem diagnósticos temporários;
+- `CLINICAL_APPROVER_ID=local-verification-approver TRUSTED_PROXY_CIDRS=127.0.0.1/32 pnpm verify` passou com `170` arquivos, `754` testes aprovados, `18` skips governados e cobertura `84,68%`/`80,63%`/`86,35%`/`85,50%`; decisões `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets passaram;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `176` funções longas e maior função de `222` linhas; `CVG_E2E_WEB_PORT=3123 pnpm exec playwright test` passou `26/26` após repetição da execução flakey;
+- o 403 foi atribuído ao guard CSRF anterior ao handler, causado por `WEB_ORIGINS` incompatível com a porta web temporária; a configuração final foi reconciliada e os diagnósticos foram removidos.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. A evidência é do worktree não comitado, não cria SHA/release nem fecha `0/145` cadeias. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; continuar com RC de SHA real, gates externos e reauditoria independente.
+
+## 2026-08-16T06:36:55-03:00 — ACTIVE-HA-REVALIDATION-S4-155
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-005–AUD-CQ-008
+
+### ACTION
+
+Rebuild da imagem s8, recriação dos quatro serviços HA, web descartável com proxy API loopback e execução do runner E2E ativo.
+
+### RESULT
+
+- `api-a`, `api-b`, `worker-a` e `worker-b` ficaram saudáveis na imagem `cvg-trainee-vet:worktree-s8`; live/ready/dependencies retornaram `200/200/200`;
+- `BASE_URL=http://127.0.0.1:3121 ... pnpm test:e2e:active-ha` passou `3/3`, incluindo browser via proxy real, atividade participante persistida e lifecycle administrativo persistido;
+- fixture sintético removido com teardown limpo; web/build temporários encerrados/removidos; runtime local reconciliado para `WEB_ORIGINS` em `:3100`;
+- não houve commit, push, release, alteração de serviço externo ou uso de dado clínico real.
+
+### DECISIONS / STATUS / NEXT
+
+`worktree-uncommitted` é marcador local e não SHA Git. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; gerar RC com SHA existente e executar proveniência, release, gates externos e reauditoria dos 16 itens antes de qualquer promoção.
+
+## 2026-08-16T07:23:44-03:00 — CODE-QUALITY-REVALIDATION-S4-156
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-009–AUD-CQ-014
+
+### ACTION
+
+Extrações TDD de Qdrant, content repository, avaliação curricular, template de rotas, frontend de moderador/login e repositórios de answer, assessment recalculation, attempt, correction e authoring; isolamento dos dados sintéticos do caso digital; build, verificação integral e E2E canônico.
+
+### RESULT
+
+- os testes focais de composição passaram após RED/GREEN e os contratos públicos foram preservados; o build encontrou e corrigiu o import local do dashboard de moderador que o Turbopack não resolvia com sufixo `.js`;
+- `CVG_API_INTERNAL_URL=http://127.0.0.1:3101 pnpm build` passou nos `12` workspaces;
+- `CLINICAL_APPROVER_ID=local-verification-approver TRUSTED_PROXY_CIDRS=127.0.0.1/32 pnpm verify` passou com `171` arquivos, `763` testes aprovados, `18` skips governados, cobertura `84,63%` statements / `80,00%` branches / `86,68%` functions / `85,46%` lines; decisões `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29`, secrets, documentação, produto e exposição passaram;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `170` funções longas e maior função de `179` linhas (`scripts/materialize-curriculum.mjs:main`); `CVG_E2E_WEB_PORT=3124 pnpm exec playwright test` passou `26/26` em `17,5s`;
+- o E2E canônico não subiu API em `3101` e emitiu avisos de proxy recusado; isso não é tratado como evidência HA. Não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `763` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito.
+
+## 2026-08-16T07:37:04-03:00 — CODE-QUALITY-REVALIDATION-S4-157
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-006, AUD-CQ-011–AUD-CQ-014
+
+### ACTION
+
+Extração TDD do núcleo de métricas para `packages/observability/src/metrics.ts`, cobertura do branch global que havia levado o gate a `79,99%`, seguida de verificação integral, build e E2E canônico.
+
+### RESULT
+
+- `createMetricsPort` passou a compor store imutável, counters, histogramas, quantis e exportação Prometheus por dependências explícitas; `packages/observability/src/observability.ts` reduziu a `599` linhas;
+- o teste de composição falhou antes da implementação e passou depois; `pnpm verify` passou com `171` arquivos, `764` testes aprovados, `18` skips governados, cobertura `84,65%` statements / `80,01%` branches / `86,76%` functions / `85,47%` lines; decisões `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29`, secrets, documentação, produto e exposição passaram;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `169` funções longas e maior função de `179` linhas; `CVG_API_INTERNAL_URL=http://127.0.0.1:3101 pnpm build` passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3125 pnpm exec playwright test` passou `26/26` em `18,7s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito.
+
+## 2026-08-16T11:38:28-03:00 — DUAL95-U95-003-WORKTREE-INVENTORY
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — DUAL 95 / F0 / U95-003.
+
+### ACTION
+
+Foi executada a revisão integral do worktree corrente, sem reset, checkout, staging ou commit. O artefato `docs/118_dual_95_worktree_inventory_2026-08-16.md` lista as `221` entradas (`116` modificadas rastreadas + `105` não rastreadas) e classifica cada uma por origem, área, risco, segredo/dado, intenção, ownership e lote reversível.
+
+### RESULT
+
+- `pnpm verify:secrets` retornou `secret scan: clean`;
+- `git diff --check` passou;
+- todas as entradas são texto/código/configuração; não foi identificado segredo material, dado clínico real, foto, PDF ou alteração externa;
+- `U95-003` atende ao critério local de saída, mas os lotes R0 e `D95-H01–H06` permanecem abertos.
+
+### DECISIONS / STATUS / NEXT
+
+As baselines `83,24/100` e `64,20/100`, `0/145` cadeias, `PILOT_BLOCKED` e a fila de `763` revisões clínicas permanecem inalterados. O próximo passo autorizado é `U95-101–106` em TDD, com revisão de segurança e fault injection; nenhuma nota, publicação, release ou cadeia de proveniência foi promovida.
+
+`READY_FOR_NEXT_STEP` / `PILOT_BLOCKED`.
+
+## 2026-08-16T11:49:35-03:00 — DUAL95-U95-101-PROMETHEUS-RENDERER
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD / DUAL 95 / F1 / U95-101 — D95-H01.
+
+### ACTION
+
+Sob TDD, o teste com duas séries/labels da mesma família foi escrito e falhou; o renderer foi ajustado para agrupar HELP/TYPE, ordenar a saída sem mutar snapshots, normalizar counters para `_total` e histogramas para `seconds`/tipo `histogram`. Dashboards, rules e catálogo de observabilidade foram alinhados.
+
+### RESULT
+
+- RED/GREEN: observability `13/13`, worker `1/1`, API `71/71`;
+- `pnpm verify:observability-governance` passou com `PASS_WITH_EXTERNAL_OPERATIONAL_GAPS`;
+- `promtool check metrics` passou em payload multi-série com counter e histogram;
+- typecheck, Prettier e diff-check passaram; não houve commit, SHA, release ou alteração de score.
+
+### DECISIONS / STATUS / NEXT
+
+D95-H01 está tratado localmente, mas só será revalidado no RC; runtime Prometheus, token/scrape, rules, Alertmanager e fire→ack→resolve pertencem ao U95-102. `READY_FOR_NEXT_STEP` / `PILOT_BLOCKED`.
+
+## 2026-08-16T13:40:08-03:00 — DUAL95-U95-106-WORKER-HEALTH-GATE
+
+### TIMESTAMP
+
+2026-08-16 13:40:08 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F1 — fechamento local dos achados altos
+
+### SPRINT
+
+F1 — release, resiliência e operação
+
+### TASK
+
+U95-106 — D95-H06: bloquear deploy/rollback sem API A/B e worker A/B saudáveis.
+
+### ACTION
+
+Sob TDD, foi criado o contrato compartilhado de health do release em
+`scripts/release-execution.mjs`. O deploy passou a fazer gate do canário
+`api-a`/`worker-a`, gate das quatro réplicas antes do edge e health final; o
+rollback passou a fazer gate das quatro réplicas antes do health final. O
+contrato cobre `unhealthy`, `exited`, ausência e cada um dos quatro processos.
+
+### RESULT
+
+Os testes focais passaram `9/9`; `ops:verify-ha`, dry-runs de deploy/rollback e
+`pnpm verify` passaram. O rehearsal local com imagem sintética rotulada pelo
+SHA `1579442fa3dcf9a32bf5e7e1ce73977f2d8a60cd` passou `deploy=PASS`,
+`rollback=PASS` e `runtimeRestored=true`. Ao parar `worker-a`, a leitura real
+do Compose falhou fechado; após recriação, as quatro réplicas ficaram
+`running/healthy`.
+
+### DECISIONS
+
+D95-H06/U95-106 está concluído localmente, condicionado a RC imutável,
+CI/registry, ambiente aprovado e execução remota. Não houve commit, staging,
+push, release produtivo, score ou publicação clínica; `0/145`,
+`PILOT_BLOCKED` e os gates externos/humanos permanecem. Próximo task
+autorizado: U95-107.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-16T13:21:48-03:00 — DUAL95-U95-105-POSTGRES-AUTHORING-FIXTURE
+
+### TIMESTAMP
+
+2026-08-16 13:21:48 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F1 — fechamento local dos achados altos
+
+### SPRINT
+
+F1 — atomicidade, autorização e resiliência de autoria
+
+### TASK
+
+U95-105 — D95-H05: corrigir fixture PostgreSQL autoral e adicionar caso negativo do reviewer divergente.
+
+### ACTION
+
+O fixture live passou a explicitar autor, aprovador clínico e participante sintéticos, incluir `approvedClinicalApproverId` designado e separar a conexão administrativa de setup/teardown da conexão da aplicação usada no workflow. Foi adicionado caso negativo com aprovador divergente antes da transição.
+
+### RESULT
+
+A suíte live passou `1/1` sem skip: a divergência retornou `forbidden` e preservou `PROJECAO_VERIFICADA`; o caminho correto de review/publicação, fault injection, replay e teardown passou. Os focais HTTP/aplicação passaram `74/74`; `pnpm verify` permanece verde com `799` testes e `80,05%` de branches. Evidência: `docs/122_dual_95_u95_105_postgres_authoring_fixture_evidence_2026-08-16.md`.
+
+### DECISIONS
+
+D95-H05/U95-105 está concluído localmente, condicionado a RC imutável, ambiente aprovado e execução remota. Não houve commit, SHA de release, score ou publicação; D95-H06, `0/145` e os gates externos/humanos permanecem abertos. Próximo task autorizado: U95-106.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-16T13:13:20-03:00 — DUAL95-U95-104-CURRENT-CLINICAL-APPROVER
+
+### TIMESTAMP
+
+2026-08-16 13:13:20 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F1 — fechamento local dos achados altos
+
+### SPRINT
+
+F1 — atomicidade, autorização e resiliência de autoria
+
+### TASK
+
+U95-104 — D95-H04: vincular publicação ao `CLINICAL_APPROVER_ID` corrente e à decisão clínica persistida.
+
+### ACTION
+
+O comando de publicação passou a exigir `approvedClinicalApproverId`; a fronteira HTTP recusa configuração ausente/vazia e o use case compara o aprovador corrente ao `reviewerId` da última decisão clínica persistida antes de executar transições. O ID foi incluído no fingerprint de idempotência. Testes negativos e positivos foram adicionados sob TDD.
+
+### RESULT
+
+O teste live PostgreSQL passou `1/1`: ausência HTTP retornou `403`, ID vazio falhou por validação, divergência/rotação falhou com `state_conflict` sem boundary de publicação, e o caminho correto publicou e reexecutou por replay. Os focais passaram `74/74`; `pnpm verify` passou com `177` arquivos, `799` testes, `18` skips governados e `80,05%` de branches. Evidência: `docs/121_dual_95_u95_104_current_clinical_approver_evidence_2026-08-16.md`.
+
+### DECISIONS
+
+D95-H04/U95-104 está concluído localmente, condicionado a RC imutável, rotação operacional de identidade e ambiente aprovado. Não houve commit, SHA de release, score ou publicação; D95-H05–H06, `0/145` e os gates externos/humanos permanecem abertos. Próximo task autorizado: U95-105.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-16T12:55:43-03:00 — DUAL95-U95-103-AUTHORING-ATOMICITY
+
+### TIMESTAMP
+
+2026-08-16 12:55:43 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 95 / F1 — fechamento local dos achados altos
+
+### SPRINT
+
+F1 — atomicidade, autorização e resiliência de autoria
+
+### TASK
+
+U95-103 — D95-H03: tornar review + decisão e authorize + publish atômicos e idempotentes.
+
+### ACTION
+
+Implementada a porta transacional de autoria no API runtime, com operação de conteúdo no mesmo executor PostgreSQL, tabela de idempotência e migração `0029`. Foram adicionados testes unitários e integração live com fault injection após a segunda transição em review e publicação.
+
+### RESULT
+
+O teste live passou `1/1`: cada falha retornou ao estado anterior sem decisão, outbox ou publicação parcial; o retry com a mesma chave retornou resposta igual sem duplicidade. API A/B e worker A/B foram recriados a partir da imagem local atual e ficaram `healthy`; `pnpm ops:verify-ha` passou. `pnpm verify` passou com `177` arquivos, `797` testes, `18` skips governados e `80,02%` de branches. Evidência: `docs/120_dual_95_u95_103_authoring_atomicity_evidence_2026-08-16.md`.
+
+### DECISIONS
+
+D95-H03/U95-103 está concluído localmente, condicionado a RC imutável, teste de concorrência distribuída e ambiente aprovado. Não houve commit, SHA de release, score ou publicação; D95-H04–H06, `0/145` e os gates externos/humanos permanecem abertos. Próximo task autorizado: U95-104.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-16T12:10:55-03:00 — DUAL95-U95-102-OBSERVABILITY-RUNTIME
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD / DUAL 95 / F1 / U95-102 — D95-H02.
+
+### ACTION / RESULT
+
+Sob TDD, o contrato operacional falhou `1/6` antes da implementação porque faltavam helper de segredo, readiness gates e dependência por saúde. O Compose agora prepara o token em volume derivado `0440` para Prometheus `65534:65534`, sem rede e com capacidades mínimas; Prometheus/Alertmanager têm healthchecks e o Prometheus aguarda API/worker A/B saudáveis. Após build/recriação da imagem local, os cinco targets (`api-a`, `api-b`, `worker-a`, `worker-b`, `otel-collector`) ficaram `up` sem erro, 7 rules ficaram `health=ok`, o bearer negativo retornou `401`, `promtool`/`amtool` passaram e o alerta sintético percorreu `active` → `suppressed` → resolvido. Evidência: `docs/119_dual_95_u95_102_observability_evidence_2026-08-16.md`.
+
+### DECISIONS / STATUS / NEXT
+
+D95-H02 e U95-102 estão concluídos localmente, condicionados à revalidação em RC imutável/ambiente aprovado. O receiver não envia notificações externas; não houve commit, SHA, release, score ou publicação. `READY_FOR_NEXT_STEP` / `PILOT_BLOCKED`; próximo `U95-103`, mantendo D95-H03–H06 e `0/145` abertos.
+
+## 2026-08-16T11:41:25-03:00 — DUAL95-U95-003-DOCUMENT-REVALIDATION
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — DUAL 95 / F0 / U95-003.
+
+### ACTION / RESULT
+
+Após a materialização do inventário, o gate documental detectou corretamente que o registry canônico não aceita caminhos ainda não rastreados. A referência foi removida sem alterar o conteúdo do inventário; `verify:documentation`, `verify:traceability`, `verify:premium-traceability`, JSON do registry e `git diff --check` passaram. O relatório continua ligado por `DUAL95-U95-003-WORKTREE-INVENTORY-146`.
+
+### DECISIONS / STATUS / NEXT
+
+O inventário permanece não staged e não commitado; `0/145`, `PILOT_BLOCKED`, as duas baselines e os seis `D95-H01–H06` permanecem. Próximo passo: `U95-101–106` em TDD/security review/fault injection.
+
+`READY_FOR_NEXT_STEP` / `PILOT_BLOCKED`.
+
+## 2026-08-16T10:39:29-03:00 — CODE-QUALITY-REVALIDATION-S4-173
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`apps/web/app/dashboard/page.tsx::DashboardPage` foi reduzido sob TDD de `217` para `21` linhas. O contrato bounded/loader foi movido para `dashboard-model.ts`, o hook de estado para `dashboard-state.ts`, a apresentação para `dashboard-view.tsx` e a seleção de estado para `DashboardPageContent`, mantendo o shell, retry, limites de exposição e acessibilidade.
+
+### RESULT
+
+- o teste RED falhou `3/3` antes da composição existir; GREEN passou `3/3`, e a caracterização focal passou `6/6` cobrindo loading, erro prioritário, conteúdo completo, landmarks e `24` itens da roadmap;
+- `pnpm verify` passou fora da restrição de listeners do sandbox com `177` arquivos, `790` testes, `16` skips e cobertura `84,81%` statements / `80,18%` branches / `87,13%` functions / `85,65%` lines; decisões `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29`, governanças, documentação, secrets, produto, exposição e hotspots passaram;
+- build passou nos `12` workspaces e `CVG_E2E_WEB_PORT=3142 pnpm exec playwright test` passou `26/26` em `21,2s`; a API não estava ativa em `3101`, portanto os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. A próxima ação é preparar a reauditoria independente dos 16 itens no mesmo RC após aprovação/provisionamento; continuam pendentes SHA Git real/RC, runtime HA, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e `0/145` cadeias completas.
+
+## 2026-08-16T07:50:30-03:00 — CODE-QUALITY-REVALIDATION-S4-158
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-010, AUD-CQ-012, ENT95-14-A
+
+### ACTION
+
+O `test-risk-matrix.json` recebeu `proofReferencePaths.error` com destinos curados de testes negativos. O verificador agora só contabiliza erro quando a referência está presente na matriz canônica e falha quando uma referência de erro não está ligada. O teste de governança foi RED antes da implementação e GREEN `3/3` depois.
+
+### RESULT
+
+- `pnpm verify` passou com `171` arquivos, `765` testes aprovados, `18` skips governados, cobertura `84,65%` statements / `80,01%` branches / `86,76%` functions / `85,47%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:test-risk-matrix` reportou `87` requisitos, `63/87` error, `26/87` denied, `36/87` conflict e `11/87` linhas completas, mantendo `PASS_WITH_GAPS` / `PILOT_BLOCKED`;
+- build passou nos `12` workspaces e E2E canônico passou `26/26` em `16,0s`; como a API não estava ativa em `3101`, os avisos de proxy recusado não constituem evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; as `24` linhas sem error proof, gaps de denied/conflict, SHA Git real/artefato, CI/registry/deploy/rollback, identidade, TLS, backup/DR, UAT/WCAG/RUM/soak, revisão clínica, beta e reauditoria independente permanecem pendentes. AUD-CQ-001–014 seguem prontos para runtime audit/reauditoria, AUD-CQ-015 aguarda aprovação e ambiente; `0/145` cadeias completas permanece explícito.
+
+## 2026-08-16T10:11:24-03:00 — CODE-QUALITY-REVALIDATION-S4-172
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-006, AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`validateCapacityGovernanceSnapshot` foi decomposto sob TDD. O entrypoint passou a compor validadores de metadados, smoke, exploração/failover/soak e gaps em `scripts/verify-capacity-governance-support.mjs`, preservando loader, relatório, CLI e os gaps operacionais explícitos.
+
+### RESULT
+
+- o RED confirmou a ausência inicial do suporte e GREEN passou `4/4`, preservando as métricas 200/200, as cargas escalonadas, o failover, o estado de soak e os quatro gaps;
+- `pnpm verify` passou com `175` arquivos, `784` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,13%` functions / `85,65%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:capacity-governance` reportou smoke `200/200`, `3` cargas escalonadas, failover `100%`, soak `NOT_EXECUTED` e `4` gaps; `verify:hotspots` passou com `0` hotspots acima de `800` linhas, `153` funções longas e maior função de `130` linhas (`apps/web/app/dashboard/page.tsx::DashboardPage`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3141 pnpm exec playwright test` passou `26/26` em `16,6s` após o build; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `apps/web/app/dashboard/page.tsx::DashboardPage` sob TDD.
+
+## 2026-08-16T10:04:15-03:00 — CODE-QUALITY-REVALIDATION-S4-171
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`createInvitationUseCaseDependencies` foi decomposto sob TDD. `packages/persistence/src/invitation-repository.ts` passou a compor `createInvitationOperations`, enquanto `packages/persistence/src/invitation-repository-support.ts` concentra mapeamento, port de conta, port de convite e a composição dos ports compartilhados de sessão/auditoria.
+
+### RESULT
+
+- o RED confirmou a ausência inicial do suporte e GREEN passou `4/4` no conjunto focal, preservando os métodos de conta/convite, os mapeamentos, as queries e os conflitos transacionais;
+- `pnpm verify` passou com `175` arquivos, `783` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,13%` functions / `85,65%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima de `800` linhas, `154` funções longas e maior função de `131` linhas (`scripts/verify-capacity-governance.mjs::validateCapacityGovernanceSnapshot`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3140 pnpm exec playwright test` passou `26/26` em `15,9s` após o build; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `scripts/verify-capacity-governance.mjs::validateCapacityGovernanceSnapshot` sob TDD.
+
+## 2026-08-16T09:53:20-03:00 — CODE-QUALITY-REVALIDATION-S4-170
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`validateJourneyCorrectionGovernance` foi decomposto sob TDD. O entrypoint passou a compor validadores separados de metadados, invariantes, evidências e gaps em `scripts/journey-correction-governance-support.mjs`, preservando o loader, o relatório, a CLI, os diagnósticos e os estados `PASS_WITH_GAPS` / `PILOT_BLOCKED`.
+
+### RESULT
+
+- o RED confirmou a ausência inicial do suporte e GREEN passou `3/3`, preservando os identificadores obrigatórios, as invariantes, as referências de evidência e os gaps explícitos;
+- `pnpm verify` passou com `174` arquivos, `782` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,12%` functions / `85,64%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:journey-correction-governance` passou com `4` tasks, `4` invariantes, `4` evidências e `5` gaps; `verify:hotspots` passou com `0` hotspots acima de `800` linhas, `154` funções longas e maior função de `135` linhas (`packages/persistence/src/invitation-repository.ts::createInvitationUseCaseDependencies`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3139 pnpm exec playwright test` passou `26/26` em `16,0s` após o build; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `packages/persistence/src/invitation-repository.ts::createInvitationUseCaseDependencies` sob TDD.
+
+## 2026-08-16T09:44:23-03:00 — CODE-QUALITY-REVALIDATION-S4-169
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-009, AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`apps/web/app/invite/page.tsx::InvitePage` foi decomposto sob TDD. A página passou a compor `useInviteActivation`, `invite-model` e componentes visuais separados, preservando o fluxo de primeiro acesso, a aceitação bounded do convite e a acessibilidade dos campos.
+
+### RESULT
+
+- o RED confirmou a ausência inicial do modelo e GREEN passou `3/3`, preservando leitura do token, validação de senha/confirmação, envelope de sucesso, endpoint, credenciais e duração da sessão;
+- `pnpm verify` passou com `174` arquivos, `781` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,12%` functions / `85,64%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima de `800` linhas, `155` funções longas e maior função de `140` linhas (`scripts/verify-journey-correction-governance.mjs::validateJourneyCorrectionGovernance`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3138 pnpm exec playwright test` passou `26/26` em `16,0s` após o build; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `scripts/verify-journey-correction-governance.mjs::validateJourneyCorrectionGovernance` sob TDD.
+
+## 2026-08-16T09:32:29-03:00 — CODE-QUALITY-REVALIDATION-S4-168
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012, AUD-CQ-013.
+
+### ACTION
+
+`scripts/verify-product-definition.mjs::validateProductDefinitionSnapshot` foi decomposto sob TDD. O entrypoint preserva o gate Discovery→PRD→SPEC e passou a compor validadores de arquivos obrigatórios, gates, conteúdo, cobertura e baseline de rastreabilidade; as regras foram isoladas em `scripts/verify-product-definition-support.mjs`.
+
+### RESULT
+
+- o RED confirmou a ausência do suporte e GREEN passou `3/3`, preservando a ordem dos diagnósticos, o contrato de lista imutável e a rejeição de gates/conteúdo/cobertura inválidos;
+- `pnpm verify` passou com `173` arquivos, `778` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,12%` functions / `85,64%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima de `800` linhas, `156` funções longas e maior função de `141` linhas (`apps/web/app/invite/page.tsx::InvitePage`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3137 pnpm exec playwright test` passou `26/26` em `16,0s` após a conclusão do build; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `apps/web/app/invite/page.tsx::InvitePage` sob TDD.
+
+## 2026-08-16T09:24:00-03:00 — CODE-QUALITY-REVALIDATION-S4-167
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012, AUD-CQ-014.
+
+### ACTION
+
+`scripts/verify-postgres-restore.mjs` foi decomposto sob TDD. O entrypoint mantém o contrato operacional e passou a delegar parsing de artefatos, geração de alvos isolados, fases de backup/restore/verificação e cleanup; o suporte puro foi isolado em `scripts/verify-postgres-restore-support.mjs`.
+
+### RESULT
+
+- o RED confirmou a ausência do suporte e GREEN passou `2/2`, preservando configuração de artefato pareado, nomes isolados, modos synthetic-marker/stored-artifact e relatórios bounded;
+- `pnpm verify` passou com `173` arquivos, `777` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,12%` functions / `85,64%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `157` funções longas e maior função de `145` linhas (`scripts/verify-product-definition.mjs::validateProductDefinitionSnapshot`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3136 pnpm exec playwright test` passou `26/26` em `16,0s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA; restore PostgreSQL live não foi executado neste ciclo;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `scripts/verify-product-definition.mjs::validateProductDefinitionSnapshot` sob TDD.
+
+## 2026-08-16T09:14:43-03:00 — CODE-QUALITY-REVALIDATION-S4-166
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`scripts/materialize-curriculum.mjs` foi decomposto sob TDD. O entrypoint ficou responsável por configuração, healthcheck, identidade, transação e relatório; `materialize-curriculum-support.mjs` concentra helpers puros e `materialize-curriculum-persistence.mjs` concentra inserções por agregado e contagens imutáveis.
+
+### RESULT
+
+- o RED confirmou a ausência do suporte e GREEN passou `3/3`, preservando ID determinístico, membership por escopo, projeção editorial sem mutação e relatório bounded;
+- `pnpm verify` passou com `172` arquivos, `775` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,12%` functions / `85,64%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `158` funções longas e maior função de `170` linhas (`scripts/verify-postgres-restore.mjs::main`); build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3135 pnpm exec playwright test` passou `26/26` em `15,9s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir `scripts/verify-postgres-restore.mjs::main` sob TDD.
+
+## 2026-08-16T09:06:16-03:00 — CODE-QUALITY-REVALIDATION-S4-165
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`correctOpenResponse` foi decomposto sob TDD dentro de `packages/application/src/correction-use-cases.ts`. A composição separa validação de comando, autorização, leitura do attempt, transição, builders imutáveis de resultado/evento/auditoria e aplicação transacional, mantendo idempotência e contratos metadata-only.
+
+### RESULT
+
+- o teste focal passou `3/3`, preservando autorização fail-closed, transição `SUBMETIDA → AGUARDAR_CORRECAO_HUMANA → CORRIGIR_HUMANAMENTE`, resultado, evento, auditoria e replay idempotente;
+- `pnpm verify` passou com `171` arquivos, `772` testes aprovados, `18` skips governados, cobertura `84,81%` statements / `80,18%` branches / `87,12%` functions / `85,64%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `160` funções longas e maior função de `179` linhas; build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3134 pnpm exec playwright test` passou `26/26` em `16,1s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito. A próxima ação local é reduzir a próxima função longa sob TDD.
+
+## 2026-08-16T08:53:02-03:00 — CODE-QUALITY-REVALIDATION-S4-164
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`loadRuntimeConfig` foi decomposto sob TDD em parsing, validações de requisitos e builders imutáveis de configuração, sem alterar os defaults ou os gates fail-closed de produção.
+
+### RESULT
+
+- a caracterização do pacote de configuração passou `13/13`; defaults, Qdrant/IA, IdP, OTLP, HTTPS produtivo, token de métricas, aprovador clínico, embedding determinístico e não exposição de segredos permaneceram verdes;
+- `pnpm verify` passou com `171` arquivos, `772` testes aprovados, `18` skips governados, cobertura `84,79%` statements / `80,18%` branches / `87,07%` functions / `85,62%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `tsc -b` e `verify:hotspots` passaram; não há hotspots acima de `800` linhas, há `161` funções longas e a maior função tem `179` linhas;
+- `CVG_API_INTERNAL_URL=http://127.0.0.1:3101 pnpm build` passou nos `12` workspaces; após o build, `CVG_E2E_WEB_PORT=3133 pnpm exec playwright test` passou `26/26` em `16,1s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. A próxima ação local é reduzir `correctOpenResponse` sob TDD; seguem pendentes SHA Git real/RC, runtime HA reconstruído, gates externos/humanos, revisão clínica, `0/145` cadeias completas e reauditoria independente dos 16 itens.
+
+## 2026-08-16T08:46:53-03:00 — CODE-QUALITY-REVALIDATION-S4-163
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-006, AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`validateObservabilityGovernance` foi decomposto sob TDD em validadores de política, sinais, alertas e regras, mantendo o contrato fail-closed e a inspeção de marcadores na camada HTTP extraída.
+
+### RESULT
+
+- o teste de composição ficou RED antes da unidade existir e GREEN passou `3/3`, preservando `7` sinais, `7` alertas, runbooks, ownership, dashboard, PII-safe, regras de alerta e evidência externa obrigatória;
+- `pnpm verify` passou com `171` arquivos, `772` testes aprovados, `18` skips governados, cobertura `84,80%` statements / `80,18%` branches / `86,99%` functions / `85,63%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `162` funções longas e maior função de `179` linhas; build passou nos `12` workspaces;
+- após o build, `CVG_E2E_WEB_PORT=3132 pnpm exec playwright test` passou `26/26` em `16,0s`; a tentativa em `3131` encontrou listener local preexistente, e a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. A próxima ação local é reduzir `loadRuntimeConfig` sob TDD; continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens, `0/145` cadeias completas e reauditoria independente dos 16 itens.
+
+## 2026-08-16T08:39:24-03:00 — CODE-QUALITY-REVALIDATION-S4-162
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-006, AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+A camada HTTP de `createApiServer` foi extraída sob TDD para `apps/api/src/server-http.ts`. `apps/api/src/server.ts` permaneceu como composição fina, preservando rate limit, CSRF, limite de corpo, respostas bounded, request outcome, observabilidade e fechamento seguro da resposta.
+
+### RESULT
+
+- o contrato de observabilidade passou a carregar `apps/api/src/server-http.ts` no snapshot; o teste focal passou `2/2` e os marcadores de disponibilidade, latência, erro e experiência continuam obrigatórios;
+- `pnpm verify` passou com `171` arquivos, `771` testes aprovados, `18` skips governados, cobertura `84,80%` statements / `80,18%` branches / `86,99%` functions / `85,63%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `163` funções longas e maior função de `179` linhas; build passou nos `12` workspaces;
+- após o build, `CVG_E2E_WEB_PORT=3130 pnpm exec playwright test` passou `26/26` em `16,0s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `IN_PROGRESS` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. A próxima ação local é reduzir `validateObservabilityGovernance` sob TDD; continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens, `0/145` cadeias completas e reauditoria independente dos 16 itens.
+
+## 2026-08-16T08:24:37-03:00 — CODE-QUALITY-REVALIDATION-S4-161
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-002, AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`publishAuthoringContent` foi extraído sob TDD para `packages/application/src/authoring-publication.ts`. A composição separa validação, autorização, aprovação clínica independente, preflight técnico, transições e persistência/projeção da publicação, mantendo o gate clínico fail-closed.
+
+### RESULT
+
+- o teste de composição falhou antes da implementação e GREEN passou; a suíte focal de authoring passou `9/9`, incluindo publicação aprovada e rejeições por validação, escopo, aprovação ausente/independente, autoaprovação e preflight;
+- `pnpm verify` passou com `171` arquivos, `770` testes aprovados, `18` skips governados, cobertura `84,79%` statements / `80,16%` branches / `86,94%` functions / `85,62%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `165` funções longas e maior função de `179` linhas; build passou nos `12` workspaces;
+- após o build, `CVG_E2E_WEB_PORT=3129 pnpm exec playwright test` passou `26/26` em `16,0s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito.
+
+## 2026-08-16T08:14:08-03:00 — CODE-QUALITY-REVALIDATION-S4-160
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-002, AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`reviewAuthoringContent` foi extraído sob TDD para `packages/application/src/authoring-review.ts`. A composição separa validação, autorização clínica, carregamento com escopo, preflight técnico, transições, construção imutável da revisão e persistência, mantendo publicação/revisão clínica fail-closed.
+
+### RESULT
+
+- o teste de composição falhou antes da implementação e GREEN passou `7/7` no pacote de aplicação; os fluxos de aprovação independente, solicitação de ajustes, autoaprovação proibida e preflight permaneceram verdes;
+- `pnpm verify` passou com `171` arquivos, `768` testes aprovados, `18` skips governados, cobertura `84,66%` statements / `80,03%` branches / `86,87%` functions / `85,49%` lines, decisões críticas `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `166` funções longas e maior função de `179` linhas; build passou nos `12` workspaces;
+- após o build, `CVG_E2E_WEB_PORT=3128 pnpm exec playwright test` passou `26/26` em `16,0s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito.
+
+## 2026-08-16T08:04:01-03:00 — CODE-QUALITY-REVALIDATION-S4-159
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
+
+### ACTION
+
+`preflightCurriculumDrafts` foi extraído para `packages/curriculum/src/learning-runtime-preflight-checks.ts`; a composição do relatório permaneceu em `learning-runtime-preflight.ts`. A nova composição expõe verificadores de módulo/diagnóstico e checks puros de boundary, retenção, campos e correção.
+
+### RESULT
+
+- o teste de composição falhou antes da implementação e passou depois; a suíte curricular focal passou `18/18`, incluindo os ramos de publicação bloqueada;
+- `pnpm verify` passou com `171` arquivos, `767` testes aprovados, `18` skips governados, cobertura `84,65%` statements / `80,03%` branches / `86,78%` functions / `85,48%` lines, decisões `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29`, secrets, documentação, produto e exposição passaram;
+- `verify:hotspots` passou com `0` hotspots acima do limite, `167` funções longas e maior função de `179` linhas; build passou nos `12` workspaces;
+- `CVG_E2E_WEB_PORT=3127 pnpm exec playwright test` passou `26/26` em `16,1s`; a API não estava ativa em `3101`, então os avisos de proxy recusado não são evidência HA;
+- não houve commit, SHA de release, publicação, alteração externa, dado clínico real ou promoção de score.
+
+### DECISIONS / STATUS / NEXT
+
+O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito.

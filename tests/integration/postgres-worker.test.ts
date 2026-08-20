@@ -5,7 +5,10 @@ import { describe, expect, it } from "vitest";
 
 import type { AiTextPort } from "../../packages/integrations/src/ai.js";
 import { createIntegrationHandlers } from "../../apps/worker/src/handlers.js";
-import { processOutboxOnce } from "../../apps/worker/src/loop.js";
+import {
+  processOutboxOnce,
+  runWorkerClaimAckProbe,
+} from "../../apps/worker/src/loop.js";
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   aiSuggestions,
@@ -23,6 +26,30 @@ const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL outbox and worker integration",
   () => {
+    it("proves claim, lease, acknowledgement, and cleanup against PostgreSQL", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const database = createPostgresDatabase(databaseUrl);
+      try {
+        const result = await runWorkerClaimAckProbe(
+          createOutboxRepository(database.db),
+        );
+
+        expect(result).toEqual({
+          claimed: 1,
+          processed: 1,
+          failed: 0,
+          acknowledged: true,
+        });
+      } finally {
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.eventType, "worker.readiness.probe.v1"));
+        await database.close();
+      }
+    });
+
     it("claims a redacted event and persists an internal AI draft through the worker", async () => {
       if (databaseUrl === undefined)
         throw new Error("test database URL is required");

@@ -1,11 +1,12 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, type SQL } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { AttemptState, AttemptStatus } from "@cvg/domain";
-import type {
-  AttemptTransactionalOperations,
-  AttemptUseCaseDependencies,
-  IdempotencyRecord,
-  TransactionSecurityContext,
+import {
+  ApplicationError,
+  type AttemptTransactionalOperations,
+  type AttemptUseCaseDependencies,
+  type IdempotencyRecord,
+  type TransactionSecurityContext,
 } from "@cvg/application";
 
 import {
@@ -27,9 +28,9 @@ export class PersistenceMappingError extends Error {
   }
 }
 
-export class PersistenceConflictError extends Error {
+export class PersistenceConflictError extends ApplicationError {
   public constructor(message: string) {
-    super(message);
+    super("state_conflict", message);
     this.name = "PersistenceConflictError";
   }
 }
@@ -94,6 +95,15 @@ const forbiddenPayloadFields = new Set([
 
 function isAttemptStatus(value: string): value is AttemptStatus {
   return attemptStatuses.includes(value as AttemptStatus);
+}
+
+export function isUniqueConstraintViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505"
+  );
 }
 
 function assertNonEmpty(value: string, field: string): void {
@@ -294,80 +304,109 @@ export function outboxEventToRow(input: OutboxEventInput) {
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
-function createOperations(
+type AttemptOperations = AttemptTransactionalOperations;
+
+const attemptSelection = {
+  id: attempts.id,
+  participantId: attempts.participantId,
+  activityId: attempts.activityId,
+  status: attempts.status,
+  version: attempts.version,
+  submittedAt: attempts.submittedAt,
+};
+
+async function findAttemptByCondition(
   db: DatabaseExecutor,
-): AttemptTransactionalOperations {
-  const attemptsPort = {
-    findOpenByParticipantAndActivity: async (
+  condition: SQL<unknown> | undefined,
+): Promise<AttemptState | null> {
+  const rows = await db
+    .select(attemptSelection)
+    .from(attempts)
+    .where(condition)
+    .limit(1);
+  const row = rows[0];
+  return row ? attemptRowToState(row) : null;
+}
+
+function findOpenAttempt(
+  db: DatabaseExecutor,
+  participantId: string,
+  activityId: string,
+): Promise<AttemptState | null> {
+  return findAttemptByCondition(
+    db,
+    and(
+      eq(attempts.participantId, participantId),
+      eq(attempts.activityId, activityId),
+      inArray(attempts.status, openAttemptStatuses),
+    ),
+  );
+}
+
+function findAttemptById(
+  db: DatabaseExecutor,
+  attemptId: string,
+): Promise<AttemptState | null> {
+  return findAttemptByCondition(db, eq(attempts.id, attemptId));
+}
+
+async function insertAttempt(
+  db: DatabaseExecutor,
+  state: AttemptState,
+): Promise<void> {
+  try {
+    await db.insert(attempts).values(attemptStateToRow(state));
+  } catch (error) {
+    if (!isUniqueConstraintViolation(error)) throw error;
+    throw new PersistenceConflictError(
+      "attempt already exists or changed concurrently",
+    );
+  }
+}
+
+async function updateAttempt(
+  db: DatabaseExecutor,
+  state: AttemptState,
+): Promise<void> {
+  const previousVersion = state.version - 1;
+  const rows = await db
+    .update(attempts)
+    .set({
+      status: state.status,
+      version: state.version,
+      submittedAt: state.submittedAt ? new Date(state.submittedAt) : null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(attempts.id, state.attemptId),
+        eq(attempts.version, previousVersion),
+      ),
+    )
+    .returning({ id: attempts.id });
+  if (rows.length === 0) {
+    throw new PersistenceConflictError("attempt version changed concurrently");
+  }
+}
+
+function createAttemptPort(
+  db: DatabaseExecutor,
+): AttemptOperations["attemptsPort"] {
+  return Object.freeze({
+    findOpenByParticipantAndActivity: (
       participantId: string,
       activityId: string,
-    ): Promise<AttemptState | null> => {
-      const rows = await db
-        .select({
-          id: attempts.id,
-          participantId: attempts.participantId,
-          activityId: attempts.activityId,
-          status: attempts.status,
-          version: attempts.version,
-          submittedAt: attempts.submittedAt,
-        })
-        .from(attempts)
-        .where(
-          and(
-            eq(attempts.participantId, participantId),
-            eq(attempts.activityId, activityId),
-            inArray(attempts.status, openAttemptStatuses),
-          ),
-        )
-        .limit(1);
-      const row = rows[0];
-      return row ? attemptRowToState(row) : null;
-    },
-    findById: async (attemptId: string): Promise<AttemptState | null> => {
-      const rows = await db
-        .select({
-          id: attempts.id,
-          participantId: attempts.participantId,
-          activityId: attempts.activityId,
-          status: attempts.status,
-          version: attempts.version,
-          submittedAt: attempts.submittedAt,
-        })
-        .from(attempts)
-        .where(eq(attempts.id, attemptId))
-        .limit(1);
-      const row = rows[0];
-      return row ? attemptRowToState(row) : null;
-    },
-    insert: async (state: AttemptState): Promise<void> => {
-      await db.insert(attempts).values(attemptStateToRow(state));
-    },
-    update: async (state: AttemptState): Promise<void> => {
-      const previousVersion = state.version - 1;
-      const rows = await db
-        .update(attempts)
-        .set({
-          status: state.status,
-          version: state.version,
-          submittedAt: state.submittedAt ? new Date(state.submittedAt) : null,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(attempts.id, state.attemptId),
-            eq(attempts.version, previousVersion),
-          ),
-        )
-        .returning({ id: attempts.id });
-      if (rows.length === 0) {
-        throw new PersistenceConflictError(
-          "attempt version changed concurrently",
-        );
-      }
-    },
-  };
+    ) => findOpenAttempt(db, participantId, activityId),
+    findById: (attemptId: string) => findAttemptById(db, attemptId),
+    insert: (state: AttemptState) => insertAttempt(db, state),
+    update: (state: AttemptState) => updateAttempt(db, state),
+  });
+}
 
-  const activity = {
+function createActivityPort(
+  db: DatabaseExecutor,
+): AttemptOperations["activity"] {
+  return Object.freeze({
     isAvailable: async (
       participantId: string,
       activityId: string,
@@ -394,9 +433,13 @@ function createOperations(
         .limit(1);
       return rows.length > 0;
     },
-  };
+  });
+}
 
-  const idempotency = {
+function createAttemptIdempotency(
+  db: DatabaseExecutor,
+): AttemptOperations["idempotency"] {
+  return Object.freeze({
     find: async (key: string): Promise<IdempotencyRecord | null> => {
       const rows = await db
         .select({
@@ -422,36 +465,51 @@ function createOperations(
       }
       if (existing[0]) return;
 
-      await db.insert(attemptIdempotency).values({
-        key,
-        operation: "attempt",
-        fingerprint: record.fingerprint,
-        attemptId: record.attempt.attemptId,
-        response: record.attempt as PersistedAttemptSnapshot,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      });
+      try {
+        await db.insert(attemptIdempotency).values({
+          key,
+          operation: "attempt",
+          fingerprint: record.fingerprint,
+          attemptId: record.attempt.attemptId,
+          response: record.attempt as PersistedAttemptSnapshot,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        });
+      } catch (error) {
+        if (!isUniqueConstraintViolation(error)) throw error;
+        throw new PersistenceConflictError(
+          "idempotency key was created concurrently",
+        );
+      }
     },
-  };
+  });
+}
 
-  const eventPublisher = {
+function createAttemptEventPublisher(
+  db: DatabaseExecutor,
+): AttemptOperations["eventPublisher"] {
+  return Object.freeze({
     publish: async (
-      event: Parameters<
-        AttemptTransactionalOperations["eventPublisher"]["publish"]
-      >[0],
+      event: Parameters<AttemptOperations["eventPublisher"]["publish"]>[0],
     ): Promise<void> => {
       await db.insert(outboxEvents).values(createOutboxInsert(event));
     },
-  };
-
-  const audit = createAuditRepository(db);
-
-  return Object.freeze({
-    activity,
-    attemptsPort,
-    idempotency,
-    eventPublisher,
-    audit,
   });
+}
+
+export function createAttemptOperationsMethods(
+  db: DatabaseExecutor,
+): AttemptOperations {
+  return Object.freeze({
+    activity: createActivityPort(db),
+    attemptsPort: createAttemptPort(db),
+    idempotency: createAttemptIdempotency(db),
+    eventPublisher: createAttemptEventPublisher(db),
+    audit: createAuditRepository(db),
+  });
+}
+
+function createOperations(db: DatabaseExecutor): AttemptOperations {
+  return createAttemptOperationsMethods(db);
 }
 
 export function createAttemptUseCaseDependencies(
@@ -471,7 +529,7 @@ export function createAttemptUseCaseDependencies(
         context?: TransactionSecurityContext,
       ): Promise<Result> =>
         db.transaction(async (transaction) => {
-          const executor = transaction as unknown as DatabaseExecutor;
+          const executor = transaction;
           if (context !== undefined) {
             await setDatabaseSecurityContext(executor, context);
           }

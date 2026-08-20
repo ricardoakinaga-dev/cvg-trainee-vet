@@ -21,84 +21,58 @@ export async function loadSkipGovernanceSnapshot(root = process.cwd()) {
   return new Map(entries);
 }
 
-export function validateSkipGovernance(snapshot) {
-  const errors = [];
-  const policyText = snapshot.get(POLICY_FILE);
-  if (policyText === undefined) return ["skip governance policy is missing"];
-
-  let policy;
-  try {
-    policy = JSON.parse(policyText);
-  } catch {
-    return ["skip governance policy is not valid JSON"];
-  }
-
-  if (policy.version !== 1) errors.push("policy version must be 1");
-  if (policy.taskId !== "ENT95-14-C") errors.push("task id is invalid");
-  if (!Number.isInteger(policy.requiredRuns) || policy.requiredRuns < 20) {
-    errors.push("requiredRuns must be at least 20");
-  }
+function validateSkipEntry(entry, snapshot, declaredPaths, errors) {
   if (
-    typeof policy.flakyRateLimitPercent !== "number" ||
-    policy.flakyRateLimitPercent <= 0 ||
-    policy.flakyRateLimitPercent >= 100
+    typeof entry !== "object" ||
+    entry === null ||
+    typeof entry.path !== "string"
   ) {
-    errors.push("flakyRateLimitPercent must be between 0 and 100");
+    errors.push("skip entry must have a path");
+    return;
   }
-  if (!Array.isArray(policy.skips)) errors.push("skips must be an array");
-  if (!Array.isArray(policy.observedRuns)) {
-    errors.push("observedRuns must be an array");
+  if (declaredPaths.has(entry.path))
+    errors.push(`duplicate skip entry ${entry.path}`);
+  declaredPaths.add(entry.path);
+  const source = snapshot.get(entry.path);
+  if (source === undefined) {
+    errors.push(`skip path ${entry.path} does not exist`);
+    return;
   }
+  if (!source.includes(SKIP_MARKER)) {
+    errors.push(`skip path ${entry.path} has no skipIf guard`);
+  }
+  if (!Number.isInteger(entry.testCount) || entry.testCount < 1) {
+    errors.push(`skip path ${entry.path} has invalid testCount`);
+  } else if (entry.testCount !== countTestDeclarations(source)) {
+    errors.push(
+      `skip path ${entry.path} declares ${entry.testCount} tests but contains ${countTestDeclarations(source)}`,
+    );
+  }
+  if (!Array.isArray(entry.guard) || entry.guard.length === 0) {
+    errors.push(`skip path ${entry.path} has no guard variables`);
+  }
+  if (typeof entry.reason !== "string" || entry.reason.trim() === "") {
+    errors.push(`skip path ${entry.path} has no reason`);
+  }
+}
 
-  const entries = Array.isArray(policy.skips) ? policy.skips : [];
-  const guardedFiles = findGuardedFiles(snapshot);
+function validateSkipEntries(entries, snapshot, guardedFiles, errors) {
   const declaredPaths = new Set();
   for (const entry of entries) {
-    if (
-      typeof entry !== "object" ||
-      entry === null ||
-      typeof entry.path !== "string"
-    ) {
-      errors.push("skip entry must have a path");
-      continue;
-    }
-    if (declaredPaths.has(entry.path)) {
-      errors.push(`duplicate skip entry ${entry.path}`);
-    }
-    declaredPaths.add(entry.path);
-    const source = snapshot.get(entry.path);
-    if (source === undefined) {
-      errors.push(`skip path ${entry.path} does not exist`);
-      continue;
-    }
-    if (!source.includes(SKIP_MARKER)) {
-      errors.push(`skip path ${entry.path} has no skipIf guard`);
-    }
-    if (!Number.isInteger(entry.testCount) || entry.testCount < 1) {
-      errors.push(`skip path ${entry.path} has invalid testCount`);
-    }
-    if (!Array.isArray(entry.guard) || entry.guard.length === 0) {
-      errors.push(`skip path ${entry.path} has no guard variables`);
-    }
-    if (typeof entry.reason !== "string" || entry.reason.trim() === "") {
-      errors.push(`skip path ${entry.path} has no reason`);
-    }
+    validateSkipEntry(entry, snapshot, declaredPaths, errors);
   }
-
   for (const path of guardedFiles) {
-    if (!declaredPaths.has(path)) {
+    if (!declaredPaths.has(path))
       errors.push(`skip path ${path} is not classified`);
-    }
   }
   for (const path of declaredPaths) {
     if (!guardedFiles.includes(path) && snapshot.has(path)) {
       errors.push(`skip path ${path} is not a guarded test file`);
     }
   }
+}
 
-  const observedRuns = Array.isArray(policy.observedRuns)
-    ? policy.observedRuns
-    : [];
+function validateObservedRuns(observedRuns, flakyRateLimitPercent, errors) {
   let flakyFailures = 0;
   for (const run of observedRuns) {
     if (typeof run !== "object" || run === null) {
@@ -113,26 +87,59 @@ export function validateSkipGovernance(snapshot) {
     }
     if (!Number.isInteger(run.flakyFailures) || run.flakyFailures < 0) {
       errors.push(`observed run ${String(run.mode)} has invalid flakyFailures`);
-    } else {
-      flakyFailures += run.flakyFailures;
-    }
+    } else flakyFailures += run.flakyFailures;
     if (typeof run.evidence !== "string" || run.evidence.trim() === "") {
       errors.push(`observed run ${String(run.mode)} has no evidence`);
     }
   }
-
   const flakyRatePercent =
     observedRuns.length === 0
       ? 100
       : (flakyFailures / observedRuns.length) * 100;
-  if (
-    typeof policy.flakyRateLimitPercent === "number" &&
-    flakyRatePercent >= policy.flakyRateLimitPercent
-  ) {
+  if (flakyRatePercent >= flakyRateLimitPercent) {
     errors.push(
-      `flaky rate ${flakyRatePercent.toFixed(2)}% exceeds configured limit ${policy.flakyRateLimitPercent}%`,
+      `flaky rate ${flakyRatePercent.toFixed(2)}% exceeds configured limit ${flakyRateLimitPercent}%`,
     );
   }
+}
+
+export function validateSkipGovernance(snapshot) {
+  const errors = [];
+  const policyText = snapshot.get(POLICY_FILE);
+  if (policyText === undefined) return ["skip governance policy is missing"];
+  let policy;
+  try {
+    policy = JSON.parse(policyText);
+  } catch {
+    return ["skip governance policy is not valid JSON"];
+  }
+  if (policy.version !== 1) errors.push("policy version must be 1");
+  if (policy.taskId !== "ENT95-14-C") errors.push("task id is invalid");
+  if (!Number.isInteger(policy.requiredRuns) || policy.requiredRuns < 20) {
+    errors.push("requiredRuns must be at least 20");
+  }
+  if (
+    typeof policy.flakyRateLimitPercent !== "number" ||
+    policy.flakyRateLimitPercent <= 0 ||
+    policy.flakyRateLimitPercent >= 100
+  ) {
+    errors.push("flakyRateLimitPercent must be between 0 and 100");
+  }
+  if (!Array.isArray(policy.skips)) errors.push("skips must be an array");
+  if (!Array.isArray(policy.observedRuns))
+    errors.push("observedRuns must be an array");
+  const guardedFiles = findGuardedFiles(snapshot);
+  validateSkipEntries(
+    Array.isArray(policy.skips) ? policy.skips : [],
+    snapshot,
+    guardedFiles,
+    errors,
+  );
+  validateObservedRuns(
+    Array.isArray(policy.observedRuns) ? policy.observedRuns : [],
+    policy.flakyRateLimitPercent,
+    errors,
+  );
   if (policy.releaseDisposition !== "PILOT_BLOCKED") {
     errors.push("skip governance cannot release the pilot");
   }
@@ -205,6 +212,10 @@ function findGuardedFiles(snapshot) {
     )
     .map(([path]) => path)
     .sort();
+}
+
+function countTestDeclarations(source) {
+  return (source.match(/^\s*(?:it|test)(?:\.\w+)*\s*\(/gmu) ?? []).length;
 }
 
 if (process.argv[1]?.endsWith("verify-skip-governance.mjs")) {

@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildObservabilityGovernanceReport,
   loadObservabilityGovernanceSnapshot,
+  validateObservabilitySignal,
   validateObservabilityGovernance,
 } from "../../scripts/verify-observability-governance.mjs";
 
@@ -18,8 +19,8 @@ describe("observability governance", () => {
 
     expect(errors).toEqual([]);
     expect(buildObservabilityGovernanceReport(snapshot)).toMatchObject({
-      signalCount: 7,
-      alertCount: 7,
+      signalCount: 8,
+      alertCount: 14,
       runbookCount: 1,
       externalEvidenceRequired: true,
       productionAcknowledgement: "NOT_CONFIGURED",
@@ -33,6 +34,7 @@ describe("observability governance", () => {
       "infra/observability/prometheus-alerts.yml",
       "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
       "apps/api/src/server.ts",
+      "apps/api/src/server-http.ts",
       "apps/worker/src/loop.ts",
       "apps/worker/src/handlers.ts",
     ];
@@ -66,5 +68,47 @@ describe("observability governance", () => {
     expect(errors.join(";")).toContain("owner");
     expect(errors.join(";")).toContain("runbook");
     expect(errors.join(";")).toContain("PII");
+  });
+
+  it("keeps signal instrumentation validation independently composable", async () => {
+    const snapshot = await loadObservabilityGovernanceSnapshot(root);
+    const policy = JSON.parse(
+      snapshot.get("observability-governance.json") ?? "{}",
+    ) as { signals?: Array<Record<string, unknown>> };
+    const dashboard = JSON.parse(
+      snapshot.get(
+        "infra/observability/grafana/dashboards/cvg-overview.json",
+      ) ?? "{}",
+    ) as Record<string, unknown>;
+    const signal = policy.signals?.[0];
+
+    expect(signal).toBeDefined();
+    expect(
+      validateObservabilitySignal(signal ?? {}, dashboard, snapshot),
+    ).toEqual([]);
+    expect(
+      validateObservabilitySignal(
+        { ...signal, instrumentationMarkers: ["marker.not.present"] },
+        dashboard,
+        snapshot,
+      ),
+    ).toContain(
+      "observability signal api_availability marker is not instrumented: marker.not.present",
+    );
+  });
+
+  it("requires loss-of-signal coverage for workers and Alertmanager", async () => {
+    const snapshot = await loadObservabilityGovernanceSnapshot(root);
+    const alertRules = snapshot.get(
+      "infra/observability/prometheus-alerts.yml",
+    );
+
+    expect(alertRules).toContain("CvgApiTargetDown");
+    expect(alertRules).toContain("CvgApiTargetAbsent");
+    expect(alertRules).toContain("CvgWorkerTargetDown");
+    expect(alertRules).toContain("CvgWorkerTargetAbsent");
+    expect(alertRules).toContain("CvgAlertmanagerDisconnected");
+    expect(alertRules).toContain("CvgObservabilityWatchdog");
+    expect(alertRules).toContain("CvgObservabilityWatchdogMissing");
   });
 });

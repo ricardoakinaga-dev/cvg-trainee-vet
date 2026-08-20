@@ -16,11 +16,21 @@ export const loginRequestSchema = z
   .strict();
 
 export const passwordUpdateRequestSchema = z
-  .object({ password: passwordSchema })
+  .object({
+    currentPassword: passwordSchema,
+    password: passwordSchema,
+  })
+  .refine((value) => value.currentPassword !== value.password, {
+    message: "new password must differ from current password",
+    path: ["password"],
+  })
   .strict();
 
 export const activeSessionProjectionSchema = z
-  .object({ status: z.literal("active") })
+  .object({
+    status: z.literal("active"),
+    canAccessAdmin: z.boolean().default(false),
+  })
   .strict();
 
 export type LoginRequest = z.infer<typeof loginRequestSchema>;

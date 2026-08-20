@@ -4,32 +4,32 @@ export const CRITICAL_DECISION_TARGETS = Object.freeze([
   Object.freeze({
     id: "NOTA",
     path: "packages/domain/src/assessment-policy.ts",
-    minimumBranchCoverage: 90,
+    minimumBranchCoverage: 100,
   }),
   Object.freeze({
     id: "PUBLICACAO",
     path: "packages/domain/src/content.ts",
-    minimumBranchCoverage: 90,
+    minimumBranchCoverage: 100,
   }),
   Object.freeze({
     id: "PERMISSAO",
     path: "packages/application/src/authorization.ts",
-    minimumBranchCoverage: 90,
+    minimumBranchCoverage: 100,
   }),
   Object.freeze({
     id: "ESTADO",
     path: "packages/domain/src/learning-state.ts",
-    minimumBranchCoverage: 90,
+    minimumBranchCoverage: 100,
   }),
   Object.freeze({
     id: "IDEMPOTENCIA",
     path: "packages/application/src/attempt-use-cases.ts",
-    minimumBranchCoverage: 80,
+    minimumBranchCoverage: 100,
   }),
   Object.freeze({
     id: "CONTRATO_ESTADO",
     path: "packages/contracts/src/learning-state.ts",
-    minimumBranchCoverage: 90,
+    minimumBranchCoverage: 100,
   }),
   Object.freeze({
     id: "MATRIZ",
@@ -86,7 +86,7 @@ export function buildCriticalDecisionCoverageReport(coverage) {
   return Object.freeze({
     status: "PASS",
     task: "ENT95-05-C",
-    decisionCount: 5,
+    decisionCount: CRITICAL_DECISION_TARGETS.length,
     matrixCaseCount: 13,
     targets: Object.freeze(
       CRITICAL_DECISION_TARGETS.map((target) => {

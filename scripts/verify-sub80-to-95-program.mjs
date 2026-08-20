@@ -75,7 +75,7 @@ export function loadSub80To95Program() {
   return JSON.parse(readFileSync(PROGRAM_PATH, "utf8"));
 }
 
-export function validateSub80To95Program(program) {
+function validateProgramMetadata(program) {
   const errors = [];
   const itemNumbers = program.items?.map((item) => item.item) ?? [];
   const sortedItems = [...itemNumbers].sort((left, right) => left - right);
@@ -109,7 +109,12 @@ export function validateSub80To95Program(program) {
     );
   }
 
-  for (const item of program.items ?? []) {
+  return errors;
+}
+
+function validateProgramItems(items) {
+  const errors = [];
+  for (const item of items ?? []) {
     const expectedBaselineScore = EXPECTED_BASELINE_SCORES.get(item.item);
     if (
       expectedBaselineScore !== undefined &&
@@ -152,11 +157,16 @@ export function validateSub80To95Program(program) {
     }
   }
 
-  const taskIds = program.tasks?.map((task) => task.id) ?? [];
+  return errors;
+}
+
+function validateProgramTasks(tasks) {
+  const errors = [];
+  const taskIds = tasks?.map((task) => task.id) ?? [];
   if (taskIds.length !== 29 || new Set(taskIds).size !== taskIds.length) {
     errors.push("program must contain 29 unique canonical tasks");
   }
-  for (const task of program.tasks ?? []) {
+  for (const task of tasks ?? []) {
     if (!EXPECTED_ITEMS.includes(task.item)) {
       errors.push(`task ${task.id} targets an item outside the sub-80 scope`);
     }
@@ -180,6 +190,11 @@ export function validateSub80To95Program(program) {
     }
   }
 
+  return errors;
+}
+
+function validateProgramArtifacts(program) {
+  const errors = [];
   const gateIds = new Set((program.gates ?? []).map((gate) => gate.id));
   for (const gateId of REQUIRED_GATES) {
     if (!gateIds.has(gateId)) {
@@ -202,6 +217,15 @@ export function validateSub80To95Program(program) {
   }
 
   return errors;
+}
+
+export function validateSub80To95Program(program) {
+  return [
+    ...validateProgramMetadata(program),
+    ...validateProgramItems(program.items),
+    ...validateProgramTasks(program.tasks),
+    ...validateProgramArtifacts(program),
+  ];
 }
 
 export function buildSub80To95Report(program) {

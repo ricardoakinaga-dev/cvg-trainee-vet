@@ -388,16 +388,17 @@ describe("managed account lifecycle", () => {
     ).rejects.toMatchObject({ code: "forbidden" });
   });
 
-  it("updates active accounts with role and scope changes without revoking sessions", async () => {
+  it("revokes sessions when active account roles or scopes change", async () => {
     const deps = dependencies();
     const result = await updateManagedAccount(
       {
         ...admin,
+        scopes: ["scope-a", "scope-b"],
         targetAccountId: target.accountId,
         expectedVersion: 0,
         nextStatus: "ACTIVE",
         nextRoles: ["MODERATOR"],
-        nextScopes: ["scope-a"],
+        nextScopes: ["scope-a", "scope-b"],
         correlationId: "request-24",
         now: new Date("2026-08-11T22:00:00.000Z"),
       },
@@ -405,7 +406,8 @@ describe("managed account lifecycle", () => {
     );
     expect(result.accountStatus).toBe("ACTIVE");
     expect(result.roles).toEqual(["MODERATOR"]);
-    expect(deps.revokedAccounts).toEqual([]);
+    expect(result.scopes).toEqual(["scope-a", "scope-b"]);
+    expect(deps.revokedAccounts).toEqual([target.accountId]);
     expect(deps.auditEntries[0]).toMatchObject({ scopeId: "scope-a" });
   });
 

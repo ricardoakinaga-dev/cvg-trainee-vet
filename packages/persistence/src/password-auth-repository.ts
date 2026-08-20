@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AccountStatus,
@@ -86,49 +86,91 @@ function assertPasswordHash(value: string): void {
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
+type PasswordAccountRow = Readonly<{
+  readonly accountId: string;
+  readonly accountStatus: unknown;
+  readonly sessionGeneration: number;
+  readonly roles: unknown;
+  readonly scopes: unknown;
+  readonly passwordHash: string | null;
+}>;
+
+const accountSelection = {
+  accountId: accounts.id,
+  accountStatus: accounts.status,
+  sessionGeneration: accounts.sessionGeneration,
+  roles: accounts.roles,
+  scopes: accounts.scopes,
+  passwordHash: accounts.passwordHash,
+};
+
+function mapAccountRow(row: PasswordAccountRow): PasswordAccountRecord {
+  return Object.freeze({
+    accountId: row.accountId,
+    accountStatus: parseStatus(row.accountStatus),
+    sessionGeneration: row.sessionGeneration,
+    roles: parseRoles(row.roles),
+    scopes: parseStringArray(row.scopes, "scopes"),
+    passwordHash: row.passwordHash,
+  });
+}
+
+async function findAccountByLogin(
+  executor: DatabaseExecutor,
+  login: string,
+): Promise<PasswordAccountRecord | null> {
+  const normalizedLogin = normalizeEmail(login);
+  const rows = await executor
+    .select(accountSelection)
+    .from(accounts)
+    .where(eq(accounts.professionalEmail, normalizedLogin))
+    .limit(1);
+  const row = rows[0];
+  return row === undefined ? null : mapAccountRow(row);
+}
+
+async function findAccountById(
+  executor: DatabaseExecutor,
+  accountId: string,
+): Promise<PasswordAccountRecord | null> {
+  assertNonEmpty(accountId, "accountId");
+  const rows = await executor
+    .select(accountSelection)
+    .from(accounts)
+    .where(eq(accounts.id, accountId))
+    .limit(1);
+  const row = rows[0];
+  return row === undefined ? null : mapAccountRow(row);
+}
+
+async function setAccountPassword(
+  executor: DatabaseExecutor,
+  accountId: string,
+  passwordHash: string,
+): Promise<void> {
+  assertNonEmpty(accountId, "accountId");
+  assertPasswordHash(passwordHash);
+  const updated = await executor
+    .update(accounts)
+    .set({
+      passwordHash,
+      sessionGeneration: sql`${accounts.sessionGeneration} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(eq(accounts.id, accountId))
+    .returning({ id: accounts.id });
+  if (updated.length === 0) {
+    throw new PersistenceMappingError("account is not available");
+  }
+}
+
 function operations(executor: DatabaseExecutor) {
   return {
     account: {
-      findByLogin: async (
-        login: string,
-      ): Promise<PasswordAccountRecord | null> => {
-        const normalizedLogin = normalizeEmail(login);
-        const rows = await executor
-          .select({
-            accountId: accounts.id,
-            accountStatus: accounts.status,
-            roles: accounts.roles,
-            scopes: accounts.scopes,
-            passwordHash: accounts.passwordHash,
-          })
-          .from(accounts)
-          .where(eq(accounts.professionalEmail, normalizedLogin))
-          .limit(1);
-        const row = rows[0];
-        if (row === undefined) return null;
-        return Object.freeze({
-          accountId: row.accountId,
-          accountStatus: parseStatus(row.accountStatus),
-          roles: parseRoles(row.roles),
-          scopes: parseStringArray(row.scopes, "scopes"),
-          passwordHash: row.passwordHash,
-        });
-      },
-      setPassword: async (
-        accountId: string,
-        passwordHash: string,
-      ): Promise<void> => {
-        assertNonEmpty(accountId, "accountId");
-        assertPasswordHash(passwordHash);
-        const updated = await executor
-          .update(accounts)
-          .set({ passwordHash, updatedAt: new Date() })
-          .where(eq(accounts.id, accountId))
-          .returning({ id: accounts.id });
-        if (updated.length === 0) {
-          throw new PersistenceMappingError("account is not available");
-        }
-      },
+      findByLogin: (login: string) => findAccountByLogin(executor, login),
+      findById: (accountId: string) => findAccountById(executor, accountId),
+      setPassword: (accountId: string, passwordHash: string) =>
+        setAccountPassword(executor, accountId, passwordHash),
     },
     sessions: createSessionRepository(executor),
     audit: createAuditRepository(executor),
@@ -145,9 +187,7 @@ export function createPasswordAuthUseCaseDependencies(
       run: async <Result>(
         work: (current: ReturnType<typeof operations>) => Promise<Result>,
       ): Promise<Result> =>
-        db.transaction(async (transaction) =>
-          work(operations(transaction as unknown as DatabaseExecutor)),
-        ),
+        db.transaction(async (transaction) => work(operations(transaction))),
     },
   });
 }

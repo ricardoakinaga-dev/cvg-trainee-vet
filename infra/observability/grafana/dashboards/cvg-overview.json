@@ -27,7 +27,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (route) (rate(api_request_duration_ms_sum[5m])) / clamp_min(sum by (route) (rate(api_request_duration_ms_count[5m])), 1)",
+          "expr": "1000 * sum by (route) (rate(api_request_duration_seconds_sum[5m])) / sum by (route) (rate(api_request_duration_seconds_count[5m]))",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -57,7 +57,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "100 * sum(rate(api_requests_total{outcome!=\"server_error\"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1)",
+          "expr": "(100 * sum(rate(api_requests_total{outcome!=\"server_error\"}[5m])) / sum(rate(api_requests_total[5m]))) and on() (sum(rate(api_requests_total[5m])) > 0)",
           "legendFormat": "availability",
           "refId": "A"
         }
@@ -72,7 +72,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "max by (route) (api_request_duration_ms_p95{route=~\"/api/v1/.*\"})",
+          "expr": "max by (route) (api_request_duration_seconds_p95{route=~\"/api/v1/.*\"})",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -87,7 +87,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "100 * sum(rate(api_requests_total{outcome=\"server_error\"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1)",
+          "expr": "(100 * sum(rate(api_requests_total{outcome=\"server_error\"}[5m])) / sum(rate(api_requests_total[5m]))) and on() (sum(rate(api_requests_total[5m])) > 0)",
           "legendFormat": "server errors",
           "refId": "A"
         }
@@ -102,17 +102,17 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum(rate(worker_events_claimed[5m]))",
+          "expr": "sum(rate(worker_events_claimed_total[5m]))",
           "legendFormat": "claimed",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(worker_events_processed[5m]))",
+          "expr": "sum(rate(worker_events_processed_total[5m]))",
           "legendFormat": "processed",
           "refId": "B"
         },
         {
-          "expr": "sum(rate(worker_events_failed[5m]))",
+          "expr": "sum(rate(worker_events_failed_total[5m]))",
           "legendFormat": "failed",
           "refId": "C"
         }
@@ -127,12 +127,12 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (outcome) (rate(worker_events_processed{event_type=\"content.published.v1\"}[5m]))",
+          "expr": "sum by (outcome) (rate(worker_events_processed_total{event_type=\"content.published.v1\"}[5m]))",
           "legendFormat": "{{outcome}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (outcome) (rate(worker_events_failed{event_type=\"content.published.v1\"}[5m]))",
+          "expr": "sum by (outcome) (rate(worker_events_failed_total{event_type=\"content.published.v1\"}[5m]))",
           "legendFormat": "failed / {{outcome}}",
           "refId": "B"
         }
@@ -147,12 +147,12 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (outcome) (rate(worker_events_processed{event_type=\"ai.suggestion.requested.v1\"}[5m]))",
+          "expr": "sum by (outcome) (rate(worker_events_processed_total{event_type=\"ai.suggestion.requested.v1\"}[5m]))",
           "legendFormat": "processed / {{outcome}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (outcome) (rate(worker_events_failed{event_type=\"ai.suggestion.requested.v1\"}[5m]))",
+          "expr": "sum by (outcome) (rate(worker_events_failed_total{event_type=\"ai.suggestion.requested.v1\"}[5m]))",
           "legendFormat": "failed / {{outcome}}",
           "refId": "B"
         }
@@ -170,6 +170,26 @@
           "expr": "sum by (route, outcome) (rate(api_requests_total{route=~\"/api/v1/(activities|learning|attempts).*\"}[5m]))",
           "legendFormat": "{{route}} — {{outcome}}",
           "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_CVG_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 48 },
+      "id": 11,
+      "title": "Observability signal integrity",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "up{job=~\"cvg-api|cvg-worker|alertmanager\"}",
+          "legendFormat": "{{job}} / {{instance}}",
+          "refId": "A"
+        },
+        {
+          "expr": "absent(up{job=\"cvg-api\"}) or absent(up{job=\"cvg-worker\"}) or absent(up{job=\"alertmanager\"})",
+          "legendFormat": "missing target",
+          "refId": "B"
         }
       ]
     }

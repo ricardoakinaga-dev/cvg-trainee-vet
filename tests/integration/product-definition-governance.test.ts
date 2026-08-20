@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 
+import { validateDefinitionGates } from "../../scripts/verify-product-definition-support.mjs";
 import { validateProductDefinitionSnapshot } from "../../scripts/verify-product-definition.mjs";
 
 const validSnapshot = new Map<string, string>([
@@ -71,6 +72,10 @@ const validSnapshot = new Map<string, string>([
 
 it("accepts the approved Discovery → PRD → SPEC chain and coverage matrix", () => {
   expect(validateProductDefinitionSnapshot(validSnapshot)).toEqual([]);
+});
+
+it("keeps the Discovery → PRD → SPEC approval checks composable", () => {
+  expect(validateDefinitionGates(validSnapshot)).toEqual([]);
 });
 
 it("rejects a definition chain with missing gate approval or coverage status", () => {

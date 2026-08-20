@@ -133,10 +133,7 @@ function normalizeAnswerError(error: unknown): ApplicationError {
   return toApplicationError(error);
 }
 
-export async function saveAnswer(
-  command: SaveAnswerCommand,
-  dependencies: AnswerUseCaseDependencies,
-): Promise<SaveAnswerResult> {
+function validateSaveAnswerCommand(command: SaveAnswerCommand): void {
   for (const [value, field] of [
     [command.attemptId, "attemptId"],
     [command.participantId, "participantId"],
@@ -147,85 +144,141 @@ export async function saveAnswer(
   ] as const) {
     assertCommandText(value, field);
   }
+}
 
+function assertAttemptOwnership(
+  current: AttemptState,
+  command: SaveAnswerCommand,
+): void {
+  if (
+    current.participantId !== command.participantId ||
+    current.activityId !== command.activityId
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Attempt is outside the current scope",
+    );
+  }
+}
+
+function buildAnswer(
+  command: SaveAnswerCommand,
+  dependencies: AnswerUseCaseDependencies,
+  existing: AnswerState | null,
+): AnswerState {
+  return createAnswer({
+    answerId: existing?.answerId ?? dependencies.idFactory(),
+    attemptId: command.attemptId,
+    itemId: command.itemId,
+    response: command.response,
+    savedAt: command.savedAt,
+  });
+}
+
+async function publishAnswerSaved(
+  command: SaveAnswerCommand,
+  dependencies: AnswerUseCaseDependencies,
+  operations: AnswerTransactionalOperations,
+  savedAttempt: AttemptState,
+  answer: AnswerState,
+): Promise<void> {
+  await operations.eventPublisher.publish({
+    eventId: dependencies.idFactory(),
+    eventType: "answer.saved.v1",
+    aggregateType: "attempt",
+    aggregateId: savedAttempt.attemptId,
+    occurredAt: command.savedAt,
+    schemaVersion: 1,
+    correlationId: command.correlationId,
+    payload: {
+      attempt_id: savedAttempt.attemptId,
+      item_id: answer.itemId,
+      status: "SALVA",
+    },
+  });
+}
+
+async function auditAnswerSaved(
+  command: SaveAnswerCommand,
+  dependencies: AnswerUseCaseDependencies,
+  operations: AnswerTransactionalOperations,
+  savedAttempt: AttemptState,
+): Promise<void> {
+  await operations.audit.append(
+    createAuditEntry({
+      auditId: dependencies.idFactory(),
+      principalId: command.participantId,
+      action: "ANSWER_SAVED",
+      resourceType: "attempt",
+      resourceId: savedAttempt.attemptId,
+      outcome: "SUCCESS",
+      reasonCode: "draft_saved",
+      requestId: command.correlationId,
+      correlationId: command.correlationId,
+      occurredAt: command.savedAt,
+    }),
+  );
+}
+
+async function executeSaveAnswerTransaction(
+  command: SaveAnswerCommand,
+  operations: AnswerTransactionalOperations,
+  dependencies: AnswerUseCaseDependencies,
+  expectedFingerprint: string,
+): Promise<SaveAnswerResult> {
+  const replay = replayOrThrow(
+    await operations.idempotency.find(command.idempotencyKey),
+    expectedFingerprint,
+  );
+  if (replay !== null) return replay;
+
+  const current = await operations.attemptsPort.findById(command.attemptId);
+  if (current === null) {
+    throw new ApplicationError("not_found", "Attempt was not found");
+  }
+  assertAttemptOwnership(current, command);
+
+  const existing = await operations.answersPort.findByAttemptAndItem(
+    command.attemptId,
+    command.itemId,
+  );
+  const answer = buildAnswer(command, dependencies, existing);
+  const savedAttempt = transitionAttempt(current, { type: "SALVAR" });
+  await operations.answersPort.save(answer);
+  await operations.attemptsPort.update(savedAttempt);
+  await publishAnswerSaved(
+    command,
+    dependencies,
+    operations,
+    savedAttempt,
+    answer,
+  );
+  await auditAnswerSaved(command, dependencies, operations, savedAttempt);
+
+  const result = Object.freeze({ attempt: savedAttempt, answer });
+  await operations.idempotency.store(command.idempotencyKey, {
+    fingerprint: expectedFingerprint,
+    result,
+  });
+  return result;
+}
+
+export async function saveAnswer(
+  command: SaveAnswerCommand,
+  dependencies: AnswerUseCaseDependencies,
+): Promise<SaveAnswerResult> {
+  validateSaveAnswerCommand(command);
   const expectedFingerprint = fingerprint(command);
 
   try {
     return await dependencies.transaction.run(
-      async (operations) => {
-        const replay = replayOrThrow(
-          await operations.idempotency.find(command.idempotencyKey),
+      (operations) =>
+        executeSaveAnswerTransaction(
+          command,
+          operations,
+          dependencies,
           expectedFingerprint,
-        );
-        if (replay !== null) return replay;
-
-        const current = await operations.attemptsPort.findById(
-          command.attemptId,
-        );
-        if (current === null) {
-          throw new ApplicationError("not_found", "Attempt was not found");
-        }
-        if (
-          current.participantId !== command.participantId ||
-          current.activityId !== command.activityId
-        ) {
-          throw new ApplicationError(
-            "forbidden",
-            "Attempt is outside the current scope",
-          );
-        }
-
-        const existing = await operations.answersPort.findByAttemptAndItem(
-          command.attemptId,
-          command.itemId,
-        );
-        const answer = createAnswer({
-          answerId: existing?.answerId ?? dependencies.idFactory(),
-          attemptId: command.attemptId,
-          itemId: command.itemId,
-          response: command.response,
-          savedAt: command.savedAt,
-        });
-        const savedAttempt = transitionAttempt(current, { type: "SALVAR" });
-
-        await operations.answersPort.save(answer);
-        await operations.attemptsPort.update(savedAttempt);
-        await operations.eventPublisher.publish({
-          eventId: dependencies.idFactory(),
-          eventType: "answer.saved.v1",
-          aggregateType: "attempt",
-          aggregateId: savedAttempt.attemptId,
-          occurredAt: command.savedAt,
-          schemaVersion: 1,
-          correlationId: command.correlationId,
-          payload: {
-            attempt_id: savedAttempt.attemptId,
-            item_id: answer.itemId,
-            status: "SALVA",
-          },
-        });
-        await operations.audit.append(
-          createAuditEntry({
-            auditId: dependencies.idFactory(),
-            principalId: command.participantId,
-            action: "ANSWER_SAVED",
-            resourceType: "attempt",
-            resourceId: savedAttempt.attemptId,
-            outcome: "SUCCESS",
-            reasonCode: "draft_saved",
-            requestId: command.correlationId,
-            correlationId: command.correlationId,
-            occurredAt: command.savedAt,
-          }),
-        );
-
-        const result = Object.freeze({ attempt: savedAttempt, answer });
-        await operations.idempotency.store(command.idempotencyKey, {
-          fingerprint: expectedFingerprint,
-          result,
-        });
-        return result;
-      },
+        ),
       { participantId: command.participantId },
     );
   } catch (error) {

@@ -92,6 +92,26 @@ describe("content editorial state machine", () => {
     ).toBe("AJUSTES_SOLICITADOS");
   });
 
+  it("reopens a clinical approval for a new reviewer after revocation or rotation", () => {
+    const approved = transitionContent(
+      transitionContent(
+        transitionContent(createContent(contentInput), {
+          type: "AUTOVERIFICAR",
+        }),
+        { type: "ENVIAR_PARA_REVISAO_CLINICA" },
+      ),
+      { type: "APROVAR_CLINICAMENTE" },
+    );
+
+    const reopened = transitionContent(approved, {
+      type: "REABRIR_REVISAO_CLINICA",
+    });
+    expect(reopened.status).toBe("EM_REVISAO_CLINICA");
+    expect(
+      transitionContent(reopened, { type: "APROVAR_CLINICAMENTE" }).status,
+    ).toBe("APROVADO_CLINICAMENTE");
+  });
+
   it("does not permit publication or withdrawal out of order", () => {
     const draft = createContent(contentInput);
 

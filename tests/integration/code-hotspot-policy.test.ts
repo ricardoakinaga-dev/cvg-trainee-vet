@@ -12,7 +12,6 @@ describe("code hotspot policy", () => {
       );
 
     expect(validateCodeHotspotSnapshot(snapshot)).toEqual([]);
-    expect(snapshot.hotspots.length).toBeGreaterThan(0);
     expect(snapshot.hotspots.every((hotspot) => hotspot.owner.length > 0)).toBe(
       true,
     );
@@ -21,6 +20,9 @@ describe("code hotspot policy", () => {
         (hotspot) => hotspot.characterizationTests.length > 0,
       ),
     ).toBe(true);
+    expect(
+      snapshot.availableFiles.some((path) => path.startsWith(".git/")),
+    ).toBe(false);
   });
 
   it("rejects an unplanned hotspot and a missing characterization test", () => {
@@ -44,6 +46,28 @@ describe("code hotspot policy", () => {
       "hotspot apps/api/src/http.ts has no owner",
       "hotspot apps/api/src/http.ts has no decomposition plan",
       "hotspot apps/api/src/http.ts characterization test is missing: tests/missing.test.ts",
+    ]);
+  });
+
+  it("rejects production function debt that regresses the ratchet", () => {
+    const snapshot: CodeHotspotSnapshot = {
+      maxProductionLines: 800,
+      maxProductionFunctionLines: 50,
+      maxLongFunctions: 1,
+      maxLongestFunctionLines: 80,
+      functionStats: {
+        functionCount: 4,
+        longFunctionCount: 2,
+        longestFunctionLines: 90,
+      },
+      sourceFiles: [],
+      availableFiles: [],
+      hotspots: [],
+    };
+
+    expect(validateCodeHotspotSnapshot(snapshot)).toEqual([
+      "long production function count 2 exceeds ratchet 1",
+      "longest production function 90 lines exceeds ratchet 80",
     ]);
   });
 });

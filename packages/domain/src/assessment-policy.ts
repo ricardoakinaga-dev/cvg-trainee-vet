@@ -91,14 +91,19 @@ function objectiveStatus(
   return objective.percent === undefined ? "DADO_INCOMPLETO" : "RESPONDIDO";
 }
 
-export function evaluateSummativeAssessment(
-  input: Readonly<{
-    readonly caseComponent: AssessmentComponent;
-    readonly examComponent: AssessmentComponent;
-    readonly quizPercent?: number;
-    readonly objectives: readonly ObjectiveAssessmentInput[];
-  }>,
-): SummativeAssessmentDecision {
+type SummativeAssessmentInput = Readonly<{
+  readonly caseComponent: AssessmentComponent;
+  readonly examComponent: AssessmentComponent;
+  readonly quizPercent?: number;
+  readonly objectives: readonly ObjectiveAssessmentInput[];
+}>;
+
+type ObjectiveSignals = Readonly<{
+  readonly criticalObjectiveIdsBelowThreshold: readonly string[];
+  readonly pendingObjectiveIds: readonly string[];
+}>;
+
+function normalizeSummativeComponents(input: SummativeAssessmentInput) {
   const caseComponent = normalizeComponent(
     input.caseComponent,
     "caseComponent",
@@ -116,11 +121,16 @@ export function evaluateSummativeAssessment(
   if (input.quizPercent !== undefined) {
     assertPercent(input.quizPercent, "quizPercent");
   }
+  return Object.freeze({ caseComponent, examComponent });
+}
 
+function collectObjectiveSignals(
+  objectives: readonly ObjectiveAssessmentInput[],
+): ObjectiveSignals {
   const seenObjectives = new Set<string>();
   const criticalObjectiveIdsBelowThreshold: string[] = [];
   const pendingObjectiveIds: string[] = [];
-  for (const objective of input.objectives) {
+  for (const objective of objectives) {
     assertNonEmpty(objective.objectiveId, "objectiveId");
     if (seenObjectives.has(objective.objectiveId)) {
       throw new AssessmentPolicyError("objectiveId must be unique");
@@ -147,26 +157,41 @@ export function evaluateSummativeAssessment(
       pendingObjectiveIds.push(objective.objectiveId);
     }
   }
+  return Object.freeze({
+    criticalObjectiveIdsBelowThreshold: Object.freeze([
+      ...criticalObjectiveIdsBelowThreshold,
+    ]),
+    pendingObjectiveIds: Object.freeze([...pendingObjectiveIds]),
+  });
+}
 
-  const components = [
-    { component: caseComponent, weight: 30 },
-    { component: examComponent, weight: 70 },
-  ] as const;
+function pendingDecision(
+  signals: ObjectiveSignals,
+): SummativeAssessmentDecision {
+  return freeze({
+    status: "PENDENTE_DADOS",
+    quizWeightPercent: 0,
+    caseWeightPercent: 30,
+    examWeightPercent: 70,
+    criticalObjectiveIdsBelowThreshold: freeze([
+      ...signals.criticalObjectiveIdsBelowThreshold,
+    ]),
+    pendingObjectiveIds: freeze([...signals.pendingObjectiveIds]),
+  });
+}
+
+function scoreSummativeComponents(
+  components: readonly Readonly<{
+    readonly component: AssessmentComponent;
+    readonly weight: number;
+  }>[],
+  signals: ObjectiveSignals,
+): SummativeAssessmentDecision {
   if (
     components.some(({ component }) => component.status === "DADO_INCOMPLETO")
   ) {
-    return freeze({
-      status: "PENDENTE_DADOS",
-      quizWeightPercent: 0,
-      caseWeightPercent: 30,
-      examWeightPercent: 70,
-      criticalObjectiveIdsBelowThreshold: freeze([
-        ...criticalObjectiveIdsBelowThreshold,
-      ]),
-      pendingObjectiveIds: freeze([...pendingObjectiveIds]),
-    });
+    return pendingDecision(signals);
   }
-
   const applicable = components.filter(
     ({ component }) => component.status === "RESPONDIDO",
   );
@@ -174,28 +199,20 @@ export function evaluateSummativeAssessment(
     (total, item) => total + item.weight,
     0,
   );
-  if (totalWeight === 0 || pendingObjectiveIds.length > 0) {
-    return freeze({
-      status: "PENDENTE_DADOS",
-      quizWeightPercent: 0,
-      caseWeightPercent: 30,
-      examWeightPercent: 70,
-      criticalObjectiveIdsBelowThreshold: freeze([
-        ...criticalObjectiveIdsBelowThreshold,
-      ]),
-      pendingObjectiveIds: freeze([...pendingObjectiveIds]),
-    });
+  if (totalWeight === 0 || signals.pendingObjectiveIds.length > 0) {
+    return pendingDecision(signals);
   }
 
   const weightedScore = applicable.reduce(
     (total, { component, weight }) =>
-      total + (component.scorePercent ?? 0) * weight,
+      total + (component.scorePercent as number) * weight,
     0,
   );
   const scorePercent = Math.round(weightedScore / totalWeight);
   return freeze({
     status:
-      scorePercent >= 70 && criticalObjectiveIdsBelowThreshold.length === 0
+      scorePercent >= 70 &&
+      signals.criticalObjectiveIdsBelowThreshold.length === 0
         ? "APROVADO"
         : "REFORCO",
     scorePercent,
@@ -203,10 +220,22 @@ export function evaluateSummativeAssessment(
     caseWeightPercent: 30,
     examWeightPercent: 70,
     criticalObjectiveIdsBelowThreshold: freeze([
-      ...criticalObjectiveIdsBelowThreshold,
+      ...signals.criticalObjectiveIdsBelowThreshold,
     ]),
-    pendingObjectiveIds: freeze([...pendingObjectiveIds]),
+    pendingObjectiveIds: freeze([...signals.pendingObjectiveIds]),
   });
+}
+
+export function evaluateSummativeAssessment(
+  input: SummativeAssessmentInput,
+): SummativeAssessmentDecision {
+  const normalized = normalizeSummativeComponents(input);
+  const signals = collectObjectiveSignals(input.objectives);
+  const components = [
+    { component: normalized.caseComponent, weight: 30 },
+    { component: normalized.examComponent, weight: 70 },
+  ] as const;
+  return scoreSummativeComponents(components, signals);
 }
 
 export type SummativeAttemptHistory = Readonly<{

@@ -52,4 +52,42 @@ describe("observed item statistics contract", () => {
       parseObservedItemStatistics({ ...valid, automaticDecision: "BLOCK" }),
     ).toThrow();
   });
+
+  it("rejects impossible aggregate counts in both request and projection contracts", () => {
+    const requestBase = {
+      itemId: valid.itemId,
+      scopeId: valid.scopeId,
+      contentVersion: valid.contentVersion,
+      observedAt: valid.observedAt,
+      sampleSize: valid.sampleSize,
+      correctCount: valid.correctCount,
+      appealCount: valid.appealCount,
+      discrimination: valid.discrimination,
+      distractorCounts: valid.distractorCounts,
+    } as const;
+    expect(() =>
+      observedItemStatisticsRequestSchema.parse({
+        ...requestBase,
+        correctCount: valid.sampleSize + 1,
+      }),
+    ).toThrow("correctCount");
+    expect(() =>
+      observedItemStatisticsRequestSchema.parse({
+        ...requestBase,
+        appealCount: valid.sampleSize + 1,
+      }),
+    ).toThrow("appealCount");
+    expect(() =>
+      parseObservedItemStatistics({
+        ...valid,
+        correctCount: valid.sampleSize + 1,
+      }),
+    ).toThrow("correctCount");
+    expect(() =>
+      parseObservedItemStatistics({
+        ...valid,
+        appealCount: valid.sampleSize + 1,
+      }),
+    ).toThrow("appealCount");
+  });
 });

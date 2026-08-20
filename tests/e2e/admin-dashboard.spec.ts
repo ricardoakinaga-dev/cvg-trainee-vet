@@ -21,6 +21,7 @@ function trainingCatalog() {
 
 test("admin acompanha avanço e disponibiliza um módulo", async ({ page }) => {
   const assignmentBodies: unknown[] = [];
+  let transitionCalls = 0;
   await page.route("**/api/v1/internal/dashboard", async (route) => {
     await route.fulfill({
       status: 200,
@@ -98,6 +99,18 @@ test("admin acompanha avanço e disponibiliza um módulo", async ({ page }) => {
     "**/api/v1/internal/learning-assignments/*/transition",
     async (route) => {
       assignmentBodies.push(route.request().postDataJSON());
+      transitionCalls += 1;
+      if (transitionCalls === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({
+            success: false,
+            error: { code: "internal_error", message: "temporary failure" },
+          }),
+        });
+        return;
+      }
       const body = route.request().postDataJSON() as { event: string };
       await route.fulfill({
         status: 200,
@@ -130,10 +143,14 @@ test("admin acompanha avanço e disponibiliza um módulo", async ({ page }) => {
   await expect(page.getByText("Fundamentos").first()).toBeVisible();
 
   await page.getByRole("button", { name: "Atribuir módulo" }).click();
+  await expect(page.locator("p[role=alert]")).toHaveText(
+    "Não foi possível atribuir o treinamento ao veterinário.",
+  );
+  await page.getByRole("button", { name: "Atribuir módulo" }).click();
   await expect(page.getByRole("status")).toHaveText(
     "Treinamento atribuído e disponibilizado.",
   );
-  expect(assignmentBodies).toHaveLength(3);
+  expect(assignmentBodies).toHaveLength(4);
   expect(assignmentBodies[0]).toMatchObject({
     participantId,
     scopeId,
@@ -145,8 +162,21 @@ test("admin acompanha avanço e disponibiliza um módulo", async ({ page }) => {
     scopeId,
   });
   expect(assignmentBodies[2]).toMatchObject({
+    event: "ATRIBUIR",
+    participantId,
+    scopeId,
+  });
+  expect(assignmentBodies[2]).toMatchObject({
+    assignmentId: (assignmentBodies[0] as { assignmentId: string })
+      .assignmentId,
+  });
+  expect(assignmentBodies[3]).toMatchObject({
     event: "DISPONIBILIZAR",
     participantId,
     scopeId,
+  });
+  expect(assignmentBodies[3]).toMatchObject({
+    assignmentId: (assignmentBodies[0] as { assignmentId: string })
+      .assignmentId,
   });
 });

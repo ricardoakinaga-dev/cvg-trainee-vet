@@ -18,6 +18,7 @@ const submitted: AttemptState = {
 
 function dependencies(
   initial: AttemptState = submitted,
+  approverOverride?: CorrectionTransactionalOperations["approver"],
 ): CorrectionUseCaseDependencies & {
   readonly attemptStates: AttemptState[];
   readonly resultStates: AssessmentResultState[];
@@ -71,6 +72,14 @@ function dependencies(
       append: async (entry) => {
         audits.push(entry);
       },
+    },
+    approver: approverOverride ?? {
+      findById: async (accountId) => ({
+        accountId,
+        accountStatus: "ACTIVE",
+        roles: ["CLINICAL_APPROVER"],
+        scopes: ["55555555-5555-4555-8555-555555555555"],
+      }),
     },
   };
 
@@ -157,5 +166,23 @@ describe("official correction application command", () => {
     await expect(
       correctOpenResponse({ ...command, score: 20 }, deps),
     ).rejects.toMatchObject({ code: "idempotency_conflict" });
+  });
+
+  it("revalidates the current corrector identity instead of the static approver id", async () => {
+    const suspended = dependencies(submitted, {
+      findById: async () => ({
+        accountId: command.principalId,
+        accountStatus: "SUSPENDED",
+        roles: ["CLINICAL_APPROVER"],
+        scopes: command.scopes,
+      }),
+    });
+
+    await expect(correctOpenResponse(command, suspended)).rejects.toMatchObject(
+      { code: "forbidden" },
+    );
+    expect(
+      suspended.attemptStates.some((a) => a.status === "CORRIGIDA_HUMANAMENTE"),
+    ).toBe(false);
   });
 });

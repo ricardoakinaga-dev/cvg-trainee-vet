@@ -31,6 +31,7 @@ describe.skipIf(
       EMBEDDING_MODEL: "cvg-local-embedding-v1",
       EMBEDDING_DIMENSION: "8",
       AI_ENABLED: "false",
+      METRICS_SCRAPE_TOKEN: "m".repeat(32),
     });
 
     await runtime.listen();
@@ -39,7 +40,9 @@ describe.skipIf(
       if (address === null || typeof address === "string") return;
       const baseUrl = `http://127.0.0.1:${address.port}`;
       const ready = await fetch(`${baseUrl}/health/ready`);
-      const dependencies = await fetch(`${baseUrl}/health/dependencies`);
+      const dependencies = await fetch(`${baseUrl}/health/dependencies`, {
+        headers: { authorization: `Bearer ${"m".repeat(32)}` },
+      });
       const body = (await dependencies.json()) as {
         data: {
           status: string;

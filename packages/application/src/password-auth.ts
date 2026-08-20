@@ -45,6 +45,7 @@ function scryptAsync(
 export type PasswordAccountRecord = Readonly<{
   readonly accountId: string;
   readonly accountStatus: AccountStatus;
+  readonly sessionGeneration: number;
   readonly roles: readonly Role[];
   readonly scopes: readonly string[];
   readonly passwordHash: string | null;
@@ -53,6 +54,9 @@ export type PasswordAccountRecord = Readonly<{
 export interface PasswordAuthAccountPort {
   readonly findByLogin: (
     login: string,
+  ) => Promise<PasswordAccountRecord | null>;
+  readonly findById: (
+    accountId: string,
   ) => Promise<PasswordAccountRecord | null>;
   readonly setPassword: (
     accountId: string,
@@ -94,6 +98,7 @@ export type LoggedInPassword = Readonly<{
 
 export type SetAccountPasswordCommand = Readonly<{
   readonly principalId: string;
+  readonly currentPassword: string;
   readonly password: string;
   readonly correlationId: string;
   readonly now?: Date;
@@ -291,6 +296,7 @@ export async function loginWithPassword(
         {
           accountId: account.accountId,
           accountStatus: account.accountStatus,
+          sessionGeneration: account.sessionGeneration,
           roles: account.roles,
           scopes: account.scopes,
           expiresInSeconds: command.sessionExpiresInSeconds,
@@ -330,15 +336,35 @@ export async function setAccountPassword(
   dependencies: PasswordAuthUseCaseDependencies,
 ): Promise<void> {
   assertNonEmpty(command.principalId, "principalId");
+  assertPasswordPolicy(command.currentPassword);
   assertCommand(command);
   assertPasswordPolicy(command.password);
+  if (command.password === command.currentPassword) {
+    throw new ApplicationError(
+      "validation_error",
+      "new password must differ from the current password",
+    );
+  }
   const now = command.now ?? new Date();
   assertDate(now);
-  const passwordHash = await hashPassword(command.password);
 
   try {
     await dependencies.transaction.run(async (operations) => {
+      const account = await operations.account.findById(command.principalId);
+      const currentPasswordValid =
+        account !== null &&
+        account.accountStatus === "ACTIVE" &&
+        account.passwordHash !== null &&
+        (await verifyPassword(command.currentPassword, account.passwordHash));
+      if (!currentPasswordValid) {
+        throw new ApplicationError(
+          "unauthenticated",
+          "Current authentication proof is invalid",
+        );
+      }
+      const passwordHash = await hashPassword(command.password);
       await operations.account.setPassword(command.principalId, passwordHash);
+      await operations.sessions.revokeAll(command.principalId, now);
       await operations.audit.append(
         createAuditEntry({
           auditId: dependencies.idFactory(),

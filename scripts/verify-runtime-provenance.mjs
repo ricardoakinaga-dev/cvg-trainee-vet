@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import process from "node:process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +12,7 @@ const DEFAULT_CONTAINERS = Object.freeze([
   "cvg-trainee-vet-ha-worker-a-1",
   "cvg-trainee-vet-ha-worker-b-1",
 ]);
+const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 
 export function assertRuntimeSourceSha(sourceSha) {
   if (typeof sourceSha !== "string" || !SOURCE_SHA_PATTERN.test(sourceSha)) {
@@ -20,67 +21,130 @@ export function assertRuntimeSourceSha(sourceSha) {
   return sourceSha.toLowerCase();
 }
 
-export function validateRuntimeProvenanceRecords(records, expectedSourceSha) {
+export function assertRuntimeDigest(digest) {
+  if (typeof digest !== "string" || !DIGEST_PATTERN.test(digest)) {
+    throw new Error("runtime provenance requires an immutable image digest");
+  }
+  return digest.toLowerCase();
+}
+
+export function assertGitSourceShaExists(sourceSha) {
+  const normalizedSourceSha = assertRuntimeSourceSha(sourceSha);
+  const result = spawnSync(
+    "git",
+    ["cat-file", "-e", `${normalizedSourceSha}^{commit}`],
+    { cwd: projectRoot, stdio: "ignore" },
+  );
+  if (result.error !== undefined || result.status !== 0) {
+    throw new Error(
+      `runtime provenance source SHA is not a Git commit: ${normalizedSourceSha}`,
+    );
+  }
+  return normalizedSourceSha;
+}
+
+export function validateRuntimeProvenanceRecords(
+  records,
+  expectedSourceSha,
+  expectedDigest,
+) {
   const expected = assertRuntimeSourceSha(expectedSourceSha);
+  const expectedImageDigest =
+    expectedDigest === undefined
+      ? undefined
+      : assertRuntimeDigest(expectedDigest);
   if (!Array.isArray(records) || records.length === 0) {
     throw new Error("runtime provenance requires at least one container");
   }
 
-  let commonDigest;
-  const containers = records.map((record, index) => {
-    const name = readContainerName(record, index);
-    if (record?.State?.Status !== "running") {
-      throw new Error(`runtime provenance container is not running: ${name}`);
-    }
-    if (record?.State?.Health?.Status !== "healthy") {
-      throw new Error(`runtime provenance container is not healthy: ${name}`);
-    }
-
-    const imageReference = record?.Config?.Image;
-    if (
-      typeof imageReference !== "string" ||
-      !IMMUTABLE_IMAGE_PATTERN.test(imageReference)
-    ) {
-      throw new Error(`runtime provenance image is not immutable: ${name}`);
-    }
-
-    const digest = record?.Image;
-    if (typeof digest !== "string" || !DIGEST_PATTERN.test(digest)) {
-      throw new Error(`runtime provenance digest is invalid: ${name}`);
-    }
-    const referenceDigest = imageReference.slice(
-      imageReference.lastIndexOf("@") + 1,
+  const containers = records.map((record, index) =>
+    validateRuntimeContainerRecord(
+      record,
+      index,
+      expected,
+      expectedImageDigest,
+    ),
+  );
+  const commonDigest = containers[0].digest.toLowerCase();
+  const divergingContainer = containers.find(
+    ({ digest }) => digest.toLowerCase() !== commonDigest,
+  );
+  if (divergingContainer !== undefined) {
+    throw new Error(
+      `runtime provenance digest diverges: ${divergingContainer.name}`,
     );
-    if (referenceDigest.toLowerCase() !== digest.toLowerCase()) {
-      throw new Error(`runtime provenance image/digest mismatch: ${name}`);
-    }
-    if (commonDigest === undefined) commonDigest = digest.toLowerCase();
-    if (commonDigest !== digest.toLowerCase()) {
-      throw new Error(`runtime provenance digest diverges: ${name}`);
-    }
-
-    const labelSha =
-      record?.Config?.Labels?.["org.opencontainers.image.revision"];
-    if (typeof labelSha !== "string" || labelSha.toLowerCase() !== expected) {
-      throw new Error(`runtime provenance source label diverges: ${name}`);
-    }
-    const environmentSha = readSourceSha(record?.Config?.Env);
-    if (environmentSha !== expected) {
-      throw new Error(
-        `runtime provenance source environment diverges: ${name}`,
-      );
-    }
-
-    return Object.freeze({ name, imageReference, sourceSha: expected, digest });
-  });
+  }
 
   return Object.freeze({
     status: "PASS",
     expectedSourceSha: expected,
+    expectedDigest: expectedImageDigest,
     commonDigest,
     containerCount: containers.length,
     containers: Object.freeze(containers),
   });
+}
+
+function validateRuntimeContainerRecord(
+  record,
+  index,
+  expectedSourceSha,
+  expectedDigest,
+) {
+  const name = readContainerName(record, index);
+  if (record?.State?.Status !== "running") {
+    throw new Error(`runtime provenance container is not running: ${name}`);
+  }
+  if (record?.State?.Health?.Status !== "healthy") {
+    throw new Error(`runtime provenance container is not healthy: ${name}`);
+  }
+
+  const image = readValidatedRuntimeImage(record, name, expectedDigest);
+  const referenceDigest = image.imageReference.slice(
+    image.imageReference.lastIndexOf("@") + 1,
+  );
+  if (referenceDigest.toLowerCase() !== image.digest.toLowerCase()) {
+    throw new Error(`runtime provenance image/digest mismatch: ${name}`);
+  }
+
+  const labelSha =
+    record?.Config?.Labels?.["org.opencontainers.image.revision"];
+  if (
+    typeof labelSha !== "string" ||
+    labelSha.toLowerCase() !== expectedSourceSha
+  ) {
+    throw new Error(`runtime provenance source label diverges: ${name}`);
+  }
+  if (readSourceSha(record?.Config?.Env) !== expectedSourceSha) {
+    throw new Error(`runtime provenance source environment diverges: ${name}`);
+  }
+
+  return Object.freeze({
+    name,
+    imageReference: image.imageReference,
+    sourceSha: expectedSourceSha,
+    digest: image.digest,
+  });
+}
+
+function readValidatedRuntimeImage(record, name, expectedDigest) {
+  const imageReference = record?.Config?.Image;
+  if (
+    typeof imageReference !== "string" ||
+    !IMMUTABLE_IMAGE_PATTERN.test(imageReference)
+  ) {
+    throw new Error(`runtime provenance image is not immutable: ${name}`);
+  }
+  const digest = record?.Image;
+  if (typeof digest !== "string" || !DIGEST_PATTERN.test(digest)) {
+    throw new Error(`runtime provenance digest is invalid: ${name}`);
+  }
+  if (expectedDigest !== undefined && digest.toLowerCase() !== expectedDigest) {
+    throw new Error(
+      `runtime provenance digest does not match expected manifest digest: ${name}`,
+    );
+  }
+  return Object.freeze({ imageReference, digest });
 }
 
 export async function runRuntimeProvenanceVerification(
@@ -97,9 +161,17 @@ export async function runRuntimeProvenanceVerification(
   const expectedSourceSha = assertRuntimeSourceSha(
     environment.CVG_RUNTIME_EXPECTED_SOURCE_SHA ?? environment.CVG_SOURCE_SHA,
   );
+  const expectedDigest = assertRuntimeDigest(
+    environment.CVG_RUNTIME_EXPECTED_DIGEST,
+  );
+  assertGitSourceShaExists(expectedSourceSha);
   const containers = parseContainerNames(environment.CVG_RUNTIME_CONTAINERS);
-  const records = await inspectContainers(containers);
-  return validateRuntimeProvenanceRecords(records, expectedSourceSha);
+  const records = await inspectContainers(containers, environment);
+  return validateRuntimeProvenanceRecords(
+    records,
+    expectedSourceSha,
+    expectedDigest,
+  );
 }
 
 function parseContainerNames(value) {
@@ -133,10 +205,10 @@ function readSourceSha(environmentValues) {
   return SOURCE_SHA_PATTERN.test(sourceSha) ? sourceSha.toLowerCase() : null;
 }
 
-function inspectContainers(containers) {
+function inspectContainers(containers, environment) {
   return new Promise((resolveOutput, reject) => {
     const child = spawn("docker", ["inspect", ...containers], {
-      env: process.env,
+      env: environment,
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";

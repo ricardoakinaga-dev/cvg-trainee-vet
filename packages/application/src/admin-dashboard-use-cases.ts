@@ -153,24 +153,14 @@ function isActiveCatalogStatus(
   return activeModuleStatuses.includes(status);
 }
 
-export function buildAdminDashboard(
-  snapshots: readonly AdminDashboardParticipantSnapshot[],
-): AdminDashboard {
-  const projected = snapshots
-    .map(participantProjection)
-    .sort((left, right) =>
-      left.participant.professionalEmail.localeCompare(
-        right.participant.professionalEmail,
-      ),
-    );
-  const participants = Object.freeze(
-    projected.map(({ participant }) => participant),
-  );
+function buildAdminSummary(
+  participants: readonly AdminDashboardParticipant[],
+): AdminDashboardSummary {
   const progressTotal = participants.reduce(
     (total, participant) => total + participant.progressPercent,
     0,
   );
-  const summary = Object.freeze({
+  return Object.freeze({
     participantsTotal: participants.length,
     activeParticipants: participants.filter(
       ({ accountStatus }) => accountStatus === "ACTIVE",
@@ -192,49 +182,73 @@ export function buildAdminDashboard(
       0,
     ),
   });
+}
 
-  const trainingCatalog = Object.freeze(
-    curriculumV3.modules.map((module) => {
-      let assignedParticipants = 0;
-      let activeParticipants = 0;
-      let completedParticipants = 0;
-
-      for (const item of projected) {
-        const roadmapModule = item.dashboard.roadmap.find(
-          (candidate) => candidate.moduleId === module.id,
-        );
-        if (item.assignedModuleIds.has(module.id)) {
-          assignedParticipants += 1;
-          if (
-            roadmapModule !== undefined &&
-            isActiveCatalogStatus(roadmapModule.status)
-          ) {
-            activeParticipants += 1;
-          }
-        }
-        if (roadmapModule?.status === "CONCLUIDO_DIGITAL") {
-          completedParticipants += 1;
-        }
+function buildTrainingCatalogEntry(
+  module: (typeof curriculumV3.modules)[number],
+  projected: readonly ReturnType<typeof participantProjection>[],
+): AdminDashboardTrainingModule {
+  let assignedParticipants = 0;
+  let activeParticipants = 0;
+  let completedParticipants = 0;
+  for (const item of projected) {
+    const roadmapModule = item.dashboard.roadmap.find(
+      (candidate) => candidate.moduleId === module.id,
+    );
+    if (item.assignedModuleIds.has(module.id)) {
+      assignedParticipants += 1;
+      if (
+        roadmapModule !== undefined &&
+        isActiveCatalogStatus(roadmapModule.status)
+      ) {
+        activeParticipants += 1;
       }
+    }
+    if (roadmapModule?.status === "CONCLUIDO_DIGITAL") {
+      completedParticipants += 1;
+    }
+  }
+  return Object.freeze({
+    moduleId: module.id,
+    month: module.month,
+    title: module.title,
+    competence: module.competence,
+    assignedParticipants,
+    activeParticipants,
+    completedParticipants,
+  });
+}
 
-      return Object.freeze({
-        moduleId: module.id,
-        month: module.month,
-        title: module.title,
-        competence: module.competence,
-        assignedParticipants,
-        activeParticipants,
-        completedParticipants,
-      });
-    }),
+function buildTrainingCatalog(
+  projected: readonly ReturnType<typeof participantProjection>[],
+): readonly AdminDashboardTrainingModule[] {
+  return Object.freeze(
+    curriculumV3.modules.map((module) =>
+      buildTrainingCatalogEntry(module, projected),
+    ),
+  );
+}
+
+export function buildAdminDashboard(
+  snapshots: readonly AdminDashboardParticipantSnapshot[],
+): AdminDashboard {
+  const projected = snapshots
+    .map(participantProjection)
+    .sort((left, right) =>
+      left.participant.professionalEmail.localeCompare(
+        right.participant.professionalEmail,
+      ),
+    );
+  const participants = Object.freeze(
+    projected.map(({ participant }) => participant),
   );
 
   return Object.freeze({
     curriculumId: curriculumV3.id,
     curriculumVersion: curriculumV3.version,
-    summary,
+    summary: buildAdminSummary(participants),
     participants,
-    trainingCatalog,
+    trainingCatalog: buildTrainingCatalog(projected),
   });
 }
 

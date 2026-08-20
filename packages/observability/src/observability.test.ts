@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   createOtlpHttpTraceSink,
+  createMetricsPort,
   createObservability,
   sanitizeCorrelationId,
   type LogRecord,
@@ -9,6 +10,26 @@ import {
 } from "./observability.js";
 
 describe("observability", () => {
+  it("composes an immutable metrics port independently from the logger", () => {
+    const metrics = createMetricsPort({
+      safeMetricName: (value) => value,
+      sanitizeLabels: (labels) => Object.freeze({ ...(labels ?? {}) }),
+      labelsKey: (labels) => JSON.stringify(Object.entries(labels).sort()),
+      renderPrometheusMetrics: () => "",
+    });
+
+    expect(Object.isFrozen(metrics)).toBe(true);
+    metrics.increment("api.requests.total", { status: "200" });
+
+    expect(metrics.snapshot().counters).toEqual([
+      {
+        name: "api.requests.total",
+        value: 1,
+        labels: { status: "200" },
+      },
+    ]);
+  });
+
   it("exposes an immutable non-invasive collection policy", () => {
     const observability = createObservability({
       service: "api",
@@ -190,6 +211,8 @@ describe("observability", () => {
       2,
     );
     metrics.increment("Worker.Events", { route: "/health/live" }, 3);
+    metrics.increment("worker.other", {}, 1);
+    metrics.increment("Worker.Events", { route: "/health/live" }, 1);
     metrics.observe("worker.duration", -1);
     metrics.observe("worker.duration", Number.NaN);
     metrics.observe("worker.duration", 10, { route: "/health/live" });
@@ -199,9 +222,10 @@ describe("observability", () => {
       counters: [
         {
           name: "worker.events",
-          value: 5,
+          value: 6,
           labels: { route: "/health/live" },
         },
+        { name: "worker.other", value: 1, labels: {} },
       ],
       histograms: [
         {
@@ -254,14 +278,122 @@ describe("observability", () => {
 
     const rendered = observability.metrics.prometheus();
 
-    expect(rendered).toContain("# TYPE worker_events_processed counter");
+    expect(rendered).toContain("# TYPE worker_events_processed_total counter");
     expect(rendered).toContain(
-      'worker_events_processed{event_type="content.published.v1"} 2',
+      'worker_events_processed_total{event_type="content.published.v1"} 2',
     );
-    expect(rendered).toContain("worker_batch_duration_ms_count");
-    expect(rendered).toContain("worker_batch_duration_ms_sum");
+    expect(rendered).toContain("worker_batch_duration_seconds_count");
+    expect(rendered).toContain("worker_batch_duration_seconds_sum");
     expect(rendered).not.toContain("participant");
     expect(observability.metrics.prometheus()).toBe(rendered);
+  });
+
+  it("rejects distinct internal metric names that collapse to one Prometheus family", () => {
+    const observability = createObservability({
+      service: "worker",
+      sink: () => undefined,
+    });
+
+    observability.metrics.increment("worker.events:processed", {}, 1);
+    observability.metrics.increment("worker.events_processed", {}, 1);
+
+    expect(() => observability.metrics.prometheus()).toThrow(
+      "Prometheus metric family collision",
+    );
+  });
+
+  it("emits one HELP/TYPE pair per family and deterministic series ordering", () => {
+    const observability = createObservability({
+      service: "worker",
+      sink: () => undefined,
+    });
+
+    observability.metrics.increment(
+      "worker.events.processed",
+      { event_type: "zeta" },
+      1,
+    );
+    observability.metrics.increment(
+      "worker.events.processed",
+      { event_type: "alpha" },
+      2,
+    );
+    observability.metrics.observe("worker.duration_ms", 10, {
+      route: "/zeta",
+    });
+    observability.metrics.observe("worker.duration_ms", 5, {
+      route: "/alpha",
+    });
+
+    const rendered = observability.metrics.prometheus();
+    const helpLines = rendered.match(
+      /^# HELP worker_events_processed_total .+$/gmu,
+    );
+    const typeLines = rendered.match(
+      /^# TYPE worker_events_processed_total counter$/gmu,
+    );
+
+    expect(helpLines).toHaveLength(1);
+    expect(typeLines).toHaveLength(1);
+    expect(
+      rendered.match(/^# TYPE worker_duration_seconds histogram$/gmu),
+    ).toHaveLength(1);
+    expect(
+      rendered.match(/^# TYPE worker_duration_seconds_p95 gauge$/gmu),
+    ).toHaveLength(1);
+    expect(
+      rendered.indexOf("# TYPE worker_events_processed_total counter"),
+    ).toBeLessThan(
+      rendered.indexOf('worker_events_processed_total{event_type="alpha"} 2'),
+    );
+    expect(
+      rendered.indexOf('worker_events_processed_total{event_type="alpha"} 2'),
+    ).toBeLessThan(
+      rendered.indexOf('worker_events_processed_total{event_type="zeta"} 1'),
+    );
+  });
+
+  it("preserves the complete Prometheus wire format for sorted families", () => {
+    const observability = createObservability({
+      service: "worker",
+      sink: () => undefined,
+    });
+
+    observability.metrics.increment(
+      "worker.events.processed",
+      { event_type: "zeta" },
+      1,
+    );
+    observability.metrics.increment(
+      "worker.events.processed",
+      { event_type: "alpha" },
+      2,
+    );
+    observability.metrics.observe("worker.duration_ms", 10, {
+      route: "/zeta",
+    });
+    observability.metrics.observe("worker.duration_ms", 5, {
+      route: "/alpha",
+    });
+
+    expect(observability.metrics.prometheus()).toBe(
+      [
+        "# HELP worker_events_processed_total CVG metric worker_events_processed_total",
+        "# TYPE worker_events_processed_total counter",
+        'worker_events_processed_total{event_type="alpha"} 2',
+        'worker_events_processed_total{event_type="zeta"} 1',
+        "# HELP worker_duration_seconds CVG metric worker_duration_seconds",
+        "# TYPE worker_duration_seconds histogram",
+        'worker_duration_seconds_count{route="/alpha"} 1',
+        'worker_duration_seconds_sum{route="/alpha"} 0.005',
+        "# HELP worker_duration_seconds_p95 CVG metric worker_duration_seconds_p95",
+        "# TYPE worker_duration_seconds_p95 gauge",
+        'worker_duration_seconds_p95{route="/alpha"} 0.005',
+        'worker_duration_seconds_count{route="/zeta"} 1',
+        'worker_duration_seconds_sum{route="/zeta"} 0.01',
+        'worker_duration_seconds_p95{route="/zeta"} 0.01',
+      ].join("\n") + "\n",
+    );
   });
 
   it("exports a bounded p95 gauge for latency SLO dashboards", () => {
@@ -275,7 +407,7 @@ describe("observability", () => {
     observability.metrics.observe("api.request.duration_ms", 300);
 
     expect(observability.metrics.prometheus()).toContain(
-      "api_request_duration_ms_p95 300",
+      "api_request_duration_seconds_p95 0.3",
     );
   });
 

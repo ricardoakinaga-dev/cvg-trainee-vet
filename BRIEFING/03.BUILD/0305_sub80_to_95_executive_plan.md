@@ -1,5 +1,13 @@
 # 0305 — Plano executivo dos itens abaixo de 80 para elegibilidade 95
 
+> **Status documental:** HISTÓRICO/SUPERSEDED. Este plano preserva a baseline e
+> as decisões da sua janela de execução original; o overlay ativo para a
+> auditoria de qualidade de 2026-08-16 é
+> `BRIEFING/03.BUILD/0306_code_quality_95_executive_plan.md`, com roadmap
+> `BRIEFING/04.AUDIT/0512_code_quality_95_roadmap.md` e backlog
+> `BRIEFING/04.AUDIT/0513_code_quality_95_backlog.md`. Pesos, notas e projeções
+> deste documento não devem ser usados como scorecard atual.
+
 ## 1. Mandato
 
 Este documento é um recorte executivo suplementar do programa `0304`. Ele atua **somente** nos seis itens cuja nota oficial no `0491` é inferior a 80/100 e reutiliza as tasks canônicas do `0493`; não cria um segundo backlog concorrente, não reabre itens com nota igual ou superior a 80 e não altera a baseline auditada.

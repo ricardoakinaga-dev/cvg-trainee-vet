@@ -159,6 +159,138 @@ function runtimeRowToState(
   return curriculumRuntimeRowToState(row as CurriculumRuntimeRowShape);
 }
 
+type JourneyTransactionExecutor = Parameters<
+  Parameters<DatabaseExecutor["transaction"]>[0]
+>[0];
+type JourneyAssignment = ParticipantLearningJourneyState["assignments"][number];
+type JourneyResult = ParticipantLearningJourneyState["results"][number];
+
+function normalizeScopeIds(scopeIds: readonly string[]): readonly string[] {
+  return Object.freeze([
+    ...new Set(
+      scopeIds
+        .map((scopeId) => scopeId.trim())
+        .filter((scopeId) => scopeId.length > 0),
+    ),
+  ]);
+}
+
+function emptyJourney(participantId: string): ParticipantLearningJourneyState {
+  return Object.freeze({
+    participantId,
+    assignments: Object.freeze([]),
+    activities: Object.freeze([]),
+    results: Object.freeze([]),
+    runtimes: Object.freeze([]),
+  });
+}
+
+async function readJourneyActivityRows(
+  executor: JourneyTransactionExecutor,
+  participantId: string,
+  scopeIds: readonly string[],
+): Promise<readonly JourneyActivityRow[]> {
+  return executor
+    .select({
+      activityId: activityAssignments.activityId,
+      scopeId: learningActivities.scopeId,
+      slug: learningActivities.slug,
+      title: learningActivities.title,
+      status: activityAssignments.status,
+      attemptId: attempts.id,
+      attemptStatus: attempts.status,
+      attemptVersion: attempts.version,
+      attemptUpdatedAt: attempts.updatedAt,
+    })
+    .from(activityAssignments)
+    .innerJoin(
+      learningActivities,
+      eq(activityAssignments.activityId, learningActivities.id),
+    )
+    .leftJoin(
+      attempts,
+      and(
+        eq(attempts.participantId, participantId),
+        eq(attempts.activityId, activityAssignments.activityId),
+      ),
+    )
+    .where(
+      and(
+        eq(activityAssignments.participantId, participantId),
+        eq(learningActivities.status, "PUBLISHED"),
+        inArray(learningActivities.scopeId, scopeIds),
+        inArray(activityAssignments.status, assignmentStatuses),
+      ),
+    )
+    .orderBy(asc(learningActivities.slug), desc(attempts.updatedAt));
+}
+
+async function readJourneyRuntimeStates(
+  executor: JourneyTransactionExecutor,
+  participantId: string,
+  scopeIds: readonly string[],
+): Promise<readonly ReturnType<typeof curriculumRuntimeRowToState>[]> {
+  const rows = await executor
+    .select()
+    .from(curriculumRuntimeStates)
+    .where(
+      and(
+        eq(curriculumRuntimeStates.participantId, participantId),
+        inArray(curriculumRuntimeStates.scopeId, scopeIds),
+      ),
+    );
+  return Object.freeze(rows.map(runtimeRowToState));
+}
+
+async function readScopedJourneyState(
+  executor: JourneyTransactionExecutor,
+  participantId: string,
+  scopeIds: readonly string[],
+): Promise<
+  Readonly<{
+    readonly assignments: readonly JourneyAssignment[];
+    readonly results: readonly JourneyResult[];
+  }>
+> {
+  const assignments: JourneyAssignment[] = [];
+  const results: JourneyResult[] = [];
+
+  for (const scopeId of scopeIds) {
+    await setDatabaseSecurityContext(executor, {
+      participantId,
+      scopeId,
+    });
+    const assignmentRows = await executor
+      .select()
+      .from(learningAssignments)
+      .where(
+        and(
+          eq(learningAssignments.participantId, participantId),
+          eq(learningAssignments.scopeId, scopeId),
+        ),
+      )
+      .orderBy(asc(learningAssignments.moduleId));
+    assignments.push(...assignmentRows.map(learningAssignmentRowToState));
+
+    const workflowRows = await executor
+      .select()
+      .from(assessmentWorkflows)
+      .where(
+        and(
+          eq(assessmentWorkflows.participantId, participantId),
+          eq(assessmentWorkflows.scopeId, scopeId),
+        ),
+      )
+      .orderBy(asc(assessmentWorkflows.resultId));
+    results.push(...workflowRows.map(assessmentWorkflowRowToState));
+  }
+
+  return Object.freeze({
+    assignments: Object.freeze([...assignments]),
+    results: Object.freeze([...results]),
+  });
+}
+
 export function createParticipantJourneyRepository(
   db: DatabaseExecutor,
 ): ParticipantJourneyReadPort {
@@ -168,117 +300,37 @@ export function createParticipantJourneyRepository(
       scopeIds: readonly string[],
     ): Promise<ParticipantLearningJourneyState> => {
       assertNonEmpty(participantId, "participantId");
-      const normalizedScopeIds = [
-        ...new Set(
-          scopeIds
-            .map((scopeId) => scopeId.trim())
-            .filter((scopeId) => scopeId.length > 0),
-        ),
-      ];
+      const normalizedScopeIds = normalizeScopeIds(scopeIds);
 
       return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
         if (normalizedScopeIds.length === 0) {
-          return Object.freeze({
-            participantId,
-            assignments: Object.freeze([]),
-            activities: Object.freeze([]),
-            results: Object.freeze([]),
-            runtimes: Object.freeze([]),
-          });
+          return emptyJourney(participantId);
         }
 
-        await setDatabaseSecurityContext(executor, { participantId });
-        const activityRows: readonly JourneyActivityRow[] = await executor
-          .select({
-            activityId: activityAssignments.activityId,
-            scopeId: learningActivities.scopeId,
-            slug: learningActivities.slug,
-            title: learningActivities.title,
-            status: activityAssignments.status,
-            attemptId: attempts.id,
-            attemptStatus: attempts.status,
-            attemptVersion: attempts.version,
-            attemptUpdatedAt: attempts.updatedAt,
-          })
-          .from(activityAssignments)
-          .innerJoin(
-            learningActivities,
-            eq(activityAssignments.activityId, learningActivities.id),
-          )
-          .leftJoin(
-            attempts,
-            and(
-              eq(attempts.participantId, participantId),
-              eq(attempts.activityId, activityAssignments.activityId),
-            ),
-          )
-          .where(
-            and(
-              eq(activityAssignments.participantId, participantId),
-              eq(learningActivities.status, "PUBLISHED"),
-              inArray(learningActivities.scopeId, normalizedScopeIds),
-              inArray(activityAssignments.status, assignmentStatuses),
-            ),
-          )
-          .orderBy(asc(learningActivities.slug), desc(attempts.updatedAt));
+        await setDatabaseSecurityContext(transaction, { participantId });
+        const activityRows = await readJourneyActivityRows(
+          transaction,
+          participantId,
+          normalizedScopeIds,
+        );
         const activities = activityRowsToJourney(activityRows);
+        const runtimes = await readJourneyRuntimeStates(
+          transaction,
+          participantId,
+          normalizedScopeIds,
+        );
+        const scopedState = await readScopedJourneyState(
+          transaction,
+          participantId,
+          normalizedScopeIds,
+        );
 
-        const runtimeRows = await executor
-          .select()
-          .from(curriculumRuntimeStates)
-          .where(
-            and(
-              eq(curriculumRuntimeStates.participantId, participantId),
-              inArray(curriculumRuntimeStates.scopeId, normalizedScopeIds),
-            ),
-          );
-        const runtimes = Object.freeze(runtimeRows.map(runtimeRowToState));
-        const assignments =
-          [] as ParticipantLearningJourneyState["assignments"] extends readonly (infer T)[]
-            ? T[]
-            : never[];
-        const results =
-          [] as ParticipantLearningJourneyState["results"] extends readonly (infer T)[]
-            ? T[]
-            : never[];
-
-        for (const scopeId of normalizedScopeIds) {
-          await setDatabaseSecurityContext(executor, {
-            participantId,
-            scopeId,
-          });
-          const assignmentRows = await executor
-            .select()
-            .from(learningAssignments)
-            .where(
-              and(
-                eq(learningAssignments.participantId, participantId),
-                eq(learningAssignments.scopeId, scopeId),
-              ),
-            )
-            .orderBy(asc(learningAssignments.moduleId));
-          assignments.push(...assignmentRows.map(learningAssignmentRowToState));
-
-          const workflowRows = await executor
-            .select()
-            .from(assessmentWorkflows)
-            .where(
-              and(
-                eq(assessmentWorkflows.participantId, participantId),
-                eq(assessmentWorkflows.scopeId, scopeId),
-              ),
-            )
-            .orderBy(asc(assessmentWorkflows.resultId));
-          results.push(...workflowRows.map(assessmentWorkflowRowToState));
-        }
-
-        await setDatabaseSecurityContext(executor, { participantId });
+        await setDatabaseSecurityContext(transaction, { participantId });
         return Object.freeze({
           participantId,
-          assignments: Object.freeze([...assignments]),
+          assignments: scopedState.assignments,
           activities,
-          results: Object.freeze([...results]),
+          results: scopedState.results,
           runtimes,
         });
       });

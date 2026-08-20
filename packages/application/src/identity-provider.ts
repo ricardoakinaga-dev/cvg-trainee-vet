@@ -202,17 +202,18 @@ function parseOperation(value: unknown): IdentityProviderOperation {
   });
 }
 
-export function createHttpIdentityProvider(
+type ProviderRequest = (
+  path: string,
+  method: "GET" | "POST",
+  principalId: string,
+  body?: Readonly<Record<string, string>>,
+) => Promise<unknown>;
+
+function createProviderRequest(
   options: IdentityProviderOptions,
-): IdentityProviderPort {
-  assertProviderOptions(options);
-  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
-  const request = async (
-    path: string,
-    method: "GET" | "POST",
-    principalId: string,
-    body: Readonly<Record<string, string>> = {},
-  ): Promise<unknown> => {
+  fetchImpl: IdentityProviderFetch,
+): ProviderRequest {
+  return async (path, method, principalId, body = {}) => {
     assertPrincipalId(principalId);
     const response = await fetchImpl(providerUrl(options.baseUrl, path), {
       method,
@@ -225,6 +226,23 @@ export function createHttpIdentityProvider(
     });
     return parseProviderResponse(response);
   };
+}
+
+async function requestOperation(
+  request: ProviderRequest,
+  principalId: string,
+  path: string,
+  body?: Readonly<Record<string, string>>,
+): Promise<IdentityProviderOperation> {
+  return parseOperation(await request(path, "POST", principalId, body));
+}
+
+export function createHttpIdentityProvider(
+  options: IdentityProviderOptions,
+): IdentityProviderPort {
+  assertProviderOptions(options);
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  const request = createProviderRequest(options, fetchImpl);
 
   return Object.freeze({
     getSecurityStatus: async (principalId: string) =>
@@ -236,20 +254,16 @@ export function createHttpIdentityProvider(
         ),
       ),
     beginRecovery: async (principalId: string) =>
-      parseOperation(
-        await request(
-          `/v1/accounts/${encodeURIComponent(principalId)}/recovery`,
-          "POST",
-          principalId,
-        ),
+      requestOperation(
+        request,
+        principalId,
+        `/v1/accounts/${encodeURIComponent(principalId)}/recovery`,
       ),
     beginMfaEnrollment: async (principalId: string) =>
-      parseOperation(
-        await request(
-          `/v1/accounts/${encodeURIComponent(principalId)}/mfa/enrollment`,
-          "POST",
-          principalId,
-        ),
+      requestOperation(
+        request,
+        principalId,
+        `/v1/accounts/${encodeURIComponent(principalId)}/mfa/enrollment`,
       ),
     verifyMfaEnrollment: async (
       principalId: string,
@@ -258,13 +272,11 @@ export function createHttpIdentityProvider(
     ) => {
       assertOpaqueValue(operationId, "operationId");
       assertOpaqueValue(verificationCode, "verificationCode");
-      return parseOperation(
-        await request(
-          `/v1/accounts/${encodeURIComponent(principalId)}/mfa/enrollment/verify`,
-          "POST",
-          principalId,
-          { operationId, verificationCode },
-        ),
+      return requestOperation(
+        request,
+        principalId,
+        `/v1/accounts/${encodeURIComponent(principalId)}/mfa/enrollment/verify`,
+        { operationId, verificationCode },
       );
     },
     completeRecovery: async (
@@ -274,13 +286,11 @@ export function createHttpIdentityProvider(
     ) => {
       assertOpaqueValue(operationId, "operationId");
       assertOpaqueValue(verificationCode, "verificationCode");
-      return parseOperation(
-        await request(
-          `/v1/accounts/${encodeURIComponent(principalId)}/recovery/complete`,
-          "POST",
-          principalId,
-          { operationId, verificationCode },
-        ),
+      return requestOperation(
+        request,
+        principalId,
+        `/v1/accounts/${encodeURIComponent(principalId)}/recovery/complete`,
+        { operationId, verificationCode },
       );
     },
   });

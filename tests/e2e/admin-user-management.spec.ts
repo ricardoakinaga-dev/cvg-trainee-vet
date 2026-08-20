@@ -122,18 +122,6 @@ test("first access accepts the invitation and creates the user password", async 
       body: JSON.stringify(successEnvelope({ status: "active" })),
     });
   });
-  await page.route("**/api/v1/account/password", async (route) => {
-    calls.push({
-      path: "/api/v1/account/password",
-      body: route.request().postDataJSON(),
-    });
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(successEnvelope({ status: "updated" })),
-    });
-  });
-
   await page.goto(`/invite?token=${invitationToken}`);
   await expect(
     page.getByRole("heading", { name: "Criar senha de primeiro acesso" }),
@@ -150,11 +138,11 @@ test("first access accepts the invitation and creates the user password", async 
   expect(calls).toEqual([
     {
       path: "/api/v1/invitations/accept",
-      body: { token: invitationToken, sessionExpiresInSeconds: 3600 },
-    },
-    {
-      path: "/api/v1/account/password",
-      body: { password: firstAccessPassword },
+      body: {
+        token: invitationToken,
+        password: firstAccessPassword,
+        sessionExpiresInSeconds: 3600,
+      },
     },
   ]);
   await expect(page.locator("body")).not.toContainText(invitationToken);

@@ -1,5 +1,11 @@
 # 0491 — Relatório completo da auditoria atual do programa CVG
 
+> **Baseline de maturidade congelada:** a nota `83,24/100` e as 16 linhas deste
+> corte só mudam por reauditoria independente. O overlay executivo corrente é
+> `../03.BUILD/0308_dual_98_executive_program.md`; a avaliação pós-hardening está
+> em `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`. Dual 95 permanece
+> histórico.
+
 **Data da verificação:** 2026-08-11T22:15:31-03:00
 **Projeto:** `cvg-trainee-vet`
 **HEAD:** `9803c85ca62cda0684802aaa68a5dd3418f43c88`

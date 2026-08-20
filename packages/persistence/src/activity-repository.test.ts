@@ -194,6 +194,142 @@ describe("published activity persistence mapping", () => {
     ).toThrow(PersistenceMappingError);
   });
 
+  it("rejects malformed participant-safe metadata at every mapping boundary", () => {
+    const row = (overrides: Record<string, unknown>) =>
+      [{ ...rows[0], ...overrides }] as unknown as readonly ActivityRowShape[];
+    const expectMappingError = (overrides: Record<string, unknown>) =>
+      expect(() => activityRowsToState(row(overrides))).toThrow(
+        PersistenceMappingError,
+      );
+
+    expectMappingError({ activityId: " " });
+    expectMappingError({ scopeId: " " });
+    expectMappingError({ slug: " " });
+    expectMappingError({ title: " " });
+    expectMappingError({ kind: "INVALID" });
+    expectMappingError({ responseMode: "INVALID" });
+    expectMappingError({ text: "x".repeat(20_001) });
+    expectMappingError({ choices: [] });
+    expectMappingError({ choices: [null, { id: "b", label: "B", text: "B" }] });
+    expectMappingError({
+      choices: [
+        { id: "a", label: "A", text: "A" },
+        { id: "a", label: "B", text: "B" },
+      ],
+    });
+    expectMappingError({
+      choices: [
+        { id: " ", label: "A", text: "A" },
+        { id: "b", label: "B", text: "B" },
+      ],
+    });
+    expectMappingError({ selectionMode: "INVALID" });
+    expectMappingError({ interaction: "INVALID" });
+    expectMappingError({
+      interaction: {
+        kind: "STRUCTURED_FIELDS",
+        evaluationMode: "AUTOMATIC",
+        fields: [],
+      },
+    });
+    expectMappingError({
+      interaction: {
+        kind: "STRUCTURED_FIELDS",
+        evaluationMode: "AUTOMATIC",
+        fields: [null],
+      },
+    });
+    expectMappingError({
+      interaction: {
+        kind: "STRUCTURED_FIELDS",
+        evaluationMode: "AUTOMATIC",
+        fields: [{ id: "field", label: "Campo", valueType: "INVALID" }],
+      },
+    });
+    expectMappingError({
+      interaction: {
+        kind: "STRUCTURED_FIELDS",
+        evaluationMode: "AUTOMATIC",
+        fields: [{ id: "field", label: "Campo", valueType: "TEXT", min: "0" }],
+      },
+    });
+    expectMappingError({
+      interaction: {
+        kind: "DOSE_INFUSION",
+        evaluationMode: "AUTOMATIC",
+        fields: [{ id: "field", label: "Campo", valueType: "NUMBER" }],
+      },
+    });
+    expectMappingError({
+      interaction: {
+        kind: "DOSE_INFUSION",
+        evaluationMode: "AUTOMATIC",
+        fields: [{ id: "field", label: "Campo", valueType: "NUMBER" }],
+        calculationInputs: {
+          weightKg: 10,
+          doseMgPerKg: "2",
+          concentrationMgPerMl: 4,
+          durationHours: 2,
+        },
+      },
+    });
+    expectMappingError({
+      interaction: {
+        kind: "DOSE_INFUSION",
+        evaluationMode: "AUTOMATIC",
+        fields: [{ id: "field", label: "Campo", valueType: "NUMBER" }],
+        calculationInputs: {
+          weightKg: 10,
+          doseMgPerKg: 2,
+          concentrationMgPerMl: 4,
+          durationHours: 2,
+        },
+        formulaLabel: 2,
+      },
+    });
+    expectMappingError({ digitalCaseStage: "INVALID" });
+    expectMappingError({
+      digitalCaseStage: { caseId: "case", stage: 4, examSeries: [] },
+    });
+    expectMappingError({
+      digitalCaseStage: {
+        caseId: "case",
+        stage: 1,
+        examSeries: [null],
+      },
+    });
+    expectMappingError({
+      digitalCaseStage: {
+        caseId: "case",
+        stage: 1,
+        examSeries: [
+          {
+            id: "exam",
+            label: "Exame",
+            modality: "INVALID",
+            observationCount: 1,
+          },
+        ],
+      },
+    });
+    expectMappingError({ ordinal: 0 });
+    expectMappingError({ itemId: " " });
+    expectMappingError({ responseMode: "CHOICE", choices: undefined });
+    expectMappingError({
+      responseMode: "CHOICE",
+      choices: [
+        { id: "a", label: "A", text: "A" },
+        { id: "b", label: "B", text: "B" },
+      ],
+    });
+    expect(() =>
+      activityRowsToState([
+        rows[0],
+        { ...rows[1], activityId: "other-activity" },
+      ]),
+    ).toThrow("agree");
+  });
+
   it("keeps content and activity-item tables explicit", () => {
     expect(contentVersions).toBeDefined();
     expect(learningActivityItems).toBeDefined();

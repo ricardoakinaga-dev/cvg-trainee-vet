@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACTIVE_HA_FIXTURE_SERVICE,
   buildActiveHaComposeArgs,
+  buildActiveHaFixtureUrl,
   buildActiveHaPlaywrightEnvironment,
   buildActiveHaReadinessUrl,
 } from "../../scripts/active-ha-e2e.mjs";
@@ -61,11 +62,26 @@ describe("active HA E2E orchestration", () => {
 
   it("waits for active web dependency health before browser tests", async () => {
     expect(buildActiveHaReadinessUrl("http://127.0.0.1:3100")).toBe(
-      "http://127.0.0.1:3100/health/dependencies",
+      "http://127.0.0.1:3100/health/ready",
     );
 
     const activeRunner = await readFile("scripts/active-ha-e2e.mjs", "utf8");
-    expect(activeRunner).toContain("await waitForActiveRuntime(baseUrl)");
+    expect(activeRunner).toContain(
+      "await waitForActiveRuntime(configuration.baseUrl)",
+    );
+  });
+
+  it("retrieves fixture credentials through the loopback fixture endpoint", async () => {
+    expect(buildActiveHaFixtureUrl(3102)).toBe("http://127.0.0.1:3102/fixture");
+
+    const [fixtureServer, activeRunner] = await Promise.all([
+      readFile("scripts/real-e2e-fixture-server.mjs", "utf8"),
+      readFile("scripts/active-ha-e2e.mjs", "utf8"),
+    ]);
+
+    expect(fixtureServer).toContain('request.url === "/fixture"');
+    expect(activeRunner).toContain("buildActiveHaFixtureUrl");
+    expect(activeRunner).not.toContain('"docker", ["cp"');
   });
 
   it("keeps disposable E2E Next builds isolated from the operational artifact", async () => {

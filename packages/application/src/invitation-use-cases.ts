@@ -9,6 +9,7 @@ import {
 import { createAuditEntry, type AuditPort } from "./audit.js";
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { ApplicationError, toApplicationError } from "./errors.js";
+import { hashPassword } from "./password-auth.js";
 
 export type InvitationRecord = Readonly<{
   readonly invitationId: string;
@@ -48,6 +49,7 @@ export type CreatedInvitation = Readonly<{
 
 export type AcceptInvitationCommand = Readonly<{
   readonly token: string;
+  readonly password: string;
   readonly sessionExpiresInSeconds: number;
   readonly correlationId: string;
   readonly now?: Date;
@@ -68,6 +70,10 @@ export interface InvitationAccountPort {
       readonly roles?: readonly Role[];
       readonly scopes?: readonly string[];
     }>,
+  ) => Promise<void>;
+  readonly setPassword: (
+    accountId: string,
+    passwordHash: string,
   ) => Promise<void>;
   readonly activate: (accountId: string) => Promise<void>;
 }
@@ -142,14 +148,7 @@ function normalizeInvitationError(error: unknown): ApplicationError {
   return toApplicationError(error);
 }
 
-export async function createInvitation(
-  command: CreateInvitationCommand,
-  dependencies: InvitationUseCaseDependencies,
-): Promise<CreatedInvitation> {
-  assertNonEmpty(command.principalId, "principalId");
-  assertNonEmpty(command.correlationId, "correlationId");
-  const professionalEmail = normalizeEmail(command.professionalEmail);
-  assertLifetime(command.expiresInSeconds, "expiresInSeconds");
+function assertInvitationAuthorization(command: CreateInvitationCommand): void {
   if (
     !canAccess({
       principalId: command.principalId,
@@ -175,7 +174,23 @@ export async function createInvitation(
       "Invitation scope is outside the creator scope",
     );
   }
+}
 
+type InvitationCreationContext = Readonly<{
+  readonly token: string;
+  readonly invitationId: string;
+  readonly accountId: string;
+  readonly professionalEmail: string;
+  readonly now: Date;
+  readonly expiresAt: Date;
+  readonly record: InvitationRecord;
+}>;
+
+function buildInvitationContext(
+  command: CreateInvitationCommand,
+  dependencies: InvitationUseCaseDependencies,
+  professionalEmail: string,
+): InvitationCreationContext {
   const token = (command.tokenFactory ?? defaultTokenFactory)();
   if (!/^[A-Za-z0-9_-]{32,256}$/u.test(token)) {
     throw new ApplicationError(
@@ -201,44 +216,78 @@ export async function createInvitation(
     createdBy: command.principalId,
     createdAt: now,
   });
+  return Object.freeze({
+    token,
+    invitationId,
+    accountId,
+    professionalEmail,
+    now,
+    expiresAt,
+    record,
+  });
+}
+
+async function persistInvitation(
+  command: CreateInvitationCommand,
+  dependencies: InvitationUseCaseDependencies,
+  operations: InvitationTransactionalOperations,
+  context: InvitationCreationContext,
+): Promise<void> {
+  await operations.account.createInvited({
+    accountId: context.accountId,
+    professionalEmail: context.professionalEmail,
+    roles: command.invitedRoles,
+    scopes: command.invitedScopes,
+  });
+  await operations.invitation.create(context.record);
+  await operations.audit.append(
+    createAuditEntry({
+      auditId: dependencies.idFactory(),
+      principalId: command.principalId,
+      action: "invitation.created",
+      resourceType: "account_invitation",
+      resourceId: context.invitationId,
+      ...(command.invitedScopes[0] === undefined
+        ? {}
+        : { scopeId: command.invitedScopes[0] }),
+      outcome: "SUCCESS",
+      reasonCode: "internal_admin_invitation",
+      requestId: command.correlationId,
+      correlationId: command.correlationId,
+      occurredAt: context.now.toISOString(),
+    }),
+  );
+}
+
+export async function createInvitation(
+  command: CreateInvitationCommand,
+  dependencies: InvitationUseCaseDependencies,
+): Promise<CreatedInvitation> {
+  assertNonEmpty(command.principalId, "principalId");
+  assertNonEmpty(command.correlationId, "correlationId");
+  const professionalEmail = normalizeEmail(command.professionalEmail);
+  assertLifetime(command.expiresInSeconds, "expiresInSeconds");
+  assertInvitationAuthorization(command);
+  const context = buildInvitationContext(
+    command,
+    dependencies,
+    professionalEmail,
+  );
 
   try {
-    await dependencies.transaction.run(async (operations) => {
-      await operations.account.createInvited({
-        accountId,
-        professionalEmail,
-        roles: command.invitedRoles,
-        scopes: command.invitedScopes,
-      });
-      await operations.invitation.create(record);
-      await operations.audit.append(
-        createAuditEntry({
-          auditId: dependencies.idFactory(),
-          principalId: command.principalId,
-          action: "invitation.created",
-          resourceType: "account_invitation",
-          resourceId: invitationId,
-          ...(command.invitedScopes[0] === undefined
-            ? {}
-            : { scopeId: command.invitedScopes[0] }),
-          outcome: "SUCCESS",
-          reasonCode: "internal_admin_invitation",
-          requestId: command.correlationId,
-          correlationId: command.correlationId,
-          occurredAt: now.toISOString(),
-        }),
-      );
-    });
+    await dependencies.transaction.run((operations) =>
+      persistInvitation(command, dependencies, operations, context),
+    );
   } catch (error) {
     throw normalizeInvitationError(error);
   }
 
   return Object.freeze({
-    invitationId,
-    accountId,
-    professionalEmail,
-    token,
-    expiresAt,
+    invitationId: context.invitationId,
+    accountId: context.accountId,
+    professionalEmail: context.professionalEmail,
+    token: context.token,
+    expiresAt: context.expiresAt,
   });
 }
 
@@ -256,6 +305,7 @@ export async function acceptInvitation(
   if (!/^[A-Za-z0-9_-]{32,256}$/u.test(command.token)) {
     throw new ApplicationError("not_found", "Invitation is not available");
   }
+  const passwordHash = await hashPassword(command.password);
 
   try {
     return await dependencies.transaction.run(async (operations) => {
@@ -267,6 +317,7 @@ export async function acceptInvitation(
         throw new ApplicationError("not_found", "Invitation is not available");
       }
 
+      await operations.account.setPassword(invitation.accountId, passwordHash);
       await operations.account.activate(invitation.accountId);
       await operations.invitation.accept(invitation.invitationId, now);
       const sessionInput: CreateSessionInput = {

@@ -3,6 +3,10 @@ import {
   FEEDBACK_TEXT_MAX_LENGTH,
   inspectFeedbackContent,
 } from "./feedback-safety.js";
+import { normalizeFeedbackTicketHistory } from "./feedback-ticket-history.js";
+import { LearningAssignmentDomainError } from "./learning-state-error.js";
+
+export { LearningAssignmentDomainError } from "./learning-state-error.js";
 
 export type LearningAssignmentStatus =
   | "NAO_ATRIBUIDO"
@@ -59,13 +63,6 @@ export type LearningAssignmentEvent =
       readonly to: "ATRIBUIDO" | "DISPONIVEL";
     };
 
-export class LearningAssignmentDomainError extends Error {
-  public constructor(message: string) {
-    super(message);
-    this.name = "LearningAssignmentDomainError";
-  }
-}
-
 function freeze<T>(value: T): Readonly<T> {
   return Object.freeze(value);
 }
@@ -85,7 +82,7 @@ const assignmentPauseReasons = [
   "JANELA_OPERACIONAL",
 ] as const;
 
-function assertValidState(state: LearningAssignmentState): void {
+function assertAssignmentIdentity(state: LearningAssignmentState): void {
   if (state === null || typeof state !== "object") {
     throw new LearningAssignmentDomainError(
       "assignment state must be an object",
@@ -106,13 +103,9 @@ function assertValidState(state: LearningAssignmentState): void {
       "assignment version must be a non-negative integer",
     );
   }
-  if (
-    !Object.prototype.hasOwnProperty.call(assignmentTransitions, state.status)
-  ) {
-    throw new LearningAssignmentDomainError(
-      "assignment state is not supported",
-    );
-  }
+}
+
+function assertPauseState(state: LearningAssignmentState): void {
   if (state.status === "PAUSADO" && state.pausedFrom === undefined) {
     throw new LearningAssignmentDomainError(
       "paused assignment must preserve its previous state",
@@ -129,29 +122,31 @@ function assertValidState(state: LearningAssignmentState): void {
         "paused assignment pause reason is not supported",
       );
     }
-  }
-  if (state.status === "PAUSADO" && state.resumeAt !== undefined) {
-    if (!isValidIsoTimestamp(state.resumeAt)) {
+    if (state.resumeAt !== undefined && !isValidIsoTimestamp(state.resumeAt)) {
       throw new LearningAssignmentDomainError(
         "resumeAt must be a valid timestamp",
       );
     }
+    return;
   }
-  if (state.status !== "PAUSADO" && state.pausedFrom !== undefined) {
+  if (state.pausedFrom !== undefined) {
     throw new LearningAssignmentDomainError(
       "pausedFrom is only allowed for paused assignments",
     );
   }
-  if (state.status !== "PAUSADO" && state.pauseReason !== undefined) {
+  if (state.pauseReason !== undefined) {
     throw new LearningAssignmentDomainError(
       "pauseReason is only allowed for paused assignments",
     );
   }
-  if (state.status !== "PAUSADO" && state.resumeAt !== undefined) {
+  if (state.resumeAt !== undefined) {
     throw new LearningAssignmentDomainError(
       "resumeAt is only allowed for paused assignments",
     );
   }
+}
+
+function assertBlockState(state: LearningAssignmentState): void {
   if (state.status === "BLOQUEADO" && state.blockReason === undefined) {
     throw new LearningAssignmentDomainError(
       "blocked assignment must declare a reason",
@@ -162,6 +157,19 @@ function assertValidState(state: LearningAssignmentState): void {
       "blockReason is only allowed for blocked assignments",
     );
   }
+}
+
+function assertValidState(state: LearningAssignmentState): void {
+  assertAssignmentIdentity(state);
+  if (
+    !Object.prototype.hasOwnProperty.call(assignmentTransitions, state.status)
+  ) {
+    throw new LearningAssignmentDomainError(
+      "assignment state is not supported",
+    );
+  }
+  assertPauseState(state);
+  assertBlockState(state);
 }
 
 const assignmentTransitions: Readonly<
@@ -220,9 +228,6 @@ function assertTransition(
     }
   }
   if (event.type === "RETOMAR" && state.status === "PAUSADO") {
-    if (state.pausedFrom === undefined) {
-      throw new LearningAssignmentDomainError("paused state is incomplete");
-    }
     if (!isValidIsoTimestamp(event.now)) {
       throw new LearningAssignmentDomainError("now must be a valid timestamp");
     }
@@ -234,7 +239,7 @@ function assertTransition(
         "assignment cannot resume before the resume window",
       );
     }
-    return state.pausedFrom;
+    return state.pausedFrom as Exclude<LearningAssignmentStatus, "PAUSADO">;
   }
   if (event.type === "DESBLOQUEAR" && state.status === "BLOQUEADO") {
     return event.to;
@@ -329,104 +334,15 @@ export function transitionLearningAssignment(
   return freeze(next);
 }
 
-export type AssessmentWorkflowStatus =
-  | "RESULTADO_EM_PROCESSAMENTO"
-  | "RESULTADO_DISPONIVEL"
-  | "RESULTADO_EM_REVISAO"
-  | "RESULTADO_CORRIGIDO"
-  | "RESULTADO_ANULADO";
-
-export interface AssessmentWorkflowState {
-  readonly resultId: string;
-  readonly attemptId: string;
-  readonly ruleVersion: string;
-  readonly version: number;
-  readonly status: AssessmentWorkflowStatus;
-}
-
-export type AssessmentWorkflowEvent =
-  | { readonly type: "DISPONIBILIZAR" }
-  | { readonly type: "INICIAR_REVISAO" }
-  | { readonly type: "CORRIGIR" }
-  | { readonly type: "ANULAR" };
-
-const assessmentWorkflowTransitions: Readonly<
-  Record<
-    AssessmentWorkflowStatus,
-    Readonly<
-      Partial<Record<AssessmentWorkflowEvent["type"], AssessmentWorkflowStatus>>
-    >
-  >
-> = {
-  RESULTADO_EM_PROCESSAMENTO: { DISPONIBILIZAR: "RESULTADO_DISPONIVEL" },
-  RESULTADO_DISPONIVEL: {
-    INICIAR_REVISAO: "RESULTADO_EM_REVISAO",
-    ANULAR: "RESULTADO_ANULADO",
-  },
-  RESULTADO_EM_REVISAO: {
-    CORRIGIR: "RESULTADO_CORRIGIDO",
-    ANULAR: "RESULTADO_ANULADO",
-  },
-  RESULTADO_CORRIGIDO: { INICIAR_REVISAO: "RESULTADO_EM_REVISAO" },
-  RESULTADO_ANULADO: {},
-};
-
-function assertAssessmentWorkflowState(state: AssessmentWorkflowState): void {
-  if (state === null || typeof state !== "object") {
-    throw new LearningAssignmentDomainError(
-      "assessment workflow must be an object",
-    );
-  }
-  assertNonEmpty(state.resultId, "resultId");
-  assertNonEmpty(state.attemptId, "attemptId");
-  assertNonEmpty(state.ruleVersion, "ruleVersion");
-  if (!Number.isInteger(state.version) || state.version < 0) {
-    throw new LearningAssignmentDomainError(
-      "assessment workflow version must be non-negative",
-    );
-  }
-  if (
-    !Object.prototype.hasOwnProperty.call(
-      assessmentWorkflowTransitions,
-      state.status,
-    )
-  ) {
-    throw new LearningAssignmentDomainError(
-      "assessment workflow status is not supported",
-    );
-  }
-}
-
-export function createAssessmentWorkflowResult(
-  input: Readonly<{
-    readonly resultId: string;
-    readonly attemptId: string;
-    readonly ruleVersion: string;
-  }>,
-): AssessmentWorkflowState {
-  assertNonEmpty(input.resultId, "resultId");
-  assertNonEmpty(input.attemptId, "attemptId");
-  assertNonEmpty(input.ruleVersion, "ruleVersion");
-  return freeze({
-    ...input,
-    version: 0,
-    status: "RESULTADO_EM_PROCESSAMENTO" as const,
-  });
-}
-
-export function transitionAssessmentWorkflowResult(
-  state: AssessmentWorkflowState,
-  event: AssessmentWorkflowEvent,
-): AssessmentWorkflowState {
-  assertAssessmentWorkflowState(state);
-  const nextStatus = assessmentWorkflowTransitions[state.status][event.type];
-  if (nextStatus === undefined) {
-    throw new LearningAssignmentDomainError(
-      `Event ${event.type} is not allowed from state ${state.status}`,
-    );
-  }
-  return freeze({ ...state, status: nextStatus, version: state.version + 1 });
-}
+export {
+  createAssessmentWorkflowResult,
+  transitionAssessmentWorkflowResult,
+} from "./assessment-workflow-state.js";
+export type {
+  AssessmentWorkflowEvent,
+  AssessmentWorkflowState,
+  AssessmentWorkflowStatus,
+} from "./assessment-workflow-state.js";
 
 export type FeedbackTicketType =
   "BUG_TECNICO" | "USABILIDADE" | "ERRO_CONTEUDO" | "MELHORIA" | "CONTESTACAO";
@@ -602,9 +518,6 @@ function assertPlainText(
       `${field} contains prohibited content`,
     );
   }
-  if (/<[^>]*>/u.test(value)) {
-    throw new LearningAssignmentDomainError(`${field} must be plain text`);
-  }
 }
 
 const feedbackTechnicalContextKeys = new Set([
@@ -704,46 +617,6 @@ function assertFeedbackTicketResponse(
   }
 }
 
-function normalizeFeedbackTicketHistory(
-  state: FeedbackTicketState,
-): readonly FeedbackTicketHistoryEntry[] {
-  const history =
-    state.history ??
-    ([
-      {
-        status: state.status,
-        changedAt: state.createdAt,
-      },
-    ] as const);
-  if (history.length === 0 || history.length > 100) {
-    throw new LearningAssignmentDomainError(
-      "feedback ticket history must contain between 1 and 100 entries",
-    );
-  }
-  return freeze(
-    history.map((entry) => {
-      if (
-        !Object.prototype.hasOwnProperty.call(feedbackTransitions, entry.status)
-      ) {
-        throw new LearningAssignmentDomainError(
-          "feedback ticket history status is not supported",
-        );
-      }
-      if (!isValidIsoTimestamp(entry.changedAt)) {
-        throw new LearningAssignmentDomainError(
-          "feedback ticket history changedAt must be a valid timestamp",
-        );
-      }
-      if (entry.actorId !== undefined) assertNonEmpty(entry.actorId, "actorId");
-      return freeze({
-        status: entry.status,
-        changedAt: entry.changedAt,
-        ...(entry.actorId === undefined ? {} : { actorId: entry.actorId }),
-      });
-    }),
-  );
-}
-
 export function createFeedbackTicket(
   input: Readonly<{
     readonly ticketId: string;
@@ -790,10 +663,14 @@ export function createFeedbackTicket(
   });
 }
 
-export function transitionFeedbackTicket(
+type FeedbackStateValidation = Readonly<{
+  readonly priority: FeedbackTicketPriority;
+  readonly history: readonly FeedbackTicketHistoryEntry[];
+}>;
+
+function validateFeedbackState(
   state: FeedbackTicketState,
-  event: FeedbackTicketEvent,
-): FeedbackTicketState {
+): FeedbackStateValidation {
   if (state === null || typeof state !== "object") {
     throw new LearningAssignmentDomainError("ticket state must be an object");
   }
@@ -828,6 +705,18 @@ export function transitionFeedbackTicket(
   ) {
     throw new LearningAssignmentDomainError("ticket status is not supported");
   }
+  return Object.freeze({ priority, history });
+}
+
+type FeedbackEventValidation = Readonly<{
+  readonly now: string;
+  readonly nextStatus: FeedbackTicketState["status"];
+}>;
+
+function validateFeedbackEvent(
+  state: FeedbackTicketState,
+  event: FeedbackTicketEvent,
+): FeedbackEventValidation {
   if (event === null || typeof event !== "object") {
     throw new LearningAssignmentDomainError("ticket event must be an object");
   }
@@ -849,6 +738,17 @@ export function transitionFeedbackTicket(
       `Event ${event.type} is not allowed from state ${state.status}`,
     );
   }
+  return Object.freeze({ now, nextStatus });
+}
+
+function buildFeedbackTransition(
+  state: FeedbackTicketState,
+  event: FeedbackTicketEvent,
+  validation: FeedbackStateValidation,
+  eventValidation: FeedbackEventValidation,
+): FeedbackTicketState {
+  const { priority, history } = validation;
+  const { now, nextStatus } = eventValidation;
   const nextResponse =
     event.type === "RESPONDER"
       ? freeze({
@@ -883,4 +783,18 @@ export function transitionFeedbackTicket(
     status: nextStatus,
     version: state.version + 1,
   });
+}
+
+export function transitionFeedbackTicket(
+  state: FeedbackTicketState,
+  event: FeedbackTicketEvent,
+): FeedbackTicketState {
+  const stateValidation = validateFeedbackState(state);
+  const eventValidation = validateFeedbackEvent(state, event);
+  return buildFeedbackTransition(
+    state,
+    event,
+    stateValidation,
+    eventValidation,
+  );
 }

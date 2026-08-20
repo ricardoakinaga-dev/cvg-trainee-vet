@@ -3,7 +3,7 @@ groups:
     interval: 30s
     rules:
       - alert: CvgCoreAvailabilityBreach
-        expr: sum(rate(api_requests_total{outcome!="server_error"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1) < 0.995
+        expr: (sum(rate(api_requests_total{outcome!="server_error"}[5m])) / sum(rate(api_requests_total[5m])) < 0.995) and sum(rate(api_requests_total[5m])) > 0
         for: 5m
         labels:
           severity: critical
@@ -13,7 +13,7 @@ groups:
           summary: CVG core availability is below the approved floor
           runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos
       - alert: CvgApiLatencyBreach
-        expr: max(api_request_duration_ms_p95{route=~"/api/v1/.*"}) > 800
+        expr: max(api_request_duration_seconds_p95{route=~"/api/v1/.*"}) > 0.8
         for: 5m
         labels:
           severity: warning
@@ -23,7 +23,7 @@ groups:
           summary: CVG API p95 latency is above the read SLO
           runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo
       - alert: CvgApiErrorRateBreach
-        expr: sum(rate(api_requests_total{outcome="server_error"}[5m])) / clamp_min(sum(rate(api_requests_total[5m])), 1) > 0.01
+        expr: (sum(rate(api_requests_total{outcome="server_error"}[5m])) / sum(rate(api_requests_total[5m])) > 0.01) and sum(rate(api_requests_total[5m])) > 0
         for: 5m
         labels:
           severity: critical
@@ -33,7 +33,7 @@ groups:
           summary: CVG API server error rate is above the operational threshold
           runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados
       - alert: CvgIndexingFailures
-        expr: sum(rate(worker_events_failed{event_type="content.published.v1"}[5m])) > 0
+        expr: sum(rate(worker_events_failed_total{event_type="content.published.v1"}[5m])) > 0
         for: 5m
         labels:
           severity: warning
@@ -43,7 +43,7 @@ groups:
           summary: Internal content indexing is failing
           runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#runbooks-exercitados
       - alert: CvgAssistiveAiFailures
-        expr: sum(rate(worker_events_failed{event_type="ai.suggestion.requested.v1"}[5m])) > 0
+        expr: sum(rate(worker_events_failed_total{event_type="ai.suggestion.requested.v1"}[5m])) > 0
         for: 5m
         labels:
           severity: warning
@@ -53,7 +53,7 @@ groups:
           summary: Assistive AI jobs are failing; the educational core remains authoritative
           runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#slos-e-alertas-minimos
       - alert: CvgWorkerQueueBacklog
-        expr: sum(rate(worker_events_claimed[5m])) > sum(rate(worker_events_processed[5m]))
+        expr: sum(rate(worker_events_claimed_total[5m])) > sum(rate(worker_events_processed_total[5m]))
         for: 10m
         labels:
           severity: critical
@@ -72,3 +72,72 @@ groups:
         annotations:
           summary: Participant journey server errors require product and SRE review
           runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#dashboard-minimo
+      - alert: CvgApiTargetDown
+        expr: up{job="cvg-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: A CVG API target is down or no longer serving metrics
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+      - alert: CvgApiTargetAbsent
+        expr: absent(up{job="cvg-api"})
+        for: 2m
+        labels:
+          severity: critical
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: No CVG API target is visible to Prometheus
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+      - alert: CvgWorkerTargetDown
+        expr: up{job="cvg-worker"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: A CVG worker target is down or no longer serving metrics
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+      - alert: CvgWorkerTargetAbsent
+        expr: absent(up{job="cvg-worker"})
+        for: 2m
+        labels:
+          severity: critical
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: No CVG worker target is visible to Prometheus
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+      - alert: CvgAlertmanagerDisconnected
+        expr: absent(up{job="alertmanager"}) or sum(up{job="alertmanager"}) == 0
+        for: 2m
+        labels:
+          severity: critical
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: Prometheus cannot observe a healthy Alertmanager target
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+      - alert: CvgObservabilityWatchdog
+        expr: vector(1)
+        labels:
+          severity: warning
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: CVG observability watchdog heartbeat
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+      - alert: CvgObservabilityWatchdogMissing
+        expr: absent(ALERTS{alertname="CvgObservabilityWatchdog",alertstate="firing"})
+        for: 5m
+        labels:
+          severity: critical
+          owner: sre
+          signal: observability_integrity
+        annotations:
+          summary: CVG observability watchdog heartbeat is missing
+          runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal

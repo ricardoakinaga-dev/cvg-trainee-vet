@@ -48,4 +48,16 @@ describe("source conflict decisions", () => {
       }),
     ).toThrow("decision");
   });
+
+  it("rejects malformed identity, version and timestamp boundaries", () => {
+    expect(() =>
+      buildSourceConflictDecision({ ...input, conflictId: " " }),
+    ).toThrow("conflictId");
+    expect(() =>
+      buildSourceConflictDecision({ ...input, contentVersion: 0 }),
+    ).toThrow("contentVersion");
+    expect(() =>
+      buildSourceConflictDecision({ ...input, decidedAt: "invalid" }),
+    ).toThrow("decidedAt");
+  });
 });

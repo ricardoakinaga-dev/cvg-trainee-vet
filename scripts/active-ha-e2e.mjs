@@ -1,15 +1,22 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 export const ACTIVE_HA_FIXTURE_SERVICE = "real-e2e-fixture";
-const DEFAULT_FIXTURE_CONTAINER_FILE = "/tmp/cvg-real-e2e-fixture.json";
+const DEFAULT_FIXTURE_FILE_NAME = "cvg-real-e2e-fixture.json";
 const DEFAULT_FIXTURE_PORT = 3102;
 
 export function buildActiveHaReadinessUrl(baseUrl) {
-  return `${assertLocalBaseUrl(baseUrl)}/health/dependencies`;
+  return `${assertLocalBaseUrl(baseUrl)}/health/ready`;
+}
+
+export function buildActiveHaFixtureUrl(port) {
+  if (!Number.isInteger(port) || port < 1 || port > 65_535) {
+    throw new Error("active HA fixture port is invalid");
+  }
+  return `http://127.0.0.1:${port}/fixture`;
 }
 
 function assertLocalBaseUrl(baseUrl) {
@@ -87,18 +94,34 @@ function run(command, args, { cwd, env, capture = false } = {}) {
 }
 
 async function waitForFixture(port) {
-  const url = `http://127.0.0.1:${port}/ready`;
+  const url = buildActiveHaFixtureUrl(port);
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
     try {
       const response = await fetch(url);
-      if (response.ok) return;
+      if (response.ok) {
+        const fixture = await response.json();
+        if (isFixture(fixture)) return fixture;
+      }
     } catch {
       // The container is still starting.
     }
     await new Promise((resolveResult) => setTimeout(resolveResult, 250));
   }
   throw new Error("active HA E2E fixture did not become ready");
+}
+
+function isFixture(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof value.adminLogin === "string" &&
+    typeof value.adminPassword === "string" &&
+    typeof value.login === "string" &&
+    typeof value.password === "string" &&
+    typeof value.activityId === "string" &&
+    typeof value.itemId === "string"
+  );
 }
 
 async function waitForActiveRuntime(baseUrl) {
@@ -116,8 +139,7 @@ async function waitForActiveRuntime(baseUrl) {
   throw new Error("active HA web runtime did not become ready");
 }
 
-async function main() {
-  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+function resolveActiveHaConfiguration(projectRoot) {
   const composeFile = resolve(
     process.env.CVG_HA_COMPOSE_FILE ??
       join(projectRoot, "infra/production/docker-compose.ha.yml"),
@@ -140,127 +162,179 @@ async function main() {
     throw new Error("CVG_REAL_E2E_FIXTURE_PORT is invalid");
   }
 
-  const tempDirectory = await mkdtemp(join(tmpdir(), "cvg-active-ha-e2e-"));
-  const hostFixtureFile = join(
-    tempDirectory,
-    basename(DEFAULT_FIXTURE_CONTAINER_FILE),
+  const composeOptions = { composeFile, envFile, projectName };
+  return Object.freeze({
+    baseUrl,
+    fixturePort,
+    composeEnvironment: {
+      ...process.env,
+      CVG_REAL_E2E_FIXTURE_PORT: String(fixturePort),
+    },
+    composeArgs: buildActiveHaComposeArgs(composeOptions),
+    composePrefix: buildActiveHaComposeArgs(composeOptions).slice(0, -4),
+  });
+}
+
+async function startActiveHaFixture({
+  projectRoot,
+  composeArgs,
+  composePrefix,
+  composeEnvironment,
+  fixturePort,
+  hostFixtureFile,
+}) {
+  await run(
+    "docker",
+    [...composePrefix, "rm", "--force", "--stop", ACTIVE_HA_FIXTURE_SERVICE],
+    { cwd: projectRoot, env: composeEnvironment },
   );
-  const composePrefix = buildActiveHaComposeArgs({
-    composeFile,
-    envFile,
-    projectName,
-  }).slice(0, -4);
-  const composeEnvironment = {
-    ...process.env,
-    CVG_REAL_E2E_FIXTURE_PORT: String(fixturePort),
-  };
-  let testCode = 1;
-  let fixtureContainerId;
 
-  try {
-    await run(
-      "docker",
-      [...composePrefix, "rm", "--force", "--stop", ACTIVE_HA_FIXTURE_SERVICE],
-      { cwd: projectRoot, env: composeEnvironment },
-    );
+  const up = await run("docker", composeArgs, {
+    cwd: projectRoot,
+    env: composeEnvironment,
+  });
+  if (up.code !== 0) throw new Error("active HA E2E fixture failed to start");
 
-    const up = await run(
-      "docker",
-      buildActiveHaComposeArgs({ composeFile, envFile, projectName }),
-      { cwd: projectRoot, env: composeEnvironment },
-    );
-    if (up.code !== 0) throw new Error("active HA E2E fixture failed to start");
+  const fixture = await waitForFixture(fixturePort);
+  const container = await run(
+    "docker",
+    [...composePrefix, "ps", "-q", ACTIVE_HA_FIXTURE_SERVICE],
+    { cwd: projectRoot, env: composeEnvironment, capture: true },
+  );
+  const containerId = container.stdout.trim();
+  if (container.code !== 0 || containerId.length === 0) {
+    throw new Error("active HA E2E fixture container could not be resolved");
+  }
+  await writeFile(hostFixtureFile, JSON.stringify(fixture), "utf8");
+  return containerId;
+}
 
-    await waitForFixture(fixturePort);
-    const container = await run(
+async function runActiveHaPlaywright({
+  projectRoot,
+  baseUrl,
+  hostFixtureFile,
+}) {
+  const playwright = await run(
+    "pnpm",
+    ["exec", "playwright", "test", "tests/e2e/real-runtime.spec.ts"],
+    {
+      cwd: projectRoot,
+      env: buildActiveHaPlaywrightEnvironment({
+        baseUrl,
+        fixtureFile: hostFixtureFile,
+        inherited: process.env,
+      }),
+    },
+  );
+  return playwright.code;
+}
+
+async function safeRun(command, args, options) {
+  return run(command, args, options).catch(() => ({
+    code: 1,
+    signal: null,
+    stdout: "",
+    stderr: "",
+  }));
+}
+
+async function reportFixtureTeardownFailure({
+  projectRoot,
+  composeEnvironment,
+  stop,
+  exitStatus,
+  fixtureContainerId,
+}) {
+  const fixtureLogs = await safeRun(
+    "docker",
+    ["logs", "--tail", "120", fixtureContainerId],
+    { cwd: projectRoot, env: composeEnvironment, capture: true },
+  );
+  console.error(
+    JSON.stringify({
+      status: "FAIL",
+      code: "active_ha_e2e_fixture_teardown",
+      stopCode: stop.code,
+      inspectCode: exitStatus.code,
+      fixtureExitCode: exitStatus.stdout.trim(),
+      fixtureLogs: `${fixtureLogs.stdout}${fixtureLogs.stderr}`.trim(),
+    }),
+  );
+}
+
+async function teardownActiveHaFixture({
+  projectRoot,
+  composePrefix,
+  composeEnvironment,
+  fixtureContainerId,
+  testCode,
+}) {
+  const stop = await safeRun(
+    "docker",
+    [...composePrefix, "stop", "--timeout", "30", ACTIVE_HA_FIXTURE_SERVICE],
+    { cwd: projectRoot, env: composeEnvironment },
+  );
+  let finalTestCode = testCode;
+  if (fixtureContainerId !== undefined) {
+    const exitStatus = await safeRun(
       "docker",
-      [...composePrefix, "ps", "-q", ACTIVE_HA_FIXTURE_SERVICE],
+      ["inspect", "--format", "{{.State.ExitCode}}", fixtureContainerId],
       { cwd: projectRoot, env: composeEnvironment, capture: true },
     );
-    const containerId = container.stdout.trim();
-    if (container.code !== 0 || containerId.length === 0) {
-      throw new Error("active HA E2E fixture container could not be resolved");
-    }
-    fixtureContainerId = containerId;
-    const copied = await run(
-      "docker",
-      [
-        "cp",
-        `${containerId}:${DEFAULT_FIXTURE_CONTAINER_FILE}`,
-        hostFixtureFile,
-      ],
-      { cwd: projectRoot, env: composeEnvironment },
-    );
-    if (copied.code !== 0) {
-      throw new Error("active HA E2E fixture could not be copied");
-    }
-
-    const fixture = JSON.parse(await readFile(hostFixtureFile, "utf8"));
     if (
-      typeof fixture.adminLogin !== "string" ||
-      typeof fixture.adminPassword !== "string" ||
-      typeof fixture.login !== "string" ||
-      typeof fixture.password !== "string" ||
-      typeof fixture.activityId !== "string" ||
-      typeof fixture.itemId !== "string"
+      stop.code !== 0 ||
+      exitStatus.code !== 0 ||
+      exitStatus.stdout.trim() !== "0"
     ) {
-      throw new Error("active HA E2E fixture is incomplete");
+      await reportFixtureTeardownFailure({
+        projectRoot,
+        composeEnvironment,
+        stop,
+        exitStatus,
+        fixtureContainerId,
+      });
+      finalTestCode = finalTestCode === 0 ? 1 : finalTestCode;
     }
+  }
+  await safeRun(
+    "docker",
+    [...composePrefix, "rm", "--force", ACTIVE_HA_FIXTURE_SERVICE],
+    { cwd: projectRoot, env: composeEnvironment },
+  );
+  return finalTestCode;
+}
 
-    await waitForActiveRuntime(baseUrl);
-    const playwright = await run(
-      "pnpm",
-      ["exec", "playwright", "test", "tests/e2e/real-runtime.spec.ts"],
-      {
-        cwd: projectRoot,
-        env: buildActiveHaPlaywrightEnvironment({
-          baseUrl,
-          fixtureFile: hostFixtureFile,
-          inherited: process.env,
-        }),
-      },
-    );
-    testCode = playwright.code;
+async function main() {
+  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const configuration = resolveActiveHaConfiguration(projectRoot);
+  const tempDirectory = await mkdtemp(join(tmpdir(), "cvg-active-ha-e2e-"));
+  const hostFixtureFile = join(tempDirectory, DEFAULT_FIXTURE_FILE_NAME);
+  let fixtureContainerId;
+  let testCode = 1;
+
+  try {
+    fixtureContainerId = await startActiveHaFixture({
+      projectRoot,
+      composeArgs: configuration.composeArgs,
+      composePrefix: configuration.composePrefix,
+      composeEnvironment: configuration.composeEnvironment,
+      fixturePort: configuration.fixturePort,
+      hostFixtureFile,
+    });
+    await waitForActiveRuntime(configuration.baseUrl);
+    testCode = await runActiveHaPlaywright({
+      projectRoot,
+      baseUrl: configuration.baseUrl,
+      hostFixtureFile,
+    });
   } finally {
-    const stop = await run(
-      "docker",
-      [...composePrefix, "stop", "--timeout", "30", ACTIVE_HA_FIXTURE_SERVICE],
-      { cwd: projectRoot, env: composeEnvironment },
-    ).catch(() => ({ code: 1, signal: null, stdout: "", stderr: "" }));
-    if (fixtureContainerId !== undefined) {
-      const exitStatus = await run(
-        "docker",
-        ["inspect", "--format", "{{.State.ExitCode}}", fixtureContainerId],
-        { cwd: projectRoot, env: composeEnvironment, capture: true },
-      ).catch(() => ({ code: 1, signal: null, stdout: "", stderr: "" }));
-      if (
-        stop.code !== 0 ||
-        exitStatus.code !== 0 ||
-        exitStatus.stdout.trim() !== "0"
-      ) {
-        const fixtureLogs = await run(
-          "docker",
-          ["logs", "--tail", "120", fixtureContainerId],
-          { cwd: projectRoot, env: composeEnvironment, capture: true },
-        ).catch(() => ({ code: 1, signal: null, stdout: "", stderr: "" }));
-        console.error(
-          JSON.stringify({
-            status: "FAIL",
-            code: "active_ha_e2e_fixture_teardown",
-            stopCode: stop.code,
-            inspectCode: exitStatus.code,
-            fixtureExitCode: exitStatus.stdout.trim(),
-            fixtureLogs: `${fixtureLogs.stdout}${fixtureLogs.stderr}`.trim(),
-          }),
-        );
-        testCode = testCode === 0 ? 1 : testCode;
-      }
-    }
-    await run(
-      "docker",
-      [...composePrefix, "rm", "--force", ACTIVE_HA_FIXTURE_SERVICE],
-      { cwd: projectRoot, env: composeEnvironment },
-    ).catch(() => undefined);
+    testCode = await teardownActiveHaFixture({
+      projectRoot,
+      composePrefix: configuration.composePrefix,
+      composeEnvironment: configuration.composeEnvironment,
+      fixtureContainerId,
+      testCode,
+    });
     await rm(tempDirectory, { recursive: true, force: true });
   }
 

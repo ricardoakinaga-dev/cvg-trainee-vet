@@ -1,8 +1,45 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createQdrantVectorStore, validateVectorDimension } from "./qdrant.js";
+import {
+  createQdrantVectorStore,
+  createQdrantVectorStoreMethods,
+  validateVectorDimension,
+} from "./qdrant.js";
 
 describe("Qdrant integration boundary", () => {
+  it("composes a frozen vector store from focused operations", () => {
+    const client = {
+      collectionExists: vi.fn(),
+      createCollection: vi.fn(),
+      getCollection: vi.fn(),
+      createPayloadIndex: vi.fn(),
+      scroll: vi.fn(),
+      upsert: vi.fn(),
+      delete: vi.fn(),
+      query: vi.fn(),
+    };
+    const methods = createQdrantVectorStoreMethods(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_test",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      },
+      client,
+    );
+
+    expect(Object.isFrozen(methods)).toBe(true);
+    expect(Object.keys(methods).sort()).toEqual([
+      "delete",
+      "ensureCollection",
+      "healthcheck",
+      "list",
+      "search",
+      "upsert",
+    ]);
+  });
+
   it("rejects invalid vector dimensions and non-finite values", () => {
     expect(() => validateVectorDimension([1], 2)).toThrow("dimension");
     expect(() => validateVectorDimension([1, Number.NaN], 2)).toThrow("finite");

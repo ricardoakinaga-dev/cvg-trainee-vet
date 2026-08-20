@@ -93,4 +93,51 @@ describe("observed item statistics", () => {
       buildObservedItemStatistics({ ...baseInput, itemId: " " }),
     ).toThrow("itemId");
   });
+
+  it("rejects malformed samples, timestamps, discrimination and distractors", () => {
+    for (const field of ["statisticsId", "itemId", "scopeId"] as const) {
+      expect(() =>
+        buildObservedItemStatistics({ ...baseInput, [field]: " " }),
+      ).toThrow(field);
+    }
+    expect(() =>
+      buildObservedItemStatistics({ ...baseInput, contentVersion: 0 }),
+    ).toThrow("contentVersion");
+    expect(() =>
+      buildObservedItemStatistics({ ...baseInput, observedAt: "invalid" }),
+    ).toThrow("observedAt");
+    expect(() =>
+      buildObservedItemStatistics({ ...baseInput, sampleSize: 0 }),
+    ).toThrow("sampleSize");
+    expect(() =>
+      buildObservedItemStatistics({ ...baseInput, correctCount: -1 }),
+    ).toThrow("correctCount");
+    expect(() =>
+      buildObservedItemStatistics({ ...baseInput, appealCount: -1 }),
+    ).toThrow("appealCount");
+    expect(() =>
+      buildObservedItemStatistics({ ...baseInput, discrimination: 2 }),
+    ).toThrow("discrimination");
+    expect(() =>
+      buildObservedItemStatistics({
+        ...baseInput,
+        distractorCounts: undefined as never,
+      }),
+    ).toThrow("distractorCounts");
+    expect(() =>
+      buildObservedItemStatistics({
+        ...baseInput,
+        distractorCounts: [
+          { key: "A", count: 1 },
+          { key: "A", count: 1 },
+        ],
+      }),
+    ).toThrow("duplicates");
+    expect(() =>
+      buildObservedItemStatistics({
+        ...baseInput,
+        distractorCounts: [{ key: "A", count: 20 }],
+      }),
+    ).toThrow("exceeds");
+  });
 });

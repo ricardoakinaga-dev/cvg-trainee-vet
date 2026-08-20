@@ -9,6 +9,7 @@ import type {
 import type {
   PublicAssessmentInteraction,
   PublicDigitalCaseStage,
+  StructuredFieldDefinition,
 } from "@cvg/curriculum";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
@@ -141,22 +142,9 @@ function parseSelectionMode(value: unknown): "SINGLE" | "MULTIPLE" | undefined {
   return value;
 }
 
-function parseInteraction(
-  value: unknown,
-): PublicAssessmentInteraction | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (!isRecord(value)) {
-    throw new PersistenceMappingError("content interaction is invalid");
-  }
-  const kind = value.kind;
-  const evaluationMode = value.evaluationMode;
-  if (
-    (kind !== "STRUCTURED_FIELDS" && kind !== "DOSE_INFUSION") ||
-    evaluationMode !== "AUTOMATIC"
-  ) {
-    throw new PersistenceMappingError("content interaction is invalid");
-  }
-  const rawFields = value.fields;
+function parseInteractionFields(
+  rawFields: unknown,
+): readonly StructuredFieldDefinition[] {
   if (
     !Array.isArray(rawFields) ||
     rawFields.length < 1 ||
@@ -218,13 +206,13 @@ function parseInteraction(
   if (fields.some((field) => !field.required)) {
     throw new PersistenceMappingError("content fields must be required");
   }
-  if (kind === "STRUCTURED_FIELDS") {
-    return Object.freeze({
-      kind,
-      evaluationMode,
-      fields,
-    });
-  }
+  return Object.freeze(fields);
+}
+
+function parseDoseInteraction(
+  value: Readonly<Record<string, unknown>>,
+  fields: readonly StructuredFieldDefinition[],
+): PublicAssessmentInteraction {
   const inputs = value.calculationInputs;
   if (!isRecord(inputs)) {
     throw new PersistenceMappingError("dose interaction inputs are invalid");
@@ -246,8 +234,8 @@ function parseInteraction(
     throw new PersistenceMappingError("dose interaction formula is invalid");
   }
   return Object.freeze({
-    kind,
-    evaluationMode,
+    kind: "DOSE_INFUSION" as const,
+    evaluationMode: "AUTOMATIC" as const,
     fields,
     calculationInputs: Object.freeze({
       weightKg: inputs.weightKg as number,
@@ -257,6 +245,32 @@ function parseInteraction(
     }),
     formulaLabel: parsePlainText(value.formulaLabel, "dose formula"),
   });
+}
+
+function parseInteraction(
+  value: unknown,
+): PublicAssessmentInteraction | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!isRecord(value)) {
+    throw new PersistenceMappingError("content interaction is invalid");
+  }
+  const kind = value.kind;
+  const evaluationMode = value.evaluationMode;
+  if (
+    (kind !== "STRUCTURED_FIELDS" && kind !== "DOSE_INFUSION") ||
+    evaluationMode !== "AUTOMATIC"
+  ) {
+    throw new PersistenceMappingError("content interaction is invalid");
+  }
+  const fields = parseInteractionFields(value.fields);
+  if (kind === "STRUCTURED_FIELDS") {
+    return Object.freeze({
+      kind,
+      evaluationMode,
+      fields,
+    });
+  }
+  return parseDoseInteraction(value, fields);
 }
 
 function parseDigitalCaseStage(
@@ -385,7 +399,7 @@ export function createActivityReadRepository(
       activityId: string,
     ): Promise<ParticipantActivityState | null> => {
       return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
+        const executor = transaction;
         await setDatabaseSecurityContext(executor, { participantId });
         const rows = await executor
           .select({

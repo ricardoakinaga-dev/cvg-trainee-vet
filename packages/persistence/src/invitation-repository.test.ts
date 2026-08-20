@@ -176,6 +176,7 @@ describe("PostgreSQL invitation persistence", () => {
       sessionId: "55555555-5555-4555-8555-555555555555",
       accountId: record.accountId,
       accountStatus: "ACTIVE",
+      sessionGeneration: 0,
       roles: ["PARTICIPANT"],
       scopes: record.scopes,
       tokenHash: "b".repeat(64),
@@ -190,6 +191,10 @@ describe("PostgreSQL invitation persistence", () => {
         accountId: record.accountId,
         professionalEmail: " TRAINEE@CVG.EXAMPLE ",
       });
+      await operations.account.setPassword(
+        record.accountId,
+        "scrypt$16384$8$1$" + "a".repeat(22) + "$" + "b".repeat(86),
+      );
       await operations.invitation.create(record);
       await expect(
         operations.invitation.findActive(record.tokenHash, now),

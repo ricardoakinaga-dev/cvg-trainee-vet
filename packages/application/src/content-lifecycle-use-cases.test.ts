@@ -194,4 +194,92 @@ describe("content lifecycle use cases", () => {
     ).rejects.toMatchObject({ code: "forbidden" });
     expect(fixture.repository.listPublishedDueForExpiry).not.toHaveBeenCalled();
   });
+
+  it("validates scheduler limits and classifies skipped or failed candidates", async () => {
+    const fixture = createDependencies([dueContent]);
+    const validCommand = {
+      principalId: "content-operator",
+      accountStatus: "ACTIVE" as const,
+      roles: ["ADMIN"] as const,
+      scopes: [scopeId],
+      now,
+      correlationId: "33333333-3333-4333-8333-333333333333",
+    };
+
+    await expect(
+      expireDueContent({ ...validCommand, limit: 0 }, fixture.deps),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    await expect(
+      expireDueContent({ ...validCommand, limit: 101 }, fixture.deps),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    await expect(
+      expireDueContent({ ...validCommand, scopes: [] }, fixture.deps),
+    ).rejects.toMatchObject({ code: "forbidden" });
+
+    const missingRepository = {
+      ...fixture.deps,
+      expiryRepository: {},
+    } as never;
+    await expect(
+      expireDueContent(validCommand, missingRepository),
+    ).rejects.toMatchObject({
+      code: "internal_error",
+    });
+
+    const skippedFixture = createDependencies([]);
+    const dueContentWithoutExpiry = Object.fromEntries(
+      Object.entries(dueContent).filter(([key]) => key !== "validUntil"),
+    ) as Omit<ContentRecord, "validUntil">;
+    skippedFixture.repository.listPublishedDueForExpiry.mockResolvedValue([
+      { ...dueContent, status: "RASCUNHO" },
+      {
+        ...dueContentWithoutExpiry,
+        contentId: "44444444-4444-4444-8444-444444444444",
+      },
+      {
+        ...dueContent,
+        contentId: "55555555-5555-4555-8555-555555555555",
+        validUntil: "invalid",
+      },
+      {
+        ...dueContent,
+        contentId: "66666666-6666-4666-8666-666666666666",
+        validUntil: "2026-08-13T00:00:00.000Z",
+      },
+    ]);
+    await expect(
+      expireDueContent(validCommand, skippedFixture.deps),
+    ).resolves.toMatchObject({
+      requested: 4,
+      expiredCount: 0,
+      skipped: 4,
+    });
+
+    const conflictFixture = createDependencies([]);
+    const missingId = "77777777-7777-4777-8777-777777777777";
+    conflictFixture.repository.listPublishedDueForExpiry.mockResolvedValue([
+      dueContent,
+      { ...dueContent, contentId: missingId },
+    ]);
+    conflictFixture.repository.find
+      .mockResolvedValueOnce({ ...dueContent, status: "RASCUNHO" })
+      .mockResolvedValueOnce(null);
+    await expect(
+      expireDueContent(validCommand, conflictFixture.deps),
+    ).resolves.toMatchObject({
+      requested: 2,
+      expiredCount: 0,
+      skipped: 2,
+    });
+
+    const failureFixture = createDependencies([dueContent]);
+    failureFixture.repository.find.mockRejectedValueOnce(
+      new Error("synthetic storage failure"),
+    );
+    await expect(
+      expireDueContent(validCommand, failureFixture.deps),
+    ).rejects.toMatchObject({
+      code: "internal_error",
+    });
+  });
 });

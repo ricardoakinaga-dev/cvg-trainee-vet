@@ -220,6 +220,17 @@ export function digitalCaseRuntimeRowToState(
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
+const DIGITAL_CASE_RUNTIME_RETURNING = {
+  id: digitalCaseRuntimeStates.id,
+  participantId: digitalCaseRuntimeStates.participantId,
+  scopeId: digitalCaseRuntimeStates.scopeId,
+  moduleId: digitalCaseRuntimeStates.moduleId,
+  caseId: digitalCaseRuntimeStates.caseId,
+  version: digitalCaseRuntimeStates.version,
+  state: digitalCaseRuntimeStates.state,
+  updatedAt: digitalCaseRuntimeStates.updatedAt,
+};
+
 function selectRow(
   db: DatabaseExecutor,
   participantId: string,
@@ -248,110 +259,117 @@ function selectRow(
     .limit(1);
 }
 
+async function findDigitalCaseRuntimeInTransaction(
+  executor: DatabaseExecutor,
+  participantId: string,
+  scopeId: string,
+  moduleId: string,
+): Promise<DigitalCaseRuntimeRecord | null> {
+  await setDatabaseSecurityContext(executor, { participantId, scopeId });
+  const rows = await selectRow(executor, participantId, scopeId, moduleId);
+  const row = rows[0];
+  return row === undefined ? null : digitalCaseRuntimeRowToState(row);
+}
+
+async function updateDigitalCaseRuntime(
+  executor: DatabaseExecutor,
+  row: DigitalCaseRuntimeInsertRow,
+  expectedVersion: number,
+): Promise<DigitalCaseRuntimeRecord | null> {
+  const updated = await executor
+    .update(digitalCaseRuntimeStates)
+    .set({
+      caseId: row.caseId,
+      version: row.version,
+      state: row.state,
+      updatedAt: row.updatedAt,
+    })
+    .where(
+      and(
+        eq(digitalCaseRuntimeStates.participantId, row.participantId),
+        eq(digitalCaseRuntimeStates.scopeId, row.scopeId),
+        eq(digitalCaseRuntimeStates.moduleId, row.moduleId),
+        eq(digitalCaseRuntimeStates.version, expectedVersion),
+      ),
+    )
+    .returning(DIGITAL_CASE_RUNTIME_RETURNING);
+  const updatedRow = updated[0];
+  return updatedRow === undefined
+    ? null
+    : digitalCaseRuntimeRowToState(updatedRow);
+}
+
+async function insertDigitalCaseRuntime(
+  executor: DatabaseExecutor,
+  row: DigitalCaseRuntimeInsertRow,
+): Promise<DigitalCaseRuntimeRecord> {
+  const inserted = await executor
+    .insert(digitalCaseRuntimeStates)
+    .values(row)
+    .onConflictDoNothing({
+      target: [
+        digitalCaseRuntimeStates.participantId,
+        digitalCaseRuntimeStates.scopeId,
+        digitalCaseRuntimeStates.moduleId,
+      ],
+    })
+    .returning(DIGITAL_CASE_RUNTIME_RETURNING);
+  const insertedRow = inserted[0];
+  if (insertedRow === undefined) {
+    throw new DigitalCaseRuntimePersistenceConflictError(
+      "digital case was created concurrently",
+    );
+  }
+  return digitalCaseRuntimeRowToState(insertedRow);
+}
+
+async function saveDigitalCaseRuntimeInTransaction(
+  executor: DatabaseExecutor,
+  input: DigitalCaseRuntimeWriteInput,
+  idFactory: () => string,
+): Promise<DigitalCaseRuntimeRecord> {
+  await setDatabaseSecurityContext(executor, {
+    participantId: input.participantId,
+    scopeId: input.scopeId,
+  });
+  const row = digitalCaseRuntimeStateToRow(input, idFactory());
+  if (row.version !== input.expectedVersion + 1) {
+    throw new DigitalCaseRuntimeMappingError(
+      "next version must increment the expected version by one",
+    );
+  }
+  const updated = await updateDigitalCaseRuntime(
+    executor,
+    row,
+    input.expectedVersion,
+  );
+  if (updated !== null) return updated;
+  if (input.expectedVersion !== 0) {
+    throw new DigitalCaseRuntimePersistenceConflictError(
+      "digital case version changed",
+    );
+  }
+  return insertDigitalCaseRuntime(executor, row);
+}
+
 export function createDigitalCaseRuntimeRepository(
   db: DatabaseExecutor,
   idFactory: () => string = randomUUID,
 ): DigitalCaseRuntimeRepositoryPort {
   const repository: DigitalCaseRuntimeRepositoryPort = {
     findDigitalCaseRuntime: async (participantId, scopeId, moduleId) =>
-      db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, { participantId, scopeId });
-        const rows = await selectRow(
-          executor,
+      db.transaction((transaction) =>
+        findDigitalCaseRuntimeInTransaction(
+          transaction,
           participantId,
           scopeId,
           moduleId,
-        );
-        const row = rows[0];
-        return row === undefined ? null : digitalCaseRuntimeRowToState(row);
-      }),
+        ),
+      ),
     saveDigitalCaseRuntime: async (input: DigitalCaseRuntimeWriteInput) =>
-      db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, {
-          participantId: input.participantId,
-          scopeId: input.scopeId,
-        });
-        const row = digitalCaseRuntimeStateToRow(input, idFactory());
-        if (row.version !== input.expectedVersion + 1) {
-          throw new DigitalCaseRuntimeMappingError(
-            "next version must increment the expected version by one",
-          );
-        }
-
-        const updated = await executor
-          .update(digitalCaseRuntimeStates)
-          .set({
-            caseId: row.caseId,
-            version: row.version,
-            state: row.state,
-            updatedAt: row.updatedAt,
-          })
-          .where(
-            and(
-              eq(digitalCaseRuntimeStates.participantId, row.participantId),
-              eq(digitalCaseRuntimeStates.scopeId, row.scopeId),
-              eq(digitalCaseRuntimeStates.moduleId, row.moduleId),
-              eq(digitalCaseRuntimeStates.version, input.expectedVersion),
-            ),
-          )
-          .returning({
-            id: digitalCaseRuntimeStates.id,
-            participantId: digitalCaseRuntimeStates.participantId,
-            scopeId: digitalCaseRuntimeStates.scopeId,
-            moduleId: digitalCaseRuntimeStates.moduleId,
-            caseId: digitalCaseRuntimeStates.caseId,
-            version: digitalCaseRuntimeStates.version,
-            state: digitalCaseRuntimeStates.state,
-            updatedAt: digitalCaseRuntimeStates.updatedAt,
-          });
-        const updatedRow = updated[0];
-        if (updatedRow !== undefined)
-          return digitalCaseRuntimeRowToState(updatedRow);
-        if (input.expectedVersion !== 0) {
-          throw new DigitalCaseRuntimePersistenceConflictError(
-            "digital case version changed",
-          );
-        }
-
-        const inserted = await executor
-          .insert(digitalCaseRuntimeStates)
-          .values({
-            id: row.id,
-            participantId: row.participantId,
-            scopeId: row.scopeId,
-            moduleId: row.moduleId,
-            caseId: row.caseId,
-            version: row.version,
-            state: row.state,
-            updatedAt: row.updatedAt,
-          })
-          .onConflictDoNothing({
-            target: [
-              digitalCaseRuntimeStates.participantId,
-              digitalCaseRuntimeStates.scopeId,
-              digitalCaseRuntimeStates.moduleId,
-            ],
-          })
-          .returning({
-            id: digitalCaseRuntimeStates.id,
-            participantId: digitalCaseRuntimeStates.participantId,
-            scopeId: digitalCaseRuntimeStates.scopeId,
-            moduleId: digitalCaseRuntimeStates.moduleId,
-            caseId: digitalCaseRuntimeStates.caseId,
-            version: digitalCaseRuntimeStates.version,
-            state: digitalCaseRuntimeStates.state,
-            updatedAt: digitalCaseRuntimeStates.updatedAt,
-          });
-        const insertedRow = inserted[0];
-        if (insertedRow === undefined) {
-          throw new DigitalCaseRuntimePersistenceConflictError(
-            "digital case was created concurrently",
-          );
-        }
-        return digitalCaseRuntimeRowToState(insertedRow);
-      }),
+      db.transaction((transaction) =>
+        saveDigitalCaseRuntimeInTransaction(transaction, input, idFactory),
+      ),
   };
   return Object.freeze(repository);
 }

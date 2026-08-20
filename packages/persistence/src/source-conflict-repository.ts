@@ -115,7 +115,7 @@ export function createSourceConflictDecisionRepository(
   return Object.freeze({
     save: async (state: SourceConflictDecisionState) =>
       db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
+        const executor = transaction;
         await setDatabaseSecurityContext(executor, { scopeId: state.scopeId });
         await executor
           .insert(sourceConflictDecisions)

@@ -150,6 +150,7 @@ const capabilityByEvent: Readonly<Record<ContentEvent["type"], Capability>> = {
   AUTOVERIFICAR: "AUTHOR_CONTENT",
   VERIFICAR_PROJECAO: "AUTHOR_CONTENT",
   ENVIAR_PARA_REVISAO_CLINICA: "MODERATE_CONTENT",
+  REABRIR_REVISAO_CLINICA: "APPROVE_CLINICAL_CONTENT",
   SOLICITAR_AJUSTES: "MODERATE_CONTENT",
   APROVAR_CLINICAMENTE: "APPROVE_CLINICAL_CONTENT",
   AUTORIZAR_PUBLICACAO: "PUBLISH_CONTENT",
@@ -183,10 +184,15 @@ function normalizeContentError(error: unknown): ApplicationError {
   return toApplicationError(error);
 }
 
-export async function advanceContent(
-  command: AdvanceContentCommand,
-  dependencies: ContentUseCaseDependencies,
-): Promise<ContentRecord> {
+function isPublicationEvent(event: ContentEvent["type"]): boolean {
+  return (
+    event === "AUTORIZAR_PUBLICACAO" ||
+    event === "PUBLICAR" ||
+    event === "PUBLICAR_AUTOMATICAMENTE"
+  );
+}
+
+function validateContentIdentifiers(command: AdvanceContentCommand): void {
   for (const [value, field] of [
     [command.principalId, "principalId"],
     [command.contentId, "contentId"],
@@ -195,11 +201,12 @@ export async function advanceContent(
   ] as const) {
     assertNonEmpty(value, field);
   }
-
   if (!Number.isInteger(command.version) || command.version < 1) {
     throw new ApplicationError("validation_error", "version is invalid");
   }
+}
 
+function validateWithdrawalMetadata(command: AdvanceContentCommand): void {
   if (
     command.event === "RETIRAR" &&
     command.withdrawalReasonCode === undefined
@@ -218,11 +225,11 @@ export async function advanceContent(
       "withdrawalReasonCode is only valid when withdrawing content",
     );
   }
+}
 
+function validatePublicationContext(command: AdvanceContentCommand): void {
   if (
-    (command.event === "AUTORIZAR_PUBLICACAO" ||
-      command.event === "PUBLICAR" ||
-      command.event === "PUBLICAR_AUTOMATICAMENTE") &&
+    isPublicationEvent(command.event) &&
     (command.approvedClinicalReviewerId === undefined ||
       command.approvedClinicalReviewerId.trim().length === 0)
   ) {
@@ -231,13 +238,14 @@ export async function advanceContent(
       "Clinical approval context is required before publication",
     );
   }
+}
 
-  const capability = capabilityByEvent[command.event];
+function validateContentAuthorization(command: AdvanceContentCommand): void {
   const authorized = canAccess({
     principalId: command.principalId,
     accountStatus: command.accountStatus,
     roles: command.roles,
-    capability,
+    capability: capabilityByEvent[command.event],
     resource: { scopeId: command.scopeId },
     scopes: command.scopes,
     ...(command.approvedClinicalApproverId === undefined
@@ -250,186 +258,272 @@ export async function advanceContent(
       "Content operation is outside the current authorization scope",
     );
   }
+}
 
-  try {
-    return await dependencies.transaction.run(async (operations) => {
-      const current = await operations.content.find(
+function validateAdvanceContentCommand(command: AdvanceContentCommand): void {
+  validateContentIdentifiers(command);
+  validateWithdrawalMetadata(command);
+  validatePublicationContext(command);
+  validateContentAuthorization(command);
+}
+
+async function loadCurrentContent(
+  operations: ContentTransactionalOperations,
+  command: AdvanceContentCommand,
+): Promise<ContentRecord> {
+  const current = await operations.content.find(
+    command.contentId,
+    command.version,
+  );
+  if (current === null) {
+    throw new ApplicationError("not_found", "Content version was not found");
+  }
+  if (current.scopeId !== command.scopeId) {
+    throw new ApplicationError(
+      "forbidden",
+      "Content is outside the current scope",
+    );
+  }
+  return current;
+}
+
+async function assertPublicationReady(
+  operations: ContentTransactionalOperations,
+  command: AdvanceContentCommand,
+  current: ContentRecord,
+): Promise<void> {
+  if (!isPublicationEvent(command.event)) return;
+  if (current.publicationReady !== true) {
+    throw new ApplicationError(
+      "state_conflict",
+      "Content publication gate is incomplete",
+    );
+  }
+
+  const reviewerId = command.approvedClinicalReviewerId;
+  if (
+    reviewerId === undefined ||
+    !(await operations.clinicalReview.hasApproved(
+      command.contentId,
+      command.version,
+      reviewerId,
+    ))
+  ) {
+    throw new ApplicationError(
+      "state_conflict",
+      "Persisted clinical approval is required before publication",
+    );
+  }
+}
+
+async function loadAffectedParticipantIds(
+  operations: ContentTransactionalOperations,
+  command: AdvanceContentCommand,
+): Promise<readonly string[]> {
+  if (command.event !== "RETIRAR") return Object.freeze([] as string[]);
+  const listAffectedParticipantIds =
+    operations.content.listAffectedParticipantIds;
+  if (listAffectedParticipantIds === undefined) {
+    throw new ApplicationError(
+      "internal_error",
+      "Content withdrawal repository is not configured",
+    );
+  }
+  return Object.freeze([
+    ...new Set(
+      await listAffectedParticipantIds(
         command.contentId,
         command.version,
-      );
-      if (current === null) {
-        throw new ApplicationError(
-          "not_found",
-          "Content version was not found",
-        );
-      }
-      if (current.scopeId !== command.scopeId) {
-        throw new ApplicationError(
-          "forbidden",
-          "Content is outside the current scope",
-        );
-      }
+        command.scopeId,
+      ),
+    ),
+  ]);
+}
 
-      const isPublicationEvent =
-        command.event === "AUTORIZAR_PUBLICACAO" ||
-        command.event === "PUBLICAR" ||
-        command.event === "PUBLICAR_AUTOMATICAMENTE";
-      if (isPublicationEvent) {
-        if (current.publicationReady !== true) {
-          throw new ApplicationError(
-            "state_conflict",
-            "Content publication gate is incomplete",
-          );
-        }
+function buildNextContent(
+  current: ContentRecord,
+  command: AdvanceContentCommand,
+  affectedParticipantIds: readonly string[],
+  withdrawnAt: string | undefined,
+): ContentRecord {
+  const nextState = transitionContent(
+    {
+      contentId: current.contentId,
+      version: current.version,
+      status: current.status,
+      ...(current.withdrawalReasonCode === undefined
+        ? {}
+        : { withdrawalReasonCode: current.withdrawalReasonCode }),
+      ...(current.withdrawnAt === undefined
+        ? {}
+        : { withdrawnAt: current.withdrawnAt }),
+      ...(current.affectedParticipantCount === undefined
+        ? {}
+        : { affectedParticipantCount: current.affectedParticipantCount }),
+    },
+    {
+      type: command.event,
+      ...(command.withdrawalReasonCode === undefined
+        ? {}
+        : { withdrawalReasonCode: command.withdrawalReasonCode }),
+    },
+  );
+  return Object.freeze({
+    ...current,
+    status: nextState.status,
+    ...(command.withdrawalReasonCode === undefined
+      ? {}
+      : { withdrawalReasonCode: command.withdrawalReasonCode }),
+    ...(withdrawnAt === undefined ? {} : { withdrawnAt }),
+    ...(command.event === "RETIRAR"
+      ? { affectedParticipantCount: affectedParticipantIds.length }
+      : {}),
+  });
+}
 
-        const reviewerId = command.approvedClinicalReviewerId;
-        if (
-          reviewerId === undefined ||
-          !(await operations.clinicalReview.hasApproved(
-            command.contentId,
-            command.version,
-            reviewerId,
-          ))
-        ) {
-          throw new ApplicationError(
-            "state_conflict",
-            "Persisted clinical approval is required before publication",
-          );
-        }
-      }
+async function persistWithdrawalAffected(
+  operations: ContentTransactionalOperations,
+  command: AdvanceContentCommand,
+  affectedParticipantIds: readonly string[],
+  withdrawnAt: string | undefined,
+): Promise<void> {
+  if (command.event !== "RETIRAR") return;
+  const recordWithdrawalAffected = operations.content.recordWithdrawalAffected;
+  if (recordWithdrawalAffected === undefined || withdrawnAt === undefined) {
+    throw new ApplicationError(
+      "internal_error",
+      "Content withdrawal audit repository is not configured",
+    );
+  }
+  const recordedCount = await recordWithdrawalAffected(affectedParticipantIds, {
+    contentId: command.contentId,
+    version: command.version,
+    scopeId: command.scopeId,
+    withdrawnAt,
+    correlationId: command.correlationId,
+  });
+  if (recordedCount !== affectedParticipantIds.length) {
+    throw new ApplicationError(
+      "internal_error",
+      "Content withdrawal affected participant count is inconsistent",
+    );
+  }
+}
 
-      const isEmergencyWithdrawal = command.event === "RETIRAR";
-      const affectedParticipantIds = isEmergencyWithdrawal
-        ? await (async () => {
-            const listAffectedParticipantIds =
-              operations.content.listAffectedParticipantIds;
-            if (listAffectedParticipantIds === undefined) {
-              throw new ApplicationError(
-                "internal_error",
-                "Content withdrawal repository is not configured",
-              );
-            }
-            return Object.freeze([
-              ...new Set(
-                await listAffectedParticipantIds(
-                  command.contentId,
-                  command.version,
-                  command.scopeId,
-                ),
-              ),
-            ]);
-          })()
-        : Object.freeze([] as string[]);
-      const withdrawnAt = isEmergencyWithdrawal
-        ? new Date().toISOString()
-        : undefined;
+async function publishContentTransition(
+  operations: ContentTransactionalOperations,
+  idFactory: ContentUseCaseDependencies["idFactory"],
+  command: AdvanceContentCommand,
+  next: ContentRecord,
+  affectedParticipantIds: readonly string[],
+): Promise<void> {
+  const occurredAt = new Date().toISOString();
+  await operations.eventPublisher.publish({
+    eventId: idFactory(),
+    eventType: eventTypeForStatus(next.status),
+    aggregateType: "content_version",
+    aggregateId: next.contentId,
+    occurredAt,
+    schemaVersion: 1,
+    correlationId: command.correlationId,
+    payload: {
+      content_id: next.contentId,
+      version: String(next.version),
+      status: next.status,
+      ...(command.withdrawalReasonCode === undefined
+        ? {}
+        : { reason_code: command.withdrawalReasonCode }),
+      ...(command.event === "RETIRAR"
+        ? { affected_count: affectedParticipantIds.length }
+        : {}),
+    },
+  });
+  await operations.audit.append(
+    createAuditEntry({
+      auditId: idFactory(),
+      principalId: command.principalId,
+      action: `CONTENT_${command.event}`,
+      resourceType: "content_version",
+      resourceId: next.contentId,
+      scopeId: next.scopeId,
+      outcome: "SUCCESS",
+      reasonCode:
+        command.event === "RETIRAR"
+          ? "emergency_withdrawal"
+          : "content_workflow_transition",
+      requestId: command.correlationId,
+      correlationId: command.correlationId,
+      occurredAt,
+    }),
+  );
+}
 
-      const nextState = transitionContent(
-        {
-          contentId: current.contentId,
-          version: current.version,
-          status: current.status,
-          ...(current.withdrawalReasonCode === undefined
-            ? {}
-            : { withdrawalReasonCode: current.withdrawalReasonCode }),
-          ...(current.withdrawnAt === undefined
-            ? {}
-            : { withdrawnAt: current.withdrawnAt }),
-          ...(current.affectedParticipantCount === undefined
-            ? {}
-            : { affectedParticipantCount: current.affectedParticipantCount }),
-        },
-        {
-          type: command.event,
-          ...(command.withdrawalReasonCode === undefined
-            ? {}
-            : { withdrawalReasonCode: command.withdrawalReasonCode }),
-        },
-      );
-      const next = Object.freeze({
-        ...current,
-        status: nextState.status,
-        ...(command.withdrawalReasonCode === undefined
-          ? {}
-          : { withdrawalReasonCode: command.withdrawalReasonCode }),
-        ...(withdrawnAt === undefined ? {} : { withdrawnAt }),
-        ...(isEmergencyWithdrawal
-          ? { affectedParticipantCount: affectedParticipantIds.length }
-          : {}),
-      });
-      await operations.content.save(current, next);
+async function executeContentTransitionWithinTransaction(
+  command: AdvanceContentCommand,
+  operations: ContentTransactionalOperations,
+  idFactory: ContentUseCaseDependencies["idFactory"],
+): Promise<ContentRecord> {
+  const current = await loadCurrentContent(operations, command);
+  await assertPublicationReady(operations, command, current);
+  const affectedParticipantIds = await loadAffectedParticipantIds(
+    operations,
+    command,
+  );
+  const withdrawnAt =
+    command.event === "RETIRAR" ? new Date().toISOString() : undefined;
+  const next = buildNextContent(
+    current,
+    command,
+    affectedParticipantIds,
+    withdrawnAt,
+  );
+  await operations.content.save(current, next);
+  await persistWithdrawalAffected(
+    operations,
+    command,
+    affectedParticipantIds,
+    withdrawnAt,
+  );
+  await publishContentTransition(
+    operations,
+    idFactory,
+    command,
+    next,
+    affectedParticipantIds,
+  );
+  return next;
+}
 
-      if (isEmergencyWithdrawal) {
-        const recordWithdrawalAffected =
-          operations.content.recordWithdrawalAffected;
-        if (
-          recordWithdrawalAffected === undefined ||
-          withdrawnAt === undefined
-        ) {
-          throw new ApplicationError(
-            "internal_error",
-            "Content withdrawal audit repository is not configured",
-          );
-        }
-        const recordedCount = await recordWithdrawalAffected(
-          affectedParticipantIds,
-          {
-            contentId: command.contentId,
-            version: command.version,
-            scopeId: command.scopeId,
-            withdrawnAt,
-            correlationId: command.correlationId,
-          },
-        );
-        if (recordedCount !== affectedParticipantIds.length) {
-          throw new ApplicationError(
-            "internal_error",
-            "Content withdrawal affected participant count is inconsistent",
-          );
-        }
-      }
+export async function advanceContentWithinTransaction(
+  command: AdvanceContentCommand,
+  operations: ContentTransactionalOperations,
+  idFactory: ContentUseCaseDependencies["idFactory"],
+): Promise<ContentRecord> {
+  validateAdvanceContentCommand(command);
+  try {
+    return await executeContentTransitionWithinTransaction(
+      command,
+      operations,
+      idFactory,
+    );
+  } catch (error) {
+    throw normalizeContentError(error);
+  }
+}
 
-      const occurredAt = new Date().toISOString();
-      await operations.eventPublisher.publish({
-        eventId: dependencies.idFactory(),
-        eventType: eventTypeForStatus(next.status),
-        aggregateType: "content_version",
-        aggregateId: next.contentId,
-        occurredAt,
-        schemaVersion: 1,
-        correlationId: command.correlationId,
-        payload: {
-          content_id: next.contentId,
-          version: String(next.version),
-          status: next.status,
-          ...(command.withdrawalReasonCode === undefined
-            ? {}
-            : { reason_code: command.withdrawalReasonCode }),
-          ...(isEmergencyWithdrawal
-            ? { affected_count: affectedParticipantIds.length }
-            : {}),
-        },
-      });
-      await operations.audit.append(
-        createAuditEntry({
-          auditId: dependencies.idFactory(),
-          principalId: command.principalId,
-          action: `CONTENT_${command.event}`,
-          resourceType: "content_version",
-          resourceId: next.contentId,
-          scopeId: next.scopeId,
-          outcome: "SUCCESS",
-          reasonCode: isEmergencyWithdrawal
-            ? "emergency_withdrawal"
-            : "content_workflow_transition",
-          requestId: command.correlationId,
-          correlationId: command.correlationId,
-          occurredAt,
-        }),
-      );
-
-      return next;
-    });
+export async function advanceContent(
+  command: AdvanceContentCommand,
+  dependencies: ContentUseCaseDependencies,
+): Promise<ContentRecord> {
+  validateAdvanceContentCommand(command);
+  try {
+    return await dependencies.transaction.run((operations) =>
+      executeContentTransitionWithinTransaction(
+        command,
+        operations,
+        dependencies.idFactory,
+      ),
+    );
   } catch (error) {
     throw normalizeContentError(error);
   }
@@ -451,10 +545,13 @@ function normalizedScopeIds(scopes: readonly string[]): readonly string[] {
   ]);
 }
 
-export async function expireDueContent(
-  command: ExpireContentCommand,
-  dependencies: ContentExpiryUseCaseDependencies,
-): Promise<ExpireContentResult> {
+type ExpiryRequest = Readonly<{
+  readonly now: string;
+  readonly limit: number;
+  readonly scopeIds: readonly string[];
+}>;
+
+function validateExpiryRequest(command: ExpireContentCommand): ExpiryRequest {
   assertNonEmpty(command.principalId, "principalId");
   assertNonEmpty(command.correlationId, "correlationId");
 
@@ -468,25 +565,72 @@ export async function expireDueContent(
   }
 
   const scopeIds = normalizedScopeIds(command.scopes);
-  if (
-    scopeIds.length === 0 ||
-    scopeIds.some(
-      (scopeId) =>
-        !canAccess({
-          principalId: command.principalId,
-          accountStatus: command.accountStatus,
-          roles: command.roles,
-          capability: "PUBLISH_CONTENT",
-          resource: { scopeId },
-          scopes: scopeIds,
-        }),
-    )
-  ) {
+  const unauthorized = scopeIds.some(
+    (scopeId) =>
+      !canAccess({
+        principalId: command.principalId,
+        accountStatus: command.accountStatus,
+        roles: command.roles,
+        capability: "PUBLISH_CONTENT",
+        resource: { scopeId },
+        scopes: scopeIds,
+      }),
+  );
+  if (scopeIds.length === 0 || unauthorized) {
     throw new ApplicationError(
       "forbidden",
       "Content expiry is outside the current authorization scope",
     );
   }
+  return Object.freeze({ now, limit, scopeIds });
+}
+
+function isDueForExpiry(candidate: ContentRecord, nowMs: number): boolean {
+  if (candidate.status !== "PUBLICADO" || candidate.validUntil === undefined) {
+    return false;
+  }
+  const validUntilMs = new Date(candidate.validUntil).getTime();
+  return !Number.isNaN(validUntilMs) && validUntilMs <= nowMs;
+}
+
+async function expireCandidate(
+  command: ExpireContentCommand,
+  dependencies: ContentExpiryUseCaseDependencies,
+  scopeIds: readonly string[],
+  candidate: ContentRecord,
+): Promise<ContentRecord | null> {
+  try {
+    return await advanceContent(
+      {
+        principalId: command.principalId,
+        accountStatus: command.accountStatus,
+        roles: command.roles,
+        scopes: scopeIds,
+        contentId: candidate.contentId,
+        version: candidate.version,
+        scopeId: candidate.scopeId,
+        event: "VENCER",
+        correlationId: command.correlationId,
+      },
+      dependencies,
+    );
+  } catch (error) {
+    const normalized = toApplicationError(error);
+    if (
+      normalized.code === "state_conflict" ||
+      normalized.code === "not_found"
+    ) {
+      return null;
+    }
+    throw normalized;
+  }
+}
+
+export async function expireDueContent(
+  command: ExpireContentCommand,
+  dependencies: ContentExpiryUseCaseDependencies,
+): Promise<ExpireContentResult> {
+  const request = validateExpiryRequest(command);
 
   const listDue = dependencies.expiryRepository.listPublishedDueForExpiry;
   if (listDue === undefined) {
@@ -496,58 +640,29 @@ export async function expireDueContent(
     );
   }
 
-  const candidates = await listDue(now, scopeIds, limit);
-  const expired: ContentRecord[] = [];
-  let skipped = 0;
-  const nowMs = new Date(now).getTime();
+  const candidates = await listDue(
+    request.now,
+    request.scopeIds,
+    request.limit,
+  );
+  let expired: readonly ContentRecord[] = [];
+  const nowMs = new Date(request.now).getTime();
 
   for (const candidate of candidates) {
-    const validUntil = candidate.validUntil;
-    const validUntilMs =
-      validUntil === undefined ? Number.NaN : new Date(validUntil).getTime();
-    if (
-      candidate.status !== "PUBLICADO" ||
-      validUntil === undefined ||
-      Number.isNaN(validUntilMs) ||
-      validUntilMs > nowMs
-    ) {
-      skipped += 1;
-      continue;
-    }
-
-    try {
-      const next = await advanceContent(
-        {
-          principalId: command.principalId,
-          accountStatus: command.accountStatus,
-          roles: command.roles,
-          scopes: scopeIds,
-          contentId: candidate.contentId,
-          version: candidate.version,
-          scopeId: candidate.scopeId,
-          event: "VENCER",
-          correlationId: command.correlationId,
-        },
-        dependencies,
-      );
-      expired.push(next);
-    } catch (error) {
-      const normalized = toApplicationError(error);
-      if (
-        normalized.code === "state_conflict" ||
-        normalized.code === "not_found"
-      ) {
-        skipped += 1;
-        continue;
-      }
-      throw normalized;
-    }
+    if (!isDueForExpiry(candidate, nowMs)) continue;
+    const next = await expireCandidate(
+      command,
+      dependencies,
+      request.scopeIds,
+      candidate,
+    );
+    if (next !== null) expired = [...expired, next];
   }
 
   return Object.freeze({
     requested: candidates.length,
     expiredCount: expired.length,
-    skipped,
+    skipped: candidates.length - expired.length,
     expired: Object.freeze([...expired]),
   });
 }

@@ -4,6 +4,9 @@ export type ApiSurfaceAuth = "PUBLIC" | "SESSION" | "INTERNAL" | "METRICS";
 
 export type ApiSurfaceScope = "none" | "own" | "scope" | "audit";
 
+export type ApiSurfaceHandlerGroup =
+  "health" | "metrics" | "workflow" | "internal" | "participant" | "authoring";
+
 export type ApiSurfaceRoute = Readonly<{
   readonly method: ApiSurfaceMethod;
   readonly path: string;
@@ -13,9 +16,87 @@ export type ApiSurfaceRoute = Readonly<{
   readonly useCase: string;
   readonly requestContract: string;
   readonly responseContract: string;
+  readonly handlerGroup: ApiSurfaceHandlerGroup;
 }>;
 
-const route = (value: ApiSurfaceRoute): ApiSurfaceRoute => Object.freeze(value);
+type ApiSurfaceRouteInput = Omit<ApiSurfaceRoute, "handlerGroup">;
+
+type HandlerGroupMatcher = Readonly<{
+  readonly group: ApiSurfaceHandlerGroup;
+  readonly matches: (path: string) => boolean;
+}>;
+
+const handlerGroupMatchers: readonly HandlerGroupMatcher[] = Object.freeze([
+  { group: "health", matches: (path) => path.startsWith("/health/") },
+  {
+    group: "metrics",
+    matches: (path) => path.startsWith("/internal/metrics"),
+  },
+  {
+    group: "authoring",
+    matches: (path) =>
+      [
+        path.startsWith("/api/v1/internal/content/"),
+        path.startsWith("/api/v1/internal/authoring/"),
+        path.startsWith("/api/v1/internal/attempts/"),
+        path === "/api/v1/internal/curriculum/modules/:moduleId/evaluate",
+        path.startsWith("/api/v1/attempts/"),
+        path.endsWith("/progress"),
+      ].some(Boolean),
+  },
+  {
+    group: "workflow",
+    matches: (path) =>
+      [
+        "/api/v1/invitations/accept",
+        "/api/v1/auth/login",
+        "/api/v1/session",
+        "/api/v1/account/password",
+        "/api/v1/session/revoke",
+        "/api/v1/session/rotate",
+        "/api/v1/internal/invitations",
+        "/api/v1/feedback",
+        "/api/v1/appeals",
+      ].includes(path) ||
+      [
+        "/api/v1/internal/learning-assignments",
+        "/api/v1/internal/assessment-workflows",
+        "/api/v1/internal/feedback/",
+        "/api/v1/internal/appeals/",
+      ].some((prefix) => path.startsWith(prefix)),
+  },
+  {
+    group: "participant",
+    matches: (path) =>
+      [
+        "/api/v1/attempts",
+        "/api/v1/learning-path",
+        "/api/v1/dashboard",
+      ].includes(path) ||
+      ["/api/v1/activities/", "/api/v1/curriculum/"].some((prefix) =>
+        path.startsWith(prefix),
+      ),
+  },
+  {
+    group: "internal",
+    matches: (path) =>
+      path === "/api/v1/account/security" ||
+      path.startsWith("/api/v1/account/recovery/") ||
+      path.startsWith("/api/v1/account/mfa/") ||
+      path.startsWith("/api/v1/internal/"),
+  },
+]);
+
+function handlerGroupForPath(path: string): ApiSurfaceHandlerGroup {
+  const match = handlerGroupMatchers.find(({ matches }) => matches(path));
+  if (match === undefined) {
+    throw new Error(`API surface route has no handler group: ${path}`);
+  }
+  return match.group;
+}
+
+const route = (value: ApiSurfaceRouteInput): ApiSurfaceRoute =>
+  Object.freeze({ ...value, handlerGroup: handlerGroupForPath(value.path) });
 
 export const API_SURFACE: readonly ApiSurfaceRoute[] = Object.freeze([
   route({
@@ -603,6 +684,29 @@ const pathParameterPattern = /:[A-Za-z][A-Za-z0-9]*/gu;
 export function materializeApiSurfacePath(path: string): string {
   return path.replace(pathParameterPattern, (parameter) =>
     parameter === ":version" ? "1" : "sample-id",
+  );
+}
+
+function matchesApiSurfacePath(template: string, path: string): boolean {
+  const templateSegments = template.split("/");
+  const pathSegments = path.split("/");
+  if (templateSegments.length !== pathSegments.length) return false;
+  return templateSegments.every((segment, index) =>
+    segment.startsWith(":") && pathSegments[index] !== undefined
+      ? pathSegments[index] !== ""
+      : segment === pathSegments[index],
+  );
+}
+
+export function findApiSurfaceRoute(
+  method: string,
+  path: string,
+): ApiSurfaceRoute | null {
+  return (
+    API_SURFACE.find(
+      (route) =>
+        route.method === method && matchesApiSurfacePath(route.path, path),
+    ) ?? null
   );
 }
 

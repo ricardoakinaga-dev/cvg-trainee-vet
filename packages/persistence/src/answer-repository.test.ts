@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import type { AnswerSavedEvent } from "@cvg/application";
 import type { AnswerState, AttemptState } from "@cvg/domain";
 
 import {
@@ -7,7 +8,10 @@ import {
   answerIdempotencyRowToRecord,
   answerRowToState,
   answerStateToRow,
+  createAnswerOperationsMethods,
+  createAnswerUseCaseDependencies,
 } from "./answer-repository.js";
+import { PersistenceConflictError } from "./attempt-repository.js";
 import { answerIdempotency, answers } from "./schema.js";
 
 const answer: AnswerState = {
@@ -26,7 +30,107 @@ const attempt: AttemptState = {
   version: 2,
 };
 
+const answerRow = {
+  id: answer.answerId,
+  attemptId: answer.attemptId,
+  itemId: answer.itemId,
+  response: answer.response,
+  savedAt: new Date(answer.savedAt),
+};
+
+const attemptRow = {
+  id: attempt.attemptId,
+  participantId: attempt.participantId,
+  activityId: attempt.activityId,
+  status: attempt.status,
+  version: attempt.version,
+  submittedAt: null,
+};
+
+function fakeDatabase(input?: {
+  readonly selectResults?: readonly unknown[][];
+  readonly updateResults?: readonly unknown[][];
+  readonly insertResults?: readonly unknown[][];
+  readonly insertErrors?: readonly unknown[];
+}) {
+  const selectResults = [...(input?.selectResults ?? [])];
+  const updateResults = [...(input?.updateResults ?? [])];
+  const insertResults = [...(input?.insertResults ?? [])];
+  const insertErrors = [...(input?.insertErrors ?? [])];
+  const inserted: unknown[] = [];
+
+  const createQuery = (result: readonly unknown[]) => {
+    const query = {
+      from: vi.fn(),
+      where: vi.fn(),
+      limit: vi.fn(),
+      then: (
+        resolve: (value: readonly unknown[]) => unknown,
+        reject: (reason: unknown) => unknown,
+      ) => Promise.resolve(result).then(resolve, reject),
+    };
+    query.from.mockReturnValue(query);
+    query.where.mockReturnValue(query);
+    query.limit.mockResolvedValue(result);
+    return query;
+  };
+
+  const createInsertQuery = () => {
+    const insertQuery = {
+      values: vi.fn((value: unknown) => {
+        inserted.push(value);
+        return insertQuery;
+      }),
+      onConflictDoUpdate: vi.fn(),
+      onConflictDoNothing: vi.fn(),
+      returning: vi.fn(async () => updateResults.shift() ?? []),
+      then: (
+        resolve: (value: readonly unknown[]) => unknown,
+        reject: (reason: unknown) => unknown,
+      ) => {
+        const error = insertErrors.shift();
+        if (error !== undefined)
+          return Promise.reject(error).then(resolve, reject);
+        return Promise.resolve(insertResults.shift() ?? []).then(
+          resolve,
+          reject,
+        );
+      },
+    };
+    insertQuery.onConflictDoUpdate.mockReturnValue(insertQuery);
+    insertQuery.onConflictDoNothing.mockReturnValue(insertQuery);
+    return insertQuery;
+  };
+
+  const executor = {
+    execute: vi.fn(async () => undefined),
+    select: vi.fn(() => createQuery(selectResults.shift() ?? [])),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn(async () => updateResults.shift() ?? []),
+        })),
+      })),
+    })),
+    insert: vi.fn(createInsertQuery),
+  };
+  return { executor, inserted };
+}
+
 describe("PostgreSQL answer mapping", () => {
+  it("composes frozen answer transaction operations", () => {
+    const methods = createAnswerOperationsMethods({} as never);
+
+    expect(Object.isFrozen(methods)).toBe(true);
+    expect(Object.keys(methods).sort()).toEqual([
+      "answersPort",
+      "attemptsPort",
+      "audit",
+      "eventPublisher",
+      "idempotency",
+    ]);
+  });
+
   it("maps a plain-text answer to a row without exposing event metadata", () => {
     const row = answerStateToRow(answer);
 
@@ -74,9 +178,198 @@ describe("PostgreSQL answer mapping", () => {
     ).toThrow("savedAt");
   });
 
+  it("rejects malformed answer and replay snapshots at the persistence boundary", () => {
+    expect(() => answerStateToRow({ ...answer, response: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => answerStateToRow({ ...answer, savedAt: "invalid" })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => answerRowToState({ ...answerRow, id: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() =>
+      answerIdempotencyRowToRecord({ fingerprint: " ", response: {} }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({ fingerprint: "fp", response: null }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({
+        fingerprint: "fp",
+        response: {
+          attempt: { ...attempt, submittedAt: 42 },
+          answer,
+        },
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({
+        fingerprint: "fp",
+        response: {
+          attempt: { ...attempt, status: "UNKNOWN" },
+          answer,
+        },
+      }),
+    ).toThrow(PersistenceMappingError);
+  });
+
   it("keeps answer and idempotency tables explicit", () => {
     expect(answers).toBeDefined();
     expect(answerIdempotency).toBeDefined();
+  });
+
+  it("maps an optimistic attempt update miss to a persistence conflict", async () => {
+    const database = {
+      update: () => ({
+        set: () => ({
+          where: () => ({
+            returning: async () => [],
+          }),
+        }),
+      }),
+    } as never;
+
+    await expect(
+      createAnswerOperationsMethods(database).attemptsPort.update(attempt),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+  });
+
+  it("maps a concurrent answer idempotency insert to a persistence conflict", async () => {
+    const duplicate = Object.assign(new Error("duplicate idempotency key"), {
+      code: "23505",
+    });
+    const database = {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: async () => [],
+          }),
+        }),
+      }),
+      insert: () => ({
+        values: async () => {
+          throw duplicate;
+        },
+      }),
+    } as never;
+
+    await expect(
+      createAnswerOperationsMethods(database).idempotency.store("key", {
+        fingerprint: "fingerprint",
+        result: { attempt, answer },
+      }),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+  });
+
+  it("executes answer, attempt, idempotency and event operations", async () => {
+    const database = fakeDatabase({
+      selectResults: [
+        [answerRow],
+        [],
+        [attemptRow],
+        [],
+        [{ fingerprint: "fp", response: { attempt, answer } }],
+        [{ fingerprint: "stored-fingerprint" }],
+        [{ fingerprint: "fp" }],
+        [],
+      ],
+      updateResults: [[{ id: attempt.attemptId }], []],
+      insertResults: [[], [], [{ id: "idempotency-row" }]],
+    });
+    const methods = createAnswerOperationsMethods(database.executor as never);
+
+    await expect(
+      methods.answersPort.findByAttemptAndItem(
+        attempt.attemptId,
+        answer.itemId,
+      ),
+    ).resolves.toEqual(answer);
+    await expect(
+      methods.answersPort.findByAttemptAndItem("missing", answer.itemId),
+    ).resolves.toBeNull();
+    await methods.answersPort.save(answer);
+
+    await expect(
+      methods.attemptsPort.findById(attempt.attemptId),
+    ).resolves.toEqual(attempt);
+    await expect(methods.attemptsPort.findById("missing")).resolves.toBeNull();
+    await methods.attemptsPort.update({
+      ...attempt,
+      version: attempt.version + 1,
+    });
+    await expect(
+      methods.attemptsPort.update({ ...attempt, version: attempt.version + 1 }),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+
+    await expect(methods.idempotency.find("answer-key")).resolves.toEqual({
+      fingerprint: "fp",
+      result: { attempt, answer },
+    });
+    const record = { fingerprint: "fp", result: { attempt, answer } };
+    await expect(
+      methods.idempotency.store("answer-key", {
+        ...record,
+        fingerprint: "new-fingerprint",
+      }),
+    ).rejects.toThrow("another fingerprint");
+    await methods.idempotency.store("answer-key", record);
+    await methods.idempotency.store("new-answer-key", record);
+
+    const event: AnswerSavedEvent = {
+      eventId: "77777777-7777-4777-8777-777777777777",
+      eventType: "answer.saved.v1",
+      aggregateType: "attempt",
+      aggregateId: attempt.attemptId,
+      occurredAt: "2026-08-09T17:00:00.000Z",
+      schemaVersion: 1,
+      correlationId: "88888888-8888-4888-8888-888888888888",
+      payload: {
+        attempt_id: attempt.attemptId,
+        item_id: answer.itemId,
+        status: "SALVA",
+      },
+    };
+    await methods.eventPublisher.publish(event);
+
+    expect(database.inserted.length).toBeGreaterThanOrEqual(3);
+    expect(database.inserted.at(-1)).toMatchObject({
+      eventType: event.eventType,
+      status: "PENDING",
+    });
+  });
+
+  it("maps a non-duplicate idempotency insert error and applies transaction security context", async () => {
+    const unexpected = new Error("database unavailable");
+    const duplicate = Object.assign(new Error("duplicate"), { code: "23505" });
+    const database = fakeDatabase({
+      selectResults: [[], []],
+      insertErrors: [unexpected, duplicate],
+    });
+    const methods = createAnswerOperationsMethods(database.executor as never);
+    const record = { fingerprint: "fp", result: { attempt, answer } };
+
+    await expect(methods.idempotency.store("unexpected", record)).rejects.toBe(
+      unexpected,
+    );
+    await expect(
+      methods.idempotency.store("duplicate", record),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+
+    const db = {
+      transaction: vi.fn(async (work: (executor: unknown) => unknown) =>
+        work(database.executor),
+      ),
+    };
+    const dependencies = createAnswerUseCaseDependencies(
+      db as never,
+      () => "generated-id",
+    );
+    await dependencies.transaction.run(
+      async (operations) => Object.keys(operations).sort(),
+      { participantId: attempt.participantId },
+    );
+    expect(database.executor.execute).toHaveBeenCalledTimes(1);
   });
 });
 

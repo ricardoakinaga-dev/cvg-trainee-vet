@@ -103,4 +103,49 @@ describe("operational AI safety policy", () => {
 
     expect(proposal.requiresHumanReview).toBe(false);
   });
+
+  it("rejects malformed request, cost, timestamp and output boundaries", () => {
+    expect(() =>
+      createOperationalAiProposal({ ...baseInput, requestId: " " }),
+    ).toThrow("requestId");
+    expect(() =>
+      createOperationalAiProposal({ ...baseInput, impact: "UNKNOWN" as never }),
+    ).toThrow("impact");
+    expect(() =>
+      createOperationalAiProposal({ ...baseInput, estimatedCostUsd: -1 }),
+    ).toThrow("estimated cost");
+    expect(() =>
+      createOperationalAiProposal({ ...baseInput, costCeilingUsd: 0 }),
+    ).toThrow("cost ceiling");
+    expect(() =>
+      createOperationalAiProposal({ ...baseInput, generatedAt: "invalid" }),
+    ).toThrow("generatedAt");
+    expect(() =>
+      createOperationalAiProposal({ ...baseInput, output: null }),
+    ).toThrow("output must");
+    expect(() =>
+      createOperationalAiProposal({
+        ...baseInput,
+        output: { ...baseInput.output, unsupported: true },
+      }),
+    ).toThrow("unsupported fields");
+    expect(() =>
+      createOperationalAiProposal({
+        ...baseInput,
+        output: { ...baseInput.output, action: " " },
+      }),
+    ).toThrow("output.action");
+    expect(() =>
+      createOperationalAiProposal({
+        ...baseInput,
+        output: { ...baseInput.output, evidence: [" "] },
+      }),
+    ).toThrow("evidence");
+    expect(() =>
+      confirmOperationalAiProposal(createOperationalAiProposal(baseInput), {
+        confirmedBy: "operator-1",
+        confirmedAt: "invalid",
+      }),
+    ).toThrow("confirmedAt");
+  });
 });

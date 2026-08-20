@@ -81,6 +81,7 @@ const rawEnvironmentSchema = z.object({
 });
 
 type EnvironmentInput = Record<string, string | undefined>;
+type ParsedEnvironment = z.infer<typeof rawEnvironmentSchema>;
 
 export type RuntimeConfig = {
   nodeEnv: "development" | "test" | "production";
@@ -130,9 +131,9 @@ export class ConfigError extends Error {
   }
 }
 
-export function loadRuntimeConfig(
+function parseRuntimeEnvironment(
   environment: EnvironmentInput,
-): RuntimeConfig {
+): ParsedEnvironment {
   const parsed = rawEnvironmentSchema.safeParse(environment);
 
   if (!parsed.success) {
@@ -143,46 +144,57 @@ export function loadRuntimeConfig(
       `Invalid runtime configuration: ${fields.join(", ")}`,
     );
   }
+  return parsed.data;
+}
 
-  const value = parsed.data;
-  const missing: string[] = [];
+function validateQdrantRequirements(
+  value: ParsedEnvironment,
+): readonly string[] {
+  if (!value.QDRANT_ENABLED) return [];
+  if (value.EMBEDDING_PROVIDER === "fake" && value.NODE_ENV === "production") {
+    throw new ConfigError(
+      "Deterministic embedding provider is allowed only in development or test",
+    );
+  }
+  return Object.freeze([
+    ...(value.QDRANT_URL ? [] : ["QDRANT_URL"]),
+    ...(value.EMBEDDING_MODEL ? [] : ["EMBEDDING_MODEL"]),
+    ...(value.EMBEDDING_DIMENSION ? [] : ["EMBEDDING_DIMENSION"]),
+    ...(value.EMBEDDING_PROVIDER === "openai" &&
+    !value.EMBEDDING_API_KEY &&
+    !value.AI_API_KEY
+      ? ["EMBEDDING_API_KEY or AI_API_KEY"]
+      : []),
+  ]);
+}
 
-  if (value.QDRANT_ENABLED) {
-    if (!value.QDRANT_URL) missing.push("QDRANT_URL");
-    if (!value.EMBEDDING_MODEL) missing.push("EMBEDDING_MODEL");
-    if (!value.EMBEDDING_DIMENSION) missing.push("EMBEDDING_DIMENSION");
-    if (
-      value.EMBEDDING_PROVIDER === "openai" &&
-      !value.EMBEDDING_API_KEY &&
-      !value.AI_API_KEY
-    ) {
-      missing.push("EMBEDDING_API_KEY or AI_API_KEY");
-    }
-    if (
-      value.EMBEDDING_PROVIDER === "fake" &&
-      value.NODE_ENV === "production"
-    ) {
-      throw new ConfigError(
-        "Deterministic embedding provider is allowed only in development or test",
-      );
-    }
-  }
+function validateAiRequirements(value: ParsedEnvironment): readonly string[] {
+  if (!value.AI_ENABLED) return [];
+  return Object.freeze([
+    ...(value.AI_API_KEY ? [] : ["AI_API_KEY"]),
+    ...(value.AI_MODEL ? [] : ["AI_MODEL"]),
+  ]);
+}
 
-  if (value.AI_ENABLED) {
-    if (!value.AI_API_KEY) missing.push("AI_API_KEY");
-    if (!value.AI_MODEL) missing.push("AI_MODEL");
-  }
+function validateIdentityProviderRequirements(
+  value: ParsedEnvironment,
+): readonly string[] {
+  return Object.freeze([
+    ...(value.IDENTITY_PROVIDER_URL && !value.IDENTITY_PROVIDER_TOKEN
+      ? ["IDENTITY_PROVIDER_TOKEN"]
+      : []),
+    ...(value.IDENTITY_PROVIDER_REQUIRED && !value.IDENTITY_PROVIDER_URL
+      ? ["IDENTITY_PROVIDER_URL"]
+      : []),
+    ...(value.IDENTITY_PROVIDER_REQUIRED && !value.IDENTITY_PROVIDER_TOKEN
+      ? ["IDENTITY_PROVIDER_TOKEN"]
+      : []),
+  ]);
+}
 
-  if (value.IDENTITY_PROVIDER_URL && !value.IDENTITY_PROVIDER_TOKEN) {
-    missing.push("IDENTITY_PROVIDER_TOKEN");
-  }
-  if (value.IDENTITY_PROVIDER_REQUIRED && !value.IDENTITY_PROVIDER_URL) {
-    missing.push("IDENTITY_PROVIDER_URL");
-  }
-  if (value.IDENTITY_PROVIDER_REQUIRED && !value.IDENTITY_PROVIDER_TOKEN) {
-    missing.push("IDENTITY_PROVIDER_TOKEN");
-  }
-
+function validateProductionRequirements(
+  value: ParsedEnvironment,
+): readonly string[] {
   if (
     value.NODE_ENV === "production" &&
     value.IDENTITY_PROVIDER_URL !== undefined &&
@@ -190,17 +202,82 @@ export function loadRuntimeConfig(
   ) {
     throw new ConfigError("IDENTITY_PROVIDER_URL must use HTTPS in production");
   }
+  return Object.freeze([
+    ...(value.NODE_ENV === "production" && !value.METRICS_SCRAPE_TOKEN
+      ? ["METRICS_SCRAPE_TOKEN"]
+      : []),
+    ...(value.NODE_ENV === "production" && !value.CLINICAL_APPROVER_ID
+      ? ["CLINICAL_APPROVER_ID"]
+      : []),
+  ]);
+}
 
-  if (value.NODE_ENV === "production" && !value.METRICS_SCRAPE_TOKEN) {
-    missing.push("METRICS_SCRAPE_TOKEN");
-  }
+function collectMissingRuntimeConfiguration(
+  value: ParsedEnvironment,
+): readonly string[] {
+  return Object.freeze([
+    ...validateQdrantRequirements(value),
+    ...validateAiRequirements(value),
+    ...validateIdentityProviderRequirements(value),
+    ...validateProductionRequirements(value),
+  ]);
+}
 
-  if (missing.length > 0) {
-    throw new ConfigError(
-      `Missing runtime configuration: ${missing.join(", ")}`,
-    );
-  }
+function buildIdentityProvider(
+  value: ParsedEnvironment,
+): RuntimeConfig["identityProvider"] {
+  return value.IDENTITY_PROVIDER_URL === undefined
+    ? { configured: false }
+    : {
+        configured: true,
+        url: value.IDENTITY_PROVIDER_URL,
+        token: value.IDENTITY_PROVIDER_TOKEN as string,
+      };
+}
 
+function buildObservability(
+  value: ParsedEnvironment,
+): RuntimeConfig["observability"] {
+  return value.OTEL_EXPORTER_OTLP_ENDPOINT === undefined
+    ? { configured: false }
+    : {
+        configured: true,
+        otlpEndpoint: value.OTEL_EXPORTER_OTLP_ENDPOINT,
+      };
+}
+
+function buildQdrant(value: ParsedEnvironment): RuntimeConfig["qdrant"] {
+  if (!value.QDRANT_ENABLED) return { enabled: false };
+  return {
+    enabled: true,
+    url: value.QDRANT_URL as string,
+    ...(value.QDRANT_API_KEY ? { apiKey: value.QDRANT_API_KEY } : {}),
+    collection: value.QDRANT_COLLECTION,
+    indexVersion: value.QDRANT_INDEX_VERSION,
+    embeddingProvider: value.EMBEDDING_PROVIDER,
+    ...((value.EMBEDDING_API_KEY ?? value.AI_API_KEY)
+      ? {
+          embeddingApiKey:
+            value.EMBEDDING_API_KEY ?? (value.AI_API_KEY as string),
+        }
+      : {}),
+    embeddingModel: value.EMBEDDING_MODEL as string,
+    embeddingDimension: value.EMBEDDING_DIMENSION as number,
+  };
+}
+
+function buildAi(value: ParsedEnvironment): RuntimeConfig["ai"] {
+  return value.AI_ENABLED
+    ? {
+        enabled: true,
+        provider: value.AI_PROVIDER,
+        apiKey: value.AI_API_KEY as string,
+        model: value.AI_MODEL as string,
+      }
+    : { enabled: false, provider: value.AI_PROVIDER };
+}
+
+function buildRuntimeConfig(value: ParsedEnvironment): RuntimeConfig {
   return {
     nodeEnv: value.NODE_ENV,
     databaseUrl: value.DATABASE_URL,
@@ -209,50 +286,27 @@ export function loadRuntimeConfig(
     ...(value.CLINICAL_APPROVER_ID === undefined
       ? {}
       : { approvedClinicalApproverId: value.CLINICAL_APPROVER_ID }),
-    identityProvider:
-      value.IDENTITY_PROVIDER_URL === undefined
-        ? { configured: false }
-        : {
-            configured: true,
-            url: value.IDENTITY_PROVIDER_URL,
-            token: value.IDENTITY_PROVIDER_TOKEN as string,
-          },
+    identityProvider: buildIdentityProvider(value),
     identityProviderRequired: value.IDENTITY_PROVIDER_REQUIRED,
-    observability:
-      value.OTEL_EXPORTER_OTLP_ENDPOINT === undefined
-        ? { configured: false }
-        : {
-            configured: true,
-            otlpEndpoint: value.OTEL_EXPORTER_OTLP_ENDPOINT,
-          },
+    observability: buildObservability(value),
     ...(value.METRICS_SCRAPE_TOKEN === undefined
       ? {}
       : { metricsScrapeToken: value.METRICS_SCRAPE_TOKEN }),
-    qdrant: value.QDRANT_ENABLED
-      ? {
-          enabled: true,
-          url: value.QDRANT_URL as string,
-          ...(value.QDRANT_API_KEY ? { apiKey: value.QDRANT_API_KEY } : {}),
-          collection: value.QDRANT_COLLECTION,
-          indexVersion: value.QDRANT_INDEX_VERSION,
-          embeddingProvider: value.EMBEDDING_PROVIDER,
-          ...((value.EMBEDDING_API_KEY ?? value.AI_API_KEY)
-            ? {
-                embeddingApiKey:
-                  value.EMBEDDING_API_KEY ?? (value.AI_API_KEY as string),
-              }
-            : {}),
-          embeddingModel: value.EMBEDDING_MODEL as string,
-          embeddingDimension: value.EMBEDDING_DIMENSION as number,
-        }
-      : { enabled: false },
-    ai: value.AI_ENABLED
-      ? {
-          enabled: true,
-          provider: value.AI_PROVIDER,
-          apiKey: value.AI_API_KEY as string,
-          model: value.AI_MODEL as string,
-        }
-      : { enabled: false, provider: value.AI_PROVIDER },
+    qdrant: buildQdrant(value),
+    ai: buildAi(value),
   };
+}
+
+export function loadRuntimeConfig(
+  environment: EnvironmentInput,
+): RuntimeConfig {
+  const value = parseRuntimeEnvironment(environment);
+  const missing = collectMissingRuntimeConfiguration(value);
+
+  if (missing.length > 0) {
+    throw new ConfigError(
+      `Missing runtime configuration: ${missing.join(", ")}`,
+    );
+  }
+  return buildRuntimeConfig(value);
 }

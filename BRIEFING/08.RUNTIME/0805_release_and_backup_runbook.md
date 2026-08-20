@@ -9,6 +9,20 @@ Este runbook fecha o mecanismo operacional sem fingir que um ambiente produtivo 
 - IdP externo, domínio HTTPS gerenciado, storage de traces, destino de backup e janela de mudança estão aprovados;
 - `CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL` identifica uma conta técnica sintética do IdP; o valor não é uma conta de participante nem segredo;
 - `pnpm ops:verify-production-security` retorna `PASS` no ambiente de release, sem imprimir segredos.
+- no Compose HA, o helper `prometheus-secret-init` concluiu com sucesso e o
+  Prometheus/Alertmanager estão `healthy` antes de aceitar scrape; a rotação
+  do token repete o helper e reinicia somente o Prometheus após validação.
+
+Para uma rotação autorizada no ambiente local/aprovado, sem imprimir o valor:
+
+```bash
+docker compose --env-file /etc/cvg/ha.env \
+  -f infra/production/docker-compose.ha.yml \
+  -p cvg-trainee-vet-ha run --rm --no-deps prometheus-secret-init
+docker compose --env-file /etc/cvg/ha.env \
+  -f infra/production/docker-compose.ha.yml \
+  -p cvg-trainee-vet-ha up -d --no-deps prometheus
+```
 
 ## Deploy canário
 

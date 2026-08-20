@@ -15,7 +15,9 @@ import {
 
 import {
   createOutboxInsert,
+  PersistenceConflictError,
   PersistenceMappingError,
+  isUniqueConstraintViolation,
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
 import type {
@@ -189,10 +191,34 @@ export function answerIdempotencyRowToRecord(row: {
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
-function createAnswerOperations(
+async function insertAnswerIdempotency(
   db: DatabaseExecutor,
-): AnswerTransactionalOperations {
-  const answersPort = {
+  key: string,
+  record: AnswerIdempotencyRecord,
+  response: PersistedAnswerSnapshot,
+): Promise<void> {
+  try {
+    await db.insert(answerIdempotency).values({
+      key,
+      operation: "answer",
+      fingerprint: record.fingerprint,
+      attemptId: record.result.attempt.attemptId,
+      answerId: record.result.answer.answerId,
+      response,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+  } catch (error) {
+    if (!isUniqueConstraintViolation(error)) throw error;
+    throw new PersistenceConflictError(
+      "idempotency key was created concurrently",
+    );
+  }
+}
+
+function createAnswersPort(
+  db: DatabaseExecutor,
+): AnswerTransactionalOperations["answersPort"] {
+  return Object.freeze({
     findByAttemptAndItem: async (
       attemptId: string,
       itemId: string,
@@ -226,9 +252,13 @@ function createAnswerOperations(
           },
         });
     },
-  };
+  });
+}
 
-  const attemptsPort = {
+function createAttemptsPort(
+  db: DatabaseExecutor,
+): AnswerTransactionalOperations["attemptsPort"] {
+  return Object.freeze({
     findById: async (attemptId: string): Promise<AttemptState | null> => {
       const rows = await db
         .select({
@@ -289,12 +319,18 @@ function createAnswerOperations(
         )
         .returning({ id: attempts.id });
       if (rows.length === 0) {
-        throw new Error("attempt version changed concurrently");
+        throw new PersistenceConflictError(
+          "attempt version changed concurrently",
+        );
       }
     },
-  };
+  });
+}
 
-  const idempotency = {
+function createAnswerIdempotency(
+  db: DatabaseExecutor,
+): AnswerTransactionalOperations["idempotency"] {
+  return Object.freeze({
     find: async (key: string): Promise<AnswerIdempotencyRecord | null> => {
       const rows = await db
         .select({
@@ -325,19 +361,15 @@ function createAnswerOperations(
         attempt: record.result.attempt as PersistedAttemptSnapshot,
         answer: record.result.answer,
       };
-      await db.insert(answerIdempotency).values({
-        key,
-        operation: "answer",
-        fingerprint: record.fingerprint,
-        attemptId: record.result.attempt.attemptId,
-        answerId: record.result.answer.answerId,
-        response,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      });
+      await insertAnswerIdempotency(db, key, record, response);
     },
-  };
+  });
+}
 
-  const eventPublisher = {
+function createAnswerEventPublisher(
+  db: DatabaseExecutor,
+): AnswerTransactionalOperations["eventPublisher"] {
+  return Object.freeze({
     publish: async (
       event: Parameters<
         AnswerTransactionalOperations["eventPublisher"]["publish"]
@@ -345,17 +377,25 @@ function createAnswerOperations(
     ): Promise<void> => {
       await db.insert(outboxEvents).values(createOutboxInsert(event));
     },
-  };
-
-  const audit = createAuditRepository(db);
-
-  return Object.freeze({
-    attemptsPort,
-    answersPort,
-    idempotency,
-    eventPublisher,
-    audit,
   });
+}
+
+export function createAnswerOperationsMethods(
+  db: DatabaseExecutor,
+): AnswerTransactionalOperations {
+  return Object.freeze({
+    attemptsPort: createAttemptsPort(db),
+    answersPort: createAnswersPort(db),
+    idempotency: createAnswerIdempotency(db),
+    eventPublisher: createAnswerEventPublisher(db),
+    audit: createAuditRepository(db),
+  });
+}
+
+function createAnswerOperations(
+  db: DatabaseExecutor,
+): AnswerTransactionalOperations {
+  return createAnswerOperationsMethods(db);
 }
 
 export function createAnswerUseCaseDependencies(
@@ -373,7 +413,7 @@ export function createAnswerUseCaseDependencies(
         context?: TransactionSecurityContext,
       ): Promise<Result> =>
         db.transaction(async (transaction) => {
-          const executor = transaction as unknown as DatabaseExecutor;
+          const executor = transaction;
           if (context !== undefined) {
             await setDatabaseSecurityContext(executor, context);
           }

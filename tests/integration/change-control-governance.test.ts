@@ -12,10 +12,10 @@ it("accepts the canonical decisions, risks, changes and sprint score impacts", (
   expect(validateChangeControlSnapshot(snapshot)).toEqual([]);
   expect(buildChangeControlReport(snapshot)).toMatchObject({
     programId: "CVG-PREMIUM-ENTERPRISE-95",
-    decisionCount: 2,
+    decisionCount: 3,
     riskCount: 2,
-    changeRequestCount: 2,
-    sprintImpactCount: 2,
+    changeRequestCount: 3,
+    sprintImpactCount: 3,
     scoreChangedCount: 0,
     status: "PASS_WITH_GAPS",
     releaseDisposition: "PILOT_BLOCKED",

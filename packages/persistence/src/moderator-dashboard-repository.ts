@@ -59,14 +59,33 @@ function queueId(kind: AssignedWorkKind, scopeId: string): string {
   return `${kind}:${scopeId}`;
 }
 
-export function buildModeratorAssignedWork(
-  _moderatorId: string,
-  requestedScopeIds: readonly string[],
-  workRows: readonly ModeratorAssignedWorkRow[],
+type ParticipantWorkState = Readonly<{
+  readonly scopeIds: readonly string[];
+  readonly queueIds: readonly string[];
+  readonly correctionPendingCount: number;
+  readonly feedbackOpenCount: number;
+  readonly technicalFailureCount: number;
+}>;
+
+type QueueWorkState = Readonly<{
+  readonly scopeId: string;
+  readonly kind: AssignedWorkKind;
+  readonly openCount: number;
+  readonly overdueCount: number;
+}>;
+
+function appendUnique(
+  values: readonly string[],
+  value: string,
+): readonly string[] {
+  return values.includes(value) ? values : [...values, value];
+}
+
+function indexParticipantAccounts(
+  scopes: ReadonlySet<string>,
   accountRows: readonly ModeratorAssignedAccountRow[],
-): ModeratorDashboardReadData {
-  const scopes = new Set(normalizeValues(requestedScopeIds));
-  const accountsById = new Map(
+): ReadonlyMap<string, ModeratorAssignedAccountRow> {
+  return new Map(
     accountRows
       .filter(
         (account) =>
@@ -77,80 +96,106 @@ export function buildModeratorAssignedWork(
       )
       .map((account) => [account.participantId, account] as const),
   );
-  const participantRows = new Map<
-    string,
-    {
-      readonly scopeIds: Set<string>;
-      readonly queueIds: Set<string>;
-      correctionPendingCount: number;
-      feedbackOpenCount: number;
-      technicalFailureCount: number;
-    }
-  >();
-  const queueRows = new Map<
-    string,
-    {
-      readonly scopeId: string;
-      readonly kind: AssignedWorkKind;
-      openCount: number;
-      overdueCount: number;
-    }
-  >();
+}
 
+function accumulateParticipantWork(
+  participantRows: ReadonlyMap<string, ParticipantWorkState>,
+  row: ModeratorAssignedWorkRow,
+): ReadonlyMap<string, ParticipantWorkState> {
+  const existing = participantRows.get(row.participantId) ?? {
+    scopeIds: [],
+    queueIds: [],
+    correctionPendingCount: 0,
+    feedbackOpenCount: 0,
+    technicalFailureCount: 0,
+  };
+  return new Map(participantRows).set(
+    row.participantId,
+    Object.freeze({
+      scopeIds: appendUnique(existing.scopeIds, row.scopeId),
+      queueIds: appendUnique(existing.queueIds, queueId(row.kind, row.scopeId)),
+      correctionPendingCount:
+        existing.correctionPendingCount + (row.kind === "CORRECTION" ? 1 : 0),
+      feedbackOpenCount:
+        existing.feedbackOpenCount + (row.kind === "FEEDBACK" ? 1 : 0),
+      technicalFailureCount:
+        existing.technicalFailureCount +
+        (row.kind === "FEEDBACK" && row.technicalFailure ? 1 : 0),
+    }),
+  );
+}
+
+function accumulateQueueWork(
+  queueRows: ReadonlyMap<string, QueueWorkState>,
+  row: ModeratorAssignedWorkRow,
+): ReadonlyMap<string, QueueWorkState> {
+  const key = queueId(row.kind, row.scopeId);
+  const existing = queueRows.get(key) ?? {
+    scopeId: row.scopeId,
+    kind: row.kind,
+    openCount: 0,
+    overdueCount: 0,
+  };
+  return new Map(queueRows).set(
+    key,
+    Object.freeze({
+      ...existing,
+      openCount: existing.openCount + 1,
+      overdueCount: existing.overdueCount + (row.overdue ? 1 : 0),
+    }),
+  );
+}
+
+function aggregateAssignedWork(
+  scopes: ReadonlySet<string>,
+  accountsById: ReadonlyMap<string, ModeratorAssignedAccountRow>,
+  workRows: readonly ModeratorAssignedWorkRow[],
+): Readonly<{
+  readonly participantRows: ReadonlyMap<string, ParticipantWorkState>;
+  readonly queueRows: ReadonlyMap<string, QueueWorkState>;
+}> {
+  let participantRows: ReadonlyMap<string, ParticipantWorkState> = new Map();
+  let queueRows: ReadonlyMap<string, QueueWorkState> = new Map();
   for (const row of workRows) {
-    if (!scopes.has(row.scopeId)) continue;
-    const account = accountsById.get(row.participantId);
-    if (account === undefined) continue;
-    const key = `${row.kind}:${row.scopeId}`;
-    const existing = participantRows.get(row.participantId) ?? {
-      scopeIds: new Set<string>(),
-      queueIds: new Set<string>(),
-      correctionPendingCount: 0,
-      feedbackOpenCount: 0,
-      technicalFailureCount: 0,
-    };
-    existing.scopeIds.add(row.scopeId);
-    existing.queueIds.add(queueId(row.kind, row.scopeId));
-    if (row.kind === "CORRECTION") existing.correctionPendingCount += 1;
-    if (row.kind === "FEEDBACK") {
-      existing.feedbackOpenCount += 1;
-      if (row.technicalFailure) existing.technicalFailureCount += 1;
+    if (!scopes.has(row.scopeId) || !accountsById.has(row.participantId)) {
+      continue;
     }
-    participantRows.set(row.participantId, existing);
-
-    const queue = queueRows.get(key) ?? {
-      scopeId: row.scopeId,
-      kind: row.kind,
-      openCount: 0,
-      overdueCount: 0,
-    };
-    queue.openCount += 1;
-    if (row.overdue) queue.overdueCount += 1;
-    queueRows.set(key, queue);
+    participantRows = accumulateParticipantWork(participantRows, row);
+    queueRows = accumulateQueueWork(queueRows, row);
   }
+  return Object.freeze({ participantRows, queueRows });
+}
 
-  const participants: readonly ModeratorAssignedParticipantSnapshot[] =
-    Object.freeze(
-      [...participantRows.entries()]
-        .map(([participantId, work]) => {
-          const account = accountsById.get(participantId);
-          if (account === undefined) return undefined;
-          return Object.freeze({
-            participantId,
-            professionalEmail: account.professionalEmail,
-            scopeIds: normalizeValues([...work.scopeIds]),
-            assignedQueueIds: normalizeValues([...work.queueIds]),
-            correctionPendingCount: work.correctionPendingCount,
-            feedbackOpenCount: work.feedbackOpenCount,
-            technicalFailureCount: work.technicalFailureCount,
-          });
-        })
-        .filter(
-          (value): value is ModeratorAssignedParticipantSnapshot =>
-            value !== undefined,
-        ),
-    );
-  const queues: readonly ModeratorQueueSnapshot[] = Object.freeze(
+function buildParticipantSnapshots(
+  accountsById: ReadonlyMap<string, ModeratorAssignedAccountRow>,
+  participantRows: ReadonlyMap<string, ParticipantWorkState>,
+): readonly ModeratorAssignedParticipantSnapshot[] {
+  return Object.freeze(
+    [...participantRows.entries()]
+      .map(([participantId, work]) => {
+        const account = accountsById.get(participantId);
+        if (account === undefined) return undefined;
+        return Object.freeze({
+          participantId,
+          professionalEmail: account.professionalEmail,
+          scopeIds: normalizeValues(work.scopeIds),
+          assignedQueueIds: normalizeValues(work.queueIds),
+          correctionPendingCount: work.correctionPendingCount,
+          feedbackOpenCount: work.feedbackOpenCount,
+          technicalFailureCount: work.technicalFailureCount,
+        });
+      })
+      .filter(
+        (value): value is ModeratorAssignedParticipantSnapshot =>
+          value !== undefined,
+      ),
+  );
+}
+
+function buildQueueSnapshots(
+  queueRows: ReadonlyMap<string, QueueWorkState>,
+): readonly ModeratorQueueSnapshot[] {
+  return Object.freeze(
     [...queueRows.values()]
       .map((queue) =>
         Object.freeze({
@@ -163,8 +208,25 @@ export function buildModeratorAssignedWork(
       )
       .sort((left, right) => left.queueId.localeCompare(right.queueId)),
   );
+}
 
-  return Object.freeze({ participants, queues });
+export function buildModeratorAssignedWork(
+  _moderatorId: string,
+  requestedScopeIds: readonly string[],
+  workRows: readonly ModeratorAssignedWorkRow[],
+  accountRows: readonly ModeratorAssignedAccountRow[],
+): ModeratorDashboardReadData {
+  const scopes = new Set(normalizeValues(requestedScopeIds));
+  const accountsById = indexParticipantAccounts(scopes, accountRows);
+  const { participantRows, queueRows } = aggregateAssignedWork(
+    scopes,
+    accountsById,
+    workRows,
+  );
+  return Object.freeze({
+    participants: buildParticipantSnapshots(accountsById, participantRows),
+    queues: buildQueueSnapshots(queueRows),
+  });
 }
 
 async function readAssignedRows(

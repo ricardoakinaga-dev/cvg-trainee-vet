@@ -19,10 +19,15 @@ function dependencies(
   passwordHash: string | null,
 ): PasswordAuthUseCaseDependencies & {
   readonly sessions: unknown[];
+  readonly revokedSessions: readonly {
+    readonly accountId: string;
+    readonly revokedAt: Date;
+  }[];
   readonly audits: unknown[];
   readonly passwordHashes: string[];
 } {
   const sessions: unknown[] = [];
+  const revokedSessions: { accountId: string; revokedAt: Date }[] = [];
   const audits: unknown[] = [];
   const passwordHashes: string[] = [];
   const operations: PasswordAuthTransactionalOperations = {
@@ -33,10 +38,19 @@ function dependencies(
           : {
               accountId,
               accountStatus: "ACTIVE",
+              sessionGeneration: 7,
               roles: ["PARTICIPANT"],
               scopes: [scopeId],
               passwordHash,
             },
+      findById: async () => ({
+        accountId,
+        accountStatus: "ACTIVE",
+        sessionGeneration: 7,
+        roles: ["PARTICIPANT"],
+        scopes: [scopeId],
+        passwordHash,
+      }),
       setPassword: async (_accountId, nextHash) => {
         passwordHashes.push(nextHash);
       },
@@ -47,6 +61,10 @@ function dependencies(
       },
       findActive: async () => null,
       revoke: async () => undefined,
+      revokeAll: async (accountId, revokedAt) => {
+        revokedSessions.push({ accountId, revokedAt });
+        return 1;
+      },
     },
     audit: {
       append: async (entry) => {
@@ -58,6 +76,7 @@ function dependencies(
     idFactory: () => "33333333-3333-4333-8333-333333333333",
     transaction: { run: async (work) => work(operations) },
     sessions,
+    revokedSessions,
     audits,
     passwordHashes,
   };
@@ -103,6 +122,7 @@ describe("password authentication", () => {
     expect(result.session.cookie).toContain("HttpOnly");
     expect(result.session.cookie).toContain("SameSite=Lax");
     expect(deps.sessions).toHaveLength(1);
+    expect(deps.sessions[0]).toMatchObject({ sessionGeneration: 7 });
     expect(JSON.stringify(deps.audits)).not.toContain(validCredential);
   });
 
@@ -137,19 +157,58 @@ describe("password authentication", () => {
     expect(unknown.sessions).toHaveLength(0);
   });
 
-  it("sets a new password without returning credential material", async () => {
-    const deps = dependencies(null);
+  it("sets a new password and revokes existing sessions", async () => {
+    const deps = dependencies(await hashPassword(validCredential));
+    const now = new Date("2026-08-11T22:00:00.000Z");
     await setAccountPassword(
       {
         principalId: accountId,
+        currentPassword: validCredential,
         password: replacementCredential,
         correlationId: "66666666-6666-4666-8666-666666666666",
+        now,
       },
       deps,
     );
 
     expect(deps.passwordHashes).toHaveLength(1);
     expect(deps.passwordHashes[0]).not.toContain(replacementCredential);
+    expect(deps.revokedSessions).toEqual([{ accountId, revokedAt: now }]);
     expect(deps.audits).toHaveLength(1);
+  });
+
+  it("rejects a password change without the current password proof", async () => {
+    const deps = dependencies(await hashPassword(validCredential));
+    await expect(
+      setAccountPassword(
+        {
+          principalId: accountId,
+          currentPassword: wrongCredential,
+          password: replacementCredential,
+          correlationId: "77777777-7777-4777-8777-777777777777",
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "unauthenticated" });
+    expect(deps.passwordHashes).toHaveLength(0);
+    expect(deps.revokedSessions).toHaveLength(0);
+  });
+
+  it("rejects setting the current password as the new password", async () => {
+    const deps = dependencies(await hashPassword(validCredential));
+    await expect(
+      setAccountPassword(
+        {
+          principalId: accountId,
+          currentPassword: validCredential,
+          password: validCredential,
+          correlationId: "88888888-8888-4888-8888-888888888888",
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    expect(deps.passwordHashes).toHaveLength(0);
+    expect(deps.revokedSessions).toHaveLength(0);
+    expect(deps.audits).toHaveLength(0);
   });
 });

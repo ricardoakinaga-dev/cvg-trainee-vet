@@ -73,6 +73,7 @@ const token = randomBytes(32).toString("base64url");
 const adminPassword = randomBytes(18).toString("base64url");
 const participantPassword = randomBytes(18).toString("base64url");
 let participantId;
+let fixturePayload;
 let cleanupStarted = false;
 let cleanupStep = "not_started";
 
@@ -140,21 +141,18 @@ async function seed() {
     status: "DISPONIVEL",
   });
 
-  await writeFile(
-    fixtureFile,
-    JSON.stringify({
-      adminLogin: `real-e2e-admin-${adminId}@cvg.example`,
-      adminPassword,
-      login: participantEmail,
-      password: participantPassword,
-      activityId,
-      itemId: contentVersionId,
-    }),
-    "utf8",
-  );
+  fixturePayload = JSON.stringify({
+    adminLogin: `real-e2e-admin-${adminId}@cvg.example`,
+    adminPassword,
+    login: participantEmail,
+    password: participantPassword,
+    activityId,
+    itemId: contentVersionId,
+  });
+  await writeFile(fixtureFile, fixturePayload, "utf8");
 }
 
-async function cleanupStaleSyntheticResidue() {
+async function findStaleSyntheticResidue() {
   const staleAccounts = await database.db
     .select({ id: accounts.id })
     .from(accounts)
@@ -175,101 +173,120 @@ async function cleanupStaleSyntheticResidue() {
   const staleContentVersionIds = staleContentVersionRows.map(
     (row) => row.contentVersionId,
   );
+  return Object.freeze({
+    staleAccountIds,
+    staleActivityIds,
+    staleContentVersionIds,
+  });
+}
 
-  if (staleAccountIds.length > 0) {
-    const staleAttempts = await database.db
-      .select({ id: attempts.id })
-      .from(attempts)
-      .where(inArray(attempts.participantId, staleAccountIds));
-    const staleAttemptIds = staleAttempts.map((row) => row.id);
-    if (staleAttemptIds.length > 0) {
-      await database.db
-        .delete(assessmentIdempotency)
-        .where(inArray(assessmentIdempotency.attemptId, staleAttemptIds));
-      await database.db
-        .delete(assessmentResults)
-        .where(inArray(assessmentResults.attemptId, staleAttemptIds));
-      await database.db
-        .delete(assessmentWorkflows)
-        .where(inArray(assessmentWorkflows.attemptId, staleAttemptIds));
-      await database.db
-        .delete(appeals)
-        .where(inArray(appeals.attemptId, staleAttemptIds));
-      await database.db
-        .delete(answerIdempotency)
-        .where(inArray(answerIdempotency.attemptId, staleAttemptIds));
-      await database.db
-        .delete(attemptIdempotency)
-        .where(inArray(attemptIdempotency.attemptId, staleAttemptIds));
-      await database.db
-        .delete(answers)
-        .where(inArray(answers.attemptId, staleAttemptIds));
-      await database.db
-        .delete(outboxEvents)
-        .where(inArray(outboxEvents.aggregateId, staleAttemptIds));
-      await database.db
-        .delete(attempts)
-        .where(inArray(attempts.id, staleAttemptIds));
-    }
-    await database.db
-      .delete(sessions)
-      .where(inArray(sessions.accountId, staleAccountIds));
-    await database.db
-      .delete(accountInvitations)
-      .where(inArray(accountInvitations.accountId, staleAccountIds));
-    await database.db
-      .delete(accountInvitations)
-      .where(inArray(accountInvitations.createdBy, staleAccountIds));
-    await database.db
-      .delete(activityAssignments)
-      .where(inArray(activityAssignments.participantId, staleAccountIds));
-    await database.db
-      .delete(curriculumRuntimeStates)
-      .where(inArray(curriculumRuntimeStates.participantId, staleAccountIds));
-    await database.db
-      .delete(digitalCaseRuntimeStates)
-      .where(inArray(digitalCaseRuntimeStates.participantId, staleAccountIds));
-    await database.db
-      .delete(learningAssignments)
-      .where(inArray(learningAssignments.participantId, staleAccountIds));
-    await database.db
-      .delete(assessmentWorkflows)
-      .where(inArray(assessmentWorkflows.participantId, staleAccountIds));
-    await database.db
-      .delete(feedbackTickets)
-      .where(inArray(feedbackTickets.participantId, staleAccountIds));
-    await database.db
-      .delete(appeals)
-      .where(inArray(appeals.participantId, staleAccountIds));
-    await database.db
-      .delete(contentWithdrawalAffected)
-      .where(inArray(contentWithdrawalAffected.participantId, staleAccountIds));
-  }
+async function deleteStaleAttemptData(staleAttemptIds) {
+  if (staleAttemptIds.length === 0) return;
+  await database.db
+    .delete(assessmentIdempotency)
+    .where(inArray(assessmentIdempotency.attemptId, staleAttemptIds));
+  await database.db
+    .delete(assessmentResults)
+    .where(inArray(assessmentResults.attemptId, staleAttemptIds));
+  await database.db
+    .delete(assessmentWorkflows)
+    .where(inArray(assessmentWorkflows.attemptId, staleAttemptIds));
+  await database.db
+    .delete(appeals)
+    .where(inArray(appeals.attemptId, staleAttemptIds));
+  await database.db
+    .delete(answerIdempotency)
+    .where(inArray(answerIdempotency.attemptId, staleAttemptIds));
+  await database.db
+    .delete(attemptIdempotency)
+    .where(inArray(attemptIdempotency.attemptId, staleAttemptIds));
+  await database.db
+    .delete(answers)
+    .where(inArray(answers.attemptId, staleAttemptIds));
+  await database.db
+    .delete(outboxEvents)
+    .where(inArray(outboxEvents.aggregateId, staleAttemptIds));
+  await database.db
+    .delete(attempts)
+    .where(inArray(attempts.id, staleAttemptIds));
+}
 
-  if (staleActivityIds.length > 0) {
-    await database.db
-      .delete(activityAssignments)
-      .where(inArray(activityAssignments.activityId, staleActivityIds));
-    await database.db
-      .delete(learningActivityItems)
-      .where(inArray(learningActivityItems.activityId, staleActivityIds));
-    await database.db
-      .delete(learningActivities)
-      .where(inArray(learningActivities.id, staleActivityIds));
-  }
-  if (staleContentVersionIds.length > 0) {
-    await database.db
-      .delete(contentWithdrawalAffected)
-      .where(
-        inArray(
-          contentWithdrawalAffected.contentVersionId,
-          staleContentVersionIds,
-        ),
-      );
-    await database.db
-      .delete(contentVersions)
-      .where(inArray(contentVersions.id, staleContentVersionIds));
-  }
+async function deleteStaleAccountData(staleAccountIds) {
+  if (staleAccountIds.length === 0) return;
+  const staleAttempts = await database.db
+    .select({ id: attempts.id })
+    .from(attempts)
+    .where(inArray(attempts.participantId, staleAccountIds));
+  await deleteStaleAttemptData(staleAttempts.map((row) => row.id));
+  await database.db
+    .delete(sessions)
+    .where(inArray(sessions.accountId, staleAccountIds));
+  await database.db
+    .delete(accountInvitations)
+    .where(inArray(accountInvitations.accountId, staleAccountIds));
+  await database.db
+    .delete(accountInvitations)
+    .where(inArray(accountInvitations.createdBy, staleAccountIds));
+  await database.db
+    .delete(activityAssignments)
+    .where(inArray(activityAssignments.participantId, staleAccountIds));
+  await database.db
+    .delete(curriculumRuntimeStates)
+    .where(inArray(curriculumRuntimeStates.participantId, staleAccountIds));
+  await database.db
+    .delete(digitalCaseRuntimeStates)
+    .where(inArray(digitalCaseRuntimeStates.participantId, staleAccountIds));
+  await database.db
+    .delete(learningAssignments)
+    .where(inArray(learningAssignments.participantId, staleAccountIds));
+  await database.db
+    .delete(assessmentWorkflows)
+    .where(inArray(assessmentWorkflows.participantId, staleAccountIds));
+  await database.db
+    .delete(feedbackTickets)
+    .where(inArray(feedbackTickets.participantId, staleAccountIds));
+  await database.db
+    .delete(appeals)
+    .where(inArray(appeals.participantId, staleAccountIds));
+  await database.db
+    .delete(contentWithdrawalAffected)
+    .where(inArray(contentWithdrawalAffected.participantId, staleAccountIds));
+}
+
+async function deleteStaleActivityData(staleActivityIds) {
+  if (staleActivityIds.length === 0) return;
+  await database.db
+    .delete(activityAssignments)
+    .where(inArray(activityAssignments.activityId, staleActivityIds));
+  await database.db
+    .delete(learningActivityItems)
+    .where(inArray(learningActivityItems.activityId, staleActivityIds));
+  await database.db
+    .delete(learningActivities)
+    .where(inArray(learningActivities.id, staleActivityIds));
+}
+
+async function deleteStaleContentData(staleContentVersionIds) {
+  if (staleContentVersionIds.length === 0) return;
+  await database.db
+    .delete(contentWithdrawalAffected)
+    .where(
+      inArray(
+        contentWithdrawalAffected.contentVersionId,
+        staleContentVersionIds,
+      ),
+    );
+  await database.db
+    .delete(contentVersions)
+    .where(inArray(contentVersions.id, staleContentVersionIds));
+}
+
+async function cleanupStaleSyntheticResidue() {
+  const { staleAccountIds, staleActivityIds, staleContentVersionIds } =
+    await findStaleSyntheticResidue();
+  await deleteStaleAccountData(staleAccountIds);
+  await deleteStaleActivityData(staleActivityIds);
+  await deleteStaleContentData(staleContentVersionIds);
   if (staleAccountIds.length > 0) {
     await database.db
       .delete(accounts)
@@ -277,77 +294,84 @@ async function cleanupStaleSyntheticResidue() {
   }
 }
 
+async function cleanupParticipantAttempts(participant) {
+  cleanupStep = "participant_attempts";
+  const participantAttempts = await database.db
+    .select({ id: attempts.id })
+    .from(attempts)
+    .where(eq(attempts.participantId, participant));
+  const attemptIds = participantAttempts.map((row) => row.id);
+  if (attemptIds.length === 0) return;
+  await database.db
+    .delete(answerIdempotency)
+    .where(inArray(answerIdempotency.attemptId, attemptIds));
+  await database.db
+    .delete(attemptIdempotency)
+    .where(inArray(attemptIdempotency.attemptId, attemptIds));
+  await database.db
+    .delete(answers)
+    .where(inArray(answers.attemptId, attemptIds));
+  await database.db
+    .delete(outboxEvents)
+    .where(inArray(outboxEvents.aggregateId, attemptIds));
+  await database.db.delete(attempts).where(inArray(attempts.id, attemptIds));
+}
+
+async function cleanupParticipantRecords(participant) {
+  cleanupStep = "participant_sessions";
+  await database.db.delete(sessions).where(eq(sessions.accountId, participant));
+  await database.db
+    .delete(accountInvitations)
+    .where(eq(accountInvitations.accountId, participant));
+  cleanupStep = "participant_digital_case_runtime_states";
+  await database.db
+    .delete(digitalCaseRuntimeStates)
+    .where(eq(digitalCaseRuntimeStates.participantId, participant));
+  cleanupStep = "participant_curriculum_runtime_states";
+  await database.db
+    .delete(curriculumRuntimeStates)
+    .where(eq(curriculumRuntimeStates.participantId, participant));
+  cleanupStep = "participant_learning_assignments";
+  await database.db
+    .delete(learningAssignments)
+    .where(eq(learningAssignments.participantId, participant));
+  await database.db
+    .delete(activityAssignments)
+    .where(eq(activityAssignments.participantId, participant));
+}
+
+async function cleanupFixtureRecords() {
+  cleanupStep = "activity_items";
+  await database.db
+    .delete(learningActivityItems)
+    .where(eq(learningActivityItems.activityId, activityId));
+  cleanupStep = "activity";
+  await database.db
+    .delete(learningActivities)
+    .where(eq(learningActivities.id, activityId));
+  cleanupStep = "content";
+  await database.db
+    .delete(contentVersions)
+    .where(eq(contentVersions.id, contentVersionId));
+  if (participantId !== undefined) {
+    cleanupStep = "participant_account";
+    await database.db.delete(accounts).where(eq(accounts.id, participantId));
+  }
+  cleanupStep = "admin_sessions";
+  await database.db.delete(sessions).where(eq(sessions.accountId, adminId));
+  cleanupStep = "admin_account";
+  await database.db.delete(accounts).where(eq(accounts.id, adminId));
+}
+
 async function cleanup() {
   if (cleanupStarted) return;
   cleanupStarted = true;
   try {
     if (participantId !== undefined) {
-      cleanupStep = "participant_attempts";
-      const participantAttempts = await database.db
-        .select({ id: attempts.id })
-        .from(attempts)
-        .where(eq(attempts.participantId, participantId));
-      const attemptIds = participantAttempts.map((row) => row.id);
-      if (attemptIds.length > 0) {
-        await database.db
-          .delete(answerIdempotency)
-          .where(inArray(answerIdempotency.attemptId, attemptIds));
-        await database.db
-          .delete(attemptIdempotency)
-          .where(inArray(attemptIdempotency.attemptId, attemptIds));
-        await database.db
-          .delete(answers)
-          .where(inArray(answers.attemptId, attemptIds));
-        await database.db
-          .delete(outboxEvents)
-          .where(inArray(outboxEvents.aggregateId, attemptIds));
-        await database.db
-          .delete(attempts)
-          .where(inArray(attempts.id, attemptIds));
-      }
-      cleanupStep = "participant_sessions";
-      await database.db
-        .delete(sessions)
-        .where(eq(sessions.accountId, participantId));
-      await database.db
-        .delete(accountInvitations)
-        .where(eq(accountInvitations.accountId, participantId));
-      cleanupStep = "participant_digital_case_runtime_states";
-      await database.db
-        .delete(digitalCaseRuntimeStates)
-        .where(eq(digitalCaseRuntimeStates.participantId, participantId));
-      cleanupStep = "participant_curriculum_runtime_states";
-      await database.db
-        .delete(curriculumRuntimeStates)
-        .where(eq(curriculumRuntimeStates.participantId, participantId));
-      cleanupStep = "participant_learning_assignments";
-      await database.db
-        .delete(learningAssignments)
-        .where(eq(learningAssignments.participantId, participantId));
-      await database.db
-        .delete(activityAssignments)
-        .where(eq(activityAssignments.participantId, participantId));
+      await cleanupParticipantAttempts(participantId);
+      await cleanupParticipantRecords(participantId);
     }
-    cleanupStep = "activity_items";
-    await database.db
-      .delete(learningActivityItems)
-      .where(eq(learningActivityItems.activityId, activityId));
-    cleanupStep = "activity";
-    await database.db
-      .delete(learningActivities)
-      .where(eq(learningActivities.id, activityId));
-    cleanupStep = "content";
-    await database.db
-      .delete(contentVersions)
-      .where(eq(contentVersions.id, contentVersionId));
-    if (participantId !== undefined) {
-      cleanupStep = "participant_account";
-      await database.db.delete(accounts).where(eq(accounts.id, participantId));
-    }
-    cleanupStep = "admin_sessions";
-    await database.db.delete(sessions).where(eq(sessions.accountId, adminId));
-    cleanupStep = "admin_account";
-    await database.db.delete(accounts).where(eq(accounts.id, adminId));
+    await cleanupFixtureRecords();
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -370,6 +394,18 @@ const server = createServer((request, response) => {
     response.statusCode = 200;
     response.setHeader("content-type", "application/json; charset=utf-8");
     response.end(JSON.stringify({ ready: true }));
+    return;
+  }
+  if (request.method === "GET" && request.url === "/fixture") {
+    if (fixturePayload === undefined) {
+      response.statusCode = 503;
+      response.setHeader("content-type", "application/json; charset=utf-8");
+      response.end(JSON.stringify({ ready: false }));
+      return;
+    }
+    response.statusCode = 200;
+    response.setHeader("content-type", "application/json; charset=utf-8");
+    response.end(fixturePayload);
     return;
   }
   response.statusCode = 404;

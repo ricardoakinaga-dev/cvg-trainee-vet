@@ -5,6 +5,21 @@ import {
   loadCapacityGovernanceSnapshot,
   validateCapacityGovernanceSnapshot,
 } from "../../scripts/verify-capacity-governance.mjs";
+import {
+  validateCapacityExplorationEvidence,
+  validateCapacityGaps,
+  validateCapacityMetadata,
+  validateCapacitySmokeEvidence,
+} from "../../scripts/verify-capacity-governance-support.mjs";
+
+it("keeps capacity governance validation composable by evidence block", () => {
+  const snapshot = loadCapacityGovernanceSnapshot();
+
+  expect(validateCapacityMetadata(snapshot)).toEqual([]);
+  expect(validateCapacitySmokeEvidence(snapshot)).toEqual([]);
+  expect(validateCapacityExplorationEvidence(snapshot)).toEqual([]);
+  expect(validateCapacityGaps(snapshot)).toEqual([]);
+});
 
 it("accepts the local HA load smoke and keeps capacity gaps explicit", () => {
   const snapshot = loadCapacityGovernanceSnapshot();

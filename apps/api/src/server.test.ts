@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createObservability, type LogRecord } from "@cvg/observability";
 
+import { createApiRequestHandlerMethods } from "./server-http.js";
 import { createApiServer, requestOutcome, routeTemplate } from "./server.js";
 import type { ApiHttpDependencies } from "./http.js";
 
@@ -42,6 +43,19 @@ const dependencies: ApiHttpDependencies = {
 };
 
 describe("API node server adapter", () => {
+  it("composes the request handler immutably", () => {
+    const methods = createApiRequestHandlerMethods({
+      dependencies,
+      allowedOrigins: ["http://127.0.0.1:3000"],
+      maxBodyBytes: 1024,
+      rateLimiter: { check: async () => ({ allowed: true, remaining: 1 }) },
+      trustedProxyCidrs: [],
+    });
+
+    expect(Object.isFrozen(methods)).toBe(true);
+    expect(Object.keys(methods)).toEqual(["handle"]);
+  });
+
   it("normalizes routes before telemetry and classifies response outcomes", () => {
     expect(requestOutcome(200)).toBe("success");
     expect(requestOutcome(404)).toBe("client_error");
@@ -211,6 +225,7 @@ describe("API node server adapter", () => {
     const api = createApiServer(
       {
         ...dependencies,
+        approvedClinicalApproverId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         authenticate: async () => ({
           principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
           accountStatus: "ACTIVE" as const,
@@ -311,6 +326,7 @@ describe("API node server adapter", () => {
             ai: "DISABLED" as const,
           },
         }),
+        metricsScrapeToken: "x",
         authenticate: async (request) =>
           request.headers?.["x-test-auditor"] === "true"
             ? {
@@ -329,7 +345,9 @@ describe("API node server adapter", () => {
       const address = api.address();
       if (address === null || typeof address === "string") return;
       const baseUrl = `http://127.0.0.1:${address.port}`;
-      const health = await fetch(`${baseUrl}/health/dependencies`);
+      const health = await fetch(`${baseUrl}/health/dependencies`, {
+        headers: { authorization: "Bearer x" },
+      });
       const healthBody = (await health.json()) as {
         data: { status: string; dependencies: Record<string, string> };
       };
@@ -425,6 +443,105 @@ describe("API node server adapter", () => {
     }
   });
 
+  it("uses forwarded client addresses only from configured trusted proxies", async () => {
+    const untrustedKeys: string[] = [];
+    const untrustedApi = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      rateLimiter: {
+        check: async (key) => {
+          untrustedKeys.push(key);
+          return { allowed: true, remaining: 1 };
+        },
+      },
+    });
+    await untrustedApi.listen();
+
+    try {
+      const address = untrustedApi.address();
+      if (address === null || typeof address === "string") return;
+      await fetch(`http://127.0.0.1:${address.port}/unknown`, {
+        headers: { "x-forwarded-for": "203.0.113.9" },
+      });
+      expect(untrustedKeys).toEqual(["127.0.0.1|unmatched"]);
+    } finally {
+      await untrustedApi.close();
+    }
+
+    const trustedKeys: string[] = [];
+    const trustedApi = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      trustedProxyCidrs: ["127.0.0.1/32", "127.0.0.2/32"],
+      rateLimiter: {
+        check: async (key) => {
+          trustedKeys.push(key);
+          return { allowed: true, remaining: 1 };
+        },
+      },
+    });
+    await trustedApi.listen();
+
+    try {
+      const address = trustedApi.address();
+      if (address === null || typeof address === "string") return;
+      await fetch(`http://127.0.0.1:${address.port}/unknown`, {
+        headers: {
+          "x-forwarded-for": "203.0.113.9, 127.0.0.2",
+        },
+      });
+      expect(trustedKeys).toEqual(["203.0.113.9|unmatched"]);
+    } finally {
+      await trustedApi.close();
+    }
+  });
+
+  it("rejects invalid trusted proxy CIDRs before binding a socket", () => {
+    expect(() =>
+      createApiServer(dependencies, { trustedProxyCidrs: ["not-an-ip"] }),
+    ).toThrow("trustedProxyCidrs");
+  });
+
+  it("returns a bounded dependency error when rate limiting fails", async () => {
+    const unhandledRejections: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", onUnhandledRejection);
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      rateLimiter: {
+        check: async () => {
+          throw new Error("rate limiter unavailable");
+        },
+      },
+    });
+    await api.listen();
+    const abortController = new AbortController();
+    const abortTimer = setTimeout(() => abortController.abort(), 300);
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(`http://127.0.0.1:${address.port}/unknown`, {
+        signal: abortController.signal,
+      });
+      expect(response.status).toBe(503);
+      expect(await response.json()).toMatchObject({
+        success: false,
+        error: { code: "internal_error" },
+      });
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      clearTimeout(abortTimer);
+      abortController.abort();
+      process.off("unhandledRejection", onUnhandledRejection);
+      await api.close();
+    }
+  });
+
   it("turns malformed JSON into a public validation error", async () => {
     const api = createApiServer(dependencies, { host: "127.0.0.1", port: 0 });
     await api.listen();
@@ -445,6 +562,71 @@ describe("API node server adapter", () => {
         success: false,
         error: { code: "validation_error" },
       });
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("rejects content-length values above the configured body limit", async () => {
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      maxBodyBytes: 4,
+    });
+    await api.listen();
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const baseUrl = `http://127.0.0.1:${address.port}`;
+      const oversizedLength = await fetch(`${baseUrl}/api/v1/attempts`, {
+        method: "POST",
+        headers: { "content-length": "999" },
+        body: "x".repeat(999),
+      });
+
+      expect(oversizedLength.status).toBe(422);
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("records a valid traceparent and omits retry-after when unavailable", async () => {
+    const observability = createObservability({ service: "api" });
+    const api = createApiServer(
+      { ...dependencies, observability },
+      {
+        host: "127.0.0.1",
+        port: 0,
+        rateLimiter: {
+          check: async () => ({ allowed: false, remaining: 0 }),
+        },
+      },
+    );
+    await api.listen();
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/health/live`,
+        {
+          headers: {
+            traceparent: `00-${"a".repeat(32)}-${"b".repeat(16)}-01`,
+          },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(observability.traces.snapshot()).toContainEqual(
+        expect.objectContaining({
+          traceId: "a".repeat(32),
+          parentSpanId: "b".repeat(16),
+        }),
+      );
+
+      const limited = await fetch(`http://127.0.0.1:${address.port}/unknown`);
+      expect(limited.status).toBe(429);
+      expect(limited.headers.get("retry-after")).toBeNull();
     } finally {
       await api.close();
     }

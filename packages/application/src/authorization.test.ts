@@ -76,6 +76,22 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
+  it("keeps the admin dashboard capability exclusive to administrators", () => {
+    expect(
+      canAccess(
+        participant({
+          principalId: "admin-1",
+          roles: ["ADMIN"],
+          capability: "VIEW_ADMIN_DASHBOARD",
+          scopes: [],
+        }),
+      ),
+    ).toBe(true);
+    expect(canAccess(participant({ capability: "VIEW_ADMIN_DASHBOARD" }))).toBe(
+      false,
+    );
+  });
+
   it("allows scoped authors to request publication while keeping the clinical gate", () => {
     const request = participant({
       principalId: "author-account",

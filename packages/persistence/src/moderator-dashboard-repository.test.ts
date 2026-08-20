@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   buildModeratorAssignedWork,
+  createModeratorDashboardRepository,
   type ModeratorAssignedAccountRow,
   type ModeratorAssignedWorkRow,
 } from "./moderator-dashboard-repository.js";
@@ -74,5 +75,94 @@ describe("moderator dashboard repository projection", () => {
         { ...account, roles: ["MODERATOR"] },
       ]),
     ).toEqual({ participants: [], queues: [] });
+  });
+
+  it("reads feedback and correction queues through scoped transactions", async () => {
+    const selectResults: unknown[][] = [
+      [{ participantId, scopeId, type: "BUG_TECNICO" }],
+      [{ participantId, scopeId, dueAt: new Date("2026-08-01T00:00:00.000Z") }],
+      [
+        {
+          participantId,
+          professionalEmail: account.professionalEmail,
+          roles: account.roles,
+          scopeIds: account.scopeIds,
+        },
+      ],
+    ];
+    const queryFor = (result: readonly unknown[]) => {
+      const query = {
+        from: vi.fn(),
+        where: vi.fn(),
+        then: (
+          resolve: (value: readonly unknown[]) => unknown,
+          reject: (reason: unknown) => unknown,
+        ) => Promise.resolve(result).then(resolve, reject),
+      };
+      query.from.mockReturnValue(query);
+      query.where.mockReturnValue(query);
+      return query;
+    };
+    const tx = {
+      execute: vi.fn(async () => undefined),
+      select: vi.fn(() => queryFor(selectResults.shift() ?? [])),
+    };
+    const db = {
+      transaction: vi.fn(async (work: (executor: typeof tx) => unknown) =>
+        work(tx),
+      ),
+    };
+    const repository = createModeratorDashboardRepository(db as never);
+
+    await expect(
+      repository.listAssignedWork("moderator-1", [scopeId]),
+    ).resolves.toEqual({
+      participants: [
+        {
+          participantId,
+          professionalEmail: account.professionalEmail,
+          scopeIds: [scopeId],
+          assignedQueueIds: [`FEEDBACK:${scopeId}`, `CORRECTION:${scopeId}`],
+          correctionPendingCount: 1,
+          feedbackOpenCount: 1,
+          technicalFailureCount: 1,
+        },
+      ],
+      queues: [
+        {
+          queueId: `CORRECTION:${scopeId}`,
+          scopeId,
+          kind: "CORRECTION",
+          openCount: 1,
+          overdueCount: 1,
+        },
+        {
+          queueId: `FEEDBACK:${scopeId}`,
+          scopeId,
+          kind: "FEEDBACK",
+          openCount: 1,
+          overdueCount: 0,
+        },
+      ],
+    });
+    expect(db.transaction).toHaveBeenCalledTimes(2);
+    expect(tx.execute).toHaveBeenCalledTimes(4);
+  });
+
+  it("returns an empty projection before opening a transaction for invalid scope input", async () => {
+    const db = { transaction: vi.fn() };
+    const repository = createModeratorDashboardRepository(db as never);
+
+    await expect(repository.listAssignedWork(" ", [scopeId])).resolves.toEqual({
+      participants: [],
+      queues: [],
+    });
+    await expect(
+      repository.listAssignedWork("moderator-1", [" "]),
+    ).resolves.toEqual({
+      participants: [],
+      queues: [],
+    });
+    expect(db.transaction).not.toHaveBeenCalled();
   });
 });

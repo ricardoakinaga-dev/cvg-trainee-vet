@@ -9,7 +9,43 @@ const traceStorageBackends = new Set(["s3", "gcs", "azure"]);
 const backupUriSchemes = new Set(["s3:", "gs:", "az:"]);
 
 export function validateProductionSecurityConfig(environment = process.env) {
-  const required = [
+  assertCompleteProductionSecurityConfig(environment);
+  assertIdentityProviderRequired(environment);
+
+  const identityProvider = parseIdentityProviderConfig(environment);
+
+  const publicOrigin = parsePublicHttpsOrigin(
+    requiredString(environment, "CVG_PUBLIC_HTTPS_ORIGIN"),
+  );
+  const trace = parseTraceConfig(environment);
+  const backup = parseBackupConfig(environment);
+  assertDistinctReleaseDigests(environment);
+
+  return createProductionSecurityResult({
+    identityProviderUrl: identityProvider.identityProviderUrl,
+    probePrincipal: identityProvider.probePrincipal,
+    publicOrigin,
+    traceStorage: trace.traceStorage,
+    retention: trace.retention,
+    backupUri: backup.backupUri,
+  });
+}
+
+function assertCompleteProductionSecurityConfig(environment) {
+  const missing = requiredProductionSecurityConfig(environment)
+    .filter(
+      ([, value]) => value !== true && (!value || String(value).trim() === ""),
+    )
+    .map(([name]) => name);
+  if (missing.length > 0) {
+    throw new Error(
+      `production security gate is incomplete: ${missing.join(", ")}`,
+    );
+  }
+}
+
+function requiredProductionSecurityConfig(environment) {
+  return [
     [
       "IDENTITY_PROVIDER_REQUIRED",
       environment.IDENTITY_PROVIDER_REQUIRED === "true",
@@ -31,20 +67,15 @@ export function validateProductionSecurityConfig(environment = process.env) {
     ["CVG_RELEASE_IMAGE_DIGEST", environment.CVG_RELEASE_IMAGE_DIGEST],
     ["CVG_ROLLBACK_IMAGE_DIGEST", environment.CVG_ROLLBACK_IMAGE_DIGEST],
   ];
-  const missing = required
-    .filter(
-      ([, value]) => value !== true && (!value || String(value).trim() === ""),
-    )
-    .map(([name]) => name);
-  if (missing.length > 0) {
-    throw new Error(
-      `production security gate is incomplete: ${missing.join(", ")}`,
-    );
-  }
+}
+
+function assertIdentityProviderRequired(environment) {
   if (environment.IDENTITY_PROVIDER_REQUIRED !== "true") {
     throw new Error("IDENTITY_PROVIDER_REQUIRED must be true in production");
   }
+}
 
+function parseIdentityProviderConfig(environment) {
   const identityProviderUrl = parseHttpsUrl(
     requiredString(environment, "IDENTITY_PROVIDER_URL"),
     "IDENTITY_PROVIDER_URL",
@@ -57,9 +88,10 @@ export function validateProductionSecurityConfig(environment = process.env) {
   );
   assertOpaqueReference(principal, "CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL");
 
-  const publicOrigin = parsePublicHttpsOrigin(
-    requiredString(environment, "CVG_PUBLIC_HTTPS_ORIGIN"),
-  );
+  return { identityProviderUrl, probePrincipal: principal };
+}
+
+function parseTraceConfig(environment) {
   const traceStorage = requiredString(
     environment,
     "CVG_TRACE_STORAGE_BACKEND",
@@ -77,6 +109,10 @@ export function validateProductionSecurityConfig(environment = process.env) {
     );
   }
 
+  return { traceStorage, retention };
+}
+
+function parseBackupConfig(environment) {
   const backupUri = parseBackupUri(
     requiredString(environment, "CVG_BACKUP_URI"),
   );
@@ -86,6 +122,10 @@ export function validateProductionSecurityConfig(environment = process.env) {
   );
   assertOpaqueReference(encryptionKeyRef, "CVG_BACKUP_ENCRYPTION_KEY_REF");
 
+  return { backupUri };
+}
+
+function assertDistinctReleaseDigests(environment) {
   const releaseDigest = requiredDigest(environment, "CVG_RELEASE_IMAGE_DIGEST");
   const rollbackDigest = requiredDigest(
     environment,
@@ -96,11 +136,20 @@ export function validateProductionSecurityConfig(environment = process.env) {
       "CVG_RELEASE_IMAGE_DIGEST and CVG_ROLLBACK_IMAGE_DIGEST must be different",
     );
   }
+}
 
+function createProductionSecurityResult({
+  identityProviderUrl,
+  probePrincipal,
+  publicOrigin,
+  traceStorage,
+  retention,
+  backupUri,
+}) {
   return Object.freeze({
     status: "PASS",
     identityProviderUrl: identityProviderUrl.origin,
-    probePrincipal: principal,
+    probePrincipal,
     publicOrigin: publicOrigin.origin,
     traceStorage,
     retention,

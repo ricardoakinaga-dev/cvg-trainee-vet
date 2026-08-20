@@ -165,6 +165,9 @@ describe("learning assignment state machine", () => {
 
   it("covers fail-closed assignment validation and every critical state branch", () => {
     expect(() =>
+      transitionLearningAssignment(null as never, { type: "INICIAR" }),
+    ).toThrow("object");
+    expect(() =>
       createLearningAssignment({ ...assignmentInput, assignmentId: "" }),
     ).toThrow("assignmentId");
     expect(() =>
@@ -493,11 +496,72 @@ describe("feedback ticket state machine", () => {
       }),
     ).toThrow("createdAt");
     expect(() =>
+      createFeedbackTicket({
+        ticketId: "ticket-6",
+        participantId: "participant-1",
+        type: "MELHORIA",
+        description: "x".repeat(2_001),
+        createdAt: "2026-08-10T17:00:00.000Z",
+      }),
+    ).toThrow("maximum length");
+    expect(() =>
+      createFeedbackTicket({
+        ticketId: "ticket-7",
+        participantId: "participant-1",
+        type: "MELHORIA",
+        description: "<b>texto sintético</b>",
+        createdAt: "2026-08-10T17:00:00.000Z",
+      }),
+    ).toThrow("prohibited content");
+    expect(() =>
+      createFeedbackTicket({
+        ticketId: "ticket-8",
+        participantId: "participant-1",
+        type: "MELHORIA",
+        description: "Falha sintética de teste.",
+        createdAt: "2026-08-10T17:00:00.000Z",
+        technicalContext: {
+          logicalPage: "/feedback",
+          appVersion: "test-1",
+          occurredAt: "2026-08-10T17:00:00.000Z",
+          errorCode: "CLIENT_ERROR",
+        },
+      }),
+    ).not.toThrow();
+    expect(() =>
+      createFeedbackTicket({
+        ticketId: "ticket-9",
+        participantId: "participant-1",
+        type: "MELHORIA",
+        description: "Contexto sem campos opcionais.",
+        createdAt: "2026-08-10T17:00:00.000Z",
+        technicalContext: {
+          logicalPage: "/feedback",
+          appVersion: "test-1",
+        },
+      }),
+    ).not.toThrow();
+    expect(() =>
       transitionFeedbackTicket(
         { ...created, status: "UNKNOWN" as never },
         { type: "TRIAR" },
       ),
     ).toThrow("status");
+    expect(() =>
+      transitionFeedbackTicket(
+        { ...created, createdAt: "invalid" },
+        { type: "TRIAR" },
+      ),
+    ).toThrow("createdAt");
+    expect(() =>
+      transitionFeedbackTicket(
+        { ...created, alertedAt: "invalid" },
+        { type: "TRIAR" },
+      ),
+    ).toThrow("alertedAt");
+    expect(() =>
+      transitionFeedbackTicket({ ...created, version: -1 }, { type: "TRIAR" }),
+    ).toThrow("version");
 
     const triaged = transitionFeedbackTicket(created, { type: "TRIAR" });
     const treatment = transitionFeedbackTicket(triaged, {

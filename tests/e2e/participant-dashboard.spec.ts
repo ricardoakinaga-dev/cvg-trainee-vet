@@ -71,3 +71,80 @@ test("participant dashboard shows study recommendations and safe quick links", a
     page.getByRole("link", { name: "Relate um problema ou melhoria" }),
   ).toHaveAttribute("href", "/#feedback-report-title");
 });
+
+test("participant dashboard exposes loading and recovers through retry", async ({
+  page,
+}) => {
+  let requests = 0;
+  await page.route("**/api/v1/dashboard", async (route) => {
+    requests += 1;
+    if (requests === 1) {
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          error: { code: "internal_error", message: "indisponível" },
+        }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          curriculumId: "CVG-CURRICULUM-24M",
+          curriculumVersion: "3.0.0",
+          totalMonths: 24,
+          totalModules: 24,
+          completedModules: 0,
+          progressPercent: 0,
+          activeModuleId: "M01",
+          nextAction: "INICIAR_BASELINE",
+          roadmap: roadmap(),
+          recommendations: [
+            {
+              id: "NEXT_STUDY",
+              title: "Acompanhe sua próxima ação",
+              description: "Veja a próxima atividade digital da sua jornada.",
+              href: "/dashboard",
+            },
+            {
+              id: "ACCOUNT_SECURITY",
+              title: "Revise sua conta",
+              description: "Confira recuperação, MFA e sessões da sua conta.",
+              href: "/account",
+            },
+            {
+              id: "REPORT_FEEDBACK",
+              title: "Relate um problema ou melhoria",
+              description: "Envie um relato sem anexos ou dados sensíveis.",
+              href: "/#feedback-report-title",
+            },
+          ],
+        }),
+      ),
+    });
+  });
+
+  await page.goto("/dashboard");
+  await expect(page.locator("main#main-content")).toHaveAttribute(
+    "aria-busy",
+    "true",
+  );
+  await expect(page.getByTestId("dashboard-loading")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Tentar novamente" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Tentar novamente" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Recomendações para você" }),
+  ).toBeVisible();
+  await expect(page.locator("main#main-content")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+  expect(requests).toBe(2);
+});

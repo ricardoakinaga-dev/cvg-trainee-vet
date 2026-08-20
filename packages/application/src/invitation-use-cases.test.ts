@@ -23,6 +23,7 @@ function dependencies(): InvitationUseCaseDependencies & {
       createInvited: async ({ accountId }) => {
         accounts.push(accountId);
       },
+      setPassword: async () => undefined,
       activate: async () => undefined,
     },
     invitation: {
@@ -52,6 +53,7 @@ function dependencies(): InvitationUseCaseDependencies & {
       },
       findActive: async () => null,
       revoke: async () => undefined,
+      revokeAll: async () => 0,
     },
     audit: {
       append: async () => undefined,
@@ -80,6 +82,7 @@ const admin = {
   invitationIdFactory: () => "55555555-5555-4555-8555-555555555555",
   tokenFactory: () => "a".repeat(32),
 };
+const invitationCredential = ["Acesso", "CVG", "2026!Seguro"].join("-");
 
 describe("invitation identity use cases", () => {
   it("creates a normalized, expiring one-time invitation without persisting raw token", async () => {
@@ -99,6 +102,7 @@ describe("invitation identity use cases", () => {
     const accepted = await acceptInvitation(
       {
         token: "a".repeat(32),
+        password: invitationCredential,
         sessionExpiresInSeconds: 3600,
         correlationId: admin.correlationId,
         now: new Date("2026-08-09T17:00:00.000Z"),
@@ -115,6 +119,7 @@ describe("invitation identity use cases", () => {
       acceptInvitation(
         {
           token: "a".repeat(32),
+          password: invitationCredential,
           sessionExpiresInSeconds: 3600,
           correlationId: admin.correlationId,
           now: new Date("2026-08-09T17:00:00.000Z"),
@@ -135,6 +140,7 @@ describe("invitation identity use cases", () => {
       acceptInvitation(
         {
           token: "short",
+          password: invitationCredential,
           sessionExpiresInSeconds: 3600,
           correlationId: admin.correlationId,
         },
@@ -220,6 +226,7 @@ describe("invitation identity use cases", () => {
       acceptInvitation(
         {
           token: "a".repeat(32),
+          password: invitationCredential,
           sessionExpiresInSeconds: 3600,
           correlationId: admin.correlationId,
           now: new Date("invalid"),
@@ -232,6 +239,7 @@ describe("invitation identity use cases", () => {
     const accepted = await acceptInvitation(
       {
         token: created.token,
+        password: invitationCredential,
         sessionExpiresInSeconds: 60,
         correlationId: admin.correlationId,
       },

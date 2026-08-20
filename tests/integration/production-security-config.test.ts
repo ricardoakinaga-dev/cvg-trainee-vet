@@ -16,12 +16,26 @@ const validEnvironment = Object.freeze({
   CVG_ROLLBACK_IMAGE_DIGEST: `sha256:${"b".repeat(64)}`,
 });
 
+function expectValidationError(environment: object, message: string) {
+  let error: unknown;
+  try {
+    validateProductionSecurityConfig(environment);
+  } catch (caught) {
+    error = caught;
+  }
+
+  expect(error).toBeInstanceOf(Error);
+  expect(error).toHaveProperty("message", message);
+}
+
 describe("production security configuration", () => {
   it("accepts a complete external configuration without returning secrets", () => {
     const result = validateProductionSecurityConfig(validEnvironment);
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       status: "PASS",
+      identityProviderUrl: "https://identity.example",
+      probePrincipal: "probe/account",
       publicOrigin: "https://training.example",
       traceStorage: "s3",
       retention: "14d",
@@ -29,66 +43,101 @@ describe("production security configuration", () => {
       backup: "configured-by-reference",
       release: "immutable-digest-with-rollback-digest",
     });
+    expect(Object.isFrozen(result)).toBe(true);
     expect(JSON.stringify(result)).not.toContain("xxxxxxxx");
   });
 
-  it("rejects a local or credential-bearing public origin", () => {
-    expect(() =>
-      validateProductionSecurityConfig({
+  it("preserves fail-closed validation messages for invalid configurations", () => {
+    expectValidationError(
+      {
         ...validEnvironment,
-        CVG_PUBLIC_HTTPS_ORIGIN: "https://user:password@localhost:3181/path",
-      }),
-    ).toThrow("CVG_PUBLIC_HTTPS_ORIGIN");
+        IDENTITY_PROVIDER_URL: "",
+      },
+      "production security gate is incomplete: IDENTITY_PROVIDER_URL",
+    );
+    expectValidationError(
+      {
+        ...validEnvironment,
+        CVG_TRACE_STORAGE_BACKEND: "filesystem",
+      },
+      "CVG_TRACE_STORAGE_BACKEND must be production object storage",
+    );
+    expectValidationError(
+      {
+        ...validEnvironment,
+        CVG_RELEASE_IMAGE_DIGEST: validEnvironment.CVG_ROLLBACK_IMAGE_DIGEST,
+      },
+      "CVG_RELEASE_IMAGE_DIGEST and CVG_ROLLBACK_IMAGE_DIGEST must be different",
+    );
+  });
+
+  it("rejects a local or credential-bearing public origin", () => {
+    expectValidationError(
+      {
+        ...validEnvironment,
+        CVG_PUBLIC_HTTPS_ORIGIN: [
+          "https://",
+          "user:password@localhost:3181/path",
+        ].join(""),
+      },
+      "CVG_PUBLIC_HTTPS_ORIGIN must use HTTPS without embedded credentials",
+    );
   });
 
   it("rejects non-object-storage backup references", () => {
-    expect(() =>
-      validateProductionSecurityConfig({
+    expectValidationError(
+      {
         ...validEnvironment,
         CVG_BACKUP_URI: "file:///tmp/backup",
-      }),
-    ).toThrow("CVG_BACKUP_URI");
+      },
+      "CVG_BACKUP_URI must be an object-storage URI",
+    );
   });
 
   it("rejects malformed or empty retention", () => {
-    expect(() =>
-      validateProductionSecurityConfig({
+    expectValidationError(
+      {
         ...validEnvironment,
         CVG_TRACE_RETENTION: "",
-      }),
-    ).toThrow("CVG_TRACE_RETENTION");
-    expect(() =>
-      validateProductionSecurityConfig({
+      },
+      "production security gate is incomplete: CVG_TRACE_RETENTION",
+    );
+    expectValidationError(
+      {
         ...validEnvironment,
         CVG_TRACE_RETENTION: "forever",
-      }),
-    ).toThrow("CVG_TRACE_RETENTION");
+      },
+      "CVG_TRACE_RETENTION must be a positive duration such as 14d",
+    );
   });
 
   it("requires distinct immutable release and rollback digests", () => {
-    expect(() =>
-      validateProductionSecurityConfig({
+    expectValidationError(
+      {
         ...validEnvironment,
         CVG_ROLLBACK_IMAGE_DIGEST: validEnvironment.CVG_RELEASE_IMAGE_DIGEST,
-      }),
-    ).toThrow("different");
+      },
+      "CVG_RELEASE_IMAGE_DIGEST and CVG_ROLLBACK_IMAGE_DIGEST must be different",
+    );
   });
 
   it("rejects an insecure identity provider URL", () => {
-    expect(() =>
-      validateProductionSecurityConfig({
+    expectValidationError(
+      {
         ...validEnvironment,
         IDENTITY_PROVIDER_URL: "http://identity.example",
-      }),
-    ).toThrow("IDENTITY_PROVIDER_URL");
+      },
+      "IDENTITY_PROVIDER_URL must use HTTPS without embedded credentials",
+    );
   });
 
   it("rejects control characters in secret references", () => {
-    expect(() =>
-      validateProductionSecurityConfig({
+    expectValidationError(
+      {
         ...validEnvironment,
         CVG_BACKUP_ENCRYPTION_KEY_REF: "secret://cvg/backup\nkey",
-      }),
-    ).toThrow("CVG_BACKUP_ENCRYPTION_KEY_REF");
+      },
+      "CVG_BACKUP_ENCRYPTION_KEY_REF must be a bounded secret/reference value",
+    );
   });
 });

@@ -64,4 +64,91 @@ describe("appeal workflow", () => {
       }),
     ).toThrow();
   });
+
+  it("validates identity, timestamps, state prerequisites and terminal transitions", () => {
+    for (const field of [
+      "appealId",
+      "participantId",
+      "attemptId",
+      "itemId",
+    ] as const) {
+      expect(() => createAppeal({ ...input, [field]: " " })).toThrow(field);
+    }
+    expect(() =>
+      createAppeal({ ...input, justification: "x".repeat(10_001) }),
+    ).toThrow("plain text");
+    expect(() =>
+      createAppeal({ ...input, createdAt: "not-a-timestamp" }),
+    ).toThrow("createdAt");
+
+    expect(() => transitionAppeal(null as never, {} as never)).toThrow(
+      "state must be an object",
+    );
+    expect(() =>
+      transitionAppeal({ ...createAppeal(input), status: "UNKNOWN" } as never, {
+        type: "ATRIBUIR_REVISOR",
+        reviewerId: "reviewer-1",
+      }),
+    ).toThrow("status is not supported");
+    expect(() =>
+      transitionAppeal(
+        { ...createAppeal(input), status: "EM_REVISAO" } as never,
+        { type: "ATRIBUIR_REVISOR", reviewerId: "reviewer-1" },
+      ),
+    ).toThrow("independent reviewer");
+    expect(() =>
+      transitionAppeal(
+        {
+          ...createAppeal(input),
+          status: "DECIDIDA",
+          reviewerId: "reviewer-1",
+        } as never,
+        { type: "ENCERRAR" },
+      ),
+    ).toThrow("decision is required");
+
+    const opened = createAppeal(input);
+    const review = transitionAppeal(opened, {
+      type: "ATRIBUIR_REVISOR",
+      reviewerId: "reviewer-1",
+    });
+    expect(() =>
+      transitionAppeal(review, {
+        type: "DECIDIR",
+        decision: "UNKNOWN" as never,
+      }),
+    ).toThrow("decision is not supported");
+    const decided = transitionAppeal(review, {
+      type: "DECIDIR",
+      decision: "MANTER_RESULTADO",
+    });
+    expect(transitionAppeal(decided, { type: "ENCERRAR" }).status).toBe(
+      "ENCERRADA",
+    );
+    expect(() =>
+      transitionAppeal(transitionAppeal(decided, { type: "ENCERRAR" }), {
+        type: "ENCERRAR",
+      }),
+    ).toThrow("not allowed");
+
+    const valid = createAppeal(input);
+    expect(() =>
+      transitionAppeal(
+        { ...valid, createdAt: "invalid" },
+        { type: "ATRIBUIR_REVISOR", reviewerId: "reviewer-1" },
+      ),
+    ).toThrow("createdAt");
+    expect(() =>
+      transitionAppeal(
+        { ...valid, dueAt: "invalid" },
+        { type: "ATRIBUIR_REVISOR", reviewerId: "reviewer-1" },
+      ),
+    ).toThrow("dueAt");
+    expect(() =>
+      transitionAppeal(
+        { ...valid, version: -1 },
+        { type: "ATRIBUIR_REVISOR", reviewerId: "reviewer-1" },
+      ),
+    ).toThrow("version");
+  });
 });

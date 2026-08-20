@@ -27,7 +27,7 @@ describe("critical decision coverage gate", () => {
     expect(buildCriticalDecisionCoverageReport(coverage)).toMatchObject({
       status: "PASS",
       task: "ENT95-05-C",
-      decisionCount: 5,
+      decisionCount: 7,
       matrixCaseCount: 13,
     });
   });
@@ -38,7 +38,7 @@ describe("critical decision coverage gate", () => {
 
     expect(validateCriticalDecisionCoverage(coverage)).toEqual(
       expect.arrayContaining([
-        "NOTA branch coverage 50% is below 90%",
+        "NOTA branch coverage 50% is below 100%",
         "PUBLICACAO coverage is missing for packages/domain/src/content.ts",
       ]),
     );

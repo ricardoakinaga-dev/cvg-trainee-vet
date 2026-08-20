@@ -105,8 +105,33 @@ rework (itens reabertos)
 fila liberável (aprovados sem QA pendente)
 ```
 
-Próxima ação: executar `pnpm ops:verify-clinical-review-queue` (read-only) e
-registrar o snapshot inicial deste tracking; nenhum item é aprovado nesta etapa.
+### Snapshot live (read-only) — 2026-08-16
+
+Executado contra o PostgreSQL HA ativo (role admin, somente `SELECT`):
+
+| Métrica | Valor |
+|---|---:|
+| total | 796 |
+| pendentes (`PROJECAO_VERIFICADA`) | 763 |
+| aprovados (`APROVAR_CLINICAMENTE`) | 0 |
+| ajustes solicitados | 0 |
+| sem revisão | 763 |
+| falhas técnicas | 0 |
+| `PUBLICADO` | 33 (somente M02) |
+
+Divergência encontrada (reconciliar em `G98-0`):
+
+- Os **33 itens de M02** estão com `status=PUBLICADO` desde `2026-08-10
+  16:35:26 UTC` (timestamp idêntico ⇒ operação em lote), porém com **zero**
+  registros em `content_review_decisions` (`APROVAR_CLINICAMENTE`=0).
+- Trata-se de artefato de seed/desenvolvimento (publicação em lote sem gate
+  clínico), não de publicação real. O inventory (`curriculum-inventory.json`)
+  ainda lista M02 como pendente com 26 itens críticos — drift a corrigir.
+- Consequência: os **763 pendentes reais** excluem M02, não os 796 do inventory.
+
+Ação: decidir se M02 é (a)reset para `PROJECAO_VERIFICADA` e revisado
+normalmente, ou (b) reconhecido como recorte piloto com decisão documentada em
+ADR — sem decidir, o gate estrito permanece correto em `763` pendentes.
 
 ## 3. Comparativo — Identidade (IdP/MFA/recovery)
 

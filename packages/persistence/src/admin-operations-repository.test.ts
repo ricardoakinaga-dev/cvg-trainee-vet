@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   buildAdminOperationsSignals,
+  createAdminOperationsRepository,
   type AdminAccountOperationalRow,
   type AdminContentValidityRow,
   type AdminCorrectionRow,
@@ -70,5 +71,114 @@ describe("admin operations repository projection", () => {
       contentValidity: { valid: 1, dueForReview: 1, expired: 1, withdrawn: 1 },
       feedback: { open: 1, technicalFailures: 1 },
     });
+  });
+
+  it("reads scoped operational rows in one transaction and projects them", async () => {
+    const responses: unknown[][] = [
+      [
+        {
+          accountId: "account-1",
+          status: "ACTIVE",
+          roles: ["PARTICIPANT"],
+        },
+      ],
+      [
+        {
+          accountId: "account-1",
+          lastSeenAt: new Date("2026-07-30T12:00:00.000Z"),
+        },
+      ],
+      [{ status: "ABERTA", dueAt: new Date("2026-08-13T12:00:00.000Z") }],
+      [{ participantId: "participant-1", moduleId: "OBJ-1" }],
+      [
+        {
+          participantId: "participant-1",
+          state: { remediationObjectiveIds: ["OBJ-2"] },
+        },
+      ],
+      [
+        {
+          status: "PUBLICADO",
+          validUntil: null,
+          nextReviewAt: new Date("2026-08-13T12:00:00.000Z"),
+        },
+      ],
+      [{ status: "NOVO", type: "BUG_TECNICO" }],
+    ];
+    const tx = {
+      execute: vi.fn(async () => undefined),
+      select: vi.fn(() => ({
+        from: vi.fn(() => ({
+          where: vi.fn(async () => responses.shift() ?? []),
+        })),
+      })),
+    };
+    const db = {
+      transaction: vi.fn(async (callback: (executor: typeof tx) => unknown) =>
+        callback(tx),
+      ),
+    };
+
+    await expect(
+      createAdminOperationsRepository(db as never).readSignals(
+        [" scope-1 ", "scope-1"],
+        now,
+      ),
+    ).resolves.toEqual({
+      accounts: {
+        invited: 0,
+        active: 1,
+        suspended: 0,
+        deactivated: 0,
+        inactiveOver14Days: 1,
+      },
+      corrections: { open: 1, overdue: 1, slaBreaches: 1 },
+      remediation: { participants: 1, objectives: 2 },
+      contentValidity: { valid: 1, dueForReview: 1, expired: 0, withdrawn: 0 },
+      feedback: { open: 1, technicalFailures: 1 },
+    });
+    expect(db.transaction).toHaveBeenCalledOnce();
+    expect(tx.execute).toHaveBeenCalledTimes(2);
+    expect(responses).toHaveLength(0);
+  });
+
+  it("handles a scoped query with no participant accounts and rejects invalid time", async () => {
+    const emptyTx = {
+      execute: vi.fn(async () => undefined),
+      select: vi.fn(() => ({
+        from: vi.fn(() => ({
+          where: vi.fn(async () => []),
+        })),
+      })),
+    };
+    const db = {
+      transaction: vi.fn(
+        async (callback: (executor: typeof emptyTx) => unknown) =>
+          callback(emptyTx),
+      ),
+    };
+
+    await expect(
+      createAdminOperationsRepository(db as never).readSignals(
+        ["scope-1"],
+        now,
+      ),
+    ).resolves.toEqual({
+      accounts: {
+        invited: 0,
+        active: 0,
+        suspended: 0,
+        deactivated: 0,
+        inactiveOver14Days: 0,
+      },
+      corrections: { open: 0, overdue: 0, slaBreaches: 0 },
+      remediation: { participants: 0, objectives: 0 },
+      contentValidity: { valid: 0, dueForReview: 0, expired: 0, withdrawn: 0 },
+      feedback: { open: 0, technicalFailures: 0 },
+    });
+
+    expect(() =>
+      buildAdminOperationsSignals([], [], [], [], [], new Date("invalid")),
+    ).toThrow("now is invalid");
   });
 });

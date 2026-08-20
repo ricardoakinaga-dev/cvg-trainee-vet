@@ -175,227 +175,303 @@ function publicationGate(
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
+type ContentRepositoryMethods = Required<
+  Pick<
+    ContentRepositoryPort,
+    | "find"
+    | "save"
+    | "listPublishedDueForExpiry"
+    | "listAffectedParticipantIds"
+    | "recordWithdrawalAffected"
+  >
+>;
+
+type WithdrawalAffectedMetadata = Readonly<{
+  readonly contentId: string;
+  readonly version: number;
+  readonly scopeId: string;
+  readonly withdrawnAt: string;
+  readonly correlationId: string;
+}>;
+
+function contentVersionSelection() {
+  return {
+    contentId: contentVersions.contentId,
+    version: contentVersions.version,
+    scopeId: contentVersions.scopeId,
+    status: contentVersions.status,
+    withdrawalReasonCode: contentVersions.withdrawalReasonCode,
+    withdrawnAt: contentVersions.withdrawnAt,
+    validUntil: contentVersions.validUntil,
+    nextReviewAt: contentVersions.nextReviewAt,
+  };
+}
+
+async function loadContentVersion(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+) {
+  const rows = await db
+    .select(contentVersionSelection())
+    .from(contentVersions)
+    .where(
+      and(
+        eq(contentVersions.contentId, contentId),
+        eq(contentVersions.version, version),
+      ),
+    )
+    .limit(1);
+  return rows[0];
+}
+
+async function loadPublicationGate(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+) {
+  const rows = await db
+    .select({ preflight: contentEditorialRecords.preflight })
+    .from(contentEditorialRecords)
+    .where(
+      and(
+        eq(contentEditorialRecords.contentId, contentId),
+        eq(contentEditorialRecords.version, version),
+      ),
+    )
+    .limit(1);
+  const editorial = rows[0];
+  return editorial === undefined
+    ? Object.freeze({
+        ready: false,
+        reasons: Object.freeze(["AUTHORING_RECORD_MISSING"]),
+      })
+    : publicationGate(editorial.preflight);
+}
+
+async function hasLatestClinicalApproval(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+): Promise<boolean> {
+  const rows = await db
+    .select({ decision: contentReviewDecisions.decision })
+    .from(contentReviewDecisions)
+    .where(
+      and(
+        eq(contentReviewDecisions.contentId, contentId),
+        eq(contentReviewDecisions.version, version),
+      ),
+    )
+    .orderBy(desc(contentReviewDecisions.reviewedAt))
+    .limit(1);
+  return rows[0]?.decision === "APROVAR_CLINICAMENTE";
+}
+
+async function findContent(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+): Promise<ContentRecord | null> {
+  const row = await loadContentVersion(db, contentId, version);
+  if (row === undefined) return null;
+  const gate = await loadPublicationGate(db, contentId, version);
+  const clinicallyApproved = await hasLatestClinicalApproval(
+    db,
+    contentId,
+    version,
+  );
+  const publicationBlockReasons = [
+    ...gate.reasons,
+    ...(clinicallyApproved ? [] : ["CLINICAL_REVIEW_MISSING"]),
+  ];
+  return contentRowToRecord({
+    ...row,
+    publicationReady: gate.ready && clinicallyApproved,
+    publicationBlockReasons,
+  });
+}
+
+function validateExpiryInput(
+  now: string,
+  scopeIds: readonly string[],
+  limit: number,
+): Readonly<{ readonly nowDate: Date; readonly scopeIds: readonly string[] }> {
+  const nowDate = new Date(now);
+  if (Number.isNaN(nowDate.getTime())) {
+    throw new ContentMappingError("now must be a valid timestamp");
+  }
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new ContentMappingError("limit must be between 1 and 100");
+  }
+  return Object.freeze({
+    nowDate,
+    scopeIds: Object.freeze([
+      ...new Set(scopeIds.map((scopeId) => scopeId.trim()).filter(Boolean)),
+    ]),
+  });
+}
+
+async function listPublishedDueForExpiry(
+  db: DatabaseExecutor,
+  now: string,
+  scopeIds: readonly string[],
+  limit: number,
+): Promise<readonly ContentRecord[]> {
+  const input = validateExpiryInput(now, scopeIds, limit);
+  if (input.scopeIds.length === 0) return Object.freeze([]);
+  const rows = await db
+    .select(contentVersionSelection())
+    .from(contentVersions)
+    .where(
+      and(
+        inArray(contentVersions.scopeId, input.scopeIds),
+        eq(contentVersions.status, "PUBLICADO"),
+        lte(contentVersions.validUntil, input.nowDate),
+      ),
+    )
+    .orderBy(asc(contentVersions.validUntil), asc(contentVersions.contentId))
+    .limit(limit);
+  return Object.freeze(rows.map((row) => contentRowToRecord(row)));
+}
+
+async function listAffectedParticipantIds(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+  scopeId: string,
+): Promise<readonly string[]> {
+  const rows = await db
+    .select({ participantId: activityAssignments.participantId })
+    .from(activityAssignments)
+    .innerJoin(
+      learningActivityItems,
+      eq(activityAssignments.activityId, learningActivityItems.activityId),
+    )
+    .innerJoin(
+      contentVersions,
+      eq(learningActivityItems.contentVersionId, contentVersions.id),
+    )
+    .where(
+      and(
+        eq(contentVersions.contentId, contentId),
+        eq(contentVersions.version, version),
+        eq(contentVersions.scopeId, scopeId),
+      ),
+    );
+  return Object.freeze([...new Set(rows.map((row) => row.participantId))]);
+}
+
+async function loadContentVersionIdForWithdrawal(
+  db: DatabaseExecutor,
+  metadata: WithdrawalAffectedMetadata,
+) {
+  const rows = await db
+    .select({ id: contentVersions.id })
+    .from(contentVersions)
+    .where(
+      and(
+        eq(contentVersions.contentId, metadata.contentId),
+        eq(contentVersions.version, metadata.version),
+        eq(contentVersions.scopeId, metadata.scopeId),
+      ),
+    )
+    .limit(1);
+  return rows[0];
+}
+
+async function recordWithdrawalAffected(
+  db: DatabaseExecutor,
+  participantIds: readonly string[],
+  metadata: WithdrawalAffectedMetadata,
+): Promise<number> {
+  const contentVersion = await loadContentVersionIdForWithdrawal(db, metadata);
+  if (contentVersion === undefined) {
+    throw new ContentMappingError(
+      "content version was not found for withdrawal audit",
+    );
+  }
+  if (participantIds.length === 0) return 0;
+  const rows = await db
+    .insert(contentWithdrawalAffected)
+    .values(
+      participantIds.map((participantId) => ({
+        contentVersionId: contentVersion.id,
+        contentId: metadata.contentId,
+        version: metadata.version,
+        scopeId: metadata.scopeId,
+        participantId,
+        withdrawnAt: new Date(metadata.withdrawnAt),
+        correlationId: metadata.correlationId,
+      })),
+    )
+    .onConflictDoNothing()
+    .returning({ id: contentWithdrawalAffected.id });
+  return rows.length;
+}
+
+function assertContentIdentity(
+  current: ContentRecord,
+  next: ContentRecord,
+): void {
+  if (
+    current.contentId !== next.contentId ||
+    current.version !== next.version ||
+    current.scopeId !== next.scopeId
+  ) {
+    throw new ContentMappingError(
+      "content identity cannot change during a transition",
+    );
+  }
+}
+
+async function saveContent(
+  db: DatabaseExecutor,
+  current: ContentRecord,
+  next: ContentRecord,
+): Promise<void> {
+  assertContentIdentity(current, next);
+  const rows = await db
+    .update(contentVersions)
+    .set({
+      status: next.status,
+      withdrawalReasonCode: next.withdrawalReasonCode ?? null,
+      withdrawnAt:
+        next.withdrawnAt === undefined ? null : new Date(next.withdrawnAt),
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(contentVersions.contentId, current.contentId),
+        eq(contentVersions.version, current.version),
+        eq(contentVersions.status, current.status),
+      ),
+    )
+    .returning({ id: contentVersions.id });
+  if (rows.length === 0) {
+    throw new PersistenceConflictError("content version changed concurrently");
+  }
+}
+
+export function createContentRepositoryMethods(
+  db: DatabaseExecutor,
+): ContentRepositoryMethods {
+  return Object.freeze({
+    find: (contentId, version) => findContent(db, contentId, version),
+    listPublishedDueForExpiry: (now, scopeIds, limit) =>
+      listPublishedDueForExpiry(db, now, scopeIds, limit),
+    listAffectedParticipantIds: (contentId, version, scopeId) =>
+      listAffectedParticipantIds(db, contentId, version, scopeId),
+    recordWithdrawalAffected: (participantIds, metadata) =>
+      recordWithdrawalAffected(db, participantIds, metadata),
+    save: (current, next) => saveContent(db, current, next),
+  });
+}
+
 export function createContentRepository(
   db: DatabaseExecutor,
 ): ContentRepositoryPort {
-  const repository: ContentRepositoryPort = {
-    find: async (
-      contentId: string,
-      version: number,
-    ): Promise<ContentRecord | null> => {
-      const rows = await db
-        .select({
-          contentId: contentVersions.contentId,
-          version: contentVersions.version,
-          scopeId: contentVersions.scopeId,
-          status: contentVersions.status,
-          withdrawalReasonCode: contentVersions.withdrawalReasonCode,
-          withdrawnAt: contentVersions.withdrawnAt,
-          validUntil: contentVersions.validUntil,
-          nextReviewAt: contentVersions.nextReviewAt,
-        })
-        .from(contentVersions)
-        .where(
-          and(
-            eq(contentVersions.contentId, contentId),
-            eq(contentVersions.version, version),
-          ),
-        )
-        .limit(1);
-      const row = rows[0];
-      if (row === undefined) return null;
-      const editorialRows = await db
-        .select({
-          preflight: contentEditorialRecords.preflight,
-        })
-        .from(contentEditorialRecords)
-        .where(
-          and(
-            eq(contentEditorialRecords.contentId, contentId),
-            eq(contentEditorialRecords.version, version),
-          ),
-        )
-        .limit(1);
-      const editorial = editorialRows[0];
-      if (editorial === undefined) {
-        return contentRowToRecord({
-          ...row,
-          publicationReady: false,
-          publicationBlockReasons: ["AUTHORING_RECORD_MISSING"],
-        });
-      }
-      const gate = publicationGate(editorial.preflight);
-      const reviewRows = await db
-        .select({ decision: contentReviewDecisions.decision })
-        .from(contentReviewDecisions)
-        .where(
-          and(
-            eq(contentReviewDecisions.contentId, contentId),
-            eq(contentReviewDecisions.version, version),
-          ),
-        )
-        .orderBy(desc(contentReviewDecisions.reviewedAt))
-        .limit(1);
-      const latestReview = reviewRows[0];
-      const clinicallyApproved =
-        latestReview?.decision === "APROVAR_CLINICAMENTE";
-      const publicationBlockReasons = [
-        ...gate.reasons,
-        ...(clinicallyApproved ? [] : ["CLINICAL_REVIEW_MISSING"]),
-      ];
-      return contentRowToRecord({
-        ...row,
-        publicationReady: gate.ready && clinicallyApproved,
-        publicationBlockReasons: publicationBlockReasons,
-      });
-    },
-    listPublishedDueForExpiry: async (
-      now: string,
-      scopeIds: readonly string[],
-      limit: number,
-    ): Promise<readonly ContentRecord[]> => {
-      const nowDate = new Date(now);
-      if (Number.isNaN(nowDate.getTime())) {
-        throw new ContentMappingError("now must be a valid timestamp");
-      }
-      if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-        throw new ContentMappingError("limit must be between 1 and 100");
-      }
-      const normalizedScopeIds = [
-        ...new Set(scopeIds.map((scopeId) => scopeId.trim()).filter(Boolean)),
-      ];
-      if (normalizedScopeIds.length === 0) return Object.freeze([]);
-
-      const rows = await db
-        .select({
-          contentId: contentVersions.contentId,
-          version: contentVersions.version,
-          scopeId: contentVersions.scopeId,
-          status: contentVersions.status,
-          withdrawalReasonCode: contentVersions.withdrawalReasonCode,
-          withdrawnAt: contentVersions.withdrawnAt,
-          validUntil: contentVersions.validUntil,
-          nextReviewAt: contentVersions.nextReviewAt,
-        })
-        .from(contentVersions)
-        .where(
-          and(
-            inArray(contentVersions.scopeId, normalizedScopeIds),
-            eq(contentVersions.status, "PUBLICADO"),
-            lte(contentVersions.validUntil, nowDate),
-          ),
-        )
-        .orderBy(
-          asc(contentVersions.validUntil),
-          asc(contentVersions.contentId),
-        )
-        .limit(limit);
-
-      return Object.freeze(rows.map((row) => contentRowToRecord(row)));
-    },
-    listAffectedParticipantIds: async (
-      contentId: string,
-      version: number,
-      scopeId: string,
-    ): Promise<readonly string[]> => {
-      const rows = await db
-        .select({ participantId: activityAssignments.participantId })
-        .from(activityAssignments)
-        .innerJoin(
-          learningActivityItems,
-          eq(activityAssignments.activityId, learningActivityItems.activityId),
-        )
-        .innerJoin(
-          contentVersions,
-          eq(learningActivityItems.contentVersionId, contentVersions.id),
-        )
-        .where(
-          and(
-            eq(contentVersions.contentId, contentId),
-            eq(contentVersions.version, version),
-            eq(contentVersions.scopeId, scopeId),
-          ),
-        );
-      return Object.freeze([...new Set(rows.map((row) => row.participantId))]);
-    },
-    recordWithdrawalAffected: async (
-      participantIds: readonly string[],
-      metadata,
-    ): Promise<number> => {
-      const contentRows = await db
-        .select({ id: contentVersions.id })
-        .from(contentVersions)
-        .where(
-          and(
-            eq(contentVersions.contentId, metadata.contentId),
-            eq(contentVersions.version, metadata.version),
-            eq(contentVersions.scopeId, metadata.scopeId),
-          ),
-        )
-        .limit(1);
-      const contentVersion = contentRows[0];
-      if (contentVersion === undefined) {
-        throw new ContentMappingError(
-          "content version was not found for withdrawal audit",
-        );
-      }
-      if (participantIds.length === 0) return 0;
-      const rows = await db
-        .insert(contentWithdrawalAffected)
-        .values(
-          participantIds.map((participantId) => ({
-            contentVersionId: contentVersion.id,
-            contentId: metadata.contentId,
-            version: metadata.version,
-            scopeId: metadata.scopeId,
-            participantId,
-            withdrawnAt: new Date(metadata.withdrawnAt),
-            correlationId: metadata.correlationId,
-          })),
-        )
-        .onConflictDoNothing()
-        .returning({ id: contentWithdrawalAffected.id });
-      return rows.length;
-    },
-    save: async (
-      current: ContentRecord,
-      next: ContentRecord,
-    ): Promise<void> => {
-      if (
-        current.contentId !== next.contentId ||
-        current.version !== next.version ||
-        current.scopeId !== next.scopeId
-      ) {
-        throw new ContentMappingError(
-          "content identity cannot change during a transition",
-        );
-      }
-
-      const rows = await db
-        .update(contentVersions)
-        .set({
-          status: next.status,
-          withdrawalReasonCode: next.withdrawalReasonCode ?? null,
-          withdrawnAt:
-            next.withdrawnAt === undefined ? null : new Date(next.withdrawnAt),
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(contentVersions.contentId, current.contentId),
-            eq(contentVersions.version, current.version),
-            eq(contentVersions.status, current.status),
-          ),
-        )
-        .returning({ id: contentVersions.id });
-      if (rows.length === 0) {
-        throw new PersistenceConflictError(
-          "content version changed concurrently",
-        );
-      }
-    },
-  };
-  return Object.freeze(repository);
+  return createContentRepositoryMethods(db);
 }
 
 export function createContentIndexSourceRepository(
@@ -464,7 +540,7 @@ export function createContentIndexSourceRepository(
   return Object.freeze(source);
 }
 
-function createOperations(
+export function createContentTransactionalOperations(
   db: DatabaseExecutor,
 ): ContentTransactionalOperations {
   return Object.freeze({
@@ -510,7 +586,7 @@ export function createContentUseCaseDependencies(
         work: (operations: ContentTransactionalOperations) => Promise<Result>,
       ): Promise<Result> =>
         db.transaction(async (transaction) =>
-          work(createOperations(transaction as unknown as DatabaseExecutor)),
+          work(createContentTransactionalOperations(transaction)),
         ),
     },
   });

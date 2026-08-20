@@ -3,8 +3,11 @@
   "image": "registry.example.invalid/cvg-trainee-vet",
   "imageDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "rollbackImageDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "sourceSha": "1579442fa3dcf9a32bf5e7e1ce73977f2d8a60cd",
+  "rollbackSourceSha": "f9155651eb3ca09a6cd082a07b53bc8b471d848c",
   "migrationStrategy": "EXPAND_CONTRACT",
   "canaryService": "api-a",
   "healthPath": "/health/ready",
-  "canarySeconds": 60
+  "canarySeconds": 60,
+  "canaryStableProbes": 3
 }

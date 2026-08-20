@@ -37,22 +37,54 @@ export function validateCurriculumRuntimeSnapshot(
   expectation,
   options = {},
 ) {
-  const errors = [];
-  const expectedAggregates = {
+  const expectedAggregates = Object.freeze({
     activities: expectation.moduleCount,
     content: expectation.contentCount,
     editorial: expectation.contentCount,
     items: expectation.contentCount,
     assignments: expectation.moduleCount,
     runtime: expectation.moduleCount,
-  };
+  });
+  const errors = [
+    ...validateAggregateCounts(snapshot, expectedAggregates),
+    ...validateStatusCounts(snapshot, expectedAggregates),
+    ...validateModuleSets(snapshot, expectation.moduleIds),
+  ];
 
+  const unpublishedContent =
+    expectedAggregates.content - (snapshot.contentStatuses?.PUBLICADO ?? 0);
+  if (options.requireClinicalPublication === true && unpublishedContent > 0) {
+    errors.push(
+      `clinical publication is incomplete: ${unpublishedContent} items`,
+    );
+  }
+
+  const status =
+    errors.length > 0
+      ? "FAIL"
+      : unpublishedContent > 0
+        ? "PASS_WITH_GAPS"
+        : "PASS";
+  return Object.freeze({
+    status,
+    errors: Object.freeze(errors),
+    unpublishedContent,
+    expected: expectedAggregates,
+  });
+}
+
+function validateAggregateCounts(snapshot, expectedAggregates) {
+  const errors = [];
   for (const [field, expected] of Object.entries(expectedAggregates)) {
     if (snapshot.aggregates?.[field] !== expected) {
       errors.push(`${field} count must equal ${expected}`);
     }
   }
+  return errors;
+}
 
+function validateStatusCounts(snapshot, expectedAggregates) {
+  const errors = [];
   const contentStatusTotal = sumCounts(snapshot.contentStatuses);
   if (contentStatusTotal !== expectedAggregates.content) {
     errors.push("content status counts must equal content count");
@@ -80,34 +112,18 @@ export function validateCurriculumRuntimeSnapshot(
       `runtime status PENDENTE must have count ${expectedAggregates.runtime}`,
     );
   }
+  return errors;
+}
 
-  if (!sameValues(snapshot.assignmentModules, expectation.moduleIds)) {
+function validateModuleSets(snapshot, expectedModuleIds) {
+  const errors = [];
+  if (!sameValues(snapshot.assignmentModules, expectedModuleIds)) {
     errors.push("assignment module set must contain exactly M01–M24");
   }
-  if (!sameValues(snapshot.runtimeModules, expectation.moduleIds)) {
+  if (!sameValues(snapshot.runtimeModules, expectedModuleIds)) {
     errors.push("runtime module set must contain exactly M01–M24");
   }
-
-  const unpublishedContent =
-    expectedAggregates.content - (snapshot.contentStatuses?.PUBLICADO ?? 0);
-  if (options.requireClinicalPublication === true && unpublishedContent > 0) {
-    errors.push(
-      `clinical publication is incomplete: ${unpublishedContent} items`,
-    );
-  }
-
-  const status =
-    errors.length > 0
-      ? "FAIL"
-      : unpublishedContent > 0
-        ? "PASS_WITH_GAPS"
-        : "PASS";
-  return Object.freeze({
-    status,
-    errors: Object.freeze(errors),
-    unpublishedContent,
-    expected: Object.freeze(expectedAggregates),
-  });
+  return errors;
 }
 
 export async function runCurriculumRuntimeVerification(

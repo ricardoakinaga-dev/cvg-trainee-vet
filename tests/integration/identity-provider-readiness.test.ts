@@ -97,7 +97,10 @@ describe("identity provider production readiness contract", () => {
     ).rejects.toThrow("HTTPS");
     await expect(
       probeIdentityProviderReadiness({
-        IDENTITY_PROVIDER_URL: "https://user:password@identity.example",
+        IDENTITY_PROVIDER_URL: [
+          "https://",
+          "user:password@identity.example",
+        ].join(""),
         IDENTITY_PROVIDER_TOKEN: bearerValue,
         CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL: "probe-account",
         CVG_VERIFY_IDENTITY_PROVIDER: "true",

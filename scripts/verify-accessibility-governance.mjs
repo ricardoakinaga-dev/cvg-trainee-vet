@@ -25,13 +25,8 @@ export function loadAccessibilityGovernanceSnapshot(rootDir = REPO_ROOT) {
   );
 }
 
-export function validateAccessibilityGovernanceSnapshot(
-  snapshot,
-  rootDir = REPO_ROOT,
-) {
+function validateAccessibilityMetadata(snapshot) {
   const errors = [];
-  if (!isRecord(snapshot))
-    return ["accessibility governance must be an object"];
   if (snapshot.version !== 1)
     errors.push("accessibility governance version must be 1");
   if (snapshot.taskId !== "ENT95-13-B")
@@ -46,7 +41,27 @@ export function validateAccessibilityGovernanceSnapshot(
   if (!Array.isArray(snapshot.surfaces) || snapshot.surfaces.length < 2) {
     errors.push("accessibility governance must declare at least two surfaces");
   }
+  return errors;
+}
 
+function resolveEvidencePath(rootDir, testPath) {
+  if (path.isAbsolute(testPath)) return null;
+  const root = path.resolve(rootDir);
+  const candidate = path.resolve(rootDir, testPath);
+  const relative = path.relative(root, candidate);
+  if (
+    relative === "" ||
+    (relative !== ".." &&
+      !relative.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relative))
+  ) {
+    return candidate;
+  }
+  return null;
+}
+
+function validateAutomatedEvidence(snapshot, rootDir) {
+  const errors = [];
   if (!Array.isArray(snapshot.automatedEvidence)) {
     errors.push("automated evidence must be an array");
   } else {
@@ -89,8 +104,12 @@ export function validateAccessibilityGovernanceSnapshot(
       }
       evidenceIds.add(evidence.id);
       if (isNonEmptyString(evidence.testPath)) {
-        const testPath = path.join(rootDir, evidence.testPath);
-        if (!fs.existsSync(testPath)) {
+        const testPath = resolveEvidencePath(rootDir, evidence.testPath);
+        if (testPath === null) {
+          errors.push(
+            `automated evidence ${evidence.id ?? "<unknown>"} testPath must remain inside repository`,
+          );
+        } else if (!fs.existsSync(testPath)) {
           errors.push(
             `automated evidence ${evidence.id} testPath does not exist`,
           );
@@ -98,7 +117,11 @@ export function validateAccessibilityGovernanceSnapshot(
       }
     }
   }
+  return errors;
+}
 
+function validateManualGaps(snapshot) {
+  const errors = [];
   if (!Array.isArray(snapshot.manualGaps)) {
     errors.push("manual gaps must be an array");
   } else {
@@ -132,8 +155,21 @@ export function validateAccessibilityGovernanceSnapshot(
       gapIds.add(gap.id);
     }
   }
+  return errors;
+}
 
-  return Object.freeze(errors);
+export function validateAccessibilityGovernanceSnapshot(
+  snapshot,
+  rootDir = REPO_ROOT,
+) {
+  if (!isRecord(snapshot))
+    return ["accessibility governance must be an object"];
+
+  return Object.freeze([
+    ...validateAccessibilityMetadata(snapshot),
+    ...validateAutomatedEvidence(snapshot, rootDir),
+    ...validateManualGaps(snapshot),
+  ]);
 }
 
 export function buildAccessibilityGovernanceReport(snapshot) {

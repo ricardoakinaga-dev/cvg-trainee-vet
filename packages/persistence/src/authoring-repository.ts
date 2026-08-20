@@ -1,17 +1,30 @@
 import { and, desc, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import {
+  advanceContentWithinTransaction,
+  type AuthoringTransactionPort,
+  type AuthoringTransactionalOperations,
+} from "@cvg/application";
 import type {
-  ClinicalReviewRecord,
   AuthoringRecord,
   AuthoringRepositoryPort,
+  ClinicalReviewRecord,
+} from "@cvg/application";
+import type {
+  ClinicalApproverPort,
+  ClinicalApproverRecord,
 } from "@cvg/application";
 import type { ContentStatus } from "@cvg/domain";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
+import { createAuthoringIdempotency } from "./authoring-idempotency-repository.js";
+import { createContentTransactionalOperations } from "./content-repository.js";
 import {
   contentEditorialRecords,
   contentReviewDecisions,
   contentVersions,
+  accounts,
 } from "./schema.js";
 import type * as schema from "./schema.js";
 
@@ -93,51 +106,122 @@ function requiredStringArray(value: unknown, field: string): readonly string[] {
   return Object.freeze(value.map((item) => item as string));
 }
 
+type AuthoringParticipant = AuthoringRecord["participant"];
+
+function parseResponseMode(
+  value: unknown,
+  message: string,
+  allowNone: boolean,
+): AuthoringRecord["responseMode"] {
+  const valid =
+    value === "CHOICE" ||
+    value === "TEXT" ||
+    value === "STRUCTURED_FIELDS" ||
+    value === "DOSE_INFUSION" ||
+    (allowNone && value === "NONE");
+  if (!valid) throw new PersistenceMappingError(message);
+  return value as AuthoringRecord["responseMode"];
+}
+
+function parseSourceRefs(value: unknown): AuthoringRecord["sourceRefs"] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new PersistenceMappingError("authoring sourceRefs are required");
+  }
+  return Object.freeze(
+    value.map((source, index) => {
+      if (!isRecord(source)) {
+        throw new PersistenceMappingError(
+          "sourceRefs[" + index + "] is invalid",
+        );
+      }
+      return Object.freeze({
+        code: requiredString(source.code, "sourceRefs[" + index + "].code"),
+        locator: requiredString(
+          source.locator,
+          "sourceRefs[" + index + "].locator",
+        ),
+        updateRequired: requiredBoolean(
+          source.updateRequired,
+          "sourceRefs[" + index + "].updateRequired",
+        ),
+      });
+    }),
+  );
+}
+
+function parseParticipantKind(value: unknown): AuthoringParticipant["kind"] {
+  if (value === "QUESTAO" || value === "CASO") return value;
+  throw new PersistenceMappingError("item.participant.kind is invalid");
+}
+
+function parseSelectionMode(
+  value: unknown,
+): NonNullable<AuthoringParticipant["selectionMode"]> {
+  if (value === "SINGLE" || value === "MULTIPLE") return value;
+  throw new PersistenceMappingError(
+    "item.participant.selectionMode is invalid",
+  );
+}
+
+function parseParticipant(value: unknown): AuthoringParticipant {
+  if (!isRecord(value)) {
+    throw new PersistenceMappingError("authoring participant item is invalid");
+  }
+  return {
+    id: requiredString(value.id, "item.participant.id"),
+    ordinal:
+      typeof value.ordinal === "number" &&
+      Number.isInteger(value.ordinal) &&
+      value.ordinal > 0
+        ? value.ordinal
+        : (() => {
+            throw new PersistenceMappingError(
+              "item.participant.ordinal is invalid",
+            );
+          })(),
+    kind: parseParticipantKind(value.kind),
+    title: requiredString(value.title, "item.participant.title"),
+    prompt: requiredString(value.prompt, "item.participant.prompt"),
+    responseMode: parseResponseMode(
+      value.responseMode,
+      "participant response mode is invalid",
+      false,
+    ) as AuthoringParticipant["responseMode"],
+    ...(value.choices === undefined
+      ? {}
+      : {
+          choices: value.choices as NonNullable<
+            AuthoringParticipant["choices"]
+          >,
+        }),
+    ...(value.selectionMode === undefined
+      ? {}
+      : { selectionMode: parseSelectionMode(value.selectionMode) }),
+    ...(value.interaction === undefined
+      ? {}
+      : {
+          interaction: value.interaction as NonNullable<
+            AuthoringParticipant["interaction"]
+          >,
+        }),
+    ...(value.digitalCaseStage === undefined
+      ? {}
+      : {
+          digitalCaseStage: value.digitalCaseStage as NonNullable<
+            AuthoringParticipant["digitalCaseStage"]
+          >,
+        }),
+  };
+}
+
 function parseItem(value: unknown): ParsedAuthoringItem {
   if (!isRecord(value)) {
     throw new PersistenceMappingError("authoring item must be an object");
   }
-  const participant = value.participant;
-  if (!isRecord(participant)) {
-    throw new PersistenceMappingError("authoring participant item is invalid");
-  }
-  const responseMode = value.responseMode;
-  if (
-    responseMode !== "CHOICE" &&
-    responseMode !== "TEXT" &&
-    responseMode !== "STRUCTURED_FIELDS" &&
-    responseMode !== "DOSE_INFUSION" &&
-    responseMode !== "NONE"
-  ) {
-    throw new PersistenceMappingError("authoring response mode is invalid");
-  }
-  const participantResponseMode = participant.responseMode;
-  if (
-    participantResponseMode !== "CHOICE" &&
-    participantResponseMode !== "TEXT" &&
-    participantResponseMode !== "STRUCTURED_FIELDS" &&
-    participantResponseMode !== "DOSE_INFUSION"
-  ) {
-    throw new PersistenceMappingError("participant response mode is invalid");
-  }
-  const sourceRefs = value.sourceRefs;
-  if (!Array.isArray(sourceRefs) || sourceRefs.length === 0) {
-    throw new PersistenceMappingError("authoring sourceRefs are required");
-  }
-  const parsedSourceRefs = Object.freeze(
-    sourceRefs.map((source, index) => {
-      if (!isRecord(source)) {
-        throw new PersistenceMappingError(`sourceRefs[${index}] is invalid`);
-      }
-      return Object.freeze({
-        code: requiredString(source.code, `sourceRefs[${index}].code`),
-        locator: requiredString(source.locator, `sourceRefs[${index}].locator`),
-        updateRequired: requiredBoolean(
-          source.updateRequired,
-          `sourceRefs[${index}].updateRequired`,
-        ),
-      });
-    }),
+  const responseMode = parseResponseMode(
+    value.responseMode,
+    "authoring response mode is invalid",
+    true,
   );
   return {
     title: requiredString(value.title, "item.title"),
@@ -182,68 +266,10 @@ function parseItem(value: unknown): ParsedAuthoringItem {
       value.remediationTargetObjectiveId,
       "item.remediationTargetObjectiveId",
     ),
-    sourceRefs: parsedSourceRefs,
-    participant: {
-      id: requiredString(participant.id, "item.participant.id"),
-      ordinal:
-        typeof participant.ordinal === "number" &&
-        Number.isInteger(participant.ordinal) &&
-        participant.ordinal > 0
-          ? participant.ordinal
-          : (() => {
-              throw new PersistenceMappingError(
-                "item.participant.ordinal is invalid",
-              );
-            })(),
-      kind:
-        participant.kind === "QUESTAO" || participant.kind === "CASO"
-          ? participant.kind
-          : (() => {
-              throw new PersistenceMappingError(
-                "item.participant.kind is invalid",
-              );
-            })(),
-      title: requiredString(participant.title, "item.participant.title"),
-      prompt: requiredString(participant.prompt, "item.participant.prompt"),
-      responseMode: participantResponseMode,
-      ...(participant.choices === undefined
-        ? {}
-        : {
-            choices: participant.choices as NonNullable<
-              AuthoringRecord["participant"]["choices"]
-            >,
-          }),
-      ...(participant.selectionMode === undefined
-        ? {}
-        : {
-            selectionMode:
-              participant.selectionMode === "SINGLE" ||
-              participant.selectionMode === "MULTIPLE"
-                ? participant.selectionMode
-                : (() => {
-                    throw new PersistenceMappingError(
-                      "item.participant.selectionMode is invalid",
-                    );
-                  })(),
-          }),
-      ...(participant.interaction === undefined
-        ? {}
-        : {
-            interaction: participant.interaction as NonNullable<
-              AuthoringRecord["participant"]["interaction"]
-            >,
-          }),
-      ...(participant.digitalCaseStage === undefined
-        ? {}
-        : {
-            digitalCaseStage: participant.digitalCaseStage as NonNullable<
-              AuthoringRecord["participant"]["digitalCaseStage"]
-            >,
-          }),
-    },
+    sourceRefs: parseSourceRefs(value.sourceRefs),
+    participant: parseParticipant(value.participant),
   };
 }
-
 function parsePreflight(value: unknown): AuthoringRecord["preflight"] {
   if (!isRecord(value) || value.ruleVersion !== "authoring-preflight-v1") {
     throw new PersistenceMappingError("authoring preflight is invalid");
@@ -305,6 +331,56 @@ function assertVersion(value: number, field: string): void {
   }
 }
 
+export function createClinicalApproverPort(
+  db: DatabaseExecutor,
+): ClinicalApproverPort {
+  return Object.freeze({
+    findById: async (
+      accountId: string,
+    ): Promise<ClinicalApproverRecord | null> => {
+      const rows = await db
+        .select({
+          accountId: accounts.id,
+          accountStatus: accounts.status,
+          roles: accounts.roles,
+          scopes: accounts.scopes,
+        })
+        .from(accounts)
+        .where(eq(accounts.id, accountId))
+        .limit(1)
+        .for("update");
+      const row = rows[0];
+      if (row === undefined) return null;
+      if (
+        row.accountStatus !== "INVITED" &&
+        row.accountStatus !== "ACTIVE" &&
+        row.accountStatus !== "SUSPENDED" &&
+        row.accountStatus !== "DEACTIVATED"
+      ) {
+        throw new PersistenceMappingError(
+          "clinical approver status is invalid",
+        );
+      }
+      if (
+        !Array.isArray(row.roles) ||
+        row.roles.some((role) => typeof role !== "string") ||
+        !Array.isArray(row.scopes) ||
+        row.scopes.some((scope) => typeof scope !== "string")
+      ) {
+        throw new PersistenceMappingError(
+          "clinical approver access data is invalid",
+        );
+      }
+      return Object.freeze({
+        accountId: row.accountId,
+        accountStatus: row.accountStatus,
+        roles: Object.freeze([...row.roles]),
+        scopes: Object.freeze([...row.scopes]),
+      });
+    },
+  });
+}
+
 export function authoringRowToRecord(row: AuthoringRowShape): AuthoringRecord {
   for (const [value, field] of [
     [row.editorialRecordId, "editorialRecordId"],
@@ -337,121 +413,177 @@ export function authoringRowToRecord(row: AuthoringRowShape): AuthoringRecord {
   });
 }
 
+async function findAuthoringRecord(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+): Promise<AuthoringRecord | null> {
+  const rows = await db
+    .select({
+      editorialRecordId: contentEditorialRecords.id,
+      contentVersionId: contentEditorialRecords.contentVersionId,
+      contentId: contentEditorialRecords.contentId,
+      scopeId: contentEditorialRecords.scopeId,
+      version: contentEditorialRecords.version,
+      moduleId: contentEditorialRecords.moduleId,
+      sessionId: contentEditorialRecords.sessionId,
+      objectiveId: contentEditorialRecords.objectiveId,
+      authorId: contentEditorialRecords.authorId,
+      item: contentEditorialRecords.item,
+      preflight: contentEditorialRecords.preflight,
+      contentStatus: contentVersions.status,
+    })
+    .from(contentEditorialRecords)
+    .innerJoin(
+      contentVersions,
+      eq(contentEditorialRecords.contentVersionId, contentVersions.id),
+    )
+    .where(
+      and(
+        eq(contentEditorialRecords.contentId, contentId),
+        eq(contentEditorialRecords.version, version),
+      ),
+    )
+    .limit(1);
+  const row = rows[0];
+  return row === undefined ? null : authoringRowToRecord(row);
+}
+
+async function saveAuthoringPreflight(
+  db: DatabaseExecutor,
+  record: AuthoringRecord,
+  preflight: AuthoringRecord["preflight"],
+): Promise<AuthoringRecord> {
+  await db
+    .update(contentEditorialRecords)
+    .set({ preflight, updatedAt: new Date() })
+    .where(
+      and(
+        eq(contentEditorialRecords.id, record.editorialRecordId),
+        eq(contentEditorialRecords.contentId, record.contentId),
+        eq(contentEditorialRecords.version, record.version),
+      ),
+    );
+  return Object.freeze({ ...record, preflight });
+}
+
+async function findLatestClinicalReview(
+  db: DatabaseExecutor,
+  contentId: string,
+  version: number,
+): Promise<ClinicalReviewRecord | null> {
+  const rows = await db
+    .select({
+      reviewId: contentReviewDecisions.id,
+      contentId: contentReviewDecisions.contentId,
+      version: contentReviewDecisions.version,
+      contentEditorialRecordId: contentReviewDecisions.contentEditorialRecordId,
+      contentVersionId: contentReviewDecisions.contentVersionId,
+      scopeId: contentReviewDecisions.scopeId,
+      reviewerId: contentReviewDecisions.reviewerId,
+      decision: contentReviewDecisions.decision,
+      rationale: contentReviewDecisions.rationale,
+      correlationId: contentReviewDecisions.correlationId,
+      reviewedAt: contentReviewDecisions.reviewedAt,
+    })
+    .from(contentReviewDecisions)
+    .where(
+      and(
+        eq(contentReviewDecisions.contentId, contentId),
+        eq(contentReviewDecisions.version, version),
+      ),
+    )
+    .orderBy(desc(contentReviewDecisions.reviewedAt))
+    .limit(1);
+  const row = rows[0];
+  if (row === undefined) return null;
+  if (
+    row.decision !== "APROVAR_CLINICAMENTE" &&
+    row.decision !== "SOLICITAR_AJUSTES"
+  ) {
+    throw new PersistenceMappingError("clinical review decision is invalid");
+  }
+  return Object.freeze({
+    reviewId: row.reviewId,
+    contentId: row.contentId,
+    version: row.version,
+    contentEditorialRecordId: row.contentEditorialRecordId,
+    contentVersionId: row.contentVersionId,
+    scopeId: row.scopeId,
+    reviewerId: row.reviewerId,
+    decision: row.decision,
+    rationale: row.rationale,
+    correlationId: row.correlationId,
+    reviewedAt: row.reviewedAt.toISOString(),
+  });
+}
+
+async function saveClinicalReview(
+  db: DatabaseExecutor,
+  review: ClinicalReviewRecord,
+): Promise<void> {
+  await db.insert(contentReviewDecisions).values({
+    id: review.reviewId,
+    contentEditorialRecordId: review.contentEditorialRecordId,
+    contentVersionId: review.contentVersionId,
+    contentId: review.contentId,
+    version: review.version,
+    scopeId: review.scopeId,
+    reviewerId: review.reviewerId,
+    decision: review.decision,
+    rationale: review.rationale,
+    correlationId: review.correlationId,
+    reviewedAt: new Date(review.reviewedAt),
+  });
+}
+
 export function createAuthoringRepository(
   db: DatabaseExecutor,
 ): AuthoringRepositoryPort {
   const repository: AuthoringRepositoryPort = {
-    find: async (contentId, version) => {
-      const rows = await db
-        .select({
-          editorialRecordId: contentEditorialRecords.id,
-          contentVersionId: contentEditorialRecords.contentVersionId,
-          contentId: contentEditorialRecords.contentId,
-          scopeId: contentEditorialRecords.scopeId,
-          version: contentEditorialRecords.version,
-          moduleId: contentEditorialRecords.moduleId,
-          sessionId: contentEditorialRecords.sessionId,
-          objectiveId: contentEditorialRecords.objectiveId,
-          authorId: contentEditorialRecords.authorId,
-          item: contentEditorialRecords.item,
-          preflight: contentEditorialRecords.preflight,
-          contentStatus: contentVersions.status,
-        })
-        .from(contentEditorialRecords)
-        .innerJoin(
-          contentVersions,
-          eq(contentEditorialRecords.contentVersionId, contentVersions.id),
-        )
-        .where(
-          and(
-            eq(contentEditorialRecords.contentId, contentId),
-            eq(contentEditorialRecords.version, version),
-          ),
-        )
-        .limit(1);
-      const row = rows[0];
-      if (row === undefined) return null;
-
-      return authoringRowToRecord(row);
-    },
-    savePreflight: async (record, preflight) => {
-      await db
-        .update(contentEditorialRecords)
-        .set({ preflight, updatedAt: new Date() })
-        .where(
-          and(
-            eq(contentEditorialRecords.id, record.editorialRecordId),
-            eq(contentEditorialRecords.contentId, record.contentId),
-            eq(contentEditorialRecords.version, record.version),
-          ),
-        );
-      return Object.freeze({ ...record, preflight });
-    },
-    findLatestClinicalReview: async (contentId, version) => {
-      const rows = await db
-        .select({
-          reviewId: contentReviewDecisions.id,
-          contentId: contentReviewDecisions.contentId,
-          version: contentReviewDecisions.version,
-          contentEditorialRecordId:
-            contentReviewDecisions.contentEditorialRecordId,
-          contentVersionId: contentReviewDecisions.contentVersionId,
-          scopeId: contentReviewDecisions.scopeId,
-          reviewerId: contentReviewDecisions.reviewerId,
-          decision: contentReviewDecisions.decision,
-          rationale: contentReviewDecisions.rationale,
-          correlationId: contentReviewDecisions.correlationId,
-          reviewedAt: contentReviewDecisions.reviewedAt,
-        })
-        .from(contentReviewDecisions)
-        .where(
-          and(
-            eq(contentReviewDecisions.contentId, contentId),
-            eq(contentReviewDecisions.version, version),
-          ),
-        )
-        .orderBy(desc(contentReviewDecisions.reviewedAt))
-        .limit(1);
-      const row = rows[0];
-      if (row === undefined) return null;
-      if (
-        row.decision !== "APROVAR_CLINICAMENTE" &&
-        row.decision !== "SOLICITAR_AJUSTES"
-      ) {
-        throw new PersistenceMappingError(
-          "clinical review decision is invalid",
-        );
-      }
-      const review: ClinicalReviewRecord = {
-        reviewId: row.reviewId,
-        contentId: row.contentId,
-        version: row.version,
-        contentEditorialRecordId: row.contentEditorialRecordId,
-        contentVersionId: row.contentVersionId,
-        scopeId: row.scopeId,
-        reviewerId: row.reviewerId,
-        decision: row.decision,
-        rationale: row.rationale,
-        correlationId: row.correlationId,
-        reviewedAt: row.reviewedAt.toISOString(),
-      };
-      return Object.freeze(review);
-    },
-    saveClinicalReview: async (review) => {
-      await db.insert(contentReviewDecisions).values({
-        id: review.reviewId,
-        contentEditorialRecordId: review.contentEditorialRecordId,
-        contentVersionId: review.contentVersionId,
-        contentId: review.contentId,
-        version: review.version,
-        scopeId: review.scopeId,
-        reviewerId: review.reviewerId,
-        decision: review.decision,
-        rationale: review.rationale,
-        correlationId: review.correlationId,
-        reviewedAt: new Date(review.reviewedAt),
-      });
-    },
+    find: (contentId, version) => findAuthoringRecord(db, contentId, version),
+    savePreflight: (record, preflight) =>
+      saveAuthoringPreflight(db, record, preflight),
+    findLatestClinicalReview: (contentId, version) =>
+      findLatestClinicalReview(db, contentId, version),
+    saveClinicalReview: (review) => saveClinicalReview(db, review),
   };
   return Object.freeze(repository);
+}
+
+export function createAuthoringTransactionPort(
+  db: DatabaseExecutor,
+  idFactory: () => string,
+): AuthoringTransactionPort {
+  return Object.freeze({
+    run: async <Result>(
+      work: (operations: AuthoringTransactionalOperations) => Promise<Result>,
+    ): Promise<Result> =>
+      db.transaction(async (transaction) => {
+        const executor = transaction;
+        await executor.execute(
+          sql`select set_config('cvg.authoring_workflow', 'true', true)`,
+        );
+        const contentOperations =
+          createContentTransactionalOperations(executor);
+        const repository = createAuthoringRepository(executor);
+        const operations: AuthoringTransactionalOperations = Object.freeze({
+          repository,
+          approver: createClinicalApproverPort(executor),
+          transition: (
+            command: Parameters<
+              AuthoringTransactionalOperations["transition"]
+            >[0],
+          ) =>
+            advanceContentWithinTransaction(
+              command,
+              contentOperations,
+              idFactory,
+            ),
+          idFactory,
+          idempotency: createAuthoringIdempotency(executor, repository),
+        });
+        return work(operations);
+      }),
+  });
 }

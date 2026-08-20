@@ -11,12 +11,12 @@ describe("conditional skip governance", () => {
     const snapshot = await loadSkipGovernanceSnapshot(process.cwd());
     expect(validateSkipGovernance(snapshot)).toEqual([]);
     expect(buildSkipGovernanceReport(snapshot)).toMatchObject({
-      guardedFiles: 16,
-      guardedTests: 18,
+      guardedFiles: 17,
+      guardedTests: 21,
       unexplainedSkips: 0,
-      observedRuns: 3,
+      observedRuns: 20,
       flakyFailures: 0,
-      status: "PASS_WITH_GAPS",
+      status: "PASS",
       releaseDisposition: "PILOT_BLOCKED",
     });
   });
@@ -50,5 +50,22 @@ describe("conditional skip governance", () => {
     const errors = validateSkipGovernance(snapshot);
     expect(errors.join(";")).toContain("does not exist");
     expect(errors.join(";")).toContain("flaky rate");
+  });
+
+  it("rejects a skip inventory whose test denominator drifted", async () => {
+    const snapshot = await loadSkipGovernanceSnapshot(process.cwd());
+    const policy = JSON.parse(snapshot.get("skip-governance.json") ?? "{}") as {
+      skips?: Array<Record<string, unknown>>;
+    };
+    policy.skips = (policy.skips ?? []).map((entry) =>
+      entry.path === "tests/integration/postgres-attempt-repository.test.ts"
+        ? { ...entry, testCount: 1 }
+        : entry,
+    );
+    snapshot.set("skip-governance.json", JSON.stringify(policy));
+
+    expect(validateSkipGovernance(snapshot).join(";")).toContain(
+      "declares 1 tests but contains 2",
+    );
   });
 });

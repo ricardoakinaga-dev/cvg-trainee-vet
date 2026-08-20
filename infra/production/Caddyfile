@@ -15,7 +15,7 @@
   encode gzip
   import common_headers
   reverse_proxy api-a:3000 api-b:3000 {
-    health_uri /health/live
+    health_uri /health/ready
     health_interval 5s
     health_timeout 2s
     health_fails 3

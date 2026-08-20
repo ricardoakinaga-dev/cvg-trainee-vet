@@ -9,6 +9,29 @@
     { "id": "denied", "label": "authorization / privacy denial" },
     { "id": "conflict", "label": "concurrency / replay / state conflict" }
   ],
+  "proofReferencePaths": {
+    "error": [
+      "apps/api/src/http.test.ts",
+      "apps/api/src/server.test.ts",
+      "packages/application/src/answer-use-cases.test.ts",
+      "packages/application/src/attempt-use-cases.test.ts",
+      "packages/application/src/authoring-use-cases.test.ts",
+      "packages/application/src/content-use-cases.test.ts",
+      "packages/application/src/learning-state-use-cases.test.ts",
+      "packages/application/src/password-auth.test.ts",
+      "packages/contracts/src/auth.test.ts",
+      "packages/contracts/src/authoring.test.ts",
+      "packages/contracts/src/public-boundary.test.ts",
+      "packages/curriculum/src/authoring.test.ts",
+      "packages/curriculum/src/learning-runtime.test.ts",
+      "packages/domain/src/content.test.ts",
+      "packages/domain/src/learning-state.test.ts",
+      "packages/domain/src/remediation-policy.test.ts",
+      "packages/persistence/src/authoring-repository.test.ts",
+      "packages/persistence/src/password-auth-repository.test.ts",
+      "tests/e2e/participant-access.spec.ts"
+    ]
+  },
   "testLayers": [
     "unit",
     "application",
@@ -24,6 +47,7 @@
   "notes": [
     "The matrix derives obligations from the canonical premium requirements matrix.",
     "A local test path is evidence of a test destination, not proof that every risk branch is complete.",
+    "Error proof destinations are curated references to bounded negative tests and must remain linked from the canonical matrix.",
     "Missing proof types remain explicit gaps until a real test or runtime artifact is linked."
   ]
 }

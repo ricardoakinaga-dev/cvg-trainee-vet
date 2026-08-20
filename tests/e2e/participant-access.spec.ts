@@ -226,7 +226,54 @@ test.describe("participant access and learning projection", () => {
     await expect(page.getByText("Retomar atividade").first()).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Centro de controle" }),
-    ).toHaveAttribute("href", "/admin");
+    ).toHaveCount(0);
+  });
+
+  test("shows a working logout control and returns to the protected entry", async ({
+    page,
+  }) => {
+    let revokeCalls = 0;
+    await page.route("**/api/v1/auth/login", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/session/revoke", async (route) => {
+      revokeCalls += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "revoked" })),
+      });
+    });
+
+    await page.goto("/");
+    await signIn(page);
+
+    await expect(page.getByRole("button", { name: "Sair" })).toBeVisible();
+    await page.getByRole("button", { name: "Sair" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Entrar no treinamento" }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sair" })).toHaveCount(0);
+    expect(revokeCalls).toBe(1);
   });
 
   test("does not auto-open M02 while M01 awaits publication", async ({

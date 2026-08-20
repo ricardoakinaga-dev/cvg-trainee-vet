@@ -20,6 +20,7 @@ function runRestoreVerification(
   readonly status: string;
   readonly markerVerified: boolean;
   readonly artifactVerified: boolean;
+  readonly invariantsVerified: boolean;
   readonly verificationMode: string;
   readonly restoredObjects?: number;
   readonly targetIsolated: boolean;
@@ -57,6 +58,7 @@ function runRestoreVerification(
             readonly status: string;
             readonly markerVerified: boolean;
             readonly artifactVerified: boolean;
+            readonly invariantsVerified: boolean;
             readonly verificationMode: string;
             readonly restoredObjects?: number;
             readonly targetIsolated: boolean;
@@ -129,6 +131,7 @@ describe.skipIf(!runLiveRestoreTest || databaseUrl === undefined)(
         status: "PASS",
         markerVerified: true,
         artifactVerified: false,
+        invariantsVerified: true,
         verificationMode: "synthetic-marker",
         targetIsolated: true,
       });
@@ -148,6 +151,7 @@ describe.skipIf(!runLiveRestoreTest || databaseUrl === undefined)(
           status: "PASS",
           markerVerified: false,
           artifactVerified: true,
+          invariantsVerified: true,
           verificationMode: "stored-artifact",
           targetIsolated: true,
         });

@@ -29,6 +29,7 @@ export type ContentEvent =
   | { readonly type: "AUTOVERIFICAR" }
   | { readonly type: "VERIFICAR_PROJECAO" }
   | { readonly type: "ENVIAR_PARA_REVISAO_CLINICA" }
+  | { readonly type: "REABRIR_REVISAO_CLINICA" }
   | { readonly type: "SOLICITAR_AJUSTES" }
   | { readonly type: "APROVAR_CLINICAMENTE" }
   | { readonly type: "AUTORIZAR_PUBLICACAO" }
@@ -105,6 +106,7 @@ const transitions: Readonly<
     ENVIAR_PARA_REVISAO_CLINICA: "EM_REVISAO_CLINICA",
   },
   APROVADO_CLINICAMENTE: {
+    REABRIR_REVISAO_CLINICA: "EM_REVISAO_CLINICA",
     AUTORIZAR_PUBLICACAO: "AUTORIZADO_PARA_PUBLICACAO",
   },
   AUTORIZADO_PARA_PUBLICACAO: {

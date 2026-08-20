@@ -129,20 +129,12 @@ function hasField(block, field) {
   return new RegExp(`\\n    ${field}:`, "u").test(`\n${block}`);
 }
 
-function validateRow(
-  row,
-  requirement,
-  errors,
-  canonicalSpecIds,
-  canonicalTaskIds,
-  snapshot,
-  artifactIds,
-) {
+function parseTraceabilityRow(row, requirement, errors) {
   if (row.length !== 12) {
     errors.push(
       `${requirement.id} matrix row must have 12 pipe-delimited fields`,
     );
-    return;
+    return null;
   }
   const [
     id,
@@ -162,51 +154,56 @@ function validateRow(
     errors.push(
       `matrix row ${id ?? "<empty>"} does not match ${requirement.id}`,
     );
+    return null;
+  }
+  return {
+    id,
+    priority,
+    spec,
+    task,
+    module,
+    contract,
+    test,
+    decisions,
+    state,
+    release,
+    commit,
+    artifact,
+  };
+}
+
+function validateCanonicalDestination(
+  id,
+  field,
+  value,
+  pattern,
+  canonicalIds,
+  missingMessage,
+  errors,
+) {
+  if (!pattern.test(value)) {
+    errors.push(`${id} has no canonical ${field} destination`);
     return;
   }
-  if (priority !== requirement.priority) {
-    errors.push(`${id} priority drift: expected ${requirement.priority}`);
-  }
-  if (!/^SPEC-\d{4}(?:,SPEC-\d{4})*$/u.test(spec)) {
-    errors.push(`${id} has no canonical SPEC destination`);
-  } else if (canonicalSpecIds.size > 0) {
-    for (const specId of spec.split(",")) {
-      if (!canonicalSpecIds.has(specId)) {
-        errors.push(`${specId} is not present in the canonical SPEC master`);
-      }
+  if (canonicalIds.size === 0) return;
+  for (const reference of value.split(",")) {
+    if (!canonicalIds.has(reference)) {
+      errors.push(missingMessage(reference));
     }
   }
-  if (!/^ENT95-\d{2}-[A-Z](?:,ENT95-\d{2}-[A-Z])*$/u.test(task)) {
-    errors.push(`${id} has no canonical ENT95 task destination`);
-  } else if (canonicalTaskIds.size > 0) {
-    for (const taskId of task.split(",")) {
-      if (!canonicalTaskIds.has(taskId)) {
-        errors.push(
-          `${taskId} is not present in the canonical premium backlog`,
-        );
-      }
-    }
-  }
-  for (const [field, value] of [
-    ["module", module],
-    ["contract", contract],
-    ["test", test],
-    ["decisions", decisions],
-    ["state", state],
-    ["release", release],
-    ["commit", commit],
-    ["artifact", artifact],
-  ]) {
+}
+
+function validateDispositionFields(id, fields, errors) {
+  for (const [field, value] of fields) {
     if (value === undefined || value.trim().length === 0) {
       errors.push(`${id} has an empty ${field} disposition`);
     }
   }
-  for (const [field, value] of [
-    ["module", module],
-    ["contract", contract],
-    ["test", test],
-  ]) {
-    for (const reference of value.split(",")) {
+}
+
+function validateSnapshotReferences(id, fields, snapshot, errors) {
+  for (const [field, value] of fields) {
+    for (const reference of (value ?? "").split(",")) {
       if (
         reference.includes("/") &&
         !reference.startsWith("GAP:") &&
@@ -218,19 +215,93 @@ function validateRow(
       }
     }
   }
-  for (const reference of artifact.split(",")) {
+}
+
+function validateArtifactReferences(id, artifact, artifactIds, errors) {
+  for (const reference of (artifact ?? "").split(",")) {
     if (!reference.startsWith("GAP:") && !artifactIds.has(reference)) {
       errors.push(
         `${id} artifact is not present in traceability.yml: ${reference}`,
       );
     }
   }
-  if (state === "RELEASED" && release === "PILOT_APPROVED") {
-    errors.push(`${id} cannot be RELEASED while release is PILOT_APPROVED`);
+}
+
+function validateRowDisposition(row, requirement, errors) {
+  if (row.state === "RELEASED" && row.release === "PILOT_APPROVED") {
+    errors.push(`${row.id} cannot be RELEASED while release is PILOT_APPROVED`);
   }
-  if (decisions !== requirement.decisions && decisions !== "DECISION_PENDING") {
-    errors.push(`${id} decision mapping does not match the PRD classification`);
+  if (
+    row.decisions !== requirement.decisions &&
+    row.decisions !== "DECISION_PENDING"
+  ) {
+    errors.push(
+      `${row.id} decision mapping does not match the PRD classification`,
+    );
   }
+}
+
+function validateRow(
+  row,
+  requirement,
+  errors,
+  canonicalSpecIds,
+  canonicalTaskIds,
+  snapshot,
+  artifactIds,
+) {
+  const parsed = parseTraceabilityRow(row, requirement, errors);
+  if (parsed === null) return;
+  const { id, priority, spec, task, module, contract, test, decisions } =
+    parsed;
+  if (priority !== requirement.priority) {
+    errors.push(`${id} priority drift: expected ${requirement.priority}`);
+  }
+  validateCanonicalDestination(
+    id,
+    "SPEC",
+    spec,
+    /^SPEC-\d{4}(?:,SPEC-\d{4})*$/u,
+    canonicalSpecIds,
+    (reference) => `${reference} is not present in the canonical SPEC master`,
+    errors,
+  );
+  validateCanonicalDestination(
+    id,
+    "ENT95 task",
+    task,
+    /^ENT95-\d{2}-[A-Z](?:,ENT95-\d{2}-[A-Z])*$/u,
+    canonicalTaskIds,
+    (reference) =>
+      `${reference} is not present in the canonical premium backlog`,
+    errors,
+  );
+  validateDispositionFields(
+    id,
+    [
+      ["module", module],
+      ["contract", contract],
+      ["test", test],
+      ["decisions", decisions],
+      ["state", parsed.state],
+      ["release", parsed.release],
+      ["commit", parsed.commit],
+      ["artifact", parsed.artifact],
+    ],
+    errors,
+  );
+  validateSnapshotReferences(
+    id,
+    [
+      ["module", module],
+      ["contract", contract],
+      ["test", test],
+    ],
+    snapshot,
+    errors,
+  );
+  validateArtifactReferences(id, parsed.artifact, artifactIds, errors);
+  validateRowDisposition(parsed, requirement, errors);
 }
 
 function isCompleteRow(row) {
@@ -254,24 +325,28 @@ function hasLocalEvidence(row) {
   );
 }
 
-export function validatePremiumTraceabilitySnapshot(snapshot) {
-  const errors = [];
-  const manifest = contentOf(snapshot, TRACEABILITY);
-  const block = artifactBlock(manifest);
-  const requirements = readRequiredRequirements(snapshot);
-  const canonicalSpecIds = readCanonicalSpecIds(
-    contentOf(snapshot, SPEC_MASTER),
-  );
-  const canonicalTaskIds = readCanonicalTaskIds(contentOf(snapshot, BACKLOG));
-  const artifactIds = readArtifactIds(manifest);
+const TRACEABILITY_INPUT_PATHS = Object.freeze([
+  FUNCTIONAL_REQUIREMENTS,
+  NON_FUNCTIONAL_REQUIREMENTS,
+  SPEC_MASTER,
+  TRACEABILITY,
+  BACKLOG,
+]);
 
-  for (const path of [
-    FUNCTIONAL_REQUIREMENTS,
-    NON_FUNCTIONAL_REQUIREMENTS,
-    SPEC_MASTER,
-    TRACEABILITY,
-    BACKLOG,
-  ]) {
+const TRACEABILITY_ARTIFACT_FIELDS = Object.freeze([
+  "coverage",
+  "documents",
+  "specification",
+  "tasks",
+  "verification",
+  "status",
+  "commit",
+  "artifact",
+]);
+
+function validateTraceabilityInputs(snapshot, manifest, block) {
+  const errors = [];
+  for (const path of TRACEABILITY_INPUT_PATHS) {
     if (contentOf(snapshot, path).trim().length === 0) {
       errors.push(`missing traceability input: ${path}`);
     }
@@ -279,22 +354,15 @@ export function validatePremiumTraceabilitySnapshot(snapshot) {
   if (block.length === 0) {
     errors.push(`traceability has no ${MATRIX_ID} artifact`);
   }
-  for (const field of [
-    "coverage",
-    "documents",
-    "specification",
-    "tasks",
-    "verification",
-    "status",
-    "commit",
-    "artifact",
-  ]) {
+  for (const field of TRACEABILITY_ARTIFACT_FIELDS) {
     if (block.length > 0 && !hasField(block, field)) {
       errors.push(`${MATRIX_ID} has no ${field} field`);
     }
   }
+  return errors;
+}
 
-  const rows = parseCoverageRows(block);
+function indexCoverageRows(rows, errors) {
   const rowsById = new Map();
   for (const row of rows) {
     const id = row[0];
@@ -303,6 +371,10 @@ export function validatePremiumTraceabilitySnapshot(snapshot) {
     }
     if (id !== undefined) rowsById.set(id, row);
   }
+  return rowsById;
+}
+
+function validateRequirementRows(requirements, rowsById, errors, context) {
   for (const requirement of requirements) {
     const row = rowsById.get(requirement.id);
     if (row === undefined) {
@@ -315,13 +387,15 @@ export function validatePremiumTraceabilitySnapshot(snapshot) {
       row,
       requirement,
       errors,
-      canonicalSpecIds,
-      canonicalTaskIds,
-      snapshot,
-      artifactIds,
+      context.canonicalSpecIds,
+      context.canonicalTaskIds,
+      context.snapshot,
+      context.artifactIds,
     );
   }
+}
 
+function validateUnexpectedRows(requirements, rowsById, errors) {
   const requirementIds = new Set(
     requirements.map((requirement) => requirement.id),
   );
@@ -330,38 +404,50 @@ export function validatePremiumTraceabilitySnapshot(snapshot) {
       errors.push(`${id} is not present in the current PRD requirement set`);
     }
   }
+}
 
-  const completeChains = requirements.reduce(
-    (total, requirement) =>
-      total + (isCompleteRow(rowsById.get(requirement.id) ?? []) ? 1 : 0),
-    0,
-  );
-  const localEvidenceRows = requirements.reduce(
-    (total, requirement) =>
-      total + (hasLocalEvidence(rowsById.get(requirement.id) ?? []) ? 1 : 0),
-    0,
-  );
-  const p0p1Requirements = requirements.filter((requirement) =>
-    ["P0", "P1"].includes(requirement.priority),
+function summarizeTraceabilityRows(requirements, rowsById) {
+  const completeChains = requirements.filter((requirement) =>
+    isCompleteRow(rowsById.get(requirement.id) ?? []),
   ).length;
-  const p0p1LocalEvidenceRows = requirements.reduce(
-    (total, requirement) =>
-      total +
-      (["P0", "P1"].includes(requirement.priority) &&
-      hasLocalEvidence(rowsById.get(requirement.id) ?? [])
-        ? 1
-        : 0),
-    0,
+  const localEvidenceRows = requirements.filter((requirement) =>
+    hasLocalEvidence(rowsById.get(requirement.id) ?? []),
+  ).length;
+  const p0p1 = requirements.filter((requirement) =>
+    ["P0", "P1"].includes(requirement.priority),
   );
-  const mappedWithGaps = requirements.length - completeChains;
+  const p0p1LocalEvidenceRows = p0p1.filter((requirement) =>
+    hasLocalEvidence(rowsById.get(requirement.id) ?? []),
+  ).length;
   return Object.freeze({
-    errors: Object.freeze(errors),
     requirements: requirements.length,
     completeChains,
-    mappedWithGaps,
+    mappedWithGaps: requirements.length - completeChains,
     localEvidenceRows,
-    p0p1Requirements,
+    p0p1Requirements: p0p1.length,
     p0p1LocalEvidenceRows,
+  });
+}
+
+export function validatePremiumTraceabilitySnapshot(snapshot) {
+  const errors = [];
+  const manifest = contentOf(snapshot, TRACEABILITY);
+  const block = artifactBlock(manifest);
+  const requirements = readRequiredRequirements(snapshot);
+  const context = {
+    canonicalSpecIds: readCanonicalSpecIds(contentOf(snapshot, SPEC_MASTER)),
+    canonicalTaskIds: readCanonicalTaskIds(contentOf(snapshot, BACKLOG)),
+    snapshot,
+    artifactIds: readArtifactIds(manifest),
+  };
+  errors.push(...validateTraceabilityInputs(snapshot, manifest, block));
+  const rowsById = indexCoverageRows(parseCoverageRows(block), errors);
+  validateRequirementRows(requirements, rowsById, errors, context);
+  validateUnexpectedRows(requirements, rowsById, errors);
+  const summary = summarizeTraceabilityRows(requirements, rowsById);
+  return Object.freeze({
+    errors: Object.freeze(errors),
+    ...summary,
   });
 }
 

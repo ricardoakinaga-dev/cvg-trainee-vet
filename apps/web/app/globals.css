@@ -136,6 +136,26 @@ button:disabled {
   text-underline-offset: 0.18em;
 }
 
+.session-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.session-logout {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.session-logout:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .hero-card {
   align-items: end;
   background: var(--card);

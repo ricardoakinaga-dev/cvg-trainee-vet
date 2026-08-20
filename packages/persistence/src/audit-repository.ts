@@ -109,8 +109,12 @@ export function createAuditRepository(
 ): AuditPort & AuditReadPort {
   const repository: AuditPort & AuditReadPort = {
     append: async (entry: AuditEntry): Promise<void> => {
-      await db.execute(sql`select set_config('cvg.audit_write', 'on', true)`);
-      await db.insert(auditEntries).values(auditEntryToRow(entry));
+      await db.transaction(async (transaction) => {
+        await transaction.execute(
+          sql`select set_config('cvg.audit_write', 'on', true)`,
+        );
+        await transaction.insert(auditEntries).values(auditEntryToRow(entry));
+      });
     },
     list: async (): Promise<readonly AuditEntry[]> => {
       const rows = await db.transaction(async (transaction) => {

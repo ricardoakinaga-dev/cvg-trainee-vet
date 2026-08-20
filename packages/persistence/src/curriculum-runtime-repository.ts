@@ -182,7 +182,7 @@ export function createCurriculumRuntimeRepository(
       moduleId: string,
     ): Promise<CurriculumRuntimeState | null> => {
       return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
+        const executor = transaction;
         await setDatabaseSecurityContext(executor, { participantId });
         const rows = await selectRuntimeRow(
           executor,
@@ -198,7 +198,7 @@ export function createCurriculumRuntimeRepository(
       input: CurriculumRuntimeWriteInput,
     ): Promise<CurriculumRuntimeState> => {
       return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
+        const executor = transaction;
         await setDatabaseSecurityContext(executor, {
           participantId: input.participantId,
           scopeId: input.scopeId,

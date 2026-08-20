@@ -20,7 +20,7 @@
     },
     "@cvg/web": {
       "manifest": "apps/web/package.json",
-      "allowedWorkspaceDependencies": []
+      "allowedWorkspaceDependencies": ["@cvg/contracts"]
     },
     "@cvg/worker": {
       "manifest": "apps/worker/package.json",

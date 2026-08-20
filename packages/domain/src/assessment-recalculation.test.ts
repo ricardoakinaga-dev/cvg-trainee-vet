@@ -48,4 +48,45 @@ describe("assessment recalculation", () => {
       recalculateAssessment({ ...input, reason: "AUTOMATIC" as never }),
     ).toThrow("reason");
   });
+
+  it("rejects malformed boundary values and preserves a reinforcement outcome", () => {
+    for (const field of [
+      "candidateId",
+      "participantId",
+      "scopeId",
+      "attemptId",
+      "itemId",
+    ] as const) {
+      expect(() => recalculateAssessment({ ...input, [field]: " " })).toThrow(
+        field,
+      );
+    }
+    expect(() =>
+      recalculateAssessment({ ...input, previousScore: 101 }),
+    ).toThrow("previousScore");
+    expect(() =>
+      recalculateAssessment({ ...input, previousOutcome: "UNKNOWN" as never }),
+    ).toThrow("previousOutcome");
+    expect(() =>
+      recalculateAssessment({ ...input, eligibleItemCount: 0 }),
+    ).toThrow("eligibleItemCount");
+    expect(() => recalculateAssessment({ ...input, correctCount: -1 })).toThrow(
+      "correctCount",
+    );
+    expect(() =>
+      recalculateAssessment({ ...input, passingScore: 101 }),
+    ).toThrow("passingScore");
+    expect(() =>
+      recalculateAssessment({ ...input, recalculatedAt: "invalid" }),
+    ).toThrow("recalculatedAt");
+
+    const result = recalculateAssessment({
+      ...input,
+      correctCount: 2,
+      eligibleItemCount: 10,
+      passingScore: 70,
+      reason: "ANSWER_KEY_CHANGED",
+    });
+    expect(result.recalculatedOutcome).toBe("REFORCO");
+  });
 });

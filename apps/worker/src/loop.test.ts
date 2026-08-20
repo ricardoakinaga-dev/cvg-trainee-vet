@@ -1,9 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createObservability, type LogRecord } from "@cvg/observability";
-import type { OutboxEventRecord, OutboxRepositoryPort } from "@cvg/persistence";
+import type {
+  OutboxEventInput,
+  OutboxEventRecord,
+  OutboxRepositoryPort,
+} from "@cvg/persistence";
 
-import { processOutboxOnce, type WorkerEventHandler } from "./loop.js";
+import {
+  processOutboxOnce,
+  runWorkerClaimAckProbe,
+  type WorkerProbeRepository,
+  type WorkerEventHandler,
+} from "./loop.js";
 
 const event: OutboxEventRecord = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -42,7 +51,107 @@ function outbox(events: readonly OutboxEventRecord[]): OutboxRepositoryPort & {
   };
 }
 
+function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
+  readonly inserted: OutboxEventInput[];
+  readonly removed: string[];
+} {
+  let current: OutboxEventRecord | null = null;
+  const inserted: OutboxEventInput[] = [];
+  const removed: string[] = [];
+  return {
+    inserted,
+    removed,
+    insertProbe: vi.fn(async (input) => {
+      inserted.push(input);
+      const occurredAt = new Date(input.occurredAt);
+      current = {
+        id: input.eventId,
+        eventType: input.eventType,
+        aggregateType: input.aggregateType,
+        aggregateId: input.aggregateId,
+        occurredAt,
+        schemaVersion: input.schemaVersion,
+        correlationId: input.correlationId,
+        payload: input.payload as Readonly<Record<string, unknown>>,
+        status: "PENDING",
+        attempts: 0,
+        availableAt: new Date(0),
+        lockedUntil: null,
+        lastErrorCode: null,
+        processedAt: null,
+        createdAt: occurredAt,
+      };
+    }),
+    claimProbe: vi.fn(async (eventId, now, leaseSeconds) => {
+      if (current === null || current.id !== eventId) return null;
+      if (current.status !== "PENDING") return null;
+      current = {
+        ...current,
+        status: "PROCESSING",
+        attempts: current.attempts + 1,
+        lockedUntil: new Date(now.getTime() + leaseSeconds * 1_000),
+      };
+      return current;
+    }),
+    claim: vi.fn(async () => (current === null ? [] : [current])),
+    markProcessed: vi.fn(async (eventId, now) => {
+      if (failOnProcess) throw new Error("synthetic acknowledgement failure");
+      const snapshot = current;
+      if (snapshot === null || snapshot.id !== eventId) {
+        throw new Error("probe event is missing");
+      }
+      current = {
+        ...snapshot,
+        status: "PROCESSED",
+        processedAt: now,
+        lockedUntil: null,
+      };
+    }),
+    markFailed: vi.fn(async (eventId, _attempts, errorCode, now) => {
+      const snapshot = current;
+      if (snapshot === null || snapshot.id !== eventId) {
+        throw new Error("probe event is missing");
+      }
+      current = {
+        ...snapshot,
+        status: "FAILED",
+        lastErrorCode: errorCode,
+        processedAt: null,
+        lockedUntil: null,
+        availableAt: now,
+      };
+    }),
+    removeProbe: vi.fn(async (eventId) => {
+      removed.push(eventId);
+      if (current?.id === eventId) current = null;
+    }),
+  };
+}
+
 describe("outbox worker loop", () => {
+  it("proves the synthetic claim-to-ack path through the repository boundary", async () => {
+    const repository = probeOutbox();
+    await expect(runWorkerClaimAckProbe(repository)).resolves.toEqual({
+      claimed: 1,
+      processed: 1,
+      failed: 0,
+      acknowledged: true,
+    });
+    expect(repository.inserted).toHaveLength(1);
+    expect(repository.removed).toEqual([repository.inserted[0]?.eventId]);
+  });
+
+  it("fails the synthetic probe when the real repository cannot acknowledge", async () => {
+    const repository = probeOutbox(true);
+    await expect(runWorkerClaimAckProbe(repository)).resolves.toMatchObject({
+      claimed: 1,
+      processed: 0,
+      failed: 1,
+      acknowledged: false,
+    });
+    expect(repository.removed).toHaveLength(1);
+  });
+
   it("processes a claimed event and marks it only after the handler succeeds", async () => {
     const repository = outbox([event]);
     const handler = vi.fn<WorkerEventHandler>(async () => undefined);

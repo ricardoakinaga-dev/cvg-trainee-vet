@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 
+import { validateJourneyCorrectionMetadata } from "../../scripts/journey-correction-governance-support.mjs";
 import {
   buildJourneyCorrectionGovernanceReport,
   loadJourneyCorrectionGovernanceSnapshot,
@@ -18,6 +19,12 @@ it("accepts local journey, appeal, feedback and correction evidence with explici
     status: "PASS_WITH_GAPS",
     releaseDisposition: "PILOT_BLOCKED",
   });
+});
+
+it("keeps metadata and sensitive-marker checks composable", async () => {
+  const snapshot = await loadJourneyCorrectionGovernanceSnapshot(process.cwd());
+
+  expect(validateJourneyCorrectionMetadata(snapshot)).toEqual([]);
 });
 
 it("rejects missing owner-scoped evidence or a hidden production claim", async () => {

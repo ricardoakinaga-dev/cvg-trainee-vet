@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildClinicalReviewQueueSnapshot,
   summarizeClinicalReviewQueueSnapshot,
   type ClinicalReviewQueueSnapshot,
 } from "../../scripts/verify-clinical-review-queue.mjs";
@@ -16,6 +17,32 @@ const pendingSnapshot: ClinicalReviewQueueSnapshot = {
 };
 
 describe("clinical review queue verifier", () => {
+  it("normalizes SQL rows into an immutable queue snapshot", () => {
+    const snapshot = buildClinicalReviewQueueSnapshot(
+      {
+        total: "2",
+        pending: "1",
+        approved: "1",
+        adjustments_requested: "0",
+        unreviewed: "1",
+        technical_failures: "0",
+      },
+      [{ moduleId: "M01", count: "1" }],
+    );
+
+    expect(snapshot).toEqual({
+      total: 2,
+      pending: 1,
+      approved: 1,
+      adjustmentsRequested: 0,
+      unreviewed: 1,
+      technicalFailures: 0,
+      pendingByModule: { M01: 1 },
+    });
+    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(Object.isFrozen(snapshot.pendingByModule)).toBe(true);
+  });
+
   it("reports the honest gap and fails in strict completion mode", () => {
     expect(summarizeClinicalReviewQueueSnapshot(pendingSnapshot)).toMatchObject(
       {

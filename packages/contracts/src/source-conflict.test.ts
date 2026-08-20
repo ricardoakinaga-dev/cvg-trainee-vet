@@ -43,4 +43,21 @@ describe("source conflict decision contract", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects duplicate source codes on both write and projection boundaries", () => {
+    expect(() =>
+      sourceConflictDecisionRequestSchema.parse({
+        ...request,
+        sourceCodes: ["SOURCE_A", "SOURCE_A"],
+      }),
+    ).toThrow("unique");
+    expect(() =>
+      parseSourceConflictDecision({
+        ...request,
+        sourceCodes: ["SOURCE_A", "SOURCE_A"],
+        decidedBy: "reviewer-1",
+        humanReviewRequired: true,
+      }),
+    ).toThrow("unique");
+  });
 });

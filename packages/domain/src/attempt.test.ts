@@ -123,6 +123,17 @@ describe("attempt domain state machine", () => {
     ).toThrow(AttemptDomainError);
   });
 
+  it("rejects malformed persisted state before applying an event", () => {
+    expect(() => transitionAttempt(null as never, { type: "INICIAR" })).toThrow(
+      "state must be an object",
+    );
+    expect(() =>
+      transitionAttempt({ ...createAttempt(ids), status: "UNKNOWN" } as never, {
+        type: "INICIAR",
+      }),
+    ).toThrow("status is not supported");
+  });
+
   it("allows the human correction route only after explicit queueing", () => {
     const submitted = transitionAttempt(
       transitionAttempt(

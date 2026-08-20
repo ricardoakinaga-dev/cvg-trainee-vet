@@ -169,6 +169,30 @@ describe("attempt application commands", () => {
     expect(dependencies.attempts).toHaveLength(0);
   });
 
+  it("rejects a second open attempt for the same activity", async () => {
+    const dependencies = createDependencies([
+      {
+        attemptId: "attempt-existing",
+        participantId: ids.participantId,
+        activityId: ids.activityId,
+        status: "EM_ANDAMENTO",
+        version: 1,
+      },
+    ]);
+
+    await expect(
+      startAttempt(
+        {
+          ...ids,
+          idempotencyKey: "start-attempt-conflict",
+          correlationId: "correlation-start-conflict",
+        },
+        dependencies,
+      ),
+    ).rejects.toMatchObject({ code: "state_conflict", status: 409 });
+    expect(dependencies.attempts).toHaveLength(1);
+  });
+
   it("submits only the owner's saved attempt and replays safely", async () => {
     const dependencies = createDependencies();
     const started = await startAttempt(
@@ -228,6 +252,49 @@ describe("attempt application commands", () => {
       ),
     ).rejects.toMatchObject({ code: "forbidden", status: 403 });
     expect(dependencies.attempts[0]?.status).toBe("SALVA");
+  });
+
+  it("maps a domain transition failure to a state conflict", async () => {
+    const dependencies = createDependencies([
+      {
+        attemptId: "attempt-submitted",
+        participantId: ids.participantId,
+        activityId: ids.activityId,
+        status: "SUBMETIDA",
+        version: 3,
+      },
+    ]);
+
+    await expect(
+      submitAttempt(
+        {
+          attemptId: "attempt-submitted",
+          participantId: ids.participantId,
+          idempotencyKey: "submit-attempt-domain-conflict",
+          correlationId: "correlation-domain-conflict",
+          submittedAt: "2026-08-09T17:00:00.000Z",
+        },
+        dependencies,
+      ),
+    ).rejects.toMatchObject({ code: "state_conflict", status: 409 });
+    expect(dependencies.events).toHaveLength(0);
+  });
+
+  it("rejects submission when the attempt is missing", async () => {
+    const dependencies = createDependencies();
+
+    await expect(
+      submitAttempt(
+        {
+          attemptId: "missing-attempt",
+          participantId: ids.participantId,
+          idempotencyKey: "submit-attempt-missing",
+          correlationId: "correlation-missing",
+          submittedAt: "2026-08-09T17:00:00.000Z",
+        },
+        dependencies,
+      ),
+    ).rejects.toMatchObject({ code: "not_found", status: 404 });
   });
 
   it("maps malformed persistence outcomes to a stable application error", async () => {

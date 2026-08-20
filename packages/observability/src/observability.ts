@@ -1,5 +1,9 @@
 import { randomBytes } from "node:crypto";
 
+import { createMetricsPort } from "./metrics.js";
+
+export { createMetricsPort } from "./metrics.js";
+
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export type SafeFieldValue = string | number | boolean | null;
@@ -391,6 +395,23 @@ function prometheusMetricName(value: string): string {
   return /^[a-zA-Z_]/u.test(normalized) ? normalized : `metric_${normalized}`;
 }
 
+function prometheusCounterName(value: string): string {
+  const name = prometheusMetricName(value);
+  return name.endsWith("_total") ? name : `${name}_total`;
+}
+
+function prometheusHistogramName(
+  value: string,
+): Readonly<{ readonly name: string; readonly scale: number }> {
+  const name = prometheusMetricName(value);
+  return name.endsWith("_ms")
+    ? Object.freeze({
+        name: `${name.slice(0, -3)}_seconds`,
+        scale: 0.001,
+      })
+    : Object.freeze({ name, scale: 1 });
+}
+
 function prometheusLabelValue(value: string): string {
   return value
     .replace(/\\/gu, "\\\\")
@@ -398,9 +419,13 @@ function prometheusLabelValue(value: string): string {
     .replace(/"/gu, '\\"');
 }
 
+function compareLexical(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 function prometheusLabels(labels: MetricLabels): string {
   const entries = Object.entries(sanitizeLabels(labels)).sort(
-    ([left], [right]) => left.localeCompare(right),
+    ([left], [right]) => compareLexical(left, right),
   );
   if (entries.length === 0) return "";
   return `{${entries
@@ -408,184 +433,147 @@ function prometheusLabels(labels: MetricLabels): string {
     .join(",")}}`;
 }
 
-export function renderPrometheusMetrics(
-  snapshot: MetricsSnapshot,
-  quantileResolver?: (
-    name: string,
-    quantile: number,
-    labels: MetricLabels,
-  ) => number | null,
-): string {
-  const lines: string[] = [];
-  for (const counter of snapshot.counters) {
-    const name = prometheusMetricName(counter.name);
-    lines.push(`# TYPE ${name} counter`);
-    lines.push(`${name}${prometheusLabels(counter.labels)} ${counter.value}`);
-  }
-  for (const histogram of snapshot.histograms) {
-    const name = prometheusMetricName(histogram.name);
-    const labels = prometheusLabels(histogram.labels);
-    lines.push(`# TYPE ${name}_count gauge`);
-    lines.push(`${name}_count${labels} ${histogram.count}`);
-    lines.push(`# TYPE ${name}_sum gauge`);
-    lines.push(`${name}_sum${labels} ${histogram.sum}`);
-    const p95 = quantileResolver?.(histogram.name, 0.95, histogram.labels);
-    if (p95 !== null && p95 !== undefined) {
-      const p95Name = prometheusMetricName(`${histogram.name}_p95`);
-      lines.push(`# TYPE ${p95Name} gauge`);
-      lines.push(`${p95Name}${labels} ${p95}`);
-    }
-  }
-  return lines.length === 0 ? "" : `${lines.join("\n")}\n`;
+function comparePrometheusSeries(
+  left: Readonly<{ readonly name: string; readonly labels: MetricLabels }>,
+  right: Readonly<{ readonly name: string; readonly labels: MetricLabels }>,
+  nameResolver: (value: string) => string = prometheusMetricName,
+): number {
+  const nameOrder = compareLexical(
+    nameResolver(left.name),
+    nameResolver(right.name),
+  );
+  return nameOrder === 0
+    ? compareLexical(
+        prometheusLabels(left.labels),
+        prometheusLabels(right.labels),
+      )
+    : nameOrder;
 }
 
-function createMetrics(): MetricsPort {
-  type Counter = Readonly<{
-    readonly name: string;
-    readonly value: number;
-    readonly labels: MetricLabels;
-  }>;
-  type Histogram = Readonly<{
-    readonly name: string;
-    readonly count: number;
-    readonly sum: number;
-    readonly min: number;
-    readonly max: number;
-    readonly labels: MetricLabels;
-  }>;
+function appendPrometheusDescriptor(
+  lines: string[],
+  name: string,
+  type: "counter" | "gauge" | "histogram",
+): void {
+  lines.push(`# HELP ${name} CVG metric ${name}`);
+  lines.push(`# TYPE ${name} ${type}`);
+}
 
-  let counters: readonly Counter[] = [];
-  let histograms: readonly Histogram[] = [];
-  let observations: readonly Readonly<{
-    readonly name: string;
-    readonly value: number;
-    readonly labels: MetricLabels;
-  }>[] = [];
+function registerPrometheusFamily(
+  families: Map<string, Readonly<{ source: string; type: string }>>,
+  name: string,
+  source: string,
+  type: string,
+): void {
+  const existing = families.get(name);
+  if (
+    existing !== undefined &&
+    (existing.source !== source || existing.type !== type)
+  ) {
+    throw new Error(`Prometheus metric family collision: ${name}`);
+  }
+  families.set(name, Object.freeze({ source, type }));
+}
 
-  function increment(
-    name: string,
-    labels: MetricLabels = {},
-    amount = 1,
-  ): void {
-    if (!Number.isFinite(amount) || amount <= 0) return;
-    const safeName = safeMetricName(name);
-    const safeLabels = sanitizeLabels(labels);
-    const key = labelsKey(safeLabels);
-    const index = counters.findIndex(
-      (counter) =>
-        counter.name === safeName && labelsKey(counter.labels) === key,
-    );
-    if (index === -1) {
-      counters = [
-        ...counters,
-        Object.freeze({ name: safeName, value: amount, labels: safeLabels }),
-      ];
-      return;
-    }
-    counters = counters.map((counter, counterIndex) =>
-      counterIndex === index
-        ? Object.freeze({ ...counter, value: counter.value + amount })
-        : counter,
+type PrometheusQuantileResolver = (
+  name: string,
+  quantile: number,
+  labels: MetricLabels,
+) => number | null;
+
+function registerPrometheusFamilies(snapshot: MetricsSnapshot): void {
+  const families = new Map<
+    string,
+    Readonly<{ readonly source: string; readonly type: string }>
+  >();
+  for (const counter of snapshot.counters) {
+    registerPrometheusFamily(
+      families,
+      prometheusCounterName(counter.name),
+      counter.name,
+      "counter",
     );
   }
-
-  function observe(
-    name: string,
-    value: number,
-    labels: MetricLabels = {},
-  ): void {
-    if (!Number.isFinite(value) || value < 0) return;
-    const safeName = safeMetricName(name);
-    const safeLabels = sanitizeLabels(labels);
-    observations = [
-      ...observations,
-      Object.freeze({ name: safeName, value, labels: safeLabels }),
-    ].slice(-10_000);
-    const key = labelsKey(safeLabels);
-    const index = histograms.findIndex(
-      (histogram) =>
-        histogram.name === safeName && labelsKey(histogram.labels) === key,
+  for (const histogram of snapshot.histograms) {
+    const descriptor = prometheusHistogramName(histogram.name);
+    registerPrometheusFamily(
+      families,
+      descriptor.name,
+      histogram.name,
+      "histogram",
     );
-    if (index === -1) {
-      histograms = [
-        ...histograms,
-        Object.freeze({
-          name: safeName,
-          count: 1,
-          sum: value,
-          min: value,
-          max: value,
-          labels: safeLabels,
-        }),
-      ];
-      return;
-    }
-    histograms = histograms.map((histogram, histogramIndex) =>
-      histogramIndex === index
-        ? Object.freeze({
-            ...histogram,
-            count: histogram.count + 1,
-            sum: histogram.sum + value,
-            min: Math.min(histogram.min, value),
-            max: Math.max(histogram.max, value),
-          })
-        : histogram,
+    registerPrometheusFamily(
+      families,
+      `${descriptor.name}_p95`,
+      `${histogram.name}:p95`,
+      "gauge",
     );
   }
+}
 
-  const snapshot = (): MetricsSnapshot =>
-    Object.freeze({
-      counters: Object.freeze(
-        counters.map((counter) =>
-          Object.freeze({ ...counter, labels: { ...counter.labels } }),
-        ),
-      ),
-      histograms: Object.freeze(
-        histograms.map((histogram) =>
-          Object.freeze({ ...histogram, labels: { ...histogram.labels } }),
-        ),
-      ),
-    });
-
-  const quantile = (
-    name: string,
-    quantileValue: number,
-    labels?: MetricLabels,
-  ): number | null => {
-    if (
-      !Number.isFinite(quantileValue) ||
-      quantileValue < 0 ||
-      quantileValue > 1
-    ) {
-      return null;
+function appendPrometheusCounters(
+  lines: string[],
+  counters: MetricsSnapshot["counters"],
+): void {
+  let counterFamily: string | null = null;
+  const orderedCounters = [...counters].sort((left, right) =>
+    comparePrometheusSeries(left, right, prometheusCounterName),
+  );
+  for (const counter of orderedCounters) {
+    const name = prometheusCounterName(counter.name);
+    if (name !== counterFamily) {
+      appendPrometheusDescriptor(lines, name, "counter");
+      counterFamily = name;
     }
-    const safeName = safeMetricName(name);
-    const safeLabels =
-      labels === undefined ? undefined : sanitizeLabels(labels);
-    const values = observations
-      .filter(
-        (observation) =>
-          observation.name === safeName &&
-          (safeLabels === undefined ||
-            labelsKey(observation.labels) === labelsKey(safeLabels)),
-      )
-      .map((observation) => observation.value)
-      .sort((left, right) => left - right);
-    if (values.length === 0) return null;
-    const index = Math.min(
-      values.length - 1,
-      Math.max(0, Math.ceil(quantileValue * values.length) - 1),
-    );
-    return values[index] ?? null;
-  };
+    lines.push(`${name}${prometheusLabels(counter.labels)} ${counter.value}`);
+  }
+}
 
-  return Object.freeze({
-    increment,
-    observe,
-    snapshot,
-    prometheus: () => renderPrometheusMetrics(snapshot(), quantile),
-    quantile,
-  });
+function appendPrometheusHistograms(
+  lines: string[],
+  histograms: MetricsSnapshot["histograms"],
+  quantileResolver?: PrometheusQuantileResolver,
+): void {
+  let histogramFamily: string | null = null;
+  let histogramP95Family: string | null = null;
+  const orderedHistograms = [...histograms].sort((left, right) =>
+    comparePrometheusSeries(
+      left,
+      right,
+      (value) => prometheusHistogramName(value).name,
+    ),
+  );
+  for (const histogram of orderedHistograms) {
+    const descriptor = prometheusHistogramName(histogram.name);
+    const name = descriptor.name;
+    const labels = prometheusLabels(histogram.labels);
+    if (name !== histogramFamily) {
+      appendPrometheusDescriptor(lines, name, "histogram");
+      histogramFamily = name;
+    }
+    lines.push(`${name}_count${labels} ${histogram.count}`);
+    lines.push(`${name}_sum${labels} ${histogram.sum * descriptor.scale}`);
+    const p95 = quantileResolver?.(histogram.name, 0.95, histogram.labels);
+    if (p95 !== null && p95 !== undefined) {
+      const p95Name = `${name}_p95`;
+      if (p95Name !== histogramP95Family) {
+        appendPrometheusDescriptor(lines, p95Name, "gauge");
+        histogramP95Family = p95Name;
+      }
+      lines.push(`${p95Name}${labels} ${p95 * descriptor.scale}`);
+    }
+  }
+}
+
+export function renderPrometheusMetrics(
+  snapshot: MetricsSnapshot,
+  quantileResolver?: PrometheusQuantileResolver,
+): string {
+  const lines: string[] = [];
+  registerPrometheusFamilies(snapshot);
+  appendPrometheusCounters(lines, snapshot.counters);
+  appendPrometheusHistograms(lines, snapshot.histograms, quantileResolver);
+  return lines.length === 0 ? "" : `${lines.join("\n")}\n`;
 }
 
 function createTraces(options: ObservabilityOptions): TracesPort {
@@ -732,7 +720,12 @@ export function createObservability(
 ): Observability {
   return Object.freeze({
     logger: createLogger(options),
-    metrics: createMetrics(),
+    metrics: createMetricsPort({
+      safeMetricName,
+      sanitizeLabels,
+      labelsKey,
+      renderPrometheusMetrics,
+    }),
     traces: createTraces(options),
     collectionPolicy: nonInvasiveCollectionPolicy,
   });

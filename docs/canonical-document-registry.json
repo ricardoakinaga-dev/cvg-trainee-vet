@@ -6,6 +6,118 @@
     "roadmap": "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
     "backlog": "BRIEFING/04.AUDIT/0493_score_95_backlog.md"
   },
+  "baselineCurrent": {
+    "program": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+    "audit": "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+    "roadmap": "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+    "backlog": "BRIEFING/04.AUDIT/0493_score_95_backlog.md"
+  },
+  "activeExecutionOverlay": {
+    "id": "CVG-DUAL-99",
+    "assessment": "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+    "program": "BRIEFING/03.BUILD/0309_dual_99_executive_program.md",
+    "roadmap": "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
+    "backlog": "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
+    "manifest": "dual-99-program.json",
+    "previousOverlay": "CVG-DUAL-98",
+    "status": "ACTIVE_EXECUTION_OVERLAY"
+  },
+  "assessmentTracks": {
+    "maturity": {
+      "audit": "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+      "program": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
+      "baseline": 83.24,
+      "items": 16,
+      "itemsAtOrAbove95": 1,
+      "itemsAtOrAbove98": 0,
+      "status": "FROZEN_UNTIL_INDEPENDENT_REAUDIT"
+    },
+    "codeQuality": {
+      "audit": "docs/116_code_quality_audit_2026-08-16.md",
+      "baseline": 64.2,
+      "items": 16,
+      "itemsAtOrAbove95": 0,
+      "itemsAtOrAbove98": 0,
+      "status": "FROZEN_UNTIL_INDEPENDENT_REAUDIT"
+    },
+    "dual95": {
+      "assessment": "docs/117_dual_95_readiness_assessment_2026-08-16.md",
+      "program": "BRIEFING/03.BUILD/0307_dual_95_executive_program.md",
+      "roadmap": "BRIEFING/04.AUDIT/0514_dual_95_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0515_dual_95_backlog.md",
+      "acceptance": "32/32 items at or above 95 on the same release candidate",
+      "status": "ABSORBED_BY_DUAL_98",
+      "supersededBy": "BRIEFING/03.BUILD/0308_dual_98_executive_program.md"
+    },
+    "dual98": {
+      "assessment": "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+      "previousAssessment": "docs/131_dual_98_gap_assessment_2026-08-16.md",
+      "assessmentStatus": "CURRENT_POST_HARDENING",
+      "previousAssessmentStatus": "SUPERSEDED_AS_ACTIVE_ASSESSMENT",
+      "program": "BRIEFING/03.BUILD/0308_dual_98_executive_program.md",
+      "roadmap": "BRIEFING/04.AUDIT/0516_dual_98_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0517_dual_98_backlog.md",
+      "localEvidence": "docs/132_dual_98_local_hardening_evidence_2026-08-16.md",
+      "acceptance": "32/32 items at or above 98 on the same release candidate",
+      "itemsAtOrAbove98": 0,
+      "status": "ACTIVE_EXECUTION_OVERLAY"
+    },
+    "dual99": {
+      "assessment": "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+      "previousAssessment": "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+      "assessmentStatus": "BASELINE_FOR_DUAL_99",
+      "program": "BRIEFING/03.BUILD/0309_dual_99_executive_program.md",
+      "roadmap": "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
+      "manifest": "dual-99-program.json",
+      "localEvidence": "docs/135_dual_99_local_execution_evidence_2026-08-20.md",
+      "stabilityEvidence": "docs/136_dual_99_skip-governance-20-runs-2026-08-20.md",
+      "mutationEvidence": "docs/137_dual_99_critical_mutation_evidence_2026-08-20.md",
+      "acceptance": "32/32 items at or above 99 plus C1-C8 and RH01-RH06 closed on the same release candidate",
+      "itemsAtOrAbove99": 0,
+      "status": "ACTIVE_EXECUTION_OVERLAY",
+      "note": "Target overlay; scores remain frozen until independent re-audit."
+    }
+  },
+  "overlays": [
+    {
+      "program": "BRIEFING/03.BUILD/0306_code_quality_95_executive_plan.md",
+      "roadmap": "BRIEFING/04.AUDIT/0512_code_quality_95_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0513_code_quality_95_backlog.md",
+      "source": "docs/116_code_quality_audit_2026-08-16.md",
+      "status": "ABSORBED_BY_DUAL_95",
+      "supersededBy": "BRIEFING/03.BUILD/0307_dual_95_executive_program.md"
+    },
+    {
+      "program": "BRIEFING/03.BUILD/0307_dual_95_executive_program.md",
+      "roadmap": "BRIEFING/04.AUDIT/0514_dual_95_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0515_dual_95_backlog.md",
+      "source": "docs/117_dual_95_readiness_assessment_2026-08-16.md",
+      "status": "ABSORBED_BY_DUAL_98",
+      "supersededBy": "BRIEFING/03.BUILD/0308_dual_98_executive_program.md"
+    },
+    {
+      "program": "BRIEFING/03.BUILD/0308_dual_98_executive_program.md",
+      "roadmap": "BRIEFING/04.AUDIT/0516_dual_98_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0517_dual_98_backlog.md",
+      "source": "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+      "previousSource": "docs/131_dual_98_gap_assessment_2026-08-16.md",
+      "localEvidence": "docs/132_dual_98_local_hardening_evidence_2026-08-16.md",
+      "status": "ACTIVE_OVERLAY"
+    },
+    {
+      "program": "BRIEFING/03.BUILD/0309_dual_99_executive_program.md",
+      "roadmap": "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
+      "backlog": "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
+      "source": "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+      "previousOverlay": "BRIEFING/03.BUILD/0308_dual_98_executive_program.md",
+      "manifest": "dual-99-program.json",
+      "localEvidence": "docs/135_dual_99_local_execution_evidence_2026-08-20.md",
+      "stabilityEvidence": "docs/136_dual_99_skip-governance-20-runs-2026-08-20.md",
+      "mutationEvidence": "docs/137_dual_99_critical_mutation_evidence_2026-08-20.md",
+      "status": "ACTIVE_OVERLAY"
+    }
+  ],
   "documents": [
     {
       "path": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md",
@@ -38,6 +150,27 @@
       "role": "program",
       "status": "SUPERSEDED",
       "supersededBy": "BRIEFING/03.BUILD/0304_premium_enterprise_95_program.md"
+    },
+    {
+      "path": "BRIEFING/03.BUILD/0305_sub80_to_95_executive_plan.md",
+      "role": "program",
+      "status": "HISTORICAL",
+      "supersededBy": "BRIEFING/03.BUILD/0306_code_quality_95_executive_plan.md"
+    },
+    {
+      "path": "BRIEFING/03.BUILD/0309_dual_99_executive_program.md",
+      "role": "program",
+      "status": "ACTIVE_EXECUTION_OVERLAY"
+    },
+    {
+      "path": "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
+      "role": "roadmap",
+      "status": "ACTIVE_EXECUTION_OVERLAY"
+    },
+    {
+      "path": "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
+      "role": "backlog",
+      "status": "ACTIVE_EXECUTION_OVERLAY"
     }
   ]
 }

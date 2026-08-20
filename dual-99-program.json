@@ -1,0 +1,180 @@
+{
+  "programId": "CVG-DUAL-99",
+  "version": 1,
+  "status": "IN_PROGRESS",
+  "releaseDisposition": "PILOT_BLOCKED",
+  "sourceDocuments": [
+    "docs/133_dual_98_post_hardening_assessment_2026-08-16.md",
+    "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+    "docs/116_code_quality_audit_2026-08-16.md",
+    "BRIEFING/03.BUILD/0309_dual_99_executive_program.md",
+    "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
+    "BRIEFING/04.AUDIT/0519_dual_99_backlog.md"
+  ],
+  "tracks": [
+    {
+      "id": "MATURITY",
+      "source": "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+      "baseline": 83.24,
+      "targetScore": 99,
+      "items": [
+        { "item": 1, "baselineScore": 90 },
+        { "item": 2, "baselineScore": 95 },
+        { "item": 3, "baselineScore": 72 },
+        { "item": 4, "baselineScore": 92 },
+        { "item": 5, "baselineScore": 88 },
+        { "item": 6, "baselineScore": 90 },
+        { "item": 7, "baselineScore": 82 },
+        { "item": 8, "baselineScore": 86 },
+        { "item": 9, "baselineScore": 75 },
+        { "item": 10, "baselineScore": 68 },
+        { "item": 11, "baselineScore": 88 },
+        { "item": 12, "baselineScore": 78 },
+        { "item": 13, "baselineScore": 78 },
+        { "item": 14, "baselineScore": 93 },
+        { "item": 15, "baselineScore": 86 },
+        { "item": 16, "baselineScore": 65 }
+      ]
+    },
+    {
+      "id": "CODE_QUALITY",
+      "source": "docs/116_code_quality_audit_2026-08-16.md",
+      "baseline": 64.2,
+      "targetScore": 99,
+      "items": [
+        { "item": 1, "baselineScore": 78 },
+        { "item": 2, "baselineScore": 75 },
+        { "item": 3, "baselineScore": 85 },
+        { "item": 4, "baselineScore": 84 },
+        { "item": 5, "baselineScore": 52 },
+        { "item": 6, "baselineScore": 84 },
+        { "item": 7, "baselineScore": 86 },
+        { "item": 8, "baselineScore": 48 },
+        { "item": 9, "baselineScore": 70 },
+        { "item": 10, "baselineScore": 68 },
+        { "item": 11, "baselineScore": 65 },
+        { "item": 12, "baselineScore": 70 },
+        { "item": 13, "baselineScore": 46 },
+        { "item": 14, "baselineScore": 40 },
+        { "item": 15, "baselineScore": 47 },
+        { "item": 16, "baselineScore": 42 }
+      ]
+    }
+  ],
+  "criticalDomains": [
+    { "id": "C1", "targetScore": 99, "status": "OPEN" },
+    { "id": "C2", "targetScore": 99, "status": "OPEN" },
+    { "id": "C3", "targetScore": 99, "status": "OPEN" },
+    { "id": "C4", "targetScore": 99, "status": "OPEN" },
+    { "id": "C5", "targetScore": 99, "status": "OPEN" },
+    { "id": "C6", "targetScore": 99, "status": "OPEN" },
+    { "id": "C7", "targetScore": 99, "status": "OPEN" },
+    { "id": "C8", "targetScore": 99, "status": "OPEN" }
+  ],
+  "highFindings": [
+    {
+      "id": "RH01",
+      "sourceId": "D98-RH01",
+      "severity": "HIGH",
+      "status": "OPEN"
+    },
+    {
+      "id": "RH02",
+      "sourceId": "D98-RH02",
+      "severity": "HIGH",
+      "status": "OPEN"
+    },
+    {
+      "id": "RH03",
+      "sourceId": "D98-RH03",
+      "severity": "HIGH",
+      "status": "OPEN"
+    },
+    {
+      "id": "RH04",
+      "sourceId": "D98-RH04",
+      "severity": "HIGH",
+      "status": "OPEN"
+    },
+    {
+      "id": "RH05",
+      "sourceId": "D98-RH05",
+      "severity": "HIGH",
+      "status": "OPEN"
+    },
+    {
+      "id": "RH06",
+      "sourceId": "D98-RH06",
+      "severity": "HIGH",
+      "status": "OPEN"
+    }
+  ],
+  "traceability": {
+    "requiredRequirements": 145,
+    "completeChains": 0,
+    "localEvidenceRows": 145,
+    "status": "PASS_WITH_GAPS"
+  },
+  "gates": [
+    { "id": "G99-0", "status": "IN_PROGRESS" },
+    { "id": "G99-1", "status": "IN_PROGRESS" },
+    { "id": "G99-2", "status": "BLOCKED" },
+    { "id": "G99-3", "status": "WAITING_HUMAN_APPROVAL" },
+    { "id": "G99-4", "status": "IN_PROGRESS" },
+    { "id": "G99-5", "status": "WAITING_HUMAN_APPROVAL" },
+    { "id": "G99-6", "status": "IN_PROGRESS" },
+    { "id": "G99-7", "status": "BLOCKED" },
+    { "id": "G99-8", "status": "WAITING_HUMAN_APPROVAL" }
+  ],
+  "backlog": {
+    "path": "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
+    "taskIds": [
+      "B99-000",
+      "B99-001",
+      "B99-002",
+      "B99-003",
+      "B99-004",
+      "B99-101",
+      "B99-102",
+      "B99-103",
+      "B99-104",
+      "B99-105",
+      "B99-106",
+      "B99-107",
+      "B99-201",
+      "B99-202",
+      "B99-203",
+      "B99-204",
+      "B99-205",
+      "B99-301",
+      "B99-302",
+      "B99-303",
+      "B99-304",
+      "B99-305",
+      "B99-306",
+      "B99-307",
+      "B99-308",
+      "B99-401",
+      "B99-402",
+      "B99-403",
+      "B99-404",
+      "B99-501",
+      "B99-502",
+      "B99-503",
+      "B99-504",
+      "B99-505",
+      "B99-601",
+      "B99-602",
+      "B99-603",
+      "B99-604",
+      "B99-605",
+      "B99-606",
+      "B99-607",
+      "B99-701",
+      "B99-702",
+      "B99-703",
+      "B99-704",
+      "B99-705"
+    ]
+  }
+}

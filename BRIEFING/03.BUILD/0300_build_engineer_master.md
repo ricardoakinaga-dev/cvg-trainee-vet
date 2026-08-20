@@ -2,10 +2,10 @@
 
 **Projeto:** Sistema CVG de Treinamento Veterinário  
 **Fonte de verdade:** `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0190_spec_validation.md`  
-**Status:** `BUILD — PREMIUM ENTERPRISE 95 / E0 MOBILIZAÇÃO — WAITING_HUMAN_APPROVAL`
+**Status:** `BUILD — DUAL 95 / F0 VERDADE E CONTROLE — READY_FOR_NEXT_STEP`
 **Regra:** o código foi autorizado somente depois do fechamento documental 04–08 no gate 0391; cada fase seguinte ainda exige o respectivo critério de aceite.
 
-**Extensão vigente:** a baseline técnica deste master permanece válida; o programa de elevação da auditoria atual de 83/100 para >=95 em cada item está em `0304_premium_enterprise_95_program.md`, com roadmap 0492 e backlog 0493.
+**Extensão vigente:** a baseline técnica deste master permanece válida. As baselines independentes `0491` (`83,24/100`) e `docs/116` (`64,20/100`) são coordenadas, sem mistura de notas, pelo programa `0307_dual_95_executive_program.md`, roadmap `../04.AUDIT/0514_dual_95_roadmap.md` e backlog `../04.AUDIT/0515_dual_95_backlog.md`. O aceite final exige `32/32` itens ≥95 no mesmo RC.
 
 ## 1. Objetivo da construção
 

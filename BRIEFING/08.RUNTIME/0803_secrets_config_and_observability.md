@@ -36,3 +36,10 @@ Redaction bloqueia senha, token, cookie, API key, prompt, resposta IA, texto cl�
 `WEB_ORIGINS` é uma lista separada por vírgula de origens web autorizadas. A borda API exige origem/referer permitido ou contexto Fetch same-site para mutações com cookie de sessão. O rate limit atual é local ao processo, bounded e com `Retry-After`; health não é limitado. Em escala horizontal, substituir por contador compartilhado antes de liberar múltiplas réplicas.
 
 O item 12 materializou o exporter interno Prometheus, health/dependencies redigido, avaliação de SLO/alertas e o contrato operacional 0804. Exportação OpenTelemetry externa, retenção efetiva, dashboards provisionados e traces distribuídos continuam dependentes da configuração do ambiente operacional.
+
+No perfil HA local, o Prometheus permanece `65534:65534` e não lê diretamente o
+arquivo de segredo do host. O serviço one-shot
+`prometheus-secret-init` prepara um volume derivado `0440`, de propriedade do
+UID/GID do processo, com rede desabilitada e capacidades mínimas. A rotação
+autorizada deve executar novamente o helper antes de reiniciar o Prometheus;
+nenhum valor do token deve aparecer em log, Git ou evidência.

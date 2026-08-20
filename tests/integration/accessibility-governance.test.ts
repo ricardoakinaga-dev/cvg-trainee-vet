@@ -37,3 +37,19 @@ it("rejects missing automated evidence or an undocumented manual gap", () => {
     ]),
   );
 });
+
+it("rejects automated evidence paths that escape the repository root", () => {
+  const snapshot = loadAccessibilityGovernanceSnapshot();
+  const invalidSnapshot = {
+    ...snapshot,
+    automatedEvidence: snapshot.automatedEvidence.map((evidence, index) =>
+      index === 0
+        ? { ...evidence, testPath: "../../outside.test.ts" }
+        : evidence,
+    ),
+  };
+
+  expect(validateAccessibilityGovernanceSnapshot(invalidSnapshot)).toContain(
+    "automated evidence A11Y-KEYBOARD-001 testPath must remain inside repository",
+  );
+});

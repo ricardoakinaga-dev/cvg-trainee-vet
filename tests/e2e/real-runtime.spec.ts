@@ -15,16 +15,26 @@ const fixtureFile =
   process.env.CVG_REAL_E2E_FIXTURE_FILE ?? "/tmp/cvg-real-e2e-fixture.json";
 
 test("browser reaches the real API through the web proxy", async ({ page }) => {
+  const fixture = JSON.parse(
+    await readFile(fixtureFile, "utf8"),
+  ) as RealFixture;
+  const expectedBaseUrl = new URL(
+    process.env.BASE_URL ?? "http://127.0.0.1:3100",
+  ).origin;
   const dependencyResponse = page.waitForResponse(
     (response) =>
       response.url().endsWith("/health/dependencies") &&
       response.request().resourceType() === "fetch",
   );
 
+  await page.goto("/");
+  await page.getByLabel("E-mail profissional").fill(fixture.adminLogin);
+  await page.getByLabel("Senha").fill(fixture.adminPassword);
+  await page.getByRole("button", { name: "Entrar" }).click();
   await page.goto("/operations");
   const response = await dependencyResponse;
 
-  expect(response.url()).toBe("http://127.0.0.1:3100/health/dependencies");
+  expect(response.url()).toBe(`${expectedBaseUrl}/health/dependencies`);
   expect(response.status()).toBeGreaterThanOrEqual(200);
   expect(response.status()).toBeLessThan(300);
   await expect(page.getByTestId("operations-ready")).toBeVisible();
