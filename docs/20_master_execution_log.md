@@ -10754,3 +10754,41 @@ release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
 `IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
 runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O
 programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T18:36:22-03:00 — DUAL99-B99-101-CAT-FILE-RESPONSE-IDENTITY
+
+### TIMESTAMP / TASK
+
+2026-08-20 18:36:22 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — binding da identidade das respostas de `git cat-file --batch`.
+
+### ACTION / RESULT
+
+RED reproduziu que uma resposta `blob` com header estruturalmente válido, mas
+com object ID ausente do mapa de objetos solicitado, era tratada como resposta
+sem path e silenciosamente ignorada; o corpo sintético com atribuição sensível
+não produzia finding. GREEN passou a validar cada object ID contra o mapa
+solicitado antes de consumir ou escanear o corpo, emitindo
+`git-object-unreadable`, encerrando o lote inesperado e sem expor o corpo.
+Respostas solicitadas válidas, framing estrutural e `missing/error` permanecem
+preservados.
+
+O foco passou `27/27`; a cobertura passou `205/1121/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `798` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu todos os gates até `verify:secrets`, que falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `adc2b85` (`fix: reject unexpected git batch
+responses`) e enviados para `origin/agent/publish-production-hardening`; a
+evidência documental será reconciliada em commit separado. Nenhum segredo,
+PDF, dado real, provider, CI, produção, score, release, decisão clínica ou
+promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
+`0/145`, gates externos e reauditoria seguem abertos. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.

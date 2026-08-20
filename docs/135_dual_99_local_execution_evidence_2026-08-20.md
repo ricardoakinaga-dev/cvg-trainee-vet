@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T18:21:57-03:00`
-- última atualização: `2026-08-20T18:25:13-03:00`
+- corte: `2026-08-20T18:36:22-03:00`
+- última atualização: `2026-08-20T18:36:22-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `53b96d8` em
+- commit publicado: `adc2b85` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,53 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 38 — B99-101 / cat-file response identity binding — 2026-08-20T18:36:22-03:00
+
+### Barra congelada
+
+- vincular cada resposta de `git cat-file --batch` a um object ID presente no
+  mapa de objetos solicitado, antes de consumir ou escanear seu corpo;
+- provar que uma resposta `blob` válida para um object ID inesperado emite
+  `git-object-unreadable`, não expõe o corpo sintético e encerra o lote;
+- manter respostas solicitadas válidas, framing estrutural e
+  `missing/error`, sob RED→GREEN com formato/lint/typecheck/diff-check,
+  cobertura, hotspots e governanças verdes.
+
+### RED → GREEN
+
+O RED criou um mapa contendo somente um object ID solicitado e uma resposta
+`blob` sintética com outro ID de 40 hex, cujo corpo continha uma atribuição
+sensível. A implementação anterior derivava `path` como `undefined` e seguia
+sem finding, retornando scan limpo. O GREEN valida a identidade contra o mapa
+antes de consumir o corpo, emite `git-object-unreadable` para
+`history:<objectId>`, encerra o lote e não imprime o valor sintético.
+
+### Evidência
+
+- foco do scanner: `27/27`;
+- cobertura integral: `205` arquivos, `1.121` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- scanner em `798` linhas, `verify:hotspots` com `0` hotspots; lint, typecheck,
+  Prettier, audit, contratos `86/86`, worker `51/51`, migrações `33/33`,
+  migration safety, decisões `7/7`, mutation `7/7` e `git diff --check`: PASS;
+- `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou
+  fail-closed somente nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado;
+- código/teste commitados em `adc2b85` (`fix: reject unexpected git batch
+  responses`) e enviados para `origin/agent/publish-production-hardening`;
+  nenhum segredo, dado real, PDF, produção, score, release ou promoção de
+  piloto foi tocado.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A evidência documental será reconciliada em
+commit separado após a publicação inicial. Esta rodada não prova provider, CI,
+RC imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos
+ou reauditoria independente. O programa permanece `IN_PROGRESS /
+PILOT_BLOCKED`.
 
 ## Round 37 — B99-101 / rev-list path whitespace preservation — 2026-08-20T18:21:57-03:00
 

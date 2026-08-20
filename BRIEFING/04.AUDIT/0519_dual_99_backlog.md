@@ -137,6 +137,27 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T18:36:22-03:00 — B99-101 cat-file response identity
+
+- **RED/GREEN:** o RED reproduziu falso scan limpo para uma resposta `blob`
+  estruturalmente válida, porém com object ID ausente do mapa solicitado ao
+  `git cat-file --batch`; sem path associado, o corpo sensível era ignorado.
+  O GREEN vincula cada resposta ao mapa de objetos antes de consumir/scanear o
+  corpo, emite `git-object-unreadable` para resposta inesperada, encerra o
+  lote e não expõe o valor sintético; respostas solicitadas válidas,
+  `missing/error` e framing estrutural permanecem preservados;
+- **evidência:** foco `27/27`, cobertura `205/1121/21` em
+  `95,02/90,95/95,31/95,71`, scanner em `798` linhas, hotspots `0`, lint,
+  typecheck, formato, audit, contratos `86/86`, worker `51/51`, migrações
+  `33/33`, migration safety, decisões `7/7`, mutation `7/7` e diff-check
+  passaram; `pnpm verify` parou somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `adc2b85`; a evidência documental
+  será reconciliada em commit separado. Nenhum segredo, dado real, PDF,
+  rotação, provider, CI, produção, score, release, clínica, `0/145` ou piloto
+  foi tocado. B99-101 permanece `IN_PROGRESS` até secret manager/rotação/
+  autorização; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T18:21:57-03:00 — B99-101 rev-list path
 
 - **RED/GREEN:** o RED reproduziu falso scan limpo para um arquivo textual

@@ -198,6 +198,25 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 20. Checkpoint de identidade da resposta cat-file — 2026-08-20T18:36:22-03:00
+
+B99-101 recebeu RED/GREEN para vincular a identidade das respostas de
+`git cat-file --batch` ao mapa de objetos efetivamente solicitado. O RED
+reproduziu falso scan limpo quando uma resposta `blob` válida carregava um
+object ID inesperado: sem path associado, seu corpo sensível era ignorado. O
+GREEN valida a presença do ID no mapa antes de consumir/scanear o corpo, emite
+`git-object-unreadable`, encerra o lote inesperado e não expõe o valor;
+respostas solicitadas, framing estrutural e `missing/error` permanecem válidos.
+
+O foco passou `27/27`, a cobertura passou `205/1121/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `798` linhas e
+`verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
+worker, migrações, migration safety, decisões, mutation e diff-check passaram.
+Código/teste estão em `adc2b85`; a evidência documental será reconciliada em
+commit separado. O `pnpm verify` parou em `verify:secrets` somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`; B99-101 segue
+`IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 19. Checkpoint de path whitespace no rev-list do scanner — 2026-08-20T18:21:57-03:00
 
 B99-101 recebeu RED/GREEN para preservar o path exato produzido por
