@@ -18,39 +18,13 @@ const ignoredDirectories = new Set([
 
 const MAX_SCAN_BYTES = 2 * 1024 * 1024;
 
-// Tracked and security-shaped paths remain scanned.
-const ignoredBinaryAssetExtensions = new Set([
-  ".7z",
-  ".avi",
-  ".bmp",
-  ".class",
-  ".dll",
-  ".doc",
-  ".docx",
-  ".gif",
-  ".gz",
-  ".ico",
-  ".jpeg",
-  ".jpg",
-  ".mov",
-  ".mp3",
-  ".mp4",
-  ".ogg",
-  ".pdf",
-  ".png",
-  ".ppt",
-  ".pptx",
-  ".tar",
-  ".ttf",
-  ".wav",
-  ".webm",
-  ".webp",
-  ".woff",
-  ".woff2",
-  ".xls",
-  ".xlsx",
-  ".zip",
-]);
+// Asset paths are still enumerated so text content cannot bypass scanning by
+// using an asset extension; binary bytes remain outside text scanning.
+const ignoredBinaryAssetExtensions = new Set(
+  ".7z .avi .bmp .class .dll .doc .docx .gif .gz .ico .jpeg .jpg .mov .mp3 .mp4 .ogg .pdf .png .ppt .pptx .tar .ttf .wav .webm .webp .woff .woff2 .xls .xlsx .zip".split(
+    " ",
+  ),
+);
 
 const boundedSyntheticPlaceholders = new Set([
   "<synthetic>",
@@ -147,10 +121,6 @@ function isIgnoredBinaryAssetPath(path) {
     dot >= 0 &&
     ignoredBinaryAssetExtensions.has(basename.slice(dot).toLowerCase())
   );
-}
-
-function isScanCandidatePath(path) {
-  return !isIgnoredBinaryAssetPath(path);
 }
 
 function isSyntheticPlaceholder(value, path) {
@@ -530,14 +500,22 @@ async function walk(directory, root) {
       continue;
     }
     if (!entry.isFile()) continue;
-    const relativePath = relative(root, absolutePath).split("\\").join("/");
-    if (isScanCandidatePath(relativePath)) files.push(absolutePath);
+    files.push(absolutePath);
   }
   return files;
 }
 
 function unscannedFinding(path, rule, evidence) {
   return finding(path, 1, rule, evidence);
+}
+
+function decodeTextBuffer(buffer) {
+  if (buffer.includes(0)) return null;
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+  } catch {
+    return null;
+  }
 }
 
 function scanBuffer(buffer, path) {
@@ -547,12 +525,19 @@ function scanBuffer(buffer, path) {
   if (buffer.includes(0)) {
     return [unscannedFinding(path, "binary-file", "NUL byte")];
   }
-  try {
-    const content = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-    return scanText(content, path);
-  } catch {
-    return [unscannedFinding(path, "binary-file", "invalid UTF-8")];
+  const content = decodeTextBuffer(buffer);
+  return content === null
+    ? [unscannedFinding(path, "binary-file", "invalid UTF-8")]
+    : scanText(content, path);
+}
+
+function scanPathBuffer(buffer, path) {
+  if (isIgnoredBinaryAssetPath(path)) {
+    if (buffer.length > MAX_SCAN_BYTES) return [];
+    const content = decodeTextBuffer(buffer);
+    return content === null ? [] : scanText(content, path);
   }
+  return scanBuffer(buffer, path);
 }
 
 async function scanFile(file, path) {
@@ -561,12 +546,12 @@ async function scanFile(file, path) {
     if (metadata.isSymbolicLink()) {
       return [unscannedFinding(path, "unreadable-file", "symlink")];
     }
-    if (metadata.size > MAX_SCAN_BYTES) {
+    if (metadata.size > MAX_SCAN_BYTES && !isIgnoredBinaryAssetPath(path)) {
       return [
         unscannedFinding(path, "oversize-file", `${metadata.size} bytes`),
       ];
     }
-    return scanBuffer(await readFile(file), path);
+    return scanPathBuffer(await readFile(file), path);
   } catch {
     return [unscannedFinding(path, "unreadable-file", "workspace file")];
   }
@@ -593,9 +578,7 @@ async function git(root, args, options = {}) {
 
 async function stagedPaths(root) {
   const output = await git(root, ["ls-files", "--cached", "-z"]);
-  return output
-    .split("\0")
-    .filter((path) => path.length > 0 && isScanCandidatePath(path));
+  return output.split("\0").filter((path) => path.length > 0);
 }
 
 async function scanStaged(root) {
@@ -607,7 +590,7 @@ async function scanStaged(root) {
         encoding: "buffer",
         maxBuffer: MAX_SCAN_BYTES + 1,
       });
-      findings.push(...scanBuffer(Buffer.from(stdout), `staged:${path}`));
+      findings.push(...scanPathBuffer(Buffer.from(stdout), `staged:${path}`));
     } catch {
       findings.push(
         unscannedFinding(
@@ -633,7 +616,7 @@ function parseObjectList(output) {
     if (separator < 0) continue;
     const path = line.slice(separator + 1);
     if (path.length === 0) continue;
-    if (isScanCandidatePath(path)) objects.set(objectId, path);
+    objects.set(objectId, path);
   }
   return objects;
 }
@@ -698,7 +681,7 @@ function readBatchOutput(buffer, objects, source = "history") {
       addUnreadable(logicalPath, header);
       continue;
     }
-    if (size > MAX_SCAN_BYTES) {
+    if (size > MAX_SCAN_BYTES && !isIgnoredBinaryAssetPath(path ?? "")) {
       findings.push(
         unscannedFinding(logicalPath, "oversize-file", `${size} bytes`),
       );
@@ -716,7 +699,7 @@ function readBatchOutput(buffer, objects, source = "history") {
     }
     offset = bodyEnd + 1;
     if (path === undefined || size > MAX_SCAN_BYTES) continue;
-    findings.push(...scanBuffer(body, logicalPath));
+    findings.push(...scanPathBuffer(body, logicalPath));
   }
   return findings;
 }

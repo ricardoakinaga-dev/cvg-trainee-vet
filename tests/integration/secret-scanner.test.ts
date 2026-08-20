@@ -353,6 +353,93 @@ describe("secret scanner", () => {
     );
   });
 
+  it("scans text under binary-looking paths across all surfaces without exposing bytes", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-binary-extension-"),
+    );
+    temporaryDirectories.push(directory);
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    const marker = "SYNTHETIC_BINARY_EXTENSION_MARKER";
+    const worktreePath = "worktree.png";
+    const stagedPath = "staged.png";
+    const historyPath = "history.png";
+    const binaryPath = "binary.png";
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["config", "user.email", "synthetic@example.invalid"],
+      { cwd: directory },
+    );
+    await execFileAsync("git", ["config", "user.name", "Synthetic Test"], {
+      cwd: directory,
+    });
+    const textContent = `client_secret="${secret.repeat(4)}"\n`;
+    await writeFile(join(directory, worktreePath), textContent);
+    await writeFile(join(directory, stagedPath), textContent);
+    await writeFile(join(directory, historyPath), textContent);
+    await writeFile(
+      join(directory, binaryPath),
+      Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from(marker)]),
+    );
+
+    const worktreeFindings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: false,
+    });
+    expect(worktreeFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: worktreePath,
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(worktreeFindings)).not.toContain(marker);
+    expect(
+      worktreeFindings.some((finding) => finding.path === binaryPath),
+    ).toBe(false);
+
+    await execFileAsync(
+      "git",
+      ["add", "--", worktreePath, stagedPath, historyPath],
+      { cwd: directory },
+    );
+    const stagedFindings = await scanProject(directory, {
+      includeStaged: true,
+      includeHistory: false,
+    });
+    expect(stagedFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: `staged:${stagedPath}`,
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+
+    await execFileAsync("git", ["commit", "-qm", "synthetic png paths"], {
+      cwd: directory,
+    });
+    await Promise.all(
+      [worktreePath, stagedPath, historyPath].map((path) =>
+        rm(join(directory, path)),
+      ),
+    );
+    const historyFindings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: true,
+    });
+    expect(historyFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: `history:${historyPath}`,
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(historyFindings)).not.toContain(secret);
+  });
+
   it("preserves boundary whitespace in staged paths", async () => {
     const directory = await mkdtemp(join(tmpdir(), "cvg-secret-scanner-path-"));
     temporaryDirectories.push(directory);
@@ -441,17 +528,18 @@ describe("secret scanner", () => {
   it("rejects malformed rev-list object records instead of silently skipping them", () => {
     const structureObjectId = "a".repeat(40);
     const contentObjectId = "b".repeat(40);
-    const ignoredAssetObjectId = "c".repeat(40);
+    const binaryAssetObjectId = "c".repeat(40);
     const objects = parseObjectList(
       [
         structureObjectId,
         `${contentObjectId} src/config.ts`,
-        `${ignoredAssetObjectId} public/icon.png`,
+        `${binaryAssetObjectId} public/icon.png`,
       ].join("\n"),
     );
 
     expect([...objects.entries()]).toEqual([
       [contentObjectId, "src/config.ts"],
+      [binaryAssetObjectId, "public/icon.png"],
     ]);
     expect(() => parseObjectList("not-a-valid-rev-list-record\n")).toThrow(
       /malformed git object list/iu,
