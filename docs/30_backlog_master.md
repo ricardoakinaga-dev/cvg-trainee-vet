@@ -101,6 +101,26 @@ abertos. B99-203 está `READY_FOR_NEXT_STEP` localmente, programa
 `IN_PROGRESS/PILOT_BLOCKED`, código publicado em `e913d23`; próxima ação
 local: B99-204.
 
+**Atualização Dual99 — 2026-08-20T12:50:47-03:00:** B99-204 fechou
+localmente a correlação e redaction de observabilidade: logs e spans carregam
+IDs técnicos sanitizados, API e worker compartilham trace ID derivado da
+correlation, OTLP não exporta payload, Tempo fixa retenção local de `336h` e o
+verificador live encontrou trace sintético persistido. O Alertmanager local
+passou firing→silence acknowledgement→resolve com alerta sintético único e
+sem alerta ativo ao final. Focos de observabilidade, worker, API, governança e
+ciclo passaram; a retenção Prometheus local é `15d`. O runtime HA ativo ainda
+monta configuração/SHA anterior, e notificação externa, RBAC/on-call,
+retenção/acesso de fornecedor, PostgreSQL live, RC, secret manager, clínica,
+`0/145` e reauditoria seguem abertos. B99-204 está `READY_FOR_NEXT_STEP`
+localmente; programa `IN_PROGRESS/PILOT_BLOCKED`.
+
+**Publicação B99-204 — 2026-08-20T13:10:31-03:00:** código, testes e
+verificadores foram commitados como
+`12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac` (`feat: verify observability
+correlation lifecycle`) e enviados para `origin/agent/publish-production-hardening`.
+O status permanece `IN_PROGRESS/PILOT_BLOCKED`; gaps externos, runtime HA
+stale, PostgreSQL live, RC, clínica, `0/145` e reauditoria continuam abertos.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;

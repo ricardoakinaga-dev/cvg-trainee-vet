@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-203 fechou localmente o gate de Prometheus: 14 rules via API, targets API/worker/Alertmanager saudáveis, watchdog firing e cenários down/absent/desconexão validados por `promtool`; B99-202/201 e B99-107–105 permanecem prontos localmente; cobertura `203/1072/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-2 local hardening; B99-204 fechou localmente a correlação redigida API→outbox→worker, spans OTLP/Tempo persistidos com retenção local explícita de 14 dias e ciclo sintético fire→ack→resolve no Alertmanager; B99-203/202/201 e B99-107–105 permanecem prontos localmente; a suíte focal B99-204 passou `51/51`; o HA ativo continua no SHA anterior e a retenção externa, notificação externa e acesso/RBAC operacional permanecem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-203 sob RED/GREEN: criou fixture `prometheus-alerts.test.yml`, `ops:verify-prometheus-rules` e `ops:verify-prometheus-runtime`; `promtool` passou sintaxe com `14` rules e cinco cenários de loss-of-signal; a API runtime passou `14/14`, targets `2` API + `2` worker + `1` Alertmanager, Alertmanager ativo e watchdog `firing`; cobertura `203/1072/21`, floors `95,03/90,99/95,32/95,71`, build `12/12` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
-- next_action: executar B99-204 localmente para traces/logs/metrics e, em paralelo, obter autoridade/ambiente para notify→ack→resolve externo, probes consecutivos A/B no runtime real, prova PostgreSQL de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-204 sob RED/GREEN, repetiu os gates no worktree e publicou o código no commit `12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac`; logs passaram a carregar `traceId` validado, traces API/worker carregam request/correlation IDs redigidos, OTLP exporta somente atributos técnicos, e o worker emite spans correlacionáveis por hash técnico; `tempo.yaml` passou a fixar `backend_worker.compaction.block_retention: 336h`; `ops:verify-durable-traces` passou estático e live com trace sintético persistido; o verificador sintético do Alertmanager observou firing, acknowledgement por silence e resolve com limpeza; focos passaram `51/51`, cobertura global passou `204/1077/21` com floors `95/90,87/95,29/95,69`; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
+- next_action: obter autoridade/ambiente para retenção/RBAC/notificação externos, probes consecutivos A/B no runtime real, prova PostgreSQL de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T12:25:25-03:00
+- last_update: 2026-08-20T13:10:31-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 
@@ -4313,3 +4313,33 @@ independente continuam pendentes. B99-203 está `READY_FOR_NEXT_STEP` localmente
 o programa permanece `IN_PROGRESS / PILOT_BLOCKED`. O código foi publicado no
 commit `e913d23` (`feat: verify prometheus runtime observability`); próxima ação
 local: B99-204.
+
+## 2026-08-20T12:50:47-03:00 — DUAL99-B99-204-OBSERVABILITY-CORRELATION
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu que `LogRecord` não carregava `traceId`, que spans OTLP não
+  exportavam `requestId`/`correlationId` técnicos e que a retenção do Tempo
+  permanecia implícita apesar do contrato exigir retenção observável;
+- GREEN adicionou sanitização de trace/correlation IDs, derivação determinística
+  de trace ID técnico por correlação, spans API e worker correlacionáveis e
+  atributos OTLP restritos a rota/status/outcome/IDs técnicos, sem payload;
+- `tempo.yaml` fixa `backend_worker.compaction.block_retention: 336h`,
+  `ops:verify-durable-traces` validou a configuração pinada e uma prova live
+  inseriu somente trace sintético no collector e o encontrou no Tempo;
+- `scripts/verify-alertmanager-lifecycle.mjs` e o foco de integração observam
+  fire, acknowledgement por silence e resolve, e a execução live confirmou os
+  três estados sem deixar alerta sintético ativo;
+- o worker passou a emitir span técnico por evento processado/falho, mantendo
+  métricas agregadas e redaction por allowlist.
+
+### LIMITES / STATUS / NEXT
+
+Os focos B99-204 passaram localmente; a retenção Prometheus local continua em
+15 dias e a retenção do Tempo em 14 dias, mas o container HA ativo ainda monta
+o SHA/configuração anterior porque não houve reload/redeploy. A prova de
+acknowledgement foi interna ao Alertmanager local; não prova destino externo,
+on-call, RBAC, retenção externa ou acesso de fornecedor. `verify:secrets` segue
+fail-closed apenas nos quatro valores redigidos de `infra/production/.env.local`.
+B99-204 permanece `READY_FOR_NEXT_STEP` localmente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.

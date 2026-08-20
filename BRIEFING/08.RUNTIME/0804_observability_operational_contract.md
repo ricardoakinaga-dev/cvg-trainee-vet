@@ -56,12 +56,23 @@ Não há ranking de veterinários nem métrica punitiva.
 
 ## Correlação e limites de trace
 
-request_id e correlation_id são validados na borda, propagados ao worker quando presentes e aparecem somente em logs técnicos. A correlação local API→outbox→worker está verificada. Exportação OpenTelemetry, spans distribuídos entre processos e retenção/acesso no fornecedor de telemetria ainda dependem da configuração de homologação/produção e permanecem gap explícito.
+request_id, correlation_id e traceId são validados na borda e aparecem somente
+em logs/traces técnicos. Quando não há `traceparent` externo, o trace ID é
+derivado de forma determinística do correlation ID sanitizado, permitindo
+correlacionar API→outbox→worker sem exportar conteúdo. A API registra span de
+rota e o worker registra span técnico por evento; a correlação local, redaction
+e exportação OTLP sem payload foram verificadas. Spans distribuídos com
+traceparent externo, retenção/acesso no fornecedor e notificação externa ainda
+dependem do ambiente de homologação/produção e permanecem gaps explícitos.
 
 ## Retenção e acesso
 
 - Dados educacionais seguem a política aprovada de vínculo + 2 anos, com eliminação/anonimização posterior conforme obrigação aplicável.
 - Logs operacionais não são fonte de auditoria de domínio; o collector deve aplicar retenção mínima necessária e acesso por papel de operação, sem retenção de payload bruto.
+- No perfil HA local, Prometheus mantém retenção declarada de 15 dias e Tempo
+  local mantém `backend_worker.compaction.block_retention: 336h` (14 dias);
+  retenção externa, RBAC e acesso do fornecedor exigem configuração e prova
+  autorizadas.
 - Auditoria de domínio é append-only, metadata-only e permanece sob autorização server-side/RLS.
 
 ## Runbooks exercitados
@@ -71,6 +82,7 @@ request_id e correlation_id são validados na borda, propagados ao worker quando
 | health/readiness/dependencies | tests/integration/api-health.test.ts e apps/api/src/server.test.ts | PostgreSQL/Qdrant UP live; degradação redigida em teste HTTP |
 | exportação e redaction | apps/api/src/http.test.ts e packages/observability/src/observability.test.ts | auditor autorizado recebe métrica; participante recebe 401/403; campos proibidos não aparecem |
 | scrape, rules e Alertmanager HA | `scripts/verify-ha-topology.mjs`, `scripts/verify-prometheus-rules.mjs`, `scripts/verify-prometheus-runtime.mjs`, `tests/integration/production-edge-contract.test.ts` e `docs/135` | arquivo versionado contém 14 rules; `promtool` valida sintaxe e cinco cenários down/absent/desconexão; o Prometheus local expõe 14/14 `health=ok`, cinco targets obrigatórios `up`, Alertmanager conectado e watchdog `firing`; notify→ack→resolve externo e dead-man externo permanecem `NOT_EXECUTED` |
+| correlação, redaction e ciclo de alerta | `packages/observability/src/observability.test.ts`, `apps/api/src/server.test.ts`, `apps/worker/src/loop.test.ts`, `scripts/verify-durable-traces.mjs`, `scripts/verify-alertmanager-lifecycle.mjs` e `tests/integration/alertmanager-lifecycle.test.ts` | IDs técnicos correlacionam logs/spans API→worker sem payload; trace sintético foi encontrado no Tempo; fire→silence acknowledgement→resolve interno passou; destino externo, on-call, RBAC e retenção de fornecedor permanecem `NOT_EXECUTED` |
 | SLO/alertas | packages/observability/src/operations.test.ts | PASS, BREACHED, NO_DATA, dependência crítica e degradação cobertos |
 | backup/restore | scripts/verify-postgres-restore.mjs e tests/integration/postgres-restore.test.ts | marcador sintético restaurado em banco descartável isolado |
 | Qdrant rebuild/reconcile | tests/integration/worker-qdrant-live.test.ts e pnpm reconcile:qdrant | fonte PostgreSQL, contadores técnicos, replay idempotente e remoção de órfão |
@@ -81,7 +93,7 @@ O teste de restauração usa marcador sintético, `pg_dump` custom, `pg_restore`
 
 ## Gaps que continuam bloqueando release
 
-- collector/OTel, dashboards e retenção precisam ser configurados e testados no ambiente operacional real;
+- collector/OTel, dashboards, RBAC e retenção externa precisam ser configurados e testados no ambiente operacional real; o HA atualmente executado ainda monta o SHA/configuração anterior;
 - restart/crash de processo, carga, múltiplas réplicas e failover ainda não foram medidos;
 - provider produtivo de embedding/IA, navegador contra API real, conteúdo clínico aprovado e commit rastreável continuam gates independentes;
 - RPO/RTO medidos localmente não autorizam piloto ou publicação clínica.

@@ -10113,3 +10113,47 @@ O código e os testes foram commitados como `e913d23` (`feat: verify prometheus
 runtime observability`) e enviados para
 `origin/agent/publish-production-hardening`. A próxima ação local é B99-204
 (traces/logs/metrics).
+
+## 2026-08-20T12:50:47-03:00 — DUAL99-B99-204-OBSERVABILITY-CORRELATION
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 F99-2 / worker,
+observabilidade e dados derivados / B99-204.
+
+### RED / GREEN / EVIDÊNCIA
+
+- RED reproduziu ausência de `traceId` nos logs, ausência de IDs técnicos nos
+  spans OTLP e retenção do Tempo sem parâmetro versionado;
+- GREEN adicionou IDs sanitizados em logs e spans, derivação determinística de
+  trace ID por correlation ID, spans técnicos de eventos do worker e atributos
+  OTLP sem payload; `tempo.yaml` agora fixa `backend_worker.compaction` em
+  `336h` e o comando estático tornou-se parte de `pnpm verify`;
+- `ops:verify-durable-traces` passou sintaxe pinada e prova live com trace
+  sintético encontrado no Tempo; `ops:verify-alertmanager-lifecycle` passou a
+  prova live sintética de firing → silence acknowledgement → resolve, com
+  limpeza e nenhum alerta sintético ativo;
+- focos de observabilidade, API, worker, governança e ciclo do Alertmanager
+  passaram localmente, sem conteúdo clínico, payload, segredo ou dado real.
+
+### LIMITES / STATUS / NEXT
+
+A retenção local observada é 15 dias para Prometheus e 14 dias para Tempo; o
+container HA ativo ainda monta o SHA/configuração anterior e não foi
+reiniciado/recarregado. O ciclo de acknowledgement é interno ao Alertmanager;
+notificação externa, on-call, RBAC/acesso, retenção de fornecedor, PostgreSQL
+live, RC, clínica, `0/145`, secret manager e reauditoria permanecem pendentes.
+B99-204 está `READY_FOR_NEXT_STEP` localmente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`. Próxima ação: revisão, gates completos e
+publicação do commit desta rodada.
+
+## 2026-08-20T13:10:31-03:00 — DUAL99-B99-204-PUBLISH
+
+O código, testes e verificadores de B99-204 foram commitados como
+`12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac` (`feat: verify observability
+correlation lifecycle`) e enviados para
+`origin/agent/publish-production-hardening`. O worktree continua preservando
+`.gauntlet/` local não rastreado. A publicação não promove evidência local a
+notificação externa, RBAC/retenção de fornecedor, PostgreSQL live, RC,
+clínica, `0/145` ou reauditoria independente; status permanece
+`IN_PROGRESS / PILOT_BLOCKED`.

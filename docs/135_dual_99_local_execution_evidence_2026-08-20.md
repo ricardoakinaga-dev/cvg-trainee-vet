@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T12:25:25-03:00`
-- última atualização: `2026-08-20T12:25:25-03:00`
+- corte: `2026-08-20T13:10:31-03:00`
+- última atualização: `2026-08-20T13:10:31-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `e913d23` em
+- commit publicado: `12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -63,6 +63,11 @@
   Prometheus, fixture `promtool` e comandos operacionais; o source versionado
   contém 14 rules, e a execução local confirmou rules saudáveis, targets A/B,
   Alertmanager conectado e watchdog firing sem alterar o HA.
+- B99-204: logs e spans passaram a compartilhar IDs técnicos sanitizados, o
+  worker emite spans correlacionáveis por evento, OTLP não carrega payload,
+  Tempo local tem retenção explícita de 14 dias e os verificadores live
+  confirmaram persistência de trace sintético e o ciclo interno sintético
+  fire→ack→resolve do Alertmanager.
 
 ## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
 
@@ -401,6 +406,60 @@ para `127.0.0.1:3101` não constituem evidência de API/DB/HA real.
 - limite: rotação/concurrency PostgreSQL live, RC/proveniência, revisão clínica,
   CI/release, reauditoria e gates externos continuam sem prova autorizada. B99-104
   permanece `IN_PROGRESS` e o release `PILOT_BLOCKED`.
+
+## Round 22 — B99-204 / correlation, redaction, retention and alert lifecycle — 2026-08-20T12:50:47-03:00
+
+### RED → GREEN
+
+- RED reproduziu que o logger não carregava `traceId`, que o payload OTLP não
+  carregava `requestId`/`correlationId` técnicos e que o Tempo local dependia do
+  default de retenção em vez de uma configuração versionada;
+- GREEN adicionou validação de trace/correlation IDs, derivação determinística
+  de trace ID técnico por correlation ID, logs e spans API correlacionáveis e
+  spans técnicos por evento no worker, sempre sem payload e com allowlist;
+- `infra/observability/tempo.yaml` agora fixa
+  `backend_worker.compaction.block_retention: 336h`; a imagem pinada passou
+  `-config.verify`, e `pnpm verify` passou a executar o gate estático de traces;
+- `scripts/verify-alertmanager-lifecycle.mjs` usa somente alerta/silence
+  sintéticos, valida firing → acknowledgement → resolve e limpa o probe.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- focos de observabilidade, API, worker, governança e Alertmanager passaram
+  localmente; o foco direto inicial passou `34/34` e a repetição transversal
+  final passou `51/51`;
+- `pnpm ops:verify-durable-traces` passou em modo estático e live: collector
+  aceitou trace sintético e Tempo o devolveu pelo trace ID, sem restart;
+- `CVG_VERIFY_ALERTMANAGER_LIFECYCLE=true ... pnpm ops:verify-alertmanager-lifecycle`
+  passou com `firing`, `acknowledged` e `resolved` observados; consulta final
+  não encontrou o alerta sintético ativo;
+- `pnpm test:coverage` passou `204` arquivos, `1.077` testes e `21` testes
+  guardados, com `95,00%` statements, `90,87%` branches, `95,29%`
+  functions e `95,69%` lines; build com `CVG_API_INTERNAL_URL` passou
+  `12/12` workspaces, e typecheck, lint, formato, hotspots, documentação,
+  traceability, Dual99, mutation dirigida `7/7` e demais gates locais passaram;
+- `traceId`/correlation IDs aparecem apenas como identificadores técnicos, e
+  os testes confirmam que resposta clínica, payload e identificadores de
+  participante não chegam ao log/OTLP.
+
+### LIMITES / STATUS / NEXT
+
+A retenção local declarada é Prometheus `15d` e Tempo `336h`; o container HA
+ativo ainda monta a configuração/SHA anterior e não foi reiniciado. O ciclo de
+acknowledgement validado é interno ao Alertmanager; notificação externa,
+on-call, RBAC, retenção/acesso do fornecedor, dead-man externo, PostgreSQL live,
+RC, secret manager, clínica, `0/145` e reauditoria continuam sem evidência
+autorizada. B99-204 está `READY_FOR_NEXT_STEP` localmente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+### PUBLICAÇÃO
+
+O código e os testes B99-204 foram commitados como
+`12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac` (`feat: verify observability
+correlation lifecycle`) e enviados para
+`origin/agent/publish-production-hardening`. A publicação não promove a
+evidência local para notificação externa, RBAC/retenção de fornecedor,
+PostgreSQL live, RC, clínica, `0/145` ou reauditoria independente.
 
 ## Gaps que permanecem abertos
 

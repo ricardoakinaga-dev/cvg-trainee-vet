@@ -382,6 +382,34 @@
   (`feat: verify prometheus runtime observability`) em
   `origin/agent/publish-production-hardening`. Próxima ação local: B99-204.
 
+## Atualização de execução — 2026-08-20T12:50:47-03:00 — B99-204
+
+- **RED/GREEN:** o RED reproduziu que logs não carregavam `traceId`, spans OTLP
+  não carregavam os IDs técnicos de request/correlation e a retenção local do
+  Tempo não estava explicitamente versionada; o GREEN adicionou sanitização,
+  correlação determinística por ID técnico, spans API/worker, atributos OTLP
+  sem payload, retenção Tempo `336h` e o verificador de ciclo Alertmanager;
+- **evidência:** os focos de observabilidade, worker, API, governança e ciclo
+  Alertmanager passaram; `ops:verify-durable-traces` passou configuração pinada
+  e live com trace sintético no Tempo; o ciclo live sintético observou firing,
+  acknowledgement por silence e resolve, sem alerta sintético ativo ao final;
+  `pnpm verify` agora inclui a checagem estática de retenção do Tempo;
+- **limite/status:** Prometheus local mantém retenção declarada de 15 dias e
+  Tempo de 14 dias, mas o HA ativo continua no SHA/configuração anterior, sem
+  reload/redeploy. O ciclo de ack é interno ao Alertmanager e não prova
+  notificação externa, on-call, RBAC, retenção/acesso de fornecedor ou dead-man
+  externo. PostgreSQL live, RC, secret manager, clínica, `0/145` e reauditoria
+  continuam pendentes. B99-204 está `READY_FOR_NEXT_STEP` localmente; o
+  programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+### Publicação — 2026-08-20T13:10:31-03:00
+
+O código, testes e verificadores de B99-204 foram commitados como
+`12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac` (`feat: verify observability
+correlation lifecycle`) e enviados para
+`origin/agent/publish-production-hardening`. A publicação não fecha os gates
+externos nem altera a disposição `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,
