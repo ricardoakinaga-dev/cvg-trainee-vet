@@ -6,11 +6,35 @@ import {
   ACTIVE_HA_FIXTURE_SERVICE,
   buildActiveHaComposeArgs,
   buildActiveHaFixtureUrl,
+  buildActiveHaPlaywrightArgs,
   buildActiveHaPlaywrightEnvironment,
   buildActiveHaReadinessUrl,
+  resolveActiveHaBrowsers,
 } from "../../scripts/active-ha-e2e.mjs";
 
 describe("active HA E2E orchestration", () => {
+  it("normalizes the requested browser matrix for isolated fixture runs", () => {
+    expect(
+      resolveActiveHaBrowsers({
+        CVG_E2E_BROWSERS: "firefox,chromium,firefox",
+      }),
+    ).toEqual(["firefox", "chromium"]);
+    expect(resolveActiveHaBrowsers({})).toEqual(["chromium"]);
+    expect(() =>
+      resolveActiveHaBrowsers({ CVG_E2E_BROWSERS: "chromium,unknown" }),
+    ).toThrow("CVG_E2E_BROWSERS contains unsupported projects: unknown");
+  });
+
+  it("runs one Playwright project per fresh fixture lifecycle", () => {
+    expect(buildActiveHaPlaywrightArgs("firefox")).toEqual([
+      "exec",
+      "playwright",
+      "test",
+      "tests/e2e/real-runtime.spec.ts",
+      "--project=firefox",
+    ]);
+  });
+
   it("starts only the isolated fixture service through the HA compose project", () => {
     const args = buildActiveHaComposeArgs({
       composeFile: "/workspace/infra/production/docker-compose.ha.yml",

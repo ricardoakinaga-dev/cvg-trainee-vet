@@ -5,8 +5,44 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 export const ACTIVE_HA_FIXTURE_SERVICE = "real-e2e-fixture";
+export const ACTIVE_HA_BROWSER_PROJECTS = Object.freeze([
+  "chromium",
+  "firefox",
+  "webkit",
+  "mobile-chromium",
+]);
 const DEFAULT_FIXTURE_FILE_NAME = "cvg-real-e2e-fixture.json";
 const DEFAULT_FIXTURE_PORT = 3102;
+
+export function resolveActiveHaBrowsers(environment = process.env) {
+  const requested = environment.CVG_E2E_BROWSERS;
+  const names =
+    requested === undefined || requested.trim().length === 0
+      ? ["chromium"]
+      : requested.split(",").map((value) => value.trim());
+  const invalid = names.filter(
+    (name) => !ACTIVE_HA_BROWSER_PROJECTS.includes(name),
+  );
+  if (invalid.length > 0) {
+    throw new Error(
+      `CVG_E2E_BROWSERS contains unsupported projects: ${invalid.join(", ")}`,
+    );
+  }
+  return [...new Set(names)];
+}
+
+export function buildActiveHaPlaywrightArgs(browser) {
+  if (!ACTIVE_HA_BROWSER_PROJECTS.includes(browser)) {
+    throw new Error(`active HA E2E browser is unsupported: ${browser}`);
+  }
+  return [
+    "exec",
+    "playwright",
+    "test",
+    "tests/e2e/real-runtime.spec.ts",
+    `--project=${browser}`,
+  ];
+}
 
 export function buildActiveHaReadinessUrl(baseUrl) {
   return `${assertLocalBaseUrl(baseUrl)}/health/ready`;
@@ -213,19 +249,16 @@ async function runActiveHaPlaywright({
   projectRoot,
   baseUrl,
   hostFixtureFile,
+  browser,
 }) {
-  const playwright = await run(
-    "pnpm",
-    ["exec", "playwright", "test", "tests/e2e/real-runtime.spec.ts"],
-    {
-      cwd: projectRoot,
-      env: buildActiveHaPlaywrightEnvironment({
-        baseUrl,
-        fixtureFile: hostFixtureFile,
-        inherited: process.env,
-      }),
-    },
-  );
+  const playwright = await run("pnpm", buildActiveHaPlaywrightArgs(browser), {
+    cwd: projectRoot,
+    env: buildActiveHaPlaywrightEnvironment({
+      baseUrl,
+      fixtureFile: hostFixtureFile,
+      inherited: { ...process.env, CVG_E2E_BROWSERS: browser },
+    }),
+  });
   return playwright.code;
 }
 
@@ -304,14 +337,15 @@ async function teardownActiveHaFixture({
   return finalTestCode;
 }
 
-async function main() {
-  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-  const configuration = resolveActiveHaConfiguration(projectRoot);
-  const tempDirectory = await mkdtemp(join(tmpdir(), "cvg-active-ha-e2e-"));
-  const hostFixtureFile = join(tempDirectory, DEFAULT_FIXTURE_FILE_NAME);
+async function runIsolatedActiveHaBrowser({
+  projectRoot,
+  configuration,
+  hostFixtureFile,
+  browser,
+}) {
   let fixtureContainerId;
   let testCode = 1;
-
+  let caughtError;
   try {
     fixtureContainerId = await startActiveHaFixture({
       projectRoot,
@@ -326,7 +360,10 @@ async function main() {
       projectRoot,
       baseUrl: configuration.baseUrl,
       hostFixtureFile,
+      browser,
     });
+  } catch (error) {
+    caughtError = error;
   } finally {
     testCode = await teardownActiveHaFixture({
       projectRoot,
@@ -335,6 +372,30 @@ async function main() {
       fixtureContainerId,
       testCode,
     });
+  }
+  if (caughtError !== undefined) throw caughtError;
+  return testCode;
+}
+
+async function main() {
+  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const configuration = resolveActiveHaConfiguration(projectRoot);
+  const browsers = resolveActiveHaBrowsers();
+  const tempDirectory = await mkdtemp(join(tmpdir(), "cvg-active-ha-e2e-"));
+  const hostFixtureFile = join(tempDirectory, DEFAULT_FIXTURE_FILE_NAME);
+  let testCode = 0;
+
+  try {
+    for (const browser of browsers) {
+      const browserCode = await runIsolatedActiveHaBrowser({
+        projectRoot,
+        configuration,
+        hostFixtureFile,
+        browser,
+      });
+      if (testCode === 0 && browserCode !== 0) testCode = browserCode;
+    }
+  } finally {
     await rm(tempDirectory, { recursive: true, force: true });
   }
 
