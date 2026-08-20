@@ -352,6 +352,47 @@ describe("secret scanner", () => {
     );
   });
 
+  it("preserves boundary whitespace in staged paths", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "cvg-secret-scanner-path-"));
+    temporaryDirectories.push(directory);
+    const paddedPath = " .env.local ";
+    const trimmedPath = ".env.local";
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["config", "user.email", "synthetic@example.invalid"],
+      { cwd: directory },
+    );
+    await execFileAsync("git", ["config", "user.name", "Synthetic Test"], {
+      cwd: directory,
+    });
+    await writeFile(
+      join(directory, paddedPath),
+      `API_TOKEN="${secret.repeat(4)}"\n`,
+    );
+    await writeFile(join(directory, trimmedPath), 'API_TOKEN="<redacted>"\n');
+    await execFileAsync("git", ["add", "--", paddedPath, trimmedPath], {
+      cwd: directory,
+    });
+    await rm(join(directory, paddedPath));
+
+    const findings = await scanProject(directory, {
+      includeStaged: true,
+      includeHistory: false,
+    });
+
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: `staged:${paddedPath}`,
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
   it("rejects malformed rev-list object records instead of silently skipping them", () => {
     const structureObjectId = "a".repeat(40);
     const contentObjectId = "b".repeat(40);

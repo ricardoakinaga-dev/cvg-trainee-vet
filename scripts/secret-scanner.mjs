@@ -595,7 +595,6 @@ async function stagedPaths(root) {
   const output = await git(root, ["ls-files", "--cached", "-z"]);
   return output
     .split("\0")
-    .map((path) => path.trim())
     .filter((path) => path.length > 0 && isScanCandidatePath(path));
 }
 
