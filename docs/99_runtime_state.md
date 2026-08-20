@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-307 endureceu o gate de compatibilidade de migrations e comprovou aplicação `33/33` + restore isolado `2/2`; B99-205/204/203/202/201 e B99-107–105 permanecem prontos localmente; B99-308 é a próxima frente local; o HA ativo continua no SHA anterior e os gates externos permanecem sem prova
+- current_task: F99-2 local hardening; B99-308 fechou localmente o inventário executável de API, contratos, authz, erros, telemetria e negativos; o HA ativo continua no SHA anterior e os gates externos permanecem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-307 sob RED/GREEN, publicou `8440f09` e repetiu os gates; o RED mostrou que o safety gate aceitava `TRUNCATE`, `DELETE`, `SET NOT NULL` sem guarda e coluna obrigatória sem `DEFAULT`; o GREEN adicionou rejeição fail-closed e conectou `pnpm verify:migration-safety` ao `pnpm verify`. O foco passou `8/8`, migration `33/33`, PostgreSQL descartável aplicou a cadeia inteira, restore isolado passou `2/2`, cobertura `204/1080/21` com floors `95/90,87/95,29/95,69`, build `12/12`, contratos `84/84`, worker `51/51`, decisões `7/7`, mutation crítica `7/7` e gates locais passaram; `verify:secrets` segue fail-closed nos quatro valores redigidos de `.env.local`
-- next_action: executar B99-308 localmente (rotas, schemas, authz, erros, telemetria, fuzz/negative) e depois obter autoridade/ambiente para rollout N/N-1 no RC, retenção/RBAC/notificação externos, probes A/B no runtime HA/API/DB real, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-308 sob RED/GREEN: o RED mostrou que `validateApiSurface` aceitava request contract vazio e que as rotas de revogação/rotação declaradas como `SESSION` podiam bypassar `requirePrincipal`; o GREEN validou request contract, handler group e compatibilidade auth/escopo, fechou o guard de sessão e adicionou prova executável das `57/57` rotas na borda HTTP. Foco de contrato `4/4`, inventário `5/5`, API `60/60`, cobertura `204/1083/21` com floors `95,01/90,89/95,29/95,70`, build `12/12`, contratos `84/84`, decisões `7/7`, mutation crítica `7/7`, lint, typecheck, formato, hotspots e diff-check passaram; código publicado em `31fed87`; `verify:secrets` segue fail-closed nos quatro valores redigidos de `.env.local`
+- next_action: obter autoridade/ambiente para rollout N/N-1 no RC, retenção/RBAC/notificação externos, probes A/B no runtime HA/API/DB real, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T13:51:48-03:00
+- last_update: 2026-08-20T14:04:49-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 

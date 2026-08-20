@@ -567,6 +567,54 @@ O código foi commitado como `8440f09` (`fix: harden migration compatibility
 gate`) e enviado para `origin/agent/publish-production-hardening`. A publicação
 não promove a prova descartável para um RC ou rollout externo.
 
+## Round 25 — B99-308 / API contracts, authorization and negative routing — 2026-08-20T14:04:49-03:00
+
+### RED → GREEN
+
+- RED mostrou que `validateApiSurface` aceitava `requestContract` vazio e que
+  as rotas `/api/v1/session/revoke` e `/api/v1/session/rotate`, embora
+  catalogadas como `SESSION`, não passavam por `requirePrincipal`;
+- a primeira prova de despacho foi ajustada para chamar `handleApiRequest`, a
+  fronteira HTTP que normaliza `ApplicationError`; o dispatcher interno não
+  foi duplicado com tratamento de erro;
+- GREEN validou request contract, handler group e compatibilidade auth/escopo,
+  e fechou a autenticação das duas rotas de sessão;
+- o inventário executável agora percorre todas as `57/57` rotas por caminho
+  materializado e garante que nenhuma cai em `404`, que protegidas sem
+  principal retornam `401/403`, que as duas entradas públicas com corpo nulo
+  retornam `422/422`, que a telemetria resolve cada template e que método
+  `DELETE`/variantes de caminho com barra final não são aceitos.
+
+### VERIFICAÇÃO
+
+- foco de contrato: `4/4` testes;
+- foco de inventário/rotas: `5/5` testes;
+- regressão API: `60/60` testes;
+- `pnpm test:coverage`: `204` arquivos passaram, `17` guardados; `1.083`
+  testes passaram, `21` guardados; `95,01%` statements, `90,89%` branches,
+  `95,29%` functions e `95,70%` lines;
+- `pnpm test:contract`: `28` arquivos / `84/84` testes;
+- build: `12/12` workspaces; typecheck, lint, Prettier, CI contract,
+  critical decisions `7/7`, critical mutation `7/7`, scope drift, hotspots e
+  `git diff --check`: PASS.
+
+### LIMITES / STATUS / NEXT
+
+O negativo é determinístico e cobre variações de método/caminho e entrada
+inválida; não foi inventada prova de fuzz property-based. Não houve execução
+contra HA/API/DB ativo, RC imutável, secret manager, rollout N/N-1, clínica,
+`0/145`, gates externos ou reauditoria independente. `verify:secrets` continua
+fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
+não foi lido nem alterado. B99-308 está `READY_FOR_NEXT_STEP` localmente e o
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+### PUBLICAÇÃO
+
+O código foi commitado como `31fed87` (`fix: harden API route contracts and
+authz`) e enviado para `origin/agent/publish-production-hardening`. A
+publicação não promove evidência local para RC, produção, score, piloto,
+clínica ou reauditoria.
+
 ## Gaps que permanecem abertos
 
 - `pnpm verify:secrets` acusa quatro entradas reais de

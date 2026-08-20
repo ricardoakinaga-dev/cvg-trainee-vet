@@ -10210,3 +10210,31 @@ RC autorizado nem produção, CI/registry, secret manager, clínica, `0/145` ou
 reauditoria. O código foi publicado como `8440f09` em
 `origin/agent/publish-production-hardening`; B99-307 está pronto localmente e
 B99-308 é a próxima frente local.
+
+## 2026-08-20T14:04:49-03:00 — DUAL99-B99-308-API-CONTRACTS-AUTHZ
+
+O RED confirmou duas lacunas: `validateApiSurface` aceitava `requestContract`
+vazio, e as rotas de revogação/rotação declaradas como `SESSION` podiam chegar
+ao handler sem `requirePrincipal`. A primeira execução do inventário também
+foi corrigida para usar a fronteira HTTP pública (`handleApiRequest`), pois o
+dispatcher interno propaga `ApplicationError` para essa camada normalizar.
+
+O GREEN passou a validar request contract, handler group e compatibilidade entre
+auth/escopo; as duas rotas de sessão agora exigem autenticação. O inventário
+executável percorre as `57/57` rotas canônicas e verificou ausência de 404,
+401/403 para rotas protegidas, 422 para as duas entradas públicas inválidas,
+templates de telemetria, métodos não suportados e variantes de caminho
+malformadas.
+
+Focais passaram contrato `4/4`, inventário `5/5` e API `60/60`. A cobertura
+passou `204` arquivos / `1.083` testes / `17` arquivos e `21` testes guardados,
+com `95,01%` statements, `90,89%` branches, `95,29%` functions e `95,70%`
+lines; build `12/12`, contratos `84/84`, decisões `7/7`, mutation crítica
+`7/7`, typecheck, lint, formato, hotspots e diff-check passaram. O código foi
+publicado como `31fed87` (`fix: harden API route contracts and authz`).
+
+O secret scan continua fail-closed nos quatro valores redigidos de
+`infra/production/.env.local`, que não foi lido nem alterado. Não houve prova
+contra HA/API/DB ativo, RC imutável, fuzz property-based, gates externos,
+clínica, `0/145` ou reauditoria independente; o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.

@@ -146,6 +146,21 @@ aplicou a cadeia inteira e restore isolado passou `2/2`. Coverage passou
 externos permanecem abertos. Código publicado em `8440f09`; próxima frente
 local: B99-308.
 
+**Atualização Dual99 — 2026-08-20T14:04:49-03:00 — B99-308:** o inventário
+canônico agora exige request contract, handler group válido e combinação
+coerente de autenticação/escopo; as rotas de revogação e rotação de sessão
+passam por `requirePrincipal`. A prova de integração percorreu as `57/57`
+rotas na borda HTTP, confirmou zero fallthrough `404`, `401/403` sem principal,
+`422` para as duas entradas públicas inválidas, templates de telemetria e
+negativos de método/caminho. Focais `4/4` de contratos, `5/5` de inventário e
+`60/60` de API passaram; cobertura `204/1083/21` em
+`95,01/90,89/95,29/95,70`, build `12/12`, contratos `84/84`, decisões `7/7`,
+mutation `7/7`, lint, typecheck, formato e hotspots passaram. B99-308 fica
+`READY_FOR_NEXT_STEP` localmente; secret scan, HA/API/DB ativo, RC, clínica,
+`0/145`, gates externos e reauditoria continuam abertos. Código publicado em
+`31fed87`; próxima ação é obter os ambientes e aprovações externas sem alterar
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;

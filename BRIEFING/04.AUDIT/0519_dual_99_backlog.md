@@ -451,6 +451,27 @@ externos nem altera a disposição `IN_PROGRESS / PILOT_BLOCKED`.
 - **publicação:** código em `8440f09`, enviado para
   `origin/agent/publish-production-hardening`.
 
+## Atualização de execução — 2026-08-20T14:04:49-03:00 — B99-308
+
+- **RED/GREEN:** `validateApiSurface` aceitava request contract vazio e as
+  rotas de sessão declaradas como `SESSION` não exigiam `requirePrincipal`;
+  o GREEN adicionou validação de request contract, handler group,
+  compatibilidade auth/escopo e autenticação para revogação/rotação;
+- **evidência:** o inventário passou `5/5` e percorreu `57/57` rotas pela borda
+  HTTP sem 404; rotas protegidas sem principal retornaram `401/403`, entradas
+  públicas inválidas retornaram `422/422`, telemetria ficou coberta e
+  métodos/caminhos negativos foram rejeitados. Contratos passaram `4/4`, API
+  `60/60`, cobertura `204/1083/21` em `95,01/90,89/95,29/95,70`, build `12/12`,
+  contratos `84/84`, decisões `7/7`, mutation `7/7`, lint/typecheck/formato e
+  hotspots passaram;
+- **limite/status:** a prova é local e determinística; não há fuzz
+  property-based, HA/API/DB ativo, RC imutável, secret manager, clínica,
+  `0/145` ou reauditoria independente. B99-308 está
+  `READY_FOR_NEXT_STEP` localmente e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`;
+- **publicação:** código em `31fed87` (`fix: harden API route contracts and
+  authz`), enviado para `origin/agent/publish-production-hardening`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,
