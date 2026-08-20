@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN, commitou e publicou código/teste em `adc2b85` após corrigir o falso scan limpo causado por uma resposta `git cat-file --batch` válida, porém não solicitada, cujo corpo era silenciosamente ignorado por falta de path; o scanner agora vincula cada resposta ao mapa de objetos solicitados antes de consumir/scanear o corpo, além de preservar paths de histórico, validar headers `cat-file`, paths staged, inventário `rev-list`, symlinks e objetos Git; foco `27/27`, cobertura `205/1121/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`798` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `adc2b85`; `.gauntlet/` continua local e não rastreado
-- next_action: registrar e publicar a evidência documental de Round 38, reconciliar seus SHAs e confirmar a paridade remota; então executar auditoria read-only fresca e selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN, commitou e publicou código/teste em `adc2b85` e o pacote de evidências em `66cf8bb` após corrigir o falso scan limpo causado por uma resposta `git cat-file --batch` válida, porém não solicitada, cujo corpo era silenciosamente ignorado por falta de path; o scanner agora vincula cada resposta ao mapa de objetos solicitados antes de consumir/scanear o corpo, além de preservar paths de histórico, validar headers `cat-file`, paths staged, inventário `rev-list`, symlinks e objetos Git; foco `27/27`, cobertura `205/1121/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`798` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `66cf8bb`; `.gauntlet/` continua local e não rastreado
+- next_action: reconciliar os SHAs de publicação de Round 38, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T18:36:22-03:00
+- last_update: 2026-08-20T18:40:12-03:00
 
 ## 2026-08-20T18:36:22-03:00 — DUAL99-B99-101-CAT-FILE-RESPONSE-IDENTITY
 
@@ -57,8 +57,9 @@ contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
 decisões `7/7`, mutation `7/7` e diff-check passaram. O `pnpm verify` parou
 fail-closed somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`, cuja rotação exige secret manager/autorização.
-O código/teste foi publicado em `adc2b85` e a evidência documental desta
-rodada está em preparação. Nenhum segredo, dado real, PDF, produção, score,
+O código/teste foi publicado em `adc2b85` e o pacote de evidências foi
+publicado em `66cf8bb` (`docs: record b99-101 cat-file response identity`).
+Nenhum segredo, dado real, PDF, produção, score,
 release, clínica, `0/145` ou piloto foi tocado. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 

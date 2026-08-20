@@ -10785,10 +10785,11 @@ alterar o arquivo.
 ### DECISIONS / STATUS / NEXT
 
 O código/teste foram commitados em `adc2b85` (`fix: reject unexpected git batch
-responses`) e enviados para `origin/agent/publish-production-hardening`; a
-evidência documental será reconciliada em commit separado. Nenhum segredo,
-PDF, dado real, provider, CI, produção, score, release, decisão clínica ou
-promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+responses`) e a evidência documental foi publicada em `66cf8bb` (`docs: record
+b99-101 cat-file response identity`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo, PDF, dado real,
+provider, CI, produção, score, release, decisão clínica ou promoção de piloto
+foi tocado. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
 `0/145`, gates externos e reauditoria seguem abertos. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.

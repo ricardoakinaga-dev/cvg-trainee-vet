@@ -2,7 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T18:36:22-03:00`
-- última atualização: `2026-08-20T18:36:22-03:00`
+- última atualização: `2026-08-20T18:40:12-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `adc2b85` em
   `origin/agent/publish-production-hardening`
@@ -867,8 +867,9 @@ antes de consumir o corpo, emite `git-object-unreadable` para
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A evidência documental será reconciliada em
-commit separado após a publicação inicial. Esta rodada não prova provider, CI,
+manager/rotação/autorização. O pacote de evidências foi publicado em `66cf8bb`
+(`docs: record b99-101 cat-file response identity`) e enviado para
+`origin/agent/publish-production-hardening`. Esta rodada não prova provider, CI,
 RC imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos
 ou reauditoria independente. O programa permanece `IN_PROGRESS /
 PILOT_BLOCKED`.
