@@ -318,7 +318,9 @@
 - **limite/status:** `verify:secrets` acusa somente os quatro valores redigidos
   de `infra/production/.env.local`; nenhum live HA/API/DB, RC, score, release
   ou promoção clínica foi alegado. B99-107 está `READY_FOR_NEXT_STEP` localmente
-  e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+  e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`. Commit publicado:
+  `6e4dc60def99a83143a70f06e95ab2db33fff123` em
+  `origin/agent/publish-production-hardening`.
 
 ## Definition of Done
 

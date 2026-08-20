@@ -9991,3 +9991,5 @@ clínica. B99-107 está `READY_FOR_NEXT_STEP` localmente; o programa continua
 `IN_PROGRESS / PILOT_BLOCKED`. A próxima ação local é B99-201 (outbox
 claim/lease/ack), em paralelo à obtenção de ambiente e autoridade para os
 gates live e externos.
+O commit `6e4dc60def99a83143a70f06e95ab2db33fff123` foi enviado para
+`origin/agent/publish-production-hardening`.

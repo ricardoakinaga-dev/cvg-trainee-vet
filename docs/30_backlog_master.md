@@ -2136,4 +2136,6 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
   `20/20`, architecture, hotspots, public-boundary, edge security, audit de
   dependências e diff-check passaram. O secret scan acusa somente os quatro
   valores redigidos de `.env.local`; B99-107 está `READY_FOR_NEXT_STEP`
-  localmente e o programa permanece `IN_PROGRESS/PILOT_BLOCKED`.
+  localmente e o programa permanece `IN_PROGRESS/PILOT_BLOCKED`. Commit
+  publicado: `6e4dc60def99a83143a70f06e95ab2db33fff123` em
+  `origin/agent/publish-production-hardening`.

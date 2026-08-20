@@ -92,6 +92,9 @@ abertos. Código, testes e evidência foram publicados no commit
   local, sem live HA/API/DB, RC, score, release ou promoção clínica; B99-107
   fica `READY_FOR_NEXT_STEP` localmente e o programa permanece
   `IN_PROGRESS / PILOT_BLOCKED`.
+- implementação, testes e evidência rastreada foram publicados no commit
+  `6e4dc60def99a83143a70f06e95ab2db33fff123` em
+  `origin/agent/publish-production-hardening`.
 
 ## 2026-08-20T10:32:23-03:00 — DUAL99-B99-105-SCHEMA-RUNTIME-REVIEW
 

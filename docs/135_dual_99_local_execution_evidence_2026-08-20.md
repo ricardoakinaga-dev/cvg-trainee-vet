@@ -4,7 +4,7 @@
 - corte: `2026-08-20T11:21:39-03:00`
 - última atualização: `2026-08-20T11:21:39-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `4e4cd4e04718ca26c0cd1979152225301fbd249a` em
+- commit publicado: `6e4dc60def99a83143a70f06e95ab2db33fff123` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -131,6 +131,9 @@ local e não versionado.
   skip-governance `20/20`, architecture, hotspots, public-boundary e
   `git diff --check` passaram;
 - Playwright administrativo sintético Chromium `3/3` passou em `3214`.
+- publicação: implementação e testes desta rodada estão no commit
+  `6e4dc60def99a83143a70f06e95ab2db33fff123` enviado para
+  `origin/agent/publish-production-hardening`.
 
 ### LIMITES / STATUS
 
