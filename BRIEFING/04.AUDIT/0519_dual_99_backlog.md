@@ -117,6 +117,25 @@ permanece condicionado aos quatro valores já existentes em
 B99-102 permanece `IN_PROGRESS`; o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T16:52:54-03:00 — B99-101
+
+- **RED/GREEN:** o RED reproduziu falso scan limpo para header `tree` sem
+  tamanho numérico, corpo `commit` truncado e corpo `tree` sem delimitador. O
+  GREEN passou a validar tamanho seguro, corpo completo e delimitador do
+  protocolo `git cat-file --batch` para `tree`/`commit`, emitindo
+  `git-object-unreadable` e interrompendo o lote inválido, sem alterar o
+  comportamento válido de objetos Git, blobs ou tags;
+- **evidência:** foco `18/18`, cobertura `205/1112/21` em
+  `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots `0` e
+  diff-check passaram. O `pnpm verify` passou todos os gates até
+  `verify:secrets`, que falhou somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `16a4f82`; nenhum segredo, dado
+  real, PDF, rotação, provider, CI, produção, score, release, clínica, `0/145`
+  ou piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+  manager/rotação/autorização; o programa permanece `IN_PROGRESS /
+  PILOT_BLOCKED`.
+
 ## F99-4 — RC e supply chain
 
 | ID | Pri | Estado | Owner | Critério de pronto |

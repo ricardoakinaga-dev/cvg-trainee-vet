@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T15:35:54-03:00`
-- última atualização: `2026-08-20T15:35:54-03:00`
+- corte: `2026-08-20T16:52:54-03:00`
+- última atualização: `2026-08-20T16:52:54-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `9959e44` em
+- commit publicado: `16a4f82` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,53 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 31 — B99-101 / Git history parser fail-closed hardening — 2026-08-20T16:49:21-03:00
+
+### Barra congelada
+
+- endurecer o parser de histórico alcançável do scanner de segredos sem mudar
+  a política de fixtures sintéticas, os quatro achados reais de `.env.local`
+  ou o contrato de rotação/secret manager;
+- provar que headers não numéricos e corpos `tree`/`commit` truncados ou sem
+  delimitador não são silenciosamente ignorados, enquanto objetos válidos e
+  blobs/tags continuam com o comportamento anterior;
+- manter RED→GREEN, teste sintético focal, sem saída de segredo/corpo,
+  formato/lint/typecheck/diff-check, cobertura e governanças verdes.
+
+### RED → GREEN
+
+O RED adicionou uma matriz sintética para header `tree` sem tamanho numérico,
+corpo `commit` menor que o declarado e corpo `tree` sem o delimitador final. O
+teste reproduziu `[]`, evidenciando falso PASS para histórico ilegível. O GREEN
+valida `Number.isSafeInteger`, tamanho não negativo, corpo completo e newline
+do protocolo `git cat-file --batch`; em qualquer violação registra
+`git-object-unreadable` e encerra o lote inválido fail-closed. O fixture de
+objetos válidos foi alinhado ao framing real do protocolo.
+
+### Evidência
+
+- foco do scanner: `18/18`;
+- cobertura integral: `205` arquivos, `1.112` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- lint, typecheck, Prettier, audit de dependências, hotspots (`0`) e
+  `git diff --check`: PASS;
+- `pnpm verify` passou todos os gates até `verify:secrets`, que falhou
+  fail-closed somente nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado;
+- código/teste commitados em `16a4f82` (`fix: harden git history secret
+  scanning`), sem segredo, PDF, dado real, produção, score, release ou
+  promoção de piloto.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem
+secret manager/rotação/autorização. Esta rodada não prova provider, CI, RC
+imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos ou
+reauditoria independente. A evidência documental desta rodada ainda será
+publicada em commit separado. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 30 — B99-102 / clinical-source downloader hardening — 2026-08-20T16:21:01-03:00
 

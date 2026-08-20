@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-102 recebeu downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 recebeu parser de histórico Git fail-closed para objetos `tree`/`commit` inválidos ou truncados, e B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-102 sob RED/GREEN e publicou código/teste em `7b06233` e o evidence pack/documentação em `45b8141`; testes adversariais reproduziram as entradas inseguras do downloader; o GREEN adicionou validação HTTPS origin-only, SigV4 determinístico, `redirect: "error"`, AbortController cobrindo headers/body, limite padrão de 2 GiB, streaming para temp `0600`, hash antes de rename atômico e guards contra symlink; foco `20/20`, localização `5/5`, cobertura `205/1111/21` em `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, scope drift, migration safety, hotspots `0`, lint, typecheck, formato e diff-check passaram; `.gauntlet/` continua local e não rastreado
-- next_action: selecionar e congelar o próximo gap local verificável após confirmar a paridade entre HEAD e origin; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN e commitou código/teste em `16a4f82`; o parser agora rejeita headers não numéricos e corpos `tree`/`commit` truncados ou sem delimitador com `git-object-unreadable`, preservando objetos válidos e blobs/tags; foco `18/18`, cobertura `205/1112/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
+- next_action: publicar o código `16a4f82` junto com a evidência rastreada, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,34 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T16:40:08-03:00
+- last_update: 2026-08-20T16:52:54-03:00
+
+## 2026-08-20T16:49:21-03:00 — DUAL99-B99-101-GIT-HISTORY-PARSER
+
+### AÇÃO / RESULTADO
+
+- RED adicionou um caso sintético que reproduziu o falso scan limpo para header
+  `tree` inválido e corpo `commit` truncado;
+- GREEN passou a validar tamanho seguro, corpo completo e delimitador do
+  protocolo `git cat-file --batch` para `tree`/`commit`, emitindo
+  `git-object-unreadable` em qualquer registro inválido e mantendo o skip
+  seguro de objetos Git válidos;
+- o foco passou `18/18`; a cobertura integral passou `205/1112/21` em
+  `95,02/90,95/95,31/95,71`; lint, typecheck, formato, audit, hotspots e
+  `git diff --check` passaram;
+- o código/teste foram commitados em `16a4f82` (`fix: harden git history
+  secret scanning`); nenhum segredo foi adicionado e `.env.local` não foi
+  lido nem alterado.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
+quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
+rotação depende de secret manager/autorização. A rodada não fecha rotação,
+RC/SHA publicado, WebKit aprovado, runtime live, clínica, `0/145`, gates
+externos, score, release, piloto ou reauditoria. Próxima ação: publicar e
+reconciliar a evidência deste round. Estado global: `IN_PROGRESS /
+PILOT_BLOCKED`.
 
 ## 2026-08-20T16:21:01-03:00 — DUAL99-B99-102-CLINICAL-DOWNLOADER
 

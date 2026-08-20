@@ -179,3 +179,21 @@ continua fail-closed pelos quatro valores locais redigidos. B99-102 segue
 `IN_PROGRESS`; B99-306, RC/proveniência, runtime, clínica, `0/145`, gates
 externos e reauditoria permanecem abertos. Estado: `IN_PROGRESS` /
 `PILOT_BLOCKED`.
+
+## 13. Checkpoint de parser de histórico do scanner — 2026-08-20T16:52:54-03:00
+
+B99-101 recebeu uma redução local adicional sob RED/GREEN. O RED reproduziu
+falso scan limpo para header `tree` sem tamanho numérico, corpo `commit`
+truncado e corpo `tree` sem delimitador. O GREEN valida tamanho seguro, corpo
+completo e delimitador do framing `git cat-file --batch`, emitindo
+`git-object-unreadable` e interrompendo o lote inválido; objetos Git válidos,
+blobs e tags permanecem preservados. O foco passou `18/18`, a cobertura passou
+`205/1112/21` em `95,02/90,95/95,31/95,71`, e lint, typecheck, formato, audit,
+hotspots `0` e diff-check passaram. Código/teste estão em `16a4f82`.
+
+O `pnpm verify` percorreu os gates até `verify:secrets`, que continua
+fail-closed somente nos quatro valores redigidos preexistentes de
+`infra/production/.env.local`. B99-101 permanece `IN_PROGRESS`; secret
+manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria continuam abertos. F99-1 segue
+`IN_PROGRESS`/`PILOT_BLOCKED`.

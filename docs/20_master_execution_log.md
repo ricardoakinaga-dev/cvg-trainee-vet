@@ -10496,3 +10496,39 @@ RC/SHA, runtime live, clínica, `0/145`, gates externos e reauditoria continuam
 dependências. Estado: `IN_PROGRESS / PILOT_BLOCKED`. Próxima ação: selecionar e
 congelar o próximo gap local verificável após confirmar a paridade entre HEAD e
 origin.
+
+## 2026-08-20T16:49:21-03:00 — DUAL99-B99-101-GIT-HISTORY-PARSER
+
+### TIMESTAMP
+
+2026-08-20 16:49:21 -03:00
+
+### ENGINE / PHASE / TASK
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 / F99-1 — fechamento local e
+evidência / B99-101 — parser fail-closed de histórico Git do scanner de segredos.
+
+### ACTION / RESULT
+
+RED adicionou casos sintéticos para header `tree` sem tamanho numérico, corpo
+`commit` truncado e corpo `tree` sem delimitador; a implementação anterior
+retornou lista vazia. GREEN passou a validar tamanho seguro, corpo completo e
+delimitador do framing `git cat-file --batch` para `tree`/`commit`, emitindo
+`git-object-unreadable` e interrompendo o lote inválido, sem alterar blobs/tags
+ou objetos válidos.
+
+O foco passou `18/18`; a cobertura passou `205/1112/21` em
+`95,02/90,95/95,31/95,71`; lint, typecheck, Prettier, audit, hotspots `0` e
+`git diff --check` passaram. O `pnpm verify` percorreu todos os gates até
+`verify:secrets`, que falhou somente nos quatro valores redigidos preexistentes
+de `infra/production/.env.local`, sem ler ou alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `16a4f82` (`fix: harden git history secret
+scanning`). Nenhum segredo, PDF, dado real, provider, CI, produção, score,
+release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos.
+Próxima ação: publicar e reconciliar a evidência documental deste round. Estado:
+`IN_PROGRESS / PILOT_BLOCKED`.
