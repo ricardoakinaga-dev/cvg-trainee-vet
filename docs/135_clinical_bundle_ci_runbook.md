@@ -79,6 +79,8 @@ Em `github.com/<repo>/settings/secrets/actions`, crie estes secrets
 | `CLINICAL_SOURCES_S3_BUCKET` | `cvg-clinical-sources` |
 | `CLINICAL_SOURCES_S3_ACCESS_KEY` | Access Key ID read-only |
 | `CLINICAL_SOURCES_S3_SECRET_KEY` | Secret read-only |
+| `CLINICAL_SOURCES_MAX_BYTES` | Limite opcional por arquivo; padrão `2147483648` (2 GiB) |
+| `CLINICAL_SOURCES_TIMEOUT_MS` | Timeout opcional por requisição/corpo; padrão `120000` ms |
 
 Se preferir uma variável de configuração pública (não secreta) para o prefixo,
 use uma **action variable** `CLINICAL_SOURCES_PREFIX=clinical`.
@@ -90,9 +92,13 @@ que executa `scripts/fetch-clinical-sources.mjs` (SignV4 puro, sem dependência
 nova). O passo:
 
 1. baixa os 3 PDFs do bucket para `/tmp/cvg-clinical-sources` (fora do repo);
-2. valida cada SHA-256 e falha fechado em qualquer divergência;
-3. `pnpm verify` roda com `CVG_CLINICAL_SOURCES_DIRECTORY=/tmp/cvg-clinical-sources`;
-4. ao final (`if: always()`), `rm -rf /tmp/cvg-clinical-sources`.
+2. usa somente endpoint HTTPS sem credenciais/query/fragment/path, não segue
+   redirects, limita o corpo por arquivo e aborta requisições/corpos parados;
+3. valida cada SHA-256 e falha fechado em qualquer divergência;
+4. grava cada arquivo em temp `0600`, verifica o hash e publica por rename
+   atômico, removendo qualquer parcial antes de continuar;
+5. `pnpm verify` roda com `CVG_CLINICAL_SOURCES_DIRECTORY=/tmp/cvg-clinical-sources`;
+6. ao final (`if: always()`), `rm -rf /tmp/cvg-clinical-sources`.
 
 Arquivos alterados/criados:
 
@@ -101,8 +107,12 @@ Arquivos alterados/criados:
 
 ## Segurança e limites
 
-- Nenhum PDF, hash de credencial ou segredo é gravado em log; o download usa
-  `--no-progress` e redireciona saída.
+- Nenhum PDF, hash de credencial ou segredo é gravado em log; o downloader só
+  imprime o código sintético da fonte e o diretório de destino.
+- O endpoint é validado como HTTPS origin-only, a requisição usa
+  `redirect: "error"`, e falhas de rede não expõem URL, resposta ou credencial.
+- O corpo é transmitido com limite de bytes, timeout cobrindo headers e body,
+  temp file privado e rename atômico; symlink de destino/ancestral é rejeitado.
 - O resolver rejeita caminho relativo/dentro do repo e traversal.
 - O gate continua exigindo os 3 SHA-256; apontar para o bucket **não** reduz a
   integridade exigida nem substitui a licença.

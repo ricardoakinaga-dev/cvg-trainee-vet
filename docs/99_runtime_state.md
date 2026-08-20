@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-308 recebeu fuzz bounded determinístico para descritores e lookup da superfície de API, com validação fail-closed e módulo separado, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-102 recebeu downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-308 sob RED/GREEN: o corpus bounded encontrou `TypeError` em descritores e lookup malformados; a validação foi extraída para `packages/contracts/src/api-surface-validation.ts`, o foco passou `6/6`, o inventário `11/11`, contratos `86/86`, cobertura `204/1091/21` em `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato e diff-check passaram; código/testes estão no commit `7c46ad3` e a evidência rastreada em `a4840eb`; `.gauntlet/` continua local e não rastreado
-- next_action: revisar o diff e publicar o lote autorizado; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-102 sob RED/GREEN: testes adversariais reproduziram as entradas inseguras do downloader; o GREEN adicionou validação HTTPS origin-only, SigV4 determinístico, `redirect: "error"`, AbortController cobrindo headers/body, limite padrão de 2 GiB, streaming para temp `0600`, hash antes de rename atômico e guards contra symlink; foco `20/20`, localização `5/5`, cobertura `205/1111/21` em `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, scope drift, migration safety, hotspots `0`, lint, typecheck, formato e diff-check passaram; `.gauntlet/` continua local e não rastreado
+- next_action: executar a revisão read-only final, repetir gates no worktree exato e publicar o lote autorizado; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,37 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T15:52:02-03:00
+- last_update: 2026-08-20T16:21:01-03:00
+
+## 2026-08-20T16:21:01-03:00 — DUAL99-B99-102-CLINICAL-DOWNLOADER
+
+### AÇÃO / RESULTADO
+
+- RED adicionou testes adversariais sintéticos para endpoint HTTP/credentials/query/path,
+  bucket/prefixo com traversal, destino interno, SigV4, redirect, timeout de
+  headers/body, limite declarado/streaming, symlink, SHA mismatch e parcial;
+- GREEN fez o downloader falhar fechado: endpoint HTTPS origin-only, bucket e
+  prefixo relativos, `redirect: "error"`, AbortController cobrindo fetch e
+  pipeline, limite padrão de 2 GiB por arquivo, streaming para temp `0600`,
+  hash antes de `rename` atômico e rejeição de symlink no destino/ancestrais;
+- foco do downloader `20/20`, localização `5/5`, cobertura `205/1111/21` em
+  `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, scope drift,
+  migration safety, hotspots `0`, lint, typecheck, formato e diff-check
+  passaram;
+- o teste usa somente bytes sintéticos e a implementação não materializa os
+  PDFs licenciados nem altera provider, CI, produção ou `.env.local`.
+- código e teste foram commitados em `7b06233`
+  (`fix: harden clinical source downloader`); a evidência documental deste
+  round ainda aguarda seu commit de publicação.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-102 permanece `IN_PROGRESS`: o `pnpm verify` final deve continuar fail-closed
+nos quatro valores já existentes e redigidos de `infra/production/.env.local`,
+e a execução real ainda depende de provider/secret manager autorizado. Esta
+rodada não fecha licença, clínica, `0/145`, RC/SHA, WebKit aprovado, runtime
+live, gates externos, score, release, piloto ou reauditoria. Estado global:
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T15:52:02-03:00 — DUAL99-B99-308-BOUNDED-API-FUZZ
 

@@ -826,6 +826,54 @@ fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Round 30 — B99-102 / clinical-source downloader hardening — 2026-08-20T16:21:01-03:00
+
+### RED → GREEN
+
+- RED adicionou uma matriz adversarial sintética para endpoint HTTP, endpoint
+  com credenciais/query/path, bucket/prefixo com traversal, destino dentro do
+  repositório, SigV4, redirect, timeout antes e depois dos headers, limite de
+  `Content-Length` e streaming, symlink, SHA mismatch e gravação parcial;
+- GREEN tornou o downloader fail-closed: endpoint HTTPS origin-only, bucket
+  DNS-compatible, prefixo relativo, `redirect: "error"`, AbortController com
+  timeout cobrindo fetch e pipeline, limite configurável por arquivo com
+  padrão de `2 GiB`, streaming para temp `0600`, hash antes de `rename` atômico
+  e rejeição de symlink no destino e em ancestrais;
+- a superfície foi extraída em helpers pequenos para manter a coesão da
+  fronteira de credenciais, sem alterar os três códigos/SHA-256 canônicos nem
+  o resolver clínico existente.
+
+### VERIFICAÇÃO
+
+- RED focal reproduziu as lacunas de contrato do downloader; GREEN passou
+  `20/20` testes de `tests/integration/clinical-source-downloader.test.ts`;
+- regressão de localização clínica passou `5/5`; cobertura ampla passou
+  `205` arquivos, `1.111` testes passantes, `17` arquivos e `21` testes
+  guardados, em `95,02%` statements, `90,95%` branches, `95,31%` functions e
+  `95,71%` lines;
+- build dos `12/12` workspaces, arquitetura `2/2`, scope drift, migration
+  safety (`33` migrações sem destrutividade), CI contract, fontes clínicas,
+  lint, typecheck, Prettier, `verify:hotspots` (`0` hotspots) e
+  `git diff --check`: PASS;
+- execução da CLI sem ambiente falhou fechado em variável obrigatória, sem
+  iniciar rede ou escrever destino; a governança de fontes passou com os três
+  PDFs já presentes no ambiente local, sem materializar ou copiar qualquer
+  fonte nesta rodada;
+- código/teste foram commitados em `7b06233`
+  (`fix: harden clinical source downloader`); a documentação desta rodada é o
+  lote rastreado que ainda será publicado em commit separado;
+- `pnpm verify` será repetido no worktree final e deve parar em
+  `verify:secrets` pelos quatro valores já redigidos de
+  `infra/production/.env.local`, sem ler ou alterar o arquivo.
+
+### LIMITES / STATUS / NEXT
+
+B99-102 fica `IN_PROGRESS`: os testes usam apenas bytes sintéticos e não
+  provam acesso ao bucket privado, licença, secret manager, CI, provider,
+  runtime HA/API/DB, RC/SHA, WebKit aprovado, clínica, `0/145`, gates externos
+  ou reauditoria. Não houve segredo, PDF, dado real, produção, score, release
+  ou promoção de piloto. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Gaps que permanecem abertos
 
 - `pnpm verify:secrets` acusa quatro entradas reais de

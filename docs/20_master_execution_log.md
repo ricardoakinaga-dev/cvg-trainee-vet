@@ -10446,3 +10446,50 @@ IN_PROGRESS / PILOT_BLOCKED
 Revisar o diff e publicar o lote autorizado; manter pendentes WebKit aprovado/RC
 imutável, proveniência runtime, secret manager, clínica, `0/145`, gates externos
 e reauditoria independente.
+
+## 2026-08-20T16:21:01-03:00 — DUAL99-B99-102-CLINICAL-DOWNLOADER
+
+### TIMESTAMP
+
+2026-08-20 16:21:01 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE / SPRINT / TASK
+
+Dual 99 / F99-1 — fechamento local e evidência / B99-102 — downloader privado
+de fontes clínicas licenciadas, sem materializar os PDFs nesta rodada.
+
+### ACTION
+
+RED adicionou uma matriz adversarial sintética cobrindo endpoint HTTP,
+credenciais/query/path no endpoint, bucket/prefixo com traversal, destino
+interno, SigV4, redirect, timeout antes/depois dos headers, limite declarado e
+streaming, symlink, SHA mismatch e gravação parcial. GREEN implementou endpoint
+HTTPS origin-only, prefixo/bucket fail-closed, `redirect: "error"`,
+AbortController para fetch e pipeline, limite padrão de `2 GiB` por arquivo,
+temp `0600`, hash antes de rename atômico e rejeição de symlink no destino e em
+ancestrais.
+
+### RESULT
+
+Downloader `20/20`, localização clínica `5/5`, cobertura `205/1111/21` em
+`95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, scope drift,
+migration safety, CI contract, fontes clínicas, lint, typecheck, formato,
+hotspots `0` e diff-check passaram. A implementação usa apenas as três entradas
+canônicas e não expõe credenciais, corpo ou hash em mensagens. A CLI sem env
+falhou fechado antes de rede/escrita. O `pnpm verify` final permanece obrigado a
+parar em `verify:secrets` nos quatro valores já existentes e redigidos de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado.
+
+### DECISIONS / STATUS / NEXT
+
+Não houve acesso ao bucket/licença, provider, secret manager, CI, produção,
+PDF, dado real, score, release, decisão clínica ou promoção de piloto. B99-102
+foi commitado em `7b06233` (`fix: harden clinical source downloader`) e
+permanece `IN_PROGRESS`; provider/secret manager autorizado, WebKit aprovado,
+RC/SHA, runtime live, clínica, `0/145`, gates externos e reauditoria continuam
+dependências. Estado: `IN_PROGRESS / PILOT_BLOCKED`. Próxima ação: revisão
+read-only final, repetição dos gates no worktree exato e commit/push autorizado.

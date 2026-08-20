@@ -30,7 +30,7 @@
 | ID | Pri | Estado | Owner | Boundary | RED/GREEN e pronto |
 |---|---|---|---|---|---|
 | B99-101 | P0 | IN_PROGRESS | SEC/ENG | `scripts/secret-scanner.mjs` | testes adversariais de worktree/index/history; fail-closed sem falso PASS |
-| B99-102 | P0 | READY_FOR_NEXT_STEP | SEC/ENG | `scripts/fetch-clinical-sources.mjs` e scanner | lint/format/type/secret scan; nenhum segredo ou dado real |
+| B99-102 | P0 | IN_PROGRESS | SEC/ENG | `scripts/fetch-clinical-sources.mjs` e scanner | lint/format/type/secret scan; nenhum segredo ou dado real |
 | B99-103 | P0 | IN_PROGRESS | SEC/ENG/DBA | sessão/senha/migrations 0031 | concorrência PostgreSQL, generation, TTL, logout e replay |
 | B99-104 | P0 | IN_PROGRESS | ENG/CLINICAL | authoring/review/correction/assessment | aprovador corrente ativo/role/scope na transação; fail-closed |
 | B99-105 | P0 | READY_FOR_NEXT_STEP | ENG/DBA | idempotência/0030/RLS | RED de corrida/TTL/legado; GREEN com lock/constraint/role |
@@ -98,6 +98,23 @@ fuzz property-based, ambiente live/RC, secret manager, clínica, `0/145` ou
 reauditoria. O `pnpm verify` final passou todos os gates até migration safety e
 parou fail-closed nos quatro valores redigidos de `.env.local`. Código/testes
 estão no commit `7c46ad3` e a documentação/evidence pack em `a4840eb`. Programa
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+**Atualização B99-102 — 2026-08-20T16:21:01-03:00:** o RED criou a matriz
+adversarial do downloader privado: endpoint HTTP/credentials/query/path,
+bucket/prefixo com traversal, destino no repositório, redirects, timeout de
+headers/body, `Content-Length`/stream acima do limite, symlink, SHA mismatch e
+parcial. O GREEN adicionou validação HTTPS origin-only, SigV4 determinístico
+testável, `redirect: "error"`, AbortController cobrindo fetch e pipeline,
+limite configurável com padrão de 2 GiB por arquivo, streaming para temp `0600`,
+hash antes de rename atômico e rejeição de symlink em destino/ancestrais. O
+foco passou `20/20`, localização `5/5`, cobertura ampla `205/1111/21` em
+`95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, scope drift,
+migration safety, hotspots `0`, lint, typecheck, formato e diff-check. Não
+houve acesso aos PDFs licenciados, segredo, produção ou CI; o verify final
+permanece condicionado aos quatro valores já existentes em
+`infra/production/.env.local` e ao provedor/secret manager autorizado.
+B99-102 permanece `IN_PROGRESS`; o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## F99-4 — RC e supply chain

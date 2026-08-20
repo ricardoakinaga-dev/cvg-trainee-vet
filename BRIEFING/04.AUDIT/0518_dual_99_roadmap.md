@@ -160,3 +160,22 @@ O avanço é local e não fecha B99-306, RC/proveniência, secret manager,
 HA/API/DB externo, clínica, `0/145`, gates externos, duas reauditorias ou
 go/no-go. F99-1 permanece `IN_PROGRESS` e o produto permanece
 `PILOT_BLOCKED`.
+
+## 12. Checkpoint do downloader clínico — 2026-08-20T16:21:01-03:00
+
+B99-102 avançou localmente sob RED/GREEN. O RED reproduziu os caminhos sem
+contrato do downloader S3 privado; o GREEN passou a exigir endpoint HTTPS
+origin-only, bucket/prefixo sem traversal, destino absoluto externo ao
+repositório, `redirect: "error"`, timeout com AbortController, limite de corpo
+declarado e durante streaming, temp `0600`, hash antes de rename atômico e
+rejeição de symlink. O foco passou `20/20`, a regressão de localização `5/5`,
+cobertura ampla `205/1111/21` em `95,02/90,95/95,31/95,71`, build `12/12`,
+arquitetura `2/2`, scope drift, migration safety, hotspots `0`, lint, typecheck,
+formato e diff-check.
+
+O avanço não materializou fonte licenciada, não leu/alterou `.env.local`, não
+provisionou provider/secret manager/CI e não substitui o scan de segredos, que
+continua fail-closed pelos quatro valores locais redigidos. B99-102 segue
+`IN_PROGRESS`; B99-306, RC/proveniência, runtime, clínica, `0/145`, gates
+externos e reauditoria permanecem abertos. Estado: `IN_PROGRESS` /
+`PILOT_BLOCKED`.
