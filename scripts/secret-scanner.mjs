@@ -668,14 +668,30 @@ function readBatchOutput(buffer, objects, source = "history") {
       continue;
     }
     const size = Number(sizeText);
-    // tree and commit objects are git structure, not scannable text. Skip
-    // their body so the loop advances to the next object. Annotated tags are
-    // text-bearing Git metadata, so their body is scanned below.
+    // tree and commit objects are Git structure, not scannable text. Their
+    // body still has to be structurally valid: silently skipping a malformed
+    // batch record would turn an unreadable history object into a false clean
+    // scan. Annotated tags are text-bearing Git metadata, so their body is
+    // scanned below.
     if (type === "tree" || type === "commit") {
-      if (Number.isSafeInteger(size) && size >= 0) {
-        offset += size;
-        if (buffer[offset] === 0x0a) offset += 1;
+      const bodyEnd = offset + size;
+      if (
+        !Number.isSafeInteger(size) ||
+        size < 0 ||
+        bodyEnd > buffer.length ||
+        buffer[bodyEnd] !== 0x0a
+      ) {
+        findings.push(
+          unscannedFinding(
+            logicalPath,
+            "git-object-unreadable",
+            "malformed or truncated git object body",
+          ),
+        );
+        offset = buffer.length;
+        continue;
       }
+      offset = bodyEnd + 1;
       continue;
     }
     if (

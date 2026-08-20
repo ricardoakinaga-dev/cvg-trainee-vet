@@ -342,12 +342,12 @@ describe("secret scanner", () => {
 
   it("does not report git tree or commit objects as unreadable blobs", () => {
     const treeObject = Buffer.concat([
-      Buffer.from("treeid tree 9\n"),
+      Buffer.from("treeid tree 8\n"),
       Buffer.from("100644 x"),
       Buffer.from("\n"),
     ]);
     const commitObject = Buffer.concat([
-      Buffer.from("commitid commit 12\n"),
+      Buffer.from("commitid commit 11\n"),
       Buffer.from("tree abcdef"),
       Buffer.from("\n"),
     ]);
@@ -362,6 +362,52 @@ describe("secret scanner", () => {
     // trees and commits are git structure, not scannable text: they must not
     // be reported as "git-object-unreadable" nor as any other finding.
     expect(findings).toEqual([]);
+  });
+
+  it("reports malformed tree and commit objects instead of silently skipping them", () => {
+    const malformedHeaderFindings = readBatchOutput(
+      Buffer.from("malformed-tree tree not-a-size\n"),
+      new Map([["malformed-tree", "src"]]),
+    );
+    const truncatedBodyFindings = readBatchOutput(
+      Buffer.concat([
+        Buffer.from("truncated-commit commit 12\n"),
+        Buffer.from("tree abcde"),
+      ]),
+      new Map([["truncated-commit", "docs"]]),
+    );
+    const missingDelimiterFindings = readBatchOutput(
+      Buffer.concat([
+        Buffer.from("missing-delimiter tree 8\n"),
+        Buffer.from("100644 x"),
+      ]),
+      new Map([["missing-delimiter", "missing-tree"]]),
+    );
+
+    expect(malformedHeaderFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "history:src",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
+    expect(truncatedBodyFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "history:docs",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
+    expect(missingDelimiterFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "history:missing-tree",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
   });
 
   it("reports stable, redacted summaries suitable for CI output", () => {
