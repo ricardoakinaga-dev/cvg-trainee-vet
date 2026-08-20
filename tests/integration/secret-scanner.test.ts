@@ -673,6 +673,22 @@ describe("secret scanner", () => {
     expect(JSON.stringify(findings)).not.toContain(marker);
   });
 
+  it("does not expose malformed cat-file header tokens in findings", () => {
+    const marker = "SYNTHETIC_HEADER_MARKER";
+    const findings = readBatchOutput(
+      Buffer.from(`client_secret="${marker}" blob 3\nabc\n`),
+      new Map(),
+    );
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: "history:<git>",
+        rule: "git-object-unreadable",
+      }),
+    ]);
+    expect(JSON.stringify(findings)).not.toContain(marker);
+  });
+
   it.each(["blob", "tag"])(
     "reports a %s object without its batch delimiter before scanning content",
     (type) => {

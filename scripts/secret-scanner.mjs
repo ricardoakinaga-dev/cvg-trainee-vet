@@ -656,7 +656,9 @@ function readBatchOutput(buffer, objects, source = "history") {
       /^[0-9a-f]{40} (?:blob|tag|tree|commit) [0-9]+$/u.test(header) ||
       /^[0-9a-f]{40} (?:missing|error)(?: .*)?$/u.test(header);
     const path = objects.get(objectId);
-    const logicalPath = `${source}:${path ?? (objectId || "unknown")}`;
+    const identity =
+      path ?? (/^[0-9a-f]{40}$/u.test(objectId ?? "") ? objectId : "<git>");
+    const logicalPath = `${source}:${identity || "<git>"}`;
     if (!validHeader) {
       addUnreadable(logicalPath, "malformed git object header");
       offset = buffer.length;
