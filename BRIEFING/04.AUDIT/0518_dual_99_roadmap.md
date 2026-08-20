@@ -211,7 +211,8 @@ O foco passou `21/21`, a cobertura passou `205/1115/21` em
 `95,02/90,95/95,31/95,71`, o scanner ficou em `800` linhas e
 `verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
 worker, migrações, migration safety, decisões, mutation e diff-check passaram.
-Código/teste estão em `1adef42`. O `pnpm verify` parou em `verify:secrets`
+Código/teste estão em `1adef42` e a evidência foi publicada em `b114236`. O
+`pnpm verify` parou em `verify:secrets`
 somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`; B99-101 segue `IN_PROGRESS` e o programa
 permanece `IN_PROGRESS / PILOT_BLOCKED`.

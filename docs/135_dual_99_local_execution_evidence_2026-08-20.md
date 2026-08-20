@@ -2,7 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T17:20:12-03:00`
-- última atualização: `2026-08-20T17:20:12-03:00`
+- última atualização: `2026-08-20T17:23:26-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `1adef42` em
   `origin/agent/publish-production-hardening`
@@ -866,10 +866,11 @@ preserva o processamento de registros delimitados.
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A evidência documental desta rodada será
-publicada em commit separado; RC/proveniência, runtime live, WebKit aprovado,
-clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
-O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+manager/rotação/autorização. A evidência documental desta rodada foi publicada
+em `b114236` (`docs: record b99-101 batch framing`) e enviada para
+`origin/agent/publish-production-hardening`; RC/proveniência, runtime live,
+WebKit aprovado, clínica, `0/145`, gates externos e reauditoria independente
+continuam abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 32 — B99-101 / workspace symlink fail-closed hardening — 2026-08-20T17:07:01-03:00
 

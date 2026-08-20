@@ -10596,10 +10596,12 @@ arquivo.
 ### DECISIONS / STATUS / NEXT
 
 O código/teste foram commitados em `1adef42` (`fix: reject unterminated git
-objects`). Nenhum segredo, PDF, dado real, provider, CI, produção, score,
-release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
-`IN_PROGRESS` até secret manager/rotação/autorização; a evidência documental
-desta rodada será publicada em commit separado. RC/proveniência, WebKit,
-runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos.
-Próxima ação: publicar a evidência, confirmar paridade remota e selecionar o
-próximo gap local. Estado: `IN_PROGRESS / PILOT_BLOCKED`.
+objects`) e a evidência documental foi publicada em `b114236` (`docs: record
+b99-101 batch framing`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo, PDF, dado real,
+provider, CI, produção, score, release, decisão clínica ou promoção de piloto
+foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+manager/rotação/autorização. RC/proveniência, WebKit, runtime live, clínica,
+`0/145`, gates externos e reauditoria seguem abertos. Próxima ação: confirmar
+paridade remota e selecionar o próximo gap local. Estado:
+`IN_PROGRESS / PILOT_BLOCKED`.

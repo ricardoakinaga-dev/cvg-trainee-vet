@@ -15,8 +15,9 @@ foco passou `21/21`, cobertura `205/1115/21` em
 `86/86`, worker `51/51`, migrações `33/33`, migration safety, decisões `7/7`,
 mutation `7/7` e diff-check passaram. O `pnpm verify` parou em
 `verify:secrets` somente nos quatro valores redigidos preexistentes de
-`infra/production/.env.local`; código/teste estão em `1adef42`. B99-101
-permanece `IN_PROGRESS` até secret manager/rotação, e o programa segue
+`infra/production/.env.local`; código/teste estão em `1adef42` e a evidência
+foi publicada em `b114236`. B99-101 permanece `IN_PROGRESS` até secret
+manager/rotação, e o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T17:07:01-03:00 — B99-101:** o RED

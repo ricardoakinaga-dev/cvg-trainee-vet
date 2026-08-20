@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `1adef42` após corrigir o falso scan limpo de `blob`/`tag` sem delimitador final; o scanner agora reporta symlinks do worktree como `unreadable-file` sem seguir ou expor o alvo, rejeita headers não numéricos/corpos `tree`/`commit` truncados ou sem delimitador e rejeita corpos `blob`/`tag` truncados ou sem delimitador; foco `21/21`, cobertura `205/1115/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`800` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a evidência rastreada de B99-101, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- next_action: confirmar a paridade entre HEAD e origin após publicar código `1adef42` e evidência `b114236`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T17:20:12-03:00
+- last_update: 2026-08-20T17:23:26-03:00
 
 ## 2026-08-20T17:20:12-03:00 — DUAL99-B99-101-BLOB-TAG-FRAMING
 
@@ -55,10 +55,11 @@
 B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
 quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
 rotação exige secret manager/autorização. O código/teste foi publicado em
-`1adef42`; a evidência documental desta rodada será publicada em commit
-separado. Nenhum segredo, dado real, PDF, produção, score, release, clínica,
+`1adef42`; a evidência documental desta rodada foi publicada em `b114236` e
+enviada para `origin/agent/publish-production-hardening`. Nenhum segredo, dado real, PDF, produção, score, release, clínica,
 `0/145` ou piloto foi tocado. O programa permanece
-`IN_PROGRESS / PILOT_BLOCKED`.
+`IN_PROGRESS / PILOT_BLOCKED`; a próxima ação é confirmar a paridade remota e
+selecionar o próximo gap local.
 
 ## 2026-08-20T17:07:01-03:00 — DUAL99-B99-101-WORKSPACE-SYMLINK
 
