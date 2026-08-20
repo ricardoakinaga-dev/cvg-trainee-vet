@@ -770,6 +770,60 @@ O runtime API observado continua com proveniência/SHA antigo e o
 `BLOCKED` até execução em ambiente WebKit aprovado no mesmo RC; o programa
 segue `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Round 29 — B99-308 / bounded API-surface fuzz hardening — 2026-08-20T15:52:02-03:00
+
+### RED → GREEN
+
+- RED criou um corpus determinístico de mutações sintéticas sobre oito rotas e
+  entradas primitivas/estruturais inválidas; `validateApiSurface` lançava
+  `TypeError` para descritores incompletos e `findApiSurfaceRoute` lançava para
+  `path` não-string;
+- GREEN fez o contrato falhar fechado: descritores inválidos agora produzem
+  erros de validação, inventário não-array é rejeitado e lookup com método/path
+  malformados retorna `null`;
+- a validação foi extraída para
+  `packages/contracts/src/api-surface-validation.ts`, mantendo
+  `packages/contracts/src/api-surface.ts` em `706` linhas e evitando criar um
+  novo hotspot acima do limite de `800` linhas;
+- o escopo não adiciona dependência de fuzz, aleatoriedade não reprodutível,
+  alteração de política de autorização, rota, runtime, segredo, dado clínico ou
+  ambiente externo.
+
+### VERIFICAÇÃO
+
+- RED focal: `2` testes falhando (`TypeError` em descriptor/lookup);
+- GREEN focal: `6/6`; regressão de inventário ativo: `11/11`; contratos:
+  `86/86`; arquitetura: `2/2`; CI contract e scope drift: `PASS`;
+- cobertura ampla: `204` arquivos, `1.091` testes passantes, `17` arquivos e
+  `21` testes guardados; `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- build dos `12/12` workspaces, typecheck, lint, Prettier, `verify:hotspots`
+  (`0` hotspots) e `git diff --check`: PASS;
+- a primeira cobertura ampla encontrou corretamente o arquivo novo como
+  hotspot não classificado; a extração da validação foi aplicada e a repetição
+  fechou o gate sem adicionar dívida de hotspot;
+- revisão read-only da mudança confirmou que rotas válidas preservam o
+  comportamento anterior, entradas malformadas não escapam como exceção e o
+  módulo não introduz import runtime circular;
+- código/testes foram commitados em `7c46ad3`
+  (`fix: harden API surface malformed input handling`);
+- `pnpm verify` no worktree final passou formato, CI contract, fontes clínicas,
+  inventário, observabilidade, configuração HA, Prometheus, traces, lint,
+  typecheck, cobertura `204/1091/21`, decisões `7/7`, mutation `7/7`, scope
+  drift, contratos `86/86`, worker `51/51`, migrations `33/33` e migration
+  safety; parou fail-closed em `verify:secrets` pelos quatro valores redigidos
+  de `infra/production/.env.local`, sem ler ou alterar o arquivo.
+
+### LIMITES / STATUS / NEXT
+
+Esta rodada fecha somente a lacuna local de fuzz bounded do B99-308. Não prova
+fuzz property-based não determinístico, HA/API/DB ativo, WebKit em ambiente
+aprovado, RC imutável, runtime com SHA, secret manager, clínica, `0/145`, gates
+externos ou reauditoria independente. O `pnpm verify` final permanece
+fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
+não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
+programa `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Gaps que permanecem abertos
 
 - `pnpm verify:secrets` acusa quatro entradas reais de

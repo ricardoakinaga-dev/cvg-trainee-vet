@@ -83,6 +83,23 @@ ambiente aprovado/RC; `pnpm verify` percorreu os gates até migration safety e
 parou fail-closed nos quatro achados redigidos de `.env.local`. B99-306
 permanece `BLOCKED`, sem promoção de release, score ou `PILOT_BLOCKED`.
 
+**Atualização B99-308 — 2026-08-20T15:52:02-03:00:** o RED adicionou corpus
+bounded determinístico para descritores e lookup malformados e reproduziu
+`TypeError` em `validateApiSurface` e `findApiSurfaceRoute`. O GREEN fez a
+validação falhar fechada, rejeitou inventário não-array e extraiu a lógica para
+`packages/contracts/src/api-surface-validation.ts`, mantendo as 57 rotas e o
+comportamento válido. Focais `6/6`, inventário `11/11`, contratos `86/86`,
+arquitetura `2/2`, build `12/12`, cobertura `204/1091/21` em
+`95,02/90,95/95,31/95,71` e hotspots `0` passaram, além de lint, typecheck,
+formato e diff-check. A primeira cobertura ampla encontrou hotspot não
+classificado; a extração foi aplicada e a repetição fechou o gate sem nova
+dívida. B99-308 fica `READY_FOR_NEXT_STEP` localmente; o corpus não substitui
+fuzz property-based, ambiente live/RC, secret manager, clínica, `0/145` ou
+reauditoria. O `pnpm verify` final passou todos os gates até migration safety e
+parou fail-closed nos quatro valores redigidos de `.env.local`. Código/testes
+estão no commit `7c46ad3`. Programa
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## F99-4 — RC e supply chain
 
 | ID | Pri | Estado | Owner | Critério de pronto |

@@ -10380,3 +10380,68 @@ clínica. O código foi publicado como `9959e44` e enviado para
 `verify:secrets` permanece fail-closed nos quatro valores redigidos de
 `infra/production/.env.local`; B99-306 continua bloqueado até ambiente WebKit
 aprovado e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T15:52:02-03:00 — DUAL99-B99-308-BOUNDED-API-FUZZ
+
+### TIMESTAMP
+
+2026-08-20 15:52:02 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local e evidência
+
+### SPRINT
+
+B99-308 — contratos de API, autorização e roteamento negativo
+
+### TASK
+
+Fechar a lacuna local de fuzz bounded para descritores da superfície de API e
+garantir lookup fail-closed para entradas malformadas.
+
+### ACTION
+
+Foi escrito primeiro um corpus determinístico de mutações sintéticas. O RED
+reproduziu `TypeError` em `validateApiSurface` para campos ausentes/não-string e
+em `findApiSurfaceRoute` para `path` malformado. O GREEN extraiu a validação para
+`packages/contracts/src/api-surface-validation.ts`, preservou o re-export
+canônico e adicionou guards de tipo sem alterar as 57 rotas ou a política de
+autorização.
+
+### RESULT
+
+O focal passou `6/6`, o inventário ativo `11/11`, contratos `86/86`, arquitetura
+`2/2`, CI contract/scope drift, typecheck, lint e formato passaram. A cobertura
+ampla passou `204/1091/21`, com floors `95,02/90,95/95,31/95,71`; build `12/12`
+e hotspots `0` passaram. A primeira execução ampla detectou corretamente um
+hotspot novo não classificado; a extração foi aplicada e a repetição fechou o
+gate sem nova dívida. O `pnpm verify` final passou formato, CI contract, fontes
+clínicas, inventário, observabilidade, configuração HA, Prometheus, traces, lint,
+typecheck, cobertura `204/1091/21`, decisões `7/7`, mutation `7/7`, scope drift,
+contratos `86/86`, worker `51/51`, migrations `33/33` e migration safety; parou
+fail-closed em `verify:secrets` pelos quatro valores redigidos de
+`infra/production/.env.local`, sem ler ou alterar o arquivo. Código e testes
+foram commitados em `7c46ad3` (`fix: harden API surface malformed input
+handling`).
+
+### DECISIONS
+
+O corpus permanece bounded, determinístico e somente sintético; não foi
+adicionada dependência de fuzz ou aleatoriedade não reprodutível. Não houve
+alteração de runtime, produção, `.env.local`, segredo, dado clínico, score,
+release ou decisão humana.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Revisar o diff e publicar o lote autorizado; manter pendentes WebKit aprovado/RC
+imutável, proveniência runtime, secret manager, clínica, `0/145`, gates externos
+e reauditoria independente.

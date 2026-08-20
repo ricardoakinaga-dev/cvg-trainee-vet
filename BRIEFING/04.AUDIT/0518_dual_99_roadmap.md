@@ -141,3 +141,21 @@ mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica,
 operação externa, `0/145`, aprovação humana e reauditoria. O parecer
 independente compatível permanece `REJECT`; a nova tentativa read-only foi
 encerrada sem evidência. Estado: `IN_PROGRESS` / `PILOT_BLOCKED`.
+
+## 11. Checkpoint de contratos negativos — 2026-08-20T15:52:02-03:00
+
+B99-308 recebeu uma frente local de fuzz bounded determinístico. O RED
+reproduziu exceções para descritores incompletos e lookup com `path` inválido;
+o GREEN adicionou rejeição fail-closed e isolou a validação em módulo coeso.
+Focais `6/6`, inventário `11/11`, contratos `86/86`, arquitetura `2/2`, build
+`12/12`, cobertura `204/1091/21` em `95,02/90,95/95,31/95,71` e hotspots `0`
+passaram. A primeira execução ampla encontrou hotspot não classificado, que foi
+removido por extração estrutural e revalidado.
+
+O código/testes de B99-308 foram commitados em `7c46ad3`; o avanço permanece
+local e não altera a disposição `IN_PROGRESS` / `PILOT_BLOCKED`.
+
+O avanço é local e não fecha B99-306, RC/proveniência, secret manager,
+HA/API/DB externo, clínica, `0/145`, gates externos, duas reauditorias ou
+go/no-go. F99-1 permanece `IN_PROGRESS` e o produto permanece
+`PILOT_BLOCKED`.

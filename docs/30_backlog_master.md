@@ -4,6 +4,23 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Atualização Dual99 local — 2026-08-20T15:52:02-03:00 — B99-308:** o RED
+adicionou corpus bounded determinístico de descritores/lookup malformados e
+reproduziu `TypeError` em `validateApiSurface` e `findApiSurfaceRoute`. O GREEN
+fez a superfície falhar fechada, rejeitou inventário não-array e extraiu a
+validação para `packages/contracts/src/api-surface-validation.ts`, mantendo as
+57 rotas e o comportamento válido. Focais passaram `6/6`, inventário `11/11`,
+contratos `86/86`, arquitetura `2/2`, build `12/12`, cobertura `204/1091/21`
+em `95,02/90,95/95,31/95,71` e hotspots `0`; lint, typecheck, formato e
+`git diff --check` passaram. A primeira cobertura ampla encontrou hotspot não
+classificado, corrigido pela extração e repetido com gate verde. O corpus não
+substitui property-based fuzz, HA/API/DB ativo, RC/SHA, secret manager,
+clínica, `0/145`, gates externos ou reauditoria. O `pnpm verify` final passou
+todos os gates até migration safety e parou fail-closed nos quatro valores
+redigidos de `.env.local`. Código/testes estão no commit `7c46ad3`; B99-308 permanece
+`READY_FOR_NEXT_STEP` localmente e o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T14:56:53-03:00 — B99-306:** a
 matriz E2E ativa foi executada contra o web proxy `3100`, API/edge/HA e
 PostgreSQL real local. O RED reproduziu base HTTP incorreta, chunk web 404

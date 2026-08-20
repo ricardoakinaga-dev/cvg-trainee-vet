@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-306 foi exercitada contra o HA/API/DB local com fixture isolada por browser; Chromium, Firefox, mobile Chromium e WebKit containerizado passaram `3/3` cada; a configuração de launch cross-browser e o bypass TLS local opt-in foram endurecidos, enquanto o ambiente WebKit aprovado e o runtime API do RC seguem sem prova
+- current_task: F99-1 local hardening; B99-308 recebeu fuzz bounded determinístico para descritores e lookup da superfície de API, com validação fail-closed e módulo separado, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-306 sob RED/GREEN: flags Chromium-only foram removidas de Firefox/WebKit, cookie `Secure` foi exercitado por HTTPS e a origem HTTPS foi autorizada somente em override HA temporário. O foco de configuração/orquestração passou `16/16`; E2E ativo HTTP Chromium `3/3`, Firefox `3/3`, mobile Chromium `3/3` e WebKit containerizado `3/3`; cobertura `204/1089/21` em `95,02/90,92/95,31/95,70`; lint, typecheck, formato, hotspots e diff-check passaram; código publicado em `9959e44`; `.gauntlet/` continua local e não rastreado
-- next_action: obter ambiente WebKit aprovado e repetir a matriz no RC imutável; manter rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-308 sob RED/GREEN: o corpus bounded encontrou `TypeError` em descritores e lookup malformados; a validação foi extraída para `packages/contracts/src/api-surface-validation.ts`, o foco passou `6/6`, o inventário `11/11`, contratos `86/86`, cobertura `204/1091/21` em `95,02/90,95/95,31/95,71`, build `12/12`, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato e diff-check passaram; código/testes estão no commit local `7c46ad3`; `.gauntlet/` continua local e não rastreado
+- next_action: revisar o diff e publicar o lote autorizado; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,39 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T15:35:54-03:00
+- last_update: 2026-08-20T15:52:02-03:00
+
+## 2026-08-20T15:52:02-03:00 — DUAL99-B99-308-BOUNDED-API-FUZZ
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu `TypeError` em `validateApiSurface` para descritores
+  incompletos e em `findApiSurfaceRoute` para `path` não-string;
+- GREEN adicionou guards fail-closed, rejeição de inventário não-array e
+  extraiu a validação para `packages/contracts/src/api-surface-validation.ts`,
+  preservando as 57 rotas e o re-export canônico;
+- o foco passou `6/6`, o inventário ativo `11/11`, contratos `86/86`,
+  arquitetura `2/2`, build `12/12`, cobertura `204/1091/21` em
+  `95,02/90,95/95,31/95,71`, hotspots `0`, lint, typecheck, formato e
+  `git diff --check` passaram;
+- a primeira cobertura ampla detectou corretamente um hotspot novo não
+  classificado; a extração foi aplicada e a repetição fechou o gate sem nova
+  dívida;
+- `pnpm verify` no worktree final passou formato, CI contract, fontes clínicas,
+  inventário, observabilidade, configuração HA, Prometheus, traces, lint,
+  typecheck, cobertura `204/1091/21`, decisões `7/7`, mutation `7/7`, scope
+  drift, contratos `86/86`, worker `51/51`, migrations `33/33` e migration
+  safety; parou fail-closed em `verify:secrets` pelos quatro valores redigidos
+  de `infra/production/.env.local`, sem ler ou alterar o arquivo.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+O corpus é bounded e determinístico, não substitui property-based fuzz,
+ambiente WebKit aprovado, RC/SHA imutável, runtime externo, secret manager,
+clínica, `0/145`, gates externos ou reauditoria independente. O `pnpm verify`
+final permanece fail-closed nos quatro valores redigidos de
+`infra/production/.env.local`, que não foi lido nem alterado. Estado global:
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T15:29:24-03:00 — DUAL99-B99-306-WEBKIT-TLS-LAUNCH
 
