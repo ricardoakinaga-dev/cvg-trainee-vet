@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN e commitou código/teste em `16a4f82`; o parser agora rejeita headers não numéricos e corpos `tree`/`commit` truncados ou sem delimitador com `git-object-unreadable`, preservando objetos válidos e blobs/tags; foco `18/18`, cobertura `205/1112/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: publicar o código `16a4f82` junto com a evidência rastreada, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `16a4f82` e publicou a evidência rastreada em `73ae862`; o parser agora rejeita headers não numéricos e corpos `tree`/`commit` truncados ou sem delimitador com `git-object-unreadable`, preservando objetos válidos e blobs/tags; foco `18/18`, cobertura `205/1112/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
+- next_action: confirmar a paridade entre HEAD e origin após publicar `16a4f82` e `73ae862`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -55,11 +55,12 @@
 
 B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
 quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
-rotação depende de secret manager/autorização. A rodada não fecha rotação,
-RC/SHA publicado, WebKit aprovado, runtime live, clínica, `0/145`, gates
-externos, score, release, piloto ou reauditoria. Próxima ação: publicar e
-reconciliar a evidência deste round. Estado global: `IN_PROGRESS /
-PILOT_BLOCKED`.
+rotação depende de secret manager/autorização. A evidência documental foi
+publicada em `73ae862` e enviada para `origin/agent/publish-production-hardening`.
+A rodada não fecha rotação, RC/SHA publicado, WebKit aprovado, runtime live,
+clínica, `0/145`, gates externos, score, release, piloto ou reauditoria.
+Próxima ação: confirmar a paridade remota e selecionar o próximo gap local.
+Estado global: `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T16:21:01-03:00 — DUAL99-B99-102-CLINICAL-DOWNLOADER
 

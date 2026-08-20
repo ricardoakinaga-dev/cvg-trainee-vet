@@ -869,8 +869,9 @@ objetos válidos foi alinhado ao framing real do protocolo.
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem
 secret manager/rotação/autorização. Esta rodada não prova provider, CI, RC
 imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos ou
-reauditoria independente. A evidência documental desta rodada ainda será
-publicada em commit separado. O programa permanece
+reauditoria independente. A evidência documental desta rodada foi publicada
+em `73ae862` (`docs: record b99-101 parser hardening`) e enviada para
+`origin/agent/publish-production-hardening`. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 30 — B99-102 / clinical-source downloader hardening — 2026-08-20T16:21:01-03:00

@@ -196,4 +196,4 @@ fail-closed somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`. B99-101 permanece `IN_PROGRESS`; secret
 manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
-`IN_PROGRESS`/`PILOT_BLOCKED`.
+`IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.

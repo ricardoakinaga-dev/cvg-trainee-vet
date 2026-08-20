@@ -14,8 +14,9 @@ cobertura passou `205/1112/21` em `95,02/90,95/95,31/95,71`, e lint, typecheck,
 formato, audit, hotspots `0` e diff-check passaram. O `pnpm verify` percorreu
 os gates até `verify:secrets`, que reportou somente os quatro valores redigidos
 preexistentes de `infra/production/.env.local`; código/teste estão no commit
-`16a4f82`. B99-101 permanece `IN_PROGRESS` até secret manager/rotação, e o
-programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+`16a4f82`; a evidência rastreada foi publicada em `73ae862`. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação, e o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T16:21:01-03:00 — B99-102:** o RED
 adicionou testes adversariais para endpoint/bucket/prefixo/destino, SigV4,

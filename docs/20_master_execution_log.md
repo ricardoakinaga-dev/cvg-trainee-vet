@@ -10526,9 +10526,11 @@ de `infra/production/.env.local`, sem ler ou alterar o arquivo.
 ### DECISIONS / STATUS / NEXT
 
 O código/teste foram commitados em `16a4f82` (`fix: harden git history secret
-scanning`). Nenhum segredo, PDF, dado real, provider, CI, produção, score,
-release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
-`IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
-runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos.
-Próxima ação: publicar e reconciliar a evidência documental deste round. Estado:
-`IN_PROGRESS / PILOT_BLOCKED`.
+scanning`) e a evidência documental foi publicada em `73ae862` (`docs: record
+b99-101 parser hardening`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo, PDF, dado real,
+provider, CI, produção, score, release, decisão clínica ou promoção de piloto
+foi tocado. B99-101 permanece `IN_PROGRESS` até secret manager/rotação/
+autorização; RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates
+externos e reauditoria seguem abertos. Próxima ação: confirmar paridade remota
+e selecionar o próximo gap local. Estado: `IN_PROGRESS / PILOT_BLOCKED`.
