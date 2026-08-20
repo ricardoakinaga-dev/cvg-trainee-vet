@@ -198,6 +198,24 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 18. Checkpoint de integridade cat-file batch do scanner — 2026-08-20T18:09:25-03:00
+
+B99-101 recebeu RED/GREEN para o header estrutural de `git cat-file --batch`.
+O RED reproduziu aceitação de object ID não hexadecimal, campo extra e tamanho
+`+N`, seguida de scan do corpo. O GREEN valida ID de 40 hex, tipo permitido e
+tamanho decimal antes de consumir o corpo; `missing/error` permanecem válidos,
+enquanto header inválido emite `git-object-unreadable`, encerra o lote e não
+expõe o valor sintético.
+
+O foco passou `25/25`, a cobertura passou `205/1119/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
+worker, migrações, migration safety, decisões, mutation e diff-check passaram.
+O `pnpm verify` parou em `verify:secrets` somente nos quatro valores redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+Código/teste estão em `0b29af6`; a evidência será publicada em commit separado.
+B99-101 segue `IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 17. Checkpoint de staged path whitespace do scanner — 2026-08-20T17:44:10-03:00
 
 B99-101 recebeu RED/GREEN para a identidade exata dos paths staged. O RED

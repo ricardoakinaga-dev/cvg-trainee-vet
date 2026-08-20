@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T17:44:10-03:00`
-- última atualização: `2026-08-20T17:49:39-03:00`
+- corte: `2026-08-20T18:09:25-03:00`
+- última atualização: `2026-08-20T18:09:25-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `4605371` em
+- commit publicado: `0b29af6` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,53 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 36 — B99-101 / cat-file batch header integrity — 2026-08-20T18:09:25-03:00
+
+### Barra congelada
+
+- validar o header estrutural de cada registro retornado por
+  `git cat-file --batch` antes de consumir ou escanear o corpo;
+- provar que object IDs inválidos, tamanhos não decimais e campos extras
+  produzem `git-object-unreadable` sem escanear ou expor o corpo, enquanto
+  `blob`/`tag`/`tree`/`commit` válidos e respostas `missing`/`error` permanecem
+  compatíveis;
+- manter RED→GREEN, bytes sintéticos, leitura sem produção, formato/lint/
+  typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### RED → GREEN
+
+O RED reproduziu que o parser aceitava um object ID que não era SHA-1 de 40
+hex, um campo adicional e um tamanho com sinal `+`, e ainda escaneava o corpo
+como blob válido. O GREEN exige ID estrutural, tipo permitido e tamanho decimal
+para objetos de conteúdo/estrutura; `missing` e `error` mantêm suas formas de
+resposta. Header inválido gera `git-object-unreadable`, encerra o lote antes do
+corpo e não expõe o valor sintético. Os fixtures anteriores foram alinhados ao
+framing real, com IDs de 40 hex.
+
+### Evidência
+
+- foco do scanner: `25/25`;
+- cobertura integral: `205` arquivos, `1.119` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- scanner em `793` linhas, `verify:hotspots` com `0` hotspots; lint, typecheck,
+  Prettier, audit, contratos `86/86`, worker `51/51`, migrações `33/33`,
+  migration safety, decisões `7/7`, mutation `7/7` e `git diff --check`: PASS;
+- `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou
+  fail-closed somente nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado;
+- código/teste commitados em `0b29af6` (`fix: validate git batch object
+  headers`), sem segredo, PDF, dado real, produção, score, release ou
+  promoção de piloto.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A evidência documental desta rodada será publicada
+em commit separado. Esta rodada não prova provider, CI, RC imutável, runtime
+live, WebKit aprovado, clínica, `0/145`, gates externos ou reauditoria
+independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 35 — B99-101 / staged path whitespace preservation — 2026-08-20T17:44:10-03:00
 

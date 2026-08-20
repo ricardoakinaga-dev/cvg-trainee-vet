@@ -10679,3 +10679,39 @@ release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
 `IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
 runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O
 programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T18:09:25-03:00 — DUAL99-B99-101-CAT-FILE-HEADER
+
+### TIMESTAMP / TASK
+
+2026-08-20 18:09:25 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — integridade dos headers de `git cat-file --batch`.
+
+### ACTION / RESULT
+
+RED reproduziu que `readBatchOutput` aceitava object ID inválido, campo extra
+ou tamanho `+N` no header e ainda escaneava o corpo. GREEN passou a exigir ID
+de 40 hex, tipo permitido e tamanho decimal para `blob`/`tag`/`tree`/`commit`,
+preservando as respostas `missing`/`error`; qualquer header inválido emite
+`git-object-unreadable`, interrompe o lote antes do corpo e não expõe o valor
+sintético. Os fixtures de histórico foram alinhados ao framing real, com IDs
+de 40 hex.
+
+O foco passou `25/25`; a cobertura passou `205/1119/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu todos os gates até `verify:secrets`, que falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `0b29af6` (`fix: validate git batch object
+headers`); a evidência documental desta rodada será publicada em commit
+separado. Nenhum segredo, PDF, dado real, provider, CI, produção, score,
+release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
