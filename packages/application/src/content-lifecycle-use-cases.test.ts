@@ -67,6 +67,14 @@ function createDependencies(initial: ContentRecord[]) {
             }),
           },
           clinicalReview: { hasApproved: vi.fn(async () => true) },
+          approver: {
+            findById: vi.fn(async (accountId) => ({
+              accountId,
+              accountStatus: "ACTIVE" as const,
+              roles: ["CLINICAL_APPROVER"] as const,
+              scopes: [scopeId],
+            })),
+          },
         }),
     },
     expiryRepository: repository,

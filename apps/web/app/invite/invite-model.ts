@@ -28,16 +28,29 @@ function isSuccess(value: unknown): boolean {
   return isRecord(value) && value.success === true;
 }
 
-export function readInvitationToken(
-  searchParams: Pick<URLSearchParams, "get">,
-): string | null {
-  return searchParams.get("token");
+export function readInvitationToken(fragment: string): string | null {
+  if (!fragment.startsWith("#")) return null;
+  return new URLSearchParams(fragment.slice(1)).get("token");
 }
 
 export function stripInvitationTokenFromUrl(value: string): string {
   const url = new URL(value, "http://127.0.0.1");
-  url.searchParams.delete("token");
-  return `${url.pathname}${url.search}${url.hash}`;
+  if (url.searchParams.has("token")) url.searchParams.delete("token");
+
+  if (!url.hash.startsWith("#")) {
+    return `${url.pathname}${url.search}`;
+  }
+
+  const fragmentParams = new URLSearchParams(url.hash.slice(1));
+  if (!fragmentParams.has("token")) {
+    return `${url.pathname}${url.search}${url.hash}`;
+  }
+
+  fragmentParams.delete("token");
+  const nextFragment = fragmentParams.toString();
+  return `${url.pathname}${url.search}${
+    nextFragment.length > 0 ? `#${nextFragment}` : ""
+  }`;
 }
 
 export function validateInvitationForm(

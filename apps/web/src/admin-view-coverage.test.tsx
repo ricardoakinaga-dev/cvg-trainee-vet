@@ -152,7 +152,7 @@ function fullProps(overrides: Record<string, unknown> = {}) {
     email: "new-user@example.test",
     role: "PARTICIPANT",
     invitation,
-    invitationPath: "/invite?token=synthetic-invitation-token-1234567890",
+    invitationPath: "/invite#token=synthetic-invitation-token-1234567890",
     busy: false,
     error: "Falha operacional sintética.",
     notice: "Operação concluída.",

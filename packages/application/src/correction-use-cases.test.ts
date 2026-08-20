@@ -138,7 +138,11 @@ describe("official correction application command", () => {
   it("denies a non-approved actor, cross-scope command, and invalid state", async () => {
     await expect(
       correctOpenResponse(
-        { ...command, approvedClinicalApproverId: "other" },
+        {
+          ...command,
+          roles: ["MODERATOR"],
+          approvedClinicalApproverId: "other",
+        },
         dependencies(),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
@@ -183,6 +187,23 @@ describe("official correction application command", () => {
     );
     expect(
       suspended.attemptStates.some((a) => a.status === "CORRIGIDA_HUMANAMENTE"),
+    ).toBe(false);
+
+    const roleRemoved = dependencies(submitted, {
+      findById: async (accountId) => ({
+        accountId,
+        accountStatus: "ACTIVE",
+        roles: ["MODERATOR"],
+        scopes: command.scopes,
+      }),
+    });
+    await expect(
+      correctOpenResponse(command, roleRemoved),
+    ).rejects.toMatchObject({ code: "forbidden" });
+    expect(
+      roleRemoved.attemptStates.some(
+        (attempt) => attempt.status === "CORRIGIDA_HUMANAMENTE",
+      ),
     ).toBe(false);
   });
 });

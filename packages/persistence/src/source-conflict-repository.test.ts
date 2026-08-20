@@ -52,4 +52,20 @@ describe("source conflict persistence", () => {
       expect.objectContaining({ id: "conflict-1", scopeId: "scope-1" }),
     );
   });
+
+  it("composes the persisted approver with the decision write transaction", async () => {
+    const transaction = vi.fn(async (work: (tx: unknown) => Promise<unknown>) =>
+      work({}),
+    );
+    const repository = createSourceConflictDecisionRepository({
+      transaction,
+    } as never);
+
+    await expect(
+      repository.transaction.run(async (operations) =>
+        Object.keys(operations).sort(),
+      ),
+    ).resolves.toEqual(["approver", "save"]);
+    expect(transaction).toHaveBeenCalledOnce();
+  });
 });

@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   createAssessmentResult,
@@ -18,9 +18,14 @@ import {
   attemptRowToState,
   createOutboxInsert,
   PersistenceConflictError,
+  isUniqueConstraintViolation,
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
-import { createClinicalApproverPort } from "./authoring-repository.js";
+import { createClinicalApproverPort } from "./clinical-approver-repository.js";
+import {
+  assertIdempotencyKey,
+  lockIdempotencyKey,
+} from "./idempotency-policy.js";
 import {
   assessmentIdempotency,
   assessmentResults,
@@ -266,13 +271,20 @@ function createCorrectionIdempotency(
 ): CorrectionTransactionalOperations["idempotency"] {
   return Object.freeze({
     find: async (key: string): Promise<CorrectionIdempotencyRecord | null> => {
+      assertIdempotencyKey(key);
+      await lockIdempotencyKey(executor, "correction", key);
       const rows = await executor
         .select({
           fingerprint: assessmentIdempotency.fingerprint,
           response: assessmentIdempotency.response,
         })
         .from(assessmentIdempotency)
-        .where(eq(assessmentIdempotency.key, key))
+        .where(
+          and(
+            eq(assessmentIdempotency.key, key),
+            sql`${assessmentIdempotency.expiresAt} > CURRENT_TIMESTAMP`,
+          ),
+        )
         .limit(1);
       const row = rows[0];
       return row === undefined ? null : assessmentIdempotencyRowToRecord(row);
@@ -281,6 +293,11 @@ function createCorrectionIdempotency(
       key: string,
       record: CorrectionIdempotencyRecord,
     ): Promise<void> => {
+      assertIdempotencyKey(key);
+      await lockIdempotencyKey(executor, "correction", key);
+      await executor.execute(
+        sql`delete from "assessment_idempotency" where "expires_at" <= CURRENT_TIMESTAMP`,
+      );
       const existing = await executor
         .select({ fingerprint: assessmentIdempotency.fingerprint })
         .from(assessmentIdempotency)
@@ -293,14 +310,20 @@ function createCorrectionIdempotency(
       }
       if (existing[0]) return;
 
-      await executor.insert(assessmentIdempotency).values({
-        key,
-        operation: "correction",
-        fingerprint: record.fingerprint,
-        attemptId: record.result.attempt.attemptId,
-        response: record.result as PersistedCorrectionSnapshot,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1_000),
-      });
+      try {
+        await executor.insert(assessmentIdempotency).values({
+          key,
+          operation: "correction",
+          fingerprint: record.fingerprint,
+          attemptId: record.result.attempt.attemptId,
+          response: record.result as PersistedCorrectionSnapshot,
+        });
+      } catch (error) {
+        if (!isUniqueConstraintViolation(error)) throw error;
+        throw new PersistenceConflictError(
+          "idempotency key was created concurrently",
+        );
+      }
     },
   });
 }

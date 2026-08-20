@@ -12,6 +12,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Atualização Dual99 local — 2026-08-20T08:55:50-03:00:** B99-103 foi corrigida sob RED/GREEN para executar o avanço de `session_generation` e a revogação em massa de sessões no mesmo transaction executor. O focal do repositório passou `8/8`; após um timeout transitório do teste existente de hotspots sob cobertura, a repetição passou `200/1050/21`, floors `95,06/91,06/95,35/95,77`, decisões `7/7`, mutation `7/7`, documentação, Dual99, rastreabilidade, skips `20/20`, hotspots, lint, typecheck, audit e diff-check. B99-103 permanece `IN_PROGRESS` até concorrência PostgreSQL/generation/TTL/logout/replay live autorizado; o programa segue `IN_PROGRESS`/`PILOT_BLOCKED`.
 
+**Atualização Dual99 local — 2026-08-20T09:35:11-03:00:** B99-104 foi tratada sob RED/GREEN/REFACTOR. `CLINICAL_APPROVER_ID` saiu do runtime/API, Compose HA, `.env.example` e verificador de topologia; source-conflict, recalculation, correction e content withdrawal agora derivam o principal autenticado e revalidam conta persistida `ACTIVE` + `CLINICAL_APPROVER` + escopo antes do write. Source-conflict e recalculation compartilham transaction executor com contexto de escopo aplicado antes da leitura bloqueante. Focais passaram `13/171`; cobertura passou `200/1053/21` com floors `95,06/91,07/95,31/95,75`; build `12/12`, lint, typecheck, formato, audit, documentation, Dual99, traceability, skip `20/20`, decisões `7/7`, mutation `7/7`, hotspots e diff-check passaram. B99-104 permanece `IN_PROGRESS` até rotação/concurrency live, RC/proveniência, revisão clínica e gates externos; o programa segue `IN_PROGRESS`/`PILOT_BLOCKED`.
+
 **Avaliação independente pós-hardening:** a implementação é relevante, mas o pacote é `PARTIAL`. U98-107–113 foram reabertas por seis achados altos: scanner com bypass, corrida de sessão, probe de outbox em memória, runtime Prometheus stale/sem API loss-of-signal, identidade clínica estática fora de authoring e rollout N/N-1 inseguro para mutações. Permanecem `11/87`, cobertura abaixo de `95/90/95/95`, worker abaixo de 80% nas quatro métricas, hotspots `152/21/128` (`22` ≥100), WebKit, `3/20`, RC, clínica, `0/145` e externos. Próxima ação: U98-005, U98-107–113/115–117 e só então U98-114.
 
 **Hardening local Dual 98 (2026-08-16T21:26:09-03:00):** U98-107, U98-108 e U98-110–113 foram implementadas e verificadas localmente sob RED/GREEN/REFACTOR; U98-109 está `IN_PROGRESS` por limite explícito de escopo. `pnpm verify` passou com `195/947/19`, cobertura `90,43%/85,14%/93,61%/91,84%`, build `12/12`, migrações `31/31`, decisões `7/7`, contratos `82/82`, worker `31/31`, secrets limpo e hotspots sem violação. A evidência é `docs/132`; não houve commit, release, score ou promoção de `PILOT_BLOCKED`.
@@ -2060,3 +2062,59 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **verificação:** `pnpm verify` com `171` arquivos, `764` testes, `18` skips, cobertura `84,65%`/`80,01%`/`86,76%`/`85,47%`, decisões `7/7`, contratos `81/81`, worker `25/25`, migrations `29/29` e secrets limpo; hotspots `0`, `169` funções longas, maior função `179` linhas;
 - **build/E2E:** build nos `12` workspaces; `CVG_E2E_WEB_PORT=3125 pnpm exec playwright test` passou `26/26` em `18,7s`; sem API local em `3101`, não é evidência HA;
 - **limite/status:** worktree não comitado; AUD-CQ-001–014 seguem `READY_FOR_NEXT_STEP`, AUD-CQ-015 segue `WAITING_HUMAN_APPROVAL`, score `64,20/100`, `0/145` cadeias e `PILOT_BLOCKED` permanecem.
+
+## 2026-08-20T10:19:27-03:00 — DUAL99-B99-105-IDEMPOTENCY-INTEGRITY
+
+- **entrega:** B99-105 fechou localmente o contrato de idempotência nos quatro
+  adapters: chave 16–128, lock advisory namespaced por transação,
+  `CURRENT_TIMESTAMP` para TTL/leitura/cleanup, conflito concorrente explícito
+  e nenhuma expiração calculada por `Date.now()`;
+- **persistência:** migration `0032_idempotency_integrity_closure.sql` adiciona
+  defaults server-clock, constraints de operação/chave/fingerprint/expiry,
+  `response_hash NOT NULL` com SHA-256, rejeição fail-closed de legado, `FORCE
+  RLS`, `REVOKE ALL FROM PUBLIC` e policies `FOR DELETE` com contexto de
+  participante/escopo;
+- **verificação:** focais `112/112`, coverage `202/1060/21`, floors
+  `95,06/91,06/95,31/95,76`, migration governance `33/33`, build `12/12`,
+  typecheck/lint/format/audit, decisões `7/7`, mutation `7/7`, traceability,
+  documentation, skips `20/20`, architecture, hotspots e diff-check verdes;
+- **limite/status:** `verify:secrets` acusa apenas os quatro valores redigidos
+  de `infra/production/.env.local`, sem leitura/alteração do arquivo; migration
+  live, concorrência PostgreSQL, role restrita, RLS cleanup live, RC, score e
+  release permanecem pendentes. Estado `IN_PROGRESS` / `PILOT_BLOCKED`.
+
+## 2026-08-20T10:32:23-03:00 — DUAL99-B99-105-SCHEMA-RUNTIME-REVIEW
+
+- **correção:** schema Drizzle de authoring agora declara o mesmo default
+  server-clock de TTL presente na migration 0032;
+- **verificação:** coverage fresca `202/1060/21`, floors
+  `95,06/91,06/95,31/95,76`, migrations `33/33`, typecheck, lint, formato e
+  diff-check passaram;
+- a cobertura foi repetida após a revisão final do diff no worktree exato e
+  manteve os mesmos números;
+- **evidência runtime:** probe somente leitura encontrou migration count `30`,
+  `cvg_admin` com `SUPERUSER/BYPASSRLS` e authoring idempotency sem RLS; o HA
+  ativo está stale e não representa o RC desta rodada;
+- **limite/status:** nenhuma alteração live, migration aplicada, score,
+  release, commit ou push; B99-105 permanece localmente pronto e globalmente
+  `IN_PROGRESS` / `PILOT_BLOCKED`, com role restrita e provas same-key/TTL/RLS
+  ainda pendentes.
+
+## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
+
+- **entrega:** `/health/dependencies` foi alinhado no catálogo canônico a
+  `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`; o fluxo administrativo passou a
+  gerar `/invite#token=...`, ler token somente do fragmento e limpar também
+  query legada;
+- **RED/GREEN:** o contrato focal falhou com o descriptor público e o modelo
+  falhou com query token; após a correção, contrato/modelo/estado/view/health
+  passaram `22/22`, e os negativos 401/403/503 permaneceram cobertos;
+- **E2E/gates:** Playwright sintético Chromium `3/3` em porta isolada `3213`;
+  coverage `202/1060/21`, `95,05/91,06/95,31/95,75`; typecheck, lint, formato,
+  diff-check, migrations `33/33`, decisions `7/7`, mutation `7/7`, documentação,
+  traceability, Dual99, risk matrix, skips, architecture e public-boundary
+  passaram. O timeout do hotspot AST foi explicitado em `30s` sob cobertura;
+- **limite/status:** E2E sintético com mocks e API `3101` indisponível não prova
+  HA/API/DB ativo; runtime PostgreSQL stale, secrets redigidos, RC, gates
+  externos/clínicos, `0/145` e reauditoria permanecem. B99-106 segue
+  `READY_FOR_NEXT_STEP` localmente; estado global `IN_PROGRESS/PILOT_BLOCKED`.

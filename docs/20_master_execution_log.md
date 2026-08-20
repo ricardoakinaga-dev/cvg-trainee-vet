@@ -9805,3 +9805,148 @@ BUILD ENGINE / BUILD — SUB80→95 / S4 / AUD-CQ-011, AUD-CQ-012.
 ### DECISIONS / STATUS / NEXT
 
 O score histórico `64,20/100` não foi alterado. `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; AUD-CQ-001–014 permanecem localmente implementados/verificados e prontos para runtime audit/reauditoria, AUD-CQ-015 permanece aguardando aprovação e ambiente. Continuam pendentes SHA Git real/RC, runtime HA reconstruído para este estado, CI/registry/deploy/rollback, IdP/MFA, DNS/TLS, backup/RPO/RTO, UAT/WCAG/RUM/Web Vitals, soak/DR, beta clínico, revisão humana dos `764` itens e reauditoria independente dos 16 itens; `0/145` cadeias completas permanece explícito.
+
+## 2026-08-20T09:35:11-03:00 — DUAL99-B99-104-CURRENT-CLINICAL-IDENTITY
+
+### TIMESTAMP
+
+2026-08-20 09:35:11 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+B99-104 — identidade clínica corrente
+
+### TASK
+
+Eliminar a dependência de configuração estática do aprovador clínico e
+revalidar o principal persistido dentro da transação de cada decisão clínica.
+
+### ACTION
+
+Sob RED/GREEN/REFACTOR, a configuração `CLINICAL_APPROVER_ID` foi retirada do
+runtime config, da composição HTTP, do Compose HA, do exemplo de ambiente e do
+verificador de topologia. Source-conflict, recalculation, correction e content
+withdrawal passaram a usar o principal autenticado; as duas primeiras áreas
+ganharam transação compartilhada com contexto de escopo aplicado antes da
+leitura bloqueante da conta, e content/correction preservaram suas transações.
+
+### RESULT
+
+Focais passaram `13` arquivos / `171` testes. `pnpm test:coverage` passou na
+repetição imediata com `200` arquivos / `1.053` testes / `17` arquivos e `21`
+testes guardados; floors `95,06%` statements, `91,07%` branches, `95,31%`
+functions e `95,75%` lines. Lint, typecheck, formato, audit, documentação,
+Dual99, traceability, skip governance `20/20`, decisões críticas `7/7`,
+mutation dirigida `7/7`, hotspots e diff-check passaram. Build passou `12/12`
+com `CVG_API_INTERNAL_URL` sintética; `verify:secrets` acusa somente os quatro
+valores redigidos de `.env.local` ignorado.
+
+### DECISIONS
+
+Nenhum segredo, dado clínico, score, release, deploy ou aprovação clínica foi
+promovido. O código local está concluído para a rodada, mas a prova live de
+rotação/concorrência PostgreSQL, RC/proveniência, secret manager, gates
+externos, `0/145` e reauditoria independente permanece necessária.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Preservar o worktree, obter ambiente/autorização para as provas live e gates
+externos, e então reauditar o mesmo RC. Não executar push adicional sem nova
+autorização explícita.
+
+## 2026-08-20T10:19:27-03:00 — DUAL99-B99-105-IDEMPOTENCY-INTEGRITY
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE + GAUNTLET / DUAL 99 F99-1 / B99-105 / integridade de
+idempotência em authoring, tentativa, resposta e correção.
+
+### RED → GREEN / RESULTADO
+
+O RED reproduziu o piso HTTP de chave ausente/inadequado, a ausência da
+migration de fechamento, o cleanup negado pela falta de `FOR DELETE` em RLS e
+o uso de `Date.now()` sem serialização same-key nos três adapters não autorais.
+O GREEN centralizou a validação 16–128 e lock `pg_advisory_xact_lock`
+namespaced, moveu TTL/expiração para `CURRENT_TIMESTAMP`, adicionou cleanup
+de escrita e publicou `0032_idempotency_integrity_closure.sql` com constraints,
+`response_hash NOT NULL`/SHA-256, rejeição explícita de legado, `FORCE RLS`,
+`REVOKE ALL FROM PUBLIC` e policies de delete por contexto.
+
+### EVIDÊNCIA
+
+Focais passaram `112/112`; a cobertura integral passou `202` arquivos / `1.060`
+testes / `17` arquivos e `21` testes guardados, com `95,06%` statements,
+`91,06%` branches, `95,31%` functions e `95,76%` lines. Typecheck, lint,
+formato, build `12/12`, `pnpm audit --audit-level=high`, migration governance
+`33/33`, decisões `7/7`, mutation `7/7`, traceability, documentação,
+skip-governance `20/20`, architecture, hotspots e `git diff --check` passaram.
+O scanner segue fail-closed e acusa somente os quatro valores redigidos do
+`infra/production/.env.local` ignorado.
+
+### LIMITES / DECISÃO
+
+O resultado é local e não autoriza score, release, clínica, commit ou push.
+Sem PostgreSQL live autorizado, continuam pendentes a execução da migration
+contra legado, role sem `SUPERUSER/BYPASSRLS`, concorrência same-key e prova
+live de TTL/RLS cleanup; Dual99 segue `IN_PROGRESS` / `PILOT_BLOCKED`.
+
+## 2026-08-20T10:32:23-03:00 — DUAL99-B99-105-SCHEMA-RUNTIME-REVIEW
+
+- a revisão estática corrigiu o default `CURRENT_TIMESTAMP + interval '24 hours'`
+  ausente no schema Drizzle de `authoringWorkflowIdempotency.expiresAt`;
+- cobertura fresca passou `202/1060/21`, floors `95,06/91,06/95,31/95,76`,
+  migration governance `33/33`, typecheck, lint, formato e diff-check;
+- probe read-only do PostgreSQL HA ativo encontrou migration count `30`,
+  `cvg_admin` com `SUPERUSER/BYPASSRLS` e authoring idempotency sem RLS, logo o
+  runtime não é o RC B99-105;
+- após a revisão final do diff, a cobertura foi repetida no worktree exato e
+  manteve `202/1060/21` e os mesmos floors;
+- não houve alteração live, aplicação de migration, score, release, commit ou
+  push. Estado `IN_PROGRESS` / `PILOT_BLOCKED`; role restrita, same-key, TTL e
+  cleanup RLS live seguem pendentes.
+
+## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE + GAUNTLET / DUAL 99 F99-1 / B99-106 / CSRF, autorização,
+diagnóstico e convite.
+
+### RED → GREEN / RESULTADO
+
+RED reproduziu o catálogo de `/health/dependencies` como público apesar da
+autorização interna real e o convite administrativo com token na query. GREEN
+alinhou o contrato a `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`, moveu o token para
+`#token=...`, restringiu a leitura ao fragmento e limpou também query legada
+com `replaceState`. Os negativos existentes preservam 401/403/503 para o
+diagnóstico.
+
+### EVIDÊNCIA
+
+O foco passou `22/22`; o E2E sintético Chromium passou `3/3` em porta isolada
+`3213`; cobertura passou `202/1060/21` com `95,05%` statements, `91,06%`
+branches, `95,31%` functions e `95,75%` lines. Typecheck, lint, formato,
+diff-check, migrations `33/33`, decisões `7/7`, mutation `7/7`, documentação,
+traceability, Dual99, risk matrix, skip governance, architecture e
+public-boundary passaram. O teste de hotspots passou a declarar timeout de
+`30s` para o scan AST sob instrumentação, sem flexibilizar suas asserções.
+
+### LIMITES / DECISÃO
+
+O E2E usa mocks sintéticos e a API `3101` estava indisponível; não é evidência
+de HA/API/DB ativo. O runtime PostgreSQL continua stale, o secret scan acusa
+somente os quatro valores redigidos do `.env.local` ignorado e os gates
+externos, clínicos, RC, `0/145` e reauditoria permanecem abertos. Resultado
+local `READY_FOR_NEXT_STEP`; estado global `IN_PROGRESS` / `PILOT_BLOCKED`.

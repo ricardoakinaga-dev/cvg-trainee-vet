@@ -14,6 +14,7 @@ import {
 } from "./authorization.js";
 import { createAuditEntry, type AuditPort } from "./audit.js";
 import { ApplicationError, toApplicationError } from "./errors.js";
+import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 
 export type ContentRecord = Readonly<{
   readonly contentId: string;
@@ -133,6 +134,7 @@ export interface ContentTransactionalOperations {
   readonly eventPublisher: ContentEventPublisherPort;
   readonly audit: AuditPort;
   readonly clinicalReview: ClinicalReviewPort;
+  readonly approver: ClinicalApproverPort;
 }
 
 export interface ContentTransactionPort {
@@ -248,14 +250,31 @@ function validateContentAuthorization(command: AdvanceContentCommand): void {
     capability: capabilityByEvent[command.event],
     resource: { scopeId: command.scopeId },
     scopes: command.scopes,
-    ...(command.approvedClinicalApproverId === undefined
-      ? {}
-      : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
+    approvedClinicalApproverId: command.principalId,
   });
   if (!authorized) {
     throw new ApplicationError(
       "forbidden",
       "Content operation is outside the current authorization scope",
+    );
+  }
+}
+
+async function assertCurrentClinicalApprover(
+  command: AdvanceContentCommand,
+  operations: ContentTransactionalOperations,
+): Promise<void> {
+  if (command.event !== "RETIRAR") return;
+  const current = await operations.approver.findById(command.principalId);
+  if (
+    current === null ||
+    current.accountStatus !== "ACTIVE" ||
+    !current.roles.includes("CLINICAL_APPROVER") ||
+    !current.scopes.includes(command.scopeId)
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Current clinical approver is not active in the requested scope",
     );
   }
 }
@@ -464,6 +483,7 @@ async function executeContentTransitionWithinTransaction(
   idFactory: ContentUseCaseDependencies["idFactory"],
 ): Promise<ContentRecord> {
   const current = await loadCurrentContent(operations, command);
+  await assertCurrentClinicalApprover(command, operations);
   await assertPublicationReady(operations, command, current);
   const affectedParticipantIds = await loadAffectedParticipantIds(
     operations,

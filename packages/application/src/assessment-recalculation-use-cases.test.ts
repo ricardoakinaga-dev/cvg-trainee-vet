@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   recalculateAffectedAssessments,
   registerAssessmentRecalculationCandidates,
+  type AssessmentRecalculationRepository,
   type RecalculateAffectedAssessmentsCommand,
 } from "./assessment-recalculation-use-cases.js";
 import type { ClinicalApproverPort } from "./authoring-use-cases.js";
@@ -42,13 +43,36 @@ const candidate = {
   eligibleItemCount: 10,
 };
 
+function repository(
+  overrides: Readonly<{
+    readonly approver?: ClinicalApproverPort;
+    readonly listAffected?: AssessmentRecalculationRepository["listAffected"];
+    readonly register?: AssessmentRecalculationRepository["register"];
+    readonly save?: AssessmentRecalculationRepository["save"];
+    readonly notify?: AssessmentRecalculationRepository["notify"];
+  }> = {},
+): AssessmentRecalculationRepository {
+  const operations = {
+    listAffected: overrides.listAffected ?? (async () => [candidate]),
+    register: overrides.register ?? (async () => undefined),
+    save: overrides.save ?? (async () => undefined),
+    notify: overrides.notify ?? (async () => undefined),
+    approver: overrides.approver ?? activeApprover,
+  };
+  return {
+    ...operations,
+    transaction: {
+      run: async (work) => work(operations),
+    },
+  };
+}
+
 describe("affected assessment recalculation", () => {
   it("registers only scope-matched snapshots through approved clinical access", async () => {
     const register = vi.fn(async () => undefined);
     const result = await registerAssessmentRecalculationCandidates(
       { ...command, candidates: [candidate] },
-      { register },
-      activeApprover,
+      repository({ register }),
     );
 
     expect(result).toEqual({ registeredCount: 1 });
@@ -60,12 +84,11 @@ describe("affected assessment recalculation", () => {
     const notify = vi.fn(async () => undefined);
     const result = await recalculateAffectedAssessments(
       command,
-      {
+      repository({
         listAffected: async () => [candidate],
         save,
         notify,
-      },
-      activeApprover,
+      }),
     );
 
     expect(result).toMatchObject({
@@ -103,12 +126,9 @@ describe("affected assessment recalculation", () => {
     await expect(
       recalculateAffectedAssessments(
         withoutApproval,
-        {
+        repository({
           listAffected,
-          save: vi.fn(),
-          notify: vi.fn(),
-        },
-        activeApprover,
+        }),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
     expect(listAffected).not.toHaveBeenCalled();
@@ -127,12 +147,29 @@ describe("affected assessment recalculation", () => {
     await expect(
       recalculateAffectedAssessments(
         command,
-        {
+        repository({
           listAffected,
-          save: vi.fn(),
-          notify: vi.fn(),
-        },
-        suspendedApprover,
+          approver: suspendedApprover,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+    expect(listAffected).not.toHaveBeenCalled();
+
+    const roleRemovedApprover: ClinicalApproverPort = {
+      findById: async (accountId) => ({
+        accountId,
+        accountStatus: "ACTIVE",
+        roles: ["MODERATOR"],
+        scopes: ["scope-1"],
+      }),
+    };
+    await expect(
+      recalculateAffectedAssessments(
+        command,
+        repository({
+          listAffected,
+          approver: roleRemovedApprover,
+        }),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
     expect(listAffected).not.toHaveBeenCalled();

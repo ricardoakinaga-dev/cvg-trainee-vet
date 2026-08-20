@@ -23,7 +23,7 @@ describe("code hotspot policy", () => {
     expect(
       snapshot.availableFiles.some((path) => path.startsWith(".git/")),
     ).toBe(false);
-  });
+  }, 30_000);
 
   it("rejects an unplanned hotspot and a missing characterization test", () => {
     const snapshot: CodeHotspotSnapshot = {

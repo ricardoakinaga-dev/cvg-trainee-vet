@@ -3,13 +3,12 @@
 import { useEffect } from "react";
 import { createAdminActions } from "./admin-actions";
 import { AdminView } from "./admin-view";
-import { invitationQueryParameter } from "./admin-model";
 import { useAdminPageState } from "./admin-state";
 
 function invitationPath(token: string | undefined): string | null {
   return token === undefined
     ? null
-    : "/invite?" + invitationQueryParameter + "=" + encodeURIComponent(token);
+    : "/invite#token=" + encodeURIComponent(token);
 }
 
 export default function AdminPage() {

@@ -327,11 +327,7 @@ export async function handleSourceConflictDecision(
     accountStatus: principal.accountStatus,
     roles: principal.roles,
     scopes: principal.scopes,
-    ...(dependencies.approvedClinicalApproverId === undefined
-      ? {}
-      : {
-          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
-        }),
+    approvedClinicalApproverId: principal.principalId,
   });
   return {
     status: 201,
@@ -345,9 +341,6 @@ export async function handleAssessmentRecalculation(
   principal: ApiPrincipal,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
-  if (dependencies.approvedClinicalApproverId === undefined) {
-    return errorResponse("forbidden", requestId);
-  }
   const parsed = assessmentRecalculationBatchRequestSchema.safeParse(
     request.body,
   );
@@ -360,7 +353,7 @@ export async function handleAssessmentRecalculation(
     accountStatus: principal.accountStatus,
     roles: principal.roles,
     scopes: principal.scopes,
-    approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+    approvedClinicalApproverId: principal.principalId,
     scopeId: parsed.data.scopeId,
     itemId: parsed.data.itemId,
     reason: parsed.data.reason,

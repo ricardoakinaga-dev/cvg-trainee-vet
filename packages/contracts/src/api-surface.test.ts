@@ -37,6 +37,11 @@ describe("canonical API surface inventory", () => {
     expect(findApiSurfaceRoute("GET", "/health/live")?.path).toBe(
       "/health/live",
     );
+    expect(findApiSurfaceRoute("GET", "/health/dependencies")).toMatchObject({
+      capability: "VIEW_INTERNAL_AUDIT",
+      auth: "INTERNAL",
+      scope: "audit",
+    });
     expect(
       findApiSurfaceRoute("POST", "/api/v1/internal/content/sample-id/review")
         ?.path,

@@ -227,13 +227,12 @@ describe("API HTTP dependency composition coverage", () => {
         DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
         QDRANT_ENABLED: "false",
         AI_ENABLED: "false",
-        CLINICAL_APPROVER_ID: "approver",
         METRICS_SCRAPE_TOKEN: "m".repeat(32),
       }),
       runtimeResources,
     );
 
-    expect(dependencies.approvedClinicalApproverId).toBe("approver");
+    expect(dependencies).not.toHaveProperty("approvedClinicalApproverId");
     expect(dependencies.metricsScrapeToken).toBe("m".repeat(32));
     await expect(
       dependencies.authenticate?.({

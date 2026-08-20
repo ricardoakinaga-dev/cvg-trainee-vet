@@ -408,7 +408,7 @@ describe("API optional dependency boundaries", () => {
         administrator,
         dependencies(),
       ),
-    ).resolves.toMatchObject({ status: 403 });
+    ).resolves.toMatchObject({ status: 422 });
     await expectInternal(
       handleListManagedAccounts(
         request(),
@@ -570,7 +570,7 @@ describe("API optional dependency boundaries", () => {
         request(),
         requestId,
         administrator,
-        dependencies({ approvedClinicalApproverId: participantId }),
+        dependencies(),
       ),
     ).resolves.toMatchObject({ status: 422 });
     await expect(
@@ -578,7 +578,7 @@ describe("API optional dependency boundaries", () => {
         request(recalculationInput),
         requestId,
         administrator,
-        dependencies({ approvedClinicalApproverId: participantId }),
+        dependencies(),
       ),
     ).resolves.toMatchObject({ status: 403 });
     await expect(
@@ -586,7 +586,7 @@ describe("API optional dependency boundaries", () => {
         request({ ...recalculationInput, scopeId }),
         requestId,
         administrator,
-        dependencies({ approvedClinicalApproverId: participantId }),
+        dependencies(),
       ),
     ).resolves.toMatchObject({ status: 500 });
 

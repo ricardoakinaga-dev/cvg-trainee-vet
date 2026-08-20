@@ -415,9 +415,29 @@ export const attemptIdempotency = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP + interval '24 hours'`),
   },
-  (table) => [index("attempt_idempotency_expires_at_idx").on(table.expiresAt)],
+  (table) => [
+    index("attempt_idempotency_expires_at_idx").on(table.expiresAt),
+    check(
+      "attempt_idempotency_operation_check",
+      sql`${table.operation} = 'attempt'`,
+    ),
+    check(
+      "attempt_idempotency_key_entropy_check",
+      sql`${table.key} ~ '^[A-Za-z0-9][A-Za-z0-9._~:-]{15,127}$'`,
+    ),
+    check(
+      "attempt_idempotency_fingerprint_check",
+      sql`${table.fingerprint} <> ''`,
+    ),
+    check(
+      "attempt_idempotency_expiry_check",
+      sql`${table.expiresAt} > ${table.createdAt}`,
+    ),
+  ],
 );
 
 export const answerIdempotency = pgTable(
@@ -436,9 +456,29 @@ export const answerIdempotency = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP + interval '24 hours'`),
   },
-  (table) => [index("answer_idempotency_expires_at_idx").on(table.expiresAt)],
+  (table) => [
+    index("answer_idempotency_expires_at_idx").on(table.expiresAt),
+    check(
+      "answer_idempotency_operation_check",
+      sql`${table.operation} = 'answer'`,
+    ),
+    check(
+      "answer_idempotency_key_entropy_check",
+      sql`${table.key} ~ '^[A-Za-z0-9][A-Za-z0-9._~:-]{15,127}$'`,
+    ),
+    check(
+      "answer_idempotency_fingerprint_check",
+      sql`${table.fingerprint} <> ''`,
+    ),
+    check(
+      "answer_idempotency_expiry_check",
+      sql`${table.expiresAt} > ${table.createdAt}`,
+    ),
+  ],
 );
 
 export const assessmentIdempotency = pgTable(
@@ -454,9 +494,27 @@ export const assessmentIdempotency = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP + interval '24 hours'`),
   },
   (table) => [
     index("assessment_idempotency_expires_at_idx").on(table.expiresAt),
+    check(
+      "assessment_idempotency_operation_check",
+      sql`${table.operation} = 'correction'`,
+    ),
+    check(
+      "assessment_idempotency_key_entropy_check",
+      sql`${table.key} ~ '^[A-Za-z0-9][A-Za-z0-9._~:-]{15,127}$'`,
+    ),
+    check(
+      "assessment_idempotency_fingerprint_check",
+      sql`${table.fingerprint} <> ''`,
+    ),
+    check(
+      "assessment_idempotency_expiry_check",
+      sql`${table.expiresAt} > ${table.createdAt}`,
+    ),
   ],
 );

@@ -41,7 +41,6 @@ export type ManagedAccountPage = ManagedAccountPageProjection;
 
 export type ApiRecord = Readonly<Record<string, unknown>>;
 export const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
-export const invitationQueryParameter = "token";
 
 export const inviteRoleOptions: readonly Readonly<{
   readonly value: InviteRole;

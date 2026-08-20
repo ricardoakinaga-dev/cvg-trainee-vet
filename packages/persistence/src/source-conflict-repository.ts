@@ -3,8 +3,14 @@ import {
   buildSourceConflictDecision,
   type SourceConflictDecisionState,
 } from "@cvg/domain";
-import type { SourceConflictDecisionWritePort } from "@cvg/application";
+import type {
+  SourceConflictDecisionRepository,
+  SourceConflictDecisionTransactionPort,
+  SourceConflictDecisionTransactionalOperations,
+  TransactionSecurityContext,
+} from "@cvg/application";
 
+import { createClinicalApproverPort } from "./clinical-approver-repository.js";
 import { sourceConflictDecisions } from "./schema.js";
 import type * as schema from "./schema.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
@@ -109,18 +115,41 @@ export function sourceConflictDecisionRowToState(
   }
 }
 
+function createTransactionalOperations(
+  executor: DatabaseExecutor,
+): SourceConflictDecisionTransactionalOperations {
+  return Object.freeze({
+    approver: createClinicalApproverPort(executor),
+    save: async (state: SourceConflictDecisionState) => {
+      await setDatabaseSecurityContext(executor, { scopeId: state.scopeId });
+      await executor
+        .insert(sourceConflictDecisions)
+        .values(sourceConflictDecisionStateToRow(state));
+      return state;
+    },
+  });
+}
+
 export function createSourceConflictDecisionRepository(
   db: DatabaseExecutor,
-): SourceConflictDecisionWritePort {
-  return Object.freeze({
-    save: async (state: SourceConflictDecisionState) =>
-      db.transaction(async (transaction) => {
-        const executor = transaction;
-        await setDatabaseSecurityContext(executor, { scopeId: state.scopeId });
-        await executor
-          .insert(sourceConflictDecisions)
-          .values(sourceConflictDecisionStateToRow(state));
-        return state;
+): SourceConflictDecisionRepository {
+  const transaction: SourceConflictDecisionTransactionPort = Object.freeze({
+    run: async <Result>(
+      work: (
+        operations: SourceConflictDecisionTransactionalOperations,
+      ) => Promise<Result>,
+      context?: TransactionSecurityContext,
+    ): Promise<Result> =>
+      db.transaction(async (executor) => {
+        if (context !== undefined) {
+          await setDatabaseSecurityContext(executor, context);
+        }
+        return work(createTransactionalOperations(executor));
       }),
+  });
+  return Object.freeze({
+    transaction,
+    save: async (state: SourceConflictDecisionState) =>
+      transaction.run((operations) => operations.save(state)),
   });
 }

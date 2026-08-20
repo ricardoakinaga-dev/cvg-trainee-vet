@@ -104,7 +104,7 @@ test("superadmin creates a bounded first-access invitation", async ({
   });
   await expect(
     page.getByRole("link", { name: "Abrir primeiro acesso" }),
-  ).toHaveAttribute("href", `/invite?token=${invitationToken}`);
+  ).toHaveAttribute("href", `/invite#token=${invitationToken}`);
 });
 
 test("first access accepts the invitation and creates the user password", async ({
@@ -122,10 +122,11 @@ test("first access accepts the invitation and creates the user password", async 
       body: JSON.stringify(successEnvelope({ status: "active" })),
     });
   });
-  await page.goto(`/invite?token=${invitationToken}`);
+  await page.goto(`/invite#token=${invitationToken}`);
   await expect(
     page.getByRole("heading", { name: "Criar senha de primeiro acesso" }),
   ).toBeVisible();
+  await expect.poll(() => page.url()).not.toContain(invitationToken);
   await page
     .getByLabel("Nova senha", { exact: true })
     .fill(firstAccessPassword);

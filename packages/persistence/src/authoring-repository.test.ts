@@ -142,7 +142,7 @@ function replayRow(
     contentId: row.contentId,
     version: row.version,
     response,
-    responseHash: null,
+    responseHash: `legacy:${"c".repeat(32)}`,
     expiresAt: new Date(Date.now() + 60_000),
     ...overrides,
   };
@@ -533,7 +533,7 @@ describe("authoring persistence mapping", () => {
               preflight: record.preflight,
               recordHash: `legacy:${"c".repeat(32)}`,
             },
-            responseHash: null,
+            responseHash: `legacy:${"c".repeat(32)}`,
             expiresAt: new Date(Date.now() + 60_000),
           },
         ],
@@ -549,9 +549,9 @@ describe("authoring persistence mapping", () => {
       transaction.run(async (operations) => {
         expect(Object.isFrozen(operations)).toBe(true);
         await expect(
-          operations.idempotency.find("publication-key"),
+          operations.idempotency.find("publication-key-2026"),
         ).resolves.toEqual(publication);
-        await operations.idempotency.store("publication-key", publication);
+        await operations.idempotency.store("publication-key-2026", publication);
         return Object.keys(operations).sort();
       }),
     ).resolves.toEqual([
@@ -584,7 +584,7 @@ describe("authoring persistence mapping", () => {
     );
     await expect(
       invalidTransaction.run((operations) =>
-        operations.idempotency.find("invalid-key"),
+        operations.idempotency.find("invalid-key-2026"),
       ),
     ).rejects.toThrow("idempotency operation");
   });
@@ -620,7 +620,7 @@ describe("authoring persistence mapping", () => {
               recordHash: `legacy:${"c".repeat(32)}`,
               review,
             },
-            responseHash: null,
+            responseHash: `legacy:${"c".repeat(32)}`,
             expiresAt: new Date(Date.now() + 60_000),
           },
         ],
@@ -658,7 +658,7 @@ describe("authoring persistence mapping", () => {
               preflight: row.preflight,
               recordHash: `legacy:${"c".repeat(32)}`,
             },
-            responseHash: null,
+            responseHash: `legacy:${"c".repeat(32)}`,
             expiresAt: new Date(Date.now() + 60_000),
           },
         ],
@@ -671,7 +671,7 @@ describe("authoring persistence mapping", () => {
     );
     await expect(
       changedTransaction.run((operations) =>
-        operations.idempotency.find("changed-key"),
+        operations.idempotency.find("changed-key-2026"),
       ),
     ).rejects.toThrow("content state has changed");
 
@@ -691,7 +691,7 @@ describe("authoring persistence mapping", () => {
               preflight: row.preflight,
               recordHash: `legacy:${"c".repeat(32)}`,
             },
-            responseHash: null,
+            responseHash: `legacy:${"c".repeat(32)}`,
             expiresAt: new Date(0),
           },
         ],
@@ -703,7 +703,7 @@ describe("authoring persistence mapping", () => {
     );
     await expect(
       expiredTransaction.run((operations) =>
-        operations.idempotency.find("expired-key"),
+        operations.idempotency.find("expired-key-2026"),
       ),
     ).resolves.toBeNull();
   });
@@ -721,7 +721,7 @@ describe("authoring persistence mapping", () => {
       () => "generated-id",
     );
     await storingTransaction.run((operations) =>
-      operations.idempotency.store("round-trip-key", publication),
+      operations.idempotency.store("round-trip-key-2026", publication),
     );
     const storedRow = stored.inserted[0];
     expect(storedRow).toMatchObject({
@@ -763,7 +763,7 @@ describe("authoring persistence mapping", () => {
     );
     await expect(
       replayTransaction.run((operations) =>
-        operations.idempotency.find("round-trip-key"),
+        operations.idempotency.find("round-trip-key-2026"),
       ),
     ).resolves.toEqual(publication);
 
@@ -783,7 +783,7 @@ describe("authoring persistence mapping", () => {
     );
     await expect(
       tamperedTransaction.run((operations) =>
-        operations.idempotency.find("tampered-key"),
+        operations.idempotency.find("tampered-key-2026"),
       ),
     ).rejects.toThrow("response hash is invalid");
 

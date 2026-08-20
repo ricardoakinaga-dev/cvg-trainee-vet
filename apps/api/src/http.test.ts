@@ -517,7 +517,6 @@ describe("API HTTP boundary", () => {
         body: undefined,
       },
       dependencies({
-        approvedClinicalApproverId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         authenticate: async () => ({
           principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
           accountStatus: "ACTIVE",
@@ -582,7 +581,7 @@ describe("API HTTP boundary", () => {
       {
         method: "POST",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/review`,
-        headers: { "idempotency-key": "review-http-1" },
+        headers: { "idempotency-key": "review-http-202601" },
         body: {
           version: 1,
           scopeId: authoringRecord.scopeId,
@@ -606,7 +605,7 @@ describe("API HTTP boundary", () => {
       expect.objectContaining({
         decision: "APROVAR_CLINICAMENTE",
         contentId: authoringRecord.contentId,
-        idempotencyKey: "review-http-1",
+        idempotencyKey: "review-http-202601",
       }),
     );
     expect(reviewAuthoringContent).toHaveBeenCalledWith(
@@ -658,7 +657,7 @@ describe("API HTTP boundary", () => {
       {
         method: "POST",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/publish`,
-        headers: { "Idempotency-Key": "publish-http-1" },
+        headers: { "Idempotency-Key": "publish-http-202601" },
         body: { version: 1, scopeId: authoringRecord.scopeId },
       },
       dependencies({
@@ -687,7 +686,7 @@ describe("API HTTP boundary", () => {
       expect.objectContaining({
         contentId: authoringRecord.contentId,
         scopeId: authoringRecord.scopeId,
-        idempotencyKey: "publish-http-1",
+        idempotencyKey: "publish-http-202601",
       }),
     );
   });
@@ -700,7 +699,7 @@ describe("API HTTP boundary", () => {
       {
         method: "POST",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/publish`,
-        headers: { "idempotency-key": "publish-http-2" },
+        headers: { "idempotency-key": "publish-http-202602" },
         body: { version: 1, scopeId: authoringRecord.scopeId },
       },
       dependencies({
@@ -1843,7 +1842,6 @@ describe("API HTTP boundary", () => {
           roles: ["CLINICAL_APPROVER"] as const,
           scopes: ["scope-1"],
         }),
-        approvedClinicalApproverId: "reviewer-1",
         recordSourceConflictDecision: record,
       }),
     );
@@ -1916,7 +1914,6 @@ describe("API HTTP boundary", () => {
           roles: ["CLINICAL_APPROVER"] as const,
           scopes: [scopeId],
         }),
-        approvedClinicalApproverId: "00000000-0000-4000-8000-000000000006",
         registerAssessmentRecalculationCandidates: register,
         recalculateAffectedAssessments: recalculate,
       }),
@@ -2951,7 +2948,6 @@ describe("API HTTP boundary", () => {
         },
       },
       dependencies({
-        approvedClinicalApproverId: attempt.participantId,
         resolveActivityScope: async () => correctionScope,
         authenticate: async () => ({
           principalId: attempt.participantId,
@@ -3068,7 +3064,6 @@ describe("API HTTP boundary", () => {
         },
       },
       dependencies({
-        approvedClinicalApproverId: "ricardo-account",
         authenticate: async () => ({
           principalId: "ricardo-account",
           accountStatus: "ACTIVE",
@@ -3125,7 +3120,6 @@ describe("API HTTP boundary", () => {
         },
       },
       dependencies({
-        approvedClinicalApproverId: "ricardo-account",
         authenticate: async () => ({
           principalId: "ricardo-account",
           accountStatus: "ACTIVE",

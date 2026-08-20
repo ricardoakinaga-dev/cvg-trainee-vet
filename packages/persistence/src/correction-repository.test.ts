@@ -12,6 +12,7 @@ import {
   createCorrectionReadRepository,
   createCorrectionUseCaseDependencies,
 } from "./correction-repository.js";
+import { PersistenceConflictError } from "./attempt-repository.js";
 import { assessmentIdempotency, assessmentResults } from "./schema.js";
 
 const result: AssessmentResultState = {
@@ -228,7 +229,9 @@ describe("assessment persistence mapping", () => {
     await expect(methods.results.findLatest("missing")).resolves.toBeNull();
     await methods.results.insert(result);
 
-    await expect(methods.idempotency.find("correction-key")).resolves.toEqual({
+    await expect(
+      methods.idempotency.find("correction-key-2026"),
+    ).resolves.toEqual({
       fingerprint: "fingerprint-1",
       result: { attempt, result },
     });
@@ -237,13 +240,22 @@ describe("assessment persistence mapping", () => {
       result: { attempt, result },
     };
     await expect(
-      methods.idempotency.store("correction-key", {
+      methods.idempotency.store("correction-key-2026", {
         ...record,
         fingerprint: "another-fingerprint",
       }),
     ).rejects.toMatchObject({ name: "PersistenceConflictError" });
-    await methods.idempotency.store("correction-key", record);
-    await methods.idempotency.store("new-correction-key", record);
+    await methods.idempotency.store("correction-key-2026", record);
+    await methods.idempotency.store("new-correction-key-2026", record);
+
+    const idempotencyRows = fake.inserted.filter(
+      (value): value is Record<string, unknown> =>
+        typeof value === "object" && value !== null && "key" in value,
+    );
+    expect(idempotencyRows).not.toHaveLength(0);
+    expect(idempotencyRows.every((value) => !("expiresAt" in value))).toBe(
+      true,
+    );
 
     const event: AssessmentCorrectedEvent = {
       eventId: "66666666-6666-4666-8666-666666666666",
@@ -271,6 +283,35 @@ describe("assessment persistence mapping", () => {
       aggregateId: event.aggregateId,
       status: "PENDING",
     });
+  });
+
+  it("maps a concurrent correction idempotency insert to a persistence conflict", async () => {
+    const duplicate = Object.assign(new Error("duplicate idempotency key"), {
+      code: "23505",
+    });
+    const database = {
+      execute: vi.fn(async () => undefined),
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: async () => [],
+          }),
+        }),
+      }),
+      insert: () => ({
+        values: async () => {
+          throw duplicate;
+        },
+      }),
+    };
+
+    await expect(
+      createCorrectionOperationsMethods(database as never).idempotency.store(
+        "correction-race-2026",
+        { fingerprint: "fingerprint-1", result: { attempt, result } },
+      ),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+    expect(database.execute).toHaveBeenCalled();
   });
 
   it("runs correction transactions with an optional participant security context", async () => {

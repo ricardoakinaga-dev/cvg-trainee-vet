@@ -8,6 +8,7 @@ import {
 
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { ApplicationError } from "./errors.js";
+import type { TransactionSecurityContext } from "./transaction-context.js";
 import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 
 export type AssessmentRecalculationCandidate = Omit<
@@ -65,6 +66,29 @@ export interface AssessmentRecalculationCandidateWritePort {
   ) => Promise<void>;
 }
 
+export type AssessmentRecalculationTransactionalOperations =
+  AssessmentRecalculationPort &
+    AssessmentRecalculationCandidateWritePort &
+    Readonly<{
+      readonly approver: ClinicalApproverPort;
+    }>;
+
+export interface AssessmentRecalculationTransactionPort {
+  readonly run: <Result>(
+    work: (
+      operations: AssessmentRecalculationTransactionalOperations,
+    ) => Promise<Result>,
+    context?: TransactionSecurityContext,
+  ) => Promise<Result>;
+}
+
+export interface AssessmentRecalculationRepository
+  extends
+    AssessmentRecalculationPort,
+    AssessmentRecalculationCandidateWritePort {
+  readonly transaction: AssessmentRecalculationTransactionPort;
+}
+
 export type RegisterAssessmentRecalculationCandidatesCommand =
   RecalculateAffectedAssessmentsCommand &
     Readonly<{
@@ -93,9 +117,7 @@ function assertApprovedRecalculationAccess(
       capability: "CORRECT_ATTEMPT",
       resource: { scopeId: command.scopeId },
       scopes: command.scopes,
-      ...(command.approvedClinicalApproverId === undefined
-        ? {}
-        : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
+      approvedClinicalApproverId: command.principalId,
     })
   ) {
     throw new ApplicationError(
@@ -113,6 +135,7 @@ async function assertCurrentClinicalApproverIdentity(
   if (
     current === null ||
     current.accountStatus !== "ACTIVE" ||
+    !current.roles.includes("CLINICAL_APPROVER") ||
     !current.scopes.includes(command.scopeId)
   ) {
     throw new ApplicationError(
@@ -124,31 +147,38 @@ async function assertCurrentClinicalApproverIdentity(
 
 export async function registerAssessmentRecalculationCandidates(
   command: RegisterAssessmentRecalculationCandidatesCommand,
-  repository: AssessmentRecalculationCandidateWritePort,
-  approver: ClinicalApproverPort,
+  repository: AssessmentRecalculationRepository,
 ): Promise<Readonly<{ readonly registeredCount: number }>> {
   assertApprovedRecalculationAccess(command);
-  await assertCurrentClinicalApproverIdentity(command, approver);
   try {
-    for (const candidate of command.candidates) {
-      if (
-        candidate.scopeId !== command.scopeId ||
-        candidate.itemId !== command.itemId
-      ) {
-        throw new ApplicationError(
-          "state_conflict",
-          "Candidate crossed the requested scope or item",
+    return await repository.transaction.run(
+      async (operations) => {
+        await assertCurrentClinicalApproverIdentity(
+          command,
+          operations.approver,
         );
-      }
-      recalculateAssessment({
-        ...candidate,
-        reason: command.reason,
-        passingScore: command.passingScore,
-        recalculatedAt: command.recalculatedAt,
-      });
-      await repository.register(candidate, command.reason);
-    }
-    return Object.freeze({ registeredCount: command.candidates.length });
+        for (const candidate of command.candidates) {
+          if (
+            candidate.scopeId !== command.scopeId ||
+            candidate.itemId !== command.itemId
+          ) {
+            throw new ApplicationError(
+              "state_conflict",
+              "Candidate crossed the requested scope or item",
+            );
+          }
+          recalculateAssessment({
+            ...candidate,
+            reason: command.reason,
+            passingScore: command.passingScore,
+            recalculatedAt: command.recalculatedAt,
+          });
+          await operations.register(candidate, command.reason);
+        }
+        return Object.freeze({ registeredCount: command.candidates.length });
+      },
+      { scopeId: command.scopeId },
+    );
   } catch (error) {
     throw normalizeError(error);
   }
@@ -156,54 +186,62 @@ export async function registerAssessmentRecalculationCandidates(
 
 export async function recalculateAffectedAssessments(
   command: RecalculateAffectedAssessmentsCommand,
-  repository: AssessmentRecalculationPort,
-  approver: ClinicalApproverPort,
+  repository: AssessmentRecalculationRepository,
 ): Promise<RecalculateAffectedAssessmentsResult> {
   assertApprovedRecalculationAccess(command);
-  await assertCurrentClinicalApproverIdentity(command, approver);
 
   try {
-    const candidates = await repository.listAffected(
-      command.scopeId,
-      command.itemId,
-      command.reason,
-    );
-    const results: AssessmentRecalculationState[] = [];
-    for (const candidate of candidates) {
-      if (
-        candidate.scopeId !== command.scopeId ||
-        candidate.itemId !== command.itemId
-      ) {
-        throw new ApplicationError(
-          "state_conflict",
-          "Affected assessment crossed the requested scope or item",
+    return await repository.transaction.run(
+      async (operations) => {
+        await assertCurrentClinicalApproverIdentity(
+          command,
+          operations.approver,
         );
-      }
-      const state = recalculateAssessment({
-        ...candidate,
-        reason: command.reason,
-        passingScore: command.passingScore,
-        recalculatedAt: command.recalculatedAt,
-      });
-      await repository.save(state);
-      await repository.notify({
-        notificationId: `assessment-recalculated:${state.candidateId}:${state.recalculatedVersion}`,
-        notificationType: "ASSESSMENT_RECALCULATED",
-        candidateId: state.candidateId,
-        participantId: state.participantId,
-        scopeId: state.scopeId,
-        attemptId: state.attemptId,
-        itemId: state.itemId,
-        recalculatedVersion: state.recalculatedVersion,
-        occurredAt: state.recalculatedAt,
-      });
-      results.push(state);
-    }
-    return Object.freeze({
-      processedCount: results.length,
-      notificationsQueued: results.length,
-      results: Object.freeze(results),
-    });
+
+        const candidates = await operations.listAffected(
+          command.scopeId,
+          command.itemId,
+          command.reason,
+        );
+        const results: AssessmentRecalculationState[] = [];
+        for (const candidate of candidates) {
+          if (
+            candidate.scopeId !== command.scopeId ||
+            candidate.itemId !== command.itemId
+          ) {
+            throw new ApplicationError(
+              "state_conflict",
+              "Affected assessment crossed the requested scope or item",
+            );
+          }
+          const state = recalculateAssessment({
+            ...candidate,
+            reason: command.reason,
+            passingScore: command.passingScore,
+            recalculatedAt: command.recalculatedAt,
+          });
+          await operations.save(state);
+          await operations.notify({
+            notificationId: `assessment-recalculated:${state.candidateId}:${state.recalculatedVersion}`,
+            notificationType: "ASSESSMENT_RECALCULATED",
+            candidateId: state.candidateId,
+            participantId: state.participantId,
+            scopeId: state.scopeId,
+            attemptId: state.attemptId,
+            itemId: state.itemId,
+            recalculatedVersion: state.recalculatedVersion,
+            occurredAt: state.recalculatedAt,
+          });
+          results.push(state);
+        }
+        return Object.freeze({
+          processedCount: results.length,
+          notificationsQueued: results.length,
+          results: Object.freeze(results),
+        });
+      },
+      { scopeId: command.scopeId },
+    );
   } catch (error) {
     throw normalizeError(error);
   }

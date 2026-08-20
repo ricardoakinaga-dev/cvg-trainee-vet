@@ -23,7 +23,7 @@ const statusByErrorCode: Readonly<Record<ApiErrorCode, number>> = {
   internal_error: 500,
 };
 
-const idempotencyKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._~:-]{0,127}$/u;
+const idempotencyKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._~:-]{15,127}$/u;
 
 export function readIdempotencyKey(request: ApiHttpRequest): string | null {
   const header = Object.entries(request.headers ?? {}).find(
@@ -115,8 +115,13 @@ export function isAllowed(
   principal: ApiPrincipal,
   capability: Capability,
   resource: Readonly<{ ownerId?: string; scopeId?: string }>,
-  approvedClinicalApproverId?: string,
 ): boolean {
+  const requiresCurrentClinicalIdentity =
+    capability === "PUBLISH_CONTENT" ||
+    capability === "VIEW_INTERNAL_SOURCE" ||
+    capability === "APPROVE_CLINICAL_CONTENT" ||
+    capability === "VIEW_CLINICAL_REVIEW_QUEUE" ||
+    capability === "VIEW_FEEDBACK_TICKETS";
   return canAccess({
     principalId: principal.principalId,
     accountStatus: principal.accountStatus,
@@ -124,16 +129,8 @@ export function isAllowed(
     capability,
     resource,
     scopes: principal.scopes,
-    ...(capability === "PUBLISH_CONTENT" ||
-    capability === "VIEW_INTERNAL_SOURCE" ||
-    capability === "APPROVE_CLINICAL_CONTENT" ||
-    capability === "VIEW_CLINICAL_REVIEW_QUEUE" ||
-    capability === "VIEW_FEEDBACK_TICKETS"
-      ? {
-          ...(approvedClinicalApproverId === undefined
-            ? {}
-            : { approvedClinicalApproverId }),
-        }
+    ...(requiresCurrentClinicalIdentity
+      ? { approvedClinicalApproverId: principal.principalId }
       : {}),
   });
 }

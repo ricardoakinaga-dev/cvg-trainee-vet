@@ -15,6 +15,7 @@ import {
   PersistenceConflictError,
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
+import { createClinicalApproverPort } from "./clinical-approver-repository.js";
 import {
   contentEditorialRecords,
   contentReviewDecisions,
@@ -551,6 +552,7 @@ export function createContentTransactionalOperations(
       },
     },
     audit: createAuditRepository(db),
+    approver: createClinicalApproverPort(db),
     clinicalReview: {
       hasApproved: async (
         contentId: string,

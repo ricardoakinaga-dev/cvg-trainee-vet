@@ -223,6 +223,83 @@
   logout e replay dependem de ambiente live autorizado. O estado global segue
   `IN_PROGRESS` / `PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T09:35:11-03:00
+
+- `B99-104` recebeu RED/GREEN/REFACTOR para remover a identidade clínica
+  estática do runtime: `CLINICAL_APPROVER_ID` saiu do schema de ambiente, API,
+  Compose HA, `.env.example` e verificador de topologia;
+- source-conflict, assessment recalculation, correction e content withdrawal
+  agora passam o principal autenticado, revalidam a conta persistida como
+  `ACTIVE` + `CLINICAL_APPROVER` + escopo e falham fechado quando há suspensão,
+  remoção de papel ou divergência de escopo;
+- source-conflict e recalculation compartilham transaction executor com o
+  contexto de escopo aplicado antes da leitura bloqueante e do write. Os focais
+  passaram `13` arquivos / `171` testes; a cobertura integral passou
+  `200/1053/21`, com floors `95,06/91,07/95,31/95,75`;
+- build `12/12`, lint, typecheck, formato, audit, documentação, Dual99,
+  rastreabilidade, skips `20/20`, decisões `7/7`, mutation `7/7`, hotspots e
+  diff-check passaram. `verify:secrets` continua fail-closed apenas nos quatro
+  valores redigidos de `infra/production/.env.local`;
+- `B99-104` permanece `IN_PROGRESS` até concorrência/rotação PostgreSQL live,
+  RC/proveniência, revisão clínica, CI/release e gates externos. O estado global
+  continua `IN_PROGRESS` / `PILOT_BLOCKED`.
+
+## Atualização de execução — 2026-08-20T10:19:27-03:00 — B99-105
+
+- **RED:** boundary HTTP, migration governance, adapters e RLS reproduziram
+  respectivamente chave abaixo do piso, ausência de `0032`, TTL por relógio da
+  aplicação/sem lock same-key e cleanup sem policy `FOR DELETE`;
+- **GREEN:** `idempotency-policy.ts` centraliza chave 16–128 e
+  `pg_advisory_xact_lock` namespaced; authoring, attempt, answer e correction
+  usam `CURRENT_TIMESTAMP`, cleanup de escrita e conflitos concorrentes
+  fail-closed; a migration `0032_idempotency_integrity_closure.sql` fecha
+  constraints, `response_hash NOT NULL`/SHA-256, legado, `FORCE RLS`, revoke e
+  delete policies por participante/escopo;
+- **evidência:** focais `112/112`, coverage `202/1060/21`, floors
+  `95,06/91,06/95,31/95,76`, migrations `33/33`, build `12/12`, typecheck,
+  lint, format, audit, decisions `7/7`, mutation `7/7`, traceability,
+  documentation, skips `20/20`, architecture, hotspots e diff-check passaram;
+- **status:** B99-105 segue `READY_FOR_NEXT_STEP` localmente com
+  `IN_PROGRESS/PILOT_BLOCKED` global. PostgreSQL live/role restrita, migration
+  sobre legado, concorrência same-key, TTL/RLS live, RC, score e gates
+  externos continuam dependentes de ambiente/autorização. `verify:secrets`
+  acusa somente os quatro valores redigidos do `.env.local` ignorado.
+
+## Atualização de execução — 2026-08-20T10:32:23-03:00 — B99-105 revisão final
+
+- **correção:** a revisão estática encontrou e corrigiu o default
+  `CURRENT_TIMESTAMP + interval '24 hours'` ausente no schema Drizzle de
+  `authoringWorkflowIdempotency.expiresAt`, alinhando schema e migration 0032;
+- **verificação:** cobertura fresca `202/1060/21`, floors
+  `95,06/91,06/95,31/95,76`, migration governance `33/33`, typecheck, lint,
+  formato e diff-check passaram;
+- após a revisão final remover um efeito colateral não relacionado no schema de
+  rate limit, a cobertura foi repetida no worktree exato e manteve os mesmos
+  resultados;
+- **runtime:** o probe read-only encontrou o PostgreSQL HA em migration count
+  `30`, usuário `cvg_admin` com `SUPERUSER/BYPASSRLS` e authoring idempotency
+  sem RLS; o runtime é stale e não comprova o RC B99-105;
+- **status:** segue `READY_FOR_NEXT_STEP` localmente e
+  `IN_PROGRESS/PILOT_BLOCKED` globalmente; não houve alteração live, score,
+  release, commit ou push. A execução autorizada em alvo restrito permanece
+  necessária.
+
+## Atualização de execução — 2026-08-20T10:53:52-03:00 — B99-106
+
+- **RED/GREEN:** o catálogo de `/health/dependencies` falhou por declarar
+  acesso público; o convite falhou por colocar token em query. A correção
+  alinhou `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`, migrou o token para
+  fragmento, restringiu a leitura ao hash e limpou query legada;
+- **evidência:** foco de contrato/modelo/estado/view/health `22/22`, negativos
+  401/403/503 preservados, E2E sintético Chromium `3/3` em `3213`, coverage
+  `202/1060/21` com `95,05/91,06/95,31/95,75`, migrations `33/33`, decisões
+  `7/7`, mutation `7/7`, typecheck/lint/format/diff-check e gates documentais
+  verdes; timeout do hotspot AST explicitado em `30s` sob cobertura;
+- **status:** B99-106 está `READY_FOR_NEXT_STEP` localmente. O E2E não prova
+  HA/API/DB porque usa mocks e a API `3101` estava indisponível; runtime stale,
+  secrets redigidos, RC, gates externos/clínicos, `0/145` e reauditoria seguem
+  pendentes. Programa `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,

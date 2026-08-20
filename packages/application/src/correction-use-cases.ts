@@ -161,9 +161,7 @@ function assertCorrectionAccess(command: CorrectOpenResponseCommand): void {
       capability: "CORRECT_ATTEMPT",
       resource: { scopeId: command.scopeId },
       scopes: command.scopes,
-      ...(command.approvedClinicalApproverId === undefined
-        ? {}
-        : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
+      approvedClinicalApproverId: command.principalId,
     })
   ) {
     throw new ApplicationError(
@@ -275,6 +273,7 @@ async function assertCurrentCorrectorIdentity(
   if (
     current === null ||
     current.accountStatus !== "ACTIVE" ||
+    !current.roles.includes("CLINICAL_APPROVER") ||
     !current.scopes.includes(command.scopeId)
   ) {
     throw new ApplicationError(

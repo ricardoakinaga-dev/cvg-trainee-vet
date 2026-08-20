@@ -108,6 +108,9 @@ export type {
   AssessmentRecalculationCandidateWritePort,
   AssessmentRecalculationNotification,
   AssessmentRecalculationPort,
+  AssessmentRecalculationRepository,
+  AssessmentRecalculationTransactionPort,
+  AssessmentRecalculationTransactionalOperations,
   RecalculateAffectedAssessmentsCommand,
   RecalculateAffectedAssessmentsResult,
   RegisterAssessmentRecalculationCandidatesCommand,
@@ -120,6 +123,10 @@ export type {
 export { recordSourceConflictDecision } from "./source-conflict-use-cases.js";
 export type {
   RecordSourceConflictDecisionCommand,
+  SourceConflictDecisionDependencies,
+  SourceConflictDecisionRepository,
+  SourceConflictDecisionTransactionPort,
+  SourceConflictDecisionTransactionalOperations,
   SourceConflictDecisionWritePort,
 } from "./source-conflict-use-cases.js";
 export { acceptInvitation, createInvitation } from "./invitation-use-cases.js";

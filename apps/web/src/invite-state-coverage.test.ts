@@ -57,15 +57,16 @@ beforeEach(() => {
   reactHarness.reset();
   vi.stubGlobal("window", {
     location: {
-      search: `?token=${invitationToken}&locale=pt-BR`,
-      href: `https://web.internal/invite?token=${invitationToken}&locale=pt-BR`,
+      search: "?locale=pt-BR",
+      hash: `#token=${invitationToken}`,
+      href: `https://web.internal/invite?locale=pt-BR#token=${invitationToken}`,
     },
     history: { state: null, replaceState: vi.fn() },
   });
 });
 
 describe("invite activation hook production coverage", () => {
-  it("reads and removes the invitation token, then completes activation", async () => {
+  it("reads and removes the fragment token, then completes activation", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ success: true }),

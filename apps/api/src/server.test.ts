@@ -225,7 +225,6 @@ describe("API node server adapter", () => {
     const api = createApiServer(
       {
         ...dependencies,
-        approvedClinicalApproverId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
         authenticate: async () => ({
           principalId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
           accountStatus: "ACTIVE" as const,

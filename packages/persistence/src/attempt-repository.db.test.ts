@@ -245,7 +245,7 @@ describe("database adapter operations", () => {
     ).rejects.toMatchObject({ code: "not_found" });
 
     expect(await dependencies.attemptsPort.findById("missing")).toBeNull();
-    expect(await dependencies.idempotency.find("missing")).toBeNull();
+    expect(await dependencies.idempotency.find("missing-key-2026")).toBeNull();
     await expect(
       dependencies.attemptsPort.update({
         attemptId: "attempt-1",
@@ -271,12 +271,12 @@ describe("database adapter operations", () => {
       version: 2,
     };
 
-    await dependencies.idempotency.store("same-key-123456", {
+    await dependencies.idempotency.store("same-key-1234567", {
       fingerprint: "fingerprint-a",
       attempt,
     });
     await expect(
-      dependencies.idempotency.store("same-key-123456", {
+      dependencies.idempotency.store("same-key-1234567", {
         fingerprint: "fingerprint-b",
         attempt,
       }),

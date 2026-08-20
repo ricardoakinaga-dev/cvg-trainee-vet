@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { eq, lte, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AuthoringIdempotencyPort,
@@ -16,6 +16,10 @@ import type { ContentStatus } from "@cvg/domain";
 import { PersistenceMappingError } from "./attempt-repository.js";
 import { authoringWorkflowIdempotency } from "./schema.js";
 import type * as schema from "./schema.js";
+import {
+  assertIdempotencyKey,
+  lockIdempotencyKey,
+} from "./idempotency-policy.js";
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 type AuthoringWorkflowResponse =
@@ -41,12 +45,11 @@ type AuthoringIdempotencyDatabaseRow = Readonly<{
   readonly contentId: string;
   readonly version: number;
   readonly response: unknown;
-  readonly responseHash: string | null;
+  readonly responseHash: string;
   readonly expiresAt: Date;
 }>;
 
 const authoringWorkflowTtlMs = 24 * 60 * 60 * 1_000;
-const idempotencyKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._~:-]{0,127}$/u;
 const fingerprintPattern = /^sha256:[0-9a-f]{64}$/u;
 const replayHashPattern = /^(?:sha256:[0-9a-f]{64}|legacy:[0-9a-f]{32})$/u;
 const contentStatuses: readonly ContentStatus[] = [
@@ -61,12 +64,6 @@ const contentStatuses: readonly ContentStatus[] = [
   "RETIRADO",
   "VENCIDO",
 ];
-
-function assertIdempotencyKey(key: string): void {
-  if (!idempotencyKeyPattern.test(key)) {
-    throw new PersistenceMappingError("authoring idempotency key is invalid");
-  }
-}
 
 function assertFingerprint(fingerprint: string): void {
   if (!fingerprintPattern.test(fingerprint)) {
@@ -362,13 +359,11 @@ async function loadAuthoringIdempotencyRow(
   db: DatabaseExecutor,
   key: string,
 ): Promise<AuthoringIdempotencyDatabaseRow | null> {
-  assertIdempotencyKey(key);
-  await db.execute(
-    sql`select pg_advisory_xact_lock(hashtextextended(${key}, 0))`,
-  );
+  assertIdempotencyKey(key, "authoring idempotency");
+  await lockIdempotencyKey(db, "authoring", key);
   await db
     .delete(authoringWorkflowIdempotency)
-    .where(lte(authoringWorkflowIdempotency.expiresAt, new Date()));
+    .where(sql`${authoringWorkflowIdempotency.expiresAt} <= CURRENT_TIMESTAMP`);
   const rows = await db
     .select({
       operation: authoringWorkflowIdempotency.operation,
@@ -380,7 +375,12 @@ async function loadAuthoringIdempotencyRow(
       expiresAt: authoringWorkflowIdempotency.expiresAt,
     })
     .from(authoringWorkflowIdempotency)
-    .where(eq(authoringWorkflowIdempotency.key, key))
+    .where(
+      and(
+        eq(authoringWorkflowIdempotency.key, key),
+        sql`${authoringWorkflowIdempotency.expiresAt} > CURRENT_TIMESTAMP`,
+      ),
+    )
     .limit(1);
   const row = rows[0];
   if (row === undefined || row.expiresAt <= new Date()) return null;
@@ -407,7 +407,6 @@ async function findAuthoringIdempotency(
     );
   }
   if (
-    row.responseHash !== null &&
     row.responseHash.startsWith("sha256:") &&
     row.responseHash !== responseHash(payload)
   ) {
@@ -432,15 +431,13 @@ async function storeAuthoringIdempotency(
   key: string,
   value: AuthoringIdempotencyRecord,
 ): Promise<void> {
-  assertIdempotencyKey(key);
+  assertIdempotencyKey(key, "authoring idempotency");
   assertFingerprint(value.fingerprint);
   const payload = createReplayPayload(value);
-  await db.execute(
-    sql`select pg_advisory_xact_lock(hashtextextended(${key}, 0))`,
-  );
+  await lockIdempotencyKey(db, "authoring", key);
   await db
     .delete(authoringWorkflowIdempotency)
-    .where(lte(authoringWorkflowIdempotency.expiresAt, new Date()));
+    .where(sql`${authoringWorkflowIdempotency.expiresAt} <= CURRENT_TIMESTAMP`);
   await db
     .insert(authoringWorkflowIdempotency)
     .values({
@@ -451,7 +448,7 @@ async function storeAuthoringIdempotency(
       version: payload.version,
       response: payload,
       responseHash: responseHash(payload),
-      expiresAt: new Date(Date.now() + authoringWorkflowTtlMs),
+      expiresAt: sql`CURRENT_TIMESTAMP + (${authoringWorkflowTtlMs} * interval '1 millisecond')`,
     })
     .onConflictDoNothing({
       target: authoringWorkflowIdempotency.key,

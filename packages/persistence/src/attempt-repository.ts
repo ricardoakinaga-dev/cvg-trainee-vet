@@ -1,4 +1,4 @@
-import { and, eq, inArray, type SQL } from "drizzle-orm";
+import { and, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { AttemptState, AttemptStatus } from "@cvg/domain";
 import {
@@ -20,13 +20,12 @@ import type { PersistedAttemptSnapshot } from "./schema.js";
 import type * as schema from "./schema.js";
 import { createAuditRepository } from "./audit-repository.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
-
-export class PersistenceMappingError extends Error {
-  public constructor(message: string) {
-    super(message);
-    this.name = "PersistenceMappingError";
-  }
-}
+import { PersistenceMappingError } from "./persistence-errors.js";
+import {
+  assertIdempotencyKey,
+  lockIdempotencyKey,
+} from "./idempotency-policy.js";
+export { PersistenceMappingError } from "./persistence-errors.js";
 
 export class PersistenceConflictError extends ApplicationError {
   public constructor(message: string) {
@@ -441,18 +440,30 @@ function createAttemptIdempotency(
 ): AttemptOperations["idempotency"] {
   return Object.freeze({
     find: async (key: string): Promise<IdempotencyRecord | null> => {
+      assertIdempotencyKey(key);
+      await lockIdempotencyKey(db, "attempt", key);
       const rows = await db
         .select({
           fingerprint: attemptIdempotency.fingerprint,
           response: attemptIdempotency.response,
         })
         .from(attemptIdempotency)
-        .where(eq(attemptIdempotency.key, key))
+        .where(
+          and(
+            eq(attemptIdempotency.key, key),
+            sql`${attemptIdempotency.expiresAt} > CURRENT_TIMESTAMP`,
+          ),
+        )
         .limit(1);
       const row = rows[0];
       return row ? idempotencyRowToRecord(row) : null;
     },
     store: async (key: string, record: IdempotencyRecord): Promise<void> => {
+      assertIdempotencyKey(key);
+      await lockIdempotencyKey(db, "attempt", key);
+      await db.execute(
+        sql`delete from "attempt_idempotency" where "expires_at" <= CURRENT_TIMESTAMP`,
+      );
       const existing = await db
         .select({ fingerprint: attemptIdempotency.fingerprint })
         .from(attemptIdempotency)
@@ -472,7 +483,6 @@ function createAttemptIdempotency(
           fingerprint: record.fingerprint,
           attemptId: record.attempt.attemptId,
           response: record.attempt as PersistedAttemptSnapshot,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         });
       } catch (error) {
         if (!isUniqueConstraintViolation(error)) throw error;

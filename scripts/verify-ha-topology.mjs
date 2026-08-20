@@ -15,8 +15,6 @@ const environment = {
   CVG_DB_NAME: process.env.CVG_DB_NAME ?? "cvg",
   WEB_ORIGINS: process.env.WEB_ORIGINS ?? "http://localhost:8080",
   TRUSTED_PROXY_CIDRS: process.env.TRUSTED_PROXY_CIDRS ?? "127.0.0.1/32",
-  CLINICAL_APPROVER_ID:
-    process.env.CLINICAL_APPROVER_ID ?? "synthetic-clinical-approver",
   METRICS_SCRAPE_TOKEN: process.env.METRICS_SCRAPE_TOKEN ?? "m".repeat(32),
   GRAFANA_ADMIN_PASSWORD:
     process.env.GRAFANA_ADMIN_PASSWORD ?? "synthetic-grafana-password",

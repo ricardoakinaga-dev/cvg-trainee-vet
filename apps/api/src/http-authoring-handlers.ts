@@ -107,9 +107,8 @@ export async function handleContentTransition(
     parsed.data.withdrawalReasonCode !== undefined
       ? { withdrawalReasonCode: parsed.data.withdrawalReasonCode }
       : {}),
-    ...(parsed.data.event === "RETIRAR" &&
-    dependencies.approvedClinicalApproverId !== undefined
-      ? { approvedClinicalApproverId: dependencies.approvedClinicalApproverId }
+    ...(parsed.data.event === "RETIRAR"
+      ? { approvedClinicalApproverId: principal.principalId }
       : {}),
   } satisfies AdvanceContentCommand;
   const result = await dependencies.advanceContent(command);
@@ -156,12 +155,7 @@ export async function handleInternalAuthoringRecord(
   );
   if (record === null) return errorResponse("not_found", requestId);
   if (
-    !isAllowed(
-      principal,
-      "VIEW_INTERNAL_SOURCE",
-      { scopeId: record.scopeId },
-      dependencies.approvedClinicalApproverId,
-    )
+    !isAllowed(principal, "VIEW_INTERNAL_SOURCE", { scopeId: record.scopeId })
   ) {
     return errorResponse("forbidden", requestId);
   }
@@ -183,12 +177,9 @@ export async function handleClinicalReviewQueue(
   const parsed = clinicalReviewQueueQuerySchema.safeParse(request.query ?? {});
   if (!parsed.success) return validationResponse(requestId);
   if (
-    !isAllowed(
-      principal,
-      "VIEW_CLINICAL_REVIEW_QUEUE",
-      { scopeId: parsed.data.scopeId },
-      principal.principalId,
-    )
+    !isAllowed(principal, "VIEW_CLINICAL_REVIEW_QUEUE", {
+      scopeId: parsed.data.scopeId,
+    })
   ) {
     return errorResponse("forbidden", requestId);
   }
@@ -271,16 +262,7 @@ export async function handleAuthoringReview(
     parsed.data.decision === "APROVAR_CLINICAMENTE"
       ? ("APPROVE_CLINICAL_CONTENT" as const)
       : ("MODERATE_CONTENT" as const);
-  if (
-    !isAllowed(
-      principal,
-      capability,
-      { scopeId: parsed.data.scopeId },
-      capability === "APPROVE_CLINICAL_CONTENT"
-        ? principal.principalId
-        : undefined,
-    )
-  ) {
+  if (!isAllowed(principal, capability, { scopeId: parsed.data.scopeId })) {
     return errorResponse("forbidden", requestId);
   }
   const command: ReviewAuthoringCommand = {
@@ -339,13 +321,10 @@ export async function handleCorrection(
     feedback: parsed.data.feedback,
     ruleVersion: parsed.data.ruleVersion,
   };
-  const command: CorrectOpenResponseCommand =
-    dependencies.approvedClinicalApproverId === undefined
-      ? baseCommand
-      : {
-          ...baseCommand,
-          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
-        };
+  const command: CorrectOpenResponseCommand = {
+    ...baseCommand,
+    approvedClinicalApproverId: principal.principalId,
+  };
   const result = await dependencies.correctOpenResponse(command);
 
   return {

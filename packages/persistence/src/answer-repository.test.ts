@@ -240,6 +240,7 @@ describe("PostgreSQL answer mapping", () => {
       code: "23505",
     });
     const database = {
+      execute: vi.fn(async () => undefined),
       select: () => ({
         from: () => ({
           where: () => ({
@@ -252,14 +253,18 @@ describe("PostgreSQL answer mapping", () => {
           throw duplicate;
         },
       }),
-    } as never;
+    };
 
     await expect(
-      createAnswerOperationsMethods(database).idempotency.store("key", {
-        fingerprint: "fingerprint",
-        result: { attempt, answer },
-      }),
+      createAnswerOperationsMethods(database as never).idempotency.store(
+        "key-2026-08-20-000001",
+        {
+          fingerprint: "fingerprint",
+          result: { attempt, answer },
+        },
+      ),
     ).rejects.toBeInstanceOf(PersistenceConflictError);
+    expect(database.execute).toHaveBeenCalled();
   });
 
   it("executes answer, attempt, idempotency and event operations", async () => {
@@ -302,19 +307,30 @@ describe("PostgreSQL answer mapping", () => {
       methods.attemptsPort.update({ ...attempt, version: attempt.version + 1 }),
     ).rejects.toBeInstanceOf(PersistenceConflictError);
 
-    await expect(methods.idempotency.find("answer-key")).resolves.toEqual({
+    await expect(
+      methods.idempotency.find("answer-key-2026-01"),
+    ).resolves.toEqual({
       fingerprint: "fp",
       result: { attempt, answer },
     });
     const record = { fingerprint: "fp", result: { attempt, answer } };
     await expect(
-      methods.idempotency.store("answer-key", {
+      methods.idempotency.store("answer-key-2026-01", {
         ...record,
         fingerprint: "new-fingerprint",
       }),
     ).rejects.toThrow("another fingerprint");
-    await methods.idempotency.store("answer-key", record);
-    await methods.idempotency.store("new-answer-key", record);
+    await methods.idempotency.store("answer-key-2026-01", record);
+    await methods.idempotency.store("new-answer-key-2026", record);
+
+    const idempotencyRows = database.inserted.filter(
+      (value): value is Record<string, unknown> =>
+        typeof value === "object" && value !== null && "key" in value,
+    );
+    expect(idempotencyRows).not.toHaveLength(0);
+    expect(idempotencyRows.every((value) => !("expiresAt" in value))).toBe(
+      true,
+    );
 
     const event: AnswerSavedEvent = {
       eventId: "77777777-7777-4777-8777-777777777777",
@@ -349,11 +365,11 @@ describe("PostgreSQL answer mapping", () => {
     const methods = createAnswerOperationsMethods(database.executor as never);
     const record = { fingerprint: "fp", result: { attempt, answer } };
 
-    await expect(methods.idempotency.store("unexpected", record)).rejects.toBe(
-      unexpected,
-    );
     await expect(
-      methods.idempotency.store("duplicate", record),
+      methods.idempotency.store("unexpected-key-2026", record),
+    ).rejects.toBe(unexpected);
+    await expect(
+      methods.idempotency.store("duplicate-key-2026", record),
     ).rejects.toBeInstanceOf(PersistenceConflictError);
 
     const db = {
@@ -365,6 +381,7 @@ describe("PostgreSQL answer mapping", () => {
       db as never,
       () => "generated-id",
     );
+    database.executor.execute.mockClear();
     await dependencies.transaction.run(
       async (operations) => Object.keys(operations).sort(),
       { participantId: attempt.participantId },

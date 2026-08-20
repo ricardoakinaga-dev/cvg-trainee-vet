@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-103 teve a revogação em massa de sessão tornada atômica sob TDD, enquanto B99-101 mantém o bypass de literais no RHS corrigido; cobertura `200/1050/21`, floors `95,06/91,06/95,35/95,77`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/32`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-1 local hardening; B99-106 fechou localmente catálogo de diagnóstico, autorização negativa e convite sem token em query; B99-105 mantém integridade de idempotência em authoring, tentativa, resposta e correção; cobertura `202/1060/21`, floors `95,05/91,06/95,31/95,75`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechou B99-103 localmente com incremento de generation e revogação de sessões no mesmo transaction executor e publicou o lote no commit `e32b941` em `origin/agent/publish-production-hardening`; repositório focal `8/8`, cobertura `200/1050/21`, floors `95,06/91,06/95,35/95,77` e gates locais relevantes passaram, sem alterar `.env.local`
-- next_action: preservar `IN_PROGRESS`/`PILOT_BLOCKED`, obter autoridade e ambiente para secret manager, concorrência PostgreSQL, mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: fechou localmente B99-106 sob RED/GREEN/REFACTOR: `/health/dependencies` foi alinhado ao contrato interno, convite passou a usar fragmento e a limpeza remove token de fragmento/query legado; focal `22/22`, E2E sintético Chromium `3/3`, cobertura `202/1060/21`, floors `95,05/91,06/95,31/95,75`, build `12/12` e gates locais relevantes passaram, sem alterar `.env.local`
+- next_action: executar B99-107 localmente para rate limit/headers/CORS; em paralelo, preservar `IN_PROGRESS`/`PILOT_BLOCKED` e obter autoridade/ambiente para migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,129 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T08:59:13-03:00
+- last_update: 2026-08-20T10:53:52-03:00
+
+## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
+
+### AÇÃO / RESULTADO
+
+- RED confirmou o desalinhamento de `/health/dependencies` no catálogo
+  canônico e a emissão administrativa de convite com token em query;
+- GREEN alinhou o catálogo a `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`, fez o
+  convite usar `#token=...`, restringiu a leitura ao fragmento e removeu tokens
+  do fragmento e de query legada durante a limpeza com `replaceState`;
+- os negativos existentes do handler cobrem 401/403/503; o foco combinado de
+  contrato, modelo/estado web, view e health passou `22/22`; E2E sintético
+  Chromium passou `3/3` em porta isolada;
+- cobertura passou `202/1060/21`, floors `95,05/91,06/95,31/95,75`, com o
+  timeout de governança de hotspots explicitado em `30s`; typecheck, lint,
+  formato, diff-check, migrations `33/33`, decisions `7/7`, mutation `7/7`,
+  documentation, traceability, Dual99, risk matrix, skips, architecture e
+  public-boundary passaram.
+
+### LIMITES / STATUS / NEXT
+
+O E2E usa mocks sintéticos e a API em `3101` não estava disponível; portanto
+não prova HA/API/DB ativo. O runtime PostgreSQL continua stale, o secret scan
+continua acusando somente os quatro valores redigidos do `.env.local` ignorado,
+e os gates externos, clínicos, RC e reauditoria independente permanecem
+abertos. Estado `IN_PROGRESS`; release `PILOT_BLOCKED`.
+
+## 2026-08-20T10:32:23-03:00 — DUAL99-B99-105-SCHEMA-RUNTIME-REVIEW
+
+### AÇÃO / RESULTADO
+
+- a revisão estática encontrou e corrigiu o default server-clock ausente no
+  schema Drizzle de `authoringWorkflowIdempotency.expiresAt`, alinhando-o à
+  migration `0032`; cobertura fresca passou `202/1060/21`, com floors
+  `95,06/91,06/95,31/95,76`, e migration governance, typecheck, lint, formato
+  e diff-check permaneceram verdes;
+- após a revisão final do diff remover um efeito colateral não relacionado em
+  `rateLimitBuckets`, a cobertura foi repetida no worktree exato e produziu os
+  mesmos números;
+- o probe apenas de leitura do PostgreSQL HA ativo encontrou migration table
+  em `30`, usuário corrente `cvg_admin` com `SUPERUSER/BYPASSRLS` e RLS ainda
+  desligado na tabela de idempotência de authoring; o runtime está stale em
+  relação a este worktree e não é evidência do RC B99-105.
+
+### LIMITES / STATUS / NEXT
+
+Nenhuma migration, linha, role, container ou release foi alterada. Continuam
+pendentes a execução autorizada em alvo descartável/aprovado, role restrita,
+concorrência same-key, TTL e cleanup RLS live. Estado `IN_PROGRESS`; release
+`PILOT_BLOCKED`.
+
+## 2026-08-20T10:19:27-03:00 — DUAL99-B99-105-IDEMPOTENCY-INTEGRITY
+
+### AÇÃO / RESULTADO
+
+- o RED confirmou que o boundary HTTP aceitava chave abaixo do piso, que a
+  migration de fechamento não existia, que o cleanup RLS não tinha `FOR
+  DELETE`, e que tentativa/resposta/correção calculavam `expiresAt` com
+  `Date.now()` sem lock transacional de mesma chave;
+- o GREEN adicionou `idempotency-policy.ts` com validação 16–128 e lock
+  `pg_advisory_xact_lock` namespaced; os quatro adapters agora usam
+  `CURRENT_TIMESTAMP` para leitura/expiração e cleanup de escrita, omitindo
+  o TTL calculado pela aplicação;
+- `0032_idempotency_integrity_closure.sql` fecha defaults server-clock,
+  constraints de operação/chave/fingerprint/expiry, `response_hash NOT NULL`
+  com SHA-256, rejeição explícita de legado, `FORCE ROW LEVEL SECURITY`,
+  `REVOKE ALL FROM PUBLIC` e policies de `DELETE` por participante/escopo.
+
+### VERIFICAÇÃO
+
+Focais passaram `112/112`; `pnpm test:coverage` passou `202` arquivos / `1.060`
+testes / `17` arquivos e `21` testes guardados, com `95,06%` statements,
+`91,06%` branches, `95,31%` functions e `95,76%` lines. Typecheck, lint,
+formato, build `12/12`, audit sem vulnerabilidades, migration governance
+`33/33`, decisões `7/7`, mutation `7/7`, traceability, documentation,
+skip-governance `20/20`, architecture e `git diff --check` passaram. O
+secret scan fail-closed acusa somente os quatro valores redigidos do
+`infra/production/.env.local` ignorado.
+
+### LIMITES / STATUS / NEXT
+
+Não houve PostgreSQL live autorizado nesta rodada: concorrência same-key,
+aplicação da migration sobre legado, role sem `SUPERUSER/BYPASSRLS` e limpeza
+RLS continuam como evidência pendente. Nenhum score, release, aprovação
+clínica, commit ou push adicional foi realizado. Estado `IN_PROGRESS`; release
+`PILOT_BLOCKED`.
+
+## 2026-08-20T09:35:11-03:00 — DUAL99-B99-104-CURRENT-CLINICAL-IDENTITY
+
+### AÇÃO / RESULTADO
+
+- sob TDD, o RED confirmou que avaliação/recalculation e correção aceitavam
+  role persistida removida, e que a composição de content transactions ainda
+  não expunha a porta de aprovador; o GREEN adicionou a checagem de
+  `ACTIVE` + `CLINICAL_APPROVER` + escopo e fixtures de suspensão/rotação;
+- `CLINICAL_APPROVER_ID` foi removido do schema/runtime config, da composição
+  de `ApiHttpDependencies`, do Compose HA, do `.env.example` e do verificador
+  de topologia. O principal autenticado agora é a única identidade enviada aos
+  use cases clínicos; authoring/publication existentes permaneceram intactos;
+- source-conflict e recalculation passaram a executar leitura bloqueante do
+  aprovador e writes no mesmo transaction executor, com `scopeId` aplicado
+  antes da leitura. Content withdrawal usa a mesma porta transacional, e
+  correction já conserva a transação com a checagem de role corrigida.
+
+### VERIFICAÇÃO
+
+Focais passaram `13` arquivos / `171` testes. A repetição de `pnpm
+test:coverage` passou `200` arquivos / `1.053` testes / `17` arquivos e `21`
+testes guardados, com `95,06%` statements / `91,07%` branches / `95,31%`
+functions / `95,75%` lines. Lint, typecheck, formato, audit, documentation,
+Dual99, traceability, skip governance `20/20`, critical decisions `7/7`,
+directed mutation `7/7`, hotspots, build com URL local sintética e
+`git diff --check` passaram. A primeira cobertura teve timeout operacional de
+5s no hotspot; o foco isolado passou `3/3` e o retry integral passou.
+
+### LIMITES / STATUS / NEXT
+
+`verify:secrets` continua fail-closed somente pelos quatro valores redigidos
+de `infra/production/.env.local`; o arquivo não foi lido, alterado ou
+publicado. Não há evidência live de concorrência/rotação PostgreSQL, RC
+imutável, gates externos, revisão clínica, `0/145`, release ou reauditoria.
+Estado `IN_PROGRESS`; release `PILOT_BLOCKED`.
 
 ## 2026-08-20T08:59:13-03:00 — GIT-PUBLISH-B99-101-B99-103
 

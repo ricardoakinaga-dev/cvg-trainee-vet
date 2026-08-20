@@ -113,7 +113,6 @@ export interface ApiHttpDependencies {
   readonly observability?: Observability;
   readonly metricsScrapeToken?: string;
   readonly operationalEvidence?: OperationalEvidence;
-  readonly approvedClinicalApproverId?: string;
   readonly createInvitation: (
     command: CreateInvitationCommand,
   ) => Promise<CreatedInvitation>;
@@ -245,19 +244,11 @@ export interface ApiHttpDependencies {
   readonly recordSourceConflictDecision?: (
     command: Omit<
       RecordSourceConflictDecisionCommand,
-      | "principalId"
-      | "accountStatus"
-      | "roles"
-      | "scopes"
-      | "approvedClinicalApproverId"
+      "principalId" | "accountStatus" | "roles" | "scopes"
     > &
       Pick<
         RecordSourceConflictDecisionCommand,
-        | "principalId"
-        | "accountStatus"
-        | "roles"
-        | "scopes"
-        | "approvedClinicalApproverId"
+        "principalId" | "accountStatus" | "roles" | "scopes"
       >,
   ) => Promise<SourceConflictDecisionState>;
   readonly registerAssessmentRecalculationCandidates?: (

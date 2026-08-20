@@ -1,8 +1,8 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T03:48:50-03:00`
-- última atualização: `2026-08-20T08:55:50-03:00`
+- corte: `2026-08-20T10:53:52-03:00`
+- última atualização: `2026-08-20T10:53:52-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -36,18 +36,92 @@
 - worker: o inventário de skips foi atualizado de `20` para `21` testes e foi
   adicionada prova live de claim→lease→ack→cleanup PostgreSQL no teste de
   worker; o ambiente local sem banco live mantém essa prova guardada.
+- identidade clínica corrente: `CLINICAL_APPROVER_ID` foi removido do runtime,
+  API, Compose HA, `.env.example` e verificador de topologia; os fluxos de
+  source-conflict, recalculation, correction e content withdrawal derivam o
+  principal autenticado, revalidam a conta persistida como `ACTIVE` +
+  `CLINICAL_APPROVER` + escopo e, quando aplicável, executam leitura e write no
+  mesmo transaction executor com contexto de escopo.
+- integridade de idempotência: B99-105 adicionou validação 16–128 no boundary
+  HTTP/persistência, lock advisory namespaced, TTL/cleanup pelo
+  `CURRENT_TIMESTAMP`, constraints e response hash SHA-256; a migration 0032
+  rejeita legado, força RLS, revoga `PUBLIC` e permite cleanup somente pelo
+  contexto de participante/escopo.
+- revisão final: o default server-clock ausente no schema Drizzle de
+  `authoringWorkflowIdempotency.expiresAt` foi corrigido para refletir a
+  migration 0032; um probe somente leitura confirmou que o PostgreSQL HA ativo
+  ainda está em migration count `30`, usa `cvg_admin` com
+  `SUPERUSER/BYPASSRLS` e não tem RLS de authoring aplicado, portanto não é o
+  RC desta rodada.
+- diagnóstico/convite: B99-106 alinhou o catálogo de
+  `/health/dependencies` a `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`, passou o
+  convite para `/invite#token=...`, restringiu leitura ao fragmento e limpou
+  tokens do fragmento e de query legada.
 
-## Checkpoint corrente — 2026-08-20T03:48:50-03:00
+## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
+
+### RED → GREEN
+
+- RED reproduziu o catálogo canônico declarando `/health/dependencies` como
+  público embora o handler exigisse capability interna ou credencial de scrape;
+  também reproduziu convite administrativo com token em query;
+- GREEN alinhou o catálogo a `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`, passou
+  links para `/invite#token=...`, restringiu a leitura ao fragmento e sanitizou
+  tokens do fragmento e de query legada no `replaceState`;
+- os testes existentes do handler preservaram negativos 401/403/503 e o foco
+  de contrato/modelo/estado/view/health passou `22/22`;
+- Playwright sintético Chromium passou `3/3` na porta isolada `3213`, incluindo
+  link em fragmento, ativação e remoção do token da URL.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- `pnpm test:coverage`: `202` arquivos, `1.060` testes, `17` arquivos e `21`
+  testes guardados; `95,05%` statements, `91,06%` branches, `95,31%`
+  functions e `95,75%` lines;
+- typecheck, lint, formato, diff-check, migrations `33/33`, decisões críticas
+  `7/7`, mutation dirigida `7/7`, documentation, traceability, Dual99,
+  risk-matrix, skip-governance, architecture e public-boundary passaram;
+- o teste de hotspots recebeu timeout explícito de `30s` para o scan AST sob
+  instrumentação; nenhum critério de classificação foi relaxado.
+
+### LIMITES
+
+O E2E usou mocks sintéticos e a API em `3101` estava indisponível, logo não é
+prova de HA/API/DB ativo. O runtime PostgreSQL observado continua stale em
+relação ao worktree; `verify:secrets` permanece fail-closed somente nos quatro
+valores redigidos do `infra/production/.env.local` ignorado. Não houve dado
+real, alteração live, score, release ou promoção clínica; gates externos,
+clínicos, RC e reauditoria independente continuam abertos.
+
+## Checkpoint corrente — 2026-08-20T10:53:52-03:00
 
 | Evidência | Resultado |
 |---|---|
-| cobertura oficial | `200` arquivos aprovados / `17` guardados; `1.041` testes aprovados / `21` guardados; `95,01%` statements, `91,02%` branches, `95,19%` functions, `95,73%` lines |
-| gates técnicos | format, lint, typecheck, decisões críticas `7/7`, contratos `84/84`, worker `46/46`, migrações `32/32`, dependency audit e diff-check verdes |
-| hotspots | `PASS_WITH_DEBT_RATCHET`, `144` funções >50 linhas, maior `113`, zero arquivo >800 sem classificação |
-| scanner | focal `14/14`; execução integral falha somente nas quatro atribuições redigidas de `infra/production/.env.local` |
+| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.060` testes aprovados / `21` guardados; `95,05%` statements, `91,06%` branches, `95,31%` functions, `95,75%` lines |
+| gates técnicos | format, lint, typecheck, decisões críticas `7/7`, dependency audit e diff-check verdes |
+| hotspots | `PASS_WITH_DEBT_RATCHET`, `113` funções >50 linhas, maior `76`, zero hotspot não classificado |
+| scanner | focal `17/17`; execução integral falha somente nas quatro atribuições redigidas de `infra/production/.env.local` |
 | mutation crítica | `7/7 killed`, `0` sobreviventes, score `100%` / mínimo `90%` |
-| build/E2E | build `12/12`; wrapper E2E com porta alternativa `3112`, Chromium sintético `27/27` |
-| governança Dual99 | `PASS_WITH_GAPS`, `eligibleForIndependentReaudit=false`, `PILOT_BLOCKED`; traceabilidade `0/145`; skips `20/20` runs, `0` flaky, `17` arquivos guardados |
+| build/E2E | build `12/12`; E2E administrativo/convite sintético em porta alternativa `3213`, Chromium `3/3` |
+| governança Dual99 | `PASS_WITH_GAPS`, `eligibleForIndependentReaudit=false`, `PILOT_BLOCKED`; traceabilidade `0/145` cadeias, `145` evidências locais; skips `20/20` runs, `0` flaky, `17` arquivos guardados |
+
+## Round 16 — B99-105 / schema contract and runtime boundary — 2026-08-20T10:32:23-03:00
+
+- a revisão final corrigiu o default `CURRENT_TIMESTAMP + interval '24 hours'`
+  no schema Drizzle de authoring, alinhando o contrato TypeScript à migration
+  `0032`;
+- `pnpm test:coverage` fresco passou `202` arquivos / `1.060` testes / `17`
+  arquivos e `21` testes guardados, com `95,06%` statements, `91,06%`
+  branches, `95,31%` functions e `95,76%` lines; typecheck, lint, formato,
+  migrations `33/33` e diff-check passaram;
+- após a correção do diff final, o comando foi repetido no worktree exato e
+  retornou os mesmos números;
+- o probe read-only no PostgreSQL HA ativo retornou migration count `30`,
+  `cvg_admin` com `SUPERUSER/BYPASSRLS` e authoring idempotency sem RLS; isto
+  confirma runtime stale, não prova live do RC B99-105;
+- não houve alteração de migration aplicada, dados, role, container, score,
+  release, commit ou push. Permanecem pendentes role restrita, migration sobre
+  legado, same-key, TTL/RLS live e gates externos.
 
 As refatorações alteraram apenas a decomposição, mantendo contratos, decisões
 críticas e projeções imutáveis. O E2E permanece sintético: os avisos de proxy
@@ -109,6 +183,52 @@ para `127.0.0.1:3101` não constituem evidência de API/DB/HA real.
 - limite: a concorrência PostgreSQL, generation, TTL, logout e replay seguem
   sem execução por falta de ambiente live autorizado; B99-103 continua
   `IN_PROGRESS` e o release `PILOT_BLOCKED`.
+
+## Round 15 — B99-105 / idempotency integrity — 2026-08-20T10:19:27-03:00
+
+- RED reproduziu a chave HTTP abaixo do piso, a ausência da migration 0032,
+  adapters com `Date.now()`/sem lock same-key e cleanup incompatível com as
+  policies RLS existentes;
+- GREEN centralizou `assertIdempotencyKey` e
+  `pg_advisory_xact_lock`, moveu leitura/TTL/cleanup para o relógio PostgreSQL,
+  retirou `expiresAt` calculado da aplicação e adicionou conflito concorrente
+  explícito na correção;
+- `0032_idempotency_integrity_closure.sql` fecha constraints de operação,
+  chave, fingerprint e expiry; torna `response_hash` não nulo/SHA-256; falha
+  explicitamente diante de legado; força RLS, revoga `PUBLIC` e cria delete
+  policies com contexto de participante/escopo;
+- focais passaram `112/112`; coverage passou `202/1060/21` com floors
+  `95,06/91,06/95,31/95,76`; migrations `33/33`, build `12/12`, audit,
+  decisões `7/7`, mutation `7/7`, traceability, documentation, skips `20/20`,
+  architecture, hotspots e diff-check passaram;
+- limite: PostgreSQL live, aplicação da migration sobre legado, role restrita,
+  concorrência same-key e RLS cleanup permanecem sem prova autorizada. O
+  resultado segue local, sem score/release/commit/push adicional.
+
+## Round 14 — B99-104 / current clinical identity — 2026-08-20T09:35:11-03:00
+
+- RED reproduziu que a identidade clínica ainda era fornecida por configuração
+  estática e que alguns fluxos não revalidavam o papel/estado/escopo persistidos
+  no mesmo limite transacional antes da mutação;
+- GREEN removeu `CLINICAL_APPROVER_ID` do schema de ambiente, composição do API,
+  Compose HA, exemplo de ambiente e verificador de topologia. Handlers passam o
+  principal autenticado, e application/persistence revalidam a conta corrente
+  com lock, `ACTIVE`, papel `CLINICAL_APPROVER` e escopo;
+- source-conflict e assessment recalculation passaram a compartilhar o executor
+  transacional com contexto de escopo aplicado antes da leitura do aprovador e do
+  write; correction e content withdrawal também falham fechado em suspensão,
+  remoção de papel ou divergência de escopo;
+- os focais de aplicação/persistência/API passaram `13` arquivos / `171`
+  testes. A repetição integral passou `200` arquivos / `1.053` testes / `17`
+  arquivos e `21` testes guardados, com floors `95,06%` statements /
+  `91,07%` branches / `95,31%` functions / `95,75%` lines;
+- build `12/12`, lint, typecheck, formato, audit, documentação, Dual99,
+  traceability, skip governance `20/20`, decisões `7/7`, mutation `7/7`,
+  hotspots e diff-check passaram. `verify:secrets` permanece fail-closed apenas
+  nos quatro valores de `infra/production/.env.local`;
+- limite: rotação/concurrency PostgreSQL live, RC/proveniência, revisão clínica,
+  CI/release, reauditoria e gates externos continuam sem prova autorizada. B99-104
+  permanece `IN_PROGRESS` e o release `PILOT_BLOCKED`.
 
 ## Gaps que permanecem abertos
 

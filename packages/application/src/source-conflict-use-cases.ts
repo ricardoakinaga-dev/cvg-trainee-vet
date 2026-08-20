@@ -7,6 +7,7 @@ import {
 
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { ApplicationError } from "./errors.js";
+import type { TransactionSecurityContext } from "./transaction-context.js";
 import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 
 export type RecordSourceConflictDecisionCommand = Readonly<{
@@ -32,9 +33,25 @@ export interface SourceConflictDecisionWritePort {
   ) => Promise<SourceConflictDecisionState>;
 }
 
-export type SourceConflictDecisionDependencies = Readonly<{
-  readonly save: SourceConflictDecisionWritePort["save"];
+export interface SourceConflictDecisionTransactionalOperations extends SourceConflictDecisionWritePort {
   readonly approver: ClinicalApproverPort;
+}
+
+export interface SourceConflictDecisionTransactionPort {
+  readonly run: <Result>(
+    work: (
+      operations: SourceConflictDecisionTransactionalOperations,
+    ) => Promise<Result>,
+    context?: TransactionSecurityContext,
+  ) => Promise<Result>;
+}
+
+export interface SourceConflictDecisionRepository extends SourceConflictDecisionWritePort {
+  readonly transaction: SourceConflictDecisionTransactionPort;
+}
+
+export type SourceConflictDecisionDependencies = Readonly<{
+  readonly transaction: SourceConflictDecisionTransactionPort;
 }>;
 
 function normalizeError(error: unknown): ApplicationError {
@@ -78,9 +95,7 @@ export async function recordSourceConflictDecision(
       capability: "APPROVE_CLINICAL_CONTENT",
       resource: { scopeId: command.scopeId },
       scopes: command.scopes,
-      ...(command.approvedClinicalApproverId === undefined
-        ? {}
-        : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
+      approvedClinicalApproverId: command.principalId,
     })
   ) {
     throw new ApplicationError(
@@ -89,24 +104,28 @@ export async function recordSourceConflictDecision(
     );
   }
 
-  // The static approvedClinicalApproverId is a hint, not proof: revalidate the
-  // current persisted identity so suspension/role/scope revocation is honored.
-  await assertCurrentClinicalApprover(command, dependencies.approver);
-
   try {
-    const state = buildSourceConflictDecision({
-      conflictId: command.conflictId,
-      contentId: command.contentId,
-      contentVersion: command.contentVersion,
-      scopeId: command.scopeId,
-      sourceCodes: command.sourceCodes,
-      description: command.description,
-      decision: command.decision,
-      rationale: command.rationale,
-      decidedBy: command.principalId,
-      decidedAt: command.decidedAt,
-    });
-    return await dependencies.save(state);
+    return await dependencies.transaction.run(
+      async (operations) => {
+        // Revalidate the persisted current identity in the same transaction as
+        // the decision write so suspension/role/scope revocation cannot race it.
+        await assertCurrentClinicalApprover(command, operations.approver);
+        const state = buildSourceConflictDecision({
+          conflictId: command.conflictId,
+          contentId: command.contentId,
+          contentVersion: command.contentVersion,
+          scopeId: command.scopeId,
+          sourceCodes: command.sourceCodes,
+          description: command.description,
+          decision: command.decision,
+          rationale: command.rationale,
+          decidedBy: command.principalId,
+          decidedAt: command.decidedAt,
+        });
+        return operations.save(state);
+      },
+      { scopeId: command.scopeId },
+    );
   } catch (error) {
     throw normalizeError(error);
   }

@@ -122,9 +122,9 @@ export const API_SURFACE: readonly ApiSurfaceRoute[] = Object.freeze([
   route({
     method: "GET",
     path: "/health/dependencies",
-    capability: "PUBLIC_HEALTH",
-    auth: "PUBLIC",
-    scope: "none",
+    capability: "VIEW_INTERNAL_AUDIT",
+    auth: "INTERNAL",
+    scope: "audit",
     useCase: "dependencyHealth",
     requestContract: "none",
     responseContract: "DependencyStatusProjection",

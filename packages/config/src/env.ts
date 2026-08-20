@@ -33,7 +33,6 @@ const rawEnvironmentSchema = z.object({
         value.startsWith("postgresql://") || value.startsWith("postgres://"),
       "DATABASE_URL must use PostgreSQL",
     ),
-  CLINICAL_APPROVER_ID: z.string().min(1).optional(),
   QDRANT_ENABLED: booleanString.default(false),
   QDRANT_URL: z
     .string()
@@ -88,7 +87,6 @@ export type RuntimeConfig = {
   databaseUrl: string;
   requireDatabaseLeastPrivilege: boolean;
   operationalAiCostCeilingUsd: number;
-  approvedClinicalApproverId?: string;
   identityProvider:
     { configured: false } | { configured: true; url: string; token: string };
   identityProviderRequired: boolean;
@@ -206,9 +204,6 @@ function validateProductionRequirements(
     ...(value.NODE_ENV === "production" && !value.METRICS_SCRAPE_TOKEN
       ? ["METRICS_SCRAPE_TOKEN"]
       : []),
-    ...(value.NODE_ENV === "production" && !value.CLINICAL_APPROVER_ID
-      ? ["CLINICAL_APPROVER_ID"]
-      : []),
   ]);
 }
 
@@ -283,9 +278,6 @@ function buildRuntimeConfig(value: ParsedEnvironment): RuntimeConfig {
     databaseUrl: value.DATABASE_URL,
     requireDatabaseLeastPrivilege: value.NODE_ENV === "production",
     operationalAiCostCeilingUsd: value.AI_OPERATIONAL_COST_CEILING_USD,
-    ...(value.CLINICAL_APPROVER_ID === undefined
-      ? {}
-      : { approvedClinicalApproverId: value.CLINICAL_APPROVER_ID }),
     identityProvider: buildIdentityProvider(value),
     identityProviderRequired: value.IDENTITY_PROVIDER_REQUIRED,
     observability: buildObservability(value),

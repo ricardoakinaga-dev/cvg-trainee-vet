@@ -41,7 +41,9 @@ export const sessions = pgTable(
     roles: jsonb("roles").$type<readonly string[]>().notNull(),
     scopes: jsonb("scopes").$type<readonly string[]>().notNull(),
     sessionGeneration: integer("session_generation").notNull().default(0),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP + interval '24 hours'`),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -131,11 +133,13 @@ export const authoringWorkflowIdempotency = pgTable(
     response: jsonb("response")
       .$type<AuthoringWorkflowReplayPayload>()
       .notNull(),
-    responseHash: text("response_hash"),
+    responseHash: text("response_hash").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP + interval '24 hours'`),
   },
   (table) => [
     index("authoring_workflow_idempotency_expires_at_idx").on(table.expiresAt),
@@ -156,12 +160,20 @@ export const authoringWorkflowIdempotency = pgTable(
       sql`${table.key} ~ '^[A-Za-z0-9][A-Za-z0-9._~:-]{0,127}$'`,
     ),
     check(
+      "authoring_workflow_idempotency_key_entropy_check",
+      sql`${table.key} ~ '^[A-Za-z0-9][A-Za-z0-9._~:-]{15,127}$'`,
+    ),
+    check(
       "authoring_workflow_idempotency_fingerprint_check",
       sql`${table.fingerprint} ~ '^sha256:[0-9a-f]{64}$'`,
     ),
     check(
       "authoring_workflow_idempotency_response_schema_check",
       sql`${table.response}->>'schemaVersion' = '1'`,
+    ),
+    check(
+      "authoring_workflow_idempotency_response_hash_sha256_check",
+      sql`${table.responseHash} ~ '^sha256:[0-9a-f]{64}$'`,
     ),
     check(
       "authoring_workflow_idempotency_expiry_check",

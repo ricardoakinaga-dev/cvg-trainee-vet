@@ -225,6 +225,13 @@
       "when": 1786936219000,
       "tag": "0031_session_generation_revocation",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1787230365453,
+      "tag": "0032_idempotency_integrity_closure",
+      "breakpoints": true
     }
   ]
 }

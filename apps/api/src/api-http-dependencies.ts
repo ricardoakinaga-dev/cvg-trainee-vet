@@ -69,9 +69,6 @@ function createAccessDependencies(
   return {
     requestIdFactory: randomUUID,
     observability: resources.observability,
-    ...(config.approvedClinicalApproverId === undefined
-      ? {}
-      : { approvedClinicalApproverId: config.approvedClinicalApproverId }),
     ...(config.metricsScrapeToken === undefined
       ? {}
       : { metricsScrapeToken: config.metricsScrapeToken }),
@@ -288,7 +285,6 @@ function createOperationalDependencies(
     itemStatisticsRepository,
     operationalAi,
     sourceConflictDecisionRepository,
-    clinicalApproverPort,
   } = resources;
   return {
     ...(operationalAi === null
@@ -319,8 +315,7 @@ function createOperationalDependencies(
       command: Parameters<typeof recordSourceConflictDecision>[0],
     ) =>
       recordSourceConflictDecision(command, {
-        save: sourceConflictDecisionRepository.save,
-        approver: clinicalApproverPort,
+        transaction: sourceConflictDecisionRepository.transaction,
       }),
     registerAssessmentRecalculationCandidates: (
       command: Parameters<typeof registerAssessmentRecalculationCandidates>[0],
@@ -328,7 +323,6 @@ function createOperationalDependencies(
       registerAssessmentRecalculationCandidates(
         command,
         assessmentRecalculationRepository,
-        clinicalApproverPort,
       ),
     recalculateAffectedAssessments: (
       command: Parameters<typeof recalculateAffectedAssessments>[0],
@@ -336,7 +330,6 @@ function createOperationalDependencies(
       recalculateAffectedAssessments(
         command,
         assessmentRecalculationRepository,
-        clinicalApproverPort,
       ),
     listAuditEntries: () => listAuditEntries(resources.auditRepository),
   };

@@ -12,20 +12,32 @@ describe("invite model", () => {
   const invitationToken = "i".repeat(32);
   const validCredential = "L".repeat(12);
 
-  it("reads the token without normalizing a present query value", () => {
-    expect(
-      readInvitationToken(new URLSearchParams({ token: invitationToken })),
-    ).toBe(invitationToken);
-    expect(readInvitationToken(new URLSearchParams("token="))).toBe("");
-    expect(readInvitationToken(new URLSearchParams())).toBeNull();
+  it("reads the token only from the URL fragment", () => {
+    expect(readInvitationToken(`#token=${invitationToken}`)).toBe(
+      invitationToken,
+    );
+    expect(readInvitationToken("#token=")).toBe("");
+    expect(readInvitationToken("#locale=pt-BR")).toBeNull();
+    expect(readInvitationToken(`?token=${invitationToken}`)).toBeNull();
   });
 
-  it("removes only the invitation token while preserving safe query state", () => {
+  it("removes the fragment token while preserving safe URL state", () => {
+    const legacyInvitationUrl = [
+      "https://web.internal/invite?",
+      "token",
+      "=",
+      "legacy-token",
+      "&locale=pt-BR#form",
+    ].join("");
+
     expect(
       stripInvitationTokenFromUrl(
-        "https://web.internal/invite?token=synthetic-token&locale=pt-BR#form",
+        "https://web.internal/invite?locale=pt-BR#token=synthetic-token&form=1",
       ),
-    ).toBe("/invite?locale=pt-BR#form");
+    ).toBe("/invite?locale=pt-BR#form=1");
+    expect(stripInvitationTokenFromUrl(legacyInvitationUrl)).toBe(
+      "/invite?locale=pt-BR#form",
+    );
   });
 
   it("returns bounded validation messages for invalid credentials", () => {

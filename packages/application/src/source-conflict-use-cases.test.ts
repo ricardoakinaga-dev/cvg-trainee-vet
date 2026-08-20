@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   recordSourceConflictDecision,
   type RecordSourceConflictDecisionCommand,
+  type SourceConflictDecisionDependencies,
+  type SourceConflictDecisionWritePort,
 } from "./source-conflict-use-cases.js";
 import type { ClinicalApproverPort } from "./authoring-use-cases.js";
 import { ApplicationError } from "./errors.js";
@@ -18,6 +20,22 @@ function approver(
       roles,
       scopes: ["scope-1"],
     })),
+  };
+}
+
+function dependencies(
+  overrides: Readonly<{
+    readonly save?: SourceConflictDecisionWritePort["save"];
+    readonly approver?: ClinicalApproverPort;
+  }> = {},
+): SourceConflictDecisionDependencies {
+  const save = overrides.save ?? (async (state) => state);
+  const currentApprover =
+    overrides.approver ?? approver("ACTIVE", ["CLINICAL_APPROVER"]);
+  return {
+    transaction: {
+      run: async (work) => work({ save, approver: currentApprover }),
+    },
   };
 }
 
@@ -41,10 +59,10 @@ const command: RecordSourceConflictDecisionCommand = {
 describe("source conflict decision use case", () => {
   it("requires an approved clinical identity and persists the decision", async () => {
     const save = vi.fn(async (state) => state);
-    const result = await recordSourceConflictDecision(command, {
-      save,
-      approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
-    });
+    const result = await recordSourceConflictDecision(
+      command,
+      dependencies({ save }),
+    );
 
     expect(result).toMatchObject({
       conflictId: "conflict-1",
@@ -72,17 +90,19 @@ describe("source conflict decision use case", () => {
     } as const;
     await expect(
       recordSourceConflictDecision(withoutApproval, {
-        save: vi.fn(),
-        approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
+        transaction: {
+          run: async (work) =>
+            work({
+              save: vi.fn(),
+              approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
+            }),
+        },
       }),
     ).rejects.toMatchObject({ code: "forbidden" });
     await expect(
       recordSourceConflictDecision(
         { ...command, scopeId: "scope-2" },
-        {
-          save: vi.fn(),
-          approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
-        },
+        dependencies(),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
   });
@@ -90,26 +110,25 @@ describe("source conflict decision use case", () => {
   it("revalidates the current clinical approver instead of trusting the static id", async () => {
     const save = vi.fn(async (state) => state);
     await expect(
-      recordSourceConflictDecision(command, {
-        save,
-        approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
-      }),
+      recordSourceConflictDecision(command, dependencies({ save })),
     ).resolves.toMatchObject({ decidedBy: "reviewer-1" });
 
     // A static approvedClinicalApproverId on the command must NOT bypass the
     // current-identity revalidation: a suspended approver or one that lost the
     // CLINICAL_APPROVER role is rejected.
     await expect(
-      recordSourceConflictDecision(command, {
-        save: vi.fn(),
-        approver: approver("SUSPENDED", ["CLINICAL_APPROVER"]),
-      }),
+      recordSourceConflictDecision(
+        command,
+        dependencies({
+          approver: approver("SUSPENDED", ["CLINICAL_APPROVER"]),
+        }),
+      ),
     ).rejects.toMatchObject({ code: "forbidden" });
     await expect(
-      recordSourceConflictDecision(command, {
-        save: vi.fn(),
-        approver: approver("ACTIVE", ["MODERATOR"]),
-      }),
+      recordSourceConflictDecision(
+        command,
+        dependencies({ approver: approver("ACTIVE", ["MODERATOR"]) }),
+      ),
     ).rejects.toMatchObject({ code: "forbidden" });
     expect(save).toHaveBeenCalledOnce();
   });
@@ -118,10 +137,7 @@ describe("source conflict decision use case", () => {
     await expect(
       recordSourceConflictDecision(
         { ...command, description: "<script>synthetic</script>" },
-        {
-          save: vi.fn(),
-          approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
-        },
+        dependencies(),
       ),
     ).rejects.toMatchObject({
       code: "validation_error",
@@ -131,12 +147,14 @@ describe("source conflict decision use case", () => {
 
   it("maps unexpected persistence failures without leaking internals", async () => {
     await expect(
-      recordSourceConflictDecision(command, {
-        save: vi.fn(async () => {
-          throw new Error("synthetic database detail");
+      recordSourceConflictDecision(
+        command,
+        dependencies({
+          save: vi.fn(async () => {
+            throw new Error("synthetic database detail");
+          }),
         }),
-        approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
-      }),
+      ),
     ).rejects.toMatchObject({
       code: "internal_error",
       message: "Source conflict decision could not be recorded",
@@ -150,37 +168,41 @@ describe("source conflict decision use case", () => {
     );
 
     await expect(
-      recordSourceConflictDecision(command, {
-        save: vi.fn(async () => {
-          throw persistenceError;
+      recordSourceConflictDecision(
+        command,
+        dependencies({
+          save: vi.fn(async () => {
+            throw persistenceError;
+          }),
         }),
-        approver: approver("ACTIVE", ["CLINICAL_APPROVER"]),
-      }),
+      ),
     ).rejects.toBe(persistenceError);
   });
 
   it("fails closed when the current approver is absent or out of scope", async () => {
     await expect(
-      recordSourceConflictDecision(command, {
-        save: vi.fn(),
-        approver: {
-          findById: vi.fn(async () => null),
-        },
-      }),
+      recordSourceConflictDecision(
+        command,
+        dependencies({
+          approver: { findById: vi.fn(async () => null) },
+        }),
+      ),
     ).rejects.toMatchObject({ code: "forbidden" });
 
     await expect(
-      recordSourceConflictDecision(command, {
-        save: vi.fn(),
-        approver: {
-          findById: vi.fn(async () => ({
-            accountId: "reviewer-1",
-            accountStatus: "ACTIVE" as const,
-            roles: ["CLINICAL_APPROVER"] as const,
-            scopes: ["other-scope"],
-          })),
-        },
-      }),
+      recordSourceConflictDecision(
+        command,
+        dependencies({
+          approver: {
+            findById: vi.fn(async () => ({
+              accountId: "reviewer-1",
+              accountStatus: "ACTIVE" as const,
+              roles: ["CLINICAL_APPROVER"] as const,
+              scopes: ["other-scope"],
+            })),
+          },
+        }),
+      ),
     ).rejects.toMatchObject({ code: "forbidden" });
   });
 });

@@ -31,9 +31,7 @@ export function useInviteActivation(apiBase: string): InviteActivationState {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const nextToken = readInvitationToken(
-      new URLSearchParams(window.location.search),
-    );
+    const nextToken = readInvitationToken(window.location.hash);
     setToken(nextToken);
     if (nextToken !== null) {
       window.history.replaceState(

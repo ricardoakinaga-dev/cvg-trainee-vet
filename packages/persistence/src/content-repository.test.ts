@@ -480,6 +480,7 @@ describe("content persistence mapping", () => {
         Object.keys(operations).sort(),
       ),
     ).resolves.toEqual([
+      "approver",
       "audit",
       "clinicalReview",
       "content",

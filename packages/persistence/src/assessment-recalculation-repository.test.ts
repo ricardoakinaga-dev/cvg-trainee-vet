@@ -4,6 +4,7 @@ import {
   assessmentRecalculationCandidateRowToCandidate,
   assessmentRecalculationStateToUpdate,
   createAssessmentRecalculationMethods,
+  createAssessmentRecalculationRepository,
 } from "./assessment-recalculation-repository.js";
 
 const row = {
@@ -34,6 +35,28 @@ describe("assessment recalculation persistence mapping", () => {
       "register",
       "save",
     ]);
+  });
+
+  it("composes the approver inside the shared recalculation transaction", async () => {
+    const transaction = vi.fn(async (work: (tx: unknown) => Promise<unknown>) =>
+      work({}),
+    );
+    const repository = createAssessmentRecalculationRepository({
+      transaction,
+    } as never);
+
+    await expect(
+      repository.transaction.run(async (operations) =>
+        Object.keys(operations).sort(),
+      ),
+    ).resolves.toEqual([
+      "approver",
+      "listAffected",
+      "notify",
+      "register",
+      "save",
+    ]);
+    expect(transaction).toHaveBeenCalledOnce();
   });
 
   it("maps an approved pending snapshot to a recalculation candidate", () => {

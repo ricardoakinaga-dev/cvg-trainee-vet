@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AnswerIdempotencyRecord,
@@ -32,6 +32,10 @@ import {
 } from "./schema.js";
 import type * as schema from "./schema.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
+import {
+  assertIdempotencyKey,
+  lockIdempotencyKey,
+} from "./idempotency-policy.js";
 
 export { PersistenceMappingError } from "./attempt-repository.js";
 
@@ -205,7 +209,6 @@ async function insertAnswerIdempotency(
       attemptId: record.result.attempt.attemptId,
       answerId: record.result.answer.answerId,
       response,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
   } catch (error) {
     if (!isUniqueConstraintViolation(error)) throw error;
@@ -332,13 +335,20 @@ function createAnswerIdempotency(
 ): AnswerTransactionalOperations["idempotency"] {
   return Object.freeze({
     find: async (key: string): Promise<AnswerIdempotencyRecord | null> => {
+      assertIdempotencyKey(key);
+      await lockIdempotencyKey(db, "answer", key);
       const rows = await db
         .select({
           fingerprint: answerIdempotency.fingerprint,
           response: answerIdempotency.response,
         })
         .from(answerIdempotency)
-        .where(eq(answerIdempotency.key, key))
+        .where(
+          and(
+            eq(answerIdempotency.key, key),
+            sql`${answerIdempotency.expiresAt} > CURRENT_TIMESTAMP`,
+          ),
+        )
         .limit(1);
       const row = rows[0];
       return row ? answerIdempotencyRowToRecord(row) : null;
@@ -347,6 +357,11 @@ function createAnswerIdempotency(
       key: string,
       record: AnswerIdempotencyRecord,
     ): Promise<void> => {
+      assertIdempotencyKey(key);
+      await lockIdempotencyKey(db, "answer", key);
+      await db.execute(
+        sql`delete from "answer_idempotency" where "expires_at" <= CURRENT_TIMESTAMP`,
+      );
       const existing = await db
         .select({ fingerprint: answerIdempotency.fingerprint })
         .from(answerIdempotency)

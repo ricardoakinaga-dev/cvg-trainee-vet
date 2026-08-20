@@ -11,22 +11,20 @@ import type {
   AuthoringRepositoryPort,
   ClinicalReviewRecord,
 } from "@cvg/application";
-import type {
-  ClinicalApproverPort,
-  ClinicalApproverRecord,
-} from "@cvg/application";
 import type { ContentStatus } from "@cvg/domain";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
 import { createAuthoringIdempotency } from "./authoring-idempotency-repository.js";
+import { createClinicalApproverPort } from "./clinical-approver-repository.js";
 import { createContentTransactionalOperations } from "./content-repository.js";
 import {
   contentEditorialRecords,
   contentReviewDecisions,
   contentVersions,
-  accounts,
 } from "./schema.js";
 import type * as schema from "./schema.js";
+
+export { createClinicalApproverPort } from "./clinical-approver-repository.js";
 
 export type AuthoringRowShape = Readonly<{
   readonly editorialRecordId: string;
@@ -329,56 +327,6 @@ function assertVersion(value: number, field: string): void {
   if (!Number.isInteger(value) || value < 1) {
     throw new PersistenceMappingError(`${field} must be a positive integer`);
   }
-}
-
-export function createClinicalApproverPort(
-  db: DatabaseExecutor,
-): ClinicalApproverPort {
-  return Object.freeze({
-    findById: async (
-      accountId: string,
-    ): Promise<ClinicalApproverRecord | null> => {
-      const rows = await db
-        .select({
-          accountId: accounts.id,
-          accountStatus: accounts.status,
-          roles: accounts.roles,
-          scopes: accounts.scopes,
-        })
-        .from(accounts)
-        .where(eq(accounts.id, accountId))
-        .limit(1)
-        .for("update");
-      const row = rows[0];
-      if (row === undefined) return null;
-      if (
-        row.accountStatus !== "INVITED" &&
-        row.accountStatus !== "ACTIVE" &&
-        row.accountStatus !== "SUSPENDED" &&
-        row.accountStatus !== "DEACTIVATED"
-      ) {
-        throw new PersistenceMappingError(
-          "clinical approver status is invalid",
-        );
-      }
-      if (
-        !Array.isArray(row.roles) ||
-        row.roles.some((role) => typeof role !== "string") ||
-        !Array.isArray(row.scopes) ||
-        row.scopes.some((scope) => typeof scope !== "string")
-      ) {
-        throw new PersistenceMappingError(
-          "clinical approver access data is invalid",
-        );
-      }
-      return Object.freeze({
-        accountId: row.accountId,
-        accountStatus: row.accountStatus,
-        roles: Object.freeze([...row.roles]),
-        scopes: Object.freeze([...row.scopes]),
-      });
-    },
-  });
 }
 
 export function authoringRowToRecord(row: AuthoringRowShape): AuthoringRecord {

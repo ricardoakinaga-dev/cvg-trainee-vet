@@ -23,7 +23,6 @@ import {
   createAuditRepository,
   createAuthoringRepository,
   createClinicalReviewQueueRepository,
-  createClinicalApproverPort,
   createContentUseCaseDependencies,
   createCorrectionReadRepository,
   createCorrectionUseCaseDependencies,
@@ -96,7 +95,6 @@ function createWorkflowResources(database: Database) {
       createAssessmentRecalculationRepository(database),
     authoringRepository: createAuthoringRepository(database),
     authoringTransaction: createAuthoringTransactionPort(database, randomUUID),
-    clinicalApproverPort: createClinicalApproverPort(database),
     clinicalReviewQueueRepository:
       createClinicalReviewQueueRepository(database),
     learningStateRepository: createLearningStateRepository(database),

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { AttemptState } from "@cvg/domain";
 
@@ -147,6 +147,7 @@ describe("PostgreSQL attempt mapping", () => {
       code: "23505",
     });
     const database = {
+      execute: vi.fn(async () => []),
       select: () => ({
         from: () => ({
           where: () => ({
@@ -159,14 +160,18 @@ describe("PostgreSQL attempt mapping", () => {
           throw duplicate;
         },
       }),
-    } as never;
+    };
 
     await expect(
-      createAttemptOperationsMethods(database).idempotency.store("key", {
-        fingerprint: "fingerprint",
-        attempt: state,
-      }),
+      createAttemptOperationsMethods(database as never).idempotency.store(
+        "key-2026-08-20-000001",
+        {
+          fingerprint: "fingerprint",
+          attempt: state,
+        },
+      ),
     ).rejects.toBeInstanceOf(PersistenceConflictError);
+    expect(database.execute).toHaveBeenCalled();
   });
 });
 
@@ -287,6 +292,7 @@ describe("outbox and idempotency protection", () => {
 
   it("covers empty reads, non-conflict writes and idempotency replay", async () => {
     const emptySelectDatabase = {
+      execute: async () => [],
       select: () => ({
         from: () => ({
           where: () => ({
@@ -321,13 +327,14 @@ describe("outbox and idempotency protection", () => {
       methods.attemptsPort.insert(stateWithoutSubmission),
     ).resolves.toBeUndefined();
     await expect(
-      methods.idempotency.store("key", {
+      methods.idempotency.store("key-2026-08-20-000001", {
         fingerprint: "fingerprint",
         attempt: state,
       }),
     ).resolves.toBeUndefined();
 
     const existingDatabase = {
+      execute: async () => [],
       select: () => ({
         from: () => ({
           where: () => ({
@@ -338,7 +345,7 @@ describe("outbox and idempotency protection", () => {
     } as never;
     await expect(
       createAttemptOperationsMethods(existingDatabase).idempotency.store(
-        "key",
+        "key-2026-08-20-000001",
         { fingerprint: "fingerprint", attempt: state },
       ),
     ).resolves.toBeUndefined();

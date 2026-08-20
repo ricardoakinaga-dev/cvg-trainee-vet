@@ -66,6 +66,14 @@ function dependencies(
           clinicalReview: {
             hasApproved: vi.fn(async () => clinicalApproval),
           },
+          approver: {
+            findById: vi.fn(async (accountId) => ({
+              accountId,
+              accountStatus: "ACTIVE" as const,
+              roles: ["CLINICAL_APPROVER"] as const,
+              scopes: [content.scopeId],
+            })),
+          },
         }),
     },
     saved,
@@ -275,6 +283,14 @@ describe("content workflow use cases", () => {
         eventPublisher: { publish: vi.fn(async () => undefined) },
         audit: { append: vi.fn(async () => undefined) },
         clinicalReview: { hasApproved: vi.fn(async () => true) },
+        approver: {
+          findById: vi.fn(async (accountId) => ({
+            accountId,
+            accountStatus: "ACTIVE" as const,
+            roles: ["CLINICAL_APPROVER"] as const,
+            scopes: [published.scopeId],
+          })),
+        },
       }) as unknown as ContentTransactionalOperations;
 
     await expect(
@@ -306,6 +322,48 @@ describe("content workflow use cases", () => {
         () => "event-id",
       ),
     ).rejects.toMatchObject({ code: "internal_error" });
+  });
+
+  it("revalidates the persisted clinical identity before withdrawal", async () => {
+    const published: ContentRecord = { ...content, status: "PUBLICADO" };
+    const command = {
+      principalId: "clinical-approver",
+      accountStatus: "ACTIVE" as const,
+      roles: ["CLINICAL_APPROVER"] as const,
+      scopes: [published.scopeId],
+      contentId: published.contentId,
+      version: published.version,
+      scopeId: published.scopeId,
+      event: "RETIRAR" as const,
+      withdrawalReasonCode: "ERRO_CONTEUDO" as const,
+      approvedClinicalApproverId: "clinical-approver",
+      correlationId: "33333333-3333-4333-8333-333333333333",
+    };
+    const save = vi.fn(async () => undefined);
+    const operations = {
+      content: {
+        find: vi.fn(async () => published),
+        save,
+        listAffectedParticipantIds: vi.fn(async () => []),
+        recordWithdrawalAffected: vi.fn(async () => 0),
+      },
+      eventPublisher: { publish: vi.fn(async () => undefined) },
+      audit: { append: vi.fn(async () => undefined) },
+      clinicalReview: { hasApproved: vi.fn(async () => true) },
+      approver: {
+        findById: vi.fn(async () => ({
+          accountId: command.principalId,
+          accountStatus: "ACTIVE" as const,
+          roles: ["MODERATOR"] as const,
+          scopes: [published.scopeId],
+        })),
+      },
+    } as unknown as ContentTransactionalOperations;
+
+    await expect(
+      advanceContentWithinTransaction(command, operations, () => "event-id"),
+    ).rejects.toMatchObject({ code: "forbidden" });
+    expect(save).not.toHaveBeenCalled();
   });
 
   it("allows an authorized author to publish source-verified content without a clinical approver", async () => {
