@@ -394,6 +394,50 @@ describe("secret scanner", () => {
     expect(JSON.stringify(findings)).not.toContain(secret);
   });
 
+  it("preserves trailing whitespace in reachable history paths", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-history-path-"),
+    );
+    temporaryDirectories.push(directory);
+    const historyPath = "secret.png ";
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["config", "user.email", "synthetic@example.invalid"],
+      { cwd: directory },
+    );
+    await execFileAsync("git", ["config", "user.name", "Synthetic Test"], {
+      cwd: directory,
+    });
+    await writeFile(
+      join(directory, historyPath),
+      `API_TOKEN="${secret.repeat(4)}"\n`,
+    );
+    await execFileAsync("git", ["add", "--", historyPath], {
+      cwd: directory,
+    });
+    await execFileAsync("git", ["commit", "-qm", "synthetic history"], {
+      cwd: directory,
+    });
+    await rm(join(directory, historyPath));
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: true,
+    });
+
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: `history:${historyPath}`,
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
   it("rejects malformed rev-list object records instead of silently skipping them", () => {
     const structureObjectId = "a".repeat(40);
     const contentObjectId = "b".repeat(40);

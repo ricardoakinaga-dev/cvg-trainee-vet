@@ -631,7 +631,7 @@ function parseObjectList(output) {
       throw new Error("malformed git object list");
     }
     if (separator < 0) continue;
-    const path = line.slice(separator + 1).trim();
+    const path = line.slice(separator + 1);
     if (path.length === 0) continue;
     if (isScanCandidatePath(path)) objects.set(objectId, path);
   }
