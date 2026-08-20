@@ -14,7 +14,7 @@ direto rejeitou output acima do limite. Foco `34/34`, cobertura `205/1128/21`
 em `95,02/90,95/95,31/95,71`, scanner `774` linhas, helper `213`, hotspots
 `0`; `pnpm verify` passou até migration safety e parou somente nos quatro
 assignments redigidos preexistentes de `.env.local`. Código/teste estão em
-`b15f171`; documentação em reconciliação; streaming integral sem buffers e os
+`b15f171`; documentação publicada em `1572192`; streaming integral sem buffers e os
 demais gates externos continuam abertos. B99-101 permanece `IN_PROGRESS` e o
 programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 

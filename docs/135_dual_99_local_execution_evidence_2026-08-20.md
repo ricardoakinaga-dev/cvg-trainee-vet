@@ -2,11 +2,12 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T20:13:49-03:00`
-- última atualização: `2026-08-20T20:13:49-03:00`
+- última atualização: `2026-08-20T20:19:08-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `b15f171` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: reconciliação pendente neste worktree
+- evidência documental publicada: `1572192` em
+  `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -880,12 +881,14 @@ subprocesso confirmou rejeição acima do limite sem serializar o corpo.
   lido nem alterado;
 - código/teste commitados em `b15f171` (`fix: bound git history batch memory`)
   e enviados para `origin/agent/publish-production-hardening`.
+- pacote de evidências, estado, backlog, roadmap, log e rastreabilidade foi
+  publicado em `1572192` (`docs: record bounded git history batches`) e enviado
+  para o mesmo remoto.
 
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A documentação desta rodada será publicada na
-reconciliação seguinte. Esta evidência não prova streaming integral sem
+manager/rotação/autorização. Esta evidência não prova streaming integral sem
 buffers, provider, CI, RC imutável, runtime live, WebKit aprovado, clínica,
 `0/145`, gates externos ou reauditoria independente. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.

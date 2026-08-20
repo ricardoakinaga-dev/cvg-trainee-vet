@@ -55,7 +55,7 @@
 - **verificação/publicação:** `pnpm verify` passou todos os gates até
   `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
   assignments redigidos preexistentes de `infra/production/.env.local`; código
-  em `b15f171`, evidência documental em reconciliação;
+  em `b15f171`, evidência documental publicada em `1572192`;
 - **limite/status:** `.env.local` não foi lido nem alterado; streaming integral
   sem buffers, secret manager, provider/CI, RC, runtime live, clínica, `0/145`,
   gates externos e reauditoria permanecem abertos. B99-101 e o programa seguem

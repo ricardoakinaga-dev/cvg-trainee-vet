@@ -11020,7 +11020,9 @@ que não foi lido nem alterado.
 ### DECISIONS
 
 O código/teste foram commitados em `b15f171` (`fix: bound git history batch
-memory`) e enviados para `origin/agent/publish-production-hardening`. Não
+memory`) e enviados para `origin/agent/publish-production-hardening`.
+O pacote de evidências foi publicado em `1572192` (`docs: record bounded git
+history batches`) e enviado para o mesmo remoto.
 houve segredo, dado real, PDF, produção, score, release, decisão clínica,
 piloto ou reauditoria independente. Streaming integral sem buffers, secret
 manager/rotação, provider/CI, RC, runtime live, WebKit aprovado, clínica,
@@ -11032,5 +11034,5 @@ IN_PROGRESS / PILOT_BLOCKED
 
 ### NEXT ACTION
 
-Publicar e reconciliar a evidência documental; depois executar auditoria
-read-only fresca para selecionar o próximo gap local verificável.
+Confirmar a paridade remota da implementação e da evidência; depois executar
+auditoria read-only fresca para selecionar o próximo gap local verificável.

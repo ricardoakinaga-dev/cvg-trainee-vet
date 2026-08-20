@@ -219,7 +219,8 @@ nos quatro assignments redigidos preexistentes de `.env.local`.
 O avanço permanece local: streaming integral sem buffers, secret
 manager/rotação, provider/CI, RC/proveniência, runtime live, clínica, `0/145`,
 gates externos e reauditoria independente continuam abertos. F99-1 permanece
-`IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+`IN_PROGRESS` e o produto `PILOT_BLOCKED`. A evidência documental foi publicada
+em `1572192`.
 
 ## 24. Checkpoint de preflight de corpos históricos — 2026-08-20T19:48:27-03:00
 

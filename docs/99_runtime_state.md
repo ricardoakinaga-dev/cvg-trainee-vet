@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar buffer agregado sem limite em corpos históricos bounded; publicou código/teste em `b15f171`; Round 43 passou foco `34/34`, cobertura `205/1128/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `213` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar e reconciliar a evidência documental de Round 43, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar buffer agregado sem limite em corpos históricos bounded; publicou código/teste em `b15f171` e o pacote documental de Round 43 em `1572192`; Round 43 passou foco `34/34`, cobertura `205/1128/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `213` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: confirmar a paridade remota de `b15f171`/`1572192` e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T20:13:49-03:00
+- last_update: 2026-08-20T20:19:08-03:00
 
 ## 2026-08-20T20:13:49-03:00 — DUAL99-B99-101-AGGREGATE-BATCH-BOUND
 
@@ -52,9 +52,9 @@
 
 ### LIMITES / STATUS / PRÓXIMA AÇÃO
 
-B99-101 permanece `IN_PROGRESS`: o código/teste está em `b15f171`, o arquivo
-`infra/production/.env.local` não foi lido nem alterado e a evidência está em
-reconciliação. Streaming integral sem buffers, secret manager, provider, RC,
+B99-101 permanece `IN_PROGRESS`: o código/teste está em `b15f171`, a evidência
+foi publicada em `1572192`, e o arquivo `infra/production/.env.local` não foi
+lido nem alterado. Streaming integral sem buffers, secret manager, provider, RC,
 runtime live, clínica, `0/145`, gates externos e reauditoria permanecem
 abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
