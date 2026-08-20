@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
+import { resolveBrowserLaunchOptions } from "../../playwright.config";
 import { buildE2eEnvironment } from "../../scripts/build-e2e.mjs";
 
 describe("disposable E2E build environment", () => {
@@ -54,5 +55,25 @@ describe("disposable E2E build environment", () => {
     expect(playwrightConfig).toContain('name: "firefox"');
     expect(playwrightConfig).toContain('name: "webkit"');
     expect(playwrightConfig).toContain('name: "mobile-chromium"');
+  });
+
+  it("does not pass Chromium-only launch flags to Firefox or WebKit", () => {
+    expect(resolveBrowserLaunchOptions("chromium")?.args).toEqual([
+      "--headless=new",
+      "--disable-gpu",
+      "--disable-software-rasterizer",
+    ]);
+    expect(resolveBrowserLaunchOptions("mobile-chromium")?.args).toEqual([
+      "--headless=new",
+      "--disable-gpu",
+      "--disable-software-rasterizer",
+    ]);
+    expect(resolveBrowserLaunchOptions("firefox")).toBeUndefined();
+    expect(resolveBrowserLaunchOptions("webkit")).toBeUndefined();
+  });
+
+  it("keeps local TLS certificate bypass explicit and opt-in", async () => {
+    const playwrightConfig = await readFile("playwright.config.ts", "utf8");
+    expect(playwrightConfig).toContain("CVG_E2E_IGNORE_HTTPS_ERRORS");
   });
 });

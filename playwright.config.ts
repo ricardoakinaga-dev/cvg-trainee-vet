@@ -7,6 +7,7 @@ if (!Number.isInteger(e2eWebPort) || e2eWebPort < 1 || e2eWebPort > 65_535) {
   throw new Error("CVG_E2E_WEB_PORT must be an integer between 1 and 65535");
 }
 const e2eWebBaseUrl = `http://127.0.0.1:${e2eWebPort}`;
+const ignoreHTTPSErrors = process.env.CVG_E2E_IGNORE_HTTPS_ERRORS === "true";
 if (runDisposableRealE2e && runActiveHaE2e) {
   throw new Error("disposable and active HA E2E modes are mutually exclusive");
 }
@@ -18,6 +19,21 @@ const browserProjectDefinitions = {
   "mobile-chromium": { name: "mobile-chromium", device: "Pixel 5" },
 } as const;
 type BrowserProjectName = keyof typeof browserProjectDefinitions;
+
+const chromiumLaunchArgs = [
+  "--headless=new",
+  "--disable-gpu",
+  "--disable-software-rasterizer",
+];
+
+export function resolveBrowserLaunchOptions(
+  browserName: string,
+): { args: string[] } | undefined {
+  if (browserName !== "chromium" && browserName !== "mobile-chromium") {
+    return undefined;
+  }
+  return { args: [...chromiumLaunchArgs] };
+}
 
 function resolveBrowserProjects(
   requested: string | undefined,
@@ -38,9 +54,13 @@ function resolveBrowserProjects(
   const uniqueNames = [...new Set(names)] as BrowserProjectName[];
   return uniqueNames.map((name) => {
     const definition = browserProjectDefinitions[name];
+    const launchOptions = resolveBrowserLaunchOptions(definition.name);
     return {
       name: definition.name,
-      use: { ...devices[definition.device] },
+      use: {
+        ...devices[definition.device],
+        ...(launchOptions === undefined ? {} : { launchOptions }),
+      },
     };
   });
 }
@@ -60,18 +80,12 @@ export default defineConfig({
   ],
   use: {
     baseURL: process.env.BASE_URL ?? e2eWebBaseUrl,
+    ignoreHTTPSErrors,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     actionTimeout: 10_000,
     navigationTimeout: 30_000,
-    launchOptions: {
-      args: [
-        "--headless=new",
-        "--disable-gpu",
-        "--disable-software-rasterizer",
-      ],
-    },
   },
   projects: resolveBrowserProjects(process.env.CVG_E2E_BROWSERS),
   ...(runActiveHaE2e
