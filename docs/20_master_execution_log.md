@@ -10489,7 +10489,10 @@ parar em `verify:secrets` nos quatro valores já existentes e redigidos de
 Não houve acesso ao bucket/licença, provider, secret manager, CI, produção,
 PDF, dado real, score, release, decisão clínica ou promoção de piloto. B99-102
 foi commitado em `7b06233` (`fix: harden clinical source downloader`) e
-permanece `IN_PROGRESS`; provider/secret manager autorizado, WebKit aprovado,
+evidência/documentação foi publicada em `45b8141` e enviada para
+`origin/agent/publish-production-hardening`; permanece `IN_PROGRESS`;
+provider/secret manager autorizado, WebKit aprovado,
 RC/SHA, runtime live, clínica, `0/145`, gates externos e reauditoria continuam
-dependências. Estado: `IN_PROGRESS / PILOT_BLOCKED`. Próxima ação: revisão
-read-only final, repetição dos gates no worktree exato e commit/push autorizado.
+dependências. Estado: `IN_PROGRESS / PILOT_BLOCKED`. Próxima ação: selecionar e
+congelar o próximo gap local verificável após confirmar a paridade entre HEAD e
+origin.

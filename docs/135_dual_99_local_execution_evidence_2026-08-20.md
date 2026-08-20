@@ -860,9 +860,10 @@ programa `IN_PROGRESS / PILOT_BLOCKED`.
   PDFs já presentes no ambiente local, sem materializar ou copiar qualquer
   fonte nesta rodada;
 - código/teste foram commitados em `7b06233`
-  (`fix: harden clinical source downloader`); a documentação desta rodada é o
-  lote rastreado que ainda será publicado em commit separado;
-- `pnpm verify` será repetido no worktree final e deve parar em
+  (`fix: harden clinical source downloader`); a documentação desta rodada foi
+  publicada em `45b8141` (`docs: record b99-102 downloader hardening`) e
+  enviada para `origin/agent/publish-production-hardening`;
+- a execução final de `pnpm verify` passou todos os gates locais até parar em
   `verify:secrets` pelos quatro valores já redigidos de
   `infra/production/.env.local`, sem ler ou alterar o arquivo.
 
