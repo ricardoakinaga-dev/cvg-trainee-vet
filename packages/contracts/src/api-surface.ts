@@ -671,39 +671,9 @@ export const API_SURFACE: readonly ApiSurfaceRoute[] = Object.freeze([
   }),
 ]);
 
-const validMethods = new Set<ApiSurfaceMethod>(["GET", "PATCH", "POST"]);
-const validAuth = new Set<ApiSurfaceAuth>([
-  "PUBLIC",
-  "SESSION",
-  "INTERNAL",
-  "METRICS",
-]);
-const validScopes = new Set<ApiSurfaceScope>(["none", "own", "scope", "audit"]);
-const validHandlerGroups = new Set<ApiSurfaceHandlerGroup>([
-  "health",
-  "metrics",
-  "workflow",
-  "internal",
-  "participant",
-  "authoring",
-]);
 const pathParameterPattern = /:[A-Za-z][A-Za-z0-9]*/gu;
 
-function isCompatibleAuthScope(
-  auth: ApiSurfaceAuth,
-  scope: ApiSurfaceScope,
-): boolean {
-  switch (auth) {
-    case "PUBLIC":
-      return scope === "none";
-    case "SESSION":
-      return scope === "own";
-    case "INTERNAL":
-      return scope === "scope" || scope === "audit";
-    case "METRICS":
-      return scope === "audit";
-  }
-}
+export { validateApiSurface } from "./api-surface-validation.js";
 
 export function materializeApiSurfacePath(path: string): string {
   return path.replace(pathParameterPattern, (parameter) =>
@@ -726,60 +696,11 @@ export function findApiSurfaceRoute(
   method: string,
   path: string,
 ): ApiSurfaceRoute | null {
+  if (typeof method !== "string" || typeof path !== "string") return null;
   return (
     API_SURFACE.find(
       (route) =>
         route.method === method && matchesApiSurfacePath(route.path, path),
     ) ?? null
   );
-}
-
-export function validateApiSurface(
-  routes: readonly ApiSurfaceRoute[],
-): readonly string[] {
-  const errors: string[] = [];
-  const seen = new Set<string>();
-
-  for (const route of routes) {
-    const key = `${String(route.method)} ${route.path}`;
-    if (seen.has(key)) errors.push(`duplicate route: ${key}`);
-    seen.add(key);
-
-    if (!validMethods.has(route.method)) {
-      errors.push(`invalid method for ${key}`);
-    }
-    if (!route.path.startsWith("/") || route.path.includes("//")) {
-      errors.push(`invalid path for ${key}`);
-    }
-    if (!validAuth.has(route.auth)) {
-      errors.push(`invalid auth for ${key}`);
-    }
-    if (!validScopes.has(route.scope)) {
-      errors.push(`invalid scope for ${key}`);
-    }
-    if (!validHandlerGroups.has(route.handlerGroup)) {
-      errors.push(`invalid handler group for ${key}`);
-    }
-    if (
-      validAuth.has(route.auth) &&
-      validScopes.has(route.scope) &&
-      !isCompatibleAuthScope(route.auth, route.scope)
-    ) {
-      errors.push(`incompatible auth and scope for ${key}`);
-    }
-    if (route.capability.trim() === "") {
-      errors.push(`missing capability for ${key}`);
-    }
-    if (route.useCase.trim() === "") {
-      errors.push(`missing use case for ${key}`);
-    }
-    if (route.requestContract.trim() === "") {
-      errors.push(`missing request contract for ${key}`);
-    }
-    if (route.responseContract.trim() === "") {
-      errors.push(`missing response contract for ${key}`);
-    }
-  }
-
-  return Object.freeze(errors);
 }

@@ -104,4 +104,63 @@ describe("canonical API surface inventory", () => {
       validateApiSurface([{ ...route, auth: "PUBLIC", scope: "own" }]),
     ).toContain("incompatible auth and scope for GET /health/live");
   });
+
+  it("fails closed across a bounded malformed descriptor fuzz corpus", () => {
+    const fields = [
+      "method",
+      "path",
+      "capability",
+      "auth",
+      "scope",
+      "useCase",
+      "requestContract",
+      "responseContract",
+      "handlerGroup",
+    ] as const;
+    const invalidValues: readonly unknown[] = [
+      undefined,
+      null,
+      0,
+      false,
+      {},
+      [],
+      "",
+      " \t",
+    ];
+    const malformedRoutes: readonly unknown[] = [
+      ...API_SURFACE.slice(0, 8).flatMap((route) =>
+        fields.flatMap((field) =>
+          invalidValues.map((value) => ({ ...route, [field]: value })),
+        ),
+      ),
+      null,
+      undefined,
+      17,
+      "route",
+    ];
+
+    for (const candidate of malformedRoutes) {
+      let errors: readonly string[] = [];
+      expect(() => {
+        errors = validateApiSurface([candidate as never]);
+      }).not.toThrow();
+      expect(errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("fails closed for malformed route lookup inputs", () => {
+    const malformedLookups: readonly [unknown, unknown][] = [
+      [undefined, "/health/live"],
+      ["GET", undefined],
+      [null, "/health/live"],
+      ["GET", null],
+      [{}, "/health/live"],
+      ["GET", {}],
+      ["TRACE", "/health/live/"],
+    ];
+
+    for (const [method, path] of malformedLookups) {
+      expect(findApiSurfaceRoute(method as string, path as string)).toBeNull();
+    }
+  });
 });
