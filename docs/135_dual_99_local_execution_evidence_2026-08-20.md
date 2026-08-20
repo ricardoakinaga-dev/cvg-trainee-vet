@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T12:09:09-03:00`
-- última atualização: `2026-08-20T12:09:09-03:00`
+- corte: `2026-08-20T12:25:25-03:00`
+- última atualização: `2026-08-20T12:25:25-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7` em
+- commit publicado: `e913d23` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -59,6 +59,10 @@
   `/health/dependencies` a `VIEW_INTERNAL_AUDIT`/`INTERNAL`/`audit`, passou o
   convite para `/invite#token=...`, restringiu leitura ao fragmento e limpou
   tokens do fragmento e de query legada.
+- observabilidade runtime: B99-203 adicionou verificador read-only da API
+  Prometheus, fixture `promtool` e comandos operacionais; o source versionado
+  contém 14 rules, e a execução local confirmou rules saudáveis, targets A/B,
+  Alertmanager conectado e watchdog firing sem alterar o HA.
 
 ## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
 
@@ -219,16 +223,58 @@ fail-closed somente nos quatro valores redigidos de
 `READY_FOR_NEXT_STEP` localmente e o programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Checkpoint corrente — 2026-08-20T12:09:09-03:00
+## Round 21 — B99-203 / Prometheus rules, targets and loss-of-signal — 2026-08-20T12:25:25-03:00
+
+### RED → GREEN
+
+- RED confirmou que a cobertura anterior validava somente o texto de
+  `prometheus.yml`/`prometheus-alerts.yml`, sem verificar `/api/v1/rules`, a
+  saúde dos targets, o destino Alertmanager ou o watchdog;
+- GREEN adicionou `scripts/verify-prometheus-runtime.mjs`, com execução opt-in
+  e somente leitura, e `scripts/verify-prometheus-rules.mjs`, com `promtool`
+  pinado em `prom/prometheus:v2.55.1`;
+- `infra/observability/prometheus-alerts.test.yml` prova semanticamente API e
+  worker down, API e worker absent e Alertmanager desconectado sem parar,
+  recarregar ou injetar falha no HA ativo.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- `pnpm ops:verify-prometheus-rules`: sintaxe `SUCCESS: 14 rules found` e
+  semântica `SUCCESS` nos cinco cenários;
+- `CVG_VERIFY_PROMETHEUS_RUNTIME=true CVG_PROMETHEUS_RUNTIME_URL=<runtime>
+  pnpm ops:verify-prometheus-runtime`: `14/14` rules `health=ok`, `cvg-api`
+  `2/2`, `cvg-worker` `2/2`, `alertmanager` `1/1`, um Alertmanager ativo,
+  watchdog `firing` e `errors=[]`;
+- os hashes dos dois arquivos montados no Prometheus coincidiram com os hashes
+  do worktree; o foco de integração passou `4/4`, coverage passou `203/1072/21`
+  com `95,03%` statements, `90,99%` branches, `95,32%` functions e `95,71%`
+  lines;
+- build `12/12`, typecheck, lint, formato, contrato CI, governança de
+  observabilidade, topologia HA e gates documentais/estruturais da rodada
+  passaram.
+
+### LIMITES / PUBLICAÇÃO / STATUS
+
+O snapshot live é saudável, portanto down/absent permanecem inativos nele; o
+firing foi comprovado no teste semântico. Notify→ack→resolve externo, dead-man
+externo, PostgreSQL live, RC/proveniência, secret manager, clínica, `0/145` e
+reauditoria independente continuam sem evidência autorizada. B99-203 está
+`READY_FOR_NEXT_STEP` localmente; o programa permanece `IN_PROGRESS /
+PILOT_BLOCKED`. Código e testes foram publicados no commit `e913d23` em
+`origin/agent/publish-production-hardening`.
+
+## Checkpoint corrente — 2026-08-20T12:25:25-03:00
 
 | Evidência | Resultado |
 |---|---|
-| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.068` testes aprovados / `21` guardados; `95,03%` statements, `90,99%` branches, `95,32%` functions, `95,71%` lines |
-| gates técnicos | format, lint, typecheck, decisões críticas `7/7`, dependency audit e diff-check verdes |
+| cobertura oficial | `203` arquivos aprovados / `17` guardados; `1.072` testes aprovados / `21` guardados; `95,03%` statements, `90,99%` branches, `95,32%` functions, `95,71%` lines |
+| gates técnicos | format, lint, typecheck, decisões críticas `7/7`, dependency audit, CI contract, Prometheus semantic rules e diff-check verdes |
 | hotspots | `PASS_WITH_DEBT_RATCHET`, `113` funções >50 linhas, maior `76`, zero hotspot não classificado |
 | scanner | focal `17/17`; execução integral falha somente nas quatro atribuições redigidas de `infra/production/.env.local` |
 | mutation crítica | `7/7 killed`, `0` sobreviventes, score `100%` / mínimo `90%` |
 | build/E2E | build `12/12`; E2E administrativo/convite sintético em porta alternativa `3215`, Chromium `3/3` |
+| observabilidade runtime | `14/14` rules `health=ok`; API `2/2`, worker `2/2`, Alertmanager `1/1`, destino ativo e watchdog `firing`; hashes dos arquivos montados coincidentes |
+| loss-of-signal | `promtool` `SUCCESS` em API/worker down, API/worker absent e Alertmanager desconectado; sem fault injection no HA ativo |
 | governança Dual99 | `PASS_WITH_GAPS`, `eligibleForIndependentReaudit=false`, `PILOT_BLOCKED`; traceabilidade `0/145` cadeias, `145` evidências locais; skips `20/20` runs, `0` flaky, `17` arquivos guardados |
 
 ## Round 16 — B99-105 / schema contract and runtime boundary — 2026-08-20T10:32:23-03:00

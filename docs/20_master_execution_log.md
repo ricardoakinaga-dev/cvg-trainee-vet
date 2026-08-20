@@ -10071,3 +10071,45 @@ continua fail-closed apenas nos quatro valores redigidos de
 o programa permanece `IN_PROGRESS / PILOT_BLOCKED`. Teste publicado no commit
 `8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`; próxima ação local: B99-203
 (rules/targets e loss-of-signal).
+
+## 2026-08-20T12:25:25-03:00 — DUAL99-B99-203-PROMETHEUS-RUNTIME
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 F99-2 / worker,
+observabilidade e dados derivados / B99-203.
+
+### ACTION / RESULT
+
+RED confirmou que os testes anteriores validavam somente strings de configuração
+e não a API runtime de Prometheus. GREEN adicionou um verificador opt-in
+read-only para `/api/v1/rules`, `/api/v1/targets`, `/api/v1/alertmanagers` e o
+query do watchdog; adicionou também fixture e comando `promtool` com sintaxe e
+cenários semânticos de API/worker down, API/worker absent e Alertmanager
+desconectado.
+
+`pnpm ops:verify-prometheus-rules` passou com `14 rules found` e `SUCCESS` nos
+cinco cenários. No HA local, os hashes de `prometheus.yml` e
+`prometheus-alerts.yml` no container coincidiram com o worktree; o probe API
+passou com `14/14` rules `health=ok`, `cvg-api 2/2`, `cvg-worker 2/2`,
+`alertmanager 1/1`, um Alertmanager ativo e watchdog `firing`. Foco de
+integração passou `4/4`; cobertura passou `203/1072/21` com floors
+`95,03/90,99/95,32/95,71`; build `12/12`, typecheck, lint, formato, contrato
+CI, governança de observabilidade e topologia HA passaram.
+
+### LIMITES / STATUS / NEXT
+
+Não houve parada, reload ou fault injection no HA ativo. Assim, down/absent
+foram provados semanticamente com `promtool`, enquanto o runtime saudável
+mostrou as regras armadas e inativas. Notify→ack→resolve externo, dead-man
+externo, PostgreSQL live, RC/proveniência, secret manager, clínica, `0/145`,
+gates externos e reauditoria independente continuam abertos. B99-203 está
+`READY_FOR_NEXT_STEP` localmente; o programa permanece `IN_PROGRESS /
+PILOT_BLOCKED`.
+
+### PUBLICAÇÃO
+
+O código e os testes foram commitados como `e913d23` (`feat: verify prometheus
+runtime observability`) e enviados para
+`origin/agent/publish-production-hardening`. A próxima ação local é B99-204
+(traces/logs/metrics).

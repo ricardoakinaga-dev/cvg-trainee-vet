@@ -360,6 +360,28 @@
   PILOT_BLOCKED` global. Teste publicado em
   `8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`.
 
+## Atualização de execução — 2026-08-20T12:25:25-03:00 — B99-203
+
+- **RED/GREEN:** a cobertura anterior só validava strings estáticas. Foi criado
+  um verificador read-only da API Prometheus e uma fixture `promtool` com
+  cenários de API/worker down, API/worker absent e Alertmanager desconectado;
+- **evidência:** `promtool` passou sintaxe com `14 rules` e os cinco cenários;
+  o runtime local passou `14/14` rules `health=ok`, API `2/2`, worker `2/2`,
+  Alertmanager `1/1`, destino Alertmanager ativo e watchdog `firing`. Os
+  arquivos de configuração montados no container coincidiram por SHA com o
+  worktree. Foco `4/4`, coverage `203/1072/21`, floors
+  `95,03/90,99/95,32/95,71`, build `12/12`, contrato CI, governança,
+  topologia, lint, typecheck e formato passaram;
+- **limite/status:** não houve fault injection, parada ou reload no HA ativo;
+  portanto down/absent firing foi provado sem mutar o runtime, por testes
+  semânticos, enquanto o snapshot saudável mantém esses alertas inativos.
+  Notify→ack→resolve externo, dead-man externo, PostgreSQL live, RC, secrets,
+  clínica, `0/145` e reauditoria continuam pendentes. B99-203 está
+  `READY_FOR_NEXT_STEP` localmente; programa `IN_PROGRESS / PILOT_BLOCKED`;
+- **publicação:** código e testes foram publicados no commit `e913d23`
+  (`feat: verify prometheus runtime observability`) em
+  `origin/agent/publish-production-hardening`. Próxima ação local: B99-204.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,

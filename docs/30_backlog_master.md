@@ -86,6 +86,21 @@ B99-202 está `READY_FOR_NEXT_STEP` localmente, programa
 `IN_PROGRESS/PILOT_BLOCKED`, teste publicado em
 `8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`.
 
+**Atualização Dual99 — 2026-08-20T12:25:25-03:00:** B99-203 adicionou o gate
+read-only da API Prometheus e o teste semântico pinado. `promtool` confirmou
+`14` rules e disparou cinco cenários sintéticos: API/worker down, API/worker
+absent e Alertmanager desconectado. O runtime local confirmou `14/14`
+`health=ok`, `cvg-api 2/2`, `cvg-worker 2/2`, `alertmanager 1/1`, Alertmanager
+ativo e watchdog `firing`; os arquivos montados no container têm os mesmos
+hashes do worktree. Foco `4/4`, cobertura `203/1072/21`, floors
+`95,03/90,99/95,32/95,71`, build `12/12`, contrato CI, governança, topologia,
+lint, typecheck e formato passaram. Sem fault injection no HA ativo, o
+snapshot saudável não simula firing down/absent; notify→ack→resolve externo,
+dead-man externo, RC, secret manager, clínica, `0/145` e reauditoria seguem
+abertos. B99-203 está `READY_FOR_NEXT_STEP` localmente, programa
+`IN_PROGRESS/PILOT_BLOCKED`, código publicado em `e913d23`; próxima ação
+local: B99-204.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;

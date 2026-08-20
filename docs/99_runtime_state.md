@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-202 fechou localmente a recuperação de readiness após falha de dependência, exigindo nova dependência saudável e novo claim→ACK antes de processar; B99-201 mantém fencing/cleanup da outbox e B99-107–105 permanecem prontos localmente; cobertura `202/1068/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-2 local hardening; B99-203 fechou localmente o gate de Prometheus: 14 rules via API, targets API/worker/Alertmanager saudáveis, watchdog firing e cenários down/absent/desconexão validados por `promtool`; B99-202/201 e B99-107–105 permanecem prontos localmente; cobertura `203/1072/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-202 sob caracterização TDD: uma falha de dependência mantém o worker fechado e impede processamento; após recuperação, o segundo healthcheck e o segundo claim→ACK ocorrem antes do processamento; worker `50/50`, health/main/HA `28/28`, topologia A/B `PASS`, cobertura `202/1068/21`, floors `95,03/90,99/95,32/95,71`, build `12/12` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
-- next_action: executar B99-203 localmente para rules/targets e loss-of-signal; em paralelo, obter autoridade/ambiente para probes consecutivos A/B no runtime real, prova PostgreSQL de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-203 sob RED/GREEN: criou fixture `prometheus-alerts.test.yml`, `ops:verify-prometheus-rules` e `ops:verify-prometheus-runtime`; `promtool` passou sintaxe com `14` rules e cinco cenários de loss-of-signal; a API runtime passou `14/14`, targets `2` API + `2` worker + `1` Alertmanager, Alertmanager ativo e watchdog `firing`; cobertura `203/1072/21`, floors `95,03/90,99/95,32/95,71`, build `12/12` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
+- next_action: executar B99-204 localmente para traces/logs/metrics e, em paralelo, obter autoridade/ambiente para notify→ack→resolve externo, probes consecutivos A/B no runtime real, prova PostgreSQL de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T12:09:09-03:00
+- last_update: 2026-08-20T12:25:25-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 
@@ -4281,3 +4281,35 @@ B99-202 está `READY_FOR_NEXT_STEP` localmente e foi publicado no commit
 workers contra HA/API/DB ativo, além de secret manager, RC, clínica, `0/145` e
 reauditoria, permanecem pendentes. Próxima ação local: B99-203; estado global
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T12:25:25-03:00 — DUAL99-B99-203-PROMETHEUS-RUNTIME
+
+### AÇÃO / RESULTADO
+
+- RED identificou que a cobertura anterior provava apenas texto estático e não
+  verificava a API `/api/v1/rules`, a saúde dos targets, a conexão do
+  Alertmanager ou o watchdog;
+- GREEN adicionou `scripts/verify-prometheus-runtime.mjs`, com probe opt-in e
+  somente leitura dos endpoints de rules, targets, Alertmanager e watchdog, e
+  `scripts/verify-prometheus-rules.mjs`, que executa `promtool` em imagem pinada;
+- a fixture `infra/observability/prometheus-alerts.test.yml` passou sintaxe com
+  `14 rules` e semanticamente provou API/worker down, API/worker absent e
+  Alertmanager desconectado sem derrubar o runtime HA;
+- o runtime local, consultado por endereço interno sem mutação, devolveu
+  `14/14` rules `health=ok`, API `2/2`, worker `2/2`, Alertmanager `1/1`,
+  Alertmanager ativo e `CvgObservabilityWatchdog` `firing`; os hashes dos dois
+  arquivos montados coincidiram com o worktree;
+- o foco passou `4/4`; cobertura passou `203/1072/21`, floors
+  `95,03/90,99/95,32/95,71`; build `12/12`, typecheck, lint, formato,
+  contrato CI, governança de observabilidade e topologia HA passaram.
+
+### LIMITES / STATUS / NEXT
+
+Não foi injetada falha deliberada no HA ativo, portanto os alertas down/absent
+permanecem inativos no snapshot saudável; o disparo foi comprovado nos testes
+semânticos `promtool`. Notify→ack→resolve externo, dead-man externo, RC,
+secret manager, PostgreSQL live, clínica, `0/145`, gates externos e reauditoria
+independente continuam pendentes. B99-203 está `READY_FOR_NEXT_STEP` localmente;
+o programa permanece `IN_PROGRESS / PILOT_BLOCKED`. O código foi publicado no
+commit `e913d23` (`feat: verify prometheus runtime observability`); próxima ação
+local: B99-204.
