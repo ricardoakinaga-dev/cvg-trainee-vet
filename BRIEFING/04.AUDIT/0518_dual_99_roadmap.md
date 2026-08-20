@@ -213,7 +213,7 @@ O foco passou `23/23`, a cobertura passou `205/1117/21` em
 worker, migrações, migration safety, decisões, mutation e diff-check passaram.
 O `pnpm verify` parou em `verify:secrets` somente nos quatro valores redigidos
 preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
-Código/teste estão em `4605371`; a evidência será publicada em commit separado.
+Código/teste estão em `4605371` e a evidência foi publicada em `5604793`.
 B99-101 segue `IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 16. Checkpoint de framing rev-list do scanner — 2026-08-20T17:33:16-03:00

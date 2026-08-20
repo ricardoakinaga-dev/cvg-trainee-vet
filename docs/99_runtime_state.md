@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `4605371` após corrigir o falso scan limpo causado por `.trim()` em caminhos staged com whitespace de borda; o scanner agora preserva o path exato de `git ls-files -z`, além de rejeitar inventário `rev-list` malformado, manter paths binários ignorados e histórico válido; foco `23/23`, cobertura `205/1117/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`799` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a evidência rastreada de B99-101, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- next_action: confirmar a paridade entre HEAD e origin após publicar código `4605371` e evidência `5604793`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T17:44:10-03:00
+- last_update: 2026-08-20T17:49:39-03:00
 
 ## 2026-08-20T17:44:10-03:00 — DUAL99-B99-101-STAGED-PATH-WHITESPACE
 
@@ -56,10 +56,10 @@
 B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
 quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
 rotação exige secret manager/autorização. O código/teste foi publicado em
-`4605371`; a evidência documental desta rodada será publicada em commit
-separado. Nenhum segredo, dado real, PDF, produção, score, release, clínica,
-`0/145` ou piloto foi tocado. O programa permanece
-`IN_PROGRESS / PILOT_BLOCKED`.
+`4605371` e a evidência documental desta rodada em `5604793`, ambos enviados
+para `origin/agent/publish-production-hardening`. Nenhum segredo, dado real,
+PDF, produção, score, release, clínica, `0/145` ou piloto foi tocado. O
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T17:33:16-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
 

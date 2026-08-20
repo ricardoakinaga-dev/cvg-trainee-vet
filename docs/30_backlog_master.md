@@ -15,7 +15,7 @@ contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety, decis�
 `7/7`, mutation `7/7` e diff-check passaram. O `pnpm verify` parou em
 `verify:secrets` somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`; código/teste estão em `4605371` e a evidência
-documental será publicada em commit separado. B99-101 permanece `IN_PROGRESS`
+documental foi publicada em `5604793`. B99-101 permanece `IN_PROGRESS`
 até secret manager/rotação, e o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T17:33:16-03:00 — B99-101:** o RED
