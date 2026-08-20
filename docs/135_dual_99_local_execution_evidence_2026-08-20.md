@@ -1,8 +1,8 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T10:53:52-03:00`
-- última atualização: `2026-08-20T10:53:52-03:00`
+- corte: `2026-08-20T11:21:39-03:00`
+- última atualização: `2026-08-20T11:21:39-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `4e4cd4e04718ca26c0cd1979152225301fbd249a` em
   `origin/agent/publish-production-hardening`
@@ -102,16 +102,55 @@ Código, testes e evidência desta rodada foram publicados no commit
 `origin/agent/publish-production-hardening`. O diretório `.gauntlet/` continua
 local e não versionado.
 
-## Checkpoint corrente — 2026-08-20T10:53:52-03:00
+## Round 18 — B99-107 / rate limit, headers and CORS boundary — 2026-08-20T11:21:39-03:00
+
+### RED → GREEN
+
+- RED confirmou que `/health/dependencies` permanecia fora do rate limit,
+  que a API direta não devolvia os headers de defesa já exigidos na borda e que
+  `allowedOrigins` podia ser alterado pelo chamador depois da construção do
+  servidor;
+- GREEN limitou somente liveness/readiness como health probes não metrados,
+  manteve diagnóstico interno com `429`/`Retry-After`, aplicou os headers
+  `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy`, COOP, CORP e CSP às respostas da API e congelou uma
+  cópia da política de origens. Não foi introduzido CORS permissivo: mutações
+  com cookie continuam deny-by-default para origem não autorizada;
+- os testes novos cobrem headers, abuso repetido e mutação da configuração;
+  foco API passou `24/24`, regressão API `12/118` e E2E sintético Chromium
+  passou `3/3` na porta isolada `3214`.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- `pnpm test:coverage`: `202` arquivos, `1.062` testes, `17` arquivos e `21`
+  testes guardados; `95,05%` statements, `91,06%` branches, `95,31%`
+  functions e `95,75%` lines;
+- typecheck, lint, formato, build `12/12`, `pnpm audit --audit-level=high`,
+  edge security estático (`7` diretivas), migrations `33/33`, decisões `7/7`,
+  mutation `7/7`, documentation, traceability, Dual99, risk matrix,
+  skip-governance `20/20`, architecture, hotspots, public-boundary e
+  `git diff --check` passaram;
+- Playwright administrativo sintético Chromium `3/3` passou em `3214`.
+
+### LIMITES / STATUS
+
+O secret scan fail-closed acusa apenas os quatro valores redigidos de
+`infra/production/.env.local`, que não foi lido nem alterado. A rodada não
+executou live HA/API/DB, migration 0032, role restrita, RC, score, release,
+promoção clínica ou reauditoria independente. B99-107 está pronto localmente,
+mas permanece `READY_FOR_NEXT_STEP`; o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+## Checkpoint corrente — 2026-08-20T11:21:39-03:00
 
 | Evidência | Resultado |
 |---|---|
-| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.060` testes aprovados / `21` guardados; `95,05%` statements, `91,06%` branches, `95,31%` functions, `95,75%` lines |
+| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.062` testes aprovados / `21` guardados; `95,05%` statements, `91,06%` branches, `95,31%` functions, `95,75%` lines |
 | gates técnicos | format, lint, typecheck, decisões críticas `7/7`, dependency audit e diff-check verdes |
 | hotspots | `PASS_WITH_DEBT_RATCHET`, `113` funções >50 linhas, maior `76`, zero hotspot não classificado |
 | scanner | focal `17/17`; execução integral falha somente nas quatro atribuições redigidas de `infra/production/.env.local` |
 | mutation crítica | `7/7 killed`, `0` sobreviventes, score `100%` / mínimo `90%` |
-| build/E2E | build `12/12`; E2E administrativo/convite sintético em porta alternativa `3213`, Chromium `3/3` |
+| build/E2E | build `12/12`; E2E administrativo/convite sintético em porta alternativa `3214`, Chromium `3/3` |
 | governança Dual99 | `PASS_WITH_GAPS`, `eligibleForIndependentReaudit=false`, `PILOT_BLOCKED`; traceabilidade `0/145` cadeias, `145` evidências locais; skips `20/20` runs, `0` flaky, `17` arquivos guardados |
 
 ## Round 16 — B99-105 / schema contract and runtime boundary — 2026-08-20T10:32:23-03:00

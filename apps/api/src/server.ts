@@ -46,10 +46,12 @@ export function createApiServer(
   const host = options.host ?? "127.0.0.1";
   const port = options.port ?? 3000;
   const maxBodyBytes = options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
-  const allowedOrigins = options.allowedOrigins ?? [
-    `http://${host}:${port}`,
-    `http://localhost:${port}`,
-  ];
+  const allowedOrigins = Object.freeze([
+    ...(options.allowedOrigins ?? [
+      `http://${host}:${port}`,
+      `http://localhost:${port}`,
+    ]),
+  ]);
   const rateLimiter =
     options.rateLimiter ?? createRateLimiter(options.rateLimit);
   const trustedProxyCidrs = parseTrustedProxyCidrs(options.trustedProxyCidrs);

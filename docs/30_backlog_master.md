@@ -2121,3 +2121,19 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
   `4e4cd4e04718ca26c0cd1979152225301fbd249a` foi enviado para
   `origin/agent/publish-production-hardening`; estado global
   `IN_PROGRESS/PILOT_BLOCKED`.
+
+## 2026-08-20T11:21:39-03:00 — DUAL99-B99-107-RATE-LIMIT-HEADERS-CORS
+
+- **entrega:** diagnósticos internos agora entram no rate limit e retornam
+  `429`/`Retry-After` sob abuso repetido; somente liveness/readiness permanecem
+  sem janela. A API direta repete os headers de defesa da borda e o servidor
+  congela uma cópia da política `allowedOrigins`, sem abrir CORS permissivo;
+- **RED/GREEN e evidência:** o RED reproduziu os três gaps; o foco API passou
+  `24/24`, a regressão `12/118`, o E2E sintético Chromium `3/3` em `3214`, e
+  a cobertura passou `202/1062/21` com floors `95,05/91,06/95,31/95,75`;
+- **gates/status:** build `12/12`, migrations `33/33`, decisions `7/7`,
+  mutation `7/7`, documentation, traceability, Dual99, risk matrix, skips
+  `20/20`, architecture, hotspots, public-boundary, edge security, audit de
+  dependências e diff-check passaram. O secret scan acusa somente os quatro
+  valores redigidos de `.env.local`; B99-107 está `READY_FOR_NEXT_STEP`
+  localmente e o programa permanece `IN_PROGRESS/PILOT_BLOCKED`.

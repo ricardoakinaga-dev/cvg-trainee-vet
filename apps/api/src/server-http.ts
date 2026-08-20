@@ -20,6 +20,17 @@ import {
 } from "./client-address.js";
 import { routeTemplate } from "./route-template.js";
 
+const API_SECURITY_HEADERS = Object.freeze({
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+  "referrer-policy": "no-referrer",
+  "permissions-policy": "camera=(), microphone=(), geolocation=()",
+  "cross-origin-opener-policy": "same-origin",
+  "cross-origin-resource-policy": "same-origin",
+  "content-security-policy":
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+});
+
 export type ApiRequestHandlerDependencies = Readonly<{
   readonly dependencies: ApiHttpDependencies;
   readonly allowedOrigins: readonly string[];
@@ -58,12 +69,8 @@ function requestHeaders(request: IncomingMessage): RequestHeaders {
   );
 }
 
-function isHealthPath(path: string): boolean {
-  return (
-    path === "/health/live" ||
-    path === "/health/ready" ||
-    path === "/health/dependencies"
-  );
+function isUnmeteredHealthPath(path: string): boolean {
+  return path === "/health/live" || path === "/health/ready";
 }
 
 function clientKey(
@@ -129,6 +136,9 @@ function writeResponse(
   response.setHeader("cache-control", "no-store");
   response.setHeader("x-request-id", payload.body.meta.request_id);
   for (const [name, value] of Object.entries(payload.headers ?? {})) {
+    response.setHeader(name, value);
+  }
+  for (const [name, value] of Object.entries(API_SECURITY_HEADERS)) {
     response.setHeader(name, value);
   }
   if (payload.rawBody !== undefined) {
@@ -311,7 +321,7 @@ async function rateLimitResponse(
   route: string,
   path: string,
 ): Promise<ApiHttpResponse | undefined> {
-  if (isHealthPath(path)) return undefined;
+  if (isUnmeteredHealthPath(path)) return undefined;
 
   let rateLimit;
   try {

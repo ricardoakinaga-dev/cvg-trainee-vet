@@ -302,6 +302,24 @@
   `origin/agent/publish-production-hardening`. Programa
   `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T11:21:39-03:00 — B99-107
+
+- **RED/GREEN:** RED reproduziu diagnóstico interno sem rate limit, ausência de
+  headers de defesa na API direta e política de origens mutável após o bind;
+  GREEN limitou `/health/dependencies` com `429`/`Retry-After`, manteve apenas
+  liveness/readiness sem janela, aplicou headers alinhados à borda e congelou
+  uma cópia da configuração de origens sem introduzir CORS permissivo;
+- **evidência:** foco API `24/24`, regressão API `12/118`, Playwright sintético
+  Chromium `3/3` em `3214`, coverage `202/1062/21` com
+  `95,05/91,06/95,31/95,75`, build `12/12`, migrations `33/33`, decisions
+  `7/7`, mutation `7/7`, documentação, traceability, Dual99, risk matrix,
+  skips `20/20`, architecture, hotspots, public-boundary, edge security,
+  dependency audit e diff-check verdes;
+- **limite/status:** `verify:secrets` acusa somente os quatro valores redigidos
+  de `infra/production/.env.local`; nenhum live HA/API/DB, RC, score, release
+  ou promoção clínica foi alegado. B99-107 está `READY_FOR_NEXT_STEP` localmente
+  e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,

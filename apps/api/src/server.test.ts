@@ -205,6 +205,21 @@ describe("API node server adapter", () => {
       expect(response.headers.get("content-type")).toContain(
         "application/json",
       );
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(response.headers.get("x-frame-options")).toBe("DENY");
+      expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+      expect(response.headers.get("permissions-policy")).toBe(
+        "camera=(), microphone=(), geolocation=()",
+      );
+      expect(response.headers.get("cross-origin-opener-policy")).toBe(
+        "same-origin",
+      );
+      expect(response.headers.get("cross-origin-resource-policy")).toBe(
+        "same-origin",
+      );
+      expect(response.headers.get("content-security-policy")).toBe(
+        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      );
       expect(body).toEqual({
         success: true,
         data: { status: "live" },
@@ -413,6 +428,38 @@ describe("API node server adapter", () => {
     }
   });
 
+  it("keeps the origin policy immutable after server construction", async () => {
+    const allowedOrigins = ["http://web.internal"];
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      allowedOrigins,
+    });
+    allowedOrigins.push("https://evil.invalid");
+    await api.listen();
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/api/v1/attempts`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: "__Host-cvg_session=session",
+            origin: "https://evil.invalid",
+          },
+          body: JSON.stringify({}),
+        },
+      );
+
+      expect(response.status).toBe(403);
+    } finally {
+      await api.close();
+    }
+  });
+
   it("limits repeated non-health requests while keeping liveness available", async () => {
     const api = createApiServer(dependencies, {
       host: "127.0.0.1",
@@ -435,6 +482,31 @@ describe("API node server adapter", () => {
         success: false,
         error: { code: "rate_limited" },
       });
+      expect(second.headers.get("retry-after")).toBe("10");
+      expect(live.status).toBe(200);
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("limits repeated dependency diagnostics while keeping liveness available", async () => {
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      rateLimit: { maxRequests: 1, windowMs: 10_000 },
+    });
+    await api.listen();
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const baseUrl = `http://127.0.0.1:${address.port}`;
+      const first = await fetch(`${baseUrl}/health/dependencies`);
+      const second = await fetch(`${baseUrl}/health/dependencies`);
+      const live = await fetch(`${baseUrl}/health/live`);
+
+      expect(first.status).toBe(401);
+      expect(second.status).toBe(429);
       expect(second.headers.get("retry-after")).toBe("10");
       expect(live.status).toBe(200);
     } finally {

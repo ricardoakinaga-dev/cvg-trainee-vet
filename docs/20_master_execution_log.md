@@ -9953,3 +9953,41 @@ local `READY_FOR_NEXT_STEP`; o código, os testes e a evidência foram publicado
 no commit `4e4cd4e04718ca26c0cd1979152225301fbd249a` em
 `origin/agent/publish-production-hardening`; estado global `IN_PROGRESS` /
 `PILOT_BLOCKED`.
+
+## 2026-08-20T11:21:39-03:00 — DUAL99-B99-107-RATE-LIMIT-HEADERS-CORS
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD ENGINE + GAUNTLET / DUAL 99 F99-1 / B99-107 / rate limit, headers e
+CORS/CSRF boundary.
+
+### RED → GREEN / RESULTADO
+
+RED reproduziu que `/health/dependencies` escapava do rate limit, que a API
+direta não emitia os headers de defesa presentes no Caddy e que uma lista
+`allowedOrigins` mutável podia mudar a política depois da construção do
+servidor. GREEN deixou somente `/health/live` e `/health/ready` sem limite,
+aplicou headers de defesa às respostas da API e congelou uma cópia da política
+de origens. Nenhum CORS permissivo foi introduzido; a mutação com cookie segue
+deny-by-default para origem não autorizada.
+
+### EVIDÊNCIA
+
+O foco API passou `24/24`; a regressão API passou `12/118`; o Playwright
+sintético Chromium passou `3/3` na porta `3214`; a cobertura passou `202`
+arquivos / `1.062` testes / `17` arquivos e `21` testes guardados, com
+`95,05%` statements, `91,06%` branches, `95,31%` functions e `95,75%` lines.
+Typecheck, lint, formato, build `12/12`, audit de dependências, edge security
+estático (`7` diretivas), migrations `33/33`, decisões `7/7`, mutation `7/7`,
+documentation, traceability, Dual99, risk matrix, skip governance `20/20`,
+architecture, hotspots, public-boundary e `git diff --check` passaram.
+
+### LIMITES / STATUS / NEXT
+
+`pnpm verify:secrets` falha fechado somente nos quatro valores redigidos de
+`infra/production/.env.local`, que não foi lido nem alterado. Não houve live
+HA/API/DB, migration 0032, role restrita, RC, score, release ou promoção
+clínica. B99-107 está `READY_FOR_NEXT_STEP` localmente; o programa continua
+`IN_PROGRESS / PILOT_BLOCKED`. A próxima ação local é B99-201 (outbox
+claim/lease/ack), em paralelo à obtenção de ambiente e autoridade para os
+gates live e externos.

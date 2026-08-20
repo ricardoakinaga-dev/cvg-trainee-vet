@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-106 fechou localmente catálogo de diagnóstico, autorização negativa e convite sem token em query; B99-105 mantém integridade de idempotência em authoring, tentativa, resposta e correção; cobertura `202/1060/21`, floors `95,05/91,06/95,31/95,75`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-1 local hardening; B99-107 fechou localmente rate limit do diagnóstico, headers de segurança e imutabilidade da política de origens; B99-106 mantém catálogo de diagnóstico e convite sem token em query; B99-105 mantém integridade de idempotência em authoring, tentativa, resposta e correção; cobertura `202/1062/21`, floors `95,05/91,06/95,31/95,75`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechou e publicou B99-106 sob RED/GREEN/REFACTOR: `/health/dependencies` foi alinhado ao contrato interno, convite passou a usar fragmento e a limpeza remove token de fragmento/query legado; focal `22/22`, E2E sintético Chromium `3/3`, cobertura `202/1060/21`, floors `95,05/91,06/95,31/95,75`, build `12/12` e gates locais relevantes passaram; commit `4e4cd4e04718ca26c0cd1979152225301fbd249a` está em `origin/agent/publish-production-hardening`, sem alterar `.env.local`
-- next_action: executar B99-107 localmente para rate limit/headers/CORS; em paralelo, preservar `IN_PROGRESS`/`PILOT_BLOCKED` e obter autoridade/ambiente para migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: fechou B99-107 sob RED/GREEN/REFACTOR: diagnósticos internos passaram a ser limitados sem bloquear liveness/readiness, respostas diretas da API recebem headers de defesa alinhados à borda e a política de origens é copiada/congelada no bind; foco API `24/24`, regressão API `12/118`, E2E sintético Chromium `3/3` em `3214`, cobertura `202/1062/21`, floors `95,05/91,06/95,31/95,75`, build `12/12` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
+- next_action: executar B99-201 localmente para outbox/claim/lease/ack; em paralelo, preservar `IN_PROGRESS`/`PILOT_BLOCKED` e obter autoridade/ambiente para migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T10:53:52-03:00
+- last_update: 2026-08-20T11:21:39-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 
@@ -62,6 +62,36 @@ abertos. Código, testes e evidência foram publicados no commit
 `4e4cd4e04718ca26c0cd1979152225301fbd249a` em
 `origin/agent/publish-production-hardening`. Estado `IN_PROGRESS`; release
 `PILOT_BLOCKED`.
+
+## 2026-08-20T11:21:39-03:00 — DUAL99-B99-107-RATE-LIMIT-HEADERS-CORS
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu três gaps: `/health/dependencies` escapava do rate limit,
+  respostas diretas da API não repetiam os headers de defesa da borda e a lista
+  de origens recebida por `createApiServer` permanecia mutável após a criação;
+- GREEN deixou somente `/health/live` e `/health/ready` sem rate limit, mantendo
+  o diagnóstico interno sujeito a `429`/`Retry-After`; adicionou os headers de
+  defesa alinhados à borda às respostas da API; e congelou uma cópia da política
+  de origens no servidor, preservando CORS/CSRF deny-by-default;
+- testes novos cobrem headers, abuso repetido de diagnóstico e mutação da
+  configuração de origens. O foco API passou `24/24`, a regressão API passou
+  `12/118`, e o Playwright sintético Chromium passou `3/3` na porta `3214`.
+
+### VERIFICAÇÃO / LIMITES / STATUS
+
+- `pnpm test:coverage` passou `202` arquivos / `1.062` testes / `17` arquivos
+  e `21` testes guardados, com `95,05%` statements, `91,06%` branches,
+  `95,31%` functions e `95,75%` lines;
+- typecheck, lint, formato, build `12/12`, audit de dependências, edge security
+  estático (`7` diretivas), migrations `33/33`, decisões `7/7`, mutation `7/7`,
+  documentation, traceability, Dual99, risk matrix, skip governance `20/20`,
+  architecture, hotspots, public-boundary e `git diff --check` passaram;
+- `pnpm verify:secrets` falha fechado somente pelos quatro valores redigidos de
+  `infra/production/.env.local`, que não foi lido nem alterado. A mudança é
+  local, sem live HA/API/DB, RC, score, release ou promoção clínica; B99-107
+  fica `READY_FOR_NEXT_STEP` localmente e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T10:32:23-03:00 — DUAL99-B99-105-SCHEMA-RUNTIME-REVIEW
 
