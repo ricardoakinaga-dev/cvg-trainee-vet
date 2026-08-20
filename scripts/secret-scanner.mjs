@@ -646,14 +646,7 @@ function readBatchOutput(buffer, objects, source = "history") {
   while (offset < buffer.length) {
     const headerEnd = buffer.indexOf(0x0a, offset);
     if (headerEnd < 0) {
-      const objectId = buffer.subarray(offset).toString("utf8").trim();
-      findings.push(
-        unscannedFinding(
-          `${source}:${objects.get(objectId) ?? (objectId || "unknown")}`,
-          "git-object-unreadable",
-          "malformed git object header",
-        ),
-      );
+      addUnreadable(`${source}:<git>`, "malformed git object header");
       break;
     }
     const header = buffer.subarray(offset, headerEnd).toString("utf8");
