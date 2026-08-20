@@ -10830,3 +10830,39 @@ promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
 `0/145`, gates externos e reauditoria seguem abertos. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T19:01:02-03:00 — DUAL99-B99-101-CAT-FILE-MALFORMED-TOKEN-REDACTION
+
+### TIMESTAMP / TASK
+
+2026-08-20 19:01:02 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — redaction of malformed `git cat-file --batch` header tokens.
+
+### ACTION / RESULT
+
+Uma auditoria read-only reproduziu que um header com newline, mas com primeiro
+token inválido contendo marcador sintético, era usado como object ID lógico e
+copiado para o path do finding. O RED falhou com a exposição. GREEN passou a
+usar somente path conhecido ou object ID hex válido; qualquer identidade não
+confiável vira `history:<git>` e emite `git-object-unreadable`, sem copiar ou
+expor o token.
+
+O foco passou `29/29`; a cobertura passou `205/1123/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu todos os gates até `verify:secrets`, que falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `87f759a` (`fix: redact malformed git
+header identities`) e enviados para `origin/agent/publish-production-hardening`;
+a evidência documental será reconciliada em commit separado. Nenhum segredo,
+PDF, dado real, provider, CI, produção, score, release, decisão clínica ou
+promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
+`0/145`, gates externos e reauditoria seguem abertos. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.

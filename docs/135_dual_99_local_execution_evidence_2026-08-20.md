@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T18:50:39-03:00`
-- última atualização: `2026-08-20T18:53:05-03:00`
+- corte: `2026-08-20T19:01:02-03:00`
+- última atualização: `2026-08-20T19:01:02-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `b528ff4` em
+- commit publicado: `87f759a` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,51 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 40 — B99-101 / malformed cat-file header identity redaction — 2026-08-20T19:01:02-03:00
+
+### Barra congelada
+
+- impedir que o primeiro token não confiável de um header malformado com
+  newline seja copiado para path, evidence ou resumo;
+- provar que um header sintético com token `client_secret=...` produz
+  `history:<git>` + `git-object-unreadable`, sem o marcador, preservando
+  headers válidos e os casos já cobertos;
+- manter RED→GREEN, conteúdo sintético, formato/lint/typecheck/diff-check,
+  cobertura, hotspots e governanças verdes.
+
+### RED → GREEN
+
+Uma auditoria read-only enviou um header com newline, mas com primeiro token
+malformado contendo marcador de corpo. O parser anterior usava esse token como
+object ID lógico e o path do finding expunha o marcador. O RED falhou ao exigir
+identidade estável. O GREEN aceita apenas path conhecido ou object ID de 40 hex
+como identidade; qualquer outro header usa `history:<git>` e não expõe o token.
+
+### Evidência
+
+- foco do scanner: `29/29`;
+- cobertura integral: `205` arquivos, `1.123` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- scanner em `793` linhas, `verify:hotspots` com `0` hotspots; lint, typecheck,
+  Prettier, audit, contratos `86/86`, worker `51/51`, migrações `33/33`,
+  migration safety, decisões `7/7`, mutation `7/7` e `git diff --check`: PASS;
+- `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou
+  fail-closed somente nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado;
+- código/teste commitados em `87f759a` (`fix: redact malformed git header
+  identities`) e enviados para `origin/agent/publish-production-hardening`;
+  o teste prova que o marcador sintético não aparece nos findings.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A evidência documental será reconciliada em
+commit separado após a publicação inicial. Esta rodada não prova provider, CI,
+RC imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos
+ou reauditoria independente. O programa permanece `IN_PROGRESS /
+PILOT_BLOCKED`.
 
 ## Round 39 — B99-101 / truncated cat-file header redaction — 2026-08-20T18:50:39-03:00
 

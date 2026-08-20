@@ -137,6 +137,26 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T19:01:02-03:00 — B99-101 malformed cat-file header token
+
+- **RED/GREEN:** a auditoria read-only reproduziu que um header com newline,
+  mas primeiro token inválido contendo marcador sintético, era usado como
+  object ID lógico e copiado para o path do finding; o RED falhou com a
+  exposição e o GREEN aceita somente path conhecido ou object ID hex válido,
+  usando `history:<git>` para o restante e emitindo
+  `git-object-unreadable` sem copiar/scanear/expor o token;
+- **evidência:** foco `29/29`, cobertura `205/1123/21` em
+  `95,02/90,95/95,31/95,71`, scanner em `793` linhas, hotspots `0`, lint,
+  typecheck, formato, audit, contratos `86/86`, worker `51/51`, migrações
+  `33/33`, migration safety, decisões `7/7`, mutation `7/7` e diff-check
+  passaram; `pnpm verify` parou somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `87f759a`; a evidência documental
+  será reconciliada em commit separado. Nenhum segredo, dado real, PDF,
+  rotação, provider, CI, produção, score, release, clínica, `0/145` ou piloto
+  foi tocado. B99-101 permanece `IN_PROGRESS` até secret manager/rotação/
+  autorização; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T18:50:39-03:00 — B99-101 truncated cat-file header
 
 - **RED/GREEN:** a auditoria read-only reproduziu que um header de

@@ -198,6 +198,23 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 22. Checkpoint de identidade de token malformado cat-file — 2026-08-20T19:01:02-03:00
+
+B99-101 recebeu RED/GREEN para impedir que o primeiro token não confiável de
+um header malformado com newline contamine o path ou o resumo de um finding.
+O RED reproduziu marcador sintético no path; o GREEN aceita somente path
+conhecido ou object ID de 40 hex e usa `history:<git>` para qualquer outro
+token, emitindo `git-object-unreadable` sem copiar/scanear/expor a entrada.
+
+O foco passou `29/29`, a cobertura passou `205/1123/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
+worker, migrações, migration safety, decisões, mutation e diff-check passaram.
+Código/teste estão em `87f759a`; a evidência documental será reconciliada em
+commit separado. O `pnpm verify` parou em `verify:secrets` somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`; B99-101 segue
+`IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 21. Checkpoint de redaction de header truncado cat-file — 2026-08-20T18:50:39-03:00
 
 B99-101 recebeu RED/GREEN para impedir que bytes não confiáveis de um header

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora falha fechado para respostas `cat-file` com object ID não solicitado, paths de histórico com whitespace de borda, headers malformados de `git cat-file --batch`, symlinks do worktree, caminhos staged com whitespace de borda, inventário `rev-list` malformado, objetos `tree`/`commit` inválidos ou truncados e objetos `blob`/`tag` sem delimitador, e B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 agora falha fechado para respostas `cat-file` com object ID não solicitado, tokens de header malformados, paths de histórico com whitespace de borda, headers malformados de `git cat-file --batch`, symlinks do worktree, caminhos staged com whitespace de borda, inventário `rev-list` malformado, objetos `tree`/`commit` inválidos ou truncados e objetos `blob`/`tag` sem delimitador, e B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN, publicou código/teste em `b528ff4` e o pacote de evidências em `3520f85` após a auditoria fresca reproduzir vazamento de bytes do buffer em um header `git cat-file --batch` sem newline; o scanner agora usa a identidade estável `history:<git>` para header truncado, sem copiar bytes não confiáveis para path/evidence; Round 39 passou foco `28/28`, cobertura `205/1122/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`791` linhas, `0` hotspots) e diff-check; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `3520f85`; `.gauntlet/` continua local e não rastreado
-- next_action: reconciliar os SHAs de publicação de Round 39, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN, publicou código/teste em `87f759a` após a auditoria fresca reproduzir vazamento de um token de header malformado no path do finding; o scanner agora usa somente path conhecido, object ID hex válido ou a identidade estável `history:<git>`, sem copiar tokens não confiáveis para path/evidence; Round 40 passou foco `29/29`, cobertura `205/1123/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`793` linhas, `0` hotspots) e diff-check; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `87f759a`; `.gauntlet/` continua local e não rastreado
+- next_action: registrar e publicar a evidência documental de Round 40, reconciliar seus SHAs e confirmar a paridade remota; então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,33 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T18:53:05-03:00
+- last_update: 2026-08-20T19:01:02-03:00
+
+## 2026-08-20T19:01:02-03:00 — DUAL99-B99-101-CAT-FILE-MALFORMED-TOKEN-REDACTION
+
+### AÇÃO / RESULTADO
+
+- auditoria read-only reproduziu que um header com newline, mas primeiro token
+  inválido contendo marcador de corpo, era usado diretamente na identidade do
+  path e aparecia no finding;
+- RED adicionou header sintético `client_secret=...` e falhou porque o
+  marcador entrou no path;
+- GREEN passou a derivar a identidade somente de path conhecido, object ID de
+  40 hex ou `history:<git>`; o foco passou `29/29`, sem expor o token.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: a cobertura passou `205/1123/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0` hotspots; lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e diff-check passaram. O `pnpm verify` parou
+fail-closed somente nos quatro valores redigidos preexistentes de
+`infra/production/.env.local`, cuja rotação exige secret manager/autorização.
+O código/teste foi publicado em `87f759a`; a evidência documental desta rodada
+está em preparação. Nenhum segredo, dado real, PDF, produção, score, release,
+clínica, `0/145` ou piloto foi tocado. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T18:50:39-03:00 — DUAL99-B99-101-CAT-FILE-TRUNCATED-HEADER-REDACTION
 
