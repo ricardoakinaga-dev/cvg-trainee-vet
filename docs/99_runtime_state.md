@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora falha fechado para symlinks do worktree, inventário `rev-list` malformado, objetos `tree`/`commit` inválidos ou truncados e objetos `blob`/`tag` sem delimitador, e B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 agora falha fechado para symlinks do worktree, caminhos staged com whitespace de borda, inventário `rev-list` malformado, objetos `tree`/`commit` inválidos ou truncados e objetos `blob`/`tag` sem delimitador, e B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `b2f2cc0` após corrigir o falso scan limpo de uma linha malformada do inventário `git rev-list --objects --all`; o scanner agora rejeita inventário que não seja bare-ID estrutural válido ou ID+path, mantendo paths binários ignorados e histórico válido; foco `22/22`, cobertura `205/1116/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`800` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: confirmar a paridade entre HEAD e origin após publicar código `b2f2cc0` e evidência `3b35169`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `4605371` após corrigir o falso scan limpo causado por `.trim()` em caminhos staged com whitespace de borda; o scanner agora preserva o path exato de `git ls-files -z`, além de rejeitar inventário `rev-list` malformado, manter paths binários ignorados e histórico válido; foco `23/23`, cobertura `205/1117/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`799` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a evidência rastreada de B99-101, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,34 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T17:35:52-03:00
+- last_update: 2026-08-20T17:44:10-03:00
+
+## 2026-08-20T17:44:10-03:00 — DUAL99-B99-101-STAGED-PATH-WHITESPACE
+
+### AÇÃO / RESULTADO
+
+- RED criou um índice Git sintético com um arquivo sensível cujo nome tinha
+  whitespace de borda e um path aparado não sensível; o scanner antigo fazia
+  `.trim()` em `git ls-files -z` e retornava `[]`, deixando o conteúdo staged
+  sem a identidade correta;
+- GREEN passou a preservar cada path exatamente como recebido pelo índice,
+  usar `git show :<path>` sem alterar bytes e detectar o finding sob
+  `staged: .env.local `, sem imprimir o valor sintético;
+- o foco passou `23/23`; a cobertura passou `205/1117/21` em
+  `95,02/90,95/95,31/95,71`; o scanner ficou em `799` linhas e
+  `verify:hotspots` reportou `0` hotspots; lint, typecheck, formato, audit,
+  contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+  decisões `7/7`, mutation `7/7` e diff-check passaram.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
+quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
+rotação exige secret manager/autorização. O código/teste foi publicado em
+`4605371`; a evidência documental desta rodada será publicada em commit
+separado. Nenhum segredo, dado real, PDF, produção, score, release, clínica,
+`0/145` ou piloto foi tocado. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T17:33:16-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
 

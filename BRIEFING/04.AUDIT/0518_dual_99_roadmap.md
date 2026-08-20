@@ -198,6 +198,24 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 17. Checkpoint de staged path whitespace do scanner — 2026-08-20T17:44:10-03:00
+
+B99-101 recebeu RED/GREEN para a identidade exata dos paths staged. O RED
+reproduziu falso scan limpo quando `.trim()` transformava ` .env.local ` em
+`.env.local` e colidia com um path aparado não sensível. O GREEN preserva os
+bytes de cada path retornado por `git ls-files -z`, consulta o índice com
+`git show :<path>` e detecta o finding staged com whitespace de borda sem
+expor o valor sintético.
+
+O foco passou `23/23`, a cobertura passou `205/1117/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `799` linhas e
+`verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
+worker, migrações, migration safety, decisões, mutation e diff-check passaram.
+O `pnpm verify` parou em `verify:secrets` somente nos quatro valores redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+Código/teste estão em `4605371`; a evidência será publicada em commit separado.
+B99-101 segue `IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 16. Checkpoint de framing rev-list do scanner — 2026-08-20T17:33:16-03:00
 
 B99-101 recebeu RED/GREEN para o inventário produzido por

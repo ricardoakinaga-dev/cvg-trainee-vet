@@ -10643,3 +10643,38 @@ manager/rotação/autorização. RC/proveniência, WebKit, runtime live, clínic
 `0/145`, gates externos e reauditoria seguem abertos. Próxima ação: confirmar
 paridade remota e selecionar o próximo gap local. Estado:
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T17:44:10-03:00 — DUAL99-B99-101-STAGED-PATH-WHITESPACE
+
+### TIMESTAMP / TASK
+
+2026-08-20 17:44:10 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — preservação exata de paths staged com whitespace de borda.
+
+### ACTION / RESULT
+
+RED criou um repositório Git sintético com ` .env.local ` contendo uma
+atribuição sensível e `.env.local` contendo apenas um placeholder redigido;
+ambos foram staged e o primeiro foi removido do worktree. O `.trim()` anterior
+colidia as identidades e produzia scan limpo. GREEN passou a preservar cada
+path byte a byte de `git ls-files -z`, consultar `git show :<path>` sem aparar e
+detectar `staged: .env.local ` sem imprimir o valor sintético.
+
+O foco passou `23/23`; a cobertura passou `205/1117/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `799` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu todos os gates até `verify:secrets`, que falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `4605371` (`fix: preserve exact staged
+scanner paths`); a evidência documental desta rodada será publicada em commit
+separado. Nenhum segredo, PDF, dado real, provider, CI, produção, score,
+release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
