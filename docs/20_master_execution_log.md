@@ -10035,6 +10035,35 @@ score, release, clínica, `0/145` e reauditoria independente continuam abertos.
 B99-201 está `READY_FOR_NEXT_STEP` localmente; o programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 
+## 2026-08-20T17:07:01-03:00 — DUAL99-B99-101-WORKSPACE-SYMLINK
+
+### TIMESTAMP / TASK
+
+2026-08-20 17:07:01 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — symlink fail-closed no scanner de segredos.
+
+### ACTION / RESULT
+
+RED criou uma raiz sintética com `linked.env` apontando para um `.env` sensível
+fora da raiz; o scanner antigo retornou `[]`. GREEN passou a enumerar symlinks,
+usar `lstat` e emitir `unreadable-file`, sem seguir ou expor o alvo. O foco
+passou `19/19`; a cobertura passou `205/1113/21` em
+`95,02/90,95/95,31/95,71`; `scripts/secret-scanner.mjs` ficou em `799` linhas
+com `verify:hotspots` `0`, e lint, typecheck, Prettier, audit e diff-check
+passaram.
+
+O `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou
+somente nos quatro valores redigidos preexistentes de
+`infra/production/.env.local`, sem ler ou alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+Código/teste foram commitados em `2bf5a45` (`fix: fail closed on workspace
+symlinks`). Nenhum segredo, dado real, PDF, provider, CI, produção, score,
+release, clínica, `0/145` ou piloto foi tocado. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; a próxima ação é publicar
+a evidência documental. Estado: `IN_PROGRESS / PILOT_BLOCKED`.
+
 ### PUBLICAÇÃO / NEXT
 
 O código, testes e integração foram commitados como

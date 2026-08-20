@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T16:52:54-03:00`
-- última atualização: `2026-08-20T16:52:54-03:00`
+- corte: `2026-08-20T17:07:01-03:00`
+- última atualização: `2026-08-20T17:07:01-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `16a4f82` em
+- commit publicado: `2bf5a45` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,48 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 32 — B99-101 / workspace symlink fail-closed hardening — 2026-08-20T17:07:01-03:00
+
+### Barra congelada
+
+- tratar symlinks do worktree como entradas explícitas sem segui-los ou ler
+  fora da raiz escaneada;
+- provar que um symlink para arquivo sensível produz `unreadable-file`, não
+  expõe o alvo e não altera o comportamento de arquivos normais ou do scan de
+  index/history;
+- manter RED→GREEN, teste sintético, sem segredo/corpo real, formato/lint/
+  typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### RED → GREEN
+
+O RED criou uma raiz sintética com `linked.env` apontando para um `.env` fora da
+raiz; o scanner antigo retornou `[]` porque ignorava symlinks. O GREEN enumera
+links, usa `lstat` e retorna `unreadable-file` sem seguir o alvo. O teste também
+confirma que o finding não contém o valor sensível. A redução de comentários
+preservou a política de hotspots e deixou o scanner com `799` linhas.
+
+### Evidência
+
+- foco do scanner: `19/19`;
+- cobertura integral: `205` arquivos, `1.113` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- lint, typecheck, Prettier, audit, `verify:hotspots` (`0` hotspots) e
+  `git diff --check`: PASS;
+- `pnpm verify` passou todos os gates até `verify:secrets`, que falhou somente
+  nos quatro valores redigidos preexistentes de `infra/production/.env.local`;
+  o arquivo não foi lido nem alterado;
+- código/teste commitados em `2bf5a45` (`fix: fail closed on workspace
+  symlinks`), sem segredo, PDF, dado real, produção, score, release ou piloto.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A evidência documental desta rodada ainda será
+publicada em commit separado; RC/proveniência, runtime live, WebKit aprovado,
+clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
+O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 31 — B99-101 / Git history parser fail-closed hardening — 2026-08-20T16:49:21-03:00
 

@@ -137,6 +137,22 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T17:07:01-03:00 — B99-101 symlink
+
+- **RED/GREEN:** o RED reproduziu falso scan limpo para `linked.env`, symlink
+  que apontava para um arquivo sensível fora da raiz. O GREEN enumera symlinks
+  sem segui-los, usa `lstat` e emite `unreadable-file` sem expor o alvo;
+- **evidência:** foco `19/19`, cobertura `205/1113/21` em
+  `95,02/90,95/95,31/95,71`, scanner em `799` linhas, `verify:hotspots` com
+  `0` hotspots, lint, typecheck, formato, audit e diff-check passaram. O
+  `pnpm verify` parou somente nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `2bf5a45`; nenhum segredo, dado
+  real, PDF, rotação, provider, CI, produção, score, release, clínica, `0/145`
+  ou piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+  manager/rotação/autorização; o programa permanece `IN_PROGRESS /
+  PILOT_BLOCKED`.
+
 ## F99-4 — RC e supply chain
 
 | ID | Pri | Estado | Owner | Critério de pronto |

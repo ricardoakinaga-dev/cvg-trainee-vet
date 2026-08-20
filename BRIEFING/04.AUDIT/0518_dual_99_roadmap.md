@@ -197,3 +197,19 @@ fail-closed somente nos quatro valores redigidos preexistentes de
 manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
+
+## 14. Checkpoint de symlink do scanner — 2026-08-20T17:07:01-03:00
+
+B99-101 recebeu uma segunda redução local sob RED/GREEN. O RED reproduziu
+falso scan limpo para um symlink `linked.env` apontando para arquivo sensível
+fora da raiz. O GREEN enumera symlinks sem segui-los, usa `lstat` e emite
+`unreadable-file` sem ler/expor o alvo. O foco passou `19/19`, a cobertura
+passou `205/1113/21` em `95,02/90,95/95,31/95,71`, o scanner ficou em `799`
+linhas e `verify:hotspots` reportou `0`; lint, typecheck, formato, audit e
+diff-check passaram. Código/teste estão em `2bf5a45`.
+
+O `pnpm verify` parou em `verify:secrets` somente nos quatro valores redigidos
+preexistentes de `infra/production/.env.local`. B99-101 segue `IN_PROGRESS`;
+secret manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria permanecem abertos. F99-1 segue
+`IN_PROGRESS`/`PILOT_BLOCKED`.
