@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `b2f2cc0` após corrigir o falso scan limpo de uma linha malformada do inventário `git rev-list --objects --all`; o scanner agora rejeita inventário que não seja bare-ID estrutural válido ou ID+path, mantendo paths binários ignorados e histórico válido; foco `22/22`, cobertura `205/1116/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`800` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a evidência rastreada de B99-101, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- next_action: confirmar a paridade entre HEAD e origin após publicar código `b2f2cc0` e evidência `3b35169`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T17:33:16-03:00
+- last_update: 2026-08-20T17:35:52-03:00
 
 ## 2026-08-20T17:33:16-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
 
@@ -56,10 +56,11 @@
 B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
 quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
 rotação exige secret manager/autorização. O código/teste foi publicado em
-`b2f2cc0`; a evidência documental desta rodada será publicada em commit
-separado. Nenhum segredo, dado real, PDF, produção, score, release, clínica,
-`0/145` ou piloto foi tocado. O programa permanece
-`IN_PROGRESS / PILOT_BLOCKED`.
+`b2f2cc0`; a evidência documental desta rodada foi publicada em `3b35169` e
+enviada para `origin/agent/publish-production-hardening`. Nenhum segredo, dado
+real, PDF, produção, score, release, clínica, `0/145` ou piloto foi tocado. O
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`; a próxima ação é confirmar a
+paridade remota e selecionar o próximo gap local.
 
 ## 2026-08-20T17:20:12-03:00 — DUAL99-B99-101-BLOB-TAG-FRAMING
 

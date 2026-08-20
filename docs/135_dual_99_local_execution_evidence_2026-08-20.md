@@ -2,7 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T17:33:16-03:00`
-- última atualização: `2026-08-20T17:33:16-03:00`
+- última atualização: `2026-08-20T17:35:52-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `b2f2cc0` em
   `origin/agent/publish-production-hardening`
@@ -865,10 +865,11 @@ cada registro, aceita a forma bare ou ID+path e lança erro para a forma inváli
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A evidência documental desta rodada será
-publicada em commit separado; RC/proveniência, runtime live, WebKit aprovado,
-clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
-O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+manager/rotação/autorização. A evidência documental desta rodada foi publicada
+em `3b35169` (`docs: record b99-101 rev-list framing`) e enviada para
+`origin/agent/publish-production-hardening`; RC/proveniência, runtime live,
+WebKit aprovado, clínica, `0/145`, gates externos e reauditoria independente
+continuam abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 33 — B99-101 / blob-tag batch framing fail-closed — 2026-08-20T17:20:12-03:00
 

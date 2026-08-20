@@ -150,10 +150,10 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   `33/33`, migration safety, decisões `7/7`, mutation `7/7` e diff-check
   passaram; `pnpm verify` parou somente nos quatro valores redigidos
   preexistentes de `infra/production/.env.local`;
-- **limite/status:** código/teste no commit `b2f2cc0`; nenhum segredo, dado
+- **limite/status:** código/teste no commit `b2f2cc0`, evidência publicada em
+  `3b35169`; nenhum segredo, dado
   real, PDF, rotação, provider, CI, produção, score, release, clínica, `0/145`
-  ou piloto foi tocado. A evidência documental será publicada em commit
-  separado. B99-101 permanece `IN_PROGRESS` até secret
+  ou piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
