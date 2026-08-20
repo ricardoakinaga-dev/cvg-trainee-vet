@@ -10566,3 +10566,40 @@ foi tocado. B99-101 permanece `IN_PROGRESS` até secret manager/rotação/
 autorização; RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates
 externos e reauditoria seguem abertos. Próxima ação: confirmar paridade remota
 e selecionar o próximo gap local. Estado: `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T17:20:12-03:00 — DUAL99-B99-101-BLOB-TAG-FRAMING
+
+### TIMESTAMP / TASK
+
+2026-08-20 17:20:12 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — framing fail-closed de `blob`/`tag` no scanner de segredos.
+
+### ACTION / RESULT
+
+RED adicionou casos sintéticos para `blob` e `tag` com corpo completo, tamanho
+correto e ausência do delimitador final `\n`; a implementação anterior
+escaneava a atribuição sintética e retornava `sensitive-assignment`, embora o
+registro estivesse malformado. GREEN passou a exigir corpo completo e
+delimitador no framing `git cat-file --batch`, emitindo
+`git-object-unreadable` e encerrando o lote inválido antes de escanear o corpo;
+registros válidos continuam preservados.
+
+O foco passou `21/21`; a cobertura passou `205/1115/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `800` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu os gates até `verify:secrets`, que falhou somente nos quatro valores
+redigidos preexistentes de `infra/production/.env.local`, sem ler ou alterar o
+arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `1adef42` (`fix: reject unterminated git
+objects`). Nenhum segredo, PDF, dado real, provider, CI, produção, score,
+release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; a evidência documental
+desta rodada será publicada em commit separado. RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos.
+Próxima ação: publicar a evidência, confirmar paridade remota e selecionar o
+próximo gap local. Estado: `IN_PROGRESS / PILOT_BLOCKED`.

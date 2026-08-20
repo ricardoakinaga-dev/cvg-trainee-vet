@@ -137,6 +137,26 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T17:20:12-03:00 — B99-101 blob/tag
+
+- **RED/GREEN:** o RED reproduziu falso scan limpo para corpos `blob` e `tag`
+  completos, mas sem o delimitador final `\n` do framing
+  `git cat-file --batch`; o GREEN exige corpo completo e delimitador, emite
+  `git-object-unreadable` e encerra o lote inválido antes de escanear ou expor
+  o corpo, preservando objetos válidos;
+- **evidência:** foco `21/21`, cobertura `205/1115/21` em
+  `95,02/90,95/95,31/95,71`, scanner em `800` linhas, hotspots `0`, lint,
+  typecheck, formato, audit, contratos `86/86`, worker `51/51`, migrações
+  `33/33`, migration safety, decisões `7/7`, mutation `7/7` e diff-check
+  passaram; `pnpm verify` parou somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `1adef42`; nenhum segredo, dado
+  real, PDF, rotação, provider, CI, produção, score, release, clínica, `0/145`
+  ou piloto foi tocado. A evidência documental será publicada em commit
+  separado. B99-101 permanece `IN_PROGRESS` até secret
+  manager/rotação/autorização; o programa permanece `IN_PROGRESS /
+  PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T17:07:01-03:00 — B99-101 symlink
 
 - **RED/GREEN:** o RED reproduziu falso scan limpo para `linked.env`, symlink
