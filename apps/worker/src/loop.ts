@@ -5,7 +5,10 @@ import type {
   OutboxEventRecord,
   OutboxRepositoryPort,
 } from "@cvg/persistence";
-import type { Observability } from "@cvg/observability";
+import {
+  traceIdForCorrelationId,
+  type Observability,
+} from "@cvg/observability";
 
 export type WorkerEventHandler = (event: OutboxEventRecord) => Promise<void>;
 
@@ -199,14 +202,34 @@ function recordEventOutcome(
   observability: Observability | undefined,
   event: OutboxEventRecord,
   result: WorkerEventResult,
+  startedAt: number,
 ): void {
   if (observability === undefined) return;
+  const traceId = traceIdForCorrelationId(event.correlationId);
+  const endedAt = new Date();
+  observability.traces.record({
+    ...(traceId === undefined ? {} : { traceId }),
+    correlationId: event.correlationId,
+    name: "worker.event",
+    startedAt: new Date(startedAt),
+    endedAt,
+    status: result.outcome === "processed" ? "ok" : "error",
+    attributes: {
+      outcome:
+        result.outcome === "processed"
+          ? "success"
+          : result.terminal
+            ? "dead_letter"
+            : "retry",
+    },
+  });
   if (result.outcome === "processed") {
     observability.metrics.increment("worker.events.processed", {
       event_type: event.eventType,
       outcome: "success",
     });
     observability.logger.info("worker.event.processed", {
+      ...(traceId === undefined ? {} : { traceId }),
       correlationId: event.correlationId,
       fields: { event_type: event.eventType, outcome: "success" },
     });
@@ -217,6 +240,7 @@ function recordEventOutcome(
     outcome: result.terminal ? "dead_letter" : "retry",
   });
   observability.logger.warn("worker.event.failed", {
+    ...(traceId === undefined ? {} : { traceId }),
     correlationId: event.correlationId,
     fields: {
       event_type: event.eventType,
@@ -273,6 +297,7 @@ export async function processOutboxOnce(
   );
   let results: readonly WorkerEventResult[] = [];
   for (const event of events) {
+    const eventStartedAt = Date.now();
     const result = await processClaimedEvent(
       repository,
       handlers,
@@ -280,7 +305,7 @@ export async function processOutboxOnce(
       runtime,
     );
     results = [...results, result];
-    recordEventOutcome(runtime.observability, event, result);
+    recordEventOutcome(runtime.observability, event, result, eventStartedAt);
   }
   recordBatchOutcome(runtime.observability, events, results, runtime.startedAt);
   if (repository.cleanup !== undefined) {

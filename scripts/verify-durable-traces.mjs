@@ -29,6 +29,7 @@ for (const required of [
   "backend: local",
   "path: /var/tempo/wal",
   "path: /var/tempo/blocks",
+  "block_retention: 336h",
 ]) {
   if (!tempoConfig.includes(required)) {
     throw new Error(`Tempo configuration missing: ${required}`);
@@ -64,7 +65,7 @@ if (!live) {
       mode: "static",
       storage: "tempo-data local volume",
       retention:
-        "14d default block retention for local staging; production retention is a separate gate",
+        "14d explicit block retention for local staging; production retention is a separate gate",
     }),
   );
   process.exit(0);
@@ -143,7 +144,7 @@ console.log(
     restarted,
     storage: "tempo-data local volume",
     retention:
-      "14d default block retention for local staging; production retention is a separate gate",
+      "14d explicit block retention for local staging; production retention is a separate gate",
   }),
 );
 

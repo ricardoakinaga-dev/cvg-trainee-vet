@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import { createMetricsPort } from "./metrics.js";
 
@@ -15,6 +15,7 @@ export type LogRecord = Readonly<{
   readonly level: LogLevel;
   readonly service: string;
   readonly event: string;
+  readonly traceId?: string;
   readonly requestId?: string;
   readonly correlationId?: string;
   readonly durationMs?: number;
@@ -22,6 +23,7 @@ export type LogRecord = Readonly<{
 }>;
 
 export type LogContext = Readonly<{
+  readonly traceId?: string;
   readonly requestId?: string;
   readonly correlationId?: string;
   readonly durationMs?: number;
@@ -79,6 +81,8 @@ export type MetricsPort = Readonly<{
 export type TraceSpan = Readonly<{
   readonly traceId: string;
   readonly spanId: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
   readonly parentSpanId?: string;
   readonly service: string;
   readonly name: string;
@@ -97,6 +101,8 @@ export type TraceSpan = Readonly<{
 export type TraceSpanInput = Readonly<{
   readonly traceId?: string;
   readonly parentSpanId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
   readonly name: string;
   readonly startedAt: Date;
   readonly endedAt: Date;
@@ -239,6 +245,15 @@ export function sanitizeCorrelationId(value: unknown): string | undefined {
   return safeIdentifier(value);
 }
 
+export function traceIdForCorrelationId(value: unknown): string | undefined {
+  const correlationId = sanitizeCorrelationId(value);
+  if (correlationId === undefined) return undefined;
+  return createHash("sha256")
+    .update(correlationId, "utf8")
+    .digest("hex")
+    .slice(0, 32);
+}
+
 function safeEvent(value: string): string {
   const normalized = boundedString(value, MAX_IDENTIFIER_LENGTH);
   return /^[a-zA-Z0-9_.:-]+$/.test(normalized) ? normalized : "invalid_event";
@@ -287,6 +302,9 @@ function safeDuration(value: number | undefined): number | undefined {
 function mergeContexts(base: LogContext, next: LogContext): LogContext {
   const fields = { ...(base.fields ?? {}), ...(next.fields ?? {}) };
   return Object.freeze({
+    ...(base.traceId === undefined && next.traceId === undefined
+      ? {}
+      : { traceId: next.traceId ?? base.traceId }),
     ...(base.requestId === undefined && next.requestId === undefined
       ? {}
       : { requestId: next.requestId ?? base.requestId }),
@@ -328,6 +346,7 @@ function createLogger(
 
     const merged = mergeContexts(baseContext, context);
     const fields = sanitizeFields(merged.fields);
+    const traceId = safeTraceIdentifier(merged.traceId, 32);
     const requestId = sanitizeCorrelationId(merged.requestId);
     const correlationId = sanitizeCorrelationId(merged.correlationId);
     const durationMs = safeDuration(merged.durationMs);
@@ -336,6 +355,7 @@ function createLogger(
       level,
       service,
       event: safeEvent(event),
+      ...(traceId === undefined ? {} : { traceId }),
       ...(requestId === undefined ? {} : { requestId }),
       ...(correlationId === undefined ? {} : { correlationId }),
       ...(durationMs === undefined ? {} : { durationMs }),
@@ -582,7 +602,11 @@ function createTraces(options: ObservabilityOptions): TracesPort {
 
   const record = (input: TraceSpanInput): void => {
     const parentSpanId = safeTraceIdentifier(input.parentSpanId, 16);
-    const traceId = safeTraceIdentifier(input.traceId, 32);
+    const requestId = sanitizeCorrelationId(input.requestId);
+    const correlationId = sanitizeCorrelationId(input.correlationId);
+    const traceId =
+      safeTraceIdentifier(input.traceId, 32) ??
+      traceIdForCorrelationId(correlationId ?? requestId);
     const route = safeTraceRoute(input.attributes?.route);
     const durationMs = Math.max(
       0,
@@ -594,6 +618,8 @@ function createTraces(options: ObservabilityOptions): TracesPort {
     const span: TraceSpan = Object.freeze({
       traceId: traceId ?? randomTraceIdentifier(16),
       spanId: randomTraceIdentifier(8),
+      ...(requestId === undefined ? {} : { requestId }),
+      ...(correlationId === undefined ? {} : { correlationId }),
       ...(parentSpanId === undefined ? {} : { parentSpanId }),
       service,
       name: safeEvent(input.name),
@@ -659,6 +685,12 @@ export function createOtlpHttpTraceSink(
     : `${normalizedEndpoint}/v1/traces`;
   return (span: TraceSpan): void => {
     const attributes = [
+      ...(span.requestId === undefined
+        ? []
+        : [otlpAttribute("cvg.request_id", span.requestId)]),
+      ...(span.correlationId === undefined
+        ? []
+        : [otlpAttribute("cvg.correlation_id", span.correlationId)]),
       ...(span.attributes.method === undefined
         ? []
         : [otlpAttribute("http.method", span.attributes.method)]),

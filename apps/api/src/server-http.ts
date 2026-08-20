@@ -1,7 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { apiErrorResponse } from "@cvg/contracts";
-import { sanitizeCorrelationId, type Observability } from "@cvg/observability";
+import {
+  sanitizeCorrelationId,
+  traceIdForCorrelationId,
+  type Observability,
+} from "@cvg/observability";
 
 import {
   handleApiRequest,
@@ -241,8 +245,11 @@ function observeRequest(
     typeof traceparent === "string"
       ? traceparent.match(/^00-([a-f0-9]{32})-([a-f0-9]{16})-[a-f0-9]{2}$/u)
       : null;
+  const traceId =
+    traceContext?.[1] ?? traceIdForCorrelationId(correlationId ?? requestId);
 
   observability.logger.info("http.request.completed", {
+    ...(traceId === undefined ? {} : { traceId }),
     requestId,
     correlationId,
     durationMs,
@@ -257,10 +264,12 @@ function observeRequest(
     route,
   });
   observability.traces.record({
-    ...(traceContext?.[1] === undefined ? {} : { traceId: traceContext[1] }),
+    ...(traceId === undefined ? {} : { traceId }),
     ...(traceContext?.[2] === undefined
       ? {}
       : { parentSpanId: traceContext[2] }),
+    requestId,
+    correlationId,
     name: "http.request",
     startedAt: new Date(startedAt),
     endedAt: new Date(),

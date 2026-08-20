@@ -111,4 +111,19 @@ describe("observability governance", () => {
     expect(alertRules).toContain("CvgObservabilityWatchdog");
     expect(alertRules).toContain("CvgObservabilityWatchdogMissing");
   });
+
+  it("pins bounded local retention for traces and metrics", async () => {
+    const tempo = await readFile(
+      resolve(root, "infra/observability/tempo.yaml"),
+      "utf8",
+    );
+    const compose = await readFile(
+      resolve(root, "infra/production/docker-compose.ha.yml"),
+      "utf8",
+    );
+
+    expect(tempo).toContain("backend_worker:");
+    expect(tempo).toContain("block_retention: 336h");
+    expect(compose).toContain("--storage.tsdb.retention.time=15d");
+  });
 });

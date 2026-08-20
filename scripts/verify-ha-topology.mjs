@@ -190,7 +190,7 @@ process.stdout.write(
     replicas: { api: ["api-a", "api-b"], worker: ["worker-a", "worker-b"] },
     retention: "15d",
     traceCollector: "OTLP HTTP :4318",
-    traceBackend: "Tempo 3.0.0 local volume with 14d default block retention",
+    traceBackend: "Tempo 3.0.0 local volume with 14d explicit block retention",
     edge: {
       httpTargetPort: 8080,
       internalApiTargetPort: 8081,

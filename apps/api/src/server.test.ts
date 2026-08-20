@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createObservability, type LogRecord } from "@cvg/observability";
+import {
+  createObservability,
+  traceIdForCorrelationId,
+  type LogRecord,
+} from "@cvg/observability";
 
 import { createApiRequestHandlerMethods } from "./server-http.js";
 import { createApiServer, requestOutcome, routeTemplate } from "./server.js";
@@ -292,6 +296,7 @@ describe("API node server adapter", () => {
       expect(records).toHaveLength(1);
       expect(records[0]).toMatchObject({
         event: "http.request.completed",
+        traceId: traceIdForCorrelationId("local-correlation-1"),
         requestId: "request-server-test",
         correlationId: "local-correlation-1",
         fields: {

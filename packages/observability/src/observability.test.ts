@@ -90,6 +90,43 @@ describe("observability", () => {
     expect(JSON.stringify(records)).not.toContain("clinical response");
   });
 
+  it("correlates redacted logs and OTLP spans without exporting payloads", () => {
+    const records: LogRecord[] = [];
+    const spans: TraceSpan[] = [];
+    const observability = createObservability({
+      service: "api",
+      sink: (record) => records.push(record),
+      traceSink: (span) => spans.push(span),
+    });
+    const traceId = "a".repeat(32);
+    const requestId = "request-observability-probe";
+    const correlationId = "correlation-observability-probe";
+
+    observability.logger.info("http.request.completed", {
+      traceId,
+      requestId,
+      correlationId,
+      fields: {
+        route: "/health/live",
+        response: "must never be exported",
+      },
+    });
+    observability.traces.record({
+      traceId,
+      requestId,
+      correlationId,
+      name: "http.request",
+      startedAt: new Date("2026-08-20T15:00:00.000Z"),
+      endedAt: new Date("2026-08-20T15:00:00.010Z"),
+      status: "ok",
+      attributes: { method: "GET", route: "/health/live", status: 200 },
+    });
+
+    expect(records[0]).toMatchObject({ traceId, requestId, correlationId });
+    expect(spans[0]).toMatchObject({ traceId, requestId, correlationId });
+    expect(JSON.stringify(records)).not.toContain("must never be exported");
+  });
+
   it("rejects untrusted correlation identifiers", () => {
     expect(sanitizeCorrelationId("corr-123_abc")).toBe("corr-123_abc");
     expect(sanitizeCorrelationId(" ")).toBeUndefined();
@@ -470,6 +507,8 @@ describe("observability", () => {
     sink({
       traceId: "a".repeat(32),
       spanId: "b".repeat(16),
+      requestId: "request-observability-probe",
+      correlationId: "correlation-observability-probe",
       service: "api",
       name: "http.request",
       startedAt: "2026-08-09T20:00:00.000Z",
@@ -483,6 +522,8 @@ describe("observability", () => {
     const body = String(requests[0]?.body);
     expect(body).toContain("service.name");
     expect(body).toContain("http.status_code");
+    expect(body).toContain("cvg.request_id");
+    expect(body).toContain("cvg.correlation_id");
     expect(body).not.toContain("payload");
     expect(body).not.toContain("participant");
   });

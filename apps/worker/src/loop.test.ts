@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createObservability, type LogRecord } from "@cvg/observability";
+import {
+  createObservability,
+  traceIdForCorrelationId,
+  type LogRecord,
+  type TraceSpan,
+} from "@cvg/observability";
 import type {
   OutboxEventInput,
   OutboxEventRecord,
@@ -282,9 +287,11 @@ describe("outbox worker loop", () => {
 
   it("records batch and event outcomes without event payloads", async () => {
     const records: LogRecord[] = [];
+    const spans: TraceSpan[] = [];
     const observability = createObservability({
       service: "worker",
       sink: (record) => records.push(record),
+      traceSink: (span) => spans.push(span),
     });
     const repository = outbox([event]);
 
@@ -299,12 +306,20 @@ describe("outbox worker loop", () => {
       "worker.batch.completed",
     ]);
     expect(records[0]).toMatchObject({
+      traceId: traceIdForCorrelationId(event.correlationId),
+      correlationId: event.correlationId,
       fields: { event_type: "content.published.v1", outcome: "success" },
     });
     expect(records[1]).toMatchObject({
       fields: { claimed: 1, processed: 1, failed: 0, outcome: "success" },
     });
     expect(JSON.stringify(records)).not.toContain("content_id");
+    expect(spans[0]).toMatchObject({
+      name: "worker.event",
+      traceId: traceIdForCorrelationId(event.correlationId),
+      correlationId: event.correlationId,
+      status: "ok",
+    });
   });
 
   it("records retry telemetry for a partially failed batch without the error text", async () => {
