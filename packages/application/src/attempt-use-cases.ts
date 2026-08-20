@@ -118,6 +118,180 @@ function normalizeAttemptError(error: unknown): ApplicationError {
   return toApplicationError(error);
 }
 
+async function createStartedAttempt(
+  command: StartAttemptCommand,
+  operations: AttemptTransactionalOperations,
+  idFactory: () => string,
+): Promise<AttemptState> {
+  const available = await operations.activity.isAvailable(
+    command.participantId,
+    command.activityId,
+  );
+  if (!available) {
+    throw new ApplicationError(
+      "not_found",
+      "Activity is not available in the current scope",
+    );
+  }
+
+  const existing =
+    await operations.attemptsPort.findOpenByParticipantAndActivity(
+      command.participantId,
+      command.activityId,
+    );
+  if (existing !== null) {
+    throw new ApplicationError(
+      "state_conflict",
+      "An open attempt already exists for this activity",
+    );
+  }
+
+  return transitionAttempt(
+    createAttempt({
+      attemptId: idFactory(),
+      participantId: command.participantId,
+      activityId: command.activityId,
+    }),
+    { type: "INICIAR" },
+  );
+}
+
+async function persistStartedAttempt(
+  command: StartAttemptCommand,
+  expectedFingerprint: string,
+  started: AttemptState,
+  operations: AttemptTransactionalOperations,
+  idFactory: () => string,
+): Promise<AttemptState> {
+  await operations.attemptsPort.insert(started);
+  await operations.audit.append(
+    createAuditEntry({
+      auditId: idFactory(),
+      principalId: command.participantId,
+      action: "ATTEMPT_STARTED",
+      resourceType: "attempt",
+      resourceId: started.attemptId,
+      outcome: "SUCCESS",
+      reasonCode: "attempt_started",
+      requestId: command.correlationId,
+      correlationId: command.correlationId,
+      occurredAt: new Date().toISOString(),
+    }),
+  );
+  await operations.idempotency.store(command.idempotencyKey, {
+    fingerprint: expectedFingerprint,
+    attempt: started,
+  });
+  return started;
+}
+
+async function runStartAttempt(
+  command: StartAttemptCommand,
+  expectedFingerprint: string,
+  operations: AttemptTransactionalOperations,
+  idFactory: () => string,
+): Promise<AttemptState> {
+  const replay = replayOrThrow(
+    await operations.idempotency.find(command.idempotencyKey),
+    expectedFingerprint,
+  );
+  if (replay !== null) return replay;
+
+  const started = await createStartedAttempt(command, operations, idFactory);
+  return persistStartedAttempt(
+    command,
+    expectedFingerprint,
+    started,
+    operations,
+    idFactory,
+  );
+}
+
+async function findSubmittableAttempt(
+  command: SubmitAttemptCommand,
+  operations: AttemptTransactionalOperations,
+): Promise<AttemptState> {
+  const current = await operations.attemptsPort.findById(command.attemptId);
+  if (current === null) {
+    throw new ApplicationError("not_found", "Attempt was not found");
+  }
+  if (current.participantId !== command.participantId) {
+    throw new ApplicationError(
+      "forbidden",
+      "Attempt is outside the current scope",
+    );
+  }
+  return current;
+}
+
+async function persistSubmittedAttempt(
+  command: SubmitAttemptCommand,
+  expectedFingerprint: string,
+  current: AttemptState,
+  operations: AttemptTransactionalOperations,
+  idFactory: () => string,
+): Promise<AttemptState> {
+  const submitted = transitionAttempt(current, {
+    type: "SUBMETER",
+    submittedAt: command.submittedAt,
+  });
+  await operations.attemptsPort.update(submitted);
+  await operations.eventPublisher.publish({
+    eventId: idFactory(),
+    eventType: "attempt.submitted.v1",
+    aggregateType: "attempt",
+    aggregateId: submitted.attemptId,
+    occurredAt: command.submittedAt,
+    schemaVersion: 1,
+    correlationId: command.correlationId,
+    payload: {
+      attempt_id: submitted.attemptId,
+      status: submitted.status,
+    },
+  });
+  await operations.audit.append(
+    createAuditEntry({
+      auditId: idFactory(),
+      principalId: command.participantId,
+      action: "ATTEMPT_SUBMITTED",
+      resourceType: "attempt",
+      resourceId: submitted.attemptId,
+      outcome: "SUCCESS",
+      reasonCode: "attempt_submitted",
+      requestId: command.correlationId,
+      correlationId: command.correlationId,
+      occurredAt: command.submittedAt,
+    }),
+  );
+  await operations.idempotency.store(command.idempotencyKey, {
+    fingerprint: expectedFingerprint,
+    attempt: submitted,
+  });
+  return submitted;
+}
+
+async function runSubmitAttempt(
+  command: SubmitAttemptCommand,
+  expectedFingerprint: string,
+  operations: AttemptTransactionalOperations,
+  idFactory: () => string,
+): Promise<AttemptState> {
+  const replay = replayOrThrow(
+    await operations.idempotency.find(command.idempotencyKey),
+    expectedFingerprint,
+  );
+  if (replay !== null) return replay;
+
+  const current = await findSubmittableAttempt(command, operations);
+  return persistSubmittedAttempt(
+    command,
+    expectedFingerprint,
+    current,
+    operations,
+    idFactory,
+  );
+}
+
 export async function startAttempt(
   command: StartAttemptCommand,
   dependencies: AttemptUseCaseDependencies,
@@ -129,65 +303,13 @@ export async function startAttempt(
 
   try {
     return await dependencies.transaction.run(
-      async (operations) => {
-        const replay = replayOrThrow(
-          await operations.idempotency.find(command.idempotencyKey),
+      (operations) =>
+        runStartAttempt(
+          command,
           expectedFingerprint,
-        );
-        if (replay !== null) return replay;
-
-        const available = await operations.activity.isAvailable(
-          command.participantId,
-          command.activityId,
-        );
-        if (!available) {
-          throw new ApplicationError(
-            "not_found",
-            "Activity is not available in the current scope",
-          );
-        }
-
-        const existing =
-          await operations.attemptsPort.findOpenByParticipantAndActivity(
-            command.participantId,
-            command.activityId,
-          );
-        if (existing !== null) {
-          throw new ApplicationError(
-            "state_conflict",
-            "An open attempt already exists for this activity",
-          );
-        }
-
-        const started = transitionAttempt(
-          createAttempt({
-            attemptId: dependencies.idFactory(),
-            participantId: command.participantId,
-            activityId: command.activityId,
-          }),
-          { type: "INICIAR" },
-        );
-        await operations.attemptsPort.insert(started);
-        await operations.audit.append(
-          createAuditEntry({
-            auditId: dependencies.idFactory(),
-            principalId: command.participantId,
-            action: "ATTEMPT_STARTED",
-            resourceType: "attempt",
-            resourceId: started.attemptId,
-            outcome: "SUCCESS",
-            reasonCode: "attempt_started",
-            requestId: command.correlationId,
-            correlationId: command.correlationId,
-            occurredAt: new Date().toISOString(),
-          }),
-        );
-        await operations.idempotency.store(command.idempotencyKey, {
-          fingerprint: expectedFingerprint,
-          attempt: started,
-        });
-        return started;
-      },
+          operations,
+          dependencies.idFactory,
+        ),
       { participantId: command.participantId },
     );
   } catch (error) {
@@ -207,64 +329,13 @@ export async function submitAttempt(
 
   try {
     return await dependencies.transaction.run(
-      async (operations) => {
-        const replay = replayOrThrow(
-          await operations.idempotency.find(command.idempotencyKey),
+      (operations) =>
+        runSubmitAttempt(
+          command,
           expectedFingerprint,
-        );
-        if (replay !== null) return replay;
-
-        const current = await operations.attemptsPort.findById(
-          command.attemptId,
-        );
-        if (current === null) {
-          throw new ApplicationError("not_found", "Attempt was not found");
-        }
-        if (current.participantId !== command.participantId) {
-          throw new ApplicationError(
-            "forbidden",
-            "Attempt is outside the current scope",
-          );
-        }
-
-        const submitted = transitionAttempt(current, {
-          type: "SUBMETER",
-          submittedAt: command.submittedAt,
-        });
-        await operations.attemptsPort.update(submitted);
-        await operations.eventPublisher.publish({
-          eventId: dependencies.idFactory(),
-          eventType: "attempt.submitted.v1",
-          aggregateType: "attempt",
-          aggregateId: submitted.attemptId,
-          occurredAt: command.submittedAt,
-          schemaVersion: 1,
-          correlationId: command.correlationId,
-          payload: {
-            attempt_id: submitted.attemptId,
-            status: submitted.status,
-          },
-        });
-        await operations.audit.append(
-          createAuditEntry({
-            auditId: dependencies.idFactory(),
-            principalId: command.participantId,
-            action: "ATTEMPT_SUBMITTED",
-            resourceType: "attempt",
-            resourceId: submitted.attemptId,
-            outcome: "SUCCESS",
-            reasonCode: "attempt_submitted",
-            requestId: command.correlationId,
-            correlationId: command.correlationId,
-            occurredAt: command.submittedAt,
-          }),
-        );
-        await operations.idempotency.store(command.idempotencyKey, {
-          fingerprint: expectedFingerprint,
-          attempt: submitted,
-        });
-        return submitted;
-      },
+          operations,
+          dependencies.idFactory,
+        ),
       { participantId: command.participantId },
     );
   } catch (error) {

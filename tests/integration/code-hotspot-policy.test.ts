@@ -70,4 +70,36 @@ describe("code hotspot policy", () => {
       "longest production function 90 lines exceeds ratchet 80",
     ]);
   });
+
+  it("keeps critical attempt commands below the function-size bar", async () => {
+    const { loadCodeHotspotSnapshot } =
+      await import("../../scripts/verify-code-hotspots.mjs");
+    const snapshot = await loadCodeHotspotSnapshot();
+    const criticalCommands = snapshot.sourceFiles
+      .flatMap((file) => file.functions ?? [])
+      .filter(
+        (fn) =>
+          fn.path === "packages/application/src/attempt-use-cases.ts" &&
+          ["startAttempt", "submitAttempt"].includes(fn.name),
+      );
+
+    expect(criticalCommands).toHaveLength(2);
+    expect(criticalCommands.filter((fn) => fn.lineCount > 50)).toEqual([]);
+  });
+
+  it("keeps dependency diagnostics orchestration below the function-size bar", async () => {
+    const { loadCodeHotspotSnapshot } =
+      await import("../../scripts/verify-code-hotspots.mjs");
+    const snapshot = await loadCodeHotspotSnapshot();
+    const dependencyResponse = snapshot.sourceFiles
+      .flatMap((file) => file.functions ?? [])
+      .find(
+        (fn) =>
+          fn.path === "apps/api/src/http-route-health.ts" &&
+          fn.name === "dependencyResponse",
+      );
+
+    expect(dependencyResponse).toBeDefined();
+    expect(dependencyResponse?.lineCount).toBeLessThanOrEqual(50);
+  });
 });

@@ -15,6 +15,9 @@ import {
 type DependencyStatus = Awaited<
   ReturnType<NonNullable<ApiHttpDependencies["dependencyStatus"]>>
 >;
+type DependencyStatusReader = NonNullable<
+  ApiHttpDependencies["dependencyStatus"]
+>;
 
 type DependencyCacheEntry = Readonly<{
   readonly value: DependencyStatus | null;
@@ -48,76 +51,104 @@ async function readinessResponse(
   };
 }
 
+async function authorizeDependencyRequest(
+  request: ApiHttpRequest,
+  requestId: string,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse | null> {
+  try {
+    if (hasMetricsScrapeToken(request, dependencies.metricsScrapeToken)) {
+      return null;
+    }
+    let principal: ApiPrincipal | null;
+    try {
+      principal = await dependencies.authenticate(request);
+    } catch {
+      return errorResponse("unauthenticated", requestId);
+    }
+    if (principal === null) return errorResponse("unauthenticated", requestId);
+    return isAllowed(principal, "VIEW_INTERNAL_AUDIT", {})
+      ? null
+      : errorResponse("forbidden", requestId);
+  } catch {
+    return errorResponse("unauthenticated", requestId);
+  }
+}
+
+function dependencyStatusResponse(
+  status: DependencyStatus,
+  requestId: string,
+): ApiHttpResponse {
+  return {
+    status: status.status === "NOT_READY" ? 503 : 200,
+    headers: { "cache-control": "private, max-age=5" },
+    body: apiSuccessResponse(status, requestId),
+  };
+}
+
+function freshDependencyResponse(
+  cached: DependencyCacheEntry | undefined,
+  now: number,
+  requestId: string,
+): ApiHttpResponse | null {
+  if (cached === undefined) return null;
+  if (cached.value !== null && cached.expiresAt > now) {
+    return dependencyStatusResponse(cached.value, requestId);
+  }
+  return null;
+}
+
+async function loadDependencyStatus(
+  dependencies: ApiHttpDependencies,
+  dependencyStatus: DependencyStatusReader,
+): Promise<DependencyStatus> {
+  const inFlight = dependencyStatus();
+  dependencyCache.set(
+    dependencies,
+    Object.freeze({ value: null, expiresAt: 0, inFlight }),
+  );
+  const status = await inFlight;
+  dependencyCache.set(
+    dependencies,
+    Object.freeze({
+      value: status,
+      expiresAt: Date.now() + dependencyCacheTtlMs,
+      inFlight: null,
+    }),
+  );
+  return status;
+}
+
 async function dependencyResponse(
   request: ApiHttpRequest,
   requestId: string,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
-  try {
-    const authorizedByScrapeToken = hasMetricsScrapeToken(
-      request,
-      dependencies.metricsScrapeToken,
-    );
-    if (!authorizedByScrapeToken) {
-      let principal: ApiPrincipal | null;
-      try {
-        principal = await dependencies.authenticate(request);
-      } catch {
-        return errorResponse("unauthenticated", requestId);
-      }
-      if (principal === null)
-        return errorResponse("unauthenticated", requestId);
-      if (!isAllowed(principal, "VIEW_INTERNAL_AUDIT", {})) {
-        return errorResponse("forbidden", requestId);
-      }
-    }
-  } catch {
-    return errorResponse("unauthenticated", requestId);
-  }
+  const authorizationResponse = await authorizeDependencyRequest(
+    request,
+    requestId,
+    dependencies,
+  );
+  if (authorizationResponse !== null) return authorizationResponse;
   if (dependencies.dependencyStatus === undefined) {
     return errorResponse("internal_error", requestId, 503);
   }
   try {
-    const now = Date.now();
     const cached = dependencyCache.get(dependencies);
-    if (
-      cached?.value !== null &&
-      cached !== undefined &&
-      cached.expiresAt > now
-    ) {
-      return {
-        status: cached.value.status === "NOT_READY" ? 503 : 200,
-        headers: { "cache-control": "private, max-age=5" },
-        body: apiSuccessResponse(cached.value, requestId),
-      };
-    }
-    if (cached?.inFlight !== null && cached !== undefined) {
-      const status = await cached.inFlight;
-      return {
-        status: status.status === "NOT_READY" ? 503 : 200,
-        headers: { "cache-control": "private, max-age=5" },
-        body: apiSuccessResponse(status, requestId),
-      };
-    }
-    const inFlight = dependencies.dependencyStatus();
-    dependencyCache.set(
-      dependencies,
-      Object.freeze({ value: null, expiresAt: 0, inFlight }),
+    const cachedResponse = freshDependencyResponse(
+      cached,
+      Date.now(),
+      requestId,
     );
-    const status = await inFlight;
-    dependencyCache.set(
+    if (cachedResponse !== null) return cachedResponse;
+    if (cached !== undefined && cached.inFlight !== null) {
+      return dependencyStatusResponse(await cached.inFlight, requestId);
+    }
+    const status = await loadDependencyStatus(
       dependencies,
-      Object.freeze({
-        value: status,
-        expiresAt: Date.now() + dependencyCacheTtlMs,
-        inFlight: null,
-      }),
+      dependencies.dependencyStatus,
     );
-    return {
-      status: status.status === "NOT_READY" ? 503 : 200,
-      headers: { "cache-control": "private, max-age=5" },
-      body: apiSuccessResponse(status, requestId),
-    };
+    return dependencyStatusResponse(status, requestId);
   } catch {
     dependencyCache.delete(dependencies);
     return errorResponse("internal_error", requestId, 503);
