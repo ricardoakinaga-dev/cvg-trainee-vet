@@ -58,7 +58,10 @@ function outbox(events: readonly OutboxEventRecord[]): OutboxRepositoryPort & {
   };
 }
 
-function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
+function probeOutbox(
+  failOnProcess = false,
+  availableAt = () => new Date(0),
+): WorkerProbeRepository & {
   readonly inserted: OutboxEventInput[];
   readonly removed: string[];
 } {
@@ -82,7 +85,7 @@ function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
         payload: input.payload as Readonly<Record<string, unknown>>,
         status: "PENDING",
         attempts: 0,
-        availableAt: new Date(0),
+        availableAt: availableAt(),
         lockedUntil: null,
         lastErrorCode: null,
         processedAt: null,
@@ -92,6 +95,7 @@ function probeOutbox(failOnProcess = false): WorkerProbeRepository & {
     claimProbe: vi.fn(async (eventId, now, leaseSeconds) => {
       if (current === null || current.id !== eventId) return null;
       if (current.status !== "PENDING") return null;
+      if (current.availableAt > now) return null;
       current = {
         ...current,
         status: "PROCESSING",
@@ -159,6 +163,33 @@ describe("outbox worker loop", () => {
       acknowledged: false,
     });
     expect(repository.removed).toHaveLength(1);
+  });
+
+  it("claims a probe after a delayed insert becomes available", async () => {
+    vi.useFakeTimers();
+    const insertedAt = new Date("2026-08-20T13:20:00.000Z");
+    const committedAt = new Date(insertedAt.getTime() + 1_000);
+    vi.setSystemTime(insertedAt);
+    const repository = probeOutbox(false, () => new Date());
+    const insert = repository.insertProbe;
+    const originalInsert = vi.mocked(insert).getMockImplementation();
+    if (originalInsert === undefined)
+      throw new Error("probe insert is missing");
+    vi.mocked(insert).mockImplementation(async (input) => {
+      vi.setSystemTime(committedAt);
+      await originalInsert(input);
+    });
+
+    try {
+      await expect(runWorkerClaimAckProbe(repository)).resolves.toEqual({
+        claimed: 1,
+        processed: 1,
+        failed: 0,
+        acknowledged: true,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("processes a claimed event and marks it only after the handler succeeds", async () => {

@@ -331,14 +331,14 @@ export async function processOutboxOnce(
 export async function runWorkerClaimAckProbe(
   repository: WorkerProbeRepository,
 ): Promise<WorkerClaimAckProbeResult> {
-  const now = new Date();
+  const occurredAt = new Date();
   const eventId = randomUUID();
   const probeInput: OutboxEventInput = Object.freeze({
     eventId,
     eventType: "worker.readiness.probe.v1",
     aggregateType: "worker_readiness_probe",
     aggregateId: randomUUID(),
-    occurredAt: now.toISOString(),
+    occurredAt: occurredAt.toISOString(),
     schemaVersion: 1,
     correlationId: randomUUID(),
     payload: Object.freeze({ probe: "worker_claim_ack_v1" }),
@@ -346,6 +346,7 @@ export async function runWorkerClaimAckProbe(
 
   await repository.insertProbe(probeInput);
   try {
+    const claimNow = new Date();
     const probeRepository: OutboxRepositoryPort = {
       claim: async (_limit, claimAt, leaseSeconds) => {
         const event = await repository.claimProbe(
@@ -367,7 +368,7 @@ export async function runWorkerClaimAckProbe(
           }
         },
       },
-      { batchSize: 1, leaseSeconds: 5, maxAttempts: 1, now },
+      { batchSize: 1, leaseSeconds: 5, maxAttempts: 1, now: claimNow },
     );
     return Object.freeze({
       ...result,
