@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: reconciliou os verificadores e documentos após a prova local; documentação, Dual99, rastreabilidade, skips, mutation, hotspots, formato, lint, typecheck e diff-check passaram, e `docs/135` foi corrigido para a medição autoritativa `200/1041/21` e ratchet `144/113`
+- last_completed_action: consolidou o lote Dual99 no commit `8eb6578` e publicou a branch `agent/publish-production-hardening` em `origin`; verificações locais, cobertura e gates de segurança/governança foram registradas sem promover release
 - next_action: preservar `IN_PROGRESS`/`PILOT_BLOCKED`, obter autoridade e ambiente para secret manager, mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; só então executar reauditoria independente
 
 ## BLOQUEIOS
@@ -32,7 +32,21 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T03:48:50-03:00
+- last_update: 2026-08-20T08:10:50-03:00
+
+## 2026-08-20T08:10:50-03:00 — GIT-PUBLISH-DUAL99
+
+### AÇÃO / RESULTADO
+
+- o lote Dual99 de código, testes, infraestrutura e documentação foi consolidado no commit `8eb6578` (`feat: harden dual 99 quality and runtime controls`), com `373` arquivos alterados;
+- a branch `agent/publish-production-hardening` foi publicada em `origin`, e a referência remota confirmou o SHA `8eb65785cc5eccd7104cccdfad7c5c71a05a392d`;
+- cobertura passou em `200` arquivos, `1046` testes e `17` arquivos/`21` testes guardados, com `95,06%` statements / `91,06%` branches / `95,35%` functions / `95,77%` lines; audit de dependências não encontrou vulnerabilidades conhecidas;
+- decisões críticas `7/7`, mutation direcionada `7/7`, skips `20/20`, hotspots, formato, lint, typecheck, documentação, rastreabilidade e gates de risco/evidência passaram conforme os contratos locais;
+- `.gauntlet/` permaneceu fora do commit como estado local do agente; `infra/production/.env.local` permaneceu ignorado e inalterado.
+
+### LIMITES / STATUS / NEXT
+
+O publish não promove score, release ou piloto: `IN_PROGRESS` / `PILOT_BLOCKED` permanecem. O scanner integral continua bloqueado somente pelos quatro valores locais redigidos de `.env.local`; mutation integral, live/RC, clínica, `0/145`, operação externa, aprovação humana e reauditoria independente continuam pendentes.
 
 ## 2026-08-20T03:48:50-03:00 — DUAL99-FINAL-RECONCILIATION
 

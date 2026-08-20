@@ -40,6 +40,62 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-20T08:10:50-03:00 — GIT-PUBLISH-DUAL99
+
+### TIMESTAMP
+
+2026-08-20 08:10:50 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — versionamento e publicação do lote local
+
+### SPRINT
+
+F99-1 — fechamento local e evidência
+
+### TASK
+
+Publicar o lote Dual99 autorizado no repositório remoto e preservar a
+continuidade operacional.
+
+### ACTION
+
+Foram revisados o diff staged, o escopo de `373` caminhos, os gates locais e a
+ausência de segredos no conteúdo publicado. O lote foi commitado como
+`8eb6578` (`feat: harden dual 99 quality and runtime controls`) e enviado para
+`origin/agent/publish-production-hardening`.
+
+### RESULT
+
+O push confirmou a atualização remota de `d3964a9` para
+`8eb65785cc5eccd7104cccdfad7c5c71a05a392d`. A cobertura passou `200/1046`,
+com `17/21` guardados e floors `95,06/91,06/95,35/95,77`; audit de dependências,
+decisões críticas, mutation direcionada, skips, hotspots, formato, lint,
+typecheck, documentação, rastreabilidade e diff-check passaram. O scanner
+integral permanece fail-closed apenas por valores locais ignorados em
+`infra/production/.env.local`.
+
+### DECISIONS
+
+`.gauntlet/` não foi publicado por ser estado local do agente, e
+`.env.local` não foi alterado. Nenhum score, release, deploy, rotação de
+segredo ou decisão clínica foi promovido.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter autoridade e ambiente para secret manager, mutation integral,
+browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145`, operação externa
+e aprovação humana; depois executar reauditoria independente no mesmo RC.
+
 ## 2026-08-20T03:48:50-03:00 — DUAL99-FINAL-RECONCILIATION
 
 ### TIMESTAMP
