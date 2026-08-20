@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { lstat, readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { spawn } from "node:child_process";
 import { promisify, TextDecoder } from "node:util";
@@ -172,11 +172,8 @@ function isSyntheticPlaceholder(value, path) {
 }
 
 function isCodeExpression(value) {
-  // A value that is clearly a code expression (env interpolation, a bare
-  // variable reference, a method call, or a property access chain) is never a
-  // secret literal. Property chains and method calls use short identifiers, so
-  // a high-entropy value is never misclassified here: real credential literals
-  // (random-looking) must always be reported even with a trailing .method(.
+  // Code expressions are not secret literals; high-entropy credential
+  // literals remain findings even when followed by method-like syntax.
   if (
     /\$\{|\b(?:process|import\.meta)\.env\b/u.test(value) ||
     /^\??[A-Z][A-Z0-9_]*(?:\s+is\s+required)?$/u.test(value.trim()) ||
@@ -207,10 +204,7 @@ function isCodeExpression(value) {
   return false;
 }
 
-// An unquoted value that is a bare identifier-like code reference (property
-// access such as `material.token`, a camelCase identifier such as
-// `optionalNonEmptyString`, or a cast/ternary expression) is code, never a
-// secret literal. Real secrets are literals (quoted) or high-entropy tokens.
+// Bare identifier/property/cast expressions are code; literals remain findings.
 function isBareIdentifierExpression(value) {
   const normalized = value.trim().replace(/[;,}\]]+$/gu, "");
   if (entropy(normalized) >= 4.0) {
@@ -530,6 +524,12 @@ async function walk(directory, root) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
+    const absolutePath = join(directory, entry.name);
+    if (entry.isSymbolicLink()) {
+      // Do not follow workspace links; report them as unscanned inputs.
+      files.push(absolutePath);
+      continue;
+    }
     if (entry.isDirectory()) {
       if (!ignoredDirectories.has(entry.name)) {
         files.push(...(await walk(join(directory, entry.name), root)));
@@ -537,7 +537,6 @@ async function walk(directory, root) {
       continue;
     }
     if (!entry.isFile()) continue;
-    const absolutePath = join(directory, entry.name);
     const relativePath = relative(root, absolutePath).split("\\").join("/");
     if (isScanCandidatePath(relativePath)) files.push(absolutePath);
   }
@@ -565,7 +564,10 @@ function scanBuffer(buffer, path) {
 
 async function scanFile(file, path) {
   try {
-    const metadata = await stat(file);
+    const metadata = await lstat(file);
+    if (metadata.isSymbolicLink()) {
+      return [unscannedFinding(path, "unreadable-file", "symlink")];
+    }
     if (metadata.size > MAX_SCAN_BYTES) {
       return [
         unscannedFinding(path, "oversize-file", `${metadata.size} bytes`),
@@ -668,11 +670,8 @@ function readBatchOutput(buffer, objects, source = "history") {
       continue;
     }
     const size = Number(sizeText);
-    // tree and commit objects are Git structure, not scannable text. Their
-    // body still has to be structurally valid: silently skipping a malformed
-    // batch record would turn an unreadable history object into a false clean
-    // scan. Annotated tags are text-bearing Git metadata, so their body is
-    // scanned below.
+    // Validate structural framing before skipping Git tree/commit objects;
+    // annotated tags remain text-bearing and are scanned below.
     if (type === "tree" || type === "commit") {
       const bodyEnd = offset + size;
       if (

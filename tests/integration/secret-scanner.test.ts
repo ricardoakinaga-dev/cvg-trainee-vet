@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -264,6 +264,46 @@ describe("secret scanner", () => {
     expect(findings.map((finding) => finding.rule)).toEqual(
       expect.arrayContaining(["sensitive-assignment", "private-key"]),
     );
+  });
+
+  it("reports workspace symlinks without following or exposing their targets", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-symlink-"),
+    );
+    temporaryDirectories.push(directory);
+    const outsideDirectory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-target-"),
+    );
+    temporaryDirectories.push(outsideDirectory);
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    const target = join(outsideDirectory, "outside.env");
+    const link = join(directory, "linked.env");
+    await writeFile(target, `API_TOKEN="${secret.repeat(4)}"\n`);
+    await symlink(target, link);
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: false,
+    });
+    const linkedFindings = findings.filter(
+      (finding) => finding.path === "linked.env",
+    );
+
+    expect(linkedFindings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "unreadable-file",
+        }),
+      ]),
+    );
+    expect(linkedFindings).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(linkedFindings)).not.toContain(secret);
   });
 
   it("scans the working tree, index and reachable history instead of only common extensions", async () => {
