@@ -70,6 +70,19 @@ artefato web incoerente após rebuild. WebKit foi tentado separadamente e os
 O estado permanece `BLOCKED`: falta ambiente WebKit aprovado e a prova não
 equivale a RC/produção.
 
+**Atualização B99-306 — 2026-08-20T15:29:24-03:00:** o RED no container
+Playwright pinado reproduziu flags Chromium-only no WebKit, cookie `Secure`
+rejeitado sobre HTTP e, antes da allowlist temporária, `403` CSRF para a origem
+HTTPS. O GREEN escopou launch args por browser e tornou o bypass de certificado
+local opt-in por `CVG_E2E_IGNORE_HTTPS_ERRORS=true`. Com proxy TLS e origem
+HTTPS autorizada somente no override descartável, WebKit passou `3/3`; a
+repetição HTTP passou Chromium/Firefox/mobile `3/3` cada, total `12/12`, foco
+`16/16`, coverage `204/1089/21` em `95,02/90,92/95,31/95,70`. Código
+`9959e44` foi publicado. O host continua sem `libavif16` e o container não é
+ambiente aprovado/RC; `pnpm verify` percorreu os gates até migration safety e
+parou fail-closed nos quatro achados redigidos de `.env.local`. B99-306
+permanece `BLOCKED`, sem promoção de release, score ou `PILOT_BLOCKED`.
+
 ## F99-4 — RC e supply chain
 
 | ID | Pri | Estado | Owner | Critério de pronto |

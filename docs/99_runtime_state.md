@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-306 foi exercitada contra o HA/API/DB local com fixture isolada por browser; Chromium, Firefox e mobile Chromium passaram, WebKit permanece bloqueado por dependência do host; B99-305 e B99-308 permanecem fechadas localmente e o runtime API ainda não tem prova de SHA/RC
+- current_task: F99-2 local hardening; B99-306 foi exercitada contra o HA/API/DB local com fixture isolada por browser; Chromium, Firefox, mobile Chromium e WebKit containerizado passaram `3/3` cada; a configuração de launch cross-browser e o bypass TLS local opt-in foram endurecidos, enquanto o ambiente WebKit aprovado e o runtime API do RC seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-306 sob RED/GREEN: a base HTTP incorreta e o chunk web 404 por processo antigo foram reproduzidos; após alinhar o serviço web, o RED encontrou compartilhamento da mesma fixture entre browsers. O GREEN passou a executar um projeto por vez com fixture PostgreSQL sintética nova por browser. E2E ativo Chromium `3/3`, Firefox `3/3`, mobile Chromium `3/3`; foco do orquestrador `9/9`; cobertura `204/1087/21` em `95,02/90,92/95,31/95,70`; WebKit `3` casos bloqueados por `libavif16`; lint, typecheck, formato e diff-check passaram; código publicado em `b0fcbe8`; `.gauntlet/` continua local e não rastreado
-- next_action: obter ambiente WebKit aprovado e depois executar E2E no RC imutável; manter rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-306 sob RED/GREEN: flags Chromium-only foram removidas de Firefox/WebKit, cookie `Secure` foi exercitado por HTTPS e a origem HTTPS foi autorizada somente em override HA temporário. O foco de configuração/orquestração passou `16/16`; E2E ativo HTTP Chromium `3/3`, Firefox `3/3`, mobile Chromium `3/3` e WebKit containerizado `3/3`; cobertura `204/1089/21` em `95,02/90,92/95,31/95,70`; lint, typecheck, formato, hotspots e diff-check passaram; código publicado em `9959e44`; `.gauntlet/` continua local e não rastreado
+- next_action: obter ambiente WebKit aprovado e repetir a matriz no RC imutável; manter rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,36 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T14:56:53-03:00
+- last_update: 2026-08-20T15:35:54-03:00
+
+## 2026-08-20T15:29:24-03:00 — DUAL99-B99-306-WEBKIT-TLS-LAUNCH
+
+### AÇÃO / RESULTADO
+
+- o RED no container pinado `mcr.microsoft.com/playwright:v1.55.1-noble`
+  (`sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c`)
+  reproduziu flags Chromium-only no WebKit e, após a correção por projeto,
+  cookie `Secure` rejeitado sobre HTTP;
+- com proxy TLS descartável, o POST foi inicialmente rejeitado `403` pelo
+  CSRF devido à allowlist HTTP do HA; a execução final usou a origem HTTPS
+  somente em override temporário, sem relaxar o deny-by-default;
+- GREEN escopou os launch args por browser e tornou o bypass de certificado
+  local explícito por `CVG_E2E_IGNORE_HTTPS_ERRORS=true`;
+- foco de configuração/orquestração `16/16`; cobertura `204/1089/21`,
+  `95,02/90,92/95,31/95,70`; Chromium, Firefox, mobile Chromium e WebKit
+  passaram `3/3` cada, total `12/12`; lint, typecheck, formato, hotspots e
+  diff-check passaram; `pnpm verify` percorreu os gates até migration safety e
+  parou fail-closed em `verify:secrets` pelos quatro achados redigidos do
+  `.env.local`; código `9959e44` foi publicado.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+O host continua sem `libavif16`; container pinado não equivale a ambiente
+WebKit aprovado, RC imutável ou release. Proxy, fixture e origem HTTPS foram
+removidos ao final e produção não foi alterada. O runtime API segue sem
+proveniência do RC atual e `verify:secrets` continua fail-closed nos quatro
+valores redigidos de `infra/production/.env.local`. B99-306 permanece
+`BLOCKED`; estado global `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 

@@ -10346,3 +10346,37 @@ IN_PROGRESS / PILOT_BLOCKED
 Obter ambiente WebKit aprovado e repetir a matriz no mesmo RC/SHA imutável;
 continuar gates de secret manager, rollout N/N-1, runtime com proveniência,
 clínica, `0/145`, operação externa e reauditoria independente.
+
+## 2026-08-20T15:29:24-03:00 — DUAL99-B99-306-WEBKIT-TLS-LAUNCH
+
+O RED no container pinado `mcr.microsoft.com/playwright:v1.55.1-noble`
+(`sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c`)
+reproduziu que flags exclusivas do Chromium eram enviadas ao WebKit. Depois
+da correção por projeto, o RED seguinte mostrou que WebKit rejeitava o cookie
+`Secure` sobre HTTP. Com proxy TLS local descartável, o POST inicialmente
+falhou `403` por CSRF, pois a allowlist do HA local continha somente origens
+HTTP; a execução final adicionou a origem HTTPS apenas ao override temporário
+do ambiente, preservando a proteção.
+
+O GREEN escopou `--headless=new`, `--disable-gpu` e
+`--disable-software-rasterizer` a Chromium/mobile Chromium e tornou o bypass de
+certificado local explícito por `CVG_E2E_IGNORE_HTTPS_ERRORS=true`. O foco de
+configuração/orquestração passou `16/16`; coverage passou `204/1089/21` em
+`95,02/90,92/95,31/95,70`. O E2E ativo HTTP passou Chromium, Firefox e mobile
+Chromium `3/3` cada; WebKit em HTTPS pinado passou `3/3`, totalizando `12/12`.
+Lint, typecheck, formato, hotspots e diff-check passaram.
+
+O `pnpm verify` percorreu os gates até migration safety: coverage `204/1089/21`,
+decisões `7/7`, mutation `7/7`, contratos `84/84`, worker `51/51` e migrations
+`33/33` passaram. A execução parou fail-closed em `verify:secrets` pelos quatro
+achados redigidos de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado.
+
+A imagem/Proxy e a origem HTTPS foram temporários e removidos; não houve
+alteração de produção, cookies, CSRF, API, banco, score, release ou decisão
+clínica. O código foi publicado como `9959e44` e enviado para
+`origin/agent/publish-production-hardening`. O host ainda não possui
+`libavif16`, o runtime API continua sem proveniência do RC atual e
+`verify:secrets` permanece fail-closed nos quatro valores redigidos de
+`infra/production/.env.local`; B99-306 continua bloqueado até ambiente WebKit
+aprovado e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.

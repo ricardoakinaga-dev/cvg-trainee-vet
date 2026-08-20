@@ -15,6 +15,21 @@ verdes; cobertura `204/1087/21` em `95,02/90,92/95,31/95,70`. WebKit foi executa
 `libavif16` ausente; teardown passou. B99-306 permanece `BLOCKED` até ambiente
 WebKit aprovado, sem promover release, RC, score ou `PILOT_BLOCKED`.
 
+**Atualização Dual99 local — 2026-08-20T15:29:24-03:00 — B99-306:** o RED no
+container Playwright pinado reproduziu flags Chromium-only no WebKit; depois da
+separação por projeto, reproduziu cookie `Secure` rejeitado sobre HTTP e CSRF
+`403` quando a origem HTTPS não estava na allowlist do HA. O GREEN escopou os
+launch args a Chromium/mobile Chromium e tornou o bypass TLS local opt-in por
+`CVG_E2E_IGNORE_HTTPS_ERRORS=true`. Com proxy HTTPS e allowlist HTTPS em
+override descartável, WebKit passou `3/3`; a matriz HTTP repetida passou
+Chromium/Firefox/mobile `3/3` cada, total `12/12`, e o foco passou `16/16`.
+Cobertura `204/1089/21` em `95,02/90,92/95,31/95,70`; lint, typecheck, formato,
+hotspots e diff-check verdes. Código publicado em `9959e44`. O host ainda não
+tem `libavif16`, o container não equivale a ambiente aprovado/RC e B99-306
+permanece `BLOCKED`; `pnpm verify` percorreu os gates até migration safety e
+parou fail-closed nos quatro achados redigidos de `.env.local`; o programa
+segue `IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T03:38:02-03:00:** B99-302, B99-303 e B99-304 foram concluídas no escopo local após RED/GREEN/REFACTOR, revisão, 17 repetições adicionais e mutation direcionada `7/7` (`100%`). A cobertura corrente é `200/1041/21` com floors `95,01/91,02/95,19/95,73`; build `12/12` e E2E Chromium sintético `27/27` passaram em porta isolada `3112`; a governança reporta `20/20` runs, zero falhas flaky e zero skips sem classificação. A barra técnica local foi mantida, mas mutation integral, browsers ativos, HA/API/DB reais, RC/proveniência, clínica, UAT, rastreabilidade ou reauditoria continuam abertas. O programa continua `IN_PROGRESS`/`PILOT_BLOCKED`.
 
 **Reconciliação final Dual99 — 2026-08-20T03:48:50-03:00:** os verificadores de documentação, programa, rastreabilidade, skips, mutation, hotspots, formato, lint, typecheck e diff-check passaram após a correção do checkpoint de `docs/135` para `200/1041/21` e ratchet `144/113`. O parecer independente compatível permanece `REJECT`; a nova tentativa read-only foi encerrada sem resultado e sem alterar arquivos. B99-303/B99-304 seguem concluídas apenas no escopo local; `0/145`, mutation integral, live/RC, clínica, operação externa, aprovação humana e reauditoria mantêm `IN_PROGRESS`/`PILOT_BLOCKED`.

@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T14:56:53-03:00`
-- última atualização: `2026-08-20T14:56:53-03:00`
+- corte: `2026-08-20T15:35:54-03:00`
+- última atualização: `2026-08-20T15:35:54-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `b0fcbe8` em
+- commit publicado: `9959e44` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -712,6 +712,63 @@ independente. O `pnpm verify` anterior continua fail-closed nos quatro valores
 redigidos de `infra/production/.env.local`, que não foi lido nem alterado.
 B99-306 permanece `BLOCKED` até ambiente WebKit aprovado; o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 28 — B99-306 / WebKit em container pinado e launch cross-browser — 2026-08-20T15:29:24-03:00
+
+### RED → GREEN
+
+- RED no container pinado `mcr.microsoft.com/playwright:v1.55.1-noble`
+  (`sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c`)
+  reproduziu que os argumentos Chromium-only `--headless=new`, `--disable-gpu`
+  e `--disable-software-rasterizer` eram enviados também ao WebKit; os três
+  testes falharam antes do launch com `Unknown option --disable-gpu`;
+- após separar os argumentos por projeto, o WebKit chegou ao app HTTP, mas o
+  cookie de sessão `Secure` não foi persistido. O diagnóstico registrou apenas
+  paths/status e confirmou `Set-Cookie` com `Secure` e cookie jar vazio; nenhum
+  segredo, credencial ou payload foi registrado;
+- com proxy TLS local descartável Caddy em `https://localhost:3210`, o primeiro
+  POST foi corretamente rejeitado `403` pelo CSRF porque o HA local autorizava
+  somente origens HTTP. A execução foi repetida com a origem HTTPS adicionada
+  somente ao override temporário do ambiente HA; o CSRF permaneceu deny-by-default;
+- GREEN passou a escopar launch flags somente a Chromium/mobile Chromium e a
+  aceitar certificados locais apenas quando
+  `CVG_E2E_IGNORE_HTTPS_ERRORS=true`. A configuração não altera cookies,
+  CSRF, API, edge ou runtime de produção.
+
+### VERIFICAÇÃO
+
+- foco de configuração/orquestração: `16/16` testes;
+- cobertura global: `204` arquivos, `1.089` testes passantes e `21` guardados;
+  `95,02%` statements, `90,92%` branches, `95,31%` functions e `95,70%`
+  lines;
+- E2E ativo contra o web proxy `3100`, API/edge/HA e PostgreSQL sintético real
+  local: Chromium `3/3`, Firefox `3/3` e mobile Chromium `3/3`, cada um com
+  fixture nova e teardown confirmado;
+- WebKit ativo no container pinado, via HTTPS local e API/DB HA, passou `3/3`
+  incluindo health, atividade persistida e ciclo administrativo; a matriz
+  executada nesta rodada soma `12/12` casos ativos;
+- lint, typecheck, Prettier, `verify:hotspots` e `git diff --check`: PASS;
+- `pnpm verify` percorreu formato, CI contract, fontes clínicas, inventário,
+  observabilidade, HA, Prometheus, traces, lint, typecheck, coverage, decisões
+  `7/7`, mutation `7/7`, scope drift, contratos `84/84`, worker `51/51`,
+  migrations `33/33` e migration safety; parou fail-closed em
+  `verify:secrets` pelos quatro achados redigidos de
+  `infra/production/.env.local`, sem ler ou alterar o arquivo;
+- código/testes publicados em `9959e44`
+  (`fix: harden cross-browser E2E launch`) em
+  `origin/agent/publish-production-hardening`.
+
+### LIMITES / STATUS / NEXT
+
+O host continua sem `libavif16`; portanto a execução WebKit dependeu do
+ambiente containerizado pinado e ainda não é prova de ambiente aprovado, RC
+imutável ou release. A origem HTTPS foi adicionada apenas em containers HA
+descartáveis e removida ao final; a configuração de produção não foi alterada.
+O runtime API observado continua com proveniência/SHA antigo e o
+`verify:secrets` permanece fail-closed nos quatro valores redigidos de
+`infra/production/.env.local`, que não foi lido nem alterado. B99-306 continua
+`BLOCKED` até execução em ambiente WebKit aprovado no mesmo RC; o programa
+segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Gaps que permanecem abertos
 
