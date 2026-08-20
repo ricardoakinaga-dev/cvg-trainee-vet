@@ -94,5 +94,14 @@ describe("canonical API surface inventory", () => {
     expect(validateApiSurface([{ ...route, responseContract: "" }])).toContain(
       "missing response contract for GET /health/live",
     );
+    expect(validateApiSurface([{ ...route, requestContract: "" }])).toContain(
+      "missing request contract for GET /health/live",
+    );
+    expect(
+      validateApiSurface([{ ...route, handlerGroup: "missing" } as never]),
+    ).toContain("invalid handler group for GET /health/live");
+    expect(
+      validateApiSurface([{ ...route, auth: "PUBLIC", scope: "own" }]),
+    ).toContain("incompatible auth and scope for GET /health/live");
   });
 });

@@ -70,6 +70,7 @@ async function routeSessionRevoke(
   dependencies: ApiHttpDependencies,
 ): Promise<RouteResult> {
   if (!matchesRoute(request, "POST", "/api/v1/session/revoke")) return null;
+  await requirePrincipal(request, dependencies);
   return handleRevokeSession(request, requestId, dependencies);
 }
 
@@ -79,6 +80,7 @@ async function routeSessionRotate(
   dependencies: ApiHttpDependencies,
 ): Promise<RouteResult> {
   if (!matchesRoute(request, "POST", "/api/v1/session/rotate")) return null;
+  await requirePrincipal(request, dependencies);
   return handleRotateSession(request, requestId, dependencies);
 }
 

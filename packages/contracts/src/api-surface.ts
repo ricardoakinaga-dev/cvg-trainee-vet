@@ -679,7 +679,31 @@ const validAuth = new Set<ApiSurfaceAuth>([
   "METRICS",
 ]);
 const validScopes = new Set<ApiSurfaceScope>(["none", "own", "scope", "audit"]);
+const validHandlerGroups = new Set<ApiSurfaceHandlerGroup>([
+  "health",
+  "metrics",
+  "workflow",
+  "internal",
+  "participant",
+  "authoring",
+]);
 const pathParameterPattern = /:[A-Za-z][A-Za-z0-9]*/gu;
+
+function isCompatibleAuthScope(
+  auth: ApiSurfaceAuth,
+  scope: ApiSurfaceScope,
+): boolean {
+  switch (auth) {
+    case "PUBLIC":
+      return scope === "none";
+    case "SESSION":
+      return scope === "own";
+    case "INTERNAL":
+      return scope === "scope" || scope === "audit";
+    case "METRICS":
+      return scope === "audit";
+  }
+}
 
 export function materializeApiSurfacePath(path: string): string {
   return path.replace(pathParameterPattern, (parameter) =>
@@ -733,11 +757,24 @@ export function validateApiSurface(
     if (!validScopes.has(route.scope)) {
       errors.push(`invalid scope for ${key}`);
     }
+    if (!validHandlerGroups.has(route.handlerGroup)) {
+      errors.push(`invalid handler group for ${key}`);
+    }
+    if (
+      validAuth.has(route.auth) &&
+      validScopes.has(route.scope) &&
+      !isCompatibleAuthScope(route.auth, route.scope)
+    ) {
+      errors.push(`incompatible auth and scope for ${key}`);
+    }
     if (route.capability.trim() === "") {
       errors.push(`missing capability for ${key}`);
     }
     if (route.useCase.trim() === "") {
       errors.push(`missing use case for ${key}`);
+    }
+    if (route.requestContract.trim() === "") {
+      errors.push(`missing request contract for ${key}`);
     }
     if (route.responseContract.trim() === "") {
       errors.push(`missing response contract for ${key}`);
