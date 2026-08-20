@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `2bf5a45` e publicou a correção de symlink sobre o parser de `16a4f82`; o scanner agora reporta symlinks do worktree como `unreadable-file` sem seguir ou expor o alvo, e rejeita headers não numéricos/corpos `tree`/`commit` truncados ou sem delimitador; foco `19/19`, cobertura `205/1113/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`799` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a evidência rastreada de B99-101, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- next_action: confirmar a paridade entre HEAD e origin após publicar código `2bf5a45` e evidência `c43034b`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -53,10 +53,11 @@
 
 B99-101 permanece `IN_PROGRESS`: `pnpm verify` parou fail-closed somente nos
 quatro valores redigidos preexistentes de `infra/production/.env.local`, cuja
-rotação exige secret manager/autorização. Nenhum segredo, dado real, PDF,
-produção, score, release, clínica, `0/145` ou piloto foi tocado. A próxima ação
-é publicar a evidência desta rodada; o programa permanece
-`IN_PROGRESS / PILOT_BLOCKED`.
+rotação exige secret manager/autorização. A evidência desta rodada foi
+publicada em `c43034b` e enviada para `origin/agent/publish-production-hardening`.
+Nenhum segredo, dado real, PDF, produção, score, release, clínica, `0/145` ou
+piloto foi tocado. A próxima ação é confirmar a paridade remota e selecionar o
+próximo gap local; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T16:49:21-03:00 — DUAL99-B99-101-GIT-HISTORY-PARSER
 

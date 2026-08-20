@@ -133,7 +133,7 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
 - **limite/status:** código/teste no commit `16a4f82`, evidência publicada em
   `73ae862`; nenhum segredo, dado
   real, PDF, rotação, provider, CI, produção, score, release, clínica, `0/145`
-  ou piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+  ou piloto foi tocado. Evidência publicada em `c43034b`. B99-101 permanece `IN_PROGRESS` até secret
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 

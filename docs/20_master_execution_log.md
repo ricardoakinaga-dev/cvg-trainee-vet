@@ -10059,10 +10059,13 @@ somente nos quatro valores redigidos preexistentes de
 ### DECISIONS / STATUS / NEXT
 
 Código/teste foram commitados em `2bf5a45` (`fix: fail closed on workspace
-symlinks`). Nenhum segredo, dado real, PDF, provider, CI, produção, score,
-release, clínica, `0/145` ou piloto foi tocado. B99-101 permanece
-`IN_PROGRESS` até secret manager/rotação/autorização; a próxima ação é publicar
-a evidência documental. Estado: `IN_PROGRESS / PILOT_BLOCKED`.
+symlinks`) e a evidência documental foi publicada em `c43034b` (`docs: record
+b99-101 symlink hardening`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo, dado real, PDF,
+provider, CI, produção, score, release, clínica, `0/145` ou piloto foi tocado.
+B99-101 permanece `IN_PROGRESS` até secret manager/rotação/autorização; a
+próxima ação é confirmar a paridade remota e selecionar o próximo gap local.
+Estado: `IN_PROGRESS / PILOT_BLOCKED`.
 
 ### PUBLICAÇÃO / NEXT
 

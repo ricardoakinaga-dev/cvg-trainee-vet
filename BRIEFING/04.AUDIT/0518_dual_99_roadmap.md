@@ -206,7 +206,8 @@ fora da raiz. O GREEN enumera symlinks sem segui-los, usa `lstat` e emite
 `unreadable-file` sem ler/expor o alvo. O foco passou `19/19`, a cobertura
 passou `205/1113/21` em `95,02/90,95/95,31/95,71`, o scanner ficou em `799`
 linhas e `verify:hotspots` reportou `0`; lint, typecheck, formato, audit e
-diff-check passaram. Código/teste estão em `2bf5a45`.
+diff-check passaram. Código/teste estão em `2bf5a45` e a evidência foi publicada
+em `c43034b`.
 
 O `pnpm verify` parou em `verify:secrets` somente nos quatro valores redigidos
 preexistentes de `infra/production/.env.local`. B99-101 segue `IN_PROGRESS`;

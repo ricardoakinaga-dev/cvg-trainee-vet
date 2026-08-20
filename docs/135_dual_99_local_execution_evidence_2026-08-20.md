@@ -863,10 +863,11 @@ preservou a política de hotspots e deixou o scanner com `799` linhas.
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A evidência documental desta rodada ainda será
-publicada em commit separado; RC/proveniência, runtime live, WebKit aprovado,
-clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
-O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+manager/rotação/autorização. A evidência documental desta rodada foi publicada
+em `c43034b` (`docs: record b99-101 symlink hardening`) e enviada para
+`origin/agent/publish-production-hardening`; RC/proveniência, runtime live,
+WebKit aprovado, clínica, `0/145`, gates externos e reauditoria independente
+continuam abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 31 — B99-101 / Git history parser fail-closed hardening — 2026-08-20T16:49:21-03:00
 

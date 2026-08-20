@@ -13,8 +13,9 @@ sensível fora da raiz. O GREEN enumera links sem segui-los, usa `lstat` e emite
 diff-check passaram. O `pnpm verify` percorreu os gates até
 `verify:secrets`, que reportou somente os quatro valores redigidos
 preexistentes de `infra/production/.env.local`; código/teste estão em
-`2bf5a45`. B99-101 permanece `IN_PROGRESS` até secret manager/rotação, e o
-programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+`2bf5a45`; a evidência rastreada foi publicada em `c43034b`. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação, e o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T16:52:54-03:00 — B99-101:** o RED
 adicionou casos sintéticos de header `tree` não numérico, corpo `commit`
