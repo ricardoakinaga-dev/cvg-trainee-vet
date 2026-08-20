@@ -2,11 +2,12 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T19:48:27-03:00`
-- última atualização: `2026-08-20T19:48:27-03:00`
+- última atualização: `2026-08-20T19:52:56-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `69e5ff3` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: reconciliação pendente neste worktree
+- evidência documental publicada: `67b7b40` em
+  `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -880,6 +881,9 @@ esperados, sem finding ou corpo para o asset oversized.
   lido nem alterado;
 - código/teste commitados em `69e5ff3` (`fix: preflight git history object
   sizes`) e enviados para `origin/agent/publish-production-hardening`.
+- pacote de evidências, estado, backlog, roadmap, log e rastreabilidade foi
+  publicado em `67b7b40` (`docs: record git history batch preflight`) e enviado
+  para o mesmo remoto.
 
 ### Limites / status / próxima ação
 

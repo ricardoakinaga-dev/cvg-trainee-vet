@@ -10958,6 +10958,8 @@ todos os gates até `verify:migration-safety` e parou fail-closed em
 
 O código/teste foram commitados em `69e5ff3` (`fix: preflight git history
 object sizes`) e enviados para `origin/agent/publish-production-hardening`.
+O pacote de evidências foi publicado em `67b7b40` (`docs: record git history
+batch preflight`) e enviado para o mesmo remoto.
 Não houve segredo, dado real, PDF, produção, score, release, decisão clínica,
 piloto ou reauditoria independente. Limite agregado dos corpos bounded,
 secret manager/rotação, provider/CI, RC, runtime live, WebKit aprovado,

@@ -32,7 +32,7 @@
 - **verificação/publicação:** `pnpm verify` passou todos os gates até
   `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
   assignments redigidos preexistentes de `infra/production/.env.local`; código
-  em `69e5ff3`, evidência documental em reconciliação;
+  em `69e5ff3`, evidência documental publicada em `67b7b40`;
 - **limite/status:** `.env.local` não foi lido nem alterado; limite agregado
   de corpos bounded, secret manager, provider/CI, RC, runtime live, clínica,
   `0/145`, gates externos e reauditoria permanecem abertos. B99-101 e o

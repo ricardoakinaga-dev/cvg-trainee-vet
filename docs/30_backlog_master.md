@@ -15,8 +15,8 @@ binário sintético acima de 2 MiB. Foco `31/31`, cobertura `205/1125/21` em
 `95,02/90,95/95,31/95,71`, scanner `785` linhas, helper `108`, hotspots `0`;
 `pnpm verify` passou até migration safety e parou somente nos quatro
 assignments redigidos preexistentes de `.env.local`. Código/teste estão em
-`69e5ff3`; documentação em reconciliação; B99-101 permanece `IN_PROGRESS` e o
-programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+`69e5ff3`; documentação publicada em `67b7b40`; B99-101 permanece
+`IN_PROGRESS` e o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T19:25:00-03:00 — B99-101:** a auditoria
 read-only rejeitou a hipótese de vazamento em detalhes de respostas `error`

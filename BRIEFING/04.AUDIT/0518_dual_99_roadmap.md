@@ -220,7 +220,8 @@ preexistentes de `.env.local`.
 O avanço permanece local: secret manager/rotação, limite agregado de corpos
 bounded, provider/CI, RC/proveniência, runtime live, clínica, `0/145`, gates
 externos e reauditoria independente continuam abertos. F99-1 permanece
-`IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+`IN_PROGRESS` e o produto `PILOT_BLOCKED`. A evidência documental foi publicada
+em `67b7b40`.
 
 ## 23. Checkpoint de conteúdo sob extensão binária — 2026-08-20T19:25:00-03:00
 

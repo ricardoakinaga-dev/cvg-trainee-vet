@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar materialização de corpos históricos oversized; publicou código/teste em `69e5ff3`; Round 42 passou foco `31/31`, cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`785` linhas no scanner e `108` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar e reconciliar a evidência documental de Round 42, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar materialização de corpos históricos oversized; publicou código/teste em `69e5ff3` e o pacote documental de Round 42 em `67b7b40`; Round 42 passou foco `31/31`, cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`785` linhas no scanner e `108` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: confirmar a paridade remota de `69e5ff3`/`67b7b40` e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T19:48:27-03:00
+- last_update: 2026-08-20T19:52:56-03:00
 
 ## 2026-08-20T19:48:27-03:00 — DUAL99-B99-101-HISTORY-BATCH-PREFLIGHT
 
@@ -52,9 +52,9 @@
 
 ### LIMITES / STATUS / PRÓXIMA AÇÃO
 
-B99-101 permanece `IN_PROGRESS`: o código/teste está em `69e5ff3`, o arquivo
-`infra/production/.env.local` não foi lido nem alterado e a evidência está em
-reconciliação. Limite agregado de corpos bounded, secret manager, provider,
+B99-101 permanece `IN_PROGRESS`: o código/teste está em `69e5ff3`, a evidência
+foi publicada em `67b7b40`, o arquivo `infra/production/.env.local` não foi
+lido nem alterado. Limite agregado de corpos bounded, secret manager, provider,
 RC, runtime live, clínica, `0/145`, gates externos e reauditoria permanecem
 abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
