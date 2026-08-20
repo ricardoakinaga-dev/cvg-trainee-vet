@@ -10793,3 +10793,39 @@ foi tocado. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
 `0/145`, gates externos e reauditoria seguem abertos. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T18:50:39-03:00 — DUAL99-B99-101-CAT-FILE-TRUNCATED-HEADER-REDACTION
+
+### TIMESTAMP / TASK
+
+2026-08-20 18:50:39 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — redaction of truncated `git cat-file --batch` headers.
+
+### ACTION / RESULT
+
+Uma auditoria read-only reproduziu que, sem o newline do header, o parser
+anterior convertia todo o buffer restante em `objectId` e copiava um marcador
+de corpo sintético para o path do finding. O RED falhou com essa entrada. GREEN
+passou a emitir `history:<git>` com `git-object-unreadable` e encerra o lote sem
+copiar ou expor bytes do buffer; headers válidos e demais casos de framing
+permanecem preservados.
+
+O foco passou `28/28`; a cobertura passou `205/1122/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `791` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu todos os gates até `verify:secrets`, que falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `b528ff4` (`fix: redact truncated git
+headers`) e enviados para `origin/agent/publish-production-hardening`; a
+evidência documental será reconciliada em commit separado. Nenhum segredo,
+PDF, dado real, provider, CI, produção, score, release, decisão clínica ou
+promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
+manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
+`0/145`, gates externos e reauditoria seguem abertos. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.

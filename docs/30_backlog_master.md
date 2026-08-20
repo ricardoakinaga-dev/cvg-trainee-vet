@@ -4,6 +4,21 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Atualização Dual99 local — 2026-08-20T18:50:39-03:00 — B99-101:** a
+auditoria read-only reproduziu que um header `git cat-file --batch` sem newline
+copiava o buffer restante, inclusive marcador de corpo sintético, para o path
+do finding. O RED falhou com a exposição; o GREEN usa `history:<git>` e emite
+`git-object-unreadable` sem copiar/scanear/expor os bytes. Headers válidos e os
+demais casos de framing permanecem preservados. O foco passou `28/28`,
+cobertura `205/1122/21` em `95,02/90,95/95,31/95,71`, scanner em `791` linhas,
+`verify:hotspots` reportou `0`, e lint, typecheck, formato, audit, contratos
+`86/86`, worker `51/51`, migrações `33/33`, migration safety, decisões `7/7`,
+mutation `7/7` e diff-check passaram. O `pnpm verify` parou em
+`verify:secrets` somente nos quatro valores redigidos preexistentes de
+`infra/production/.env.local`; código/teste estão em `b528ff4` e a evidência
+documental está em publicação. B99-101 permanece `IN_PROGRESS` até secret
+manager/rotação, e o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T18:36:22-03:00 — B99-101:** o RED
 reproduziu resposta `blob` válida no framing, mas com object ID ausente do mapa
 solicitado ao `git cat-file --batch`; como não havia path associado, o corpo
