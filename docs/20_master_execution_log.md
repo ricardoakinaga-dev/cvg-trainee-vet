@@ -10253,3 +10253,37 @@ A branch `agent/publish-production-hardening` permaneceu sincronizada com
 `origin` no commit documental `47e8214`; `.gauntlet/` continua somente estado
 local não rastreado. Nenhum score, release, piloto, RC, gate externo, clínica,
 `0/145` ou reauditoria foi promovido.
+
+## 2026-08-20T14:28:58-03:00 — DUAL99-B99-305-CRITICAL-HOTSPOTS
+
+O RED reproduziu `startAttempt` e `submitAttempt` com 76 linhas cada. Após a
+primeira extração, o teste de política reproduziu `dependencyResponse` com 75
+linhas; o GREEN separou a autorização, projeção de status, leitura de cache e
+carregamento coalescido do diagnóstico, além de separar criação/persistência e
+orquestração dos comandos de tentativa.
+
+Durante a correção do health route, a regressão de requisições in-flight chegou
+a chamar `dependencyStatus` duas vezes. A leitura síncrona do cache antes do
+primeiro `await` restaurou o coalescimento; o foco final passou `5/5` e a
+regressão de health passou `10/10`. Os fluxos relacionados de API, servidor e
+tentativa passaram `97/97`.
+
+Cobertura passou `204` arquivos / `1.085` testes / `17` arquivos e `21` testes
+guardados, com `95,02%` statements, `90,92%` branches, `95,31%` functions e
+`95,70%` lines. O hotspot verifier reportou `0` hotspots acima do limite,
+`111` funções longas e maior função de `75` linhas; o teste de política agora
+protege explicitamente os três comandos críticos com limite de `50` linhas.
+Build `12/12`, contratos `84/84`, worker `51/51`, decisões críticas `7/7`,
+mutation crítica `7/7`, arquitetura, lint, typecheck, formato e diff-check
+passaram. O código foi publicado em `90f0a21` e enviado para
+`origin/agent/publish-production-hardening`.
+
+O `pnpm verify` oficial repetiu a cadeia até migrations e migration safety e
+parou fail-closed no `verify:secrets`, com quatro atribuições redigidas de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado.
+
+O resultado é uma redução local de complexidade, sem promoção de score, RC,
+release, piloto ou estado clínico. Permanecem sem prova HA/API/DB ativo,
+Playwright/WebKit ativo, rollout N/N-1, secret manager, `0/145`, clínica,
+gates externos e reauditoria independente; o programa continua
+`IN_PROGRESS / PILOT_BLOCKED`.

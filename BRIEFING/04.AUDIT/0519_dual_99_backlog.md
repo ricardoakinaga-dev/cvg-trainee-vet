@@ -472,6 +472,32 @@ externos nem altera a disposição `IN_PROGRESS / PILOT_BLOCKED`.
 - **publicação:** código em `31fed87` (`fix: harden API route contracts and
   authz`), enviado para `origin/agent/publish-production-hardening`.
 
+## Atualização de execução — 2026-08-20T14:28:58-03:00 — B99-305
+
+- **RED/GREEN:** `startAttempt` e `submitAttempt` excediam o bar local com 76
+  linhas; o teste novo de política também encontrou `dependencyResponse` com
+  75 linhas depois da primeira extração. O GREEN separou as operações
+  transacionais de tentativa e as etapas de autorização, cache e leitura de
+  dependências. Uma regressão real de coalescimento in-flight foi encontrada
+  (`dependencyStatus` chamado duas vezes) e corrigida antes do fechamento;
+  foco de política `5/5` e health `10/10` ficaram verdes.
+- **evidência:** fluxos relacionados de API/servidor/tentativa `97/97`,
+  cobertura `204/1085/21` em `95,02/90,92/95,31/95,70`, build `12/12`, contratos
+  `84/84`, worker `51/51`, decisões `7/7`, mutation crítica `7/7`, arquitetura,
+  lint, typecheck, formato, hotspots e diff-check passaram. O hotspot scan
+  reportou `0` hotspots acima do limite, `111` funções longas e máximo de `75`;
+  a política crítica bloqueia regressão acima de `50` nos três comandos.
+- **verify oficial:** passou todos os gates até migration safety e parou
+  fail-closed em `verify:secrets` nos quatro valores redigidos de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado.
+- **limite/status:** B99-305 está `READY_FOR_NEXT_STEP` localmente; não há
+  prova de Playwright/WebKit/HA/API/DB ativo, RC imutável, rollout N/N-1,
+  secret manager, clínica, `0/145`, gates externos ou reauditoria. O programa
+  permanece `IN_PROGRESS / PILOT_BLOCKED`.
+- **publicação:** código em `90f0a21`, enviado para
+  `origin/agent/publish-production-hardening`; `.gauntlet/` continua local e
+  não rastreado.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,

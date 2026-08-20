@@ -619,6 +619,50 @@ authz`) e enviado para `origin/agent/publish-production-hardening`. A
 publicação não promove evidência local para RC, produção, score, piloto,
 clínica ou reauditoria.
 
+## Round 26 — B99-305 / critical hotspot decomposition — 2026-08-20T14:28:58-03:00
+
+### RED → GREEN
+
+- RED encontrou `startAttempt` e `submitAttempt` com 76 linhas e, após a
+  primeira decomposição, `dependencyResponse` com 75 linhas;
+- GREEN separou as etapas transacionais de tentativa e as funções de
+  autorização, projeção/cache e carregamento de dependências;
+- a primeira versão do cache quebrou a garantia de coalescimento e fez o foco
+  chamar `dependencyStatus` duas vezes; a correção restaurou a escrita síncrona
+  de `inFlight` antes do primeiro `await`;
+- o teste de política agora verifica que os três hotspots críticos permanecem
+  em até 50 linhas.
+
+### VERIFICAÇÃO
+
+- foco de política: `5/5`;
+- regressão health: `10/10`; regressão relacionada API/servidor/tentativa:
+  `97/97`;
+- cobertura: `204` arquivos, `1.085` testes passantes, `17` arquivos e `21`
+  testes guardados; `95,02%` statements, `90,92%` branches, `95,31%` functions
+  e `95,70%` lines;
+- build: `12/12`; contratos `84/84`; worker `51/51`; decisões críticas
+  `7/7`; mutation crítica `7/7`; arquitetura, lint, typecheck, formato,
+  hotspots e `git diff --check`: PASS;
+- hotspot scan: `0` acima do limite, `111` funções longas e máximo `75`;
+  nenhuma das três funções críticas excede `50` linhas;
+- `pnpm verify` oficial percorreu formato, CI contract, fontes clínicas,
+  inventário, observabilidade, topologia HA, regras Prometheus, traces, lint,
+  typecheck, cobertura `204/1085/21`, decisões `7/7`, mutation `7/7`, scope
+  drift, contratos `84/84`, worker `51/51`, migrations `33/33` e migration
+  safety; parou fail-closed em `verify:secrets` com quatro atribuições
+  redigidas de `infra/production/.env.local`, que não foi lido nem alterado;
+- código publicado em `90f0a21` na branch
+  `agent/publish-production-hardening`.
+
+### LIMITES / STATUS / NEXT
+
+Esta é uma prova local e determinística de complexidade e comportamento; não
+prova Playwright/WebKit/HA/API/DB ativo, RC imutável, rollout N/N-1, secret
+manager, clínica, `0/145`, gates externos ou reauditoria independente. B99-305
+está `READY_FOR_NEXT_STEP` localmente; o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Gaps que permanecem abertos
 
 - `pnpm verify:secrets` acusa quatro entradas reais de

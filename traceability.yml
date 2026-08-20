@@ -1512,12 +1512,22 @@ artifacts:
       [
         "code-hotspot-policy.json",
         "scripts/verify-code-hotspots.mjs",
+        "packages/application/src/attempt-use-cases.ts",
+        "apps/api/src/http-route-health.ts",
         "package.json",
       ]
-    tests: ["CODE-HOTSPOT-POLICY-001"]
+    tests:
+      [
+        "CODE-HOTSPOT-POLICY-001",
+        "tests/integration/code-hotspot-policy.test.ts",
+        "packages/application/src/attempt-use-cases.test.ts",
+        "apps/api/src/http-route-health.test.ts",
+      ]
     verification:
       [
         "pnpm verify:hotspots",
+        "pnpm exec vitest run --project integration tests/integration/code-hotspot-policy.test.ts",
+        "pnpm exec vitest run --project unit packages/application/src/attempt-use-cases.test.ts apps/api/src/http-route-health.test.ts",
         "pnpm verify",
         "pnpm typecheck",
         "pnpm lint",

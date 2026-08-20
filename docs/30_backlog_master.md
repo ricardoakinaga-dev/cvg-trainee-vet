@@ -2238,3 +2238,22 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
   localmente e o programa permanece `IN_PROGRESS/PILOT_BLOCKED`. Commit
   publicado: `6e4dc60def99a83143a70f06e95ab2db33fff123` em
   `origin/agent/publish-production-hardening`.
+
+**Atualização Dual99 — 2026-08-20T14:28:58-03:00 — B99-305:** o RED
+reproduziu `startAttempt`/`submitAttempt` em 76 linhas e, na etapa seguinte,
+`dependencyResponse` em 75 linhas. O GREEN extraiu as fronteiras de
+orquestração, autorização, projeção/cache e carregamento de dependências;
+também corrigiu a regressão que duplicava `dependencyStatus` em requisições
+in-flight. O foco de política passou `5/5`, a regressão relacionada passou
+`97/97`, o hotspot verifier passou com `0` hotspots acima do limite, `111`
+funções longas e maior função de `75` linhas. A barra crítica de `50` linhas
+agora é testada para os três comandos sensíveis.
+
+Cobertura `204/1085/21` passou em `95,02/90,92/95,31/95,70`; build `12/12`,
+contratos `84/84`, worker `51/51`, decisões `7/7`, mutation `7/7`, arquitetura,
+lint, typecheck, formato e diff-check passaram. B99-305 fica
+`READY_FOR_NEXT_STEP` localmente; B99-306, Playwright ativo e os demais gates
+de HA/RC/produção/clínica continuam abertos. O código publicado é `90f0a21`;
+o `pnpm verify` oficial parou fail-closed em `verify:secrets` nos quatro
+valores redigidos de `infra/production/.env.local`, que não foi lido nem
+alterado; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
