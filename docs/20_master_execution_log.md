@@ -9993,3 +9993,52 @@ claim/lease/ack), em paralelo à obtenção de ambiente e autoridade para os
 gates live e externos.
 O commit `6e4dc60def99a83143a70f06e95ab2db33fff123` foi enviado para
 `origin/agent/publish-production-hardening`.
+
+## 2026-08-20T11:59:51-03:00 — DUAL99-B99-201-OUTBOX-LEASE-CLEANUP
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE / SPRINT / TASK
+
+Dual 99 / F99-2 worker, observabilidade e dados derivados / B99-201 / outbox
+claim, lease, ACK, retry, poison/DLQ e cleanup.
+
+### ACTION
+
+Sob RED/GREEN/REFACTOR, o contrato do adapter passou a carregar a tentativa
+reclamada e a retornar se a mutação afetou a mesma lease. O SQL de ACK/retry
+agora exige `status=PROCESSING`, `attempts` coincidente e `locked_until` ainda
+vigente; o worker usa um relógio atual no ACK e não conta ACK rejeitado. Foi
+adicionado cleanup bounded de eventos `PROCESSED`/`FAILED` antigos, com
+`FOR UPDATE SKIP LOCKED`, e a integração PostgreSQL passou a preparar cleanup
+real e rejeição de ACK stale após reclaim.
+
+### RESULT
+
+Foco worker/persistência passou `38` arquivos / `246` testes; foco direto passou
+`2/19`; a suíte PostgreSQL live está guardada em `3` testes por ausência de
+ambiente autorizado. A cobertura passou `202/1067/21`, floors
+`95,03/90,99/95,32/95,71`; build `12/12`, Playwright sintético Chromium `3/3`
+em `3215`, decisões `7/7`, mutation `7/7`, migrations `33/33`, documentação,
+traceability, Dual99, risk matrix, skips `20/20`, architecture, hotspots,
+public-boundary, edge security, audit de dependências, lint, typecheck,
+formato e diff-check passaram.
+
+### DECISIONS / LIMITES
+
+O secret scan continua falhando fechado somente nos quatro valores redigidos
+de `infra/production/.env.local`; o arquivo não foi lido nem alterado. A prova
+live de PostgreSQL, fault de permissão/SQL, HA/API/DB ativo, RC/proveniência,
+score, release, clínica, `0/145` e reauditoria independente continuam abertos.
+B99-201 está `READY_FOR_NEXT_STEP` localmente; o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+### PUBLICAÇÃO / NEXT
+
+O código, testes e integração foram commitados como
+`388db21d262eb10bbaebcaae25559997c04556ca` (`fix: fence outbox leases and
+clean terminal events`) e enviados para
+`origin/agent/publish-production-hardening`. Próxima ação local: B99-202
+(heartbeat/freshness/readiness), mantendo os gates live e externos explícitos.

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-107 fechou localmente rate limit do diagnóstico, headers de segurança e imutabilidade da política de origens; B99-106 mantém catálogo de diagnóstico e convite sem token em query; B99-105 mantém integridade de idempotência em authoring, tentativa, resposta e correção; cobertura `202/1062/21`, floors `95,05/91,06/95,31/95,75`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-1 local hardening; B99-201 fechou localmente fencing de lease/ACK, retry/poison/DLQ preservados e cleanup bounded da outbox; B99-107 mantém rate limit/headers/CORS, B99-106 mantém diagnóstico/convite sem token em query e B99-105 mantém integridade de idempotência; cobertura `202/1067/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechou B99-107 sob RED/GREEN/REFACTOR: diagnósticos internos passaram a ser limitados sem bloquear liveness/readiness, respostas diretas da API recebem headers de defesa alinhados à borda e a política de origens é copiada/congelada no bind; foco API `24/24`, regressão API `12/118`, E2E sintético Chromium `3/3` em `3214`, cobertura `202/1062/21`, floors `95,05/91,06/95,31/95,75`, build `12/12` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
-- next_action: executar B99-201 localmente para outbox/claim/lease/ack; em paralelo, preservar `IN_PROGRESS`/`PILOT_BLOCKED` e obter autoridade/ambiente para migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-201 sob RED/GREEN/REFACTOR: ACK e retry agora retornam sucesso somente quando a mesma tentativa ainda possui lease válido, o worker usa relógio atual no ACK, cleanup terminal é bounded e o teste PostgreSQL live cobre cleanup e rejeição de ACK stale após reclaim; foco worker/persistência `38/246`, integração PostgreSQL `3` testes guardados, cobertura `202/1067/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, E2E Chromium `3/3` em `3215` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
+- next_action: executar B99-202 localmente para heartbeat/freshness/readiness consecutivos; em paralelo, obter autoridade/ambiente para a prova PostgreSQL real de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T11:21:39-03:00
+- last_update: 2026-08-20T11:59:51-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 
@@ -4239,3 +4239,25 @@ Classificar BLK-03/BLK-07 local como `PARTIAL`; investigar a intermitência em j
 ### STATUS / NEXT
 
 `WAITING_HUMAN_APPROVAL` / `PILOT_BLOCKED`; iniciar beta humano dos `763` itens somente com roster/T0 aprovados e continuar o provisionamento dos gates externos.
+
+## 2026-08-20T11:59:51-03:00 — DUAL99-B99-201-OUTBOX-LEASE-CLEANUP
+
+### AÇÃO / RESULTADO
+
+- RED/GREEN atualizou o adapter e o worker para exigir a tentativa reclamada e
+  lease vigente em ACK/retry, retornar `false` quando nenhuma linha é afetada,
+  usar relógio atual no ACK e limpar eventos terminais antigos em lote bounded;
+- o teste de integração PostgreSQL cobre cleanup SQL real e rejeição de ACK stale
+  após reclaim, além de retry/poison/DLQ; os `3` testes continuam guardados sem
+  ambiente live autorizado;
+- foco worker/persistência `38/246`, cobertura `202/1067/21`, floors
+  `95,03/90,99/95,32/95,71`, build `12/12`, E2E Chromium sintético `3/3` em
+  `3215` e gates locais relevantes passaram.
+
+### STATUS / NEXT
+
+B99-201 está `READY_FOR_NEXT_STEP` no escopo local e foi publicado no commit
+`388db21d262eb10bbaebcaae25559997c04556ca`. A prova PostgreSQL live, fault de
+permissão/SQL, HA/API/DB ativo, RC, score, release, clínica, `0/145` e
+reauditoria permanecem pendentes. Próxima ação local: B99-202; estado global
+`IN_PROGRESS / PILOT_BLOCKED`.

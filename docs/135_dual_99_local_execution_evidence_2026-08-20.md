@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T11:21:39-03:00`
-- última atualização: `2026-08-20T11:21:39-03:00`
+- corte: `2026-08-20T11:59:51-03:00`
+- última atualização: `2026-08-20T11:59:51-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `6e4dc60def99a83143a70f06e95ab2db33fff123` em
+- commit publicado: `388db21d262eb10bbaebcaae25559997c04556ca` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -35,9 +35,9 @@
   com mínimo `90%`; evidência em `docs/137_dual_99_critical_mutation_evidence_2026-08-20.md`.
 - governança: manifesto executável Dual99 valida `16+16`, `C1–C8`,
   `RH01–RH06`, `145` requisitos, `9` gates e `46` tasks do backlog.
-- worker: o inventário de skips foi atualizado de `20` para `21` testes e foi
-  adicionada prova live de claim→lease→ack→cleanup PostgreSQL no teste de
-  worker; o ambiente local sem banco live mantém essa prova guardada.
+- worker: o inventário de skips foi atualizado de `20` para `21` testes e o
+  teste PostgreSQL cobre claim→lease→ack→cleanup real, ACK stale após reclaim,
+  retry e DLQ; o ambiente local sem banco live mantém os três testes guardados.
 - identidade clínica corrente: `CLINICAL_APPROVER_ID` foi removido do runtime,
   API, Compose HA, `.env.example` e verificador de topologia; os fluxos de
   source-conflict, recalculation, correction e content withdrawal derivam o
@@ -144,16 +144,56 @@ promoção clínica ou reauditoria independente. B99-107 está pronto localmente
 mas permanece `READY_FOR_NEXT_STEP`; o programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Checkpoint corrente — 2026-08-20T11:21:39-03:00
+## Round 19 — B99-201 / outbox lease fencing and bounded cleanup — 2026-08-20T11:59:51-03:00
+
+### RED → GREEN
+
+- RED reproduziu ACK contado como processado mesmo quando a lease fence
+  recusava a mutação, a assinatura de `markProcessed` não carregava a tentativa
+  reclamada e não existia cleanup bounded no adapter SQL;
+- GREEN passou tentativa + lease vigente no `UPDATE` de ACK/retry, retornou
+  booleano de linhas afetadas, fez o worker usar o relógio atual no ACK/falha e
+  adicionou cleanup terminal por lote com `FOR UPDATE SKIP LOCKED`; cleanup não
+  toca eventos `PENDING`/`PROCESSING` ou leases ativas;
+- a prova de integração PostgreSQL agora inclui cleanup real e rejeição de ACK
+  de uma lease antiga depois do reclaim; poison/retry/DLQ existentes foram
+  preservados e os focos passaram `2/19`.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco worker/persistência passou `38` arquivos / `246` testes; o teste
+  PostgreSQL real ficou com `3` testes guardados por ausência de
+  `CVG_RUN_LIVE_DB_TESTS` + `CVG_TEST_DATABASE_URL` autorizados;
+- `pnpm test:coverage` passou `202` arquivos / `1.067` testes / `17` arquivos
+  e `21` testes guardados, com `95,03%` statements, `90,99%` branches, `95,32%`
+  functions e `95,71%` lines;
+- typecheck, lint, formato, `git diff --check`, build `12/12`, decisões `7/7`,
+  mutation dirigida `7/7`, migrations `33/33`, audit de dependências, edge
+  security, documentação, traceability, Dual99, risk matrix, skips `20/20`,
+  architecture, hotspots, public-boundary e Playwright sintético Chromium
+  `3/3` em `3215` passaram.
+
+### LIMITES / PUBLICAÇÃO / STATUS
+
+`pnpm verify:secrets` falha fechado somente nos quatro valores redigidos de
+`infra/production/.env.local`, que não foi lido nem alterado. A prova
+PostgreSQL live, permissões/SQL fault, HA/API/DB ativo, RC, score, release,
+promoção clínica e reauditoria independente permanecem sem evidência. O código
+foi publicado no commit `388db21d262eb10bbaebcaae25559997c04556ca` em
+`origin/agent/publish-production-hardening`; B99-201 está
+`READY_FOR_NEXT_STEP` localmente e o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+## Checkpoint corrente — 2026-08-20T11:59:51-03:00
 
 | Evidência | Resultado |
 |---|---|
-| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.062` testes aprovados / `21` guardados; `95,05%` statements, `91,06%` branches, `95,31%` functions, `95,75%` lines |
+| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.067` testes aprovados / `21` guardados; `95,03%` statements, `90,99%` branches, `95,32%` functions, `95,71%` lines |
 | gates técnicos | format, lint, typecheck, decisões críticas `7/7`, dependency audit e diff-check verdes |
 | hotspots | `PASS_WITH_DEBT_RATCHET`, `113` funções >50 linhas, maior `76`, zero hotspot não classificado |
 | scanner | focal `17/17`; execução integral falha somente nas quatro atribuições redigidas de `infra/production/.env.local` |
 | mutation crítica | `7/7 killed`, `0` sobreviventes, score `100%` / mínimo `90%` |
-| build/E2E | build `12/12`; E2E administrativo/convite sintético em porta alternativa `3214`, Chromium `3/3` |
+| build/E2E | build `12/12`; E2E administrativo/convite sintético em porta alternativa `3215`, Chromium `3/3` |
 | governança Dual99 | `PASS_WITH_GAPS`, `eligibleForIndependentReaudit=false`, `PILOT_BLOCKED`; traceabilidade `0/145` cadeias, `145` evidências locais; skips `20/20` runs, `0` flaky, `17` arquivos guardados |
 
 ## Round 16 — B99-105 / schema contract and runtime boundary — 2026-08-20T10:32:23-03:00

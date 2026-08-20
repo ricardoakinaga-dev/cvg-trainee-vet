@@ -41,7 +41,7 @@
 
 | ID | Pri | Estado | Owner | Boundary | Critério de pronto |
 |---|---|---|---|---|---|
-| B99-201 | P0 | IN_PROGRESS | ENG/DBA | outbox claim/lease/ack | probe SQL real, retry, poison/DLQ, cleanup e replay |
+| B99-201 | P0 | READY_FOR_NEXT_STEP | ENG/DBA | outbox claim/lease/ack | probe SQL real, retry, poison/DLQ, cleanup e replay |
 | B99-202 | P0 | IN_PROGRESS | SRE/ENG | worker health/readiness | heartbeat + dependency + claim→ack consecutivo A/B |
 | B99-203 | P0 | READY_FOR_NEXT_STEP | SRE | Prometheus rules/targets | rules carregadas via API; down/absent/loss-of-signal firing |
 | B99-204 | P1 | READY_FOR_NEXT_STEP | SRE/SEC | traces/logs/metrics | correlação, redaction, retenção e ack/resolve observados |
@@ -320,6 +320,29 @@
   ou promoção clínica foi alegado. B99-107 está `READY_FOR_NEXT_STEP` localmente
   e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`. Commit publicado:
   `6e4dc60def99a83143a70f06e95ab2db33fff123` em
+  `origin/agent/publish-production-hardening`.
+
+## Atualização de execução — 2026-08-20T11:59:51-03:00 — B99-201
+
+- **RED/GREEN:** o RED reproduziu ACK contado após recusa da lease, assinatura
+  sem a tentativa reclamada e ausência de cleanup SQL bounded. O GREEN adicionou
+  fencing por `attempts` + `locked_until`, booleano de linhas afetadas, relógio
+  atual no ACK/falha e exclusão bounded de eventos terminais antigos com
+  `FOR UPDATE SKIP LOCKED`;
+- **integração:** o teste PostgreSQL agora cobre cleanup real, reclaim e rejeição
+  de ACK stale, além dos fluxos existentes de retry/poison/DLQ. A execução local
+  mantém `3` testes guardados por ausência de banco live autorizado;
+- **evidência:** foco worker/persistência `38/246`, foco direto `2/19`, coverage
+  `202/1067/21` com floors `95,03/90,99/95,32/95,71`, build `12/12`, E2E
+  sintético Chromium `3/3` em `3215`, migrations `33/33`, decisões `7/7`,
+  mutation `7/7`, documentação, traceability, Dual99, risk, skips `20/20`,
+  architecture, hotspots, public-boundary, edge security, dependency audit,
+  lint, typecheck, formato e diff-check verdes;
+- **status:** B99-201 está `READY_FOR_NEXT_STEP` localmente; a prova live de
+  PostgreSQL/permissão-SQL, RC, score, release, clínica, `0/145` e reauditoria
+  permanecem abertas. O programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+- **publicação:** código e testes em
+  `388db21d262eb10bbaebcaae25559997c04556ca` foram enviados para
   `origin/agent/publish-production-hardening`.
 
 ## Definition of Done

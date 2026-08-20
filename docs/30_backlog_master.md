@@ -62,6 +62,19 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Baseline de qualidade independente:** `docs/116_code_quality_audit_2026-08-16.md` — 16 itens entre 40 e 86, nota `64,20/100`, segurança/operação/release em `FAIL` e sem promoção pós-corte.
 
+**Atualização Dual99 — 2026-08-20T11:59:51-03:00:** B99-201 foi concluída
+localmente sob RED/GREEN/REFACTOR. O outbox agora rejeita ACK/retry de tentativa
+ou lease stale, usa relógio atual no ACK e executa cleanup bounded de eventos
+terminais; a integração PostgreSQL cobre cleanup real e reclaim, mas permanece
+guardada (`3` testes) sem ambiente live autorizado. Foco worker/persistência
+`38/246`, cobertura `202/1067/21` (`95,03/90,99/95,32/95,71`), build `12/12`,
+decisões `7/7`, mutation `7/7`, migrations `33/33`, skips `20/20`, documentação,
+traceability, Dual99, risk, architecture, hotspots, exposição, edge security,
+audit de dependências, lint, typecheck, formato e diff-check passaram. O código
+foi publicado em `388db21d262eb10bbaebcaae25559997c04556ca`; B99-201 está
+`READY_FOR_NEXT_STEP` localmente e o programa continua `IN_PROGRESS` /
+`PILOT_BLOCKED`.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;
