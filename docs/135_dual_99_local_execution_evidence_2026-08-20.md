@@ -2,7 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T18:21:57-03:00`
-- última atualização: `2026-08-20T18:21:57-03:00`
+- última atualização: `2026-08-20T18:25:13-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `53b96d8` em
   `origin/agent/publish-production-hardening`
@@ -868,10 +868,11 @@ expor o valor sintético.
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A evidência documental desta rodada será publicada
-em commit separado. Esta rodada não prova provider, CI, RC imutável, runtime
-live, WebKit aprovado, clínica, `0/145`, gates externos ou reauditoria
-independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+manager/rotação/autorização. A evidência documental desta rodada foi publicada
+em `1c2a68e` (`docs: record b99-101 rev-list path preservation`) e enviada para
+`origin/agent/publish-production-hardening`. Esta rodada não prova provider, CI,
+RC imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos ou
+reauditoria independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 36 — B99-101 / cat-file batch header integrity — 2026-08-20T18:09:25-03:00
 
