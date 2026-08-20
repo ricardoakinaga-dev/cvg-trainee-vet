@@ -15,6 +15,30 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T20:55:39-03:00 — B99-101 incremental Git batch body
+
+- **auditoria/RED:** o cap por batch do Round 43 ainda permitia que
+  `runGitBatch` guardasse todos os chunks e concatenasse stdout antes do
+  parser; RED cobriu callback incremental, header malformado e corpo truncado
+  com marcadores sintéticos que não podem aparecer em findings;
+- **GREEN:** `runGitBatch` agora encaminha chunks a um parser framed que retém
+  somente header e corpo do objeto bounded corrente, descarta oversized durante
+  o consumo e preserva `missing/error`, identidade, delimiter e falhas de
+  truncamento redigidas;
+- **evidência:** fixture Git descartável com cinco blobs de aproximadamente
+  1,8 MiB encontrou os cinco findings através de múltiplos chunks e duas
+  batches; foco `36/36`, cobertura `205/1130/21` em
+  `95,02/90,95/95,31/95,71`, scanner `774`, helper `397`, hotspots `0`,
+  lint/typecheck/formato/diff-check verdes;
+- **verificação/publicação:** `pnpm verify` passou todos os gates até
+  `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
+  assignments redigidos preexistentes de `infra/production/.env.local`; código
+  em `11a6d10`, evidência documental em publicação;
+- **limite/status:** `.env.local` não foi lido nem alterado; o parser mantém um
+  único corpo bounded por vez para scan textual; secret manager, provider/CI,
+  RC, runtime live, clínica, `0/145`, gates externos e reauditoria permanecem
+  abertos. B99-101 e o programa seguem `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T19:48:27-03:00 — B99-101 history batch preflight
 
 - **auditoria/RED:** a auditoria read-only identificou que

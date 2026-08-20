@@ -11036,3 +11036,67 @@ IN_PROGRESS / PILOT_BLOCKED
 
 Confirmar a paridade remota da implementação e da evidência; depois executar
 auditoria read-only fresca para selecionar o próximo gap local verificável.
+
+## 2026-08-20T20:55:39-03:00 — DUAL99-B99-101-INCREMENTAL-GIT-BATCH-BODY
+
+### TIMESTAMP
+
+2026-08-20 20:55:39 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+F99-1 — hardening do scanner de segredos
+
+### TASK
+
+B99-101 — consumir incrementalmente os corpos históricos bounded sem
+materializar a saída completa de cada batch Git.
+
+### ACTION
+
+Uma auditoria read-only confirmou que o limite do Round 43 ainda deixava
+`runGitBatch` acumular todos os chunks e concatenar stdout antes do parse. O
+RED cobriu callback incremental, header malformado e corpo truncado. O GREEN
+introduziu parser framed por chunks, com retenção apenas do header e corpo do
+objeto bounded corrente e descarte de oversized durante o consumo.
+
+### RESULT
+
+Fixture Git descartável com cinco blobs distintos de aproximadamente 1,8 MiB
+encontrou os cinco findings através de múltiplos chunks e duas batches. O foco
+passou `36/36`; a cobertura passou `205/1130/21` em
+`95,02/90,95/95,31/95,71`; scanner `774` linhas, helper `397`, hotspots `0`,
+lint, typecheck, formato e diff-check passaram. O `pnpm verify` oficial passou
+coverage, decisões críticas `7/7`, mutation `7/7`, scope drift, contratos
+`86/86`, worker `51/51`, migrações `33/33` e migration safety; parou
+fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+
+### DECISIONS
+
+O código/teste foram commitados em `11a6d10` (`fix: stream git history batch
+bodies`) e enviados para `origin/agent/publish-production-hardening`. O pacote
+documental está em publicação nesta etapa. O parser mantém um único corpo
+bounded por vez para o scan textual limitado; não se afirma ausência absoluta
+de buffers. Secret manager/rotação, provider/CI, RC/proveniência, runtime live,
+WebKit aprovado, clínica, `0/145`, gates externos e reauditoria independente
+seguem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar e reconciliar a evidência documental no mesmo remoto; confirmar
+paridade de código e documentação; depois executar auditoria read-only fresca
+para selecionar o próximo gap local verificável, mantendo explícitos os gates
+externos e humanos.

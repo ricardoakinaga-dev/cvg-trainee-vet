@@ -4,6 +4,23 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Atualização Dual99 local — 2026-08-20T20:55:39-03:00 — B99-101:** a
+auditoria read-only confirmou que o cap por batch do Round 43 ainda deixava
+`runGitBatch` armazenar todos os chunks e concatenar a saída completa antes do
+parse. O RED cobriu callback incremental, header malformado e corpo truncado;
+o GREEN passou a consumir stdout por chunks, reter somente o objeto bounded
+corrente e descartar oversized durante o framing, sem expor bytes sintéticos.
+Fixture Git descartável encontrou cinco findings em múltiplos chunks e duas
+batches. Foco `36/36`, cobertura `205/1130/21` em
+`95,02/90,95/95,31/95,71`, scanner `774` linhas, helper `397`, hotspots `0`,
+lint/typecheck/formato/diff-check verdes; `pnpm verify` passou até migration
+safety e parou somente nos quatro assignments redigidos preexistentes de
+`.env.local`. Código/teste estão em `11a6d10`; evidência documental segue em
+publicação. O parser mantém um único corpo bounded por vez para scan textual;
+secret manager/rotação, provider/CI, RC, runtime live, clínica, `0/145`, gates
+externos e reauditoria permanecem abertos. B99-101 e o programa seguem
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T20:13:49-03:00 — B99-101:** a
 auditoria read-only encontrou concatenação sem limite agregado para todos os
 corpos históricos bounded. O RED falhou nos contratos de particionamento e

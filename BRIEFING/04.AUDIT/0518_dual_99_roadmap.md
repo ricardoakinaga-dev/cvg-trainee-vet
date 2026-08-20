@@ -198,6 +198,29 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 26. Checkpoint de consumo incremental do batch Git — 2026-08-20T20:55:39-03:00
+
+B99-101 recebeu uma auditoria read-only fresca sobre o limite residual do
+Round 43: apesar do cap por batch, `runGitBatch` ainda retinha todos os chunks
+e concatenava stdout antes do parse. O RED cobriu callback de chunks, header
+malformado e corpo truncado sem exposição de marcadores sintéticos. O GREEN
+passou a consumir stdout incrementalmente, fazer framing entre chunks e reter
+somente o corpo bounded corrente; oversized são descartados durante o consumo.
+
+Fixture Git descartável com cinco blobs distintos de aproximadamente 1,8 MiB
+preservou cinco findings através de múltiplos chunks e duas batches. Foco
+`36/36`, cobertura `205/1130/21` em `95,02/90,95/95,31/95,71`, scanner `774`,
+helper `397`, hotspots `0`, lint/typecheck/formato/diff-check e todos os gates
+oficiais até migration safety passaram. `verify:secrets` permanece fail-closed
+somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`, não lidos nem alterados. O código está em
+`11a6d10`; a evidência documental está em publicação.
+
+O parser mantém um único corpo bounded por vez para permitir scan textual
+limitado; isso não fecha secret manager/rotação, provider/CI, RC/proveniência,
+runtime live, WebKit aprovado, clínica, `0/145`, gates externos ou reauditoria
+independente. F99-1 continua `IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+
 ## 25. Checkpoint de limite agregado do batch Git — 2026-08-20T20:13:49-03:00
 
 B99-101 recebeu uma auditoria read-only fresca que identificou um segundo

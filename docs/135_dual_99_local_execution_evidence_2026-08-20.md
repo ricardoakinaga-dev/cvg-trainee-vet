@@ -1,13 +1,12 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T20:13:49-03:00`
-- última atualização: `2026-08-20T20:19:08-03:00`
+- corte: `2026-08-20T20:55:39-03:00`
+- última atualização: `2026-08-20T20:55:39-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `b15f171` em
+- commit publicado: `11a6d10` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `1572192` em
-  `origin/agent/publish-production-hardening`
+- evidência documental: pendente de publicação nesta rodada
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -36,6 +35,10 @@
 - limite agregado de histórico: corpos bounded são particionados em batches de
   até `8 MiB`, cada saída de subprocesso recebe cap derivado dos tamanhos
   preflightados e overflow gera finding `git-object-unreadable` redigido.
+- consumo incremental de histórico: `runGitBatch` entrega chunks ao parser
+  framed; somente o header e o corpo do objeto corrente bounded são retidos,
+  sem `Buffer.concat` do stdout inteiro da batch, e corpos oversized continuam
+  sendo descartados sem materialização.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -836,6 +839,39 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 44 — B99-101 / incremental Git batch body consumption — 2026-08-20T20:55:39-03:00
+
+B99-101 recebeu uma auditoria read-only fresca: o cap agregado do Round 43
+limitava cada batch, mas `runGitBatch` ainda guardava todos os chunks e fazia
+`Buffer.concat` da saída completa antes do parser. O RED adicionou contratos
+para callback de chunks, header malformado e corpo truncado sem refletir bytes
+não confiáveis em findings.
+
+O GREEN passou a entregar stdout incrementalmente a um parser de framing que
+retém somente o header e o corpo do objeto corrente, com limite individual de
+`MAX_SCAN_BYTES`; objetos oversized são descartados durante o consumo, e
+`missing/error`, identidade inesperada, delimiter ausente e truncamento
+continuam fail-closed com evidência redigida. A fixture Git real sintética com
+cinco blobs distintos de aproximadamente 1,8 MiB atravessou múltiplos chunks e
+duas batches, preservando os cinco findings.
+
+O foco passou `36/36`; a cobertura passou `205/1130/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `774` linhas, o helper em `397`
+linhas e `verify:hotspots` em `0` hotspots não classificados. Formato, lint,
+typecheck e `git diff --check` passaram. O `pnpm verify` oficial passou
+coverage, decisões críticas `7/7`, mutation `7/7`, scope drift, contratos
+`86/86`, worker `51/51`, migrações `33/33` e migration safety; parou
+fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+
+O código/teste está em `11a6d10` (`fix: stream git history batch bodies`) e foi
+enviado para `origin/agent/publish-production-hardening`. O parser ainda
+retém um único corpo bounded por vez para permitir o scan textual limitado;
+isso não é uma alegação de ausência absoluta de buffers. Secret
+manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit aprovado,
+clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
+B99-101 e o programa permanecem `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 43 — B99-101 / aggregate Git body batch bound — 2026-08-20T20:13:49-03:00
 
