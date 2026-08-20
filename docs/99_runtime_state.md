@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-201 fechou localmente fencing de lease/ACK, retry/poison/DLQ preservados e cleanup bounded da outbox; B99-107 mantém rate limit/headers/CORS, B99-106 mantém diagnóstico/convite sem token em query e B99-105 mantém integridade de idempotência; cobertura `202/1067/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
+- current_task: F99-2 local hardening; B99-202 fechou localmente a recuperação de readiness após falha de dependência, exigindo nova dependência saudável e novo claim→ACK antes de processar; B99-201 mantém fencing/cleanup da outbox e B99-107–105 permanecem prontos localmente; cobertura `202/1068/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, skips `20/20` e mutation crítica `7/7` executados; baselines `83,24/100` e `64,20/100`, `0/33`, `0/145` e `PILOT_BLOCKED` continuam congelados
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-201 sob RED/GREEN/REFACTOR: ACK e retry agora retornam sucesso somente quando a mesma tentativa ainda possui lease válido, o worker usa relógio atual no ACK, cleanup terminal é bounded e o teste PostgreSQL live cobre cleanup e rejeição de ACK stale após reclaim; foco worker/persistência `38/246`, integração PostgreSQL `3` testes guardados, cobertura `202/1067/21`, floors `95,03/90,99/95,32/95,71`, build `12/12`, E2E Chromium `3/3` em `3215` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
-- next_action: executar B99-202 localmente para heartbeat/freshness/readiness consecutivos; em paralelo, obter autoridade/ambiente para a prova PostgreSQL real de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-202 sob caracterização TDD: uma falha de dependência mantém o worker fechado e impede processamento; após recuperação, o segundo healthcheck e o segundo claim→ACK ocorrem antes do processamento; worker `50/50`, health/main/HA `28/28`, topologia A/B `PASS`, cobertura `202/1068/21`, floors `95,03/90,99/95,32/95,71`, build `12/12` e gates locais relevantes passaram; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
+- next_action: executar B99-203 localmente para rules/targets e loss-of-signal; em paralelo, obter autoridade/ambiente para probes consecutivos A/B no runtime real, prova PostgreSQL de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T11:59:51-03:00
+- last_update: 2026-08-20T12:09:09-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 
@@ -4260,4 +4260,24 @@ B99-201 está `READY_FOR_NEXT_STEP` no escopo local e foi publicado no commit
 `388db21d262eb10bbaebcaae25559997c04556ca`. A prova PostgreSQL live, fault de
 permissão/SQL, HA/API/DB ativo, RC, score, release, clínica, `0/145` e
 reauditoria permanecem pendentes. Próxima ação local: B99-202; estado global
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T12:09:09-03:00 — DUAL99-B99-202-READINESS-RECOVERY
+
+### AÇÃO / RESULTADO
+
+- caracterização TDD forçou a segunda verificação de dependência a falhar e
+  confirmou que o worker mantém readiness fechada sem processar batch;
+- após o ciclo de espera, dependency health e claim→ACK foram executados de
+  novo antes do processamento; worker `50/50`, health/main/active-HA `28/28` e
+  topologia A/B `PASS`;
+- cobertura `202/1068/21`, floors `95,03/90,99/95,32/95,71`, build `12/12` e
+  gates locais relevantes passaram.
+
+### STATUS / NEXT
+
+B99-202 está `READY_FOR_NEXT_STEP` localmente e foi publicado no commit
+`8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`. Probes consecutivos dos dois
+workers contra HA/API/DB ativo, além de secret manager, RC, clínica, `0/145` e
+reauditoria, permanecem pendentes. Próxima ação local: B99-203; estado global
 `IN_PROGRESS / PILOT_BLOCKED`.

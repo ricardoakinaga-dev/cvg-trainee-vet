@@ -42,7 +42,7 @@
 | ID | Pri | Estado | Owner | Boundary | Critério de pronto |
 |---|---|---|---|---|---|
 | B99-201 | P0 | READY_FOR_NEXT_STEP | ENG/DBA | outbox claim/lease/ack | probe SQL real, retry, poison/DLQ, cleanup e replay |
-| B99-202 | P0 | IN_PROGRESS | SRE/ENG | worker health/readiness | heartbeat + dependency + claim→ack consecutivo A/B |
+| B99-202 | P0 | READY_FOR_NEXT_STEP | SRE/ENG | worker health/readiness | heartbeat + dependency + claim→ack consecutivo A/B |
 | B99-203 | P0 | READY_FOR_NEXT_STEP | SRE | Prometheus rules/targets | rules carregadas via API; down/absent/loss-of-signal firing |
 | B99-204 | P1 | READY_FOR_NEXT_STEP | SRE/SEC | traces/logs/metrics | correlação, redaction, retenção e ack/resolve observados |
 | B99-205 | P1 | READY_FOR_NEXT_STEP | ENG | Qdrant reconciliation | PostgreSQL→índice derivado, órfãos removidos, rebuild repetível |
@@ -344,6 +344,21 @@
 - **publicação:** código e testes em
   `388db21d262eb10bbaebcaae25559997c04556ca` foram enviados para
   `origin/agent/publish-production-hardening`.
+
+## Atualização de execução — 2026-08-20T12:09:09-03:00 — B99-202
+
+- **caracterização:** foi adicionada uma prova de recuperação que força uma
+  falha transitória de dependência, confirma readiness fechada e impede o
+  processamento até nova dependência saudável + novo claim→ACK;
+- **evidência:** worker `50/50`, health/main/active-HA `28/28`, topologia
+  declarativa A/B `PASS`, cobertura `202/1068/21` com floors
+  `95,03/90,99/95,32/95,71`, build `12/12`, typecheck, lint, formato,
+  diff-check, documentation, traceability, Dual99, risk, skips, architecture,
+  hotspots, public-boundary, edge security e dependency audit verdes;
+- **limite/status:** não houve execução dos dois workers contra HA/API/DB ativo;
+  B99-202 está `READY_FOR_NEXT_STEP` localmente, com `IN_PROGRESS /
+  PILOT_BLOCKED` global. Teste publicado em
+  `8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`.
 
 ## Definition of Done
 

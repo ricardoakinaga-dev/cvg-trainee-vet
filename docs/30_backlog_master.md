@@ -75,6 +75,17 @@ foi publicado em `388db21d262eb10bbaebcaae25559997c04556ca`; B99-201 está
 `READY_FOR_NEXT_STEP` localmente e o programa continua `IN_PROGRESS` /
 `PILOT_BLOCKED`.
 
+**Atualização Dual99 — 2026-08-20T12:09:09-03:00:** B99-202 recebeu
+caracterização TDD de recuperação: durante falha de dependência o worker
+permanece fechado e não processa; só após nova verificação saudável e novo
+claim→ACK o batch é retomado. `pnpm test:worker` passou `50/50`, os focos
+health/main/active-HA `28/28`, `pnpm test:coverage` passou `202/1068/21` com
+`95,03/90,99/95,32/95,71`, build `12/12` e `pnpm ops:verify-ha` confirmou as
+réplicas A/B. A prova contra runtime HA/API/DB ativo permanece pendente;
+B99-202 está `READY_FOR_NEXT_STEP` localmente, programa
+`IN_PROGRESS/PILOT_BLOCKED`, teste publicado em
+`8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;

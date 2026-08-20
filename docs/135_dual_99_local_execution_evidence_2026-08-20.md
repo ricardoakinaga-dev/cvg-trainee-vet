@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T11:59:51-03:00`
-- última atualização: `2026-08-20T11:59:51-03:00`
+- corte: `2026-08-20T12:09:09-03:00`
+- última atualização: `2026-08-20T12:09:09-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `388db21d262eb10bbaebcaae25559997c04556ca` em
+- commit publicado: `8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -184,11 +184,46 @@ foi publicado no commit `388db21d262eb10bbaebcaae25559997c04556ca` em
 `READY_FOR_NEXT_STEP` localmente e o programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Checkpoint corrente — 2026-08-20T11:59:51-03:00
+## Round 20 — B99-202 / readiness recovery after dependency loss — 2026-08-20T12:09:09-03:00
+
+### CARACTERIZAÇÃO TDD
+
+- foi adicionada uma caracterização de recuperação que força a segunda
+  verificação de dependência a falhar e confirma que nenhum batch é processado
+  durante a janela fechada;
+- após o ciclo de espera, o worker precisa executar novamente dependency health
+  e claim→ACK antes de processar, preservando heartbeat, estado fail-closed e
+  fechamento durante a indisponibilidade;
+- a topologia declarativa mantém `worker-a` e `worker-b` com healthcheck de
+  `/health/ready`, e `pnpm ops:verify-ha` confirmou as duas réplicas.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- `pnpm test:worker` passou `50/50`; health/main/active-HA focais passaram
+  `28/28`;
+- `pnpm test:coverage` passou `202` arquivos / `1.068` testes / `17` arquivos
+  e `21` testes guardados, com `95,03%` statements, `90,99%` branches, `95,32%`
+  functions e `95,71%` lines;
+- build `12/12`, typecheck, lint, formato, `git diff --check`, topologia HA,
+  documentation, traceability, Dual99, risk, skips, architecture, hotspots,
+  public-boundary, edge security, dependency audit e gates críticos da rodada
+  anterior permaneceram verdes.
+
+### LIMITES / PUBLICAÇÃO / STATUS
+
+Esta é evidência local/sintética de recuperação; não executa probes consecutivos
+nos dois workers contra runtime HA/API/DB ativo. `verify:secrets` continua
+fail-closed somente nos quatro valores redigidos de
+`infra/production/.env.local`. O teste foi publicado em
+`8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`; B99-202 está
+`READY_FOR_NEXT_STEP` localmente e o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+## Checkpoint corrente — 2026-08-20T12:09:09-03:00
 
 | Evidência | Resultado |
 |---|---|
-| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.067` testes aprovados / `21` guardados; `95,03%` statements, `90,99%` branches, `95,32%` functions, `95,71%` lines |
+| cobertura oficial | `202` arquivos aprovados / `17` guardados; `1.068` testes aprovados / `21` guardados; `95,03%` statements, `90,99%` branches, `95,32%` functions, `95,71%` lines |
 | gates técnicos | format, lint, typecheck, decisões críticas `7/7`, dependency audit e diff-check verdes |
 | hotspots | `PASS_WITH_DEBT_RATCHET`, `113` funções >50 linhas, maior `76`, zero hotspot não classificado |
 | scanner | focal `17/17`; execução integral falha somente nas quatro atribuições redigidas de `infra/production/.env.local` |

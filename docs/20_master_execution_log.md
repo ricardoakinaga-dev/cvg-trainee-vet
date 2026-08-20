@@ -10042,3 +10042,32 @@ O código, testes e integração foram commitados como
 clean terminal events`) e enviados para
 `origin/agent/publish-production-hardening`. Próxima ação local: B99-202
 (heartbeat/freshness/readiness), mantendo os gates live e externos explícitos.
+
+## 2026-08-20T12:09:09-03:00 — DUAL99-B99-202-READINESS-RECOVERY
+
+### ENGINE / PHASE / SPRINT / TASK
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 F99-2 / worker health e
+readiness / B99-202.
+
+### ACTION / RESULT
+
+Foi adicionada caracterização TDD da recuperação do worker: uma falha de
+dependência mantém readiness fechada e não permite processar; o ciclo seguinte
+precisa confirmar dependency health e executar novo claim→ACK antes do batch.
+O health server continua exigindo heartbeat fresco, dependências saudáveis e
+probe sintético aprovado; `worker-a` e `worker-b` permanecem com healthcheck de
+`/health/ready` na topologia HA.
+
+Worker passou `50/50`; health/main/active-HA `28/28`; cobertura `202/1068/21`
+com floors `95,03/90,99/95,32/95,71`; build `12/12`, topologia HA, typecheck,
+lint, formato, diff-check e os gates de governança locais passaram.
+
+### LIMITES / STATUS / NEXT
+
+Não houve execução dos dois workers contra HA/API/DB ativo; `verify:secrets`
+continua fail-closed apenas nos quatro valores redigidos de
+`infra/production/.env.local`. B99-202 está `READY_FOR_NEXT_STEP` localmente;
+o programa permanece `IN_PROGRESS / PILOT_BLOCKED`. Teste publicado no commit
+`8f40c41ca090e26fe1ccb7e87e409c1cde8cd7b7`; próxima ação local: B99-203
+(rules/targets e loss-of-signal).
