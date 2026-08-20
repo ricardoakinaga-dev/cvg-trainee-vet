@@ -10187,3 +10187,26 @@ HA ativo, PostgreSQL restrito/RLS/TTL/concurrency live, notificação externa,
 RBAC/retenção de fornecedor, RC, clínica, `0/145` e reauditoria permanecem
 abertos. B99-205 está `READY_FOR_NEXT_STEP` localmente e o programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T13:51:48-03:00 — DUAL99-B99-307-MIGRATION-COMPATIBILITY
+
+O RED confirmou que o gate de migration safety não detectava `TRUNCATE`,
+`DELETE`, `SET NOT NULL` sem guarda de backfill nem coluna obrigatória sem
+`DEFAULT`. O GREEN adicionou essas regras, permitiu uma etapa de contract
+somente após pré-condição explícita e conectou
+`pnpm verify:migration-safety` ao `pnpm verify`.
+
+O foco passou `2` arquivos e `8/8` testes; a cadeia e o journal passaram
+`33/33`. Em PostgreSQL descartável, as 33 migrations aplicaram do zero e o
+restore isolado passou `2/2`, incluindo marcador sintético, artefato checksummed
+e invariantes de RLS/auditoria/índices. A cobertura passou `204/1080/21` com
+floors `95,00/90,87/95,29/95,69`; build `12/12`, contratos `84/84`, worker
+`51/51`, decisões `7/7`, mutation `7/7`, lint, typecheck, formato, hotspots e
+diff-check passaram.
+
+O `pnpm verify` percorreu o novo gate e parou fail-closed somente nos quatro
+valores redigidos de `.env.local`. A prova não inclui rollout misto N/N-1 no
+RC autorizado nem produção, CI/registry, secret manager, clínica, `0/145` ou
+reauditoria. O código foi publicado como `8440f09` em
+`origin/agent/publish-production-hardening`; B99-307 está pronto localmente e
+B99-308 é a próxima frente local.

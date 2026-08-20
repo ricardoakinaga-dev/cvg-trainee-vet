@@ -135,6 +135,17 @@ com floors `95,00/90,87/95,29/95,69`. B99-205 está
 reauditoria continuam abertos. Código publicado em
 `43de2a2ff575c4fd9e11153a575c8dfbbb858008`.
 
+**Atualização Dual99 — 2026-08-20T13:51:48-03:00 — B99-307:** o gate de
+migrations agora rejeita `TRUNCATE`, `DELETE`, `SET NOT NULL` sem guarda de
+backfill e coluna obrigatória sem `DEFAULT`; a checagem está no `pnpm verify`.
+O foco passou `8/8`, as migrations passaram `33/33`, PostgreSQL descartável
+aplicou a cadeia inteira e restore isolado passou `2/2`. Coverage passou
+`204/1080/21` com floors `95,00/90,87/95,29/95,69`; build `12/12`, contratos
+`84/84`, worker `51/51`, decisões `7/7` e mutation `7/7` passaram. B99-307 fica
+`READY_FOR_NEXT_STEP` localmente; rollout N/N-1 no RC, produção e demais gates
+externos permanecem abertos. Código publicado em `8440f09`; próxima frente
+local: B99-308.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;

@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T13:30:56-03:00`
-- última atualização: `2026-08-20T13:30:56-03:00`
+- corte: `2026-08-20T13:51:48-03:00`
+- última atualização: `2026-08-20T13:51:48-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `43de2a2ff575c4fd9e11153a575c8dfbbb858008` em
+- commit publicado: `8440f09` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -72,6 +72,10 @@
   insert PostgreSQL; a reconciliação PostgreSQL→Qdrant foi exercitada com
   conteúdo sintético não vazio, reparando divergência e órfão, replay e
   retirada sem expor payload.
+- B99-307: o gate de migrations passou a rejeitar operações destrutivas,
+  colunas obrigatórias sem default e `SET NOT NULL` sem guarda de backfill;
+  a checagem entrou no `pnpm verify`, sem remover o bloqueio fail-closed para
+  dados legados incompatíveis.
 
 ## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
 
@@ -515,6 +519,53 @@ O código e os testes foram commitados como
 probe clock`) e enviados para `origin/agent/publish-production-hardening`.
 Esta evidência documental segue para publicação separada e não promove
 qualquer gate externo.
+
+## Round 24 — B99-307 / migration compatibility and isolated restore — 2026-08-20T13:51:48-03:00
+
+### RED → GREEN
+
+- RED adicionou casos de contract incompatível e o verificador anterior
+  aceitou `TRUNCATE`, `DELETE`, `SET NOT NULL` sem pré-condição e coluna
+  `NOT NULL` sem `DEFAULT`;
+- GREEN passou a rejeitar essas operações, aceitar somente `SET NOT NULL`
+  precedido por guarda explícita de backfill/legado e expôs o comando
+  `pnpm verify:migration-safety` no pipeline oficial `pnpm verify`;
+- a alteração é fail-closed: a migration `0032` mantém a rejeição explícita de
+  linhas legadas inválidas, em vez de transformar chaves ou snapshots de
+  replay sem decisão segura.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco de governança/safety passou `2` arquivos e `8/8` testes; a cadeia
+  versionada passou `33/33` (`0000`–`0032`) e o novo gate reportou
+  `checkedMigrations=33`, `destructiveMigrations=0`;
+- PostgreSQL descartável aplicou as `33` migrations do zero e o restore
+  isolado passou `2/2`, cobrindo marcador sintético, artefato checksummed e
+  invariantes de RLS/auditoria/índices;
+- cobertura global passou `204` arquivos, `1.080` testes e `21` guardados, com
+  floors `95,00%` statements, `90,87%` branches, `95,29%` functions e
+  `95,69%` lines; build `12/12`, contratos `84/84`, worker `51/51`, decisões
+  `7/7`, mutation crítica `7/7`, hotspots, lint, typecheck, formato e
+  diff-check passaram;
+- `pnpm verify` percorreu o novo gate e parou somente em
+  `verify:secrets`, pelos quatro valores redigidos de
+  `infra/production/.env.local`, que não foi lido nem alterado.
+
+### LIMITES / STATUS / NEXT
+
+O restore e a aplicação das migrations foram executados em container
+PostgreSQL temporário com fixtures sintéticas e limpeza automática. Ainda não
+há prova de rollout misto N/N-1 no RC autorizado, migração/rollback em
+produção, backup externo, secret manager, CI/registry, clínica, `0/145` ou
+reauditoria independente. B99-307 está `READY_FOR_NEXT_STEP` localmente; a
+próxima frente local é B99-308, e o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+### PUBLICAÇÃO
+
+O código foi commitado como `8440f09` (`fix: harden migration compatibility
+gate`) e enviado para `origin/agent/publish-production-hardening`. A publicação
+não promove a prova descartável para um RC ou rollout externo.
 
 ## Gaps que permanecem abertos
 

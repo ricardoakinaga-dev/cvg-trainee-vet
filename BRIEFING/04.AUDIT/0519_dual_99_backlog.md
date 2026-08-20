@@ -433,6 +433,24 @@ externos nem altera a disposição `IN_PROGRESS / PILOT_BLOCKED`.
   `43de2a2ff575c4fd9e11153a575c8dfbbb858008`, enviado para
   `origin/agent/publish-production-hardening`.
 
+## Atualização de execução — 2026-08-20T13:51:48-03:00 — B99-307
+
+- **RED/GREEN:** o safety gate anterior deixava passar `TRUNCATE`, `DELETE`,
+  `SET NOT NULL` sem guarda de backfill e coluna `NOT NULL` sem `DEFAULT`;
+  o GREEN adicionou rejeição fail-closed e conectou
+  `pnpm verify:migration-safety` ao `pnpm verify`;
+- **evidência:** foco de migrations `2` arquivos / `8/8` testes, cadeia
+  `33/33`, PostgreSQL descartável com aplicação do zero e restore isolado
+  `2/2` com marcador, artefato checksummed e invariantes preservados;
+  coverage `204/1080/21`, build `12/12`, contratos `84/84`, worker `51/51`,
+  decisões `7/7`, mutation `7/7`, lint/typecheck/formato e hotspots passaram;
+- **limite/status:** não houve rollout misto N/N-1 no RC autorizado nem
+  alteração de produção; CI/registry, secret manager, clínica, `0/145` e
+  reauditoria seguem abertos. B99-307 está `READY_FOR_NEXT_STEP` localmente;
+  próxima frente local: B99-308;
+- **publicação:** código em `8440f09`, enviado para
+  `origin/agent/publish-production-hardening`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,
