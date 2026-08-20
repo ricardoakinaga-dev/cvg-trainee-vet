@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora falha fechado para respostas `cat-file` com object ID não solicitado, tokens de header malformados, paths de histórico com whitespace de borda, headers malformados de `git cat-file --batch`, symlinks do worktree, caminhos staged com whitespace de borda, inventário `rev-list` malformado, objetos `tree`/`commit` inválidos ou truncados e objetos `blob`/`tag` sem delimitador, e B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 agora enumera worktree/index/history sem filtrar por extensão, escaneia texto UTF-8 limitado sob paths de assets e preserva fail-closed para bytes binários/oversize não-asset, além das proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN, publicou código/teste em `87f759a` e o pacote de evidências em `9cc102a` após a auditoria fresca reproduzir vazamento de um token de header malformado no path do finding; o scanner agora usa somente path conhecido, object ID hex válido ou a identidade estável `history:<git>`, sem copiar tokens não confiáveis para path/evidence; Round 40 passou foco `29/29`, cobertura `205/1123/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`793` linhas, `0` hotspots) e diff-check; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `9cc102a`; `.gauntlet/` continua local e não rastreado
-- next_action: reconciliar os SHAs de publicação de Round 40, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após uma auditoria fresca invalidar o candidato de error-detail e reproduzir bypass textual em `worktree.png`, `staged.png` e `history.png`; publicou código/teste em `de8cbdd`; Round 41 passou foco `30/30`, cobertura `205/1124/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`776` linhas, `0` hotspots), diff-check e `verify:secrets` até os quatro valores redigidos preexistentes de `.env.local`; o scanner não expõe bytes de assets binários e o arquivo de produção não foi lido nem alterado; HEAD e origin estão em `de8cbdd`; `.gauntlet/` continua local e não rastreado
+- next_action: executar o `pnpm verify` oficial no commit `de8cbdd`, reconciliar/publicar a evidência documental e confirmar paridade remota; depois repetir auditoria read-only para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,32 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T19:03:37-03:00
+- last_update: 2026-08-20T19:25:00-03:00
+
+## 2026-08-20T19:25:00-03:00 — DUAL99-B99-101-BINARY-EXTENSION-CONTENT
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only rejeitou a hipótese de vazamento em detalhes de
+  `error` válidos porque a evidência já é redigida; a fixture Git descartável
+  reproduziu falso scan limpo para texto secret-shaped sob `worktree.png`,
+  `staged.png` e `history.png`;
+- RED falhou com findings vazios; GREEN passou a enumerar todos os arquivos
+  regulares, paths do índice e paths de `git rev-list`, usando uma fronteira de
+  conteúdo que escaneia UTF-8 limitado sob extensões de asset e não trata
+  bytes binários/oversize de assets como texto;
+- foco `30/30`, cobertura `205/1124/21` em `95,02/90,95/95,31/95,71`, scanner
+  `776` linhas, hotspots `0`, lint/typecheck/formato/diff-check passaram;
+  `verify:secrets` reportou somente os quatro valores redigidos preexistentes
+  de `.env.local`.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: o código/teste está em `de8cbdd`, o arquivo
+`infra/production/.env.local` não foi lido nem alterado e a documentação está
+em reconciliação. Não houve segredo, dado real, PDF, produção, score, release,
+clínica, `0/145` ou piloto. O programa permanece `IN_PROGRESS /
+PILOT_BLOCKED`.
 
 ## 2026-08-20T19:01:02-03:00 — DUAL99-B99-101-CAT-FILE-MALFORMED-TOKEN-REDACTION
 

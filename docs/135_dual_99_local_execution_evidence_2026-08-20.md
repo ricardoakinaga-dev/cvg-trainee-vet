@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T19:01:02-03:00`
-- última atualização: `2026-08-20T19:03:37-03:00`
+- corte: `2026-08-20T19:25:00-03:00`
+- última atualização: `2026-08-20T19:25:00-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `87f759a` em
+- commit publicado: `de8cbdd` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -23,7 +23,9 @@
 
 - scanner de segredos: enumeração de worktree/index/history, tags anotadas,
   referências `secret://`, expressões de código e placeholders sintéticos
-  delimitados foram cobertos por testes adversariais; o scanner continua
+  delimitados foram cobertos por testes adversariais; paths com extensão de
+  asset agora também são enumerados, texto UTF-8 limitado é escaneado e bytes
+  binários/oversize de assets não são tratados como texto; o scanner continua
   fail-closed e ainda acusa `infra/production/.env.local` sem imprimir valores.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
@@ -825,6 +827,59 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 41 — B99-101 / binary-extension content bypass — 2026-08-20T19:25:00-03:00
+
+### Barra congelada
+
+- impedir que worktree, índice ou histórico descartem conteúdo textual
+  secret-shaped somente porque o path termina em extensão de asset binário;
+- provar cobertura das três superfícies com paths sintéticos `.png`, sem
+  expor o valor, preservando a proteção para bytes binários/oversize de PDFs e
+  demais assets e o fail-closed para binários fora dessa allowlist;
+- manter RED→GREEN, conteúdo sintético, leitura sem produção, formato/lint/
+  typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### Auditoria fresca e RED → GREEN
+
+A auditoria read-only primeiro testou a hipótese de que detalhes de uma
+resposta `error` válida de `git cat-file --batch` poderiam entrar em evidence.
+O probe mostrou que o finding `git-object-unreadable` já redige a evidência e
+não serializa o marcador sintético. Em seguida, uma fixture Git descartável
+com conteúdo textual `client_secret` sob `worktree.png`, `staged.png` e
+`history.png` reproduziu o bypass: `walk`, `git ls-files` e
+`parseObjectList` descartavam os caminhos pela extensão.
+
+O RED foi registrado no teste de integração e falhou com findings vazios. O
+GREEN removeu o filtro de enumeração por extensão, reteve todos os paths e
+introduziu uma fronteira de conteúdo: texto UTF-8 limitado em assets é
+escaneado; bytes binários ou assets acima do limite não são tratados como
+texto nem copiados para findings; caminhos não-asset mantêm
+`binary-file`/`oversize-file` fail-closed. O teste também confirma que o
+marcador presente em bytes binários não aparece na serialização.
+
+### Evidência
+
+- foco do scanner: `30/30`;
+- cobertura integral: `205` arquivos, `1.124` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- scanner em `776` linhas, `verify:hotspots` com `0` hotspots; lint,
+  typecheck, Prettier, `git diff --check` e o foco de secrets passaram;
+- `pnpm verify:secrets` percorreu o worktree/history sem reportar os PDFs
+  históricos e falhou fail-closed somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+  alterado;
+- código/teste commitados em `de8cbdd` (`fix: scan text under binary asset
+  paths`) e enviados para `origin/agent/publish-production-hardening`.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A documentação desta rodada será publicada na
+reconciliação seguinte. Esta rodada não prova provider, CI, RC imutável,
+runtime live, WebKit aprovado, clínica, `0/145`, gates externos ou reauditoria
+independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 40 — B99-101 / malformed cat-file header identity redaction — 2026-08-20T19:01:02-03:00
 

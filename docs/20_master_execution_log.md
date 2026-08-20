@@ -10794,6 +10794,46 @@ manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínic
 `0/145`, gates externos e reauditoria seguem abertos. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 
+## 2026-08-20T19:25:00-03:00 — DUAL99-B99-101-BINARY-EXTENSION-CONTENT
+
+### TIMESTAMP / TASK
+
+2026-08-20 19:25:00 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — scan textual content under binary-looking asset paths.
+
+### ACTION / RESULT
+
+Uma auditoria read-only primeiro testou a hipótese de vazamento de detalhes em
+respostas `error` válidas de `git cat-file --batch`; o probe confirmou que a
+evidência já é redigida. A prova seguinte criou uma fixture Git descartável
+com conteúdo textual secret-shaped sob `worktree.png`, `staged.png` e
+`history.png`; o parser anterior filtrava esses caminhos e produzia scan limpo.
+
+O RED adicionou a regressão e falhou com findings vazios. O GREEN removeu o
+filtro de enumeração por extensão e passou a reter todos os paths de worktree,
+índice e `git rev-list`. Uma fronteira de conteúdo escaneia texto UTF-8 dentro
+do limite mesmo sob extensões de asset; bytes binários/oversize de assets não
+são tratados como texto nem copiados para findings, enquanto caminhos
+não-asset permanecem fail-closed como `binary-file`/`oversize-file`.
+
+O foco passou `30/30`; a cobertura passou `205/1124/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `776` linhas e
+`verify:hotspots` reportou `0`. Lint, typecheck, formato, foco de secrets e
+`git diff --check` passaram. `pnpm verify:secrets` falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo; os PDFs históricos não foram reportados.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `de8cbdd` (`fix: scan text under binary
+asset paths`) e enviados para `origin/agent/publish-production-hardening`. A
+documentação desta rodada está em reconciliação. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos.
+Nenhum segredo, dado real, PDF, produção, score, release, decisão clínica ou
+promoção de piloto foi tocado. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 2026-08-20T18:50:39-03:00 — DUAL99-B99-101-CAT-FILE-TRUNCATED-HEADER-REDACTION
 
 ### TIMESTAMP / TASK

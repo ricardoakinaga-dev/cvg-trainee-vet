@@ -137,6 +137,27 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T19:25:00-03:00 — B99-101 binary-extension content bypass
+
+- **auditoria/RED:** a hipótese de vazamento em detalhes de respostas `error`
+  válidas foi rejeitada porque findings `missing/error` já redigem a
+  evidência; uma fixture Git descartável reproduziu falso scan limpo para
+  conteúdo textual secret-shaped sob `worktree.png`, `staged.png` e
+  `history.png`;
+- **GREEN:** o scanner enumera todos os caminhos de worktree, índice e
+  histórico, sem filtrar somente pelo sufixo; texto UTF-8 limitado sob
+  extensão binária é escaneado, bytes binários/oversize de assets não são
+  tratados como texto nem copiados para findings, e paths não-asset continuam
+  fail-closed;
+- **evidência:** foco `30/30`, cobertura `205/1124/21` em
+  `95,02/90,95/95,31/95,71`, scanner `776` linhas, hotspots `0`, foco de
+  secrets sem PDFs históricos e somente os quatro valores redigidos
+  preexistentes de `infra/production/.env.local`; código/teste em `de8cbdd`;
+- **limite/status:** `.env.local` não foi lido nem alterado; não houve segredo,
+  dado real, PDF, produção, score, release, clínica, `0/145` ou promoção de
+  piloto. B99-101 permanece `IN_PROGRESS` até secret manager/rotação e o
+  programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T19:01:02-03:00 — B99-101 malformed cat-file header token
 
 - **RED/GREEN:** a auditoria read-only reproduziu que um header com newline,

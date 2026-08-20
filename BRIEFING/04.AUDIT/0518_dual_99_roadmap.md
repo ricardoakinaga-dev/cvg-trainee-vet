@@ -198,6 +198,30 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 23. Checkpoint de conteúdo sob extensão binária — 2026-08-20T19:25:00-03:00
+
+B99-101 recebeu uma auditoria read-only fresca. A hipótese de vazamento em
+detalhes de respostas `error` válidas foi rejeitada: a evidência já é
+redigida. A prova seguinte reproduziu falso scan limpo quando conteúdo textual
+secret-shaped recebia os nomes exatos `worktree.png`, `staged.png` e
+`history.png`; a enumeração por extensão descartava os três caminhos.
+
+O RED falhou com o teste sintético das três superfícies. O GREEN passou a
+enumerar todos os arquivos regulares, paths staged e paths do inventário
+`git rev-list`; conteúdo UTF-8 limitado sob extensão de asset é escaneado,
+enquanto bytes binários/oversize de assets não são tratados como texto nem
+copiados para findings. Paths não-asset continuam fail-closed como
+`binary-file`/`oversize-file`. O foco passou `30/30`, cobertura `205/1124/21`
+em `95,02/90,95/95,31/95,71`, scanner em `776` linhas e hotspots `0`.
+
+Código/teste estão em `de8cbdd`; a documentação desta execução está sendo
+reconciliada. O gate de segredos continua fail-closed somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, que não foi
+lido nem alterado. B99-101 segue `IN_PROGRESS`; secret manager/rotação,
+RC/proveniência, runtime, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria continuam abertos. F99-1 permanece `IN_PROGRESS` /
+`PILOT_BLOCKED`.
+
 ## 22. Checkpoint de identidade de token malformado cat-file — 2026-08-20T19:01:02-03:00
 
 B99-101 recebeu RED/GREEN para impedir que o primeiro token não confiável de
