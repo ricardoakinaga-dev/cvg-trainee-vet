@@ -10822,8 +10822,9 @@ alterar o arquivo.
 ### DECISIONS / STATUS / NEXT
 
 O código/teste foram commitados em `b528ff4` (`fix: redact truncated git
-headers`) e enviados para `origin/agent/publish-production-hardening`; a
-evidência documental será reconciliada em commit separado. Nenhum segredo,
+headers`) e a evidência documental foi publicada em `3520f85` (`docs: record
+truncated git header redaction`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo,
 PDF, dado real, provider, CI, produção, score, release, decisão clínica ou
 promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,

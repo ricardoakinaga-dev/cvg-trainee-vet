@@ -211,8 +211,8 @@ O foco passou `28/28`, a cobertura passou `205/1122/21` em
 `95,02/90,95/95,31/95,71`, o scanner ficou em `791` linhas e
 `verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
 worker, migrações, migration safety, decisões, mutation e diff-check passaram.
-Código/teste estão em `b528ff4`; a evidência documental será reconciliada em
-commit separado. O `pnpm verify` parou em `verify:secrets` somente nos quatro
+Código/teste estão em `b528ff4`; a evidência documental foi publicada em
+`3520f85`. O `pnpm verify` parou em `verify:secrets` somente nos quatro
 valores redigidos preexistentes de `infra/production/.env.local`; B99-101 segue
 `IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 

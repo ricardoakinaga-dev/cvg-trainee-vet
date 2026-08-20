@@ -16,7 +16,7 @@ cobertura `205/1122/21` em `95,02/90,95/95,31/95,71`, scanner em `791` linhas,
 mutation `7/7` e diff-check passaram. O `pnpm verify` parou em
 `verify:secrets` somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`; código/teste estão em `b528ff4` e a evidência
-documental está em publicação. B99-101 permanece `IN_PROGRESS` até secret
+documental foi publicada em `3520f85`. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação, e o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T18:36:22-03:00 — B99-101:** o RED
