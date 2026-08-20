@@ -16,7 +16,10 @@ import {
   planGitBatchRequests,
   readBatchOutput,
 } from "../../scripts/secret-scanner.mjs";
-import { runGitBatch } from "../../scripts/secret-scanner-git-batch.mjs";
+import {
+  createGitBatchStreamParser,
+  runGitBatch,
+} from "../../scripts/secret-scanner-git-batch.mjs";
 
 const temporaryDirectories: string[] = [];
 
@@ -710,6 +713,77 @@ describe("secret scanner", () => {
         maxOutputBytes: 16,
       }),
     ).rejects.toThrow(/output exceeds configured limit/iu);
+
+    const chunks = [];
+    const streamed = await runGitBatch(
+      directory,
+      ["cat-file", "--batch"],
+      [stdout.trim()],
+      {
+        maxOutputBytes: 512,
+        onChunk: (chunk) => chunks.push(chunk),
+      },
+    );
+
+    expect(streamed).toBeUndefined();
+    expect(chunks.length).toBeGreaterThan(0);
+  });
+
+  it("redacts malformed streamed Git headers", () => {
+    const marker = "SYNTHETIC_STREAM_HEADER_MARKER";
+    const parser = createGitBatchStreamParser({
+      objects: new Map(),
+      maxScanBytes: 128,
+      maxHeaderBytes: 128,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path, rule, evidence) => ({
+        path,
+        rule,
+        evidence,
+      }),
+      readBatchOutput,
+    });
+
+    parser.push(Buffer.from(`invalid ${marker}\n`));
+    parser.finish();
+
+    expect(parser.findings).toEqual([
+      expect.objectContaining({
+        path: "history:<git>",
+        rule: "git-object-unreadable",
+      }),
+    ]);
+    expect(JSON.stringify(parser.findings)).not.toContain(marker);
+  });
+
+  it("fails closed on truncated streamed Git bodies", () => {
+    const objectId = "f".repeat(40);
+    const marker = "SYNTHETIC_STREAM_BODY_MARKER";
+    const parser = createGitBatchStreamParser({
+      objects: new Map([[objectId, "history.txt"]]),
+      maxScanBytes: 128,
+      maxHeaderBytes: 128,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path, rule, evidence) => ({
+        path,
+        rule,
+        evidence,
+      }),
+      readBatchOutput,
+    });
+
+    parser.push(
+      Buffer.from(`${objectId} blob ${marker.length}\n${marker.slice(0, 5)}`),
+    );
+    parser.finish();
+
+    expect(parser.findings).toEqual([
+      expect.objectContaining({
+        path: "history:history.txt",
+        rule: "git-object-unreadable",
+      }),
+    ]);
+    expect(JSON.stringify(parser.findings)).not.toContain(marker);
   });
 
   it("does not report git tree or commit objects as unreadable blobs", () => {

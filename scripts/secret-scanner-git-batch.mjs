@@ -5,7 +5,7 @@ export function runGitBatch(
   root,
   args,
   objectIds,
-  { maxOutputBytes = Number.POSITIVE_INFINITY } = {},
+  { maxOutputBytes = Number.POSITIVE_INFINITY, onChunk } = {},
 ) {
   return new Promise((resolve, reject) => {
     const child = spawn("git", args, { cwd: root });
@@ -27,6 +27,15 @@ export function runGitBatch(
         child.kill();
         return;
       }
+      if (onChunk) {
+        try {
+          onChunk(Buffer.from(chunk));
+        } catch (error) {
+          fail(error);
+          child.kill();
+        }
+        return;
+      }
       chunks.push(Buffer.from(chunk));
     });
     child.stderr.on("data", (chunk) => errors.push(Buffer.from(chunk)));
@@ -45,7 +54,7 @@ export function runGitBatch(
       }
       if (settled) return;
       settled = true;
-      resolve(Buffer.concat(chunks));
+      resolve(onChunk ? undefined : Buffer.concat(chunks));
     });
     child.stdin.end(`${objectIds.join("\n")}\n`);
   });
@@ -150,6 +159,177 @@ export function planGitBatchRequests(
   });
 }
 
+function parseGitBatchRecord(
+  headerBuffer,
+  {
+    objects,
+    maxScanBytes,
+    isIgnoredBinaryAssetPath,
+    unscannedFinding,
+    readBatchOutput,
+    source,
+  },
+) {
+  const findings = [];
+  const addUnreadable = (path, evidence) =>
+    findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
+  const header = headerBuffer.toString("utf8");
+  const [objectId, type, sizeText] = header.split(/\s+/u);
+  const validHeader =
+    /^[0-9a-f]{40} (?:blob|tag|tree|commit) [0-9]+$/u.test(header) ||
+    /^[0-9a-f]{40} (?:missing|error)(?: .*)?$/u.test(header);
+  const path = objects.get(objectId);
+  const identity =
+    path ?? (/^[0-9a-f]{40}$/u.test(objectId ?? "") ? objectId : "<git>");
+  const logicalPath = `${source}:${identity}`;
+  if (!validHeader) {
+    addUnreadable(`${source}:<git>`, "malformed git object header");
+    return { aborted: true, findings, record: null };
+  }
+  if (!objects.has(objectId)) {
+    addUnreadable(logicalPath, "unexpected git object response");
+    return { aborted: true, findings, record: null };
+  }
+  if (type === "missing" || type === "error") {
+    findings.push(
+      ...readBatchOutput(Buffer.from(`${header}\n`), objects, source),
+    );
+    return { aborted: false, findings, record: null };
+  }
+  const size = Number(sizeText);
+  if (!Number.isSafeInteger(size) || size < 0) {
+    addUnreadable(logicalPath, "malformed git object size");
+    return { aborted: true, findings, record: null };
+  }
+  const isOversized = size > maxScanBytes;
+  if (
+    isOversized &&
+    type !== "tree" &&
+    type !== "commit" &&
+    !isIgnoredBinaryAssetPath(path ?? "")
+  ) {
+    findings.push(
+      unscannedFinding(logicalPath, "oversize-file", `${size} bytes`),
+    );
+  }
+  return {
+    aborted: false,
+    findings,
+    record: {
+      body: isOversized ? null : Buffer.allocUnsafe(size),
+      bodyOffset: 0,
+      header: Buffer.from(`${header}\n`),
+      logicalPath,
+      remaining: size,
+    },
+  };
+}
+
+export function createGitBatchStreamParser({
+  objects,
+  maxScanBytes,
+  maxHeaderBytes,
+  isIgnoredBinaryAssetPath,
+  unscannedFinding,
+  readBatchOutput,
+  source = "history",
+}) {
+  const findings = [];
+  let headerParts = [];
+  let headerBytes = 0;
+  let record = null;
+  let aborted = false;
+  const addUnreadable = (path, evidence) =>
+    findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
+  const resetRecord = () => {
+    record = null;
+  };
+  const consume = (chunk) => {
+    let offset = 0;
+    while (offset < chunk.length && !aborted) {
+      if (record === null) {
+        const headerEnd = chunk.indexOf(0x0a, offset);
+        if (headerEnd < 0) {
+          const part = chunk.subarray(offset);
+          headerBytes += part.length;
+          if (headerBytes > maxHeaderBytes) {
+            addUnreadable(`${source}:<git>`, "malformed git object header");
+            aborted = true;
+            return;
+          }
+          headerParts.push(Buffer.from(part));
+          return;
+        }
+        const part = chunk.subarray(offset, headerEnd);
+        headerBytes += part.length;
+        if (headerBytes > maxHeaderBytes) {
+          addUnreadable(`${source}:<git>`, "malformed git object header");
+          aborted = true;
+          return;
+        }
+        const header = Buffer.concat([...headerParts, part]);
+        headerParts = [];
+        headerBytes = 0;
+        offset = headerEnd + 1;
+        const parsed = parseGitBatchRecord(header, {
+          objects,
+          maxScanBytes,
+          isIgnoredBinaryAssetPath,
+          unscannedFinding,
+          readBatchOutput,
+          source,
+        });
+        findings.push(...parsed.findings);
+        record = parsed.record;
+        aborted = parsed.aborted;
+        continue;
+      }
+      const amount = Math.min(record.remaining, chunk.length - offset);
+      if (record.body !== null && amount > 0) {
+        chunk.copy(record.body, record.bodyOffset, offset, offset + amount);
+        record.bodyOffset += amount;
+      }
+      record.remaining -= amount;
+      offset += amount;
+      if (record.remaining > 0) continue;
+      if (offset >= chunk.length) return;
+      if (chunk[offset] !== 0x0a) {
+        addUnreadable(
+          record.logicalPath,
+          "truncated or missing git object delimiter",
+        );
+        aborted = true;
+        return;
+      }
+      offset += 1;
+      if (record.body !== null) {
+        findings.push(
+          ...readBatchOutput(
+            Buffer.concat([record.header, record.body, Buffer.from("\n")]),
+            objects,
+            source,
+          ),
+        );
+      }
+      resetRecord();
+    }
+  };
+  return {
+    findings,
+    push: consume,
+    finish: () => {
+      if (aborted) return;
+      if (record !== null || headerParts.length > 0) {
+        addUnreadable(
+          record?.logicalPath ?? `${source}:<git>`,
+          "truncated git batch stream",
+        );
+        aborted = true;
+      }
+    },
+  };
+}
+
 export async function readGitBlobs(
   root,
   objects,
@@ -184,19 +364,26 @@ export async function readGitBlobs(
     const requestedObjects = new Map(
       batch.map((objectId) => [objectId, objects.get(objectId)]),
     );
+    const parser = createGitBatchStreamParser({
+      objects: requestedObjects,
+      maxScanBytes,
+      maxHeaderBytes,
+      isIgnoredBinaryAssetPath,
+      unscannedFinding,
+      readBatchOutput,
+      source,
+    });
     try {
-      const bodyOutput = await runGitBatch(
-        root,
-        ["cat-file", "--batch"],
-        batch,
-        {
-          maxOutputBytes:
-            plan.batchSizes[index] + batch.length * maxHeaderBytes + 1,
-        },
-      );
-      findings.push(...readBatchOutput(bodyOutput, requestedObjects, source));
+      await runGitBatch(root, ["cat-file", "--batch"], batch, {
+        maxOutputBytes:
+          plan.batchSizes[index] + batch.length * maxHeaderBytes + 1,
+        onChunk: (chunk) => parser.push(chunk),
+      });
+      parser.finish();
+      findings.push(...parser.findings);
     } catch {
       findings.push(
+        ...parser.findings,
         unscannedFinding(
           `${source}:<git>`,
           "git-object-unreadable",
