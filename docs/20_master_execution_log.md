@@ -10709,8 +10709,9 @@ alterar o arquivo.
 ### DECISIONS / STATUS / NEXT
 
 O código/teste foram commitados em `0b29af6` (`fix: validate git batch object
-headers`); a evidência documental desta rodada será publicada em commit
-separado. Nenhum segredo, PDF, dado real, provider, CI, produção, score,
+headers`) e a evidência documental foi publicada em `adfacbc` (`docs: record
+b99-101 cat-file header integrity`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo, PDF, dado real, provider, CI, produção, score,
 release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
 `IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
 runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O

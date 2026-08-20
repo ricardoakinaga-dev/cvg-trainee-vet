@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: executou B99-101 sob RED/GREEN, commitou código/teste em `0b29af6` após corrigir a aceitação de headers malformados de `git cat-file --batch`; o scanner agora exige object ID de 40 hex, tipo/framing válido e tamanho decimal antes de consumir/scannear o corpo, preservando respostas `missing/error`, além das correções de paths staged, inventário `rev-list`, symlinks e objetos Git; foco `25/25`, cobertura `205/1119/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`793` linhas, `0` hotspots) e diff-check passaram; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a evidência rastreada de B99-101, confirmar a paridade entre HEAD e origin e então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- next_action: confirmar a paridade entre HEAD e origin após publicar código `0b29af6` e evidência `adfacbc`, então selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T18:09:25-03:00
+- last_update: 2026-08-20T18:12:21-03:00
 
 ## 2026-08-20T18:09:25-03:00 — DUAL99-B99-101-CAT-FILE-HEADER
 
@@ -57,10 +57,10 @@ contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
 decisões `7/7`, mutation `7/7` e diff-check passaram. O `pnpm verify` parou
 fail-closed somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`, cuja rotação exige secret manager/autorização.
-O código/teste foi publicado em `0b29af6`; a evidência documental desta rodada
-será publicada em commit separado. Nenhum segredo, dado real, PDF, produção,
-score, release, clínica, `0/145` ou piloto foi tocado. O programa permanece
-`IN_PROGRESS / PILOT_BLOCKED`.
+O código/teste foi publicado em `0b29af6` e a evidência documental desta rodada
+em `adfacbc`, ambos enviados para `origin/agent/publish-production-hardening`.
+Nenhum segredo, dado real, PDF, produção, score, release, clínica, `0/145` ou
+piloto foi tocado. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T17:44:10-03:00 — DUAL99-B99-101-STAGED-PATH-WHITESPACE
 
