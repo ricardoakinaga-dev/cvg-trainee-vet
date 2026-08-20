@@ -10238,3 +10238,18 @@ O secret scan continua fail-closed nos quatro valores redigidos de
 contra HA/API/DB ativo, RC imutável, fuzz property-based, gates externos,
 clínica, `0/145` ou reauditoria independente; o programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T14:14:13-03:00 — DUAL99-B99-308-FINAL-VERIFY
+
+O `pnpm verify` oficial no worktree publicado passou formato, CI contract,
+fontes clínicas, inventário, observabilidade, topologia HA, regras Prometheus,
+traces duráveis, lint, typecheck, cobertura `204/1083/21`, decisões `7/7`,
+mutation crítica `7/7`, scope drift, contratos `84/84`, worker `51/51`,
+migrations `33/33` e migration safety. O comando parou em
+`verify:secrets`, fail-closed, nos quatro valores redigidos de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado.
+
+A branch `agent/publish-production-hardening` permaneceu sincronizada com
+`origin` no commit documental `47e8214`; `.gauntlet/` continua somente estado
+local não rastreado. Nenhum score, release, piloto, RC, gate externo, clínica,
+`0/145` ou reauditoria foi promovido.

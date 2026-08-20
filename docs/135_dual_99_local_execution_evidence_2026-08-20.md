@@ -597,6 +597,10 @@ não promove a prova descartável para um RC ou rollout externo.
 - build: `12/12` workspaces; typecheck, lint, Prettier, CI contract,
   critical decisions `7/7`, critical mutation `7/7`, scope drift, hotspots e
   `git diff --check`: PASS.
+- `pnpm verify` oficial repetiu os gates até migration safety — cobertura,
+  contratos `84/84`, worker `51/51`, migrations `33/33`, decisões `7/7` e
+  mutation `7/7` — e parou fail-closed em `verify:secrets` nos quatro valores
+  redigidos de `infra/production/.env.local`.
 
 ### LIMITES / STATUS / NEXT
 
