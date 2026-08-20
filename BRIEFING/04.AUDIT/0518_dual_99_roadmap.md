@@ -198,6 +198,24 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 19. Checkpoint de path whitespace no rev-list do scanner — 2026-08-20T18:21:57-03:00
+
+B99-101 recebeu RED/GREEN para preservar o path exato produzido por
+`git rev-list --objects --all`. O RED reproduziu falso scan limpo quando um
+arquivo textual `secret.png ` era aparado para `secret.png` e ignorado como
+asset binário. O GREEN mantém os bytes do trecho após o separador, trata só a
+linha vazia de árvore como marcador estrutural e encontra
+`history:secret.png ` sem expor o valor sintético.
+
+O foco passou `26/26`, a cobertura passou `205/1120/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
+worker, migrações, migration safety, decisões, mutation e diff-check passaram.
+O `pnpm verify` parou em `verify:secrets` somente nos quatro valores redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+Código/teste estão em `53b96d8`; a evidência será publicada em commit separado.
+B99-101 segue `IN_PROGRESS` e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 18. Checkpoint de integridade cat-file batch do scanner — 2026-08-20T18:09:25-03:00
 
 B99-101 recebeu RED/GREEN para o header estrutural de `git cat-file --batch`.

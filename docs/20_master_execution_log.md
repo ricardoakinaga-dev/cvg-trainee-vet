@@ -10716,3 +10716,40 @@ release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
 `IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
 runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O
 programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T18:21:57-03:00 — DUAL99-B99-101-REV-LIST-PATH-WHITESPACE
+
+### TIMESTAMP / TASK
+
+2026-08-20 18:21:57 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — preservação exata de paths do inventário `git rev-list`.
+
+### ACTION / RESULT
+
+RED criou um repositório Git sintético com um arquivo textual chamado
+`secret.png `, contendo uma atribuição sensível, commitou-o e removeu-o do
+worktree. O `.trim()` anterior convertia o path em `secret.png`, que era
+classificado como asset binário ignorado, e o histórico retornava `[]`. GREEN
+passou a preservar exatamente o trecho após o separador de
+`git rev-list --objects --all`, tratando apenas a linha vazia de árvore como
+marcador estrutural; o finding aparece como `history:secret.png ` sem expor o
+valor sintético.
+
+O foco passou `26/26`; a cobertura passou `205/1120/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `793` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu todos os gates até `verify:secrets`, que falhou somente nos quatro
+valores redigidos preexistentes de `infra/production/.env.local`, sem ler ou
+alterar o arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `53b96d8` (`fix: preserve git history path
+identity`); a evidência documental desta rodada será publicada em commit
+separado. Nenhum segredo, PDF, dado real, provider, CI, produção, score,
+release, decisão clínica ou promoção de piloto foi tocado. B99-101 permanece
+`IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos. O
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`.

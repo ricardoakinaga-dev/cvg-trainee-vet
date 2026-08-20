@@ -137,6 +137,26 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T18:21:57-03:00 — B99-101 rev-list path
+
+- **RED/GREEN:** o RED reproduziu falso scan limpo para um arquivo textual
+  versionado como `secret.png `, porque `.trim()` o convertia em `secret.png`,
+  um asset binário ignorado; o GREEN preserva exatamente o trecho de path após
+  o separador de `git rev-list --objects --all`, trata somente a linha vazia de
+  árvore como marcador estrutural e encontra `history:secret.png ` sem expor o
+  valor sintético;
+- **evidência:** foco `26/26`, cobertura `205/1120/21` em
+  `95,02/90,95/95,31/95,71`, scanner em `793` linhas, hotspots `0`, lint,
+  typecheck, formato, audit, contratos `86/86`, worker `51/51`, migrações
+  `33/33`, migration safety, decisões `7/7`, mutation `7/7` e diff-check
+  passaram; `pnpm verify` parou somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `53b96d8`; a evidência documental
+  será publicada em commit separado. Nenhum segredo, dado real, PDF, rotação,
+  provider, CI, produção, score, release, clínica, `0/145` ou piloto foi
+  tocado. B99-101 permanece `IN_PROGRESS` até secret manager/rotação/
+  autorização; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T18:09:25-03:00 — B99-101 cat-file header
 
 - **RED/GREEN:** o RED reproduziu scan do corpo após headers malformados de

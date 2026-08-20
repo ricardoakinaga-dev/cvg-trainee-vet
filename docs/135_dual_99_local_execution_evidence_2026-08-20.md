@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T18:09:25-03:00`
-- última atualização: `2026-08-20T18:12:21-03:00`
+- corte: `2026-08-20T18:21:57-03:00`
+- última atualização: `2026-08-20T18:21:57-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `0b29af6` em
+- commit publicado: `53b96d8` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,53 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 37 — B99-101 / rev-list path whitespace preservation — 2026-08-20T18:21:57-03:00
+
+### Barra congelada
+
+- preservar os bytes exatos do path emitido após o object ID por
+  `git rev-list --objects --all`, sem aparar whitespace de borda; tratar apenas
+  o marcador vazio de árvore como ausência de path de conteúdo;
+- provar que um arquivo textual versionado como `secret.png ` não é
+  reclassificado como `secret.png` binário ignorado e é encontrado no histórico,
+  sem imprimir o valor;
+- manter RED→GREEN, conteúdo sintético, leitura sem produção, formato/lint/
+  typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### RED → GREEN
+
+O RED criou um repositório Git sintético com `secret.png ` contendo uma
+atribuição sensível, commitou o arquivo e o removeu do worktree. O `.trim()`
+anterior convertia o path em `secret.png`, que entrava na lista de assets
+binários ignorados, e o scan de histórico retornava `[]`. O GREEN preserva o
+trecho exato após o separador do `rev-list`, mantendo a linha vazia de árvore
+como marcador estrutural; o finding aparece como `history:secret.png ` sem
+expor o valor sintético.
+
+### Evidência
+
+- foco do scanner: `26/26`;
+- cobertura integral: `205` arquivos, `1.120` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- scanner em `793` linhas, `verify:hotspots` com `0` hotspots; lint, typecheck,
+  Prettier, audit, contratos `86/86`, worker `51/51`, migrações `33/33`,
+  migration safety, decisões `7/7`, mutation `7/7` e `git diff --check`: PASS;
+- `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou
+  fail-closed somente nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado;
+- código/teste commitados em `53b96d8` (`fix: preserve git history path
+  identity`), sem segredo, PDF, dado real, produção, score, release ou
+  promoção de piloto.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A evidência documental desta rodada será publicada
+em commit separado. Esta rodada não prova provider, CI, RC imutável, runtime
+live, WebKit aprovado, clínica, `0/145`, gates externos ou reauditoria
+independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 36 — B99-101 / cat-file batch header integrity — 2026-08-20T18:09:25-03:00
 
