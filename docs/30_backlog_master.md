@@ -15,7 +15,9 @@ assets como texto nem os copia para findings; paths não-asset seguem
 fail-closed. O foco passou `30/30`, cobertura `205/1124/21` em
 `95,02/90,95/95,31/95,71`, scanner `776` linhas, hotspots `0`, e
 `verify:secrets` reportou somente os quatro valores redigidos preexistentes de
-`infra/production/.env.local`; código/teste estão em `de8cbdd`. O arquivo não
+`infra/production/.env.local`; código/teste estão em `de8cbdd`, a evidência
+documental foi publicada em `4a9d315` e o `pnpm verify` oficial passou todos os
+gates anteriores antes do mesmo bloqueio em `verify:secrets`. O arquivo não
 foi lido nem alterado; B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação e o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 

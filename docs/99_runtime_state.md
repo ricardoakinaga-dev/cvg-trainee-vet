@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após uma auditoria fresca invalidar o candidato de error-detail e reproduzir bypass textual em `worktree.png`, `staged.png` e `history.png`; publicou código/teste em `de8cbdd`; Round 41 passou foco `30/30`, cobertura `205/1124/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`776` linhas, `0` hotspots), diff-check e `verify:secrets` até os quatro valores redigidos preexistentes de `.env.local`; o scanner não expõe bytes de assets binários e o arquivo de produção não foi lido nem alterado; HEAD e origin estão em `de8cbdd`; `.gauntlet/` continua local e não rastreado
-- next_action: executar o `pnpm verify` oficial no commit `de8cbdd`, reconciliar/publicar a evidência documental e confirmar paridade remota; depois repetir auditoria read-only para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após uma auditoria fresca invalidar o candidato de error-detail e reproduzir bypass textual em `worktree.png`, `staged.png` e `history.png`; publicou código/teste em `de8cbdd` e evidência documental em `4a9d315`; Round 41 passou foco `30/30`, cobertura `205/1124/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`776` linhas, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:secrets`, que reportou somente os quatro valores redigidos preexistentes de `.env.local`; o scanner não expõe bytes de assets binários e o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: confirmar a paridade remota da publicação, executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável e atualizar o estado; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T19:25:00-03:00
+- last_update: 2026-08-20T19:32:31-03:00
 
 ## 2026-08-20T19:25:00-03:00 — DUAL99-B99-101-BINARY-EXTENSION-CONTENT
 

@@ -10827,7 +10827,10 @@ alterar o arquivo; os PDFs históricos não foram reportados.
 
 O código/teste foram commitados em `de8cbdd` (`fix: scan text under binary
 asset paths`) e enviados para `origin/agent/publish-production-hardening`. A
-documentação desta rodada está em reconciliação. B99-101 permanece
+evidência documental foi publicada em `4a9d315` e enviada para o mesmo remoto;
+o `pnpm verify` oficial passou todos os gates anteriores e parou em
+`verify:secrets` somente nos quatro valores redigidos preexistentes de
+`infra/production/.env.local`, que não foi lido nem alterado. B99-101 permanece
 `IN_PROGRESS` até secret manager/rotação/autorização; RC/proveniência, WebKit,
 runtime live, clínica, `0/145`, gates externos e reauditoria seguem abertos.
 Nenhum segredo, dado real, PDF, produção, score, release, decisão clínica ou

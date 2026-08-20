@@ -2,9 +2,11 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T19:25:00-03:00`
-- última atualização: `2026-08-20T19:25:00-03:00`
+- última atualização: `2026-08-20T19:32:31-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `de8cbdd` em
+  `origin/agent/publish-production-hardening`
+- evidência documental publicada: `4a9d315` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -870,14 +872,18 @@ marcador presente em bytes binários não aparece na serialização.
   históricos e falhou fail-closed somente nos quatro valores redigidos
   preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
   alterado;
+- o `pnpm verify` oficial passou formatação, contratos CI, fontes clínicas,
+  currículo, observabilidade/HA, Prometheus, traces, lint, typecheck, cobertura,
+  decisões `7/7`, mutation `7/7`, scope drift, contratos `86/86`, worker `51/51`,
+  migrations `33/33` e migration safety antes do mesmo bloqueio em
+  `verify:secrets`;
 - código/teste commitados em `de8cbdd` (`fix: scan text under binary asset
   paths`) e enviados para `origin/agent/publish-production-hardening`.
 
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A documentação desta rodada será publicada na
-reconciliação seguinte. Esta rodada não prova provider, CI, RC imutável,
+manager/rotação/autorização. Esta rodada não prova provider, CI, RC imutável,
 runtime live, WebKit aprovado, clínica, `0/145`, gates externos ou reauditoria
 independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 

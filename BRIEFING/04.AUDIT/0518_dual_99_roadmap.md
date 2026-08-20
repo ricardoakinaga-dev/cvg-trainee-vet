@@ -214,8 +214,9 @@ copiados para findings. Paths não-asset continuam fail-closed como
 `binary-file`/`oversize-file`. O foco passou `30/30`, cobertura `205/1124/21`
 em `95,02/90,95/95,31/95,71`, scanner em `776` linhas e hotspots `0`.
 
-Código/teste estão em `de8cbdd`; a documentação desta execução está sendo
-reconciliada. O gate de segredos continua fail-closed somente nos quatro
+Código/teste estão em `de8cbdd` e a evidência documental foi publicada em
+`4a9d315`. O `pnpm verify` oficial percorreu todos os gates até
+`verify:secrets`, que continua fail-closed somente nos quatro
 valores redigidos preexistentes de `infra/production/.env.local`, que não foi
 lido nem alterado. B99-101 segue `IN_PROGRESS`; secret manager/rotação,
 RC/proveniência, runtime, clínica, `0/145`, gates externos, aprovação humana e

@@ -153,6 +153,10 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   `95,02/90,95/95,31/95,71`, scanner `776` linhas, hotspots `0`, foco de
   secrets sem PDFs históricos e somente os quatro valores redigidos
   preexistentes de `infra/production/.env.local`; código/teste em `de8cbdd`;
+- **verificação/publicação:** o `pnpm verify` oficial passou todos os gates
+  anteriores e parou em `verify:secrets` somente nos quatro valores redigidos
+  preexistentes de `.env.local`; a evidência documental foi publicada em
+  `4a9d315` e enviada ao remoto;
 - **limite/status:** `.env.local` não foi lido nem alterado; não houve segredo,
   dado real, PDF, produção, score, release, clínica, `0/145` ou promoção de
   piloto. B99-101 permanece `IN_PROGRESS` até secret manager/rotação e o
