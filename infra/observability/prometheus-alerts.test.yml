@@ -1,0 +1,90 @@
+rule_files:
+  - /workspace/prometheus-alerts.yml
+
+evaluation_interval: 30s
+
+tests:
+  - interval: 30s
+    input_series:
+      - series: 'up{job="cvg-api",instance="api-a:3000"}'
+        values: "1 1 0 0 0 0"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: CvgApiTargetDown
+        exp_alerts:
+          - exp_labels:
+              alertname: CvgApiTargetDown
+              instance: api-a:3000
+              job: cvg-api
+              owner: sre
+              severity: critical
+              signal: observability_integrity
+            exp_annotations:
+              summary: A CVG API target is down or no longer serving metrics
+              runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+
+  - interval: 30s
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: CvgApiTargetAbsent
+        exp_alerts:
+          - exp_labels:
+              alertname: CvgApiTargetAbsent
+              job: cvg-api
+              owner: sre
+              severity: critical
+              signal: observability_integrity
+            exp_annotations:
+              summary: No CVG API target is visible to Prometheus
+              runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+
+  - interval: 30s
+    input_series:
+      - series: 'up{job="cvg-worker",instance="worker-a:9091"}'
+        values: "1 1 0 0 0 0"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: CvgWorkerTargetDown
+        exp_alerts:
+          - exp_labels:
+              alertname: CvgWorkerTargetDown
+              instance: worker-a:9091
+              job: cvg-worker
+              owner: sre
+              severity: critical
+              signal: observability_integrity
+            exp_annotations:
+              summary: A CVG worker target is down or no longer serving metrics
+              runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+
+  - interval: 30s
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: CvgWorkerTargetAbsent
+        exp_alerts:
+          - exp_labels:
+              alertname: CvgWorkerTargetAbsent
+              job: cvg-worker
+              owner: sre
+              severity: critical
+              signal: observability_integrity
+            exp_annotations:
+              summary: No CVG worker target is visible to Prometheus
+              runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
+
+  - interval: 30s
+    input_series:
+      - series: 'up{job="alertmanager",instance="alertmanager:9093"}'
+        values: "0 0 0 0 0 0"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: CvgAlertmanagerDisconnected
+        exp_alerts:
+          - exp_labels:
+              alertname: CvgAlertmanagerDisconnected
+              owner: sre
+              severity: critical
+              signal: observability_integrity
+            exp_annotations:
+              summary: Prometheus cannot observe a healthy Alertmanager target
+              runbook: BRIEFING/08.RUNTIME/0804_observability_operational_contract.md#loss-of-signal
