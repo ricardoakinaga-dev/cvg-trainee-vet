@@ -10605,3 +10605,39 @@ manager/rotação/autorização. RC/proveniência, WebKit, runtime live, clínic
 `0/145`, gates externos e reauditoria seguem abertos. Próxima ação: confirmar
 paridade remota e selecionar o próximo gap local. Estado:
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T17:33:16-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
+
+### TIMESTAMP / TASK
+
+2026-08-20 17:33:16 -03:00 — BUILD + GAUNTLET + RUNTIME CONTROLLER / Dual 99 /
+F99-1 / B99-101 — validação fail-closed do inventário `git rev-list`.
+
+### ACTION / RESULT
+
+RED adicionou um inventário sintético com ID estrutural bare, objeto com path,
+asset binário ignorado e uma linha inválida; a implementação anterior
+silenciosamente ignorava a linha inválida. GREEN passou a validar cada linha
+não vazia, aceitar IDs bare de 40 hex e IDs seguidos de paths, preservar paths
+binários ignorados e lançar erro para registros malformados; a falha é convertida
+por `scanProject` em `git-object-unreadable` para o histórico.
+
+O foco passou `22/22`; a cobertura passou `205/1116/21` em
+`95,02/90,95/95,31/95,71`; o scanner ficou em `800` linhas e
+`verify:hotspots` reportou `0` hotspots. Lint, typecheck, formato, audit,
+contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+decisões `7/7`, mutation `7/7` e `git diff --check` passaram. O `pnpm verify`
+percorreu os gates até `verify:secrets`, que falhou somente nos quatro valores
+redigidos preexistentes de `infra/production/.env.local`, sem ler ou alterar o
+arquivo.
+
+### DECISIONS / STATUS / NEXT
+
+O código/teste foram commitados em `b2f2cc0` (`fix: fail closed on malformed
+git object lists`). Nenhum segredo, PDF, dado real, provider, CI, produção,
+score, release, decisão clínica ou promoção de piloto foi tocado. B99-101
+permanece `IN_PROGRESS` até secret manager/rotação/autorização; a evidência
+documental desta rodada será publicada em commit separado. RC/proveniência,
+WebKit, runtime live, clínica, `0/145`, gates externos e reauditoria seguem
+abertos. Próxima ação: publicar a evidência, confirmar paridade remota e
+selecionar o próximo gap local. Estado: `IN_PROGRESS / PILOT_BLOCKED`.

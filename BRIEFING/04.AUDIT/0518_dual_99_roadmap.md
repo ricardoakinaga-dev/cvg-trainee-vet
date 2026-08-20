@@ -198,6 +198,25 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 16. Checkpoint de framing rev-list do scanner — 2026-08-20T17:33:16-03:00
+
+B99-101 recebeu RED/GREEN para o inventário produzido por
+`git rev-list --objects --all`. O RED reproduziu uma linha malformada sendo
+silenciosamente ignorada, o que poderia remover um objeto do histórico e
+produzir falso PASS. O GREEN valida cada linha não vazia, aceita IDs bare de 40
+hex para estrutura e IDs seguidos de path para conteúdo, preserva paths binários
+ignorados e falha fechado para registros inválidos; `scanProject` converte a
+falha em `git-object-unreadable` de histórico.
+
+O foco passou `22/22`, a cobertura passou `205/1116/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `800` linhas e
+`verify:hotspots` reportou `0`; lint, typecheck, formato, audit, contratos,
+worker, migrações, migration safety, decisões, mutation e diff-check passaram.
+Código/teste estão em `b2f2cc0`. O `pnpm verify` parou em `verify:secrets`
+somente nos quatro valores redigidos preexistentes de
+`infra/production/.env.local`; B99-101 segue `IN_PROGRESS` e o programa
+permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 15. Checkpoint de framing blob/tag do scanner — 2026-08-20T17:20:12-03:00
 
 B99-101 recebeu RED/GREEN para o framing de objetos de conteúdo do histórico

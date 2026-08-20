@@ -137,6 +137,26 @@ B99-102 permanece `IN_PROGRESS`; o programa segue
   manager/rotação/autorização; o programa permanece `IN_PROGRESS /
   PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T17:33:16-03:00 — B99-101 rev-list
+
+- **RED/GREEN:** o RED reproduziu aceitação silenciosa de uma linha malformada
+  de `git rev-list --objects --all`; o GREEN valida linhas não vazias, aceita
+  IDs bare de 40 hex e IDs seguidos de path, preserva paths binários ignorados
+  e falha fechado para registros inválidos, convertendo a falha em
+  `git-object-unreadable` no histórico;
+- **evidência:** foco `22/22`, cobertura `205/1116/21` em
+  `95,02/90,95/95,31/95,71`, scanner em `800` linhas, hotspots `0`, lint,
+  typecheck, formato, audit, contratos `86/86`, worker `51/51`, migrações
+  `33/33`, migration safety, decisões `7/7`, mutation `7/7` e diff-check
+  passaram; `pnpm verify` parou somente nos quatro valores redigidos
+  preexistentes de `infra/production/.env.local`;
+- **limite/status:** código/teste no commit `b2f2cc0`; nenhum segredo, dado
+  real, PDF, rotação, provider, CI, produção, score, release, clínica, `0/145`
+  ou piloto foi tocado. A evidência documental será publicada em commit
+  separado. B99-101 permanece `IN_PROGRESS` até secret
+  manager/rotação/autorização; o programa permanece `IN_PROGRESS /
+  PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T17:20:12-03:00 — B99-101 blob/tag
 
 - **RED/GREEN:** o RED reproduziu falso scan limpo para corpos `blob` e `tag`

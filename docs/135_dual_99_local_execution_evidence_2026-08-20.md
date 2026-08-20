@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T17:20:12-03:00`
-- última atualização: `2026-08-20T17:23:26-03:00`
+- corte: `2026-08-20T17:33:16-03:00`
+- última atualização: `2026-08-20T17:33:16-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `1adef42` em
+- commit publicado: `b2f2cc0` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -825,6 +825,50 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 34 — B99-101 / rev-list object-list framing fail-closed — 2026-08-20T17:33:16-03:00
+
+### Barra congelada
+
+- validar todas as linhas não vazias de `git rev-list --objects --all`,
+  aceitando IDs bare de 40 hex para estrutura e IDs de 40 hex seguidos de path
+  para objetos de conteúdo;
+- provar que uma linha malformada produz `git-object-unreadable` sem ser
+  silenciosamente ignorada, enquanto IDs estruturais, paths válidos e paths de
+  assets binários ignorados permanecem inalterados;
+- manter RED→GREEN, teste sintético, sem segredo/corpo real, formato/lint/
+  typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### RED → GREEN
+
+O RED adicionou um inventário sintético com ID estrutural bare, objeto com path,
+asset binário ignorado e uma linha inválida; o parser antigo retornava um mapa
+vazio para a linha inválida, permitindo falso PASS de histórico. O GREEN valida
+cada registro, aceita a forma bare ou ID+path e lança erro para a forma inválida;
+`scanProject` já converte a falha do histórico em `git-object-unreadable`.
+
+### Evidência
+
+- foco do scanner: `22/22`;
+- cobertura integral: `205` arquivos, `1.116` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- lint, typecheck, Prettier, audit, `verify:hotspots` (`0` hotspots), contratos
+  `86/86`, worker `51/51`, migrações `33/33`, migration safety, decisões `7/7`,
+  mutation `7/7` e `git diff --check`: PASS;
+- `pnpm verify` passou todos os gates até `verify:secrets`, que falhou somente
+  nos quatro valores redigidos preexistentes de
+  `infra/production/.env.local`; o arquivo não foi lido nem alterado;
+- código/teste commitados em `b2f2cc0` (`fix: fail closed on malformed git object
+  lists`), sem segredo, PDF, dado real, produção, score, release ou piloto.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A evidência documental desta rodada será
+publicada em commit separado; RC/proveniência, runtime live, WebKit aprovado,
+clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
+O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 33 — B99-101 / blob-tag batch framing fail-closed — 2026-08-20T17:20:12-03:00
 
