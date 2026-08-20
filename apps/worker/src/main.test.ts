@@ -392,6 +392,45 @@ describe("worker runtime", () => {
     }
   });
 
+  it("rechecks dependencies and claim-to-ack before processing after recovery", async () => {
+    vi.useFakeTimers();
+    try {
+      let healthcheckCalls = 0;
+      let resolveFailure: (() => void) | undefined;
+      const failureObserved = new Promise<void>((resolve) => {
+        resolveFailure = resolve;
+      });
+      mocks.integrations.healthcheck.mockImplementation(async () => {
+        healthcheckCalls += 1;
+        if (healthcheckCalls === 2) {
+          resolveFailure?.();
+          throw new Error("synthetic dependency outage");
+        }
+      });
+      const runtime = createWorkerRuntime(environment());
+      mocks.processOutboxOnce.mockImplementation(async () => {
+        expect(mocks.runWorkerClaimAckProbe).toHaveBeenCalledTimes(2);
+        await runtime.close();
+        return { claimed: 0, processed: 0, failed: 0 };
+      });
+
+      const runPromise = runtime.run();
+      await failureObserved;
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(mocks.processOutboxOnce).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      await vi.advanceTimersByTimeAsync(1_000);
+      await expect(runPromise).resolves.toBeUndefined();
+      expect(healthcheckCalls).toBe(3);
+      expect(mocks.runWorkerClaimAckProbe).toHaveBeenCalledTimes(2);
+      expect(mocks.processOutboxOnce).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("processes an idle batch, waits, and exits after close", async () => {
     vi.useFakeTimers();
     try {
