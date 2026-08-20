@@ -1,13 +1,12 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T19:25:00-03:00`
-- última atualização: `2026-08-20T19:32:31-03:00`
+- corte: `2026-08-20T19:48:27-03:00`
+- última atualização: `2026-08-20T19:48:27-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `de8cbdd` em
+- commit publicado: `69e5ff3` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `4a9d315` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: reconciliação pendente neste worktree
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -29,6 +28,10 @@
   asset agora também são enumerados, texto UTF-8 limitado é escaneado e bytes
   binários/oversize de assets não são tratados como texto; o scanner continua
   fail-closed e ainda acusa `infra/production/.env.local` sem imprimir valores.
+- preflight de histórico: `git cat-file --batch-check` agora valida tipo e
+  tamanho antes de requisitar corpos; assets acima de `MAX_SCAN_BYTES` não têm
+  corpo materializado, enquanto paths não-asset oversized geram
+  `oversize-file` e assets textuais limitados continuam escaneáveis.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -829,6 +832,62 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 42 — B99-101 / oversized history body preflight — 2026-08-20T19:48:27-03:00
+
+### Barra congelada
+
+- impedir que o scanner solicite e concatene corpos históricos acima do limite
+  antes de descartá-los, sem perder o scan textual limitado de assets e o
+  fail-closed de conteúdo não-asset;
+- validar strictamente os metadados `cat-file --batch-check`, não solicitar o
+  corpo de asset oversized e manter `oversize-file` com metadados redigidos
+  para não-assets;
+- manter RED→GREEN, fixture Git descartável, ausência de segredo/dado real,
+  formato/lint/typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### Auditoria fresca e RED → GREEN
+
+Uma auditoria read-only identificou que `readGitBlobs` ainda requisitava todos
+os objetos mapeados com `git cat-file --batch` e concatenava a saída inteira;
+assim, um asset histórico oversized era materializado e só depois descartado.
+O RED adicionou um plano sintético de requisições baseado em
+`cat-file --batch-check` e falhou porque o planejador ainda não existia.
+
+O GREEN adicionou `scripts/secret-scanner-git-batch.mjs`: o preflight valida
+framing, identidade, tipo e tamanho, registra `oversize-file` somente para
+paths não-asset e exclui corpos oversized da lista enviada ao batch de
+conteúdo. `readGitBlobs` executa o preflight antes do batch corporal e mantém
+o scan UTF-8 limitado sob `.png`; erro ou framing incompleto permanece
+fail-closed sem expor bytes.
+
+Uma fixture Git descartável com asset binário sintético acima de 2 MiB e texto
+secret-shaped sob `text.png` confirmou `history:text.png` com os findings
+esperados, sem finding ou corpo para o asset oversized.
+
+### Evidência
+
+- foco do scanner: `31/31`;
+- cobertura integral: `205` arquivos, `1.125` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- `scripts/secret-scanner.mjs` ficou em `785` linhas e o helper em `108`,
+  `verify:hotspots` reportou `0` hotspots; formato, lint, typecheck e
+  `git diff --check` passaram;
+- o `pnpm verify` oficial passou todos os gates até `verify:migration-safety`
+  e parou fail-closed em `verify:secrets` somente nos quatro assignments
+  redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+  lido nem alterado;
+- código/teste commitados em `69e5ff3` (`fix: preflight git history object
+  sizes`) e enviados para `origin/agent/publish-production-hardening`.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. Esta evidência não prova limite agregado de todos
+os corpos bounded, provider, CI, RC imutável, runtime live, WebKit aprovado,
+clínica, `0/145`, gates externos ou reauditoria independente. O programa
+permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 41 — B99-101 / binary-extension content bypass — 2026-08-20T19:25:00-03:00
 

@@ -198,6 +198,30 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 24. Checkpoint de preflight de corpos históricos — 2026-08-20T19:48:27-03:00
+
+B99-101 recebeu uma auditoria read-only fresca que identificou materialização
+desnecessária: `readGitBlobs` requisitava todos os objetos com
+`git cat-file --batch` e concatenava corpos históricos antes de descartar
+assets oversized. O RED falhou ao exigir um plano de requisições baseado em
+`git cat-file --batch-check`; o GREEN passou a validar framing, identidade,
+tipo e tamanho, omitir corpos oversized de assets e emitir `oversize-file`
+redigido para paths não-asset.
+
+Uma fixture Git descartável confirmou que texto UTF-8 limitado sob `text.png`
+continua encontrando findings, enquanto um asset binário sintético acima de
+2 MiB não é materializado nem produz finding. O foco passou `31/31`, a
+cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, o scanner ficou em `785`
+linhas, o helper em `108` e hotspots em `0`. O código/teste está em
+`69e5ff3`; o `pnpm verify` oficial passou até `verify:migration-safety` e
+parou em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `.env.local`.
+
+O avanço permanece local: secret manager/rotação, limite agregado de corpos
+bounded, provider/CI, RC/proveniência, runtime live, clínica, `0/145`, gates
+externos e reauditoria independente continuam abertos. F99-1 permanece
+`IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+
 ## 23. Checkpoint de conteúdo sob extensão binária — 2026-08-20T19:25:00-03:00
 
 B99-101 recebeu uma auditoria read-only fresca. A hipótese de vazamento em

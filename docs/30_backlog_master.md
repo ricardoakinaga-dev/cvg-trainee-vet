@@ -4,6 +4,20 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Atualização Dual99 local — 2026-08-20T19:48:27-03:00 — B99-101:** a
+auditoria read-only encontrou materialização de corpos históricos oversized
+antes do descarte. O RED falhou ao exigir o plano `git cat-file --batch-check`;
+o GREEN adicionou preflight estrito de framing/identidade/tipo/tamanho,
+excluiu corpos oversized de assets do batch corporal e manteve
+`oversize-file` fail-closed para não-assets, sem perder o scan UTF-8 limitado
+de `text.png`. Fixture Git descartável confirmou o comportamento com asset
+binário sintético acima de 2 MiB. Foco `31/31`, cobertura `205/1125/21` em
+`95,02/90,95/95,31/95,71`, scanner `785` linhas, helper `108`, hotspots `0`;
+`pnpm verify` passou até migration safety e parou somente nos quatro
+assignments redigidos preexistentes de `.env.local`. Código/teste estão em
+`69e5ff3`; documentação em reconciliação; B99-101 permanece `IN_PROGRESS` e o
+programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T19:25:00-03:00 — B99-101:** a auditoria
 read-only rejeitou a hipótese de vazamento em detalhes de respostas `error`
 válidas porque findings `missing/error` já redigem evidence. Uma fixture Git

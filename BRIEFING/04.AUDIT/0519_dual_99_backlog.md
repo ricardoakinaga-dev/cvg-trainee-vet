@@ -15,6 +15,29 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T19:48:27-03:00 — B99-101 history batch preflight
+
+- **auditoria/RED:** a auditoria read-only identificou que
+  `readGitBlobs` requisitava e concatenava corpos históricos oversized antes
+  de descartá-los; o RED do planejador baseado em `git cat-file --batch-check`
+  falhou antes da implementação;
+- **GREEN:** `scripts/secret-scanner-git-batch.mjs` valida framing, identidade,
+  tipo e tamanho, exclui corpos oversized de assets do batch corporal e
+  emite `oversize-file` somente para paths não-asset; o scan textual limitado
+  sob assets permanece ativo e fail-closed;
+- **evidência:** fixture Git descartável confirmou `text.png` escaneável e
+  asset binário sintético acima de 2 MiB não materializado; foco `31/31`,
+  cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, scanner `785` linhas,
+  helper `108`, hotspots `0`, lint/typecheck/formato/diff-check verdes;
+- **verificação/publicação:** `pnpm verify` passou todos os gates até
+  `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
+  assignments redigidos preexistentes de `infra/production/.env.local`; código
+  em `69e5ff3`, evidência documental em reconciliação;
+- **limite/status:** `.env.local` não foi lido nem alterado; limite agregado
+  de corpos bounded, secret manager, provider/CI, RC, runtime live, clínica,
+  `0/145`, gates externos e reauditoria permanecem abertos. B99-101 e o
+  programa seguem `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## F99-0 — verdade e planejamento
 
 | ID | Pri | Estado | Owner | O que/onde | Teste e pronto |

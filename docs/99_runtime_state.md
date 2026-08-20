@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora enumera worktree/index/history sem filtrar por extensão, escaneia texto UTF-8 limitado sob paths de assets e preserva fail-closed para bytes binários/oversize não-asset, além das proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 agora faz preflight `git cat-file --batch-check` de tipo/tamanho antes de requisitar corpos históricos, não materializa assets oversized, emite `oversize-file` redigido para não-assets e preserva scan UTF-8 limitado sob assets, além das proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após uma auditoria fresca invalidar o candidato de error-detail e reproduzir bypass textual em `worktree.png`, `staged.png` e `history.png`; publicou código/teste em `de8cbdd` e evidência documental em `4a9d315`; Round 41 passou foco `30/30`, cobertura `205/1124/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`776` linhas, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:secrets`, que reportou somente os quatro valores redigidos preexistentes de `.env.local`; o scanner não expõe bytes de assets binários e o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: confirmar a paridade remota da publicação, executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável e atualizar o estado; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar materialização de corpos históricos oversized; publicou código/teste em `69e5ff3`; Round 42 passou foco `31/31`, cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`785` linhas no scanner e `108` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar e reconciliar a evidência documental de Round 42, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,31 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T19:32:31-03:00
+- last_update: 2026-08-20T19:48:27-03:00
+
+## 2026-08-20T19:48:27-03:00 — DUAL99-B99-101-HISTORY-BATCH-PREFLIGHT
+
+### AÇÃO / RESULTADO
+
+- auditoria read-only encontrou que `readGitBlobs` requisitava todos os
+  objetos e concatenava corpos históricos antes de descartar assets oversized;
+- RED falhou ao importar o planejador de `cat-file --batch-check`; GREEN criou
+  o helper de preflight, validou framing/identidade/tipo/tamanho, omitiu corpos
+  oversized de assets e preservou `oversize-file` fail-closed para não-assets;
+- fixture Git descartável confirmou scan de texto limitado sob `text.png` e
+  ausência de materialização/finding do asset binário sintético acima de 2 MiB;
+- foco `31/31`, cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, scanner
+  `785` linhas, helper `108`, hotspots `0`, lint/typecheck/formato/diff-check
+  passaram; `pnpm verify` passou até migration safety e parou somente nos
+  quatro assignments redigidos preexistentes do secret scan.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: o código/teste está em `69e5ff3`, o arquivo
+`infra/production/.env.local` não foi lido nem alterado e a evidência está em
+reconciliação. Limite agregado de corpos bounded, secret manager, provider,
+RC, runtime live, clínica, `0/145`, gates externos e reauditoria permanecem
+abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T19:25:00-03:00 — DUAL99-B99-101-BINARY-EXTENSION-CONTENT
 

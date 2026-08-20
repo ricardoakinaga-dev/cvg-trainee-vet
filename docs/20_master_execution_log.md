@@ -10910,3 +10910,65 @@ promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,
 `0/145`, gates externos e reauditoria seguem abertos. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T19:48:27-03:00 — DUAL99-B99-101-HISTORY-BATCH-PREFLIGHT
+
+### TIMESTAMP
+
+2026-08-20 19:48:27 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+F99-1 — hardening do scanner de segredos
+
+### TASK
+
+B99-101 — planejar corpos históricos por `git cat-file --batch-check` antes
+da requisição de conteúdo.
+
+### ACTION
+
+Uma auditoria read-only identificou que `readGitBlobs` requisitava todos os
+objetos mapeados e concatenava corpos históricos antes de descartar assets
+oversized. O RED adicionou o contrato do planejador e falhou; o GREEN criou
+`scripts/secret-scanner-git-batch.mjs`, validando framing, identidade, tipo e
+tamanho antes de construir o batch corporal. Assets oversized não entram na
+requisição de corpo; paths não-asset recebem `oversize-file` redigido.
+
+### RESULT
+
+Fixture Git descartável confirmou scan de texto UTF-8 limitado sob `text.png`
+e ausência de materialização/finding para asset binário sintético acima de 2
+MiB. O foco passou `31/31`; a cobertura passou `205/1125/21` em
+`95,02/90,95/95,31/95,71`; scanner `785` linhas, helper `108`, hotspots `0`,
+lint, typecheck, formato e diff-check passaram. O `pnpm verify` oficial passou
+todos os gates até `verify:migration-safety` e parou fail-closed em
+`verify:secrets` somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`, que não foi lido nem alterado.
+
+### DECISIONS
+
+O código/teste foram commitados em `69e5ff3` (`fix: preflight git history
+object sizes`) e enviados para `origin/agent/publish-production-hardening`.
+Não houve segredo, dado real, PDF, produção, score, release, decisão clínica,
+piloto ou reauditoria independente. Limite agregado dos corpos bounded,
+secret manager/rotação, provider/CI, RC, runtime live, WebKit aprovado,
+clínica, `0/145` e gates externos seguem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar e reconciliar a evidência documental; depois executar auditoria
+read-only fresca para selecionar o próximo gap local verificável, mantendo
+os gates externos e humanos explícitos.
