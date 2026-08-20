@@ -201,11 +201,9 @@ function isCodeExpression(value) {
   return false;
 }
 
-// Bare identifier/property/cast expressions are code; literals remain findings.
 function isBareIdentifierExpression(value) {
   const normalized = value.trim().replace(/[;,}\]]+$/gu, "");
   if (entropy(normalized) >= 4.0) {
-    // Recognizable call/property expressions remain code at high entropy.
     const expressionPattern =
       /^[a-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*(?:\([^()]*\))?(?:\.[A-Za-z_$][A-Za-z0-9_$]*(?:\([^()]*\))?)*(?:\s+as\s+[A-Za-z_$][A-Za-z0-9_$]*)?$/u;
     return (
@@ -522,7 +520,6 @@ async function walk(directory, root) {
   for (const entry of entries) {
     const absolutePath = join(directory, entry.name);
     if (entry.isSymbolicLink()) {
-      // Do not follow workspace links; report them as unscanned inputs.
       files.push(absolutePath);
       continue;
     }
@@ -628,12 +625,16 @@ async function scanStaged(root) {
 function parseObjectList(output) {
   const objects = new Map();
   for (const line of output.split("\n")) {
+    if (line.length === 0) continue;
     const separator = line.indexOf(" ");
-    if (separator <= 0) continue;
-    const objectId = line.slice(0, separator);
+    const objectId = separator < 0 ? line : line.slice(0, separator);
+    if (!/^[0-9a-f]{40}$/u.test(objectId)) {
+      throw new Error("malformed git object list");
+    }
+    if (separator < 0) continue;
     const path = line.slice(separator + 1).trim();
-    if (path.length > 0 && isScanCandidatePath(path))
-      objects.set(objectId, path);
+    if (path.length === 0) continue;
+    if (isScanCandidatePath(path)) objects.set(objectId, path);
   }
   return objects;
 }
@@ -666,8 +667,7 @@ function readBatchOutput(buffer, objects, source = "history") {
       continue;
     }
     const size = Number(sizeText);
-    // Validate structural framing before skipping Git tree/commit objects;
-    // annotated tags remain text-bearing and are scanned below.
+    // Validate framing before skipping Git structure; tags remain text-bearing.
     if (type === "tree" || type === "commit") {
       const bodyEnd = offset + size;
       if (
@@ -797,4 +797,4 @@ export async function scanProject(
   return Object.freeze([...unique.values()]);
 }
 
-export { isTextPath, readBatchOutput };
+export { isTextPath, parseObjectList, readBatchOutput };

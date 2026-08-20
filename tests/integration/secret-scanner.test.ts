@@ -12,6 +12,7 @@ import {
   scanProject,
   summarizeSecretFindings,
   type SecretFinding,
+  parseObjectList,
   readBatchOutput,
 } from "../../scripts/secret-scanner.mjs";
 
@@ -348,6 +349,26 @@ describe("secret scanner", () => {
         "history:.env.local",
         "staged:.npmrc",
       ]),
+    );
+  });
+
+  it("rejects malformed rev-list object records instead of silently skipping them", () => {
+    const structureObjectId = "a".repeat(40);
+    const contentObjectId = "b".repeat(40);
+    const ignoredAssetObjectId = "c".repeat(40);
+    const objects = parseObjectList(
+      [
+        structureObjectId,
+        `${contentObjectId} src/config.ts`,
+        `${ignoredAssetObjectId} public/icon.png`,
+      ].join("\n"),
+    );
+
+    expect([...objects.entries()]).toEqual([
+      [contentObjectId, "src/config.ts"],
+    ]);
+    expect(() => parseObjectList("not-a-valid-rev-list-record\n")).toThrow(
+      /malformed git object list/iu,
     );
   });
 
