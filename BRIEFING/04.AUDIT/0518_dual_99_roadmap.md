@@ -198,6 +198,29 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 25. Checkpoint de limite agregado do batch Git — 2026-08-20T20:13:49-03:00
+
+B99-101 recebeu uma auditoria read-only fresca que identificou um segundo
+limite de recurso: após o preflight, todos os blobs bounded ainda eram
+enviados para uma única chamada e concatenados em memória. O RED falhou nos
+contratos de particionamento e cap. O GREEN passou a agrupar corpos em batches
+de até `8 MiB`, limitar stdout pelo tamanho preflightado e emitir
+`git-object-unreadable` redigido em overflow; a orquestração foi extraída para
+o helper Git e o scanner principal ficou em `774` linhas.
+
+Uma fixture Git descartável com cinco blobs distintos de aproximadamente 1,8
+MiB encontrou os cinco findings através de duas batches, e o teste de cap
+rejeitou output acima do limite sem expor bytes. O foco passou `34/34`, a
+cobertura `205/1128/21` em `95,02/90,95/95,31/95,71`, o helper ficou em `213`
+linhas e hotspots em `0`. O código/teste está em `b15f171`; o `pnpm verify`
+oficial passou até `verify:migration-safety` e parou em `verify:secrets` somente
+nos quatro assignments redigidos preexistentes de `.env.local`.
+
+O avanço permanece local: streaming integral sem buffers, secret
+manager/rotação, provider/CI, RC/proveniência, runtime live, clínica, `0/145`,
+gates externos e reauditoria independente continuam abertos. F99-1 permanece
+`IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+
 ## 24. Checkpoint de preflight de corpos históricos — 2026-08-20T19:48:27-03:00
 
 B99-101 recebeu uma auditoria read-only fresca que identificou materialização

@@ -10974,3 +10974,63 @@ IN_PROGRESS / PILOT_BLOCKED
 Publicar e reconciliar a evidência documental; depois executar auditoria
 read-only fresca para selecionar o próximo gap local verificável, mantendo
 os gates externos e humanos explícitos.
+
+## 2026-08-20T20:13:49-03:00 — DUAL99-B99-101-AGGREGATE-BATCH-BOUND
+
+### TIMESTAMP
+
+2026-08-20 20:13:49 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+F99-1 — hardening do scanner de segredos
+
+### TASK
+
+B99-101 — limitar a memória agregada das batches de corpos históricos bounded.
+
+### ACTION
+
+Uma auditoria read-only confirmou que `readGitBlobs` enviava todos os blobs
+bounded em uma lista flat e `runGitBatch` concatenava todo stdout antes do
+parse. O RED falhou nos contratos de batches e cap. O GREEN particiona por
+`8 MiB`, limita stdout pelo tamanho obtido no `cat-file --batch-check` e
+converte overflow em finding genérico redigido; a orquestração foi extraída
+para `scripts/secret-scanner-git-batch.mjs`.
+
+### RESULT
+
+Fixture Git descartável com cinco blobs distintos de aproximadamente 1,8 MiB
+encontrou os cinco findings através de duas batches. O foco passou `34/34`; a
+cobertura passou `205/1128/21` em `95,02/90,95/95,31/95,71`; scanner `774`
+linhas, helper `213`, hotspots `0`, lint, typecheck, formato e diff-check
+passaram. O `pnpm verify` oficial passou todos os gates até
+`verify:migration-safety` e parou fail-closed em `verify:secrets` somente nos
+quatro assignments redigidos preexistentes de `infra/production/.env.local`,
+que não foi lido nem alterado.
+
+### DECISIONS
+
+O código/teste foram commitados em `b15f171` (`fix: bound git history batch
+memory`) e enviados para `origin/agent/publish-production-hardening`. Não
+houve segredo, dado real, PDF, produção, score, release, decisão clínica,
+piloto ou reauditoria independente. Streaming integral sem buffers, secret
+manager/rotação, provider/CI, RC, runtime live, WebKit aprovado, clínica,
+`0/145` e gates externos seguem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar e reconciliar a evidência documental; depois executar auditoria
+read-only fresca para selecionar o próximo gap local verificável.

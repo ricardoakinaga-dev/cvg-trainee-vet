@@ -1,13 +1,12 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T19:48:27-03:00`
-- última atualização: `2026-08-20T19:52:56-03:00`
+- corte: `2026-08-20T20:13:49-03:00`
+- última atualização: `2026-08-20T20:13:49-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `69e5ff3` em
+- commit publicado: `b15f171` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `67b7b40` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: reconciliação pendente neste worktree
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -33,6 +32,9 @@
   tamanho antes de requisitar corpos; assets acima de `MAX_SCAN_BYTES` não têm
   corpo materializado, enquanto paths não-asset oversized geram
   `oversize-file` e assets textuais limitados continuam escaneáveis.
+- limite agregado de histórico: corpos bounded são particionados em batches de
+  até `8 MiB`, cada saída de subprocesso recebe cap derivado dos tamanhos
+  preflightados e overflow gera finding `git-object-unreadable` redigido.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -833,6 +835,60 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 43 — B99-101 / aggregate Git body batch bound — 2026-08-20T20:13:49-03:00
+
+### Barra congelada
+
+- impedir que muitos corpos históricos individualmente bounded formem um único
+  buffer agregado sem limite, mantendo todos os findings e o fail-closed;
+- particionar por orçamento de corpo, limitar stdout do subprocesso e não
+  expor bytes quando o output exceder o cap;
+- manter RED→GREEN, fixture Git descartável, ausência de segredo/dado real,
+  formato/lint/typecheck/diff-check, cobertura, hotspots e governanças verdes.
+
+### Auditoria fresca e RED → GREEN
+
+Após Round 42, a auditoria read-only reproduziu que cinco blobs sintéticos de
+2 MiB eram retornados por `planGitBatchRequests` em uma lista flat e enviados
+para um único `runGitBatch`, cujo helper concatenava todos os chunks de stdout.
+O RED adicionou o contrato de batches e do cap de subprocesso e falhou em
+`2/33` testes.
+
+O GREEN passou a agrupar corpos bounded em batches de até `8 MiB`, derivar um
+limite de stdout por batch a partir dos tamanhos do `cat-file --batch-check` e
+encerrar fail-closed quando o subprocesso excede o cap. A lógica foi extraída
+para `scripts/secret-scanner-git-batch.mjs`, mantendo o scanner principal em
+`774` linhas.
+
+Uma fixture Git descartável com cinco blobs distintos de aproximadamente
+1,8 MiB encontrou os cinco paths através de duas batches; o teste direto do
+subprocesso confirmou rejeição acima do limite sem serializar o corpo.
+
+### Evidência
+
+- foco do scanner: `34/34`;
+- cobertura integral: `205` arquivos, `1.128` testes passantes, `17` arquivos
+  e `21` testes guardados, `95,02%` statements, `90,95%` branches, `95,31%`
+  functions e `95,71%` lines;
+- `scripts/secret-scanner.mjs` ficou em `774` linhas e o helper em `213`,
+  `verify:hotspots` reportou `0` hotspots não classificados; formato, lint,
+  typecheck e `git diff --check` passaram;
+- o `pnpm verify` oficial passou todos os gates até `verify:migration-safety`
+  e parou fail-closed em `verify:secrets` somente nos quatro assignments
+  redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+  lido nem alterado;
+- código/teste commitados em `b15f171` (`fix: bound git history batch memory`)
+  e enviados para `origin/agent/publish-production-hardening`.
+
+### Limites / status / próxima ação
+
+B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
+manager/rotação/autorização. A documentação desta rodada será publicada na
+reconciliação seguinte. Esta evidência não prova streaming integral sem
+buffers, provider, CI, RC imutável, runtime live, WebKit aprovado, clínica,
+`0/145`, gates externos ou reauditoria independente. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 42 — B99-101 / oversized history body preflight — 2026-08-20T19:48:27-03:00
 

@@ -38,6 +38,29 @@
   `0/145`, gates externos e reauditoria permanecem abertos. B99-101 e o
   programa seguem `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T20:13:49-03:00 — B99-101 aggregate Git body batch
+
+- **auditoria/RED:** a auditoria read-only confirmou que a lista flat de
+  corpos bounded ainda era enviada a um único `git cat-file --batch`, cujo
+  stdout era concatenado sem limite agregado; RED falhou nos contratos de
+  batches e cap;
+- **GREEN:** corpos são particionados em batches de até `8 MiB`, cada saída
+  recebe cap derivado do `cat-file --batch-check` e overflow produz
+  `history:<git>`/`git-object-unreadable` sem expor bytes; a orquestração foi
+  extraída para o helper Git;
+- **evidência:** fixture descartável encontrou cinco findings em duas batches,
+  cap direto rejeitou output oversized; foco `34/34`, cobertura `205/1128/21`
+  em `95,02/90,95/95,31/95,71`, scanner `774`, helper `213`, hotspots `0`,
+  lint/typecheck/formato/diff-check verdes;
+- **verificação/publicação:** `pnpm verify` passou todos os gates até
+  `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
+  assignments redigidos preexistentes de `infra/production/.env.local`; código
+  em `b15f171`, evidência documental em reconciliação;
+- **limite/status:** `.env.local` não foi lido nem alterado; streaming integral
+  sem buffers, secret manager, provider/CI, RC, runtime live, clínica, `0/145`,
+  gates externos e reauditoria permanecem abertos. B99-101 e o programa seguem
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## F99-0 — verdade e planejamento
 
 | ID | Pri | Estado | Owner | O que/onde | Teste e pronto |

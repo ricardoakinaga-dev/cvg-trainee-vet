@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora faz preflight `git cat-file --batch-check` de tipo/tamanho antes de requisitar corpos históricos, não materializa assets oversized, emite `oversize-file` redigido para não-assets e preserva scan UTF-8 limitado sob assets, além das proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 agora particiona corpos históricos bounded em batches de até `8 MiB`, limita stdout por batch, falha fechado em overflow e mantém o preflight `git cat-file --batch-check` de tipo/tamanho, scan UTF-8 limitado sob assets e proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar materialização de corpos históricos oversized; publicou código/teste em `69e5ff3` e o pacote documental de Round 42 em `67b7b40`; Round 42 passou foco `31/31`, cobertura `205/1125/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`785` linhas no scanner e `108` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: confirmar a paridade remota de `69e5ff3`/`67b7b40` e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar buffer agregado sem limite em corpos históricos bounded; publicou código/teste em `b15f171`; Round 43 passou foco `34/34`, cobertura `205/1128/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `213` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar e reconciliar a evidência documental de Round 43, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,31 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T19:52:56-03:00
+- last_update: 2026-08-20T20:13:49-03:00
+
+## 2026-08-20T20:13:49-03:00 — DUAL99-B99-101-AGGREGATE-BATCH-BOUND
+
+### AÇÃO / RESULTADO
+
+- auditoria read-only encontrou uma lista flat de corpos bounded enviada a um
+  único `git cat-file --batch`, com concatenação de stdout sem limite agregado;
+- RED falhou nos contratos de particionamento e cap; GREEN criou batches de
+  até `8 MiB`, cap de stdout derivado do preflight e finding redigido em
+  overflow, extraindo a orquestração para o helper Git;
+- fixture Git descartável confirmou cinco findings em duas batches; o teste
+  direto do subprocesso confirmou rejeição acima do cap sem expor bytes;
+- foco `34/34`, cobertura `205/1128/21` em `95,02/90,95/95,31/95,71`, scanner
+  `774` linhas, helper `213`, hotspots `0`, lint/typecheck/formato/diff-check
+  passaram; `pnpm verify` passou até migration safety e parou somente nos
+  quatro assignments redigidos preexistentes do secret scan.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: o código/teste está em `b15f171`, o arquivo
+`infra/production/.env.local` não foi lido nem alterado e a evidência está em
+reconciliação. Streaming integral sem buffers, secret manager, provider, RC,
+runtime live, clínica, `0/145`, gates externos e reauditoria permanecem
+abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T19:48:27-03:00 — DUAL99-B99-101-HISTORY-BATCH-PREFLIGHT
 
