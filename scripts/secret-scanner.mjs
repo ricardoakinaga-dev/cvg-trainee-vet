@@ -1,9 +1,12 @@
 import { Buffer } from "node:buffer";
 import { lstat, readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
-import { spawn } from "node:child_process";
 import { promisify, TextDecoder } from "node:util";
 import { execFile } from "node:child_process";
+import {
+  planGitBatchRequests as planGitBatchRequestsInternal,
+  runGitBatch,
+} from "./secret-scanner-git-batch.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -706,25 +709,31 @@ function readBatchOutput(buffer, objects, source = "history") {
 
 async function readGitBlobs(root, objects) {
   if (objects.size === 0) return [];
-  return new Promise((resolve, reject) => {
-    const child = spawn("git", ["cat-file", "--batch"], { cwd: root });
-    const chunks = [];
-    const errors = [];
-    child.stdout.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-    child.stderr.on("data", (chunk) => errors.push(Buffer.from(chunk)));
-    child.once("error", reject);
-    child.once("close", (code) => {
-      if (code !== 0) {
-        reject(
-          new Error(
-            Buffer.concat(errors).toString("utf8") || `git exited with ${code}`,
-          ),
-        );
-        return;
-      }
-      resolve(readBatchOutput(Buffer.concat(chunks), objects));
-    });
-    child.stdin.end(`${[...objects.keys()].join("\n")}\n`);
+  const objectIds = [...objects.keys()];
+  const checkOutput = await runGitBatch(
+    root,
+    ["cat-file", "--batch-check"],
+    objectIds,
+  );
+  const plan = planGitBatchRequests(checkOutput, objects);
+  if (!plan.complete || plan.objectIds.length === 0) return plan.findings;
+  const requestedObjects = new Map(
+    plan.objectIds.map((objectId) => [objectId, objects.get(objectId)]),
+  );
+  const bodyOutput = await runGitBatch(
+    root,
+    ["cat-file", "--batch"],
+    plan.objectIds,
+  );
+  return [...plan.findings, ...readBatchOutput(bodyOutput, requestedObjects)];
+}
+
+function planGitBatchRequests(buffer, objects, source = "history") {
+  return planGitBatchRequestsInternal(buffer, objects, {
+    maxScanBytes: MAX_SCAN_BYTES,
+    isIgnoredBinaryAssetPath,
+    source,
+    unscannedFinding,
   });
 }
 
@@ -773,4 +782,4 @@ export async function scanProject(
   return Object.freeze([...unique.values()]);
 }
 
-export { isTextPath, parseObjectList, readBatchOutput };
+export { isTextPath, parseObjectList, planGitBatchRequests, readBatchOutput };

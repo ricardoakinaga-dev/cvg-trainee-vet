@@ -13,6 +13,7 @@ import {
   summarizeSecretFindings,
   type SecretFinding,
   parseObjectList,
+  planGitBatchRequests,
   readBatchOutput,
 } from "../../scripts/secret-scanner.mjs";
 
@@ -573,6 +574,38 @@ describe("secret scanner", () => {
         "oversize-file",
       ]),
     );
+  });
+
+  it("plans bounded Git body requests from batch-check metadata", () => {
+    const oversizedAssetId = "a".repeat(40);
+    const oversizedTextId = "b".repeat(40);
+    const boundedTextId = "c".repeat(40);
+    const structuralId = "d".repeat(40);
+    const plan = planGitBatchRequests(
+      Buffer.from(
+        [
+          `${oversizedAssetId} blob 2097153`,
+          `${oversizedTextId} blob 2097153`,
+          `${boundedTextId} blob 32`,
+          `${structuralId} tree 512`,
+          "",
+        ].join("\n"),
+      ),
+      new Map([
+        [oversizedAssetId, "large.pdf"],
+        [oversizedTextId, "large.txt"],
+        [boundedTextId, "text.png"],
+        [structuralId, "src"],
+      ]),
+    );
+
+    expect(plan.objectIds).toEqual([boundedTextId]);
+    expect(plan.findings).toEqual([
+      expect.objectContaining({
+        path: "history:large.txt",
+        rule: "oversize-file",
+      }),
+    ]);
   });
 
   it("does not report git tree or commit objects as unreadable blobs", () => {
