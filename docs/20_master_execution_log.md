@@ -10157,3 +10157,33 @@ correlation lifecycle`) e enviados para
 notificação externa, RBAC/retenção de fornecedor, PostgreSQL live, RC,
 clínica, `0/145` ou reauditoria independente; status permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T13:30:56-03:00 — DUAL99-B99-205-READINESS-QDRANT
+
+O RED reproduziu uma corrida operacional: `runWorkerClaimAckProbe` capturava
+o relógio antes do `insertProbe`, enquanto `available_at` recebia
+`DEFAULT NOW()` no PostgreSQL. Em um insert atrasado, o claim não era elegível
+e o runbook retornava apenas `qdrant reconciliation failed`.
+
+O GREEN preservou o horário do evento antes do insert e passou a capturar o
+relógio do claim depois do insert. O foco unitário passou `14/14`; a integração
+descartável, com migration `33`, passou `2` arquivos e `4/4` testes para
+PostgreSQL worker e Qdrant. A reconciliação reparou divergência e órfão,
+replay e retirada. `pnpm reconcile:qdrant` passou duas vezes com
+`expected=1/upserted=1/removed=0` e depois
+`expected=1/upserted=0/removed=0`, sem payload na saída.
+
+A cobertura passou `204/1078/21` com floors `95,00/90,87/95,29/95,69`;
+build `12/12`, lint, typecheck, formato, migrations `33/33`, decisões `7/7`,
+mutation crítica `7/7`, hotspots e diff-check passaram. `pnpm verify` chegou
+até `verify:secrets` e parou fail-closed nos quatro valores redigidos do
+`.env.local` ignorado. Uma primeira execução de harness sem `DATABASE_URL` foi
+descartada e a repetição com as duas variáveis explícitas passou `4/4`.
+
+O código foi publicado como
+`43de2a2ff575c4fd9e11153a575c8dfbbb858008` em
+`origin/agent/publish-production-hardening`. O resultado é local e sintético;
+HA ativo, PostgreSQL restrito/RLS/TTL/concurrency live, notificação externa,
+RBAC/retenção de fornecedor, RC, clínica, `0/145` e reauditoria permanecem
+abertos. B99-205 está `READY_FOR_NEXT_STEP` localmente e o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.

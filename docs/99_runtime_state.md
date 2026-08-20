@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-204 fechou localmente a correlação redigida API→outbox→worker, spans OTLP/Tempo persistidos com retenção local explícita de 14 dias e ciclo sintético fire→ack→resolve no Alertmanager; B99-203/202/201 e B99-107–105 permanecem prontos localmente; a suíte focal B99-204 passou `51/51`; o HA ativo continua no SHA anterior e a retenção externa, notificação externa e acesso/RBAC operacional permanecem sem prova
+- current_task: F99-2 local hardening; B99-205 corrigiu e comprovou localmente o probe de readiness após insert PostgreSQL e a reconciliação PostgreSQL→Qdrant; B99-204/203/202/201 e B99-107–105 permanecem prontos localmente; a suíte B99-205 passou `14/14`, a integração live combinada passou `4/4` e o comando operacional passou duas execuções idempotentes; o HA ativo continua no SHA anterior e os gates externos permanecem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-204 sob RED/GREEN, repetiu os gates no worktree e publicou o código no commit `12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac`; logs passaram a carregar `traceId` validado, traces API/worker carregam request/correlation IDs redigidos, OTLP exporta somente atributos técnicos, e o worker emite spans correlacionáveis por hash técnico; `tempo.yaml` passou a fixar `backend_worker.compaction.block_retention: 336h`; `ops:verify-durable-traces` passou estático e live com trace sintético persistido; o verificador sintético do Alertmanager observou firing, acknowledgement por silence e resolve com limpeza; focos passaram `51/51`, cobertura global passou `204/1077/21` com floors `95/90,87/95,29/95,69`; o secret scan segue fail-closed apenas nos quatro valores redigidos de `.env.local`
-- next_action: obter autoridade/ambiente para retenção/RBAC/notificação externos, probes consecutivos A/B no runtime real, prova PostgreSQL de B99-201, migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-205 sob RED/GREEN, publicou a correção no commit `43de2a2ff575c4fd9e11153a575c8dfbbb858008` e repetiu os gates no worktree; o RED reproduziu que `runWorkerClaimAckProbe` podia fazer claim antes de `available_at DEFAULT NOW()` ser observável, e o GREEN passou a capturar o relógio do claim após o insert. A suíte focada passou `14/14`; PostgreSQL/Qdrant descartáveis passaram `4/4` live, a reconciliação não vazia reparou divergência/órfão, replay e retirada, e `pnpm reconcile:qdrant` passou `expected=1/upserted=1/removed=0` seguido de `expected=1/upserted=0/removed=0` sem payload; cobertura passou `204/1078/21` com floors `95/90,87/95,29/95,69`; build, typecheck, lint, formato, mutation crítica, migrações e gates locais passaram; `verify:secrets` segue fail-closed apenas nos quatro valores redigidos de `.env.local`
+- next_action: obter autoridade/ambiente para retenção/RBAC/notificação externos, probes consecutivos A/B no runtime HA/API/DB real, prova PostgreSQL de B99-201 em alvo autorizado, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T13:10:31-03:00
+- last_update: 2026-08-20T13:30:56-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 

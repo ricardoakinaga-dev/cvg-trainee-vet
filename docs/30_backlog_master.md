@@ -121,6 +121,20 @@ correlation lifecycle`) e enviados para `origin/agent/publish-production-hardeni
 O status permanece `IN_PROGRESS/PILOT_BLOCKED`; gaps externos, runtime HA
 stale, PostgreSQL live, RC, clínica, `0/145` e reauditoria continuam abertos.
 
+**Atualização Dual99 — 2026-08-20T13:30:56-03:00 — B99-205:** RED reproduziu
+que o probe de readiness capturava o relógio antes do insert PostgreSQL,
+podendo fazer claim antes de `available_at DEFAULT NOW()` ser elegível. GREEN
+captura o relógio de claim depois do insert. O foco passou `14/14`; a
+integração descartável PostgreSQL/Qdrant passou `4/4`, cobrindo claim/lease/ack,
+cleanup, divergência, órfão, replay e retirada. `pnpm reconcile:qdrant` passou
+duas vezes com `expected=1/upserted=1/removed=0` e depois
+`expected=1/upserted=0/removed=0`, sem payload; coverage passou `204/1078/21`
+com floors `95,00/90,87/95,29/95,69`. B99-205 está
+`READY_FOR_NEXT_STEP` localmente; o programa permanece
+`IN_PROGRESS/PILOT_BLOCKED` e os gates externos, RC, clínica, `0/145` e
+reauditoria continuam abertos. Código publicado em
+`43de2a2ff575c4fd9e11153a575c8dfbbb858008`.
+
 ## 2026-08-16T11:49:35-03:00 — U95-101 / renderer Prometheus
 
 - **concluído:** HELP/TYPE passou a ser único por família, séries/labels têm ordering determinístico, counters são expostos com `_total` e histogramas com tipo `histogram`/unidade `seconds`;

@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T13:10:31-03:00`
-- última atualização: `2026-08-20T13:10:31-03:00`
+- corte: `2026-08-20T13:30:56-03:00`
+- última atualização: `2026-08-20T13:30:56-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `12f93266a3d8a1f5fd4e4a5a38d55b6e01e8a7ac` em
+- commit publicado: `43de2a2ff575c4fd9e11153a575c8dfbbb858008` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -68,6 +68,10 @@
   Tempo local tem retenção explícita de 14 dias e os verificadores live
   confirmaram persistência de trace sintético e o ciclo interno sintético
   fire→ack→resolve do Alertmanager.
+- B99-205: o probe de readiness passou a capturar o relógio de claim depois do
+  insert PostgreSQL; a reconciliação PostgreSQL→Qdrant foi exercitada com
+  conteúdo sintético não vazio, reparando divergência e órfão, replay e
+  retirada sem expor payload.
 
 ## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
 
@@ -460,6 +464,57 @@ correlation lifecycle`) e enviados para
 `origin/agent/publish-production-hardening`. A publicação não promove a
 evidência local para notificação externa, RBAC/retenção de fornecedor,
 PostgreSQL live, RC, clínica, `0/145` ou reauditoria independente.
+
+## Round 23 — B99-205 / readiness clock and Qdrant reconciliation — 2026-08-20T13:30:56-03:00
+
+### RED → GREEN
+
+- RED adicionou uma reprodução de insert atrasado: antes da correção, o
+  resultado era `claimed=0`, `processed=0`, `acknowledged=false`; a execução
+  operacional descartável expôs o mesmo efeito como `qdrant reconciliation
+  failed` no readiness probe;
+- GREEN preservou `occurredAt` antes do insert e passou a capturar `claimNow`
+  depois do `insertProbe`, sem alterar payload, autorização ou estado
+  educacional;
+- a migração descartável PostgreSQL `33` + integração worker/Qdrant passou
+  `2` arquivos e `4/4` testes: claim/lease/ack/cleanup PostgreSQL e
+  divergência/orphan, replay e withdrawal no Qdrant com dados sintéticos não
+  vazios;
+- `pnpm reconcile:qdrant` passou duas vezes: primeira execução
+  `expected=1/upserted=1/removed=0`; segunda
+  `expected=1/upserted=0/removed=0`; a saída ficou limitada a contadores
+  técnicos e não incluiu texto, payload ou dado de participante.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco unitário worker/reconcile passou `14/14`; cobertura passou `204`
+  arquivos, `1.078` testes e `21` guardados, com floors `95,00%` statements,
+  `90,87%` branches, `95,29%` functions e `95,69%` lines;
+- integração descartável corrigida passou PostgreSQL worker + Qdrant live em
+  `2` arquivos e `4/4` testes; build passou `12/12`, com lint, typecheck,
+  formato, migrations `33/33`, decisões `7/7`, mutation crítica `7/7`,
+  hotspots e diff-check verdes;
+- `pnpm verify` percorreu os gates até `verify:secrets` e parou somente nos
+  quatro valores redigidos de `infra/production/.env.local`; uma tentativa
+  anterior de harness omitiu `DATABASE_URL` durante a migration e foi
+  descartada, com a repetição explícita passando `4/4`.
+
+### LIMITES / STATUS / NEXT
+
+Os containers PostgreSQL/Qdrant foram temporários, usaram apenas fixtures
+sintéticas e foram removidos. Isto não prova HA ativo, PostgreSQL restrito,
+RLS/TTL/concurrency live, retenção/RBAC/notificação externa, secret manager,
+RC/proveniência, clínica, `0/145` ou reauditoria independente. B99-205 está
+`READY_FOR_NEXT_STEP` localmente; o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+### PUBLICAÇÃO
+
+O código e os testes foram commitados como
+`43de2a2ff575c4fd9e11153a575c8dfbbb858008` (`fix: stabilize worker readiness
+probe clock`) e enviados para `origin/agent/publish-production-hardening`.
+Esta evidência documental segue para publicação separada e não promove
+qualquer gate externo.
 
 ## Gaps que permanecem abertos
 

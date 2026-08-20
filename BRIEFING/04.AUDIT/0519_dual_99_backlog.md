@@ -410,6 +410,29 @@ correlation lifecycle`) e enviados para
 `origin/agent/publish-production-hardening`. A publicação não fecha os gates
 externos nem altera a disposição `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Atualização de execução — 2026-08-20T13:30:56-03:00 — B99-205
+
+- **RED/GREEN:** o probe de readiness podia capturar o relógio antes do
+  `insertProbe`, enquanto PostgreSQL preenchia `available_at` com
+  `DEFAULT NOW()`. O RED reproduziu `claimed=0/processed=0`; o GREEN captura
+  o relógio de claim depois do insert, preservando o horário do evento antes
+  dele;
+- **evidência:** foco worker/reconcile `14/14`; integração descartável com
+  migration `33` passou `4/4` em PostgreSQL worker + Qdrant e cobriu
+  divergência, órfão, replay e retirada; `pnpm reconcile:qdrant` passou com
+  `expected=1/upserted=1/removed=0` e depois
+  `expected=1/upserted=0/removed=0`, sem payload; coverage `204/1078/21`,
+  build `12/12`, migrations `33/33`, decisões `7/7` e mutation crítica
+  `7/7` passaram;
+- **limite/status:** containers foram temporários e sintéticos; HA ativo,
+  PostgreSQL restrito/RLS/TTL/concurrency live, secret manager, RC, clínica,
+  `0/145`, gates externos e reauditoria seguem abertos. B99-205 está
+  `READY_FOR_NEXT_STEP` localmente e o programa permanece
+  `IN_PROGRESS/PILOT_BLOCKED`;
+- **publicação:** código e testes em
+  `43de2a2ff575c4fd9e11153a575c8dfbbb858008`, enviado para
+  `origin/agent/publish-production-hardening`.
+
 ## Definition of Done
 
 Nenhuma task é `COMPLETED` sem teste, review, evidência, rastreabilidade,
