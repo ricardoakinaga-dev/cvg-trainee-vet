@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-2 local hardening; B99-305 fechou localmente a fatia de hotspots críticos, com `startAttempt`, `submitAttempt` e `dependencyResponse` abaixo de 50 linhas; B99-308 permanece fechado localmente; o HA ativo continua no SHA anterior e os gates externos permanecem sem prova
+- current_task: F99-2 local hardening; B99-306 foi exercitada contra o HA/API/DB local com fixture isolada por browser; Chromium, Firefox e mobile Chromium passaram, WebKit permanece bloqueado por dependência do host; B99-305 e B99-308 permanecem fechadas localmente e o runtime API ainda não tem prova de SHA/RC
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-305 sob RED/GREEN: o RED encontrou `startAttempt`/`submitAttempt` com 76 linhas e, após a primeira extração, `dependencyResponse` com 75; o GREEN separou orquestração de tentativa, autorização/cache de diagnóstico e adicionou o teste de política para manter os três hotspots críticos abaixo de 50 linhas. Foco de hotspot `5/5`, tentativa/health `97/97`, cobertura `204/1085/21` com floors `95,02/90,92/95,31/95,70`, build `12/12`, contratos `84/84`, worker `51/51`, decisões `7/7`, mutation crítica `7/7`, lint, typecheck, formato, arquitetura, hotspots e diff-check passaram; código publicado em `90f0a21`; o `pnpm verify` oficial parou fail-closed em `verify:secrets` nos quatro valores redigidos de `.env.local`, que não foi lido nem alterado; rastreabilidade e evidência desta fatia estão registradas
-- next_action: obter autoridade/ambiente para B99-306 (Playwright ativo) e rollout N/N-1 no RC, retenção/RBAC/notificação externos, probes A/B no runtime HA/API/DB real, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
+- last_completed_action: executou B99-306 sob RED/GREEN: a base HTTP incorreta e o chunk web 404 por processo antigo foram reproduzidos; após alinhar o serviço web, o RED encontrou compartilhamento da mesma fixture entre browsers. O GREEN passou a executar um projeto por vez com fixture PostgreSQL sintética nova por browser. E2E ativo Chromium `3/3`, Firefox `3/3`, mobile Chromium `3/3`; foco do orquestrador `9/9`; cobertura `204/1087/21` em `95,02/90,92/95,31/95,70`; WebKit `3` casos bloqueados por `libavif16`; lint, typecheck, formato e diff-check passaram; código publicado em `b0fcbe8`; `.gauntlet/` continua local e não rastreado
+- next_action: obter ambiente WebKit aprovado e depois executar E2E no RC imutável; manter rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, clínica, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
-- blockers: crítica independente `REJECT`; scanner acusa quatro valores locais em `infra/production/.env.local`; também permanecem `RH01–RH06`, `0/145`, mutation integral, WebKit/HA/RC (HA ativo falhou na prontidão web), `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: crítica independente `REJECT`; scanner acusa quatro valores locais em `infra/production/.env.local`; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T14:35:25-03:00
+- last_update: 2026-08-20T14:56:53-03:00
 
 ## 2026-08-20T10:53:52-03:00 — DUAL99-B99-106-DIAGNOSTICS-INVITE
 
@@ -4343,3 +4343,29 @@ on-call, RBAC, retenção externa ou acesso de fornecedor. `verify:secrets` segu
 fail-closed apenas nos quatro valores redigidos de `infra/production/.env.local`.
 B99-204 permanece `READY_FOR_NEXT_STEP` localmente; o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T14:56:53-03:00 — DUAL99-B99-306-ACTIVE-BROWSER-MATRIX
+
+### AÇÃO / RESULTADO
+
+- o RED reproduziu primeiro a base HTTP incorreta (`3180` redireciona para
+  TLS), depois um chunk web `404` porque o serviço web antigo continuava
+  executando enquanto `.next` era reconstruído; após o restart local do
+  serviço, o login voltou a gerar `POST /auth/login` `200` sem query string;
+- a matriz conjunta revelou que os projetos compartilhavam a mesma conta e o
+  mesmo caso M24: o fluxo admin revogava a sessão do participante e um browser
+  recebia a versão já avançada do caso;
+- sob TDD, o orquestrador passou a resolver browsers únicos, usar
+  `--project=<browser>` e criar uma fixture PostgreSQL nova por browser;
+- E2E ativo: Chromium `3/3`, Firefox `3/3`, mobile Chromium `3/3`; WebKit foi
+  tentado em separado e os `3` casos ficaram bloqueados antes do launch por
+  `libavif16`; teardown da fixture passou em todas as execuções;
+- foco do orquestrador `9/9`, lint, typecheck, formato e diff-check passaram;
+  código publicado em `b0fcbe8`.
+
+### LIMITES / STATUS / NEXT
+
+B99-306 fica `BLOCKED` até haver ambiente WebKit aprovado. O restart alinhou o
+processo web local ao artefato `.next`, mas não prova rollout atômico, RC/SHA,
+runtime API atual, CI/registry, secret manager, produção, clínica, `0/145` ou
+reauditoria independente. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.

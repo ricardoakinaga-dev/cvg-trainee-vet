@@ -4,6 +4,17 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Atualização Dual99 local — 2026-08-20T14:56:53-03:00 — B99-306:** a
+matriz E2E ativa foi executada contra o web proxy `3100`, API/edge/HA e
+PostgreSQL real local. O RED reproduziu base HTTP incorreta, chunk web 404
+por processo antigo após rebuild e, depois do alinhamento do serviço, o
+compartilhamento de sessão/caso entre projetos. O GREEN isolou cada browser
+com `--project` e uma fixture nova: Chromium `3/3`, Firefox `3/3` e mobile
+Chromium `3/3`; foco do orquestrador `9/9`, lint/typecheck/formato/diff-check
+verdes; cobertura `204/1087/21` em `95,02/90,92/95,31/95,70`. WebKit foi executado separadamente e bloqueou os `3` testes por
+`libavif16` ausente; teardown passou. B99-306 permanece `BLOCKED` até ambiente
+WebKit aprovado, sem promover release, RC, score ou `PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T03:38:02-03:00:** B99-302, B99-303 e B99-304 foram concluídas no escopo local após RED/GREEN/REFACTOR, revisão, 17 repetições adicionais e mutation direcionada `7/7` (`100%`). A cobertura corrente é `200/1041/21` com floors `95,01/91,02/95,19/95,73`; build `12/12` e E2E Chromium sintético `27/27` passaram em porta isolada `3112`; a governança reporta `20/20` runs, zero falhas flaky e zero skips sem classificação. A barra técnica local foi mantida, mas mutation integral, browsers ativos, HA/API/DB reais, RC/proveniência, clínica, UAT, rastreabilidade ou reauditoria continuam abertas. O programa continua `IN_PROGRESS`/`PILOT_BLOCKED`.
 
 **Reconciliação final Dual99 — 2026-08-20T03:48:50-03:00:** os verificadores de documentação, programa, rastreabilidade, skips, mutation, hotspots, formato, lint, typecheck e diff-check passaram após a correção do checkpoint de `docs/135` para `200/1041/21` e ratchet `144/113`. O parecer independente compatível permanece `REJECT`; a nova tentativa read-only foi encerrada sem resultado e sem alterar arquivos. B99-303/B99-304 seguem concluídas apenas no escopo local; `0/145`, mutation integral, live/RC, clínica, operação externa, aprovação humana e reauditoria mantêm `IN_PROGRESS`/`PILOT_BLOCKED`.

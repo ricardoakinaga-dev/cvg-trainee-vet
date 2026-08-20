@@ -10287,3 +10287,62 @@ release, piloto ou estado clínico. Permanecem sem prova HA/API/DB ativo,
 Playwright/WebKit ativo, rollout N/N-1, secret manager, `0/145`, clínica,
 gates externos e reauditoria independente; o programa continua
 `IN_PROGRESS / PILOT_BLOCKED`.
+
+## 2026-08-20T14:56:53-03:00 — DUAL99-B99-306-ACTIVE-BROWSER-MATRIX
+
+### TIMESTAMP
+
+2026-08-20 14:56:53 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-3 — qualidade e medição
+
+### SPRINT
+
+B99-306 — Playwright ativo e isolamento de fixture
+
+### TASK
+
+Executar a matriz browser→web proxy→API/HA→PostgreSQL real local sem
+compartilhar estado entre projetos e registrar os bloqueios ambientais.
+
+### ACTION
+
+O RED reproduziu redirect HTTP/TLS no endpoint `3180`, chunk web `404` por
+processo antigo após rebuild e, depois do alinhamento do serviço web local,
+compartilhamento de sessão/caso M24 quando todos os browsers usavam a mesma
+fixture. Foram adicionados testes para browsers únicos e argumento
+`--project`; o runner passou a recriar a fixture antes de cada browser.
+
+### RESULT
+
+O foco do orquestrador passou `9/9`. O E2E ativo passou Chromium `3/3`, Firefox
+`3/3` e mobile Chromium `3/3`, incluindo login, health proxy, atividade
+persistida e ciclo administrativo. WebKit foi executado separadamente e os
+`3` casos foram bloqueados antes do launch pela ausência de `libavif16`; todos
+os teardowns da fixture passaram. A cobertura global passou `204/1087/21`, com
+floors `95,02/90,92/95,31/95,70`; lint, typecheck, formato e diff-check
+passaram. Código publicado em `b0fcbe8` e push confirmado em
+`origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+Manter B99-306 como `BLOCKED` até ambiente WebKit aprovado. O restart alterou
+somente o serviço web local para reconciliar o processo ao artefato atual; não
+houve deploy, alteração de API/DB permanente, leitura/alteração de
+`.env.local`, rotação de segredo, score, release ou decisão clínica.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter ambiente WebKit aprovado e repetir a matriz no mesmo RC/SHA imutável;
+continuar gates de secret manager, rollout N/N-1, runtime com proveniência,
+clínica, `0/145`, operação externa e reauditoria independente.

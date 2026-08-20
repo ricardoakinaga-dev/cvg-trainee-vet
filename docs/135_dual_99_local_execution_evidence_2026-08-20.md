@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T13:51:48-03:00`
-- última atualização: `2026-08-20T13:51:48-03:00`
+- corte: `2026-08-20T14:56:53-03:00`
+- última atualização: `2026-08-20T14:56:53-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `8440f09` em
+- commit publicado: `b0fcbe8` em
   `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
@@ -661,6 +661,56 @@ Esta é uma prova local e determinística de complexidade e comportamento; não
 prova Playwright/WebKit/HA/API/DB ativo, RC imutável, rollout N/N-1, secret
 manager, clínica, `0/145`, gates externos ou reauditoria independente. B99-305
 está `READY_FOR_NEXT_STEP` localmente; o programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 27 — B99-306 / active browser matrix and fixture isolation — 2026-08-20T14:56:53-03:00
+
+### RED → GREEN
+
+- RED com `BASE_URL=http://127.0.0.1:3180` reproduziu o redirect HTTP→TLS e
+  erros de certificado nos browsers Chromium/Firefox/mobile; WebKit não
+  iniciou por `libavif16` ausente no host;
+- com a base web local correta (`3100`), o browser ainda não hidratava porque
+  o serviço web iniciado antes do build servia HTML novo com o chunk
+  `2fpl2raujli5f.js` em `404`. O diagnóstico Playwright observou
+  `pageerror`, ausência de `POST /auth/login` e submit HTML nativo que levaria
+  credenciais à query string;
+- após reiniciar somente o serviço web local para alinhar processo e artefato,
+  o fluxo passou a enviar `POST /auth/login` `200` sem query string;
+- a primeira matriz conjunta revelou compartilhamento indevido da mesma
+  fixture entre projetos: revogação do fluxo admin interferia no participante
+  e o caso M24 avançava entre browsers. O RED TDD adicionou dois testes
+  quebrados para exigir browsers únicos e argumento `--project` isolado;
+- GREEN passou a resolver a matriz suportada, executar um projeto Playwright
+  por vez e recriar a fixture PostgreSQL sintética antes de cada browser;
+  não houve alteração da API de produção ou relaxamento das asserções.
+
+### VERIFICAÇÃO
+
+- foco do orquestrador: `9/9` testes;
+- cobertura global: `204` arquivos, `1.087` testes passantes e `21` guardados;
+  `95,02%` statements, `90,92%` branches, `95,31%` functions e `95,70%`
+  lines;
+- E2E ativo contra o web proxy `3100`, API/edge/HA e PostgreSQL real local:
+  Chromium `3/3`, Firefox `3/3` e mobile Chromium `3/3`, com criação e
+  teardown da fixture por browser confirmados;
+- WebKit foi executado separadamente: `3` testes bloqueados antes do launch
+  pela dependência ambiental `libavif16`; o teardown da fixture passou;
+- lint, typecheck, Prettier e `git diff --check`: PASS;
+- código/testes publicados em `b0fcbe8`
+  (`fix: isolate active HA browser fixtures`) e enviados para
+  `origin/agent/publish-production-hardening`.
+
+### LIMITES / STATUS / NEXT
+
+O resultado fecha a matriz local executável, mas não fecha o requisito de
+WebKit em ambiente aprovado. O serviço web local foi reiniciado para
+reconciliar um artefato `.next` reconstruído com processo antigo; isso não é
+prova de rollout atômico, RC imutável, SHA do runtime API, CI/registry,
+secret manager, produção, clínica, `0/145`, gates externos ou reauditoria
+independente. O `pnpm verify` anterior continua fail-closed nos quatro valores
+redigidos de `infra/production/.env.local`, que não foi lido nem alterado.
+B99-306 permanece `BLOCKED` até ambiente WebKit aprovado; o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Gaps que permanecem abertos

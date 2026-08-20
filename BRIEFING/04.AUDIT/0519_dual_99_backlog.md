@@ -60,6 +60,16 @@
 | B99-307 | P0 | READY_FOR_NEXT_STEP | ENG/DBA | migrations/compatibilidade | expand-contract, N/N-1, rollback/restore isolado |
 | B99-308 | P1 | READY_FOR_NEXT_STEP | ENG | API/contracts/type safety | todas rotas schema/authz/erro/telemetria; fuzz/negative |
 
+**Atualização B99-306 — 2026-08-20T14:56:53-03:00:** o E2E ativo foi
+reexecutado contra o web proxy `3100` com fixture PostgreSQL sintética isolada
+por browser. Chromium, Firefox e mobile Chromium passaram `3/3` cada; o
+orquestrador passou `9/9` focais. O RED também identificou e o GREEN corrigiu
+o compartilhamento de sessão/caso entre projetos, além de registrar o caso de
+artefato web incoerente após rebuild. WebKit foi tentado separadamente e os
+`3` casos foram bloqueados antes do launch por `libavif16` ausente no host.
+O estado permanece `BLOCKED`: falta ambiente WebKit aprovado e a prova não
+equivale a RC/produção.
+
 ## F99-4 — RC e supply chain
 
 | ID | Pri | Estado | Owner | Critério de pronto |
