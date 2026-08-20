@@ -156,6 +156,58 @@ Obter ambiente live para a matriz de sessão e, em paralelo, manter abertos
 secret manager, mutation integral, browsers/HA/API/DB ativos, RC/proveniência,
 clínica, `0/145`, operação externa, aprovação humana e reauditoria independente.
 
+## 2026-08-20T08:59:13-03:00 — GIT-PUBLISH-B99-101-B99-103
+
+### TIMESTAMP
+
+2026-08-20 08:59:13 -03:00
+
+### ENGINE
+
+BUILD + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — versionamento e publicação
+
+### SPRINT
+
+F99-1 — fechamento local e evidência
+
+### TASK
+
+Publicar o hardening local autorizado e manter a continuidade operacional
+registrada no próprio repositório.
+
+### ACTION
+
+Após a revisão staged e os gates locais, o lote foi commitado como
+`e32b941f5d8b67d1490e33cab5b50ba4503a0532` (`fix: close session and secret
+scanning gaps`) e enviado para `origin/agent/publish-production-hardening`.
+
+### RESULT
+
+`git ls-remote` confirmou o mesmo SHA em `HEAD` local e no branch remoto. O
+commit contém nove arquivos, com scanner de RHS endurecido, atomicidade de
+revogação de sessão, testes TDD e estado/log/backlog/evidência atualizados.
+`.gauntlet/` ficou fora do índice; `.env.local` permaneceu ignorado e
+inalterado.
+
+### DECISIONS
+
+O publish não promove score, release, piloto, segredo, decisão clínica ou
+reauditoria. O estado global continua `IN_PROGRESS` / `PILOT_BLOCKED`, com
+gates live, externos e humanos pendentes.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter autoridade e ambientes para os gates pendentes e executar a reauditoria
+independente no mesmo RC quando elegível.
+
 ## 2026-08-20T08:35:37-03:00 — DUAL99-B99-101-RHS-EXPRESSION-HARDENING
 
 ### TIMESTAMP

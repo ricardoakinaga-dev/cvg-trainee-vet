@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechou B99-103 localmente com incremento de generation e revogação de sessões no mesmo transaction executor; repositório focal `8/8`, cobertura `200/1050/21`, floors `95,06/91,06/95,35/95,77` e gates locais relevantes passaram, sem alterar `.env.local`
+- last_completed_action: fechou B99-103 localmente com incremento de generation e revogação de sessões no mesmo transaction executor e publicou o lote no commit `e32b941` em `origin/agent/publish-production-hardening`; repositório focal `8/8`, cobertura `200/1050/21`, floors `95,06/91,06/95,35/95,77` e gates locais relevantes passaram, sem alterar `.env.local`
 - next_action: preservar `IN_PROGRESS`/`PILOT_BLOCKED`, obter autoridade e ambiente para secret manager, concorrência PostgreSQL, mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
@@ -32,7 +32,28 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T08:55:50-03:00
+- last_update: 2026-08-20T08:59:13-03:00
+
+## 2026-08-20T08:59:13-03:00 — GIT-PUBLISH-B99-101-B99-103
+
+### AÇÃO / RESULTADO
+
+- o lote de hardening do scanner de segredos, atomicidade de revogação de
+  sessões e sua evidência operacional foi commitado como
+  `e32b941f5d8b67d1490e33cab5b50ba4503a0532` (`fix: close session and secret
+  scanning gaps`);
+- o push confirmou `HEAD` local e
+  `origin/agent/publish-production-hardening` no mesmo SHA; o worktree não
+  possui alterações rastreadas pendentes;
+- `.gauntlet/` permanece fora do commit como estado local do agente, e
+  `infra/production/.env.local` permaneceu ignorado e inalterado.
+
+### STATUS / NEXT
+
+Estado `IN_PROGRESS`; release `PILOT_BLOCKED`. Permanecem abertos os gates
+externos e humanos, incluindo secret manager/rotação, concorrência PostgreSQL
+live, mutation integral, browsers/HA/API/DB ativos, RC/proveniência, clínica,
+`0/145`, operação externa e reauditoria independente.
 
 ## 2026-08-20T08:55:50-03:00 — DUAL99-B99-103-SESSION-REVOCATION-ATOMICITY
 
