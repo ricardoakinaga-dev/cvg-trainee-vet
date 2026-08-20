@@ -298,7 +298,9 @@
 - **status:** B99-106 está `READY_FOR_NEXT_STEP` localmente. O E2E não prova
   HA/API/DB porque usa mocks e a API `3101` estava indisponível; runtime stale,
   secrets redigidos, RC, gates externos/clínicos, `0/145` e reauditoria seguem
-  pendentes. Programa `IN_PROGRESS / PILOT_BLOCKED`.
+  pendentes. Commit `4e4cd4e04718ca26c0cd1979152225301fbd249a` foi enviado para
+  `origin/agent/publish-production-hardening`. Programa
+  `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Definition of Done
 

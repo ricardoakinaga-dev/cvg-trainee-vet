@@ -4,6 +4,8 @@
 - corte: `2026-08-20T10:53:52-03:00`
 - última atualização: `2026-08-20T10:53:52-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
+- commit publicado: `4e4cd4e04718ca26c0cd1979152225301fbd249a` em
+  `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -92,6 +94,13 @@ relação ao worktree; `verify:secrets` permanece fail-closed somente nos quatro
 valores redigidos do `infra/production/.env.local` ignorado. Não houve dado
 real, alteração live, score, release ou promoção clínica; gates externos,
 clínicos, RC e reauditoria independente continuam abertos.
+
+### PUBLICAÇÃO
+
+Código, testes e evidência desta rodada foram publicados no commit
+`4e4cd4e04718ca26c0cd1979152225301fbd249a` em
+`origin/agent/publish-production-hardening`. O diretório `.gauntlet/` continua
+local e não versionado.
 
 ## Checkpoint corrente — 2026-08-20T10:53:52-03:00
 

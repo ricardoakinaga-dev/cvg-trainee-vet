@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechou localmente B99-106 sob RED/GREEN/REFACTOR: `/health/dependencies` foi alinhado ao contrato interno, convite passou a usar fragmento e a limpeza remove token de fragmento/query legado; focal `22/22`, E2E sintético Chromium `3/3`, cobertura `202/1060/21`, floors `95,05/91,06/95,31/95,75`, build `12/12` e gates locais relevantes passaram, sem alterar `.env.local`
+- last_completed_action: fechou e publicou B99-106 sob RED/GREEN/REFACTOR: `/health/dependencies` foi alinhado ao contrato interno, convite passou a usar fragmento e a limpeza remove token de fragmento/query legado; focal `22/22`, E2E sintético Chromium `3/3`, cobertura `202/1060/21`, floors `95,05/91,06/95,31/95,75`, build `12/12` e gates locais relevantes passaram; commit `4e4cd4e04718ca26c0cd1979152225301fbd249a` está em `origin/agent/publish-production-hardening`, sem alterar `.env.local`
 - next_action: executar B99-107 localmente para rate limit/headers/CORS; em paralelo, preservar `IN_PROGRESS`/`PILOT_BLOCKED` e obter autoridade/ambiente para migration 0032, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager, browsers/HA/API/DB ativos, RC/proveniência, clínica, `0/145` e gates externos; depois executar reauditoria independente no mesmo RC
 
 ## BLOQUEIOS
@@ -58,7 +58,10 @@ O E2E usa mocks sintéticos e a API em `3101` não estava disponível; portanto
 não prova HA/API/DB ativo. O runtime PostgreSQL continua stale, o secret scan
 continua acusando somente os quatro valores redigidos do `.env.local` ignorado,
 e os gates externos, clínicos, RC e reauditoria independente permanecem
-abertos. Estado `IN_PROGRESS`; release `PILOT_BLOCKED`.
+abertos. Código, testes e evidência foram publicados no commit
+`4e4cd4e04718ca26c0cd1979152225301fbd249a` em
+`origin/agent/publish-production-hardening`. Estado `IN_PROGRESS`; release
+`PILOT_BLOCKED`.
 
 ## 2026-08-20T10:32:23-03:00 — DUAL99-B99-105-SCHEMA-RUNTIME-REVIEW
 

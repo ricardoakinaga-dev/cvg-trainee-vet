@@ -2117,4 +2117,7 @@ O rollback local usa uma cópia sintética (`sha256:32a8b4dfca1e383354b439cb9118
 - **limite/status:** E2E sintético com mocks e API `3101` indisponível não prova
   HA/API/DB ativo; runtime PostgreSQL stale, secrets redigidos, RC, gates
   externos/clínicos, `0/145` e reauditoria permanecem. B99-106 segue
-  `READY_FOR_NEXT_STEP` localmente; estado global `IN_PROGRESS/PILOT_BLOCKED`.
+  `READY_FOR_NEXT_STEP` localmente; commit
+  `4e4cd4e04718ca26c0cd1979152225301fbd249a` foi enviado para
+  `origin/agent/publish-production-hardening`; estado global
+  `IN_PROGRESS/PILOT_BLOCKED`.

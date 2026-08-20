@@ -9949,4 +9949,7 @@ O E2E usa mocks sintéticos e a API `3101` estava indisponível; não é evidên
 de HA/API/DB ativo. O runtime PostgreSQL continua stale, o secret scan acusa
 somente os quatro valores redigidos do `.env.local` ignorado e os gates
 externos, clínicos, RC, `0/145` e reauditoria permanecem abertos. Resultado
-local `READY_FOR_NEXT_STEP`; estado global `IN_PROGRESS` / `PILOT_BLOCKED`.
+local `READY_FOR_NEXT_STEP`; o código, os testes e a evidência foram publicados
+no commit `4e4cd4e04718ca26c0cd1979152225301fbd249a` em
+`origin/agent/publish-production-hardening`; estado global `IN_PROGRESS` /
+`PILOT_BLOCKED`.
