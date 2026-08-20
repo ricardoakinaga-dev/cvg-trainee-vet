@@ -10859,8 +10859,9 @@ alterar o arquivo.
 ### DECISIONS / STATUS / NEXT
 
 O código/teste foram commitados em `87f759a` (`fix: redact malformed git
-header identities`) e enviados para `origin/agent/publish-production-hardening`;
-a evidência documental será reconciliada em commit separado. Nenhum segredo,
+header identities`) e a evidência documental foi publicada em `9cc102a` (`docs:
+record malformed git header identity redaction`) e enviada para
+`origin/agent/publish-production-hardening`. Nenhum segredo,
 PDF, dado real, provider, CI, produção, score, release, decisão clínica ou
 promoção de piloto foi tocado. B99-101 permanece `IN_PROGRESS` até secret
 manager/rotação/autorização; RC/proveniência, WebKit, runtime live, clínica,

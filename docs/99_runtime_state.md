@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN, publicou código/teste em `87f759a` após a auditoria fresca reproduzir vazamento de um token de header malformado no path do finding; o scanner agora usa somente path conhecido, object ID hex válido ou a identidade estável `history:<git>`, sem copiar tokens não confiáveis para path/evidence; Round 40 passou foco `29/29`, cobertura `205/1123/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`793` linhas, `0` hotspots) e diff-check; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `87f759a`; `.gauntlet/` continua local e não rastreado
-- next_action: registrar e publicar a evidência documental de Round 40, reconciliar seus SHAs e confirmar a paridade remota; então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN, publicou código/teste em `87f759a` e o pacote de evidências em `9cc102a` após a auditoria fresca reproduzir vazamento de um token de header malformado no path do finding; o scanner agora usa somente path conhecido, object ID hex válido ou a identidade estável `history:<git>`, sem copiar tokens não confiáveis para path/evidence; Round 40 passou foco `29/29`, cobertura `205/1123/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, audit, hotspots (`793` linhas, `0` hotspots) e diff-check; `pnpm verify` passou todos os gates até `verify:secrets`, que reportou somente os quatro achados redigidos preexistentes de `.env.local`; HEAD e origin estão em `9cc102a`; `.gauntlet/` continua local e não rastreado
+- next_action: reconciliar os SHAs de publicação de Round 40, confirmar a paridade remota e então executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T19:01:02-03:00
+- last_update: 2026-08-20T19:03:37-03:00
 
 ## 2026-08-20T19:01:02-03:00 — DUAL99-B99-101-CAT-FILE-MALFORMED-TOKEN-REDACTION
 
@@ -55,8 +55,9 @@ contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
 decisões `7/7`, mutation `7/7` e diff-check passaram. O `pnpm verify` parou
 fail-closed somente nos quatro valores redigidos preexistentes de
 `infra/production/.env.local`, cuja rotação exige secret manager/autorização.
-O código/teste foi publicado em `87f759a`; a evidência documental desta rodada
-está em preparação. Nenhum segredo, dado real, PDF, produção, score, release,
+O código/teste foi publicado em `87f759a` e o pacote de evidências foi
+publicado em `9cc102a` (`docs: record malformed git header identity redaction`).
+Nenhum segredo, dado real, PDF, produção, score, release,
 clínica, `0/145` ou piloto foi tocado. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.
 

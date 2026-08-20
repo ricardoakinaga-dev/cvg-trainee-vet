@@ -2,7 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T19:01:02-03:00`
-- última atualização: `2026-08-20T19:01:02-03:00`
+- última atualização: `2026-08-20T19:03:37-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `87f759a` em
   `origin/agent/publish-production-hardening`
@@ -865,8 +865,9 @@ como identidade; qualquer outro header usa `history:<git>` e não expõe o token
 ### Limites / status / próxima ação
 
 B99-101 permanece `IN_PROGRESS` porque os quatro valores reais exigem secret
-manager/rotação/autorização. A evidência documental será reconciliada em
-commit separado após a publicação inicial. Esta rodada não prova provider, CI,
+manager/rotação/autorização. O pacote de evidências foi publicado em `9cc102a`
+(`docs: record malformed git header identity redaction`) e enviado para
+`origin/agent/publish-production-hardening`. Esta rodada não prova provider, CI,
 RC imutável, runtime live, WebKit aprovado, clínica, `0/145`, gates externos
 ou reauditoria independente. O programa permanece `IN_PROGRESS /
 PILOT_BLOCKED`.

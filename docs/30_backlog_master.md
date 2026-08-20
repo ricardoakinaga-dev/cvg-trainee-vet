@@ -15,7 +15,8 @@ O foco passou `29/29`, cobertura `205/1123/21` em
 migrações `33/33`, migration safety, decisões `7/7`, mutation `7/7` e
 diff-check passaram. O `pnpm verify` parou em `verify:secrets` somente nos
 quatro valores redigidos preexistentes de `infra/production/.env.local`;
-código/teste estão em `87f759a` e a evidência documental está em publicação.
+código/teste estão em `87f759a` e a evidência documental foi publicada em
+`9cc102a`.
 B99-101 permanece `IN_PROGRESS` até secret manager/rotação, e o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
