@@ -5,6 +5,36 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T04:54:57-03:00 — B99-101 Git metadata race boundary
+
+- **auditoria/RED:** um worker criou/removeu `objects/info/alternates` entre a
+  validação estática e o uso; o scanner anterior expôs `history:victim.env` em
+  `1/1000` probes e o RED focal acumulou `12` findings externos em `1000`
+  tentativas;
+- **GREEN:** snapshot estrutural e de `stat` de `objects`, `info` e `pack` é
+  comparado depois de cada comando/batch Git; mudança, symlink ou arquivo
+  `alternates` faz o processo falhar fechado e o parser descarta findings
+  parciais;
+- **evidência:** foco `57/57`, cobertura `205/1153/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`,
+  hotspots `0` com maior função de `100`, lint, typecheck, formato,
+  diff-check e audit passaram. Probe pós-fix executou `1000` corridas com `0`
+  leaks; código/teste `50f22c7` foi publicado no branch remoto;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  O caso separado de `.git/commondir` não expôs objeto externo e falhou fechado.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T04:54:57-03:00 — B99-101 Git metadata race boundary
+
+O código/teste `50f22c7` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T04:26:53-03:00 — B99-101 Git internal metadata boundary
 
 - **auditoria/RED:** symlinks internos em `.git/index`/`.git/objects` fizeram o

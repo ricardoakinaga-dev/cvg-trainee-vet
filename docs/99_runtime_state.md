@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 62 fechou a barra local de metadados Git internos: `index` e `objects` são abertos no-follow e passados por fd, symlinks internos estáticos e `objects/info/alternates` falham fechado. Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Round 59 mantém `.git` no-follow e fd Git fixo; Rounds 58–55 preservam fronteiras de caminho, diretório e arquivo; Rounds 54–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 63 fechou a corrida TOCTOU de metadados Git: snapshot estrutural/`stat` de `objects`, `info` e `pack` é validado após cada comando/batch, e output é descartado quando a superfície muda. Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Round 59 mantém `.git` no-follow e fd Git fixo; Rounds 58–55 preservam fronteiras de caminho, diretório e arquivo; Rounds 54–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 62 de B99-101 sob RED→GREEN→REFACTOR; uma auditoria read-only reproduziu `staged:victim.env` por symlinks em `.git/index`/`.git/objects` e `history:victim.env` por `objects/info/alternates`. `openGitMetadata` agora abre `index` e `objects` no-follow, mantém handles em fd 4/5, rejeita symlinks em `objects`, `info` e `pack`, rejeita o arquivo `alternates` e falha fechado nas superfícies Git inseguras; foco `56/56`, cobertura `205/1152/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram; código/teste `3c3758c` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 63 de B99-101 sob RED→GREEN→REFACTOR; uma auditoria read-only reproduziu corrida de criação/remoção de `objects/info/alternates` e o scanner anterior expôs `history:victim.env` em `1/1000` probes, enquanto o RED focal acumulou `12` leaks em `1000` tentativas. GREEN registra snapshot estrutural/`stat` no `openGitMetadata`, valida a estabilidade depois de cada comando/batch e descarta findings parciais quando a metadata muda; foco `57/57`, cobertura `205/1153/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix de `1000` corridas produziu `0` leaks e `1000` findings genéricos `history:<git>`; código/teste `50f22c7` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,50 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T04:26:53-03:00
+- last_update: 2026-08-21T04:54:57-03:00
+
+## 2026-08-21T04:54:57-03:00 — DUAL99-B99-101-GIT-METADATA-RACE-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only reproduziu que um worker criava/removia
+  `objects/info/alternates` depois da validação e o scanner anterior expunha
+  `history:victim.env`; o probe encontrou leak em `1/1000` tentativas e o RED
+  focal acumulou `12` findings externos em `1000` tentativas;
+- RED adicionou a regressão; GREEN passou a guardar snapshot estrutural e de
+  `dev/ino`/`mtime`/`ctime` de `objects`, `info` e `pack`, validar a superfície
+  depois de cada comando/batch Git e descartar output/parser findings quando a
+  metadata muda, retornando `history:<git> / git-object-unreadable`;
+- foco `57/57`; cobertura `205/1153/21` em `95,03/90,95/95,31/95,73`; probe
+  pós-fix de `1000` corridas sem leak, build `12/12`, CI contract, arquitetura
+  `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
+  diff-check e audit de dependências passaram. Código/teste `50f22c7` foi
+  publicado e `HEAD == origin` confirmado.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. O probe separado de
+`.git/commondir` não expôs objeto externo e falhou fechado. A crítica
+independente continua indisponível; Windows/non-proc, secret manager/rotação,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente permanecem abertos. Publicar a reconciliação documental desta
+rodada.
+
+## 2026-08-21T04:54:57-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-METADATA-RACE-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+O commit técnico `50f22c7` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado;
+não houve rotação de segredo, alteração de runtime/produção, score, release,
+decisão clínica ou piloto.
+
+### PRÓXIMA AÇÃO
+
+Publicar a reconciliação documental; então executar nova auditoria bounded.
 
 ## 2026-08-21T04:26:53-03:00 — DUAL99-B99-101-GIT-INTERNAL-METADATA-NOFOLLOW
 

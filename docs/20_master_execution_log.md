@@ -11420,6 +11420,88 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T04:54:57-03:00 — DUAL99-B99-101-GIT-METADATA-RACE-NOFOLLOW
+
+### TIMESTAMP
+
+2026-08-21 04:54:57 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem/Git
+
+### TASK
+
+B99-101 — impedir que uma mudança concorrente em `objects/info/alternates`,
+`objects` ou seus diretórios auxiliares altere a superfície Git depois da
+validação.
+
+### ACTION
+
+Uma auditoria read-only criou/removou `objects/info/alternates` entre a
+validação e o uso; o scanner anterior produziu `history:victim.env` em
+`1/1000` probes. O RED focal acumulou `12` findings externos em `1000`
+tentativas. O GREEN passou a registrar snapshot estrutural e de `stat` de
+`objects`, `info` e `pack`, validar a estabilidade após cada comando/batch Git
+e descartar output/parser findings quando a metadata muda.
+
+### RESULT
+
+O foco passou `57/57`; a cobertura passou `205` arquivos / `1153` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build passou `12/12`, CI contract,
+arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck,
+formato, diff-check e audit de dependências passaram. Probe pós-fix de `1000`
+corridas produziu `0` leaks e `1000` findings genéricos. O caso separado de
+`.git/commondir` não expôs objeto externo e falhou fechado. Código/teste
+`50f22c7` foi publicado.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica foi fresca,
+read-only e não independente porque o backend de critic está indisponível.
+Não houve alteração de segredo, runtime, produção, score, release, decisão
+clínica ou piloto.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; então executar nova auditoria
+bounded e obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente.
+
+## 2026-08-21T04:54:57-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-METADATA-RACE-NOFOLLOW
+
+### ACTION
+
+O commit de código/teste `50f22c7` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte.
+
+### RESULT / STATUS
+
+`HEAD == origin` em `50f22c7`. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental; Windows/non-proc, secret manager/rotação,
+provider/CI, RC/runtime, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente permanecem abertos.
+
 ## 2026-08-21T04:26:53-03:00 — DUAL99-B99-101-GIT-INTERNAL-METADATA-NOFOLLOW
 
 ### TIMESTAMP

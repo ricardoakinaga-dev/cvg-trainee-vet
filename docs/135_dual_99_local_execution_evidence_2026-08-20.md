@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T04:26:53-03:00`
-- última atualização: `2026-08-21T04:26:53-03:00`
+- corte: `2026-08-21T04:54:57-03:00`
+- última atualização: `2026-08-21T04:54:57-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `3c3758c` em
+- commit publicado: `50f22c7` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `de4563e` em
+- evidência documental publicada: `9453204` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `de4563e`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: confirmada no pós-push em `9453204` para o corte
+  anterior; a reconciliação desta rodada será publicada em seguida
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,22 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 63 — corrida de metadata Git
+
+- a auditoria read-only encontrou que `objects/info/alternates` podia ser
+  criado/removido depois da validação estática e redirecionar o histórico para
+  um repositório sintético externo; o probe pré-fix reproduziu leak em `1/1000`
+  tentativas e o RED focal acumulou `12` findings externos em `1000` tentativas;
+- GREEN registra snapshot estrutural e de `stat` para `objects`, `info` e
+  `pack`, valida a estabilidade após cada comando/batch Git e descarta output
+  parcial quando a metadata muda. Foco `57/57`, cobertura `205/1153/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`,
+  hotspots `0`, lint, typecheck, formato, diff-check e audit passaram;
+- probe pós-fix de `1000` corridas produziu `0` leaks e `1000` findings
+  genéricos `history:<git>`; `.git/commondir` não expôs objeto externo e
+  também falhou fechado. A evidência permanece local, sem promoção de nota,
+  release, piloto, decisão clínica ou reauditoria independente.
 
 ## Implementações locais desta rodada
 

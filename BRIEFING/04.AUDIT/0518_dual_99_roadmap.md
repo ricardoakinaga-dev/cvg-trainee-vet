@@ -247,6 +247,32 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 60. Checkpoint de publicação da corrida de metadados Git B99-101 — 2026-08-21T04:54:57-03:00
+
+O código/teste `50f22c7` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada será publicada em seguida. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 59. Checkpoint da corrida de metadados Git B99-101 — 2026-08-21T04:54:57-03:00
+
+B99-101 recebeu RED/GREEN para a corrida de metadata Git. Um worker criou e
+removeu `objects/info/alternates` entre a validação e o uso; o scanner anterior
+produziu `history:victim.env` em `1/1000` probes e o RED focal acumulou `12`
+findings externos em `1000` tentativas. O GREEN registra snapshot estrutural e
+de `stat` de `objects`, `info` e `pack`, valida depois de cada comando/batch e
+descarta output/parser findings quando a superfície muda, retornando
+`history:<git> / git-object-unreadable`.
+
+O foco passou `57/57`, a cobertura passou `205/1153/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12`, CI contract, arquitetura
+`2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
+diff-check e audit de dependências passaram. Probe pós-fix de `1000` corridas
+produziu `0` leaks; `.git/commondir` não expôs objeto externo e falhou fechado.
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes; Windows/non-proc, condições live, gates externos, crítica
+independente e demais bloqueios de programa permanecem abertos.
+
 ## 58. Checkpoint de publicação de metadados Git internos B99-101 — 2026-08-21T04:26:53-03:00
 
 O código/teste `3c3758c` e a reconciliação documental `de4563e` foram
