@@ -1,15 +1,13 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T00:58:01-03:00`
-- última atualização: `2026-08-21T00:58:01-03:00`
+- corte: `2026-08-21T01:13:43-03:00`
+- última atualização: `2026-08-21T01:13:43-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `3410d52` em
+- commit publicado: `95adb51` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `4bd3d3e` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: `4bd3d3e` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: será reconciliada após o commit desta rodada
+- paridade documental final: será registrada no pós-push documental
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -26,6 +24,18 @@
 - registry: `docs/canonical-document-registry.json`
 
 ## Implementações locais desta rodada
+
+- bounded workspace reads: `scanFile` agora descarta por metadata os assets
+  ignorados acima de `MAX_SCAN_BYTES`, sem abrir o arquivo, e `readScanBuffer`
+  lê arquivos regulares em buffer máximo de `MAX_SCAN_BYTES + 1`; uma regressão
+  com `.png` esparso, oversized e sem permissão passou `43/43` sem produzir
+  `unreadable-file`, e crescimento concorrente não pode exceder o limite;
+- qualidade da rodada: cobertura integral passou `205/1139/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12` com endpoint sintético explícito,
+  hotspots `0`, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation
+  `7/7`, migration safety `33/33`, lint, typecheck, formato, audit e
+  `diff-check`; sem a variável de build o guard de produção bloqueou conforme
+  esperado;
 
 - scanner de segredos: enumeração de worktree/index/history, tags anotadas,
   referências `secret://`, expressões de código e placeholders sintéticos

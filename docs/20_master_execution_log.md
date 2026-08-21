@@ -11420,6 +11420,66 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T01:13:43-03:00 — DUAL99-B99-101-BOUNDED-WORKSPACE-ASSET-READS
+
+### TIMESTAMP
+
+2026-08-21 01:13:43 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — limitar leituras do workspace para assets ignorados e arquivos
+regulares antes do scan de segredos.
+
+### ACTION
+
+A auditoria read-only encontrou que `scanFile` ignorava o preflight de tamanho
+para extensões binárias e chamava `readFile` sem teto. O RED reproduziu a
+abertura de um `.png` esparso, oversized e sem permissão; o GREEN passou a
+descartar assets ignorados oversized por metadata e a usar `readScanBuffer`,
+que retém no máximo `MAX_SCAN_BYTES + 1` bytes e preserva o comportamento
+fail-closed se o arquivo crescer após `lstat`.
+
+### RESULT
+
+O foco passou `43/43`; a cobertura passou `205` arquivos / `1139` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build `12/12` com
+`CVG_API_INTERNAL_URL` sintético; hotspots `0` com maior função de `98` linhas;
+contratos `87/87`; worker `51/51`; decisões `7/7`; mutation `7/7` (`100%`);
+migration safety `33/33`; audit, lint, typecheck, formato e diff-check passaram.
+O build sem a variável exigida permaneceu bloqueado pelo guard de configuração,
+como esperado. O commit de código/teste `95adb51` foi publicado em
+`origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente
+porque o backend de critic não estava disponível. Nenhum segredo, runtime,
+produção, score, release, decisão clínica ou piloto foi tocado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada e executar nova auditoria
+bounded; depois obter autoridade e ambiente para os bloqueios externos listados.
+
 ## 2026-08-21T00:12:22-03:00 — DUAL99-B99-308-FINAL-PARITY
 
 ### ACTION / RESULT

@@ -247,6 +247,45 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 40. Publicação do checkpoint bounded workspace asset reads B99-101 — 2026-08-21T01:13:43-03:00
+
+O código/teste `95adb51` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada será publicada em seguida. A rodada fechou o teto de leitura do
+workspace: assets ignorados oversized são descartados pelo preflight e arquivos
+regulares são lidos em buffer de `MAX_SCAN_BYTES + 1`. O foco passou `43/43`,
+full coverage `205/1139/21`, build sintético `12/12`, hotspots `0`, contratos
+`87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety
+`33/33`, audit, lint, typecheck, formato e diff-check. O build sem
+`CVG_API_INTERNAL_URL` permaneceu bloqueado pelo guard esperado.
+
+O gate `pnpm verify:secrets` permanece fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente; o
+roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
+clínica ou piloto.
+
+## 39. Checkpoint bounded workspace asset reads B99-101 — 2026-08-21T01:13:43-03:00
+
+Uma auditoria read-only reproduziu a materialização sem teto em `scanFile` para
+assets de extensão ignorada acima de `2 MiB`. O RED usou um `.png` esparso,
+oversized e sem permissão; o GREEN passou a descartar o asset por metadata e a
+usar `readScanBuffer` com máximo de `MAX_SCAN_BYTES + 1`, preservando o
+comportamento de texto UTF-8 limitado e fail-closed se houver crescimento após
+`lstat`.
+
+O foco passou `43/43`; a cobertura passou `205/1139/21` em
+`95,03/90,95/95,31/95,73`, build sintético `12/12`, `verify:hotspots` reporta
+`0` hotspots e maior função de `98` linhas, contratos `87/87`, worker `51/51`,
+decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint,
+typecheck, formato e diff-check passaram. O código/teste está em `95adb51`.
+
+O gate `pnpm verify:secrets` permanece fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente; o
+roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
+clínica ou piloto.
+
 ## 38. Publicação do checkpoint de caps scan/header B99-101 — 2026-08-21T01:01:22-03:00
 
 O código/teste `3410d52` e a reconciliação documental `4bd3d3e` foram publicados

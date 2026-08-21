@@ -15,6 +15,31 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-21T01:13:43-03:00 — B99-101 bounded workspace asset reads
+
+- **auditoria/RED:** `scanFile` chamava `readFile` sem teto para asset
+  ignorado acima de `2 MiB`; um `.png` esparso, oversized e sem permissão
+  reproduziu `unreadable-file` em vez de ser descartado pelo preflight;
+- **GREEN:** assets ignorados oversized agora são descartados por metadata e
+  arquivos regulares passam por `readScanBuffer`, com leitura máxima de
+  `MAX_SCAN_BYTES + 1`, preservando texto UTF-8 limitado, binário e fail-closed
+  se o arquivo crescer depois de `lstat`;
+- **evidência:** foco `43/43`, cobertura `205/1139/21` em
+  `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior
+  função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`,
+  mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e
+  diff-check passaram. O build sem `CVG_API_INTERNAL_URL` foi bloqueado pelo
+  guard esperado;
+- **rastreabilidade/publicação:** código/teste em `95adb51`, publicado no
+  branch remoto; a reconciliação documental desta rodada será publicada em
+  seguida;
+- **status/limite:** B99-101 permanece `IN_PROGRESS` no escopo externo por
+  secret manager/rotação e gates externos. `pnpm verify:secrets` permanece
+  fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica
+  fresca foi read-only e não independente; o programa segue
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T00:58:01-03:00 — B99-101 caps de scan/header do parser Git
 
 - **auditoria/RED:** `planGitBatchRequests` aceitava `maxScanBytes: Infinity`,

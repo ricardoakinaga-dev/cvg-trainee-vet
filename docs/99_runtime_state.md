@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 52 fechou a barra local de B99-101 para caps de scan/header do parser Git: `maxScanBytes` e `maxHeaderBytes` agora aceitam somente inteiros seguros positivos e falham antes do planejamento/stream parsing; Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 53 fechou a barra local de B99-101 para leituras do workspace: assets ignorados acima de `2 MiB` são descartados por metadata sem abertura e arquivos regulares são lidos em buffer máximo de `MAX_SCAN_BYTES + 1`, preservando scan UTF-8 limitado e fail-closed em crescimento concorrente; Round 52 mantém caps de scan/header do parser Git, Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check` e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; planner, stream parser e reader Git agora validam `maxScanBytes` e `maxHeaderBytes` como inteiros seguros positivos antes de processar, preservando cap finito, finding `oversize-file` e framing bounded. O foco passou `42/42`, cobertura `205/1138/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca confirmou rejeição de `Infinity` e aceitação de caps finitos. O commit de código/teste `3410d52` e a reconciliação documental `4bd3d3e` foram publicados no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 53 de B99-101 sob RED→GREEN→REFACTOR; o scanner agora pula asset ignorado oversized antes de abrir o arquivo e lê o workspace em buffer limitado a `MAX_SCAN_BYTES + 1`. O foco passou `43/43`, cobertura `205/1139/21` em `95,03/90,95/95,31/95,73`, build sintético explícito `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o commit de código/teste `95adb51` foi publicado no branch remoto. O build sem `CVG_API_INTERNAL_URL` parou no guard esperado; com endpoint sintético passou. `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental de Round 53 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,37 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T01:01:22-03:00
+- last_update: 2026-08-21T01:13:43-03:00
+
+## 2026-08-21T01:13:43-03:00 — DUAL99-B99-101-BOUNDED-WORKSPACE-ASSET-READS
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only encontrou que `scanFile` bypassava o preflight de
+  tamanho para extensões binárias ignoradas e chamava `readFile` sem teto;
+- RED reproduziu a abertura de um `.png` esparso, oversized e sem permissão,
+  que antes virava `unreadable-file`; GREEN passou a descartar assets ignorados
+  oversized por metadata e a usar `readScanBuffer`, que retém no máximo
+  `MAX_SCAN_BYTES + 1` bytes, preservando classificações existentes;
+- o foco passou `43/43`, cobertura `205/1139/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12` com
+  `CVG_API_INTERNAL_URL` sintético, hotspots `0` com maior função de `98`
+  linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`,
+  migration safety `33/33`, audit, lint, typecheck, formato e diff-check;
+- o commit de código/teste `95adb51` foi publicado em
+  `origin/agent/publish-production-hardening`. O build sem a variável exigida
+  permaneceu corretamente bloqueado pelo guard de configuração.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente
+porque o backend de critic não estava disponível. Publicar a reconciliação
+documental e seguir com nova auditoria bounded; permanecem abertos secret
+manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente.
+Não houve score, release, decisão clínica, piloto ou produção.
 
 ## 2026-08-21T00:58:01-03:00 — DUAL99-B99-101-GIT-PARSER-SCAN-HEADER-CAPS
 
