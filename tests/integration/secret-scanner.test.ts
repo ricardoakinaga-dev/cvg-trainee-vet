@@ -1095,6 +1095,32 @@ describe("secret scanner", () => {
     ]);
   });
 
+  it("fails closed when workspace recursion depth budget is exceeded", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-workspace-depth-budget-"),
+    );
+    temporaryDirectories.push(directory);
+    let current = directory;
+    const depth = 257;
+    for (let index = 0; index < depth; index += 1) {
+      current = join(current, `level-${String(index).padStart(3, "0")}`);
+      await mkdir(current);
+    }
+    await writeFile(join(current, "empty.txt"), "");
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: false,
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: "<workspace>",
+        rule: "unreadable-file",
+      }),
+    ]);
+  });
+
   it.each(["missing", "regular-file"])(
     "rejects a %s supplied as the scan root",
     async (name) => {

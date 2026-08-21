@@ -26,6 +26,7 @@ const ignoredDirectories = new Set([
 
 const MAX_SCAN_BYTES = 2 * 1024 * 1024;
 const MAX_WORKSPACE_TOTAL_ENTRIES = 4096;
+const MAX_WORKSPACE_DEPTH = 256;
 const MAX_GIT_BATCH_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_GIT_BATCH_HEADER_BYTES = 128;
 
@@ -499,6 +500,7 @@ async function walk(
   logicalDirectory = "",
   openedDirectory,
   remainingEntries = MAX_WORKSPACE_TOTAL_ENTRIES,
+  workspaceDepth = 0,
 ) {
   const access =
     openedDirectory === undefined
@@ -523,11 +525,15 @@ async function walk(
       }
       if (entry.isDirectory()) {
         if (!ignoredDirectories.has(entry.name)) {
+          if (workspaceDepth >= MAX_WORKSPACE_DEPTH) {
+            throw new Error("workspace recursion depth exceeded");
+          }
           const child = await walk(
             absolutePath,
             logicalPath,
             undefined,
             remaining,
+            workspaceDepth + 1,
           );
           findings.push(...child.findings);
           remaining = child.remainingEntries;
