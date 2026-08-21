@@ -247,11 +247,12 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 48. Checkpoint de publicação do Git cwd bounded B99-101 — 2026-08-21T02:47:53-03:00
+## 48. Checkpoint de publicação do Git cwd bounded B99-101 — 2026-08-21T02:51:17-03:00
 
 O código/teste `0f575d1` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental deste
-checkpoint está em andamento. A publicação não altera runtime, produção,
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`22de927` também foi publicada no mesmo branch e o pós-push confirmou
+`HEAD == origin` em `22de927`. A publicação não altera runtime, produção,
 segredos, score, release, clínica ou piloto.
 
 ## 47. Checkpoint do Git cwd bounded B99-101 — 2026-08-21T02:47:53-03:00

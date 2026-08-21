@@ -11548,13 +11548,14 @@ auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
 provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
 gates externos, aprovação humana e reauditoria independente.
 
-## 2026-08-21T02:47:53-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-CWD-ROOT-NOFOLLOW
+## 2026-08-21T02:51:17-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-CWD-ROOT-NOFOLLOW
 
 ### ACTION
 
 O commit de código/teste `0f575d1` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está sendo publicada separadamente.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`22de927` também foi publicada no mesmo branch. O pós-push confirmou
+`HEAD == origin` em `22de927`.
 
 ### RESULT / STATUS
 
@@ -11563,7 +11564,10 @@ alteração de runtime/produção, score, release, decisão clínica ou piloto.
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental e depois executar nova auditoria bounded.
+Executar nova auditoria bounded; parent path races, POSIX/procfs, secret
+manager/rotação, provider/CI, RC/runtime, WebKit aprovado, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente permanecem
+abertos.
 
 ## 2026-08-21T02:16:26-03:00 — DUAL99-B99-101-WORKSPACE-DIRECTORY-NOFOLLOW
 
