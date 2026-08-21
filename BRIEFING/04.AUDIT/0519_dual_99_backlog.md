@@ -5,6 +5,25 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T12:10:51-03:00 — B99-201 worker persistence
+
+Uma inspeção independente read-only reproduziu que exceções de `markFailed`
+interrompiam o lote e que exceções de `markProcessed` acionavam retry indevido
+do handler. RED falhou nos dois cenários; GREEN separa handler, ACK e registro
+de retry, sem repetir ACK e preservando telemetria/cleanup. Foco worker `53/53`,
+outbox `10/10`; cobertura `205/1176/21` em `95,04/90,95/95,32/95,74`; build
+`12/12`; hotspots `0`; typecheck, lint, formato, exposure e diff-check
+passaram. Código/teste publicado: `8bcbe58`; evidência:
+`docs/143_dual_99_b99_201_worker_persistence_failure_evidence_2026-08-21.md`.
+
+**status:** B99-201 segue `READY_FOR_NEXT_STEP` localmente. PostgreSQL live
+com role restrita, concorrência, retry/cleanup/RLS, RC, score, release, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente continuam
+abertos. `pnpm verify:secrets` acusa somente os quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado. O explorador independente encontrou o gap corrigido, mas não há
+`PASS` independente final.
+
 ## Atualização de execução — 2026-08-21T11:54:12-03:00 — B99-201 ACK state
 
 Uma revisão read-only reproduziu que `markProcessed` preservava

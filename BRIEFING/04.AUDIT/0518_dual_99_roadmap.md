@@ -5,6 +5,27 @@
 **Predecessor preservado:** `0516_dual_98_roadmap.md`
 **Disposição:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Checkpoint local B99-201 — falha de persistência isolada no worker — 2026-08-21T12:10:51-03:00
+
+Uma inspeção independente read-only reproduziu que exceções de `markFailed`
+interrompiam o lote e que exceções de `markProcessed` eram classificadas como
+falha do handler. RED capturou os dois cenários; GREEN separa handler, ACK e
+registro de retry, não repete o ACK e mantém telemetria/cleanup do lote.
+
+O foco worker passou `53/53`, o outbox `10/10`; a cobertura passou
+`205/1176/21` em `95,04/90,95/95,32/95,74`; build `12/12`, hotspots `0`,
+typecheck, lint, formato, exposure e diff-check passaram. Código/teste
+`8bcbe58` foi publicado; evidência detalhada:
+`docs/143_dual_99_b99_201_worker_persistence_failure_evidence_2026-08-21.md`.
+
+B99-201 permanece `READY_FOR_NEXT_STEP` localmente. PostgreSQL live com role
+restrita, concorrência, retry/cleanup/RLS, RC, runtime, score, release, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente continuam
+abertos. `verify:secrets` segue fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`; não houve alteração
+live. O explorador independente encontrou o gap, mas não há `PASS` independente
+final.
+
 ## Checkpoint local B99-201 — ACK com estado terminal coerente — 2026-08-21T11:54:12-03:00
 
 Uma revisão read-only encontrou que o adapter de outbox limpava a lease ao

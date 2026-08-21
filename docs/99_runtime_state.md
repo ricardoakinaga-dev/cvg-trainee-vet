@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-2 worker, observabilidade e dados derivados
 - current_sprint: F99-2 — fechamento local de outbox e readiness
-- current_task: B99-201 local hardening; o ACK do outbox agora limpa `last_error_code` ao concluir um evento após falha transitória. B99-101 permanece com as Rounds 81–89 fechadas; B99-102 mantém downloader clínico fail-closed, enquanto PostgreSQL live com role restrita, WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: B99-201 continuation local hardening; além de limpar `last_error_code` no ACK, o worker isola falhas de `markProcessed`/`markFailed`, evita retry do ACK e preserva telemetria/cleanup do lote. B99-101 permanece com as Rounds 81–89 fechadas; B99-102 mantém downloader clínico fail-closed, enquanto PostgreSQL live com role restrita, WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: tratou B99-201 sob RED→GREEN→REFACTOR, publicou `0e0e2c8` e confirmou `HEAD == origin`; o ACK limpa `last_error_code` junto ao estado `PROCESSED`. Foco worker/persistência `24/24`; cobertura `205/1174/21` em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`; format/lint/typecheck/diff-check/exposure verdes. As Rounds 81–89 de B99-101 permanecem reconciliadas em `docs/141`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica independente desta rodada expirou sem relatório. `.gauntlet/` continua local e não rastreado
+- last_completed_action: tratou a continuação B99-201 sob RED→GREEN→REFACTOR, publicou `8bcbe58` e confirmou o código em `origin`; o worker agora isola exceções de ACK/retry com códigos técnicos redigidos. Foco worker `53/53`, outbox `10/10`; cobertura `205/1176/21` em `95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; format/lint/typecheck/diff-check/exposure verdes. As Rounds 81–89 de B99-101 permanecem reconciliadas em `docs/141`, e o ACK anterior em `docs/142`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; o explorador independente encontrou este gap, sem `PASS` independente final. `.gauntlet/` continua local e não rastreado
 - next_action: revalidar B99-201 em PostgreSQL live descartável/aprovado com role sem `SUPERUSER/BYPASSRLS`, concorrência, lease/ACK/retry/cleanup e RLS; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, concurrency/TTL/RLS de B99-103/105, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
-- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; B99-201 ainda depende de PostgreSQL live com role restrita para provar concorrência, lease/ACK/retry/cleanup e RLS; a crítica independente desta rodada expirou sem relatório; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; B99-201 ainda depende de PostgreSQL live com role restrita para provar concorrência, lease/ACK/retry/cleanup e RLS; o explorador independente encontrou o gap corrigido localmente, mas não há `PASS` independente final e o papel reviewer não foi suportado; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,32 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T11:54:12-03:00
+- last_update: 2026-08-21T12:10:51-03:00
+
+## 2026-08-21T12:10:51-03:00 — DUAL99-B99-201-WORKER-PERSISTENCE-FAILURE
+
+### AÇÃO / RESULTADO
+
+- a inspeção independente read-only encontrou que exceções de `markFailed`
+  interrompiam o lote e que exceções de `markProcessed` eram tratadas como
+  falha do handler, acionando retry indevido;
+- RED reproduziu os dois comportamentos; GREEN separou handler, ACK e registro
+  de falha, com códigos técnicos redigidos e continuidade do lote;
+- foco worker `53/53`, outbox `10/10`; cobertura `205/1176/21` em
+  `95,04/90,95/95,32/95,74`; build `12/12`, hotspots `0`, typecheck, lint,
+  formato, exposure e diff-check passaram;
+- código/teste foi publicado em `8bcbe58` e enviado ao `origin`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+B99-201 segue `READY_FOR_NEXT_STEP` localmente. PostgreSQL live com role
+restrita, concorrência, RLS/permissões, RC, runtime, score, release, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente continuam
+abertos. `pnpm verify:secrets` permanece fail-closed somente nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`; o arquivo
+não foi lido nem alterado. O explorador independente encontrou o gap, mas não
+há `PASS` independente final; o papel reviewer não iniciou por limitação de
+modelo da conta.
 
 ## 2026-08-21T11:54:12-03:00 — DUAL99-B99-201-OUTBOX-ACK-STATE
 

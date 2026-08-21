@@ -2,6 +2,24 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Auditoria Dual99 — 2026-08-21T12:10:51-03:00 — B99-201 worker persistence:**
+uma inspeção independente read-only reproduziu que exceções de `markFailed`
+interrompiam o lote e que exceções de `markProcessed` eram tratadas como falha
+do handler. RED falhou nos dois cenários; GREEN separa handler, ACK e registro
+de retry, preservando telemetria/cleanup e sem repetir o ACK. Foco worker
+`53/53`, outbox `10/10`; cobertura `205/1176/21` em
+`95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; typecheck, lint,
+formato, exposure e diff-check passaram. Código/teste `8bcbe58` está publicado
+com `HEAD == origin`; evidência: `docs/143_dual_99_b99_201_worker_persistence_failure_evidence_2026-08-21.md`.
+
+**Disposição:** B99-201 continua `READY_FOR_NEXT_STEP` localmente e o programa
+`IN_PROGRESS / PILOT_BLOCKED`. PostgreSQL live com role restrita, concorrência,
+RLS/permissões, RC, score, release, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente permanecem abertos. `pnpm
+verify:secrets` segue fail-closed somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. O explorador independente
+encontrou o gap corrigido, mas não há `PASS` independente final.
+
 **Auditoria Dual99 — 2026-08-21T11:54:12-03:00 — B99-201:** uma revisão
 read-only reproduziu que o ACK do outbox preservava `last_error_code` depois de
 uma falha transitória. RED focal falhou no contrato SQL; GREEN limpa o marcador

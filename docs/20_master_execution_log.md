@@ -40,6 +40,59 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T12:10:51-03:00 — DUAL99-B99-201-WORKER-PERSISTENCE-FAILURE
+
+### TIMESTAMP
+
+2026-08-21 12:10:51 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-2 — worker, observabilidade e dados derivados
+
+### SPRINT
+
+F99-2 — fechamento local de outbox e readiness
+
+### TASK
+
+B99-201 — isolar falhas de persistência no ACK e no retry do worker.
+
+### ACTION
+
+Uma inspeção independente read-only encontrou que exceções de `markFailed`
+interrompiam o lote e que exceções de `markProcessed` acionavam o retry do
+handler. RED reproduziu ambos; GREEN separou handler, ACK e registro de falha.
+
+### RESULT
+
+Foco worker `53/53`; outbox `10/10`; cobertura `205/1176/21` em
+`95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; typecheck, lint,
+formato, exposure e diff-check passaram. Código/teste `8bcbe58` foi publicado
+e enviado ao `origin`.
+
+### DECISIONS
+
+B99-201 segue `READY_FOR_NEXT_STEP` localmente. Não houve alteração em runtime,
+produção, banco live, score, release, decisão clínica ou piloto. O explorador
+independente encontrou o gap corrigido, mas nenhum `PASS` independente final é
+alegado; o papel reviewer não iniciou por limitação do modelo da conta.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Executar, somente em alvo descartável/aprovado e com role sem
+`SUPERUSER/BYPASSRLS`, a prova live de concorrência, lease/ACK/retry/cleanup e
+RLS de B99-201; manter abertos os gates externos, humanos, clínicos, RC,
+`0/145` e reauditoria independente.
+
 ## 2026-08-21T11:54:12-03:00 — DUAL99-B99-201-OUTBOX-ACK-STATE
 
 ### TIMESTAMP
