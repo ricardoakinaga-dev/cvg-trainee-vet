@@ -136,7 +136,7 @@ function isIgnoredBinaryAssetPath(path) {
 
 function isSyntheticPlaceholder(value, path) {
   const logicalPath = path.replace(/^(?:history|staged):/u, "");
-  const normalizedValue = value.trim().split(/[&#]/u, 1)[0] ?? value.trim();
+  const normalizedValue = value.trim();
   const fixturePath =
     /^tests(?:\/|$)/u.test(logicalPath) ||
     /^\.github\/workflows(?:\/|$)/u.test(logicalPath) ||
@@ -144,7 +144,7 @@ function isSyntheticPlaceholder(value, path) {
   return (
     fixturePath &&
     (boundedSyntheticPlaceholders.has(normalizedValue) ||
-      /^(?:synthetic-token|synthetic-invitation-token-\d+|(?:review|publish)-http-\d+|(?:authoring|start)-key-\d{4}(?:-[a-z])?)$/iu.test(
+      /^(?:synthetic-token|synthetic-invitation-token-\d+|(?:review|publish)-http-\d+|(?:authoring|start)-key-\d{4}(?:-[a-z])?)(?:&(?:form=1|locale=pt-BR))?$/iu.test(
         normalizedValue,
       ))
   );

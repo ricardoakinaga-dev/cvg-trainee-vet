@@ -149,6 +149,23 @@ describe("secret scanner", () => {
     );
   });
 
+  it("does not let a synthetic placeholder hide a secret suffix", () => {
+    const randomValue = ["H4", "rP", "8v", "L2", "mQ", "7s", "Tz", "9k"].join(
+      "",
+    );
+    const findings = scanText(
+      [
+        `password: "<synthetic>#${randomValue.repeat(3)}"`,
+        `token: "synthetic-token&${randomValue.repeat(3)}"`,
+      ].join("\n"),
+      "tests/fixtures/synthetic.ts",
+    );
+
+    expect(
+      findings.filter((finding) => finding.rule === "sensitive-assignment"),
+    ).toHaveLength(2);
+  });
+
   it("does not treat a literal value containing .repeat( as executable code", () => {
     const literal = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
 
