@@ -31,9 +31,9 @@
 
 ## Publicação de execução — 2026-08-21T04:54:57-03:00 — B99-101 Git metadata race boundary
 
-O código/teste `50f22c7` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado.
+O código/teste `50f22c7` e a reconciliação documental `31ce669` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `31ce669`. `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T04:26:53-03:00 — B99-101 Git internal metadata boundary
 

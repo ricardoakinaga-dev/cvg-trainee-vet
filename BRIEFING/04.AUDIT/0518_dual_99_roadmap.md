@@ -249,9 +249,9 @@ clínica ou piloto.
 
 ## 60. Checkpoint de publicação da corrida de metadados Git B99-101 — 2026-08-21T04:54:57-03:00
 
-O código/teste `50f22c7` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada será publicada em seguida. A publicação não altera runtime, produção,
+O código/teste `50f22c7` e a reconciliação documental `31ce669` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `31ce669`. A publicação não altera runtime, produção,
 segredos, score, release, clínica ou piloto.
 
 ## 59. Checkpoint da corrida de metadados Git B99-101 — 2026-08-21T04:54:57-03:00

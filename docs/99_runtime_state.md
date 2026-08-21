@@ -67,15 +67,17 @@ rodada.
 
 ### AÇÃO / RESULTADO
 
-O commit técnico `50f22c7` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado;
-não houve rotação de segredo, alteração de runtime/produção, score, release,
+O commit técnico `50f22c7` e a reconciliação documental `31ce669` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `31ce669`. `.gauntlet/` permanece local e não rastreado; não
+houve rotação de segredo, alteração de runtime/produção, score, release,
 decisão clínica ou piloto.
 
 ### PRÓXIMA AÇÃO
 
-Publicar a reconciliação documental; então executar nova auditoria bounded.
+Executar nova auditoria bounded; Windows/non-proc, secret manager/rotação,
+provider/CI, RC/runtime, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente permanecem abertos.
 
 ## 2026-08-21T04:26:53-03:00 — DUAL99-B99-101-GIT-INTERNAL-METADATA-NOFOLLOW
 

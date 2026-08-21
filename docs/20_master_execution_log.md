@@ -11486,9 +11486,9 @@ independente.
 
 ### ACTION
 
-O commit de código/teste `50f22c7` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte.
+O commit de código/teste `50f22c7` e a reconciliação documental `31ce669` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `31ce669`.
 
 ### RESULT / STATUS
 
@@ -11498,7 +11498,7 @@ score, release, decisão clínica ou piloto.
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental; Windows/non-proc, secret manager/rotação,
+Executar nova auditoria bounded; Windows/non-proc, secret manager/rotação,
 provider/CI, RC/runtime, clínica, `0/145`, gates externos, aprovação humana e
 reauditoria independente permanecem abertos.
 
