@@ -247,6 +247,30 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 54. Checkpoint de publicação da identidade da raiz B99-101 — 2026-08-21T03:45:58-03:00
+
+O código/teste `55dffa5` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. A publicação do código não altera runtime,
+produção, segredos, score, release, clínica ou piloto.
+
+## 53. Checkpoint da identidade da raiz B99-101 — 2026-08-21T03:45:58-03:00
+
+B99-101 recebeu RED/GREEN para a corrida de identidade da raiz. Uma troca por
+outro diretório real, sem symlink, fez a sequência `lstat`→open atravessar a
+fronteira em `207/1000` tentativas; o focal RED reproduziu `87/500` findings.
+O GREEN consolida a fronteira em `withWorkspaceRoot`, compara `dev/ino` do
+`lstat` com o descritor aberto por `O_DIRECTORY | O_NOFOLLOW` e falha fechado
+quando diverge; o scan usa somente o handle retido.
+
+O foco passou `53/53`, a cobertura passou `205/1149/21` em
+`95,03/90,95/95,31/95,73`, dez swaps profundos determinísticos pós-fix não
+produziram finding externo, o build sintético passou `12/12`, CI contract e
+arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit
+de dependências passaram. `pnpm verify:secrets` permanece fail-closed nos
+quatro assignments redigidos preexistentes; a solução local depende de
+POSIX/procfs e as condições live, externas e independentes permanecem abertas.
+
 ## 52. Checkpoint de publicação do Git metadata bounded B99-101 — 2026-08-21T03:35:55-03:00
 
 O código/teste `5ea9281` foi publicado em

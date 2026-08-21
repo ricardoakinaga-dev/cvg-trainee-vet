@@ -11420,6 +11420,65 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T03:45:58-03:00 — DUAL99-B99-101-ROOT-IDENTITY-NOFOLLOW
+
+### TIMESTAMP
+
+2026-08-21 03:45:58 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem
+
+### TASK
+
+B99-101 — impedir que uma troca por outro diretório real entre validação e
+abertura redirecione a varredura do worktree.
+
+### ACTION
+
+A auditoria read-only reproduziu `207/1000` atravessamentos externos quando a
+raiz foi trocada por outro diretório real, sem symlink; o RED focal reproduziu
+`87/500` findings. O GREEN consolidou validação e abertura em
+`withWorkspaceRoot`, comparando `dev/ino` do `lstat` com o descritor aberto por
+`O_DIRECTORY | O_NOFOLLOW`, e removeu a pré-validação duplicada de `scanProject`.
+
+### RESULT
+
+O foco passou `53/53`; a cobertura passou `205` arquivos / `1149` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; dez swaps profundos
+determinísticos pós-fix não produziram finding externo. Build passou `12/12`
+com URL sintética somente no processo; CI contract, arquitetura `2/2`,
+hotspots `0`, lint, typecheck, formato, diff-check e audit de dependências
+passaram. O commit de código/teste `55dffa5` foi publicado.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica foi fresca,
+read-only e não independente porque o backend de critic está indisponível.
+Não houve alteração de segredo, runtime, produção, score, release, decisão
+clínica ou piloto.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; então executar nova auditoria
+bounded e obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente.
+
 ## 2026-08-21T03:31:23-03:00 — DUAL99-B99-101-GIT-METADATA-NOFOLLOW
 
 ### TIMESTAMP

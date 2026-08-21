@@ -1,10 +1,10 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T03:31:23-03:00`
-- última atualização: `2026-08-21T03:31:23-03:00`
+- corte: `2026-08-21T03:45:58-03:00`
+- última atualização: `2026-08-21T03:45:58-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `5ea9281` em
+- commit publicado: `55dffa5` em
   `origin/agent/publish-production-hardening`
 - evidência documental publicada: `4d54d8b` em
   `origin/agent/publish-production-hardening`
@@ -26,6 +26,14 @@
 - registry: `docs/canonical-document-registry.json`
 
 ## Implementações locais desta rodada
+
+- root identity boundary: a auditoria reproduziu que a troca da raiz por
+  outro diretório real, sem symlink, atravessava a sequência `lstat`→open em
+  `207/1000` tentativas; o RED focal reproduziu `87/500` findings externos.
+  GREEN consolidou a validação em `withWorkspaceRoot`, compara `dev/ino` do
+  `lstat` com o descritor `O_DIRECTORY | O_NOFOLLOW` e falha fechado em
+  divergência. Dez swaps profundos determinísticos pós-fix não produziram
+  finding externo; foco `53/53`.
 
 - Git metadata boundary: a auditoria reproduziu que um `.git` simbólico fazia
   Git ler índice e histórico de um repositório externo. A regressão RED cobriu
@@ -78,6 +86,13 @@
   arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e
   audit de dependências passaram. `pnpm verify:secrets` continua apontando
   somente os quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`.
+
+- qualidade Round 60: cobertura integral passou `205/1149/21` em
+  `95,03/90,95/95,31/95,73`; build `12/12` com URL sintética somente no
+  processo, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck,
+  formato, diff-check e audit de dependências passaram. `pnpm verify:secrets`
+  continua apontando somente os quatro assignments redigidos preexistentes de
   `infra/production/.env.local`.
 
 - scanner de segredos: enumeração de worktree/index/history, tags anotadas,

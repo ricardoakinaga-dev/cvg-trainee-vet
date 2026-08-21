@@ -5,6 +5,34 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T03:45:58-03:00 — B99-101 root identity boundary
+
+- **auditoria/RED:** a troca da raiz por outro diretório real, sem symlink,
+  atravessou a sequência `lstat`→open e encontrou `victim.env` em `207/1000`
+  tentativas; o RED focal reproduziu `87/500` findings externos;
+- **GREEN:** `withWorkspaceRoot` compara `dev/ino` do `lstat` com o descritor
+  aberto por `O_DIRECTORY | O_NOFOLLOW`, falha fechado em divergência e mantém
+  somente o handle validado durante o scan;
+- **evidência:** foco `53/53`, cobertura `205/1149/21` em
+  `95,03/90,95/95,31/95,73`, dez swaps profundos determinísticos sem finding
+  externo, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0`, lint,
+  typecheck, formato, diff-check e audit passaram. Código/teste `55dffa5` foi
+  publicado no branch remoto;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T03:45:58-03:00 — B99-101 root identity boundary
+
+O código/teste `55dffa5` foi publicado em
+`origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `55dffa5`. A reconciliação documental será publicada em
+seguida; `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T03:31:23-03:00 — B99-101 Git metadata boundary
 
 - **auditoria/RED:** um `.git` simbólico para repositório externo fez o Git

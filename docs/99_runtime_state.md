@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 59 fechou a barra local de B99-101 para metadados Git simbólicos: `.git` é aberto com `O_DIRECTORY | O_NOFOLLOW`, o descritor é mantido durante staged/history e entregue ao filho Git em fd fixo; a travessia do worktree usa o descritor já aberto da raiz. Rounds 58–55 preservam as fronteiras de caminho, diretório e arquivo; Round 54 valida a raiz; Rounds 53–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 60 fechou a barra local de B99-101 para identidade da raiz: a validação compara `dev/ino` do caminho com o descritor raiz aberto e falha fechado em troca de diretório real. Round 59 mantém `.git` no-follow e fd Git fixo; Rounds 58–55 preservam fronteiras de caminho, diretório e arquivo; Round 54 valida a raiz; Rounds 53–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 59 de B99-101 sob RED→GREEN→REFACTOR; a auditoria reproduziu que `.git` simbólico fazia Git ler índice/histórico externos, e a regressão focal cobriu staged/history. A solução rejeita `.git` não-diretório, mantém o descritor real e o entrega a comandos Git bounded; a caminhada do worktree usa a raiz já aberta. Foco `52/52`, cobertura `205/1148/21` em `95,03/90,95/95,31/95,73`, probe `.git` com `1000` trocas sem vazamento nem exceção, build `12/12` com URL sintética de processo, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram; código/teste `5ea9281` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only bounded da superfície Git/metadados; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 60 de B99-101 sob RED→GREEN→REFACTOR; a auditoria reproduziu `207/1000` leituras externas após troca de raiz real e o RED focal reproduziu `87/500` leaks. `withWorkspaceRoot` agora compara `dev/ino` do `lstat` com o descritor no-follow aberto e mantém somente esse handle no scan; foco `53/53`, cobertura `205/1149/21` em `95,03/90,95/95,31/95,73`, dez swaps profundos determinísticos sem finding externo, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram; código/teste `55dffa5` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,32 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T03:35:55-03:00
+- last_update: 2026-08-21T03:45:58-03:00
+
+## 2026-08-21T03:45:58-03:00 — DUAL99-B99-101-ROOT-IDENTITY-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only trocou a raiz por outro diretório real sem symlink;
+  a validação anterior abriu a árvore externa em `207/1000` tentativas e o RED
+  focal reproduziu `87/500` findings externos;
+- GREEN consolidou validação e abertura em `withWorkspaceRoot`: o `dev/ino` do
+  `lstat` é comparado ao `fstat` do descritor `O_DIRECTORY | O_NOFOLLOW`, e
+  divergência retorna o fallback genérico antes do scan;
+- foco `53/53`; cobertura `205/1149/21` em `95,03/90,95/95,31/95,73`; dez
+  swaps profundos determinísticos sem finding externo; build `12/12` com URL
+  sintética de processo, CI contract, arquitetura `2/2`, hotspots `0`, lint,
+  typecheck, formato, diff-check e audit passaram. Código/teste `55dffa5` foi
+  publicado e `HEAD == origin` confirmado.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Executar nova auditoria bounded.
 
 ## 2026-08-21T03:31:23-03:00 — DUAL99-B99-101-GIT-METADATA-NOFOLLOW
 
