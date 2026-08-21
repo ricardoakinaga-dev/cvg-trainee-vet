@@ -214,7 +214,7 @@ helper `397`, hotspots `0`, lint/typecheck/formato/diff-check e todos os gates
 oficiais até migration safety passaram. `verify:secrets` permanece fail-closed
 somente nos quatro assignments redigidos preexistentes de
 `infra/production/.env.local`, não lidos nem alterados. O código está em
-`11a6d10`; a evidência documental está em publicação.
+`11a6d10`; a evidência documental foi publicada em `0b393d5`.
 
 O parser mantém um único corpo bounded por vez para permitir scan textual
 limitado; isso não fecha secret manager/rotação, provider/CI, RC/proveniência,

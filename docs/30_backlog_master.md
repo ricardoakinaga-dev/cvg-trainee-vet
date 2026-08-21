@@ -15,8 +15,8 @@ batches. Foco `36/36`, cobertura `205/1130/21` em
 `95,02/90,95/95,31/95,71`, scanner `774` linhas, helper `397`, hotspots `0`,
 lint/typecheck/formato/diff-check verdes; `pnpm verify` passou até migration
 safety e parou somente nos quatro assignments redigidos preexistentes de
-`.env.local`. Código/teste estão em `11a6d10`; evidência documental segue em
-publicação. O parser mantém um único corpo bounded por vez para scan textual;
+`.env.local`. Código/teste estão em `11a6d10`; evidência documental publicada
+em `0b393d5`. O parser mantém um único corpo bounded por vez para scan textual;
 secret manager/rotação, provider/CI, RC, runtime live, clínica, `0/145`, gates
 externos e reauditoria permanecem abertos. B99-101 e o programa seguem
 `IN_PROGRESS / PILOT_BLOCKED`.

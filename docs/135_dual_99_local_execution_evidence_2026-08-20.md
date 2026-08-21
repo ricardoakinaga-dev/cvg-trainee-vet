@@ -2,11 +2,12 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T20:55:39-03:00`
-- última atualização: `2026-08-20T20:55:39-03:00`
+- última atualização: `2026-08-20T20:59:41-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `11a6d10` em
   `origin/agent/publish-production-hardening`
-- evidência documental: pendente de publicação nesta rodada
+- evidência documental publicada: `0b393d5` em
+  `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -866,7 +867,8 @@ fail-closed em `verify:secrets` somente nos quatro assignments redigidos
 preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
 
 O código/teste está em `11a6d10` (`fix: stream git history batch bodies`) e foi
-enviado para `origin/agent/publish-production-hardening`. O parser ainda
+enviado para `origin/agent/publish-production-hardening`; esta evidência foi
+publicada em `0b393d5` (`docs: record incremental git batch parser`). O parser ainda
 retém um único corpo bounded por vez para permitir o scan textual limitado;
 isso não é uma alegação de ausência absoluta de buffers. Secret
 manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit aprovado,
