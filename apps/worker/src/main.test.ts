@@ -357,7 +357,18 @@ describe("worker runtime", () => {
     await expect(runtime.run()).rejects.toBe(initializationError);
     expect(mocks.health.start).toHaveBeenCalledOnce();
     expect(mocks.health.close).toHaveBeenCalledOnce();
+    expect(mocks.integrations.close).toHaveBeenCalledOnce();
     expect(mocks.integrations.healthcheck).not.toHaveBeenCalled();
+  });
+
+  it("closes integrations when processing fails during run", async () => {
+    const processingError = new Error("synthetic processing failure");
+    mocks.processOutboxOnce.mockRejectedValueOnce(processingError);
+    const runtime = createWorkerRuntime(environment());
+
+    await expect(runtime.run()).rejects.toBe(processingError);
+    expect(mocks.health.close).toHaveBeenCalledOnce();
+    expect(mocks.integrations.close).toHaveBeenCalledOnce();
   });
 
   it("waits through a readiness failure and stops during the idle cycle", async () => {

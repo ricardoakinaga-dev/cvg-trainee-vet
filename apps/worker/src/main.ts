@@ -113,10 +113,11 @@ async function runWorkerLoop(
   initialize: () => Promise<void>,
   refreshReadiness: () => Promise<boolean>,
   processOnce: () => ReturnType<typeof processOutboxOnce>,
+  closeIntegrations: () => Promise<void>,
   isStopped: () => boolean,
 ): Promise<void> {
-  await health.start();
   try {
+    await health.start();
     await initialize();
     while (!isStopped()) {
       health.markHeartbeat();
@@ -129,7 +130,7 @@ async function runWorkerLoop(
       if (result.claimed === 0) await waitForWorkerCycle();
     }
   } catch (error) {
-    await health.close();
+    await Promise.allSettled([health.close(), closeIntegrations()]);
     throw error;
   }
 }
@@ -237,8 +238,13 @@ export function createWorkerRuntime(
   const reconcile = (): Promise<VectorReconciliationResult> =>
     reconcileVectorIndex(workerDependencies);
   const run = (): Promise<void> =>
-    runWorkerLoop(health, initialize, refreshReadiness, processOnce, () =>
-      Boolean(stopped),
+    runWorkerLoop(
+      health,
+      initialize,
+      refreshReadiness,
+      processOnce,
+      integrations.close,
+      () => Boolean(stopped),
     );
 
   return Object.freeze({
