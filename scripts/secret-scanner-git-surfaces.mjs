@@ -19,6 +19,7 @@ export function createGitSurfaceScanner({
       gitDirectoryHandle: options.gitDirectoryHandle,
       gitIndexHandle: options.gitIndexHandle,
       gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
+      validateGitMetadata: options.validateGitMetadata,
       maxOutputBytes: options.maxOutputBytes ?? 32 * 1024 * 1024,
     });
     return output.toString("utf8");
@@ -45,6 +46,7 @@ export function createGitSurfaceScanner({
           gitDirectoryHandle: options.gitDirectoryHandle,
           gitIndexHandle: options.gitIndexHandle,
           gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
+          validateGitMetadata: options.validateGitMetadata,
           maxOutputBytes: maxScanBytes + 1,
         });
         findings.push(...scanPathBuffer(stdout, `staged:${path}`));
@@ -79,6 +81,7 @@ export function createGitSurfaceScanner({
       gitDirectoryHandle: options.gitDirectoryHandle,
       gitIndexHandle: options.gitIndexHandle,
       gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
+      validateGitMetadata: options.validateGitMetadata,
     });
   }
 

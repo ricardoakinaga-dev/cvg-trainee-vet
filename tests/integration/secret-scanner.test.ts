@@ -838,6 +838,92 @@ describe("secret scanner", () => {
     );
   });
 
+  it("fails closed when Git alternates appear after metadata validation", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-alternates-race-"),
+    );
+    temporaryDirectories.push(parent);
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    await mkdir(root);
+    await mkdir(external);
+    await execFileAsync("git", ["init", "-q"], { cwd: root });
+    await execFileAsync("git", ["init", "-q"], { cwd: external });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], { cwd: external });
+    await execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.email=synthetic@example.invalid",
+        "-c",
+        "user.name=synthetic",
+        "commit",
+        "-qm",
+        "synthetic",
+      ],
+      { cwd: external },
+    );
+    const externalHead = (
+      await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: external })
+    ).stdout.trim();
+    await writeFile(join(root, ".git", "HEAD"), "ref: refs/heads/main\n");
+    await mkdir(join(root, ".git", "refs", "heads"), { recursive: true });
+    await writeFile(
+      join(root, ".git", "refs", "heads", "main"),
+      `${externalHead}\n`,
+    );
+
+    const alternates = join(root, ".git", "objects", "info", "alternates");
+    const worker = new Worker(
+      `
+        import { parentPort, workerData } from "node:worker_threads";
+        import { unlink, writeFile } from "node:fs/promises";
+        let running = true;
+        parentPort.on("message", (message) => {
+          if (message === "stop") running = false;
+        });
+        while (running) {
+          try { await writeFile(workerData.file, workerData.target + "\\n"); } catch {}
+          try { await unlink(workerData.file); } catch {}
+        }
+      `,
+      {
+        eval: true,
+        workerData: {
+          file: alternates,
+          target: join(external, ".git", "objects"),
+        },
+      },
+    );
+
+    try {
+      const leakedFindings = [];
+      for (let attempt = 0; attempt < 1000; attempt += 1) {
+        const findings = await scanProject(root, {
+          includeStaged: false,
+          includeHistory: true,
+        });
+        leakedFindings.push(
+          ...findings.filter(
+            (finding) =>
+              finding.path === "history:victim.env" &&
+              finding.rule === "sensitive-assignment",
+          ),
+        );
+      }
+
+      expect(leakedFindings).toHaveLength(0);
+    } finally {
+      worker.postMessage("stop");
+      await worker.terminate();
+    }
+  }, 15_000);
+
   it("pins Git metadata while staged content is being read", async () => {
     const parent = await mkdtemp(
       join(tmpdir(), "cvg-secret-scanner-git-metadata-race-"),

@@ -4,6 +4,44 @@ import { spawn } from "node:child_process";
 const DEFAULT_MAX_ERROR_BYTES = 4096;
 const DEFAULT_MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
 const DEFAULT_MAX_BATCH_BYTES = 8 * 1024 * 1024;
+const GIT_METADATA_CHANGED_CODE = "ERR_GIT_METADATA_CHANGED";
+
+function gitMetadataChangedError() {
+  return Object.assign(new Error("git metadata changed"), {
+    code: GIT_METADATA_CHANGED_CODE,
+  });
+}
+
+async function assertGitMetadataStable(validateGitMetadata) {
+  if (validateGitMetadata === undefined) return;
+  let stable = false;
+  try {
+    stable = await validateGitMetadata();
+  } catch {
+    stable = false;
+  }
+  if (!stable) throw gitMetadataChangedError();
+}
+
+function finalizeGitProcess({
+  validateGitMetadata,
+  isSettled,
+  markSettled,
+  resolve,
+  fail,
+  value,
+}) {
+  void (async () => {
+    try {
+      await assertGitMetadataStable(validateGitMetadata);
+      if (isSettled()) return;
+      markSettled();
+      resolve(value());
+    } catch (error) {
+      fail(error);
+    }
+  })();
+}
 
 function assertPositiveSafeInteger(value, name) {
   if (!Number.isSafeInteger(value) || value <= 0) {
@@ -62,6 +100,7 @@ export function runGitBatch(
     gitDirectoryHandle,
     gitIndexHandle,
     gitObjectDirectoryHandle,
+    validateGitMetadata,
     spawnProcess = spawn,
   } = {},
 ) {
@@ -137,8 +176,14 @@ export function runGitBatch(
         return;
       }
       if (settled) return;
-      settled = true;
-      resolve(onChunk ? undefined : Buffer.concat(chunks));
+      finalizeGitProcess({
+        validateGitMetadata,
+        isSettled: () => settled,
+        markSettled: () => (settled = true),
+        resolve,
+        fail,
+        value: () => (onChunk ? undefined : Buffer.concat(chunks)),
+      });
     });
     child.stdin.end(`${objectIds.join("\n")}\n`);
   });
@@ -154,6 +199,7 @@ export function runGitCommand(
     gitDirectoryHandle,
     gitIndexHandle,
     gitObjectDirectoryHandle,
+    validateGitMetadata,
   } = {},
 ) {
   return new Promise((resolve, reject) => {
@@ -208,8 +254,14 @@ export function runGitCommand(
         return;
       }
       if (settled) return;
-      settled = true;
-      resolve(Buffer.concat(chunks));
+      finalizeGitProcess({
+        validateGitMetadata,
+        isSettled: () => settled,
+        markSettled: () => (settled = true),
+        resolve,
+        fail,
+        value: () => Buffer.concat(chunks),
+      });
     });
   });
 }
@@ -531,6 +583,7 @@ export async function readGitBlobs(
     gitDirectoryHandle,
     gitIndexHandle,
     gitObjectDirectoryHandle,
+    validateGitMetadata,
     source = "history",
   },
 ) {
@@ -551,6 +604,7 @@ export async function readGitBlobs(
       gitDirectoryHandle,
       gitIndexHandle,
       gitObjectDirectoryHandle,
+      validateGitMetadata,
       maxOutputBytes: objectIds.length * headerLimit + 1,
     },
   );
@@ -582,14 +636,17 @@ export async function readGitBlobs(
         gitDirectoryHandle,
         gitIndexHandle,
         gitObjectDirectoryHandle,
+        validateGitMetadata,
         maxOutputBytes: plan.batchSizes[index] + batch.length * headerLimit + 1,
         onChunk: (chunk) => parser.push(chunk),
       });
       parser.finish();
       findings.push(...parser.findings);
-    } catch {
+    } catch (error) {
+      if (error?.code !== GIT_METADATA_CHANGED_CODE) {
+        findings.push(...parser.findings);
+      }
       findings.push(
-        ...parser.findings,
         unscannedFinding(
           `${source}:<git>`,
           "git-object-unreadable",
