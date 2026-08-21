@@ -730,6 +730,45 @@ describe("secret scanner", () => {
     expect(chunks.length).toBeGreaterThan(0);
   });
 
+  it("fails closed when the default Git batch stdout cap is exceeded", async () => {
+    const marker = "SYNTHETIC_DEFAULT_STDOUT_MARKER";
+    type FakeChild = EventEmitter & {
+      stdout: EventEmitter;
+      stderr: EventEmitter;
+      stdin: EventEmitter & { end: (input: string) => void };
+      kill: () => void;
+    };
+    const child = Object.assign(new EventEmitter(), {
+      stdout: new EventEmitter(),
+      stderr: new EventEmitter(),
+      stdin: Object.assign(new EventEmitter(), {
+        end: (_input: string) => undefined,
+      }),
+      kill: () => undefined,
+    }) as FakeChild;
+    const spawnProcess = () => {
+      queueMicrotask(() => {
+        child.stdout.emit(
+          "data",
+          Buffer.concat([Buffer.alloc(8 * 1024 * 1024), Buffer.from(marker)]),
+        );
+        child.emit("close", 0);
+      });
+      return child;
+    };
+
+    const error = await runGitBatch(
+      process.cwd(),
+      ["cat-file", "--batch"],
+      [],
+      { spawnProcess },
+    ).catch((caught) => caught as Error);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toMatch(/output exceeds configured limit/iu);
+    expect(error.message).not.toContain(marker);
+  });
+
   it("bounds and redacts noisy Git batch stderr", async () => {
     const marker = "SYNTHETIC_GIT_STDERR_MARKER";
     type FakeChild = EventEmitter & {

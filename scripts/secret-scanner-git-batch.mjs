@@ -2,13 +2,14 @@ import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 
 const DEFAULT_MAX_ERROR_BYTES = 4096;
+const DEFAULT_MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
 
 export function runGitBatch(
   root,
   args,
   objectIds,
   {
-    maxOutputBytes = Number.POSITIVE_INFINITY,
+    maxOutputBytes = DEFAULT_MAX_OUTPUT_BYTES,
     maxErrorBytes = DEFAULT_MAX_ERROR_BYTES,
     onChunk,
     spawnProcess = spawn,
