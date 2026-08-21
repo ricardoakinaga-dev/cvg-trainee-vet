@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { lstat, open, readdir } from "node:fs/promises";
+import { lstat, readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { promisify, TextDecoder } from "node:util";
 import { execFile } from "node:child_process";
@@ -7,7 +7,10 @@ import {
   planGitBatchRequests as planGitBatchRequestsInternal,
   readGitBlobs as readGitBlobsInternal,
 } from "./secret-scanner-git-batch.mjs";
-import { validateWorkspaceRoot } from "./secret-scanner-workspace.mjs";
+import {
+  readScanBuffer,
+  validateWorkspaceRoot,
+} from "./secret-scanner-workspace.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -546,27 +549,6 @@ function scanPathBuffer(buffer, path) {
   return scanBuffer(buffer, path);
 }
 
-async function readScanBuffer(file) {
-  const handle = await open(file, "r");
-  try {
-    const buffer = Buffer.allocUnsafe(MAX_SCAN_BYTES + 1);
-    let offset = 0;
-    while (offset < buffer.length) {
-      const { bytesRead } = await handle.read(
-        buffer,
-        offset,
-        buffer.length - offset,
-        null,
-      );
-      if (bytesRead === 0) break;
-      offset += bytesRead;
-    }
-    return buffer.subarray(0, offset);
-  } finally {
-    await handle.close();
-  }
-}
-
 async function scanFile(file, path) {
   try {
     const metadata = await lstat(file);
@@ -578,7 +560,7 @@ async function scanFile(file, path) {
         ? []
         : [unscannedFinding(path, "oversize-file", `${metadata.size} bytes`)];
     }
-    return scanPathBuffer(await readScanBuffer(file), path);
+    return scanPathBuffer(await readScanBuffer(file, MAX_SCAN_BYTES), path);
   } catch {
     return [unscannedFinding(path, "unreadable-file", "workspace file")];
   }
@@ -797,4 +779,10 @@ export async function scanProject(
   }
   return Object.freeze([...unique.values()]);
 }
-export { isTextPath, parseObjectList, planGitBatchRequests, readBatchOutput };
+export {
+  isTextPath,
+  parseObjectList,
+  planGitBatchRequests,
+  readBatchOutput,
+  readScanBuffer,
+};

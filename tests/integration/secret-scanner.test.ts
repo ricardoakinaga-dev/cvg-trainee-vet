@@ -24,6 +24,7 @@ import {
   parseObjectList,
   planGitBatchRequests,
   readBatchOutput,
+  readScanBuffer,
 } from "../../scripts/secret-scanner.mjs";
 import {
   createGitBatchStreamParser,
@@ -321,6 +322,19 @@ describe("secret scanner", () => {
       ]),
     );
     expect(JSON.stringify(linkedFindings)).not.toContain(secret);
+  });
+
+  it("does not follow symlinks when opening workspace files", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-open-symlink-"),
+    );
+    temporaryDirectories.push(directory);
+    const target = join(directory, "target.env");
+    const link = join(directory, "linked.env");
+    await writeFile(target, "synthetic\n");
+    await symlink(target, link);
+
+    await expect(readScanBuffer(link, 2 * 1024 * 1024)).rejects.toThrow();
   });
 
   it("rejects a symlink supplied as the scan root", async () => {
