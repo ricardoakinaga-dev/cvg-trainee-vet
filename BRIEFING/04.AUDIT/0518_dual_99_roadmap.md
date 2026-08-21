@@ -247,6 +247,17 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 36. Publicação do checkpoint de caps explícitos B99-101 — 2026-08-21T00:48:02-03:00
+
+O código/teste `f79cce6` e a reconciliação documental `167c4c4` foram publicados
+em `origin/agent/publish-production-hardening`; a checagem pós-push confirmou
+`HEAD == origin` em `167c4c4`. Estado, backlog, evidência, log e traceability
+estão alinhados. A publicação não promove score, release, clínica ou piloto e
+não fecha os quatro findings locais de `.env.local`, secret manager/rotação,
+provider/CI, RC/proveniência, runtime live, `0/145`, gates externos, aprovação
+humana ou reauditoria independente. O roadmap permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 35. Checkpoint de validação dos caps explícitos B99-101 — 2026-08-21T00:44:50-03:00
 
 Uma auditoria read-only reproduziu que `runGitBatch` aceitava
