@@ -31,8 +31,16 @@ function asUnknownRecord(value: unknown): UnknownRecord {
     : {};
 }
 
+function readUnknown(record: UnknownRecord, key: string): unknown {
+  try {
+    return record[key];
+  } catch {
+    return undefined;
+  }
+}
+
 function readString(record: UnknownRecord, key: string): string | null {
-  const value = record[key];
+  const value = readUnknown(record, key);
   return typeof value === "string" ? value : null;
 }
 
@@ -70,6 +78,8 @@ export function validateApiSurface(
 
   for (const candidate of routes) {
     const route = asUnknownRecord(candidate);
+    const rawMethod = readUnknown(route, "method");
+    const rawPath = readUnknown(route, "path");
     const method = readString(route, "method");
     const path = readString(route, "path");
     const auth = readString(route, "auth");
@@ -79,7 +89,7 @@ export function validateApiSurface(
     const useCase = readString(route, "useCase");
     const requestContract = readString(route, "requestContract");
     const responseContract = readString(route, "responseContract");
-    const key = `${stringifyUnknown(route.method)} ${stringifyUnknown(route.path)}`;
+    const key = `${stringifyUnknown(rawMethod)} ${stringifyUnknown(rawPath)}`;
     if (seen.has(key)) errors.push(`duplicate route: ${key}`);
     seen.add(key);
 

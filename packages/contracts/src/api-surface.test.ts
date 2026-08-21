@@ -7,6 +7,71 @@ import {
   validateApiSurface,
 } from "./api-surface.js";
 
+const fuzzFields = [
+  "method",
+  "path",
+  "capability",
+  "auth",
+  "scope",
+  "useCase",
+  "requestContract",
+  "responseContract",
+  "handlerGroup",
+] as const;
+
+const fuzzValues: readonly unknown[] = [
+  undefined,
+  null,
+  false,
+  0,
+  "",
+  " \t",
+  Object.create(null),
+  [],
+  () => undefined,
+];
+
+function createSeededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
+    return state / 0x1_0000_0000;
+  };
+}
+
+function createMalformedRoute(random: () => number, index: number): unknown {
+  const baseRoute = API_SURFACE[index % API_SURFACE.length];
+  if (baseRoute === undefined) throw new Error("missing API surface route");
+  const route = {
+    ...baseRoute,
+  } as Record<string, unknown>;
+  const field = fuzzFields[index % fuzzFields.length] ?? "method";
+
+  if (index % 9 === 0) {
+    Object.defineProperty(route, field, {
+      configurable: true,
+      enumerable: true,
+      get: () => {
+        throw new Error(`synthetic hostile getter ${index}`);
+      },
+    });
+  } else {
+    route[field] = fuzzValues[Math.floor(random() * fuzzValues.length)];
+  }
+
+  return route;
+}
+
+function randomPath(random: () => number, index: number): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789_-/";
+  const length = 1 + Math.floor(random() * 32);
+  let value = index % 2 === 0 ? "/" : "";
+  for (let position = 0; position < length; position += 1) {
+    value += alphabet[Math.floor(random() * alphabet.length)] ?? "x";
+  }
+  return value;
+}
+
 describe("canonical API surface inventory", () => {
   it("maps every route to access, scope, use case and contracts", () => {
     expect(validateApiSurface(API_SURFACE)).toEqual([]);
@@ -162,5 +227,39 @@ describe("canonical API surface inventory", () => {
     for (const [method, path] of malformedLookups) {
       expect(findApiSurfaceRoute(method as string, path as string)).toBeNull();
     }
+  });
+
+  it("holds the API boundary properties across a seeded fuzz campaign", () => {
+    const random = createSeededRandom(0xc0de308);
+
+    for (let index = 0; index < 512; index += 1) {
+      const malformedRoute = createMalformedRoute(random, index);
+      let errors: readonly string[] = [];
+      expect(() => {
+        errors = validateApiSurface([malformedRoute as never]);
+      }).not.toThrow();
+      expect(
+        errors.length,
+        `malformed fuzz case ${index} for ${fuzzFields[index % fuzzFields.length]}`,
+      ).toBeGreaterThan(0);
+
+      const canonicalRoute = API_SURFACE[index % API_SURFACE.length];
+      if (canonicalRoute === undefined)
+        throw new Error("missing API surface route");
+      const canonicalPath = materializeApiSurfacePath(canonicalRoute.path);
+      expect(findApiSurfaceRoute(canonicalRoute.method, canonicalPath)).toBe(
+        canonicalRoute,
+      );
+      expect(
+        findApiSurfaceRoute(canonicalRoute.method, `${canonicalPath}/`),
+      ).toBeNull();
+
+      const method =
+        index % 4 === 0 ? "TRACE" : random() > 0.5 ? "GET" : "POST";
+      const path = randomPath(random, index);
+      expect(() => findApiSurfaceRoute(method, path)).not.toThrow();
+    }
+
+    expect(validateApiSurface(API_SURFACE)).toEqual([]);
   });
 });
