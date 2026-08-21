@@ -198,6 +198,26 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 28. Checkpoint de default stdout finito do batch Git — 2026-08-20T21:41:55-03:00
+
+B99-101 recebeu uma auditoria read-only fresca sobre o fallback residual do
+Round 45: embora os callsites de produção passassem caps, `runGitBatch`
+mantinha `maxOutputBytes = Infinity` para chamadores genéricos e podia
+acumular stdout em `chunks`. O RED adicionou subprocesso sintético acima do
+default; o GREEN adotou cap finito de `8 MiB`, falhando antes de materializar o
+chunk excedente e preservando limites explícitos preflightados.
+
+Foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, scanner
+`774`, helper `415`, hotspots `0`, lint/typecheck/formato/diff-check e todos
+os gates oficiais até migration safety passaram. `verify:secrets` permanece
+fail-closed somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`, não lidos nem alterados. Código está em
+`a6d7ce3`; a evidência documental está em publicação.
+
+Secret manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit
+aprovado, clínica, `0/145`, gates externos e reauditoria independente seguem
+abertos. F99-1 continua `IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+
 ## 27. Checkpoint de stderr bounded do batch Git — 2026-08-20T21:25:32-03:00
 
 B99-101 recebeu uma auditoria read-only fresca sobre o canal residual do

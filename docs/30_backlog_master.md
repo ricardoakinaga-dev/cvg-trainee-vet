@@ -4,6 +4,20 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Atualização Dual99 local — 2026-08-20T21:41:55-03:00 — B99-101:** a
+auditoria read-only encontrou que o fallback de `runGitBatch` ainda usava
+`maxOutputBytes = Infinity` quando o chamador omitia o limite. O RED adicionou
+subprocesso sintético acima do default e falhou ao observar a resolução do
+Buffer completo; o GREEN adotou cap default finito de `8 MiB`, preservando
+limites explícitos preflightados. Foco `39/39`, cobertura `205/1133/21` em
+`95,02/90,95/95,31/95,71`, scanner `774`, helper `415`, hotspots `0`,
+lint/typecheck/formato/diff-check verdes; `pnpm verify` passou até migration
+safety e parou somente nos quatro assignments redigidos preexistentes de
+`.env.local`. Código/teste estão em `a6d7ce3`; evidência documental segue em
+publicação. Secret manager/rotação, provider/CI, RC, runtime live, clínica,
+`0/145`, gates externos e reauditoria permanecem abertos. B99-101 e o programa
+seguem `IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T21:25:32-03:00 — B99-101:** a
 auditoria read-only encontrou que o Round 44 ainda acumulava stderr do
 subprocesso Git e devolvia o texto bruto em falhas não-zero. O RED adicionou

@@ -11101,6 +11101,67 @@ Confirmar a paridade de código e documentação no mesmo remoto; depois executa
 auditoria read-only fresca para selecionar o próximo gap local verificável,
 mantendo explícitos os gates externos e humanos.
 
+## 2026-08-20T21:41:55-03:00 — DUAL99-B99-101-FINITE-GIT-BATCH-STDOUT-DEFAULT
+
+### TIMESTAMP
+
+2026-08-20 21:41:55 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+F99-1 — hardening do scanner de segredos
+
+### TASK
+
+B99-101 — eliminar o default infinito do buffer fallback de stdout do helper
+Git, preservando caps explícitos preflightados.
+
+### ACTION
+
+Uma auditoria read-only confirmou que somente os callsites internos passavam
+limites, enquanto `runGitBatch` mantinha `maxOutputBytes = Infinity` por
+default e podia agregar chunks em `Buffer.concat`. O RED adicionou um
+subprocesso sintético acima do default. O GREEN adotou cap default finito de
+`8 MiB`, com overflow fail-closed antes da retenção do chunk excedente.
+
+### RESULT
+
+O foco passou `39/39`; a cobertura serializada passou `205/1133/21` em
+`95,02/90,95/95,31/95,71`; scanner `774` linhas, helper `415`, hotspots `0`,
+lint, typecheck, formato e diff-check passaram. O `pnpm verify` oficial passou
+coverage, decisões críticas `7/7`, mutation `7/7`, scope drift, contratos
+`86/86`, worker `51/51`, migrações `33/33` e migration safety; parou
+fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+
+### DECISIONS
+
+O código/teste foram commitados em `a6d7ce3` (`fix: bound default git batch
+stdout`) e enviados para `origin/agent/publish-production-hardening`. O pacote
+documental está em publicação nesta etapa. O default agora é finito e os
+callers preflightados preservam seus limites explícitos maiores. Secret
+manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit aprovado,
+clínica, `0/145`, gates externos e reauditoria independente seguem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar e reconciliar a evidência documental no mesmo remoto; confirmar
+paridade de código e documentação; depois executar auditoria read-only fresca
+para selecionar o próximo gap local verificável, mantendo explícitos os gates
+externos e humanos.
+
 ## 2026-08-20T21:25:32-03:00 — DUAL99-B99-101-BOUNDED-GIT-BATCH-STDERR
 
 ### TIMESTAMP

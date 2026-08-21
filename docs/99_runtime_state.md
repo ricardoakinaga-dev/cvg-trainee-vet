@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora consome stdout de `git cat-file --batch` incrementalmente, retém somente header e corpo do objeto bounded corrente, falha fechado em overflow/truncamento e mantém o preflight `git cat-file --batch-check` de tipo/tamanho, scan UTF-8 limitado sob assets e proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; B99-101 agora consome stdout de `git cat-file --batch` incrementalmente, retém somente header e corpo do objeto bounded corrente, limita stderr a `4 KiB` com mensagens genéricas redigidas, usa cap default finito de `8 MiB` no fallback stdout, falha fechado em overflow/truncamento e mantém o preflight `git cat-file --batch-check` de tipo/tamanho, scan UTF-8 limitado sob assets e proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar acumulação ilimitada de stderr do subprocesso; publicou código/teste em `208868b` e a evidência documental em `1685e63`; Round 45 passou foco `38/38`, cobertura `205/1132/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `414` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: confirmar a paridade remota final e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar cap infinito no fallback stdout do subprocesso; publicou código/teste em `a6d7ce3`; Round 46 passou foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `415` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar e reconciliar o pacote documental de Round 46, confirmar paridade remota e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,30 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T21:28:52-03:00
+- last_update: 2026-08-20T21:41:55-03:00
+
+## 2026-08-20T21:41:55-03:00 — DUAL99-B99-101-FINITE-GIT-BATCH-STDOUT-DEFAULT
+
+### AÇÃO / RESULTADO
+
+- auditoria read-only encontrou que o fallback genérico de `runGitBatch` ainda
+  usava `Infinity` quando o chamador não informava `maxOutputBytes`, apesar de
+  os callsites de produção passarem caps explícitos;
+- RED adicionou subprocesso sintético acima do default e falhou porque a
+  promessa resolvia o Buffer completo; GREEN adotou cap default finito de `8
+  MiB`, preservando limites explícitos preflightados;
+- foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, scanner
+  `774` linhas, helper `415`, hotspots `0`, lint/typecheck/formato/diff-check
+  passaram; `pnpm verify` passou até migration safety e parou somente nos
+  quatro assignments redigidos preexistentes do secret scan.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+B99-101 permanece `IN_PROGRESS`: o código/teste está em `a6d7ce3`, a
+evidência documental está em publicação, e `infra/production/.env.local` não
+foi lido nem alterado. Secret manager, provider/CI, RC, runtime live, clínica,
+`0/145`, gates externos e reauditoria permanecem abertos. O programa permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-20T21:25:32-03:00 — DUAL99-B99-101-BOUNDED-GIT-BATCH-STDERR
 

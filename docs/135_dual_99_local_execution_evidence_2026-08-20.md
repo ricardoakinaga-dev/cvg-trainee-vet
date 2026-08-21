@@ -1,13 +1,12 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T21:25:32-03:00`
-- última atualização: `2026-08-20T21:28:52-03:00`
+- corte: `2026-08-20T21:41:55-03:00`
+- última atualização: `2026-08-20T21:41:55-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `208868b` em
+- commit publicado: `a6d7ce3` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `1685e63` em
-  `origin/agent/publish-production-hardening`
+- evidência documental: pendente de publicação nesta rodada
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -43,6 +42,9 @@
 - stderr do subprocesso: `runGitBatch` aplica limite independente de `4 KiB`,
   encerra fail-closed em stderr excessivo e substitui stderr não-zero por
   mensagens genéricas, sem reter ou expor o texto bruto.
+- default de stdout: o fallback de `runGitBatch` agora tem cap finito de `8 MiB`
+  em vez de `Infinity`; callsites com preflight continuam podendo passar
+  limites explícitos maiores quando necessário.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -843,6 +845,36 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 46 — B99-101 / finite default Git batch stdout cap — 2026-08-20T21:41:55-03:00
+
+Uma auditoria read-only fresca encontrou que os callsites de produção já
+passavam caps explícitos, mas o fallback genérico de `runGitBatch` ainda usava
+`maxOutputBytes = Infinity`, permitindo acumular chunks se um chamador omitisse
+o limite. O RED adicionou um subprocesso sintético que excede o default e
+falhou ao observar a resolução de um Buffer completo.
+
+O GREEN adotou cap default finito de `8 MiB`, mantendo caps explícitos
+preflightados para `cat-file --batch-check` e batches corporais conhecidos. O
+overflow continua fail-closed antes de inserir o chunk em `chunks`, e o
+contrato de stdout incremental do Round 44 e stderr redigido do Round 45
+permanece intacto.
+
+O foco passou `39/39`; a cobertura passou `205/1133/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `774` linhas, o helper em `415`
+linhas e `verify:hotspots` em `0` hotspots não classificados. Formato, lint,
+typecheck e `git diff --check` passaram. O `pnpm verify` oficial passou
+coverage, decisões críticas `7/7`, mutation `7/7`, scope drift, contratos
+`86/86`, worker `51/51`, migrações `33/33` e migration safety; parou
+fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+
+O código/teste está em `a6d7ce3` (`fix: bound default git batch stdout`) e foi
+enviado para `origin/agent/publish-production-hardening`. A documentação desta
+rodada está pendente de publicação no momento deste corte. Secret
+manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit aprovado,
+clínica, `0/145`, gates externos e reauditoria independente continuam abertos.
+B99-101 e o programa permanecem `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 45 — B99-101 / bounded and redacted Git batch stderr — 2026-08-20T21:25:32-03:00
 

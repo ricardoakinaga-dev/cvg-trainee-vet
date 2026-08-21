@@ -15,6 +15,27 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T21:41:55-03:00 — B99-101 finite Git batch stdout default
+
+- **auditoria/RED:** os callsites de produção já passavam caps explícitos, mas
+  `runGitBatch` mantinha `maxOutputBytes = Infinity` no fallback genérico; RED
+  adicionou subprocesso sintético acima do default e falhou porque o Buffer
+  completo era resolvido;
+- **GREEN:** o fallback agora tem cap finito de `8 MiB`, falha fechado antes de
+  inserir o chunk excedente e preserva limites explícitos preflightados para
+  `cat-file --batch-check` e batches corporais;
+- **evidência:** foco `39/39`, cobertura `205/1133/21` em
+  `95,02/90,95/95,31/95,71`, scanner `774`, helper `415`, hotspots `0`,
+  lint/typecheck/formato/diff-check verdes;
+- **verificação/publicação:** `pnpm verify` passou todos os gates até
+  `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
+  assignments redigidos preexistentes de `infra/production/.env.local`; código
+  em `a6d7ce3`, evidência documental em publicação;
+- **limite/status:** `.env.local` não foi lido nem alterado; secret
+  manager/rotação, provider/CI, RC, runtime live, clínica, `0/145`, gates
+  externos e reauditoria permanecem abertos. B99-101 e o programa seguem
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T21:25:32-03:00 — B99-101 bounded Git batch stderr
 
 - **auditoria/RED:** após o parser incremental do Round 44, uma auditoria
