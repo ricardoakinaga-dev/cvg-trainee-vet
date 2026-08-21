@@ -288,6 +288,23 @@ quatro assignments redigidos preexistentes. O programa continua
 `IN_PROGRESS / PILOT_BLOCKED`, sem promoção de score, release, piloto ou decisão
 clínica.
 
+## 84. Checkpoint local de registros staged vazios B99-101 — 2026-08-21T10:24:57-03:00
+
+Round 85 fechou o último caso local identificado nesta sequência: o parser de
+`git ls-files --cached -z` não aceita NUL isolado nem registros consecutivos
+vazios, mas preserva stream vazio e caminhos não vazios terminados por NUL. O
+foco passou `74/74`; cobertura `205/1170/21` em
+`95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`; scanner `793` linhas;
+format/lint/typecheck/diff-check passaram. O commit de código/teste
+`5790ce8` foi publicado e `HEAD == origin` foi confirmado. Evidência:
+`docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes. A crítica que reproduziu os gaps foi `REJECT`; a tentativa final
+não devolveu veredito e não constitui aprovação independente. O produto segue
+`IN_PROGRESS / PILOT_BLOCKED`, condicionado aos gates externos, live, humanos e
+à reauditoria independente.
+
 ## 83. Checkpoint local de boundaries Git e workspace B99-101 — 2026-08-21T10:03:45-03:00
 
 Rounds 81–84 avançaram o fechamento local do scanner sob RED/GREEN/REFACTOR.

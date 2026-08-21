@@ -1,16 +1,17 @@
 # Evidência Dual99 — B99-101 — fronteiras Git e arquivos especiais
 
-**Data:** 2026-08-21 10:03 -03:00
+**Data:** 2026-08-21 10:24 -03:00
 **Task:** B99-101 — scanner de segredos fail-closed
 **IDs:** `DUAL99-B99-101-SYNTHETIC-CREDENTIAL-URI-292`,
 `DUAL99-B99-101-STAGED-PATH-FRAMING-294`,
 `DUAL99-B99-101-GIT-BATCH-IDENTITY-296`,
-`DUAL99-B99-101-WORKSPACE-SPECIAL-FILE-298`
+`DUAL99-B99-101-WORKSPACE-SPECIAL-FILE-298`,
+`DUAL99-B99-101-STAGED-EMPTY-RECORD-302`
 **Branch:** `agent/publish-production-hardening`
 
 ## Gaps reproduzidos
 
-Quatro auditorias locais sucessivas encontraram bypasses de superfície no
+Cinco auditorias locais sucessivas encontraram bypasses de superfície no
 scanner:
 
 - a isenção de URI sintética aceitava sufixos arbitrários e também precisava
@@ -20,6 +21,8 @@ scanner:
   requisição `A,B`, omitindo silenciosamente um objeto;
 - o walker ignorava FIFO/socket e a abertura direta de um arquivo especial
   podia bloquear.
+- o parser staged filtrava registros vazios, aceitando NUL isolado ou
+  consecutivo como se fossem uma lista válida de caminhos.
 
 Todos os casos usaram nomes, valores e repositórios temporários sintéticos.
 Nenhum segredo real, prontuário, fonte clínica, PDF ou ambiente de produção foi
@@ -42,6 +45,9 @@ incluído.
   walker encaminha entries não regulares para o finding redigido
   `unreadable-file`; as aberturas de arquivos são não bloqueantes e validam o
   tipo do descriptor para cobrir a janela de troca após `lstat`.
+- **Registros staged vazios:** o RED aceitou `\0` e `safe.env\0\0`; o GREEN
+  preserva o stream vazio como caso válido, mas rejeita registros vazios antes
+  de consumir a superfície staged.
 
 ## Commits de código/teste
 
@@ -52,6 +58,7 @@ incluído.
 - `dfbb01c` — identidade bijetiva no batch Git;
 - `7c70686` — arquivo especial do workspace fail-closed;
 - `084e2d0` — descriptor regular e abertura não bloqueante.
+- `5790ce8` — registros staged vazios rejeitados fail-closed.
 
 ## Verificação final local
 
@@ -69,7 +76,9 @@ incluído.
 - `pnpm verify:secrets`: permanece fail-closed somente nos quatro assignments
   redigidos preexistentes de `infra/production/.env.local`; nenhum finding novo
   apareceu e o arquivo não foi lido nem alterado;
-- publicação: `HEAD == origin == 084e2d0` confirmado no branch remoto.
+- publicação do código/teste: `5790ce8` enviado a
+  `origin/agent/publish-production-hardening`, com `HEAD == origin` confirmado;
+  a reconciliação documental desta evidência foi feita em seguida.
 
 ## Crítica, limites e decisão
 

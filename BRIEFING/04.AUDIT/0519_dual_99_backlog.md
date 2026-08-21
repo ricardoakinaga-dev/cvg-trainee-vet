@@ -5,18 +5,19 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
-## Atualização de execução — 2026-08-21T10:03:45-03:00 — B99-101 Git/workspace boundaries
+## Atualização de execução — 2026-08-21T10:24:57-03:00 — B99-101 staged empty-record framing
 
-Rounds 81–84 fecharam localmente quatro gaps P0/P1 do scanner sob
+Rounds 81–85 fecharam localmente cinco gaps P0/P1 do scanner sob
 RED→GREEN→REFACTOR: URI sintética exata, NUL terminal em staged, identidade
-bijetiva de objetos Git e arquivos especiais/descriptor regular sem bloqueio.
+bijetiva de objetos Git, arquivos especiais/descriptor regular sem bloqueio e
+registros staged vazios fail-closed.
 O foco passou `74/74`; cobertura `205/1170/21` em
 `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`; scanner `793` linhas;
 format/lint/typecheck/diff-check passaram. Código/teste publicado:
 `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686` e `084e2d0`;
-`HEAD == origin == 084e2d0`. Evidência: `docs/140`.
+`5790ce8`; `HEAD == origin`. Evidência: `docs/140`.
 Estado, backlog, roadmap, evidência, log e traceability foram reconciliados
-em `adcf502`, com `HEAD == origin == adcf502`.
+como parte desta atualização após o commit de código/teste.
 
 `pnpm verify:secrets` segue fail-closed somente nos quatro assignments
 redigidos preexistentes de `infra/production/.env.local`. A crítica que
