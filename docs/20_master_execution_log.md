@@ -11222,3 +11222,57 @@ IN_PROGRESS / PILOT_BLOCKED
 Confirmar a paridade de código e documentação no mesmo remoto; depois executar
 auditoria read-only fresca para selecionar o próximo gap local verificável,
 mantendo explícitos os gates externos e humanos.
+
+## 2026-08-20T21:47:42-03:00 — DUAL99-POST-PUBLISH-AUDIT
+
+### TIMESTAMP
+
+2026-08-20 21:47:42 -03:00
+
+### ENGINE
+
+AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — auditoria read-only pós-publicação
+
+### SPRINT
+
+F99-1 — fechamento local verificável
+
+### TASK
+
+Confirmar a validade do Round 46 no mesmo SHA remoto e decidir se há novo gap
+local de produção autorizável.
+
+### ACTION
+
+Foi confirmado `HEAD == origin` em `6ddc37b`. O foco do scanner passou
+`39/39`, `verify:hotspots` permaneceu em `0`, e a auditoria de fonte verificou
+caps finitos em todos os callsites do scanner. O único override `Infinity`
+restante exige que um chamador interno viole deliberadamente o contrato de
+cap; não é usado pela composição de produção.
+
+### RESULT
+
+Não há novo gap local de produção justificável nesta rodada. Nenhum segredo,
+`.env.local`, dado real, runtime, produção, score, release, decisão clínica ou
+piloto foi tocado. A disposição continua `IN_PROGRESS / PILOT_BLOCKED`.
+
+### DECISIONS
+
+Encerrar o loop local nesta rodada com veredito condicional: os limites locais
+verificáveis do scanner estão cobertos, mas não se promove release, score ou
+piloto. A continuação depende de secret manager/rotação, provider/CI,
+RC/proveniência, runtime live, WebKit aprovado, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter as autoridades e ambientes externos listados; não iniciar novo hardening
+local sem um gap de produção novo e verificável.

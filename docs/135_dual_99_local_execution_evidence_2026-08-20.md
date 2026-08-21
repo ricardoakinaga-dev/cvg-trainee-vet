@@ -2,7 +2,7 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T21:41:55-03:00`
-- última atualização: `2026-08-20T21:45:09-03:00`
+- última atualização: `2026-08-20T21:47:42-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `a6d7ce3` em
   `origin/agent/publish-production-hardening`
@@ -46,6 +46,10 @@
 - default de stdout: o fallback de `runGitBatch` agora tem cap finito de `8 MiB`
   em vez de `Infinity`; callsites com preflight continuam podendo passar
   limites explícitos maiores quando necessário.
+- auditoria pós-publicação: `HEAD` e `origin/agent/publish-production-hardening`
+  estão em `6ddc37b`; foco `39/39` e hotspots `0` permanecem verdes. A
+  auditoria de fonte confirmou caps finitos em todos os callsites do scanner;
+  não foi selecionado novo gap local de produção.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -846,6 +850,22 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Auditoria read-only pós-Round 46 — 2026-08-20T21:47:42-03:00
+
+Após a publicação e reconciliação em `6ddc37b`, a auditoria independente de
+fonte confirmou `HEAD == origin`, repetiu o foco `39/39` e
+`verify:hotspots = 0`, e verificou que `readGitBlobs` passa caps finitos tanto
+para `cat-file --batch-check` quanto para batches corporais. O helper ainda
+aceita que um chamador interno substitua deliberadamente limites por
+`Infinity`, mas esse override não é usado pela composição do scanner; o
+default agora é finito e não há novo gap local de produção justificável.
+
+Nenhum arquivo de produção, `.env.local`, runtime ou ambiente externo foi
+alterado. Permanecem bloqueios de secret manager/rotação, provider/CI,
+RC/proveniência, runtime live, WebKit aprovado, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente. A disposição permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 46 — B99-101 / finite default Git batch stdout cap — 2026-08-20T21:41:55-03:00
 

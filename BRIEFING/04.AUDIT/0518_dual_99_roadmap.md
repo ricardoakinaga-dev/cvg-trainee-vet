@@ -198,6 +198,18 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 29. Auditoria pós-publicação do Dual99 local — 2026-08-20T21:47:42-03:00
+
+Após a publicação do Round 46, `HEAD == origin` em `6ddc37b`, o foco passou
+`39/39` e hotspots permaneceu `0`. A auditoria de fonte confirmou caps finitos
+em todos os callsites de produção; o único override `Infinity` restante exige
+violação deliberada da API interna e não é usado pela composição do scanner.
+
+Não há novo gap local de produção justificável. O roadmap segue
+`IN_PROGRESS / PILOT_BLOCKED`, condicionado a secret manager/rotação,
+provider/CI, RC/proveniência, runtime live, WebKit aprovado, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente.
+
 ## 28. Checkpoint de default stdout finito do batch Git — 2026-08-20T21:41:55-03:00
 
 B99-101 recebeu uma auditoria read-only fresca sobre o fallback residual do

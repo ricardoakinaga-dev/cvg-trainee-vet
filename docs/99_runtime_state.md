@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar cap infinito no fallback stdout do subprocesso; publicou código/teste em `a6d7ce3` e a evidência documental em `630509f`; Round 46 passou foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `415` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: confirmar a paridade remota final e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar cap infinito no fallback stdout do subprocesso; publicou código/teste em `a6d7ce3` e a evidência documental em `630509f`; a auditoria read-only pós-publicação confirmou `HEAD == origin` em `6ddc37b`, foco `39/39`, hotspots `0` e caps finitos em todos os callsites do scanner; o único residual é override `Infinity` deliberado na API interna, não usado pela composição de produção; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: obter autoridade e ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não há novo gap local de produção selecionado
 
 ## BLOQUEIOS
 
@@ -32,7 +32,26 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T21:45:09-03:00
+- last_update: 2026-08-20T21:47:42-03:00
+
+## 2026-08-20T21:47:42-03:00 — DUAL99-POST-PUBLISH-AUDIT
+
+### AÇÃO / RESULTADO
+
+- `HEAD` e `origin/agent/publish-production-hardening` estão em `6ddc37b`;
+- foco do scanner passou `39/39` e `verify:hotspots` permaneceu em `0`;
+- auditoria read-only confirmou caps finitos em todos os callsites de produção
+  e não selecionou novo gap local justificável; apenas o override `Infinity`
+  deliberado da API interna permanece fora da composição do scanner;
+- nenhum segredo, `.env.local`, dado real, runtime, produção, score, release,
+  clínica ou piloto foi tocado.
+
+### LIMITES / STATUS / PRÓXIMA AÇÃO
+
+O programa permanece `IN_PROGRESS / PILOT_BLOCKED`. A próxima ação exige
+autoridade e ambientes externos para secret manager/rotação, provider/CI,
+RC/proveniência, runtime live, clínica, `0/145`, gates externos, aprovação
+humana e reauditoria independente.
 
 ## 2026-08-20T21:41:55-03:00 — DUAL99-B99-101-FINITE-GIT-BATCH-STDOUT-DEFAULT
 

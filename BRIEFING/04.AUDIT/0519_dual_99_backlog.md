@@ -15,6 +15,18 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T21:47:42-03:00 — auditoria pós-publicação
+
+- **auditoria:** `HEAD` e origin estão em `6ddc37b`; o foco passou `39/39`,
+  hotspots permaneceu `0` e todos os callsites de produção passam caps finitos;
+- **resultado:** o único override `Infinity` exige violação deliberada da API
+  interna e não é usado pelo scanner; não há novo gap local justificável;
+- **limite/status:** nenhum segredo, `.env.local`, runtime, produção, score,
+  release, clínica ou piloto foi tocado. Secret manager/rotação, provider/CI,
+  RC, runtime live, clínica, `0/145`, gates externos, aprovação humana e
+  reauditoria permanecem abertos. B99-101 e o programa seguem
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T21:41:55-03:00 — B99-101 finite Git batch stdout default
 
 - **auditoria/RED:** os callsites de produção já passavam caps explícitos, mas
