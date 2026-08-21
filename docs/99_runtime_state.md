@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 70 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only reproduziu `129` arquivos staged oversized de `2 MiB + 2 bytes` (`270532866` bytes) que geravam `129` findings por caminho sem consumir o orçamento agregado. RED falhou sem finding genérico; GREEN desconta `MAX_SCAN_BYTES + 1` quando `git show` excede o cap por arquivo e falha fechado ao ultrapassar `256 MiB`. Foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `c4a0cc9` e a reconciliação documental inicial `5ec5a63` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 70 de B99-101 sob RED→GREEN→REFACTOR e uma auditoria read-only pós-publicação; `129` arquivos staged oversized de `2 MiB + 2 bytes` (`270532866` bytes) agora consomem o orçamento por output-cap abortado, e a auditoria final confirmou limites bounded em worktree, metadata Git, `rev-list`, `cat-file --batch-check`, batches de corpo e staged `git show`. Foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `c4a0cc9`, documentação final `bb14a4a` e `HEAD == origin` foram confirmados; não há outro gap local bounded justificável nesta rodada. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,32 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T07:59:41-03:00
+- last_update: 2026-08-21T08:07:39-03:00
+
+## 2026-08-21T08:07:39-03:00 — POST-ROUND70-FRESH-BOUNDED-AUDIT
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only pós-Round 70 revisou todos os limites ativos: worktree
+  em `64 MiB`, `4096` entradas e `256` níveis; metadata Git em `1024`
+  entradas por diretório; `rev-list` e listagem staged com output bounded;
+  `cat-file --batch-check` com headers bounded; batches de corpo em `8 MiB`
+  e `256 MiB` agregados; staged `git show` em `2 MiB + 1` por tentativa e
+  `256 MiB` agregados;
+- verificou-se `scripts/secret-scanner.mjs` em `799` linhas, hotspots `0`,
+  `HEAD == origin == bb14a4a`, `git diff --check` limpo e nenhum novo gap
+  local bounded justificável após a correção de oversized staged;
+- a disposição permanece `IN_PROGRESS / PILOT_BLOCKED`; esta conclusão local
+  não promove score, release, piloto, produção ou decisão clínica.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Registrar esta auditoria documental e aguardar autoridade
+para os gates externos.
 
 ## 2026-08-21T07:59:41-03:00 — DUAL99-B99-101-STAGED-OVERSIZE-BYTE-BUDGET
 

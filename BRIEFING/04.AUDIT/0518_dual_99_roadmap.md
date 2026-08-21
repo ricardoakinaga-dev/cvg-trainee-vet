@@ -278,6 +278,23 @@ Código/teste `48e1014` e documentação inicial `abb1657` foram publicados.
 Windows/non-proc, condições live, gates externos,
 crítica independente e demais bloqueios do programa permanecem abertos.
 
+## 76. Checkpoint de publicação da auditoria bounded pós-Round 70 — 2026-08-21T08:07:39-03:00
+
+A auditoria read-only revisou todos os limites ativos e não encontrou novo gap
+local bounded justificável. A reconciliação documental inicial segue
+`DOCUMENTATION_PENDING` neste primeiro registro; a confirmação final de paridade
+permanece necessária.
+
+## 75. Auditoria bounded pós-Round 70 — 2026-08-21T08:07:39-03:00
+
+Foram revisados worktree (`64 MiB`, `4096` entradas, `256` níveis), metadata Git
+(`1024` entradas por diretório), `rev-list`/listagem staged, `cat-file
+--batch-check`, batches de corpo (`8 MiB`/`256 MiB`) e staged `git show` (`2 MiB
++ 1`/`256 MiB`). `scripts/secret-scanner.mjs` permanece em `799` linhas,
+hotspots `0`, `HEAD == origin == bb14a4a` e diff-check limpo. Nenhum novo gap
+local bounded justificável foi encontrado; os gates externos e a crítica
+independente continuam abertos.
+
 ## 74. Checkpoint de publicação do orçamento para staged oversized B99-101 — 2026-08-21T07:59:41-03:00
 
 O código/teste `c4a0cc9` e a reconciliação documental inicial `5ec5a63` foram

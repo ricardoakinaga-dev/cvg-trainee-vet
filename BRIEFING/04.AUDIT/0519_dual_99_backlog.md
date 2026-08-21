@@ -5,6 +5,21 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Auditoria de continuidade — 2026-08-21T08:07:39-03:00 — pós-Round 70
+
+A auditoria read-only revisou worktree (`64 MiB`, `4096` entradas, `256`
+níveis), metadata Git (`1024` entradas por diretório), `rev-list`/listagem
+staged, `cat-file --batch-check`, batches de corpo (`8 MiB`/`256 MiB`) e staged
+`git show` (`2 MiB + 1`/`256 MiB`). `scripts/secret-scanner.mjs` está em `799`
+linhas, hotspots `0`, `HEAD == origin == bb14a4a`, diff-check limpo e nenhum
+novo gap local bounded justificável foi encontrado. A disposição permanece
+`IN_PROGRESS / PILOT_BLOCKED`; a documentação desta auditoria segue
+`DOCUMENTATION_PENDING` neste primeiro registro.
+
+Próxima ação: obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/runtime, WebKit aprovado, clínica, `0/145`, gates externos, aprovação humana
+e reauditoria independente; não promover score, release ou piloto.
+
 ## Atualização de execução — 2026-08-21T07:59:41-03:00 — B99-101 staged oversized byte budget
 
 - **auditoria/RED:** arquivos staged maiores que o cap por arquivo faziam

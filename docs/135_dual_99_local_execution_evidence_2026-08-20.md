@@ -6,10 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `c4a0cc9` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `5ec5a63` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `5ec5a63`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até a reconciliação desta rodada; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,18 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Auditoria pós-Round 70 — limites bounded finais
+
+- a auditoria read-only pós-publicação revisou worktree em `64 MiB`, `4096`
+  entradas e `256` níveis; metadata Git em `1024` entradas por diretório;
+  `rev-list` e listagem staged com output bounded; `cat-file --batch-check` com
+  headers bounded; batches de corpo em `8 MiB` e `256 MiB` agregados; staged
+  `git show` em `2 MiB + 1` por tentativa e `256 MiB` agregados;
+- `scripts/secret-scanner.mjs` permanece em `799` linhas, hotspots `0`,
+  `HEAD == origin == bb14a4a`, diff-check limpo e nenhum novo gap local
+  bounded justificável foi encontrado. A documentação desta auditoria inicial
+  está em `DOCUMENTATION_PENDING`.
 
 ## Round 70 — consumo do orçamento para staged oversized
 
