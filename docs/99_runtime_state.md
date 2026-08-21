@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Rounds 81–89 de B99-101 sob RED→GREEN→REFACTOR, publicou os commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686`, `084e2d0`, `5790ce8`, `87ca28d` e `1fec40a`, e iniciou a reconciliação de estado, backlog, roadmap, evidência, log e traceability. O resultado consolidado é foco `77/77`, cobertura `205/1173/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com scanner em `779` linhas, formato, lint, typecheck e diff-check verdes; `HEAD == origin == 1fec40a` confirmado. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica focal original foi `BLOCKED`, a tentativa integrada não devolveu relatório e não há aprovação independente final. `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu Rounds 81–89 de B99-101 sob RED→GREEN→REFACTOR, publicou os commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686`, `084e2d0`, `5790ce8`, `87ca28d` e `1fec40a`, reconciliou estado, backlog, roadmap, evidência, log e traceability e publicou a documentação como `54a9b7b`. O resultado consolidado é foco `77/77`, cobertura `205/1173/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com scanner em `779` linhas, formato, lint, typecheck e diff-check verdes; `HEAD == origin` confirmado. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica focal original foi `BLOCKED`, a tentativa integrada não devolveu relatório e não há aprovação independente final. `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,28 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T11:27:43-03:00
+- last_update: 2026-08-21T11:35:22-03:00
+
+## 2026-08-21T11:33:55-03:00 — DUAL99-B99-101-DOCS-PUBLISH
+
+### AÇÃO / RESULTADO
+
+- estado, backlog, roadmap, evidência, log e traceability foram reconciliados
+  após as Rounds 88–89 e publicados como `54a9b7b`;
+- `HEAD == origin == 54a9b7b`, `git diff --check` e os gates de documentação,
+  rastreabilidade, Dual99 e exposição foram confirmados; `.gauntlet/` permanece
+  local e não rastreado;
+- `pnpm verify:secrets` continua fail-closed somente nos quatro assignments
+  redigidos preexistentes de `infra/production/.env.local`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+Não há `PASS` independente final: a crítica focal foi `BLOCKED` na primeira
+forma da evidência e a tentativa integrada não devolveu relatório. Permanecem
+abertos secret manager/rotação, provider/CI, RC/proveniência, WebKit, runtime
+live, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente. Manter `IN_PROGRESS / PILOT_BLOCKED` e não promover score,
+release, piloto ou decisão clínica.
 
 ## 2026-08-21T11:27:43-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
 
@@ -49,16 +70,16 @@
   testes e `21` guardados, com cobertura `95,03/90,95/95,31/95,73`; build
   `12/12`, format/lint/typecheck/diff-check e hotspots passaram;
 - o código/teste `1fec40a` foi enviado a
-  `origin/agent/publish-production-hardening`, com `HEAD == origin`
-  confirmado; a reconciliação documental desta rodada segue pendente.
+  `origin/agent/publish-production-hardening`; a reconciliação documental foi
+  publicada como `54a9b7b`, com `HEAD == origin` confirmado.
 
 ### LIMITES / PRÓXIMA AÇÃO
 
 `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
 preexistentes de `infra/production/.env.local`. A limitação da primeira
 crítica foi corrigida no código/teste, mas a tentativa integrada não devolveu
-relatório dentro da janela; não há `PASS` independente final. Reconciliar e
-publicar os documentos canônicos; depois obter autoridade/ambiente para
+relatório dentro da janela; não há `PASS` independente final. Depois obter
+autoridade/ambiente para
 secret manager/rotação, provider/CI, RC/proveniência, WebKit, runtime live,
 clínica, `0/145`, gates externos, aprovação humana e reauditoria independente;
 manter `IN_PROGRESS / PILOT_BLOCKED`.

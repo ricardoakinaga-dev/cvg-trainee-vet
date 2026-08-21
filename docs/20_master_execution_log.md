@@ -40,6 +40,58 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T11:33:55-03:00 — DUAL99-B99-101-DOCS-PUBLISH
+
+### TIMESTAMP
+
+2026-08-21 11:33:55 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — publicar a reconciliação documental das Rounds 88–89.
+
+### ACTION
+
+Estado, backlog, roadmap, evidência, log e traceability foram reconciliados
+após o código/teste `1fec40a` e publicados no commit documental `54a9b7b`.
+
+### RESULT
+
+Os gates de documentação, rastreabilidade, Dual99 e exposição passaram;
+`HEAD == origin == 54a9b7b` foi confirmado; `.gauntlet/` permanece local e
+não rastreado. `pnpm verify:secrets` continua falhando somente nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`.
+
+### DECISIONS
+
+Não há aprovação independente final: a crítica focal foi `BLOCKED` na primeira
+forma da evidência e a tentativa integrada não devolveu relatório. Nenhum
+segredo real, runtime, produção, score, release, decisão clínica ou piloto foi
+alterado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente; não promover score, release,
+piloto ou decisão clínica.
+
 ## 2026-08-21T11:27:43-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
 
 ### TIMESTAMP

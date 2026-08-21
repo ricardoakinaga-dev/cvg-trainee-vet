@@ -92,6 +92,8 @@ Dois gaps adicionais foram reproduzidos com output sintético bounded:
   PASS;
 - código/teste: `1fec40a`, publicado em
   `origin/agent/publish-production-hardening`, com `HEAD == origin`.
+- reconciliação documental: `54a9b7b`, incluindo estado, backlog, roadmap,
+  log e traceability; `HEAD == origin == 54a9b7b` confirmado.
 
 Nenhum segredo real, prontuário, fonte clínica, PDF, runtime, produção, score,
 release, decisão clínica ou piloto foi usado ou alterado.
