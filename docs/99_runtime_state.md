@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: concluiu Round 53 de B99-101 sob RED→GREEN→REFACTOR; o scanner agora pula asset ignorado oversized antes de abrir o arquivo e lê o workspace em buffer limitado a `MAX_SCAN_BYTES + 1`. O foco passou `43/43`, cobertura `205/1139/21` em `95,03/90,95/95,31/95,73`, build sintético explícito `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o commit de código/teste `95adb51` foi publicado no branch remoto. O build sem `CVG_API_INTERNAL_URL` parou no guard esperado; com endpoint sintético passou. `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental de Round 53 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T01:13:43-03:00
+- last_update: 2026-08-21T01:17:22-03:00
 
 ## 2026-08-21T01:13:43-03:00 — DUAL99-B99-101-BOUNDED-WORKSPACE-ASSET-READS
 
@@ -63,6 +63,24 @@ documental e seguir com nova auditoria bounded; permanecem abertos secret
 manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live,
 clínica, `0/145`, gates externos, aprovação humana e reauditoria independente.
 Não houve score, release, decisão clínica, piloto ou produção.
+
+## 2026-08-21T01:17:22-03:00 — GIT-PUBLISH-DUAL99-B99-101-BOUNDED-WORKSPACE-READS
+
+### ACTION / RESULT
+
+O commit de código/teste `95adb51` e a reconciliação documental `22d1a97`
+foram publicados em `origin/agent/publish-production-hardening`; o pós-push
+confirmou `HEAD == origin` em `22d1a97`. Estado, backlog, roadmap, evidência,
+log e traceability estão alinhados. `.gauntlet/` permanece local e não
+rastreado por desenho.
+
+### STATUS / NEXT ACTION
+
+`IN_PROGRESS / PILOT_BLOCKED`. A publicação não altera score, release, clínica,
+piloto, runtime ou produção. Permanecem os quatro findings locais redigidos,
+secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime
+live, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente. Executar nova auditoria bounded antes de qualquer conclusão.
 
 ## 2026-08-21T00:58:01-03:00 — DUAL99-B99-101-GIT-PARSER-SCAN-HEADER-CAPS
 

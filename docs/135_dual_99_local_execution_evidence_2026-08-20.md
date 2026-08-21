@@ -6,8 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `95adb51` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: será reconciliada após o commit desta rodada
-- paridade documental final: será registrada no pós-push documental
+- evidência documental publicada: `22d1a97` em
+  `origin/agent/publish-production-hardening`
+- paridade documental final: confirmada no pós-push da reconciliação em
+  `22d1a97`; nenhum código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`

@@ -249,9 +249,9 @@ clínica ou piloto.
 
 ## 40. Publicação do checkpoint bounded workspace asset reads B99-101 — 2026-08-21T01:13:43-03:00
 
-O código/teste `95adb51` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada será publicada em seguida. A rodada fechou o teto de leitura do
+O código/teste `95adb51` e a reconciliação documental `22d1a97` foram publicados
+em `origin/agent/publish-production-hardening`; a checagem pós-push confirmou
+`HEAD == origin` em `22d1a97`. A rodada fechou o teto de leitura do
 workspace: assets ignorados oversized são descartados pelo preflight e arquivos
 regulares são lidos em buffer de `MAX_SCAN_BYTES + 1`. O foco passou `43/43`,
 full coverage `205/1139/21`, build sintético `12/12`, hotspots `0`, contratos

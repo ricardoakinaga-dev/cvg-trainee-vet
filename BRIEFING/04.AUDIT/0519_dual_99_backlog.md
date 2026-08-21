@@ -40,6 +40,18 @@
   fresca foi read-only e não independente; o programa segue
   `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Publicação de execução — 2026-08-21T01:17:22-03:00 — B99-101 bounded workspace reads
+
+- código/teste: `95adb51` (`fix: bound workspace secret scanner reads`);
+- reconciliação documental de estado, roadmap, backlog, evidência, log e
+  traceability: `22d1a97`, publicada em
+  `origin/agent/publish-production-hardening`; o pós-push confirmou
+  `HEAD == origin` em `22d1a97`;
+- `.gauntlet/` permanece local e não rastreado. A publicação não fecha os
+  quatro findings locais, secret manager/rotação, provider/CI, RC/runtime,
+  clínica, `0/145`, gates externos, aprovação humana ou reauditoria
+  independente; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T00:58:01-03:00 — B99-101 caps de scan/header do parser Git
 
 - **auditoria/RED:** `planGitBatchRequests` aceitava `maxScanBytes: Infinity`,

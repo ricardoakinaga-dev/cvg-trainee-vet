@@ -11480,6 +11480,27 @@ IN_PROGRESS / PILOT_BLOCKED
 Publicar a reconciliação documental desta rodada e executar nova auditoria
 bounded; depois obter autoridade e ambiente para os bloqueios externos listados.
 
+## 2026-08-21T01:17:22-03:00 — GIT-PUBLISH-DUAL99-B99-101-BOUNDED-WORKSPACE-READS
+
+### ACTION
+
+O commit de código/teste `95adb51` e a reconciliação documental `22d1a97`
+foram publicados em `origin/agent/publish-production-hardening`.
+
+### RESULT / STATUS
+
+O pós-push confirmou `HEAD == origin` em `22d1a97`; estado, backlog, roadmap,
+evidência, log e traceability estavam alinhados nesse corte. A disposição segue
+`IN_PROGRESS / PILOT_BLOCKED`; `.gauntlet/` permanece local e não rastreado.
+Não houve rotação de segredo, alteração de runtime/produção, score, release,
+clínica ou piloto. Permanecem abertos os gates externos, humanos e live, além
+da crítica independente e dos quatro findings locais redigidos.
+
+### NEXT ACTION
+
+Executar nova auditoria bounded; não declarar release, score, piloto ou
+fechamento clínico com esta publicação local.
+
 ## 2026-08-21T00:12:22-03:00 — DUAL99-B99-308-FINAL-PARITY
 
 ### ACTION / RESULT
