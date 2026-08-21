@@ -166,6 +166,53 @@ describe("secret scanner", () => {
     ).toHaveLength(2);
   });
 
+  it("does not let a synthetic credential URI hide a secret suffix", () => {
+    const randomValue = ["J6", "wR", "3p", "N8", "cV", "5x", "Qa", "2m"].join(
+      "",
+    );
+    const suffixes = [
+      `?x=${randomValue.repeat(3)}`,
+      `#${randomValue.repeat(3)}`,
+      `/path/${randomValue.repeat(3)}`,
+      `:443?x=${randomValue.repeat(3)}`,
+    ];
+
+    for (const suffix of suffixes) {
+      const uri = `https://user:password@identity.example${suffix}`;
+      const findings = scanText(
+        `endpoint = "${uri}"`,
+        "tests/fixtures/synthetic.ts",
+      );
+
+      expect(
+        findings.filter((finding) => finding.rule === "uri-credential"),
+      ).toHaveLength(1);
+    }
+
+    const insecureUri = `http://user:password@identity.example?x=${randomValue.repeat(3)}`;
+    expect(
+      scanText(
+        `endpoint = "${insecureUri}"`,
+        "tests/fixtures/synthetic.ts",
+      ).filter((finding) => finding.rule === "uri-credential"),
+    ).toHaveLength(1);
+  });
+
+  it("allows only the complete bounded synthetic credential URI fixture", () => {
+    expect(
+      scanText(
+        'endpoint = "https://user:password@identity.example"',
+        "tests/fixtures/synthetic.ts",
+      ),
+    ).toEqual([]);
+    expect(
+      scanText(
+        'endpoint = "https://user:password@identity.example/"',
+        "tests/fixtures/synthetic.ts",
+      ),
+    ).toEqual([]);
+  });
+
   it("does not treat a literal value containing .repeat( as executable code", () => {
     const literal = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
 

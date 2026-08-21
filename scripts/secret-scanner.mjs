@@ -48,6 +48,11 @@ const boundedSyntheticPlaceholders = new Set([
   "Novo-Acesso-CVG-2026!",
 ]);
 
+const boundedSyntheticCredentialUris = new Set([
+  "https://user:password@identity.example",
+  "https://user:password@identity.example/",
+]);
+
 const textExtensions = new Set([
   ".cjs",
   ".conf",
@@ -245,17 +250,10 @@ function isLocalUri(value) {
 
 function isKnownSyntheticCredentialUri(value, path) {
   const logicalPath = path.replace(/^(?:history|staged):/u, "");
-  if (!/^tests(?:\/|$)/u.test(logicalPath)) return false;
-  try {
-    const parsed = new URL(value);
-    return (
-      parsed.hostname === "identity.example" &&
-      parsed.username === "user" &&
-      parsed.password === "password"
-    );
-  } catch {
-    return false;
-  }
+  return (
+    /^tests(?:\/|$)/u.test(logicalPath) &&
+    boundedSyntheticCredentialUris.has(value.trim())
+  );
 }
 
 function isNonSecretValue(value, path) {
