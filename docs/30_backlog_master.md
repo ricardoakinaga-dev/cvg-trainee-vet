@@ -2,20 +2,22 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
-**Auditoria Dual99 — 2026-08-21T10:24:57-03:00:** Rounds 81–85 fecharam
-cinco gaps locais de B99-101 sob RED→GREEN→REFACTOR: URI sintética exata,
+**Auditoria Dual99 — 2026-08-21T11:03:36-03:00:** Rounds 81–87 fecharam
+sete gaps locais de B99-101 sob RED→GREEN→REFACTOR: URI sintética exata,
 framing NUL staged, identidade bijetiva de objetos Git, arquivos especiais
-com descriptor regular não bloqueante e registros staged vazios fail-closed.
-O foco passou `74/74`; cobertura `1170/1191` em
+com descriptor regular não bloqueante, registros staged vazios, crescimento
+pós-`lstat` e completude de respostas Git.
+O foco passou `76/76`; cobertura `1172/1193` em
 `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0` com
 `scripts/secret-scanner.mjs` em `793` linhas; format/lint/typecheck/diff-check
 passaram. Commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`,
-`7c70686`, `084e2d0` e `5790ce8` estão publicados, com `HEAD == origin`.
+`7c70686`, `084e2d0`, `5790ce8` e `87ca28d` estão publicados, com
+`HEAD == origin`.
 `pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
 redigidos preexistentes de `infra/production/.env.local`. Evidência:
-`docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
+`docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md`.
 Estado, backlog, roadmap, evidência, log e traceability foram reconciliados
-após o commit de código/teste `5790ce8`; a publicação documental desta rodada
+após o commit de código/teste `87ca28d`; a publicação documental desta rodada
 acompanha esta reconciliação.
 
 **Disposição:** `IN_PROGRESS / PILOT_BLOCKED`. A crítica independente que

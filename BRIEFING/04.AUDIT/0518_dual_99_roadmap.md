@@ -288,6 +288,27 @@ quatro assignments redigidos preexistentes. O programa continua
 `IN_PROGRESS / PILOT_BLOCKED`, sem promoção de score, release, piloto ou decisão
 clínica.
 
+## 87. Checkpoint local de completude do batch Git B99-101 — 2026-08-21T11:03:36-03:00
+
+Round 87 fechou a omissão silenciosa em que `cat-file --batch` respondia apenas
+parte dos IDs solicitados e encerrava sem finding. `createGitBatchStreamParser`
+agora exige que `finish()` observe exatamente o conjunto completo, preservando
+as regras de ID único, inesperado e duplicado. O foco passou `76/76`; cobertura
+`205/1172/21` em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`;
+format/lint/typecheck/diff-check passaram. O commit `87ca28d` foi publicado e
+`HEAD == origin` foi confirmado. Evidência:
+`docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md`.
+
+## 86. Checkpoint local de crescimento pós-lstat B99-101 — 2026-08-21T11:03:36-03:00
+
+Round 86 reproduziu um arquivo regular que crescia entre `lstat` e a leitura:
+o reader real retornava o sentinel `max+1`, que antes alcançava o scanner e
+consumia bytes acima do limite. GREEN rejeita o buffer acima de
+`maxScanBytes`, mantém asset ignorado sem exposição, preserva o finding
+redigido e falha no orçamento quando `remainingBytes < maxScanBytes`. O foco
+passou `76/76`; cobertura `205/1172/21`, build `12/12`, hotspots `0`,
+format/lint/typecheck/diff-check passaram. Código/teste `87ca28d` foi publicado.
+
 ## 84. Checkpoint local de registros staged vazios B99-101 — 2026-08-21T10:24:57-03:00
 
 Round 85 fechou o último caso local identificado nesta sequência: o parser de

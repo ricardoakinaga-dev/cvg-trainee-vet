@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Rounds 81–85 fecharam URI sintética exata, framing NUL staged, identidade bijetiva dos batches Git, arquivos especiais/descriptor regular fail-closed e registros staged vazios fail-closed. B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Rounds 81–87 fecharam URI sintética exata, framing NUL staged, identidade bijetiva dos batches Git, arquivos especiais/descriptor regular fail-closed, registros staged vazios, crescimento pós-`lstat` e completude dos batches Git. B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Rounds 81–85 de B99-101 sob RED→GREEN→REFACTOR, publicou os commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686`, `084e2d0` e `5790ce8`, e reconciliou estado, backlog, roadmap, evidência, log e traceability. O resultado consolidado é foco `74/74`, cobertura `205/1170/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com scanner em `793` linhas, formato, lint, typecheck e diff-check verdes; `HEAD == origin` confirmado. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica que reproduziu os gaps foi `REJECT`, e a tentativa final independente não devolveu veredito antes de ser encerrada. `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu Rounds 81–87 de B99-101 sob RED→GREEN→REFACTOR, publicou os commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686`, `084e2d0`, `5790ce8` e `87ca28d`, e reconciliou estado, backlog, roadmap, evidência, log e traceability. O resultado consolidado é foco `76/76`, cobertura `205/1172/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com scanner em `793` linhas, formato, lint, typecheck e diff-check verdes; `HEAD == origin` confirmado. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica que reproduziu a limitação de evidência foi `BLOCKED`, a nova tentativa integrada não devolveu relatório e não há aprovação independente final. `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
-- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; crítica independente em `25233b6` foi `REJECT` e não há veredito independente final sobre `5790ce8`; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; a crítica independente focal foi `BLOCKED` por evidência insuficiente e não há relatório independente final sobre `87ca28d`; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,38 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T10:24:57-03:00
+- last_update: 2026-08-21T11:03:36-03:00
+
+## 2026-08-21T11:03:36-03:00 — DUAL99-B99-101-GROWTH-AND-BATCH-COMPLETE
+
+### AÇÃO / RESULTADO
+
+- Rounds 86–87 fecharam dois boundaries locais: crescimento de arquivo regular
+  após `lstat` e resposta incompleta de `cat-file --batch`;
+- o workspace agora rejeita qualquer buffer real acima de `maxScanBytes` antes
+  do scanner, preserva a política de assets ignorados, não consome orçamento e
+  mantém finding redigido; o parser Git agora exige uma resposta única para
+  todos os IDs solicitados antes de aceitar o stream;
+- o foco passou `76/76`; a suíte com cobertura passou `205` arquivos, `1172`
+  testes e `21` guardados, com cobertura `95,03/90,95/95,31/95,73`; build
+  `12/12`, hotspots `0`, scanner `793` linhas e
+  format/lint/typecheck/diff-check verdes;
+- o código/teste `87ca28d` foi publicado em
+  `origin/agent/publish-production-hardening` e `HEAD == origin` foi
+  confirmado; evidência detalhada está em
+  `docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica focal apontou que a
+primeira regressão era excessivamente injetada; a cobertura foi reforçada com
+o reader real, sentinel bounded, orçamento menor e redaction. A nova tentativa
+integrada read-only não devolveu relatório dentro da janela e foi encerrada.
+Obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente; manter `IN_PROGRESS /
+PILOT_BLOCKED` e não promover score, release, piloto ou decisão clínica.
 
 ## 2026-08-21T10:24:57-03:00 — DUAL99-B99-101-STAGED-EMPTY-RECORD
 

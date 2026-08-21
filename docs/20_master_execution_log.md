@@ -40,6 +40,63 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T11:03:36-03:00 — DUAL99-B99-101-GROWTH-AND-BATCH-COMPLETE
+
+### TIMESTAMP
+
+2026-08-21 11:03:36 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — fechar crescimento pós-`lstat` e completude de respostas Git.
+
+### ACTION
+
+Foram executadas duas ondas TDD sequenciais. A primeira reproduziu um arquivo
+regular que crescia depois do `lstat` e entregava `max+1` ao scanner; a segunda
+reproduziu `cat-file --batch` respondendo somente parte de um conjunto limpo.
+O reader real, o sentinel bounded, o orçamento menor e a redaction foram
+incluídos na regressão; o parser passou a validar o conjunto completo de IDs.
+
+### RESULT
+
+O foco passou `76/76`; a suíte passou `205` arquivos, `1172` testes e `21`
+guardados, com cobertura `95,03/90,95/95,31/95,73`; build `12/12`, hotspots `0`,
+scanner em `793` linhas, formato, lint, typecheck e diff-check passaram. O
+código/teste `87ca28d` foi publicado, com `HEAD == origin` confirmado. A
+evidência está em
+`docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md`.
+
+### DECISIONS
+
+A crítica focal foi `BLOCKED` por uma limitação válida da primeira evidência;
+essa limitação foi corrigida com o reader real e testes de orçamento/redaction.
+A nova crítica integrada não devolveu relatório dentro da janela e foi
+encerrada; não há `PASS` independente final. Nenhum segredo real, runtime,
+produção, score, release, decisão clínica ou piloto foi alterado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Reconciliar e publicar os documentos canônicos desta rodada; depois obter
+autoridade/ambiente para os gates externos, aprovação humana e reauditoria
+independente, sem promover score, release, piloto ou decisão clínica.
+
 ## 2026-08-21T10:24:57-03:00 — DUAL99-B99-101-STAGED-EMPTY-RECORD
 
 ### TIMESTAMP
