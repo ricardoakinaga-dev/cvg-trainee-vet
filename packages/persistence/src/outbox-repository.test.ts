@@ -26,10 +26,38 @@ const row = {
   created_at: new Date("2026-08-09T17:00:00.000Z"),
 };
 
-function fakeDatabase(result: readonly Record<string, unknown>[]) {
+type FakeDatabase = PostgresJsDatabase<typeof schema> & {
+  readonly execute: ReturnType<typeof vi.fn>;
+};
+
+function fakeDatabase(
+  result: readonly Record<string, unknown>[],
+): FakeDatabase {
+  const execute = vi.fn(async () => result);
   return {
-    execute: vi.fn(async () => result),
-  } as unknown as PostgresJsDatabase<typeof schema>;
+    execute,
+  } as unknown as FakeDatabase;
+}
+
+function queryText(value: unknown): string {
+  if (value === null || typeof value !== "object") return String(value);
+  const chunks = (value as { readonly queryChunks?: readonly unknown[] })
+    .queryChunks;
+  if (chunks === undefined) return "";
+  return chunks
+    .map((chunk) => {
+      if (typeof chunk === "string") return chunk;
+      if (
+        chunk !== null &&
+        typeof chunk === "object" &&
+        "value" in chunk &&
+        Array.isArray((chunk as { readonly value?: unknown }).value)
+      ) {
+        return (chunk as { readonly value: readonly unknown[] }).value.join("");
+      }
+      return "[param]";
+    })
+    .join("");
 }
 
 describe("outbox persistence", () => {
@@ -126,6 +154,20 @@ describe("outbox persistence", () => {
       repository.markFailed(row.id, 1, "handler_failed", now, 30, 3),
     ).resolves.toBe(true);
     expect(database.execute).toHaveBeenCalledTimes(3);
+  });
+
+  it("clears a prior failure marker when an event is acknowledged", async () => {
+    const database = fakeDatabase([]);
+    const repository = createOutboxRepository(database);
+
+    await repository.markProcessed(
+      row.id,
+      row.attempts,
+      new Date("2026-08-09T17:00:00.000Z"),
+    );
+
+    const query = database.execute.mock.calls[0]?.[0];
+    expect(queryText(query)).toContain("last_error_code = null");
   });
 
   it("validates lease, completion, and retry parameters before SQL", async () => {

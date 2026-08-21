@@ -260,7 +260,8 @@ function createMarkProcessed(
       update outbox_events
       set status = 'PROCESSED',
           processed_at = ${nowIso}::timestamptz,
-          locked_until = null
+          locked_until = null,
+          last_error_code = null
       where id = ${eventId}
         and status = 'PROCESSING'
         and attempts = ${attempts}
