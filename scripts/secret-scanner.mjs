@@ -25,6 +25,7 @@ const ignoredDirectories = new Set([
 ]);
 
 const MAX_SCAN_BYTES = 2 * 1024 * 1024;
+const MAX_WORKSPACE_TOTAL_ENTRIES = 4096;
 const MAX_GIT_BATCH_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_GIT_BATCH_HEADER_BYTES = 128;
 
@@ -493,7 +494,12 @@ export function summarizeSecretFindings(findings) {
     .join("; ");
 }
 
-async function walk(directory, logicalDirectory = "", openedDirectory) {
+async function walk(
+  directory,
+  logicalDirectory = "",
+  openedDirectory,
+  remainingEntries = MAX_WORKSPACE_TOTAL_ENTRIES,
+) {
   const access =
     openedDirectory === undefined
       ? await openWorkspaceDirectory(directory)
@@ -501,7 +507,12 @@ async function walk(directory, logicalDirectory = "", openedDirectory) {
   const { entries, handle, path: safeDirectory } = access;
   try {
     const findings = [];
+    let remaining = remainingEntries;
     for (const entry of entries) {
+      if (remaining <= 0) {
+        throw new Error("workspace total entry budget exceeded");
+      }
+      remaining -= 1;
       const logicalPath = logicalDirectory
         ? `${logicalDirectory}/${entry.name}`
         : entry.name;
@@ -512,7 +523,14 @@ async function walk(directory, logicalDirectory = "", openedDirectory) {
       }
       if (entry.isDirectory()) {
         if (!ignoredDirectories.has(entry.name)) {
-          findings.push(...(await walk(absolutePath, logicalPath)));
+          const child = await walk(
+            absolutePath,
+            logicalPath,
+            undefined,
+            remaining,
+          );
+          findings.push(...child.findings);
+          remaining = child.remainingEntries;
         }
         continue;
       }
@@ -520,7 +538,10 @@ async function walk(directory, logicalDirectory = "", openedDirectory) {
         findings.push(...(await scanFile(absolutePath, logicalPath)));
       }
     }
-    return findings;
+    return Object.freeze({
+      findings,
+      remainingEntries: remaining,
+    });
   } finally {
     if (openedDirectory === undefined) await handle.close();
   }
@@ -580,7 +601,7 @@ async function scanFile(file, path) {
 
 async function scanWorkspace(root, openedRoot) {
   try {
-    return await walk(root, "", openedRoot);
+    return (await walk(root, "", openedRoot)).findings;
   } catch {
     return [
       unscannedFinding("<workspace>", "unreadable-file", "workspace tree"),
