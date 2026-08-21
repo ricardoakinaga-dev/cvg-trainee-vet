@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 67 fechou a profundidade recursiva ilimitada do worktree: a travessia agora falha fechado ao ultrapassar `256` níveis, além dos limites de `1024` por diretório e `4096` entradas totais. Round 66 limita a enumeração distribuída; Round 65 limita cada diretório; Round 64 limita metadata Git; Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–50 preservam as demais fronteiras Git, caminho, diretório, arquivo e limites bounded; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 68 fechou a leitura total de bytes do worktree: a travessia agora falha fechado ao ultrapassar `64 MiB`, além dos limites de `256` níveis, `1024` por diretório e `4096` entradas totais. Round 67 limita a profundidade recursiva; Round 66 limita a enumeração distribuída; Round 65 limita cada diretório; Round 64 limita metadata Git; Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–50 preservam as demais fronteiras Git, caminho, diretório, arquivo e limites bounded; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 67 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou uma árvore sintética com `300` níveis que atravessava a recursão e retornava lista vazia. RED falhou sem o finding genérico; GREEN propaga a profundidade de worktree e falha fechado ao exceder `256` níveis, descartando a travessia parcial; foco `61/61`, cobertura `205/1157/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix em profundidade `300` produziu um único finding genérico; código/teste `232ee11` e a reconciliação documental inicial `8fc9f0b` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 68 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou `65` arquivos sintéticos de `1 MiB` cada, totalizando `68157440` bytes, que atravessavam os limites existentes e retornavam `65` findings. RED falhou sem o finding genérico; GREEN propaga um orçamento imutável de `64 MiB`, reserva o tamanho declarado antes da leitura e descarta a travessia quando ele esgota; foco `62/62`, cobertura `205/1158/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix produziu um único finding genérico; código/teste `938bc41` foi publicado e a reconciliação documental inicial segue pendente. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,37 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T05:52:50-03:00
+- last_update: 2026-08-21T06:49:40-03:00
+
+## 2026-08-21T06:49:40-03:00 — DUAL99-B99-101-WORKSPACE-BYTE-BUDGET
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only criou `65` arquivos sintéticos de `1 MiB`,
+  totalizando `68157440` bytes; antes do fix, os limites por arquivo,
+  diretório, entrada e profundidade permitiam a leitura e retornavam `65`
+  findings, sem fallback genérico;
+- RED adicionou a regressão; GREEN propaga um orçamento imutável de `64 MiB`
+  pela recursão, reserva o tamanho declarado antes da leitura e descarta a
+  travessia inteira ao excedê-lo, retornando somente
+  `<workspace> / unreadable-file`;
+- foco `62/62`; cobertura `205/1158/21` em `95,03/90,95/95,31/95,73`; build
+  `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura
+  `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
+  diff-check e audit de dependências passaram. Probe pós-fix com `65 MiB`
+  sintéticos produziu um único finding genérico. Código/teste `938bc41` foi
+  publicado; a reconciliação documental inicial segue pendente neste primeiro
+  registro.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Publicar a reconciliação documental e depois executar nova
+auditoria bounded, mantendo o programa `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-21T05:52:50-03:00 — DUAL99-B99-101-WORKSPACE-DEPTH-BUDGET
 

@@ -5,6 +5,35 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T06:49:40-03:00 — B99-101 workspace total byte budget
+
+- **auditoria/RED:** `65` arquivos sintéticos de `1 MiB` totalizavam
+  `68157440` bytes e atravessavam os limites anteriores, retornando `65`
+  findings; o RED focal reproduziu a ausência do finding genérico;
+- **GREEN:** a travessia agora propaga um orçamento global imutável de `64 MiB`,
+  reserva o tamanho declarado antes da leitura e falha fechado em overflow,
+  descartando findings parciais e retornando `<workspace> / unreadable-file`;
+- **evidência:** foco `62/62`, cobertura `205/1158/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12` com URL local efêmera, CI contract,
+  arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck,
+  formato, diff-check e audit passaram. Probe pós-fix produziu um único finding
+  genérico; código/teste `938bc41` foi publicado;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. A
+  documentação inicial segue `DOCUMENTATION_PENDING`; B99-101 segue
+  `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T06:49:40-03:00 — B99-101 workspace total byte budget
+
+O código/teste `938bc41` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A reconciliação final e a confirmação de `HEAD == origin` permanecem
+necessárias. `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T05:52:50-03:00 — B99-101 workspace recursion depth budget
 
 - **auditoria/RED:** uma árvore sintética com `300` níveis atravessava a

@@ -254,6 +254,30 @@ publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
 `HEAD == origin` em `8fc9f0b`. A reconciliação final não altera código ou estado
 externo.
 
+## 70. Checkpoint de publicação do orçamento total de bytes do worktree B99-101 — 2026-08-21T06:49:40-03:00
+
+O código/teste `938bc41` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A confirmação final de paridade permanece necessária.
+
+## 69. Checkpoint do orçamento total de bytes do worktree B99-101 — 2026-08-21T06:49:40-03:00
+
+Uma auditoria read-only encontrou `65` arquivos sintéticos de `1 MiB`,
+totalizando `68157440` bytes, que atravessavam os limites anteriores e
+retornavam `65` findings. RED reproduziu a ausência do finding genérico; GREEN
+propaga um orçamento global imutável de `64 MiB`, reserva o tamanho declarado
+antes da leitura e falha fechado em overflow, retornando
+`<workspace> / unreadable-file` sem findings parciais.
+
+O foco passou `62/62`, a cobertura passou `205/1158/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
+contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
+typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
+produziu um único finding genérico. Código/teste `938bc41` foi publicado; a
+documentação inicial segue `DOCUMENTATION_PENDING`. Windows/non-proc, condições
+live, gates externos, crítica independente e demais bloqueios do programa
+permanecem abertos.
+
 ## 67. Checkpoint da profundidade recursiva do worktree B99-101 — 2026-08-21T05:52:50-03:00
 
 Uma auditoria read-only encontrou que uma árvore sintética com `300` níveis

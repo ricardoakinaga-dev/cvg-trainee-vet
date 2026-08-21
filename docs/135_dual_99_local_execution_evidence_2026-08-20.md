@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T05:52:50-03:00`
-- última atualização: `2026-08-21T05:52:50-03:00`
+- corte: `2026-08-21T06:49:40-03:00`
+- última atualização: `2026-08-21T06:49:40-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `232ee11` em
+- commit publicado: `938bc41` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `8fc9f0b` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `8fc9f0b`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até a reconciliação desta rodada; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,21 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 68 — limite total de bytes do worktree
+
+- a auditoria read-only encontrou que `65` arquivos sintéticos de `1 MiB`
+  totalizavam `68157440` bytes e atravessavam os limites anteriores; o RED
+  focal confirmou a ausência do finding genérico;
+- GREEN propaga um orçamento global imutável de `64 MiB`, reserva o tamanho
+  declarado antes da leitura e falha fechado em overflow, descartando findings
+  parciais e retornando `<workspace> / unreadable-file`;
+- foco `62/62`, cobertura `205/1158/21` em `95,03/90,95/95,31/95,73`, build
+  `12/12` com URL local efêmera, CI contract, arquitetura `2/2`, hotspots `0`
+  com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+  dependências passaram. Probe pós-fix produziu um único finding genérico. O
+  código/teste `938bc41` foi publicado; a documentação inicial desta rodada
+  está em `DOCUMENTATION_PENDING`.
 
 ## Round 67 — limite de profundidade do worktree
 

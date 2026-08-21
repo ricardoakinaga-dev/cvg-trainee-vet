@@ -11420,6 +11420,86 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T06:49:40-03:00 — DUAL99-B99-101-WORKSPACE-BYTE-BUDGET
+
+### TIMESTAMP
+
+2026-08-21 06:49:40 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem/Git
+
+### TASK
+
+B99-101 — limitar os bytes totais lidos do worktree, inclusive em árvores
+distribuídas com muitos arquivos abaixo do limite individual.
+
+### ACTION
+
+Uma auditoria read-only criou `65` arquivos sintéticos de `1 MiB`, totalizando
+`68157440` bytes; antes do fix, o scanner retornou `65` findings sem fallback.
+O RED adicionou a regressão; o GREEN propaga um orçamento imutável de `64 MiB`,
+reserva o tamanho declarado antes da leitura e descarta a travessia inteira em
+overflow.
+
+### RESULT
+
+O foco passou `62/62`; a cobertura passou `205` arquivos / `1158` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build passou `12/12` com
+`CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots
+`0` com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+dependências passaram. Probe pós-fix com aproximadamente `65 MiB` sintéticos
+produziu um único finding genérico. Código/teste `938bc41` foi publicado.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica foi fresca,
+read-only e não independente porque o backend de critic está indisponível. Não
+houve alteração de segredo, runtime, produção, score, release, decisão clínica
+ou piloto. A reconciliação documental inicial segue pendente neste primeiro
+registro.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental; depois executar nova auditoria bounded e
+obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente.
+
+## 2026-08-21T06:49:40-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-BYTE-BUDGET
+
+### ACTION
+
+O commit de código/teste `938bc41` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental inicial
+segue `DOCUMENTATION_PENDING` neste primeiro registro.
+
+### RESULT / STATUS
+
+A confirmação de `HEAD == origin` e a reconciliação documental final permanecem
+necessárias. A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve
+rotação de segredo, alteração de runtime/produção, score, release, decisão
+clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental final; Windows/non-proc, secret
+manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente permanecem abertos.
+
 ## 2026-08-21T05:52:50-03:00 — DUAL99-B99-101-WORKSPACE-DEPTH-BUDGET
 
 ### TIMESTAMP
