@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 66 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou que uma árvore distribuída de `2048` diretórios e `2048` arquivos atravessava o cap por diretório e retornava lista vazia. RED falhou sem o finding genérico; GREEN propaga um orçamento imutável de `4096` entradas pela recursão e descarta toda a travessia quando ele esgota; foco `60/60`, cobertura `205/1156/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix distribuído produziu um único finding genérico; código/teste `e59d88c` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 66 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou que uma árvore distribuída de `2048` diretórios e `2048` arquivos atravessava o cap por diretório e retornava lista vazia. RED falhou sem o finding genérico; GREEN propaga um orçamento imutável de `4096` entradas pela recursão e descarta toda a travessia quando ele esgota; foco `60/60`, cobertura `205/1156/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix distribuído produziu um único finding genérico; código/teste `e59d88c` e a reconciliação documental inicial `4ba2a70` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -50,8 +50,8 @@
   `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
   diff-check e audit de dependências passaram. Probe pós-fix distribuído com
   aproximadamente `4128` entradas produziu um único finding genérico.
-  Código/teste `e59d88c` foi publicado; a reconciliação documental segue
-  pendente neste primeiro registro.
+  Código/teste `e59d88c` foi publicado; a reconciliação documental inicial
+  `4ba2a70` foi publicada e a paridade pós-push foi confirmada.
 
 ### LIMITES / PRÓXIMA AÇÃO
 
@@ -60,7 +60,8 @@ preexistentes de `infra/production/.env.local`; não houve alteração de
 runtime, produção, score, release, clínica ou piloto. A crítica independente
 continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
 clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
-permanecem abertos. Publicar a reconciliação documental desta rodada.
+permanecem abertos. Executar nova auditoria bounded e manter o programa
+`IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-21T05:24:48-03:00 — DUAL99-B99-101-WORKSPACE-ENTRY-BUDGET
 

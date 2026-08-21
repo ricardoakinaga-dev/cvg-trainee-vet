@@ -26,12 +26,12 @@
   segue `IN_PROGRESS` no escopo externo e o programa permanece
   `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Publicação de execução pendente — 2026-08-21T05:39:56-03:00 — B99-101 workspace total entry budget
+## Publicação de execução — 2026-08-21T05:39:56-03:00 — B99-101 workspace total entry budget
 
-O código/teste `e59d88c` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental e sua
-paridade pós-push serão registradas após os gates documentais. `.gauntlet/`
-permanece local e não rastreado.
+O código/teste `e59d88c` e a reconciliação documental inicial `4ba2a70` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `4ba2a70`. A reconciliação final não altera código ou estado
+externo. `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T05:24:48-03:00 — B99-101 workspace entry budget
 

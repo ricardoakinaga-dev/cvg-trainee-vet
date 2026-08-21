@@ -6,10 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `e59d88c` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `DOCUMENTATION_PENDING` em
+- evidência documental publicada: `4ba2a70` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: pendente até a reconciliação desta rodada; nenhum
-  código ou estado externo foi alterado depois desse corte
+- paridade documental final: confirmada no pós-push em `4ba2a70`; nenhum código
+  ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -37,8 +37,9 @@
   `12/12` com URL local efêmera, CI contract, arquitetura `2/2`, hotspots `0`
   com maior função de `100`, lint, typecheck, formato, diff-check e audit de
   dependências passaram. Probe pós-fix distribuído produziu um único finding
-  genérico. O código/teste `e59d88c` foi publicado; a documentação inicial
-  desta rodada está em `DOCUMENTATION_PENDING`.
+  genérico. O código/teste `e59d88c` e a documentação inicial `4ba2a70` foram
+  publicados; a reconciliação final desta rodada não altera código ou estado
+  externo.
 
 ## Round 65 — limite de entradas do worktree
 

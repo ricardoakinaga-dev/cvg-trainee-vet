@@ -247,13 +247,12 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 66. Checkpoint de publicação pendente da enumeração total do worktree B99-101 — 2026-08-21T05:39:56-03:00
+## 66. Checkpoint de publicação da enumeração total do worktree B99-101 — 2026-08-21T05:39:56-03:00
 
-O código/teste `e59d88c` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental ainda
-está pendente dos gates de documentação e da confirmação de paridade. A
-publicação não altera runtime, produção, segredos, score, release, clínica ou
-piloto.
+O código/teste `e59d88c` e a reconciliação documental inicial `4ba2a70` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `4ba2a70`. A reconciliação final não altera runtime,
+produção, segredos, score, release, clínica ou piloto.
 
 ## 65. Checkpoint da enumeração total bounded do worktree B99-101 — 2026-08-21T05:39:56-03:00
 
@@ -267,8 +266,8 @@ O foco passou `60/60`, a cobertura passou `205/1156/21` em
 `95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
 contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
 typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
-distribuído produziu um único finding genérico. Código/teste `e59d88c` foi
-publicado; Windows/non-proc, condições live, gates externos, crítica
+distribuído produziu um único finding genérico. Código/teste `e59d88c` e
+documentação inicial `4ba2a70` foram publicados; Windows/non-proc, condições live, gates externos, crítica
 independente e demais bloqueios do programa permanecem abertos.
 
 ## 64. Checkpoint de publicação da enumeração do worktree B99-101 — 2026-08-21T05:24:48-03:00
