@@ -26,12 +26,12 @@
   segue `IN_PROGRESS` no escopo externo e o programa permanece
   `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Publicação de execução — 2026-08-21T03:29:48-03:00 — B99-101 Git metadata boundary
+## Publicação de execução — 2026-08-21T03:35:55-03:00 — B99-101 Git metadata boundary
 
 O código/teste `5ea9281` foi publicado em
-`origin/agent/publish-production-hardening`; o pós-push confirmou
-`HEAD == origin` em `5ea9281`. A reconciliação documental será publicada em
-seguida; `.gauntlet/` permanece local e não rastreado.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`4d54d8b` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`4d54d8b`. `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T03:05:17-03:00 — B99-101 parent path boundary
 

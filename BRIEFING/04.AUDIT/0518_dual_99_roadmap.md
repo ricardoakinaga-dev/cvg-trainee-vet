@@ -247,12 +247,13 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 52. Checkpoint de publicação do Git metadata bounded B99-101 — 2026-08-21T03:31:23-03:00
+## 52. Checkpoint de publicação do Git metadata bounded B99-101 — 2026-08-21T03:35:55-03:00
 
 O código/teste `5ea9281` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. A publicação do código não altera runtime,
-produção, segredos, score, release, clínica ou piloto.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`4d54d8b` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`4d54d8b`. A publicação não altera runtime, produção, segredos, score, release,
+clínica ou piloto.
 
 ## 51. Checkpoint do Git metadata bounded B99-101 — 2026-08-21T03:31:23-03:00
 

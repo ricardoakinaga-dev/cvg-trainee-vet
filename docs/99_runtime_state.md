@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T03:31:23-03:00
+- last_update: 2026-08-21T03:35:55-03:00
 
 ## 2026-08-21T03:31:23-03:00 — DUAL99-B99-101-GIT-METADATA-NOFOLLOW
 
@@ -60,6 +60,23 @@ runtime, produção, score, release, clínica ou piloto. A crítica independente
 continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
 clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
 permanecem abertos. Executar nova auditoria bounded.
+
+## 2026-08-21T03:35:55-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-METADATA-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+O commit técnico `5ea9281` e a reconciliação documental `4d54d8b` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `4d54d8b`. Estado, backlog, roadmap, evidência, log e
+traceability estão alinhados; `.gauntlet/` permanece local e não rastreado.
+
+### STATUS / PRÓXIMA AÇÃO
+
+A disposição segue `IN_PROGRESS / PILOT_BLOCKED`. Executar nova auditoria
+bounded; Windows/non-proc, secret manager/rotação, provider/CI, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Não houve alteração de runtime, produção, score, release,
+decisão clínica ou piloto.
 
 ## 2026-08-21T03:05:17-03:00 — DUAL99-B99-101-PARENT-PATH-NOFOLLOW
 
