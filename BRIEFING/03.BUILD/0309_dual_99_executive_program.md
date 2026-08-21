@@ -175,3 +175,21 @@ externa, aprovação humana e reauditoria permanecem abertos. O parecer
 independente compatível continua `REJECT`; uma nova tentativa read-only foi
 encerrada sem produzir evidência. O manifesto permanece `PASS_WITH_GAPS`,
 inelegível para reauditoria e `PILOT_BLOCKED`.
+
+## 11. Checkpoint local de fronteira de placeholders — 2026-08-21T08:34:48-03:00
+
+Uma auditoria fresca do B99-101 reproduziu um bypass na allowlist de fixtures:
+o valor era truncado em `&`/`#` antes da comparação e um sufixo potencialmente
+secreto passava sem finding. Sob RED/GREEN, o scanner passou a exigir
+placeholder exato e preservou somente `&form=1` e `&locale=pt-BR` após tokens
+sintéticos conhecidos. O foco passou `65/65`, cobertura `205/1161/21` em
+`95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com `799` linhas,
+lint, typecheck, formato e diff-check passaram; `verify:secrets` acusa apenas
+os quatro assignments redigidos preexistentes de `.env.local`.
+
+O código/teste `2c0a35f` foi publicado e a evidência está em
+`docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md`. Isso
+fecha apenas a propriedade local desta rodada; crítica independente,
+secret-manager/rotação, RC/runtime, browsers aprovados, CI/registry, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria continuam abertos. O
+manifesto permanece `PASS_WITH_GAPS` / `IN_PROGRESS` / `PILOT_BLOCKED`.

@@ -2,6 +2,18 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Atualização Dual99 — 2026-08-21T08:34:48-03:00 — B99-101 placeholder suffix:**
+auditoria/RED reproduziu o bypass em que `isSyntheticPlaceholder` truncava
+`&`/`#` e escondia sufixos potencialmente secretos. GREEN exige correspondência
+exata e preserva somente `&form=1`/`&locale=pt-BR` para URLs sintéticos
+conhecidos. Foco `65/65`, cobertura `205/1161/21` em
+`95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, lint/typecheck/formato
+passaram; `verify:secrets` acusa apenas os quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. Código/teste `2c0a35f` foi
+publicado. Evidência: `docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md`.
+Estado global: `IN_PROGRESS / PILOT_BLOCKED`; gates externos, humanos e live
+continuam pendentes.
+
 **Auditoria Dual99 — 2026-08-21T08:07:39-03:00 — pós-Round 70:** auditoria read-only revisou worktree (`64 MiB`, `4096` entradas, `256` níveis), metadata Git (`1024` entradas por diretório), `rev-list`/listagem staged, `cat-file --batch-check`, batches de corpo (`8 MiB`/`256 MiB`) e staged `git show` (`2 MiB + 1`/`256 MiB`). `scripts/secret-scanner.mjs` está em `799` linhas, hotspots `0`, `HEAD == origin == bb14a4a`, diff-check limpo e nenhum novo gap local bounded justificável foi encontrado. A documentação inicial desta auditoria `4f49248` foi publicada; a reconciliação final não altera código ou estado externo. A disposição permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 **Próxima ação Dual99 — 2026-08-21T08:07:39-03:00:** obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/runtime, WebKit, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não promover score, release ou piloto.

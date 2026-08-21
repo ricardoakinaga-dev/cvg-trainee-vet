@@ -11420,6 +11420,68 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T08:34:48-03:00 — DUAL99-B99-101-PLACEHOLDER-SUFFIX
+
+### TIMESTAMP
+
+2026-08-21 08:34:48 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem/Git
+
+### TASK
+
+B99-101 — rejeitar sufixo secreto herdado de placeholder sintético.
+
+### ACTION
+
+Uma auditoria read-only encontrou que `isSyntheticPlaceholder` truncava o
+valor em `&` ou `#`, permitindo que `<synthetic>#suffix` e
+`synthetic-token&suffix` escapassem da detecção. O teste RED reproduziu o
+bypass; o GREEN passou a exigir igualdade exata do placeholder e permitiu
+somente os sufixos históricos explícitos `&form=1` e `&locale=pt-BR` após
+tokens sintéticos conhecidos. A regressão e a implementação foram publicadas
+como `2c0a35f`.
+
+### RESULT
+
+O foco do scanner passou `65/65`; a cobertura completa passou `205/1161/21`
+com `95,03%` de statements, `90,95%` de branches, `95,31%` de functions e
+`95,73%` de lines. Build passou em `12/12` workspaces; contrato de CI,
+hotspots (`0`, scanner com `799` linhas), lint, typecheck, format e
+`git diff --check` passaram. `pnpm verify:secrets` permanece fail-closed
+somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`. A evidência está em
+`docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md`.
+
+### DECISIONS
+
+Não foram usados segredos, dados reais, prontuários, fontes de terceiro ou
+mutação de runtime/produção. A crítica independente continua indisponível;
+secret manager/rotação, provider/CI, RC/runtime, WebKit, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente permanecem
+abertos. Não houve promoção de score, release ou piloto.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Reconciliar e publicar estado, log, backlog, roadmap, evidência e
+traceability; confirmar paridade local/remota; executar auditoria read-only
+fresca e, depois, obter autoridade/ambiente para os gates externos sem
+declarar fechamento global.
+
 ## 2026-08-21T08:07:39-03:00 — POST-ROUND70-FRESH-BOUNDED-AUDIT
 
 ### TIMESTAMP

@@ -278,6 +278,31 @@ Código/teste `48e1014` e documentação inicial `abb1657` foram publicados.
 Windows/non-proc, condições live, gates externos,
 crítica independente e demais bloqueios do programa permanecem abertos.
 
+## 78. Checkpoint de publicação do boundary de placeholder B99-101 — 2026-08-21T08:34:48-03:00
+
+O código/teste `2c0a35f` foi publicado no branch
+`origin/agent/publish-production-hardening`. A evidência
+`docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md` e a
+reconciliação documental desta rodada seguem para publicação no mesmo fluxo.
+O programa permanece `IN_PROGRESS / PILOT_BLOCKED`; não houve promoção de
+score, release, piloto ou decisão clínica.
+
+## 77. Checkpoint do boundary de placeholder B99-101 — 2026-08-21T08:34:48-03:00
+
+Uma auditoria read-only encontrou que a allowlist de placeholders truncava
+valores em `&`/`#`, permitindo que um prefixo sintético escondesse um sufixo
+potencialmente secreto. O RED reproduziu dois casos sem finding. O GREEN passou
+a exigir correspondência exata e manteve somente os dois sufixos de URL
+sintético explicitamente conhecidos (`&form=1` e `&locale=pt-BR`).
+
+O foco passou `65/65`; a cobertura passou `205/1161/21` em
+`95,03/90,95/95,31/95,73`; build `12/12`, CI contract, hotspots `0`, lint,
+typecheck, formato e diff-check passaram. `verify:secrets` continua fail-closed
+nos quatro assignments redigidos de `.env.local`; a crítica independente,
+secret manager/rotação, provider/CI, RC/runtime, WebKit aprovado, PostgreSQL/
+RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente permanecem abertos.
+
 ## 76. Checkpoint de publicação da auditoria bounded pós-Round 70 — 2026-08-21T08:07:39-03:00
 
 A auditoria read-only revisou todos os limites ativos e não encontrou novo gap

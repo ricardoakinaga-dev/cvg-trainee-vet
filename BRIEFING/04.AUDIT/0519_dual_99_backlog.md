@@ -5,6 +5,28 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T08:34:48-03:00 — B99-101 placeholder suffix
+
+- **auditoria/RED:** `isSyntheticPlaceholder` truncava o RHS em `&`/`#`; dois
+  valores sintéticos com sufixo potencialmente secreto retornavam zero findings
+  em fixture, caracterizando bypass de allowlist;
+- **GREEN:** a comparação passou a ser exata; somente os sufixos históricos
+  explícitos `&form=1` e `&locale=pt-BR` após tokens sintéticos conhecidos são
+  tolerados, sem allowlist genérica de query/fragmento;
+- **evidência:** foco `65/65`, cobertura `205/1161/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, hotspots `0` com
+  scanner em `799` linhas, lint, typecheck, formato e diff-check passaram.
+  `pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
+  redigidos preexistentes de `infra/production/.env.local`;
+- **publicação:** código/teste `2c0a35f` foi enviado para
+  `origin/agent/publish-production-hardening`; evidência em
+  `docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md`;
+- **limite/status:** B99-101 segue `IN_PROGRESS` no escopo externo e o
+  programa segue `IN_PROGRESS / PILOT_BLOCKED`. Secret manager/rotação,
+  provider/CI, RC/runtime, WebKit aprovado, PostgreSQL/RLS live, clínica,
+  `0/145`, gates externos, aprovação humana e reauditoria independente seguem
+  abertos.
+
 ## Auditoria de continuidade — 2026-08-21T08:07:39-03:00 — pós-Round 70
 
 A auditoria read-only revisou worktree (`64 MiB`, `4096` entradas, `256`

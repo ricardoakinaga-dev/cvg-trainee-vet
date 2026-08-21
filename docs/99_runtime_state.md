@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 70 fechou o consumo agregado de leituras staged oversized: cada `git show` abortado no limite por arquivo agora desconta `MAX_SCAN_BYTES + 1` do orçamento Git de `256 MiB`, além dos limites de history e worktree (`64 MiB`, `256` níveis, `1024` por diretório e `4096` entradas totais). Round 69 limitou a leitura agregada das superfícies Git; Round 68 limita bytes totais do worktree; Round 67 limita a profundidade recursiva; Round 66 limita a enumeração distribuída; Round 65 limita cada diretório; Round 64 limita metadata Git; Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–50 preservam as demais fronteiras Git, caminho, diretório, arquivo e limites bounded; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 71 fechou o bypass de allowlist em placeholders com sufixo: o scanner agora exige placeholder exato e só preserva os dois sufixos de URL sintético explicitamente permitidos (`&form=1` e `&locale=pt-BR`). Round 70 fechou o consumo agregado de leituras staged oversized; Rounds 69–50 preservam os limites Git, worktree, caminho, diretório e arquivo. B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 70 de B99-101 sob RED→GREEN→REFACTOR e uma auditoria read-only pós-publicação; `129` arquivos staged oversized de `2 MiB + 2 bytes` (`270532866` bytes) agora consomem o orçamento por output-cap abortado, e a auditoria final confirmou limites bounded em worktree, metadata Git, `rev-list`, `cat-file --batch-check`, batches de corpo e staged `git show`. Foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `c4a0cc9`, documentação da auditoria `4f49248` e `HEAD == origin` foram confirmados; não há outro gap local bounded justificável nesta rodada. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 71 de B99-101 sob RED→GREEN→REFACTOR; o RED reproduziu dois findings ausentes para `<synthetic>#<sufixo>` e `synthetic-token&<sufixo>`, e o GREEN passou a exigir correspondência exata, mantendo apenas os sufixos sintéticos históricos explicitamente allowlisted. Foco `65/65`, cobertura `205/1161/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, hotspots `0` com scanner em `799` linhas, lint, typecheck, formato e diff-check passaram. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; código/teste `2c0a35f` foi publicado; evidência documental desta rodada ainda será reconciliada. `.gauntlet/` continua local e não rastreado
+- next_action: reconciliar e publicar a evidência desta rodada, confirmar paridade pós-push e executar nova auditoria read-only; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,35 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T08:07:39-03:00
+- last_update: 2026-08-21T08:34:48-03:00
+
+## 2026-08-21T08:34:48-03:00 — DUAL99-B99-101-PLACEHOLDER-SUFFIX
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only encontrou que `isSyntheticPlaceholder` truncava
+  valores em `&`/`#` antes da allowlist; o RED reproduziu zero findings para
+  dois valores sintéticos com sufixo potencialmente secreto;
+- GREEN passou a comparar o valor completo e preservou somente os sufixos
+  explícitos `&form=1` e `&locale=pt-BR` após tokens sintéticos conhecidos;
+- o foco do scanner passou `65/65`; cobertura passou `205/1161/21` em
+  `95,03/90,95/95,31/95,73`; format, lint, typecheck, CI contract, hotspots
+  (`0`, `799` linhas), build `12/12`, `git diff --check` e `pnpm verify:secrets`
+  foram verificados; o último falha somente nos quatro assignments redigidos
+  preexistentes de `infra/production/.env.local`;
+- código/teste foram commitados como `2c0a35f` e publicados no branch remoto;
+  a evidência desta rodada está em
+  `docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O scanner continua `IN_PROGRESS` no escopo externo. A crítica independente
+permanece indisponível; secret manager/rotação, provider/CI, RC/runtime,
+WebKit aprovado, PostgreSQL/RLS live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente permanecem abertos. Reconciliar
+estado, log, backlog, roadmap, traceability e evidência, publicar o lote
+documental e confirmar `HEAD == origin`; não promover score, release, piloto ou
+decisão clínica.
 
 ## 2026-08-21T08:07:39-03:00 — POST-ROUND70-FRESH-BOUNDED-AUDIT
 
