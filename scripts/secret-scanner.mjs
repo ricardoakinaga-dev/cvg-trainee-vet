@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
-import { lstat, readdir } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { lstat } from "node:fs/promises";
+import { join } from "node:path";
 import { promisify, TextDecoder } from "node:util";
 import { execFile } from "node:child_process";
 import {
@@ -8,6 +8,7 @@ import {
   readGitBlobs as readGitBlobsInternal,
 } from "./secret-scanner-git-batch.mjs";
 import {
+  openWorkspaceDirectory,
   readScanBuffer,
   validateWorkspaceRoot,
 } from "./secret-scanner-workspace.mjs";
@@ -493,25 +494,37 @@ export function summarizeSecretFindings(findings) {
     .join("; ");
 }
 
-async function walk(directory, root) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const files = [];
-  for (const entry of entries) {
-    const absolutePath = join(directory, entry.name);
-    if (entry.isSymbolicLink()) {
-      files.push(absolutePath);
-      continue;
-    }
-    if (entry.isDirectory()) {
-      if (!ignoredDirectories.has(entry.name)) {
-        files.push(...(await walk(join(directory, entry.name), root)));
+async function walk(directory, logicalDirectory = "") {
+  const {
+    entries,
+    handle,
+    path: safeDirectory,
+  } = await openWorkspaceDirectory(directory);
+  try {
+    const findings = [];
+    for (const entry of entries) {
+      const logicalPath = logicalDirectory
+        ? `${logicalDirectory}/${entry.name}`
+        : entry.name;
+      const absolutePath = join(safeDirectory, entry.name);
+      if (entry.isSymbolicLink()) {
+        findings.push(...(await scanFile(absolutePath, logicalPath)));
+        continue;
       }
-      continue;
+      if (entry.isDirectory()) {
+        if (!ignoredDirectories.has(entry.name)) {
+          findings.push(...(await walk(absolutePath, logicalPath)));
+        }
+        continue;
+      }
+      if (entry.isFile()) {
+        findings.push(...(await scanFile(absolutePath, logicalPath)));
+      }
     }
-    if (!entry.isFile()) continue;
-    files.push(absolutePath);
+    return findings;
+  } finally {
+    await handle.close();
   }
-  return files;
 }
 
 function unscannedFinding(path, rule, evidence) {
@@ -567,13 +580,13 @@ async function scanFile(file, path) {
 }
 
 async function scanWorkspace(root) {
-  const findings = [];
-  for (const file of await walk(root, root)) {
-    findings.push(
-      ...(await scanFile(file, relative(root, file).split("\\").join("/"))),
-    );
+  try {
+    return await walk(root);
+  } catch {
+    return [
+      unscannedFinding("<workspace>", "unreadable-file", "workspace tree"),
+    ];
   }
-  return findings;
 }
 
 async function git(root, args, options = {}) {
@@ -779,10 +792,4 @@ export async function scanProject(
   }
   return Object.freeze([...unique.values()]);
 }
-export {
-  isTextPath,
-  parseObjectList,
-  planGitBatchRequests,
-  readBatchOutput,
-  readScanBuffer,
-};
+export { isTextPath, parseObjectList, planGitBatchRequests, readBatchOutput };
