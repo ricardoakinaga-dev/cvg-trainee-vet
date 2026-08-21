@@ -1,4 +1,11 @@
-import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdtemp,
+  rm,
+  symlink,
+  truncate,
+  writeFile,
+} from "node:fs/promises";
 import { EventEmitter } from "node:events";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -313,6 +320,28 @@ describe("secret scanner", () => {
       ]),
     );
     expect(JSON.stringify(linkedFindings)).not.toContain(secret);
+  });
+
+  it("skips oversized ignored assets before attempting to read them", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-oversized-asset-"),
+    );
+    temporaryDirectories.push(directory);
+    const asset = join(directory, "large.png");
+    await writeFile(asset, Buffer.from([0]));
+    await truncate(asset, 2 * 1024 * 1024 + 1);
+    await chmod(asset, 0o000);
+
+    try {
+      const findings = await scanProject(directory, {
+        includeStaged: false,
+        includeHistory: false,
+      });
+
+      expect(findings).toEqual([]);
+    } finally {
+      await chmod(asset, 0o600);
+    }
   });
 
   it("scans the working tree, index and reachable history instead of only common extensions", async () => {

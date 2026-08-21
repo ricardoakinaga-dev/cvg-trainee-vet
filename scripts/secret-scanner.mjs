@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { lstat, readdir, readFile } from "node:fs/promises";
+import { lstat, open, readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { promisify, TextDecoder } from "node:util";
 import { execFile } from "node:child_process";
@@ -545,18 +545,39 @@ function scanPathBuffer(buffer, path) {
   return scanBuffer(buffer, path);
 }
 
+async function readScanBuffer(file) {
+  const handle = await open(file, "r");
+  try {
+    const buffer = Buffer.allocUnsafe(MAX_SCAN_BYTES + 1);
+    let offset = 0;
+    while (offset < buffer.length) {
+      const { bytesRead } = await handle.read(
+        buffer,
+        offset,
+        buffer.length - offset,
+        null,
+      );
+      if (bytesRead === 0) break;
+      offset += bytesRead;
+    }
+    return buffer.subarray(0, offset);
+  } finally {
+    await handle.close();
+  }
+}
+
 async function scanFile(file, path) {
   try {
     const metadata = await lstat(file);
     if (metadata.isSymbolicLink()) {
       return [unscannedFinding(path, "unreadable-file", "symlink")];
     }
-    if (metadata.size > MAX_SCAN_BYTES && !isIgnoredBinaryAssetPath(path)) {
-      return [
-        unscannedFinding(path, "oversize-file", `${metadata.size} bytes`),
-      ];
+    if (metadata.size > MAX_SCAN_BYTES) {
+      return isIgnoredBinaryAssetPath(path)
+        ? []
+        : [unscannedFinding(path, "oversize-file", `${metadata.size} bytes`)];
     }
-    return scanPathBuffer(await readFile(file), path);
+    return scanPathBuffer(await readScanBuffer(file), path);
   } catch {
     return [unscannedFinding(path, "unreadable-file", "workspace file")];
   }
