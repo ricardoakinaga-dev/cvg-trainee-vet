@@ -247,12 +247,13 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 54. Checkpoint de publicação da identidade da raiz B99-101 — 2026-08-21T03:45:58-03:00
+## 54. Checkpoint de publicação da identidade da raiz B99-101 — 2026-08-21T03:51:59-03:00
 
 O código/teste `55dffa5` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. A publicação do código não altera runtime,
-produção, segredos, score, release, clínica ou piloto.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`b306790` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`b306790`. A publicação não altera runtime, produção, segredos, score, release,
+clínica ou piloto.
 
 ## 53. Checkpoint da identidade da raiz B99-101 — 2026-08-21T03:45:58-03:00
 

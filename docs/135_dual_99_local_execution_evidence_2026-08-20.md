@@ -1,14 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T03:45:58-03:00`
-- última atualização: `2026-08-21T03:45:58-03:00`
+- corte: `2026-08-21T03:51:59-03:00`
+- última atualização: `2026-08-21T03:51:59-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `55dffa5` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `4d54d8b` em
+- evidência documental publicada: `b306790` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `4d54d8b`; nenhum código
+- paridade documental final: confirmada no pós-push em `b306790`; nenhum código
   ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
