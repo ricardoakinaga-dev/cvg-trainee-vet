@@ -11146,7 +11146,8 @@ preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
 
 O código/teste foram commitados em `a6d7ce3` (`fix: bound default git batch
 stdout`) e enviados para `origin/agent/publish-production-hardening`. O pacote
-documental está em publicação nesta etapa. O default agora é finito e os
+documental foi publicado em `630509f` (`docs: record finite git batch stdout
+default`). O default agora é finito e os
 callers preflightados preservam seus limites explícitos maiores. Secret
 manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit aprovado,
 clínica, `0/145`, gates externos e reauditoria independente seguem abertos.
@@ -11157,10 +11158,9 @@ IN_PROGRESS / PILOT_BLOCKED
 
 ### NEXT ACTION
 
-Publicar e reconciliar a evidência documental no mesmo remoto; confirmar
-paridade de código e documentação; depois executar auditoria read-only fresca
-para selecionar o próximo gap local verificável, mantendo explícitos os gates
-externos e humanos.
+Confirmar a paridade de código e documentação no mesmo remoto; depois executar
+auditoria read-only fresca para selecionar o próximo gap local verificável,
+mantendo explícitos os gates externos e humanos.
 
 ## 2026-08-20T21:25:32-03:00 — DUAL99-B99-101-BOUNDED-GIT-BATCH-STDERR
 

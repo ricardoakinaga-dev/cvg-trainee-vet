@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar cap infinito no fallback stdout do subprocesso; publicou código/teste em `a6d7ce3`; Round 46 passou foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `415` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar e reconciliar o pacote documental de Round 46, confirmar paridade remota e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
+- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar cap infinito no fallback stdout do subprocesso; publicou código/teste em `a6d7ce3` e a evidência documental em `630509f`; Round 46 passou foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, lint, typecheck, formato, hotspots (`774` linhas no scanner e `415` no helper, `0` hotspots), diff-check e o `pnpm verify` oficial até `verify:migration-safety`, que parou em `verify:secrets` somente nos quatro assignments redigidos preexistentes; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- next_action: confirmar a paridade remota final e executar auditoria read-only fresca para selecionar/congelar o próximo gap local verificável; manter ambiente WebKit aprovado, RC imutável, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B no runtime com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, secret manager/provedor clínico, `0/145`, gates externos e reauditoria independente como dependências explícitas
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T21:41:55-03:00
+- last_update: 2026-08-20T21:45:09-03:00
 
 ## 2026-08-20T21:41:55-03:00 — DUAL99-B99-101-FINITE-GIT-BATCH-STDOUT-DEFAULT
 
@@ -52,7 +52,7 @@
 ### LIMITES / STATUS / PRÓXIMA AÇÃO
 
 B99-101 permanece `IN_PROGRESS`: o código/teste está em `a6d7ce3`, a
-evidência documental está em publicação, e `infra/production/.env.local` não
+evidência documental foi publicada em `630509f`, e `infra/production/.env.local` não
 foi lido nem alterado. Secret manager, provider/CI, RC, runtime live, clínica,
 `0/145`, gates externos e reauditoria permanecem abertos. O programa permanece
 `IN_PROGRESS / PILOT_BLOCKED`.

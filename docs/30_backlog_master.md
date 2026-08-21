@@ -13,8 +13,8 @@ limites explícitos preflightados. Foco `39/39`, cobertura `205/1133/21` em
 `95,02/90,95/95,31/95,71`, scanner `774`, helper `415`, hotspots `0`,
 lint/typecheck/formato/diff-check verdes; `pnpm verify` passou até migration
 safety e parou somente nos quatro assignments redigidos preexistentes de
-`.env.local`. Código/teste estão em `a6d7ce3`; evidência documental segue em
-publicação. Secret manager/rotação, provider/CI, RC, runtime live, clínica,
+`.env.local`. Código/teste estão em `a6d7ce3`; evidência documental publicada
+em `630509f`. Secret manager/rotação, provider/CI, RC, runtime live, clínica,
 `0/145`, gates externos e reauditoria permanecem abertos. B99-101 e o programa
 seguem `IN_PROGRESS / PILOT_BLOCKED`.
 

@@ -212,7 +212,7 @@ Foco `39/39`, cobertura `205/1133/21` em `95,02/90,95/95,31/95,71`, scanner
 os gates oficiais até migration safety passaram. `verify:secrets` permanece
 fail-closed somente nos quatro assignments redigidos preexistentes de
 `infra/production/.env.local`, não lidos nem alterados. Código está em
-`a6d7ce3`; a evidência documental está em publicação.
+`a6d7ce3`; a evidência documental foi publicada em `630509f`.
 
 Secret manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit
 aprovado, clínica, `0/145`, gates externos e reauditoria independente seguem
