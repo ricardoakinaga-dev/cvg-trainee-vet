@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T07:35:15-03:00`
-- última atualização: `2026-08-21T07:35:15-03:00`
+- corte: `2026-08-21T07:59:41-03:00`
+- última atualização: `2026-08-21T07:59:41-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `48e1014` em
+- commit publicado: `c4a0cc9` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `abb1657` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `abb1657`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até a reconciliação desta rodada; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,21 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 70 — consumo do orçamento para staged oversized
+
+- a auditoria read-only encontrou que arquivos staged maiores que o cap por
+  arquivo faziam `git show` abortar depois de tentar `MAX_SCAN_BYTES + 1`, mas o
+  catch emitia um finding por caminho sem descontar esses bytes do orçamento
+  agregado; RED com `129 × (2 MiB + 2)` (`270532866` bytes) produziu `129`
+  findings `staged:*` e nenhum fallback `staged:<git>`;
+- GREEN desconta `MAX_SCAN_BYTES + 1` em cada output-cap abortado e falha
+  fechado ao esgotar `256 MiB` da superfície staged, sem findings parciais;
+  foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build
+  `12/12` com URL local efêmera, CI contract, arquitetura `2/2`, hotspots `0`
+  com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+  dependências passaram. O código/teste `c4a0cc9` foi publicado; a
+  documentação inicial desta rodada está em `DOCUMENTATION_PENDING`.
 
 ## Round 69 — limite agregado de bytes Git
 

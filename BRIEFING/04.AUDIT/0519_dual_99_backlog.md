@@ -5,6 +5,36 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T07:59:41-03:00 — B99-101 staged oversized byte budget
+
+- **auditoria/RED:** arquivos staged maiores que o cap por arquivo faziam
+  `git show` abortar depois de tentar `MAX_SCAN_BYTES + 1`, mas o catch emitia
+  um finding por caminho sem descontar esses bytes do orçamento agregado; RED
+  com `129 × (2 MiB + 2)` (`270532866` bytes) produziu `129` findings
+  `staged:*` sem fallback `staged:<git>`;
+- **GREEN:** cada output-cap abortado agora desconta `MAX_SCAN_BYTES + 1` do
+  orçamento staged, falhando fechado ao esgotar `256 MiB` e descartando
+  findings parciais;
+- **evidência:** foco `64/64`, cobertura `205/1160/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12` com URL local efêmera, CI contract,
+  arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck,
+  formato, diff-check e audit passaram. Código/teste `c4a0cc9` foi publicado;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. A
+  documentação inicial segue `DOCUMENTATION_PENDING`; B99-101 segue
+  `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T07:59:41-03:00 — B99-101 staged oversized byte budget
+
+O código/teste `c4a0cc9` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A reconciliação final e a confirmação de `HEAD == origin` permanecem
+necessárias. `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T07:35:15-03:00 — B99-101 Git aggregate byte budget
 
 - **auditoria/RED:** `staged` lia até `2 MiB` por caminho e `history` processava

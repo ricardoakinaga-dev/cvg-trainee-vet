@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 69 fechou a leitura agregada das superfícies Git: staged e history agora falham fechado ao ultrapassar `256 MiB` por superfície, além dos limites do worktree (`64 MiB`, `256` níveis, `1024` por diretório e `4096` entradas totais). Round 68 limita bytes totais do worktree; Round 67 limita a profundidade recursiva; Round 66 limita a enumeração distribuída; Round 65 limita cada diretório; Round 64 limita metadata Git; Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–50 preservam as demais fronteiras Git, caminho, diretório, arquivo e limites bounded; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 70 fechou o consumo agregado de leituras staged oversized: cada `git show` abortado no limite por arquivo agora desconta `MAX_SCAN_BYTES + 1` do orçamento Git de `256 MiB`, além dos limites de history e worktree (`64 MiB`, `256` níveis, `1024` por diretório e `4096` entradas totais). Round 69 limitou a leitura agregada das superfícies Git; Round 68 limita bytes totais do worktree; Round 67 limita a profundidade recursiva; Round 66 limita a enumeração distribuída; Round 65 limita cada diretório; Round 64 limita metadata Git; Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–50 preservam as demais fronteiras Git, caminho, diretório, arquivo e limites bounded; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 69 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou que staged lia até `2 MiB` por caminho e history processava batches de `8 MiB` sem teto agregado. RED com `33 × 2 MiB` (`69206016` bytes) falhou sem finding genérico; GREEN limita cada superfície Git a `256 MiB`, aborta staged em overflow e pré-valida o total planejado de history antes de materializar blobs. A regressão final usa `129 × 2 MiB` (`270532608` bytes) e retorna um finding genérico em staged e history; foco `63/63`, cobertura `205/1159/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `48e1014` e a reconciliação documental inicial `abb1657` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu Round 70 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only reproduziu `129` arquivos staged oversized de `2 MiB + 2 bytes` (`270532866` bytes) que geravam `129` findings por caminho sem consumir o orçamento agregado. RED falhou sem finding genérico; GREEN desconta `MAX_SCAN_BYTES + 1` quando `git show` excede o cap por arquivo e falha fechado ao ultrapassar `256 MiB`. Foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `c4a0cc9` foi publicado; a reconciliação documental inicial segue pendente. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
 - next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,36 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T07:35:15-03:00
+- last_update: 2026-08-21T07:59:41-03:00
+
+## 2026-08-21T07:59:41-03:00 — DUAL99-B99-101-STAGED-OVERSIZE-BYTE-BUDGET
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only encontrou que arquivos staged maiores que o cap por
+  arquivo faziam `git show` abortar depois de tentar `MAX_SCAN_BYTES + 1`, mas o
+  catch emitia um finding por caminho sem descontar esses bytes do orçamento
+  agregado; RED com `129 × (2 MiB + 2)` (`270532866` bytes) produziu `129`
+  findings `staged:*` e nenhum fallback `staged:<git>`;
+- GREEN desconta `MAX_SCAN_BYTES + 1` em cada output-cap abortado e falha
+  fechado ao esgotar os `256 MiB` da superfície staged, sem expor findings
+  parciais; history mantém a pré-validação agregada da rodada anterior;
+- foco `64/64`; cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`; build
+  `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura
+  `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
+  diff-check e audit de dependências passaram. Código/teste `c4a0cc9` foi
+  publicado; a reconciliação documental inicial segue pendente neste primeiro
+  registro.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Publicar a reconciliação documental e depois executar nova
+auditoria bounded, mantendo o programa `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## 2026-08-21T07:35:15-03:00 — DUAL99-B99-101-GIT-TOTAL-BYTE-BUDGET
 

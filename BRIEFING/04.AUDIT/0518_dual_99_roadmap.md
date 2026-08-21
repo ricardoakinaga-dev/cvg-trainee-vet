@@ -278,6 +278,30 @@ Código/teste `48e1014` e documentação inicial `abb1657` foram publicados.
 Windows/non-proc, condições live, gates externos,
 crítica independente e demais bloqueios do programa permanecem abertos.
 
+## 74. Checkpoint de publicação do orçamento para staged oversized B99-101 — 2026-08-21T07:59:41-03:00
+
+O código/teste `c4a0cc9` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A confirmação final de paridade permanece necessária.
+
+## 73. Checkpoint do orçamento para staged oversized B99-101 — 2026-08-21T07:59:41-03:00
+
+Uma auditoria read-only encontrou que arquivos staged maiores que o cap por
+arquivo faziam `git show` abortar depois de tentar `MAX_SCAN_BYTES + 1`, mas o
+catch emitia um finding por caminho sem descontar esses bytes do orçamento
+agregado. RED com `129 × (2 MiB + 2)` (`270532866` bytes) produziu `129`
+findings `staged:*` sem fallback `staged:<git>`; GREEN desconta
+`MAX_SCAN_BYTES + 1` em cada output-cap abortado e falha fechado ao esgotar
+`256 MiB`, descartando findings parciais.
+
+O foco passou `64/64`, a cobertura passou `205/1160/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
+contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
+typecheck, formato, diff-check e audit de dependências passaram. Código/teste
+`c4a0cc9` foi publicado; a documentação inicial segue `DOCUMENTATION_PENDING`.
+Windows/non-proc, condições live, gates externos, crítica independente e
+demais bloqueios do programa permanecem abertos.
+
 ## 70. Checkpoint de publicação do orçamento total de bytes do worktree B99-101 — 2026-08-21T06:49:40-03:00
 
 O código/teste `938bc41` e a reconciliação documental inicial `0b5ea42` foram
