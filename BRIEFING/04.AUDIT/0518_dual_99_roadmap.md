@@ -247,6 +247,33 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 62. Checkpoint de publicação pendente da enumeração de metadados Git B99-101 — 2026-08-21T05:11:16-03:00
+
+O código/teste `ace0054` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental ainda
+está pendente dos gates de documentação e da confirmação de paridade. A
+publicação não altera runtime, produção, segredos, score, release, clínica ou
+piloto.
+
+## 61. Checkpoint da enumeração bounded de metadados Git B99-101 — 2026-08-21T05:11:16-03:00
+
+Uma auditoria read-only encontrou que o snapshot de metadata Git materializava
+`2000` entradas sintéticas em `.git/objects/info` por usar enumeração sem
+limite. RED reproduziu a ausência do finding genérico; GREEN separa a abertura
+no-follow da enumeração, lê incrementalmente com orçamento de `1024` entradas
+em `objects`, `info` e `pack` e falha fechado em overflow, symlink ou
+`alternates` inseguro.
+
+O foco passou `58/58`, a cobertura passou `205/1154/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
+contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
+typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
+com `2000` entradas produziu `gitObjectsStatus=unavailable`,
+`materializedSnapshotEntries=0` e finding genérico. `pnpm verify:secrets`
+permanece fail-closed nos quatro assignments redigidos preexistentes;
+Windows/non-proc, condições live, gates externos, crítica independente e
+demais bloqueios do programa permanecem abertos.
+
 ## 60. Checkpoint de publicação da corrida de metadados Git B99-101 — 2026-08-21T04:54:57-03:00
 
 O código/teste `50f22c7` e a reconciliação documental `31ce669` foram

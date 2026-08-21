@@ -5,6 +5,36 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T05:11:16-03:00 — B99-101 Git metadata entry budget
+
+- **auditoria/RED:** a enumeração sem limite materializava `2000` entradas
+  sintéticas em `.git/objects/info`; o RED focal confirmou que a leitura
+  histórica não retornava o finding genérico esperado;
+- **GREEN:** a abertura no-follow foi separada da enumeração, que usa leitura
+  incremental com orçamento de `1024` entradas em `objects`, `info` e `pack`.
+  Overflow, symlink ou `alternates` inseguro torna a superfície indisponível e
+  faz o scanner falhar fechado;
+- **evidência:** foco `58/58`, cobertura `205/1154/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12` com URL local efêmera, CI contract,
+  arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck,
+  formato, diff-check e audit passaram. Probe pós-fix com `2000` entradas
+  produziu `gitObjectsStatus=unavailable`, `materializedSnapshotEntries=0` e
+  finding genérico; código/teste `ace0054` foi publicado;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução pendente — 2026-08-21T05:11:16-03:00 — B99-101 Git metadata entry budget
+
+O código/teste `ace0054` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental e sua
+paridade pós-push serão registradas após os gates documentais. `.gauntlet/`
+permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T04:54:57-03:00 — B99-101 Git metadata race boundary
 
 - **auditoria/RED:** um worker criou/removeu `objects/info/alternates` entre a

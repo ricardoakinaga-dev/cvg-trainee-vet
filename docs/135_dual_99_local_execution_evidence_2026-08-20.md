@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T04:54:57-03:00`
-- última atualização: `2026-08-21T04:54:57-03:00`
+- corte: `2026-08-21T05:11:16-03:00`
+- última atualização: `2026-08-21T05:11:16-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `50f22c7` em
+- commit publicado: `ace0054` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `31ce669` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `31ce669`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até o commit de reconciliação desta
+  rodada; nenhum código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,23 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 64 — limite de entradas de metadata Git
+
+- a auditoria read-only encontrou que o snapshot de metadata Git materializava
+  `2000` entradas sintéticas em `.git/objects/info` porque a enumeração não
+  tinha orçamento; o RED focal confirmou a ausência do finding genérico;
+- GREEN separa a abertura no-follow da enumeração, lê incrementalmente com
+  `opendir` e limita `objects`, `info` e `pack` a `1024` entradas. Overflow,
+  symlink ou `alternates` inseguro torna a superfície Git indisponível e
+  preserva o finding redigido `history:<git> / git-object-unreadable`;
+- foco `58/58`, cobertura `205/1154/21` em `95,03/90,95/95,31/95,73`, build
+  `12/12` com URL local efêmera, CI contract, arquitetura `2/2`, hotspots `0`
+  com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+  dependências passaram. Probe pós-fix com `2000` entradas produziu
+  `gitObjectsStatus=unavailable`, `materializedSnapshotEntries=0` e finding
+  genérico. O código/teste `ace0054` foi publicado; a documentação inicial
+  desta rodada está em `DOCUMENTATION_PENDING`.
 
 ## Round 63 — corrida de metadata Git
 

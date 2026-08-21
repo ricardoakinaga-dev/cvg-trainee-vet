@@ -11420,6 +11420,87 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T05:11:16-03:00 — DUAL99-B99-101-GIT-METADATA-ENTRY-BUDGET
+
+### TIMESTAMP
+
+2026-08-21 05:11:16 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem/Git
+
+### TASK
+
+B99-101 — limitar a enumeração de entradas em `objects`, `info` e `pack` sem
+materializar metadata Git ilimitada.
+
+### ACTION
+
+Uma auditoria read-only criou `2000` entradas sintéticas em
+`.git/objects/info`; o snapshot anterior materializou todas e o RED focal não
+retornou o finding genérico esperado. O GREEN separa abertura no-follow da
+enumeração, usa `opendir` com leitura incremental e impõe orçamento de `1024`
+entradas, tornando a superfície Git indisponível em overflow.
+
+### RESULT
+
+O foco passou `58/58`; a cobertura passou `205` arquivos / `1154` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build passou `12/12` com
+`CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots
+`0` com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+dependências passaram. Probe pós-fix com `2000` entradas produziu
+`gitObjectsStatus=unavailable`, `materializedSnapshotEntries=0` e finding
+genérico. Código/teste `ace0054` foi publicado.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica foi fresca,
+read-only e não independente porque o backend de critic está indisponível. Não
+houve alteração de segredo, runtime, produção, score, release, decisão clínica
+ou piloto.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; então executar nova auditoria
+bounded e obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente.
+
+## 2026-08-21T05:11:16-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-METADATA-ENTRY-BUDGET
+
+### ACTION
+
+O commit de código/teste `ace0054` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental segue
+pendente até o término dos gates documentais.
+
+### RESULT / STATUS
+
+`HEAD == origin` em `ace0054`. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada e confirmar a paridade
+documental pós-push; Windows/non-proc, secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente permanecem abertos.
+
 ## 2026-08-21T04:54:57-03:00 — DUAL99-B99-101-GIT-METADATA-RACE-NOFOLLOW
 
 ### TIMESTAMP
