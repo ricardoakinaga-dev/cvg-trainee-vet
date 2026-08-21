@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 64 fechou a enumeração ilimitada de metadata Git: `objects`, `info` e `pack` agora enumeram no máximo `1024` entradas e falham fechado quando o orçamento é excedido. Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–55 preservam fronteiras Git, caminho, diretório e arquivo; Rounds 54–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 65 fechou a enumeração ilimitada do worktree: cada diretório agora enumera no máximo `1024` entradas e falha fechado com finding redigido quando o orçamento é excedido. Round 64 limita metadata Git; Round 63 valida estabilidade estrutural/`stat` após cada comando/batch; Round 62 abriu `index` e `objects` no-follow e rejeitou symlinks/alternates estáticos; Round 61 remove todos os `GIT_*` herdados; Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Rounds 59–50 preservam as demais fronteiras Git, caminho, diretório, arquivo e limites bounded; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 64 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou que `2000` entradas sintéticas em `.git/objects/info` eram materializadas pelo snapshot anterior. RED falhou sem o finding genérico; GREEN separa a abertura no-follow da enumeração, lê no máximo `1024` entradas e transforma overflow em `git-object-unreadable`; foco `58/58`, cobertura `205/1154/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix com `2000` entradas produziu `gitObjectsStatus=unavailable`, `materializedSnapshotEntries=0` e finding genérico; código/teste `ace0054` e a reconciliação documental inicial `f63547e` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 65 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou que a enumeração do worktree materializava `2000` arquivos sintéticos sem orçamento. RED falhou sem o finding genérico; GREEN separa abertura no-follow da enumeração, lê no máximo `1024` entradas por diretório e transforma overflow em `<workspace> / unreadable-file`; foco `59/59`, cobertura `205/1155/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix com `2000` arquivos produziu `workspaceEntriesStatus=unavailable`, `materializedWorkspaceEntries=0` e finding genérico; código/teste `3deee2b` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,36 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T05:11:16-03:00
+- last_update: 2026-08-21T05:24:48-03:00
+
+## 2026-08-21T05:24:48-03:00 — DUAL99-B99-101-WORKSPACE-ENTRY-BUDGET
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only encontrou que `openWorkspaceDirectory` usava
+  `readdir` sem orçamento e materializava `2000` arquivos sintéticos no
+  worktree; o probe anterior terminou sem findings e sem fallback genérico;
+- RED adicionou a regressão; GREEN separa a abertura no-follow da enumeração,
+  usa `opendir` incremental e limita cada diretório do worktree a `1024`
+  entradas. Overflow fecha a travessia e preserva somente
+  `<workspace> / unreadable-file`, sem continuar o scan parcial;
+- foco `59/59`; cobertura `205/1155/21` em `95,03/90,95/95,31/95,73`; build
+  `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura
+  `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
+  diff-check e audit de dependências passaram. Probe pós-fix com `2000`
+  arquivos produziu `workspaceEntriesStatus=unavailable`,
+  `materializedWorkspaceEntries=0` e finding genérico. Código/teste `3deee2b`
+  foi publicado; a reconciliação documental segue pendente neste primeiro
+  registro.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Publicar a reconciliação documental desta rodada.
 
 ## 2026-08-21T05:11:16-03:00 — DUAL99-B99-101-GIT-METADATA-ENTRY-BUDGET
 

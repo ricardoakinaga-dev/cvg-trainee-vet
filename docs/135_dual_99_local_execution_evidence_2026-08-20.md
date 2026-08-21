@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T05:11:16-03:00`
-- última atualização: `2026-08-21T05:11:16-03:00`
+- corte: `2026-08-21T05:24:48-03:00`
+- última atualização: `2026-08-21T05:24:48-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `ace0054` em
+- commit publicado: `3deee2b` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `f63547e` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `f63547e`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até a reconciliação desta rodada; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,22 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 65 — limite de entradas do worktree
+
+- a auditoria read-only encontrou que a enumeração do worktree materializava
+  `2000` arquivos sintéticos porque `readdir` não tinha orçamento; o RED focal
+  confirmou que o scan retornava lista vazia em vez do fallback genérico;
+- GREEN separa a abertura no-follow da enumeração, usa `opendir` incremental e
+  limita cada diretório a `1024` entradas. Overflow fecha a travessia e retorna
+  o finding redigido `<workspace> / unreadable-file`;
+- foco `59/59`, cobertura `205/1155/21` em `95,03/90,95/95,31/95,73`, build
+  `12/12` com URL local efêmera, CI contract, arquitetura `2/2`, hotspots `0`
+  com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+  dependências passaram. Probe pós-fix com `2000` arquivos produziu
+  `workspaceEntriesStatus=unavailable`, `materializedWorkspaceEntries=0` e
+  finding genérico. O código/teste `3deee2b` foi publicado; a documentação
+  inicial desta rodada está em `DOCUMENTATION_PENDING`.
 
 ## Round 64 — limite de entradas de metadata Git
 
