@@ -1,13 +1,12 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T21:41:55-03:00`
-- última atualização: `2026-08-20T21:54:57-03:00`
+- corte: `2026-08-20T22:25:53-03:00`
+- última atualização: `2026-08-20T22:25:53-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `a6d7ce3` em
+- commit publicado: `593619e` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `630509f` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: a publicar após a reconciliação desta rodada
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -105,6 +104,55 @@
   colunas obrigatórias sem default e `SET NOT NULL` sem guarda de backfill;
   a checagem entrou no `pnpm verify`, sem remover o bloqueio fail-closed para
   dados legados incompatíveis.
+
+- B99-305: auditoria de fonte encontrou `createGitBatchStreamParser` com `104`
+  linhas apesar do ratchet permitir `117`. O RED adicionou a regressão da
+  barra exata de `100`; o GREEN extraiu `consumeGitBatchChunk` preservando
+  framing Git, retenção bounded, redaction, overflow/truncamento e findings.
+  Foco hotspot `6/6`, scanner `39/39`, cobertura `205/1134/21` em
+  `95,02/90,95/95,31/95,71`, maior função `98`, `hotspotCount: 0`, mutation
+  `7/7`, contratos `86/86`, worker `51/51`, migrations `33/33`, migration
+  safety, lint, typecheck, formato, diff-check, CI contract e documentation
+  passaram. O código/teste está em `593619e` e
+  `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 48 — B99-305 / function-length closure — 2026-08-20T22:25:53-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED reproduziu a violação local: `createGitBatchStreamParser` tinha `104`
+  linhas e a política permitia um ratchet de `117`, portanto o gate oficial
+  não provava a barra de B99-305;
+- GREEN adicionou a asserção `maxLongestFunctionLines === 100`, detecta toda
+  função de produção acima de `100` e extraiu o consumidor de chunks para
+  `consumeGitBatchChunk`;
+- REFACTOR preservou o estado do parser, framing de header/corpo/delimitador,
+  retenção de um único corpo bounded corrente, redaction, findings de
+  truncamento/overflow e descarte de assets oversized.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- hotspot policy `6/6`; secret scanner `39/39`;
+- cobertura completa: `205` arquivos passantes, `17` guardados, `1134` testes
+  passantes, `21` guardados; `95,02%` statements, `90,95%` branches,
+  `95,31%` functions e `95,71%` lines;
+- `verify:hotspots`: `PASS_WITH_DEBT_RATCHET`, `hotspotCount: 0`, maior função
+  `98` linhas, `maxLongestFunctionLines: 100`;
+- lint, typecheck, formato, diff-check, decisões críticas `7/7`, mutation
+  `7/7` (`100%`), contratos `86/86`, worker `51/51`, migrations `33/33`,
+  migration safety, CI contract e documentation passaram;
+- `pnpm verify` percorreu os gates até `verify:secrets` e falhou fail-closed
+  somente nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`.
+
+### LIMITES / PUBLICAÇÃO
+
+O arquivo `.env.local` não foi lido nem alterado. B99-305 está concluído no
+escopo local da barra de comprimento; secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente permanecem abertos. O
+commit de código/teste é `593619e`; esta evidência será publicada após a
+reconciliação documental. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
 

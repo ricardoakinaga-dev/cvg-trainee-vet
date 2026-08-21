@@ -11335,3 +11335,66 @@ IN_PROGRESS / PILOT_BLOCKED
 
 Obter as autoridades e ambientes externos listados; não declarar release,
 score, piloto ou fechamento clínico com esta reconciliação local.
+
+## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
+
+### TIMESTAMP
+
+2026-08-20 22:25:53 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-3 — qualidade e medição
+
+### TASK
+
+B99-305 — fechar zero funções de produção acima de 100 linhas sem falsificar o
+ratchet.
+
+### ACTION
+
+Uma auditoria de fonte encontrou `createGitBatchStreamParser` com `104` linhas
+em `scripts/secret-scanner-git-batch.mjs`, enquanto
+`code-hotspot-policy.json` permitia `117`. O RED adicionou a regressão de
+política e a barra exata de `100`; o GREEN extraiu o consumo framed para
+`consumeGitBatchChunk` e fixou `maxLongestFunctionLines` em `100`, preservando
+framing Git, retenção bounded do objeto corrente, redaction,
+overflow/truncamento e findings.
+
+### RESULT
+
+O foco de política passou `6/6`; o scanner passou `39/39`; a cobertura passou
+`205` arquivos / `1134` testes / `21` guardados em
+`95,02/90,95/95,31/95,71`; `verify:hotspots` reporta `0` hotspots e maior
+função de `98` linhas. Lint, typecheck, formato, diff-check, decisões críticas,
+mutation `7/7` (`100%`), contratos `86/86`, worker `51/51`, migrações `33/33`,
+migration safety, CI contract e documentation passaram. O commit de
+código/teste é `593619e`.
+
+### DECISIONS
+
+B99-305 foi concluído no escopo local da barra de comprimento. O `pnpm verify`
+oficial passou até `verify:secrets` e parou fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+lido nem alterado. Nenhum segredo, runtime, produção, score, release, dado
+clínico ou piloto foi tocado. A crítica independente permanece `REJECT` e não
+há promoção global.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois obter secret
+manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live,
+rollout N/N-1, retenção/RBAC/notificação externos, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente.

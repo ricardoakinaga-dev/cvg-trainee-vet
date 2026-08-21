@@ -15,6 +15,34 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T22:25:53-03:00 — B99-305 fechamento da barra de funções
+
+- **auditoria/RED:** a auditoria de fonte encontrou
+  `createGitBatchStreamParser` com `104` linhas em
+  `scripts/secret-scanner-git-batch.mjs`, enquanto o ratchet anterior permitia
+  `117`; o RED adicionou a regressão que fixa a barra de `100` e rejeita toda
+  função de produção acima dela;
+- **GREEN:** o consumo framed foi extraído para `consumeGitBatchChunk`, sem
+  alterar framing Git, retenção bounded do objeto corrente, redaction,
+  overflow/truncamento ou findings; `code-hotspot-policy.json` agora fixa
+  `maxLongestFunctionLines: 100`;
+- **evidência:** foco de política `6/6`, scanner `39/39`, cobertura completa
+  `205` arquivos / `1134` testes / `21` guardados em
+  `95,02/90,95/95,31/95,71`, `verify:hotspots` com `0` hotspots e maior
+  função de `98` linhas; decisões críticas `7/7`, mutation `7/7` (`100%`),
+  contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
+  lint, typecheck, formato, diff-check, CI contract e documentation passaram;
+- **rastreabilidade/publicação:** código e teste em `593619e`
+  (`fix: close B99-305 function length debt`); a atualização documental será
+  publicada em commit separado após esta reconciliação;
+- **status/limite:** B99-305 fica `COMPLETED` no escopo local da barra técnica.
+  O `pnpm verify` oficial parou fail-closed em `verify:secrets` nos quatro
+  assignments redigidos preexistentes de `infra/production/.env.local`, que
+  não foi lido nem alterado. Secret manager/rotação, provider/CI, RC,
+  runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+  independente permanecem abertos; o programa segue `IN_PROGRESS /
+  PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T21:54:57-03:00 — B99-004 paridade documental
 
 - **auditoria:** no início desta reconciliação, `HEAD` e
@@ -197,7 +225,7 @@
 | B99-302 | P0 | COMPLETED | ENG/QA | testes falhos atuais | cinco falhas reproduzidas em RED e corrigidas sem apagar teste |
 | B99-303 | P0 | COMPLETED | QA | coverage/mutation | ≥95/95/95/90; critical mutation ≥90%; relatório retido |
 | B99-304 | P0 | COMPLETED | QA | skip/flaky/evidence governance | skips classificados; 20 runs; zero skip crítico |
-| B99-305 | P1 | IN_PROGRESS | ENG | hotspots/architecture | zero função >100 e ratchet sem falsificar métrica |
+| B99-305 | P1 | COMPLETED | ENG | hotspots/architecture | zero função >100 e ratchet sem falsificar métrica |
 | B99-306 | P0 | BLOCKED | QA/Platform | Playwright ativo | Chromium/Firefox/WebKit/mobile contra API real; WebKit ambiente aprovado |
 | B99-307 | P0 | READY_FOR_NEXT_STEP | ENG/DBA | migrations/compatibilidade | expand-contract, N/N-1, rollback/restore isolado |
 | B99-308 | P1 | READY_FOR_NEXT_STEP | ENG | API/contracts/type safety | todas rotas schema/authz/erro/telemetria; fuzz/negative |

@@ -24,6 +24,22 @@ contrato da API interna e não é usado pela composição de produção. Não h�
 gap local justificável; os gates externos e humanos permanecem abertos.
 O programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
+**Atualização Dual99 local — 2026-08-20T22:25:53-03:00 — B99-305:** auditoria
+de fonte encontrou `createGitBatchStreamParser` com `104` linhas apesar do
+ratchet anterior permitir `117`. O RED adicionou a barra exata de `100` e o
+GREEN extraiu `consumeGitBatchChunk` sem alterar framing, retenção bounded,
+redaction, overflow/truncamento ou findings. Foco hotspot `6/6`, scanner
+`39/39`, cobertura `205/1134/21` em `95,02/90,95/95,31/95,71`, maior função
+`98`, `hotspotCount: 0`, mutation `7/7`, contratos `86/86`, worker `51/51`,
+migrations `33/33`, migration safety, lint, typecheck, formato, diff-check,
+CI contract e documentação passaram. O código/teste está em `593619e` e o
+ratchet agora fixa `maxLongestFunctionLines: 100`. B99-305 fica concluído no
+escopo local; `pnpm verify` parou fail-closed em `verify:secrets` nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`, que não
+foi lido nem alterado. Secret manager/rotação, RC, runtime, clínica, `0/145`,
+gates externos e reauditoria permanecem abertos; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T21:41:55-03:00 — B99-101:** a
 auditoria read-only encontrou que o fallback de `runGitBatch` ainda usava
 `maxOutputBytes = Infinity` quando o chamador omitia o limite. O RED adicionou

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening e reconciliação B99-004; B99-101 agora consome stdout de `git cat-file --batch` incrementalmente, retém somente header e corpo do objeto bounded corrente, limita stderr a `4 KiB` com mensagens genéricas redigidas, usa cap default finito de `8 MiB` no fallback stdout, falha fechado em overflow/truncamento e mantém o preflight `git cat-file --batch-check` de tipo/tamanho, scan UTF-8 limitado sob assets e proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 48 fechou a barra local de B99-305, extraindo o consumo do parser Git para `consumeGitBatchChunk`, mantendo framing, corpo bounded corrente, redaction, overflow/truncamento e findings; `code-hotspot-policy.json` agora fixa `maxLongestFunctionLines: 100`, enquanto B99-101 mantém stdout incremental, stderr `4 KiB`, cap default `8 MiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: reconciliou B99-004 após confirmar, no início da rodada, `HEAD == origin` em `2af57e6`; normalizou as referências que distinguiam a auditoria histórica em `6ddc37b` do pacote documental posterior, preservou o log append-only e registrou a ordem canônica dos Rounds 45/46; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: obter autoridade e ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não há novo gap local de produção selecionado
+- last_completed_action: concluiu B99-305 localmente sob RED→GREEN→REFACTOR; a função `createGitBatchStreamParser` caiu de `104` para abaixo da barra, o ratchet foi fixado em `100`, o commit de código/teste é `593619e`, a cobertura passou `205/1134/21` em `95,02/90,95/95,31/95,71`, e o `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-305, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,42 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T21:54:57-03:00
+- last_update: 2026-08-20T22:25:53-03:00
+
+## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
+
+### AÇÃO / RESULTADO
+
+- auditoria de fonte encontrou uma única função de produção acima do critério
+  explícito de B99-305: `createGitBatchStreamParser`, com `104` linhas em
+  `scripts/secret-scanner-git-batch.mjs`; o ratchet anterior permitia `117` e
+  por isso não era evidência suficiente para a barra de zero funções acima de
+  `100`;
+- RED adicionou uma regressão que exige `maxLongestFunctionLines === 100` e
+  rejeita qualquer função de produção acima de `100`; GREEN extraiu o consumo
+  framed para `consumeGitBatchChunk`, sem alterar o framing Git, o corpo
+  bounded corrente, redaction, overflow/truncamento ou findings;
+- foco hotspot passou `6/6`, foco scanner `39/39`, cobertura completa passou
+  `205` arquivos / `1134` testes / `21` guardados em
+  `95,02/90,95/95,31/95,71`; `verify:hotspots` reporta `0` hotspots, maior
+  função em `98` linhas e ratchet explícito de `100`;
+- lint, typecheck, formato, diff-check, decisões críticas, mutation `7/7`
+  (`100%`), contratos `86/86`, worker `51/51`, migrações `33/33`, migration
+  safety, CI contract e documentation passaram; o commit de código/teste é
+  `593619e` (`fix: close B99-305 function length debt`);
+- B99-305 fica concluído no escopo local desta barra técnica. O programa
+  permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify` chegou até `verify:secrets` e parou fail-closed nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`; o arquivo
+não foi lido nem alterado. Permanecem abertos secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente. A crítica independente continua
+`REJECT`; a evidência desta rodada é local e não promove score, release,
+piloto ou decisão clínica.
 
 ## 2026-08-20T21:54:57-03:00 — DUAL99-B99-004-DOCUMENTATION-PARITY
 

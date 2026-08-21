@@ -198,6 +198,31 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 31. Checkpoint de fechamento da barra de funções B99-305 — 2026-08-20T22:25:53-03:00
+
+Uma auditoria de fonte encontrou `createGitBatchStreamParser` com `104` linhas
+em `scripts/secret-scanner-git-batch.mjs`, acima do critério explícito de zero
+funções de produção acima de `100`; o ratchet anterior permitia `117`. O RED
+adicionou uma regressão que fixa `maxLongestFunctionLines: 100` e rejeita
+qualquer função acima da barra. O GREEN extraiu o consumo framed para
+`consumeGitBatchChunk`, preservando framing Git, retenção bounded do objeto
+corrente, redaction, overflow/truncamento e findings.
+
+O foco hotspot passou `6/6`, scanner `39/39` e cobertura `205/1134/21` em
+`95,02/90,95/95,31/95,71`; `verify:hotspots` reporta `0` hotspots e maior
+função de `98` linhas. Decisões críticas `7/7`, mutation `7/7`, contratos
+`86/86`, worker `51/51`, migrações `33/33`, migration safety, lint, typecheck,
+formato, diff-check, CI contract e documentation passaram. O código/teste
+está em `593619e`; B99-305 fica concluído no escopo local da barra técnica.
+
+O `pnpm verify` oficial chegou até `verify:secrets` e falhou fail-closed nos
+quatro assignments redigidos preexistentes de `infra/production/.env.local`,
+que não foi lido nem alterado. Secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente continuam abertos. O
+roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release
+ou piloto.
+
 ## 30. Reconciliação B99-004 de paridade documental — 2026-08-20T21:54:57-03:00
 
 No início desta reconciliação, `HEAD` e `origin/agent/publish-production-hardening`
