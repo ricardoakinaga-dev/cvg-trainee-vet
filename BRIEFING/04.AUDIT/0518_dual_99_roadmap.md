@@ -247,6 +247,17 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 38. Publicação do checkpoint de caps scan/header B99-101 — 2026-08-21T01:01:22-03:00
+
+O código/teste `3410d52` e a reconciliação documental `4bd3d3e` foram publicados
+em `origin/agent/publish-production-hardening`; a checagem pós-push confirmou
+`HEAD == origin` em `4bd3d3e`. Estado, backlog, evidência, log e traceability
+estão alinhados. A publicação não promove score, release, clínica ou piloto e
+não fecha os quatro findings locais de `.env.local`, secret manager/rotação,
+provider/CI, RC/proveniência, runtime live, `0/145`, gates externos, aprovação
+humana ou reauditoria independente. O roadmap permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 37. Checkpoint de caps scan/header do parser B99-101 — 2026-08-21T00:58:01-03:00
 
 Uma auditoria read-only reproduziu que `planGitBatchRequests` aceitava

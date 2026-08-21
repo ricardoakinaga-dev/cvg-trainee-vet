@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; planner, stream parser e reader Git agora validam `maxScanBytes` e `maxHeaderBytes` como inteiros seguros positivos antes de processar, preservando cap finito, finding `oversize-file` e framing bounded. O foco passou `42/42`, cobertura `205/1138/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca confirmou rejeição de `Infinity` e aceitação de caps finitos. O commit de código/teste `3410d52` foi publicado no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; planner, stream parser e reader Git agora validam `maxScanBytes` e `maxHeaderBytes` como inteiros seguros positivos antes de processar, preservando cap finito, finding `oversize-file` e framing bounded. O foco passou `42/42`, cobertura `205/1138/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca confirmou rejeição de `Infinity` e aceitação de caps finitos. O commit de código/teste `3410d52` e a reconciliação documental `4bd3d3e` foram publicados no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T00:58:01-03:00
+- last_update: 2026-08-21T01:01:22-03:00
 
 ## 2026-08-21T00:58:01-03:00 — DUAL99-B99-101-GIT-PARSER-SCAN-HEADER-CAPS
 
@@ -66,6 +66,24 @@ concurrency/TTL/RLS live, clínica, `0/145`, aprovação humana e reauditoria
 independente. O backend independente do gauntlet não estava disponível; a
 crítica desta rodada é explicitamente read-only e não independente. Não houve
 score, release, decisão clínica, piloto ou produção.
+
+## 2026-08-21T01:01:22-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-PARSER-CAPS
+
+### ACTION / RESULT
+
+O pós-push confirmou `HEAD == origin/agent/publish-production-hardening` em
+`4bd3d3e`; o pacote documental da rodada reconciliou estado, backlog, roadmap,
+evidência, log e traceability. O commit de código/teste permanece `3410d52`.
+`.gauntlet/` continua local e não rastreado por desenho.
+
+### STATUS / NEXT ACTION
+
+`IN_PROGRESS / PILOT_BLOCKED`. A publicação não altera score, release, clínica,
+piloto, runtime ou produção. Permanecem os quatro findings locais de
+`infra/production/.env.local`, secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente. A próxima ação depende
+de autoridade e ambiente para esses gates.
 
 ## 2026-08-21T00:44:50-03:00 — DUAL99-B99-101-EXPLICIT-BATCH-CAP-VALIDATION
 
