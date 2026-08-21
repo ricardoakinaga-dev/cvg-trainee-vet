@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-308 localmente sob RED→GREEN→REFACTOR; `readUnknown` tornou o acesso a propriedades desconhecidas fail-closed, a campanha seeded cobriu `512` descritores malformados com accessors que lançam e `512` pares de método/path, e o foco passou `7/7`, integração `11/11`, contratos `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7` e mutation `7/7`; o commit de código/teste `9b3f71e` foi publicado no branch remoto; o `pnpm verify` oficial percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental desta rodada e, depois, obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu B99-308 localmente sob RED→GREEN→REFACTOR; `readUnknown` tornou o acesso a propriedades desconhecidas fail-closed, a campanha seeded cobriu `512` descritores malformados com accessors que lançam e `512` pares de método/path, e o foco passou `7/7`, integração `11/11`, contratos `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7` e mutation `7/7`; o commit de código/teste `9b3f71e` e a reconciliação documental `47b6a6c` foram publicados no branch remoto; o `pnpm verify` oficial percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T00:04:17-03:00
+- last_update: 2026-08-21T00:09:25-03:00
 
 ## 2026-08-21T00:04:17-03:00 — DUAL99-B99-308-API-SURFACE-FUZZ-BOUNDARY
 
@@ -68,7 +68,28 @@ provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
 retenção/RBAC/notificação externos, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria independente. Não houve alteração de score,
 release, decisão clínica, piloto ou produção; a reconciliação documental desta
-rodada ainda será publicada.
+  rodada foi publicada em `47b6a6c`.
+
+## 2026-08-21T00:09:25-03:00 — GIT-PUBLISH-DUAL99-B99-308
+
+### ACTION
+
+O commit de código/teste `9b3f71e` e a reconciliação documental da rodada
+(`47b6a6c`) foram publicados em `origin/agent/publish-production-hardening`.
+Estado, backlog, roadmap, evidência, log e traceability estão alinhados; o
+`.gauntlet/` continua local e não rastreado por desenho.
+
+### RESULT / STATUS
+
+`HEAD == origin` em `47b6a6c`. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto. Permanecem abertos os gates
+externos, humanos e live, além da crítica independente `REJECT`.
+
+### NEXT ACTION
+
+Obter autoridade e ambiente para os bloqueios externos listados; não declarar
+release, score, piloto ou fechamento clínico com esta publicação local.
 
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 

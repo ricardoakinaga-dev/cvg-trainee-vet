@@ -41,6 +41,17 @@
   aprovação humana e reauditoria independente permanecem abertos; o programa
   segue `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Publicação de execução — 2026-08-21T00:09:25-03:00 — B99-308
+
+- código/teste: `9b3f71e` (`fix: harden API surface fuzz boundary`);
+- reconciliação documental de estado, roadmap, backlog, evidência, log e
+  traceability: `47b6a6c` (`docs: record b99-308 fuzz boundary`), publicada em
+  `origin/agent/publish-production-hardening`; `HEAD == origin` em `47b6a6c`;
+- `.gauntlet/` permanece local e não rastreado. A publicação não fecha secret
+  manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana ou reauditoria independente; o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Publicação de execução — 2026-08-20T22:30:33-03:00 — B99-305
 
 - código/teste: `593619e` (`fix: close B99-305 function length debt`);

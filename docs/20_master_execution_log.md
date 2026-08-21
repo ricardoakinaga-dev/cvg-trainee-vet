@@ -11399,6 +11399,27 @@ RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
 retenção/RBAC/notificação externos, clínica, `0/145`, aprovação humana e
 reauditoria independente.
 
+## 2026-08-21T00:09:25-03:00 — GIT-PUBLISH-DUAL99-B99-308
+
+### ACTION
+
+O commit de código/teste `9b3f71e` e a reconciliação documental da rodada
+(`47b6a6c`) foram publicados em `origin/agent/publish-production-hardening`.
+Estado, backlog, roadmap, evidência, log e traceability foram reconciliados;
+`.gauntlet/` permanece local e não rastreado por desenho.
+
+### RESULT / STATUS
+
+`HEAD == origin` em `47b6a6c`. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto. Permanecem abertos os gates
+externos, humanos e live, além da crítica independente `REJECT`.
+
+### NEXT ACTION
+
+Obter autoridade e ambiente para os bloqueios externos listados; não declarar
+release, score, piloto ou fechamento clínico com esta publicação local.
+
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 
 ### TIMESTAMP

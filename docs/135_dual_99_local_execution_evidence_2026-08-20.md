@@ -6,8 +6,8 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `9b3f71e` em
   `origin/agent/publish-production-hardening`
-- evidência documental desta rodada: documentação em reconciliação; a
-  publicação do pacote será registrada após o commit documental
+- evidência documental publicada: `47b6a6c` em
+  `origin/agent/publish-production-hardening`
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -162,8 +162,8 @@ O arquivo `.env.local` não foi lido nem alterado. B99-308 está concluído no
 escopo local da barra de fronteira; secret manager/rotação, provider/CI,
 RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`, gates
 externos, aprovação humana e reauditoria independente permanecem abertos. O
-commit de código/teste é `9b3f71e`, já publicado no branch remoto; a
-reconciliação documental desta rodada ainda será publicada. O programa
+  commit de código/teste é `9b3f71e`, já publicado no branch remoto; a
+  reconciliação documental desta rodada foi publicada em `47b6a6c`. O programa
 permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 48 — B99-305 / function-length closure — 2026-08-20T22:25:53-03:00
