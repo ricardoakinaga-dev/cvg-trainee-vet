@@ -12,6 +12,12 @@ function gitTotalByteBudgetExceededError() {
   });
 }
 
+function isGitOutputLimitError(error) {
+  return /git command output exceeds configured limit/iu.test(
+    error?.message ?? "",
+  );
+}
+
 export function createGitSurfaceScanner({
   maxScanBytes,
   maxGitBatchBodyBytes,
@@ -67,12 +73,12 @@ export function createGitSurfaceScanner({
         remainingBytes -= stdout.length;
         findings.push(...scanPathBuffer(stdout, `staged:${path}`));
       } catch (error) {
-        if (
-          error?.code === GIT_TOTAL_BYTES_ERROR ||
-          (remainingBytes <= maxScanBytes &&
-            /output exceeds configured limit/iu.test(error?.message ?? ""))
-        ) {
+        if (error?.code === GIT_TOTAL_BYTES_ERROR) {
           throw gitTotalByteBudgetExceededError();
+        }
+        if (isGitOutputLimitError(error)) {
+          remainingBytes -= Math.min(maxScanBytes + 1, remainingBytes);
+          if (remainingBytes <= 0) throw gitTotalByteBudgetExceededError();
         }
         findings.push(
           unscannedFinding(

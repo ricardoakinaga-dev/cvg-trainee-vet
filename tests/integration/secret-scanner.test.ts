@@ -1206,6 +1206,54 @@ describe("secret scanner", () => {
     ]);
   }, 60000);
 
+  it("counts bounded reads that exceed the per-file staged cap", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-staged-oversize-budget-"),
+    );
+    temporaryDirectories.push(directory);
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["config", "user.email", "synthetic@example.invalid"],
+      { cwd: directory },
+    );
+    await execFileAsync("git", ["config", "user.name", "Synthetic Test"], {
+      cwd: directory,
+    });
+    const fileCount = 129;
+    const fileSize = 2 * 1024 * 1024 + 2;
+    await mkdir(join(directory, "dist"));
+    for (let index = 0; index < fileCount; index += 1) {
+      const prefix = `synthetic-staged-oversize-${index}\n`;
+      await writeFile(
+        join(
+          directory,
+          "dist",
+          `fixture-${String(index).padStart(3, "0")}.env`,
+        ),
+        prefix + "x".repeat(fileSize - prefix.length),
+      );
+    }
+    await execFileAsync("git", ["add", "dist"], { cwd: directory });
+    await execFileAsync(
+      "git",
+      ["commit", "-qm", "synthetic staged oversize cap"],
+      { cwd: directory },
+    );
+
+    const findings = await scanProject(directory, {
+      includeStaged: true,
+      includeHistory: false,
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: "staged:<git>",
+        rule: "git-object-unreadable",
+      }),
+    ]);
+  }, 60000);
+
   it.each(["missing", "regular-file"])(
     "rejects a %s supplied as the scan root",
     async (name) => {
