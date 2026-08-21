@@ -288,6 +288,30 @@ quatro assignments redigidos preexistentes. O programa continua
 `IN_PROGRESS / PILOT_BLOCKED`, sem promoção de score, release, piloto ou decisão
 clínica.
 
+## 83. Checkpoint local de boundaries Git e workspace B99-101 — 2026-08-21T10:03:45-03:00
+
+Rounds 81–84 avançaram o fechamento local do scanner sob RED/GREEN/REFACTOR.
+Primeiro, a URI sintética passou a exigir fixture completo; em seguida, o
+stream staged exige NUL terminal; o planner e o parser Git passaram a exigir
+identidade one-to-one, rejeitando `A,A` para uma requisição `A,B`; por fim,
+FIFO/socket e qualquer entry não regular falham com finding redigido antes da
+abertura. A abertura de arquivo também é não bloqueante e valida o descriptor
+regular após a abertura.
+
+O foco passou `74/74`; a cobertura passou `205/1170/21` em
+`95,03/90,95/95,31/95,73`; build `12/12`, hotspots `0`, scanner `793` linhas,
+format/lint/typecheck/diff-check passaram. Os commits de código/teste
+`4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686` e `084e2d0`
+foram publicados, com `HEAD == origin == 084e2d0`. A evidência está em
+`docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
+
+O crítico independente em `25233b6` foi `REJECT` e os dois gaps `HIGH` foram
+corrigidos. A tentativa independente final excedeu a janela e foi encerrada
+sem veredito; portanto não constitui aprovação. O caminho crítico continua
+condicionado a secret manager/rotação, provider/CI, RC/proveniência, WebKit,
+runtime live, clínica, `0/145`, gates externos, aprovação humana e reauditoria.
+F99-1 permanece `IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+
 ## 78. Checkpoint de publicação do boundary de placeholder B99-101 — 2026-08-21T08:34:48-03:00
 
 O código/teste `2c0a35f` e a reconciliação documental inicial `ad9f026` foram

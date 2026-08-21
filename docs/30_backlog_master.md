@@ -2,6 +2,25 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Auditoria Dual99 — 2026-08-21T10:03:45-03:00:** Rounds 81–84 fecharam
+quatro gaps locais de B99-101 sob RED→GREEN→REFACTOR: URI sintética exata,
+framing NUL staged, identidade bijetiva de objetos Git e arquivos especiais
+com descriptor regular não bloqueante. O foco passou `74/74`; cobertura
+`1170/1191` em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0` com
+`scripts/secret-scanner.mjs` em `793` linhas; format/lint/typecheck/diff-check
+passaram. Commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`,
+`7c70686` e `084e2d0` estão publicados, com `HEAD == origin == 084e2d0`.
+`pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`. Evidência:
+`docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
+
+**Disposição:** `IN_PROGRESS / PILOT_BLOCKED`. A crítica independente que
+reproduziu os gaps foi `REJECT` antes das correções; a tentativa final não
+devolveu veredito e foi encerrada, portanto não há aprovação independente
+final. Secret manager/rotação, provider/CI, RC/proveniência, WebKit, runtime
+live, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente continuam abertos. Não promover score, release ou piloto.
+
 **Auditoria Dual99 pós-publicação — 2026-08-21T08:45:45-03:00:** `HEAD == origin`
 foi confirmado em `ad9f026`; a reaudição read-only repetiu `65/65` no scanner,
 confirmou zero truncamento por `&`/`#`, hotspots `0`, scanner em `799` linhas,

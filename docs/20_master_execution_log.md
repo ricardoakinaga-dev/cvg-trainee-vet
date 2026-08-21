@@ -40,6 +40,66 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T10:03:45-03:00 — DUAL99-B99-101-GIT-WORKSPACE-BOUNDARIES
+
+### TIMESTAMP
+
+2026-08-21 10:03:45 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — fechar as fronteiras staged, history e workspace identificadas pela
+crítica independente.
+
+### ACTION
+
+Foram executadas quatro ondas TDD: allowlist de URI sintética exata, framing
+NUL da listagem staged, identidade bijetiva do batch Git e rejeição de arquivo
+especial. A última revisão de segurança também protegeu a abertura de
+descriptors contra bloqueio e confirmou tipo regular após a abertura.
+
+### RESULT
+
+O foco passou `74/74`; a suíte passou `205` arquivos, `1170` testes e `21`
+guardados, com cobertura `95,03/90,95/95,31/95,73`; build `12/12`, hotspots `0`,
+scanner em `793` linhas, formato, lint, typecheck e diff-check passaram. Os
+commits de código/teste `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`,
+`7c70686` e `084e2d0` estão publicados, e `HEAD == origin == 084e2d0` foi
+confirmado. `pnpm verify:secrets` segue fail-closed somente nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`.
+
+### DECISIONS
+
+O crítico independente em `25233b6` produziu `REJECT` com dois gaps `HIGH`,
+ambos corrigidos e cobertos. A tentativa final independente não retornou
+veredito dentro da janela e foi encerrada; não é evidência de `PASS`. Nenhum
+segredo real, runtime, produção, score, release, decisão clínica ou piloto foi
+alterado. `.gauntlet/` continua local e não rastreado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois obter autoridade e
+ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit,
+runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B,
+role restrita, concurrency/TTL/RLS live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente.
+
 ## 2026-08-20T08:10:50-03:00 — GIT-PUBLISH-DUAL99
 
 ### TIMESTAMP

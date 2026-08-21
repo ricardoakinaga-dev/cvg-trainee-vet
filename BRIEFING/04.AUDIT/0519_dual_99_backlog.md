@@ -5,6 +5,25 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T10:03:45-03:00 — B99-101 Git/workspace boundaries
+
+Rounds 81–84 fecharam localmente quatro gaps P0/P1 do scanner sob
+RED→GREEN→REFACTOR: URI sintética exata, NUL terminal em staged, identidade
+bijetiva de objetos Git e arquivos especiais/descriptor regular sem bloqueio.
+O foco passou `74/74`; cobertura `205/1170/21` em
+`95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`; scanner `793` linhas;
+format/lint/typecheck/diff-check passaram. Código/teste publicado:
+`4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686` e `084e2d0`;
+`HEAD == origin == 084e2d0`. Evidência: `docs/140`.
+
+`pnpm verify:secrets` segue fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`. A crítica que
+reproduziu os gaps foi `REJECT` antes das correções; a tentativa final não
+devolveu veredito e não substitui reauditoria independente. Estado global:
+`IN_PROGRESS / PILOT_BLOCKED`; secret manager/rotação, provider/CI,
+RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria permanecem abertos.
+
 ## Auditoria pós-publicação — 2026-08-21T08:45:45-03:00 — B99-101
 
 `HEAD == origin` foi confirmado em `ad9f026`; a reaudição read-only repetiu o

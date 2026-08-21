@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 71 fechou o bypass de allowlist em placeholders com sufixo: o scanner agora exige placeholder exato e só preserva os dois sufixos de URL sintético explicitamente permitidos (`&form=1` e `&locale=pt-BR`). Round 70 fechou o consumo agregado de leituras staged oversized; Rounds 69–50 preservam os limites Git, worktree, caminho, diretório e arquivo. B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Rounds 81–84 fecharam URI sintética exata, framing NUL staged, identidade bijetiva dos batches Git e arquivos especiais/descriptor regular fail-closed. B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 71 de B99-101 sob RED→GREEN→REFACTOR e reaudição read-only pós-publicação; o RED reproduziu dois findings ausentes para `<synthetic>#<sufixo>` e `synthetic-token&<sufixo>`, e o GREEN passou a exigir correspondência exata, mantendo apenas os sufixos sintéticos históricos explicitamente allowlisted. Foco `65/65`, cobertura `205/1161/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, hotspots `0` com scanner em `799` linhas, lint, typecheck, formato e diff-check passaram. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; código/teste `2c0a35f`, evidência e documentação inicial `ad9f026` foram publicados; `HEAD == origin` foi confirmado e o worktree rastreado está limpo. `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu Rounds 81–84 de B99-101 sob RED→GREEN→REFACTOR e publicou os commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686` e `084e2d0`. O resultado consolidado é foco `74/74`, cobertura `205/1170/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com scanner em `793` linhas, formato, lint, typecheck e diff-check verdes; `HEAD == origin == 084e2d0`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica que reproduziu os gaps foi `REJECT`, e a tentativa final independente não devolveu veredito antes de ser encerrada. `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
-- blockers: crítica independente `REJECT`; scanner acusa quatro valores locais em `infra/production/.env.local`; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; crítica independente em `25233b6` foi `REJECT` e não há veredito independente final sobre `084e2d0`; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,32 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T08:45:45-03:00
+- last_update: 2026-08-21T10:03:45-03:00
+
+## 2026-08-21T10:03:45-03:00 — DUAL99-B99-101-GIT-WORKSPACE-BOUNDARIES
+
+### AÇÃO / RESULTADO
+
+- Rounds 81–84 fecharam, sob TDD, quatro boundaries locais: URI sintética
+  exata, stream staged com NUL terminal, identidade one-to-one de objetos Git
+  e rejeição fail-closed de FIFO/socket antes de abrir o descriptor;
+- a extensão final também tornou aberturas de arquivo não bloqueantes e validou
+  o tipo regular do descriptor para cobrir troca após `lstat` e `.git/index`;
+- `74/74` no foco do scanner, `1170/1191` na suíte com cobertura,
+  `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, scanner `793` linhas,
+  formato/lint/typecheck/diff-check verdes; `HEAD == origin == 084e2d0`;
+- evidência detalhada: `docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O finding fail-closed em `infra/production/.env.local` continua nos quatro
+assignments redigidos preexistentes. A crítica que encontrou os gaps foi
+independente e `REJECT` antes das correções; a tentativa final não produziu
+veredito e não substitui reauditoria independente. Obter autoridade/ambiente
+para secret manager/rotação, provider/CI, RC/proveniência, WebKit, runtime live,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente;
+manter `IN_PROGRESS / PILOT_BLOCKED` e não promover score, release, piloto ou
+decisão clínica.
 
 ## 2026-08-21T08:45:45-03:00 — POST-PUBLISH-DUAL99-B99-101-PLACEHOLDER-SUFFIX
 
