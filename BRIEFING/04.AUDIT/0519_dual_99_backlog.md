@@ -46,7 +46,8 @@
 - código/teste: `9b3f71e` (`fix: harden API surface fuzz boundary`);
 - reconciliação documental de estado, roadmap, backlog, evidência, log e
   traceability: `47b6a6c` (`docs: record b99-308 fuzz boundary`), publicada em
-  `origin/agent/publish-production-hardening`; `HEAD == origin` em `47b6a6c`;
+  `origin/agent/publish-production-hardening`; a paridade final foi publicada
+  em `392ac11`;
 - `.gauntlet/` permanece local e não rastreado. A publicação não fecha secret
   manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
   aprovação humana ou reauditoria independente; o programa permanece

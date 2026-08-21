@@ -4,6 +4,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
+**Paridade final Dual99 local — 2026-08-21T00:12:22-03:00 — B99-308:** a
+checagem pós-push confirmou a publicação da paridade documental em `392ac11`;
+o corte de evidência está em `2026-08-21T00:12:22-03:00` e nenhum código,
+segredo, runtime ou produção foi alterado. `.gauntlet/` permanece local e não
+rastreado; o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+
 **Publicação Dual99 local — 2026-08-21T00:09:25-03:00 — B99-308:** o commit de
 código/teste `9b3f71e` e a reconciliação documental `47b6a6c` foram publicados
 em `origin/agent/publish-production-hardening`; `HEAD == origin` em

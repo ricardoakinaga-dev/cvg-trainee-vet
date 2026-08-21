@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-308 localmente sob RED→GREEN→REFACTOR; `readUnknown` tornou o acesso a propriedades desconhecidas fail-closed, a campanha seeded cobriu `512` descritores malformados com accessors que lançam e `512` pares de método/path, e o foco passou `7/7`, integração `11/11`, contratos `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7` e mutation `7/7`; o commit de código/teste `9b3f71e` e a reconciliação documental `47b6a6c` foram publicados no branch remoto; o `pnpm verify` oficial percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu B99-308 localmente sob RED→GREEN→REFACTOR; `readUnknown` tornou o acesso a propriedades desconhecidas fail-closed, a campanha seeded cobriu `512` descritores malformados com accessors que lançam e `512` pares de método/path, e o foco passou `7/7`, integração `11/11`, contratos `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7` e mutation `7/7`; o commit de código/teste `9b3f71e`, a reconciliação documental `47b6a6c` e a paridade final `392ac11` foram publicados no branch remoto; o `pnpm verify` oficial percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T00:09:25-03:00
+- last_update: 2026-08-21T00:12:22-03:00
 
 ## 2026-08-21T00:04:17-03:00 — DUAL99-B99-308-API-SURFACE-FUZZ-BOUNDARY
 
@@ -90,6 +90,22 @@ externos, humanos e live, além da crítica independente `REJECT`.
 
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
+
+## 2026-08-21T00:12:22-03:00 — DUAL99-B99-308-FINAL-PARITY
+
+### ACTION / RESULT
+
+A checagem pós-push confirmou que o commit de paridade documental `392ac11`
+está em `origin/agent/publish-production-hardening`; a documentação passou a
+referenciar o corte de evidência e a publicação efetivos da rodada. Nenhum
+código, segredo, `.env.local`, runtime, produção, score, release, clínica ou
+piloto foi alterado.
+
+### STATUS / NEXT ACTION
+
+`IN_PROGRESS / PILOT_BLOCKED`. Permanecem os gates externos, humanos e live,
+além da crítica independente `REJECT`; a próxima ação depende de autoridade e
+ambiente para esses gates.
 
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 

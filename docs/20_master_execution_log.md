@@ -11420,6 +11420,22 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T00:12:22-03:00 — DUAL99-B99-308-FINAL-PARITY
+
+### ACTION / RESULT
+
+A checagem pós-push confirmou a publicação da paridade documental em `392ac11`
+no branch `origin/agent/publish-production-hardening`. O corte de evidência
+foi atualizado e os documentos canônicos permanecem consistentes; nenhum
+código, segredo, `.env.local`, runtime, produção, score, release, clínica ou
+piloto foi alterado.
+
+### STATUS / NEXT ACTION
+
+`IN_PROGRESS / PILOT_BLOCKED`. Permanecem a crítica independente `REJECT` e os
+gates externos, humanos e live; a próxima ação depende de autoridade e
+ambiente para esses gates.
+
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 
 ### TIMESTAMP
