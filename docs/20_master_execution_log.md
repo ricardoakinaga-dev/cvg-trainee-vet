@@ -11336,6 +11336,69 @@ IN_PROGRESS / PILOT_BLOCKED
 Obter as autoridades e ambientes externos listados; não declarar release,
 score, piloto ou fechamento clínico com esta reconciliação local.
 
+## 2026-08-21T00:04:17-03:00 — DUAL99-B99-308-API-SURFACE-FUZZ-BOUNDARY
+
+### TIMESTAMP
+
+2026-08-21 00:04:17 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-3 — qualidade, contratos e segurança de fronteira
+
+### TASK
+
+B99-308 — fechar a barra local de descritores e lookup da API com campanha
+property-based seeded, sem alterar a superfície canônica.
+
+### ACTION
+
+Uma auditoria read-only encontrou leitura direta de propriedades desconhecidas
+em `validateApiSurface`; getters/proxies hostis podiam escapar como exceção.
+RED adicionou o caso de getter sintético que lança e GREEN introduziu
+`readUnknown`, capturando a exceção e validando o valor como desconhecido. A
+regressão também materializou uma campanha determinística seeded com `512`
+descritores malformados, incluindo accessors que lançam, e `512` pares de
+método/path.
+
+### RESULT
+
+Todos os casos da campanha não lançaram exceção; cada descritor malformado
+produziu erro, o inventário válido de `57` rotas permaneceu sem erro e lookup
+com variante malformada falhou fechado. O foco passou `7/7`, a integração
+passou `11/11`, contratos `28/87`, cobertura `205/1135/21` em
+`95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7`,
+mutation `7/7` (`100%`), lint, typecheck, formato e diff-check passaram. O
+commit de código/teste `9b3f71e` foi publicado no branch remoto.
+
+### DECISIONS
+
+B99-308 foi concluído no escopo local da barra de fronteira. O `pnpm verify`
+oficial percorreu todos os gates até `verify:secrets` e falhou fail-closed nos
+quatro assignments redigidos preexistentes de `infra/production/.env.local`;
+o arquivo não foi lido nem alterado. A crítica independente continua
+`REJECT`; não há promoção global, score, release, decisão clínica ou piloto.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois obter autoridade e
+ambiente para os gates externos e humanos: secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, clínica, `0/145`, aprovação humana e
+reauditoria independente.
+
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 
 ### TIMESTAMP

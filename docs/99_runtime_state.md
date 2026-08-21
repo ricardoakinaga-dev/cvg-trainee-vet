@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 48 fechou a barra local de B99-305, extraindo o consumo do parser Git para `consumeGitBatchChunk`, mantendo framing, corpo bounded corrente, redaction, overflow/truncamento e findings; `code-hotspot-policy.json` agora fixa `maxLongestFunctionLines: 100`, enquanto B99-101 mantém stdout incremental, stderr `4 KiB`, cap default `8 MiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 49 fechou a barra local de B99-308 para a fronteira de descritores da API: `readUnknown` agora captura getters/proxies hostis e a campanha seeded cobre `512` descritores malformados e `512` pares de lookup sem exceções, mantendo o inventário canônico de `57` rotas; Round 48 mantém a barra de B99-305 com parser Git bounded, enquanto B99-101 preserva stdout incremental, stderr `4 KiB`, cap default `8 MiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-305 localmente sob RED→GREEN→REFACTOR e publicou a reconciliação documental; a função `createGitBatchStreamParser` caiu de `104` para abaixo da barra, o ratchet foi fixado em `100`, o commit de código/teste é `593619e`, o pacote de evidência/estado/backlog/log/roadmap/traceability foi publicado em `aebe16a`, a cobertura passou `205/1134/21` em `95,02/90,95/95,31/95,71`, e o `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-305, score, release ou piloto além do escopo local
+- last_completed_action: concluiu B99-308 localmente sob RED→GREEN→REFACTOR; `readUnknown` tornou o acesso a propriedades desconhecidas fail-closed, a campanha seeded cobriu `512` descritores malformados com accessors que lançam e `512` pares de método/path, e o foco passou `7/7`, integração `11/11`, contratos `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7` e mutation `7/7`; o commit de código/teste `9b3f71e` foi publicado no branch remoto; o `pnpm verify` oficial percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental desta rodada e, depois, obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,43 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T22:30:33-03:00
+- last_update: 2026-08-21T00:04:17-03:00
+
+## 2026-08-21T00:04:17-03:00 — DUAL99-B99-308-API-SURFACE-FUZZ-BOUNDARY
+
+### AÇÃO / RESULTADO
+
+- a auditoria de fonte encontrou leitura direta de propriedades desconhecidas
+  em `validateApiSurface`; um getter/proxy hostil podia lançar fora do contrato,
+  e a cobertura anterior era apenas um corpus determinístico bounded;
+- RED adicionou um caso de getter sintético que lança e falhou no foco API;
+  GREEN introduziu `readUnknown`, captura exceções de acesso e valida os
+  valores materializados como desconhecidos, falhando fechado com erros;
+- a campanha property-based seeded e determinística executou `512`
+  descritores malformados, incluindo accessors que lançam, e `512` pares de
+  método/path; cada caso não lançou exceção, descritores inválidos produziram
+  erro, a superfície válida de `57` rotas permaneceu sem erro e lookup com
+  variante malformada não resolveu;
+- o foco passou `7/7`, a integração de inventário/produção passou `11/11`,
+  contratos `28` arquivos / `87` testes, cobertura `205` arquivos / `1135`
+  testes / `21` guardados em `95,03/90,95/95,31/95,73`, build `12/12`,
+  hotspots `0`, decisões críticas `7/7` e mutation `7/7` (`100%`); lint,
+  typecheck, formato e diff-check passaram;
+- o commit de código/teste é `9b3f71e`, publicado em
+  `origin/agent/publish-production-hardening`. B99-308 fica concluído no
+  escopo local desta barra técnica. O programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O `pnpm verify` oficial passou até `verify:secrets` e parou fail-closed nos
+quatro assignments redigidos preexistentes de `infra/production/.env.local`;
+o arquivo não foi lido nem alterado. Permanecem abertos secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente. Não houve alteração de score,
+release, decisão clínica, piloto ou produção; a reconciliação documental desta
+rodada ainda será publicada.
 
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 

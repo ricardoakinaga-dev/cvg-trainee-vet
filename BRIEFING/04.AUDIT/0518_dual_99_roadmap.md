@@ -198,6 +198,31 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 32. Checkpoint de boundary fuzz B99-308 — 2026-08-21T00:04:17-03:00
+
+B99-308 recebeu RED/GREEN para a última lacuna local da fronteira de
+descritores da API. A auditoria read-only encontrou leitura direta de
+propriedades desconhecidas em `validateApiSurface`; o RED reproduziu exceção
+em getter sintético hostil e o GREEN introduziu `readUnknown`, capturando
+falhas de acesso e validando os valores como desconhecidos.
+
+A campanha property-based seeded e determinística executou `512` descritores
+malformados, incluindo accessors que lançam, e `512` pares de método/path. Todos
+os casos permaneceram sem exceção, cada descritor inválido produziu erro, o
+inventário válido de `57` rotas permaneceu sem erro e lookup malformado falhou
+fechado. Foco `7/7`, integração `11/11`, contratos `28/87`, cobertura
+`205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`,
+decisões `7/7`, mutation `7/7`, lint, typecheck, formato e diff-check passaram.
+O código/teste está em `9b3f71e` e foi publicado no branch remoto.
+
+B99-308 fica concluído no escopo local desta barra. O `pnpm verify` oficial
+percorreu os gates até `verify:secrets` e parou fail-closed nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`, que não
+foi lido nem alterado. Secret manager/rotação, RC/proveniência, runtime live,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+continuam abertos; o roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não
+promove score, release ou piloto.
+
 ## 31. Checkpoint de fechamento da barra de funções B99-305 — 2026-08-20T22:25:53-03:00
 
 Uma auditoria de fonte encontrou `createGitBatchStreamParser` com `104` linhas

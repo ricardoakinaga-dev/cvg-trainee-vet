@@ -1,13 +1,13 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T22:25:53-03:00`
-- última atualização: `2026-08-20T22:25:53-03:00`
+- corte: `2026-08-21T00:04:17-03:00`
+- última atualização: `2026-08-21T00:04:17-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `593619e` em
+- commit publicado: `9b3f71e` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `aebe16a` em
-  `origin/agent/publish-production-hardening`
+- evidência documental desta rodada: documentação em reconciliação; a
+  publicação do pacote será registrada após o commit documental
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -106,6 +106,18 @@
   a checagem entrou no `pnpm verify`, sem remover o bloqueio fail-closed para
   dados legados incompatíveis.
 
+- B99-308: a auditoria de fonte encontrou leitura direta de propriedades
+  desconhecidas em `validateApiSurface`, permitindo que getter/proxy hostil
+  lançasse fora do contrato. `readUnknown` agora captura a exceção e falha
+  fechado; a campanha seeded exercitou `512` descritores malformados, incluindo
+  accessors que lançam, e `512` pares de método/path. Nenhum caso lançou,
+  descritores inválidos produziram erros, o inventário válido de `57` rotas
+  permaneceu sem erro e lookup malformado não resolveu. Foco `7/7`, integração
+  `11/11`, contratos `28/87`, cobertura `205/1135/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7`,
+  mutation `7/7`, lint, typecheck, formato e diff-check passaram. Código/teste
+  estão em `9b3f71e`.
+
 - B99-305: auditoria de fonte encontrou `createGitBatchStreamParser` com `104`
   linhas apesar do ratchet permitir `117`. O RED adicionou a regressão da
   barra exata de `100`; o GREEN extraiu `consumeGitBatchChunk` preservando
@@ -116,6 +128,43 @@
   safety, lint, typecheck, formato, diff-check, CI contract e documentation
   passaram. O código/teste está em `593619e` e
   `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 49 — B99-308 / API-surface adversarial fuzz boundary — 2026-08-21T00:04:17-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED adicionou o primeiro getter sintético que lança e reproduziu a exceção
+  na validação da superfície; a barra também exigiu `512` descritores
+  malformados e `512` pares de lookup em um gerador seeded e reproduzível;
+- GREEN introduziu `readUnknown`, que captura falhas de leitura de propriedades
+  e transforma o valor em desconhecido, deixando a validação fail-closed;
+- REFACTOR manteve a materialização da rota válida, o inventário canônico de
+  `57` rotas e a resolução negativa sem alterar contratos ou produção.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- campanha adversarial: `512` descritores inválidos com accessors que lançam e
+  `512` pares de método/path, sem exceções escapadas;
+- foco `7/7`, integração `11/11`, contratos `28` arquivos / `87` testes;
+- cobertura completa: `205` arquivos, `17` guardados, `1135` testes passantes,
+  `21` guardados; `95,03%` statements, `90,95%` branches, `95,31%` functions e
+  `95,73%` lines;
+- build com endpoint local sintético `12/12`; hotspots `0`, decisões críticas
+  `7/7`, mutation `7/7` (`100%`), lint, typecheck, formato e diff-check
+  passaram;
+- o `pnpm verify` oficial percorreu os gates até `verify:secrets` e parou
+  fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`.
+
+### LIMITES / PUBLICAÇÃO
+
+O arquivo `.env.local` não foi lido nem alterado. B99-308 está concluído no
+escopo local da barra de fronteira; secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente permanecem abertos. O
+commit de código/teste é `9b3f71e`, já publicado no branch remoto; a
+reconciliação documental desta rodada ainda será publicada. O programa
+permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 48 — B99-305 / function-length closure — 2026-08-20T22:25:53-03:00
 

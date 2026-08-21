@@ -15,6 +15,32 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-21T00:04:17-03:00 — B99-308 fronteira de API
+
+- **auditoria/RED:** a fronteira `validateApiSurface` lia diretamente
+  propriedades desconhecidas; um getter/proxy hostil podia lançar fora do
+  contrato. O RED adicionou um getter sintético que lança e reproduziu a falha;
+- **GREEN:** `readUnknown` captura exceções de acesso e a validação usa os
+  valores materializados como desconhecidos, falhando fechado com erros. A
+  campanha seeded executou `512` descritores malformados, incluindo accessors
+  que lançam, e `512` pares de método/path;
+- **evidência:** nenhum caso lançou exceção, cada descritor inválido produziu
+  erro, o inventário válido de `57` rotas permaneceu sem erro e lookup com
+  variante malformada não resolveu. Foco `7/7`, integração `11/11`, contratos
+  `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`,
+  hotspots `0`, decisões `7/7`, mutation `7/7`, lint, typecheck, formato e
+  diff-check passaram;
+- **rastreabilidade/publicação:** código e teste estão em `9b3f71e` e foram
+  publicados em `origin/agent/publish-production-hardening`; a documentação
+  desta rodada ainda será publicada;
+- **status/limite:** B99-308 fica `COMPLETED` no escopo local desta barra. O
+  `pnpm verify` oficial percorreu os gates até `verify:secrets` e parou
+  fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. Secret
+  manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos; o programa
+  segue `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Publicação de execução — 2026-08-20T22:30:33-03:00 — B99-305
 
 - código/teste: `593619e` (`fix: close B99-305 function length debt`);
@@ -239,7 +265,7 @@
 | B99-305 | P1 | COMPLETED | ENG | hotspots/architecture | zero função >100 e ratchet sem falsificar métrica |
 | B99-306 | P0 | BLOCKED | QA/Platform | Playwright ativo | Chromium/Firefox/WebKit/mobile contra API real; WebKit ambiente aprovado |
 | B99-307 | P0 | READY_FOR_NEXT_STEP | ENG/DBA | migrations/compatibilidade | expand-contract, N/N-1, rollback/restore isolado |
-| B99-308 | P1 | READY_FOR_NEXT_STEP | ENG | API/contracts/type safety | todas rotas schema/authz/erro/telemetria; fuzz/negative |
+| B99-308 | P1 | COMPLETED | ENG | API/contracts/type safety | todas rotas schema/authz/erro/telemetria; fuzz/negative |
 
 **Atualização B99-306 — 2026-08-20T14:56:53-03:00:** o E2E ativo foi
 reexecutado contra o web proxy `3100` com fixture PostgreSQL sintética isolada
