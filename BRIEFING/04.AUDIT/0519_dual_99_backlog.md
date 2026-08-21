@@ -5,6 +5,24 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T11:54:12-03:00 — B99-201 ACK state
+
+Uma revisão read-only reproduziu que `markProcessed` preservava
+`last_error_code` depois de falha transitória. RED focal falhou ao capturar a
+SQL sem a limpeza; GREEN limpa explicitamente o marcador quando o evento vira
+`PROCESSED`. O foco worker/persistência passou `24/24`; cobertura
+`205/1174/21` em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`;
+format/lint/typecheck/exposure/diff-check passaram. Código/teste publicado:
+`0e0e2c8`; evidência: `docs/142_dual_99_b99_201_outbox_ack_state_evidence_2026-08-21.md`.
+
+**status:** B99-201 segue `READY_FOR_NEXT_STEP` localmente. PostgreSQL live
+com role restrita, concorrência, retry/cleanup/RLS, RC, score, release, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente continuam
+abertos. `pnpm verify:secrets` acusa somente os quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado. A crítica independente expirou sem relatório; não há `PASS`
+independente.
+
 ## Atualização de execução — 2026-08-21T11:27:43-03:00 — B99-101 rev-list framing
 
 Rounds 88–89 fecharam localmente dois gaps P0/P1 do scanner sob

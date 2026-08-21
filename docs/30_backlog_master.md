@@ -2,6 +2,23 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Auditoria Dual99 — 2026-08-21T11:54:12-03:00 — B99-201:** uma revisão
+read-only reproduziu que o ACK do outbox preservava `last_error_code` depois de
+uma falha transitória. RED focal falhou no contrato SQL; GREEN limpa o marcador
+quando `markProcessed` grava `PROCESSED`. O foco worker/persistência passou
+`24/24`; cobertura `205/1174/21` em `95,03/90,95/95,31/95,73`; build `12/12`,
+hotspots `0`, format/lint/typecheck/exposure/diff-check passaram. Código/teste
+`0e0e2c8` está publicado com `HEAD == origin`; evidência:
+`docs/142_dual_99_b99_201_outbox_ack_state_evidence_2026-08-21.md`.
+`pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`.
+
+**Disposição:** B99-201 continua `READY_FOR_NEXT_STEP` localmente e o programa
+`IN_PROGRESS / PILOT_BLOCKED`. PostgreSQL live com role restrita, concorrência,
+RLS/permissões, RC, score, release, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente permanecem abertos. A crítica
+independente expirou sem relatório; não há `PASS` independente.
+
 **Auditoria Dual99 — 2026-08-21T11:27:43-03:00:** Rounds 88–89 fecharam
 dois gaps adicionais de B99-101 sob RED→GREEN→REFACTOR: duplicidade de
 object IDs no inventário `git rev-list` e framing terminal/sem registros vazios

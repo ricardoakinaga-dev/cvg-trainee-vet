@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
-- current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Rounds 81–89 fecharam URI sintética exata, framing NUL staged, identidade bijetiva dos batches Git, arquivos especiais/descriptor regular fail-closed, registros staged vazios, crescimento pós-`lstat`, completude dos batches Git, duplicidade de objetos no `rev-list` e framing terminal/sem registros vazios. B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_phase: BUILD — DUAL 99 / F99-2 worker, observabilidade e dados derivados
+- current_sprint: F99-2 — fechamento local de outbox e readiness
+- current_task: B99-201 local hardening; o ACK do outbox agora limpa `last_error_code` ao concluir um evento após falha transitória. B99-101 permanece com as Rounds 81–89 fechadas; B99-102 mantém downloader clínico fail-closed, enquanto PostgreSQL live com role restrita, WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Rounds 81–89 de B99-101 sob RED→GREEN→REFACTOR, publicou os commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686`, `084e2d0`, `5790ce8`, `87ca28d` e `1fec40a`, reconciliou estado, backlog, roadmap, evidência, log e traceability e publicou a documentação como `54a9b7b`. O resultado consolidado é foco `77/77`, cobertura `205/1173/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com scanner em `779` linhas, formato, lint, typecheck e diff-check verdes; `HEAD == origin` confirmado. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica focal original foi `BLOCKED`, a tentativa integrada não devolveu relatório e não há aprovação independente final. `.gauntlet/` continua local e não rastreado
-- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: tratou B99-201 sob RED→GREEN→REFACTOR, publicou `0e0e2c8` e confirmou `HEAD == origin`; o ACK limpa `last_error_code` junto ao estado `PROCESSED`. Foco worker/persistência `24/24`; cobertura `205/1174/21` em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`; format/lint/typecheck/diff-check/exposure verdes. As Rounds 81–89 de B99-101 permanecem reconciliadas em `docs/141`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; a crítica independente desta rodada expirou sem relatório. `.gauntlet/` continua local e não rastreado
+- next_action: revalidar B99-201 em PostgreSQL live descartável/aprovado com role sem `SUPERUSER/BYPASSRLS`, concorrência, lease/ACK/retry/cleanup e RLS; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, concurrency/TTL/RLS de B99-103/105, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
-- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; a crítica independente focal foi `BLOCKED` por evidência insuficiente na primeira regressão e não há relatório independente final sobre `1fec40a`; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; B99-201 ainda depende de PostgreSQL live com role restrita para provar concorrência, lease/ACK/retry/cleanup e RLS; a crítica independente desta rodada expirou sem relatório; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,29 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T11:35:22-03:00
+- last_update: 2026-08-21T11:54:12-03:00
+
+## 2026-08-21T11:54:12-03:00 — DUAL99-B99-201-OUTBOX-ACK-STATE
+
+### AÇÃO / RESULTADO
+
+- a revisão read-only encontrou que `markProcessed` preservava
+  `last_error_code` depois de uma falha transitória; RED focal falhou ao
+  verificar o contrato SQL e GREEN passou a limpar o marcador no ACK;
+- o foco worker/persistência passou `24/24`; a cobertura passou `205/1174/21`,
+  com floors `95,03/90,95/95,31/95,73`; build `12/12`, hotspots `0`,
+  format/lint/typecheck/exposure e diff-check passaram;
+- código/teste foi publicado em `0e0e2c8` e enviado ao `origin`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+B99-201 segue `READY_FOR_NEXT_STEP` localmente. PostgreSQL live com role
+restrita, concorrência, RLS/permissões, RC, runtime, score, release, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente continuam
+abertos. `pnpm verify:secrets` permanece fail-closed somente nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`; o arquivo
+não foi lido nem alterado. A crítica independente expirou sem relatório, então
+não há `PASS` independente.
 
 ## 2026-08-21T11:33:55-03:00 — DUAL99-B99-101-DOCS-PUBLISH
 

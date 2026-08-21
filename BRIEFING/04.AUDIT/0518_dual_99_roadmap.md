@@ -5,6 +5,26 @@
 **Predecessor preservado:** `0516_dual_98_roadmap.md`
 **Disposição:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Checkpoint local B99-201 — ACK com estado terminal coerente — 2026-08-21T11:54:12-03:00
+
+Uma revisão read-only encontrou que o adapter de outbox limpava a lease ao
+reconhecer um evento, mas preservava `last_error_code` de uma falha transitória.
+O RED focal falhou ao capturar o contrato SQL; o GREEN passou a limpar o
+marcador junto com `status = 'PROCESSED'`, `processed_at` e `locked_until`.
+
+O foco worker/persistência passou `24/24`; a cobertura passou `205/1174/21` em
+`95,03/90,95/95,31/95,73`; build `12/12`, hotspots `0`, format/lint/typecheck,
+exposure e diff-check passaram. Código/teste `0e0e2c8` foi publicado e enviado
+ao `origin`; evidência detalhada: `docs/142_dual_99_b99_201_outbox_ack_state_evidence_2026-08-21.md`.
+
+B99-201 permanece `READY_FOR_NEXT_STEP` localmente. A prova PostgreSQL live
+com role restrita, concorrência, retry/cleanup/RLS, RC, runtime, score, release,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+continua aberta. `verify:secrets` segue fail-closed somente nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`; nenhum
+runtime, produção ou banco live foi alterado. A crítica independente expirou
+sem relatório; não há `PASS` independente.
+
 ## 1. Calendário relativo
 
 As janelas contam a partir de T0 aprovado. Não são promessa de data. Trabalho

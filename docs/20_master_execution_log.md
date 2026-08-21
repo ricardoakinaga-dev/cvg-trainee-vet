@@ -40,6 +40,60 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T11:54:12-03:00 — DUAL99-B99-201-OUTBOX-ACK-STATE
+
+### TIMESTAMP
+
+2026-08-21 11:54:12 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-2 — worker, observabilidade e dados derivados
+
+### SPRINT
+
+F99-2 — fechamento local de outbox e readiness
+
+### TASK
+
+B99-201 — corrigir o estado terminal do ACK do outbox.
+
+### ACTION
+
+Uma revisão read-only encontrou que `markProcessed` limpava a lease, mas
+preservava `last_error_code` após uma falha transitória. O RED capturou o
+contrato SQL; o GREEN adicionou a limpeza explícita e o teste focal foi
+publicado com o código em `0e0e2c8`.
+
+### RESULT
+
+Foco worker/persistência `24/24`; cobertura `205/1174/21` em
+`95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0`; format/lint/typecheck,
+exposure e diff-check passaram. `HEAD == origin` foi confirmado após o push de
+`0e0e2c8`. `pnpm verify:secrets` continua fail-closed somente nos quatro
+assignments redigidos preexistentes de `infra/production/.env.local`.
+
+### DECISIONS
+
+B99-201 segue `READY_FOR_NEXT_STEP` localmente. Não houve alteração em runtime,
+produção, banco live, score, release, decisão clínica ou piloto. A crítica
+independente expirou sem relatório; nenhum `PASS` independente é alegado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Executar, somente em alvo descartável/aprovado e com role sem
+`SUPERUSER/BYPASSRLS`, a prova live de concorrência, lease/ACK/retry/cleanup e
+RLS de B99-201; manter abertos os gates externos, humanos, clínicos, RC,
+`0/145` e reauditoria independente.
+
 ## 2026-08-21T11:33:55-03:00 — DUAL99-B99-101-DOCS-PUBLISH
 
 ### TIMESTAMP
