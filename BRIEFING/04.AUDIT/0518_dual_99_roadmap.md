@@ -249,9 +249,9 @@ clínica ou piloto.
 
 ## 58. Checkpoint de publicação de metadados Git internos B99-101 — 2026-08-21T04:26:53-03:00
 
-O código/teste `3c3758c` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada será publicada em seguida. A publicação não altera runtime, produção,
+O código/teste `3c3758c` e a reconciliação documental `de4563e` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `de4563e`. A publicação não altera runtime, produção,
 segredos, score, release, clínica ou piloto.
 
 ## 57. Checkpoint de metadados Git internos B99-101 — 2026-08-21T04:26:53-03:00

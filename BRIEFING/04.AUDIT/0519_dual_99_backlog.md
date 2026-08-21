@@ -29,9 +29,9 @@
 
 ## Publicação de execução — 2026-08-21T04:26:53-03:00 — B99-101 Git internal metadata boundary
 
-O código/teste `3c3758c` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado.
+O código/teste `3c3758c` e a reconciliação documental `de4563e` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `de4563e`. `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T04:02:33-03:00 — B99-101 Git environment boundary
 
