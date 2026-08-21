@@ -13,7 +13,7 @@ const noFollowDirectoryFlags =
   fsConstants.O_DIRECTORY > 0
     ? noFollowReadFlags | fsConstants.O_DIRECTORY
     : undefined;
-const procFdChildPathPattern = /^\/proc\/self\/fd\/\d+\//u;
+const procFdChildPathPattern = /^\/proc\/self\/fd\/\d+(?:\/|$)/u;
 
 async function closeHandles(handles) {
   await Promise.all(
@@ -107,7 +107,7 @@ export async function withWorkspaceRoot(directory, callback) {
     return null;
   }
   try {
-    return await callback(access.path);
+    return await callback(access.path, access);
   } finally {
     await access.handle.close();
   }

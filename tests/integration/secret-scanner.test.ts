@@ -534,6 +534,147 @@ describe("secret scanner", () => {
     }
   });
 
+  it("does not follow symlinked Git metadata", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-metadata-link-"),
+    );
+    temporaryDirectories.push(parent);
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    await mkdir(root);
+    await mkdir(external);
+    await execFileAsync("git", ["init", "-q"], { cwd: external });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], { cwd: external });
+    await execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.email=synthetic@example.invalid",
+        "-c",
+        "user.name=synthetic",
+        "commit",
+        "-qm",
+        "synthetic",
+      ],
+      { cwd: external },
+    );
+    await symlink(join(external, ".git"), join(root, ".git"), "dir");
+
+    const findings = await scanProject(root, {
+      includeStaged: true,
+      includeHistory: true,
+    });
+
+    expect(findings).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "staged:victim.env",
+          rule: "sensitive-assignment",
+        }),
+        expect.objectContaining({
+          path: "history:victim.env",
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "staged:<git>",
+          rule: "git-object-unreadable",
+        }),
+        expect.objectContaining({
+          path: "history:<git>",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
+  });
+
+  it("pins Git metadata while staged content is being read", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-metadata-race-"),
+    );
+    temporaryDirectories.push(parent);
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    await mkdir(root);
+    await mkdir(external);
+    await execFileAsync("git", ["init", "-q"], { cwd: root });
+    await execFileAsync("git", ["init", "-q"], { cwd: external });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], { cwd: external });
+    await execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.email=synthetic@example.invalid",
+        "-c",
+        "user.name=synthetic",
+        "commit",
+        "-qm",
+        "synthetic",
+      ],
+      { cwd: external },
+    );
+
+    const worker = new Worker(
+      `
+        import { parentPort, workerData } from "node:worker_threads";
+        import { rename, symlink, unlink } from "node:fs/promises";
+        let running = true;
+        parentPort.on("message", (message) => {
+          if (message === "stop") running = false;
+        });
+        while (running) {
+          try { await rename(workerData.git, workerData.backup); } catch {}
+          try { await symlink(workerData.external, workerData.git, "dir"); } catch {}
+          try { await unlink(workerData.git); } catch {}
+          try { await rename(workerData.backup, workerData.git); } catch {}
+        }
+      `,
+      {
+        eval: true,
+        workerData: {
+          git: join(root, ".git"),
+          backup: join(parent, "git-backup"),
+          external: join(external, ".git"),
+        },
+      },
+    );
+
+    try {
+      const leakedFindings = [];
+      for (let attempt = 0; attempt < 500; attempt += 1) {
+        const findings = await scanProject(root, {
+          includeStaged: true,
+          includeHistory: false,
+        });
+        leakedFindings.push(
+          ...findings.filter(
+            (finding) =>
+              finding.path === "staged:victim.env" &&
+              finding.rule === "sensitive-assignment",
+          ),
+        );
+      }
+
+      expect(leakedFindings).toHaveLength(0);
+    } finally {
+      worker.postMessage("stop");
+      await worker.terminate();
+    }
+  });
+
   it.each(["missing", "regular-file"])(
     "rejects a %s supplied as the scan root",
     async (name) => {

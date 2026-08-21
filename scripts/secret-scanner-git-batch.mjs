@@ -40,6 +40,8 @@ export function runGitBatch(
     maxOutputBytes = DEFAULT_MAX_OUTPUT_BYTES,
     maxErrorBytes = DEFAULT_MAX_ERROR_BYTES,
     onChunk,
+    env,
+    gitDirectoryHandle,
     spawnProcess = spawn,
   } = {},
 ) {
@@ -52,7 +54,12 @@ export function runGitBatch(
       maxErrorBytes,
       "maxErrorBytes",
     );
-    const child = spawnProcess("git", args, { cwd: root });
+    const spawnOptions = { cwd: root };
+    if (env !== undefined) spawnOptions.env = env;
+    if (gitDirectoryHandle !== undefined) {
+      spawnOptions.stdio = ["pipe", "pipe", "pipe", gitDirectoryHandle];
+    }
+    const child = spawnProcess("git", args, spawnOptions);
     const chunks = [];
     let settled = false;
     let outputBytes = 0;
@@ -111,6 +118,71 @@ export function runGitBatch(
       resolve(onChunk ? undefined : Buffer.concat(chunks));
     });
     child.stdin.end(`${objectIds.join("\n")}\n`);
+  });
+}
+
+export function runGitCommand(
+  root,
+  args,
+  {
+    maxOutputBytes = DEFAULT_MAX_OUTPUT_BYTES,
+    maxErrorBytes = DEFAULT_MAX_ERROR_BYTES,
+    env,
+    gitDirectoryHandle,
+  } = {},
+) {
+  return new Promise((resolve, reject) => {
+    const outputLimit = assertPositiveSafeInteger(
+      maxOutputBytes,
+      "maxOutputBytes",
+    );
+    const errorLimit = assertPositiveSafeInteger(
+      maxErrorBytes,
+      "maxErrorBytes",
+    );
+    const spawnOptions = { cwd: root };
+    if (env !== undefined) spawnOptions.env = env;
+    if (gitDirectoryHandle !== undefined) {
+      spawnOptions.stdio = ["ignore", "pipe", "pipe", gitDirectoryHandle];
+    }
+    const child = spawn("git", args, spawnOptions);
+    const chunks = [];
+    let settled = false;
+    let outputBytes = 0;
+    let errorBytes = 0;
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+    child.stdout.on("data", (chunk) => {
+      if (settled) return;
+      outputBytes += chunk.length;
+      if (outputBytes > outputLimit) {
+        fail(new Error("git command output exceeds configured limit"));
+        child.kill();
+        return;
+      }
+      chunks.push(Buffer.from(chunk));
+    });
+    child.stderr.on("data", (chunk) => {
+      if (settled) return;
+      errorBytes += chunk.length;
+      if (errorBytes > errorLimit) {
+        fail(new Error("git command stderr exceeds configured limit"));
+        child.kill();
+      }
+    });
+    child.once("error", fail);
+    child.once("close", (code) => {
+      if (code !== 0) {
+        fail(new Error("git command failed"));
+        return;
+      }
+      if (settled) return;
+      settled = true;
+      resolve(Buffer.concat(chunks));
+    });
   });
 }
 
@@ -427,6 +499,8 @@ export async function readGitBlobs(
     isIgnoredBinaryAssetPath,
     unscannedFinding,
     readBatchOutput,
+    env,
+    gitDirectoryHandle,
     source = "history",
   },
 ) {
@@ -442,7 +516,11 @@ export async function readGitBlobs(
     root,
     ["cat-file", "--batch-check"],
     objectIds,
-    { maxOutputBytes: objectIds.length * headerLimit + 1 },
+    {
+      env,
+      gitDirectoryHandle,
+      maxOutputBytes: objectIds.length * headerLimit + 1,
+    },
   );
   const plan = planGitBatchRequests(checkOutput, objects, {
     maxScanBytes: scanLimit,
@@ -468,6 +546,8 @@ export async function readGitBlobs(
     });
     try {
       await runGitBatch(root, ["cat-file", "--batch"], batch, {
+        env,
+        gitDirectoryHandle,
         maxOutputBytes: plan.batchSizes[index] + batch.length * headerLimit + 1,
         onChunk: (chunk) => parser.push(chunk),
       });

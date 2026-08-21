@@ -1,21 +1,15 @@
-import { Buffer } from "node:buffer";
 import { lstat } from "node:fs/promises";
 import { join } from "node:path";
-import { promisify, TextDecoder } from "node:util";
-import { execFile } from "node:child_process";
-import {
-  planGitBatchRequests as planGitBatchRequestsInternal,
-  readGitBlobs as readGitBlobsInternal,
-} from "./secret-scanner-git-batch.mjs";
+import { TextDecoder } from "node:util";
+import { planGitBatchRequests as planGitBatchRequestsInternal } from "./secret-scanner-git-batch.mjs";
 import { deduplicateFindings } from "./secret-scanner-findings.mjs";
+import { createGitSurfaceScanner } from "./secret-scanner-git-surfaces.mjs";
 import {
   openWorkspaceDirectory,
   readScanBuffer,
   validateWorkspaceRoot,
   withWorkspaceRoot,
 } from "./secret-scanner-workspace.mjs";
-
-const execFileAsync = promisify(execFile);
 
 const ignoredDirectories = new Set([
   ".git",
@@ -495,12 +489,12 @@ export function summarizeSecretFindings(findings) {
     .join("; ");
 }
 
-async function walk(directory, logicalDirectory = "") {
-  const {
-    entries,
-    handle,
-    path: safeDirectory,
-  } = await openWorkspaceDirectory(directory);
+async function walk(directory, logicalDirectory = "", openedDirectory) {
+  const access =
+    openedDirectory === undefined
+      ? await openWorkspaceDirectory(directory)
+      : openedDirectory;
+  const { entries, handle, path: safeDirectory } = access;
   try {
     const findings = [];
     for (const entry of entries) {
@@ -524,7 +518,7 @@ async function walk(directory, logicalDirectory = "") {
     }
     return findings;
   } finally {
-    await handle.close();
+    if (openedDirectory === undefined) await handle.close();
   }
 }
 
@@ -580,51 +574,14 @@ async function scanFile(file, path) {
   }
 }
 
-async function scanWorkspace(root) {
+async function scanWorkspace(root, openedRoot) {
   try {
-    return await walk(root);
+    return await walk(root, "", openedRoot);
   } catch {
     return [
       unscannedFinding("<workspace>", "unreadable-file", "workspace tree"),
     ];
   }
-}
-
-async function git(root, args, options = {}) {
-  const result = await execFileAsync("git", args, {
-    cwd: root,
-    encoding: "utf8",
-    maxBuffer: options.maxBuffer ?? 32 * 1024 * 1024,
-  });
-  return result.stdout;
-}
-
-async function stagedPaths(root) {
-  const output = await git(root, ["ls-files", "--cached", "-z"]);
-  return output.split("\0").filter((path) => path.length > 0);
-}
-
-async function scanStaged(root) {
-  const findings = [];
-  for (const path of await stagedPaths(root)) {
-    try {
-      const { stdout } = await execFileAsync("git", ["show", `:${path}`], {
-        cwd: root,
-        encoding: "buffer",
-        maxBuffer: MAX_SCAN_BYTES + 1,
-      });
-      findings.push(...scanPathBuffer(Buffer.from(stdout), `staged:${path}`));
-    } catch {
-      findings.push(
-        unscannedFinding(
-          `staged:${path}`,
-          "unreadable-file",
-          "unreadable staged content",
-        ),
-      );
-    }
-  }
-  return findings;
 }
 
 function parseObjectList(output) {
@@ -737,18 +694,32 @@ function planGitBatchRequests(buffer, objects, source = "history") {
   });
 }
 
-async function scanHistory(root) {
-  const objects = parseObjectList(
-    await git(root, ["rev-list", "--objects", "--all"]),
-  );
-  return readGitBlobsInternal(root, objects, {
-    maxScanBytes: MAX_SCAN_BYTES,
-    maxBatchBytes: MAX_GIT_BATCH_BODY_BYTES,
-    maxHeaderBytes: MAX_GIT_BATCH_HEADER_BYTES,
-    isIgnoredBinaryAssetPath,
-    unscannedFinding,
-    readBatchOutput,
-  });
+const { scanStaged, scanHistory } = createGitSurfaceScanner({
+  maxScanBytes: MAX_SCAN_BYTES,
+  maxGitBatchBodyBytes: MAX_GIT_BATCH_BODY_BYTES,
+  maxGitBatchHeaderBytes: MAX_GIT_BATCH_HEADER_BYTES,
+  isIgnoredBinaryAssetPath,
+  unscannedFinding,
+  parseObjectList,
+  readBatchOutput,
+  scanPathBuffer,
+});
+
+async function appendGitFindings(
+  findings,
+  enabled,
+  options,
+  scan,
+  path,
+  evidence,
+) {
+  if (!enabled) return;
+  try {
+    if (options === undefined) throw new Error("Git metadata unavailable");
+    findings.push(...(await scan(options)));
+  } catch {
+    findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
+  }
 }
 
 export async function scanProject(
@@ -760,36 +731,51 @@ export async function scanProject(
     unscannedFinding,
   );
   if (invalidRootFinding !== null) return invalidRootFinding;
-  const findings = await withWorkspaceRoot(root, async (gitRoot) => {
-    const findings = [...(await scanWorkspace(root))];
-    if (includeStaged) {
+  const findings = await withWorkspaceRoot(
+    root,
+    async (gitRoot, rootAccess) => {
+      const findings = [...(await scanWorkspace(gitRoot, rootAccess))];
+      const gitDirectory =
+        includeStaged || includeHistory
+          ? await openWorkspaceDirectory(join(gitRoot, ".git")).catch(
+              () => null,
+            )
+          : null;
+      const env =
+        gitDirectory === null || gitDirectory === undefined
+          ? undefined
+          : {
+              ...process.env,
+              GIT_DIR: "/proc/self/fd/3",
+              GIT_WORK_TREE: ".",
+            };
+      const gitOptions =
+        env === undefined
+          ? undefined
+          : { env, gitDirectoryHandle: gitDirectory.handle };
       try {
-        findings.push(...(await scanStaged(gitRoot)));
-      } catch {
-        findings.push(
-          unscannedFinding(
-            "staged:<git>",
-            "git-object-unreadable",
-            "staged index",
-          ),
+        await appendGitFindings(
+          findings,
+          includeStaged,
+          gitOptions,
+          (options) => scanStaged(gitRoot, options),
+          "staged:<git>",
+          "staged index",
         );
-      }
-    }
-    if (includeHistory) {
-      try {
-        findings.push(...(await scanHistory(gitRoot)));
-      } catch {
-        findings.push(
-          unscannedFinding(
-            "history:<git>",
-            "git-object-unreadable",
-            "reachable history",
-          ),
+        await appendGitFindings(
+          findings,
+          includeHistory,
+          gitOptions,
+          (options) => scanHistory(gitRoot, options),
+          "history:<git>",
+          "reachable history",
         );
+        return deduplicateFindings(findings);
+      } finally {
+        await gitDirectory?.handle.close();
       }
-    }
-    return deduplicateFindings(findings);
-  });
+    },
+  );
   return (
     findings ?? [
       unscannedFinding("<workspace>", "unreadable-file", "workspace root"),
