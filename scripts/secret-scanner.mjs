@@ -2,7 +2,10 @@ import { join } from "node:path";
 import { TextDecoder } from "node:util";
 import { planGitBatchRequests as planGitBatchRequestsInternal } from "./secret-scanner-git-batch.mjs";
 import { deduplicateFindings } from "./secret-scanner-findings.mjs";
-import { createGitSurfaceScanner } from "./secret-scanner-git-surfaces.mjs";
+import {
+  createGitSurfaceScanner,
+  parseObjectList,
+} from "./secret-scanner-git-surfaces.mjs";
 import {
   closeGitMetadata,
   createGitOptions,
@@ -610,23 +613,6 @@ async function scanWorkspace(root, openedRoot) {
       unscannedFinding("<workspace>", "unreadable-file", "workspace tree"),
     ];
   }
-}
-
-function parseObjectList(output) {
-  const objects = new Map();
-  for (const line of output.split("\n")) {
-    if (line.length === 0) continue;
-    const separator = line.indexOf(" ");
-    const objectId = separator < 0 ? line : line.slice(0, separator);
-    if (!/^[0-9a-f]{40}$/u.test(objectId)) {
-      throw new Error("malformed git object list");
-    }
-    if (separator < 0) continue;
-    const path = line.slice(separator + 1);
-    if (path.length === 0) continue;
-    objects.set(objectId, path);
-  }
-  return objects;
 }
 
 function readBatchOutput(buffer, objects, source = "history") {

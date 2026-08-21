@@ -30,6 +30,34 @@ export function parseStagedPaths(output) {
   return paths;
 }
 
+export function parseObjectList(output) {
+  const objects = new Map();
+  if (output.length === 0) return objects;
+  if (!output.endsWith("\n")) {
+    throw new Error("malformed git object list");
+  }
+  const seenObjectIds = new Set();
+  for (const line of output.slice(0, -1).split("\n")) {
+    if (line.length === 0) {
+      throw new Error("malformed git object list");
+    }
+    const separator = line.indexOf(" ");
+    const objectId = separator < 0 ? line : line.slice(0, separator);
+    if (!/^[0-9a-f]{40}$/u.test(objectId)) {
+      throw new Error("malformed git object list");
+    }
+    if (seenObjectIds.has(objectId)) {
+      throw new Error("duplicate git object list record");
+    }
+    seenObjectIds.add(objectId);
+    if (separator < 0) continue;
+    const path = line.slice(separator + 1);
+    if (path.length === 0) continue;
+    objects.set(objectId, path);
+  }
+  return objects;
+}
+
 export function createGitSurfaceScanner({
   maxScanBytes,
   maxGitBatchBodyBytes,

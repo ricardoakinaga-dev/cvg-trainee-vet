@@ -1843,16 +1843,31 @@ describe("secret scanner", () => {
         structureObjectId,
         `${contentObjectId} src/config.ts`,
         `${binaryAssetObjectId} public/icon.png`,
-      ].join("\n"),
+      ].join("\n") + "\n",
     );
 
     expect([...objects.entries()]).toEqual([
       [contentObjectId, "src/config.ts"],
       [binaryAssetObjectId, "public/icon.png"],
     ]);
+    expect(() => parseObjectList(`${contentObjectId} src/config.ts`)).toThrow(
+      /malformed git object list/iu,
+    );
+    expect(() => parseObjectList("\n")).toThrow(/malformed git object list/iu);
+    expect(() =>
+      parseObjectList(`${contentObjectId} src/config.ts\n\n`),
+    ).toThrow(/malformed git object list/iu);
     expect(() => parseObjectList("not-a-valid-rev-list-record\n")).toThrow(
       /malformed git object list/iu,
     );
+  });
+
+  it("rejects duplicate rev-list object records instead of overwriting paths", () => {
+    const objectId = "d".repeat(40);
+
+    expect(() =>
+      parseObjectList(`${objectId} first.txt\n${objectId} second.txt\n`),
+    ).toThrow(/duplicate git object list record/iu);
   });
 
   it("reports malformed, binary and oversized history objects instead of silently skipping them", () => {
