@@ -28,14 +28,16 @@
   segue `IN_PROGRESS` no escopo externo e o programa permanece
   `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Publicação de execução — 2026-08-21T01:56:15-03:00 — B99-101 workspace open boundary
+## Publicação de execução — 2026-08-21T01:59:25-03:00 — B99-101 workspace open boundary
 
-O código/teste `ee0ebc9` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-execução está sendo publicada separadamente. A publicação não fecha secret
-manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
-aprovação humana ou reauditoria independente; o programa segue
-`IN_PROGRESS / PILOT_BLOCKED`.
+O código/teste `ee0ebc9` e a reconciliação documental `5998266` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `5998266`. Estado, backlog, roadmap, evidência, log e
+traceability estão alinhados; `.gauntlet/` permanece local e não rastreado.
+A publicação não fecha secret manager/rotação, provider/CI, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana ou reauditoria independente;
+o programa segue `IN_PROGRESS / PILOT_BLOCKED`. A próxima ação é nova auditoria
+read-only bounded.
 
 ## Atualização de execução — 2026-08-21T01:32:38-03:00 — B99-101 workspace root boundary
 

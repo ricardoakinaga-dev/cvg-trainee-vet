@@ -247,12 +247,13 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 44. Checkpoint de publicação da abertura bounded B99-101 — 2026-08-21T01:56:15-03:00
+## 44. Publicação do checkpoint da abertura bounded B99-101 — 2026-08-21T01:59:25-03:00
 
-O código/teste `ee0ebc9` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental deste
-checkpoint está em andamento. A publicação não altera runtime, produção,
-segredos, score, release, clínica ou piloto.
+O código/teste `ee0ebc9` e a reconciliação documental `5998266` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `5998266`. Estado, backlog, evidência, log e traceability
+estão alinhados. A publicação não altera runtime, produção, segredos, score,
+release, clínica ou piloto; `.gauntlet/` permanece local e não rastreado.
 
 ## 43. Checkpoint de abertura bounded do scanner B99-101 — 2026-08-21T01:56:15-03:00
 

@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 55 de B99-101 sob RED→GREEN→REFACTOR; o probe concorrente reproduziu follow de symlink após `lstat` e o scanner agora abre o arquivo com `O_NOFOLLOW`, falhando fechado se a proteção não existir. O foco passou `47/47`, cobertura `205/1143/21` em `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o probe pós-correção completou `5000` trocas sem vazamento e o commit de código/teste `ee0ebc9` foi publicado no branch remoto. `pnpm verify` oficial passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental de Round 55 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 55 de B99-101 sob RED→GREEN→REFACTOR; o probe concorrente reproduziu follow de symlink após `lstat` e o scanner agora abre o arquivo com `O_NOFOLLOW`, falhando fechado se a proteção não existir. O foco passou `47/47`, cobertura `205/1143/21` em `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o probe pós-correção completou `5000` trocas sem vazamento e o commit de código/teste `ee0ebc9` e a reconciliação documental `5998266` foram publicados no branch remoto, com `HEAD == origin`. `pnpm verify` oficial passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T01:56:15-03:00
+- last_update: 2026-08-21T01:59:25-03:00
 
 ## 2026-08-21T01:56:15-03:00 — DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
 
@@ -62,6 +62,24 @@ estava disponível. Reconciliar e publicar a documentação, então executar nov
 auditoria bounded; secret manager/rotação, provider/CI, RC/runtime, WebKit
 aprovado, clínica, `0/145`, gates externos, aprovação humana e reauditoria
 independente permanecem abertos. Não houve score, release, piloto ou produção.
+
+## 2026-08-21T01:59:25-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+O commit de código/teste `ee0ebc9` e a reconciliação documental `5998266`
+foram publicados em `origin/agent/publish-production-hardening`; o pós-push
+confirmou `HEAD == origin` em `5998266`. Estado, backlog, roadmap, evidência,
+log e traceability estão alinhados. `.gauntlet/` permanece local e não
+rastreado por desenho.
+
+### STATUS / PRÓXIMA AÇÃO
+
+`IN_PROGRESS / PILOT_BLOCKED`. A publicação não altera score, release, clínica,
+piloto, runtime ou produção. Executar nova auditoria bounded antes de qualquer
+conclusão; permanecem abertos secret manager/rotação, provider/CI, RC/runtime,
+WebKit aprovado, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente.
 
 ## 2026-08-21T01:32:38-03:00 — DUAL99-B99-101-WORKSPACE-ROOT-BOUNDARY
 

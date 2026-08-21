@@ -6,9 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `ee0ebc9` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: pendente nesta etapa de reconciliação
-- paridade documental final: será confirmada após o commit documental; nenhum
-  código ou estado externo foi alterado depois desse corte
+- evidência documental publicada: `5998266` em
+  `origin/agent/publish-production-hardening`
+- paridade documental final: confirmada no pós-push da reconciliação em
+  `5998266`; nenhum código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -232,14 +233,14 @@
 ### LIMITES / PUBLICAÇÃO
 
 O arquivo `.env.local` não foi lido nem alterado. O commit de código/teste é
-`ee0ebc9`, publicado no branch remoto; a reconciliação documental desta rodada
-está sendo publicada separadamente. A crítica foi fresca e read-only, porém
-não independente porque o backend de critic não estava disponível. A proteção
-fecha o follow do componente final; condições de corrida em componentes-pai
-ou validação live permanecem fora desta prova local. Secret manager/rotação,
-provider/CI, RC/runtime, WebKit aprovado, clínica, `0/145`, gates externos,
-aprovação humana e reauditoria independente continuam abertos; não houve score,
-release, piloto ou mutação de produção.
+`ee0ebc9` e a reconciliação documental é `5998266`, ambos publicados no branch
+remoto; o pós-push confirmou `HEAD == origin` em `5998266`. A crítica foi
+fresca e read-only, porém não independente porque o backend de critic não
+estava disponível. A proteção fecha o follow do componente final; condições de
+corrida em componentes-pai ou validação live permanecem fora desta prova
+local. Secret manager/rotação, provider/CI, RC/runtime, WebKit aprovado,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+continuam abertos; não houve score, release, piloto ou mutação de produção.
 
 ## Round 54 — B99-101 / workspace root symlink boundary — 2026-08-21T01:32:38-03:00
 
