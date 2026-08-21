@@ -15,6 +15,8 @@ O foco passou `74/74`; cobertura `205/1170/21` em
 format/lint/typecheck/diff-check passaram. Código/teste publicado:
 `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`, `7c70686` e `084e2d0`;
 `HEAD == origin == 084e2d0`. Evidência: `docs/140`.
+Estado, backlog, roadmap, evidência, log e traceability foram reconciliados
+em `adcf502`, com `HEAD == origin == adcf502`.
 
 `pnpm verify:secrets` segue fail-closed somente nos quatro assignments
 redigidos preexistentes de `infra/production/.env.local`. A crítica que

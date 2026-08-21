@@ -13,6 +13,8 @@ passaram. Commits `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`,
 `pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
 redigidos preexistentes de `infra/production/.env.local`. Evidência:
 `docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
+Estado, backlog, roadmap, evidência, log e traceability foram reconciliados em
+`adcf502`, que agora é `HEAD == origin`.
 
 **Disposição:** `IN_PROGRESS / PILOT_BLOCKED`. A crítica independente que
 reproduziu os gaps foi `REJECT` antes das correções; a tentativa final não

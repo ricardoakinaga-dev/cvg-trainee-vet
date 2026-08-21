@@ -305,6 +305,9 @@ format/lint/typecheck/diff-check passaram. Os commits de código/teste
 foram publicados, com `HEAD == origin == 084e2d0`. A evidência está em
 `docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`.
 
+Estado, backlog, roadmap, evidência, log e traceability foram reconciliados e
+publicados como `adcf502`; `HEAD == origin == adcf502` foi confirmado.
+
 O crítico independente em `25233b6` foi `REJECT` e os dois gaps `HIGH` foram
 corrigidos. A tentativa independente final excedeu a janela e foi encerrada
 sem veredito; portanto não constitui aprovação. O caminho crítico continua

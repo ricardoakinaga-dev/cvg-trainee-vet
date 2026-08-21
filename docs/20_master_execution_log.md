@@ -80,6 +80,9 @@ commits de código/teste `4fdf2b5`, `650b169`, `fb19a43`, `25233b6`, `dfbb01c`,
 confirmado. `pnpm verify:secrets` segue fail-closed somente nos quatro
 assignments redigidos preexistentes de `infra/production/.env.local`.
 
+A reconciliação canônica de estado, backlog, roadmap, evidência, log e
+traceability foi publicada como `adcf502`, com `HEAD == origin == adcf502`.
+
 ### DECISIONS
 
 O crítico independente em `25233b6` produziu `REJECT` com dois gaps `HIGH`,
@@ -94,8 +97,8 @@ IN_PROGRESS / PILOT_BLOCKED
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental desta rodada; depois obter autoridade e
-ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit,
+Obter autoridade e ambiente para secret manager/rotação, provider/CI,
+RC/proveniência, WebKit,
 runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B,
 role restrita, concurrency/TTL/RLS live, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria independente.
