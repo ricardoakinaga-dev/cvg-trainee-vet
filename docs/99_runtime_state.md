@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 70 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only reproduziu `129` arquivos staged oversized de `2 MiB + 2 bytes` (`270532866` bytes) que geravam `129` findings por caminho sem consumir o orçamento agregado. RED falhou sem finding genérico; GREEN desconta `MAX_SCAN_BYTES + 1` quando `git show` excede o cap por arquivo e falha fechado ao ultrapassar `256 MiB`. Foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `c4a0cc9` foi publicado; a reconciliação documental inicial segue pendente. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 70 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only reproduziu `129` arquivos staged oversized de `2 MiB + 2 bytes` (`270532866` bytes) que geravam `129` findings por caminho sem consumir o orçamento agregado. RED falhou sem finding genérico; GREEN desconta `MAX_SCAN_BYTES + 1` quando `git show` excede o cap por arquivo e falha fechado ao ultrapassar `256 MiB`. Foco `64/64`, cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste `c4a0cc9` e a reconciliação documental inicial `5ec5a63` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -49,9 +49,9 @@
 - foco `64/64`; cobertura `205/1160/21` em `95,03/90,95/95,31/95,73`; build
   `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura
   `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
-  diff-check e audit de dependências passaram. Código/teste `c4a0cc9` foi
-  publicado; a reconciliação documental inicial segue pendente neste primeiro
-  registro.
+  diff-check e audit de dependências passaram. Código/teste `c4a0cc9` e a
+  reconciliação documental inicial `5ec5a63` foram publicados; a paridade
+  pós-push foi confirmada.
 
 ### LIMITES / PRÓXIMA AÇÃO
 

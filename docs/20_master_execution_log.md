@@ -11459,7 +11459,8 @@ cobertura passou `205` arquivos / `1160` testes / `21` guardados em
 `95,03/90,95/95,31/95,73`; build passou `12/12` com `CVG_API_INTERNAL_URL`
 local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função
 de `100`, lint, typecheck, formato, diff-check e audit de dependências passaram.
-Código/teste `c4a0cc9` foi publicado.
+Código/teste `c4a0cc9` foi publicado; a reconciliação documental inicial
+`5ec5a63` foi publicada depois deste registro.
 
 ### DECISIONS
 
@@ -11467,8 +11468,8 @@ Código/teste `c4a0cc9` foi publicado.
 preexistentes de `infra/production/.env.local`. A crítica foi fresca,
 read-only e não independente porque o backend de critic está indisponível. Não
 houve alteração de segredo, runtime, produção, score, release, decisão clínica
-ou piloto. A reconciliação documental inicial segue pendente neste primeiro
-registro.
+ou piloto. A reconciliação documental inicial `5ec5a63` foi publicada depois
+deste registro.
 
 ### STATUS
 
@@ -11484,22 +11485,21 @@ clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
 
 ### ACTION
 
-O commit de código/teste `c4a0cc9` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental inicial
-segue `DOCUMENTATION_PENDING` neste primeiro registro.
+O commit de código/teste `c4a0cc9` e a reconciliação documental inicial
+`5ec5a63` foram publicados em `origin/agent/publish-production-hardening`.
 
 ### RESULT / STATUS
 
-A confirmação de `HEAD == origin` e a reconciliação documental final permanecem
-necessárias. A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve
-rotação de segredo, alteração de runtime/produção, score, release, decisão
-clínica ou piloto.
+A confirmação de `HEAD == origin` foi observada em `5ec5a63`; a reconciliação
+final não altera código ou estado externo. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto.
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental final; Windows/non-proc, secret
-manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
-aprovação humana e reauditoria independente permanecem abertos.
+Windows/non-proc, secret manager/rotação, provider/CI, RC/runtime, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente permanecem
+abertos.
 
 ## 2026-08-21T07:35:15-03:00 — DUAL99-B99-101-GIT-TOTAL-BYTE-BUDGET
 

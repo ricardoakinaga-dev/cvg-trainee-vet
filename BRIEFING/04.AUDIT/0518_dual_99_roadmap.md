@@ -280,9 +280,10 @@ crítica independente e demais bloqueios do programa permanecem abertos.
 
 ## 74. Checkpoint de publicação do orçamento para staged oversized B99-101 — 2026-08-21T07:59:41-03:00
 
-O código/teste `c4a0cc9` foi publicado em `origin/agent/publish-production-hardening`;
-a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
-registro. A confirmação final de paridade permanece necessária.
+O código/teste `c4a0cc9` e a reconciliação documental inicial `5ec5a63` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `5ec5a63`. A reconciliação final não altera código ou estado
+externo.
 
 ## 73. Checkpoint do orçamento para staged oversized B99-101 — 2026-08-21T07:59:41-03:00
 
@@ -298,7 +299,7 @@ O foco passou `64/64`, a cobertura passou `205/1160/21` em
 `95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
 contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
 typecheck, formato, diff-check e audit de dependências passaram. Código/teste
-`c4a0cc9` foi publicado; a documentação inicial segue `DOCUMENTATION_PENDING`.
+`c4a0cc9` e documentação inicial `5ec5a63` foram publicados.
 Windows/non-proc, condições live, gates externos, crítica independente e
 demais bloqueios do programa permanecem abertos.
 
