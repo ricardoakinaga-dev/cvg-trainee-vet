@@ -243,6 +243,93 @@ function parseGitBatchRecord(
   };
 }
 
+function consumeGitBatchChunk(
+  chunk,
+  {
+    state,
+    findings,
+    objects,
+    maxScanBytes,
+    maxHeaderBytes,
+    isIgnoredBinaryAssetPath,
+    unscannedFinding,
+    readBatchOutput,
+    source,
+  },
+) {
+  const addUnreadable = (path, evidence) =>
+    findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
+  let offset = 0;
+  while (offset < chunk.length && !state.aborted) {
+    if (state.record === null) {
+      const headerEnd = chunk.indexOf(0x0a, offset);
+      if (headerEnd < 0) {
+        const part = chunk.subarray(offset);
+        state.headerBytes += part.length;
+        if (state.headerBytes > maxHeaderBytes) {
+          addUnreadable(`${source}:<git>`, "malformed git object header");
+          state.aborted = true;
+          return;
+        }
+        state.headerParts.push(Buffer.from(part));
+        return;
+      }
+      const part = chunk.subarray(offset, headerEnd);
+      state.headerBytes += part.length;
+      if (state.headerBytes > maxHeaderBytes) {
+        addUnreadable(`${source}:<git>`, "malformed git object header");
+        state.aborted = true;
+        return;
+      }
+      const header = Buffer.concat([...state.headerParts, part]);
+      state.headerParts = [];
+      state.headerBytes = 0;
+      offset = headerEnd + 1;
+      const parsed = parseGitBatchRecord(header, {
+        objects,
+        maxScanBytes,
+        isIgnoredBinaryAssetPath,
+        unscannedFinding,
+        readBatchOutput,
+        source,
+      });
+      findings.push(...parsed.findings);
+      state.record = parsed.record;
+      state.aborted = parsed.aborted;
+      continue;
+    }
+    const record = state.record;
+    const amount = Math.min(record.remaining, chunk.length - offset);
+    if (record.body !== null && amount > 0) {
+      chunk.copy(record.body, record.bodyOffset, offset, offset + amount);
+      record.bodyOffset += amount;
+    }
+    record.remaining -= amount;
+    offset += amount;
+    if (record.remaining > 0) continue;
+    if (offset >= chunk.length) return;
+    if (chunk[offset] !== 0x0a) {
+      addUnreadable(
+        record.logicalPath,
+        "truncated or missing git object delimiter",
+      );
+      state.aborted = true;
+      return;
+    }
+    offset += 1;
+    if (record.body !== null) {
+      findings.push(
+        ...readBatchOutput(
+          Buffer.concat([record.header, record.body, Buffer.from("\n")]),
+          objects,
+          source,
+        ),
+      );
+    }
+    state.record = null;
+  }
+}
+
 export function createGitBatchStreamParser({
   objects,
   maxScanBytes,
@@ -253,96 +340,37 @@ export function createGitBatchStreamParser({
   source = "history",
 }) {
   const findings = [];
-  let headerParts = [];
-  let headerBytes = 0;
-  let record = null;
-  let aborted = false;
-  const addUnreadable = (path, evidence) =>
-    findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
-  const resetRecord = () => {
-    record = null;
+  const state = {
+    headerParts: [],
+    headerBytes: 0,
+    record: null,
+    aborted: false,
   };
-  const consume = (chunk) => {
-    let offset = 0;
-    while (offset < chunk.length && !aborted) {
-      if (record === null) {
-        const headerEnd = chunk.indexOf(0x0a, offset);
-        if (headerEnd < 0) {
-          const part = chunk.subarray(offset);
-          headerBytes += part.length;
-          if (headerBytes > maxHeaderBytes) {
-            addUnreadable(`${source}:<git>`, "malformed git object header");
-            aborted = true;
-            return;
-          }
-          headerParts.push(Buffer.from(part));
-          return;
-        }
-        const part = chunk.subarray(offset, headerEnd);
-        headerBytes += part.length;
-        if (headerBytes > maxHeaderBytes) {
-          addUnreadable(`${source}:<git>`, "malformed git object header");
-          aborted = true;
-          return;
-        }
-        const header = Buffer.concat([...headerParts, part]);
-        headerParts = [];
-        headerBytes = 0;
-        offset = headerEnd + 1;
-        const parsed = parseGitBatchRecord(header, {
-          objects,
-          maxScanBytes,
-          isIgnoredBinaryAssetPath,
-          unscannedFinding,
-          readBatchOutput,
-          source,
-        });
-        findings.push(...parsed.findings);
-        record = parsed.record;
-        aborted = parsed.aborted;
-        continue;
-      }
-      const amount = Math.min(record.remaining, chunk.length - offset);
-      if (record.body !== null && amount > 0) {
-        chunk.copy(record.body, record.bodyOffset, offset, offset + amount);
-        record.bodyOffset += amount;
-      }
-      record.remaining -= amount;
-      offset += amount;
-      if (record.remaining > 0) continue;
-      if (offset >= chunk.length) return;
-      if (chunk[offset] !== 0x0a) {
-        addUnreadable(
-          record.logicalPath,
-          "truncated or missing git object delimiter",
-        );
-        aborted = true;
-        return;
-      }
-      offset += 1;
-      if (record.body !== null) {
-        findings.push(
-          ...readBatchOutput(
-            Buffer.concat([record.header, record.body, Buffer.from("\n")]),
-            objects,
-            source,
-          ),
-        );
-      }
-      resetRecord();
-    }
+  const context = {
+    state,
+    findings,
+    objects,
+    maxScanBytes,
+    maxHeaderBytes,
+    isIgnoredBinaryAssetPath,
+    unscannedFinding,
+    readBatchOutput,
+    source,
   };
   return {
     findings,
-    push: consume,
+    push: (chunk) => consumeGitBatchChunk(chunk, context),
     finish: () => {
-      if (aborted) return;
-      if (record !== null || headerParts.length > 0) {
-        addUnreadable(
-          record?.logicalPath ?? `${source}:<git>`,
-          "truncated git batch stream",
+      if (state.aborted) return;
+      if (state.record !== null || state.headerParts.length > 0) {
+        findings.push(
+          unscannedFinding(
+            state.record?.logicalPath ?? `${source}:<git>`,
+            "git-object-unreadable",
+            "truncated git batch stream",
+          ),
         );
-        aborted = true;
+        state.aborted = true;
       }
     },
   };

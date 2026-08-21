@@ -102,4 +102,16 @@ describe("code hotspot policy", () => {
     expect(dependencyResponse).toBeDefined();
     expect(dependencyResponse?.lineCount).toBeLessThanOrEqual(50);
   });
+
+  it("keeps every production function at or below the B99-305 closure bar", async () => {
+    const { loadCodeHotspotSnapshot } =
+      await import("../../scripts/verify-code-hotspots.mjs");
+    const snapshot = await loadCodeHotspotSnapshot();
+    const overBudget = snapshot.sourceFiles
+      .flatMap((file) => file.functions ?? [])
+      .filter((fn) => fn.lineCount > 100);
+
+    expect(snapshot.maxLongestFunctionLines).toBe(100);
+    expect(overBudget).toEqual([]);
+  });
 });

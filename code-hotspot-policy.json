@@ -3,6 +3,6 @@
   "maxProductionLines": 800,
   "maxProductionFunctionLines": 50,
   "maxLongFunctions": 144,
-  "maxLongestFunctionLines": 117,
+  "maxLongestFunctionLines": 100,
   "hotspots": []
 }
