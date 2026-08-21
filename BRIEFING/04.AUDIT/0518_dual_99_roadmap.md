@@ -247,6 +247,33 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 50. Checkpoint de publicação do parent path bounded B99-101 — 2026-08-21T03:05:17-03:00
+
+O código/teste `c69069b` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental deste
+checkpoint está em andamento. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 49. Checkpoint do parent path bounded B99-101 — 2026-08-21T03:05:17-03:00
+
+B99-101 recebeu RED/GREEN para componentes-pai do caminho. O RED alternou
+`slot` entre diretório e symlink externo; como `O_NOFOLLOW` protegia apenas o
+componente final, a travessia encontrou `victim.env` fora da árvore em `14/500`
+tentativas e o focal reproduziu `15/500` vazamentos. O GREEN caminha cada
+componente absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`; a recursão
+`/proc/self/fd/<fd>/child` permanece ancorada no descritor já aberto.
+
+O foco passou `50/50`, a cobertura passou `205/1146/21` em
+`95,03/90,95/95,31/95,73`, o probe pós-correção completou `5000` trocas sem
+vazamento nem exceção, o build sintético passou `12/12`, hotspots `0` com
+maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`,
+mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e
+diff-check passaram. O `pnpm verify` no SHA exato percorreu os gates até
+migration safety e parou fail-closed somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+A solução depende de flags POSIX/`/proc`; condições live e externas
+permanecem abertas.
+
 ## 48. Checkpoint de publicação do Git cwd bounded B99-101 — 2026-08-21T02:51:17-03:00
 
 O código/teste `0f575d1` foi publicado em

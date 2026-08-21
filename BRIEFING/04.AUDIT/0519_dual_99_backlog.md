@@ -5,6 +5,38 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T03:05:17-03:00 — B99-101 parent path boundary
+
+- **auditoria/RED:** uma troca sintética de `slot` para symlink externo fez a
+  abertura anterior seguir um componente-pai e encontrar `victim.env` em
+  `14/500` tentativas; a regressão focal reproduziu `15/500` vazamentos;
+- **GREEN:** `openPathDirectory` caminha cada componente absoluto desde `/` com
+  `O_DIRECTORY | O_NOFOLLOW`; a recursão interna por
+  `/proc/self/fd/<fd>/child` usa o descritor já aberto e falhas retornam
+  `<workspace> / unreadable-file`;
+- **evidência:** foco `50/50`, cobertura `205/1146/21` em
+  `95,03/90,95/95,31/95,73`, probe de componentes-pai `5000` sem vazamento nem
+  exceção, build `12/12`, hotspots `0`, contratos `87/87`, worker `51/51`,
+  decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint,
+  typecheck, formato e diff-check passaram. O código/teste `c69069b` foi
+  publicado no branch remoto; a reconciliação desta execução será publicada em
+  seguida;
+- **limite/status:** `pnpm verify` no SHA exato passou até migration safety e
+  parou fail-closed somente nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica foi
+  fresca e read-only, mas não independente; Windows/non-proc permanece limite
+  explícito. B99-101 segue `IN_PROGRESS` no escopo externo e o programa
+  permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T03:05:17-03:00 — B99-101 parent path boundary
+
+O código/teste `c69069b` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+execução está sendo publicada separadamente. A publicação não fecha secret
+manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+aprovação humana ou reauditoria independente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T02:47:53-03:00 — B99-101 Git cwd root boundary
 
 - **auditoria/RED:** a validação anterior da raiz era seguida por `cwd: root`

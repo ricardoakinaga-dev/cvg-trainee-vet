@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 57 fechou a barra local de B99-101 para o `cwd` das superfícies Git: a raiz validada é aberta com `O_DIRECTORY | O_NOFOLLOW`, o descritor permanece vivo durante workspace/staged/history e Git usa `/proc/self/fd/<fd>`; Round 56 mantém a travessia recursiva com descritores-pai, Round 55 mantém `O_NOFOLLOW` na abertura de arquivos, Round 54 mantém a validação da raiz com `<workspace> / unreadable-file`, Round 53 mantém leituras limitadas a `MAX_SCAN_BYTES + 1`, Round 52 mantém caps de scan/header do parser Git, Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check` e proteções de identidade, whitespace e symlink; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 58 fechou a barra local de B99-101 para componentes-pai do caminho da raiz: cada componente absoluto é aberto desde `/` com `O_DIRECTORY | O_NOFOLLOW`, enquanto a recursão interna usa apenas `/proc/self/fd/<fd>/child`; Round 57 mantém o `cwd` Git ancorado no descritor da raiz, Round 56 mantém a travessia recursiva com descritores-pai, Round 55 mantém `O_NOFOLLOW` na abertura de arquivos, Round 54 mantém a validação da raiz com `<workspace> / unreadable-file`, Round 53 mantém leituras limitadas a `MAX_SCAN_BYTES + 1`, Round 52 mantém caps de scan/header do parser Git, Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check` e proteções de identidade, whitespace e symlink; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 57 de B99-101 sob RED→GREEN→REFACTOR; a auditoria fresca reproduziu follow de Git para uma raiz externa em `3/300` tentativas, e a regressão focal reproduziu `7/500` vazamentos staged. A raiz agora é aberta com `O_DIRECTORY | O_NOFOLLOW`, mantida por descritor durante workspace/staged/history e usada como `/proc/self/fd/<fd>` no `cwd` Git; foco `49/49`, cobertura `205/1145/21` em `95,03/90,95/95,31/95,73`, probes staged `5000` e history `1000` sem vazamento nem exceção, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; código/teste `0f575d1` e reconciliação documental `22de927` foram publicados; o pós-push confirmou `HEAD == origin`. `pnpm verify` no SHA exato passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 58 de B99-101 sob RED→GREEN→REFACTOR; a auditoria fresca reproduziu follow de componente-pai para árvore externa em `14/500` tentativas, e a regressão focal reproduziu `15/500` vazamentos. A abertura agora caminha cada componente absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`, mantendo a recursão interna em descritores `/proc/self/fd`; foco `50/50`, cobertura `205/1146/21` em `95,03/90,95/95,31/95,73`, probe de componentes-pai `5000` sem vazamento nem exceção, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; código/teste `c69069b` foi publicado no branch remoto. `pnpm verify` no SHA exato passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental de Round 58 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,35 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T02:51:17-03:00
+- last_update: 2026-08-21T03:05:17-03:00
+
+## 2026-08-21T03:05:17-03:00 — DUAL99-B99-101-PARENT-PATH-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only reproduziu uma troca de componente-pai em `slot/root`:
+  a abertura anterior protegia apenas o componente final e encontrou
+  `victim.env / sensitive-assignment` em `14/500` tentativas; o RED focal
+  reproduziu `15/500` vazamentos;
+- GREEN passou a caminhar cada componente absoluto desde `/` com
+  `O_DIRECTORY | O_NOFOLLOW`; apenas a recursão interna usa
+  `/proc/self/fd/<fd>/child` do descritor já aberto;
+- o foco passou `50/50`; cobertura `205/1146/21` em
+  `95,03/90,95/95,31/95,73`; probe de componentes-pai `5000` sem vazamento nem
+  exceção; build `12/12`; hotspots `0` com maior função de `98` linhas;
+  contratos `87/87`; worker `51/51`; decisões `7/7`; mutation `7/7`; migration
+  safety `33/33`; audit, lint, typecheck, formato e diff-check passaram.
+  Código/teste `c69069b` foi publicado e o pós-push confirmou `HEAD == origin`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O `pnpm verify` no SHA exato passou até migration safety e permaneceu
+fail-closed somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado. Publicar a
+reconciliação documental, então executar nova auditoria bounded;
+Windows/non-proc, secret manager/rotação, provider/CI, RC/runtime, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Não houve score, release, piloto ou produção.
 
 ## 2026-08-21T02:47:53-03:00 — DUAL99-B99-101-GIT-CWD-ROOT-NOFOLLOW
 

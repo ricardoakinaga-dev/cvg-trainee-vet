@@ -1,15 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T02:51:17-03:00`
-- última atualização: `2026-08-21T02:51:17-03:00`
+- corte: `2026-08-21T03:05:17-03:00`
+- última atualização: `2026-08-21T03:05:17-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `0f575d1` em
+- commit publicado: `c69069b` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `22de927` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `22de927`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- evidência documental publicada: pendente nesta etapa de reconciliação
+- paridade documental final: será confirmada após o commit documental; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -27,6 +26,10 @@
 
 ## Implementações locais desta rodada
 
+- parent path boundary: a abertura da raiz agora caminha cada componente
+  absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`; apenas a recursão interna
+  por `/proc/self/fd/<fd>/child` usa o descritor já aberto. O RED reproduziu
+  `15/500` findings externos; o probe pós-GREEN não vazou.
 - Git cwd root boundary: a validação da raiz agora abre e mantém um descritor
   `O_DIRECTORY | O_NOFOLLOW` vivo durante workspace, staged e history; Git usa
   `/proc/self/fd/<fd>` como `cwd`, e falhas de abertura retornam finding
@@ -210,6 +213,46 @@
   safety, lint, typecheck, formato, diff-check, CI contract e documentation
   passaram. O código/teste está em `593619e` e
   `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 58 — B99-101 / parent path component symlink TOCTOU — 2026-08-21T03:05:17-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED alternou um componente-pai de `slot/root` entre diretório regular e
+  symlink para uma árvore externa; a abertura anterior protegia apenas o
+  componente final e encontrou `victim.env` com `sensitive-assignment` em
+  `15/500` tentativas;
+- GREEN passou a resolver e abrir cada componente absoluto a partir de `/` com
+  `O_DIRECTORY | O_NOFOLLOW`; caminhos internos de recursão
+  `/proc/self/fd/<fd>/child` continuam ancorados no descritor já aberto;
+- REFACTOR preservou a abertura segura final, a leitura bounded, os diretórios
+  ignorados, o pinning de cwd Git e a deduplicação de findings.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco de integração do secret scanner: `50/50`;
+- cobertura completa: `205` arquivos, `1146` testes passantes e `21` guardados;
+  `95,03%` statements, `90,95%` branches, `95,31%` functions e `95,73%`
+  lines;
+- probe pós-correção de componentes-pai: `5000` trocas, zero vazamentos, zero
+  exceções, `4737` resultados unreadable e `263` clean;
+- build sintético `12/12`; hotspots `0`, maior função `98` linhas; contratos
+  `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety
+  `33/33`, audit, lint, typecheck, formato e diff-check passaram.
+
+### LIMITES / PUBLICAÇÃO
+
+O `pnpm verify` no SHA `c69069b` passou todos os gates até migration safety e
+parou fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado. O commit de código/teste `c69069b` foi publicado no branch remoto; a
+reconciliação documental desta rodada está sendo publicada separadamente. A
+crítica foi fresca e read-only, porém não independente porque o backend de
+critic não estava disponível. A solução depende de descritores POSIX e
+`/proc/self/fd`; Windows/non-proc, secret manager/rotação, provider/CI,
+RC/runtime, WebKit aprovado, clínica, `0/145`, gates externos, aprovação
+humana e reauditoria independente continuam abertos; não houve score, release,
+piloto ou mutação de produção.
 
 ## Round 57 — B99-101 / Git cwd root symlink TOCTOU — 2026-08-21T02:47:53-03:00
 
