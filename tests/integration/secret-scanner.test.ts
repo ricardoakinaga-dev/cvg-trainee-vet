@@ -467,6 +467,73 @@ describe("secret scanner", () => {
     }
   });
 
+  it("does not follow symlinked parent components when opening the workspace root", async () => {
+    const base = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-parent-path-race-"),
+    );
+    temporaryDirectories.push(base);
+    const realParent = join(base, "slot-real");
+    const parentPath = join(base, "slot");
+    const externalParent = join(base, "slot-external");
+    const root = join(parentPath, "root");
+    const externalRoot = join(externalParent, "root");
+    await mkdir(join(realParent, "root"), { recursive: true });
+    await mkdir(externalRoot, { recursive: true });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(externalRoot, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await rename(realParent, parentPath);
+
+    const worker = new Worker(
+      `
+        import { parentPort, workerData } from "node:worker_threads";
+        import { rename, symlink, unlink } from "node:fs/promises";
+        let running = true;
+        parentPort.on("message", (message) => {
+          if (message === "stop") running = false;
+        });
+        while (running) {
+          try { await rename(workerData.parentPath, workerData.backup); } catch {}
+          try { await symlink(workerData.external, workerData.parentPath, "dir"); } catch {}
+          try { await unlink(workerData.parentPath); } catch {}
+          try { await rename(workerData.backup, workerData.parentPath); } catch {}
+        }
+      `,
+      {
+        eval: true,
+        workerData: {
+          parentPath,
+          backup: join(base, "slot-backup"),
+          external: externalParent,
+        },
+      },
+    );
+
+    try {
+      const leakedFindings = [];
+      for (let attempt = 0; attempt < 500; attempt += 1) {
+        const findings = await scanProject(root, {
+          includeStaged: false,
+          includeHistory: false,
+        });
+        leakedFindings.push(
+          ...findings.filter(
+            (finding) =>
+              finding.path === "victim.env" &&
+              finding.rule === "sensitive-assignment",
+          ),
+        );
+      }
+
+      expect(leakedFindings).toHaveLength(0);
+    } finally {
+      worker.postMessage("stop");
+      await worker.terminate();
+    }
+  });
+
   it.each(["missing", "regular-file"])(
     "rejects a %s supplied as the scan root",
     async (name) => {
