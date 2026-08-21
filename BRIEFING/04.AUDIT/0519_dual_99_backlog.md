@@ -27,14 +27,14 @@
   falham fechado. B99-101 segue `IN_PROGRESS` no escopo externo e o programa
   permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Publicação de execução — 2026-08-21T02:16:26-03:00 — B99-101 workspace directory boundary
+## Publicação de execução — 2026-08-21T02:22:29-03:00 — B99-101 workspace directory boundary
 
 O código/teste `4af5821` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-execução está sendo publicada separadamente. A publicação não fecha secret
-manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
-aprovação humana ou reauditoria independente; o programa segue
-`IN_PROGRESS / PILOT_BLOCKED`.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`41cf20c` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`41cf20c`. A publicação não fecha secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana ou reauditoria
+independente; o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Atualização de execução — 2026-08-21T01:56:15-03:00 — B99-101 workspace open boundary
 

@@ -1,14 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T02:16:26-03:00`
-- última atualização: `2026-08-21T02:16:26-03:00`
+- corte: `2026-08-21T02:22:29-03:00`
+- última atualização: `2026-08-21T02:22:29-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `4af5821` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: pendente nesta etapa de reconciliação
-- paridade documental final: será confirmada após o commit documental; nenhum
-  código ou estado externo foi alterado depois desse corte
+- evidência documental publicada: `41cf20c` em
+  `origin/agent/publish-production-hardening`
+- paridade documental final: confirmada no pós-push em `41cf20c`; nenhum código
+  ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -240,8 +241,8 @@
 ### LIMITES / PUBLICAÇÃO
 
 O arquivo `.env.local` não foi lido nem alterado. O commit de código/teste é
-`4af5821`, publicado no branch remoto; a reconciliação documental desta rodada
-está sendo publicada separadamente. A crítica foi fresca e read-only, porém
+`4af5821` e a reconciliação documental `41cf20c`, ambos publicados no branch
+remoto; o pós-push confirmou `HEAD == origin` em `41cf20c`. A crítica foi fresca e read-only, porém
 não independente porque o backend de critic não estava disponível. A
 travessia segura depende de descritores POSIX e `/proc/self/fd`; em plataformas
 sem as flags necessárias ela falha fechado. Secret manager/rotação, provider/CI,

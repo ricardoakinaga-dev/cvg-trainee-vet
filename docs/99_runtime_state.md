@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 56 de B99-101 sob RED→GREEN→REFACTOR; o probe concorrente reproduziu follow de symlink de diretório e uma falha `ENOENT` durante enumeração. A travessia agora mantém descritores-pai abertos, abre diretórios com `O_DIRECTORY | O_NOFOLLOW` via `/proc/self/fd/<fd>` e converte falhas em finding redigido; o foco passou `48/48`, cobertura `205/1144/21` em `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o probe de profundidade pós-correção completou `5000` trocas sem vazamento nem exceção e o commit de código/teste `4af5821` foi publicado no branch remoto. `pnpm verify` oficial passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental de Round 56 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 56 de B99-101 sob RED→GREEN→REFACTOR; o probe concorrente reproduziu follow de symlink de diretório e uma falha `ENOENT` durante enumeração. A travessia agora mantém descritores-pai abertos, abre diretórios com `O_DIRECTORY | O_NOFOLLOW` via `/proc/self/fd/<fd>` e converte falhas em finding redigido; o foco passou `48/48`, cobertura `205/1144/21` em `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o probe de profundidade pós-correção completou `5000` trocas sem vazamento nem exceção. Código/teste `4af5821` e reconciliação documental `41cf20c` foram publicados; o pós-push confirmou `HEAD == origin`. `pnpm verify` oficial passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T02:16:26-03:00
+- last_update: 2026-08-21T02:22:29-03:00
 
 ## 2026-08-21T02:16:26-03:00 — DUAL99-B99-101-WORKSPACE-DIRECTORY-NOFOLLOW
 
@@ -64,6 +64,22 @@ estava disponível. Reconciliar e publicar a documentação, então executar nov
 auditoria bounded; secret manager/rotação, provider/CI, RC/runtime, WebKit
 aprovado, clínica, `0/145`, gates externos, aprovação humana e reauditoria
 independente permanecem abertos. Não houve score, release, piloto ou produção.
+
+## 2026-08-21T02:22:29-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-DIRECTORY-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+O commit documental `41cf20c` reconciliou estado, backlog, roadmap, evidência,
+log e traceability da Round 56 e foi publicado em
+`origin/agent/publish-production-hardening`. O pós-push confirmou
+`HEAD == origin` em `41cf20c`; `.gauntlet/` permanece local e não rastreado.
+
+### STATUS / PRÓXIMA AÇÃO
+
+A disposição segue `IN_PROGRESS / PILOT_BLOCKED`. Executar nova auditoria
+bounded; secret manager/rotação, provider/CI, RC/runtime, WebKit aprovado,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Não houve score, release, piloto ou produção.
 
 ## 2026-08-21T01:56:15-03:00 — DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
 

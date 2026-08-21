@@ -247,11 +247,12 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 46. Checkpoint de publicação da travessia recursiva B99-101 — 2026-08-21T02:16:26-03:00
+## 46. Checkpoint de publicação da travessia recursiva B99-101 — 2026-08-21T02:22:29-03:00
 
 O código/teste `4af5821` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental deste
-checkpoint está em andamento. A publicação não altera runtime, produção,
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`41cf20c` também foi publicada no mesmo branch e o pós-push confirmou
+`HEAD == origin` em `41cf20c`. A publicação não altera runtime, produção,
 segredos, score, release, clínica ou piloto.
 
 ## 45. Checkpoint de travessia recursiva bounded B99-101 — 2026-08-21T02:16:26-03:00
