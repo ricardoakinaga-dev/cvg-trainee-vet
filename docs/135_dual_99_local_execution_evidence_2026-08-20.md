@@ -1,7 +1,7 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T00:04:17-03:00`
+- corte: `2026-08-21T00:12:22-03:00`
 - última atualização: `2026-08-21T00:12:22-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `9b3f71e` em
