@@ -2,6 +2,23 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Auditoria Dual99 — 2026-08-21T12:19:51-03:00 — U98-106 worker crash cleanup:**
+uma inspeção independente read-only reproduziu que `runWorkerLoop` fechava
+`health`, mas não `integrations`, quando initialize/processOnce lançava. RED
+falhou nos dois caminhos; GREEN fecha ambos com `Promise.allSettled` e preserva
+o erro original. Foco worker `54/54`; cobertura `205/1177/21` em
+`95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; typecheck, lint,
+formato, exposure e diff-check passaram. Código/teste `357f265` está publicado
+com `HEAD == origin`; evidência:
+`docs/144_dual_99_u98_106_worker_cleanup_evidence_2026-08-21.md`.
+
+**Disposição:** U98-106 segue `READY_FOR_NEXT_STEP` localmente e o programa
+`IN_PROGRESS / PILOT_BLOCKED`. Qdrant com falha entre writes, replay de IA sem
+contrato de idempotência, PostgreSQL live, RLS, RC, runtime, score, release,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. O explorador independente encontrou os gaps, mas não há
+`PASS` independente final.
+
 **Auditoria Dual99 — 2026-08-21T12:10:51-03:00 — B99-201 worker persistence:**
 uma inspeção independente read-only reproduziu que exceções de `markFailed`
 interrompiam o lote e que exceções de `markProcessed` eram tratadas como falha

@@ -24,6 +24,22 @@ preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
 alterado. O explorador independente encontrou o gap corrigido, mas não há
 `PASS` independente final.
 
+## Atualização de execução — 2026-08-21T12:19:51-03:00 — U98-106 worker crash cleanup
+
+Uma inspeção independente read-only reproduziu que `runWorkerLoop` fechava
+`health`, mas não `integrations`, em falhas de inicialização/processamento. RED
+falhou nos dois caminhos; GREEN fecha ambos com `Promise.allSettled` e preserva
+o erro original. Foco worker `54/54`; cobertura `205/1177/21` em
+`95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; typecheck, lint,
+formato, exposure e diff-check passaram. Código/teste publicado: `357f265`;
+evidência: `docs/144_dual_99_u98_106_worker_cleanup_evidence_2026-08-21.md`.
+
+**status:** U98-106 segue `READY_FOR_NEXT_STEP` localmente. Qdrant com falha
+entre writes, replay de IA sem contrato de idempotência, PostgreSQL live, RLS,
+RC, score, release, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente continuam abertos. O explorador independente encontrou
+os gaps, mas não há `PASS` independente final.
+
 ## Atualização de execução — 2026-08-21T11:54:12-03:00 — B99-201 ACK state
 
 Uma revisão read-only reproduziu que `markProcessed` preservava

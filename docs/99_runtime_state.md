@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-2 worker, observabilidade e dados derivados
 - current_sprint: F99-2 — fechamento local de outbox e readiness
-- current_task: B99-201 continuation local hardening; além de limpar `last_error_code` no ACK, o worker isola falhas de `markProcessed`/`markFailed`, evita retry do ACK e preserva telemetria/cleanup do lote. B99-101 permanece com as Rounds 81–89 fechadas; B99-102 mantém downloader clínico fail-closed, enquanto PostgreSQL live com role restrita, WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: U98-106/B99-202 continuation local hardening; além de isolar falhas de `markProcessed`/`markFailed`, o worker fecha `integrations` junto com `health` em crash de inicialização/processamento. B99-101 permanece com as Rounds 81–89 fechadas; B99-102 mantém downloader clínico fail-closed, enquanto PostgreSQL live com role restrita, WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: tratou a continuação B99-201 sob RED→GREEN→REFACTOR, publicou `8bcbe58` e confirmou o código em `origin`; o worker agora isola exceções de ACK/retry com códigos técnicos redigidos. Foco worker `53/53`, outbox `10/10`; cobertura `205/1176/21` em `95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; format/lint/typecheck/diff-check/exposure verdes. As Rounds 81–89 de B99-101 permanecem reconciliadas em `docs/141`, e o ACK anterior em `docs/142`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; o explorador independente encontrou este gap, sem `PASS` independente final. `.gauntlet/` continua local e não rastreado
+- last_completed_action: tratou U98-106/B99-202 sob RED→GREEN→REFACTOR, publicou `357f265` e confirmou o código em `origin`; em crash do loop, `health` e `integrations` são fechados com preservação do erro original. Foco worker `54/54`; cobertura `205/1177/21` em `95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; format/lint/typecheck/diff-check/exposure verdes. As Rounds 81–89 de B99-101 permanecem reconciliadas em `docs/141`, ACK em `docs/142` e resiliência em `docs/143`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; o explorador independente também deixou Qdrant/IA como gaps de contrato, sem `PASS` independente final. `.gauntlet/` continua local e não rastreado
 - next_action: revalidar B99-201 em PostgreSQL live descartável/aprovado com role sem `SUPERUSER/BYPASSRLS`, concorrência, lease/ACK/retry/cleanup e RLS; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, concurrency/TTL/RLS de B99-103/105, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
-- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; B99-201 ainda depende de PostgreSQL live com role restrita para provar concorrência, lease/ACK/retry/cleanup e RLS; o explorador independente encontrou o gap corrigido localmente, mas não há `PASS` independente final e o papel reviewer não foi suportado; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; B99-201 ainda depende de PostgreSQL live com role restrita para provar concorrência, lease/ACK/retry/cleanup e RLS; U98-106 ainda tem Qdrant com falha entre writes e replay de IA sem contrato de idempotência; não há `PASS` independente final e o papel reviewer não foi suportado; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,29 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T12:10:51-03:00
+- last_update: 2026-08-21T12:19:51-03:00
+
+## 2026-08-21T12:19:51-03:00 — DUAL99-U98-106-WORKER-CLEANUP
+
+### AÇÃO / RESULTADO
+
+- a inspeção independente read-only encontrou vazamento de `integrations` no
+  crash de `initialize`/`processOutboxOnce`; RED confirmou os dois caminhos;
+- GREEN fecha `health` e `integrations` com `Promise.allSettled` e preserva o
+  erro original; o loop também protege a falha de `health.start`;
+- foco worker `54/54`; cobertura `205/1177/21` em
+  `95,04/90,95/95,32/95,74`; build `12/12`, hotspots `0`, typecheck, lint,
+  formato, exposure e diff-check passaram;
+- código/teste foi publicado em `357f265` e enviado ao `origin`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+U98-106 segue `READY_FOR_NEXT_STEP` localmente. Falha parcial entre writes no
+Qdrant e idempotência do replay de IA continuam dependentes de contrato; também
+permanecem PostgreSQL live, RLS, RC, runtime, score, release, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente. O explorador
+independente encontrou os gaps, mas não há `PASS` independente final; o papel
+reviewer não iniciou por limitação de modelo da conta.
 
 ## 2026-08-21T12:10:51-03:00 — DUAL99-B99-201-WORKER-PERSISTENCE-FAILURE
 

@@ -40,6 +40,60 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T12:19:51-03:00 — DUAL99-U98-106-WORKER-CLEANUP
+
+### TIMESTAMP
+
+2026-08-21 12:19:51 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-2 — worker, observabilidade e dados derivados
+
+### SPRINT
+
+F99-2 — fault/crash/replay do worker
+
+### TASK
+
+U98-106 — fechar cleanup de integrações no crash do worker.
+
+### ACTION
+
+Uma inspeção independente read-only encontrou que `runWorkerLoop` fechava o
+health server, mas não fechava `integrations` quando a inicialização ou o
+processamento lançava. RED reproduziu os dois caminhos; GREEN adicionou cleanup
+conjunto e preservou o erro original.
+
+### RESULT
+
+Foco worker `54/54`; cobertura `205/1177/21` em
+`95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; typecheck, lint,
+formato, exposure e diff-check passaram. Código/teste `357f265` foi publicado
+e enviado ao `origin`.
+
+### DECISIONS
+
+U98-106 segue `READY_FOR_NEXT_STEP` localmente. Não houve alteração em runtime,
+produção, banco live, score, release, decisão clínica ou piloto. O explorador
+independente também apontou Qdrant entre writes e replay de IA sem contrato de
+idempotência; ambos permanecem abertos. Nenhum `PASS` independente final é
+alegado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Definir/aprovar contrato de consistência do Qdrant e idempotência do evento de
+IA antes de implementar esses dois pontos; em paralelo, manter as provas live,
+RC, clínicas, externas, humanas e a reauditoria independente abertas.
+
 ## 2026-08-21T12:10:51-03:00 — DUAL99-B99-201-WORKER-PERSISTENCE-FAILURE
 
 ### TIMESTAMP
