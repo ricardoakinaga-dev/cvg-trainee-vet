@@ -3,6 +3,30 @@ import { spawn } from "node:child_process";
 
 const DEFAULT_MAX_ERROR_BYTES = 4096;
 const DEFAULT_MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
+const DEFAULT_MAX_BATCH_BYTES = 8 * 1024 * 1024;
+
+function assertMaxBatchBytes(value) {
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new TypeError("maxBatchBytes must be a positive safe integer");
+  }
+  return value;
+}
+
+function freezeGitBatchPlan(
+  findings,
+  objectIds,
+  batches,
+  batchSizes,
+  complete,
+) {
+  return Object.freeze({
+    findings: Object.freeze(findings),
+    objectIds: Object.freeze(objectIds),
+    batches: Object.freeze(batches),
+    batchSizes: Object.freeze(batchSizes),
+    complete,
+  });
+}
 
 export function runGitBatch(
   root,
@@ -83,12 +107,13 @@ export function planGitBatchRequests(
   objects,
   {
     maxScanBytes,
-    maxBatchBytes = Number.MAX_SAFE_INTEGER,
+    maxBatchBytes = DEFAULT_MAX_BATCH_BYTES,
     isIgnoredBinaryAssetPath,
     unscannedFinding,
     source,
   },
 ) {
+  const batchLimit = assertMaxBatchBytes(maxBatchBytes);
   const findings = [];
   const objectIds = [];
   const batches = [];
@@ -155,8 +180,12 @@ export function planGitBatchRequests(
       }
       continue;
     }
+    if (size > batchLimit) {
+      addUnreadable(logicalPath, "git object exceeds batch budget");
+      continue;
+    }
     objectIds.push(objectId);
-    if (currentBatch.length > 0 && currentBatchSize + size > maxBatchBytes) {
+    if (currentBatch.length > 0 && currentBatchSize + size > batchLimit) {
       flushBatch();
     }
     currentBatch.push(objectId);
@@ -168,13 +197,7 @@ export function planGitBatchRequests(
     addUnreadable(`${source}:<git>`, "truncated git batch-check response");
     complete = false;
   }
-  return Object.freeze({
-    findings: Object.freeze(findings),
-    objectIds: Object.freeze(objectIds),
-    batches: Object.freeze(batches),
-    batchSizes: Object.freeze(batchSizes),
-    complete,
-  });
+  return freezeGitBatchPlan(findings, objectIds, batches, batchSizes, complete);
 }
 
 function parseGitBatchRecord(

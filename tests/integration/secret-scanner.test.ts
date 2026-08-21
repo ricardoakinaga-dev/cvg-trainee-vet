@@ -19,6 +19,7 @@ import {
 } from "../../scripts/secret-scanner.mjs";
 import {
   createGitBatchStreamParser,
+  planGitBatchRequests as planGitBatchRequestsInternal,
   runGitBatch,
 } from "../../scripts/secret-scanner-git-batch.mjs";
 
@@ -684,6 +685,64 @@ describe("secret scanner", () => {
     expect(plan.objectIds).toEqual(objectIds);
     expect(plan.batches).toEqual([objectIds.slice(0, 4), objectIds.slice(4)]);
     expect(plan.batchSizes).toEqual([8 * 1024 * 1024, 2 * 1024 * 1024]);
+  });
+
+  it("keeps the low-level Git batch planner fail-closed by default", () => {
+    const megabyte = 1024 * 1024;
+    const objectIds = ["a", "b", "c"].map((prefix) => prefix.repeat(40));
+    const objects = new Map(
+      objectIds.map((objectId, index) => [objectId, `bounded-${index}.txt`]),
+    );
+    const metadata = Buffer.from(
+      objectIds
+        .map((objectId) => `${objectId} blob ${3 * megabyte}`)
+        .concat("")
+        .join("\n"),
+    );
+    const options = {
+      maxScanBytes: 4 * megabyte,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path: string, rule: string, evidence: string) => ({
+        path,
+        rule,
+        evidence,
+      }),
+      source: "history",
+    };
+
+    const plan = planGitBatchRequestsInternal(metadata, objects, options);
+
+    expect(plan.batchSizes).toEqual([6 * megabyte, 3 * megabyte]);
+    expect(Math.max(...plan.batchSizes)).toBeLessThanOrEqual(8 * megabyte);
+    for (const maxBatchBytes of [
+      0,
+      -1,
+      Number.NaN,
+      1.5,
+      Number.POSITIVE_INFINITY,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]) {
+      expect(() =>
+        planGitBatchRequestsInternal(metadata, objects, {
+          ...options,
+          maxBatchBytes,
+        }),
+      ).toThrow(/maxBatchBytes/iu);
+    }
+
+    const oversizedId = "d".repeat(40);
+    const oversized = planGitBatchRequestsInternal(
+      Buffer.from(`${oversizedId} blob ${9 * megabyte}\n`),
+      new Map([[oversizedId, "oversized.txt"]]),
+      { ...options, maxScanBytes: 10 * megabyte },
+    );
+    expect(oversized.batches).toEqual([]);
+    expect(oversized.findings).toEqual([
+      expect.objectContaining({
+        path: "history:oversized.txt",
+        rule: "git-object-unreadable",
+      }),
+    ]);
   });
 
   it("rejects Git batch output above its configured cap", async () => {
