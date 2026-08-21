@@ -16,6 +16,24 @@ function assertMaxBatchBytes(value) {
   return assertPositiveSafeInteger(value, "maxBatchBytes");
 }
 
+function createGitStdio(
+  base,
+  { gitDirectoryHandle, gitIndexHandle, gitObjectDirectoryHandle },
+) {
+  if (
+    gitDirectoryHandle === undefined &&
+    gitIndexHandle === undefined &&
+    gitObjectDirectoryHandle === undefined
+  ) {
+    return undefined;
+  }
+  const stdio = [...base, "ignore", "ignore", "ignore"];
+  stdio[3] = gitDirectoryHandle ?? "ignore";
+  stdio[4] = gitIndexHandle ?? "ignore";
+  stdio[5] = gitObjectDirectoryHandle ?? "ignore";
+  return stdio;
+}
+
 function freezeGitBatchPlan(
   findings,
   objectIds,
@@ -42,6 +60,8 @@ export function runGitBatch(
     onChunk,
     env,
     gitDirectoryHandle,
+    gitIndexHandle,
+    gitObjectDirectoryHandle,
     spawnProcess = spawn,
   } = {},
 ) {
@@ -56,9 +76,12 @@ export function runGitBatch(
     );
     const spawnOptions = { cwd: root };
     if (env !== undefined) spawnOptions.env = env;
-    if (gitDirectoryHandle !== undefined) {
-      spawnOptions.stdio = ["pipe", "pipe", "pipe", gitDirectoryHandle];
-    }
+    const stdio = createGitStdio(["pipe", "pipe", "pipe"], {
+      gitDirectoryHandle,
+      gitIndexHandle,
+      gitObjectDirectoryHandle,
+    });
+    if (stdio !== undefined) spawnOptions.stdio = stdio;
     const child = spawnProcess("git", args, spawnOptions);
     const chunks = [];
     let settled = false;
@@ -129,6 +152,8 @@ export function runGitCommand(
     maxErrorBytes = DEFAULT_MAX_ERROR_BYTES,
     env,
     gitDirectoryHandle,
+    gitIndexHandle,
+    gitObjectDirectoryHandle,
   } = {},
 ) {
   return new Promise((resolve, reject) => {
@@ -142,9 +167,12 @@ export function runGitCommand(
     );
     const spawnOptions = { cwd: root };
     if (env !== undefined) spawnOptions.env = env;
-    if (gitDirectoryHandle !== undefined) {
-      spawnOptions.stdio = ["ignore", "pipe", "pipe", gitDirectoryHandle];
-    }
+    const stdio = createGitStdio(["ignore", "pipe", "pipe"], {
+      gitDirectoryHandle,
+      gitIndexHandle,
+      gitObjectDirectoryHandle,
+    });
+    if (stdio !== undefined) spawnOptions.stdio = stdio;
     const child = spawn("git", args, spawnOptions);
     const chunks = [];
     let settled = false;
@@ -501,6 +529,8 @@ export async function readGitBlobs(
     readBatchOutput,
     env,
     gitDirectoryHandle,
+    gitIndexHandle,
+    gitObjectDirectoryHandle,
     source = "history",
   },
 ) {
@@ -519,6 +549,8 @@ export async function readGitBlobs(
     {
       env,
       gitDirectoryHandle,
+      gitIndexHandle,
+      gitObjectDirectoryHandle,
       maxOutputBytes: objectIds.length * headerLimit + 1,
     },
   );
@@ -548,6 +580,8 @@ export async function readGitBlobs(
       await runGitBatch(root, ["cat-file", "--batch"], batch, {
         env,
         gitDirectoryHandle,
+        gitIndexHandle,
+        gitObjectDirectoryHandle,
         maxOutputBytes: plan.batchSizes[index] + batch.length * headerLimit + 1,
         onChunk: (chunk) => parser.push(chunk),
       });

@@ -17,6 +17,8 @@ export function createGitSurfaceScanner({
     const output = await runGitCommand(root, args, {
       env: options.env,
       gitDirectoryHandle: options.gitDirectoryHandle,
+      gitIndexHandle: options.gitIndexHandle,
+      gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
       maxOutputBytes: options.maxOutputBytes ?? 32 * 1024 * 1024,
     });
     return output.toString("utf8");
@@ -28,12 +30,21 @@ export function createGitSurfaceScanner({
   }
 
   async function scanStaged(root, options) {
+    if (options.gitIndexStatus === "missing") return [];
+    if (
+      options.gitIndexStatus !== "ready" ||
+      options.gitObjectDirectoryStatus !== "ready"
+    ) {
+      throw new Error("Git staged metadata unavailable");
+    }
     const findings = [];
     for (const path of await stagedPaths(root, options)) {
       try {
         const stdout = await runGitCommand(root, ["show", `:${path}`], {
           env: options.env,
           gitDirectoryHandle: options.gitDirectoryHandle,
+          gitIndexHandle: options.gitIndexHandle,
+          gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
           maxOutputBytes: maxScanBytes + 1,
         });
         findings.push(...scanPathBuffer(stdout, `staged:${path}`));
@@ -51,6 +62,9 @@ export function createGitSurfaceScanner({
   }
 
   async function scanHistory(root, options) {
+    if (options.gitObjectDirectoryStatus !== "ready") {
+      throw new Error("Git object directory unavailable");
+    }
     const objects = parseObjectList(
       await git(root, ["rev-list", "--objects", "--all"], options),
     );
@@ -63,6 +77,8 @@ export function createGitSurfaceScanner({
       readBatchOutput,
       env: options.env,
       gitDirectoryHandle: options.gitDirectoryHandle,
+      gitIndexHandle: options.gitIndexHandle,
+      gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
     });
   }
 

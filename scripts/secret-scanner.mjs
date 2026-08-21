@@ -5,6 +5,11 @@ import { planGitBatchRequests as planGitBatchRequestsInternal } from "./secret-s
 import { deduplicateFindings } from "./secret-scanner-findings.mjs";
 import { createGitSurfaceScanner } from "./secret-scanner-git-surfaces.mjs";
 import {
+  closeGitMetadata,
+  createGitOptions,
+  openGitMetadata,
+} from "./secret-scanner-git-metadata.mjs";
+import {
   openWorkspaceDirectory,
   readScanBuffer,
   withWorkspaceRoot,
@@ -721,19 +726,6 @@ async function appendGitFindings(
   }
 }
 
-function createGitEnvironment() {
-  const inheritedEnvironment = Object.fromEntries(
-    Object.entries(process.env).filter(
-      ([key]) => !key.toUpperCase().startsWith("GIT_"),
-    ),
-  );
-  return {
-    ...inheritedEnvironment,
-    GIT_DIR: "/proc/self/fd/3",
-    GIT_WORK_TREE: ".",
-  };
-}
-
 export async function scanProject(
   root,
   { includeStaged = true, includeHistory = true } = {},
@@ -742,20 +734,9 @@ export async function scanProject(
     root,
     async (gitRoot, rootAccess) => {
       const findings = [...(await scanWorkspace(gitRoot, rootAccess))];
-      const gitDirectory =
-        includeStaged || includeHistory
-          ? await openWorkspaceDirectory(join(gitRoot, ".git")).catch(
-              () => null,
-            )
-          : null;
-      const env =
-        gitDirectory === null || gitDirectory === undefined
-          ? undefined
-          : createGitEnvironment();
-      const gitOptions =
-        env === undefined
-          ? undefined
-          : { env, gitDirectoryHandle: gitDirectory.handle };
+      const gitMetadata =
+        includeStaged || includeHistory ? await openGitMetadata(gitRoot) : null;
+      const gitOptions = createGitOptions(gitMetadata);
       try {
         await appendGitFindings(
           findings,
@@ -775,7 +756,7 @@ export async function scanProject(
         );
         return deduplicateFindings(findings);
       } finally {
-        await gitDirectory?.handle.close();
+        await closeGitMetadata(gitMetadata);
       }
     },
   );

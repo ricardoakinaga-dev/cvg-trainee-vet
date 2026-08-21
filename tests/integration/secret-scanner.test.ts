@@ -707,6 +707,137 @@ describe("secret scanner", () => {
     }
   });
 
+  it("does not follow symlinked internal Git index and object directories", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-internal-link-"),
+    );
+    temporaryDirectories.push(parent);
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    await mkdir(root);
+    await mkdir(external);
+    await execFileAsync("git", ["init", "-q"], { cwd: root });
+    await execFileAsync("git", ["init", "-q"], { cwd: external });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], { cwd: external });
+    await execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.email=synthetic@example.invalid",
+        "-c",
+        "user.name=synthetic",
+        "commit",
+        "-qm",
+        "synthetic",
+      ],
+      { cwd: external },
+    );
+    await rename(
+      join(root, ".git", "objects"),
+      join(root, ".git", "objects-backup"),
+    );
+    await symlink(
+      join(external, ".git", "objects"),
+      join(root, ".git", "objects"),
+      "dir",
+    );
+    await symlink(join(external, ".git", "index"), join(root, ".git", "index"));
+
+    const findings = await scanProject(root, {
+      includeStaged: true,
+      includeHistory: false,
+    });
+
+    expect(findings).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "staged:victim.env",
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "staged:<git>",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
+  });
+
+  it("does not follow Git object alternates", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-alternates-"),
+    );
+    temporaryDirectories.push(parent);
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    await mkdir(root);
+    await mkdir(external);
+    await execFileAsync("git", ["init", "-q"], { cwd: root });
+    await execFileAsync("git", ["init", "-q"], { cwd: external });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], { cwd: external });
+    await execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.email=synthetic@example.invalid",
+        "-c",
+        "user.name=synthetic",
+        "commit",
+        "-qm",
+        "synthetic",
+      ],
+      { cwd: external },
+    );
+    const externalHead = (
+      await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: external })
+    ).stdout.trim();
+    await mkdir(join(root, ".git", "refs", "heads"), { recursive: true });
+    await writeFile(join(root, ".git", "HEAD"), "ref: refs/heads/main\n");
+    await writeFile(
+      join(root, ".git", "refs", "heads", "main"),
+      `${externalHead}\n`,
+    );
+    await writeFile(
+      join(root, ".git", "objects", "info", "alternates"),
+      `${join(external, ".git", "objects")}\n`,
+    );
+
+    const findings = await scanProject(root, {
+      includeStaged: false,
+      includeHistory: true,
+    });
+
+    expect(findings).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "history:victim.env",
+          rule: "sensitive-assignment",
+        }),
+      ]),
+    );
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "history:<git>",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
+  });
+
   it("pins Git metadata while staged content is being read", async () => {
     const parent = await mkdtemp(
       join(tmpdir(), "cvg-secret-scanner-git-metadata-race-"),

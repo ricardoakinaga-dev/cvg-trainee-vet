@@ -81,6 +81,14 @@ export async function readScanBuffer(file, maxBytes) {
   }
 }
 
+export async function openWorkspaceFile(file) {
+  if (noFollowReadFlags === undefined) {
+    throw new Error("workspace no-follow open is unavailable");
+  }
+  const handle = await open(file, noFollowReadFlags);
+  return { handle, path: `/proc/self/fd/${handle.fd}` };
+}
+
 export async function openWorkspaceDirectory(directory) {
   if (noFollowDirectoryFlags === undefined) {
     throw new Error("workspace no-follow directory open is unavailable");
