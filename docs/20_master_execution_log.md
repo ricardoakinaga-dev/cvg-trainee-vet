@@ -11458,7 +11458,8 @@ O foco passou `62/62`; a cobertura passou `205` arquivos / `1158` testes /
 `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots
 `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit de
 dependências passaram. Probe pós-fix com aproximadamente `65 MiB` sintéticos
-produziu um único finding genérico. Código/teste `938bc41` foi publicado.
+produziu um único finding genérico. Código/teste `938bc41` foi publicado; a
+reconciliação documental inicial `0b5ea42` foi publicada depois deste registro.
 
 ### DECISIONS
 
@@ -11466,8 +11467,8 @@ produziu um único finding genérico. Código/teste `938bc41` foi publicado.
 preexistentes de `infra/production/.env.local`. A crítica foi fresca,
 read-only e não independente porque o backend de critic está indisponível. Não
 houve alteração de segredo, runtime, produção, score, release, decisão clínica
-ou piloto. A reconciliação documental inicial segue pendente neste primeiro
-registro.
+ou piloto. A reconciliação documental inicial `0b5ea42` foi publicada depois
+deste registro.
 
 ### STATUS
 
@@ -11483,21 +11484,20 @@ clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
 
 ### ACTION
 
-O commit de código/teste `938bc41` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental inicial
-segue `DOCUMENTATION_PENDING` neste primeiro registro.
+O commit de código/teste `938bc41` e a reconciliação documental inicial
+`0b5ea42` foram publicados em `origin/agent/publish-production-hardening`.
 
 ### RESULT / STATUS
 
-A confirmação de `HEAD == origin` e a reconciliação documental final permanecem
-necessárias. A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve
-rotação de segredo, alteração de runtime/produção, score, release, decisão
-clínica ou piloto.
+A confirmação de `HEAD == origin` foi observada em `0b5ea42`; a reconciliação
+final não altera código ou estado externo. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto.
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental final; Windows/non-proc, secret
-manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+Windows/non-proc, secret manager/rotação, provider/CI, RC/runtime, clínica,
+`0/145`, gates externos,
 aprovação humana e reauditoria independente permanecem abertos.
 
 ## 2026-08-21T05:52:50-03:00 — DUAL99-B99-101-WORKSPACE-DEPTH-BUDGET

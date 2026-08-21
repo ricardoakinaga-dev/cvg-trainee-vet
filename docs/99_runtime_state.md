@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 68 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou `65` arquivos sintéticos de `1 MiB` cada, totalizando `68157440` bytes, que atravessavam os limites existentes e retornavam `65` findings. RED falhou sem o finding genérico; GREEN propaga um orçamento imutável de `64 MiB`, reserva o tamanho declarado antes da leitura e descarta a travessia quando ele esgota; foco `62/62`, cobertura `205/1158/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix produziu um único finding genérico; código/teste `938bc41` foi publicado e a reconciliação documental inicial segue pendente. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 68 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou `65` arquivos sintéticos de `1 MiB` cada, totalizando `68157440` bytes, que atravessavam os limites existentes e retornavam `65` findings. RED falhou sem o finding genérico; GREEN propaga um orçamento imutável de `64 MiB`, reserva o tamanho declarado antes da leitura e descarta a travessia quando ele esgota; foco `62/62`, cobertura `205/1158/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix produziu um único finding genérico; código/teste `938bc41` e a reconciliação documental inicial `0b5ea42` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -51,8 +51,8 @@
   `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
   diff-check e audit de dependências passaram. Probe pós-fix com `65 MiB`
   sintéticos produziu um único finding genérico. Código/teste `938bc41` foi
-  publicado; a reconciliação documental inicial segue pendente neste primeiro
-  registro.
+  publicado; a reconciliação documental inicial `0b5ea42` foi publicada e a
+  paridade pós-push foi confirmada.
 
 ### LIMITES / PRÓXIMA AÇÃO
 

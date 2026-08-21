@@ -23,16 +23,16 @@
   A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
   secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
   aprovação humana e reauditoria independente permanecem abertos. A
-  documentação inicial segue `DOCUMENTATION_PENDING`; B99-101 segue
-  `IN_PROGRESS` no escopo externo e o programa permanece
+  documentação inicial `0b5ea42` foi publicada; B99-101 segue `IN_PROGRESS`
+  no escopo externo e o programa permanece
   `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Publicação de execução — 2026-08-21T06:49:40-03:00 — B99-101 workspace total byte budget
 
-O código/teste `938bc41` foi publicado em `origin/agent/publish-production-hardening`;
-a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
-registro. A reconciliação final e a confirmação de `HEAD == origin` permanecem
-necessárias. `.gauntlet/` permanece local e não rastreado.
+O código/teste `938bc41` e a reconciliação documental inicial `0b5ea42` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `0b5ea42`. A reconciliação final não altera código ou estado
+externo. `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T05:52:50-03:00 — B99-101 workspace recursion depth budget
 
