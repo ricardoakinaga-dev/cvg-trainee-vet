@@ -1,15 +1,13 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T00:12:22-03:00`
-- última atualização: `2026-08-21T00:12:22-03:00`
+- corte: `2026-08-21T00:29:52-03:00`
+- última atualização: `2026-08-21T00:29:52-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `9b3f71e` em
+- commit publicado: `87717ed` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `47b6a6c` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: `392ac11` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: publicação documental desta rodada em andamento
+- paridade documental final: publicação documental desta rodada em andamento
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -119,6 +117,22 @@
   `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7`,
   mutation `7/7`, lint, typecheck, formato e diff-check passaram. Código/teste
   estão em `9b3f71e`.
+
+- B99-101 default do planner Git: a auditoria read-only reproduziu que
+  `planGitBatchRequests` aceitava `maxBatchBytes` omitido como
+  `Number.MAX_SAFE_INTEGER`; três objetos sintéticos de `3 MiB` formavam uma
+  batch de `9 MiB`. RED/GREEN fixou default finito de `8 MiB`, rejeitou limites
+  não positivos, não seguros, `NaN` e infinitos, e gerou
+  `git-object-unreadable` para objeto individual acima do orçamento. A produção
+  continua passando `8 MiB` explicitamente. Foco `40/40`, cobertura
+  `205/1136/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com
+  maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation
+  `7/7`, migration safety, lint, typecheck, formato e diff-check passaram. A
+  prova sintética produziu batches omitidos `[6291456,3145728]`, três batches
+  de `3 MiB` com limite explícito de `5 MiB` e finding redigido para objeto de
+  `9 MiB`. Código/teste estão em `87717ed`; o gate `pnpm verify:secrets`
+  continua fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado.
 
 - B99-305: auditoria de fonte encontrou `createGitBatchStreamParser` com `104`
   linhas apesar do ratchet permitir `117`. O RED adicionou a regressão da

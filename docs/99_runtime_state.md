@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 49 fechou a barra local de B99-308 para a fronteira de descritores da API: `readUnknown` agora captura getters/proxies hostis e a campanha seeded cobre `512` descritores malformados e `512` pares de lookup sem exceções, mantendo o inventário canônico de `57` rotas; Round 48 mantém a barra de B99-305 com parser Git bounded, enquanto B99-101 preserva stdout incremental, stderr `4 KiB`, cap default `8 MiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 50 fechou a barra local de B99-101 para o default do planner de batches Git: o limite omitido agora é finito em `8 MiB`, limites inválidos são rejeitados e objetos individuais acima do orçamento geram finding fail-closed; Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-308 localmente sob RED→GREEN→REFACTOR; `readUnknown` tornou o acesso a propriedades desconhecidas fail-closed, a campanha seeded cobriu `512` descritores malformados com accessors que lançam e `512` pares de método/path, e o foco passou `7/7`, integração `11/11`, contratos `28/87`, cobertura `205/1135/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0`, decisões `7/7` e mutation `7/7`; o commit de código/teste `9b3f71e`, a reconciliação documental `47b6a6c` e a paridade final `392ac11` foram publicados no branch remoto; o `pnpm verify` oficial percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; o planner Git de baixo nível agora usa default finito de `8 MiB`, valida `maxBatchBytes` como inteiro seguro positivo e converte objeto individual acima do orçamento em `git-object-unreadable`, sem alterar o scanner de produção que passa `8 MiB` explicitamente. O foco passou `40/40`, cobertura `205/1136/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca read-only confirmou batches omitidos `[6291456,3145728]`, limite explícito de `5 MiB` em três batches e finding redigido para objeto de `9 MiB`. O commit de código/teste `87717ed` foi publicado no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,45 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T00:12:22-03:00
+- last_update: 2026-08-21T00:29:52-03:00
+
+## 2026-08-21T00:29:52-03:00 — DUAL99-B99-101-GIT-BATCH-DEFAULT-BOUNDARY
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only encontrou que `planGitBatchRequests` aceitava
+  `maxBatchBytes` omitido como `Number.MAX_SAFE_INTEGER`; três objetos Git
+  sintéticos de `3 MiB` produziam uma batch única de `9 MiB`, apesar do contrato
+  de memória bounded;
+- RED adicionou o teste de default finito e falhou na implementação anterior;
+  GREEN adotou default de `8 MiB`, rejeitou valores não positivos, não seguros,
+  `NaN` e infinitos, e converteu objeto individual acima do orçamento em
+  `git-object-unreadable`, sem criar batch oversized;
+- a composição de produção continua passando `MAX_GIT_BATCH_BODY_BYTES` de
+  `8 MiB` explicitamente. A prova sintética pós-GREEN produziu batches
+  `[6291456,3145728]`; com limite explícito de `5 MiB`, produziu três batches de
+  `3 MiB`; objeto de `9 MiB` gerou finding fail-closed sem materializar corpo;
+- o foco passou `40/40`, cobertura `205` arquivos / `1136` testes / `21`
+  guardados em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com
+  maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation
+  `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check;
+- crítica fresca read-only confirmou o contrato e não encontrou alteração
+  fora de `scripts/secret-scanner-git-batch.mjs` e seu teste. O commit de
+  código/teste `87717ed` foi publicado em
+  `origin/agent/publish-production-hardening`. B99-101 avança somente no
+  escopo local desta barra; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O gate `pnpm verify:secrets` continua fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+lido nem alterado. Permanecem abertos secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, probes A/B, role restrita sem
+`SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, aprovação
+humana e reauditoria independente. O backend independente do gauntlet não
+estava disponível; a crítica desta rodada é explicitamente read-only e não
+independente. Não houve score, release, decisão clínica, piloto ou produção.
 
 ## 2026-08-21T00:04:17-03:00 — DUAL99-B99-308-API-SURFACE-FUZZ-BOUNDARY
 

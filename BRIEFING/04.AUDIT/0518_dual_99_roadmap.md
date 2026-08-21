@@ -223,6 +223,30 @@ clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
 continuam abertos; o roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não
 promove score, release ou piloto.
 
+## 33. Checkpoint de default bounded do planner Git B99-101 — 2026-08-21T00:29:52-03:00
+
+Uma auditoria read-only encontrou que `planGitBatchRequests` aceitava
+`maxBatchBytes` omitido como `Number.MAX_SAFE_INTEGER`; três objetos Git
+sintéticos de `3 MiB` produziam uma batch de `9 MiB`. O RED adicionou a
+regressão do limite finito e falhou; o GREEN adotou default de `8 MiB`, rejeitou
+limites não positivos, não seguros, `NaN` e infinitos, e converteu objeto
+individual acima do orçamento em `git-object-unreadable` sem criar batch
+oversized. A composição de produção continua passando `8 MiB` explicitamente.
+
+O foco passou `40/40`; a cobertura passou `205/1136/21` em
+`95,03/90,95/95,31/95,73`, build `12/12`, `verify:hotspots` reporta `0`
+hotspots e maior função de `97` linhas, contratos `87/87`, decisões `7/7`,
+mutation `7/7`, migration safety, lint, typecheck, formato e diff-check
+passaram. A prova sintética produziu batches omitidos
+`[6291456,3145728]`, três batches de `3 MiB` com limite explícito de `5 MiB`
+e finding redigido para objeto de `9 MiB`. O código/teste está em `87717ed`.
+
+O gate `pnpm verify:secrets` permanece fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente; o
+roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
+clínica ou piloto.
+
 ## 31. Checkpoint de fechamento da barra de funções B99-305 — 2026-08-20T22:25:53-03:00
 
 Uma auditoria de fonte encontrou `createGitBatchStreamParser` com `104` linhas

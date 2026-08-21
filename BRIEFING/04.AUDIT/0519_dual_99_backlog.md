@@ -15,6 +15,31 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-21T00:29:52-03:00 — B99-101 default do planner Git
+
+- **auditoria/RED:** o planner de baixo nível `planGitBatchRequests` aceitava
+  `maxBatchBytes` omitido como `Number.MAX_SAFE_INTEGER`; três objetos Git
+  sintéticos de `3 MiB` formavam uma batch de `9 MiB`, acima do contrato
+  bounded;
+- **GREEN:** o default passou a ser `8 MiB`, valores não positivos, não seguros,
+  `NaN` e infinitos são rejeitados e objeto individual acima do orçamento gera
+  `git-object-unreadable` sem entrar em batch. A composição de produção continua
+  passando `8 MiB` explicitamente;
+- **evidência:** a prova omitida produziu `[6291456,3145728]`, o limite explícito
+  de `5 MiB` produziu três batches de `3 MiB` e o objeto de `9 MiB` gerou finding
+  fail-closed. Foco `40/40`, cobertura `205/1136/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de
+  `97` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7`, migration
+  safety, lint, typecheck, formato e diff-check passaram;
+- **rastreabilidade/publicação:** código/teste em `87717ed`, publicado no branch
+  remoto; a reconciliação documental desta rodada será publicada em seguida;
+- **status/limite:** B99-101 permanece `IN_PROGRESS` no escopo do backlog por
+  secret manager/rotação e gates externos. `pnpm verify:secrets` permanece
+  fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica
+  fresca foi read-only e não independente; o programa segue
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T00:04:17-03:00 — B99-308 fronteira de API
 
 - **auditoria/RED:** a fronteira `validateApiSurface` lia diretamente
