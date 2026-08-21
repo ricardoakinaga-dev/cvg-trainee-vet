@@ -384,6 +384,63 @@ describe("secret scanner", () => {
     expect(JSON.stringify(findings)).not.toContain(secret);
   });
 
+  it("does not scan a different directory after a root identity swap", async () => {
+    const base = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-root-identity-race-"),
+    );
+    temporaryDirectories.push(base);
+    const parent = join(
+      base,
+      ...Array.from({ length: 180 }, (_, index) => `p${index}`),
+    );
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    const backup = join(parent, "backup");
+    await mkdir(parent, { recursive: true });
+    await mkdir(root);
+    await mkdir(external);
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+
+    const worker = new Worker(
+      `
+        import { workerData } from "node:worker_threads";
+        import { rename } from "node:fs/promises";
+        await new Promise((resolve) => setTimeout(resolve, workerData.delay));
+        try { await rename(workerData.root, workerData.backup); } catch {}
+        try { await rename(workerData.external, workerData.root); } catch {}
+        await new Promise((resolve) => setTimeout(resolve, workerData.hold));
+        try { await rename(workerData.root, workerData.external); } catch {}
+        try { await rename(workerData.backup, workerData.root); } catch {}
+      `,
+      {
+        eval: true,
+        workerData: { root, external, backup, delay: 5, hold: 100 },
+      },
+    );
+
+    try {
+      const findings = await scanProject(root, {
+        includeStaged: false,
+        includeHistory: false,
+      });
+
+      expect(findings).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: "victim.env",
+            rule: "sensitive-assignment",
+          }),
+        ]),
+      );
+    } finally {
+      await worker.terminate();
+    }
+  });
+
   it("pins staged Git reads to the validated workspace root", async () => {
     const parent = await mkdtemp(
       join(tmpdir(), "cvg-secret-scanner-root-git-race-"),

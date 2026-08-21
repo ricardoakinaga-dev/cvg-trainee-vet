@@ -100,6 +100,8 @@ export async function readWorkspaceEntries(directory) {
 }
 
 export async function withWorkspaceRoot(directory, callback) {
+  const expectedMetadata = await lstat(directory).catch(() => null);
+  if (!expectedMetadata?.isDirectory()) return null;
   let access;
   try {
     access = await openWorkspaceDirectory(directory);
@@ -107,20 +109,16 @@ export async function withWorkspaceRoot(directory, callback) {
     return null;
   }
   try {
+    const openedMetadata = await access.handle.stat();
+    if (
+      !openedMetadata.isDirectory() ||
+      openedMetadata.dev !== expectedMetadata.dev ||
+      openedMetadata.ino !== expectedMetadata.ino
+    ) {
+      return null;
+    }
     return await callback(access.path, access);
   } finally {
     await access.handle.close();
   }
-}
-
-export async function validateWorkspaceRoot(root, unscannedFinding) {
-  const metadata = await lstat(root).catch(() => null);
-  if (metadata?.isDirectory()) return null;
-  return Object.freeze([
-    unscannedFinding(
-      "<workspace>",
-      "unreadable-file",
-      metadata?.isSymbolicLink() ? "symlink" : "workspace root",
-    ),
-  ]);
 }

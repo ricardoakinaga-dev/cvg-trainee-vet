@@ -7,7 +7,6 @@ import { createGitSurfaceScanner } from "./secret-scanner-git-surfaces.mjs";
 import {
   openWorkspaceDirectory,
   readScanBuffer,
-  validateWorkspaceRoot,
   withWorkspaceRoot,
 } from "./secret-scanner-workspace.mjs";
 
@@ -726,11 +725,6 @@ export async function scanProject(
   root,
   { includeStaged = true, includeHistory = true } = {},
 ) {
-  const invalidRootFinding = await validateWorkspaceRoot(
-    root,
-    unscannedFinding,
-  );
-  if (invalidRootFinding !== null) return invalidRootFinding;
   const findings = await withWorkspaceRoot(
     root,
     async (gitRoot, rootAccess) => {
