@@ -548,15 +548,9 @@ async function walk(
         }
         continue;
       }
-      if (entry.isFile()) {
-        const scanned = await scanFile(
-          absolutePath,
-          logicalPath,
-          remainingBytes,
-        );
-        findings.push(...scanned.findings);
-        remainingBytes -= scanned.bytesConsumed;
-      }
+      const scanned = await scanFile(absolutePath, logicalPath, remainingBytes);
+      findings.push(...scanned.findings);
+      remainingBytes -= scanned.bytesConsumed;
     }
     return Object.freeze({
       findings,

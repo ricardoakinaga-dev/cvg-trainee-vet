@@ -170,6 +170,12 @@ export async function scanWorkspaceFile(
         bytesConsumed: 0,
       };
     }
+    if (!metadata.isFile()) {
+      return {
+        findings: [unscannedFinding(path, "unreadable-file", "special-file")],
+        bytesConsumed: 0,
+      };
+    }
     if (metadata.size > maxScanBytes) {
       return {
         findings: isIgnoredBinaryAssetPath(path)

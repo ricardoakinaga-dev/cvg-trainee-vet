@@ -31,6 +31,7 @@ import {
 import {
   readScanBuffer,
   readWorkspaceEntries,
+  scanWorkspaceFile,
 } from "../../scripts/secret-scanner-workspace.mjs";
 import {
   createGitBatchStreamParser,
@@ -440,6 +441,49 @@ describe("secret scanner", () => {
       ]),
     );
     expect(JSON.stringify(linkedFindings)).not.toContain(secret);
+  });
+
+  it("reports workspace special files without opening or silently skipping them", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-special-file-"),
+    );
+    temporaryDirectories.push(directory);
+    const fifo = join(directory, "synthetic.pipe");
+    await execFileAsync("mkfifo", [fifo]);
+
+    const direct = await scanWorkspaceFile(fifo, "synthetic.pipe", 128, 128, {
+      isIgnoredBinaryAssetPath: () => false,
+      scanPathBuffer: () => [],
+      unscannedFinding: (path, rule, evidence) => ({
+        path,
+        rule,
+        evidence,
+      }),
+    });
+    expect(direct).toEqual({
+      findings: [
+        {
+          path: "synthetic.pipe",
+          rule: "unreadable-file",
+          evidence: "special-file",
+        },
+      ],
+      bytesConsumed: 0,
+    });
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: false,
+    });
+
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "synthetic.pipe",
+          rule: "unreadable-file",
+        }),
+      ]),
+    );
   });
 
   it("does not follow symlinks when opening workspace files", async () => {
