@@ -7,6 +7,7 @@ import {
   planGitBatchRequests as planGitBatchRequestsInternal,
   readGitBlobs as readGitBlobsInternal,
 } from "./secret-scanner-git-batch.mjs";
+import { validateWorkspaceRoot } from "./secret-scanner-workspace.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -758,6 +759,11 @@ export async function scanProject(
   root,
   { includeStaged = true, includeHistory = true } = {},
 ) {
+  const invalidRootFinding = await validateWorkspaceRoot(
+    root,
+    unscannedFinding,
+  );
+  if (invalidRootFinding !== null) return invalidRootFinding;
   const findings = [...(await scanWorkspace(root))];
   if (includeStaged) {
     try {
@@ -791,5 +797,4 @@ export async function scanProject(
   }
   return Object.freeze([...unique.values()]);
 }
-
 export { isTextPath, parseObjectList, planGitBatchRequests, readBatchOutput };

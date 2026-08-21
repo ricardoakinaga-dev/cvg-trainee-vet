@@ -1,5 +1,6 @@
 import {
   chmod,
+  mkdir,
   mkdtemp,
   rm,
   symlink,
@@ -321,6 +322,59 @@ describe("secret scanner", () => {
     );
     expect(JSON.stringify(linkedFindings)).not.toContain(secret);
   });
+
+  it("rejects a symlink supplied as the scan root", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-root-link-"),
+    );
+    temporaryDirectories.push(parent);
+    const target = join(parent, "target");
+    const root = join(parent, "root-link");
+    const secret = ["Qz", "7m", "P4", "xL", "9s", "T2", "vK", "8n"].join("");
+    await mkdir(target);
+    await writeFile(
+      join(target, "config.env"),
+      `API_TOKEN="${secret.repeat(4)}"\n`,
+    );
+    await symlink(target, root);
+
+    const findings = await scanProject(root, {
+      includeStaged: true,
+      includeHistory: true,
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: "<workspace>",
+        rule: "unreadable-file",
+      }),
+    ]);
+    expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
+  it.each(["missing", "regular-file"])(
+    "rejects a %s supplied as the scan root",
+    async (name) => {
+      const directory = await mkdtemp(
+        join(tmpdir(), "cvg-secret-scanner-invalid-root-"),
+      );
+      temporaryDirectories.push(directory);
+      const root = join(directory, name);
+      if (name === "regular-file") await writeFile(root, "synthetic\n");
+
+      const findings = await scanProject(root, {
+        includeStaged: true,
+        includeHistory: true,
+      });
+
+      expect(findings).toEqual([
+        expect.objectContaining({
+          path: "<workspace>",
+          rule: "unreadable-file",
+        }),
+      ]);
+    },
+  );
 
   it("skips oversized ignored assets before attempting to read them", async () => {
     const directory = await mkdtemp(
