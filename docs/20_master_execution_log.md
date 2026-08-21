@@ -11420,6 +11420,87 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T07:35:15-03:00 — DUAL99-B99-101-GIT-TOTAL-BYTE-BUDGET
+
+### TIMESTAMP
+
+2026-08-21 07:35:15 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem/Git
+
+### TASK
+
+B99-101 — limitar a leitura agregada de staged/history, além do limite por
+batch e por objeto Git.
+
+### ACTION
+
+Uma auditoria read-only encontrou que staged lia até `2 MiB` por caminho e
+history processava batches de `8 MiB` sem orçamento agregado. O RED com
+`33 × 2 MiB` (`69206016` bytes) reproduziu a ausência do fallback genérico. O
+GREEN limita cada superfície Git a `256 MiB`: staged decrementa o total durante
+a leitura e history pré-valida o total planejado antes de materializar blobs.
+
+### RESULT
+
+O foco passou `63/63`; a cobertura passou `205` arquivos / `1159` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; a regressão final com `129 × 2 MiB`
+(`270532608` bytes) produziu um finding genérico em staged e history. Build
+passou `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract,
+arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck,
+formato, diff-check e audit de dependências passaram. Código/teste `48e1014`
+foi publicado.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica foi fresca,
+read-only e não independente porque o backend de critic está indisponível. Não
+houve alteração de segredo, runtime, produção, score, release, decisão clínica
+ou piloto. A reconciliação documental inicial segue pendente neste primeiro
+registro.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental; depois executar nova auditoria bounded e
+obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente.
+
+## 2026-08-21T07:35:15-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-TOTAL-BYTE-BUDGET
+
+### ACTION
+
+O commit de código/teste `48e1014` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental inicial
+segue `DOCUMENTATION_PENDING` neste primeiro registro.
+
+### RESULT / STATUS
+
+A confirmação de `HEAD == origin` e a reconciliação documental final permanecem
+necessárias. A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve
+rotação de segredo, alteração de runtime/produção, score, release, decisão
+clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental final; Windows/non-proc, secret
+manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente permanecem abertos.
+
 ## 2026-08-21T06:49:40-03:00 — DUAL99-B99-101-WORKSPACE-BYTE-BUDGET
 
 ### TIMESTAMP

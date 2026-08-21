@@ -254,6 +254,29 @@ publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
 `HEAD == origin` em `8fc9f0b`. A reconciliação final não altera código ou estado
 externo.
 
+## 72. Checkpoint de publicação do orçamento agregado Git B99-101 — 2026-08-21T07:35:15-03:00
+
+O código/teste `48e1014` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A confirmação final de paridade permanece necessária.
+
+## 71. Checkpoint do orçamento agregado Git B99-101 — 2026-08-21T07:35:15-03:00
+
+Uma auditoria read-only encontrou que `staged` lia até `2 MiB` por caminho e
+`history` processava batches de `8 MiB` sem teto agregado. RED com `33 × 2 MiB`
+(`69206016` bytes) reproduziu a ausência do finding genérico; GREEN limita cada
+superfície Git a `256 MiB`, decrementa staged durante a leitura e pré-valida o
+total planejado de history antes de materializar blobs.
+
+A regressão final usa `129 × 2 MiB` (`270532608` bytes) e produz um finding
+genérico em staged e history. O foco passou `63/63`, a cobertura passou
+`205/1159/21` em `95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local
+efêmera, CI contract, arquitetura `2/2`, hotspots `0` com maior função de
+`100`, lint, typecheck, formato, diff-check e audit de dependências passaram.
+Código/teste `48e1014` foi publicado; a documentação inicial segue
+`DOCUMENTATION_PENDING`. Windows/non-proc, condições live, gates externos,
+crítica independente e demais bloqueios do programa permanecem abertos.
+
 ## 70. Checkpoint de publicação do orçamento total de bytes do worktree B99-101 — 2026-08-21T06:49:40-03:00
 
 O código/teste `938bc41` e a reconciliação documental inicial `0b5ea42` foram

@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T06:49:40-03:00`
-- última atualização: `2026-08-21T06:49:40-03:00`
+- corte: `2026-08-21T07:35:15-03:00`
+- última atualização: `2026-08-21T07:35:15-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `938bc41` em
+- commit publicado: `48e1014` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `0b5ea42` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `0b5ea42`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até a reconciliação desta rodada; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,22 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 69 — limite agregado de bytes Git
+
+- a auditoria read-only encontrou que `staged` lia até `2 MiB` por caminho e
+  `history` processava batches de `8 MiB` sem teto agregado; RED com `33 × 2
+  MiB` (`69206016` bytes) confirmou a ausência do fallback genérico;
+- GREEN limita cada superfície Git a `256 MiB`: staged decrementa o orçamento
+  durante a leitura e history pré-valida o total planejado antes de materializar
+  blobs, retornando `staged:<git>` ou `history:<git>` com
+  `git-object-unreadable` em overflow;
+- a regressão final usa `129 × 2 MiB` (`270532608` bytes), foco `63/63`,
+  cobertura `205/1159/21` em `95,03/90,95/95,31/95,73`, build `12/12` com URL
+  local efêmera, CI contract, arquitetura `2/2`, hotspots `0` com maior função
+  de `100`, lint, typecheck, formato, diff-check e audit de dependências
+  passaram. O código/teste `48e1014` foi publicado; a documentação inicial
+  desta rodada está em `DOCUMENTATION_PENDING`.
 
 ## Round 68 — limite total de bytes do worktree
 

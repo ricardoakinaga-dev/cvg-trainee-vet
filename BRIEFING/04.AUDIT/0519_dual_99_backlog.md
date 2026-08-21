@@ -5,6 +5,37 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T07:35:15-03:00 — B99-101 Git aggregate byte budget
+
+- **auditoria/RED:** `staged` lia até `2 MiB` por caminho e `history` processava
+  batches de `8 MiB` sem orçamento agregado; RED com `33 × 2 MiB`
+  (`69206016` bytes) reproduziu a ausência do finding genérico;
+- **GREEN:** cada superfície Git agora possui orçamento imutável de `256 MiB`;
+  staged decrementa o total durante a leitura e history soma os batches
+  planejados antes de materializar blobs, falhando fechado com
+  `staged:<git>` ou `history:<git>` e `git-object-unreadable`;
+- **evidência:** a regressão final usa `129 × 2 MiB` (`270532608` bytes) e
+  retorna um finding genérico em staged e history. Foco `63/63`, cobertura
+  `205/1159/21` em `95,03/90,95/95,31/95,73`, build `12/12` com URL local
+  efêmera, CI contract, arquitetura `2/2`, hotspots `0` com maior função de
+  `100`, lint, typecheck, formato, diff-check e audit passaram. Código/teste
+  `48e1014` foi publicado;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. A
+  documentação inicial segue `DOCUMENTATION_PENDING`; B99-101 segue
+  `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T07:35:15-03:00 — B99-101 Git aggregate byte budget
+
+O código/teste `48e1014` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A reconciliação final e a confirmação de `HEAD == origin` permanecem
+necessárias. `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T06:49:40-03:00 — B99-101 workspace total byte budget
 
 - **auditoria/RED:** `65` arquivos sintéticos de `1 MiB` totalizavam
