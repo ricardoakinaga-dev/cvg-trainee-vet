@@ -15,6 +15,30 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-21T00:44:50-03:00 — B99-101 caps explícitos do helper Git
+
+- **auditoria/RED:** `runGitBatch` aceitava caps explícitos
+  `maxOutputBytes: Infinity`, `maxOutputBytes: NaN` e
+  `maxErrorBytes: Infinity`, permitindo alcançar o child apesar do contrato de
+  memória bounded;
+- **GREEN:** ambos os caps agora são validados como inteiros seguros positivos
+  dentro da Promise e antes do spawn, preservando defaults finitos,
+  `onChunk`, limites válidos e erros genéricos/redigidos;
+- **evidência:** foco `41/41`, cobertura `205/1137/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de
+  `97` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7`, migration
+  safety, lint, typecheck, formato e diff-check passaram. Probes sintéticos
+  rejeitaram todos os caps inválidos antes de `spawn` e aceitaram cap finito de
+  `64` bytes;
+- **rastreabilidade/publicação:** código/teste em `f79cce6`, publicado no branch
+  remoto; a reconciliação documental desta rodada será publicada em seguida;
+- **status/limite:** B99-101 permanece `IN_PROGRESS` no escopo do backlog por
+  secret manager/rotação e gates externos. `pnpm verify:secrets` permanece
+  fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica
+  fresca foi read-only e não independente; o programa segue
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T00:29:52-03:00 — B99-101 default do planner Git
 
 - **auditoria/RED:** o planner de baixo nível `planGitBatchRequests` aceitava

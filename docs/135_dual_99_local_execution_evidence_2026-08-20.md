@@ -1,15 +1,13 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T00:29:52-03:00`
-- última atualização: `2026-08-21T00:29:52-03:00`
+- corte: `2026-08-21T00:44:50-03:00`
+- última atualização: `2026-08-21T00:44:50-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `87717ed` em
+- commit publicado: `f79cce6` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `717f1a9` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: `717f1a9` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: publicação documental desta rodada em andamento
+- paridade documental final: publicação documental desta rodada em andamento
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -135,6 +133,21 @@
   `9 MiB`. Código/teste estão em `87717ed`; o gate `pnpm verify:secrets`
   continua fail-closed nos quatro assignments redigidos preexistentes de
   `infra/production/.env.local`, que não foi lido nem alterado.
+
+- B99-101 caps explícitos do helper Git: a auditoria read-only reproduziu que
+  `runGitBatch` aceitava `maxOutputBytes: Infinity`, `maxOutputBytes: NaN` e
+  `maxErrorBytes: Infinity`, permitindo alcançar o child apesar do contrato
+  bounded. RED/GREEN passou a validar ambos os caps como inteiros seguros
+  positivos dentro da Promise e antes do spawn, preservando defaults finitos,
+  `onChunk`, limites válidos e mensagens genéricas/redigidas. Foco `41/41`,
+  cobertura `205/1137/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots
+  `0` com maior função de `97` linhas, contratos `87/87`, decisões `7/7`,
+  mutation `7/7`, migration safety, lint, typecheck, formato e diff-check
+  passaram. Probes sintéticos rejeitaram caps inválidos antes de `spawn` e
+  aceitaram cap finito de `64` bytes. Código/teste estão em `f79cce6`; o gate
+  `pnpm verify:secrets` continua fail-closed nos quatro assignments redigidos
+  preexistentes de `infra/production/.env.local`, que não foi lido nem
+  alterado.
 
 - B99-305: auditoria de fonte encontrou `createGitBatchStreamParser` com `104`
   linhas apesar do ratchet permitir `117`. O RED adicionou a regressão da

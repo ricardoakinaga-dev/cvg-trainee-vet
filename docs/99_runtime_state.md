@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 50 fechou a barra local de B99-101 para o default do planner de batches Git: o limite omitido agora é finito em `8 MiB`, limites inválidos são rejeitados e objetos individuais acima do orçamento geram finding fail-closed; Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 51 fechou a barra local de B99-101 para caps explícitos do helper Git: `maxOutputBytes` e `maxErrorBytes` agora aceitam somente inteiros seguros positivos e falham antes do spawn; Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; o planner Git de baixo nível agora usa default finito de `8 MiB`, valida `maxBatchBytes` como inteiro seguro positivo e converte objeto individual acima do orçamento em `git-object-unreadable`, sem alterar o scanner de produção que passa `8 MiB` explicitamente. O foco passou `40/40`, cobertura `205/1136/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca read-only confirmou batches omitidos `[6291456,3145728]`, limite explícito de `5 MiB` em três batches e finding redigido para objeto de `9 MiB`. O commit de código/teste `87717ed` e a reconciliação documental `717f1a9` foram publicados no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; `runGitBatch` agora valida `maxOutputBytes` e `maxErrorBytes` como inteiros seguros positivos dentro da Promise e antes do spawn, preservando caps finitos, streaming `onChunk` e erros genéricos/redigidos. O foco passou `41/41`, cobertura `205/1137/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca confirmou rejeição de `Infinity`/`NaN` e aceitação de cap finito. O commit de código/teste `f79cce6` foi publicado no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,41 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T00:34:35-03:00
+- last_update: 2026-08-21T00:44:50-03:00
+
+## 2026-08-21T00:44:50-03:00 — DUAL99-B99-101-EXPLICIT-BATCH-CAP-VALIDATION
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only reproduziu que `runGitBatch` aceitava caps explícitos
+  `maxOutputBytes: Infinity`, `maxOutputBytes: NaN` e
+  `maxErrorBytes: Infinity`, permitindo alcançar o child apesar do contrato de
+  memória bounded;
+- RED adicionou regressão que falhou contra o helper anterior; GREEN introduziu
+  validação positiva e segura de ambos os caps dentro da Promise e antes do
+  spawn, preservando defaults finitos, `onChunk`, limites explícitos válidos e
+  mensagens genéricas/redigidas;
+- o foco passou `41/41`, cobertura `205` arquivos / `1137` testes / `21`
+  guardados em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com
+  maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation
+  `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check;
+- probes sintéticos pós-GREEN rejeitaram todos os caps inválidos antes de
+  `spawn` e aceitaram cap finito de `64` bytes. O commit de código/teste
+  `f79cce6` foi publicado em `origin/agent/publish-production-hardening`.
+  B99-101 avança somente no escopo local desta barra; o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O gate `pnpm verify:secrets` continua fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+lido nem alterado. Permanecem abertos secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, probes A/B, role restrita,
+concurrency/TTL/RLS live, clínica, `0/145`, aprovação humana e reauditoria
+independente. O backend independente do gauntlet não estava disponível; a
+crítica desta rodada é explicitamente read-only e não independente. Não houve
+score, release, decisão clínica, piloto ou produção.
 
 ## 2026-08-21T00:29:52-03:00 — DUAL99-B99-101-GIT-BATCH-DEFAULT-BOUNDARY
 

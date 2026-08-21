@@ -11420,6 +11420,67 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T00:44:50-03:00 — DUAL99-B99-101-EXPLICIT-BATCH-CAP-VALIDATION
+
+### TIMESTAMP
+
+2026-08-21 00:44:50 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — rejeitar caps explícitos inválidos no helper de batches Git antes do
+spawn.
+
+### ACTION
+
+A auditoria read-only reproduziu que `runGitBatch` aceitava
+`maxOutputBytes: Infinity`, `maxOutputBytes: NaN` e `maxErrorBytes: Infinity`.
+Sob TDD, o RED adicionou a regressão; o GREEN passou a validar ambos os caps
+como inteiros seguros positivos dentro da Promise e antes do spawn, preservando
+defaults finitos, `onChunk`, caps válidos e mensagens genéricas/redigidas.
+
+### RESULT
+
+O foco passou `41/41`; a cobertura passou `205` arquivos / `1137` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots `0` com
+maior função de `97` linhas; contratos `87/87`; decisões `7/7`; mutation `7/7`
+(`100%`); migration safety, lint, typecheck, formato e diff-check passaram.
+Probes sintéticos rejeitaram caps inválidos antes de `spawn` e aceitaram cap
+finito de `64` bytes. O commit de código/teste `f79cce6` foi publicado em
+`origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+O gate `pnpm verify:secrets` permanece fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+lido nem alterado. A crítica desta rodada foi fresca, read-only e não
+independente porque o backend de critic não estava disponível. Nenhum segredo,
+runtime, produção, score, release, decisão clínica ou piloto foi tocado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois obter autoridade e
+ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit
+aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos,
+probes A/B, role restrita, concurrency/TTL/RLS live, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente.
+
 ## 2026-08-21T00:12:22-03:00 — DUAL99-B99-308-FINAL-PARITY
 
 ### ACTION / RESULT

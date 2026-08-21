@@ -247,6 +247,28 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 35. Checkpoint de validação dos caps explícitos B99-101 — 2026-08-21T00:44:50-03:00
+
+Uma auditoria read-only reproduziu que `runGitBatch` aceitava
+`maxOutputBytes: Infinity`, `maxOutputBytes: NaN` e `maxErrorBytes: Infinity`,
+permitindo alcançar o child apesar do contrato de memória bounded. O RED
+adicionou a regressão; o GREEN passou a validar os dois caps como inteiros
+seguros positivos dentro da Promise e antes do spawn, preservando defaults
+finitos, `onChunk`, limites válidos e mensagens genéricas/redigidas.
+
+O foco passou `41/41`; a cobertura passou `205/1137/21` em
+`95,03/90,95/95,31/95,73`, build `12/12`, `verify:hotspots` reporta `0`
+hotspots e maior função de `97` linhas, contratos `87/87`, decisões `7/7`,
+mutation `7/7`, migration safety, lint, typecheck, formato e diff-check
+passaram. Probes sintéticos rejeitaram os caps inválidos antes de `spawn` e
+aceitaram cap finito de `64` bytes. O código/teste está em `f79cce6`.
+
+O gate `pnpm verify:secrets` permanece fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente; o
+roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
+clínica ou piloto.
+
 ## 34. Publicação do checkpoint B99-101 — 2026-08-21T00:34:35-03:00
 
 O código/teste `87717ed` e a reconciliação documental `717f1a9` foram publicados
