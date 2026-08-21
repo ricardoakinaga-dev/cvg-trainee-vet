@@ -1034,6 +1034,33 @@ describe("secret scanner", () => {
     );
   });
 
+  it("fails closed when workspace entry budget is exceeded", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-workspace-entry-budget-"),
+    );
+    temporaryDirectories.push(directory);
+    await Promise.all(
+      Array.from({ length: 1025 }, (_, index) =>
+        writeFile(
+          join(directory, `synthetic-entry-${String(index).padStart(4, "0")}`),
+          "",
+        ),
+      ),
+    );
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: false,
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        path: "<workspace>",
+        rule: "unreadable-file",
+      }),
+    ]);
+  });
+
   it.each(["missing", "regular-file"])(
     "rejects a %s supplied as the scan root",
     async (name) => {

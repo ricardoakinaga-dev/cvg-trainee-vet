@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 import { constants as fsConstants } from "node:fs";
-import { lstat, open, readdir } from "node:fs/promises";
+import { lstat, open, opendir } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const noFollowReadFlags =
@@ -14,6 +14,7 @@ const noFollowDirectoryFlags =
     ? noFollowReadFlags | fsConstants.O_DIRECTORY
     : undefined;
 const procFdChildPathPattern = /^\/proc\/self\/fd\/\d+(?:\/|$)/u;
+const MAX_WORKSPACE_ENTRIES = 1024;
 
 async function closeHandles(handles) {
   await Promise.all(
@@ -47,10 +48,28 @@ async function openPathDirectoryHandle(directory) {
   }
 }
 
+async function readBoundedDirectoryEntries(directory) {
+  const opened = await opendir(directory, { bufferSize: 64 });
+  const entries = [];
+  try {
+    while (true) {
+      const entry = await opened.read();
+      if (entry === null) break;
+      if (entries.length >= MAX_WORKSPACE_ENTRIES) {
+        throw new Error("workspace directory entry budget exceeded");
+      }
+      entries.push(entry);
+    }
+  } finally {
+    await opened.close().catch(() => undefined);
+  }
+  return Object.freeze(entries);
+}
+
 async function openProcFdDirectory(directory) {
   const opened = await openProcFdDirectoryHandle(directory);
   try {
-    const entries = await readdir(opened.path, { withFileTypes: true });
+    const entries = await readBoundedDirectoryEntries(opened.path);
     return { ...opened, entries };
   } catch (error) {
     await closeHandles([opened.handle]);
@@ -61,7 +80,7 @@ async function openProcFdDirectory(directory) {
 async function openPathDirectory(directory) {
   const opened = await openPathDirectoryHandle(directory);
   try {
-    const entries = await readdir(opened.path, { withFileTypes: true });
+    const entries = await readBoundedDirectoryEntries(opened.path);
     return { ...opened, entries };
   } catch (error) {
     await closeHandles([opened.handle]);
