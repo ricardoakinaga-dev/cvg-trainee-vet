@@ -2,11 +2,12 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T21:25:32-03:00`
-- última atualização: `2026-08-20T21:25:32-03:00`
+- última atualização: `2026-08-20T21:28:52-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `208868b` em
   `origin/agent/publish-production-hardening`
-- evidência documental: pendente de publicação nesta rodada
+- evidência documental publicada: `1685e63` em
+  `origin/agent/publish-production-hardening`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -867,8 +868,8 @@ fail-closed em `verify:secrets` somente nos quatro assignments redigidos
 preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
 
 O código/teste está em `208868b` (`fix: bound git batch stderr`) e foi enviado
-para `origin/agent/publish-production-hardening`. A documentação desta rodada
-está pendente de publicação no momento deste corte. Secret manager/rotação,
+para `origin/agent/publish-production-hardening`; esta evidência foi publicada
+em `1685e63` (`docs: record bounded git batch stderr`). Secret manager/rotação,
 provider/CI, RC/proveniência, runtime live, WebKit aprovado, clínica, `0/145`,
 gates externos e reauditoria independente continuam abertos. B99-101 e o
 programa permanecem `IN_PROGRESS / PILOT_BLOCKED`.
