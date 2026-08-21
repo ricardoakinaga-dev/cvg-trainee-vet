@@ -653,6 +653,60 @@ describe("secret scanner", () => {
     );
   });
 
+  it("does not honor inherited Git path redirection variables", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-env-redirect-"),
+    );
+    temporaryDirectories.push(parent);
+    const root = join(parent, "root");
+    const external = join(parent, "external");
+    await mkdir(root);
+    await mkdir(external);
+    await execFileAsync("git", ["init", "-q"], { cwd: root });
+    await execFileAsync("git", ["init", "-q"], { cwd: external });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(external, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], { cwd: external });
+
+    const previousEnvironment = {
+      GIT_INDEX_FILE: process.env.GIT_INDEX_FILE,
+      GIT_OBJECT_DIRECTORY: process.env.GIT_OBJECT_DIRECTORY,
+    };
+    process.env.GIT_INDEX_FILE = join(external, ".git", "index");
+    process.env.GIT_OBJECT_DIRECTORY = join(external, ".git", "objects");
+
+    try {
+      const findings = await scanProject(root, {
+        includeStaged: true,
+        includeHistory: false,
+      });
+
+      expect(findings).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: "staged:victim.env",
+            rule: "sensitive-assignment",
+          }),
+        ]),
+      );
+    } finally {
+      if (previousEnvironment.GIT_INDEX_FILE === undefined) {
+        delete process.env.GIT_INDEX_FILE;
+      } else {
+        process.env.GIT_INDEX_FILE = previousEnvironment.GIT_INDEX_FILE;
+      }
+      if (previousEnvironment.GIT_OBJECT_DIRECTORY === undefined) {
+        delete process.env.GIT_OBJECT_DIRECTORY;
+      } else {
+        process.env.GIT_OBJECT_DIRECTORY =
+          previousEnvironment.GIT_OBJECT_DIRECTORY;
+      }
+    }
+  });
+
   it("pins Git metadata while staged content is being read", async () => {
     const parent = await mkdtemp(
       join(tmpdir(), "cvg-secret-scanner-git-metadata-race-"),

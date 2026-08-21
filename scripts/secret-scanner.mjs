@@ -721,6 +721,19 @@ async function appendGitFindings(
   }
 }
 
+function createGitEnvironment() {
+  const inheritedEnvironment = Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([key]) => !key.toUpperCase().startsWith("GIT_"),
+    ),
+  );
+  return {
+    ...inheritedEnvironment,
+    GIT_DIR: "/proc/self/fd/3",
+    GIT_WORK_TREE: ".",
+  };
+}
+
 export async function scanProject(
   root,
   { includeStaged = true, includeHistory = true } = {},
@@ -738,11 +751,7 @@ export async function scanProject(
       const env =
         gitDirectory === null || gitDirectory === undefined
           ? undefined
-          : {
-              ...process.env,
-              GIT_DIR: "/proc/self/fd/3",
-              GIT_WORK_TREE: ".",
-            };
+          : createGitEnvironment();
       const gitOptions =
         env === undefined
           ? undefined
