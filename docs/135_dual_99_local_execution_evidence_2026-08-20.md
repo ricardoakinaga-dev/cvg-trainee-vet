@@ -6,10 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `c4a0cc9` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `DOCUMENTATION_PENDING` em
+- evidência documental publicada: `4f49248` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: pendente até a reconciliação desta rodada; nenhum
-  código ou estado externo foi alterado depois desse corte
+- paridade documental final: confirmada no pós-push em `4f49248`; nenhum código
+  ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -34,8 +34,9 @@
   `git show` em `2 MiB + 1` por tentativa e `256 MiB` agregados;
 - `scripts/secret-scanner.mjs` permanece em `799` linhas, hotspots `0`,
   `HEAD == origin == bb14a4a`, diff-check limpo e nenhum novo gap local
-  bounded justificável foi encontrado. A documentação desta auditoria inicial
-  está em `DOCUMENTATION_PENDING`.
+  bounded justificável foi encontrado. A documentação inicial desta auditoria
+  `4f49248` foi publicada; a reconciliação final não altera código ou estado
+  externo.
 
 ## Round 70 — consumo do orçamento para staged oversized
 
