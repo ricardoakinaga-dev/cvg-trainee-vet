@@ -249,9 +249,10 @@ clínica ou piloto.
 
 ## 68. Checkpoint de publicação da profundidade do worktree B99-101 — 2026-08-21T05:52:50-03:00
 
-O código/teste `232ee11` foi publicado em `origin/agent/publish-production-hardening`;
-a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
-registro. A confirmação final de paridade permanece necessária.
+O código/teste `232ee11` e a reconciliação documental inicial `8fc9f0b` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `8fc9f0b`. A reconciliação final não altera código ou estado
+externo.
 
 ## 67. Checkpoint da profundidade recursiva do worktree B99-101 — 2026-08-21T05:52:50-03:00
 
@@ -265,7 +266,7 @@ O foco passou `61/61`, a cobertura passou `205/1157/21` em
 contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
 typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
 em profundidade `300` produziu um único finding genérico. Código/teste `232ee11`
-foi publicado; a documentação inicial segue `DOCUMENTATION_PENDING`. Windows/non-proc,
+e documentação inicial `8fc9f0b` foram publicados. Windows/non-proc,
 condições live, gates externos, crítica independente e demais bloqueios do
 programa permanecem abertos.
 

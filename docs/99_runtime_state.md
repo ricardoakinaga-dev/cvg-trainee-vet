@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 67 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou uma árvore sintética com `300` níveis que atravessava a recursão e retornava lista vazia. RED falhou sem o finding genérico; GREEN propaga a profundidade de worktree e falha fechado ao exceder `256` níveis, descartando a travessia parcial; foco `61/61`, cobertura `205/1157/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix em profundidade `300` produziu um único finding genérico; código/teste `232ee11` foi publicado e a reconciliação documental inicial segue pendente. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental desta rodada; depois executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 67 de B99-101 sob RED→GREEN→REFACTOR; a auditoria read-only encontrou uma árvore sintética com `300` níveis que atravessava a recursão e retornava lista vazia. RED falhou sem o finding genérico; GREEN propaga a profundidade de worktree e falha fechado ao exceder `256` níveis, descartando a travessia parcial; foco `61/61`, cobertura `205/1157/21` em `95,03/90,95/95,31/95,73`, build `12/12` com `CVG_API_INTERNAL_URL` local efêmero, CI contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato, diff-check e audit passaram. Probe pós-fix em profundidade `300` produziu um único finding genérico; código/teste `232ee11` e a reconciliação documental inicial `8fc9f0b` foram publicados, com `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only bounded da superfície de identidade/Git e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -49,8 +49,8 @@
   `2/2`, hotspots `0` com maior função de `100`, lint, typecheck, formato,
   diff-check e audit de dependências passaram. Probe pós-fix com profundidade
   `300` produziu um único finding genérico. Código/teste `232ee11` foi
-  publicado; a reconciliação documental inicial segue pendente neste primeiro
-  registro.
+  publicado; a reconciliação documental inicial `8fc9f0b` foi publicada e a
+  paridade pós-push foi confirmada.
 
 ### LIMITES / PRÓXIMA AÇÃO
 
