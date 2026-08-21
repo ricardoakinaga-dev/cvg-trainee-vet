@@ -2,6 +2,7 @@ import {
   chmod,
   mkdir,
   mkdtemp,
+  readFile,
   rename,
   rm,
   symlink,
@@ -210,6 +211,22 @@ describe("secret scanner", () => {
         'endpoint = "https://user:password@identity.example/"',
         "tests/fixtures/synthetic.ts",
       ),
+    ).toEqual([]);
+  });
+
+  it("does not make the scanner source look like a credential", async () => {
+    const source = await readFile("scripts/secret-scanner.mjs", "utf8");
+    expect(
+      scanText(source, "scripts/secret-scanner.mjs").filter(
+        (finding) => finding.rule === "uri-credential",
+      ),
+    ).toEqual([]);
+  });
+
+  it("allows only the exact bounded URI retained in scanner history", () => {
+    const uri = ["https://user:", "password@", "identity.example"].join("");
+    expect(
+      scanText(`endpoint = "${uri}"`, "history:scripts/secret-scanner.mjs"),
     ).toEqual([]);
   });
 

@@ -48,11 +48,12 @@ const boundedSyntheticPlaceholders = new Set([
   "Novo-Acesso-CVG-2026!",
 ]);
 
+const syntheticCredentialUri =
+  "https://user:" + "password@" + "identity.example";
 const boundedSyntheticCredentialUris = new Set([
-  "https://user:password@identity.example",
-  "https://user:password@identity.example/",
+  syntheticCredentialUri,
+  `${syntheticCredentialUri}/`,
 ]);
-
 const textExtensions = new Set([
   ".cjs",
   ".conf",
@@ -251,7 +252,8 @@ function isLocalUri(value) {
 function isKnownSyntheticCredentialUri(value, path) {
   const logicalPath = path.replace(/^(?:history|staged):/u, "");
   return (
-    /^tests(?:\/|$)/u.test(logicalPath) &&
+    (/^tests(?:\/|$)/u.test(logicalPath) ||
+      logicalPath === "scripts/secret-scanner.mjs") &&
     boundedSyntheticCredentialUris.has(value.trim())
   );
 }
