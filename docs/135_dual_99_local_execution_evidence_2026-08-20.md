@@ -1,15 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T03:08:46-03:00`
-- última atualização: `2026-08-21T03:08:46-03:00`
+- corte: `2026-08-21T03:31:23-03:00`
+- última atualização: `2026-08-21T03:31:23-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `c69069b` em
+- commit publicado: `5ea9281` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `13f64f1` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `13f64f1`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- evidência documental publicada: pendente nesta reconciliação local
+- paridade documental final: será confirmada após o commit documental; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -26,6 +25,14 @@
 - registry: `docs/canonical-document-registry.json`
 
 ## Implementações locais desta rodada
+
+- Git metadata boundary: a auditoria reproduziu que um `.git` simbólico fazia
+  Git ler índice e histórico de um repositório externo. A regressão RED cobriu
+  `staged:victim.env` e `history:victim.env`; GREEN abre o `.git` direto com
+  `O_DIRECTORY | O_NOFOLLOW`, mantém o descritor e o entrega ao processo Git
+  em fd 3. `runGitCommand` e `runGitBatch` continuam bounded, e a enumeração do
+  worktree usa a raiz já aberta. Foco `52/52`; probe de `1000` trocas sem
+  leakage/exceção (`758` unreadable, `242` clean).
 
 - parent path boundary: a abertura da raiz agora caminha cada componente
   absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`; apenas a recursão interna
@@ -63,6 +70,14 @@
   `7/7`, migration safety `33/33`, lint, typecheck, formato, audit e
   `diff-check`; sem a variável de build o guard de produção bloqueou conforme
   esperado;
+
+- qualidade Round 59: cobertura integral passou `205/1148/21` em
+  `95,03/90,95/95,31/95,73`; build `12/12` com
+  `CVG_API_INTERNAL_URL` sintético somente no processo, CI contract,
+  arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e
+  audit de dependências passaram. `pnpm verify:secrets` continua apontando
+  somente os quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`.
 
 - scanner de segredos: enumeração de worktree/index/history, tags anotadas,
   referências `secret://`, expressões de código e placeholders sintéticos

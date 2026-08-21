@@ -247,6 +247,31 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 52. Checkpoint de publicação do Git metadata bounded B99-101 — 2026-08-21T03:31:23-03:00
+
+O código/teste `5ea9281` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. A publicação do código não altera runtime,
+produção, segredos, score, release, clínica ou piloto.
+
+## 51. Checkpoint do Git metadata bounded B99-101 — 2026-08-21T03:31:23-03:00
+
+B99-101 recebeu RED/GREEN para metadados Git simbólicos. Um `.git` apontando
+para repositório externo produziu achados sensíveis em `staged:victim.env` e
+`history:victim.env`. O GREEN abre o `.git` direto com
+`O_DIRECTORY | O_NOFOLLOW`, mantém o descritor e o entrega ao child Git em fd
+3; `runGitCommand`/`runGitBatch` preservam caps bounded, e o worktree usa a
+raiz já aberta.
+
+O foco passou `52/52`, a cobertura passou `205/1148/21` em
+`95,03/90,95/95,31/95,73`, um probe `.git` completou `1000` trocas sem
+vazamento ou exceção (`758` unreadable, `242` clean), o build sintético passou
+`12/12`, CI contract e arquitetura `2/2`, hotspots `0`, lint, typecheck,
+formato, diff-check e audit de dependências passaram. `pnpm verify:secrets`
+permanece fail-closed nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; a solução local depende de POSIX/procfs e as
+condições live, externas e independentes permanecem abertas.
+
 ## 50. Checkpoint de publicação do parent path bounded B99-101 — 2026-08-21T03:08:46-03:00
 
 O código/teste `c69069b` foi publicado em

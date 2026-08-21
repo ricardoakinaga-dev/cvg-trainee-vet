@@ -5,6 +5,34 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T03:31:23-03:00 — B99-101 Git metadata boundary
+
+- **auditoria/RED:** um `.git` simbólico para repositório externo fez o Git
+  produzir achados sensíveis em `staged:victim.env` e `history:victim.env`;
+- **GREEN:** o scanner abre o `.git` direto com `O_DIRECTORY | O_NOFOLLOW`,
+  mantém o descritor através de staged/history e passa o handle ao processo Git
+  em fd 3. `runGitCommand`/`runGitBatch` continuam com caps bounded, e o
+  worktree é enumerado a partir da raiz já aberta;
+- **evidência:** foco `52/52`, cobertura `205/1148/21` em
+  `95,03/90,95/95,31/95,73`, probe de `1000` trocas sem leakage/exceção
+  (`758` unreadable, `242` clean), build `12/12`, CI contract, arquitetura
+  `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram.
+  Código/teste `5ea9281` foi publicado no branch remoto;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T03:29:48-03:00 — B99-101 Git metadata boundary
+
+O código/teste `5ea9281` foi publicado em
+`origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `5ea9281`. A reconciliação documental será publicada em
+seguida; `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T03:05:17-03:00 — B99-101 parent path boundary
 
 - **auditoria/RED:** uma troca sintética de `slot` para symlink externo fez a

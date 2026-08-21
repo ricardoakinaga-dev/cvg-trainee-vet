@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 58 fechou a barra local de B99-101 para componentes-pai do caminho da raiz: cada componente absoluto é aberto desde `/` com `O_DIRECTORY | O_NOFOLLOW`, enquanto a recursão interna usa apenas `/proc/self/fd/<fd>/child`; Round 57 mantém o `cwd` Git ancorado no descritor da raiz, Round 56 mantém a travessia recursiva com descritores-pai, Round 55 mantém `O_NOFOLLOW` na abertura de arquivos, Round 54 mantém a validação da raiz com `<workspace> / unreadable-file`, Round 53 mantém leituras limitadas a `MAX_SCAN_BYTES + 1`, Round 52 mantém caps de scan/header do parser Git, Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check` e proteções de identidade, whitespace e symlink; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 59 fechou a barra local de B99-101 para metadados Git simbólicos: `.git` é aberto com `O_DIRECTORY | O_NOFOLLOW`, o descritor é mantido durante staged/history e entregue ao filho Git em fd fixo; a travessia do worktree usa o descritor já aberto da raiz. Rounds 58–55 preservam as fronteiras de caminho, diretório e arquivo; Round 54 valida a raiz; Rounds 53–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 58 de B99-101 sob RED→GREEN→REFACTOR; a auditoria fresca reproduziu follow de componente-pai para árvore externa em `14/500` tentativas, e a regressão focal reproduziu `15/500` vazamentos. A abertura agora caminha cada componente absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`, mantendo a recursão interna em descritores `/proc/self/fd`; foco `50/50`, cobertura `205/1146/21` em `95,03/90,95/95,31/95,73`, probe de componentes-pai `5000` sem vazamento nem exceção, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; código/teste `c69069b` e reconciliação documental `13f64f1` foram publicados; o pós-push confirmou `HEAD == origin`. `pnpm verify` no SHA exato passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 59 de B99-101 sob RED→GREEN→REFACTOR; a auditoria reproduziu que `.git` simbólico fazia Git ler índice/histórico externos, e a regressão focal cobriu staged/history. A solução rejeita `.git` não-diretório, mantém o descritor real e o entrega a comandos Git bounded; a caminhada do worktree usa a raiz já aberta. Foco `52/52`, cobertura `205/1148/21` em `95,03/90,95/95,31/95,73`, probe `.git` com `1000` trocas sem vazamento nem exceção, build `12/12` com URL sintética de processo, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram; código/teste `5ea9281` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only bounded da superfície Git/metadados; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,34 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T03:08:46-03:00
+- last_update: 2026-08-21T03:31:23-03:00
+
+## 2026-08-21T03:31:23-03:00 — DUAL99-B99-101-GIT-METADATA-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only encontrou que `.git` podia ser um symlink para um
+  repositório externo; a regressão RED encontrou achados sensíveis em
+  `staged:victim.env` e `history:victim.env`;
+- GREEN abre o `.git` direto com `O_DIRECTORY | O_NOFOLLOW`, mantém o descriptor
+  durante index/history e passa o handle ao processo Git em fd 3. Os helpers
+  `runGitCommand`/`runGitBatch` preservam limites de stdout/stderr, e a
+  enumeração do worktree usa a raiz já aberta;
+- foco `52/52`; cobertura `205/1148/21` em `95,03/90,95/95,31/95,73`; probe
+  `.git` de `1000` trocas sem vazamento nem exceção (`758` unreadable, `242`
+  clean); build `12/12` com URL sintética de processo, CI contract,
+  arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e
+  audit de dependências passaram. Código/teste `5ea9281` foi publicado e
+  `HEAD == origin` confirmado.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Executar nova auditoria bounded.
 
 ## 2026-08-21T03:05:17-03:00 — DUAL99-B99-101-PARENT-PATH-NOFOLLOW
 
