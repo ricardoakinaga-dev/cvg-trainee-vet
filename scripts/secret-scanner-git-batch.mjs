@@ -5,11 +5,15 @@ const DEFAULT_MAX_ERROR_BYTES = 4096;
 const DEFAULT_MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
 const DEFAULT_MAX_BATCH_BYTES = 8 * 1024 * 1024;
 
-function assertMaxBatchBytes(value) {
+function assertPositiveSafeInteger(value, name) {
   if (!Number.isSafeInteger(value) || value <= 0) {
-    throw new TypeError("maxBatchBytes must be a positive safe integer");
+    throw new TypeError(`${name} must be a positive safe integer`);
   }
   return value;
+}
+
+function assertMaxBatchBytes(value) {
+  return assertPositiveSafeInteger(value, "maxBatchBytes");
 }
 
 function freezeGitBatchPlan(
@@ -40,6 +44,14 @@ export function runGitBatch(
   } = {},
 ) {
   return new Promise((resolve, reject) => {
+    const outputLimit = assertPositiveSafeInteger(
+      maxOutputBytes,
+      "maxOutputBytes",
+    );
+    const errorLimit = assertPositiveSafeInteger(
+      maxErrorBytes,
+      "maxErrorBytes",
+    );
     const child = spawnProcess("git", args, { cwd: root });
     const chunks = [];
     let settled = false;
@@ -54,7 +66,7 @@ export function runGitBatch(
     child.stdout.on("data", (chunk) => {
       if (settled) return;
       outputBytes += chunk.length;
-      if (outputBytes > maxOutputBytes) {
+      if (outputBytes > outputLimit) {
         fail(new Error("git batch output exceeds configured limit"));
         child.kill();
         return;
@@ -72,7 +84,7 @@ export function runGitBatch(
     });
     child.stderr.on("data", (chunk) => {
       if (settled) return;
-      if (errorBytes + chunk.length > maxErrorBytes) {
+      if (errorBytes + chunk.length > errorLimit) {
         fail(new Error("git batch stderr exceeds configured limit"));
         child.kill();
         return;

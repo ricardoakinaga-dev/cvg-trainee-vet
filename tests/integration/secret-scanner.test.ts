@@ -745,6 +745,40 @@ describe("secret scanner", () => {
     ]);
   });
 
+  it("rejects invalid explicit Git batch byte caps before spawning", async () => {
+    let spawnCalls = 0;
+    const spawnProcess = () => {
+      spawnCalls += 1;
+      throw new Error("synthetic spawn should not be reached");
+    };
+    const invalidLimits = [
+      0,
+      -1,
+      Number.NaN,
+      1.5,
+      Number.POSITIVE_INFINITY,
+      Number.MAX_SAFE_INTEGER + 1,
+    ];
+
+    for (const maxOutputBytes of invalidLimits) {
+      await expect(
+        runGitBatch(process.cwd(), ["cat-file", "--batch"], [], {
+          maxOutputBytes,
+          spawnProcess,
+        }),
+      ).rejects.toThrow(/maxOutputBytes/iu);
+    }
+    for (const maxErrorBytes of invalidLimits) {
+      await expect(
+        runGitBatch(process.cwd(), ["cat-file", "--batch"], [], {
+          maxErrorBytes,
+          spawnProcess,
+        }),
+      ).rejects.toThrow(/maxErrorBytes/iu);
+    }
+    expect(spawnCalls).toBe(0);
+  });
+
   it("rejects Git batch output above its configured cap", async () => {
     const directory = await mkdtemp(join(tmpdir(), "cvg-secret-scanner-cap-"));
     temporaryDirectories.push(directory);
