@@ -247,13 +247,12 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 62. Checkpoint de publicação pendente da enumeração de metadados Git B99-101 — 2026-08-21T05:11:16-03:00
+## 62. Checkpoint de publicação da enumeração de metadados Git B99-101 — 2026-08-21T05:11:16-03:00
 
-O código/teste `ace0054` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental ainda
-está pendente dos gates de documentação e da confirmação de paridade. A
-publicação não altera runtime, produção, segredos, score, release, clínica ou
-piloto.
+O código/teste `ace0054` e a reconciliação documental inicial `f63547e` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `f63547e`. A reconciliação final não altera runtime,
+produção, segredos, score, release, clínica ou piloto.
 
 ## 61. Checkpoint da enumeração bounded de metadados Git B99-101 — 2026-08-21T05:11:16-03:00
 
@@ -269,7 +268,8 @@ O foco passou `58/58`, a cobertura passou `205/1154/21` em
 contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
 typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
 com `2000` entradas produziu `gitObjectsStatus=unavailable`,
-`materializedSnapshotEntries=0` e finding genérico. `pnpm verify:secrets`
+`materializedSnapshotEntries=0` e finding genérico. Código/teste `ace0054` e
+documentação inicial `f63547e` foram publicados. `pnpm verify:secrets`
 permanece fail-closed nos quatro assignments redigidos preexistentes;
 Windows/non-proc, condições live, gates externos, crítica independente e
 demais bloqueios do programa permanecem abertos.
