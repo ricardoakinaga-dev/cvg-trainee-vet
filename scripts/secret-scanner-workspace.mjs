@@ -15,6 +15,13 @@ const noFollowDirectoryFlags =
     : undefined;
 const procFdChildPathPattern = /^\/proc\/self\/fd\/\d+(?:\/|$)/u;
 const MAX_WORKSPACE_ENTRIES = 1024;
+const WORKSPACE_BYTE_BUDGET_ERROR = "ERR_WORKSPACE_BYTE_BUDGET";
+
+function workspaceByteBudgetExceededError() {
+  return Object.assign(new Error("workspace byte budget exceeded"), {
+    code: WORKSPACE_BYTE_BUDGET_ERROR,
+  });
+}
 
 async function closeHandles(handles) {
   await Promise.all(
@@ -144,6 +151,54 @@ export async function readWorkspaceEntries(directory) {
     return entries;
   } finally {
     await handle.close();
+  }
+}
+
+export async function scanWorkspaceFile(
+  file,
+  path,
+  remainingBytes,
+  maxScanBytes,
+  { isIgnoredBinaryAssetPath, scanPathBuffer, unscannedFinding },
+) {
+  let reservedBytes = 0;
+  try {
+    const metadata = await lstat(file);
+    if (metadata.isSymbolicLink()) {
+      return {
+        findings: [unscannedFinding(path, "unreadable-file", "symlink")],
+        bytesConsumed: 0,
+      };
+    }
+    if (metadata.size > maxScanBytes) {
+      return {
+        findings: isIgnoredBinaryAssetPath(path)
+          ? []
+          : [unscannedFinding(path, "oversize-file", `${metadata.size} bytes`)],
+        bytesConsumed: 0,
+      };
+    }
+    if (metadata.size > remainingBytes) {
+      throw workspaceByteBudgetExceededError();
+    }
+    reservedBytes = metadata.size;
+    const buffer = await readScanBuffer(
+      file,
+      Math.min(maxScanBytes, remainingBytes),
+    );
+    if (buffer.length > remainingBytes) {
+      throw workspaceByteBudgetExceededError();
+    }
+    return {
+      findings: scanPathBuffer(buffer, path),
+      bytesConsumed: buffer.length,
+    };
+  } catch (error) {
+    if (error?.code === WORKSPACE_BYTE_BUDGET_ERROR) throw error;
+    return {
+      findings: [unscannedFinding(path, "unreadable-file", "workspace file")],
+      bytesConsumed: reservedBytes,
+    };
   }
 }
 

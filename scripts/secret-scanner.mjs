@@ -1,4 +1,3 @@
-import { lstat } from "node:fs/promises";
 import { join } from "node:path";
 import { TextDecoder } from "node:util";
 import { planGitBatchRequests as planGitBatchRequestsInternal } from "./secret-scanner-git-batch.mjs";
@@ -11,7 +10,7 @@ import {
 } from "./secret-scanner-git-metadata.mjs";
 import {
   openWorkspaceDirectory,
-  readScanBuffer,
+  scanWorkspaceFile,
   withWorkspaceRoot,
 } from "./secret-scanner-workspace.mjs";
 
@@ -27,6 +26,7 @@ const ignoredDirectories = new Set([
 const MAX_SCAN_BYTES = 2 * 1024 * 1024;
 const MAX_WORKSPACE_TOTAL_ENTRIES = 4096;
 const MAX_WORKSPACE_DEPTH = 256;
+const MAX_WORKSPACE_TOTAL_BYTES = 64 * 1024 * 1024;
 const MAX_GIT_BATCH_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_GIT_BATCH_HEADER_BYTES = 128;
 
@@ -494,13 +494,13 @@ export function summarizeSecretFindings(findings) {
     .map((item) => `${item.path}:${item.line} [${item.rule}] ${item.evidence}`)
     .join("; ");
 }
-
 async function walk(
   directory,
   logicalDirectory = "",
   openedDirectory,
   remainingEntries = MAX_WORKSPACE_TOTAL_ENTRIES,
   workspaceDepth = 0,
+  remainingBytes = MAX_WORKSPACE_TOTAL_BYTES,
 ) {
   const access =
     openedDirectory === undefined
@@ -520,7 +520,13 @@ async function walk(
         : entry.name;
       const absolutePath = join(safeDirectory, entry.name);
       if (entry.isSymbolicLink()) {
-        findings.push(...(await scanFile(absolutePath, logicalPath)));
+        const scanned = await scanFile(
+          absolutePath,
+          logicalPath,
+          remainingBytes,
+        );
+        findings.push(...scanned.findings);
+        remainingBytes -= scanned.bytesConsumed;
         continue;
       }
       if (entry.isDirectory()) {
@@ -534,25 +540,33 @@ async function walk(
             undefined,
             remaining,
             workspaceDepth + 1,
+            remainingBytes,
           );
           findings.push(...child.findings);
           remaining = child.remainingEntries;
+          remainingBytes = child.remainingBytes;
         }
         continue;
       }
       if (entry.isFile()) {
-        findings.push(...(await scanFile(absolutePath, logicalPath)));
+        const scanned = await scanFile(
+          absolutePath,
+          logicalPath,
+          remainingBytes,
+        );
+        findings.push(...scanned.findings);
+        remainingBytes -= scanned.bytesConsumed;
       }
     }
     return Object.freeze({
       findings,
       remainingEntries: remaining,
+      remainingBytes,
     });
   } finally {
     if (openedDirectory === undefined) await handle.close();
   }
 }
-
 function unscannedFinding(path, rule, evidence) {
   return finding(path, 1, rule, evidence);
 }
@@ -578,7 +592,6 @@ function scanBuffer(buffer, path) {
     ? [unscannedFinding(path, "binary-file", "invalid UTF-8")]
     : scanText(content, path);
 }
-
 function scanPathBuffer(buffer, path) {
   if (isIgnoredBinaryAssetPath(path)) {
     if (buffer.length > MAX_SCAN_BYTES) return [];
@@ -587,22 +600,12 @@ function scanPathBuffer(buffer, path) {
   }
   return scanBuffer(buffer, path);
 }
-
-async function scanFile(file, path) {
-  try {
-    const metadata = await lstat(file);
-    if (metadata.isSymbolicLink()) {
-      return [unscannedFinding(path, "unreadable-file", "symlink")];
-    }
-    if (metadata.size > MAX_SCAN_BYTES) {
-      return isIgnoredBinaryAssetPath(path)
-        ? []
-        : [unscannedFinding(path, "oversize-file", `${metadata.size} bytes`)];
-    }
-    return scanPathBuffer(await readScanBuffer(file, MAX_SCAN_BYTES), path);
-  } catch {
-    return [unscannedFinding(path, "unreadable-file", "workspace file")];
-  }
+function scanFile(file, path, remainingBytes) {
+  return scanWorkspaceFile(file, path, remainingBytes, MAX_SCAN_BYTES, {
+    isIgnoredBinaryAssetPath,
+    scanPathBuffer,
+    unscannedFinding,
+  });
 }
 
 async function scanWorkspace(root, openedRoot) {
