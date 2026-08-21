@@ -247,6 +247,34 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 48. Checkpoint de publicação do Git cwd bounded B99-101 — 2026-08-21T02:47:53-03:00
+
+O código/teste `0f575d1` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental deste
+checkpoint está em andamento. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 47. Checkpoint do Git cwd bounded B99-101 — 2026-08-21T02:47:53-03:00
+
+B99-101 recebeu RED/GREEN para a corrida da própria raiz. O RED reproduziu que
+a validação anterior era seguida por `cwd: root` mutável: um worker alternou a
+raiz para symlink externo e encontrou `staged:victim.env` em `3/300` tentativas;
+o focal reproduziu `7/500` vazamentos. O GREEN abre a raiz com
+`O_DIRECTORY | O_NOFOLLOW`, mantém o descritor durante workspace, staged e
+history e usa `/proc/self/fd/<fd>` em todos os comandos Git; falhas retornam
+`<workspace> / unreadable-file`.
+
+O foco passou `49/49`, a cobertura passou `205/1145/21` em
+`95,03/90,95/95,31/95,73`, os probes staged `5000` e history `1000` não
+encontraram vazamento nem exceção, o build sintético passou `12/12`, hotspots
+`0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`,
+decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint,
+typecheck, formato e diff-check passaram. O `pnpm verify` no SHA exato passou
+até migration safety e parou fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A solução depende de flags POSIX/`/proc`; parent path races,
+condições live e externas permanecem abertas.
+
 ## 46. Checkpoint de publicação da travessia recursiva B99-101 — 2026-08-21T02:22:29-03:00
 
 O código/teste `4af5821` foi publicado em

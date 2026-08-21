@@ -1,15 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T02:22:29-03:00`
-- última atualização: `2026-08-21T02:22:29-03:00`
+- corte: `2026-08-21T02:47:53-03:00`
+- última atualização: `2026-08-21T02:47:53-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `4af5821` em
+- commit publicado: `0f575d1` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `41cf20c` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `41cf20c`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- evidência documental publicada: pendente nesta etapa de reconciliação
+- paridade documental final: será confirmada após o commit documental; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -27,6 +26,11 @@
 
 ## Implementações locais desta rodada
 
+- Git cwd root boundary: a validação da raiz agora abre e mantém um descritor
+  `O_DIRECTORY | O_NOFOLLOW` vivo durante workspace, staged e history; Git usa
+  `/proc/self/fd/<fd>` como `cwd`, e falhas de abertura retornam finding
+  redigido. O RED reproduziu vazamento externo em `7/500` tentativas; os probes
+  pós-GREEN não vazaram.
 - workspace directory boundary: a travessia recursiva agora mantém o descritor
   pai aberto, abre cada diretório com `O_DIRECTORY | O_NOFOLLOW` e enumera por
   `/proc/self/fd/<fd>`; falhas de abertura/readdir viram finding redigido em
@@ -205,6 +209,49 @@
   safety, lint, typecheck, formato, diff-check, CI contract e documentation
   passaram. O código/teste está em `593619e` e
   `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 57 — B99-101 / Git cwd root symlink TOCTOU — 2026-08-21T02:47:53-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED usou um worker sintético para alternar a própria raiz entre diretório
+  regular e symlink para outro repositório Git; o scanner anterior passou o
+  pathname mutável como `cwd` e encontrou `staged:victim.env` externo em `3/300`
+  tentativas. A regressão focal reproduziu `7` vazamentos em `500` tentativas;
+- GREEN abriu a raiz com `O_DIRECTORY | O_NOFOLLOW`, manteve o descritor aberto
+  durante workspace, staged e history e passou `/proc/self/fd/<fd>` como `cwd`
+  de todos os comandos Git; falha na abertura da raiz retorna
+  `<workspace> / unreadable-file`;
+- REFACTOR moveu a deduplicação para `secret-scanner-findings.mjs` e preservou
+  leituras bounded, recusa de symlinks finais e findings redigidos.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco de integração do secret scanner: `49/49`;
+- cobertura completa: `205` arquivos, `1145` testes passantes e `21` guardados;
+  `95,03%` statements, `90,95%` branches, `95,31%` functions e `95,73%`
+  lines;
+- probe staged pós-correção: `5000` trocas, zero vazamentos, zero exceções,
+  `4933` resultados unreadable e `67` clean;
+- probe history pós-correção: `1000` trocas, zero vazamentos, zero exceções,
+  `977` resultados unreadable e `23` clean;
+- build sintético `12/12`; hotspots `0`, maior função `98` linhas; contratos
+  `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety
+  `33/33`, audit, lint, typecheck, formato e diff-check passaram.
+
+### LIMITES / PUBLICAÇÃO
+
+O `pnpm verify` no SHA `0f575d1` passou todos os gates até migration safety e
+parou fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; o arquivo não foi lido nem
+alterado. O commit de código/teste `0f575d1` foi publicado no branch remoto; a
+reconciliação documental desta rodada está sendo publicada separadamente. A
+crítica foi fresca e read-only, porém não independente porque o backend de
+critic não estava disponível. A solução depende de descritores POSIX e
+`/proc/self/fd`; parent path races, secret manager/rotação, provider/CI,
+RC/runtime, WebKit aprovado, clínica, `0/145`, gates externos, aprovação
+humana e reauditoria independente continuam abertos; não houve score, release,
+piloto ou mutação de produção.
 
 ## Round 56 — B99-101 / workspace directory-open symlink TOCTOU — 2026-08-21T02:16:26-03:00
 

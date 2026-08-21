@@ -11483,6 +11483,88 @@ auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
 provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
 gates externos, aprovação humana e reauditoria independente.
 
+## 2026-08-21T02:47:53-03:00 — DUAL99-B99-101-GIT-CWD-ROOT-NOFOLLOW
+
+### TIMESTAMP
+
+2026-08-21 02:47:53 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — impedir que staged/history Git sigam a raiz mutável após a
+validação inicial.
+
+### ACTION
+
+A auditoria read-only reproduziu que `scanProject` validava a raiz e depois
+passava o pathname mutável como `cwd` a Git. Um worker sintético alternou a
+raiz para symlink de outro repositório e o scanner encontrou
+`staged:victim.env` em `3/300` tentativas; o RED focal reproduziu `7/500`
+vazamentos. O GREEN passou a abrir a raiz com `O_DIRECTORY | O_NOFOLLOW`,
+manter o descritor vivo durante workspace, staged e history e usar
+`/proc/self/fd/<fd>` em todos os comandos Git; falha de abertura retorna
+`<workspace> / unreadable-file`.
+
+### RESULT
+
+O foco passou `49/49`; a cobertura passou `205` arquivos / `1145` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; probes staged `5000` e history
+`1000` não encontraram vazamento nem exceção; build sintético `12/12`;
+hotspots `0` com maior função de `98` linhas; contratos `87/87`; worker `51/51`;
+decisões `7/7`; mutation `7/7` (`100%`); migration safety `33/33`; audit,
+lint, typecheck, formato e diff-check passaram. O commit de código/teste
+`0f575d1` foi publicado em `origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+O `pnpm verify` no SHA exato passou até migration safety e permaneceu
+fail-closed somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado. A crítica
+foi fresca e read-only, mas não independente porque o backend de critic não
+estava disponível. Parent path races e flags POSIX/`/proc` permanecem limites;
+nenhum segredo, runtime, produção, score, release, decisão clínica ou piloto
+foi tocado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois executar nova
+auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente.
+
+## 2026-08-21T02:47:53-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-CWD-ROOT-NOFOLLOW
+
+### ACTION
+
+O commit de código/teste `0f575d1` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está sendo publicada separadamente.
+
+### RESULT / STATUS
+
+A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve rotação de segredo,
+alteração de runtime/produção, score, release, decisão clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental e depois executar nova auditoria bounded.
+
 ## 2026-08-21T02:16:26-03:00 — DUAL99-B99-101-WORKSPACE-DIRECTORY-NOFOLLOW
 
 ### TIMESTAMP

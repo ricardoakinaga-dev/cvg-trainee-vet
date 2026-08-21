@@ -5,6 +5,39 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T02:47:53-03:00 — B99-101 Git cwd root boundary
+
+- **auditoria/RED:** a validação anterior da raiz era seguida por `cwd: root`
+  mutável; uma troca sintética para symlink externo encontrou
+  `staged:victim.env` em `3/300` tentativas e a regressão focal reproduziu
+  `7/500` vazamentos;
+- **GREEN:** `withWorkspaceRoot` abre a raiz com `O_DIRECTORY | O_NOFOLLOW`,
+  mantém o descritor durante workspace/staged/history e usa
+  `/proc/self/fd/<fd>` no `cwd` de Git; falhas de abertura retornam
+  `<workspace> / unreadable-file`;
+- **evidência:** foco `49/49`, cobertura `205/1145/21` em
+  `95,03/90,95/95,31/95,73`, probes staged `5000` e history `1000` sem
+  vazamento nem exceção, build `12/12`, hotspots `0`, contratos `87/87`,
+  worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`,
+  audit, lint, typecheck, formato e diff-check passaram. O código/teste
+  `0f575d1` foi publicado no branch remoto; a reconciliação desta execução será
+  publicada em seguida;
+- **limite/status:** `pnpm verify` no SHA exato passou até migration safety e
+  parou fail-closed somente nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica foi
+  fresca e read-only, mas não independente; parent path races e flags
+  POSIX/`/proc` permanecem limites explícitos. B99-101 segue `IN_PROGRESS` no
+  escopo externo e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T02:47:53-03:00 — B99-101 Git cwd root boundary
+
+O código/teste `0f575d1` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+execução está sendo publicada separadamente. A publicação não fecha secret
+manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+aprovação humana ou reauditoria independente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T02:16:26-03:00 — B99-101 workspace directory boundary
 
 - **auditoria/RED:** uma troca sintética de `root/nested` para symlink fez a
