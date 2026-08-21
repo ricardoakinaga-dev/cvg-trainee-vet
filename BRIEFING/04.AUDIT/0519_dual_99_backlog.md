@@ -5,6 +5,38 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T01:56:15-03:00 — B99-101 workspace open boundary
+
+- **auditoria/RED:** uma troca sintética entre `lstat` e `open` alternou
+  `victim.env` entre arquivo regular e symlink; em `164` tentativas o scanner
+  anterior seguiu o alvo externo e encontrou conteúdo sensível sintético;
+- **GREEN:** `readScanBuffer` foi movido para
+  `scripts/secret-scanner-workspace.mjs` e abre com `O_RDONLY | O_NOFOLLOW`;
+  symlink no componente final e plataformas sem `O_NOFOLLOW` falham fechado;
+- **evidência:** foco `47/47`, cobertura `205/1143/21` em
+  `95,03/90,95/95,31/95,73`, probe pós-correção com `5000` trocas sem
+  vazamento, build sintético `12/12`, hotspots `0` com maior função de `98`
+  linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`,
+  migration safety `33/33`, audit, lint, typecheck, formato e diff-check
+  passaram. O código/teste `ee0ebc9` foi publicado no branch remoto; a
+  reconciliação desta execução será publicada em seguida;
+- **limite/status:** `pnpm verify` passou até migration safety e parou
+  fail-closed somente nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica foi
+  fresca e read-only, mas não independente; condições de corrida em
+  componentes-pai, gaps externos e reauditoria permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T01:56:15-03:00 — B99-101 workspace open boundary
+
+O código/teste `ee0ebc9` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+execução está sendo publicada separadamente. A publicação não fecha secret
+manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+aprovação humana ou reauditoria independente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T01:32:38-03:00 — B99-101 workspace root boundary
 
 - **auditoria/RED:** uma raiz sintética symlink fez `scanProject` atravessar o

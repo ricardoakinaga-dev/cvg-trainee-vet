@@ -247,6 +247,33 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 44. Checkpoint de publicação da abertura bounded B99-101 — 2026-08-21T01:56:15-03:00
+
+O código/teste `ee0ebc9` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental deste
+checkpoint está em andamento. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 43. Checkpoint de abertura bounded do scanner B99-101 — 2026-08-21T01:56:15-03:00
+
+B99-101 recebeu RED/GREEN para a janela entre a validação `lstat` e a abertura
+do arquivo. O RED usou um worker sintético para alternar `victim.env` entre
+arquivo regular e symlink; em `164` tentativas o scanner anterior seguiu o
+alvo externo e emitiu `sensitive-assignment`. O GREEN moveu `readScanBuffer`
+para `scripts/secret-scanner-workspace.mjs` e usa `O_RDONLY | O_NOFOLLOW`;
+symlink no componente final e plataformas sem `O_NOFOLLOW` falham fechado.
+
+O foco passou `47/47`, a cobertura passou `205/1143/21` em
+`95,03/90,95/95,31/95,73`, o probe pós-correção completou `5000` trocas sem
+vazamento, o build sintético passou `12/12`, hotspots `0` com maior função de
+`98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`,
+migration safety `33/33`, audit, lint, typecheck, formato e diff-check
+passaram. O `pnpm verify` oficial percorreu os gates até migration safety e
+parou fail-closed somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`, que não foi lido nem alterado. O foco local está
+concluído com gaps externos; condições de corrida em componentes-pai não são
+fechadas por esta alteração.
+
 ## 42. Publicação do checkpoint da fronteira da raiz B99-101 — 2026-08-21T01:39:59-03:00
 
 O código/teste `1ab557e` e a reconciliação documental `3217e13` foram

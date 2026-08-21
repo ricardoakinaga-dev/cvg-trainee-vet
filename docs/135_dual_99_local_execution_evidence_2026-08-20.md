@@ -1,15 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T01:32:38-03:00`
-- última atualização: `2026-08-21T01:32:38-03:00`
+- corte: `2026-08-21T01:56:15-03:00`
+- última atualização: `2026-08-21T01:56:15-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `1ab557e` em
+- commit publicado: `ee0ebc9` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `3217e13` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push da reconciliação em
-  `3217e13`; nenhum código ou estado externo foi alterado depois desse corte
+- evidência documental publicada: pendente nesta etapa de reconciliação
+- paridade documental final: será confirmada após o commit documental; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -27,6 +26,11 @@
 
 ## Implementações locais desta rodada
 
+- workspace open boundary: `readScanBuffer` agora abre arquivos regulares com
+  `O_RDONLY | O_NOFOLLOW`, evitando follow de symlink no componente final
+  depois de `lstat`; se `O_NOFOLLOW` não existir, a leitura falha fechado. RED
+  reproduziu a troca TOCTOU e o probe pós-GREEN completou `5000` trocas sem
+  vazamento; o foco passou `47/47`.
 - workspace root boundary: `scanProject` agora valida a raiz com `lstat`
   antes de enumerar worktree, staged ou history; symlink, ausência e arquivo
   regular retornam um finding redigido em `<workspace>` com
@@ -195,6 +199,47 @@
   safety, lint, typecheck, formato, diff-check, CI contract e documentation
   passaram. O código/teste está em `593619e` e
   `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 55 — B99-101 / workspace file-open symlink TOCTOU — 2026-08-21T01:56:15-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED usou um worker sintético para alternar `victim.env` entre arquivo
+  regular e symlink durante `scanProject`; em `164` tentativas o scanner
+  anterior seguiu o alvo externo e emitiu `sensitive-assignment`;
+- GREEN moveu `readScanBuffer` para `scripts/secret-scanner-workspace.mjs` e
+  abriu o arquivo com `O_RDONLY | O_NOFOLLOW`; a abertura final rejeita
+  symlink e a ausência da flag na plataforma também falha fechado;
+- REFACTOR preservou a leitura bounded de `MAX_SCAN_BYTES + 1`, o tratamento
+  fail-closed do `scanFile` e a fronteira existente da raiz `lstat`.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco de integração do secret scanner: `47/47`;
+- cobertura completa: `205` arquivos, `1143` testes passantes e `21` guardados;
+  `95,03%` statements, `90,95%` branches, `95,31%` functions e `95,73%`
+  lines;
+- probe pós-correção: `5000` trocas concorrentes sintéticas sem finding
+  `sensitive-assignment`; tentativas com symlink foram tratadas como
+  `unreadable-file`;
+- build sintético: `12/12`; hotspots `0`, maior função `98` linhas;
+  contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration
+  safety `33/33`, audit, lint, typecheck, formato e diff-check passaram;
+- `pnpm verify` oficial passou todos os gates até migration safety e parou
+  fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+  preexistentes de `infra/production/.env.local`.
+
+### LIMITES / PUBLICAÇÃO
+
+O arquivo `.env.local` não foi lido nem alterado. O commit de código/teste é
+`ee0ebc9`, publicado no branch remoto; a reconciliação documental desta rodada
+está sendo publicada separadamente. A crítica foi fresca e read-only, porém
+não independente porque o backend de critic não estava disponível. A proteção
+fecha o follow do componente final; condições de corrida em componentes-pai
+ou validação live permanecem fora desta prova local. Secret manager/rotação,
+provider/CI, RC/runtime, WebKit aprovado, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente continuam abertos; não houve score,
+release, piloto ou mutação de produção.
 
 ## Round 54 — B99-101 / workspace root symlink boundary — 2026-08-21T01:32:38-03:00
 

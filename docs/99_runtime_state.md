@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 54 fechou a barra local de B99-101 para a raiz do scanner: `scanProject` valida a raiz com `lstat`, rejeita symlink, ausência e arquivo regular como `<workspace> / unreadable-file`, e não executa worktree/staged/history nessas entradas; Round 53 mantém leituras de workspace limitadas a `MAX_SCAN_BYTES + 1`, Round 52 mantém caps de scan/header do parser Git, Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check` e proteções de identidade, whitespace e symlink; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 55 fechou a barra local de B99-101 para a abertura de arquivos do workspace: `readScanBuffer` usa `O_NOFOLLOW` e falha fechado quando a plataforma não oferece a proteção, impedindo follow de symlink após a validação `lstat`; Round 54 mantém a validação da raiz com `<workspace> / unreadable-file`, Round 53 mantém leituras limitadas a `MAX_SCAN_BYTES + 1`, Round 52 mantém caps de scan/header do parser Git, Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check` e proteções de identidade, whitespace e symlink; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 54 de B99-101 sob RED→GREEN→REFACTOR; a raiz do scanner agora é validada com `lstat`, e symlink, raiz ausente ou arquivo regular retornam somente `<workspace> / unreadable-file` sem atravessar o alvo nem invocar Git. O guard foi extraído para `scripts/secret-scanner-workspace.mjs`, mantendo o scanner principal em `800` linhas. O foco passou `46/46`, cobertura `205/1142/21` em `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o commit de código/teste `1ab557e` e a reconciliação documental `3217e13` foram publicados no branch remoto, com `HEAD == origin`. `pnpm verify` oficial passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 55 de B99-101 sob RED→GREEN→REFACTOR; o probe concorrente reproduziu follow de symlink após `lstat` e o scanner agora abre o arquivo com `O_NOFOLLOW`, falhando fechado se a proteção não existir. O foco passou `47/47`, cobertura `205/1143/21` em `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; o probe pós-correção completou `5000` trocas sem vazamento e o commit de código/teste `ee0ebc9` foi publicado no branch remoto. `pnpm verify` oficial passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: publicar a reconciliação documental de Round 55 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,36 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T01:39:59-03:00
+- last_update: 2026-08-21T01:56:15-03:00
+
+## 2026-08-21T01:56:15-03:00 — DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only reproduziu uma janela TOCTOU: uma troca sintética de
+  arquivo regular para symlink entre `lstat` e `open` fez o scanner seguir um
+  alvo fora da raiz e emitir `sensitive-assignment`;
+- RED adicionou a regressão focal para a fronteira de abertura. GREEN moveu
+  `readScanBuffer` para `scripts/secret-scanner-workspace.mjs` e usa
+  `O_RDONLY | O_NOFOLLOW`; symlink no componente final agora falha fechado e
+  plataformas sem `O_NOFOLLOW` também são rejeitadas sem leitura;
+- o foco passou `47/47`; cobertura `205/1143/21` em
+  `95,03/90,95/95,31/95,73`; build sintético `12/12`; hotspots `0` com maior
+  função de `98` linhas; contratos `87/87`; worker `51/51`; decisões `7/7`;
+  mutation `7/7`; migration safety `33/33`; audit, lint, typecheck, formato e
+  diff-check passaram. O probe pós-correção executou `5000` trocas sem
+  vazamento. O commit de código/teste `ee0ebc9` foi publicado no branch remoto.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify` oficial passou até migration safety e permaneceu fail-closed
+somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado. A crítica
+foi fresca e read-only, mas não independente porque o backend de critic não
+estava disponível. Reconciliar e publicar a documentação, então executar nova
+auditoria bounded; secret manager/rotação, provider/CI, RC/runtime, WebKit
+aprovado, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente permanecem abertos. Não houve score, release, piloto ou produção.
 
 ## 2026-08-21T01:32:38-03:00 — DUAL99-B99-101-WORKSPACE-ROOT-BOUNDARY
 

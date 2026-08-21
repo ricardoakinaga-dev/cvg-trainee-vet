@@ -11483,6 +11483,86 @@ auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
 provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
 gates externos, aprovação humana e reauditoria independente.
 
+## 2026-08-21T01:56:15-03:00 — DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
+
+### TIMESTAMP
+
+2026-08-21 01:56:15 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — impedir follow de symlink na abertura bounded do arquivo após a
+validação `lstat`.
+
+### ACTION
+
+A auditoria read-only reproduziu uma condição TOCTOU: um worker sintético
+alternou `victim.env` entre arquivo regular e symlink entre `lstat` e `open`, e
+o scanner anterior seguiu o alvo externo em `164` tentativas. Sob TDD, o RED
+adicionou a regressão focal. O GREEN moveu `readScanBuffer` para
+`scripts/secret-scanner-workspace.mjs` e usa `O_RDONLY | O_NOFOLLOW`; symlink
+no componente final e plataformas sem `O_NOFOLLOW` falham fechado. A leitura
+bounded de `MAX_SCAN_BYTES + 1` foi preservada.
+
+### RESULT
+
+O foco passou `47/47`; a cobertura passou `205` arquivos / `1143` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; probe pós-correção executou `5000`
+trocas sem vazamento; build sintético `12/12`; hotspots `0` com maior função
+de `98` linhas; contratos `87/87`; worker `51/51`; decisões `7/7`; mutation
+`7/7` (`100%`); migration safety `33/33`; audit, lint, typecheck, formato e
+diff-check passaram. O commit de código/teste `ee0ebc9` foi publicado em
+`origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+`pnpm verify` oficial passou até migration safety e permaneceu fail-closed
+somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado. A crítica
+foi fresca e read-only, mas não independente porque o backend de critic não
+estava disponível. A proteção cobre o componente final; condições de corrida
+em componentes-pai, runtime live e demais gates externos permanecem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois executar nova
+auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente.
+
+## 2026-08-21T01:56:15-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
+
+### ACTION
+
+O commit de código/teste `ee0ebc9` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está sendo publicada separadamente.
+
+### RESULT / STATUS
+
+A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve rotação de segredo,
+alteração de runtime/produção, score, release, decisão clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental e depois executar nova auditoria bounded.
+
 ## 2026-08-21T01:39:59-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-ROOT-BOUNDARY
 
 ### ACTION
