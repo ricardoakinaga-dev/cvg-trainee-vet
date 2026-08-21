@@ -247,6 +247,34 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 42. Checkpoint de publicação da fronteira da raiz B99-101 — 2026-08-21T01:32:38-03:00
+
+O código/teste da Rodada 54 foi publicado como `1ab557e` em
+`origin/agent/publish-production-hardening`; a reconciliação documental deste
+checkpoint está em andamento. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 41. Checkpoint de fronteira da raiz do scanner B99-101 — 2026-08-21T01:32:38-03:00
+
+B99-101 recebeu RED/GREEN para a raiz fornecida ao `scanProject`. O RED
+reproduziu traversal quando a raiz era um symlink para diretório temporário
+com `config.env` sintético, inclusive com superfícies staged/history ativadas.
+O GREEN valida a raiz com `lstat` antes de worktree, staged ou history; symlink,
+ausência e arquivo regular retornam somente `<workspace> / unreadable-file` e
+não invocam Git. O guard foi extraído para
+`scripts/secret-scanner-workspace.mjs`, mantendo o scanner principal em `800`
+linhas.
+
+O foco passou `46/46`, a cobertura passou `205/1142/21` em
+`95,03/90,95/95,31/95,73`, o build sintético passou `12/12`, hotspots `0` com
+maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`,
+mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e
+diff-check passaram. O `pnpm verify` oficial percorreu os gates até migration
+safety e parou fail-closed somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+O foco local está concluído com gaps externos; B99-101 e o programa permanecem
+`IN_PROGRESS / PILOT_BLOCKED`, sem score, release, piloto ou produção.
+
 ## 40. Publicação do checkpoint bounded workspace asset reads B99-101 — 2026-08-21T01:13:43-03:00
 
 O código/teste `95adb51` e a reconciliação documental `22d1a97` foram publicados

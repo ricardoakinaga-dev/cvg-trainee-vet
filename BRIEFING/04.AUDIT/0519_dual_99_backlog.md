@@ -5,6 +5,28 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T01:32:38-03:00 — B99-101 workspace root boundary
+
+- **auditoria/RED:** uma raiz sintética symlink fez `scanProject` atravessar o
+  alvo fornecido e localizar `config.env` fora da fronteira pedida; a chamada
+  também poderia seguir para staged/history;
+- **GREEN:** `scanProject` valida a raiz com `lstat` antes de qualquer
+  enumeração. Symlink, caminho ausente e arquivo regular retornam um único
+  finding redigido `<workspace> / unreadable-file` e não invocam Git. O guard
+  foi extraído para `scripts/secret-scanner-workspace.mjs`, mantendo o scanner
+  principal em `800` linhas;
+- **evidência:** foco `46/46`, cobertura `205/1142/21` em
+  `95,03/90,95/95,31/95,73`, build sintético `12/12`, hotspots `0` com maior
+  função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`,
+  mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e
+  diff-check passaram. O código/teste `1ab557e` foi publicado no branch remoto;
+  a reconciliação desta execução será publicada em seguida;
+- **limite/status:** `pnpm verify` passou até migration safety e parou
+  fail-closed somente nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica foi
+  fresca e read-only, mas não independente; B99-101 segue `IN_PROGRESS` no
+  escopo externo e o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Regras do backlog
 
 - IDs `B99-*` coordenam o overlay; IDs `U98-*` continuam como referências

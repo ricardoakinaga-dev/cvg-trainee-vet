@@ -1,15 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T01:13:43-03:00`
-- última atualização: `2026-08-21T01:13:43-03:00`
+- corte: `2026-08-21T01:32:38-03:00`
+- última atualização: `2026-08-21T01:32:38-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `95adb51` em
+- commit publicado: `1ab557e` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `22d1a97` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push da reconciliação em
-  `22d1a97`; nenhum código ou estado externo foi alterado depois desse corte
+- evidência documental publicada: pendente nesta etapa de reconciliação
+- paridade documental final: será confirmada após o commit documental; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -27,6 +26,12 @@
 
 ## Implementações locais desta rodada
 
+- workspace root boundary: `scanProject` agora valida a raiz com `lstat`
+  antes de enumerar worktree, staged ou history; symlink, ausência e arquivo
+  regular retornam um finding redigido em `<workspace>` com
+  `unreadable-file`, sem atravessar a raiz e sem invocar Git. O guard foi
+  extraído para `scripts/secret-scanner-workspace.mjs` para manter o scanner
+  principal em `800` linhas; a regressão focal passou `46/46`.
 - bounded workspace reads: `scanFile` agora descarta por metadata os assets
   ignorados acima de `MAX_SCAN_BYTES`, sem abrir o arquivo, e `readScanBuffer`
   lê arquivos regulares em buffer máximo de `MAX_SCAN_BYTES + 1`; uma regressão
@@ -189,6 +194,45 @@
   safety, lint, typecheck, formato, diff-check, CI contract e documentation
   passaram. O código/teste está em `593619e` e
   `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 54 — B99-101 / workspace root symlink boundary — 2026-08-21T01:32:38-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED criou uma raiz sintética symlink para um diretório temporário com
+  `config.env` sintético; o scanner antigo atravessou a raiz fornecida e
+  encontrou o conteúdo do alvo, além de continuar nas superfícies staged e
+  history;
+- GREEN adicionou `validateWorkspaceRoot`, baseado em `lstat`, no início de
+  `scanProject`; symlink, caminho ausente e arquivo regular não são aceitos
+  como raiz, retornam somente `<workspace> / unreadable-file` e encerram antes
+  de worktree/staged/history ou Git;
+- REFACTOR extraiu o guard para `scripts/secret-scanner-workspace.mjs`,
+  mantendo o scanner principal em `800` linhas e preservando a redaction dos
+  findings.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco de integração do secret scanner: `46/46`;
+- cobertura completa: `205` arquivos, `1142` testes passantes e `21` guardados;
+  `95,03%` statements, `90,95%` branches, `95,31%` functions e `95,73%`
+  lines;
+- build sintético: `12/12`; hotspots `0`, maior função `98` linhas;
+  contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration
+  safety `33/33`, audit, lint, typecheck, formato e diff-check passaram;
+- `pnpm verify` oficial passou todos os gates até migration safety e parou
+  fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+  preexistentes de `infra/production/.env.local`.
+
+### LIMITES / PUBLICAÇÃO
+
+O arquivo `.env.local` não foi lido nem alterado. O commit de código/teste é
+`1ab557e`, publicado no branch remoto; a reconciliação documental desta rodada
+está sendo publicada separadamente. A crítica foi fresca e read-only, porém
+não independente porque o backend de critic não estava disponível. Secret
+manager/rotação, provider/CI, RC/runtime, WebKit aprovado, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente continuam abertos;
+não houve score, release, piloto ou mutação de produção.
 
 ## Round 49 — B99-308 / API-surface adversarial fuzz boundary — 2026-08-21T00:04:17-03:00
 

@@ -11420,6 +11420,69 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T01:32:38-03:00 — DUAL99-B99-101-WORKSPACE-ROOT-BOUNDARY
+
+### TIMESTAMP
+
+2026-08-21 01:32:38 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — validar a fronteira da raiz fornecida ao scanner antes de
+enumerar worktree, staged ou history.
+
+### ACTION
+
+A auditoria read-only reproduziu traversal através de uma raiz symlink que
+apontava para diretório temporário com `config.env` sintético; a execução
+também alcançava as superfícies staged/history. Sob TDD, o RED adicionou
+regressões para symlink, ausência e arquivo regular. O GREEN passou a validar a
+raiz com `lstat` antes de qualquer superfície, retornar somente
+`<workspace> / unreadable-file` e não invocar Git em raízes inválidas. O guard
+foi extraído para `scripts/secret-scanner-workspace.mjs` para manter o scanner
+principal em `800` linhas.
+
+### RESULT
+
+O foco passou `46/46`; a cobertura passou `205` arquivos / `1142` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build sintético `12/12`; hotspots
+`0` com maior função de `98` linhas; contratos `87/87`; worker `51/51`;
+decisões `7/7`; mutation `7/7` (`100%`); migration safety `33/33`; audit,
+lint, typecheck, formato e diff-check passaram. O commit de código/teste
+`1ab557e` foi publicado em `origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+`pnpm verify` oficial passou até migration safety e permaneceu fail-closed
+somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado. A crítica
+foi fresca e read-only, mas não independente porque o backend de critic não
+estava disponível. Nenhum segredo, runtime, produção, score, release, decisão
+clínica ou piloto foi tocado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois executar nova
+auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente.
+
 ## 2026-08-21T01:13:43-03:00 — DUAL99-B99-101-BOUNDED-WORKSPACE-ASSET-READS
 
 ### TIMESTAMP
