@@ -3,10 +3,20 @@ import {
   runGitCommand,
 } from "./secret-scanner-git-batch.mjs";
 
+const MAX_GIT_TOTAL_BYTES = 256 * 1024 * 1024;
+const GIT_TOTAL_BYTES_ERROR = "ERR_GIT_TOTAL_BYTES";
+
+function gitTotalByteBudgetExceededError() {
+  return Object.assign(new Error("Git total byte budget exceeded"), {
+    code: GIT_TOTAL_BYTES_ERROR,
+  });
+}
+
 export function createGitSurfaceScanner({
   maxScanBytes,
   maxGitBatchBodyBytes,
   maxGitBatchHeaderBytes,
+  maxGitTotalBytes = MAX_GIT_TOTAL_BYTES,
   isIgnoredBinaryAssetPath,
   unscannedFinding,
   parseObjectList,
@@ -39,7 +49,9 @@ export function createGitSurfaceScanner({
       throw new Error("Git staged metadata unavailable");
     }
     const findings = [];
+    let remainingBytes = maxGitTotalBytes;
     for (const path of await stagedPaths(root, options)) {
+      if (remainingBytes <= 0) throw gitTotalByteBudgetExceededError();
       try {
         const stdout = await runGitCommand(root, ["show", `:${path}`], {
           env: options.env,
@@ -47,10 +59,21 @@ export function createGitSurfaceScanner({
           gitIndexHandle: options.gitIndexHandle,
           gitObjectDirectoryHandle: options.gitObjectDirectoryHandle,
           validateGitMetadata: options.validateGitMetadata,
-          maxOutputBytes: maxScanBytes + 1,
+          maxOutputBytes: Math.min(maxScanBytes + 1, remainingBytes + 1),
         });
+        if (stdout.length > remainingBytes) {
+          throw gitTotalByteBudgetExceededError();
+        }
+        remainingBytes -= stdout.length;
         findings.push(...scanPathBuffer(stdout, `staged:${path}`));
-      } catch {
+      } catch (error) {
+        if (
+          error?.code === GIT_TOTAL_BYTES_ERROR ||
+          (remainingBytes <= maxScanBytes &&
+            /output exceeds configured limit/iu.test(error?.message ?? ""))
+        ) {
+          throw gitTotalByteBudgetExceededError();
+        }
         findings.push(
           unscannedFinding(
             `staged:${path}`,
@@ -73,6 +96,7 @@ export function createGitSurfaceScanner({
     return readGitBlobsInternal(root, objects, {
       maxScanBytes,
       maxBatchBytes: maxGitBatchBodyBytes,
+      maxTotalBytes: maxGitTotalBytes,
       maxHeaderBytes: maxGitBatchHeaderBytes,
       isIgnoredBinaryAssetPath,
       unscannedFinding,

@@ -4,6 +4,7 @@ import { spawn } from "node:child_process";
 const DEFAULT_MAX_ERROR_BYTES = 4096;
 const DEFAULT_MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
 const DEFAULT_MAX_BATCH_BYTES = 8 * 1024 * 1024;
+const DEFAULT_MAX_TOTAL_BYTES = 256 * 1024 * 1024;
 const GIT_METADATA_CHANGED_CODE = "ERR_GIT_METADATA_CHANGED";
 
 function gitMetadataChangedError() {
@@ -86,6 +87,20 @@ function freezeGitBatchPlan(
     batchSizes: Object.freeze(batchSizes),
     complete,
   });
+}
+
+function exceedsGitTotalByteBudget(batchSizes, totalLimit) {
+  return (
+    batchSizes.reduce((total, batchSize) => total + batchSize, 0) > totalLimit
+  );
+}
+
+function gitTotalByteBudgetFinding(source, unscannedFinding) {
+  return unscannedFinding(
+    `${source}:<git>`,
+    "git-object-unreadable",
+    "Git total byte budget",
+  );
 }
 
 export function runGitBatch(
@@ -575,6 +590,7 @@ export async function readGitBlobs(
   {
     maxScanBytes,
     maxBatchBytes,
+    maxTotalBytes = DEFAULT_MAX_TOTAL_BYTES,
     maxHeaderBytes,
     isIgnoredBinaryAssetPath,
     unscannedFinding,
@@ -590,6 +606,7 @@ export async function readGitBlobs(
   if (objects.size === 0) return [];
   const scanLimit = assertPositiveSafeInteger(maxScanBytes, "maxScanBytes");
   const batchLimit = assertMaxBatchBytes(maxBatchBytes);
+  const totalLimit = assertPositiveSafeInteger(maxTotalBytes, "maxTotalBytes");
   const headerLimit = assertPositiveSafeInteger(
     maxHeaderBytes,
     "maxHeaderBytes",
@@ -616,6 +633,9 @@ export async function readGitBlobs(
     unscannedFinding,
   });
   if (!plan.complete || plan.objectIds.length === 0) return plan.findings;
+  if (exceedsGitTotalByteBudget(plan.batchSizes, totalLimit)) {
+    return [gitTotalByteBudgetFinding(source, unscannedFinding)];
+  }
   const findings = [...plan.findings];
   for (const [index, batch] of plan.batches.entries()) {
     const requestedObjects = new Map(
