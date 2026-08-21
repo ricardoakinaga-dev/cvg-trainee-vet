@@ -37,6 +37,10 @@ import {
   planGitBatchRequests as planGitBatchRequestsInternal,
   runGitBatch,
 } from "../../scripts/secret-scanner-git-batch.mjs";
+import {
+  createGitSurfaceScanner,
+  parseStagedPaths,
+} from "../../scripts/secret-scanner-git-surfaces.mjs";
 
 const temporaryDirectories: string[] = [];
 
@@ -288,6 +292,34 @@ describe("secret scanner", () => {
     );
 
     expect(findings).toEqual([]);
+  });
+
+  it("rejects a staged path stream without its terminating NUL", () => {
+    expect(() => parseStagedPaths("safe.env")).toThrow(
+      /malformed staged path list/iu,
+    );
+    expect(parseStagedPaths("safe.env\0")).toEqual(["safe.env"]);
+  });
+
+  it("fails the staged scanner closed on a truncated path stream", async () => {
+    const scanner = createGitSurfaceScanner({
+      maxScanBytes: 128,
+      maxGitBatchBodyBytes: 128,
+      maxGitBatchHeaderBytes: 64,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path, rule, evidence) => ({ path, rule, evidence }),
+      parseObjectList: () => new Map(),
+      readBatchOutput: () => [],
+      scanPathBuffer: () => [],
+      runGitCommand: async () => Buffer.from("safe.env"),
+    });
+
+    await expect(
+      scanner.scanStaged(process.cwd(), {
+        gitIndexStatus: "ready",
+        gitObjectDirectoryStatus: "ready",
+      }),
+    ).rejects.toThrow(/malformed staged path list/iu);
   });
 
   it("does not report unquoted code references or calls as secret literals", () => {

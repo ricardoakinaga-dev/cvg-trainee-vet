@@ -18,6 +18,17 @@ function isGitOutputLimitError(error) {
   );
 }
 
+export function parseStagedPaths(output) {
+  if (output.length === 0) return [];
+  if (!output.endsWith("\0")) {
+    throw new Error("malformed staged path list");
+  }
+  return output
+    .slice(0, -1)
+    .split("\0")
+    .filter((path) => path.length > 0);
+}
+
 export function createGitSurfaceScanner({
   maxScanBytes,
   maxGitBatchBodyBytes,
@@ -28,9 +39,10 @@ export function createGitSurfaceScanner({
   parseObjectList,
   readBatchOutput,
   scanPathBuffer,
+  runGitCommand: runGitCommandImpl = runGitCommand,
 }) {
   async function git(root, args, options = {}) {
-    const output = await runGitCommand(root, args, {
+    const output = await runGitCommandImpl(root, args, {
       env: options.env,
       gitDirectoryHandle: options.gitDirectoryHandle,
       gitIndexHandle: options.gitIndexHandle,
@@ -43,7 +55,7 @@ export function createGitSurfaceScanner({
 
   async function stagedPaths(root, options) {
     const output = await git(root, ["ls-files", "--cached", "-z"], options);
-    return output.split("\0").filter((path) => path.length > 0);
+    return parseStagedPaths(output);
   }
 
   async function scanStaged(root, options) {
