@@ -11100,3 +11100,64 @@ IN_PROGRESS / PILOT_BLOCKED
 Confirmar a paridade de código e documentação no mesmo remoto; depois executar
 auditoria read-only fresca para selecionar o próximo gap local verificável,
 mantendo explícitos os gates externos e humanos.
+
+## 2026-08-20T21:25:32-03:00 — DUAL99-B99-101-BOUNDED-GIT-BATCH-STDERR
+
+### TIMESTAMP
+
+2026-08-20 21:25:32 -03:00
+
+### ENGINE
+
+BUILD + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — segurança e integridade local
+
+### SPRINT
+
+F99-1 — hardening do scanner de segredos
+
+### TASK
+
+B99-101 — limitar e redigir stderr do subprocesso Git sem alterar o contrato
+fail-closed do scanner.
+
+### ACTION
+
+Uma auditoria read-only confirmou que o Round 44 eliminou a concatenação de
+stdout, mas ainda acumulava todos os chunks de stderr e devolvia o texto bruto
+em falhas não-zero. O RED adicionou subprocesso sintético ruidoso e falha Git
+normal. O GREEN introduziu limite independente de `4 KiB`, encerramento em
+overflow e mensagens genéricas redigidas.
+
+### RESULT
+
+O foco passou `38/38`; a cobertura serializada passou `205/1132/21` em
+`95,02/90,95/95,31/95,71`; scanner `774` linhas, helper `414`, hotspots `0`,
+lint, typecheck, formato e diff-check passaram. O `pnpm verify` oficial passou
+coverage, decisões críticas `7/7`, mutation `7/7`, scope drift, contratos
+`86/86`, worker `51/51`, migrações `33/33` e migration safety; parou
+fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+
+### DECISIONS
+
+O código/teste foram commitados em `208868b` (`fix: bound git batch stderr`)
+e enviados para `origin/agent/publish-production-hardening`. O pacote
+documental está em publicação nesta etapa. O limite de stderr é independente
+do corpo e falhas não-zero não devolvem o texto bruto. Secret manager/rotação,
+provider/CI, RC/proveniência, runtime live, WebKit aprovado, clínica, `0/145`,
+gates externos e reauditoria independente seguem abertos.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar e reconciliar a evidência documental no mesmo remoto; confirmar
+paridade de código e documentação; depois executar auditoria read-only fresca
+para selecionar o próximo gap local verificável, mantendo explícitos os gates
+externos e humanos.

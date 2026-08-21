@@ -1,13 +1,12 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-20T20:55:39-03:00`
-- última atualização: `2026-08-20T20:59:41-03:00`
+- corte: `2026-08-20T21:25:32-03:00`
+- última atualização: `2026-08-20T21:25:32-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `11a6d10` em
+- commit publicado: `208868b` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `0b393d5` em
-  `origin/agent/publish-production-hardening`
+- evidência documental: pendente de publicação nesta rodada
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -40,6 +39,9 @@
   framed; somente o header e o corpo do objeto corrente bounded são retidos,
   sem `Buffer.concat` do stdout inteiro da batch, e corpos oversized continuam
   sendo descartados sem materialização.
+- stderr do subprocesso: `runGitBatch` aplica limite independente de `4 KiB`,
+  encerra fail-closed em stderr excessivo e substitui stderr não-zero por
+  mensagens genéricas, sem reter ou expor o texto bruto.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -840,6 +842,36 @@ externos ou reauditoria independente. O `pnpm verify` final permanece
 fail-closed nos quatro valores redigidos de `infra/production/.env.local`, que
 não foi lido nem alterado. Próxima ação: revisar o diff e publicar o lote;
 programa `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Round 45 — B99-101 / bounded and redacted Git batch stderr — 2026-08-20T21:25:32-03:00
+
+Uma auditoria read-only fresca encontrou o limite residual do Round 44:
+`runGitBatch` já consumia stdout de forma incremental, mas ainda acumulava
+todos os chunks de stderr e os devolvia como mensagem de erro quando Git saía
+com código diferente de zero. O RED adicionou um subprocesso sintético ruidoso
+e um erro Git normal; os dois contratos falharam antes da implementação.
+
+O GREEN adicionou limite independente padrão de `4 KiB` para stderr, encerra o
+processo em overflow e usa somente mensagens genéricas redigidas para falhas
+não-zero, sem reter ou expor o conteúdo bruto. A injeção de processo existe
+somente para testar o boundary; o caminho de produção continua usando `spawn`
+real. O foco de histórico Round 44 permaneceu intacto.
+
+O foco passou `38/38`; a cobertura passou `205/1132/21` em
+`95,02/90,95/95,31/95,71`, o scanner ficou em `774` linhas, o helper em `414`
+linhas e `verify:hotspots` em `0` hotspots não classificados. Formato, lint,
+typecheck e `git diff --check` passaram. O `pnpm verify` oficial passou
+coverage, decisões críticas `7/7`, mutation `7/7`, scope drift, contratos
+`86/86`, worker `51/51`, migrações `33/33` e migration safety; parou
+fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`, que não foi lido nem alterado.
+
+O código/teste está em `208868b` (`fix: bound git batch stderr`) e foi enviado
+para `origin/agent/publish-production-hardening`. A documentação desta rodada
+está pendente de publicação no momento deste corte. Secret manager/rotação,
+provider/CI, RC/proveniência, runtime live, WebKit aprovado, clínica, `0/145`,
+gates externos e reauditoria independente continuam abertos. B99-101 e o
+programa permanecem `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 44 — B99-101 / incremental Git batch body consumption — 2026-08-20T20:55:39-03:00
 

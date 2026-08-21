@@ -198,6 +198,26 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 27. Checkpoint de stderr bounded do batch Git — 2026-08-20T21:25:32-03:00
+
+B99-101 recebeu uma auditoria read-only fresca sobre o canal residual do
+Round 44: `runGitBatch` já transmitia stdout por chunks, mas ainda acumulava
+stderr e usava o texto bruto em processos Git não-zero. O RED cobriu um
+subprocesso sintético ruidoso e uma falha Git normal. O GREEN passou a limitar
+stderr independentemente a `4 KiB`, encerrar overflow e emitir mensagens
+genéricas redigidas, sem manter o conteúdo original.
+
+Foco `38/38`, cobertura `205/1132/21` em `95,02/90,95/95,31/95,71`, scanner
+`774`, helper `414`, hotspots `0`, lint/typecheck/formato/diff-check e todos
+os gates oficiais até migration safety passaram. `verify:secrets` permanece
+fail-closed somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`, não lidos nem alterados. Código está em
+`208868b`; a evidência documental está em publicação.
+
+Secret manager/rotação, provider/CI, RC/proveniência, runtime live, WebKit
+aprovado, clínica, `0/145`, gates externos e reauditoria independente seguem
+abertos. F99-1 continua `IN_PROGRESS` e o produto `PILOT_BLOCKED`.
+
 ## 26. Checkpoint de consumo incremental do batch Git — 2026-08-20T20:55:39-03:00
 
 B99-101 recebeu uma auditoria read-only fresca sobre o limite residual do

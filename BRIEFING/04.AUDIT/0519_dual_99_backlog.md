@@ -15,6 +15,27 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T21:25:32-03:00 — B99-101 bounded Git batch stderr
+
+- **auditoria/RED:** após o parser incremental do Round 44, uma auditoria
+  read-only confirmou que `runGitBatch` ainda acumulava todos os chunks de
+  stderr e devolvia texto bruto quando Git saía com código não-zero; RED
+  adicionou subprocesso sintético ruidoso e erro Git normal;
+- **GREEN:** stderr agora tem limite independente de `4 KiB`, overflow encerra
+  o processo fail-closed e falhas não-zero usam mensagens genéricas redigidas,
+  sem reter ou expor o conteúdo bruto;
+- **evidência:** foco `38/38`, cobertura `205/1132/21` em
+  `95,02/90,95/95,31/95,71`, scanner `774`, helper `414`, hotspots `0`,
+  lint/typecheck/formato/diff-check verdes;
+- **verificação/publicação:** `pnpm verify` passou todos os gates até
+  `verify:migration-safety` e parou em `verify:secrets` somente nos quatro
+  assignments redigidos preexistentes de `infra/production/.env.local`; código
+  em `208868b`, evidência documental em publicação;
+- **limite/status:** `.env.local` não foi lido nem alterado; secret
+  manager/rotação, provider/CI, RC, runtime live, clínica, `0/145`, gates
+  externos e reauditoria permanecem abertos. B99-101 e o programa seguem
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T20:55:39-03:00 — B99-101 incremental Git batch body
 
 - **auditoria/RED:** o cap por batch do Round 43 ainda permitia que

@@ -21,6 +21,19 @@ secret manager/rotação, provider/CI, RC, runtime live, clínica, `0/145`, gate
 externos e reauditoria permanecem abertos. B99-101 e o programa seguem
 `IN_PROGRESS / PILOT_BLOCKED`.
 
+**Atualização Dual99 local — 2026-08-20T21:25:32-03:00 — B99-101:** a
+auditoria read-only encontrou que o Round 44 ainda acumulava stderr do
+subprocesso Git e devolvia o texto bruto em falhas não-zero. O RED adicionou
+subprocesso sintético ruidoso e erro Git normal; o GREEN limitou stderr a
+`4 KiB`, encerra overflow e usa mensagens genéricas redigidas. Foco `38/38`,
+cobertura `205/1132/21` em `95,02/90,95/95,31/95,71`, scanner `774` linhas,
+helper `414`, hotspots `0`, lint/typecheck/formato/diff-check verdes; o
+`pnpm verify` passou até migration safety e parou somente nos quatro
+assignments redigidos preexistentes de `.env.local`. Código/teste estão em
+`208868b`; evidência documental segue em publicação. Secret manager/rotação,
+provider/CI, RC, runtime live, clínica, `0/145`, gates externos e reauditoria
+permanecem abertos. B99-101 e o programa seguem `IN_PROGRESS / PILOT_BLOCKED`.
+
 **Atualização Dual99 local — 2026-08-20T20:13:49-03:00 — B99-101:** a
 auditoria read-only encontrou concatenação sem limite agregado para todos os
 corpos históricos bounded. O RED falhou nos contratos de particionamento e
