@@ -250,9 +250,10 @@ clínica ou piloto.
 ## 56. Checkpoint de publicação do ambiente Git B99-101 — 2026-08-21T04:02:33-03:00
 
 O código/teste `ae3d596` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. A publicação do código não altera runtime,
-produção, segredos, score, release, clínica ou piloto.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`efa1d9f` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`efa1d9f`. A publicação não altera runtime, produção, segredos, score, release,
+clínica ou piloto.
 
 ## 55. Checkpoint do ambiente Git B99-101 — 2026-08-21T04:02:33-03:00
 

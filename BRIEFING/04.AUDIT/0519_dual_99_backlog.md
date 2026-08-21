@@ -30,8 +30,9 @@
 ## Publicação de execução — 2026-08-21T04:02:33-03:00 — B99-101 Git environment boundary
 
 O código/teste `ae3d596` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental será
-publicada em seguida; `.gauntlet/` permanece local e não rastreado.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`efa1d9f` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`efa1d9f`; `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T03:45:58-03:00 — B99-101 root identity boundary
 

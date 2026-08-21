@@ -66,9 +66,9 @@ permanecem abertos. Publicar a reconciliação documental desta rodada.
 
 ### AÇÃO / RESULTADO
 
-O commit técnico `ae3d596` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado;
+O commit técnico `ae3d596` e a reconciliação documental `efa1d9f` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `efa1d9f`. `.gauntlet/` permanece local e não rastreado;
 não houve rotação de segredo, alteração de runtime/produção, score, release,
 decisão clínica ou piloto.
 

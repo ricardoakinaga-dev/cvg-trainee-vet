@@ -11486,13 +11486,13 @@ independente.
 
 ### ACTION
 
-O commit de código/teste `ae3d596` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado.
+O commit de código/teste `ae3d596` e a reconciliação documental de estado,
+backlog, roadmap, evidência, log e traceability `efa1d9f` foram publicados em
+`origin/agent/publish-production-hardening`.
 
 ### RESULT / STATUS
 
-`HEAD == origin` em `ae3d596`. A disposição segue `IN_PROGRESS /
+`HEAD == origin` em `efa1d9f`. A disposição segue `IN_PROGRESS /
 PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
 score, release, decisão clínica ou piloto.
 
