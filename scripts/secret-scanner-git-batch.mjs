@@ -1,18 +1,25 @@
 import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 
+const DEFAULT_MAX_ERROR_BYTES = 4096;
+
 export function runGitBatch(
   root,
   args,
   objectIds,
-  { maxOutputBytes = Number.POSITIVE_INFINITY, onChunk } = {},
+  {
+    maxOutputBytes = Number.POSITIVE_INFINITY,
+    maxErrorBytes = DEFAULT_MAX_ERROR_BYTES,
+    onChunk,
+    spawnProcess = spawn,
+  } = {},
 ) {
   return new Promise((resolve, reject) => {
-    const child = spawn("git", args, { cwd: root });
+    const child = spawnProcess("git", args, { cwd: root });
     const chunks = [];
-    const errors = [];
     let settled = false;
     let outputBytes = 0;
+    let errorBytes = 0;
     const fail = (error) => {
       if (settled) return;
       settled = true;
@@ -38,7 +45,15 @@ export function runGitBatch(
       }
       chunks.push(Buffer.from(chunk));
     });
-    child.stderr.on("data", (chunk) => errors.push(Buffer.from(chunk)));
+    child.stderr.on("data", (chunk) => {
+      if (settled) return;
+      if (errorBytes + chunk.length > maxErrorBytes) {
+        fail(new Error("git batch stderr exceeds configured limit"));
+        child.kill();
+        return;
+      }
+      errorBytes += chunk.length;
+    });
     child.once("error", fail);
     child.stdin.once("error", (error) => {
       if (!settled) fail(error);
@@ -47,7 +62,9 @@ export function runGitBatch(
       if (code !== 0) {
         fail(
           new Error(
-            Buffer.concat(errors).toString("utf8") || `git exited with ${code}`,
+            errorBytes > 0
+              ? "git batch command failed"
+              : `git exited with ${code}`,
           ),
         );
         return;

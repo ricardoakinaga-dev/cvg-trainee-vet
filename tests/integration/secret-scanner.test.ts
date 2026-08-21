@@ -1,4 +1,5 @@
 import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { EventEmitter } from "node:events";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -727,6 +728,50 @@ describe("secret scanner", () => {
 
     expect(streamed).toBeUndefined();
     expect(chunks.length).toBeGreaterThan(0);
+  });
+
+  it("bounds and redacts noisy Git batch stderr", async () => {
+    const marker = "SYNTHETIC_GIT_STDERR_MARKER";
+    type FakeChild = EventEmitter & {
+      stdout: EventEmitter;
+      stderr: EventEmitter;
+      stdin: EventEmitter & { end: (input: string) => void };
+      kill: () => void;
+    };
+    const child = Object.assign(new EventEmitter(), {
+      stdout: new EventEmitter(),
+      stderr: new EventEmitter(),
+      stdin: Object.assign(new EventEmitter(), {
+        end: (_input: string) => undefined,
+      }),
+      kill: () => undefined,
+    }) as FakeChild;
+    const spawnProcess = () => {
+      queueMicrotask(() => {
+        child.stderr.emit("data", Buffer.from(marker.repeat(100)));
+        child.emit("close", 1);
+      });
+      return child;
+    };
+
+    const error = await runGitBatch(
+      process.cwd(),
+      ["cat-file", "--batch"],
+      [],
+      { maxErrorBytes: 64, spawnProcess },
+    ).catch((caught) => caught as Error);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toMatch(/stderr exceeds configured limit/iu);
+    expect(error.message).not.toContain(marker);
+  });
+
+  it("keeps regular non-zero Git failures redacted and bounded", async () => {
+    await expect(
+      runGitBatch(process.cwd(), ["cat-file", "--not-a-real-option"], [], {
+        maxErrorBytes: 4096,
+      }),
+    ).rejects.toThrow(/git batch command failed/iu);
   });
 
   it("redacts malformed streamed Git headers", () => {
