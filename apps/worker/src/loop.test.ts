@@ -316,6 +316,100 @@ describe("outbox worker loop", () => {
     );
   });
 
+  it("contains failure-recording errors and continues the batch", async () => {
+    const records: LogRecord[] = [];
+    const observability = createObservability({
+      service: "worker",
+      sink: (record) => records.push(record),
+    });
+    const failedEvent = {
+      ...event,
+      eventType: "content.withdrawn.v1",
+    } satisfies OutboxEventRecord;
+    const completedEvent = {
+      ...event,
+      id: "44444444-4444-4444-8444-444444444444",
+    } satisfies OutboxEventRecord;
+    const completedHandler = vi.fn(async () => undefined);
+    const cleanup = vi.fn(async () => 0);
+    const repository: OutboxRepositoryPort = {
+      claim: vi.fn(async () => [failedEvent, completedEvent]),
+      markProcessed: vi.fn(async () => true),
+      markFailed: vi.fn(async () => {
+        throw new Error("database unavailable");
+      }),
+      cleanup,
+    };
+
+    await expect(
+      processOutboxOnce(
+        repository,
+        {
+          "content.published.v1": completedHandler,
+          "content.withdrawn.v1": vi.fn(async () => {
+            throw new Error("handler failed");
+          }),
+        },
+        { observability },
+      ),
+    ).resolves.toEqual({ claimed: 2, processed: 1, failed: 1 });
+
+    expect(completedHandler).toHaveBeenCalledWith(completedEvent);
+    expect(records[0]).toMatchObject({
+      event: "worker.event.failed",
+      fields: {
+        error_code: "worker_failure_recording",
+        outcome: "retry",
+        retryable: true,
+      },
+    });
+    expect(records[1]).toMatchObject({
+      event: "worker.event.processed",
+      fields: { outcome: "success" },
+    });
+    expect(records[2]).toMatchObject({
+      event: "worker.batch.completed",
+      fields: { claimed: 2, processed: 1, failed: 1, outcome: "partial" },
+    });
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(JSON.stringify(records)).not.toContain("database unavailable");
+  });
+
+  it("contains acknowledgement persistence errors without retrying the ACK", async () => {
+    const records: LogRecord[] = [];
+    const observability = createObservability({
+      service: "worker",
+      sink: (record) => records.push(record),
+    });
+    const markFailed = vi.fn(async () => true);
+    const repository: OutboxRepositoryPort = {
+      claim: vi.fn(async () => [event]),
+      markProcessed: vi.fn(async () => {
+        throw new Error("database unavailable");
+      }),
+      markFailed,
+    };
+
+    await expect(
+      processOutboxOnce(
+        repository,
+        { "content.published.v1": vi.fn(async () => undefined) },
+        { observability },
+      ),
+    ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
+
+    expect(markFailed).not.toHaveBeenCalled();
+    expect(records[0]).toMatchObject({
+      event: "worker.event.failed",
+      fields: {
+        error_code: "worker_ack_failed",
+        outcome: "retry",
+        retryable: true,
+      },
+    });
+    expect(JSON.stringify(records)).not.toContain("database unavailable");
+  });
+
   it("records batch and event outcomes without event payloads", async () => {
     const records: LogRecord[] = [];
     const spans: TraceSpan[] = [];

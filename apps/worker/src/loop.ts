@@ -98,6 +98,56 @@ type WorkerEventResult =
       readonly errorCode: string;
     }>;
 
+function leaseLostResult(): WorkerEventResult {
+  return {
+    outcome: "failed",
+    terminal: false,
+    errorCode: "worker_lease_lost",
+  };
+}
+
+function acknowledgementFailureResult(): WorkerEventResult {
+  return {
+    outcome: "failed",
+    terminal: false,
+    errorCode: "worker_ack_failed",
+  };
+}
+
+async function recordEventFailure(
+  repository: OutboxRepositoryPort,
+  event: OutboxEventRecord,
+  errorCode: string,
+  options: WorkerRuntimeOptions,
+): Promise<WorkerEventResult> {
+  const terminal = event.attempts >= options.maxAttempts;
+  try {
+    const recorded = await repository.markFailed(
+      event.id,
+      event.attempts,
+      errorCode,
+      currentWorkerTime(options),
+      terminal
+        ? 0
+        : retryDelay(
+            event.attempts,
+            options.baseRetrySeconds,
+            options.maxRetrySeconds,
+          ),
+      options.maxAttempts,
+    );
+    return recorded
+      ? { outcome: "failed", terminal, errorCode }
+      : leaseLostResult();
+  } catch {
+    return {
+      outcome: "failed",
+      terminal: false,
+      errorCode: "worker_failure_recording",
+    };
+  }
+}
+
 function resolveWorkerOptions(
   options: WorkerLoopOptions,
 ): WorkerRuntimeOptions {
@@ -154,47 +204,28 @@ async function processClaimedEvent(
   try {
     if (handler === undefined) throw new Error("unhandled event");
     await handler(event);
+  } catch {
+    return recordEventFailure(
+      repository,
+      event,
+      handler === undefined
+        ? "worker_event_unhandled"
+        : "worker_handler_failed",
+      options,
+    );
+  }
+  try {
     const acknowledged = await repository.markProcessed(
       event.id,
       event.attempts,
       currentWorkerTime(options),
     );
     if (!acknowledged) {
-      return {
-        outcome: "failed",
-        terminal: false,
-        errorCode: "worker_lease_lost",
-      };
+      return leaseLostResult();
     }
     return { outcome: "processed" };
   } catch {
-    const terminal = event.attempts >= options.maxAttempts;
-    const errorCode =
-      handler === undefined
-        ? "worker_event_unhandled"
-        : "worker_handler_failed";
-    const recorded = await repository.markFailed(
-      event.id,
-      event.attempts,
-      errorCode,
-      currentWorkerTime(options),
-      terminal
-        ? 0
-        : retryDelay(
-            event.attempts,
-            options.baseRetrySeconds,
-            options.maxRetrySeconds,
-          ),
-      options.maxAttempts,
-    );
-    if (!recorded) {
-      return {
-        outcome: "failed",
-        terminal: false,
-        errorCode: "worker_lease_lost",
-      };
-    }
-    return { outcome: "failed", terminal, errorCode };
+    return acknowledgementFailureResult();
   }
 }
 
