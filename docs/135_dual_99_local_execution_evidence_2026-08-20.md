@@ -1,15 +1,15 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T05:39:56-03:00`
-- última atualização: `2026-08-21T05:39:56-03:00`
+- corte: `2026-08-21T05:52:50-03:00`
+- última atualização: `2026-08-21T05:52:50-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `e59d88c` em
+- commit publicado: `232ee11` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `4ba2a70` em
+- evidência documental publicada: `DOCUMENTATION_PENDING` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push em `4ba2a70`; nenhum código
-  ou estado externo foi alterado depois desse corte
+- paridade documental final: pendente até a reconciliação desta rodada; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -24,6 +24,21 @@
 - backlog: `BRIEFING/04.AUDIT/0519_dual_99_backlog.md`
 - gate estrutural: `pnpm verify:dual99-program`
 - registry: `docs/canonical-document-registry.json`
+
+## Round 67 — limite de profundidade do worktree
+
+- a auditoria read-only encontrou que uma árvore sintética com `300` níveis
+  atravessava a recursão sem fallback; o RED focal confirmou a ausência do
+  finding genérico;
+- GREEN propaga a profundidade da travessia e falha fechado ao exceder `256`
+  níveis, descartando findings parciais e retornando
+  `<workspace> / unreadable-file`;
+- foco `61/61`, cobertura `205/1157/21` em `95,03/90,95/95,31/95,73`, build
+  `12/12` com URL local efêmera, CI contract, arquitetura `2/2`, hotspots `0`
+  com maior função de `100`, lint, typecheck, formato, diff-check e audit de
+  dependências passaram. Probe pós-fix em profundidade `300` produziu um único
+  finding genérico. O código/teste `232ee11` foi publicado; a documentação
+  inicial desta rodada está em `DOCUMENTATION_PENDING`.
 
 ## Round 66 — limite total de entradas do worktree
 

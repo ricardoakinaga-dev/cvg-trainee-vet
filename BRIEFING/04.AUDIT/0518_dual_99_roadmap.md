@@ -247,6 +247,28 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 68. Checkpoint de publicação da profundidade do worktree B99-101 — 2026-08-21T05:52:50-03:00
+
+O código/teste `232ee11` foi publicado em `origin/agent/publish-production-hardening`;
+a reconciliação documental inicial segue `DOCUMENTATION_PENDING` neste primeiro
+registro. A confirmação final de paridade permanece necessária.
+
+## 67. Checkpoint da profundidade recursiva do worktree B99-101 — 2026-08-21T05:52:50-03:00
+
+Uma auditoria read-only encontrou que uma árvore sintética com `300` níveis
+atravessava a recursão sem finding genérico. RED reproduziu a ausência; GREEN
+propaga a profundidade e falha fechado ao exceder `256` níveis, retornando
+`<workspace> / unreadable-file` sem findings parciais.
+
+O foco passou `61/61`, a cobertura passou `205/1157/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
+contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
+typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
+em profundidade `300` produziu um único finding genérico. Código/teste `232ee11`
+foi publicado; a documentação inicial segue `DOCUMENTATION_PENDING`. Windows/non-proc,
+condições live, gates externos, crítica independente e demais bloqueios do
+programa permanecem abertos.
+
 ## 66. Checkpoint de publicação da enumeração total do worktree B99-101 — 2026-08-21T05:39:56-03:00
 
 O código/teste `e59d88c` e a reconciliação documental inicial `4ba2a70` foram
