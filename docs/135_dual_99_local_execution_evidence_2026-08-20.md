@@ -6,8 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `87717ed` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: publicação documental desta rodada em andamento
-- paridade documental final: publicação documental desta rodada em andamento
+- evidência documental publicada: `717f1a9` em
+  `origin/agent/publish-production-hardening`
+- paridade documental final: `717f1a9` em
+  `origin/agent/publish-production-hardening`
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`

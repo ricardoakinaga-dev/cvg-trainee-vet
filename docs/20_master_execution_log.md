@@ -11583,3 +11583,24 @@ ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit
 aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos,
 probes A/B, role restrita, concurrency/TTL/RLS live, clínica, `0/145`, gates
 externos, aprovação humana e reauditoria independente.
+
+## 2026-08-21T00:34:35-03:00 — GIT-PUBLISH-DUAL99-B99-101
+
+### ACTION
+
+O commit de código/teste `87717ed` e a reconciliação documental de estado,
+roadmap, backlog, evidência, log e traceability `717f1a9` foram publicados em
+`origin/agent/publish-production-hardening`.
+
+### RESULT / STATUS
+
+O pós-push confirmou `HEAD == origin` em `717f1a9`. A disposição segue
+`IN_PROGRESS / PILOT_BLOCKED`; `.gauntlet/` permanece local e não rastreado.
+Não houve rotação de segredo, alteração de runtime/produção, score, release,
+clínica ou piloto. Permanecem abertos os gates externos, humanos e live, além
+da crítica independente e dos quatro findings locais redigidos.
+
+### NEXT ACTION
+
+Obter autoridade e ambiente para os bloqueios externos listados; não declarar
+release, score, piloto ou fechamento clínico com esta publicação local.

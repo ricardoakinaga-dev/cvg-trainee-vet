@@ -40,6 +40,18 @@
   fresca foi read-only e não independente; o programa segue
   `IN_PROGRESS / PILOT_BLOCKED`.
 
+## Publicação de execução — 2026-08-21T00:34:35-03:00 — B99-101
+
+- código/teste: `87717ed` (`fix: bound default git batch planning`);
+- reconciliação documental de estado, roadmap, backlog, evidência, log e
+  traceability: `717f1a9`, publicada em
+  `origin/agent/publish-production-hardening`; o pós-push confirmou
+  `HEAD == origin` em `717f1a9`;
+- `.gauntlet/` permanece local e não rastreado. A publicação não fecha os
+  quatro findings locais, secret manager/rotação, provider/CI, RC/runtime,
+  clínica, `0/145`, gates externos, aprovação humana ou reauditoria
+  independente; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T00:04:17-03:00 — B99-308 fronteira de API
 
 - **auditoria/RED:** a fronteira `validateApiSurface` lia diretamente

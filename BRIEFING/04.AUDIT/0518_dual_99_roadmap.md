@@ -247,6 +247,17 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 34. Publicação do checkpoint B99-101 — 2026-08-21T00:34:35-03:00
+
+O código/teste `87717ed` e a reconciliação documental `717f1a9` foram publicados
+em `origin/agent/publish-production-hardening`; a checagem pós-push confirmou
+`HEAD == origin` em `717f1a9`. Estado, backlog, evidência, log e traceability
+estão alinhados. A publicação não promove score, release, clínica ou piloto e
+não fecha os quatro findings locais de `.env.local`, secret manager/rotação,
+provider/CI, RC/proveniência, runtime live, `0/145`, gates externos, aprovação
+humana ou reauditoria independente. O roadmap permanece
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## 31. Checkpoint de fechamento da barra de funções B99-305 — 2026-08-20T22:25:53-03:00
 
 Uma auditoria de fonte encontrou `createGitBatchStreamParser` com `104` linhas
