@@ -5,6 +5,34 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T05:39:56-03:00 — B99-101 workspace total entry budget
+
+- **auditoria/RED:** o cap de `1024` por diretório permitia atravessar uma
+  árvore distribuída com `2048` diretórios e `2048` arquivos; o RED focal
+  reproduziu a ausência do finding genérico;
+- **GREEN:** a recursão agora propaga um orçamento global imutável de `4096`
+  entradas, decrementa cada entrada observada e descarta a travessia inteira em
+  overflow, retornando `<workspace> / unreadable-file` sem findings parciais;
+- **evidência:** foco `60/60`, cobertura `205/1156/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12` com URL local efêmera, CI contract,
+  arquitetura `2/2`, hotspots `0` com maior função de `100`, lint, typecheck,
+  formato, diff-check e audit passaram. Probe pós-fix distribuído produziu um
+  único finding genérico; código/teste `e59d88c` foi publicado;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução pendente — 2026-08-21T05:39:56-03:00 — B99-101 workspace total entry budget
+
+O código/teste `e59d88c` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental e sua
+paridade pós-push serão registradas após os gates documentais. `.gauntlet/`
+permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T05:24:48-03:00 — B99-101 workspace entry budget
 
 - **auditoria/RED:** `openWorkspaceDirectory` usava `readdir` sem limite e

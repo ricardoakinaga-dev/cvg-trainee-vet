@@ -247,6 +247,30 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 66. Checkpoint de publicação pendente da enumeração total do worktree B99-101 — 2026-08-21T05:39:56-03:00
+
+O código/teste `e59d88c` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental ainda
+está pendente dos gates de documentação e da confirmação de paridade. A
+publicação não altera runtime, produção, segredos, score, release, clínica ou
+piloto.
+
+## 65. Checkpoint da enumeração total bounded do worktree B99-101 — 2026-08-21T05:39:56-03:00
+
+Uma auditoria read-only encontrou que o cap de `1024` por diretório permitia
+atravessar uma árvore distribuída com `2048` diretórios e `2048` arquivos. RED
+reproduziu a ausência do finding genérico; GREEN propaga um orçamento global
+imutável de `4096` entradas pela recursão e falha fechado em overflow,
+retornando `<workspace> / unreadable-file` sem findings parciais.
+
+O foco passou `60/60`, a cobertura passou `205/1156/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12` com URL local efêmera, CI
+contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
+typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
+distribuído produziu um único finding genérico. Código/teste `e59d88c` foi
+publicado; Windows/non-proc, condições live, gates externos, crítica
+independente e demais bloqueios do programa permanecem abertos.
+
 ## 64. Checkpoint de publicação da enumeração do worktree B99-101 — 2026-08-21T05:24:48-03:00
 
 O código/teste `3deee2b` e a reconciliação documental inicial `3900713` foram
