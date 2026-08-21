@@ -40,6 +40,63 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-21T11:27:43-03:00 — DUAL99-B99-101-REV-LIST-FRAMING
+
+### TIMESTAMP
+
+2026-08-21 11:27:43 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — fechar duplicidade e framing textual do inventário `git rev-list`.
+
+### ACTION
+
+Rounds 88–89 seguiram RED→GREEN→REFACTOR. O RED reproduziu duplicidade de
+object IDs sobrescrevendo paths e aceitação de stream sem newline terminal ou
+com registros vazios. O parser foi extraído para o módulo de superfícies Git,
+passou a exigir framing terminal para output não vazio e rejeita duplicatas e
+linhas vazias antes de devolver o inventário.
+
+### RESULT
+
+O foco passou `77/77`; a suíte passou `205` arquivos, `1173` testes e `21`
+guardados, com cobertura `95,03/90,95/95,31/95,73`; build `12/12`, hotspots `0`,
+scanner em `779` linhas, formato, lint, typecheck e diff-check passaram. O
+código/teste `1fec40a` foi publicado, com `HEAD == origin` confirmado.
+
+### DECISIONS
+
+O teste focal anterior foi fortalecido com o reader real e a primeira crítica
+`BLOCKED` não representa o estado final do código. A tentativa integrada não
+devolveu relatório dentro da janela e não há `PASS` independente final. Nenhum
+segredo real, runtime, produção, score, release, decisão clínica ou piloto foi
+alterado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Reconciliar e publicar estado, backlog, roadmap, evidência, log e traceability;
+depois obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria independente, sem promover score, release,
+piloto ou decisão clínica.
+
 ## 2026-08-21T11:03:36-03:00 — DUAL99-B99-101-GROWTH-AND-BATCH-COMPLETE
 
 ### TIMESTAMP

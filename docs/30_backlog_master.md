@@ -2,6 +2,24 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Auditoria Dual99 — 2026-08-21T11:27:43-03:00:** Rounds 88–89 fecharam
+dois gaps adicionais de B99-101 sob RED→GREEN→REFACTOR: duplicidade de
+object IDs no inventário `git rev-list` e framing terminal/sem registros vazios
+no output textual. O parser foi extraído para o módulo de superfícies Git;
+foco `77/77`, cobertura `1173/1194` em `95,03/90,95/95,31/95,73`, build
+`12/12`, hotspots `0`, scanner em `779` linhas e format/lint/typecheck/
+diff-check passaram. Código/teste `1fec40a` está publicado com `HEAD == origin`.
+Evidência atualizada: `docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md`.
+`pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`.
+
+**Disposição:** `IN_PROGRESS / PILOT_BLOCKED`. A primeira crítica focal foi
+`BLOCKED` por uma limitação de evidência que foi corrigida; a tentativa
+integrada final não devolveu veredito e não há aprovação independente final.
+Secret manager/rotação, provider/CI, RC/proveniência, WebKit, runtime live,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+continuam abertos. Não promover score, release ou piloto.
+
 **Auditoria Dual99 — 2026-08-21T11:03:36-03:00:** Rounds 81–87 fecharam
 sete gaps locais de B99-101 sob RED→GREEN→REFACTOR: URI sintética exata,
 framing NUL staged, identidade bijetiva de objetos Git, arquivos especiais

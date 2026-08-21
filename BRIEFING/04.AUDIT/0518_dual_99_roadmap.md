@@ -288,6 +288,26 @@ quatro assignments redigidos preexistentes. O programa continua
 `IN_PROGRESS / PILOT_BLOCKED`, sem promoção de score, release, piloto ou decisão
 clínica.
 
+## 89. Checkpoint local de framing do inventário Git B99-101 — 2026-08-21T11:27:43-03:00
+
+Round 89 fechou o framing textual do inventário `git rev-list`: output não
+vazio agora exige newline terminal e não pode conter registros vazios. O
+stream vazio continua válido. A regressão foi adicionada sob TDD, o foco
+passou `77/77`, a cobertura `205/1173/21` em
+`95,03/90,95/95,31/95,73`, o build `12/12`, hotspots `0`, scanner em `779`
+linhas e format/lint/typecheck/diff-check passaram. O código/teste
+`1fec40a` foi publicado com `HEAD == origin`. Evidência:
+`docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md`.
+
+## 88. Checkpoint local de duplicidade no inventário Git B99-101 — 2026-08-21T11:27:43-03:00
+
+Round 88 reproduziu duas respostas de `git rev-list --objects --all` com o
+mesmo object ID sobrescrevendo o path anterior. O parser agora mantém conjunto
+de IDs vistos e falha fechado antes de devolver o inventário. O teste focal
+passou junto com Round 89 em `77/77`; a publicação de código/teste é
+`1fec40a`. Não houve runtime, produção, segredo, score, release, decisão
+clínica ou piloto alterado.
+
 ## 87. Checkpoint local de completude do batch Git B99-101 — 2026-08-21T11:03:36-03:00
 
 Round 87 fechou a omissão silenciosa em que `cat-file --batch` respondia apenas

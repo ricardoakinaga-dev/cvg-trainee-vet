@@ -5,6 +5,25 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T11:27:43-03:00 — B99-101 rev-list framing
+
+Rounds 88–89 fecharam localmente dois gaps P0/P1 do scanner sob
+RED→GREEN→REFACTOR: duplicidade de object IDs no inventário
+`git rev-list --objects --all` e framing textual sem newline terminal ou com
+registros vazios. O parser foi extraído para o módulo de superfícies Git,
+mantendo `scripts/secret-scanner.mjs` em `779` linhas. O foco passou `77/77`;
+cobertura `205/1173/21` em `95,03/90,95/95,31/95,73`; build `12/12`; hotspots
+`0`; format/lint/typecheck/diff-check passaram. Código/teste publicado:
+`1fec40a`; `HEAD == origin`. Evidência: `docs/141`.
+
+`pnpm verify:secrets` segue fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`. A limitação da
+primeira crítica foi corrigida no código/teste, mas a tentativa integrada final
+não devolveu veredito e não substitui reauditoria independente. Estado global:
+`IN_PROGRESS / PILOT_BLOCKED`; secret manager/rotação, provider/CI,
+RC/proveniência, WebKit, runtime live, clínica, `0/145`, gates externos,
+aprovação humana e reauditoria permanecem abertos.
+
 ## Atualização de execução — 2026-08-21T11:03:36-03:00 — B99-101 growth and batch completeness
 
 Rounds 81–87 fecharam localmente sete gaps P0/P1 do scanner sob

@@ -1,9 +1,11 @@
 # Evidência Dual99 — B99-101 — crescimento de workspace e completude Git
 
-**Data:** 2026-08-21 11:03 -03:00
+**Data:** 2026-08-21 11:27 -03:00
 **Task:** B99-101 — scanner de segredos fail-closed
 **IDs:** `DUAL99-B99-101-WORKSPACE-GROWTH-303`,
-`DUAL99-B99-101-GIT-BATCH-COMPLETE-304`
+`DUAL99-B99-101-GIT-BATCH-COMPLETE-304`,
+`DUAL99-B99-101-GIT-OBJECT-LIST-305`,
+`DUAL99-B99-101-REV-LIST-FRAMING-306`
 **Predecessora:** `docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md`
 **Branch:** `agent/publish-production-hardening`
 
@@ -61,6 +63,39 @@ clínica, PDF ou ambiente de produção foi usado.
 - publicação: `87ca28d` enviado a
   `origin/agent/publish-production-hardening`, com `HEAD == origin` confirmado.
 
+## Rounds 88–89 — duplicidade e framing do inventário Git
+
+Dois gaps adicionais foram reproduzidos com output sintético bounded:
+
+- **Round 88 / `DUAL99-B99-101-GIT-OBJECT-LIST-305`:** duas linhas com o mesmo
+  object ID faziam o parser sobrescrever o primeiro path e aceitar um
+  inventário incompleto. O RED falhou; GREEN rastreia IDs já vistos e rejeita
+  duplicatas antes de devolver o `Map`.
+- **Round 89 / `DUAL99-B99-101-REV-LIST-FRAMING-306`:** output não vazio sem
+  newline terminal e output com linha vazia eram aceitos. O RED reproduziu os
+  dois casos; GREEN preserva o stream vazio legítimo, exige newline terminal e
+  rejeita registros vazios. O parser foi extraído para
+  `scripts/secret-scanner-git-surfaces.mjs` para manter o scanner principal
+  abaixo do limite estrutural.
+
+### Verificação final das Rounds 88–89
+
+- foco do scanner: `77/77` passantes;
+- suíte com cobertura: `205` arquivos passantes, `17` guardados, `1173`
+  testes passantes e `21` guardados;
+- cobertura: `95,03%` statements, `90,95%` branches, `95,31%` functions e
+  `95,73%` lines;
+- build: `CVG_API_INTERNAL_URL=http://127.0.0.1:4000 pnpm build`, `12/12`;
+- `pnpm verify:hotspots`: PASS, `0` hotspots, scanner principal em `779`
+  linhas;
+- `pnpm format:check`, `pnpm lint`, `pnpm typecheck` e `git diff --check`:
+  PASS;
+- código/teste: `1fec40a`, publicado em
+  `origin/agent/publish-production-hardening`, com `HEAD == origin`.
+
+Nenhum segredo real, prontuário, fonte clínica, PDF, runtime, produção, score,
+release, decisão clínica ou piloto foi usado ou alterado.
+
 ## Crítica, limites e decisão
 
 A crítica independente focal encontrou uma limitação válida: a primeira
@@ -76,6 +111,6 @@ clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
 continuam abertos. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`; não há
 promoção de score, release, piloto ou decisão clínica.
 
-**Rollback:** reverter `87ca28d` somente mediante decisão registrada;
-preservar as regressões de crescimento e completude Git até a mudança de
-contrato ser aprovada.
+**Rollback:** reverter `1fec40a` e, se necessário, o predecessor `87ca28d`
+somente mediante decisão registrada; preservar as regressões de crescimento,
+completude e framing Git até a mudança de contrato ser aprovada.
