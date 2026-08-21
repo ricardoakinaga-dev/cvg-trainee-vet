@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 51 fechou a barra local de B99-101 para caps explícitos do helper Git: `maxOutputBytes` e `maxErrorBytes` agora aceitam somente inteiros seguros positivos e falham antes do spawn; Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 52 fechou a barra local de B99-101 para caps de scan/header do parser Git: `maxScanBytes` e `maxHeaderBytes` agora aceitam somente inteiros seguros positivos e falham antes do planejamento/stream parsing; Round 51 mantém caps explícitos de `runGitBatch`, Round 50 mantém o default do planner em `8 MiB`, Round 49 mantém a barra local de B99-308 para descritores da API, Round 48 mantém B99-305 com parser Git bounded, e B99-101 preserva stdout incremental, stderr `4 KiB`, preflight `git cat-file --batch-check`, scan UTF-8 limitado sob assets e proteções de identidade, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; `runGitBatch` agora valida `maxOutputBytes` e `maxErrorBytes` como inteiros seguros positivos dentro da Promise e antes do spawn, preservando caps finitos, streaming `onChunk` e erros genéricos/redigidos. O foco passou `41/41`, cobertura `205/1137/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `97` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca confirmou rejeição de `Infinity`/`NaN` e aceitação de cap finito. O commit de código/teste `f79cce6` e a reconciliação documental `167c4c4` foram publicados no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu B99-101 localmente sob RED→GREEN→REFACTOR; planner, stream parser e reader Git agora validam `maxScanBytes` e `maxHeaderBytes` como inteiros seguros positivos antes de processar, preservando cap finito, finding `oversize-file` e framing bounded. O foco passou `42/42`, cobertura `205/1138/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check; a crítica fresca confirmou rejeição de `Infinity` e aceitação de caps finitos. O commit de código/teste `3410d52` foi publicado no branch remoto; `pnpm verify:secrets` falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,40 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T00:48:02-03:00
+- last_update: 2026-08-21T00:58:01-03:00
+
+## 2026-08-21T00:58:01-03:00 — DUAL99-B99-101-GIT-PARSER-SCAN-HEADER-CAPS
+
+### AÇÃO / RESULTADO
+
+- a auditoria read-only reproduziu que `planGitBatchRequests` aceitava
+  `maxScanBytes: Infinity`, planejando objeto sintético de `9 MiB` sem finding,
+  e que `createGitBatchStreamParser` aceitava `maxHeaderBytes: Infinity` em
+  header incompleto;
+- RED adicionou a regressão; GREEN passou a validar caps de scan/header como
+  inteiros seguros positivos em planner, parser e reader antes de processar,
+  preservando cap finito, framing bounded e finding `oversize-file`;
+- o foco passou `42/42`, cobertura `205` arquivos / `1138` testes / `21`
+  guardados em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com
+  maior função de `98` linhas, contratos `87/87`, decisões `7/7`, mutation
+  `7/7` (`100%`), migration safety, lint, typecheck, formato e diff-check;
+- cap finito de scan de `2 MiB` gerou finding redigido para objeto de `9 MiB`
+  sem batch, e header finito de `128` bytes permaneceu válido. O commit de
+  código/teste `3410d52` foi publicado em
+  `origin/agent/publish-production-hardening`. B99-101 avança somente no
+  escopo local desta barra; o programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O gate `pnpm verify:secrets` continua fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`; o arquivo não foi
+lido nem alterado. Permanecem abertos secret manager/rotação, provider/CI,
+RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, probes A/B, role restrita,
+concurrency/TTL/RLS live, clínica, `0/145`, aprovação humana e reauditoria
+independente. O backend independente do gauntlet não estava disponível; a
+crítica desta rodada é explicitamente read-only e não independente. Não houve
+score, release, decisão clínica, piloto ou produção.
 
 ## 2026-08-21T00:44:50-03:00 — DUAL99-B99-101-EXPLICIT-BATCH-CAP-VALIDATION
 

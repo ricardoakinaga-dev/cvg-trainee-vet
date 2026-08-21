@@ -1,15 +1,13 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T00:44:50-03:00`
-- última atualização: `2026-08-21T00:44:50-03:00`
+- corte: `2026-08-21T00:58:01-03:00`
+- última atualização: `2026-08-21T00:58:01-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `f79cce6` em
+- commit publicado: `3410d52` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `167c4c4` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: `167c4c4` em
-  `origin/agent/publish-production-hardening`
+- evidência documental publicada: publicação documental desta rodada em andamento
+- paridade documental final: publicação documental desta rodada em andamento
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -150,6 +148,22 @@
   `pnpm verify:secrets` continua fail-closed nos quatro assignments redigidos
   preexistentes de `infra/production/.env.local`, que não foi lido nem
   alterado.
+
+- B99-101 caps de scan/header do parser Git: a auditoria read-only reproduziu
+  que `planGitBatchRequests` aceitava `maxScanBytes: Infinity`, planejando
+  objeto sintético de `9 MiB` sem finding, e que
+  `createGitBatchStreamParser` aceitava `maxHeaderBytes: Infinity` em header
+  incompleto. RED/GREEN passou a validar caps de scan/header como inteiros
+  seguros positivos em planner, parser e reader antes de processar,
+  preservando cap finito, framing bounded e `oversize-file`. Foco `42/42`,
+  cobertura `205/1138/21` em `95,03/90,95/95,31/95,73`, build `12/12`, hotspots
+  `0` com maior função de `98` linhas, contratos `87/87`, decisões `7/7`,
+  mutation `7/7`, migration safety, lint, typecheck, formato e diff-check
+  passaram. Cap finito de scan de `2 MiB` gerou finding redigido para objeto de
+  `9 MiB` sem batch e header finito de `128` bytes permaneceu válido.
+  Código/teste estão em `3410d52`; `pnpm verify:secrets` continua fail-closed
+  nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado.
 
 - B99-305: auditoria de fonte encontrou `createGitBatchStreamParser` com `104`
   linhas apesar do ratchet permitir `117`. O RED adicionou a regressão da

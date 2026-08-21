@@ -15,6 +15,30 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-21T00:58:01-03:00 — B99-101 caps de scan/header do parser Git
+
+- **auditoria/RED:** `planGitBatchRequests` aceitava `maxScanBytes: Infinity`,
+  planejando objeto sintético de `9 MiB` sem finding, e
+  `createGitBatchStreamParser` aceitava `maxHeaderBytes: Infinity` em header
+  incompleto;
+- **GREEN:** planner, stream parser e reader agora validam caps de scan/header
+  como inteiros seguros positivos antes de processar, preservando cap finito,
+  framing bounded e `oversize-file`;
+- **evidência:** foco `42/42`, cobertura `205/1138/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, hotspots `0` com maior função de
+  `98` linhas, contratos `87/87`, decisões `7/7`, mutation `7/7`, migration
+  safety, lint, typecheck, formato e diff-check passaram. Cap finito de `2 MiB`
+  gerou finding redigido para objeto de `9 MiB` sem batch e header finito de
+  `128` bytes permaneceu válido;
+- **rastreabilidade/publicação:** código/teste em `3410d52`, publicado no branch
+  remoto; a reconciliação documental desta rodada será publicada em seguida;
+- **status/limite:** B99-101 permanece `IN_PROGRESS` no escopo do backlog por
+  secret manager/rotação e gates externos. `pnpm verify:secrets` permanece
+  fail-closed nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica
+  fresca foi read-only e não independente; o programa segue
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T00:44:50-03:00 — B99-101 caps explícitos do helper Git
 
 - **auditoria/RED:** `runGitBatch` aceitava caps explícitos

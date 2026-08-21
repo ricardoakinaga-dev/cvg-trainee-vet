@@ -247,6 +247,30 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 37. Checkpoint de caps scan/header do parser B99-101 — 2026-08-21T00:58:01-03:00
+
+Uma auditoria read-only reproduziu que `planGitBatchRequests` aceitava
+`maxScanBytes: Infinity`, planejando objeto sintético de `9 MiB` sem finding,
+e que `createGitBatchStreamParser` aceitava `maxHeaderBytes: Infinity` em
+header incompleto. O RED adicionou a regressão; o GREEN passou a validar caps
+de scan/header como inteiros seguros positivos em planner, parser e reader
+antes de processar, preservando cap finito, framing bounded e
+`git-object-unreadable`/`oversize-file`.
+
+O foco passou `42/42`; a cobertura passou `205/1138/21` em
+`95,03/90,95/95,31/95,73`, build `12/12`, `verify:hotspots` reporta `0`
+hotspots e maior função de `98` linhas, contratos `87/87`, decisões `7/7`,
+mutation `7/7`, migration safety, lint, typecheck, formato e diff-check
+passaram. Cap finito de scan de `2 MiB` gerou finding redigido para objeto de
+`9 MiB` sem batch e header finito de `128` bytes permaneceu válido. O
+código/teste está em `3410d52`.
+
+O gate `pnpm verify:secrets` permanece fail-closed nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A crítica desta rodada foi fresca, read-only e não independente; o
+roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
+clínica ou piloto.
+
 ## 36. Publicação do checkpoint de caps explícitos B99-101 — 2026-08-21T00:48:02-03:00
 
 O código/teste `f79cce6` e a reconciliação documental `167c4c4` foram publicados
