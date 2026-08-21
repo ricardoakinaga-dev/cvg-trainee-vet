@@ -247,6 +247,31 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 58. Checkpoint de publicação de metadados Git internos B99-101 — 2026-08-21T04:26:53-03:00
+
+O código/teste `3c3758c` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada será publicada em seguida. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 57. Checkpoint de metadados Git internos B99-101 — 2026-08-21T04:26:53-03:00
+
+B99-101 recebeu RED/GREEN para as superfícies internas de metadados Git. A
+auditoria reproduziu `staged:victim.env` por symlinks em `.git/index`/
+`.git/objects` e `history:victim.env` por `objects/info/alternates`; o RED
+focal confirmou os dois atravessamentos. O GREEN abre `index` e `objects` com
+no-follow, mantém handles em fd 4/5, rejeita symlinks em `objects`, `info` e
+`pack`, rejeita `alternates` e falha fechado antes de invocar a superfície
+insegura.
+
+O foco passou `56/56`, a cobertura passou `205/1152/21` em
+`95,03/90,95/95,31/95,73`, o build passou `12/12`, CI contract, arquitetura
+`2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit de
+dependências passaram. `pnpm verify:secrets` permanece fail-closed nos quatro
+assignments redigidos preexistentes; Windows/non-proc, condições live, gates
+externos, crítica independente e demais bloqueios de programa permanecem
+abertos.
+
 ## 56. Checkpoint de publicação do ambiente Git B99-101 — 2026-08-21T04:02:33-03:00
 
 O código/teste `ae3d596` foi publicado em

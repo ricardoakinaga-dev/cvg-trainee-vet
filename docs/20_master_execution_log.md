@@ -11420,6 +11420,84 @@ externos, humanos e live, além da crítica independente `REJECT`.
 Obter autoridade e ambiente para os bloqueios externos listados; não declarar
 release, score, piloto ou fechamento clínico com esta publicação local.
 
+## 2026-08-21T04:26:53-03:00 — DUAL99-B99-101-GIT-INTERNAL-METADATA-NOFOLLOW
+
+### TIMESTAMP
+
+2026-08-21 04:26:53 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — scanner bounded e identidade de filesystem/Git
+
+### TASK
+
+B99-101 — impedir que metadados Git internos redirecionem staged/history para
+fora da raiz solicitada.
+
+### ACTION
+
+Uma auditoria read-only reproduziu `staged:victim.env` externo por symlinks em
+`.git/index`/`.git/objects` e `history:victim.env` por
+`objects/info/alternates`; o RED focal reproduziu os dois achados. O GREEN
+introduziu `openGitMetadata`, que abre `index` e `objects` no-follow, mantém os
+handles em fd 4/5, rejeita symlinks em `objects`, `info` e `pack`, rejeita
+`alternates` e falha fechado nas superfícies inseguras.
+
+### RESULT
+
+O foco passou `56/56`; a cobertura passou `205` arquivos / `1152` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; build passou `12/12`, CI contract,
+arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit
+de dependências passaram. O commit de código/teste `3c3758c` foi publicado.
+
+### DECISIONS
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`. A crítica foi fresca,
+read-only e não independente porque o backend de critic está indisponível.
+Não houve alteração de segredo, runtime, produção, score, release, decisão
+clínica ou piloto.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; então executar nova auditoria
+bounded e obter autoridade/ambiente para secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente.
+
+## 2026-08-21T04:26:53-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-INTERNAL-METADATA-NOFOLLOW
+
+### ACTION
+
+O commit de código/teste `3c3758c` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte.
+
+### RESULT / STATUS
+
+`HEAD == origin` em `3c3758c`. A disposição segue `IN_PROGRESS /
+PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
+score, release, decisão clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental; Windows/non-proc, secret manager/rotação,
+provider/CI, RC/runtime, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente permanecem abertos.
+
 ## 2026-08-21T04:02:33-03:00 — DUAL99-B99-101-GIT-ENVIRONMENT-NOFOLLOW
 
 ### TIMESTAMP

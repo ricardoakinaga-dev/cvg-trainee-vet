@@ -5,6 +5,34 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T04:26:53-03:00 — B99-101 Git internal metadata boundary
+
+- **auditoria/RED:** symlinks internos em `.git/index`/`.git/objects` fizeram o
+  Git produzir `staged:victim.env` externo; `objects/info/alternates` também
+  fez o histórico produzir `history:victim.env` externo. O RED focal
+  reproduziu ambos os achados;
+- **GREEN:** `openGitMetadata` abre `index` e `objects` no-follow, mantém os
+  handles em fd 4/5, rejeita symlinks em `objects`, `info` e `pack`, rejeita o
+  arquivo `alternates` e falha fechado antes de usar uma superfície Git
+  insegura;
+- **evidência:** foco `56/56`, cobertura `205/1152/21` em
+  `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, arquitetura `2/2`,
+  hotspots `0`, lint, typecheck, formato, diff-check e audit passaram. Código/
+  teste `3c3758c` foi publicado no branch remoto;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T04:26:53-03:00 — B99-101 Git internal metadata boundary
+
+O código/teste `3c3758c` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T04:02:33-03:00 — B99-101 Git environment boundary
 
 - **auditoria/RED:** com `GIT_INDEX_FILE` e `GIT_OBJECT_DIRECTORY` herdados
