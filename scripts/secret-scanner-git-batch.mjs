@@ -55,6 +55,17 @@ function assertMaxBatchBytes(value) {
   return assertPositiveSafeInteger(value, "maxBatchBytes");
 }
 
+function captureGitStdinError(child, state, isSettled, fail) {
+  child.stdin.once("error", (error) => {
+    if (isSettled()) return;
+    if (error?.code === "EPIPE") {
+      state.error = error;
+      return;
+    }
+    fail(error);
+  });
+}
+
 function createGitStdio(
   base,
   { gitDirectoryHandle, gitIndexHandle, gitObjectDirectoryHandle },
@@ -141,12 +152,12 @@ export function runGitBatch(
     let settled = false;
     let outputBytes = 0;
     let errorBytes = 0;
+    const stdinState = { error: undefined };
     const fail = (error) => {
       if (settled) return;
       settled = true;
       reject(error);
     };
-
     child.stdout.on("data", (chunk) => {
       if (settled) return;
       outputBytes += chunk.length;
@@ -176,9 +187,7 @@ export function runGitBatch(
       errorBytes += chunk.length;
     });
     child.once("error", fail);
-    child.stdin.once("error", (error) => {
-      if (!settled) fail(error);
-    });
+    captureGitStdinError(child, stdinState, () => settled, fail);
     child.once("close", (code) => {
       if (code !== 0) {
         fail(
@@ -190,6 +199,7 @@ export function runGitBatch(
         );
         return;
       }
+      if (stdinState.error !== undefined) return fail(stdinState.error);
       if (settled) return;
       finalizeGitProcess({
         validateGitMetadata,
