@@ -23,10 +23,11 @@ export function parseStagedPaths(output) {
   if (!output.endsWith("\0")) {
     throw new Error("malformed staged path list");
   }
-  return output
-    .slice(0, -1)
-    .split("\0")
-    .filter((path) => path.length > 0);
+  const paths = output.slice(0, -1).split("\0");
+  if (paths.some((path) => path.length === 0)) {
+    throw new Error("malformed staged path list");
+  }
+  return paths;
 }
 
 export function createGitSurfaceScanner({

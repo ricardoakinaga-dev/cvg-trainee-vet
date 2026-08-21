@@ -300,6 +300,12 @@ describe("secret scanner", () => {
     expect(() => parseStagedPaths("safe.env")).toThrow(
       /malformed staged path list/iu,
     );
+    expect(() => parseStagedPaths("\0")).toThrow(
+      /malformed staged path list/iu,
+    );
+    expect(() => parseStagedPaths("safe.env\0\0")).toThrow(
+      /malformed staged path list/iu,
+    );
     expect(parseStagedPaths("safe.env\0")).toEqual(["safe.env"]);
   });
 
