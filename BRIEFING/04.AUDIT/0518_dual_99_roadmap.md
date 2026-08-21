@@ -213,7 +213,8 @@ O foco hotspot passou `6/6`, scanner `39/39` e cobertura `205/1134/21` em
 função de `98` linhas. Decisões críticas `7/7`, mutation `7/7`, contratos
 `86/86`, worker `51/51`, migrações `33/33`, migration safety, lint, typecheck,
 formato, diff-check, CI contract e documentation passaram. O código/teste
-está em `593619e`; B99-305 fica concluído no escopo local da barra técnica.
+está em `593619e` e a reconciliação documental foi publicada em `aebe16a`;
+B99-305 fica concluído no escopo local da barra técnica.
 
 O `pnpm verify` oficial chegou até `verify:secrets` e falhou fail-closed nos
 quatro assignments redigidos preexistentes de `infra/production/.env.local`,

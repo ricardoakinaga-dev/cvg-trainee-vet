@@ -6,7 +6,8 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `593619e` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: a publicar após a reconciliação desta rodada
+- evidência documental publicada: `aebe16a` em
+  `origin/agent/publish-production-hardening`
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -151,8 +152,8 @@ O arquivo `.env.local` não foi lido nem alterado. B99-305 está concluído no
 escopo local da barra de comprimento; secret manager/rotação, provider/CI,
 RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`, gates
 externos, aprovação humana e reauditoria independente permanecem abertos. O
-commit de código/teste é `593619e`; esta evidência será publicada após a
-reconciliação documental. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+commit de código/teste é `593619e` e esta evidência foi publicada em
+`aebe16a`. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Round 17 — B99-106 / diagnostics, authorization and invitation URL — 2026-08-20T10:53:52-03:00
 

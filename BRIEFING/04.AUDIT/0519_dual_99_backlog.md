@@ -15,6 +15,17 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Publicação de execução — 2026-08-20T22:30:33-03:00 — B99-305
+
+- código/teste: `593619e` (`fix: close B99-305 function length debt`);
+- reconciliação documental de estado, roadmap, backlog, evidência, log e
+  traceability: `aebe16a` (`docs: record B99-305 hotspot closure`), publicada
+  em `origin/agent/publish-production-hardening`;
+- `.gauntlet/` permanece local e não rastreado. A publicação não fecha secret
+  manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana ou reauditoria independente; o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-20T22:25:53-03:00 — B99-305 fechamento da barra de funções
 
 - **auditoria/RED:** a auditoria de fonte encontrou
@@ -33,8 +44,8 @@
   contratos `86/86`, worker `51/51`, migrações `33/33`, migration safety,
   lint, typecheck, formato, diff-check, CI contract e documentation passaram;
 - **rastreabilidade/publicação:** código e teste em `593619e`
-  (`fix: close B99-305 function length debt`); a atualização documental será
-  publicada em commit separado após esta reconciliação;
+  (`fix: close B99-305 function length debt`); a reconciliação documental foi
+  publicada em `aebe16a`;
 - **status/limite:** B99-305 fica `COMPLETED` no escopo local da barra técnica.
   O `pnpm verify` oficial parou fail-closed em `verify:secrets` nos quatro
   assignments redigidos preexistentes de `infra/production/.env.local`, que

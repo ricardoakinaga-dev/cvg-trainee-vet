@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu B99-305 localmente sob RED→GREEN→REFACTOR; a função `createGitBatchStreamParser` caiu de `104` para abaixo da barra, o ratchet foi fixado em `100`, o commit de código/teste é `593619e`, a cobertura passou `205/1134/21` em `95,02/90,95/95,31/95,71`, e o `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental e obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-305, score, release ou piloto além do escopo local
+- last_completed_action: concluiu B99-305 localmente sob RED→GREEN→REFACTOR e publicou a reconciliação documental; a função `createGitBatchStreamParser` caiu de `104` para abaixo da barra, o ratchet foi fixado em `100`, o commit de código/teste é `593619e`, o pacote de evidência/estado/backlog/log/roadmap/traceability foi publicado em `aebe16a`, a cobertura passou `205/1134/21` em `95,02/90,95/95,31/95,71`, e o `pnpm verify` percorreu todos os gates até `verify:secrets`, que falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-305, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T22:25:53-03:00
+- last_update: 2026-08-20T22:30:33-03:00
 
 ## 2026-08-20T22:25:53-03:00 — DUAL99-B99-305-FUNCTION-LENGTH-CLOSURE
 
@@ -66,8 +66,8 @@ não foi lido nem alterado. Permanecem abertos secret manager/rotação,
 provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
 retenção/RBAC/notificação externos, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria independente. A crítica independente continua
-`REJECT`; a evidência desta rodada é local e não promove score, release,
-piloto ou decisão clínica.
+`REJECT`; a evidência desta rodada foi publicada em `aebe16a`, permanece local
+e não promove score, release, piloto ou decisão clínica.
 
 ## 2026-08-20T21:54:57-03:00 — DUAL99-B99-004-DOCUMENTATION-PARITY
 

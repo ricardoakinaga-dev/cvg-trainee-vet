@@ -40,6 +40,13 @@ foi lido nem alterado. Secret manager/rotação, RC, runtime, clínica, `0/145`,
 gates externos e reauditoria permanecem abertos; o programa segue
 `IN_PROGRESS / PILOT_BLOCKED`.
 
+**Publicação Dual99 local — 2026-08-20T22:30:33-03:00 — B99-305:** o código e
+teste de fechamento da barra estão em `593619e` e a reconciliação de estado,
+backlog, roadmap, evidência, log e traceability foi publicada em `aebe16a` no
+branch remoto. `.gauntlet/` permanece local e não rastreado. O programa segue
+`IN_PROGRESS / PILOT_BLOCKED` por secret manager/rotação, RC/runtime, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente.
+
 **Atualização Dual99 local — 2026-08-20T21:41:55-03:00 — B99-101:** a
 auditoria read-only encontrou que o fallback de `runGitBatch` ainda usava
 `maxOutputBytes = Infinity` quando o chamador omitia o limite. O RED adicionou
