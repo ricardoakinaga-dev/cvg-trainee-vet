@@ -1,10 +1,12 @@
+import { opendir } from "node:fs/promises";
 import { join } from "node:path";
-import { readdir } from "node:fs/promises";
 
 import {
-  openWorkspaceDirectory,
+  openWorkspaceDirectoryHandle,
   openWorkspaceFile,
 } from "./secret-scanner-workspace.mjs";
+
+const MAX_GIT_METADATA_ENTRIES = 1024;
 
 function entryKind(entry) {
   if (entry.isSymbolicLink()) return "symlink";
@@ -42,7 +44,7 @@ function hasUnsafeEntries(role, entries) {
 async function readDirectorySnapshot(directory, role) {
   let opened;
   try {
-    opened = await openWorkspaceDirectory(directory);
+    opened = await openWorkspaceDirectoryHandle(directory);
   } catch (error) {
     if (error?.code === "ENOENT") return null;
     throw error;
@@ -55,15 +57,36 @@ async function readDirectorySnapshot(directory, role) {
 }
 
 async function snapshotOpenedDirectory(opened, role) {
-  const entries = await readdir(`/proc/self/fd/${opened.handle.fd}`, {
-    withFileTypes: true,
-  });
+  const { entries, overflow } = await readBoundedEntries(
+    `/proc/self/fd/${opened.handle.fd}`,
+  );
   const stat = await opened.handle.stat({ bigint: true });
   return Object.freeze({
     entries: entrySignature(entries),
+    overflow,
     stat: statSignature(stat),
-    unsafe: hasUnsafeEntries(role, entries),
+    unsafe: overflow || hasUnsafeEntries(role, entries),
   });
+}
+
+async function readBoundedEntries(directory) {
+  const opened = await opendir(directory, { bufferSize: 64 });
+  const entries = [];
+  let overflow = false;
+  try {
+    while (true) {
+      const entry = await opened.read();
+      if (entry === null) break;
+      if (entries.length >= MAX_GIT_METADATA_ENTRIES) {
+        overflow = true;
+        break;
+      }
+      entries.push(entry);
+    }
+  } finally {
+    await opened.close().catch(() => undefined);
+  }
+  return Object.freeze({ entries: Object.freeze(entries), overflow });
 }
 
 async function captureGitObjectSnapshot(objects) {
@@ -99,7 +122,9 @@ async function openGitIndex(gitDirectory) {
 async function openGitObjects(gitDirectory) {
   let objects;
   try {
-    objects = await openWorkspaceDirectory(join(gitDirectory.path, "objects"));
+    objects = await openWorkspaceDirectoryHandle(
+      join(gitDirectory.path, "objects"),
+    );
     const snapshot = await captureGitObjectSnapshot(objects);
     if (snapshot === null || snapshot.unsafe) {
       await objects.handle.close().catch(() => undefined);
@@ -130,9 +155,9 @@ async function isGitObjectsStable(gitObjects) {
 }
 
 export async function openGitMetadata(root) {
-  const gitDirectory = await openWorkspaceDirectory(join(root, ".git")).catch(
-    () => null,
-  );
+  const gitDirectory = await openWorkspaceDirectoryHandle(
+    join(root, ".git"),
+  ).catch(() => null);
   if (gitDirectory === null) return null;
   return Object.freeze({
     gitDirectory,

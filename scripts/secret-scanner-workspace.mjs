@@ -23,20 +23,12 @@ async function closeHandles(handles) {
   );
 }
 
-async function openProcFdDirectory(directory) {
+async function openProcFdDirectoryHandle(directory) {
   const handle = await open(directory, noFollowDirectoryFlags);
-  try {
-    const entries = await readdir(`/proc/self/fd/${handle.fd}`, {
-      withFileTypes: true,
-    });
-    return { entries, handle, path: `/proc/self/fd/${handle.fd}` };
-  } catch (error) {
-    await closeHandles([handle]);
-    throw error;
-  }
+  return { handle, path: `/proc/self/fd/${handle.fd}` };
 }
 
-async function openPathDirectory(directory) {
+async function openPathDirectoryHandle(directory) {
   const handles = [await open("/", noFollowDirectoryFlags)];
   try {
     let current = handles[0];
@@ -47,12 +39,32 @@ async function openPathDirectory(directory) {
       );
       handles.push(current);
     }
-    const path = `/proc/self/fd/${current.fd}`;
-    const entries = await readdir(path, { withFileTypes: true });
     await closeHandles(handles.slice(0, -1));
-    return { entries, handle: current, path };
+    return { handle: current, path: `/proc/self/fd/${current.fd}` };
   } catch (error) {
     await closeHandles(handles);
+    throw error;
+  }
+}
+
+async function openProcFdDirectory(directory) {
+  const opened = await openProcFdDirectoryHandle(directory);
+  try {
+    const entries = await readdir(opened.path, { withFileTypes: true });
+    return { ...opened, entries };
+  } catch (error) {
+    await closeHandles([opened.handle]);
+    throw error;
+  }
+}
+
+async function openPathDirectory(directory) {
+  const opened = await openPathDirectoryHandle(directory);
+  try {
+    const entries = await readdir(opened.path, { withFileTypes: true });
+    return { ...opened, entries };
+  } catch (error) {
+    await closeHandles([opened.handle]);
     throw error;
   }
 }
@@ -96,6 +108,15 @@ export async function openWorkspaceDirectory(directory) {
   return procFdChildPathPattern.test(directory)
     ? openProcFdDirectory(directory)
     : openPathDirectory(directory);
+}
+
+export async function openWorkspaceDirectoryHandle(directory) {
+  if (noFollowDirectoryFlags === undefined) {
+    throw new Error("workspace no-follow directory open is unavailable");
+  }
+  return procFdChildPathPattern.test(directory)
+    ? openProcFdDirectoryHandle(directory)
+    : openPathDirectoryHandle(directory);
 }
 
 export async function readWorkspaceEntries(directory) {

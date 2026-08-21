@@ -1003,6 +1003,37 @@ describe("secret scanner", () => {
     }
   });
 
+  it("fails closed when Git metadata entry budget is exceeded", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-git-metadata-budget-"),
+    );
+    temporaryDirectories.push(directory);
+    await execFileAsync("git", ["init", "-q"], { cwd: directory });
+    const info = join(directory, ".git", "objects", "info");
+    await Promise.all(
+      Array.from({ length: 1025 }, (_, index) =>
+        writeFile(
+          join(info, `synthetic-entry-${String(index).padStart(4, "0")}`),
+          "",
+        ),
+      ),
+    );
+
+    const findings = await scanProject(directory, {
+      includeStaged: false,
+      includeHistory: true,
+    });
+
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "history:<git>",
+          rule: "git-object-unreadable",
+        }),
+      ]),
+    );
+  });
+
   it.each(["missing", "regular-file"])(
     "rejects a %s supplied as the scan root",
     async (name) => {
