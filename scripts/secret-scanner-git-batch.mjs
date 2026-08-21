@@ -114,6 +114,62 @@ function gitTotalByteBudgetFinding(source, unscannedFinding) {
   );
 }
 
+function acceptUniqueGitObjectIdentity(
+  objectId,
+  objects,
+  seenObjectIds,
+  logicalPath,
+  addUnreadable,
+  unexpectedEvidence,
+  duplicateEvidence,
+) {
+  if (!objects.has(objectId)) {
+    addUnreadable(logicalPath, unexpectedEvidence);
+    return false;
+  }
+  if (seenObjectIds.has(objectId)) {
+    addUnreadable(logicalPath, duplicateEvidence);
+    return false;
+  }
+  seenObjectIds.add(objectId);
+  return true;
+}
+
+function parseGitBatchCheckHeader(
+  header,
+  objects,
+  seenObjectIds,
+  source,
+  addUnreadable,
+) {
+  const [objectId, type, sizeText] = header.split(/\s+/u);
+  const validHeader =
+    /^[0-9a-f]{40} (?:blob|tag|tree|commit) [0-9]+$/u.test(header) ||
+    /^[0-9a-f]{40} (?:missing|error)(?: .*)?$/u.test(header);
+  const path = objects.get(objectId);
+  const identity =
+    path ?? (/^[0-9a-f]{40}$/u.test(objectId ?? "") ? objectId : "<git>");
+  const logicalPath = `${source}:${identity || "<git>"}`;
+  if (!validHeader) {
+    addUnreadable(logicalPath, "malformed git batch-check header");
+    return null;
+  }
+  if (
+    !acceptUniqueGitObjectIdentity(
+      objectId,
+      objects,
+      seenObjectIds,
+      logicalPath,
+      addUnreadable,
+      "unexpected git batch-check response",
+      "duplicate git batch-check response",
+    )
+  ) {
+    return null;
+  }
+  return { objectId, type, sizeText, path, logicalPath };
+}
+
 export function runGitBatch(
   root,
   args,
@@ -312,6 +368,7 @@ export function planGitBatchRequests(
   let currentBatchSize = 0;
   const addUnreadable = (path, evidence) =>
     findings.push(unscannedFinding(path, "git-object-unreadable", evidence));
+  const seenObjectIds = new Set();
   const flushBatch = () => {
     if (currentBatch.length === 0) return;
     batches.push(Object.freeze(currentBatch));
@@ -320,7 +377,6 @@ export function planGitBatchRequests(
     currentBatchSize = 0;
   };
   let offset = 0;
-  let responseCount = 0;
   let complete = true;
 
   while (offset < buffer.length) {
@@ -332,25 +388,18 @@ export function planGitBatchRequests(
     }
     const header = buffer.subarray(offset, headerEnd).toString("utf8");
     offset = headerEnd + 1;
-    responseCount += 1;
-    const [objectId, type, sizeText] = header.split(/\s+/u);
-    const validHeader =
-      /^[0-9a-f]{40} (?:blob|tag|tree|commit) [0-9]+$/u.test(header) ||
-      /^[0-9a-f]{40} (?:missing|error)(?: .*)?$/u.test(header);
-    const path = objects.get(objectId);
-    const identity =
-      path ?? (/^[0-9a-f]{40}$/u.test(objectId ?? "") ? objectId : "<git>");
-    const logicalPath = `${source}:${identity || "<git>"}`;
-    if (!validHeader) {
-      addUnreadable(logicalPath, "malformed git batch-check header");
+    const parsed = parseGitBatchCheckHeader(
+      header,
+      objects,
+      seenObjectIds,
+      source,
+      addUnreadable,
+    );
+    if (parsed === null) {
       complete = false;
       break;
     }
-    if (!objects.has(objectId)) {
-      addUnreadable(logicalPath, "unexpected git batch-check response");
-      complete = false;
-      break;
-    }
+    const { objectId, type, sizeText, path, logicalPath } = parsed;
     if (type === "missing" || type === "error") {
       addUnreadable(logicalPath, header);
       continue;
@@ -383,9 +432,12 @@ export function planGitBatchRequests(
   }
 
   flushBatch();
-  if (complete && responseCount !== objects.size) {
+  if (complete && seenObjectIds.size !== objects.size) {
     addUnreadable(`${source}:<git>`, "truncated git batch-check response");
     complete = false;
+  }
+  if (!complete) {
+    return freezeGitBatchPlan(findings, [], [], [], false);
   }
   return freezeGitBatchPlan(findings, objectIds, batches, batchSizes, complete);
 }
@@ -399,6 +451,7 @@ function parseGitBatchRecord(
     unscannedFinding,
     readBatchOutput,
     source,
+    seenObjectIds,
   },
 ) {
   const findings = [];
@@ -417,8 +470,17 @@ function parseGitBatchRecord(
     addUnreadable(`${source}:<git>`, "malformed git object header");
     return { aborted: true, findings, record: null };
   }
-  if (!objects.has(objectId)) {
-    addUnreadable(logicalPath, "unexpected git object response");
+  if (
+    !acceptUniqueGitObjectIdentity(
+      objectId,
+      objects,
+      seenObjectIds,
+      logicalPath,
+      addUnreadable,
+      "unexpected git object response",
+      "duplicate git object response",
+    )
+  ) {
     return { aborted: true, findings, record: null };
   }
   if (type === "missing" || type === "error") {
@@ -468,6 +530,7 @@ function consumeGitBatchChunk(
     unscannedFinding,
     readBatchOutput,
     source,
+    seenObjectIds,
   },
 ) {
   const addUnreadable = (path, evidence) =>
@@ -505,6 +568,7 @@ function consumeGitBatchChunk(
         unscannedFinding,
         readBatchOutput,
         source,
+        seenObjectIds,
       });
       findings.push(...parsed.findings);
       state.record = parsed.record;
@@ -563,6 +627,7 @@ export function createGitBatchStreamParser({
     headerBytes: 0,
     record: null,
     aborted: false,
+    seenObjectIds: new Set(),
   };
   const context = {
     state,
@@ -574,6 +639,7 @@ export function createGitBatchStreamParser({
     unscannedFinding,
     readBatchOutput,
     source,
+    seenObjectIds: state.seenObjectIds,
   };
   return {
     findings,

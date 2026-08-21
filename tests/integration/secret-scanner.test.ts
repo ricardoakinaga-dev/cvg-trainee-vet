@@ -1764,6 +1764,38 @@ describe("secret scanner", () => {
     ]);
   });
 
+  it("rejects duplicate Git batch-check identities before planning bodies", () => {
+    const firstId = "a".repeat(40);
+    const missingId = "b".repeat(40);
+    const plan = planGitBatchRequestsInternal(
+      Buffer.from(`${firstId} blob 32\n${firstId} blob 32\n`),
+      new Map([
+        [firstId, "first.txt"],
+        [missingId, "missing.txt"],
+      ]),
+      {
+        maxScanBytes: 128,
+        isIgnoredBinaryAssetPath: () => false,
+        unscannedFinding: (path: string, rule: string, evidence: string) => ({
+          path,
+          rule,
+          evidence,
+        }),
+        source: "history",
+      },
+    );
+
+    expect(plan.complete).toBe(false);
+    expect(plan.batches).toEqual([]);
+    expect(plan.findings).toEqual([
+      expect.objectContaining({
+        path: "history:first.txt",
+        rule: "git-object-unreadable",
+        evidence: "duplicate git batch-check response",
+      }),
+    ]);
+  });
+
   it("partitions bounded Git body requests by aggregate budget", () => {
     const objectIds = ["a", "b", "c", "d", "e"].map((prefix) =>
       prefix.repeat(40),
@@ -2275,6 +2307,48 @@ describe("secret scanner", () => {
       }),
     ]);
     expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
+  it("rejects duplicate cat-file object responses before rescanning the body", () => {
+    const objectId = "a".repeat(40);
+    const body = Buffer.from("synthetic-body");
+    const scannedBodies: Buffer[] = [];
+    const parser = createGitBatchStreamParser({
+      objects: new Map([
+        [objectId, "first.txt"],
+        ["b".repeat(40), "missing.txt"],
+      ]),
+      maxScanBytes: 128,
+      maxHeaderBytes: 128,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path, rule, evidence) => ({ path, rule, evidence }),
+      readBatchOutput: (output) => {
+        scannedBodies.push(output);
+        return [];
+      },
+      source: "history",
+    });
+
+    parser.push(
+      Buffer.concat([
+        Buffer.from(`${objectId} blob ${body.byteLength}\n`),
+        body,
+        Buffer.from("\n"),
+        Buffer.from(`${objectId} blob ${body.byteLength}\n`),
+        body,
+        Buffer.from("\n"),
+      ]),
+    );
+    parser.finish();
+
+    expect(scannedBodies).toHaveLength(1);
+    expect(parser.findings).toEqual([
+      expect.objectContaining({
+        path: "history:first.txt",
+        rule: "git-object-unreadable",
+        evidence: "duplicate git object response",
+      }),
+    ]);
   });
 
   it("does not expose incomplete cat-file header bytes in findings", () => {
