@@ -28,14 +28,14 @@
   explícito. B99-101 segue `IN_PROGRESS` no escopo externo e o programa
   permanece `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Publicação de execução — 2026-08-21T03:05:17-03:00 — B99-101 parent path boundary
+## Publicação de execução — 2026-08-21T03:08:46-03:00 — B99-101 parent path boundary
 
 O código/teste `c69069b` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental desta
-execução está sendo publicada separadamente. A publicação não fecha secret
-manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
-aprovação humana ou reauditoria independente; o programa segue
-`IN_PROGRESS / PILOT_BLOCKED`.
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`13f64f1` também foi publicada e o pós-push confirmou `HEAD == origin` em
+`13f64f1`. A publicação não fecha secret manager/rotação, provider/CI,
+RC/runtime, clínica, `0/145`, gates externos, aprovação humana ou reauditoria
+independente; o programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Atualização de execução — 2026-08-21T02:47:53-03:00 — B99-101 Git cwd root boundary
 

@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 58 de B99-101 sob RED→GREEN→REFACTOR; a auditoria fresca reproduziu follow de componente-pai para árvore externa em `14/500` tentativas, e a regressão focal reproduziu `15/500` vazamentos. A abertura agora caminha cada componente absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`, mantendo a recursão interna em descritores `/proc/self/fd`; foco `50/50`, cobertura `205/1146/21` em `95,03/90,95/95,31/95,73`, probe de componentes-pai `5000` sem vazamento nem exceção, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; código/teste `c69069b` foi publicado no branch remoto. `pnpm verify` no SHA exato passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
-- next_action: publicar a reconciliação documental de Round 58 e então executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 58 de B99-101 sob RED→GREEN→REFACTOR; a auditoria fresca reproduziu follow de componente-pai para árvore externa em `14/500` tentativas, e a regressão focal reproduziu `15/500` vazamentos. A abertura agora caminha cada componente absoluto desde `/` com `O_DIRECTORY | O_NOFOLLOW`, mantendo a recursão interna em descritores `/proc/self/fd`; foco `50/50`, cobertura `205/1146/21` em `95,03/90,95/95,31/95,73`, probe de componentes-pai `5000` sem vazamento nem exceção, build sintético `12/12`, hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e diff-check; código/teste `c69069b` e reconciliação documental `13f64f1` foram publicados; o pós-push confirmou `HEAD == origin`. `pnpm verify` no SHA exato passou até migration safety e falhou fail-closed somente nos quatro assignments redigidos preexistentes de `infra/production/.env.local`; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
+- next_action: executar nova auditoria read-only da superfície bounded do scanner; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global de B99-308, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T03:05:17-03:00
+- last_update: 2026-08-21T03:08:46-03:00
 
 ## 2026-08-21T03:05:17-03:00 — DUAL99-B99-101-PARENT-PATH-NOFOLLOW
 
@@ -91,6 +91,23 @@ foi fresca e read-only, mas não independente porque o backend de critic não
 estava disponível. Publicar a reconciliação documental, então executar nova
 auditoria bounded; parent path races, POSIX/procfs, secret manager/rotação,
 provider/CI, RC/runtime, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente permanecem abertos. Não houve score, release, piloto
+ou produção.
+
+## 2026-08-21T03:08:46-03:00 — GIT-PUBLISH-DUAL99-B99-101-PARENT-PATH-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+O commit documental `13f64f1` reconciliou estado, backlog, roadmap, evidência,
+log e traceability da Round 58 e foi publicado em
+`origin/agent/publish-production-hardening`. O pós-push confirmou
+`HEAD == origin` em `13f64f1`; `.gauntlet/` permanece local e não rastreado.
+
+### STATUS / PRÓXIMA AÇÃO
+
+A disposição segue `IN_PROGRESS / PILOT_BLOCKED`. Executar nova auditoria
+bounded; Windows/non-proc, secret manager/rotação, provider/CI, RC/runtime,
+WebKit aprovado, clínica, `0/145`, gates externos, aprovação humana e
 reauditoria independente permanecem abertos. Não houve score, release, piloto
 ou produção.
 

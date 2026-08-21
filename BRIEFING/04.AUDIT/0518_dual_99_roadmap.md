@@ -247,11 +247,12 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 50. Checkpoint de publicação do parent path bounded B99-101 — 2026-08-21T03:05:17-03:00
+## 50. Checkpoint de publicação do parent path bounded B99-101 — 2026-08-21T03:08:46-03:00
 
 O código/teste `c69069b` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental deste
-checkpoint está em andamento. A publicação não altera runtime, produção,
+`origin/agent/publish-production-hardening`; a reconciliação documental
+`13f64f1` também foi publicada no mesmo branch e o pós-push confirmou
+`HEAD == origin` em `13f64f1`. A publicação não altera runtime, produção,
 segredos, score, release, clínica ou piloto.
 
 ## 49. Checkpoint do parent path bounded B99-101 — 2026-08-21T03:05:17-03:00
