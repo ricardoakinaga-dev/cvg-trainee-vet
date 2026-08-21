@@ -4,13 +4,24 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Overlay executivo ativo — Dual 99 (2026-08-20T02:48:08-03:00):** assessment-base `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`, programa `0309`, roadmap `0518`, backlog `0519` e manifesto `dual-99-program.json`; `0308/0516/0517` permanecem histórico predecessor. A barra v1 exige `32/32 ≥99`, C1–C8 e RH01–RH06 fechados, `145/145` cadeias e gates críticos verdes. O plano e o gate estrutural estão verdes; execução local `IN_PROGRESS`/`PILOT_BLOCKED`. A primeira onda TDD de qualidade fechou sete focos e elevou a suíte para `199/1038/21`, cobertura `95,01/91,02/95,19/95,73`, build `12/12`, E2E sintético Chromium `27/27`, scanner focal `14/14` e ratchet `144/117`; `pnpm verify` para em B99-101 pelos quatro valores redigidos de `.env.local`, e os gaps live/externos/humanos seguem explícitos.
 
-**Atualização Dual99 local — 2026-08-20T21:47:42-03:00 — pós-publicação:**
-auditoria read-only confirmou `HEAD == origin` em `6ddc37b`, foco `39/39`,
-hotspots `0` e caps finitos em todos os callsites de produção do scanner. O
-único override `Infinity` restante exige violação deliberada do contrato da
-API interna e não é usado pela composição de produção. Não há novo gap local
-justificável; secret manager/rotação, provider/CI, RC, runtime live, clínica,
+**Atualização Dual99 local — 2026-08-20T21:54:57-03:00 — B99-004 paridade:**
+no início da reconciliação, `HEAD` e origin estavam ambos em `2af57e6`; a
+auditoria pós-publicação anterior havia observado `HEAD == origin` em
+`6ddc37b`, antes do pacote documental que a registrou. Estado, roadmap,
+backlogs, evidência, log e traceability agora distinguem esses SHAs históricos;
+o log append-only preserva as entradas existentes e registra a ordem canônica
+Round 45 → Round 46 → auditoria pós-publicação. B99-004 está concluído no
+escopo local; secret manager/rotação, provider/CI, RC, runtime live, clínica,
 `0/145`, gates externos, aprovação humana e reauditoria permanecem abertos.
+O programa segue `IN_PROGRESS / PILOT_BLOCKED`.
+
+**Atualização Dual99 local — 2026-08-20T21:47:42-03:00 — pós-publicação:**
+auditoria read-only observou `HEAD == origin` em `6ddc37b`, foco `39/39`,
+hotspots `0` e caps finitos em todos os callsites de produção do scanner; o
+pacote documental que registrou essa auditoria foi publicado depois em
+`2af57e6`. O único override `Infinity` restante exige violação deliberada do
+contrato da API interna e não é usado pela composição de produção. Não há novo
+gap local justificável; os gates externos e humanos permanecem abertos.
 O programa segue `IN_PROGRESS / PILOT_BLOCKED`.
 
 **Atualização Dual99 local — 2026-08-20T21:41:55-03:00 — B99-101:** a

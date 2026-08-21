@@ -11248,11 +11248,12 @@ local de produção autorizável.
 
 ### ACTION
 
-Foi confirmado `HEAD == origin` em `6ddc37b`. O foco do scanner passou
-`39/39`, `verify:hotspots` permaneceu em `0`, e a auditoria de fonte verificou
-caps finitos em todos os callsites do scanner. O único override `Infinity`
-restante exige que um chamador interno viole deliberadamente o contrato de
-cap; não é usado pela composição de produção.
+No momento da execução, foi confirmado `HEAD == origin` em `6ddc37b`; o pacote
+documental dessa auditoria foi publicado depois em `2af57e6`. O foco do
+scanner passou `39/39`, `verify:hotspots` permaneceu em `0`, e a auditoria de
+fonte verificou caps finitos em todos os callsites do scanner. O único override
+`Infinity` restante exige que um chamador interno viole deliberadamente o
+contrato de cap; não é usado pela composição de produção.
 
 ### RESULT
 
@@ -11276,3 +11277,61 @@ IN_PROGRESS / PILOT_BLOCKED
 
 Obter as autoridades e ambientes externos listados; não iniciar novo hardening
 local sem um gap de produção novo e verificável.
+
+## 2026-08-20T21:54:57-03:00 — DUAL99-B99-004-DOCUMENTATION-PARITY
+
+### TIMESTAMP
+
+2026-08-20 21:54:57 -03:00
+
+### ENGINE
+
+AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-0 — verdade e reconciliação documental
+
+### SPRINT
+
+F99-1 — fechamento local verificável
+
+### TASK
+
+B99-004 — reconciliar worktree, registry, estado, log, backlog e evidência.
+
+### ACTION
+
+No início da rodada, `git rev-parse HEAD` e
+`git rev-parse origin/agent/publish-production-hardening` retornaram o mesmo
+SHA `2af57e6`. A auditoria anterior de 21:47:42 havia observado `HEAD ==
+origin` em `6ddc37b`; `2af57e6` é o pacote documental posterior que registrou
+essa observação. As referências atuais foram normalizadas para distinguir os
+dois fatos históricos.
+
+O histórico append-only não foi reescrito. Como as entradas antigas de Round
+46 e Round 45 foram inseridas em ordem textual diferente da cronológica, esta
+entrada registra a ordem canônica: Round 45 (`21:25:32`) → Round 46
+(`21:41:55`) → auditoria pós-publicação (`21:47:42`) → esta reconciliação.
+
+### RESULT
+
+B99-004 foi concluído no escopo documental local. Nenhum código, segredo,
+`.env.local`, runtime, produção, score, release, dado clínico ou piloto foi
+alterado. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+### DECISIONS
+
+Mantêm-se abertos os gates externos e humanos: secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1,
+retenção/RBAC/notificação externos, clínica, `0/145`, aprovação humana e
+reauditoria independente.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Obter as autoridades e ambientes externos listados; não declarar release,
+score, piloto ou fechamento clínico com esta reconciliação local.

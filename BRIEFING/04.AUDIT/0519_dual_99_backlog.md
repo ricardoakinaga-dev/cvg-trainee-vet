@@ -15,10 +15,28 @@
 - `WAITING_HUMAN_APPROVAL` não é convertido em PASS técnico;
 - nenhuma task promove nota, piloto ou publicação sozinha.
 
+## Atualização de execução — 2026-08-20T21:54:57-03:00 — B99-004 paridade documental
+
+- **auditoria:** no início desta reconciliação, `HEAD` e
+  `origin/agent/publish-production-hardening` estavam ambos em `2af57e6`;
+  a auditoria pós-publicação registrada abaixo havia observado
+  `HEAD == origin` em `6ddc37b` antes do pacote documental que a registrou;
+- **correção:** estado, backlog, roadmap, evidência, log e traceability agora
+  distinguem o SHA observado pela auditoria (`6ddc37b`) do pacote documental
+  posterior (`2af57e6`). O log histórico permanece append-only; a ordem
+  canônica Round 45 → Round 46 → auditoria pós-publicação fica registrada na
+  nova entrada de reconciliação;
+- **status:** B99-004 fica `COMPLETED` no escopo local de documentação. O
+  programa permanece `IN_PROGRESS / PILOT_BLOCKED`; `.gauntlet/` continua
+  local e não rastreado por desenho, e nenhum segredo, `.env.local`, runtime,
+  produção, score, release, clínica ou piloto foi tocado.
+
 ## Atualização de execução — 2026-08-20T21:47:42-03:00 — auditoria pós-publicação
 
-- **auditoria:** `HEAD` e origin estão em `6ddc37b`; o foco passou `39/39`,
-  hotspots permaneceu `0` e todos os callsites de produção passam caps finitos;
+- **auditoria histórica:** no momento da execução, `HEAD` e origin estavam em
+  `6ddc37b`; o pacote documental que registrou essa auditoria foi publicado
+  depois em `2af57e6`. O foco passou `39/39`, hotspots permaneceu `0` e todos
+  os callsites de produção passam caps finitos;
 - **resultado:** o único override `Infinity` exige violação deliberada da API
   interna e não é usado pelo scanner; não há novo gap local justificável;
 - **limite/status:** nenhum segredo, `.env.local`, runtime, produção, score,
@@ -147,7 +165,7 @@
 | B99-001 | P0 | COMPLETED | Lead/Runtime | publicar 0309, 0518, 0519, registry e manifesto executável | links consistentes; `verify:documentation` e `verify:dual99-program` |
 | B99-002 | P0 | COMPLETED | Lead/QA | mapear 16+16+C1–C8+RH01–RH06 | matriz e manifesto com owner, baseline, alvo, gate e comando |
 | B99-003 | P0 | WAITING_HUMAN_APPROVAL | Ricardo/Auditores | aprovar rubrica 99, T0, reviewers e capacidade | decisão assinada; sem nota autodeclarada |
-| B99-004 | P0 | IN_PROGRESS | Lead/Runtime | reconciliar worktree, registry, estado, log e backlog | contagem/hash/next action coerentes |
+| B99-004 | P0 | COMPLETED | Lead/Runtime | reconciliar worktree, registry, estado, log e backlog | contagem/hash/next action coerentes |
 
 ## F99-1 — segurança e integridade local
 

@@ -198,12 +198,28 @@ manager/rotação, RC/proveniência, runtime, clínica, `0/145`, gates externos,
 aprovação humana e reauditoria continuam abertos. F99-1 segue
 `IN_PROGRESS`/`PILOT_BLOCKED`; a evidência foi publicada em `73ae862`.
 
+## 30. Reconciliação B99-004 de paridade documental — 2026-08-20T21:54:57-03:00
+
+No início desta reconciliação, `HEAD` e `origin/agent/publish-production-hardening`
+estavam ambos em `2af57e6`. A auditoria pós-publicação anterior observou
+`HEAD == origin` em `6ddc37b`; `2af57e6` é o pacote documental posterior que
+registrou aquela observação. Estado, backlog, evidência, log e traceability
+foram normalizados para não confundir o SHA observado com o pacote documental.
+
+O log append-only não foi reordenado. A ordem canônica dos últimos eventos é
+Round 45 (`21:25:32`) → Round 46 (`21:41:55`) → auditoria pós-publicação
+(`21:47:42`) → esta reconciliação (`21:54:57`). B99-004 está concluído no
+escopo documental local; o roadmap segue `IN_PROGRESS / PILOT_BLOCKED` e não
+fecha nenhum gate externo, humano, clínico, de RC ou de release.
+
 ## 29. Auditoria pós-publicação do Dual99 local — 2026-08-20T21:47:42-03:00
 
-Após a publicação do Round 46, `HEAD == origin` em `6ddc37b`, o foco passou
-`39/39` e hotspots permaneceu `0`. A auditoria de fonte confirmou caps finitos
-em todos os callsites de produção; o único override `Infinity` restante exige
-violação deliberada da API interna e não é usado pela composição do scanner.
+No momento da execução, após a publicação do Round 46, `HEAD == origin` em
+`6ddc37b`; o pacote documental que registrou a auditoria foi publicado depois
+em `2af57e6`. O foco passou `39/39` e hotspots permaneceu `0`. A auditoria de
+fonte confirmou caps finitos em todos os callsites de produção; o único
+override `Infinity` restante exige violação deliberada da API interna e não é
+usado pela composição do scanner.
 
 Não há novo gap local de produção justificável. O roadmap segue
 `IN_PROGRESS / PILOT_BLOCKED`, condicionado a secret manager/rotação,

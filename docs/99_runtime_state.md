@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; B99-101 agora consome stdout de `git cat-file --batch` incrementalmente, retém somente header e corpo do objeto bounded corrente, limita stderr a `4 KiB` com mensagens genéricas redigidas, usa cap default finito de `8 MiB` no fallback stdout, falha fechado em overflow/truncamento e mantém o preflight `git cat-file --batch-check` de tipo/tamanho, scan UTF-8 limitado sob assets e proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening e reconciliação B99-004; B99-101 agora consome stdout de `git cat-file --batch` incrementalmente, retém somente header e corpo do objeto bounded corrente, limita stderr a `4 KiB` com mensagens genéricas redigidas, usa cap default finito de `8 MiB` no fallback stdout, falha fechado em overflow/truncamento e mantém o preflight `git cat-file --batch-check` de tipo/tamanho, scan UTF-8 limitado sob assets e proteções de framing/identidade `cat-file`, whitespace, symlink e `rev-list`; B99-102 mantém downloader clínico fail-closed com endpoint HTTPS origin-only, SigV4 testável, timeout, limite de corpo, temp `0600`, hash/rename atômico e rejeição de symlink, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: executou B99-101 sob RED/GREEN após auditoria fresca identificar cap infinito no fallback stdout do subprocesso; publicou código/teste em `a6d7ce3` e a evidência documental em `630509f`; a auditoria read-only pós-publicação confirmou `HEAD == origin` em `6ddc37b`, foco `39/39`, hotspots `0` e caps finitos em todos os callsites do scanner; o único residual é override `Infinity` deliberado na API interna, não usado pela composição de produção; o arquivo de produção não foi lido nem alterado; `.gauntlet/` continua local e não rastreado
+- last_completed_action: reconciliou B99-004 após confirmar, no início da rodada, `HEAD == origin` em `2af57e6`; normalizou as referências que distinguiam a auditoria histórica em `6ddc37b` do pacote documental posterior, preservou o log append-only e registrou a ordem canônica dos Rounds 45/46; nenhum segredo, `.env.local`, runtime ou produção foi tocado; `.gauntlet/` continua local e não rastreado
 - next_action: obter autoridade e ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não há novo gap local de produção selecionado
 
 ## BLOQUEIOS
@@ -32,13 +32,37 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-20T21:47:42-03:00
+- last_update: 2026-08-20T21:54:57-03:00
+
+## 2026-08-20T21:54:57-03:00 — DUAL99-B99-004-DOCUMENTATION-PARITY
+
+### AÇÃO / RESULTADO
+
+- no início da reconciliação, `HEAD` e `origin/agent/publish-production-hardening`
+  estavam ambos em `2af57e6`;
+- a auditoria pós-publicação anterior observou `HEAD == origin` em `6ddc37b`,
+  enquanto `2af57e6` é o pacote documental que a registrou; os documentos
+  agora deixam explícita essa relação histórica, sem afirmar que o SHA antigo
+  é o HEAD atual;
+- a ordem histórica dos Rounds 45 e 46 não foi reescrita; a nova entrada do
+  log registra a ordem canônica e preserva o caráter append-only;
+- B99-004 foi concluído localmente. O programa continua
+  `IN_PROGRESS / PILOT_BLOCKED`, com os gates externos e humanos intactos.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O próximo passo continua exigindo autoridade e ambiente para secret
+manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live,
+rollout N/N-1, retenção/RBAC/notificação externos, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria independente.
 
 ## 2026-08-20T21:47:42-03:00 — DUAL99-POST-PUBLISH-AUDIT
 
 ### AÇÃO / RESULTADO
 
-- `HEAD` e `origin/agent/publish-production-hardening` estão em `6ddc37b`;
+- no momento da execução, `HEAD` e `origin/agent/publish-production-hardening`
+  estavam em `6ddc37b`; o pacote documental dessa auditoria foi publicado
+  depois em `2af57e6`;
 - foco do scanner passou `39/39` e `verify:hotspots` permaneceu em `0`;
 - auditoria read-only confirmou caps finitos em todos os callsites de produção
   e não selecionou novo gap local justificável; apenas o override `Infinity`

@@ -2,12 +2,14 @@
 
 - programa: `CVG-DUAL-99`
 - corte: `2026-08-20T21:41:55-03:00`
-- última atualização: `2026-08-20T21:47:42-03:00`
+- última atualização: `2026-08-20T21:54:57-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `a6d7ce3` em
   `origin/agent/publish-production-hardening`
 - evidência documental publicada: `630509f` em
   `origin/agent/publish-production-hardening`
+- pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
+  nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
 - manifesto: `dual-99-program.json`
 - limitação: esta evidência é de worktree local e não promove nota, release,
@@ -46,10 +48,12 @@
 - default de stdout: o fallback de `runGitBatch` agora tem cap finito de `8 MiB`
   em vez de `Infinity`; callsites com preflight continuam podendo passar
   limites explícitos maiores quando necessário.
-- auditoria pós-publicação: `HEAD` e `origin/agent/publish-production-hardening`
-  estão em `6ddc37b`; foco `39/39` e hotspots `0` permanecem verdes. A
-  auditoria de fonte confirmou caps finitos em todos os callsites do scanner;
-  não foi selecionado novo gap local de produção.
+- auditoria pós-publicação: no momento da execução, `HEAD` e
+  `origin/agent/publish-production-hardening` estavam em `6ddc37b`; o pacote
+  documental que a registrou foi publicado depois em `2af57e6`. Foco `39/39` e
+  hotspots `0` permanecem verdes. A auditoria de fonte confirmou caps finitos
+  em todos os callsites do scanner; não foi selecionado novo gap local de
+  produção.
 - qualidade: dashboard, jornada, runner HA, fixture real sintético, authoring,
   política somativa e parser de interação foram decompostos com caracterização
   TDD; o ratchet passou em `144` funções longas / `113` linhas máximas, sem
@@ -853,8 +857,9 @@ programa `IN_PROGRESS / PILOT_BLOCKED`.
 
 ## Auditoria read-only pós-Round 46 — 2026-08-20T21:47:42-03:00
 
-Após a publicação e reconciliação em `6ddc37b`, a auditoria independente de
-fonte confirmou `HEAD == origin`, repetiu o foco `39/39` e
+No snapshot da auditoria, o Round 46 estava publicado e `HEAD == origin` em
+`6ddc37b`; o pacote documental que registrou essa observação foi publicado
+depois em `2af57e6`. A auditoria read-only de fonte repetiu o foco `39/39` e
 `verify:hotspots = 0`, e verificou que `readGitBlobs` passa caps finitos tanto
 para `cat-file --batch-check` quanto para batches corporais. O helper ainda
 aceita que um chamador interno substitua deliberadamente limites por
