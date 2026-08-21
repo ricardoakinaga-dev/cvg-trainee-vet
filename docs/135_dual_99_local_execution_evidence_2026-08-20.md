@@ -1,15 +1,14 @@
 # Evidência local de execução Dual99 — 2026-08-20
 
 - programa: `CVG-DUAL-99`
-- corte: `2026-08-21T01:56:15-03:00`
-- última atualização: `2026-08-21T01:56:15-03:00`
+- corte: `2026-08-21T02:16:26-03:00`
+- última atualização: `2026-08-21T02:16:26-03:00`
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
-- commit publicado: `ee0ebc9` em
+- commit publicado: `4af5821` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `5998266` em
-  `origin/agent/publish-production-hardening`
-- paridade documental final: confirmada no pós-push da reconciliação em
-  `5998266`; nenhum código ou estado externo foi alterado depois desse corte
+- evidência documental publicada: pendente nesta etapa de reconciliação
+- paridade documental final: será confirmada após o commit documental; nenhum
+  código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -27,6 +26,11 @@
 
 ## Implementações locais desta rodada
 
+- workspace directory boundary: a travessia recursiva agora mantém o descritor
+  pai aberto, abre cada diretório com `O_DIRECTORY | O_NOFOLLOW` e enumera por
+  `/proc/self/fd/<fd>`; falhas de abertura/readdir viram finding redigido em
+  `<workspace>`. O RED reproduziu follow e `ENOENT`; o probe pós-GREEN executou
+  `5000` trocas sem vazamento nem exceção e o foco passou `48/48`.
 - workspace open boundary: `readScanBuffer` agora abre arquivos regulares com
   `O_RDONLY | O_NOFOLLOW`, evitando follow de symlink no componente final
   depois de `lstat`; se `O_NOFOLLOW` não existir, a leitura falha fechado. RED
@@ -200,6 +204,50 @@
   safety, lint, typecheck, formato, diff-check, CI contract e documentation
   passaram. O código/teste está em `593619e` e
   `maxLongestFunctionLines` foi fixado em `100`.
+
+## Round 56 — B99-101 / workspace directory-open symlink TOCTOU — 2026-08-21T02:16:26-03:00
+
+### RED → GREEN → REFACTOR
+
+- RED usou um worker sintético para alternar `root/nested` entre diretório
+  regular e symlink para uma árvore externa; em `178` tentativas a travessia
+  antiga encontrou `nested/victim.env` com `sensitive-assignment` e também
+  expôs falha `ENOENT` quando o diretório desaparecia durante `readdir`;
+- GREEN abriu cada diretório com `O_DIRECTORY | O_NOFOLLOW`, enumerou o
+  descritor por `/proc/self/fd/<fd>` e manteve o pai aberto durante a recursão;
+  falhas de abertura ou enumeração retornam um finding redigido
+  `<workspace> / unreadable-file`;
+- REFACTOR preservou a leitura bounded dos arquivos, a recusa de symlinks
+  finais com `O_NOFOLLOW`, os diretórios ignorados e a deduplicação posterior
+  dos findings.
+
+### VERIFICAÇÃO TRANSVERSAL
+
+- foco de integração do secret scanner: `48/48`;
+- cobertura completa: `205` arquivos, `1144` testes passantes e `21` guardados;
+  `95,03%` statements, `90,95%` branches, `95,31%` functions e `95,73%`
+  lines;
+- probe pós-correção em profundidade: `5000` trocas concorrentes sintéticas,
+  sem `sensitive-assignment`, sem exceção e com findings genéricos redigidos
+  quando a árvore não pôde ser enumerada;
+- build sintético: `12/12`; hotspots `0`, maior função `98` linhas;
+  contratos `87/87`, worker `51/51`, decisões `7/7`, mutation `7/7`, migration
+  safety `33/33`, audit, lint, typecheck, formato e diff-check passaram;
+- `pnpm verify` oficial passou todos os gates até migration safety e parou
+  fail-closed em `verify:secrets` somente nos quatro assignments redigidos
+  preexistentes de `infra/production/.env.local`.
+
+### LIMITES / PUBLICAÇÃO
+
+O arquivo `.env.local` não foi lido nem alterado. O commit de código/teste é
+`4af5821`, publicado no branch remoto; a reconciliação documental desta rodada
+está sendo publicada separadamente. A crítica foi fresca e read-only, porém
+não independente porque o backend de critic não estava disponível. A
+travessia segura depende de descritores POSIX e `/proc/self/fd`; em plataformas
+sem as flags necessárias ela falha fechado. Secret manager/rotação, provider/CI,
+RC/runtime, WebKit aprovado, clínica, `0/145`, gates externos, aprovação humana
+e reauditoria independente continuam abertos; não houve score, release, piloto
+ou mutação de produção.
 
 ## Round 55 — B99-101 / workspace file-open symlink TOCTOU — 2026-08-21T01:56:15-03:00
 

@@ -5,6 +5,37 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T02:16:26-03:00 — B99-101 workspace directory boundary
+
+- **auditoria/RED:** uma troca sintética de `root/nested` para symlink fez a
+  travessia anterior encontrar `nested/victim.env` fora da raiz em `178`
+  tentativas e também produziu falha `ENOENT` durante enumeração;
+- **GREEN:** a recursão abre cada diretório com `O_DIRECTORY | O_NOFOLLOW`,
+  enumera por `/proc/self/fd/<fd>` mantendo o descritor-pai aberto e retorna
+  `<workspace> / unreadable-file` em falhas de abertura/readdir;
+- **evidência:** foco `48/48`, cobertura `205/1144/21` em
+  `95,03/90,95/95,31/95,73`, probe de profundidade com `5000` trocas sem
+  vazamento nem exceção, build sintético `12/12`, hotspots `0` com maior
+  função de `98` linhas, contratos `87/87`, worker `51/51`, decisões `7/7`,
+  mutation `7/7`, migration safety `33/33`, audit, lint, typecheck, formato e
+  diff-check passaram. O código/teste `4af5821` foi publicado no branch remoto;
+  a reconciliação desta execução será publicada em seguida;
+- **limite/status:** `pnpm verify` passou até migration safety e parou
+  fail-closed somente nos quatro assignments redigidos preexistentes de
+  `infra/production/.env.local`, que não foi lido nem alterado. A crítica foi
+  fresca e read-only, mas não independente; flags POSIX/`/proc` ausentes
+  falham fechado. B99-101 segue `IN_PROGRESS` no escopo externo e o programa
+  permanece `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T02:16:26-03:00 — B99-101 workspace directory boundary
+
+O código/teste `4af5821` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+execução está sendo publicada separadamente. A publicação não fecha secret
+manager/rotação, provider/CI, RC/runtime, clínica, `0/145`, gates externos,
+aprovação humana ou reauditoria independente; o programa segue
+`IN_PROGRESS / PILOT_BLOCKED`.
+
 ## Atualização de execução — 2026-08-21T01:56:15-03:00 — B99-101 workspace open boundary
 
 - **auditoria/RED:** uma troca sintética entre `lstat` e `open` alternou

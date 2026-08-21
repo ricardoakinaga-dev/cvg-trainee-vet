@@ -11483,6 +11483,88 @@ auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
 provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
 gates externos, aprovação humana e reauditoria independente.
 
+## 2026-08-21T02:16:26-03:00 — DUAL99-B99-101-WORKSPACE-DIRECTORY-NOFOLLOW
+
+### TIMESTAMP
+
+2026-08-21 02:16:26 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-1 — fechamento local verificável
+
+### SPRINT
+
+F99-1 — segurança e integridade local
+
+### TASK
+
+B99-101 — impedir follow de symlink durante a enumeração recursiva do
+workspace e converter falhas de árvore em findings fail-closed.
+
+### ACTION
+
+A auditoria read-only reproduziu uma condição TOCTOU: um worker sintético
+alternou `root/nested` entre diretório regular e symlink, e o scanner anterior
+encontrou `nested/victim.env` fora da raiz em `178` tentativas; a mesma corrida
+também deixou escapar `ENOENT` durante `readdir`. Sob TDD, o RED adicionou a
+regressão de abertura de diretório. O GREEN passou a abrir cada diretório com
+`O_DIRECTORY | O_NOFOLLOW`, enumerar via `/proc/self/fd/<fd>` e manter o
+descritor-pai aberto durante a recursão. Falhas de abertura/readdir retornam um
+finding redigido `<workspace> / unreadable-file`.
+
+### RESULT
+
+O foco passou `48/48`; a cobertura passou `205` arquivos / `1144` testes /
+`21` guardados em `95,03/90,95/95,31/95,73`; probe de profundidade executou
+`5000` trocas sem vazamento nem exceção; build sintético `12/12`; hotspots `0`
+com maior função de `98` linhas; contratos `87/87`; worker `51/51`; decisões
+`7/7`; mutation `7/7` (`100%`); migration safety `33/33`; audit, lint,
+typecheck, formato e diff-check passaram. O commit de código/teste `4af5821`
+foi publicado em `origin/agent/publish-production-hardening`.
+
+### DECISIONS
+
+`pnpm verify` oficial passou até migration safety e permaneceu fail-closed
+somente nos quatro assignments redigidos preexistentes de
+`infra/production/.env.local`; o arquivo não foi lido nem alterado. A crítica
+foi fresca e read-only, mas não independente porque o backend de critic não
+estava disponível. A travessia depende de flags POSIX e `/proc/self/fd`; sem
+elas falha fechado. Nenhum segredo, runtime, produção, score, release, decisão
+clínica ou piloto foi tocado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar a reconciliação documental desta rodada; depois executar nova
+auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
+provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
+gates externos, aprovação humana e reauditoria independente.
+
+## 2026-08-21T02:16:26-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-DIRECTORY-NOFOLLOW
+
+### ACTION
+
+O commit de código/teste `4af5821` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está sendo publicada separadamente.
+
+### RESULT / STATUS
+
+A disposição segue `IN_PROGRESS / PILOT_BLOCKED`; não houve rotação de segredo,
+alteração de runtime/produção, score, release, decisão clínica ou piloto.
+
+### NEXT ACTION
+
+Publicar a reconciliação documental e depois executar nova auditoria bounded.
+
 ## 2026-08-21T01:56:15-03:00 — DUAL99-B99-101-WORKSPACE-OPEN-NOFOLLOW
 
 ### TIMESTAMP

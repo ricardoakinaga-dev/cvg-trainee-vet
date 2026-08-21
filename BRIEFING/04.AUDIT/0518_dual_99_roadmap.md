@@ -247,6 +247,34 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 46. Checkpoint de publicação da travessia recursiva B99-101 — 2026-08-21T02:16:26-03:00
+
+O código/teste `4af5821` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental deste
+checkpoint está em andamento. A publicação não altera runtime, produção,
+segredos, score, release, clínica ou piloto.
+
+## 45. Checkpoint de travessia recursiva bounded B99-101 — 2026-08-21T02:16:26-03:00
+
+B99-101 recebeu RED/GREEN para a abertura concorrente de diretórios. O RED
+reproduziu que uma troca de `root/nested` para symlink fazia a travessia antiga
+encontrar `nested/victim.env` fora da raiz em `178` tentativas, além de deixar
+escapar `ENOENT` durante `readdir`. O GREEN abre cada diretório com
+`O_DIRECTORY | O_NOFOLLOW`, enumera via `/proc/self/fd/<fd>` e mantém o
+descritor-pai aberto durante a recursão; falhas retornam
+`<workspace> / unreadable-file`.
+
+O foco passou `48/48`, a cobertura passou `205/1144/21` em
+`95,03/90,95/95,31/95,73`, o probe de profundidade pós-correção completou
+`5000` trocas sem vazamento nem exceção, o build sintético passou `12/12`,
+hotspots `0` com maior função de `98` linhas, contratos `87/87`, worker `51/51`,
+decisões `7/7`, mutation `7/7`, migration safety `33/33`, audit, lint,
+typecheck, formato e diff-check passaram. O `pnpm verify` oficial percorreu os
+gates até migration safety e parou fail-closed somente nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, que não foi lido nem
+alterado. A solução depende de flags POSIX/`/proc` e falha fechado sem elas;
+condições live, externas e parentless permanecem abertas.
+
 ## 44. Publicação do checkpoint da abertura bounded B99-101 — 2026-08-21T01:59:25-03:00
 
 O código/teste `ee0ebc9` e a reconciliação documental `5998266` foram
