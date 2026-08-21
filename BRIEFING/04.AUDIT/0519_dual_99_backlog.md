@@ -29,12 +29,12 @@
   segue `IN_PROGRESS` no escopo externo e o programa permanece
   `IN_PROGRESS / PILOT_BLOCKED`.
 
-## Publicação de execução pendente — 2026-08-21T05:24:48-03:00 — B99-101 workspace entry budget
+## Publicação de execução — 2026-08-21T05:24:48-03:00 — B99-101 workspace entry budget
 
-O código/teste `3deee2b` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental e sua
-paridade pós-push serão registradas após os gates documentais. `.gauntlet/`
-permanece local e não rastreado.
+O código/teste `3deee2b` e a reconciliação documental inicial `3900713` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `3900713`. A reconciliação final não altera código ou estado
+externo. `.gauntlet/` permanece local e não rastreado.
 
 ## Atualização de execução — 2026-08-21T05:11:16-03:00 — B99-101 Git metadata entry budget
 

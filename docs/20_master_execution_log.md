@@ -11475,7 +11475,7 @@ IN_PROGRESS / PILOT_BLOCKED
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental desta rodada; então executar nova auditoria
+Executar nova auditoria
 bounded e obter autoridade/ambiente para secret manager/rotação, provider/CI,
 RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
 independente.
@@ -11484,20 +11484,20 @@ independente.
 
 ### ACTION
 
-O commit de código/teste `3deee2b` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental segue
-pendente até o término dos gates documentais.
+O commit de código/teste `3deee2b` e a reconciliação documental inicial
+`3900713` foram publicados em
+`origin/agent/publish-production-hardening`; o pós-push confirmou a paridade
+em `3900713`.
 
 ### RESULT / STATUS
 
-`HEAD == origin` em `3deee2b`. A disposição segue `IN_PROGRESS /
+`HEAD == origin` em `3900713`. A disposição segue `IN_PROGRESS /
 PILOT_BLOCKED`; não houve rotação de segredo, alteração de runtime/produção,
 score, release, decisão clínica ou piloto.
 
 ### NEXT ACTION
 
-Publicar a reconciliação documental desta rodada e confirmar a paridade
-documental pós-push; Windows/non-proc, secret manager/rotação, provider/CI,
+Executar nova auditoria bounded; Windows/non-proc, secret manager/rotação, provider/CI,
 RC/runtime, clínica, `0/145`, gates externos, aprovação humana e reauditoria
 independente permanecem abertos.
 

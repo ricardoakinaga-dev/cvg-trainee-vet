@@ -247,13 +247,12 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 64. Checkpoint de publicação pendente da enumeração do worktree B99-101 — 2026-08-21T05:24:48-03:00
+## 64. Checkpoint de publicação da enumeração do worktree B99-101 — 2026-08-21T05:24:48-03:00
 
-O código/teste `3deee2b` foi publicado em
-`origin/agent/publish-production-hardening`; a reconciliação documental ainda
-está pendente dos gates de documentação e da confirmação de paridade. A
-publicação não altera runtime, produção, segredos, score, release, clínica ou
-piloto.
+O código/teste `3deee2b` e a reconciliação documental inicial `3900713` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `3900713`. A reconciliação final não altera runtime,
+produção, segredos, score, release, clínica ou piloto.
 
 ## 63. Checkpoint da enumeração bounded do worktree B99-101 — 2026-08-21T05:24:48-03:00
 
@@ -268,8 +267,8 @@ O foco passou `59/59`, a cobertura passou `205/1155/21` em
 contract, arquitetura `2/2`, hotspots `0` com maior função de `100`, lint,
 typecheck, formato, diff-check e audit de dependências passaram. Probe pós-fix
 com `2000` arquivos produziu `workspaceEntriesStatus=unavailable`,
-`materializedWorkspaceEntries=0` e finding genérico. O código/teste `3deee2b`
-foi publicado; Windows/non-proc, condições live, gates externos, crítica
+`materializedWorkspaceEntries=0` e finding genérico. Código/teste `3deee2b` e
+documentação inicial `3900713` foram publicados; Windows/non-proc, condições live, gates externos, crítica
 independente e demais bloqueios do programa permanecem abertos.
 
 ## 62. Checkpoint de publicação da enumeração de metadados Git B99-101 — 2026-08-21T05:11:16-03:00

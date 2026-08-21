@@ -6,10 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `3deee2b` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `DOCUMENTATION_PENDING` em
+- evidência documental publicada: `3900713` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: pendente até a reconciliação desta rodada; nenhum
-  código ou estado externo foi alterado depois desse corte
+- paridade documental final: confirmada no pós-push em `3900713`; nenhum código
+  ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -38,8 +38,9 @@
   com maior função de `100`, lint, typecheck, formato, diff-check e audit de
   dependências passaram. Probe pós-fix com `2000` arquivos produziu
   `workspaceEntriesStatus=unavailable`, `materializedWorkspaceEntries=0` e
-  finding genérico. O código/teste `3deee2b` foi publicado; a documentação
-  inicial desta rodada está em `DOCUMENTATION_PENDING`.
+  finding genérico. O código/teste `3deee2b` e a documentação inicial `3900713`
+  foram publicados; a reconciliação final desta rodada não altera código ou
+  estado externo.
 
 ## Round 64 — limite de entradas de metadata Git
 
