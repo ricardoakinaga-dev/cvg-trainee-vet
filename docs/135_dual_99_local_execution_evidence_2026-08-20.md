@@ -6,9 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `1ab557e` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: pendente nesta etapa de reconciliação
-- paridade documental final: será confirmada após o commit documental; nenhum
-  código ou estado externo foi alterado depois desse corte
+- evidência documental publicada: `3217e13` em
+  `origin/agent/publish-production-hardening`
+- paridade documental final: confirmada no pós-push da reconciliação em
+  `3217e13`; nenhum código ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -227,12 +228,13 @@
 ### LIMITES / PUBLICAÇÃO
 
 O arquivo `.env.local` não foi lido nem alterado. O commit de código/teste é
-`1ab557e`, publicado no branch remoto; a reconciliação documental desta rodada
-está sendo publicada separadamente. A crítica foi fresca e read-only, porém
-não independente porque o backend de critic não estava disponível. Secret
-manager/rotação, provider/CI, RC/runtime, WebKit aprovado, clínica, `0/145`,
-gates externos, aprovação humana e reauditoria independente continuam abertos;
-não houve score, release, piloto ou mutação de produção.
+`1ab557e` e a reconciliação documental é `3217e13`, ambos publicados no branch
+remoto; o pós-push confirmou `HEAD == origin` em `3217e13`. A crítica foi
+fresca e read-only, porém não independente porque o backend de critic não
+estava disponível. Secret manager/rotação, provider/CI, RC/runtime, WebKit
+aprovado, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+independente continuam abertos; não houve score, release, piloto ou mutação de
+produção.
 
 ## Round 49 — B99-308 / API-surface adversarial fuzz boundary — 2026-08-21T00:04:17-03:00
 

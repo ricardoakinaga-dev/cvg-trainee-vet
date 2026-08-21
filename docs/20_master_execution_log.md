@@ -11483,6 +11483,28 @@ auditoria bounded e obter autoridade/ambiente para secret manager/rotação,
 provider/CI, RC/proveniência, WebKit aprovado, runtime live, clínica, `0/145`,
 gates externos, aprovação humana e reauditoria independente.
 
+## 2026-08-21T01:39:59-03:00 — GIT-PUBLISH-DUAL99-B99-101-WORKSPACE-ROOT-BOUNDARY
+
+### ACTION
+
+O commit de código/teste `1ab557e` e a reconciliação documental `3217e13`
+foram publicados em `origin/agent/publish-production-hardening`. Estado,
+backlog, roadmap, evidência, log e traceability foram reconciliados; `.gauntlet/`
+permanece local e não rastreado por desenho.
+
+### RESULT / STATUS
+
+O pós-push confirmou `HEAD == origin` em `3217e13`. A disposição segue
+`IN_PROGRESS / PILOT_BLOCKED`; não houve rotação de segredo, alteração de
+runtime/produção, score, release, decisão clínica ou piloto. Permanecem abertos
+secret manager/rotação, provider/CI, RC/runtime, WebKit aprovado, clínica,
+`0/145`, gates externos, aprovação humana e reauditoria independente.
+
+### NEXT ACTION
+
+Executar nova auditoria bounded antes de qualquer conclusão; não declarar
+release, score, piloto ou fechamento clínico com esta publicação local.
+
 ## 2026-08-21T01:13:43-03:00 — DUAL99-B99-101-BOUNDED-WORKSPACE-ASSET-READS
 
 ### TIMESTAMP

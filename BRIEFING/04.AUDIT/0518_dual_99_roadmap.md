@@ -247,12 +247,13 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
-## 42. Checkpoint de publicação da fronteira da raiz B99-101 — 2026-08-21T01:32:38-03:00
+## 42. Publicação do checkpoint da fronteira da raiz B99-101 — 2026-08-21T01:39:59-03:00
 
-O código/teste da Rodada 54 foi publicado como `1ab557e` em
-`origin/agent/publish-production-hardening`; a reconciliação documental deste
-checkpoint está em andamento. A publicação não altera runtime, produção,
-segredos, score, release, clínica ou piloto.
+O código/teste `1ab557e` e a reconciliação documental `3217e13` foram
+publicados em `origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin` em `3217e13`. Estado, backlog, evidência, log e traceability
+estão alinhados. A publicação não altera runtime, produção, segredos, score,
+release, clínica ou piloto; `.gauntlet/` permanece local e não rastreado.
 
 ## 41. Checkpoint de fronteira da raiz do scanner B99-101 — 2026-08-21T01:32:38-03:00
 
