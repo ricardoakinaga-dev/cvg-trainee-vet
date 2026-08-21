@@ -7,10 +7,12 @@ import {
   planGitBatchRequests as planGitBatchRequestsInternal,
   readGitBlobs as readGitBlobsInternal,
 } from "./secret-scanner-git-batch.mjs";
+import { deduplicateFindings } from "./secret-scanner-findings.mjs";
 import {
   openWorkspaceDirectory,
   readScanBuffer,
   validateWorkspaceRoot,
+  withWorkspaceRoot,
 } from "./secret-scanner-workspace.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -28,8 +30,7 @@ const MAX_SCAN_BYTES = 2 * 1024 * 1024;
 const MAX_GIT_BATCH_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_GIT_BATCH_HEADER_BYTES = 128;
 
-// Asset paths are still enumerated so text content cannot bypass scanning by
-// using an asset extension; binary bytes remain outside text scanning.
+// Enumerate assets; only bounded binary content is skipped.
 const ignoredBinaryAssetExtensions = new Set(
   ".7z .avi .bmp .class .dll .doc .docx .gif .gz .ico .jpeg .jpg .mov .mp3 .mp4 .ogg .pdf .png .ppt .pptx .tar .ttf .wav .webm .webp .woff .woff2 .xls .xlsx .zip".split(
     " ",
@@ -759,37 +760,40 @@ export async function scanProject(
     unscannedFinding,
   );
   if (invalidRootFinding !== null) return invalidRootFinding;
-  const findings = [...(await scanWorkspace(root))];
-  if (includeStaged) {
-    try {
-      findings.push(...(await scanStaged(root)));
-    } catch {
-      findings.push(
-        unscannedFinding(
-          "staged:<git>",
-          "git-object-unreadable",
-          "staged index",
-        ),
-      );
+  const findings = await withWorkspaceRoot(root, async (gitRoot) => {
+    const findings = [...(await scanWorkspace(root))];
+    if (includeStaged) {
+      try {
+        findings.push(...(await scanStaged(gitRoot)));
+      } catch {
+        findings.push(
+          unscannedFinding(
+            "staged:<git>",
+            "git-object-unreadable",
+            "staged index",
+          ),
+        );
+      }
     }
-  }
-  if (includeHistory) {
-    try {
-      findings.push(...(await scanHistory(root)));
-    } catch {
-      findings.push(
-        unscannedFinding(
-          "history:<git>",
-          "git-object-unreadable",
-          "reachable history",
-        ),
-      );
+    if (includeHistory) {
+      try {
+        findings.push(...(await scanHistory(gitRoot)));
+      } catch {
+        findings.push(
+          unscannedFinding(
+            "history:<git>",
+            "git-object-unreadable",
+            "reachable history",
+          ),
+        );
+      }
     }
-  }
-  const unique = new Map();
-  for (const item of findings) {
-    unique.set(`${item.path}:${item.line}:${item.rule}:${item.evidence}`, item);
-  }
-  return Object.freeze([...unique.values()]);
+    return deduplicateFindings(findings);
+  });
+  return (
+    findings ?? [
+      unscannedFinding("<workspace>", "unreadable-file", "workspace root"),
+    ]
+  );
 }
 export { isTextPath, parseObjectList, planGitBatchRequests, readBatchOutput };

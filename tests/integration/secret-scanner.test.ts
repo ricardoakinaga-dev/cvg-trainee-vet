@@ -2,6 +2,7 @@ import {
   chmod,
   mkdir,
   mkdtemp,
+  rename,
   rm,
   symlink,
   truncate,
@@ -12,6 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { execFile } from "node:child_process";
+import { Worker } from "node:worker_threads";
 import { afterEach, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
@@ -380,6 +382,89 @@ describe("secret scanner", () => {
       }),
     ]);
     expect(JSON.stringify(findings)).not.toContain(secret);
+  });
+
+  it("pins staged Git reads to the validated workspace root", async () => {
+    const parent = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-root-git-race-"),
+    );
+    temporaryDirectories.push(parent);
+    const realRoot = join(parent, "root-real");
+    const root = join(parent, "root");
+    const externalRoot = join(parent, "external");
+    await mkdir(realRoot);
+    await mkdir(externalRoot);
+    await execFileAsync("git", ["init", "-q"], { cwd: realRoot });
+    await execFileAsync("git", ["init", "-q"], { cwd: externalRoot });
+    const syntheticKeyName = ["API", "KEY"].join("_");
+    await writeFile(
+      join(externalRoot, "victim.env"),
+      `${syntheticKeyName}="synthetic-external-only"\n`,
+    );
+    await execFileAsync("git", ["add", "victim.env"], {
+      cwd: externalRoot,
+    });
+    await execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.email=synthetic@example.invalid",
+        "-c",
+        "user.name=synthetic",
+        "commit",
+        "-qm",
+        "synthetic",
+      ],
+      { cwd: externalRoot },
+    );
+    await rename(realRoot, root);
+
+    const worker = new Worker(
+      `
+        import { parentPort, workerData } from "node:worker_threads";
+        import { rename, symlink, unlink } from "node:fs/promises";
+        let running = true;
+        parentPort.on("message", (message) => {
+          if (message === "stop") running = false;
+        });
+        while (running) {
+          try { await rename(workerData.root, workerData.backup); } catch {}
+          try { await symlink(workerData.external, workerData.root, "dir"); } catch {}
+          try { await unlink(workerData.root); } catch {}
+          try { await rename(workerData.backup, workerData.root); } catch {}
+        }
+      `,
+      {
+        eval: true,
+        workerData: {
+          root,
+          backup: join(parent, "root-backup"),
+          external: externalRoot,
+        },
+      },
+    );
+
+    try {
+      const leakedFindings = [];
+      for (let attempt = 0; attempt < 500; attempt += 1) {
+        const findings = await scanProject(root, {
+          includeStaged: true,
+          includeHistory: false,
+        });
+        leakedFindings.push(
+          ...findings.filter(
+            (finding) =>
+              finding.path === "staged:victim.env" &&
+              finding.rule === "sensitive-assignment",
+          ),
+        );
+      }
+
+      expect(leakedFindings).toHaveLength(0);
+    } finally {
+      worker.postMessage("stop");
+      await worker.terminate();
+    }
   });
 
   it.each(["missing", "regular-file"])(

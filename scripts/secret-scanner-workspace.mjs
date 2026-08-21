@@ -62,6 +62,20 @@ export async function readWorkspaceEntries(directory) {
   }
 }
 
+export async function withWorkspaceRoot(directory, callback) {
+  let access;
+  try {
+    access = await openWorkspaceDirectory(directory);
+  } catch {
+    return null;
+  }
+  try {
+    return await callback(access.path);
+  } finally {
+    await access.handle.close();
+  }
+}
+
 export async function validateWorkspaceRoot(root, unscannedFinding) {
   const metadata = await lstat(root).catch(() => null);
   if (metadata?.isDirectory()) return null;
