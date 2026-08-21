@@ -125,6 +125,7 @@ export function planGitBatchRequests(
     source,
   },
 ) {
+  const scanLimit = assertPositiveSafeInteger(maxScanBytes, "maxScanBytes");
   const batchLimit = assertMaxBatchBytes(maxBatchBytes);
   const findings = [];
   const objectIds = [];
@@ -184,7 +185,7 @@ export function planGitBatchRequests(
       break;
     }
     if (type === "tree" || type === "commit") continue;
-    if (size > maxScanBytes) {
+    if (size > scanLimit) {
       if (!isIgnoredBinaryAssetPath(path ?? "")) {
         findings.push(
           unscannedFinding(logicalPath, "oversize-file", `${size} bytes`),
@@ -374,6 +375,11 @@ export function createGitBatchStreamParser({
   readBatchOutput,
   source = "history",
 }) {
+  const scanLimit = assertPositiveSafeInteger(maxScanBytes, "maxScanBytes");
+  const headerLimit = assertPositiveSafeInteger(
+    maxHeaderBytes,
+    "maxHeaderBytes",
+  );
   const findings = [];
   const state = {
     headerParts: [],
@@ -385,8 +391,8 @@ export function createGitBatchStreamParser({
     state,
     findings,
     objects,
-    maxScanBytes,
-    maxHeaderBytes,
+    maxScanBytes: scanLimit,
+    maxHeaderBytes: headerLimit,
     isIgnoredBinaryAssetPath,
     unscannedFinding,
     readBatchOutput,
@@ -425,16 +431,22 @@ export async function readGitBlobs(
   },
 ) {
   if (objects.size === 0) return [];
+  const scanLimit = assertPositiveSafeInteger(maxScanBytes, "maxScanBytes");
+  const batchLimit = assertMaxBatchBytes(maxBatchBytes);
+  const headerLimit = assertPositiveSafeInteger(
+    maxHeaderBytes,
+    "maxHeaderBytes",
+  );
   const objectIds = [...objects.keys()];
   const checkOutput = await runGitBatch(
     root,
     ["cat-file", "--batch-check"],
     objectIds,
-    { maxOutputBytes: objectIds.length * maxHeaderBytes + 1 },
+    { maxOutputBytes: objectIds.length * headerLimit + 1 },
   );
   const plan = planGitBatchRequests(checkOutput, objects, {
-    maxScanBytes,
-    maxBatchBytes,
+    maxScanBytes: scanLimit,
+    maxBatchBytes: batchLimit,
     isIgnoredBinaryAssetPath,
     source,
     unscannedFinding,
@@ -447,8 +459,8 @@ export async function readGitBlobs(
     );
     const parser = createGitBatchStreamParser({
       objects: requestedObjects,
-      maxScanBytes,
-      maxHeaderBytes,
+      maxScanBytes: scanLimit,
+      maxHeaderBytes: headerLimit,
       isIgnoredBinaryAssetPath,
       unscannedFinding,
       readBatchOutput,
@@ -456,8 +468,7 @@ export async function readGitBlobs(
     });
     try {
       await runGitBatch(root, ["cat-file", "--batch"], batch, {
-        maxOutputBytes:
-          plan.batchSizes[index] + batch.length * maxHeaderBytes + 1,
+        maxOutputBytes: plan.batchSizes[index] + batch.length * headerLimit + 1,
         onChunk: (chunk) => parser.push(chunk),
       });
       parser.finish();

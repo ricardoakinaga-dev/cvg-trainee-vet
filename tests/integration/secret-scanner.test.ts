@@ -779,6 +779,53 @@ describe("secret scanner", () => {
     expect(spawnCalls).toBe(0);
   });
 
+  it("rejects invalid low-level Git scan and header caps", () => {
+    const megabyte = 1024 * 1024;
+    const objectId = "a".repeat(40);
+    const objects = new Map([[objectId, "synthetic-large.txt"]]);
+    const metadata = Buffer.from(`${objectId} blob ${9 * megabyte}\n`);
+    const invalidLimits = [
+      0,
+      -1,
+      Number.NaN,
+      1.5,
+      Number.POSITIVE_INFINITY,
+      Number.MAX_SAFE_INTEGER + 1,
+    ];
+    const plannerOptions = {
+      maxBatchBytes: 16 * megabyte,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path: string, rule: string, evidence: string) => ({
+        path,
+        rule,
+        evidence,
+      }),
+      source: "history",
+    };
+
+    for (const maxScanBytes of invalidLimits) {
+      expect(() =>
+        planGitBatchRequestsInternal(metadata, objects, {
+          ...plannerOptions,
+          maxScanBytes,
+        }),
+      ).toThrow(/maxScanBytes/iu);
+    }
+    for (const maxHeaderBytes of invalidLimits) {
+      expect(() =>
+        createGitBatchStreamParser({
+          objects,
+          maxScanBytes: 2 * megabyte,
+          maxHeaderBytes,
+          isIgnoredBinaryAssetPath: () => false,
+          unscannedFinding: plannerOptions.unscannedFinding,
+          readBatchOutput: () => [],
+          source: "history",
+        }),
+      ).toThrow(/maxHeaderBytes/iu);
+    }
+  });
+
   it("rejects Git batch output above its configured cap", async () => {
     const directory = await mkdtemp(join(tmpdir(), "cvg-secret-scanner-cap-"));
     temporaryDirectories.push(directory);
