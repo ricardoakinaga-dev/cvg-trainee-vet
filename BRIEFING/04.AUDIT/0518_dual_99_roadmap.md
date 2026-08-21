@@ -247,6 +247,30 @@ alterado. A crítica desta rodada foi fresca, read-only e não independente; o
 roadmap permanece `IN_PROGRESS / PILOT_BLOCKED` e não promove score, release,
 clínica ou piloto.
 
+## 56. Checkpoint de publicação do ambiente Git B99-101 — 2026-08-21T04:02:33-03:00
+
+O código/teste `ae3d596` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. A publicação do código não altera runtime,
+produção, segredos, score, release, clínica ou piloto.
+
+## 55. Checkpoint do ambiente Git B99-101 — 2026-08-21T04:02:33-03:00
+
+B99-101 recebeu RED/GREEN para o ambiente herdado do Git. Uma auditoria
+read-only configurou `GIT_INDEX_FILE` e `GIT_OBJECT_DIRECTORY` para um
+repositório externo e reproduziu `staged:victim.env` com
+`sensitive-assignment`; o RED focal confirmou o vazamento. O GREEN remove todas
+as chaves `GIT_*` herdadas do ambiente do child e fixa somente
+`GIT_DIR=/proc/self/fd/3` e `GIT_WORK_TREE=.`.
+
+O foco passou `54/54`, a cobertura passou `205/1150/21` em
+`95,03/90,95/95,31/95,73`, o probe sintético com quatro redirecionadores Git
+não produziu finding sensível, o build sintético passou `12/12`, CI contract e
+arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit
+de dependências passaram. `pnpm verify:secrets` permanece fail-closed nos
+quatro assignments redigidos preexistentes; Windows/non-proc, condições live,
+gates externos e crítica independente permanecem abertos.
+
 ## 54. Checkpoint de publicação da identidade da raiz B99-101 — 2026-08-21T03:51:59-03:00
 
 O código/teste `55dffa5` foi publicado em

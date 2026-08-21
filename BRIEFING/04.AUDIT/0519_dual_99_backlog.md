@@ -5,6 +5,34 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-21T04:02:33-03:00 — B99-101 Git environment boundary
+
+- **auditoria/RED:** com `GIT_INDEX_FILE` e `GIT_OBJECT_DIRECTORY` herdados
+  apontando para índice/objetos externos, o scanner produziu
+  `staged:victim.env` com `sensitive-assignment`; o RED focal reproduziu o
+  mesmo finding;
+- **GREEN:** `createGitEnvironment` remove todas as chaves herdadas cujo nome
+  começa por `GIT_` sem distinção de caixa e fixa somente
+  `GIT_DIR=/proc/self/fd/3` e `GIT_WORK_TREE=.`;
+- **evidência:** foco `54/54`, cobertura `205/1150/21` em
+  `95,03/90,95/95,31/95,73`, probe sintético com quatro redirecionadores Git
+  sem finding sensível, build `12/12`, CI contract, arquitetura `2/2`,
+  hotspots `0`, lint, typecheck, formato, diff-check e audit passaram. Código/
+  teste `ae3d596` foi publicado no branch remoto;
+- **limite/status:** `pnpm verify:secrets` permanece fail-closed somente nos
+  quatro assignments redigidos preexistentes de `infra/production/.env.local`.
+  A crítica foi fresca e read-only, mas não independente; Windows/non-proc,
+  secret manager/rotação, RC/runtime, clínica, `0/145`, gates externos,
+  aprovação humana e reauditoria independente permanecem abertos. B99-101
+  segue `IN_PROGRESS` no escopo externo e o programa permanece
+  `IN_PROGRESS / PILOT_BLOCKED`.
+
+## Publicação de execução — 2026-08-21T04:02:33-03:00 — B99-101 Git environment boundary
+
+O código/teste `ae3d596` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental será
+publicada em seguida; `.gauntlet/` permanece local e não rastreado.
+
 ## Atualização de execução — 2026-08-21T03:45:58-03:00 — B99-101 root identity boundary
 
 - **auditoria/RED:** a troca da raiz por outro diretório real, sem symlink,

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — DUAL 99 / F99-0 verdade e F99-1 fechamento local
 - current_sprint: F99-0/F99-1 — planejamento 99, gates locais e remediação crítica
-- current_task: F99-1 local hardening; Round 60 fechou a barra local de B99-101 para identidade da raiz: a validação compara `dev/ino` do caminho com o descritor raiz aberto e falha fechado em troca de diretório real. Round 59 mantém `.git` no-follow e fd Git fixo; Rounds 58–55 preservam fronteiras de caminho, diretório e arquivo; Round 54 valida a raiz; Rounds 53–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_task: F99-1 local hardening; Round 61 fechou a barra local de ambiente Git: o child remove todos os `GIT_*` herdados e recebe somente `GIT_DIR` no descritor fixo e `GIT_WORK_TREE` relativo. Round 60 compara `dev/ino` da raiz e falha fechado em troca de diretório real; Round 59 mantém `.git` no-follow e fd Git fixo; Rounds 58–55 preservam fronteiras de caminho, diretório e arquivo; Rounds 54–50 preservam limites bounded do scanner Git; B99-102 mantém downloader clínico fail-closed, enquanto WebKit aprovado, RC e runtime API com SHA seguem sem prova
 
 ## STATUS
 
@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 60 de B99-101 sob RED→GREEN→REFACTOR; a auditoria reproduziu `207/1000` leituras externas após troca de raiz real e o RED focal reproduziu `87/500` leaks. `withWorkspaceRoot` agora compara `dev/ino` do `lstat` com o descritor no-follow aberto e mantém somente esse handle no scan; foco `53/53`, cobertura `205/1149/21` em `95,03/90,95/95,31/95,73`, dez swaps profundos determinísticos sem finding externo, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram; código/teste `55dffa5` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
+- last_completed_action: concluiu Round 61 de B99-101 sob RED→GREEN→REFACTOR; uma auditoria read-only reproduziu finding externo `staged:victim.env` com `GIT_INDEX_FILE` e `GIT_OBJECT_DIRECTORY` herdados. `createGitEnvironment` agora remove todos os `GIT_*` herdados, preserva o restante do ambiente e fixa somente `GIT_DIR=/proc/self/fd/3` e `GIT_WORK_TREE=.`; foco `54/54`, cobertura `205/1150/21` em `95,03/90,95/95,31/95,73`, probe sintético com redirecionadores Git sem finding sensível, build `12/12`, CI contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato, diff-check e audit passaram; código/teste `ae3d596` foi publicado e `HEAD == origin` confirmado. `pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos preexistentes; `.gauntlet/` continua local e não rastreado
 - next_action: executar nova auditoria read-only bounded da superfície de identidade/Git; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
@@ -32,7 +32,49 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T03:51:59-03:00
+- last_update: 2026-08-21T04:02:33-03:00
+
+## 2026-08-21T04:02:33-03:00 — DUAL99-B99-101-GIT-ENVIRONMENT-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+- uma auditoria read-only configurou `GIT_INDEX_FILE` e
+  `GIT_OBJECT_DIRECTORY` para índice/objetos de um repositório externo; antes
+  do fix, o scanner produziu `staged:victim.env` com
+  `sensitive-assignment` apesar do `GIT_DIR` já estar fixado no fd correto;
+- o RED focal reproduziu o finding externo; o GREEN criou
+  `createGitEnvironment`, removendo todas as chaves herdadas cujo nome começa
+  por `GIT_` sem distinção de caixa e preservando somente `GIT_DIR` e
+  `GIT_WORK_TREE` controlados pelo scanner;
+- foco `54/54`; cobertura `205/1150/21` em `95,03/90,95/95,31/95,73`; probe
+  sintético com `GIT_INDEX_FILE`, `GIT_OBJECT_DIRECTORY`, `GIT_COMMON_DIR` e
+  `GIT_ALTERNATE_OBJECT_DIRECTORIES` sem finding sensível; build `12/12`, CI
+  contract, arquitetura `2/2`, hotspots `0`, lint, typecheck, formato,
+  diff-check e audit de dependências passaram. Código/teste `ae3d596` foi
+  publicado e `HEAD == origin` confirmado.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+`pnpm verify:secrets` permanece fail-closed nos quatro assignments redigidos
+preexistentes de `infra/production/.env.local`; não houve alteração de
+runtime, produção, score, release, clínica ou piloto. A crítica independente
+continua indisponível; Windows/non-proc, secret manager/rotação, RC/runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria independente
+permanecem abertos. Publicar a reconciliação documental desta rodada.
+
+## 2026-08-21T04:02:33-03:00 — GIT-PUBLISH-DUAL99-B99-101-GIT-ENVIRONMENT-NOFOLLOW
+
+### AÇÃO / RESULTADO
+
+O commit técnico `ae3d596` foi publicado em
+`origin/agent/publish-production-hardening`; a reconciliação documental desta
+rodada está pendente neste corte. `.gauntlet/` permanece local e não rastreado;
+não houve rotação de segredo, alteração de runtime/produção, score, release,
+decisão clínica ou piloto.
+
+### PRÓXIMA AÇÃO
+
+Publicar a reconciliação documental; então executar nova auditoria bounded.
 
 ## 2026-08-21T03:45:58-03:00 — DUAL99-B99-101-ROOT-IDENTITY-NOFOLLOW
 
