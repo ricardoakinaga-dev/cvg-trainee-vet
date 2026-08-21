@@ -5,6 +5,16 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Auditoria pós-publicação — 2026-08-21T08:45:45-03:00 — B99-101
+
+`HEAD == origin` foi confirmado em `ad9f026`; a reaudição read-only repetiu o
+foco `65/65`, confirmou a ausência do truncamento por `&`/`#`, hotspots `0`,
+scanner em `799` linhas e `git diff --check` limpo. O worktree rastreado está
+limpo. `pnpm verify:secrets` continua fail-closed apenas nos quatro assignments
+redigidos preexistentes de `infra/production/.env.local`, sem finding novo.
+O programa permanece `IN_PROGRESS / PILOT_BLOCKED`; os gates externos, humanos,
+live, a crítica independente e a reauditoria independente continuam abertos.
+
 ## Atualização de execução — 2026-08-21T08:34:48-03:00 — B99-101 placeholder suffix
 
 - **auditoria/RED:** `isSyntheticPlaceholder` truncava o RHS em `&`/`#`; dois

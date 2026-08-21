@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluiu Round 71 de B99-101 sob RED→GREEN→REFACTOR; o RED reproduziu dois findings ausentes para `<synthetic>#<sufixo>` e `synthetic-token&<sufixo>`, e o GREEN passou a exigir correspondência exata, mantendo apenas os sufixos sintéticos históricos explicitamente allowlisted. Foco `65/65`, cobertura `205/1161/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, hotspots `0` com scanner em `799` linhas, lint, typecheck, formato e diff-check passaram. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; código/teste `2c0a35f` foi publicado; evidência documental desta rodada ainda será reconciliada. `.gauntlet/` continua local e não rastreado
-- next_action: reconciliar e publicar a evidência desta rodada, confirmar paridade pós-push e executar nova auditoria read-only; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: concluiu Round 71 de B99-101 sob RED→GREEN→REFACTOR e reaudição read-only pós-publicação; o RED reproduziu dois findings ausentes para `<synthetic>#<sufixo>` e `synthetic-token&<sufixo>`, e o GREEN passou a exigir correspondência exata, mantendo apenas os sufixos sintéticos históricos explicitamente allowlisted. Foco `65/65`, cobertura `205/1161/21` em `95,03/90,95/95,31/95,73`, build `12/12`, CI contract, hotspots `0` com scanner em `799` linhas, lint, typecheck, formato e diff-check passaram. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; código/teste `2c0a35f`, evidência e documentação inicial `ad9f026` foram publicados; `HEAD == origin` foi confirmado e o worktree rastreado está limpo. `.gauntlet/` continua local e não rastreado
+- next_action: obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, role sem `SUPERUSER/BYPASSRLS`, concurrency/TTL/RLS live, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
 
 ## BLOQUEIOS
 
@@ -32,7 +32,28 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T08:34:48-03:00
+- last_update: 2026-08-21T08:45:45-03:00
+
+## 2026-08-21T08:45:45-03:00 — POST-PUBLISH-DUAL99-B99-101-PLACEHOLDER-SUFFIX
+
+### AÇÃO / RESULTADO
+
+- `HEAD == origin` foi confirmado em `ad9f026`, com código/teste `2c0a35f` e
+  documentação inicial publicados no branch remoto;
+- a reaudição read-only confirmou a comparação completa do placeholder, a
+  ausência do truncamento por `&`/`#`, foco `65/65`, hotspots `0`, scanner em
+  `799` linhas, `git diff --check` limpo e worktree rastreado limpo;
+- `pnpm verify:secrets` permanece fail-closed somente nos quatro assignments
+  redigidos preexistentes de `infra/production/.env.local`; nenhum finding novo
+  foi observado.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+Esta evidência não substitui a crítica independente nem os gates externos.
+Secret manager/rotação, provider/CI, RC/runtime, WebKit aprovado,
+PostgreSQL/RLS live, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria independente permanecem abertos. Obter autoridade/ambiente para
+esses gates sem promover score, release, piloto ou decisão clínica.
 
 ## 2026-08-21T08:34:48-03:00 — DUAL99-B99-101-PLACEHOLDER-SUFFIX
 

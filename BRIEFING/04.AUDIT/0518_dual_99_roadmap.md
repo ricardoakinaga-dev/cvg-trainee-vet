@@ -278,14 +278,24 @@ Código/teste `48e1014` e documentação inicial `abb1657` foram publicados.
 Windows/non-proc, condições live, gates externos,
 crítica independente e demais bloqueios do programa permanecem abertos.
 
+## 79. Auditoria read-only pós-publicação do boundary de placeholder B99-101 — 2026-08-21T08:45:45-03:00
+
+Após a publicação documental inicial `ad9f026`, `HEAD == origin` foi confirmado.
+A reaudição repetiu o foco `65/65`, confirmou que não existe truncamento por
+`&`/`#`, hotspots `0`, scanner em `799` linhas, `git diff --check` limpo e
+worktree rastreado limpo. `verify:secrets` permanece fail-closed somente nos
+quatro assignments redigidos preexistentes. O programa continua
+`IN_PROGRESS / PILOT_BLOCKED`, sem promoção de score, release, piloto ou decisão
+clínica.
+
 ## 78. Checkpoint de publicação do boundary de placeholder B99-101 — 2026-08-21T08:34:48-03:00
 
-O código/teste `2c0a35f` foi publicado no branch
-`origin/agent/publish-production-hardening`. A evidência
-`docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md` e a
-reconciliação documental desta rodada seguem para publicação no mesmo fluxo.
-O programa permanece `IN_PROGRESS / PILOT_BLOCKED`; não houve promoção de
-score, release, piloto ou decisão clínica.
+O código/teste `2c0a35f` e a reconciliação documental inicial `ad9f026` foram
+publicados no branch `origin/agent/publish-production-hardening`; a paridade
+pós-push foi confirmada. A evidência está em
+`docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md`. O
+programa permanece `IN_PROGRESS / PILOT_BLOCKED`; não houve promoção de score,
+release, piloto ou decisão clínica.
 
 ## 77. Checkpoint do boundary de placeholder B99-101 — 2026-08-21T08:34:48-03:00
 
