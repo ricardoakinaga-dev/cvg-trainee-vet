@@ -175,7 +175,12 @@ export async function scanWorkspaceFile(
   path,
   remainingBytes,
   maxScanBytes,
-  { isIgnoredBinaryAssetPath, scanPathBuffer, unscannedFinding },
+  {
+    isIgnoredBinaryAssetPath,
+    readScanBuffer: readScanBufferImpl = readScanBuffer,
+    scanPathBuffer,
+    unscannedFinding,
+  },
 ) {
   let reservedBytes = 0;
   try {
@@ -204,10 +209,18 @@ export async function scanWorkspaceFile(
       throw workspaceByteBudgetExceededError();
     }
     reservedBytes = metadata.size;
-    const buffer = await readScanBuffer(
+    const buffer = await readScanBufferImpl(
       file,
       Math.min(maxScanBytes, remainingBytes),
     );
+    if (buffer.length > maxScanBytes) {
+      return {
+        findings: isIgnoredBinaryAssetPath(path)
+          ? []
+          : [unscannedFinding(path, "oversize-file", `${buffer.length} bytes`)],
+        bytesConsumed: 0,
+      };
+    }
     if (buffer.length > remainingBytes) {
       throw workspaceByteBudgetExceededError();
     }

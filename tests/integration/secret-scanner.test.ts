@@ -496,6 +496,104 @@ describe("secret scanner", () => {
     );
   });
 
+  it("fails closed when a regular workspace file grows after lstat", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cvg-secret-scanner-growth-boundary-"),
+    );
+    temporaryDirectories.push(directory);
+    const file = join(directory, "growing.txt");
+    const maxScanBytes = 128;
+    const marker = "SYNTHETIC_GROWTH_BOUNDARY_MARKER";
+    const grownBuffer = Buffer.concat([
+      Buffer.from(marker),
+      Buffer.alloc(maxScanBytes + 1 - marker.length, "A"),
+    ]);
+    await writeFile(file, "A");
+
+    const result = await scanWorkspaceFile(
+      file,
+      "growing.txt",
+      maxScanBytes,
+      maxScanBytes,
+      {
+        isIgnoredBinaryAssetPath: () => false,
+        readScanBuffer: async (candidate, limit) => {
+          await writeFile(candidate, grownBuffer);
+          return readScanBuffer(candidate, limit);
+        },
+        scanPathBuffer: () => {
+          throw new Error("oversized buffer must not reach the scanner");
+        },
+        unscannedFinding: (path, rule, evidence) => ({
+          path,
+          rule,
+          evidence,
+        }),
+      },
+    );
+
+    expect(result).toEqual({
+      findings: [
+        {
+          path: "growing.txt",
+          rule: "oversize-file",
+          evidence: `${grownBuffer.length} bytes`,
+        },
+      ],
+      bytesConsumed: 0,
+    });
+    expect(JSON.stringify(result)).not.toContain(marker);
+
+    expect((await readScanBuffer(file, maxScanBytes)).length).toBe(
+      maxScanBytes + 1,
+    );
+
+    await writeFile(file, "A");
+    const ignoredResult = await scanWorkspaceFile(
+      file,
+      "growing.txt",
+      maxScanBytes,
+      maxScanBytes,
+      {
+        isIgnoredBinaryAssetPath: () => true,
+        readScanBuffer: async (candidate, limit) => {
+          await writeFile(candidate, grownBuffer);
+          return readScanBuffer(candidate, limit);
+        },
+        scanPathBuffer: () => {
+          throw new Error("oversized buffer must not reach the scanner");
+        },
+        unscannedFinding: (path, rule, evidence) => ({
+          path,
+          rule,
+          evidence,
+        }),
+      },
+    );
+
+    expect(ignoredResult).toEqual({ findings: [], bytesConsumed: 0 });
+    expect(JSON.stringify(ignoredResult)).not.toContain(marker);
+
+    await writeFile(file, "A");
+    await expect(
+      scanWorkspaceFile(file, "growing.txt", maxScanBytes - 1, maxScanBytes, {
+        isIgnoredBinaryAssetPath: () => false,
+        readScanBuffer: async (candidate, limit) => {
+          await writeFile(candidate, grownBuffer);
+          return readScanBuffer(candidate, limit);
+        },
+        scanPathBuffer: () => {
+          throw new Error("budget-exceeding buffer must not reach the scanner");
+        },
+        unscannedFinding: (path, rule, evidence) => ({
+          path,
+          rule,
+          evidence,
+        }),
+      }),
+    ).rejects.toMatchObject({ code: "ERR_WORKSPACE_BYTE_BUDGET" });
+  });
+
   it("does not follow symlinks when opening workspace files", async () => {
     const directory = await mkdtemp(
       join(tmpdir(), "cvg-secret-scanner-open-symlink-"),
@@ -2402,6 +2500,34 @@ describe("secret scanner", () => {
         rule: "git-object-unreadable",
         evidence: "duplicate git object response",
       }),
+    ]);
+  });
+
+  it("rejects an incomplete cat-file response set after a clean stream", () => {
+    const firstId = "a".repeat(40);
+    const secondId = "b".repeat(40);
+    const parser = createGitBatchStreamParser({
+      objects: new Map([
+        [firstId, "first.txt"],
+        [secondId, "second.txt"],
+      ]),
+      maxScanBytes: 128,
+      maxHeaderBytes: 128,
+      isIgnoredBinaryAssetPath: () => false,
+      unscannedFinding: (path, rule, evidence) => ({ path, rule, evidence }),
+      readBatchOutput: () => [],
+      source: "history",
+    });
+
+    parser.push(Buffer.from(`${firstId} blob 1\nA\n`));
+    parser.finish();
+
+    expect(parser.findings).toEqual([
+      {
+        path: "history:<git>",
+        rule: "git-object-unreadable",
+        evidence: "incomplete git object response",
+      },
     ]);
   });
 

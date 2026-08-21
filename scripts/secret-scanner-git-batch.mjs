@@ -655,6 +655,17 @@ export function createGitBatchStreamParser({
           ),
         );
         state.aborted = true;
+        return;
+      }
+      if (state.seenObjectIds.size !== objects.size) {
+        findings.push(
+          unscannedFinding(
+            `${source}:<git>`,
+            "git-object-unreadable",
+            "incomplete git object response",
+          ),
+        );
+        state.aborted = true;
       }
     },
   };
