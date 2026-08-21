@@ -6,10 +6,10 @@
 - disposição: `IN_PROGRESS` / `PILOT_BLOCKED`
 - commit publicado: `48e1014` em
   `origin/agent/publish-production-hardening`
-- evidência documental publicada: `DOCUMENTATION_PENDING` em
+- evidência documental publicada: `abb1657` em
   `origin/agent/publish-production-hardening`
-- paridade documental final: pendente até a reconciliação desta rodada; nenhum
-  código ou estado externo foi alterado depois desse corte
+- paridade documental final: confirmada no pós-push em `abb1657`; nenhum código
+  ou estado externo foi alterado depois desse corte
 - pacote documental de auditoria anterior: `2af57e6`; a auditoria registrada
   nele observou `HEAD == origin` em `6ddc37b`
 - fonte de avaliação: `docs/133_dual_98_post_hardening_assessment_2026-08-16.md`
@@ -38,8 +38,9 @@
   cobertura `205/1159/21` em `95,03/90,95/95,31/95,73`, build `12/12` com URL
   local efêmera, CI contract, arquitetura `2/2`, hotspots `0` com maior função
   de `100`, lint, typecheck, formato, diff-check e audit de dependências
-  passaram. O código/teste `48e1014` foi publicado; a documentação inicial
-  desta rodada está em `DOCUMENTATION_PENDING`.
+  passaram. O código/teste `48e1014` e a documentação inicial `abb1657` foram
+  publicados; a reconciliação final desta rodada não altera código ou estado
+  externo.
 
 ## Round 68 — limite total de bytes do worktree
 
