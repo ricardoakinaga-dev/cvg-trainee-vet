@@ -29,6 +29,7 @@ import {
   readBatchOutput,
 } from "../../scripts/secret-scanner.mjs";
 import {
+  openWorkspaceFile,
   readScanBuffer,
   readWorkspaceEntries,
   scanWorkspaceFile,
@@ -450,6 +451,9 @@ describe("secret scanner", () => {
     temporaryDirectories.push(directory);
     const fifo = join(directory, "synthetic.pipe");
     await execFileAsync("mkfifo", [fifo]);
+
+    await expect(readScanBuffer(fifo, 128)).rejects.toThrow(/regular file/iu);
+    await expect(openWorkspaceFile(fifo)).rejects.toThrow(/regular file/iu);
 
     const direct = await scanWorkspaceFile(fifo, "synthetic.pipe", 128, 128, {
       isIgnoredBinaryAssetPath: () => false,

@@ -5,13 +5,17 @@ import { resolve } from "node:path";
 
 const noFollowReadFlags =
   Number.isSafeInteger(fsConstants.O_NOFOLLOW) && fsConstants.O_NOFOLLOW > 0
-    ? fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW
+    ? fsConstants.O_RDONLY |
+      fsConstants.O_NOFOLLOW |
+      (Number.isSafeInteger(fsConstants.O_NONBLOCK)
+        ? fsConstants.O_NONBLOCK
+        : 0)
     : undefined;
 const noFollowDirectoryFlags =
   noFollowReadFlags !== undefined &&
   Number.isSafeInteger(fsConstants.O_DIRECTORY) &&
   fsConstants.O_DIRECTORY > 0
-    ? noFollowReadFlags | fsConstants.O_DIRECTORY
+    ? fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW | fsConstants.O_DIRECTORY
     : undefined;
 const procFdChildPathPattern = /^\/proc\/self\/fd\/\d+(?:\/|$)/u;
 const MAX_WORKSPACE_ENTRIES = 1024;
@@ -95,12 +99,18 @@ async function openPathDirectory(directory) {
   }
 }
 
+async function assertRegularWorkspaceFile(handle) {
+  const metadata = await handle.stat();
+  if (!metadata.isFile()) throw new Error("workspace regular file required");
+}
+
 export async function readScanBuffer(file, maxBytes) {
   if (noFollowReadFlags === undefined) {
     throw new Error("workspace no-follow open is unavailable");
   }
   const handle = await open(file, noFollowReadFlags);
   try {
+    await assertRegularWorkspaceFile(handle);
     const buffer = Buffer.allocUnsafe(maxBytes + 1);
     let offset = 0;
     while (offset < buffer.length) {
@@ -124,7 +134,13 @@ export async function openWorkspaceFile(file) {
     throw new Error("workspace no-follow open is unavailable");
   }
   const handle = await open(file, noFollowReadFlags);
-  return { handle, path: `/proc/self/fd/${handle.fd}` };
+  try {
+    await assertRegularWorkspaceFile(handle);
+    return { handle, path: `/proc/self/fd/${handle.fd}` };
+  } catch (error) {
+    await handle.close().catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function openWorkspaceDirectory(directory) {
