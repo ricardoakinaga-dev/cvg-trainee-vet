@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: recuperou e validou a Rodada 93 antes da publicação: o harness exige URL administrativa explícita, cria banco descartável e roles/URLs distintas de admin, API e worker, aplica grants verificáveis, executa as suites sem skip silencioso e sempre limpa banco/roles. PostgreSQL 16 passou `61/320/0`, migrations `35/35`, contrato focal `6/6`, cobertura `206/1224/27` em `94,92/90,77/95,26/95,64`, build `12/12` e gates locais passaram. A fixture literal apontada pelo scanner foi saneada; restam somente quatro valores locais ignorados e o finding genérico conhecido do histórico. Evidência em `docs/148`; nenhum commit/push ocorreu
-- next_action: publicar o checkpoint local reconciliado sem `.gauntlet/` e sem promover release; depois provar duas imagens históricas e a matriz comportamental N/N-1 com SIGTERM/Docker real, evoluir rollback para drain do backlog por N saudável e implementar scheduler/estado/lease e alias Qdrant. Separar roles produtivas de API, worker e publisher, sanear secrets/histórico somente com autoridade e manter RC, clínica, `0/145`, gates externos, aprovação humana e reauditoria abertos
+- last_completed_action: publicou no `origin/agent/publish-production-hardening` o checkpoint local reconciliado das Rodadas 90–93 no commit `06df36d3987386435c761abb43369575a8063c15` (`feat(worker): harden convergence and release cutover`). O push confirmou `HEAD == origin`; `78` arquivos rastreados consolidam idempotência da IA, convergência Qdrant N, drain/cutover e harness live isolado. `.gauntlet/` e `.env.local` ficaram fora do índice; nenhum release, piloto, score, decisão clínica ou runtime externo foi promovido
+- next_action: provar duas imagens históricas e a matriz comportamental N/N-1 com SIGTERM/Docker real, evoluir rollback para drain do backlog por N saudável e implementar scheduler/estado/lease e alias Qdrant. Separar roles produtivas de API, worker e publisher, sanear secrets/histórico somente com autoridade e manter RC, clínica, `0/145`, gates externos, aprovação humana e reauditoria abertos
 
 ## BLOQUEIOS
 
@@ -32,7 +32,30 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-22T03:23:31-03:00
+- last_update: 2026-08-22T03:30:35-03:00
+
+## 2026-08-22T03:30:35-03:00 — DUAL99-ROUNDS-90-93-PUBLISH
+
+### AÇÃO / RESULTADO
+
+- staging explícito incluiu `78` arquivos intencionais e excluiu `.gauntlet/`,
+  `infra/production/.env.local` e demais arquivos locais sensíveis;
+- revisão geral deu `PASS` e segurança deu `PASS_WITH_LIMITATIONS` para o push
+  da branch, sem CRITICAL/HIGH novo e sem autorizar release;
+- o commit `06df36d3987386435c761abb43369575a8063c15`
+  (`feat(worker): harden convergence and release cutover`) foi enviado para
+  `origin/agent/publish-production-hardening`;
+- a verificação pós-push confirmou `HEAD == origin == 06df36d`; `.gauntlet/`
+  permanece local e não rastreado.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O programa segue `IN_PROGRESS / PILOT_BLOCKED`. Os cinco findings conhecidos
+do scanner, roles produtivas, matriz N/N-1, SIGTERM/Docker, writers externos,
+drain do backlog, publisher, scheduler/lease/alias, restore/Qdrant opcional,
+RC, clínica, `0/145`, gates externos, aprovação humana e reauditoria
+permanecem abertos. A reconciliação documental acompanha esta publicação;
+não houve release, piloto, score ou mutação de runtime externo.
 
 ## 2026-08-22T03:23:31-03:00 — DUAL99-U98-117-LIVE-HARNESS
 

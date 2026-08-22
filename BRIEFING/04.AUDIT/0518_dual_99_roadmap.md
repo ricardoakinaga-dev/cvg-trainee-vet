@@ -5,6 +5,15 @@
 **Predecessor preservado:** `0516_dual_98_roadmap.md`
 **Disposição:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Publicação das Rodadas 90–93 — 2026-08-22T03:30:35-03:00
+
+O checkpoint local foi publicado em `06df36d3987386435c761abb43369575a8063c15`
+na branch `agent/publish-production-hardening`; `HEAD == origin` foi confirmado.
+`.gauntlet/` permaneceu local. O roadmap não promove release: a próxima prova
+é a matriz N/N-1 com duas imagens e SIGTERM/Docker real, seguida pelos gaps
+de backlog, roles, publisher, scheduler/lease/alias, secrets, RC, clínica,
+`0/145`, gates externos e reauditoria.
+
 ## Checkpoint local U98-117 — isolamento do harness live — 2026-08-22T03:23:31-03:00
 
 A revisão pré-commit encontrou a Rodada 93 implementada à frente do estado e

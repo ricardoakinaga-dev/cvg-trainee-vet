@@ -40,6 +40,61 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-22T03:30:35-03:00 — DUAL99-ROUNDS-90-93-PUBLISH
+
+### TIMESTAMP
+
+2026-08-22 03:30:35 -03:00
+
+### ENGINE
+
+SYSTEM + RUNTIME CONTROLLER + REVIEW + SECURITY REVIEW
+
+### PHASE
+
+Dual 99 / F99-2 — release, worker e dados derivados
+
+### SPRINT
+
+F99-2 — compatibilidade, cutover e rollback
+
+### TASK
+
+Publicar o checkpoint local reconciliado das Rodadas 90–93.
+
+### ACTION
+
+O índice foi montado explicitamente com `78` arquivos, sem `.gauntlet/` e sem
+arquivos `.env.*` locais. `git diff --cached --check` passou. A revisão geral
+deu `PASS`; a revisão de segurança deu `PASS_WITH_LIMITATIONS` para a branch,
+confirmando ausência de segredo/PII e CRITICAL/HIGH novo no staging. O
+checkpoint foi consolidado em commit convencional e enviado ao origin.
+
+### RESULT
+
+Commit `06df36d3987386435c761abb43369575a8063c15`
+(`feat(worker): harden convergence and release cutover`) publicado em
+`origin/agent/publish-production-hardening`; a checagem pós-push confirmou
+`HEAD == origin`. `.gauntlet/` permaneceu local/não rastreado. Os gates e a
+evidência da rodada estão em `docs/145`–`docs/148`.
+
+### DECISIONS
+
+O push registra somente código, testes, migrations e documentação da branch.
+Não autoriza release, piloto, score, clínica ou runtime externo. Os findings
+locais/histórico e gaps produtivos permanecem abertos e explicitamente
+`PILOT_BLOCKED`.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Executar duas imagens históricas e a matriz N/N-1 com SIGTERM/Docker real;
+depois fechar drain de backlog, roles produtivas, publisher e coordenação/
+alias Qdrant sem relaxar os gates humanos e externos.
+
 ## 2026-08-22T03:23:31-03:00 — DUAL99-U98-117-LIVE-HARNESS
 
 ### TIMESTAMP

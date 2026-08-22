@@ -101,3 +101,13 @@ duas imagens/digests históricos e SIGTERM/Docker real, seguida por drain seguro
 do backlog, roles produtivas separadas, publisher, scheduler/lease e alias
 Qdrant. Nenhum commit, push, release, score, piloto, decisão clínica ou mutação
 externa foi realizado neste checkpoint.
+
+## Publicação
+
+As Rodadas 90–93, incluindo este evidence pack, foram consolidadas no commit
+`06df36d3987386435c761abb43369575a8063c15`
+(`feat(worker): harden convergence and release cutover`) e enviadas para
+`origin/agent/publish-production-hardening`. A verificação pós-push confirmou
+`HEAD == origin`; `.gauntlet/` e os arquivos `.env.*` locais não foram
+incluídos. Esta publicação não altera o veredito
+`LOCAL_PASS_WITH_LIMITATIONS / IN_PROGRESS / PILOT_BLOCKED`.

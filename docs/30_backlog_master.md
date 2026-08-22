@@ -2,6 +2,16 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Publicação Dual99 — 2026-08-22T03:30:35-03:00 — Rodadas 90–93:**
+o checkpoint de `78` arquivos foi consolidado em `06df36d3987386435c761abb43369575a8063c15`
+(`feat(worker): harden convergence and release cutover`) e enviado para
+`origin/agent/publish-production-hardening`; o pós-push confirmou
+`HEAD == origin`. Revisão geral `PASS` e segurança `PASS_WITH_LIMITATIONS`
+autorizaram somente a branch. `.gauntlet/` e `.env.local` ficaram fora do
+índice. O programa permanece `IN_PROGRESS / PILOT_BLOCKED`; matriz N/N-1,
+roles produtivas, backlog, publisher, Qdrant coordenado, secrets, RC, clínica,
+`0/145`, gates externos e reauditoria continuam abertos.
+
 **Auditoria Dual99 — 2026-08-22T03:23:31-03:00 — U98-117 isolamento do
 harness live:** a revisão pré-commit encontrou a Rodada 93 à frente do estado
 persistido e bloqueou a publicação integral. A prova foi completada em

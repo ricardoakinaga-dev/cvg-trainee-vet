@@ -5,6 +5,16 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Publicação — 2026-08-22T03:30:35-03:00 — Rodadas 90–93
+
+Commit `06df36d3987386435c761abb43369575a8063c15`
+(`feat(worker): harden convergence and release cutover`) publicado em
+`origin/agent/publish-production-hardening`, com `HEAD == origin`. O staging de
+`78` arquivos excluiu `.gauntlet/` e `.env.local`; revisão geral `PASS` e
+segurança `PASS_WITH_LIMITATIONS` autorizam somente a branch. Estado segue
+`IN_PROGRESS / PILOT_BLOCKED`; nenhuma promoção de release, piloto, score,
+clínica ou runtime externo ocorreu.
+
 ## Atualização de execução — 2026-08-22T03:23:31-03:00 — U98-117 harness live
 
 A revisão pré-commit rejeitou o snapshot porque a Rodada 93 estava no
