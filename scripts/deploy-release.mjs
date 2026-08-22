@@ -7,10 +7,13 @@ import {
 } from "./release-manifest.mjs";
 import {
   RELEASE_HEALTH_SERVICES,
+  assertMutationGateClosed,
   assertReleaseServicesHealthy,
+  assertReleaseServicesStoppedCleanly,
   assertCanaryGate,
   buildCanaryProbeArgs,
   buildRuntimeContainerNames,
+  buildDeployRolloutPlan,
   createCanaryGateState,
   parseComposePsHealthOutput,
   pullStepResult,
@@ -38,15 +41,11 @@ const composeEnvironment = {
   CVG_APP_IMAGE: `${manifest.image}@${manifest.imageDigest}`,
   CVG_SOURCE_SHA: manifest.sourceSha,
 };
+const rolloutPlan = buildDeployRolloutPlan(manifest);
 
 const steps = [
   "pull immutable application image",
-  "run expand/contract migration",
-  "deploy api-a and worker-a canary",
-  "wait for api-a and worker-a health gate",
-  "deploy api-b and worker-b only after the canary gate",
-  "wait for api-a, api-b, worker-a and worker-b health gate",
-  "promote edge only after all four process gates",
+  ...rolloutPlan.map(({ id }) => id),
   "record release id and digest",
 ];
 if (!execute) {
@@ -62,6 +61,7 @@ if (!execute) {
       versionedRollback: manifest.sourceSha !== manifest.rollbackSourceSha,
       healthTarget,
       healthServices: RELEASE_HEALTH_SERVICES,
+      mutationGateRequired: true,
       steps,
       executeWith: "CVG_RELEASE_EXECUTE=true",
     }),
@@ -75,30 +75,79 @@ if (
 ) {
   assertDistinctRollbackProvenance(manifest);
 }
+assertMutationGateClosed(process.env);
 
 if (pullMode === "required") {
   await runCompose(["pull", "api-a", "api-b", "worker-a", "worker-b"]);
 } else {
   console.log(JSON.stringify(pullStepResult(pullMode)));
 }
-await runCompose(["run", "--rm", "migrate"]);
-await runCompose(["up", "-d", "--no-build", "api-a", "worker-a"]);
-await waitForServicesHealthy(["api-a", "worker-a"], "canary");
-const canaryProvenance = await verifyRuntimeProvenance(
-  manifest.sourceSha,
-  manifest.imageDigest,
-  ["api-a", "worker-a"],
-);
-const canary = await waitForCanary(manifest.canaryService, manifest.healthPath);
-await runCompose(["up", "-d", "--no-build", "api-b", "worker-b"]);
-await waitForServicesHealthy(RELEASE_HEALTH_SERVICES, "promotion");
-const promotionProvenance = await verifyRuntimeProvenance(
-  manifest.sourceSha,
-  manifest.imageDigest,
-  RELEASE_HEALTH_SERVICES,
-);
-await runCompose(["up", "-d", "--no-build", "edge"]);
-await waitForHealth(healthTarget);
+let canary = null;
+let canaryProvenance = null;
+let promotionProvenance = null;
+for (const step of rolloutPlan) {
+  if (step.args !== undefined) await runCompose(step.args);
+  if (step.id === "prove-n-minus-1-baseline") {
+    await waitForServicesHealthy(step.services, "n-minus-1-baseline");
+    await verifyRuntimeProvenance(
+      manifest.rollbackSourceSha,
+      manifest.rollbackImageDigest,
+      step.services,
+      manifest.rollbackQdrantIdentity,
+    );
+  }
+  if (step.id === "prove-n-minus-1-workers-drained") {
+    await verifyServicesStoppedCleanly(step.services, "n-minus-1-drain");
+  }
+  if (step.id === "prove-n-workers") {
+    await waitForServicesHealthy(step.services, "workers-n");
+    await verifyRuntimeProvenance(
+      manifest.sourceSha,
+      manifest.imageDigest,
+      step.services,
+      manifest.qdrantIdentity,
+    );
+  }
+  if (step.id === "prove-api-peer-n-minus-1") {
+    await waitForServicesHealthy(step.services, "api-peer-n-minus-1");
+    await verifyRuntimeProvenance(
+      manifest.rollbackSourceSha,
+      manifest.rollbackImageDigest,
+      step.services,
+      manifest.rollbackQdrantIdentity,
+    );
+  }
+  if (step.id === "prove-api-canary-and-n-workers") {
+    await waitForServicesHealthy(step.services, "canary");
+    canaryProvenance = await verifyRuntimeProvenance(
+      manifest.sourceSha,
+      manifest.imageDigest,
+      step.services,
+      manifest.qdrantIdentity,
+    );
+  }
+  if (step.id === "probe-api-canary") {
+    canary = await waitForCanary(manifest.canaryService, manifest.healthPath);
+  }
+  if (step.id === "prove-promotion") {
+    await waitForServicesHealthy(step.services, "promotion");
+    promotionProvenance = await verifyRuntimeProvenance(
+      manifest.sourceSha,
+      manifest.imageDigest,
+      step.services,
+      manifest.qdrantIdentity,
+    );
+  }
+  if (step.id === "promote-edge") await waitForHealth(healthTarget);
+}
+
+if (
+  canary === null ||
+  canaryProvenance === null ||
+  promotionProvenance === null
+) {
+  throw new Error("release rollout plan did not complete every proof gate");
+}
 
 console.log(
   JSON.stringify({
@@ -188,6 +237,17 @@ async function waitForServicesHealthy(services, phase) {
   throw new Error(`${phase} health gate timed out (${lastError})`);
 }
 
+async function verifyServicesStoppedCleanly(services, phase) {
+  const result = await runCompose(
+    ["ps", "--all", "--format", "json", ...services],
+    { capture: true },
+  );
+  return assertReleaseServicesStoppedCleanly(
+    parseComposePsHealthOutput(result.stdout),
+    { phase, services },
+  );
+}
+
 async function waitForCanary(service, healthPath) {
   const deadline = Date.now() + manifest.canarySeconds * 1_000;
   let state = createCanaryGateState({
@@ -218,12 +278,18 @@ async function waitForCanary(service, healthPath) {
   }
 }
 
-async function verifyRuntimeProvenance(sourceSha, digest, services) {
+async function verifyRuntimeProvenance(
+  sourceSha,
+  digest,
+  services,
+  qdrantIdentity,
+) {
   const result = await runRuntimeProvenanceVerification({
     ...composeEnvironment,
     CVG_VERIFY_RUNTIME_PROVENANCE: "true",
     CVG_RUNTIME_EXPECTED_SOURCE_SHA: sourceSha,
     CVG_RUNTIME_EXPECTED_DIGEST: digest,
+    CVG_RUNTIME_EXPECTED_QDRANT_IDENTITY: qdrantIdentity,
     CVG_RUNTIME_CONTAINERS: buildRuntimeContainerNames(project, services).join(
       ",",
     ),

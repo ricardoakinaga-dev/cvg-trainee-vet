@@ -2,6 +2,73 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+**Auditoria Dual99 — 2026-08-22T03:23:31-03:00 — U98-117 isolamento do
+harness live:** a revisão pré-commit encontrou a Rodada 93 à frente do estado
+persistido e bloqueou a publicação integral. A prova foi completada em
+PostgreSQL 16 descartável com banco por execução, roles/URLs distintas de
+admin, API e worker, grants e identidades verificáveis e cleanup fail-closed.
+Contrato focal `6/6`, live `61/320/0`, migrations `35/35`, cobertura
+`206/1224/27` em `94,92/90,77/95,26/95,64`, build `12/12` e gates locais
+passaram. A fixture literal detectada pelo scanner foi saneada; container,
+banco, roles e shim efêmero foram removidos. Evidência: `docs/148`.
+
+**Disposição:** harness local `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. Restore/Qdrant opcionais, roles produtivas,
+duas imagens/SIGTERM, writers externos, drain do backlog, publisher,
+scheduler/lease/alias, secrets/histórico, RC, clínica, `0/145`, gates externos
+e reauditoria seguem abertos. `.gauntlet/` fica fora do staging; nenhum
+commit/push ocorreu neste checkpoint.
+
+**Auditoria Dual99 — 2026-08-22T01:50:11-03:00 — U98-117 cutover de
+workers:** RED reproduziu manifesto/gate incompletos, claim depois do drain,
+cleanup prematuro, rollout misto, rollback sem quiescência, force-kill,
+backlog e rehearsal enganoso. GREEN implementou drain/readiness fail-closed,
+espera do lote ativo, parada do edge, estágios imutáveis, `exited/0`, outbox
+zero, schema expand preservado e proveniência Qdrant `disabled`. Release/
+proveniência `31/31`, worker `75/75`, cobertura `205/1216/27` em
+`94,94/90,80/95,26/95,66`, build `12/12`, dry-runs e gates locais passaram.
+Evidência: `docs/147`.
+
+**Disposição:** recorte mecânico `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. Dois pareceres independentes não encontraram
+CRITICAL/HIGH local. Permanecem matriz com duas imagens, tráfego/SIGTERM live,
+writers externos, drain de backlog, alias Qdrant, harness descartável com roles
+separadas, fixtures/guards, publisher, secrets/histórico, RC, clínica, `0/145`
+e gates externos. Nenhum commit/push ocorreu.
+
+**Auditoria Dual99 — 2026-08-22T01:06:20-03:00 — U98-106/B99-205
+convergência Qdrant:** RED reproduziu no-op desligado, writes parciais, corrida
+com PostgreSQL, censo filtrado, batch 2.049 e índices duplicados do provider.
+GREEN introduziu postconditions em duas fases, censo integral fail-closed,
+recheck bounded, changed-only embeddings `2048/300000 bytes` e writes de `100`.
+Foco `22/22`, worker `73/73`, live sintético `4/4 + 1/1`, cobertura
+`205/1204/27` em `95,00/90,84/95,36/95,70`, build `12/12`, migrações
+`34/34` e gates locais passaram. Evidência: `docs/146`.
+
+**Disposição:** algoritmo N `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. Parecer independente `PASS` local. Scheduler/
+estado durável, lease multi-réplica, rollout N/N-1/alias, provider real,
+harness live isolado, roles/publisher, secrets/histórico, RC, clínica,
+`0/145` e gates externos permanecem abertos. Nenhum commit/push ocorreu.
+
+**Auditoria Dual99 — 2026-08-22T00:10:53-03:00 — U98-106/B99-201/B99-205
+idempotência de sugestão de IA:** RED reproduziu liberação stale de lease,
+replay após cleanup e estado temporal inválido. GREEN introduziu tombstone
+durável independente do outbox, lease token/fencing, relógio PostgreSQL e
+save+completion atômico. Foco `49/49`, PostgreSQL 16 sintético com role
+restrita `7/7`, worker `64/64`, cobertura `205/1191/25` em
+`94,96/90,81/95,32/95,67`, build `12/12`, migrações `34/34` e gates locais
+verdes. O contêiner descartável foi removido. Evidência:
+`docs/145_dual_99_u98_106_ai_suggestion_idempotency_evidence_2026-08-22.md`.
+
+**Disposição:** consumidor N `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. Crítica independente: `PASS` local N e
+`NOT RELEASE-PASS`. Workers N-1 não respeitam tombstones; roles API/worker
+compartilhadas não fornecem isolamento forte; provider segue at-least-once;
+publisher produtivo, Qdrant entre writes, rehearsal/retention, secrets e
+histórico acima do budget, RC, clínica, `0/145` e gates externos permanecem
+abertos. Nenhum commit/push ocorreu porque `verify:secrets` falhou fechado.
+
 **Auditoria Dual99 — 2026-08-21T12:19:51-03:00 — U98-106 worker crash cleanup:**
 uma inspeção independente read-only reproduziu que `runWorkerLoop` fechava
 `health`, mas não `integrations`, quando initialize/processOnce lançava. RED

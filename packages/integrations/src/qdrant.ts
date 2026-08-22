@@ -101,7 +101,13 @@ async function ensureCollection(
   const collection = await client.getCollection(config.collection);
   validateCollectionVectorConfig(collection, config.embeddingDimension);
   const indexedFields = new Set(Object.keys(collection.payload_schema));
-  const fields = ["index_version", "visibility", "status", "scope_id"];
+  const fields = [
+    "index_version",
+    "embedding_model",
+    "visibility",
+    "status",
+    "scope_id",
+  ];
   await Promise.all(
     fields
       .filter((field) => !indexedFields.has(field))
@@ -113,6 +119,38 @@ async function ensureCollection(
         }),
       ),
   );
+  await validateCollectionIdentity(config, client);
+}
+
+async function validateCollectionIdentity(
+  config: QdrantIntegrationConfig,
+  client: QdrantClientPort,
+): Promise<void> {
+  let offset: QdrantScrollOffset | undefined;
+  while (true) {
+    const result = await client.scroll(config.collection, {
+      limit: 100,
+      ...(offset === undefined ? {} : { offset }),
+      with_payload: true,
+      with_vector: false,
+    });
+    const incompatible = result.points.some((point) => {
+      const payload = point.payload;
+      return (
+        !isInternalPayload(payload) ||
+        payload.index_version !== config.indexVersion ||
+        payload.embedding_model !== config.embeddingModel
+      );
+    });
+    if (incompatible) {
+      throw new RangeError(
+        "Qdrant collection identity is incompatible with runtime",
+      );
+    }
+    const nextOffset = result.next_page_offset;
+    if (nextOffset === null || nextOffset === undefined) return;
+    offset = nextOffset;
+  }
 }
 
 async function healthcheck(
@@ -161,6 +199,7 @@ function searchFilter(config: QdrantIntegrationConfig, scopeId: string) {
   return {
     must: [
       { key: "index_version", match: { value: config.indexVersion } },
+      { key: "embedding_model", match: { value: config.embeddingModel } },
       { key: "visibility", match: { value: "INTERNAL" } },
       {
         key: "status",
@@ -178,6 +217,7 @@ function searchPayloadFields(): string[] {
     "scope_id",
     "content_hash",
     "index_version",
+    "embedding_model",
     "visibility",
     "status",
   ];
@@ -192,6 +232,7 @@ function toSearchMatch(
   if (
     !isInternalPayload(payload) ||
     payload.index_version !== config.indexVersion ||
+    payload.embedding_model !== config.embeddingModel ||
     payload.scope_id !== scopeId
   ) {
     return undefined;
@@ -238,7 +279,8 @@ function toPointMetadata(
   const payload = point.payload;
   if (
     !isInternalPayload(payload) ||
-    payload.index_version !== config.indexVersion
+    payload.index_version !== config.indexVersion ||
+    payload.embedding_model !== config.embeddingModel
   ) {
     return undefined;
   }
@@ -261,21 +303,17 @@ async function list(
     const result = await client.scroll(config.collection, {
       limit: 100,
       ...(offset === undefined ? {} : { offset }),
-      filter: {
-        must: [
-          { key: "visibility", match: { value: "INTERNAL" } },
-          {
-            key: "status",
-            match: { value: "APPROVED_FOR_INTERNAL_SEARCH" },
-          },
-        ],
-      },
       with_payload: true,
       with_vector: false,
     });
     for (const point of result.points) {
       const metadata = toPointMetadata(config, point);
-      if (metadata !== undefined) points.push(metadata);
+      if (metadata === undefined) {
+        throw new RangeError(
+          "Qdrant collection contains an incompatible point",
+        );
+      }
+      points.push(metadata);
     }
     const nextOffset = result.next_page_offset;
     if (nextOffset === null || nextOffset === undefined) break;
@@ -380,6 +418,7 @@ function isInternalPayload(
   scope_id: string;
   content_hash: string;
   index_version: string;
+  embedding_model: string;
   visibility: "INTERNAL";
   status: "APPROVED_FOR_INTERNAL_SEARCH";
 } {
@@ -390,6 +429,7 @@ function isInternalPayload(
     typeof payload.scope_id === "string" &&
     typeof payload.content_hash === "string" &&
     typeof payload.index_version === "string" &&
+    typeof payload.embedding_model === "string" &&
     payload.visibility === "INTERNAL" &&
     payload.status === "APPROVED_FOR_INTERNAL_SEARCH"
   );

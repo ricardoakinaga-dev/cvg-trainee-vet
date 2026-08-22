@@ -122,6 +122,42 @@ export const outboxEvents = pgTable(
   ],
 );
 
+export const aiSuggestionEvents = pgTable(
+  "ai_suggestion_events",
+  {
+    eventId: uuid("event_id").primaryKey(),
+    contentId: uuid("content_id").notNull(),
+    version: integer("version").notNull(),
+    status: text("status").notNull().default("PROCESSING"),
+    attempts: integer("attempts").notNull().default(1),
+    leaseToken: uuid("lease_token").notNull(),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }).notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("ai_suggestion_events_status_lock_idx").on(
+      table.status,
+      table.lockedUntil,
+    ),
+    check(
+      "ai_suggestion_events_status_check",
+      sql`${table.status} in ('PROCESSING', 'COMPLETED')`,
+    ),
+    check("ai_suggestion_events_attempts_check", sql`${table.attempts} >= 1`),
+    check("ai_suggestion_events_version_check", sql`${table.version} >= 1`),
+    check(
+      "ai_suggestion_events_completed_at_check",
+      sql`(${table.status} = 'COMPLETED') = (${table.completedAt} is not null)`,
+    ),
+  ],
+);
+
 export const authoringWorkflowIdempotency = pgTable(
   "authoring_workflow_idempotency",
   {

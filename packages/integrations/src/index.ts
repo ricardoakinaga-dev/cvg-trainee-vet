@@ -1,5 +1,7 @@
 export {
   AiIntegrationError,
+  EMBEDDING_BATCH_MAX_INPUTS,
+  EMBEDDING_BATCH_MAX_UTF8_BYTES,
   createDeterministicEmbeddingProvider,
   createOpenAiEmbeddingProvider,
   createOpenAiTextProvider,

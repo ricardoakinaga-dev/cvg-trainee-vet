@@ -27,6 +27,7 @@ type HealthRequestHandlerOptions = Readonly<{
 
 export type WorkerReadinessState = Readonly<{
   readonly initialized: boolean;
+  readonly draining: boolean;
   readonly dependenciesHealthy: boolean;
   readonly syntheticProbePassed: boolean;
   readonly lastHeartbeatAt: number | null;
@@ -55,6 +56,7 @@ export function isWorkerReady(
 ): boolean {
   return (
     state.initialized &&
+    !state.draining &&
     state.dependenciesHealthy &&
     state.syntheticProbePassed &&
     heartbeatFresh(state.lastHeartbeatAt, nowMs, heartbeatTtlMs)
@@ -66,6 +68,7 @@ export type WorkerHealthServer = Readonly<{
   readonly close: () => Promise<void>;
   readonly address: () => ReturnType<Server["address"]>;
   readonly markReady: () => void;
+  readonly markDraining: () => void;
   readonly markDependenciesHealthy: () => void;
   readonly markDependenciesUnhealthy: () => void;
   readonly markSyntheticProbePassed: () => void;
@@ -118,6 +121,7 @@ function writeJson(
 function createReadinessController(readinessClock: () => number) {
   let readiness: WorkerReadinessState = Object.freeze({
     initialized: false,
+    draining: false,
     dependenciesHealthy: false,
     syntheticProbePassed: false,
     lastHeartbeatAt: null,
@@ -129,6 +133,7 @@ function createReadinessController(readinessClock: () => number) {
   return Object.freeze({
     get: () => readiness,
     markReady: () => update({ initialized: true }),
+    markDraining: () => update({ draining: true }),
     markDependenciesHealthy: () => update({ dependenciesHealthy: true }),
     markDependenciesUnhealthy: () => update({ dependenciesHealthy: false }),
     markSyntheticProbePassed: () => update({ syntheticProbePassed: true }),
@@ -161,6 +166,7 @@ function createHealthRequestHandler(
       status: ready ? "ready" : "not_ready",
       checks: {
         initialized: state.initialized,
+        accepting_work: !state.draining,
         dependencies: state.dependenciesHealthy,
         synthetic_probe: state.syntheticProbePassed,
         heartbeat: heartbeatFresh(state.lastHeartbeatAt, nowMs, heartbeatTtlMs),
@@ -246,6 +252,7 @@ export function createWorkerHealthServer(
       }),
     address: () => server.address(),
     markReady: readiness.markReady,
+    markDraining: readiness.markDraining,
     markDependenciesHealthy: readiness.markDependenciesHealthy,
     markDependenciesUnhealthy: readiness.markDependenciesUnhealthy,
     markSyntheticProbePassed: readiness.markSyntheticProbePassed,

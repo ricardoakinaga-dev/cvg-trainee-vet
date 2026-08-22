@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
 
 import { createApiRuntime } from "../../apps/api/src/main.js";
@@ -14,6 +16,8 @@ describe.skipIf(
       throw new Error("live database and Qdrant configuration are required");
     }
 
+    const collection = `cvg_health_${randomUUID().replaceAll("-", "")}`;
+    const qdrantApiKey = process.env.CVG_TEST_QDRANT_API_KEY;
     const runtime = createApiRuntime({
       NODE_ENV: "test",
       DATABASE_URL: databaseUrl,
@@ -22,10 +26,8 @@ describe.skipIf(
       WEB_ORIGINS: "http://127.0.0.1:0",
       QDRANT_ENABLED: "true",
       QDRANT_URL: qdrantUrl,
-      ...(process.env.CVG_TEST_QDRANT_API_KEY === undefined
-        ? {}
-        : { QDRANT_API_KEY: process.env.CVG_TEST_QDRANT_API_KEY }),
-      QDRANT_COLLECTION: "cvg_health_dependencies_v1",
+      ...(qdrantApiKey === undefined ? {} : { QDRANT_API_KEY: qdrantApiKey }),
+      QDRANT_COLLECTION: collection,
       QDRANT_INDEX_VERSION: "v1",
       EMBEDDING_PROVIDER: "fake",
       EMBEDDING_MODEL: "cvg-local-embedding-v1",
@@ -59,6 +61,11 @@ describe.skipIf(
       expect(JSON.stringify(body)).not.toMatch(/secret|password|api_key|url/iu);
     } finally {
       await runtime.close();
+      const headers = qdrantApiKey ? { "api-key": qdrantApiKey } : undefined;
+      await fetch(`${qdrantUrl}/collections/${collection}`, {
+        method: "DELETE",
+        ...(headers ? { headers } : {}),
+      });
     }
-  });
+  }, 30_000);
 });

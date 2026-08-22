@@ -116,6 +116,7 @@ describe("Qdrant integration boundary", () => {
           id: "point-1",
           payload: {
             index_version: "v1",
+            embedding_model: "embedding-test",
             visibility: "INTERNAL",
             status: "APPROVED_FOR_INTERNAL_SEARCH",
             knowledge_id: "knowledge-1",
@@ -134,6 +135,7 @@ describe("Qdrant integration boundary", () => {
           score: 0.92,
           payload: {
             index_version: "v1",
+            embedding_model: "embedding-test",
             visibility: "INTERNAL",
             status: "APPROVED_FOR_INTERNAL_SEARCH",
             knowledge_id: "knowledge-1",
@@ -144,14 +146,15 @@ describe("Qdrant integration boundary", () => {
         },
         {
           id: "point-2",
-          score: 0.4,
+          score: 0.91,
           payload: {
-            index_version: "v2",
+            index_version: "v1",
+            embedding_model: "embedding-old",
             visibility: "INTERNAL",
             status: "APPROVED_FOR_INTERNAL_SEARCH",
             knowledge_id: "knowledge-2",
             section_id: "section-2",
-            scope_id: "scope-2",
+            scope_id: "scope-1",
             content_hash: "hash-2",
           },
         },
@@ -214,7 +217,7 @@ describe("Qdrant integration boundary", () => {
         vectors: { size: 2, distance: "Cosine" },
       }),
     );
-    expect(createPayloadIndex).toHaveBeenCalledTimes(4);
+    expect(createPayloadIndex).toHaveBeenCalledTimes(5);
     expect(upsert).toHaveBeenCalledWith(
       "cvg_internal_knowledge_v1",
       expect.objectContaining({
@@ -245,6 +248,10 @@ describe("Qdrant integration boundary", () => {
         filter: {
           must: [
             { key: "index_version", match: { value: "v1" } },
+            {
+              key: "embedding_model",
+              match: { value: "embedding-test" },
+            },
             { key: "visibility", match: { value: "INTERNAL" } },
             {
               key: "status",
@@ -263,6 +270,9 @@ describe("Qdrant integration boundary", () => {
         with_vector: false,
       }),
     );
+    expect(
+      scroll.mock.calls.every(([, request]) => request.filter === undefined),
+    ).toBe(true);
     expect(matches).toEqual([
       {
         id: "point-1",
@@ -293,13 +303,17 @@ describe("Qdrant integration boundary", () => {
           config: { params: { vectors: { size: 2, distance: "Cosine" } } },
           payload_schema: {
             index_version: {},
+            embedding_model: {},
             visibility: {},
             status: {},
             scope_id: {},
           },
         }),
         createPayloadIndex,
-        scroll: vi.fn(),
+        scroll: vi.fn().mockResolvedValue({
+          points: [],
+          next_page_offset: null,
+        }),
         upsert: vi.fn(),
         delete: vi.fn(),
         query: vi.fn(),
@@ -309,6 +323,109 @@ describe("Qdrant integration boundary", () => {
     await store.ensureCollection();
     expect(createCollection).not.toHaveBeenCalled();
     expect(createPayloadIndex).not.toHaveBeenCalled();
+  });
+
+  it("blocks reuse of a non-empty collection owned by another model", async () => {
+    const client = {
+      collectionExists: vi.fn().mockResolvedValue({ exists: true }),
+      createCollection: vi.fn(),
+      getCollection: vi.fn().mockResolvedValue({
+        config: { params: { vectors: { size: 2, distance: "Cosine" } } },
+        payload_schema: {
+          index_version: {},
+          embedding_model: {},
+          visibility: {},
+          status: {},
+          scope_id: {},
+        },
+      }),
+      createPayloadIndex: vi.fn(),
+      scroll: vi.fn().mockImplementation(async (_collection, request) => ({
+        points:
+          request.filter === undefined
+            ? [
+                {
+                  id: "point-old-model",
+                  payload: {
+                    index_version: "v1",
+                    embedding_model: "embedding-old",
+                    visibility: "INTERNAL",
+                    status: "INDEX_PENDING",
+                    knowledge_id: "knowledge-old",
+                    section_id: "section-old",
+                    scope_id: "scope-old",
+                    content_hash: "hash-old",
+                  },
+                },
+              ]
+            : [],
+        next_page_offset: null,
+      })),
+      upsert: vi.fn(),
+      delete: vi.fn(),
+      query: vi.fn(),
+    };
+    const store = createQdrantVectorStore(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_existing_v1",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-new",
+        indexVersion: "v1",
+      },
+      client,
+    );
+
+    await expect(store.ensureCollection()).rejects.toThrow(
+      "collection identity is incompatible",
+    );
+    expect(client.upsert).not.toHaveBeenCalled();
+  });
+
+  it("fails closed instead of hiding a malformed point from reconciliation", async () => {
+    const client = {
+      collectionExists: vi.fn(),
+      createCollection: vi.fn(),
+      getCollection: vi.fn(),
+      createPayloadIndex: vi.fn(),
+      scroll: vi.fn().mockImplementation(async (_collection, request) => ({
+        points:
+          request.filter === undefined
+            ? [
+                {
+                  id: "malformed-point",
+                  payload: {
+                    index_version: "v1",
+                    embedding_model: "embedding-test",
+                    visibility: "INTERNAL",
+                    status: "APPROVED_FOR_INTERNAL_SEARCH",
+                    knowledge_id: "knowledge-1",
+                    section_id: "section-1",
+                    scope_id: "scope-1",
+                  },
+                },
+              ]
+            : [],
+        next_page_offset: null,
+      })),
+      upsert: vi.fn(),
+      delete: vi.fn(),
+      query: vi.fn(),
+    };
+    const store = createQdrantVectorStore(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_dedicated_v1",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      },
+      client,
+    );
+
+    await expect(store.list()).rejects.toThrow(
+      "collection contains an incompatible point",
+    );
   });
 
   it("blocks an existing collection with an incompatible vector contract", async () => {

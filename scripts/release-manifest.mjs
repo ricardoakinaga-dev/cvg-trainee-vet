@@ -8,6 +8,10 @@ const REQUIRED_FIELDS = Object.freeze([
   "sourceSha",
   "rollbackSourceSha",
   "migrationStrategy",
+  "workerRolloutStrategy",
+  "mutationGateStrategy",
+  "qdrantIdentity",
+  "rollbackQdrantIdentity",
   "canaryService",
   "healthPath",
 ]);
@@ -22,6 +26,9 @@ export function assertReleaseManifest(value) {
   const canaryStableProbes = assertCanaryStableProbes(
     manifest.canaryStableProbes,
   );
+  const workerDrainSeconds = assertWorkerDrainSeconds(
+    manifest.workerDrainSeconds,
+  );
   return Object.freeze({
     releaseId: manifest.releaseId,
     image: manifest.image,
@@ -30,10 +37,15 @@ export function assertReleaseManifest(value) {
     sourceSha: manifest.sourceSha.toLowerCase(),
     rollbackSourceSha: manifest.rollbackSourceSha.toLowerCase(),
     migrationStrategy: manifest.migrationStrategy,
+    workerRolloutStrategy: manifest.workerRolloutStrategy,
+    mutationGateStrategy: manifest.mutationGateStrategy,
+    qdrantIdentity: manifest.qdrantIdentity,
+    rollbackQdrantIdentity: manifest.rollbackQdrantIdentity,
     canaryService: manifest.canaryService,
     healthPath: manifest.healthPath,
     canarySeconds,
     canaryStableProbes,
+    workerDrainSeconds,
   });
 }
 
@@ -83,6 +95,34 @@ function assertManifestPolicy(manifest) {
   if (manifest.migrationStrategy !== "EXPAND_CONTRACT") {
     throw new Error("migrationStrategy must be EXPAND_CONTRACT");
   }
+  if (manifest.workerRolloutStrategy !== "DRAIN_N_MINUS_1_BEFORE_N") {
+    throw new Error("workerRolloutStrategy must drain N-1 before N");
+  }
+  if (
+    manifest.mutationGateStrategy !== "REQUIRED_CLOSED_DURING_WORKER_CUTOVER"
+  ) {
+    throw new Error(
+      "mutationGateStrategy must require a closed worker cutover gate",
+    );
+  }
+  if (
+    manifest.qdrantIdentity.length > 256 ||
+    !/^[A-Za-z0-9._:/-]+$/u.test(manifest.qdrantIdentity) ||
+    manifest.rollbackQdrantIdentity.length > 256 ||
+    !/^[A-Za-z0-9._:/-]+$/u.test(manifest.rollbackQdrantIdentity)
+  ) {
+    throw new Error("Qdrant identity must be a bounded stable identifier");
+  }
+  if (manifest.qdrantIdentity !== manifest.rollbackQdrantIdentity) {
+    throw new Error(
+      "Qdrant identity must remain unchanged during worker cutover",
+    );
+  }
+  if (manifest.qdrantIdentity !== "disabled") {
+    throw new Error(
+      "Qdrant identity changes require a versioned alias rollout",
+    );
+  }
   if (manifest.canaryService !== "api-a") {
     throw new Error("canaryService must be api-a");
   }
@@ -113,6 +153,18 @@ function assertCanaryStableProbes(value) {
     throw new Error("canaryStableProbes must be between 1 and 60");
   }
   return canaryStableProbes;
+}
+
+function assertWorkerDrainSeconds(value) {
+  const workerDrainSeconds = value ?? 30;
+  if (
+    !Number.isInteger(workerDrainSeconds) ||
+    workerDrainSeconds < 1 ||
+    workerDrainSeconds > 300
+  ) {
+    throw new Error("workerDrainSeconds must be between 1 and 300");
+  }
+  return workerDrainSeconds;
 }
 
 export function assertDistinctRollbackProvenance(value) {

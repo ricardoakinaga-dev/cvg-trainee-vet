@@ -12,7 +12,7 @@ describe("conditional skip governance", () => {
     expect(validateSkipGovernance(snapshot)).toEqual([]);
     expect(buildSkipGovernanceReport(snapshot)).toMatchObject({
       guardedFiles: 17,
-      guardedTests: 21,
+      guardedTests: 27,
       unexplainedSkips: 0,
       observedRuns: 20,
       flakyFailures: 0,

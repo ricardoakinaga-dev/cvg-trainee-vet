@@ -112,7 +112,16 @@ function replayOrThrow(
 
 function normalizeAttemptError(error: unknown): ApplicationError {
   if (error instanceof ApplicationError) return error;
-  if (error instanceof AttemptDomainError) {
+  const crossPackageConflict =
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    error.name === "PersistenceConflictError" &&
+    "code" in error &&
+    error.code === "state_conflict" &&
+    "status" in error &&
+    error.status === 409;
+  if (error instanceof AttemptDomainError || crossPackageConflict) {
     return new ApplicationError("state_conflict", "Attempt state conflict");
   }
   return toApplicationError(error);

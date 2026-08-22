@@ -5,6 +5,71 @@
 **Predecessor preservado:** `0516_dual_98_roadmap.md`
 **Disposição:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Checkpoint local U98-117 — isolamento do harness live — 2026-08-22T03:23:31-03:00
+
+A revisão pré-commit encontrou a Rodada 93 implementada à frente do estado e
+impediu o snapshot incoerente. O recorte foi validado em PostgreSQL 16
+descartável: banco por execução, URL administrativa obrigatória, roles/URLs de
+API e worker distintas, grants/identidades verificados e cleanup fail-closed.
+Contrato `6/6`, live `61/320/0`, migrations `35/35`, cobertura `206/1224/27`,
+build `12/12` e gates locais passaram; evidência em `docs/148`.
+
+O harness recebe `LOCAL_PASS_WITH_LIMITATIONS`, não release-pass. O roadmap
+avança para duas imagens históricas, SIGTERM/Docker e matriz comportamental
+N/N-1, preservando restore/Qdrant opcionais, roles produtivas, writers externos,
+drain de backlog, publisher, scheduler/lease/alias, secrets, RC, clínica,
+`0/145` e gates externos.
+
+## Checkpoint local U98-117 — cutover de workers — 2026-08-22T01:50:11-03:00
+
+RED reproduziu claim depois do drain, cleanup do lote em voo, rollout misto,
+rollback sem quiescência, force-kill/backlog e rehearsal de uma única imagem.
+GREEN introduziu drain/readiness fail-closed, gate externo mais parada do edge,
+`exited/0`, outbox zero, promoção progressiva e preservação da migration
+expandida. Release/proveniência passou `31/31`, worker `75/75`, cobertura
+`205/1216/27`, build `12/12`, dry-runs e gates locais passaram. Evidência:
+`docs/147`.
+
+O recorte mecânico recebe `LOCAL_PASS_WITH_LIMITATIONS`. Duas críticas
+independentes não encontraram CRITICAL/HIGH local, mas o roadmap mantém abertos
+tráfego/SIGTERM com duas imagens, matriz comportamental, writers externos,
+rollback com backlog, Qdrant versionado/alias e isolamento do harness live. A
+próxima execução local cria banco descartável e roles/URLs distintas de admin,
+API e worker, sem relaxar secrets, RC, clínica, `0/145` ou gates externos.
+
+## Checkpoint local U98-106/B99-205 — convergência Qdrant — 2026-08-22T01:06:20-03:00
+
+RED reproduziu sucesso falso com integrações desligadas, writes parciais,
+snapshot PostgreSQL stale, censo filtrado e batches incompatíveis com o
+provider. GREEN adicionou censo integral, postconditions, recheck bounded,
+changed-only embeddings `2048/300000 bytes`, writes de `100` e validação
+bijetiva dos índices de resposta. Foco `22/22`, worker `73/73`, live sintético
+`4/4 + 1/1`, cobertura `205/1204/27`, build `12/12` e gates locais passaram.
+Evidência: `docs/146`.
+
+O algoritmo N recebe `LOCAL_PASS_WITH_LIMITATIONS`, não release-pass. O
+roadmap segue para scheduler/estado durável, lease multi-réplica e U98-117 com
+coleção/alias N/N-1, canário, drain e rollback. Provider real, harness live
+isolado, roles/publisher, secrets, RC, clínica, `0/145` e gates externos
+continuam abertos.
+
+## Checkpoint local U98-106/B99-201/B99-205 — replay de sugestão de IA — 2026-08-22T00:10:53-03:00
+
+RED reproduziu liberação stale de lease, replay após cleanup do outbox e
+estado temporal inválido. GREEN adicionou tombstone durável, token/fencing,
+relógio PostgreSQL e transação única para draft+completion. PostgreSQL 16
+sintético com role sem `SUPERUSER/BYPASSRLS` passou `7/7`, incluindo
+concorrência, RLS/FORCE, replay pós-cleanup e fault injection. Foco `49/49`,
+worker `64/64`, cobertura `205/1191/25` em `94,96/90,81/95,32/95,67`, build
+`12/12`, migrações `34/34` e gates locais passaram. Evidência: `docs/145`.
+
+O consumidor N recebe `LOCAL_PASS_WITH_LIMITATIONS`, não release-pass. O
+roadmap mantém U98-117 para gate/drain N/N-1, roles separadas e rollback com
+schema expandido; publisher produtivo, provider at-least-once, Qdrant entre
+writes, rehearsal da migration, retenção dos tombstones, secrets/histórico,
+RC, clínica, `0/145` e gates externos continuam abertos. O próximo recorte
+local é a consistência/compensação do Qdrant.
+
 ## Checkpoint local B99-201 — falha de persistência isolada no worker — 2026-08-21T12:10:51-03:00
 
 Uma inspeção independente read-only reproduziu que exceções de `markFailed`

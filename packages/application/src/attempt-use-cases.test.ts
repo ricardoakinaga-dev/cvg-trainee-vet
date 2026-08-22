@@ -193,6 +193,42 @@ describe("attempt application commands", () => {
     expect(dependencies.attempts).toHaveLength(1);
   });
 
+  it("normalizes a cross-package persistence conflict without exposing internals", async () => {
+    const dependencies = createDependencies();
+    const foreignConflict = Object.assign(
+      new Error("synthetic persistence details"),
+      {
+        name: "PersistenceConflictError",
+        code: "state_conflict",
+        status: 409,
+        details: Object.freeze([]),
+      },
+    );
+    const failingDependencies = {
+      ...dependencies,
+      transaction: {
+        run: async () => {
+          throw foreignConflict;
+        },
+      },
+    } satisfies AttemptUseCaseDependencies;
+
+    await expect(
+      startAttempt(
+        {
+          ...ids,
+          idempotencyKey: "start-attempt-foreign-conflict",
+          correlationId: "correlation-foreign-conflict",
+        },
+        failingDependencies,
+      ),
+    ).rejects.toMatchObject({
+      code: "state_conflict",
+      status: 409,
+      message: "Attempt state conflict",
+    });
+  });
+
   it("submits only the owner's saved attempt and replays safely", async () => {
     const dependencies = createDependencies();
     const started = await startAttempt(

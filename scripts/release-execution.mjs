@@ -6,6 +6,148 @@ export const RELEASE_HEALTH_SERVICES = Object.freeze([
   "worker-a",
   "worker-b",
 ]);
+export const RELEASE_WORKER_SERVICES = Object.freeze(["worker-a", "worker-b"]);
+
+function rolloutStep(id, { args, services } = {}) {
+  return Object.freeze({
+    id,
+    ...(args === undefined ? {} : { args: Object.freeze([...args]) }),
+    ...(services === undefined
+      ? {}
+      : { services: Object.freeze([...services]) }),
+  });
+}
+
+export function assertMutationGateClosed(environment = process.env) {
+  if (environment.CVG_RELEASE_MUTATION_GATE_CLOSED !== "true") {
+    throw new Error(
+      "CVG_RELEASE_MUTATION_GATE_CLOSED=true is required during worker cutover",
+    );
+  }
+  return true;
+}
+
+export function buildOutboxDrainProbeArgs() {
+  return Object.freeze([
+    "exec",
+    "-T",
+    "postgres",
+    "sh",
+    "-ec",
+    'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "select count(*) from outbox_events where status in (\'PENDING\', \'PROCESSING\')"',
+  ]);
+}
+
+export function assertOutboxDrained(output) {
+  if (typeof output !== "string" || !/^\s*\d+\s*$/u.test(output)) {
+    throw new Error("rollback outbox drain probe returned invalid output");
+  }
+  const pendingOrProcessing = Number(output.trim());
+  if (!Number.isSafeInteger(pendingOrProcessing)) {
+    throw new Error("rollback outbox drain probe returned invalid output");
+  }
+  if (pendingOrProcessing !== 0) {
+    throw new Error(
+      `rollback outbox drain gate failed (${pendingOrProcessing} active events)`,
+    );
+  }
+  return Object.freeze({ status: "PASS", pendingOrProcessing });
+}
+
+export function buildDeployRolloutPlan(manifest) {
+  const drainSeconds = assertWorkerDrainSeconds(manifest?.workerDrainSeconds);
+  return Object.freeze([
+    rolloutStep("prove-n-minus-1-baseline", {
+      services: RELEASE_HEALTH_SERVICES,
+    }),
+    rolloutStep("close-edge-mutation-gate", {
+      args: ["stop", "-t", String(drainSeconds), "edge"],
+      services: ["edge"],
+    }),
+    rolloutStep("drain-n-minus-1-workers", {
+      args: ["stop", "-t", String(drainSeconds), ...RELEASE_WORKER_SERVICES],
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("prove-n-minus-1-workers-drained", {
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("expand-contract-migration", {
+      args: ["run", "--rm", "migrate"],
+    }),
+    rolloutStep("start-n-workers", {
+      args: ["up", "-d", "--no-build", ...RELEASE_WORKER_SERVICES],
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("prove-n-workers", { services: RELEASE_WORKER_SERVICES }),
+    rolloutStep("prove-api-peer-n-minus-1", { services: ["api-b"] }),
+    rolloutStep("start-api-canary", {
+      args: ["up", "-d", "--no-build", "api-a"],
+      services: ["api-a"],
+    }),
+    rolloutStep("prove-api-canary-and-n-workers", {
+      services: ["api-a", ...RELEASE_WORKER_SERVICES],
+    }),
+    rolloutStep("probe-api-canary", { services: ["api-a"] }),
+    rolloutStep("start-api-peer", {
+      args: ["up", "-d", "--no-build", "api-b"],
+      services: ["api-b"],
+    }),
+    rolloutStep("prove-promotion", { services: RELEASE_HEALTH_SERVICES }),
+    rolloutStep("promote-edge", {
+      args: ["up", "-d", "--no-build", "edge"],
+      services: ["edge"],
+    }),
+  ]);
+}
+
+export function buildRollbackRolloutPlan(manifest) {
+  const drainSeconds = assertWorkerDrainSeconds(manifest?.workerDrainSeconds);
+  return Object.freeze([
+    rolloutStep("inspect-n-workers-for-recovery", {
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("close-edge-mutation-gate", {
+      args: ["stop", "-t", String(drainSeconds), "edge"],
+      services: ["edge"],
+    }),
+    rolloutStep("drain-n-workers", {
+      args: ["stop", "-t", String(drainSeconds), ...RELEASE_WORKER_SERVICES],
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("prove-n-workers-drained", {
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("prove-outbox-drained-before-n-minus-1", {
+      args: buildOutboxDrainProbeArgs(),
+    }),
+    rolloutStep("start-n-minus-1-workers", {
+      args: ["up", "-d", "--no-build", ...RELEASE_WORKER_SERVICES],
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("prove-n-minus-1-workers", {
+      services: RELEASE_WORKER_SERVICES,
+    }),
+    rolloutStep("start-rollback-api-canary", {
+      args: ["up", "-d", "--no-build", "api-a"],
+      services: ["api-a"],
+    }),
+    rolloutStep("prove-rollback-api-canary-and-workers", {
+      services: ["api-a", ...RELEASE_WORKER_SERVICES],
+    }),
+    rolloutStep("probe-rollback-api-canary", { services: ["api-a"] }),
+    rolloutStep("start-rollback-api-peer", {
+      args: ["up", "-d", "--no-build", "api-b"],
+      services: ["api-b"],
+    }),
+    rolloutStep("prove-rollback-promotion", {
+      services: RELEASE_HEALTH_SERVICES,
+    }),
+    rolloutStep("restore-edge", {
+      args: ["up", "-d", "--no-build", "edge"],
+      services: ["edge"],
+    }),
+  ]);
+}
 
 export function createCanaryGateState({
   stableProbes = DEFAULT_CANARY_STABLE_PROBES,
@@ -140,6 +282,120 @@ export function assertReleaseServicesHealthy(
   });
 }
 
+export function assertReleaseServicesStoppedCleanly(
+  records,
+  { phase = "drain", services = RELEASE_WORKER_SERVICES } = {},
+) {
+  if (!Array.isArray(records) || !Array.isArray(services)) {
+    throw new Error("compose graceful-stop records are invalid");
+  }
+  const statuses = services.map((service) => {
+    const matches = records.filter(
+      (record) =>
+        record !== null &&
+        typeof record === "object" &&
+        (record.Service ?? record.service) === service,
+    );
+    if (matches.length !== 1) {
+      return Object.freeze({ service, state: "missing", exitCode: "missing" });
+    }
+    const record = matches[0];
+    return Object.freeze({
+      service,
+      state: String(record.State ?? record.state ?? "unknown"),
+      exitCode: String(record.ExitCode ?? record.exitCode ?? "unknown"),
+    });
+  });
+  const failures = statuses.filter(
+    ({ state, exitCode }) => state !== "exited" || exitCode !== "0",
+  );
+  if (failures.length > 0) {
+    throw new Error(
+      `${phase} graceful-stop gate failed (${failures
+        .map(
+          ({ service, state, exitCode }) => `${service}: ${state}/${exitCode}`,
+        )
+        .join(", ")})`,
+    );
+  }
+  return Object.freeze({
+    status: "PASS",
+    phase,
+    services: Object.freeze(statuses.map(({ service }) => service)),
+    statuses: Object.freeze(statuses),
+  });
+}
+
+export function assertRollbackServicesQuiescent(
+  beforeRecords,
+  afterRecords,
+  { services = RELEASE_WORKER_SERVICES } = {},
+) {
+  if (
+    !Array.isArray(beforeRecords) ||
+    !Array.isArray(afterRecords) ||
+    !Array.isArray(services)
+  ) {
+    throw new Error("rollback quiescence records are invalid");
+  }
+  const statuses = services.map((service) => {
+    const before = serviceProcessStatus(beforeRecords, service);
+    const after = serviceProcessStatus(afterRecords, service);
+    const validBefore = ["running", "exited"].includes(before.state);
+    const cleanRunningStop =
+      before.state === "running" &&
+      after.state === "exited" &&
+      after.exitCode === "0";
+    const alreadyQuiescent =
+      before.state === "exited" && after.state === "exited";
+    return Object.freeze({
+      service,
+      beforeState: before.state,
+      afterState: after.state,
+      exitCode: after.exitCode,
+      valid: validBefore && (cleanRunningStop || alreadyQuiescent),
+      recovered: before.state === "exited",
+    });
+  });
+  const failures = statuses.filter(({ valid }) => !valid);
+  if (failures.length > 0) {
+    throw new Error(
+      `rollback quiescence gate failed (${failures
+        .map(
+          ({ service, beforeState, afterState, exitCode }) =>
+            `${service}: ${beforeState}→${afterState}/${exitCode}`,
+        )
+        .join(", ")})`,
+    );
+  }
+  const recoveredServices = Object.freeze(
+    statuses.filter(({ recovered }) => recovered).map(({ service }) => service),
+  );
+  return Object.freeze({
+    status: recoveredServices.length > 0 ? "PASS_WITH_RECOVERY" : "PASS",
+    services: Object.freeze([...services]),
+    recoveredServices,
+    statuses: Object.freeze(statuses),
+  });
+}
+
+function serviceProcessStatus(records, service) {
+  const matches = records.filter(
+    (record) =>
+      record !== null &&
+      typeof record === "object" &&
+      (record.Service ?? record.service) === service,
+  );
+  if (matches.length !== 1) {
+    return Object.freeze({ state: "missing", exitCode: "missing" });
+  }
+  const record = matches[0];
+  return Object.freeze({
+    state: String(record.State ?? record.state ?? "unknown"),
+    exitCode: String(record.ExitCode ?? record.exitCode ?? "unknown"),
+  });
+}
+
 export function buildCanaryProbeArgs({ service, healthPath }) {
   if (service !== "api-a") {
     throw new Error("canary probe service must be api-a");
@@ -191,4 +447,15 @@ function assertStableProbeCount(stableProbes) {
   ) {
     throw new Error("canaryStableProbes must be between 1 and 60");
   }
+}
+
+function assertWorkerDrainSeconds(workerDrainSeconds) {
+  if (
+    !Number.isInteger(workerDrainSeconds) ||
+    workerDrainSeconds < 1 ||
+    workerDrainSeconds > 300
+  ) {
+    throw new Error("workerDrainSeconds must be between 1 and 300");
+  }
+  return workerDrainSeconds;
 }

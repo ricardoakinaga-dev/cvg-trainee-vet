@@ -113,7 +113,7 @@ async function runWorkerLoop(
   initialize: () => Promise<void>,
   refreshReadiness: () => Promise<boolean>,
   processOnce: () => ReturnType<typeof processOutboxOnce>,
-  closeIntegrations: () => Promise<void>,
+  closeResources: () => Promise<void>,
   isStopped: () => boolean,
 ): Promise<void> {
   try {
@@ -122,16 +122,39 @@ async function runWorkerLoop(
     while (!isStopped()) {
       health.markHeartbeat();
       if (!(await refreshReadiness())) {
+        if (isStopped()) break;
         await waitForWorkerCycle();
         continue;
       }
+      if (isStopped()) break;
       const result = await processOnce();
       health.markHeartbeat();
       if (result.claimed === 0) await waitForWorkerCycle();
     }
   } catch (error) {
-    await Promise.allSettled([health.close(), closeIntegrations()]);
+    await Promise.allSettled([closeResources()]);
     throw error;
+  }
+  await closeResources();
+}
+
+async function closeWorkerResources(
+  health: WorkerHealthServer,
+  integrations: ServerIntegrationSet,
+): Promise<void> {
+  const results = await Promise.allSettled([
+    health.close(),
+    integrations.close(),
+  ]);
+  const failures = results.filter(
+    (result): result is PromiseRejectedResult => result.status === "rejected",
+  );
+  if (failures.length === 1) throw failures[0]?.reason;
+  if (failures.length > 1) {
+    throw new AggregateError(
+      failures.map(({ reason }) => reason),
+      "worker resources failed to close",
+    );
   }
 }
 
@@ -203,6 +226,7 @@ export function createWorkerRuntime(
   expireContent: (
     command: ExpireContentCommand,
   ) => Promise<ExpireContentResult>;
+  requestDrain: () => void;
   run: () => Promise<void>;
   close: () => Promise<void>;
 }> {
@@ -222,6 +246,8 @@ export function createWorkerRuntime(
     handlers,
   } = composition;
   let stopped = false;
+  let runPromise: Promise<void> | null = null;
+  let resourceClosePromise: Promise<void> | null = null;
   const refreshReadiness = (): Promise<boolean> =>
     refreshWorkerReadiness(integrations, health, outbox);
   const initialize = (): Promise<void> =>
@@ -237,15 +263,26 @@ export function createWorkerRuntime(
     expireDueContent(command, contentExpiryDependencies);
   const reconcile = (): Promise<VectorReconciliationResult> =>
     reconcileVectorIndex(workerDependencies);
-  const run = (): Promise<void> =>
-    runWorkerLoop(
+  const requestDrain = (): void => {
+    if (stopped) return;
+    stopped = true;
+    health.markDraining();
+  };
+  const closeResources = (): Promise<void> => {
+    resourceClosePromise ??= closeWorkerResources(health, integrations);
+    return resourceClosePromise;
+  };
+  const run = (): Promise<void> => {
+    runPromise ??= runWorkerLoop(
       health,
       initialize,
       refreshReadiness,
       processOnce,
-      integrations.close,
+      closeResources,
       () => Boolean(stopped),
     );
+    return runPromise;
+  };
 
   return Object.freeze({
     service: "worker" as const,
@@ -255,11 +292,15 @@ export function createWorkerRuntime(
     reconcile,
     processOnce,
     expireContent,
+    requestDrain,
     run,
     close: async () => {
-      stopped = true;
-      await health.close();
-      await integrations.close();
+      requestDrain();
+      if (runPromise !== null) {
+        await runPromise;
+        return;
+      }
+      await closeResources();
     },
   });
 }
@@ -270,10 +311,14 @@ if (
 ) {
   const runtime = createWorkerRuntime(process.env);
   process.once("SIGTERM", () => {
-    void runtime.close();
+    void runtime.close().catch(() => {
+      process.exitCode = 1;
+    });
   });
   process.once("SIGINT", () => {
-    void runtime.close();
+    void runtime.close().catch(() => {
+      process.exitCode = 1;
+    });
   });
   void runtime.run().catch(() => {
     process.exitCode = 1;

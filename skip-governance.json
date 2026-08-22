@@ -25,31 +25,51 @@
     {
       "path": "tests/integration/curriculum-runtime.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
       "path": "tests/integration/postgres-activity-content.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
       "path": "tests/integration/postgres-answer-session.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
       "path": "tests/integration/postgres-attempt-repository.test.ts",
       "testCount": 2,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
       "path": "tests/integration/postgres-authoring-workflow.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
@@ -61,7 +81,11 @@
     {
       "path": "tests/integration/postgres-correction.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
@@ -73,19 +97,27 @@
     {
       "path": "tests/integration/postgres-learning-state.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
       "path": "tests/integration/postgres-restore.test.ts",
       "testCount": 2,
-      "guard": ["CVG_RUN_LIVE_RESTORE_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": ["CVG_RUN_LIVE_RESTORE_TESTS", "CVG_TEST_ADMIN_DATABASE_URL"],
       "reason": "requires isolated backup and restore tooling"
     },
     {
       "path": "tests/integration/postgres-security-isolation.test.ts",
       "testCount": 1,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "guard": [
+        "CVG_RUN_LIVE_DB_TESTS",
+        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_ADMIN_DATABASE_URL"
+      ],
       "reason": "requires a disposable live PostgreSQL database and roles"
     },
     {
@@ -96,23 +128,23 @@
     },
     {
       "path": "tests/integration/postgres-worker.test.ts",
-      "testCount": 3,
-      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_DATABASE_URL"],
+      "testCount": 7,
+      "guard": ["CVG_RUN_LIVE_DB_TESTS", "CVG_TEST_WORKER_DATABASE_URL"],
       "reason": "requires a disposable live PostgreSQL database"
     },
     {
       "path": "tests/integration/qdrant-live.test.ts",
-      "testCount": 1,
+      "testCount": 2,
       "guard": ["CVG_RUN_LIVE_QDRANT_TESTS", "CVG_TEST_QDRANT_URL"],
       "reason": "requires a disposable live Qdrant endpoint"
     },
     {
       "path": "tests/integration/worker-qdrant-live.test.ts",
-      "testCount": 1,
+      "testCount": 2,
       "guard": [
         "CVG_RUN_LIVE_DB_TESTS",
         "CVG_RUN_LIVE_QDRANT_TESTS",
-        "CVG_TEST_DATABASE_URL",
+        "CVG_TEST_WORKER_DATABASE_URL",
         "CVG_TEST_QDRANT_URL"
       ],
       "reason": "requires disposable live PostgreSQL and Qdrant endpoints"

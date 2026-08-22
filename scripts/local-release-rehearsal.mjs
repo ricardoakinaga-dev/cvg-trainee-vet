@@ -9,6 +9,7 @@ import {
   assertDistinctRollbackProvenance,
   assertReleaseManifest,
 } from "./release-manifest.mjs";
+import { assertMutationGateClosed } from "./release-execution.mjs";
 
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/iu;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/iu;
@@ -90,6 +91,11 @@ export function createLocalReleaseManifest({
     sourceSha,
     rollbackSourceSha,
     migrationStrategy: "EXPAND_CONTRACT",
+    workerRolloutStrategy: "DRAIN_N_MINUS_1_BEFORE_N",
+    mutationGateStrategy: "REQUIRED_CLOSED_DURING_WORKER_CUTOVER",
+    qdrantIdentity: "disabled",
+    rollbackQdrantIdentity: "disabled",
+    workerDrainSeconds: 30,
     canaryService: "api-a",
     healthPath: "/health/ready",
     canarySeconds,
@@ -99,12 +105,26 @@ export function createLocalReleaseManifest({
 }
 
 export function buildLocalReleaseEnvironment(inherited = {}) {
+  assertMutationGateClosed(inherited);
   return Object.freeze({
     ...inherited,
     CVG_RELEASE_EXECUTE: "true",
     CVG_RELEASE_LOCAL_REHEARSAL: "true",
     CVG_RELEASE_PULL: "skip",
   });
+}
+
+export function buildLocalReleaseScriptSequence() {
+  return Object.freeze(["rollback", "deploy", "rollback", "deploy"]);
+}
+
+export function classifyLocalCompatibilityMatrix({
+  sourceSha,
+  rollbackSourceSha,
+}) {
+  return sourceSha === rollbackSourceSha
+    ? "NOT_PROVEN"
+    : "VERSIONED_IMAGES_ONLY";
 }
 
 export function resolveLocalRollbackImage(environment = {}) {
@@ -116,6 +136,7 @@ export function resolveLocalRollbackImage(environment = {}) {
 
 export function resolveLocalRehearsalConfiguration(environment = process.env) {
   assertLocalReleaseRehearsalEnabled(environment);
+  assertMutationGateClosed(environment);
 
   const sourceSha = assertSourceSha(environment.CVG_SOURCE_SHA);
   const localImage = environment.CVG_LOCAL_RELEASE_IMAGE ?? DEFAULT_LOCAL_IMAGE;
@@ -213,7 +234,6 @@ async function runLocalReleaseCycle({
     await executeReleaseRollbackAndRestore({
       configuration,
       environment,
-      imageReference: releaseImage.reference,
       manifest,
       manifestPath,
     });
@@ -246,8 +266,6 @@ function buildRehearsalManifest({ releaseImage, rollbackImage }) {
 async function executeReleaseRollbackAndRestore({
   configuration,
   environment,
-  imageReference,
-  manifest,
   manifestPath,
 }) {
   const releaseEnvironment = buildRehearsalEnvironment({
@@ -255,21 +273,15 @@ async function executeReleaseRollbackAndRestore({
     environment,
     manifestPath,
   });
-  await runCommand(process.execPath, ["scripts/deploy-release.mjs"], {
-    environment: releaseEnvironment,
-  });
-  await runCommand(process.execPath, ["scripts/rollback-release.mjs"], {
-    environment: releaseEnvironment,
-  });
-  await restoreLocalRuntime({
-    composeEnvFile: configuration.composeEnvFile,
-    composeFile: configuration.composeFile,
-    healthTarget: configuration.healthTarget,
-    imageReference,
-    project: configuration.project,
-    sourceSha: manifest.sourceSha,
-    environment,
-  });
+  const scripts = {
+    deploy: "scripts/deploy-release.mjs",
+    rollback: "scripts/rollback-release.mjs",
+  };
+  for (const step of buildLocalReleaseScriptSequence()) {
+    await runCommand(process.execPath, [scripts[step]], {
+      environment: releaseEnvironment,
+    });
+  }
 }
 
 async function prepareRollbackImage({
@@ -321,8 +333,12 @@ function buildRehearsalEnvironment({
 }
 
 function buildLocalRehearsalResult({ configuration, manifest, rollbackMode }) {
+  const compatibilityMatrix = classifyLocalCompatibilityMatrix({
+    sourceSha: manifest.sourceSha,
+    rollbackSourceSha: manifest.rollbackSourceSha,
+  });
   return Object.freeze({
-    status: "PASS",
+    status: "PASS_WITH_LIMITATIONS",
     mode: "LOCAL_REHEARSAL",
     releaseId: manifest.releaseId,
     sourceSha: configuration.sourceSha,
@@ -332,6 +348,7 @@ function buildLocalRehearsalResult({ configuration, manifest, rollbackMode }) {
     rollbackDigest: manifest.rollbackImageDigest,
     rollbackMode,
     versionedRollback: manifest.sourceSha !== manifest.rollbackSourceSha,
+    compatibilityMatrix,
     attestation: "PASS",
     deploy: "PASS",
     rollback: "PASS",
@@ -381,65 +398,6 @@ async function inspectRepositoryDigest(image, expectedSourceSha) {
     reference: `${parsed.image}@${parsed.digest}`,
     sourceSha,
   });
-}
-
-async function restoreLocalRuntime({
-  composeEnvFile,
-  composeFile,
-  healthTarget,
-  imageReference,
-  project,
-  sourceSha,
-  environment,
-}) {
-  await runCompose(
-    ["up", "-d", "--no-build", "api-a", "api-b", "worker-a", "worker-b"],
-    {
-      composeEnvFile,
-      composeFile,
-      environment: {
-        ...environment,
-        CVG_APP_IMAGE: imageReference,
-        CVG_SOURCE_SHA: sourceSha,
-      },
-      project,
-    },
-  );
-  await waitForHealth(healthTarget);
-}
-
-function runCompose(args, options) {
-  return runCommand(
-    "docker",
-    [
-      "compose",
-      ...(options.composeEnvFile ? ["--env-file", options.composeEnvFile] : []),
-      "--file",
-      options.composeFile,
-      "--project-name",
-      options.project,
-      ...args,
-    ],
-    { environment: options.environment },
-  );
-}
-
-async function waitForHealth(target) {
-  const deadline = Date.now() + 60_000;
-  let lastStatus = "unreachable";
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(target, {
-        signal: globalThis.AbortSignal.timeout(5_000),
-      });
-      lastStatus = String(response.status);
-      if (response.ok) return;
-    } catch (error) {
-      lastStatus = error instanceof Error ? error.message : "request failed";
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1_000));
-  }
-  throw new Error(`local rehearsal health gate failed (${lastStatus})`);
 }
 
 function assertLocalImage(image) {

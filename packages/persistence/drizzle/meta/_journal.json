@@ -232,6 +232,20 @@
       "when": 1787230365453,
       "tag": "0032_idempotency_integrity_closure",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1787328000000,
+      "tag": "0033_ai_suggestion_event_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1787331600000,
+      "tag": "0034_content_withdrawal_scope_rls",
+      "breakpoints": true
     }
   ]
 }

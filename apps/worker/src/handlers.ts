@@ -1,4 +1,5 @@
 import type {
+  AiSuggestionSinkPort,
   ContentIndexSourcePort,
   OutboxEventRecord,
 } from "@cvg/persistence";
@@ -11,23 +12,14 @@ import type {
 import type { WorkerEventHandler, WorkerEventHandlers } from "./loop.js";
 import { createInternalVectorPoint, vectorPointId } from "./indexing.js";
 
+export type { AiSuggestionSinkPort } from "@cvg/persistence";
+
 export type WorkerIntegrationDependencies = Readonly<{
   readonly source: ContentIndexSourcePort;
   readonly embedding: EmbeddingPort | null;
   readonly vectorStore: VectorStorePort | null;
   readonly ai?: AiTextPort | null;
   readonly suggestionSink?: AiSuggestionSinkPort;
-}>;
-
-export type AiSuggestion = Readonly<{
-  readonly contentId: string;
-  readonly version: number;
-  readonly draftText: string;
-  readonly warnings: readonly string[];
-}>;
-
-export type AiSuggestionSinkPort = Readonly<{
-  readonly saveDraftSuggestion: (suggestion: AiSuggestion) => Promise<void>;
 }>;
 
 export class WorkerPayloadError extends Error {
@@ -59,6 +51,18 @@ function payloadString(event: OutboxEventRecord, field: string): string {
   return value;
 }
 
+function payloadUuid(event: OutboxEventRecord, field: string): string {
+  const value = payloadString(event, field);
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(
+      value,
+    )
+  ) {
+    throw new WorkerPayloadError(`payload.${field} is invalid`);
+  }
+  return value;
+}
+
 function payloadVersion(event: OutboxEventRecord): number {
   const value = payloadString(event, "version");
   if (!/^\d+$/u.test(value)) {
@@ -75,10 +79,10 @@ const publishHandler =
   (dependencies: WorkerIntegrationDependencies): WorkerEventHandler =>
   async (event): Promise<void> => {
     if (dependencies.vectorStore === null || dependencies.embedding === null) {
-      return;
+      throw new Error("Qdrant indexing is disabled");
     }
 
-    const contentId = payloadString(event, "content_id");
+    const contentId = payloadUuid(event, "content_id");
     const version = payloadVersion(event);
     const content = await dependencies.source.findPublishedIndexable(
       contentId,
@@ -101,8 +105,10 @@ const publishHandler =
 const withdrawHandler =
   (dependencies: WorkerIntegrationDependencies): WorkerEventHandler =>
   async (event): Promise<void> => {
-    if (dependencies.vectorStore === null) return;
-    const contentId = payloadString(event, "content_id");
+    if (dependencies.vectorStore === null) {
+      throw new Error("Qdrant indexing is disabled");
+    }
+    const contentId = payloadUuid(event, "content_id");
     const version = payloadVersion(event);
     await dependencies.vectorStore.delete([vectorPointId(contentId, version)]);
   };
@@ -133,7 +139,13 @@ function parseSuggestion(value: unknown): Readonly<{
     draftText.length > 20_000 ||
     /<[^>]*>/u.test(draftText) ||
     !Array.isArray(warnings) ||
-    warnings.some((warning) => typeof warning !== "string")
+    warnings.length > 20 ||
+    warnings.some(
+      (warning) =>
+        typeof warning !== "string" ||
+        warning.trim().length === 0 ||
+        warning.length > 500,
+    )
   ) {
     throw new Error("AI suggestion output is invalid");
   }
@@ -146,46 +158,80 @@ function parseSuggestion(value: unknown): Readonly<{
 const aiSuggestionHandler =
   (dependencies: WorkerIntegrationDependencies): WorkerEventHandler =>
   async (event): Promise<void> => {
-    if (dependencies.ai === null || dependencies.ai === undefined) return;
+    if (dependencies.ai === null || dependencies.ai === undefined) {
+      throw new Error("AI integration is disabled");
+    }
     if (dependencies.suggestionSink === undefined) {
       throw new Error("AI suggestion sink is not configured");
     }
 
-    const contentId = payloadString(event, "content_id");
+    const contentId = payloadUuid(event, "content_id");
     const version = payloadVersion(event);
-    const content = await dependencies.source.findPublishedIndexable(
+    const claim = await dependencies.suggestionSink.claimEvent(
+      event.id,
       contentId,
       version,
     );
-    if (content === null) {
-      throw new Error("content is not available for internal AI assistance");
+    if (claim.state === "COMPLETED") return;
+    if (claim.state === "IN_PROGRESS") {
+      throw new Error("AI suggestion event is already processing");
     }
-    const suggestion = await dependencies.ai.generateStructured({
-      input: content.text,
-      instructions:
-        "Assistente interno: produza um rascunho autoral para revisão de Ricardo. Não publique, não aprove, não defina nota e não inclua fontes, fotos, PDFs, OCR ou dados reais.",
-      schemaName: "CvgInternalSuggestionV1",
-      jsonSchema: {
-        type: "object",
-        properties: {
-          draftText: { type: "string", minLength: 1, maxLength: 20_000 },
-          warnings: {
-            type: "array",
-            items: { type: "string", maxLength: 500 },
-            maxItems: 20,
+    if (claim.state === "CONFLICT") {
+      throw new Error("AI suggestion event identity conflicts");
+    }
+    const leaseToken = claim.leaseToken;
+    if (leaseToken === null) {
+      throw new Error("AI suggestion event claim is invalid");
+    }
+
+    try {
+      const content = await dependencies.source.findPublishedIndexable(
+        contentId,
+        version,
+      );
+      if (content === null) {
+        throw new Error("content is not available for internal AI assistance");
+      }
+      const suggestion = await dependencies.ai.generateStructured({
+        input: content.text,
+        instructions:
+          "Assistente interno: produza um rascunho autoral para revisão de Ricardo. Não publique, não aprove, não defina nota e não inclua fontes, fotos, PDFs, OCR ou dados reais.",
+        schemaName: "CvgInternalSuggestionV1",
+        jsonSchema: {
+          type: "object",
+          properties: {
+            draftText: { type: "string", minLength: 1, maxLength: 20_000 },
+            warnings: {
+              type: "array",
+              items: { type: "string", maxLength: 500 },
+              maxItems: 20,
+            },
           },
+          required: ["draftText", "warnings"],
+          additionalProperties: false,
         },
-        required: ["draftText", "warnings"],
-        additionalProperties: false,
-      },
-      parse: parseSuggestion,
-    });
-    await dependencies.suggestionSink.saveDraftSuggestion({
-      contentId,
-      version,
-      draftText: suggestion.draftText,
-      warnings: suggestion.warnings,
-    });
+        parse: parseSuggestion,
+      });
+      const saved = await dependencies.suggestionSink.saveDraftSuggestion(
+        {
+          eventId: event.id,
+          contentId,
+          version,
+          draftText: suggestion.draftText,
+          warnings: suggestion.warnings,
+        },
+        leaseToken,
+      );
+      if (!saved) throw new Error("AI suggestion event lease was lost");
+    } catch (error) {
+      await dependencies.suggestionSink
+        .releaseEvent(event.id, leaseToken)
+        .catch(() => {
+          // Preserve the original handler failure; the lease expiry remains
+          // the recovery path if the release itself cannot be persisted.
+        });
+      throw error;
+    }
   };
 
 export function createIntegrationHandlers(

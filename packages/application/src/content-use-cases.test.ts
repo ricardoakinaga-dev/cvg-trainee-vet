@@ -24,6 +24,7 @@ function dependencies(
   readonly events: { current?: Readonly<Record<string, unknown>> };
   readonly affectedParticipants: readonly string[];
   readonly withdrawalAffected: { count?: number };
+  readonly transactionContext: { current?: Readonly<{ scopeId?: string }> };
 } {
   const saved: { current?: ContentRecord } = {};
   const events: { current?: Readonly<Record<string, unknown>> } = {};
@@ -32,6 +33,9 @@ function dependencies(
     "55555555-5555-4555-8555-555555555555",
   ] as const;
   const withdrawalAffected: { count?: number } = {};
+  const transactionContext: {
+    current?: Readonly<{ scopeId?: string }>;
+  } = {};
   const repository = {
     find: vi.fn(async (_contentId: string, version: number) =>
       version === state.version ? state : null,
@@ -58,8 +62,9 @@ function dependencies(
       return () => `generated-${++count}`;
     })(),
     transaction: {
-      run: async (work) =>
-        work({
+      run: async (work, context) => {
+        if (context !== undefined) transactionContext.current = context;
+        return work({
           content: repository,
           audit,
           eventPublisher,
@@ -74,12 +79,14 @@ function dependencies(
               scopes: [content.scopeId],
             })),
           },
-        }),
+        });
+      },
     },
     saved,
     events,
     affectedParticipants,
     withdrawalAffected,
+    transactionContext,
   };
 }
 
@@ -436,6 +443,9 @@ describe("content workflow use cases", () => {
     expect(deps.withdrawalAffected.count).toBe(
       deps.affectedParticipants.length,
     );
+    expect(deps.transactionContext.current).toEqual({
+      scopeId: published.scopeId,
+    });
     expect(deps.events.current).toMatchObject({
       eventType: "content.withdrawn.v1",
       payload: {

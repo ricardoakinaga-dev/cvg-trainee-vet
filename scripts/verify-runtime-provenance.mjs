@@ -47,6 +47,7 @@ export function validateRuntimeProvenanceRecords(
   records,
   expectedSourceSha,
   expectedDigest,
+  expectedQdrantIdentity,
 ) {
   const expected = assertRuntimeSourceSha(expectedSourceSha);
   const expectedImageDigest =
@@ -63,6 +64,7 @@ export function validateRuntimeProvenanceRecords(
       index,
       expected,
       expectedImageDigest,
+      expectedQdrantIdentity,
     ),
   );
   const commonDigest = containers[0].digest.toLowerCase();
@@ -79,6 +81,7 @@ export function validateRuntimeProvenanceRecords(
     status: "PASS",
     expectedSourceSha: expected,
     expectedDigest: expectedImageDigest,
+    expectedQdrantIdentity,
     commonDigest,
     containerCount: containers.length,
     containers: Object.freeze(containers),
@@ -90,6 +93,7 @@ function validateRuntimeContainerRecord(
   index,
   expectedSourceSha,
   expectedDigest,
+  expectedQdrantIdentity,
 ) {
   const name = readContainerName(record, index);
   if (record?.State?.Status !== "running") {
@@ -117,6 +121,12 @@ function validateRuntimeContainerRecord(
   }
   if (readSourceSha(record?.Config?.Env) !== expectedSourceSha) {
     throw new Error(`runtime provenance source environment diverges: ${name}`);
+  }
+  if (
+    expectedQdrantIdentity !== undefined &&
+    readQdrantIdentity(record?.Config?.Env) !== expectedQdrantIdentity
+  ) {
+    throw new Error(`runtime Qdrant identity diverges: ${name}`);
   }
 
   return Object.freeze({
@@ -171,6 +181,7 @@ export async function runRuntimeProvenanceVerification(
     records,
     expectedSourceSha,
     expectedDigest,
+    environment.CVG_RUNTIME_EXPECTED_QDRANT_IDENTITY,
   );
 }
 
@@ -203,6 +214,11 @@ function readSourceSha(environmentValues) {
   if (typeof sourceEntry !== "string") return null;
   const sourceSha = sourceEntry.slice("CVG_SOURCE_SHA=".length);
   return SOURCE_SHA_PATTERN.test(sourceSha) ? sourceSha.toLowerCase() : null;
+}
+
+function readQdrantIdentity(environmentValues) {
+  if (!Array.isArray(environmentValues)) return null;
+  return environmentValues.includes("QDRANT_ENABLED=false") ? "disabled" : null;
 }
 
 function inspectContainers(containers, environment) {

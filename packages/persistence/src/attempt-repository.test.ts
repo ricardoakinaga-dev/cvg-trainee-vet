@@ -142,6 +142,24 @@ describe("PostgreSQL attempt mapping", () => {
     ).rejects.toBeInstanceOf(PersistenceConflictError);
   });
 
+  it("maps a driver-wrapped unique violation to a persistence conflict", async () => {
+    const duplicate = Object.assign(new Error("duplicate open attempt"), {
+      code: "23505",
+    });
+    const wrapped = new Error("Failed query", { cause: duplicate });
+    const database = {
+      insert: () => ({
+        values: async () => {
+          throw wrapped;
+        },
+      }),
+    } as never;
+
+    await expect(
+      createAttemptOperationsMethods(database).attemptsPort.insert(state),
+    ).rejects.toBeInstanceOf(PersistenceConflictError);
+  });
+
   it("maps a concurrent idempotency insert to a persistence conflict", async () => {
     const duplicate = Object.assign(new Error("duplicate idempotency key"), {
       code: "23505",

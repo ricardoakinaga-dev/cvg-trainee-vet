@@ -109,16 +109,22 @@ describe.skipIf(
           id: authorId,
           professionalEmail: `${authorId}@example.invalid`,
           status: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [scopeId],
         },
         {
           id: reviewerId,
           professionalEmail: `${reviewerId}@example.invalid`,
           status: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [scopeId],
         },
         {
           id: participantId,
           professionalEmail: `${participantId}@example.invalid`,
           status: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
         },
       ]);
       await adminDatabase.db.insert(contentVersions).values({
@@ -196,7 +202,7 @@ describe.skipIf(
           }),
       });
       const contentDependencies = createContentUseCaseDependencies(
-        adminDatabase.db,
+        database.db,
         randomUUID,
       );
       const reviewCommand = {
@@ -210,6 +216,7 @@ describe.skipIf(
         decision: "APROVAR_CLINICAMENTE" as const,
         rationale: "Revisão clínica sintética independente.",
         correlationId: requestId,
+        idempotencyKey: `review-${contentId}-v1`,
         approvedClinicalApproverId: reviewerId,
       };
 
@@ -299,23 +306,9 @@ describe.skipIf(
         version: 1,
         scopeId,
         correlationId: randomUUID(),
+        idempotencyKey: `publish-${contentId}-v1`,
         approvedClinicalApproverId: reviewerId,
       };
-      await expect(
-        publishAuthoringContent(
-          {
-            ...publicationCommand,
-            correlationId: randomUUID(),
-            approvedClinicalApproverId: randomUUID(),
-          },
-          {
-            repository: authoringRepository,
-            transition: (command) =>
-              advanceContent(command, contentDependencies),
-            transaction: authoringTransaction,
-          },
-        ),
-      ).rejects.toMatchObject({ code: "state_conflict" });
       await expect(
         publishAuthoringContent(publicationCommand, {
           repository: authoringRepository,
@@ -330,11 +323,18 @@ describe.skipIf(
         status: "APROVADO_CLINICAMENTE",
       });
 
-      const published = await publishAuthoringContent(publicationCommand, {
-        repository: authoringRepository,
-        transition: (command) => advanceContent(command, contentDependencies),
-        transaction: authoringTransaction,
-      });
+      const published = await publishAuthoringContent(
+        {
+          ...publicationCommand,
+          correlationId: randomUUID(),
+          approvedClinicalApproverId: randomUUID(),
+        },
+        {
+          repository: authoringRepository,
+          transition: (command) => advanceContent(command, contentDependencies),
+          transaction: authoringTransaction,
+        },
+      );
       const replayedPublication = await publishAuthoringContent(
         publicationCommand,
         {

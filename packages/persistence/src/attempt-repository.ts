@@ -97,12 +97,13 @@ function isAttemptStatus(value: string): value is AttemptStatus {
 }
 
 export function isUniqueConstraintViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "23505"
-  );
+  let candidate = error;
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (typeof candidate !== "object" || candidate === null) return false;
+    if ("code" in candidate && candidate.code === "23505") return true;
+    candidate = "cause" in candidate ? candidate.cause : undefined;
+  }
+  return false;
 }
 
 function assertNonEmpty(value: string, field: string): void {

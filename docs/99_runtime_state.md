@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — DUAL 99 / F99-2 worker, observabilidade e dados derivados
-- current_sprint: F99-2 — fechamento local de outbox e readiness
-- current_task: U98-106/B99-202 continuation local hardening; além de isolar falhas de `markProcessed`/`markFailed`, o worker fecha `integrations` junto com `health` em crash de inicialização/processamento. B99-101 permanece com as Rounds 81–89 fechadas; B99-102 mantém downloader clínico fail-closed, enquanto PostgreSQL live com role restrita, WebKit aprovado, RC e runtime API com SHA seguem sem prova
+- current_phase: BUILD — DUAL 99 / F99-2 release, worker e dados derivados
+- current_sprint: F99-2 — compatibilidade, cutover e rollback
+- current_task: U98-117 — contrato mecânico de drain/cutover e harness live isolado fechados localmente; matriz comportamental com duas imagens, SIGTERM/Docker real, roles produtivas separadas, Qdrant com alias, publisher, secrets, RC e gates externos permanecem pendentes
 
 ## STATUS
 
@@ -18,21 +18,117 @@
 
 ## PROGRESSO
 
-- last_completed_action: tratou U98-106/B99-202 sob RED→GREEN→REFACTOR, publicou `357f265` e confirmou o código em `origin`; em crash do loop, `health` e `integrations` são fechados com preservação do erro original. Foco worker `54/54`; cobertura `205/1177/21` em `95,04/90,95/95,32/95,74`; build `12/12`; hotspots `0`; format/lint/typecheck/diff-check/exposure verdes. As Rounds 81–89 de B99-101 permanecem reconciliadas em `docs/141`, ACK em `docs/142` e resiliência em `docs/143`. `pnpm verify:secrets` acusa somente os quatro assignments redigidos preexistentes de `.env.local`; o explorador independente também deixou Qdrant/IA como gaps de contrato, sem `PASS` independente final. `.gauntlet/` continua local e não rastreado
-- next_action: revalidar B99-201 em PostgreSQL live descartável/aprovado com role sem `SUPERUSER/BYPASSRLS`, concorrência, lease/ACK/retry/cleanup e RLS; depois obter autoridade/ambiente para secret manager/rotação, provider/CI, RC/proveniência, WebKit aprovado, runtime live, rollout N/N-1, retenção/RBAC/notificação externos, probes A/B com SHA conhecido, concurrency/TTL/RLS de B99-103/105, clínica, `0/145`, gates externos, aprovação humana e reauditoria independente; não declarar fechamento global, score, release ou piloto além do escopo local
+- last_completed_action: recuperou e validou a Rodada 93 antes da publicação: o harness exige URL administrativa explícita, cria banco descartável e roles/URLs distintas de admin, API e worker, aplica grants verificáveis, executa as suites sem skip silencioso e sempre limpa banco/roles. PostgreSQL 16 passou `61/320/0`, migrations `35/35`, contrato focal `6/6`, cobertura `206/1224/27` em `94,92/90,77/95,26/95,64`, build `12/12` e gates locais passaram. A fixture literal apontada pelo scanner foi saneada; restam somente quatro valores locais ignorados e o finding genérico conhecido do histórico. Evidência em `docs/148`; nenhum commit/push ocorreu
+- next_action: publicar o checkpoint local reconciliado sem `.gauntlet/` e sem promover release; depois provar duas imagens históricas e a matriz comportamental N/N-1 com SIGTERM/Docker real, evoluir rollback para drain do backlog por N saudável e implementar scheduler/estado/lease e alias Qdrant. Separar roles produtivas de API, worker e publisher, sanear secrets/histórico somente com autoridade e manter RC, clínica, `0/145`, gates externos, aprovação humana e reauditoria abertos
 
 ## BLOQUEIOS
 
-- blockers: scanner acusa quatro valores locais em `infra/production/.env.local`; B99-201 ainda depende de PostgreSQL live com role restrita para provar concorrência, lease/ACK/retry/cleanup e RLS; U98-106 ainda tem Qdrant com falha entre writes e replay de IA sem contrato de idempotência; não há `PASS` independente final e o papel reviewer não foi suportado; WebKit/ambiente aprovado, runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/21 testes seguem guardados por dependências live
+- blockers: scanner acusa quatro valores locais redigidos em `infra/production/.env.local` e um finding genérico porque o histórico Git excede o budget de 256 MiB; Qdrant não possui scheduler/estado durável, lease multi-réplica nem rollout com alias; restore e Qdrant seguem fora da execução live básica; matriz comportamental N/N-1 e SIGTERM/Docker com duas imagens não foram executados; rollback com backlog exige recuperação; API e worker produtivos compartilham role; não há publisher produtivo; migration exige rehearsal de volume e tombstones não têm retenção/métrica; runtime API sem SHA/RC, `RH01–RH06`, `0/145`, mutation integral, `763` decisões clínicas, CI/registry, IdP/TLS, backup/DR, UAT e reauditoria independente; 17 arquivos/27 testes seguem guardados por dependências opcionais no modo local padrão
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: aprovar a rubrica Dual 98 de `docs/133`, validade, equipe/T0, capacidade clínica de 12 horas e 40–60 revisões/semana, providers/telemetria/on-call/backup/registry, ambiente WebKit, coorte e dois auditores; remediações locais U98-107–117 podem avançar sem declarar os gates externos fechados
+- decision_description: autorizar saneamento/rotação dos quatro valores locais, tratamento do histórico acima do budget, rollout com gate/drain N/N-1 e separação de roles; aprovar também a rubrica Dual 98 de `docs/133`, validade, equipe/T0, capacidade clínica de 12 horas e 40–60 revisões/semana, providers/telemetria/on-call/backup/registry, ambiente WebKit, coorte e dois auditores
 
 ## TIMESTAMP
 
-- last_update: 2026-08-21T12:19:51-03:00
+- last_update: 2026-08-22T03:23:31-03:00
+
+## 2026-08-22T03:23:31-03:00 — DUAL99-U98-117-LIVE-HARNESS
+
+### AÇÃO / RESULTADO
+
+- a revisão pré-commit rejeitou o snapshot porque a Rodada 93 já estava no
+  worktree, mas seguia declarada como próxima ação;
+- o contrato focal do harness passou `6/6`; um literal sintético apontado pelo
+  scanner foi removido sem alterar o comportamento;
+- PostgreSQL 16 descartável aplicou `35/35` migrations e passou `61` arquivos /
+  `320` testes live / `0` skips com URLs e roles distintas de admin, API e
+  worker, grants explícitos, verificação de identidade e cleanup completo;
+- cobertura passou `206/1224/27` em `94,92/90,77/95,26/95,64`; build `12/12`,
+  formato, lint, tipos, migrations/safety, CI, docs, traceability, skips,
+  hotspots, exposure, dependências e diff-check passaram;
+- container, banco, roles e shim efêmero do cliente PostgreSQL foram removidos;
+  evidência detalhada em `docs/148`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O programa segue `IN_PROGRESS / PILOT_BLOCKED`. Restore/Qdrant opcionais, roles
+produtivas, duas imagens históricas, SIGTERM/Docker, tráfego, writers externos,
+drain do backlog, publisher, scheduler/lease/alias, secrets/histórico, RC,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria permanecem
+abertos. Publicar somente o checkpoint local rastreado, sem `.gauntlet/`; não
+houve commit/push, release ou promoção.
+
+## 2026-08-22T01:50:11-03:00 — DUAL99-U98-117-WORKER-CUTOVER
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu manifesto incompleto, claim após drain, fechamento prematuro,
+  concorrência N/N-1, rollback sem quiescência, force-kill aceito, backlog e
+  rehearsal que alegava compatibilidade com a mesma imagem;
+- GREEN introduziu drain/readiness fail-closed, espera do lote ativo, gate
+  externo mais parada do edge, rollout progressivo, `exited/0`, outbox zero,
+  schema expandido preservado e proveniência Qdrant ligada ao runtime;
+- release/proveniência passou `31/31`, worker `75/75`, cobertura
+  `205/1216/27` em `94,94/90,80/95,26/95,66`, build `12/12`, dry-runs e gates
+  locais passaram;
+- dois pareceres independentes deram `PASS` local com limitações, sem
+  CRITICAL/HIGH remanescente; evidência detalhada em `docs/147`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O programa segue `IN_PROGRESS / PILOT_BLOCKED`. O corte é uma janela de
+manutenção e não prova tráfego real, duas imagens históricas, writers externos
+nem Qdrant habilitado. O harness live ainda mistura roles e fixtures. A Rodada
+93 isola banco/roles/URLs e elimina skips silenciosos antes da matriz live.
+Secrets/histórico, RC, clínica, `0/145`, gates externos, aprovação humana e
+reauditoria permanecem abertos; não houve commit/push.
+
+## 2026-08-22T01:06:20-03:00 — DUAL99-U98-106-B99-205-QDRANT-CONVERGENCE
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu sucesso falso com integrações desligadas, writes parciais,
+  snapshot stale, censo filtrado, batch de 2.049 e índices duplicados do
+  provider; GREEN fechou os caminhos com verificação e limites explícitos;
+- PostgreSQL 16 + Qdrant v1.15.5 sintéticos passaram `4/4 + 1/1`; censo
+  rejeitou identidade/payload incompatível e a corrida de retirada convergiu;
+- foco `22/22`, worker `73/73`, cobertura `205/1204/27` em
+  `95,00/90,84/95,36/95,70`, build `12/12`, migrações `34/34`, mutation
+  `7/7` e gates locais passaram; os contêineres foram removidos;
+- parecer independente final `PASS` local; evidência detalhada em `docs/146`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O programa segue `IN_PROGRESS / PILOT_BLOCKED`. Scheduler/estado durável,
+lease multi-réplica, N/N-1/alias, provider real, harness live isolado,
+roles/publisher, secrets/histórico, RC, runtime, clínica, `0/145`, gates
+externos, aprovação humana e reauditoria continuam abertos. Não houve
+commit/push porque `verify:secrets` falhou fechado.
+
+## 2026-08-22T00:10:53-03:00 — DUAL99-U98-106-AI-SUGGESTION-IDEMPOTENCY
+
+### AÇÃO / RESULTADO
+
+- RED reproduziu liberação stale de lease, replay após cleanup e estado
+  temporal inválido; GREEN introduziu token/fencing, tombstone independente do
+  outbox, relógio PostgreSQL e persistência atômica do draft+completion;
+- PostgreSQL 16 sintético com role sem `SUPERUSER/BYPASSRLS` passou `7/7`,
+  incluindo concorrência, RLS/FORCE, replay pós-cleanup e fault injection;
+- foco `49/49`, worker `64/64`, cobertura `205/1191/25` em
+  `94,96/90,81/95,32/95,67`, build `12/12`, migrações `34/34` e demais
+  gates locais passaram; o contêiner descartável foi removido;
+- dois pareceres independentes aceitaram o consumidor N local e rejeitaram
+  release; evidência detalhada em `docs/145`.
+
+### LIMITES / PRÓXIMA AÇÃO
+
+O programa segue `IN_PROGRESS / PILOT_BLOCKED`. N/N-1, roles separadas,
+publisher produtivo, Qdrant entre writes, secrets/histórico, RC, runtime,
+clínica, `0/145`, gates externos, aprovação humana e reauditoria continuam
+abertos. Não houve commit/push porque `verify:secrets` falhou fechado. O
+próximo gap local é a consistência/compensação do Qdrant.
 
 ## 2026-08-21T12:19:51-03:00 — DUAL99-U98-106-WORKER-CLEANUP
 

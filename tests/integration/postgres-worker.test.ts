@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, inArray } from "drizzle-orm";
-import { describe, expect, it } from "vitest";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { describe, expect, it, vi } from "vitest";
 
 import type { AiTextPort } from "../../packages/integrations/src/ai.js";
 import { createIntegrationHandlers } from "../../apps/worker/src/handlers.js";
@@ -11,6 +11,7 @@ import {
 } from "../../apps/worker/src/loop.js";
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
+  aiSuggestionEvents,
   aiSuggestions,
   contentVersions,
   createAiSuggestionSink,
@@ -21,7 +22,59 @@ import {
 } from "../../packages/persistence/src/index.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
+const databaseUrl = process.env.CVG_TEST_WORKER_DATABASE_URL;
+type LiveDatabase = ReturnType<typeof createPostgresDatabase>["db"];
+type LiveTransactionWork = Parameters<LiveDatabase["transaction"]>[0];
+type LiveTransaction = Parameters<LiveTransactionWork>[0];
+
+function failBeforeSuggestionCompletion(database: LiveDatabase): LiveDatabase {
+  return new Proxy(database, {
+    get(target, property, receiver) {
+      if (property !== "transaction") {
+        return Reflect.get(target, property, receiver);
+      }
+      return async (work: LiveTransactionWork) =>
+        target.transaction(async (transaction) => {
+          let executionCount = 0;
+          const faultingTransaction = new Proxy(transaction, {
+            get(transactionTarget, transactionProperty, transactionReceiver) {
+              if (transactionProperty !== "execute") {
+                return Reflect.get(
+                  transactionTarget,
+                  transactionProperty,
+                  transactionReceiver,
+                );
+              }
+              return (
+                ...parameters: Parameters<LiveTransaction["execute"]>
+              ) => {
+                executionCount += 1;
+                if (executionCount === 4) {
+                  throw new Error("synthetic completion failure");
+                }
+                return transactionTarget.execute(...parameters);
+              };
+            },
+          });
+          return work(faultingTransaction);
+        });
+    },
+  });
+}
+
+async function deleteAiSuggestionEvent(
+  database: ReturnType<typeof createPostgresDatabase>,
+  eventId: string,
+): Promise<void> {
+  await database.db.transaction(async (transaction) => {
+    await transaction.execute(
+      sql`select set_config('cvg.ai_suggestion_worker', 'true', true)`,
+    );
+    await transaction
+      .delete(aiSuggestionEvents)
+      .where(eq(aiSuggestionEvents.eventId, eventId));
+  });
+}
 
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL outbox and worker integration",
@@ -144,8 +197,17 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         };
         const handlers = createIntegrationHandlers({
           source: createContentIndexSourceRepository(database.db),
-          embedding: null,
-          vectorStore: null,
+          embedding: {
+            embed: async (inputs) => inputs.map(() => [0.1, 0.2]),
+          },
+          vectorStore: {
+            healthcheck: async () => undefined,
+            ensureCollection: async () => undefined,
+            list: async () => [],
+            upsert: async () => undefined,
+            delete: async () => undefined,
+            search: async () => [],
+          },
           ai,
           suggestionSink: createAiSuggestionSink(database.db, randomUUID),
         });
@@ -210,6 +272,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await database.db
           .delete(aiSuggestions)
           .where(eq(aiSuggestions.contentId, contentId));
+        await deleteAiSuggestionEvent(database, suggestionEventId);
         await database.db
           .delete(outboxEvents)
           .where(inArray(outboxEvents.id, [publishEventId, suggestionEventId]));
@@ -222,6 +285,404 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             ),
           );
         await database.close();
+      }
+    });
+
+    it("does not regenerate an AI draft when the same event is replayed", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const database = createPostgresDatabase(databaseUrl);
+      const contentId = randomUUID();
+      const versionId = randomUUID();
+      const scopeId = randomUUID();
+      const eventId = randomUUID();
+      const correlationId = randomUUID();
+      const processingNow = new Date(0);
+
+      try {
+        await database.db.insert(contentVersions).values({
+          id: versionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "LEITURA",
+          title: "Conteúdo sintético de replay",
+          participantText: "Texto interno autoral sintético de replay.",
+          responseMode: "NONE",
+        });
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "ai.suggestion.requested.v1",
+            aggregateType: "content_version",
+            aggregateId: contentId,
+            occurredAt: new Date().toISOString(),
+            schemaVersion: 1,
+            correlationId,
+            payload: { content_id: contentId, version: "1" },
+          }),
+          availableAt: processingNow,
+        });
+
+        const generateStructured: AiTextPort["generateStructured"] = vi.fn(
+          async (request) =>
+            request.parse({
+              draftText: "Rascunho de replay sintético.",
+              warnings: ["Revisar antes de publicar."],
+            }),
+        );
+        const handlers = createIntegrationHandlers({
+          source: createContentIndexSourceRepository(database.db),
+          embedding: null,
+          vectorStore: null,
+          ai: { generateStructured },
+          suggestionSink: createAiSuggestionSink(database.db, randomUUID),
+        });
+        const repository = createOutboxRepository(database.db);
+
+        await expect(
+          processOutboxOnce(repository, handlers, {
+            batchSize: 1,
+            now: processingNow,
+          }),
+        ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
+        expect(generateStructured).toHaveBeenCalledOnce();
+
+        await database.db
+          .update(outboxEvents)
+          .set({
+            status: "PROCESSING",
+            attempts: 1,
+            availableAt: processingNow,
+            lockedUntil: processingNow,
+            lastErrorCode: null,
+            processedAt: null,
+          })
+          .where(eq(outboxEvents.id, eventId));
+
+        await expect(
+          processOutboxOnce(repository, handlers, {
+            batchSize: 1,
+            now: new Date("2026-08-21T15:00:00.000Z"),
+          }),
+        ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
+        expect(generateStructured).toHaveBeenCalledOnce();
+        await expect(
+          database.db
+            .select({ sourceEventId: aiSuggestions.sourceEventId })
+            .from(aiSuggestions)
+            .where(eq(aiSuggestions.contentId, contentId)),
+        ).resolves.toEqual([{ sourceEventId: eventId }]);
+
+        await expect(
+          repository.cleanup(new Date("2999-01-01T00:00:00.000Z"), 10),
+        ).resolves.toBeGreaterThanOrEqual(1);
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "ai.suggestion.requested.v1",
+            aggregateType: "content_version",
+            aggregateId: contentId,
+            occurredAt: new Date().toISOString(),
+            schemaVersion: 1,
+            correlationId,
+            payload: { content_id: contentId, version: "1" },
+          }),
+          availableAt: processingNow,
+        });
+        await expect(
+          processOutboxOnce(repository, handlers, {
+            batchSize: 1,
+            now: new Date("2026-08-21T15:01:00.000Z"),
+          }),
+        ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
+        expect(generateStructured).toHaveBeenCalledOnce();
+      } finally {
+        await database.db
+          .delete(aiSuggestions)
+          .where(eq(aiSuggestions.contentId, contentId));
+        await deleteAiSuggestionEvent(database, eventId);
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        await database.db
+          .delete(contentVersions)
+          .where(
+            and(
+              eq(contentVersions.scopeId, scopeId),
+              eq(contentVersions.id, versionId),
+            ),
+          );
+        await database.close();
+      }
+    });
+
+    it("rolls back the draft when completion fails after its upsert", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const database = createPostgresDatabase(databaseUrl);
+      const contentId = randomUUID();
+      const versionId = randomUUID();
+      const scopeId = randomUUID();
+      const eventId = randomUUID();
+      try {
+        await database.db.insert(contentVersions).values({
+          id: versionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "LEITURA",
+          title: "Conteúdo sintético para rollback",
+          participantText: "Texto sintético para rollback transacional.",
+          responseMode: "NONE",
+        });
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "ai.suggestion.requested.v1",
+            aggregateType: "content_version",
+            aggregateId: contentId,
+            occurredAt: new Date().toISOString(),
+            schemaVersion: 1,
+            correlationId: randomUUID(),
+            payload: { content_id: contentId, version: "1" },
+          }),
+        });
+        const sink = createAiSuggestionSink(
+          failBeforeSuggestionCompletion(database.db),
+          randomUUID,
+        );
+        const claim = await sink.claimEvent(eventId, contentId, 1);
+        expect(claim.state).toBe("ACQUIRED");
+        if (claim.state !== "ACQUIRED") {
+          throw new Error("AI rollback probe did not acquire its claim");
+        }
+
+        await expect(
+          sink.saveDraftSuggestion(
+            {
+              eventId,
+              contentId,
+              version: 1,
+              draftText: "Rascunho sintético que deve sofrer rollback.",
+              warnings: [],
+            },
+            claim.leaseToken,
+          ),
+        ).rejects.toThrow("synthetic completion failure");
+        await expect(
+          database.db
+            .select({ id: aiSuggestions.id })
+            .from(aiSuggestions)
+            .where(eq(aiSuggestions.contentId, contentId)),
+        ).resolves.toEqual([]);
+        await database.db.transaction(async (transaction) => {
+          await transaction.execute(
+            sql`select set_config('cvg.ai_suggestion_worker', 'true', true)`,
+          );
+          await expect(
+            transaction
+              .select({ status: aiSuggestionEvents.status })
+              .from(aiSuggestionEvents)
+              .where(eq(aiSuggestionEvents.eventId, eventId)),
+          ).resolves.toEqual([{ status: "PROCESSING" }]);
+        });
+      } finally {
+        await database.db
+          .delete(aiSuggestions)
+          .where(eq(aiSuggestions.contentId, contentId));
+        await deleteAiSuggestionEvent(database, eventId);
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        await database.db
+          .delete(contentVersions)
+          .where(
+            and(
+              eq(contentVersions.scopeId, scopeId),
+              eq(contentVersions.id, versionId),
+            ),
+          );
+        await database.close();
+      }
+    });
+
+    it("does not let a stale AI worker release a reclaimed event lease", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const database = createPostgresDatabase(databaseUrl);
+      const eventId = randomUUID();
+      const contentId = randomUUID();
+      const now = new Date();
+
+      try {
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "ai.suggestion.requested.v1",
+            aggregateType: "content_version",
+            aggregateId: contentId,
+            occurredAt: now.toISOString(),
+            schemaVersion: 1,
+            correlationId: randomUUID(),
+            payload: { content_id: contentId, version: "1" },
+          }),
+          availableAt: now,
+        });
+        const sink = createAiSuggestionSink(database.db, randomUUID);
+
+        await expect(
+          database.db.transaction(async (transaction) => {
+            await transaction.execute(
+              sql`select set_config('cvg.ai_suggestion_worker', 'true', true)`,
+            );
+            await transaction.insert(aiSuggestionEvents).values({
+              eventId,
+              contentId,
+              version: 1,
+              status: "PROCESSING",
+              leaseToken: randomUUID(),
+              lockedUntil: new Date(Date.now() + 60_000),
+              completedAt: new Date(),
+            });
+          }),
+        ).rejects.toMatchObject({ cause: { code: "23514" } });
+
+        const firstClaim = await sink.claimEvent(eventId, contentId, 1);
+        expect(firstClaim.state).toBe("ACQUIRED");
+        if (firstClaim.state !== "ACQUIRED") {
+          throw new Error("first AI claim was not acquired");
+        }
+        await database.db.transaction(async (transaction) => {
+          await transaction.execute(
+            sql`select set_config('cvg.ai_suggestion_worker', 'true', true)`,
+          );
+          await transaction
+            .update(aiSuggestionEvents)
+            .set({ lockedUntil: new Date(0) })
+            .where(eq(aiSuggestionEvents.eventId, eventId));
+        });
+        const secondClaim = await sink.claimEvent(eventId, contentId, 1);
+        expect(secondClaim.state).toBe("ACQUIRED");
+        if (secondClaim.state !== "ACQUIRED") {
+          throw new Error("expired AI claim was not reclaimed");
+        }
+        expect(secondClaim.leaseToken).not.toBe(firstClaim.leaseToken);
+
+        await expect(
+          sink.saveDraftSuggestion(
+            {
+              eventId,
+              contentId,
+              version: 1,
+              draftText: "Rascunho sintético de worker obsoleto.",
+              warnings: [],
+            },
+            firstClaim.leaseToken,
+          ),
+        ).resolves.toBe(false);
+        await expect(
+          database.db
+            .select({ id: aiSuggestions.id })
+            .from(aiSuggestions)
+            .where(eq(aiSuggestions.contentId, contentId)),
+        ).resolves.toEqual([]);
+
+        await expect(
+          sink.releaseEvent(eventId, firstClaim.leaseToken),
+        ).resolves.toBe(false);
+
+        await expect(sink.claimEvent(eventId, contentId, 1)).resolves.toEqual({
+          state: "IN_PROGRESS",
+          leaseToken: null,
+        });
+      } finally {
+        await deleteAiSuggestionEvent(database, eventId);
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        await database.close();
+      }
+    });
+
+    it("serializes concurrent AI claims and hides their rows without worker context", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const left = createPostgresDatabase(databaseUrl);
+      const right = createPostgresDatabase(databaseUrl);
+      const eventId = randomUUID();
+      const contentId = randomUUID();
+      try {
+        await left.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "ai.suggestion.requested.v1",
+            aggregateType: "content_version",
+            aggregateId: contentId,
+            occurredAt: new Date().toISOString(),
+            schemaVersion: 1,
+            correlationId: randomUUID(),
+            payload: { content_id: contentId, version: "1" },
+          }),
+        });
+        await left.db.transaction(async (transaction) => {
+          await transaction.execute(
+            sql`select pg_advisory_xact_lock(hashtextextended(${eventId}, 0))`,
+          );
+          await expect(
+            createAiSuggestionSink(right.db, randomUUID).claimEvent(
+              eventId,
+              contentId,
+              1,
+            ),
+          ).resolves.toEqual({ state: "IN_PROGRESS", leaseToken: null });
+        });
+        const [first, second] = await Promise.all([
+          createAiSuggestionSink(left.db, randomUUID).claimEvent(
+            eventId,
+            contentId,
+            1,
+          ),
+          createAiSuggestionSink(right.db, randomUUID).claimEvent(
+            eventId,
+            contentId,
+            1,
+          ),
+        ]);
+
+        expect([first.state, second.state].sort()).toEqual([
+          "ACQUIRED",
+          "IN_PROGRESS",
+        ]);
+        await expect(
+          left.db
+            .select({ eventId: aiSuggestionEvents.eventId })
+            .from(aiSuggestionEvents)
+            .where(eq(aiSuggestionEvents.eventId, eventId)),
+        ).resolves.toEqual([]);
+        const catalog = await left.db.execute<{
+          readonly rlsEnabled: boolean;
+          readonly rlsForced: boolean;
+        }>(sql`
+          select
+            relrowsecurity as "rlsEnabled",
+            relforcerowsecurity as "rlsForced"
+          from pg_class
+          where oid = 'ai_suggestion_events'::regclass
+        `);
+        expect(catalog).toEqual([
+          expect.objectContaining({ rlsEnabled: true, rlsForced: true }),
+        ]);
+      } finally {
+        await deleteAiSuggestionEvent(left, eventId);
+        await left.db.delete(outboxEvents).where(eq(outboxEvents.id, eventId));
+        await Promise.all([left.close(), right.close()]);
       }
     });
 

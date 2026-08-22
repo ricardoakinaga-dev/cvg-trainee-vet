@@ -6,6 +6,13 @@ Este runbook fecha o mecanismo operacional sem fingir que um ambiente produtivo 
 
 - `pnpm verify`, `pnpm build`, migrações, E2E real, headers/TLS, traces e restore passam no artefato candidato;
 - `CVG_RELEASE_MANIFEST` contém `imageDigest` e `rollbackImageDigest` imutáveis, diferentes e compatíveis com migração `EXPAND_CONTRACT`;
+- o manifesto declara `DRAIN_N_MINUS_1_BEFORE_N`, exige gate de mutação
+  fechado, limita este corte a `qdrantIdentity=disabled` e define um budget de
+  drain compatível com o lote em voo;
+- `CVG_RELEASE_MUTATION_GATE_CLOSED=true` atesta que não existe outro ingress,
+  publisher ou caminho administrativo de mutação durante a janela. O
+  controlador também para o `edge`; a variável isolada não é evidência
+  produtiva suficiente;
 - IdP externo, domínio HTTPS gerenciado, storage de traces, destino de backup e janela de mudança estão aprovados;
 - `CVG_IDENTITY_PROVIDER_PROBE_PRINCIPAL` identifica uma conta técnica sintética do IdP; o valor não é uma conta de participante nem segredo;
 - `pnpm ops:verify-production-security` retorna `PASS` no ambiente de release, sem imprimir segredos.
@@ -29,25 +36,46 @@ docker compose --env-file /etc/cvg/ha.env \
 ```bash
 pnpm ops:verify-release-manifest
 CVG_RELEASE_EXECUTE=true \
+CVG_RELEASE_MUTATION_GATE_CLOSED=true \
 CVG_RELEASE_MANIFEST=/run/secrets/cvg-release-manifest.json \
 CVG_COMPOSE_ENV_FILE=/etc/cvg/ha.env \
 CVG_COMPOSE_METRICS_ENV_FILE=/etc/cvg/metrics.env \
 pnpm ops:deploy-release
 ```
 
-O controlador executa `pull` do digest, migração expand/contract, `api-a` + `worker-a`, health gate e promoção das demais réplicas. Falha antes da promoção mantém o tráfego no release anterior; falha após promoção exige rollback explícito e registro do incidente.
+O controlador primeiro prova que as quatro réplicas estão no digest N-1,
+para o `edge`, drena e para os dois workers N-1 e exige `exited/0` antes da
+migração. Depois sobe e prova os dois workers N, confirma `api-b` N-1, executa
+o canário sintético direto em `api-a` N, promove `api-b` N e somente então
+reabre o `edge`. O procedimento cria uma janela de indisponibilidade planejada;
+nenhuma falha anterior à reabertura pode expor o release candidato ao tráfego.
+No deploy, `ExitCode` diferente de zero, processo ausente ou SIGKILL aborta
+antes da migração/promoção.
 
 ## Rollback
 
 ```bash
 CVG_RELEASE_EXECUTE=true \
+CVG_RELEASE_MUTATION_GATE_CLOSED=true \
 CVG_RELEASE_MANIFEST=/run/secrets/cvg-release-manifest.json \
 CVG_COMPOSE_ENV_FILE=/etc/cvg/ha.env \
 CVG_COMPOSE_METRICS_ENV_FILE=/etc/cvg/metrics.env \
 pnpm ops:rollback-release
 ```
 
-Rollback de schema só é permitido quando a migração é compatível. Migração destrutiva exige procedimento separado, backup íntegro e aprovação humana; o controlador nunca sobrescreve PostgreSQL.
+O rollback para o `edge` e interrompe os dois workers N. Para workers que
+estavam ativos no início da tentativa, exige saída `exited/0`; um worker já
+falho antes do rollback pode entrar somente no caminho explícito de
+recuperação, enquanto processo ausente ou reiniciando falha fechado. Antes de
+reintroduzir qualquer worker N-1, o controlador consulta o PostgreSQL dentro do
+contêiner e exige zero eventos `PENDING` ou `PROCESSING`. Backlog não é
+descartado nem entregue ao consumidor antigo: o rollback aborta e requer drain
+por N saudável ou recuperação/quarentena manual. Com quiescência comprovada,
+o controlador sobe e prova os dois workers N-1, faz canário de `api-a` N-1,
+promove `api-b` N-1 e reabre o `edge` somente após saúde e proveniência. A
+migração expandida é preservada; o controlador não executa down/contract.
+Migração destrutiva exige procedimento separado, backup íntegro e aprovação
+humana.
 
 ## Backup
 

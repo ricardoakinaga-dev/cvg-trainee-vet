@@ -5,6 +5,74 @@
 **Predecessor preservado:** `0517_dual_98_backlog.md`
 **Estado:** `IN_PROGRESS / PILOT_BLOCKED`
 
+## Atualização de execução — 2026-08-22T03:23:31-03:00 — U98-117 harness live
+
+A revisão pré-commit rejeitou o snapshot porque a Rodada 93 estava no
+worktree, mas não no estado. A prova PostgreSQL 16 descartável passou com banco
+por execução, URL administrativa explícita, roles/URLs distintas de API e
+worker, grants, verificação de identidade e cleanup. Contrato `6/6`, live
+`61/320/0`, migrations `35/35`, cobertura `206/1224/27` em
+`94,92/90,77/95,26/95,64`, build `12/12` e gates locais passaram. A fixture
+sintética literal foi saneada; evidência: `docs/148`.
+
+**status:** harness `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. Próximo recorte: duas imagens históricas,
+SIGTERM/Docker e matriz N/N-1. Restore/Qdrant, roles produtivas, writers,
+backlog, publisher, scheduler/lease/alias, secrets, RC, clínica, `0/145` e
+gates externos seguem abertos. `.gauntlet/` permanece local; sem commit/push.
+
+## Atualização de execução — 2026-08-22T01:50:11-03:00 — U98-117 cutover de workers
+
+RED reproduziu manifesto/gate incompletos, claim após drain, cleanup prematuro,
+mistura N/N-1, rollback sem quiescência, force-kill, backlog e rehearsal com a
+mesma imagem. GREEN implementou drain/readiness fail-closed, espera do lote em
+voo, parada do edge, estágios imutáveis, `exited/0`, outbox zero, migration
+expand preservada e proveniência Qdrant `disabled`. Release/proveniência
+`31/31`, worker `75/75`, cobertura `205/1216/27` em
+`94,94/90,80/95,26/95,66`, build `12/12`, dry-runs e gates locais passaram.
+Evidência: `docs/147`.
+
+**status:** recorte mecânico `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. Duas críticas independentes deram `PASS` local
+com limitações e nenhum CRITICAL/HIGH. Próximo recorte: banco live descartável,
+roles/URLs admin/API/worker, grants, fixtures determinísticas e zero skip
+silencioso; depois duas imagens, tráfego/SIGTERM e matriz comportamental.
+Secrets, RC, clínica, `0/145` e gates externos seguem abertos; sem commit/push.
+
+## Atualização de execução — 2026-08-22T01:06:20-03:00 — U98-106/B99-205 Qdrant
+
+RED reproduziu no-op desligado, partial writes, fonte stale, censo filtrado,
+batch 2.049 e resposta de provider com índices inválidos. GREEN adicionou
+fail-closed, censo integral, postconditions, recheck bounded, embedding somente
+de changed em `2048/300000 bytes` e upsert/delete de `100`. Foco `22/22`,
+worker `73/73`, live sintético `4/4 + 1/1`, cobertura `205/1204/27` em
+`95,00/90,84/95,36/95,70`, build `12/12` e gates locais passaram. Evidência:
+`docs/146`.
+
+**status:** algoritmo N `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. O parecer independente final é `PASS` local.
+Scheduler/estado durável, lease multi-réplica, N/N-1/alias, provider real,
+harness live isolado, roles/publisher, secrets, RC, clínica, `0/145` e gates
+externos seguem abertos. Sem commit/push; próximo recorte local: durabilidade e
+coordenação do reconcile.
+
+## Atualização de execução — 2026-08-22T00:10:53-03:00 — U98-106/B99-201/B99-205 AI replay
+
+RED reproduziu lease stale, replay depois do cleanup e estado temporal
+inválido. GREEN adicionou claim/tombstone durável, token de fencing, relógio
+do PostgreSQL e draft+completion atômico. A prova PostgreSQL 16 sintética com
+role restrita passou `7/7`; foco `49/49`, worker `64/64`, cobertura
+`205/1191/25` em `94,96/90,81/95,32/95,67`, build `12/12`, migrações
+`34/34` e gates locais passaram. Evidência detalhada: `docs/145`.
+
+**status:** consumidor N `LOCAL_PASS_WITH_LIMITATIONS`; programa
+`IN_PROGRESS / PILOT_BLOCKED`. O parecer final foi `PASS` local N e
+`NOT RELEASE-PASS`: N-1 não respeita tombstones, roles API/worker são
+compartilhadas, o provider é at-least-once e falta publisher produtivo. Qdrant
+entre writes, rehearsal/retention, quatro assignments sensíveis e histórico
+Git acima do budget, RC, clínica, `0/145` e gates externos continuam abertos.
+Sem commit/push; próxima execução local: consistência/compensação Qdrant.
+
 ## Atualização de execução — 2026-08-21T12:10:51-03:00 — B99-201 worker persistence
 
 Uma inspeção independente read-only reproduziu que exceções de `markFailed`

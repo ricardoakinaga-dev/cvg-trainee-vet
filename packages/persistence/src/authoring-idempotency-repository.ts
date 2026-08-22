@@ -121,12 +121,23 @@ function parsePreflight(value: unknown): AuthoringPreflight {
   if (!isRecord(checks)) {
     throw new PersistenceMappingError("authoring preflight checks are invalid");
   }
+  const sourceVerification = value.sourceVerification;
+  if (
+    sourceVerification !== undefined &&
+    sourceVerification !== "VERIFICADO_AUTOMATICAMENTE" &&
+    sourceVerification !== "INVALIDO"
+  ) {
+    throw new PersistenceMappingError(
+      "authoring preflight source verification is invalid",
+    );
+  }
   return Object.freeze({
     ruleVersion: "authoring-preflight-v1" as const,
     technicalChecksPassed: requiredBoolean(
       value.technicalChecksPassed,
       "preflight.technicalChecksPassed",
     ),
+    ...(sourceVerification === undefined ? {} : { sourceVerification }),
     ...(value.readyForPublication === undefined
       ? {}
       : {
@@ -324,7 +335,7 @@ async function rehydrateReplayResult(
   }
   if (
     record.contentStatus !== payload.contentStatus ||
-    JSON.stringify(record.preflight) !== JSON.stringify(payload.preflight)
+    responseHash(record.preflight) !== responseHash(payload.preflight)
   ) {
     throw new PersistenceMappingError(
       "authoring idempotency content state has changed",

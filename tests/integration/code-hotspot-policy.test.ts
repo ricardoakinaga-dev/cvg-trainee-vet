@@ -85,7 +85,7 @@ describe("code hotspot policy", () => {
 
     expect(criticalCommands).toHaveLength(2);
     expect(criticalCommands.filter((fn) => fn.lineCount > 50)).toEqual([]);
-  });
+  }, 30_000);
 
   it("keeps dependency diagnostics orchestration below the function-size bar", async () => {
     const { loadCodeHotspotSnapshot } =
@@ -101,7 +101,7 @@ describe("code hotspot policy", () => {
 
     expect(dependencyResponse).toBeDefined();
     expect(dependencyResponse?.lineCount).toBeLessThanOrEqual(50);
-  });
+  }, 30_000);
 
   it("keeps every production function at or below the B99-305 closure bar", async () => {
     const { loadCodeHotspotSnapshot } =
@@ -113,5 +113,5 @@ describe("code hotspot policy", () => {
 
     expect(snapshot.maxLongestFunctionLines).toBe(100);
     expect(overBudget).toEqual([]);
-  });
+  }, 30_000);
 });

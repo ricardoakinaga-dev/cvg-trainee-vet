@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => {
     close: vi.fn(async () => undefined),
     address: vi.fn(() => null),
     markReady: vi.fn(),
+    markDraining: vi.fn(),
     markDependenciesHealthy: vi.fn(),
     markDependenciesUnhealthy: vi.fn(),
     markSyntheticProbePassed: vi.fn(),
@@ -39,7 +40,12 @@ const mocks = vi.hoisted(() => {
     listPublishedIndexable: vi.fn(async () => []),
   };
   const suggestionSink = {
-    saveDraftSuggestion: vi.fn(async () => undefined),
+    claimEvent: vi.fn(async () => ({
+      state: "ACQUIRED" as const,
+      leaseToken: "55555555-5555-4555-8555-555555555555",
+    })),
+    saveDraftSuggestion: vi.fn(async () => true),
+    releaseEvent: vi.fn(async () => true),
   };
   const observability = {
     metrics: { prometheus: vi.fn(() => "") },
@@ -158,6 +164,7 @@ function resetScenario(): void {
   mocks.health.close.mockReset().mockResolvedValue(undefined);
   mocks.health.address.mockReset().mockReturnValue(null);
   mocks.health.markReady.mockReset();
+  mocks.health.markDraining.mockReset();
   mocks.health.markDependenciesHealthy.mockReset();
   mocks.health.markDependenciesUnhealthy.mockReset();
   mocks.health.markSyntheticProbePassed.mockReset();
@@ -172,9 +179,12 @@ function resetScenario(): void {
   mocks.outbox.removeProbe.mockReset().mockResolvedValue(undefined);
   mocks.source.findPublishedIndexable.mockReset().mockResolvedValue(null);
   mocks.source.listPublishedIndexable.mockReset().mockResolvedValue([]);
-  mocks.suggestionSink.saveDraftSuggestion
-    .mockReset()
-    .mockResolvedValue(undefined);
+  mocks.suggestionSink.claimEvent.mockReset().mockResolvedValue({
+    state: "ACQUIRED",
+    leaseToken: "55555555-5555-4555-8555-555555555555",
+  });
+  mocks.suggestionSink.saveDraftSuggestion.mockReset().mockResolvedValue(true);
+  mocks.suggestionSink.releaseEvent.mockReset().mockResolvedValue(true);
 
   mocks.createWorkerHealthServer.mockReturnValue(mocks.health);
   mocks.createServerIntegrations.mockReturnValue(mocks.integrations);
@@ -395,8 +405,9 @@ describe("worker runtime", () => {
       expect(mocks.health.markDependenciesUnhealthy).toHaveBeenCalledOnce();
       expect(mocks.processOutboxOnce).not.toHaveBeenCalled();
 
-      await runtime.close();
+      const closePromise = runtime.close();
       await vi.advanceTimersByTimeAsync(1_000);
+      await closePromise;
       await expect(runPromise).resolves.toBeUndefined();
     } finally {
       vi.useRealTimers();
@@ -421,7 +432,7 @@ describe("worker runtime", () => {
       const runtime = createWorkerRuntime(environment());
       mocks.processOutboxOnce.mockImplementation(async () => {
         expect(mocks.runWorkerClaimAckProbe).toHaveBeenCalledTimes(2);
-        await runtime.close();
+        runtime.requestDrain();
         return { claimed: 0, processed: 0, failed: 0 };
       });
 
@@ -459,8 +470,9 @@ describe("worker runtime", () => {
       await processCalled;
       expect(mocks.processOutboxOnce).toHaveBeenCalledOnce();
 
-      await runtime.close();
+      const closePromise = runtime.close();
       await vi.advanceTimersByTimeAsync(1_000);
+      await closePromise;
       await expect(runPromise).resolves.toBeUndefined();
     } finally {
       vi.useRealTimers();
@@ -470,12 +482,75 @@ describe("worker runtime", () => {
   it("stops after a claimed batch without waiting for an idle delay", async () => {
     const runtime = createWorkerRuntime(environment());
     mocks.processOutboxOnce.mockImplementation(async () => {
-      await runtime.close();
+      runtime.requestDrain();
       return { claimed: 1, processed: 1, failed: 0 };
     });
 
     await expect(runtime.run()).resolves.toBeUndefined();
     expect(mocks.processOutboxOnce).toHaveBeenCalledOnce();
+    expect(mocks.integrations.close).toHaveBeenCalledOnce();
+  });
+
+  it("marks draining and waits for the active batch before closing dependencies", async () => {
+    let observeBatch: (() => void) | undefined;
+    const batchObserved = new Promise<void>((resolve) => {
+      observeBatch = resolve;
+    });
+    let finishBatch: (() => void) | undefined;
+    const batchFinished = new Promise<void>((resolve) => {
+      finishBatch = resolve;
+    });
+    mocks.processOutboxOnce.mockImplementationOnce(async () => {
+      observeBatch?.();
+      await batchFinished;
+      return { claimed: 1, processed: 1, failed: 0 };
+    });
+    const runtime = createWorkerRuntime(environment());
+    const runPromise = runtime.run();
+    await batchObserved;
+
+    const closePromise = runtime.close();
+    await Promise.resolve();
+
+    expect(mocks.health.markDraining).toHaveBeenCalledOnce();
+    expect(mocks.health.close).not.toHaveBeenCalled();
+    expect(mocks.integrations.close).not.toHaveBeenCalled();
+
+    finishBatch?.();
+    await expect(closePromise).resolves.toBeUndefined();
+    await expect(runPromise).resolves.toBeUndefined();
+    expect(mocks.processOutboxOnce).toHaveBeenCalledOnce();
+    expect(mocks.health.close).toHaveBeenCalledOnce();
+    expect(mocks.integrations.close).toHaveBeenCalledOnce();
+  });
+
+  it("does not claim a new batch when drain begins during readiness refresh", async () => {
+    let observeRefresh: (() => void) | undefined;
+    const refreshObserved = new Promise<void>((resolve) => {
+      observeRefresh = resolve;
+    });
+    let finishRefresh: (() => void) | undefined;
+    const refreshFinished = new Promise<void>((resolve) => {
+      finishRefresh = resolve;
+    });
+    let healthcheckCalls = 0;
+    mocks.integrations.healthcheck.mockImplementation(async () => {
+      healthcheckCalls += 1;
+      if (healthcheckCalls === 2) {
+        observeRefresh?.();
+        await refreshFinished;
+      }
+    });
+    const runtime = createWorkerRuntime(environment());
+    const runPromise = runtime.run();
+    await refreshObserved;
+
+    runtime.requestDrain();
+    finishRefresh?.();
+
+    await expect(runPromise).resolves.toBeUndefined();
+    expect(mocks.processOutboxOnce).not.toHaveBeenCalled();
+    expect(mocks.health.markDraining).toHaveBeenCalledOnce();
     expect(mocks.integrations.close).toHaveBeenCalledOnce();
   });
 

@@ -28,6 +28,7 @@ export {
   accountInvitations,
   accounts,
   authoringWorkflowIdempotency,
+  aiSuggestionEvents,
   aiSuggestions,
   assessmentIdempotency,
   assessmentResults,
@@ -226,6 +227,7 @@ export type {
 } from "./outbox-repository.js";
 export { createAiSuggestionSink } from "./ai-suggestion-repository.js";
 export type {
+  AiSuggestionEventClaim,
   AiSuggestionSinkPort,
   InternalAiSuggestion,
 } from "./ai-suggestion-repository.js";

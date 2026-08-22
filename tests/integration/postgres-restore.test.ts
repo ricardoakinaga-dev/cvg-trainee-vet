@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 
 const runLiveRestoreTest = process.env.CVG_RUN_LIVE_RESTORE_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
+const databaseUrl = process.env.CVG_TEST_ADMIN_DATABASE_URL;
 const scriptPath = fileURLToPath(
   new URL("../../scripts/verify-postgres-restore.mjs", import.meta.url),
 );
@@ -28,7 +28,7 @@ function runRestoreVerification(
 }> {
   return new Promise((resolve, reject) => {
     if (databaseUrl === undefined) {
-      reject(new Error("CVG_TEST_DATABASE_URL is required"));
+      reject(new Error("CVG_TEST_ADMIN_DATABASE_URL is required"));
       return;
     }
 
@@ -78,7 +78,7 @@ function createBackupArtifact(directory: string): Promise<{
 }> {
   return new Promise((resolve, reject) => {
     if (databaseUrl === undefined) {
-      reject(new Error("CVG_TEST_DATABASE_URL is required"));
+      reject(new Error("CVG_TEST_ADMIN_DATABASE_URL is required"));
       return;
     }
     const child = spawn(process.execPath, [backupScriptPath], {

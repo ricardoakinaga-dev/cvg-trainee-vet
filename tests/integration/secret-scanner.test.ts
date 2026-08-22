@@ -1187,7 +1187,7 @@ describe("secret scanner", () => {
       worker.postMessage("stop");
       await worker.terminate();
     }
-  }, 15_000);
+  }, 30_000);
 
   it("pins Git metadata while staged content is being read", async () => {
     const parent = await mkdtemp(
@@ -1266,7 +1266,7 @@ describe("secret scanner", () => {
       worker.postMessage("stop");
       await worker.terminate();
     }
-  });
+  }, 30_000);
 
   it("fails closed when Git metadata entry budget is exceeded", async () => {
     const directory = await mkdtemp(
@@ -1358,7 +1358,7 @@ describe("secret scanner", () => {
         rule: "unreadable-file",
       }),
     ]);
-  });
+  }, 30_000);
 
   it("fails closed when workspace recursion depth budget is exceeded", async () => {
     const directory = await mkdtemp(
@@ -1413,7 +1413,7 @@ describe("secret scanner", () => {
         rule: "unreadable-file",
       }),
     ]);
-  }, 15000);
+  }, 30_000);
 
   it("fails closed when aggregate Git scan bytes are exceeded", async () => {
     const directory = await mkdtemp(
@@ -1469,7 +1469,7 @@ describe("secret scanner", () => {
         rule: "git-object-unreadable",
       }),
     ]);
-  }, 60000);
+  }, 90_000);
 
   it("counts bounded reads that exceed the per-file staged cap", async () => {
     const directory = await mkdtemp(

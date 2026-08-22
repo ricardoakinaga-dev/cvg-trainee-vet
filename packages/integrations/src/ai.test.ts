@@ -210,6 +210,54 @@ describe("AI integration boundary", () => {
     );
   });
 
+  it("rejects embedding batches above the provider count or byte bounds", async () => {
+    const create = vi.fn();
+    const provider = createOpenAiEmbeddingProvider(
+      { apiKey: "test-key", model: "embedding-test", dimension: 2 },
+      { create },
+    );
+
+    await expect(
+      provider.embed(Array.from({ length: 2_049 }, () => "x")),
+    ).rejects.toThrow("batch");
+    await expect(provider.embed(["x".repeat(300_001)])).rejects.toThrow(
+      "batch",
+    );
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("rejects duplicate or out-of-range embedding response indices", async () => {
+    const duplicateIndex = createOpenAiEmbeddingProvider(
+      { apiKey: "test-key", model: "embedding-test", dimension: 2 },
+      {
+        create: vi.fn().mockResolvedValue({
+          data: [
+            { index: 0, embedding: [0.1, 0.2] },
+            { index: 0, embedding: [0.9, 0.8] },
+          ],
+        }),
+      },
+    );
+    const outOfRangeIndex = createOpenAiEmbeddingProvider(
+      { apiKey: "test-key", model: "embedding-test", dimension: 2 },
+      {
+        create: vi.fn().mockResolvedValue({
+          data: [
+            { index: 0, embedding: [0.1, 0.2] },
+            { index: 2, embedding: [0.9, 0.8] },
+          ],
+        }),
+      },
+    );
+
+    await expect(duplicateIndex.embed(["first", "second"])).rejects.toThrow(
+      "order contract",
+    );
+    await expect(outOfRangeIndex.embed(["first", "second"])).rejects.toThrow(
+      "order contract",
+    );
+  });
+
   it("creates deterministic local embeddings without external credentials", async () => {
     const provider = createDeterministicEmbeddingProvider({
       model: "cvg-local-embedding-v1",

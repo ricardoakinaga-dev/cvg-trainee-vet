@@ -40,6 +40,237 @@ Decisões tomadas, pendências e necessidade de aprovação humana.
 
 IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
+## 2026-08-22T03:23:31-03:00 — DUAL99-U98-117-LIVE-HARNESS
+
+### TIMESTAMP
+
+2026-08-22 03:23:31 -03:00
+
+### ENGINE
+
+BUILD ENGINE + RUNTIME CONTROLLER + REVIEW + SECURITY REVIEW
+
+### PHASE
+
+Dual 99 / F99-2 — release, worker e dados derivados
+
+### SPRINT
+
+F99-2 — compatibilidade, cutover e rollback
+
+### TASK
+
+U98-117 — Rodada 93, isolamento do harness live.
+
+### ACTION
+
+A revisão pré-commit encontrou o executor, o teste, a migration `0034` e as
+fixtures live à frente do estado persistido e rejeitou a publicação integral.
+O recorte foi validado contra PostgreSQL 16 descartável: URL administrativa
+obrigatória, banco por execução, roles/URLs separadas de API e worker, grants e
+identidades verificáveis, migrations e cleanup fail-closed. Um token sintético
+literal encontrado pelo scanner no teste do harness foi substituído por uma
+fixture construída, preservando o contrato.
+
+### RESULT
+
+Contrato focal `6/6`; live PostgreSQL `61` arquivos / `320` testes / `0` skips;
+migrations `35/35` e safety `0` destrutivas; cobertura `206/1224/27` em
+`94,92/90,77/95,26/95,64`; focos `105/105 + 37/37`; build `12/12`; formato,
+lint, typecheck, CI, traceability, Dual99, skips, hotspots, documentação,
+exposure, audit de dependências e diff-check passaram. O scanner voltou aos
+cinco bloqueios conhecidos: quatro assignments locais ignorados e um finding
+genérico do histórico acima do budget. Banco, roles, container e shim efêmero
+do cliente foram removidos. Evidência: `docs/148`.
+
+### DECISIONS
+
+O isolamento do harness é prova local, não release-pass. `.gauntlet/` permanece
+fora do staging. Restore/Qdrant opcionais, roles produtivas separadas, matriz
+com duas imagens, SIGTERM/Docker, writers externos, drain de backlog,
+publisher, scheduler/lease/alias, secrets/histórico, RC, clínica, `0/145`,
+gates externos e reauditoria continuam abertos. Nenhum commit, push, release,
+score, piloto ou decisão clínica ocorreu neste checkpoint.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Publicar o checkpoint local reconciliado; depois executar duas imagens
+históricas e a matriz N/N-1 com SIGTERM/Docker real, sem relaxar os demais
+gates.
+
+## 2026-08-22T01:50:11-03:00 — DUAL99-U98-117-WORKER-CUTOVER
+
+### TIMESTAMP
+
+2026-08-22 01:50:11 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + ORCHESTRATE + ENGINEERING FRAMEWORK + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-2 — release, worker e dados derivados
+
+### SPRINT
+
+F99-2 — compatibilidade, cutover e rollback
+
+### TASK
+
+U98-117 — drain e cutover mecânico sem workers N/N-1 concorrentes.
+
+### ACTION
+
+RED reproduziu manifesto/gate incompletos, claim após drain, cleanup antes do
+lote ativo, rollout misto, rollback sem quiescência, force-kill aceito, backlog
+e rehearsal com a mesma imagem. GREEN adicionou drain fail-closed, parada do
+edge, gate externo, estágios imutáveis, `exited/0`, outbox zero, schema expand
+preservado e proveniência Qdrant `disabled` ligada ao runtime.
+
+### RESULT
+
+Release/proveniência `31/31`; worker `75/75`; cobertura `205/1216/27` em
+`94,94/90,80/95,26/95,66`; build `12/12`; migrations `34/34`; dry-run de
+deploy/rollback, formato, lint, typecheck, arquitetura, hotspots e diff-check
+passaram. Dois críticos independentes retornaram `PASS` local com limitações,
+sem CRITICAL/HIGH. Evidência: `docs/147`.
+
+### DECISIONS
+
+O cutover é janela de manutenção e não prova matriz comportamental, duas
+imagens históricas, writers externos ou Qdrant habilitado. O harness live
+compartilha conexão/role e tem fixtures/guards não reproduzíveis; ele será o
+próximo recorte TDD. Nenhum commit, push, score, piloto ou decisão clínica foi
+realizado porque secrets e gates humanos/externos continuam fechados.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Criar banco descartável por execução e separar URLs/roles de admin, API e
+worker, com grants verificáveis, fixtures determinísticas e zero skip
+silencioso; depois executar a matriz N/N-1 real e os demais gates abertos.
+
+## 2026-08-22T01:06:20-03:00 — DUAL99-U98-106-B99-205-QDRANT-CONVERGENCE
+
+### TIMESTAMP
+
+2026-08-22 01:06:20 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + ORCHESTRATE + ENGINEERING FRAMEWORK + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-2 — worker, observabilidade e dados derivados
+
+### SPRINT
+
+F99-2 — consistência, fault e rebuild do índice derivado
+
+### TASK
+
+U98-106/B99-205 — convergência Qdrant local N.
+
+### ACTION
+
+RED reproduziu no-op com integrações desligadas, writes resolvidos
+parcialmente, fonte stale, censo filtrado, batch acima do provider e resposta
+com índices duplicados. GREEN adicionou censo integral fail-closed,
+postconditions em duas fases, releitura PostgreSQL bounded, metadata antes do
+vetor, batching por quantidade/bytes e writes de 100.
+
+### RESULT
+
+Foco `22/22`; worker `73/73`; Qdrant/PostgreSQL live sintético `4/4 + 1/1`;
+cobertura `205/1204/27` em `95,00/90,84/95,36/95,70`; build `12/12`;
+migrações `34/34`; critical/mutation `7/7`; formato, lint, tipos, diff,
+arquitetura, exposure, dependências e governanças passaram. Os contêineres
+sintéticos foram removidos. `verify:secrets` falhou fechado em quatro
+assignments redigidos e um finding genérico de histórico acima do budget.
+
+### DECISIONS
+
+O parecer independente final é `PASS` local N, não release-pass. Scheduler e
+estado durável, lease multi-réplica, coleção/alias N/N-1, provider real e
+harness live isolado seguem abertos, junto aos gates humanos/externos. Nenhum
+commit, push, score, piloto ou decisão clínica foi realizado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Implementar scheduler/estado `INDEX_PENDING/INDEX_BLOCKED` e lease distribuída
+por TDD; depois executar U98-117 para rollout versionado e isolar o agregador
+live por banco/role/fixture, sem relaxar secrets, RC, clínica ou `0/145`.
+
+## 2026-08-22T00:10:53-03:00 — DUAL99-U98-106-AI-SUGGESTION-IDEMPOTENCY
+
+### TIMESTAMP
+
+2026-08-22 00:10:53 -03:00
+
+### ENGINE
+
+BUILD + AUDIT + GAUNTLET + ORCHESTRATE + ENGINEERING FRAMEWORK + RUNTIME CONTROLLER
+
+### PHASE
+
+Dual 99 / F99-2 — worker, observabilidade e dados derivados
+
+### SPRINT
+
+F99-2 — fault, concorrência e replay do worker
+
+### TASK
+
+U98-106/B99-201/B99-205 — idempotência de sugestão de IA na versão N.
+
+### ACTION
+
+O candidato dirty preexistente foi recuperado sem sobrescrever mudanças. RED
+reproduziu lease stale, replay após cleanup e estado temporal inválido. GREEN
+adicionou migration expand, tombstone durável, token/fencing, relógio do
+PostgreSQL e save do draft + completion atômico. A matriz live acrescentou
+concorrência, RLS/FORCE, reclaim stale e fault injection transacional.
+
+### RESULT
+
+Foco `49/49`; PostgreSQL 16 sintético/restrito `7/7`; worker `64/64`;
+cobertura `205/1191/25` em `94,96/90,81/95,32/95,67`; build `12/12`;
+migrações `34/34`; formato, lint, tipos, diff, exposure, dependências,
+decisões críticas e governança de skips passaram. O contêiner descartável
+foi removido. `verify:secrets` falhou fechado em quatro assignments redigidos
+e um finding genérico de histórico acima do budget.
+
+### DECISIONS
+
+Dois pareceres independentes aceitaram o consumidor N local e rejeitaram
+release. N/N-1 exige gate/drain; roles API/worker devem ser separadas; o
+provider continua at-least-once; publisher produtivo e consistência Qdrant
+continuam abertos. Nenhum commit/push, score, piloto ou decisão clínica foi
+realizado.
+
+### STATUS
+
+IN_PROGRESS / PILOT_BLOCKED
+
+### NEXT ACTION
+
+Fechar por TDD a consistência/compensação entre writes do Qdrant; em seguida,
+materializar U98-117 para rollout N/N-1 e isolamento de roles, preservando os
+gates humanos, externos e de release.
+
 ## 2026-08-21T12:19:51-03:00 — DUAL99-U98-106-WORKER-CLEANUP
 
 ### TIMESTAMP

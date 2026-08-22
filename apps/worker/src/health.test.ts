@@ -42,6 +42,14 @@ describe("worker health and metrics server", () => {
       await expect(fetch(`${baseUrl}/health/ready`)).resolves.toMatchObject({
         status: 200,
       });
+
+      server.markDraining();
+      const draining = await fetch(`${baseUrl}/health/ready`);
+      expect(draining.status).toBe(503);
+      await expect(draining.json()).resolves.toMatchObject({
+        status: "not_ready",
+        checks: { accepting_work: false },
+      });
       const metrics = await fetch(`${baseUrl}/internal/metrics/prometheus`, {
         headers: { authorization: `Bearer ${"m".repeat(32)}` },
       });

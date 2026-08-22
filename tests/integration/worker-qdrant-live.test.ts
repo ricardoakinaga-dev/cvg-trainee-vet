@@ -26,7 +26,7 @@ import type { OutboxEventRecord } from "../../packages/persistence/src/index.js"
 const runLiveTests =
   process.env.CVG_RUN_LIVE_DB_TESTS === "true" &&
   process.env.CVG_RUN_LIVE_QDRANT_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
+const databaseUrl = process.env.CVG_TEST_WORKER_DATABASE_URL;
 const qdrantUrl = process.env.CVG_TEST_QDRANT_URL;
 const qdrantApiKey = process.env.CVG_TEST_QDRANT_API_KEY;
 
@@ -216,5 +216,89 @@ describe.skipIf(
       });
       await database.close();
     }
-  });
+  }, 30_000);
+
+  it("converges after a PostgreSQL withdrawal races with a stale Qdrant upsert", async () => {
+    if (databaseUrl === undefined || qdrantUrl === undefined) {
+      throw new Error("live database and Qdrant configuration are required");
+    }
+
+    const database = createPostgresDatabase(databaseUrl);
+    const collection = `cvg_worker_race_${Date.now()}`;
+    const store = createQdrantVectorStore({
+      url: qdrantUrl,
+      ...(qdrantApiKey ? { apiKey: qdrantApiKey } : {}),
+      collection,
+      embeddingDimension: 8,
+      embeddingModel: "cvg-live-test-embedding-v1",
+      indexVersion: "v1",
+    });
+    const embedding = createDeterministicEmbeddingProvider({
+      model: "cvg-live-test-embedding-v1",
+      dimension: 8,
+    });
+    const contentId = randomUUID();
+    const contentVersionId = randomUUID();
+    const scopeId = randomUUID();
+
+    try {
+      await database.db.insert(contentVersions).values({
+        id: contentVersionId,
+        contentId,
+        scopeId,
+        version: 1,
+        status: "PUBLICADO",
+        kind: "LEITURA",
+        title: "Conteúdo sintético concorrente",
+        participantText: "Texto sintético para retirada concorrente.",
+        responseMode: "NONE",
+      });
+      await store.ensureCollection();
+
+      const contentSource = createContentIndexSourceRepository(database.db);
+      const source = {
+        findPublishedIndexable: contentSource.findPublishedIndexable,
+        listPublishedIndexable: async () =>
+          (await contentSource.listPublishedIndexable()).filter(
+            (record) => record.scopeId === scopeId,
+          ),
+      };
+      let withdrawalInjected = false;
+      const faultingStore = Object.freeze({
+        ...store,
+        upsert: async (
+          points: Parameters<typeof store.upsert>[0],
+        ): Promise<void> => {
+          if (!withdrawalInjected) {
+            withdrawalInjected = true;
+            await database.db
+              .update(contentVersions)
+              .set({ status: "RETIRADO" })
+              .where(eq(contentVersions.id, contentVersionId));
+          }
+          await store.upsert(points);
+        },
+      });
+
+      await expect(
+        reconcileVectorIndex({
+          source,
+          embedding,
+          vectorStore: faultingStore,
+        }),
+      ).resolves.toEqual({ expected: 0, upserted: 1, removed: 1 });
+      expect(withdrawalInjected).toBe(true);
+      await expect(store.list()).resolves.toEqual([]);
+    } finally {
+      await database.db
+        .delete(contentVersions)
+        .where(eq(contentVersions.contentId, contentId));
+      const headers = qdrantApiKey ? { "api-key": qdrantApiKey } : undefined;
+      await fetch(`${qdrantUrl}/collections/${collection}`, {
+        method: "DELETE",
+        ...(headers ? { headers } : {}),
+      });
+      await database.close();
+    }
+  }, 30_000);
 });

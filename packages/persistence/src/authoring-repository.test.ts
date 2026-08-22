@@ -59,6 +59,7 @@ const row = {
   preflight: {
     ruleVersion: "authoring-preflight-v1",
     technicalChecksPassed: true,
+    sourceVerification: "VERIFICADO_AUTOMATICAMENTE",
     readyForPublication: true,
     checks: {
       requiredFields: true,
@@ -830,6 +831,13 @@ describe("authoring persistence mapping", () => {
           preflight: { ...row.preflight, technicalChecksPassed: "yes" },
         },
         "preflight.technicalChecksPassed must be boolean",
+      ],
+      [
+        {
+          ...base,
+          preflight: { ...row.preflight, sourceVerification: "UNKNOWN" },
+        },
+        "preflight source verification is invalid",
       ],
       [
         { ...base, recordHash: "" },

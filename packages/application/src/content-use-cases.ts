@@ -15,6 +15,7 @@ import {
 import { createAuditEntry, type AuditPort } from "./audit.js";
 import { ApplicationError, toApplicationError } from "./errors.js";
 import type { ClinicalApproverPort } from "./authoring-use-cases.js";
+import type { TransactionSecurityContext } from "./transaction-context.js";
 
 export type ContentRecord = Readonly<{
   readonly contentId: string;
@@ -140,6 +141,7 @@ export interface ContentTransactionalOperations {
 export interface ContentTransactionPort {
   readonly run: <Result>(
     work: (operations: ContentTransactionalOperations) => Promise<Result>,
+    context?: TransactionSecurityContext,
   ) => Promise<Result>;
 }
 
@@ -537,12 +539,14 @@ export async function advanceContent(
 ): Promise<ContentRecord> {
   validateAdvanceContentCommand(command);
   try {
-    return await dependencies.transaction.run((operations) =>
-      executeContentTransitionWithinTransaction(
-        command,
-        operations,
-        dependencies.idFactory,
-      ),
+    return await dependencies.transaction.run(
+      (operations) =>
+        executeContentTransitionWithinTransaction(
+          command,
+          operations,
+          dependencies.idFactory,
+        ),
+      { scopeId: command.scopeId },
     );
   } catch (error) {
     throw normalizeContentError(error);

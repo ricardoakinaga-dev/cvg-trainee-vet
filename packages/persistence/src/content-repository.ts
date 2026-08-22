@@ -7,6 +7,7 @@ import type {
   ContentUseCaseDependencies,
   ContentRepositoryPort,
   ContentWorkflowEvent,
+  TransactionSecurityContext,
 } from "@cvg/application";
 import type { ContentStatus, ContentWithdrawalReasonCode } from "@cvg/domain";
 
@@ -16,6 +17,7 @@ import {
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
 import { createClinicalApproverPort } from "./clinical-approver-repository.js";
+import { setDatabaseSecurityContext } from "./security-context.js";
 import {
   contentEditorialRecords,
   contentReviewDecisions,
@@ -586,10 +588,14 @@ export function createContentUseCaseDependencies(
     transaction: {
       run: async <Result>(
         work: (operations: ContentTransactionalOperations) => Promise<Result>,
+        context?: TransactionSecurityContext,
       ): Promise<Result> =>
-        db.transaction(async (transaction) =>
-          work(createContentTransactionalOperations(transaction)),
-        ),
+        db.transaction(async (transaction) => {
+          if (context !== undefined) {
+            await setDatabaseSecurityContext(transaction, context);
+          }
+          return work(createContentTransactionalOperations(transaction));
+        }),
     },
   });
 }

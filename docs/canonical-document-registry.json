@@ -19,6 +19,7 @@
     "roadmap": "BRIEFING/04.AUDIT/0518_dual_99_roadmap.md",
     "backlog": "BRIEFING/04.AUDIT/0519_dual_99_backlog.md",
     "manifest": "dual-99-program.json",
+    "latestEvidence": "docs/148_dual_99_u98_117_live_harness_isolation_evidence_2026-08-22.md",
     "previousOverlay": "CVG-DUAL-98",
     "status": "ACTIVE_EXECUTION_OVERLAY"
   },
@@ -73,6 +74,22 @@
       "localEvidence": "docs/135_dual_99_local_execution_evidence_2026-08-20.md",
       "stabilityEvidence": "docs/136_dual_99_skip-governance-20-runs-2026-08-20.md",
       "mutationEvidence": "docs/137_dual_99_critical_mutation_evidence_2026-08-20.md",
+      "latestEvidence": "docs/148_dual_99_u98_117_live_harness_isolation_evidence_2026-08-22.md",
+      "evidenceSeries": [
+        "docs/135_dual_99_local_execution_evidence_2026-08-20.md",
+        "docs/136_dual_99_skip-governance-20-runs-2026-08-20.md",
+        "docs/137_dual_99_critical_mutation_evidence_2026-08-20.md",
+        "docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md",
+        "docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md",
+        "docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md",
+        "docs/142_dual_99_b99_201_outbox_ack_state_evidence_2026-08-21.md",
+        "docs/143_dual_99_b99_201_worker_persistence_failure_evidence_2026-08-21.md",
+        "docs/144_dual_99_u98_106_worker_cleanup_evidence_2026-08-21.md",
+        "docs/145_dual_99_u98_106_ai_suggestion_idempotency_evidence_2026-08-22.md",
+        "docs/146_dual_99_u98_106_b99_205_qdrant_convergence_evidence_2026-08-22.md",
+        "docs/147_dual_99_u98_117_worker_cutover_evidence_2026-08-22.md",
+        "docs/148_dual_99_u98_117_live_harness_isolation_evidence_2026-08-22.md"
+      ],
       "acceptance": "32/32 items at or above 99 plus C1-C8 and RH01-RH06 closed on the same release candidate",
       "itemsAtOrAbove99": 0,
       "status": "ACTIVE_EXECUTION_OVERLAY",
@@ -115,6 +132,22 @@
       "localEvidence": "docs/135_dual_99_local_execution_evidence_2026-08-20.md",
       "stabilityEvidence": "docs/136_dual_99_skip-governance-20-runs-2026-08-20.md",
       "mutationEvidence": "docs/137_dual_99_critical_mutation_evidence_2026-08-20.md",
+      "latestEvidence": "docs/148_dual_99_u98_117_live_harness_isolation_evidence_2026-08-22.md",
+      "evidenceSeries": [
+        "docs/135_dual_99_local_execution_evidence_2026-08-20.md",
+        "docs/136_dual_99_skip-governance-20-runs-2026-08-20.md",
+        "docs/137_dual_99_critical_mutation_evidence_2026-08-20.md",
+        "docs/139_dual_99_b99_101_placeholder_boundary_evidence_2026-08-21.md",
+        "docs/140_dual_99_b99_101_git_workspace_boundaries_evidence_2026-08-21.md",
+        "docs/141_dual_99_b99_101_growth_and_batch_completeness_evidence_2026-08-21.md",
+        "docs/142_dual_99_b99_201_outbox_ack_state_evidence_2026-08-21.md",
+        "docs/143_dual_99_b99_201_worker_persistence_failure_evidence_2026-08-21.md",
+        "docs/144_dual_99_u98_106_worker_cleanup_evidence_2026-08-21.md",
+        "docs/145_dual_99_u98_106_ai_suggestion_idempotency_evidence_2026-08-22.md",
+        "docs/146_dual_99_u98_106_b99_205_qdrant_convergence_evidence_2026-08-22.md",
+        "docs/147_dual_99_u98_117_worker_cutover_evidence_2026-08-22.md",
+        "docs/148_dual_99_u98_117_live_harness_isolation_evidence_2026-08-22.md"
+      ],
       "status": "ACTIVE_OVERLAY"
     }
   ],

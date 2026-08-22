@@ -14,7 +14,7 @@ function buildRecord(overrides: Record<string, unknown> = {}) {
     Name: "/cvg-trainee-vet-ha-api-a-1",
     Config: {
       Image: `cvg-trainee-vet@${commonDigest}`,
-      Env: [`CVG_SOURCE_SHA=${sourceSha}`],
+      Env: [`CVG_SOURCE_SHA=${sourceSha}`, "QDRANT_ENABLED=false"],
       Labels: { "org.opencontainers.image.revision": sourceSha },
     },
     Image: commonDigest,
@@ -50,6 +50,7 @@ describe("runtime provenance verifier", () => {
       ],
       sourceSha,
       commonDigest,
+      "disabled",
     );
 
     expect(result).toMatchObject({
@@ -59,6 +60,25 @@ describe("runtime provenance verifier", () => {
       expectedDigest: commonDigest,
       containerCount: 4,
     });
+  });
+
+  it("binds the disabled Qdrant manifest identity to container configuration", () => {
+    expect(() =>
+      validateRuntimeProvenanceRecords(
+        [
+          buildRecord({
+            Config: {
+              Image: `cvg-trainee-vet@${commonDigest}`,
+              Env: [`CVG_SOURCE_SHA=${sourceSha}`, "QDRANT_ENABLED=true"],
+              Labels: { "org.opencontainers.image.revision": sourceSha },
+            },
+          }),
+        ],
+        sourceSha,
+        commonDigest,
+        "disabled",
+      ),
+    ).toThrow("runtime Qdrant identity diverges");
   });
 
   it("rejects a runtime digest that is not the release manifest digest", () => {

@@ -37,6 +37,9 @@ export type EmbeddingPort = Readonly<{
   embed: (inputs: readonly string[]) => Promise<readonly (readonly number[])[]>;
 }>;
 
+export const EMBEDDING_BATCH_MAX_INPUTS = 2_048;
+export const EMBEDDING_BATCH_MAX_UTF8_BYTES = 300_000;
+
 type ResponsesPort = Pick<OpenAI["responses"], "create">;
 type EmbeddingsPort = Pick<OpenAI["embeddings"], "create">;
 
@@ -124,6 +127,13 @@ export function createOpenAiEmbeddingProvider(
     if (inputs.some((input) => input.trim().length === 0)) {
       throw new TypeError("Embedding inputs cannot be empty");
     }
+    if (
+      inputs.length > EMBEDDING_BATCH_MAX_INPUTS ||
+      inputs.reduce((total, input) => total + Buffer.byteLength(input), 0) >
+        EMBEDDING_BATCH_MAX_UTF8_BYTES
+    ) {
+      throw new RangeError("Embedding batch exceeds the allowed size");
+    }
 
     let response: Awaited<ReturnType<EmbeddingsPort["create"]>>;
     try {
@@ -141,11 +151,17 @@ export function createOpenAiEmbeddingProvider(
     const ordered = [...response.data].sort(
       (left, right) => left.index - right.index,
     );
-    const vectors = ordered.map((item) => [...item.embedding]);
     if (
-      vectors.length !== inputs.length ||
-      vectors.some((vector) => vector.length !== config.dimension)
+      ordered.length !== inputs.length ||
+      ordered.some(
+        (item, expectedIndex) =>
+          !Number.isInteger(item.index) || item.index !== expectedIndex,
+      )
     ) {
+      throw new AiIntegrationError("Embedding response order contract failed");
+    }
+    const vectors = ordered.map((item) => [...item.embedding]);
+    if (vectors.some((vector) => vector.length !== config.dimension)) {
       throw new AiIntegrationError("Embedding dimension contract failed");
     }
 
