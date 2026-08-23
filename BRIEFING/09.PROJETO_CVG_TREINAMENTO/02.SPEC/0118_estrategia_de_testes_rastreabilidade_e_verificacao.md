@@ -235,5 +235,6 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - `tests/integration/traceability-governance.test.ts` falhou em RED antes dos validadores e passou 3/3 no GREEN; o teste rejeita manifesto incompleto, commit inalcançável, worktree sujo e paths não rastreados;
 - `scripts/verify-traceability.mjs` mantém um modo estrutural local e um modo `CVG_TRACEABILITY_RELEASE=true` que exige SHA alcançável, paths de código/teste presentes no índice e worktree limpo;
 - `.github/workflows/quality.yml` executa `pnpm verify:traceability:release` após `pnpm verify`; `pnpm verify:ci-contract` passou com 20 checks de workflow;
-- os 125 paths da construção atual foram congelados no commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; o workflow remoto e digest de artifact desse SHA ainda não foram executados;
+- os 125 paths da construção atual foram congelados no commit de código `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; o fechamento documental ocorreu em `b4bf8b9946578faf2d1f65053587a382efdc5a6c`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou com worktree limpo;
+- a reexecução pós-fechamento passou com `pnpm verify` em 97 arquivos/458 testes, build nos 12 workspaces, E2E 19/19 e audit de dependências sem vulnerabilidades conhecidas; o workflow remoto e digest de artifact do HEAD local ainda não foram executados;
 - a evidência remota anterior (`dd47909`/run `31380183984`) é mantida como histórica e não é usada para aprovar o worktree atual.

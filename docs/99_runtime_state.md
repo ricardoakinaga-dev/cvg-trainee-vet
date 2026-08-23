@@ -10,20 +10,20 @@
 
 - current_phase: BUILD — Phase 13 identidade e segurança operacional
 - current_sprint: TRACEABILITY-033 / AUD-P1-005 — rastreabilidade e controle de mudança do estado auditado
-- current_task: TRACEABILITY-2026-08-23-D — congelar os paths técnicos em commit local, ligar o manifesto ao SHA e impedir release com worktree/evidência histórica
+- current_task: TRACEABILITY-2026-08-23-E — reauditar o HEAD local e separar evidência local de CI remoto
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: a crítica independente confirmou que o CI remoto histórico não cobre o worktree atual; `TRACEABILITY-033` foi implementado em TDD, o gate estrutural e o contrato CI passaram, e os 125 paths técnicos atuais foram congelados no commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`
-- next_action: atualizar o commit SHA nos registros documentais finais, criar o commit de auditoria, executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo e registrar a limitação do CI remoto sem fazer push por inferência
+- last_completed_action: os 125 paths técnicos foram congelados em `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; o manifesto/auditoria foram fechados em `b4bf8b9946578faf2d1f65053587a382efdc5a6c`; o gate release local passou com worktree limpo; `pnpm verify`, build, E2E 19/19 e audit de dependências passaram novamente
+- next_action: obter workflow remoto e digest de artifacts para `b4bf8b9946578faf2d1f65053587a382efdc5a6c`, se houver autorização, ou iniciar `AUD-P1-004` em ambiente operacional autorizado
 
 ## BLOQUEIOS
 
-- blockers: CI-REMOTE-001 — evidência remota existente cobre `dd47909`, não o commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; AUD-P1-002/004/005 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e workflow remoto atual exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados
+- blockers: CI-REMOTE-001 — evidência remota existente cobre `dd47909`, não o HEAD local `b4bf8b9946578faf2d1f65053587a382efdc5a6c`; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T20:29:00-03:00
+- last_update: 2026-08-23T20:36:00-03:00
 
 ## REGRAS DE USO
 

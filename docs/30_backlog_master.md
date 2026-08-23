@@ -624,11 +624,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD/AUDIT
 - risco: alto — o HEAD auditado não contém os arquivos técnicos da construção
 - impacto: alto
-- status: IN_PROGRESS
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `BRIEFING/04.AUDIT/0510_traceability_control_audit.md`; `scripts/verify-traceability.mjs`; `tests/integration/traceability-governance.test.ts`; commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`
-- resultado parcial: os 125 paths atuais foram congelados no commit local; o manifesto foi atualizado para o SHA alcançável; falta o commit documental final e a execução remota no mesmo SHA
-- verificação: `pnpm verify` passou com 97 arquivos/458 testes/22 skips de arquivo/24 skips de teste; `pnpm verify:traceability:release` passou os checks de commit/path quando o worktree estiver limpo; `pnpm verify:ci-contract` passou com 20 checks
-- próxima ação: criar o commit documental final, executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo e solicitar o workflow remoto no mesmo SHA
+- status: COMPLETED_WITH_GAPS
+- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `BRIEFING/04.AUDIT/0510_traceability_control_audit.md`; `scripts/verify-traceability.mjs`; `tests/integration/traceability-governance.test.ts`; commits locais `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622` e `b4bf8b9946578faf2d1f65053587a382efdc5a6c`
+- resultado: os 125 paths atuais foram congelados; o manifesto foi ligado ao SHA alcançável; o gate `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou no HEAD local limpo
+- verificação: `pnpm verify` passou com 97 arquivos/458 testes/22 skips de arquivo/24 skips de teste e cobertura 84,56%/80,28%/85,41%/85,30%; build passou nos 12 workspaces; E2E passou 19/19; `pnpm audit --audit-level=high` não encontrou vulnerabilidades; `pnpm verify:ci-contract` passou com 20 checks
+- gap explícito: workflow remoto, digest de artifact e reauditoria remota do SHA local ainda não foram executados; não há push nesta rodada
+- próxima ação: workflow remoto autorizado no mesmo SHA ou avanço para `AUD-P1-004` em ambiente operacional autorizado
 
 ### TRACEABILITY-033 — Gate executável de rastreabilidade de release
 
@@ -643,9 +644,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - requisitos: `AUD-P1-005`; `SPEC-0118`; `AGENTS-TDD`
 - evidência: `traceability.yml` / `TRACEABILITY-033`; `BRIEFING/04.AUDIT/0510_traceability_control_audit.md`; `scripts/verify-traceability.mjs`; `.github/workflows/quality.yml`
 - testes: `tests/integration/traceability-governance.test.ts`; `tests/integration/ci-governance.test.ts`
-- resultado: modo estrutural local passa; modo release rejeitou 116 findings antes do commit, depois reduziu a worktree sujo e agora está preparado para passar após o commit documental; o CI passa a executar `pnpm verify:traceability:release`
+- resultado: modo estrutural local passa; modo release rejeitou 116 findings antes do congelamento e passou após os commits locais; o CI passa a executar `pnpm verify:traceability:release`
 - gap explícito: workflow remoto, digest de artifact e reauditoria do SHA local ainda não foram executados; não há push nesta rodada
-- próxima ação: commit documental final e workflow remoto autorizado no mesmo SHA
+- próxima ação: workflow remoto autorizado no mesmo SHA, com digest de artifacts, ou evidência operacional de `AUD-P1-004`
 
 ### GATE-01 — Aprovar reexecução do Discovery
 

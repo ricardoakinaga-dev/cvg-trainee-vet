@@ -4084,3 +4084,45 @@ IN_PROGRESS
 ### NEXT
 
 Atualizar o manifesto/documentação para o SHA local, criar o commit documental final e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois registrar que o workflow remoto no mesmo SHA ainda requer autorização.
+
+## 2026-08-23 — TRACEABILITY-033: fechamento local e reauditoria
+
+### TIMESTAMP
+
+2026-08-23 20:36:00 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / governança, rastreabilidade e release engineering
+
+### SPRINT
+
+TRACEABILITY-033 / AUD-P1-005
+
+### TASK
+
+Fechar a evidência local do estado auditado e registrar os limites que ainda dependem de CI remoto e autoridade operacional.
+
+### ACTION
+
+Após os commits `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622` (código) e `b4bf8b9946578faf2d1f65053587a382efdc5a6c` (documentação/manifesto), foi executado `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo. Em seguida foram repetidos `pnpm verify`, `pnpm build`, `pnpm test:e2e`, `pnpm audit --audit-level=high` e `git diff --check`.
+
+### RESULT
+
+O gate release local passou. `pnpm verify` passou com `97` arquivos/`458` testes, `22` skips de arquivo/`24` skips de teste e cobertura `84,56%` statements, `80,28%` branches, `85,41%` functions e `85,30%` lines; contratos passaram `19/54`, worker `4/24`, migrações `22/22`, build passou nos `12` workspaces, E2E Chromium passou `19/19` e audit de dependências não encontrou vulnerabilidades conhecidas. O worktree terminou limpo; não houve push, deploy, provider, credencial ou mutação externa.
+
+### DECISIONS
+
+`TRACEABILITY-033` e `AUD-P1-005` ficam `COMPLETED_WITH_GAPS`: o congelamento e a rastreabilidade local estão fechados, mas o workflow remoto e o digest de artifacts do HEAD local ainda não existem. A evidência remota anterior (`dd47909`/run `31380183984`) permanece histórica e não autoriza release.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Obter autorização para executar o workflow remoto no SHA atual com digest de artifacts, ou avançar para `AUD-P1-004` em ambiente operacional autorizado; manter gates clínicos, provider/MFA e publicação fora de qualquer inferência técnica.

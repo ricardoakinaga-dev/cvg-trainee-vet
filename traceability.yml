@@ -2282,6 +2282,7 @@ artifacts:
         "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
         "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
         "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+        "BRIEFING/04.AUDIT/0510_traceability_control_audit.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
         "docs/99_runtime_state.md",
         "docs/20_master_execution_log.md",
@@ -2310,6 +2311,11 @@ artifacts:
         "pnpm format:check",
         "pnpm exec eslint scripts/verify-traceability.mjs scripts/verify-ci-contract.mjs tests/integration/traceability-governance.test.ts",
         "CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability (expected FAIL until intentional commit; 116 findings)",
+        "CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability (PASS on clean local HEAD b4bf8b9946578faf2d1f65053587a382efdc5a6c)",
+        "pnpm verify (97 files/458 tests; 84.56% statements, 80.28% branches, 85.41% functions, 85.30% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (19/19)",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
         "git diff --check",
       ]
     status: "verified-with-gaps"
