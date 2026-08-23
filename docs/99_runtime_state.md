@@ -9,30 +9,30 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 13 identidade e segurança operacional
-- current_sprint: AUDIT-NEGATIVE-031 / DB-PRIVILEGE-032 — auditoria negativa e guard de privilégios
-- current_task: AUDIT-NEGATIVE-2026-08-23-C — registrar rejeições HTTP sem segredo e negar ownership/grants administrativos à role de runtime
+- current_sprint: TRACEABILITY-033 / AUD-P1-005 — rastreabilidade e controle de mudança do estado auditado
+- current_task: TRACEABILITY-2026-08-23-D — congelar os paths técnicos em commit local, ligar o manifesto ao SHA e impedir release com worktree/evidência histórica
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `AUDIT-NEGATIVE-031` e `DB-PRIVILEGE-032` implementados em TDD; `actor_kind=ANONYMOUS` registra rejeições sem UUID sentinela, handler e pré-handler usam rota normalizada sem body/cookie/token, `0021_audit_anonymous_rejections.sql` preserva append-only/RLS, e `requireLeastPrivilege` rejeita SUPERUSER/BYPASSRLS/CREATEROLE/CREATEDB/CREATE público/ownership. O pipeline completo passou: 96 arquivos/455 testes, 22 skips de arquivo/24 skips de teste, cobertura 84,56% statements, 80,28% branches, 85,41% functions e 85,30% lines; contratos 19/54, worker 4/24, migrações 22/22, build dos 12 workspaces, E2E 19/19, audit de dependências sem vulnerabilidades conhecidas, secrets/traceability/architecture/documentation/product-definition/exposure verdes; PostgreSQL live passou 25 arquivos/37 testes com owner de migration, role de aplicação e role administrativa separados; banco/roles descartáveis removidos
-- next_action: aplicar, com autoridade operacional, o grant matrix/owner de migration/rotação de credenciais em homologação e produção descartável e anexar evidência redigida; depois tratar collector/retention/traces/carga/failover, provider/MFA/entrega externa e os gates clínicos/piloto/publicação sem simular dependências
+- last_completed_action: a crítica independente confirmou que o CI remoto histórico não cobre o worktree atual; `TRACEABILITY-033` foi implementado em TDD, o gate estrutural e o contrato CI passaram, e os 125 paths técnicos atuais foram congelados no commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`
+- next_action: atualizar o commit SHA nos registros documentais finais, criar o commit de auditoria, executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo e registrar a limitação do CI remoto sem fazer push por inferência
 
 ## BLOQUEIOS
 
-- blockers: CI-REMOTE-001 — **RESOLVIDO** nesta rodada com repositório privado, origin, SHA e workflow remoto verde; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; AUD-P1-002/004/005/006 — collector/retention/traces/carga/failover, operação de ambiente, grant matrix/owner de migration do papel produtivo, rastreabilidade e banco autoral permanecem para seus itens próprios; provedor de senha/MFA e entrega externa exigem autoridade/contratação operacional e não serão simulados
+- blockers: CI-REMOTE-001 — evidência remota existente cobre `dd47909`, não o commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; AUD-P1-002/004/005 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e workflow remoto atual exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: não há decisão humana pendente para o CI-15-01; revisão e autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico 95 não equivale a aprovação clínica ou competência prática
+- decision_description: o commit local é reversível e foi criado com a identidade já usada no histórico; workflow remoto/push no SHA atual exigem autoridade de repositório, e revisão/autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico não equivale a aprovação clínica ou competência prática
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T20:14:50-03:00
+- last_update: 2026-08-23T20:29:00-03:00
 
 ## REGRAS DE USO
 

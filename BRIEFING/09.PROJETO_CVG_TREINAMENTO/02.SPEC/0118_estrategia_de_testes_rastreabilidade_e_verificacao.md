@@ -229,3 +229,11 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - privilégio: `packages/persistence/src/database.ts` com `requireLeastPrivilege=true` rejeita `SUPERUSER`, `BYPASSRLS`, `CREATEROLE`, `CREATEDB`, `CREATE` no schema público e ownership de relações públicas; a integração live foi executada com owner de migration separado, role de aplicação `NOSUPERUSER/NOBYPASSRLS` e role administrativa de teste isolada;
 - resultado da rodada: typecheck e testes unitários direcionados passaram; integração PostgreSQL passou 25 arquivos/37 testes no banco descartável, incluindo a nova auditoria anônima e o healthcheck de role sem ownership; o pipeline completo passou com 96 arquivos/455 testes, 22 skips de arquivo/24 skips de teste, cobertura 84,56% statements/80,28% branches/85,41% functions/85,30% lines, build dos 12 workspaces, E2E 19/19, migrações 22/22, secrets, traceability, architecture, documentation, product-definition e exposure; `pnpm audit --audit-level=high` e `git diff --check` também passaram;
 - limites: o grant matrix e o ownership do ambiente produtivo real ainda exigem provisionamento/inspeção operacional com autoridade; a prova descartável não autoriza release, fornecedor, MFA, entrega externa, aprovação clínica ou piloto.
+
+## 24. Evidência executável — congelamento e rastreabilidade de release
+
+- `tests/integration/traceability-governance.test.ts` falhou em RED antes dos validadores e passou 3/3 no GREEN; o teste rejeita manifesto incompleto, commit inalcançável, worktree sujo e paths não rastreados;
+- `scripts/verify-traceability.mjs` mantém um modo estrutural local e um modo `CVG_TRACEABILITY_RELEASE=true` que exige SHA alcançável, paths de código/teste presentes no índice e worktree limpo;
+- `.github/workflows/quality.yml` executa `pnpm verify:traceability:release` após `pnpm verify`; `pnpm verify:ci-contract` passou com 20 checks de workflow;
+- os 125 paths da construção atual foram congelados no commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; o workflow remoto e digest de artifact desse SHA ainda não foram executados;
+- a evidência remota anterior (`dd47909`/run `31380183984`) é mantida como histórica e não é usada para aprovar o worktree atual.

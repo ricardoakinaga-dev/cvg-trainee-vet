@@ -624,8 +624,28 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD/AUDIT
 - risco: alto — o HEAD auditado não contém os arquivos técnicos da construção
 - impacto: alto
-- status: PENDENTE
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `git status` e `git ls-files`
+- status: IN_PROGRESS
+- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `BRIEFING/04.AUDIT/0510_traceability_control_audit.md`; `scripts/verify-traceability.mjs`; `tests/integration/traceability-governance.test.ts`; commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`
+- resultado parcial: os 125 paths atuais foram congelados no commit local; o manifesto foi atualizado para o SHA alcançável; falta o commit documental final e a execução remota no mesmo SHA
+- verificação: `pnpm verify` passou com 97 arquivos/458 testes/22 skips de arquivo/24 skips de teste; `pnpm verify:traceability:release` passou os checks de commit/path quando o worktree estiver limpo; `pnpm verify:ci-contract` passou com 20 checks
+- próxima ação: criar o commit documental final, executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo e solicitar o workflow remoto no mesmo SHA
+
+### TRACEABILITY-033 — Gate executável de rastreabilidade de release
+
+- título: impedir que a auditoria declare rastreável um worktree sujo ou um commit histórico
+- descrição: validar artefatos atuais, commits alcançáveis, paths de código/teste rastreados e gate de release no workflow CI
+- módulo: governança / release engineering / CI
+- dependência: `AUD-P1-005`; commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`
+- fase: BUILD/AUDIT — Phase 13
+- risco: alto — evidência remota histórica pode ser confundida com o estado atual e liberar código não auditado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `AUD-P1-005`; `SPEC-0118`; `AGENTS-TDD`
+- evidência: `traceability.yml` / `TRACEABILITY-033`; `BRIEFING/04.AUDIT/0510_traceability_control_audit.md`; `scripts/verify-traceability.mjs`; `.github/workflows/quality.yml`
+- testes: `tests/integration/traceability-governance.test.ts`; `tests/integration/ci-governance.test.ts`
+- resultado: modo estrutural local passa; modo release rejeitou 116 findings antes do commit, depois reduziu a worktree sujo e agora está preparado para passar após o commit documental; o CI passa a executar `pnpm verify:traceability:release`
+- gap explícito: workflow remoto, digest de artifact e reauditoria do SHA local ainda não foram executados; não há push nesta rodada
+- próxima ação: commit documental final e workflow remoto autorizado no mesmo SHA
 
 ### GATE-01 — Aprovar reexecução do Discovery
 

@@ -487,6 +487,7 @@ artifacts:
         "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
         "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
         "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+        "BRIEFING/04.AUDIT/0510_traceability_control_audit.md",
         "docs/99_runtime_state.md",
         "docs/20_master_execution_log.md",
         "docs/30_backlog_master.md",
@@ -1495,7 +1496,7 @@ artifacts:
         "tests/e2e/operations-dashboard.spec.ts",
         "tests/integration/live-postgres-harness.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1563,7 +1564,7 @@ artifacts:
         "tests/integration/postgres-diagnostic-results.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1636,7 +1637,7 @@ artifacts:
         "tests/integration/postgres-diagnostic-results.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1704,7 +1705,7 @@ artifacts:
         "tests/integration/postgres-security-isolation.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1766,7 +1767,7 @@ artifacts:
         "tests/integration/postgres-security-isolation.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1816,7 +1817,7 @@ artifacts:
         "tests/e2e/operations-dashboard.spec.ts",
         "tests/integration/postgres-invitation.test.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1886,7 +1887,7 @@ artifacts:
         "tests/integration/postgres-account-lifecycle.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -1966,7 +1967,7 @@ artifacts:
         "tests/e2e/authoring-review.spec.ts",
         "tests/e2e/experience-accessibility.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -2030,7 +2031,7 @@ artifacts:
         "tests/integration/postgres-account-recovery.test.ts",
         "tests/e2e/recovery-access.spec.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -2091,7 +2092,7 @@ artifacts:
         "tests/integration/postgres-invitation.test.ts",
         "tests/integration/postgres-account-recovery.test.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -2146,7 +2147,7 @@ artifacts:
         "tests/integration/postgres-account-recovery.test.ts",
         "tests/integration/postgres-answer-session.test.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
@@ -2206,7 +2207,7 @@ artifacts:
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-account-recovery.test.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts: ["coverage/", "test-results/playwright.xml"]
     verification:
       [
@@ -2255,7 +2256,7 @@ artifacts:
         "tests/integration/postgres-security-isolation.test.ts",
         "tests/integration/postgres-account-recovery.test.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts: ["coverage/", "test-results/playwright.xml"]
     verification:
       [
@@ -2298,7 +2299,7 @@ artifacts:
         "tests/integration/traceability-governance.test.ts",
         "tests/integration/ci-governance.test.ts",
       ]
-    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    commit: "1e4e1792f45bb49e9b8019b0a4b8e1036ead9622"
     artifacts: ["coverage/", "test-results/playwright.xml"]
     verification:
       [

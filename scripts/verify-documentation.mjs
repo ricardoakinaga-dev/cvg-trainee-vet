@@ -35,6 +35,7 @@ const defaultRequiredFiles = Object.freeze([
   "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
   "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
   "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+  "BRIEFING/04.AUDIT/0510_traceability_control_audit.md",
   "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0500_loop_session_persistence_master.md",
   "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0501_runtime_state_contract.md",
   "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0502_execution_log_and_backlog_contract.md",

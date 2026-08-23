@@ -4042,3 +4042,45 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Executar o runbook operacional autorizado para grants/ownership/credenciais e anexar evidência redigida; manter os gates clínicos e dependências externas sem simulação.
+
+## 2026-08-23 — TRACEABILITY-033: congelamento local e gate de release
+
+### TIMESTAMP
+
+2026-08-23 20:29:00 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / governança, rastreabilidade e release engineering
+
+### SPRINT
+
+TRACEABILITY-033 / AUD-P1-005
+
+### TASK
+
+Impedir que um worktree sujo ou uma evidência CI histórica seja tratado como o estado auditado atual.
+
+### ACTION
+
+Escrito o teste RED de rastreabilidade; implementados validadores estruturais e de release em `scripts/verify-traceability.mjs`, com verificação de SHA alcançável, worktree limpo e paths de código/teste rastreados. O contrato CI passou a exigir `pnpm verify:traceability:release`. A crítica independente reproduziu 116 achados no estado inicial. Os 125 paths técnicos do worktree foram congelados no commit local `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`, usando a identidade já presente no histórico do repositório.
+
+### RESULT
+
+`tests/integration/traceability-governance.test.ts` passou 3/3; `ci-governance.test.ts` passou 4/4; `pnpm verify:ci-contract` passou com 20 checks; `pnpm verify` passou com 97 arquivos/458 testes, 22 skips de arquivo/24 skips de teste e cobertura 84,56%/80,28%/85,41%/85,30%. Após o commit, o modo release reduziu os achados a uma única falha de worktree sujo enquanto o manifesto e a auditoria documental eram atualizados. Não houve push, deploy, provider, credencial ou mutação externa.
+
+### DECISIONS
+
+`TRACEABILITY-033` fica `COMPLETED_WITH_GAPS`; `AUD-P1-005` permanece `IN_PROGRESS` até o commit documental final e a execução do gate release limpo. A crítica independente classificou C1/C3 como falhos antes da correção, C2 parcial e C4 aprovado; a evidência remota `31380183984`/artifact `9059654877` é histórica e não prova o SHA local.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Atualizar o manifesto/documentação para o SHA local, criar o commit documental final e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois registrar que o workflow remoto no mesmo SHA ainda requer autorização.
