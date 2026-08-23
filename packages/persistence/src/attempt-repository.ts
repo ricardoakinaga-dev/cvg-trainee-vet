@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { AttemptState, AttemptStatus } from "@cvg/domain";
 import type {
@@ -9,6 +9,7 @@ import type {
 } from "@cvg/application";
 
 import {
+  accountInvitations,
   activityAssignments,
   attemptIdempotency,
   attempts,
@@ -492,6 +493,30 @@ export function createActivityScopeResolver(
       .limit(1);
     return rows[0]?.scopeId ?? null;
   };
+}
+
+const participantRoleJson = JSON.stringify(["PARTICIPANT"]);
+
+export function createParticipantScopeResolver(
+  db: PostgresJsDatabase<typeof schema>,
+): (participantId: string, scopeId: string) => Promise<boolean> {
+  return async (participantId: string, scopeId: string): Promise<boolean> =>
+    db.transaction(async (transaction) => {
+      const executor = transaction as unknown as DatabaseExecutor;
+      await setDatabaseSecurityContext(executor, { scopeId });
+      const rows = await executor
+        .select({ accountId: accountInvitations.accountId })
+        .from(accountInvitations)
+        .where(
+          and(
+            eq(accountInvitations.accountId, participantId),
+            sql`${accountInvitations.roles} @> ${participantRoleJson}::jsonb`,
+            sql`${accountInvitations.scopes} @> ${JSON.stringify([scopeId])}::jsonb`,
+          ),
+        )
+        .limit(1);
+      return rows.length > 0;
+    });
 }
 
 export function createOutboxInsert(input: OutboxEventInput) {

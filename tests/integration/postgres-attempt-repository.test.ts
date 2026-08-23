@@ -7,7 +7,6 @@ import {
   startAttempt,
   submitAttempt,
 } from "../../packages/application/src/attempt-use-cases.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import { createAttemptUseCaseDependencies } from "../../packages/persistence/src/attempt-repository.js";
 import {
   activityAssignments,
@@ -16,30 +15,42 @@ import {
   learningActivities,
   outboxEvents,
 } from "../../packages/persistence/src/schema.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL attempt repository",
   () => {
-    it("persists a transaction, idempotency snapshot, and submitted outbox event", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
-      const database = createPostgresDatabase(databaseUrl);
+    it("persists a transaction, idempotency snapshot, and submitted outbox event", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
       const activityId = randomUUID();
       const participantId = randomUUID();
       const correlationId = randomUUID();
       let attemptId: string | null = null;
 
       try {
-        await database.db.insert(learningActivities).values({
+        await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId: randomUUID(),
           slug: `synthetic-${activityId}`,
           status: "PUBLISHED",
         });
-        await database.db.insert(activityAssignments).values({
+        await admin.db.insert(activityAssignments).values({
           participantId,
           activityId,
           status: "DISPONIVEL",
@@ -60,7 +71,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         );
         attemptId = started.attemptId;
 
-        await database.db
+        await admin.db
           .update(attempts)
           .set({ status: "SALVA", version: 2 })
           .where(eq(attempts.id, started.attemptId));
@@ -74,11 +85,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         } as const;
         const submitted = await submitAttempt(command, dependencies);
         const replay = await submitAttempt(command, dependencies);
-        const storedOutbox = await database.db
+        const storedOutbox = await admin.db
           .select()
           .from(outboxEvents)
           .where(eq(outboxEvents.aggregateId, started.attemptId));
-        const storedIdempotency = await database.db
+        const storedIdempotency = await admin.db
           .select()
           .from(attemptIdempotency)
           .where(eq(attemptIdempotency.key, command.idempotencyKey));
@@ -90,21 +101,21 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         expect(storedIdempotency).toHaveLength(1);
       } finally {
         if (attemptId !== null) {
-          await database.db
+          await admin.db
             .delete(outboxEvents)
             .where(eq(outboxEvents.aggregateId, attemptId));
-          await database.db
+          await admin.db
             .delete(attemptIdempotency)
             .where(eq(attemptIdempotency.attemptId, attemptId));
-          await database.db.delete(attempts).where(eq(attempts.id, attemptId));
+          await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
         }
-        await database.db
+        await admin.db
           .delete(activityAssignments)
           .where(eq(activityAssignments.activityId, activityId));
-        await database.db
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
-        await database.close();
+        await closeLivePostgresHarness(harness);
       }
     });
   },

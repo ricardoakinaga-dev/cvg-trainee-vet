@@ -9,6 +9,7 @@ import type { AccountStatus, Role } from "@cvg/application";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
 import { accounts, sessions } from "./schema.js";
+import { setDatabaseSessionSecurityContext } from "./security-context.js";
 import type * as schema from "./schema.js";
 
 export { PersistenceMappingError } from "./attempt-repository.js";
@@ -38,6 +39,12 @@ function assertNonEmpty(value: string, field: string): void {
 function assertDate(value: Date, field: string): void {
   if (Number.isNaN(value.getTime())) {
     throw new PersistenceMappingError(`${field} must be a valid timestamp`);
+  }
+}
+
+function assertTokenHash(value: string): void {
+  if (!/^[a-f0-9]{64}$/u.test(value)) {
+    throw new PersistenceMappingError("tokenHash must be a SHA-256 hex digest");
   }
 }
 
@@ -133,59 +140,93 @@ export function createSessionRepository(
 ): SessionRepositoryPort {
   const repository: SessionRepositoryPort = {
     create: async (record: SessionRecord): Promise<void> => {
-      await db.insert(sessions).values(sessionRecordToRow(record));
+      const row = sessionRecordToRow(record);
+      const scopeId = row.scopes[0];
+      if (scopeId === undefined) {
+        throw new PersistenceMappingError(
+          "session scopes must include a scope",
+        );
+      }
+      await db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSessionSecurityContext(executor, {
+          tokenHash: row.tokenHash,
+          scopeId,
+        });
+        await transaction.insert(sessions).values(row);
+      });
     },
     findActive: async (
       tokenHash: string,
       now: Date,
     ): Promise<SessionPrincipal | null> => {
+      assertTokenHash(tokenHash);
       assertDate(now, "now");
-      const rows = await db
-        .select({
-          accountId: accounts.id,
-          status: accounts.status,
-          roles: sessions.roles,
-          scopes: sessions.scopes,
-          sessionId: sessions.id,
-        })
-        .from(sessions)
-        .innerJoin(accounts, eq(sessions.accountId, accounts.id))
-        .where(
-          and(
-            eq(sessions.tokenHash, tokenHash),
-            isNull(sessions.revokedAt),
-            gt(sessions.expiresAt, now),
-          ),
-        )
-        .limit(1);
-      const row = rows[0];
-      if (!row) return null;
-      await db
-        .update(sessions)
-        .set({ lastSeenAt: now })
-        .where(eq(sessions.id, row.sessionId));
-      return sessionRowToPrincipal(row);
+      return db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSessionSecurityContext(executor, { tokenHash });
+        const rows = await transaction
+          .select({
+            accountId: accounts.id,
+            status: accounts.status,
+            roles: sessions.roles,
+            scopes: sessions.scopes,
+            sessionId: sessions.id,
+          })
+          .from(sessions)
+          .innerJoin(accounts, eq(sessions.accountId, accounts.id))
+          .where(
+            and(
+              eq(sessions.tokenHash, tokenHash),
+              isNull(sessions.revokedAt),
+              gt(sessions.expiresAt, now),
+              eq(accounts.status, "ACTIVE"),
+            ),
+          )
+          .limit(1);
+        const row = rows[0];
+        if (!row) return null;
+        await transaction
+          .update(sessions)
+          .set({ lastSeenAt: now })
+          .where(eq(sessions.id, row.sessionId));
+        return sessionRowToPrincipal(row);
+      });
     },
     revoke: async (tokenHash: string, revokedAt: Date): Promise<void> => {
+      assertTokenHash(tokenHash);
       assertDate(revokedAt, "revokedAt");
-      await db
-        .update(sessions)
-        .set({ revokedAt })
-        .where(
-          and(eq(sessions.tokenHash, tokenHash), isNull(sessions.revokedAt)),
-        );
+      await db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSessionSecurityContext(executor, { tokenHash });
+        await transaction
+          .update(sessions)
+          .set({ revokedAt })
+          .where(
+            and(eq(sessions.tokenHash, tokenHash), isNull(sessions.revokedAt)),
+          );
+      });
     },
     rotate: async (
       tokenHash: string,
       record: SessionRecord,
       rotatedAt: Date,
     ): Promise<void> => {
-      if (tokenHash.trim().length === 0) {
-        throw new TypeError("tokenHash is required");
-      }
+      assertTokenHash(tokenHash);
       assertDate(rotatedAt, "rotatedAt");
       const nextRow = sessionRecordToRow(record);
+      const scopeId = nextRow.scopes[0];
+      if (scopeId === undefined) {
+        throw new PersistenceMappingError(
+          "session scopes must include a scope",
+        );
+      }
       await db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSessionSecurityContext(executor, {
+          tokenHash,
+          scopeId,
+        });
         const revoked = await transaction
           .update(sessions)
           .set({ revokedAt: rotatedAt })

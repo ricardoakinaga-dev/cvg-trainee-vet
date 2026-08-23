@@ -10,10 +10,11 @@ export { PersistenceMappingError } from "./attempt-repository.js";
 
 export type AuditInsertRow = Readonly<{
   readonly id: string;
-  readonly principalId: string;
+  readonly actorKind: "AUTHENTICATED" | "ANONYMOUS";
+  readonly principalId: string | null;
   readonly action: string;
   readonly resourceType: string;
-  readonly resourceId: string;
+  readonly resourceId: string | null;
   readonly scopeId: string | null;
   readonly outcome: "SUCCESS" | "DENIED" | "FAILURE";
   readonly reasonCode: string | null;
@@ -24,18 +25,34 @@ export type AuditInsertRow = Readonly<{
   readonly occurredAt: Date;
 }>;
 
-function assertNonEmpty(value: string, field: string): void {
-  if (value.trim().length === 0) {
+function assertNonEmpty(value: string | undefined, field: string): void {
+  if (typeof value !== "string" || value.trim().length === 0) {
     throw new PersistenceMappingError(`${field} must not be empty`);
   }
 }
 
 export function auditEntryToRow(entry: AuditEntry): AuditInsertRow {
   assertNonEmpty(entry.auditId, "auditId");
-  assertNonEmpty(entry.principalId, "principalId");
+  const actorKind = entry.actorKind ?? "AUTHENTICATED";
+  if (actorKind !== "AUTHENTICATED" && actorKind !== "ANONYMOUS") {
+    throw new PersistenceMappingError("audit actor kind is not supported");
+  }
+  if (actorKind === "AUTHENTICATED") {
+    if (entry.principalId === undefined) {
+      throw new PersistenceMappingError(
+        "principalId is required for authenticated audit entries",
+      );
+    }
+    assertNonEmpty(entry.principalId, "principalId");
+  } else if (entry.principalId !== undefined) {
+    throw new PersistenceMappingError(
+      "anonymous audit entries cannot contain a principalId",
+    );
+  }
   assertNonEmpty(entry.action, "action");
   assertNonEmpty(entry.resourceType, "resourceType");
-  assertNonEmpty(entry.resourceId, "resourceId");
+  if (entry.resourceId !== undefined)
+    assertNonEmpty(entry.resourceId, "resourceId");
   assertNonEmpty(entry.requestId, "requestId");
   assertNonEmpty(entry.correlationId, "correlationId");
   if (!["SUCCESS", "DENIED", "FAILURE"].includes(entry.outcome)) {
@@ -48,10 +65,11 @@ export function auditEntryToRow(entry: AuditEntry): AuditInsertRow {
 
   return {
     id: entry.auditId,
-    principalId: entry.principalId,
+    actorKind,
+    principalId: entry.principalId ?? null,
     action: entry.action,
     resourceType: entry.resourceType,
-    resourceId: entry.resourceId,
+    resourceId: entry.resourceId ?? null,
     scopeId: entry.scopeId ?? null,
     outcome: entry.outcome,
     reasonCode: entry.reasonCode ?? null,
@@ -70,8 +88,12 @@ export function createAuditRepository(
 ): AuditPort {
   const repository: AuditPort = {
     append: async (entry: AuditEntry): Promise<void> => {
-      await db.execute(sql`select set_config('cvg.audit_write', 'on', true)`);
-      await db.insert(auditEntries).values(auditEntryToRow(entry));
+      await db.transaction(async (transaction) => {
+        await transaction.execute(
+          sql`select set_config('cvg.audit_write', 'on', true)`,
+        );
+        await transaction.insert(auditEntries).values(auditEntryToRow(entry));
+      });
     },
   };
   return Object.freeze(repository);

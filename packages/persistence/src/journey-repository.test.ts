@@ -84,17 +84,68 @@ const workflowRow = {
   updatedAt: new Date("2026-08-10T05:00:00.000Z"),
 };
 
+const diagnosticRow = {
+  id: "88888888-8888-4888-8888-888888888888",
+  participantId,
+  scopeId,
+  diagnosticId: "B07-DIAGNOSTIC-V1",
+  diagnosticVersion: "0.1.0",
+  result: {
+    diagnosticId: "B07-DIAGNOSTIC-V1",
+    version: "0.1.0",
+    notPunitive: true,
+    noGlobalPassFail: true,
+    totalItemCount: 120,
+    answeredItemCount: 0,
+    themeResults: [
+      {
+        themeId: "B07-S1",
+        itemCount: 40,
+        answeredItemCount: 0,
+        earnedPoints: 0,
+        possiblePoints: 0,
+        percent: 0,
+        recommendedModuleIds: ["M01"],
+      },
+      {
+        themeId: "B07-S2",
+        itemCount: 40,
+        answeredItemCount: 0,
+        earnedPoints: 0,
+        possiblePoints: 0,
+        percent: 0,
+        recommendedModuleIds: ["M02"],
+      },
+      {
+        themeId: "B07-S3",
+        itemCount: 40,
+        answeredItemCount: 0,
+        earnedPoints: 0,
+        possiblePoints: 0,
+        percent: 0,
+        recommendedModuleIds: ["M11"],
+      },
+    ],
+    recommendedModuleIds: ["M01", "M02", "M11"],
+    remediationObjectiveIds: [],
+  },
+  completedAt: new Date("2026-08-10T07:00:00.000Z"),
+  createdAt: new Date("2026-08-10T07:00:00.000Z"),
+};
+
 type FakeDatabaseInput = Readonly<{
   readonly activityRows?: readonly FakeActivityRow[];
   readonly runtimeRows?: readonly (typeof runtimeRow)[];
   readonly assignmentRows?: readonly (typeof assignmentRow)[];
   readonly workflowRows?: readonly (typeof workflowRow)[];
+  readonly diagnosticRows?: readonly (typeof diagnosticRow)[];
 }>;
 
 function fakeDatabase(input: FakeDatabaseInput = {}) {
   const results = [
     input.activityRows ?? [],
     input.runtimeRows ?? [],
+    input.diagnosticRows ?? [],
     input.assignmentRows ?? [],
     input.workflowRows ?? [],
   ];
@@ -155,6 +206,7 @@ describe("participant journey persistence", () => {
         runtimeRows: [runtimeRow],
         assignmentRows: [assignmentRow],
         workflowRows: [workflowRow],
+        diagnosticRows: [diagnosticRow],
       }),
     );
 
@@ -174,6 +226,7 @@ describe("participant journey persistence", () => {
     expect(journey.assignments).toHaveLength(1);
     expect(journey.results).toHaveLength(1);
     expect(journey.runtimes).toHaveLength(1);
+    expect(journey.diagnosticResults).toHaveLength(1);
   });
 
   it("keeps the latest attempt and preserves an activity without attempts", async () => {

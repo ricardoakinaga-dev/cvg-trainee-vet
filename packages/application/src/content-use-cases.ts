@@ -75,6 +75,10 @@ export interface ContentTransactionalOperations {
 export interface ContentTransactionPort {
   readonly run: <Result>(
     work: (operations: ContentTransactionalOperations) => Promise<Result>,
+    securityContext?: Readonly<{
+      readonly participantId?: string;
+      readonly scopeId?: string;
+    }>,
   ) => Promise<Result>;
 }
 
@@ -157,82 +161,85 @@ export async function advanceContent(
   }
 
   try {
-    return await dependencies.transaction.run(async (operations) => {
-      const current = await operations.content.find(
-        command.contentId,
-        command.version,
-      );
-      if (current === null) {
-        throw new ApplicationError(
-          "not_found",
-          "Content version was not found",
+    return await dependencies.transaction.run(
+      async (operations) => {
+        const current = await operations.content.find(
+          command.contentId,
+          command.version,
         );
-      }
-      if (current.scopeId !== command.scopeId) {
-        throw new ApplicationError(
-          "forbidden",
-          "Content is outside the current scope",
+        if (current === null) {
+          throw new ApplicationError(
+            "not_found",
+            "Content version was not found",
+          );
+        }
+        if (current.scopeId !== command.scopeId) {
+          throw new ApplicationError(
+            "forbidden",
+            "Content is outside the current scope",
+          );
+        }
+
+        if (
+          (command.event === "AUTORIZAR_PUBLICACAO" ||
+            command.event === "PUBLICAR") &&
+          current.publicationReady !== true
+        ) {
+          throw new ApplicationError(
+            "state_conflict",
+            "Content publication gate is incomplete",
+          );
+        }
+
+        const nextState = transitionContent(
+          {
+            contentId: current.contentId,
+            version: current.version,
+            status: current.status,
+          },
+          { type: command.event },
         );
-      }
+        const next = Object.freeze({
+          ...current,
+          status: nextState.status,
+        });
+        await operations.content.save(current, next);
 
-      if (
-        (command.event === "AUTORIZAR_PUBLICACAO" ||
-          command.event === "PUBLICAR") &&
-        current.publicationReady !== true
-      ) {
-        throw new ApplicationError(
-          "state_conflict",
-          "Content publication gate is incomplete",
-        );
-      }
-
-      const nextState = transitionContent(
-        {
-          contentId: current.contentId,
-          version: current.version,
-          status: current.status,
-        },
-        { type: command.event },
-      );
-      const next = Object.freeze({
-        ...current,
-        status: nextState.status,
-      });
-      await operations.content.save(current, next);
-
-      const occurredAt = new Date().toISOString();
-      await operations.eventPublisher.publish({
-        eventId: dependencies.idFactory(),
-        eventType: eventTypeForStatus(next.status),
-        aggregateType: "content_version",
-        aggregateId: next.contentId,
-        occurredAt,
-        schemaVersion: 1,
-        correlationId: command.correlationId,
-        payload: {
-          content_id: next.contentId,
-          version: String(next.version),
-          status: next.status,
-        },
-      });
-      await operations.audit.append(
-        createAuditEntry({
-          auditId: dependencies.idFactory(),
-          principalId: command.principalId,
-          action: `CONTENT_${command.event}`,
-          resourceType: "content_version",
-          resourceId: next.contentId,
-          scopeId: next.scopeId,
-          outcome: "SUCCESS",
-          reasonCode: "content_workflow_transition",
-          requestId: command.correlationId,
-          correlationId: command.correlationId,
+        const occurredAt = new Date().toISOString();
+        await operations.eventPublisher.publish({
+          eventId: dependencies.idFactory(),
+          eventType: eventTypeForStatus(next.status),
+          aggregateType: "content_version",
+          aggregateId: next.contentId,
           occurredAt,
-        }),
-      );
+          schemaVersion: 1,
+          correlationId: command.correlationId,
+          payload: {
+            content_id: next.contentId,
+            version: String(next.version),
+            status: next.status,
+          },
+        });
+        await operations.audit.append(
+          createAuditEntry({
+            auditId: dependencies.idFactory(),
+            principalId: command.principalId,
+            action: `CONTENT_${command.event}`,
+            resourceType: "content_version",
+            resourceId: next.contentId,
+            scopeId: next.scopeId,
+            outcome: "SUCCESS",
+            reasonCode: "content_workflow_transition",
+            requestId: command.correlationId,
+            correlationId: command.correlationId,
+            occurredAt,
+          }),
+        );
 
-      return next;
-    });
+        return next;
+      },
+      { scopeId: command.scopeId },
+    );
   } catch (error) {
     throw normalizeContentError(error);
   }

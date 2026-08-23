@@ -14,6 +14,7 @@ import {
   contentVersions,
 } from "./schema.js";
 import type * as schema from "./schema.js";
+import { setDatabaseSecurityContext } from "./security-context.js";
 
 export type AuthoringRowShape = Readonly<{
   readonly editorialRecordId: string;
@@ -345,79 +346,95 @@ export function createAuthoringRepository(
   db: DatabaseExecutor,
 ): AuthoringRepositoryPort {
   const repository: AuthoringRepositoryPort = {
-    find: async (contentId, version) => {
-      const rows = await db
-        .select({
-          editorialRecordId: contentEditorialRecords.id,
-          contentVersionId: contentEditorialRecords.contentVersionId,
-          contentId: contentEditorialRecords.contentId,
-          scopeId: contentEditorialRecords.scopeId,
-          version: contentEditorialRecords.version,
-          moduleId: contentEditorialRecords.moduleId,
-          sessionId: contentEditorialRecords.sessionId,
-          objectiveId: contentEditorialRecords.objectiveId,
-          authorId: contentEditorialRecords.authorId,
-          item: contentEditorialRecords.item,
-          preflight: contentEditorialRecords.preflight,
-          contentStatus: contentVersions.status,
-        })
-        .from(contentEditorialRecords)
-        .innerJoin(
-          contentVersions,
-          eq(contentEditorialRecords.contentVersionId, contentVersions.id),
-        )
-        .where(
-          and(
-            eq(contentEditorialRecords.contentId, contentId),
-            eq(contentEditorialRecords.version, version),
-          ),
-        )
-        .limit(1);
-      const row = rows[0];
-      if (row === undefined) return null;
+    find: async (contentId, version, scopeId) =>
+      db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSecurityContext(executor, { scopeId });
+        const rows = await executor
+          .select({
+            editorialRecordId: contentEditorialRecords.id,
+            contentVersionId: contentEditorialRecords.contentVersionId,
+            contentId: contentEditorialRecords.contentId,
+            scopeId: contentEditorialRecords.scopeId,
+            version: contentEditorialRecords.version,
+            moduleId: contentEditorialRecords.moduleId,
+            sessionId: contentEditorialRecords.sessionId,
+            objectiveId: contentEditorialRecords.objectiveId,
+            authorId: contentEditorialRecords.authorId,
+            item: contentEditorialRecords.item,
+            preflight: contentEditorialRecords.preflight,
+            contentStatus: contentVersions.status,
+          })
+          .from(contentEditorialRecords)
+          .innerJoin(
+            contentVersions,
+            eq(contentEditorialRecords.contentVersionId, contentVersions.id),
+          )
+          .where(
+            and(
+              eq(contentEditorialRecords.contentId, contentId),
+              eq(contentEditorialRecords.version, version),
+              eq(contentEditorialRecords.scopeId, scopeId),
+              eq(contentVersions.scopeId, scopeId),
+            ),
+          )
+          .limit(1);
+        const row = rows[0];
+        if (row === undefined) return null;
 
-      const reviews = await db
-        .select({
-          reviewerId: contentReviewDecisions.reviewerId,
-          decision: contentReviewDecisions.decision,
-          rationale: contentReviewDecisions.rationale,
-          reviewedAt: contentReviewDecisions.reviewedAt,
-          correlationId: contentReviewDecisions.correlationId,
-        })
-        .from(contentReviewDecisions)
-        .where(
-          eq(
-            contentReviewDecisions.contentEditorialRecordId,
-            row.editorialRecordId,
-          ),
-        )
-        .orderBy(
-          desc(contentReviewDecisions.reviewedAt),
-          desc(contentReviewDecisions.createdAt),
-        )
-        .limit(1);
-      const reviewRow = reviews[0];
-      return authoringRowToRecord(
-        row,
-        reviewRow === undefined ? undefined : reviewRowToState(reviewRow),
-      );
-    },
-    savePreflight: async (record, preflight) => {
-      await db
-        .update(contentEditorialRecords)
-        .set({ preflight, updatedAt: new Date() })
-        .where(
-          and(
-            eq(contentEditorialRecords.id, record.editorialRecordId),
-            eq(contentEditorialRecords.contentId, record.contentId),
-            eq(contentEditorialRecords.version, record.version),
-          ),
+        const reviews = await executor
+          .select({
+            reviewerId: contentReviewDecisions.reviewerId,
+            decision: contentReviewDecisions.decision,
+            rationale: contentReviewDecisions.rationale,
+            reviewedAt: contentReviewDecisions.reviewedAt,
+            correlationId: contentReviewDecisions.correlationId,
+          })
+          .from(contentReviewDecisions)
+          .where(
+            and(
+              eq(
+                contentReviewDecisions.contentEditorialRecordId,
+                row.editorialRecordId,
+              ),
+              eq(contentReviewDecisions.scopeId, scopeId),
+            ),
+          )
+          .orderBy(
+            desc(contentReviewDecisions.reviewedAt),
+            desc(contentReviewDecisions.createdAt),
+            desc(contentReviewDecisions.id),
+          )
+          .limit(1);
+        const reviewRow = reviews[0];
+        return authoringRowToRecord(
+          row,
+          reviewRow === undefined ? undefined : reviewRowToState(reviewRow),
         );
+      }),
+    savePreflight: async (record, preflight) => {
+      await db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSecurityContext(executor, { scopeId: record.scopeId });
+        await executor
+          .update(contentEditorialRecords)
+          .set({ preflight, updatedAt: new Date() })
+          .where(
+            and(
+              eq(contentEditorialRecords.id, record.editorialRecordId),
+              eq(contentEditorialRecords.contentId, record.contentId),
+              eq(contentEditorialRecords.version, record.version),
+              eq(contentEditorialRecords.scopeId, record.scopeId),
+            ),
+          );
+      });
       return Object.freeze({ ...record, preflight });
     },
     saveReview: async (record, review) => {
       await db.transaction(async (transaction) => {
-        await transaction.insert(contentReviewDecisions).values({
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSecurityContext(executor, { scopeId: record.scopeId });
+        await executor.insert(contentReviewDecisions).values({
           contentEditorialRecordId: record.editorialRecordId,
           contentVersionId: record.contentVersionId,
           contentId: record.contentId,
@@ -429,7 +446,7 @@ export function createAuthoringRepository(
           correlationId: review.correlationId,
           reviewedAt: new Date(review.reviewedAt),
         });
-        await transaction
+        await executor
           .update(contentEditorialRecords)
           .set({ updatedAt: new Date() })
           .where(
@@ -440,10 +457,41 @@ export function createAuthoringRepository(
               ),
               eq(contentEditorialRecords.contentId, record.contentId),
               eq(contentEditorialRecords.version, record.version),
+              eq(contentEditorialRecords.scopeId, record.scopeId),
             ),
           );
       });
       return Object.freeze({ ...record, latestReview: review });
+    },
+    rollbackReview: async (record, preflight, review) => {
+      await db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSecurityContext(executor, { scopeId: record.scopeId });
+        await executor
+          .delete(contentReviewDecisions)
+          .where(
+            and(
+              eq(
+                contentReviewDecisions.contentEditorialRecordId,
+                record.editorialRecordId,
+              ),
+              eq(contentReviewDecisions.reviewerId, review.reviewerId),
+              eq(contentReviewDecisions.correlationId, review.correlationId),
+              eq(contentReviewDecisions.scopeId, record.scopeId),
+            ),
+          );
+        await executor
+          .update(contentEditorialRecords)
+          .set({ preflight, updatedAt: new Date() })
+          .where(
+            and(
+              eq(contentEditorialRecords.id, record.editorialRecordId),
+              eq(contentEditorialRecords.contentId, record.contentId),
+              eq(contentEditorialRecords.version, record.version),
+              eq(contentEditorialRecords.scopeId, record.scopeId),
+            ),
+          );
+      });
     },
   };
   return Object.freeze(repository);

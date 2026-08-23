@@ -7,6 +7,7 @@ import type { AttemptState } from "@cvg/domain";
 import {
   createActivityScopeResolver,
   createAttemptUseCaseDependencies,
+  createParticipantScopeResolver,
   PersistenceConflictError,
   type AttemptRowShape,
 } from "./attempt-repository.js";
@@ -23,6 +24,7 @@ type FakeDatabaseState = {
     response: unknown;
   }>;
   readonly activityRows: Array<{ activityId: string; scopeId: string }>;
+  readonly invitationRows: Array<{ accountId: string; scopeId: string }>;
   readonly assignmentRows: Array<{ activityId: string; available: boolean }>;
   readonly outboxRows: FakeRow[];
   readonly auditRows: FakeRow[];
@@ -62,6 +64,7 @@ function createFakeDatabase(): {
     attemptRows: [],
     idempotencyRows: [],
     activityRows: [{ activityId: "activity-1", scopeId: "scope-1" }],
+    invitationRows: [{ accountId: "participant-1", scopeId: "scope-1" }],
     assignmentRows: [{ activityId: "activity-1", available: true }],
     outboxRows: [],
     auditRows: [],
@@ -119,6 +122,11 @@ function createFakeDatabase(): {
                   whereValues.includes(row.activityId),
               )
               .map((row) => ({ ...row }));
+          }
+          if (selectedTable === schema.accountInvitations) {
+            return state.invitationRows
+              .filter((row) => whereValues.includes(row.accountId))
+              .map((row) => ({ accountId: row.accountId }));
           }
           return [];
         },
@@ -222,6 +230,15 @@ describe("database adapter operations", () => {
     expect(state.outboxRows).toHaveLength(1);
     expect(state.auditRows).toHaveLength(2);
     expect(scope).toBe("scope-1");
+  });
+
+  it("resolves participant membership by invitation role scope", async () => {
+    const { database } = createFakeDatabase();
+    const resolveParticipantScope = createParticipantScopeResolver(database);
+
+    await expect(
+      resolveParticipantScope("participant-1", "scope-1"),
+    ).resolves.toBe(true);
   });
 
   it("handles unavailable activity, empty reads, and optimistic update conflicts", async () => {

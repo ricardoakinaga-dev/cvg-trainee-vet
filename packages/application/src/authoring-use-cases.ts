@@ -100,6 +100,7 @@ export interface AuthoringRepositoryPort {
   readonly find: (
     contentId: string,
     version: number,
+    scopeId: string,
   ) => Promise<AuthoringRecord | null>;
   readonly savePreflight: (
     record: AuthoringRecord,
@@ -109,6 +110,11 @@ export interface AuthoringRepositoryPort {
     record: AuthoringRecord,
     review: AuthoringReview,
   ) => Promise<AuthoringRecord>;
+  readonly rollbackReview: (
+    record: AuthoringRecord,
+    preflight: AuthoringPreflight,
+    review: AuthoringReview,
+  ) => Promise<void>;
 }
 
 export type ReviewAuthoringCommand = Readonly<{
@@ -278,6 +284,7 @@ export async function reviewAuthoringContent(
   const record = await dependencies.repository.find(
     command.contentId,
     command.version,
+    command.scopeId,
   );
   if (record === null) {
     throw new ApplicationError("not_found", "Authoring record not found");
@@ -341,7 +348,17 @@ export async function reviewAuthoringContent(
         }
       : {}),
   };
-  const transitioned = await dependencies.transition(transitionCommand);
+  let transitioned: ContentRecord;
+  try {
+    transitioned = await dependencies.transition(transitionCommand);
+  } catch (error) {
+    await dependencies.repository.rollbackReview(
+      record,
+      record.preflight,
+      review,
+    );
+    throw error;
+  }
 
   return Object.freeze({
     review,

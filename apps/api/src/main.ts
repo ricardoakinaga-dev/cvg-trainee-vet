@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import {
   authenticateSessionCookie,
+  acceptAccountRecovery,
+  changeAccountStatus,
   acceptInvitation,
   advanceContent,
   createAppealState,
@@ -10,12 +12,17 @@ import {
   createLearningAssignmentState,
   createInvitation,
   correctOpenResponse,
+  evaluateAndPersistDiagnosticDraft,
   evaluateAndPersistCurriculumModule,
   getParticipantActivity,
   getParticipantCurriculumRuntime,
   getAttemptFeedback,
   getParticipantLearningJourney,
   getParticipantProgress,
+  getStaffDashboard,
+  getContinuingEducationReport,
+  getContentReviewQueue,
+  issueAccountRecovery,
   reviewAuthoringContent,
   saveAnswer,
   startAttempt,
@@ -25,6 +32,7 @@ import {
   transitionFeedbackTicketState,
   transitionLearningAssignmentState,
   revokeSessionCookie,
+  resendAccountInvitation,
   rotateSession as rotateSessionCookie,
 } from "@cvg/application";
 import { loadRuntimeConfig } from "@cvg/config";
@@ -48,6 +56,14 @@ import {
   createPostgresRateLimiter,
   createProgressReadRepository,
   createParticipantJourneyRepository,
+  createParticipantScopeResolver,
+  createDashboardReadRepository,
+  createDiagnosticResultRepository,
+  createAccountManagementRepository,
+  createAccountRecoveryTransaction,
+  createAuditRepository,
+  createContinuingEducationReportRepository,
+  createContentReviewQueueRepository,
   createSessionRepository,
 } from "@cvg/persistence";
 
@@ -122,6 +138,23 @@ export function createApiRuntime(
   const participantJourneyRepository = createParticipantJourneyRepository(
     integrations.database.db,
   );
+  const dashboardReadRepository = createDashboardReadRepository(
+    integrations.database.db,
+  );
+  const continuingEducationReportRepository =
+    createContinuingEducationReportRepository(integrations.database.db);
+  const contentReviewQueueRepository = createContentReviewQueueRepository(
+    integrations.database.db,
+  );
+  const diagnosticResultRepository = createDiagnosticResultRepository(
+    integrations.database.db,
+  );
+  const accountManagementRepository = createAccountManagementRepository(
+    integrations.database.db,
+  );
+  const accountRecoveryTransaction = createAccountRecoveryTransaction(
+    integrations.database.db,
+  );
   const authoringRepository = createAuthoringRepository(
     integrations.database.db,
   );
@@ -129,9 +162,11 @@ export function createApiRuntime(
     integrations.database.db,
   );
   const rateLimiter = createPostgresRateLimiter(integrations.database.db);
+  const audit = createAuditRepository(integrations.database.db);
   const apiDependencies: ApiHttpDependencies = {
     requestIdFactory: randomUUID,
     observability,
+    audit,
     ...(config.approvedClinicalApproverId === undefined
       ? {}
       : { approvedClinicalApproverId: config.approvedClinicalApproverId }),
@@ -152,6 +187,9 @@ export function createApiRuntime(
             } satisfies ApiPrincipal);
       }),
     resolveActivityScope: createActivityScopeResolver(integrations.database.db),
+    isParticipantInScope: createParticipantScopeResolver(
+      integrations.database.db,
+    ),
     resolveAttempt: (attemptId, context) =>
       attemptDependencies.transaction.run(
         (operations) => operations.attemptsPort.findById(attemptId),
@@ -159,8 +197,28 @@ export function createApiRuntime(
       ),
     createInvitation: (command) =>
       createInvitation(command, invitationDependencies),
+    changeAccountStatus: (command) =>
+      changeAccountStatus(command, {
+        repository: accountManagementRepository,
+        idFactory: randomUUID,
+      }),
+    resendAccountInvitation: (command) =>
+      resendAccountInvitation(command, {
+        repository: accountManagementRepository,
+        idFactory: randomUUID,
+      }),
+    issueAccountRecovery: (command) =>
+      issueAccountRecovery(command, {
+        transaction: accountRecoveryTransaction,
+        idFactory: randomUUID,
+      }),
     acceptInvitation: (command) =>
       acceptInvitation(command, invitationDependencies),
+    acceptAccountRecovery: (command) =>
+      acceptAccountRecovery(command, {
+        transaction: accountRecoveryTransaction,
+        idFactory: randomUUID,
+      }),
     revokeSession: (cookieHeader) =>
       revokeSessionCookie(cookieHeader, sessionRepository),
     rotateSession: (cookieHeader, expiresInSeconds) =>
@@ -191,8 +249,8 @@ export function createApiRuntime(
         activityReadRepository,
       ),
     advanceContent: (command) => advanceContent(command, contentDependencies),
-    getInternalAuthoringRecord: (contentId, version) =>
-      authoringRepository.find(contentId, version),
+    getInternalAuthoringRecord: (contentId, version, scopeId) =>
+      authoringRepository.find(contentId, version, scopeId),
     reviewAuthoringContent: (command) =>
       reviewAuthoringContent(command, {
         repository: authoringRepository,
@@ -209,6 +267,17 @@ export function createApiRuntime(
         { participantId, scopeIds },
         participantJourneyRepository,
       ),
+    evaluateDiagnosticDraft: (command) =>
+      evaluateAndPersistDiagnosticDraft(command, diagnosticResultRepository),
+    getStaffDashboard: (principalId, scopeIds) =>
+      getStaffDashboard({ principalId, scopeIds }, dashboardReadRepository),
+    getContinuingEducationReport: (principalId, query) =>
+      getContinuingEducationReport(
+        { principalId, query },
+        continuingEducationReportRepository,
+      ),
+    getContentReviewQueue: (command) =>
+      getContentReviewQueue(command, contentReviewQueueRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>
       getParticipantCurriculumRuntime(
         { participantId, moduleId },

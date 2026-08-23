@@ -11,7 +11,10 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { ModuleEvaluationResult } from "@cvg/curriculum";
+import type {
+  CurriculumDiagnosticResult,
+  ModuleEvaluationResult,
+} from "@cvg/curriculum";
 import type {
   AuthoringChoice,
   AuthoringParticipantItem,
@@ -69,6 +72,8 @@ export type PersistedCorrectionSnapshot = Readonly<{
 }>;
 
 export type PersistedCurriculumRuntimeState = ModuleEvaluationResult;
+
+export type PersistedDiagnosticResult = CurriculumDiagnosticResult;
 
 export type PersistedAuthoringItem = Readonly<{
   readonly title: string;
@@ -156,6 +161,45 @@ export const accountInvitations = pgTable(
     index("account_invitations_account_idx").on(table.accountId),
     check(
       "account_invitations_token_hash_check",
+      sql`${table.tokenHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+);
+
+export const accountRecoveryRequests = pgTable(
+  "account_recovery_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    roles: jsonb("roles").$type<readonly string[]>().notNull(),
+    scopes: jsonb("scopes").$type<readonly string[]>().notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("account_recovery_requests_active_idx").on(
+      table.expiresAt,
+      table.consumedAt,
+      table.revokedAt,
+    ),
+    index("account_recovery_requests_account_idx").on(
+      table.accountId,
+      table.scopeId,
+      table.createdAt,
+    ),
+    check(
+      "account_recovery_requests_token_hash_check",
       sql`${table.tokenHash} ~ '^[a-f0-9]{64}$'`,
     ),
   ],
@@ -432,6 +476,44 @@ export const curriculumRuntimeStates = pgTable(
   ],
 );
 
+export const diagnosticResults = pgTable(
+  "diagnostic_results",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    participantId: uuid("participant_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    diagnosticId: text("diagnostic_id").notNull(),
+    diagnosticVersion: text("diagnostic_version").notNull(),
+    result: jsonb("result").$type<PersistedDiagnosticResult>().notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("diagnostic_results_participant_scope_idx").on(
+      table.participantId,
+      table.scopeId,
+      table.diagnosticId,
+      table.completedAt,
+    ),
+    index("diagnostic_results_scope_completed_idx").on(
+      table.scopeId,
+      table.completedAt,
+    ),
+    check(
+      "diagnostic_results_diagnostic_id_check",
+      sql`${table.diagnosticId} = 'B07-DIAGNOSTIC-V1'`,
+    ),
+    check(
+      "diagnostic_results_diagnostic_version_check",
+      sql`${table.diagnosticVersion} = '0.1.0'`,
+    ),
+  ],
+);
+
 export const attempts = pgTable(
   "attempts",
   {
@@ -680,10 +762,11 @@ export const auditEntries = pgTable(
   "audit_entries",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    principalId: uuid("principal_id").notNull(),
+    actorKind: text("actor_kind").notNull().default("AUTHENTICATED"),
+    principalId: uuid("principal_id"),
     action: text("action").notNull(),
     resourceType: text("resource_type").notNull(),
-    resourceId: uuid("resource_id").notNull(),
+    resourceId: text("resource_id"),
     scopeId: uuid("scope_id"),
     outcome: text("outcome").notNull(),
     reasonCode: text("reason_code"),
@@ -706,6 +789,14 @@ export const auditEntries = pgTable(
     check(
       "audit_entries_outcome_check",
       sql`${table.outcome} in ('SUCCESS', 'DENIED', 'FAILURE')`,
+    ),
+    check(
+      "audit_entries_actor_check",
+      sql`(
+        ${table.actorKind} = 'AUTHENTICATED' and ${table.principalId} is not null
+      ) or (
+        ${table.actorKind} = 'ANONYMOUS' and ${table.principalId} is null
+      )`,
     ),
   ],
 );

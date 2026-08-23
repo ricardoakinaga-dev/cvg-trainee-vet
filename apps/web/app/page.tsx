@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 
 type ActivityItem = Readonly<{
   readonly itemId: string;
@@ -69,6 +69,49 @@ type LearningJourneyProjection = Readonly<{
   readonly results: readonly ApiRecord[];
   readonly runtimes: readonly CurriculumRuntimeProjection[];
   readonly nextAction: string;
+}>;
+
+type ParticipantDashboardProjection = Readonly<{
+  readonly kind: "participant";
+  readonly nextAction: string;
+  readonly path: readonly Readonly<{
+    readonly moduleId: string;
+    readonly month: number;
+    readonly status: string;
+    readonly nextAction: string;
+  }>[];
+  readonly profile: readonly Readonly<{
+    readonly moduleId: string;
+    readonly month: number;
+    readonly competence: string;
+    readonly status: string;
+    readonly scorePercent: number | null;
+    readonly lastEvaluatedAt?: string;
+    readonly evidence: "AVALIACAO_MODULAR_DIGITAL";
+    readonly practicalCompetenceClaim: "PROIBIDO_MVP";
+  }>[];
+  readonly diagnosticProfile?: readonly Readonly<{
+    readonly themeId: "B07-S1" | "B07-S2" | "B07-S3";
+    readonly themeLabel: string;
+    readonly status: "SEM_EVIDENCIA_DIGITAL" | "BASELINE_REGISTRADA";
+    readonly scorePercent: number | null;
+    readonly answeredItemCount: number;
+    readonly itemCount: number;
+    readonly recommendedModuleIds: readonly string[];
+    readonly lastEvaluatedAt?: string;
+    readonly evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL";
+    readonly notPunitive: true;
+    readonly noGlobalPassFail: true;
+    readonly practicalCompetenceClaim: "PROIBIDO_MVP";
+  }>[];
+  readonly progress: Readonly<{
+    readonly assignedActivities: number;
+    readonly completedActivities: number;
+    readonly progressPercent: number | null;
+    readonly remediationObjectives: number;
+    readonly retentionReviewsPending: number;
+    readonly pendingCorrections: number;
+  }>;
 }>;
 
 type ApiRecord = Readonly<Record<string, unknown>>;
@@ -243,6 +286,278 @@ function isJourney(value: unknown): value is LearningJourneyProjection {
   );
 }
 
+function isParticipantDashboard(
+  value: unknown,
+): value is ParticipantDashboardProjection {
+  if (!isRecord(value) || value.kind !== "participant") return false;
+  const progress = value.progress;
+  if (!isRecord(progress) || !isString(value.nextAction)) return false;
+  const countKeys = [
+    "assignedActivities",
+    "completedActivities",
+    "remediationObjectives",
+    "retentionReviewsPending",
+    "pendingCorrections",
+  ] as const;
+  return (
+    Array.isArray(value.path) &&
+    value.path.length <= 24 &&
+    value.path.every(
+      (item) =>
+        isRecord(item) &&
+        isString(item.moduleId) &&
+        /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(item.moduleId) &&
+        typeof item.month === "number" &&
+        Number.isInteger(item.month) &&
+        item.month >= 1 &&
+        item.month <= 24 &&
+        isString(item.status) &&
+        isString(item.nextAction),
+    ) &&
+    Array.isArray(value.profile) &&
+    value.profile.length <= 24 &&
+    value.profile.every(
+      (item) =>
+        isRecord(item) &&
+        isString(item.moduleId) &&
+        /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(item.moduleId) &&
+        typeof item.month === "number" &&
+        Number.isInteger(item.month) &&
+        item.month >= 1 &&
+        item.month <= 24 &&
+        isString(item.competence) &&
+        item.competence.trim().length <= 500 &&
+        isString(item.status) &&
+        (item.scorePercent === null ||
+          (typeof item.scorePercent === "number" &&
+            Number.isInteger(item.scorePercent) &&
+            item.scorePercent >= 0 &&
+            item.scorePercent <= 100)) &&
+        (item.lastEvaluatedAt === undefined ||
+          isString(item.lastEvaluatedAt)) &&
+        item.evidence === "AVALIACAO_MODULAR_DIGITAL" &&
+        item.practicalCompetenceClaim === "PROIBIDO_MVP",
+    ) &&
+    (value.diagnosticProfile === undefined ||
+      (Array.isArray(value.diagnosticProfile) &&
+        value.diagnosticProfile.length === 3 &&
+        value.diagnosticProfile.every(
+          (item) =>
+            isRecord(item) &&
+            (item.themeId === "B07-S1" ||
+              item.themeId === "B07-S2" ||
+              item.themeId === "B07-S3") &&
+            isString(item.themeLabel) &&
+            (item.status === "SEM_EVIDENCIA_DIGITAL" ||
+              item.status === "BASELINE_REGISTRADA") &&
+            (item.scorePercent === null ||
+              (typeof item.scorePercent === "number" &&
+                Number.isInteger(item.scorePercent) &&
+                item.scorePercent >= 0 &&
+                item.scorePercent <= 100)) &&
+            typeof item.answeredItemCount === "number" &&
+            Number.isInteger(item.answeredItemCount) &&
+            item.answeredItemCount >= 0 &&
+            item.answeredItemCount <= 40 &&
+            typeof item.itemCount === "number" &&
+            Number.isInteger(item.itemCount) &&
+            item.itemCount >= 1 &&
+            item.itemCount <= 40 &&
+            Array.isArray(item.recommendedModuleIds) &&
+            item.recommendedModuleIds.every(
+              (moduleId) =>
+                isString(moduleId) &&
+                /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(moduleId),
+            ) &&
+            (item.lastEvaluatedAt === undefined ||
+              isString(item.lastEvaluatedAt)) &&
+            item.evidence === "DIAGNOSTICO_FORMATIVO_DIGITAL" &&
+            item.notPunitive === true &&
+            item.noGlobalPassFail === true &&
+            item.practicalCompetenceClaim === "PROIBIDO_MVP",
+        ))) &&
+    countKeys.every(
+      (key) =>
+        typeof progress[key] === "number" &&
+        Number.isInteger(progress[key]) &&
+        progress[key] >= 0,
+    ) &&
+    (progress.progressPercent === null ||
+      (typeof progress.progressPercent === "number" &&
+        Number.isInteger(progress.progressPercent) &&
+        progress.progressPercent >= 0 &&
+        progress.progressPercent <= 100))
+  );
+}
+
+function pathStatusLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    DISPONIVEL: "Disponível",
+    BLOQUEADO_PRE_REQUISITO: "Aguardando pré-requisito",
+    EM_REMEDIACAO: "Em reforço",
+    RETENCAO_PENDENTE: "Retenção pendente",
+    CONCLUIDO: "Concluído",
+    EM_ANDAMENTO: "Em andamento",
+    NAO_ATRIBUIDO: "Aguardando atribuição",
+  };
+  return labels[value] ?? value;
+}
+
+function pathActionLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    INICIAR_BASELINE: "Iniciar módulo",
+    CONCLUIR_PRE_REQUISITO: "Concluir pré-requisito",
+    EXECUTAR_REMEDIACAO: "Executar reforço",
+    EXECUTAR_RETENCAO: "Fazer retenção",
+    REVISAR_PROXIMO_MODULO: "Revisar próximo módulo",
+    RETOMAR_MODULO: "Retomar módulo",
+    AGUARDAR_ATRIBUICAO: "Aguardando equipe",
+  };
+  return labels[value] ?? value;
+}
+
+function profileStatusLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    SEM_EVIDENCIA_DIGITAL: "Sem evidência digital",
+    EM_DESENVOLVIMENTO_DIGITAL: "Em desenvolvimento digital",
+    DOMINIO_DIGITAL: "Domínio digital",
+    EM_REMEDIACAO: "Em reforço",
+    RETENCAO_PENDENTE: "Retenção pendente",
+    AGUARDA_CORRECAO_HUMANA: "Aguarda correção humana",
+  };
+  return labels[value] ?? value;
+}
+
+function CompetencyProfile({
+  profile,
+}: Readonly<{
+  readonly profile: ParticipantDashboardProjection["profile"];
+}>): ReactNode {
+  if (profile.length === 0) return null;
+  return (
+    <section className="profile-card" aria-label="Perfil de evolução digital">
+      <div className="section-heading compact-heading">
+        <div>
+          <p className="eyebrow">Perfil de evolução</p>
+          <h2>Competências acompanhadas</h2>
+        </div>
+        <span className="status-pill">Digital</span>
+      </div>
+      <div className="profile-grid">
+        {profile.map((item) => (
+          <article className="profile-item" key={item.moduleId}>
+            <div className="profile-item-heading">
+              <strong>
+                Mês {item.month} · {item.moduleId}
+              </strong>
+              <span>
+                {item.scorePercent === null ? "—" : `${item.scorePercent}%`}
+              </span>
+            </div>
+            <p>{item.competence}</p>
+            <small>{profileStatusLabel(item.status)}</small>
+          </article>
+        ))}
+      </div>
+      <p className="path-disclaimer">
+        Este perfil resume evidências de avaliações digitais. Não representa
+        competência prática, autonomia clínica ou autorização de procedimentos.
+      </p>
+    </section>
+  );
+}
+
+function diagnosticStatusLabel(value: string): string {
+  return value === "BASELINE_REGISTRADA"
+    ? "Baseline digital registrada"
+    : "Sem evidência digital";
+}
+
+function DiagnosticProfile({
+  profile,
+}: Readonly<{
+  readonly profile: NonNullable<
+    ParticipantDashboardProjection["diagnosticProfile"]
+  >;
+}>): ReactNode {
+  return (
+    <section
+      className="diagnostic-profile-card"
+      aria-label="Diagnóstico formativo por tema"
+    >
+      <div className="section-heading compact-heading">
+        <div>
+          <p className="eyebrow">Baseline formativa</p>
+          <h2>Diagnóstico por tema</h2>
+        </div>
+        <span className="status-pill">Sem nota global</span>
+      </div>
+      <div className="diagnostic-profile-grid">
+        {profile.map((item) => (
+          <article className="diagnostic-profile-item" key={item.themeId}>
+            <div className="profile-item-heading">
+              <strong>{item.themeLabel}</strong>
+              <span>
+                {item.scorePercent === null ? "—" : `${item.scorePercent}%`}
+              </span>
+            </div>
+            <p>
+              {item.answeredItemCount} de {item.itemCount} itens respondidos
+            </p>
+            <small>{diagnosticStatusLabel(item.status)}</small>
+          </article>
+        ))}
+      </div>
+      <p className="path-disclaimer">
+        O diagnóstico é formativo, não punitivo e não possui aprovação global.
+        Ele orienta a trilha digital; não representa competência prática ou
+        autorização clínica.
+      </p>
+    </section>
+  );
+}
+
+function ParticipantPath({
+  path,
+}: Readonly<{
+  readonly path: ParticipantDashboardProjection["path"];
+}>): ReactNode {
+  if (path.length === 0) return null;
+  return (
+    <section className="path-card" aria-label="Evolução da trilha">
+      <div className="section-heading compact-heading">
+        <div>
+          <p className="eyebrow">Evolução da trilha</p>
+          <h2>Plano de 24 meses</h2>
+        </div>
+        <span className="status-pill">Digital</span>
+      </div>
+      <ol className="path-list">
+        {path.map((item) => (
+          <li
+            className={`path-item path-${item.status.toLowerCase()}`}
+            key={item.moduleId}
+          >
+            <div>
+              <strong>
+                Mês {item.month} · {item.moduleId}
+              </strong>
+              <span>{pathStatusLabel(item.status)}</span>
+            </div>
+            <span className="path-action">
+              {pathActionLabel(item.nextAction)}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p className="path-disclaimer">
+        A trilha mostra evolução digital. Ela não registra prática presencial,
+        não libera procedimentos e não comprova competência clínica.
+      </p>
+    </section>
+  );
+}
+
 function nextActionLabel(value: string): string {
   const labels: Readonly<Record<string, string>> = {
     INICIAR_ATIVIDADE: "Iniciar atividade",
@@ -331,6 +646,8 @@ export default function HomePage() {
   const [journey, setJourney] = useState<LearningJourneyProjection | null>(
     null,
   );
+  const [participantDashboard, setParticipantDashboard] =
+    useState<ParticipantDashboardProjection | null>(null);
   const [runtime, setRuntime] = useState<CurriculumRuntimeProjection | null>(
     null,
   );
@@ -399,12 +716,23 @@ export default function HomePage() {
           "invalid journey projection",
         );
       setJourney(data);
+      void loadParticipantDashboard();
       setJourneyState(data.activities.length === 0 ? "empty" : "ready");
       setRetryAction(null);
       return data;
     } catch (caught) {
       setJourneyState("error");
       throw caught;
+    }
+  }
+
+  async function loadParticipantDashboard(): Promise<void> {
+    try {
+      const data = await requestJson("/api/v1/dashboard", { method: "GET" });
+      if (!isParticipantDashboard(data)) return;
+      setParticipantDashboard(data);
+    } catch {
+      setParticipantDashboard(null);
     }
   }
 
@@ -720,6 +1048,28 @@ export default function HomePage() {
                     </p>
                   ))
                 )}
+                {participantDashboard !== null ? (
+                  <p className="journey-item">
+                    Progresso digital:{" "}
+                    {participantDashboard.progress.completedActivities} de{" "}
+                    {participantDashboard.progress.assignedActivities}{" "}
+                    concluídas ·{" "}
+                    {participantDashboard.progress.progressPercent === null
+                      ? "sem percentual"
+                      : `${participantDashboard.progress.progressPercent}%`}
+                  </p>
+                ) : null}
+                {participantDashboard !== null ? (
+                  <ParticipantPath path={participantDashboard.path} />
+                ) : null}
+                {participantDashboard !== null ? (
+                  <CompetencyProfile profile={participantDashboard.profile} />
+                ) : null}
+                {participantDashboard?.diagnosticProfile !== undefined ? (
+                  <DiagnosticProfile
+                    profile={participantDashboard.diagnosticProfile}
+                  />
+                ) : null}
               </div>
             ) : null}
           </section>
@@ -868,6 +1218,28 @@ export default function HomePage() {
                   {journey.activities.length} atividade
                   {journey.activities.length === 1 ? "" : "s"} no caminho atual.
                 </p>
+                {participantDashboard !== null ? (
+                  <p className="journey-item">
+                    Progresso digital:{" "}
+                    {participantDashboard.progress.completedActivities} de{" "}
+                    {participantDashboard.progress.assignedActivities}{" "}
+                    concluídas ·{" "}
+                    {participantDashboard.progress.progressPercent === null
+                      ? "sem percentual"
+                      : `${participantDashboard.progress.progressPercent}%`}
+                  </p>
+                ) : null}
+                {participantDashboard !== null ? (
+                  <ParticipantPath path={participantDashboard.path} />
+                ) : null}
+                {participantDashboard !== null ? (
+                  <CompetencyProfile profile={participantDashboard.profile} />
+                ) : null}
+                {participantDashboard?.diagnosticProfile !== undefined ? (
+                  <DiagnosticProfile
+                    profile={participantDashboard.diagnosticProfile}
+                  />
+                ) : null}
               </div>
             ) : null}
             {runtime !== null ? (

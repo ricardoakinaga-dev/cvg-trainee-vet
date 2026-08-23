@@ -13,9 +13,13 @@ import {
   type AuthoringRecord,
   type ContentRecord,
   type CurriculumRuntimeState,
+  type DiagnosticResultState,
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
+  type StaffDashboardState,
+  type ContinuingEducationReportState,
+  type ContentReviewQueueState,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
 
@@ -63,6 +67,170 @@ const progress: ParticipantProgressState = {
   attemptStatus: "SALVA",
   attemptVersion: 2,
   nextAction: "RETOMAR_ATIVIDADE",
+};
+
+const staffDashboard: StaffDashboardState = {
+  scopes: ["scope-1"],
+  generatedAt: "2026-08-10T05:00:00.000Z",
+  metrics: {
+    invitedParticipants: 2,
+    activeParticipants: 1,
+    inactiveParticipants: 0,
+    assignedModules: 2,
+    completedModules: 1,
+    completionRatePercent: 50,
+    medianProgressPercent: 50,
+    pendingCorrections: 1,
+    remediationParticipants: 1,
+    retentionReviewsPending: 1,
+    openFeedback: 1,
+    content: {
+      published: 4,
+      inReview: 1,
+      expired: 0,
+      withdrawn: 0,
+    },
+  },
+  participants: [
+    {
+      participantId: attempt.participantId,
+      professionalEmail: "vet@example.invalid",
+      accountStatus: "ACTIVE",
+      scopeIds: ["scope-1"],
+      lastSeenAt: "2026-08-10T04:00:00.000Z",
+      progress: {
+        assignedModules: 2,
+        completedModules: 1,
+        progressPercent: 50,
+        remediationModules: 1,
+        retentionReviewsPending: 1,
+      },
+      pendingCorrections: 1,
+      openFeedback: 1,
+      nextAction: "AGUARDAR_CORRECAO_HUMANA",
+      diagnosticProfile: [
+        {
+          themeId: "B07-S1",
+          themeLabel: "Núcleo clínico e segurança",
+          status: "BASELINE_REGISTRADA",
+          scorePercent: 75,
+          answeredItemCount: 30,
+          itemCount: 40,
+          recommendedModuleIds: ["M01", "M11"],
+          lastEvaluatedAt: "2026-08-23T12:00:00.000Z",
+          evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL",
+          notPunitive: true,
+          noGlobalPassFail: true,
+          practicalCompetenceClaim: "PROIBIDO_MVP",
+        },
+        {
+          themeId: "B07-S2",
+          themeLabel: "Emergência e priorização",
+          status: "SEM_EVIDENCIA_DIGITAL",
+          scorePercent: null,
+          answeredItemCount: 0,
+          itemCount: 40,
+          recommendedModuleIds: [],
+          evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL",
+          notPunitive: true,
+          noGlobalPassFail: true,
+          practicalCompetenceClaim: "PROIBIDO_MVP",
+        },
+        {
+          themeId: "B07-S3",
+          themeLabel: "Internação, monitoramento e integração",
+          status: "SEM_EVIDENCIA_DIGITAL",
+          scorePercent: null,
+          answeredItemCount: 0,
+          itemCount: 40,
+          recommendedModuleIds: [],
+          evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL",
+          notPunitive: true,
+          noGlobalPassFail: true,
+          practicalCompetenceClaim: "PROIBIDO_MVP",
+        },
+      ],
+    },
+  ],
+};
+
+const continuingEducationReport: ContinuingEducationReportState = {
+  kind: "continuing_education_report",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T20:00:00.000Z",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    moduleId: "M02",
+    accountStatus: "ACTIVE",
+  },
+  summary: {
+    participantCount: 1,
+    invitedParticipants: 0,
+    activeParticipants: 1,
+    suspendedParticipants: 0,
+    deactivatedParticipants: 0,
+    assignedModules: 1,
+    completedModules: 1,
+    completionRatePercent: 100,
+    completedDigitalMinutes: 360,
+    completedDigitalHours: 6,
+  },
+  participants: [
+    {
+      participantId: "22222222-2222-4222-8222-222222222222",
+      professionalEmail: "vet@example.invalid",
+      accountStatus: "ACTIVE",
+      assignedModules: 1,
+      completedModules: 1,
+      progressPercent: 100,
+      completedDigitalMinutes: 360,
+      completedDigitalHours: 6,
+      lastSeenAt: "2026-08-23T19:00:00.000Z",
+    },
+  ],
+  modules: [
+    {
+      moduleId: "M02",
+      month: 2,
+      scheduledMinutes: 360,
+      assignedParticipants: 1,
+      completedParticipants: 1,
+      completionRatePercent: 100,
+    },
+  ],
+  learningEvidence: "ATIVIDADE_MODULAR_DIGITAL",
+  hoursClaim: "NAO_CREDENCIADAS",
+  practicalCompetenceClaim: "PROIBIDO_MVP",
+};
+
+const contentReviewQueue: ContentReviewQueueState = {
+  kind: "content_review_queue",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T20:00:00.000Z",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    status: "EM_REVISAO_CLINICA",
+    limit: 25,
+  },
+  items: [
+    {
+      contentId: "22222222-2222-4222-8222-222222222222",
+      version: 1,
+      scopeId: "11111111-1111-4111-8111-111111111111",
+      moduleId: "M02",
+      sessionId: "M02-S1",
+      title: "Prioridade sintética",
+      authorId: "33333333-3333-4333-8333-333333333333",
+      status: "EM_REVISAO_CLINICA",
+      preflight: {
+        technicalChecksPassed: true,
+        checkedAt: "2026-08-23T19:00:00.000Z",
+      },
+      updatedAt: "2026-08-23T19:30:00.000Z",
+      canOpenAuthoring: true,
+      nextAction: "REVISAR_CLINICAMENTE",
+    },
+  ],
 };
 
 const curriculumRuntime: CurriculumRuntimeState = {
@@ -152,6 +320,7 @@ function dependencies(
       scopes: ["scope-1"],
     }),
     resolveActivityScope: async () => "scope-1",
+    isParticipantInScope: async () => true,
     resolveAttempt: async () => attempt,
     getParticipantActivity: async () => activity,
     advanceContent: vi.fn(
@@ -233,6 +402,39 @@ describe("API HTTP boundary", () => {
     expect(healthcheck).not.toHaveBeenCalled();
   });
 
+  it("records a redacted anonymous rejection with a normalized route", async () => {
+    const audit = { append: vi.fn(async () => undefined) };
+    const protectedFixture = ["opaque", "audit", "fixture"].join("-");
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/attempts/11111111-1111-4111-8111-111111111111/submit",
+        route: "/api/v1/attempts/:attemptId/submit",
+        body: { token: protectedFixture },
+      },
+      dependencies({
+        requestIdFactory: () => "11111111-1111-4111-8111-111111111111",
+        audit,
+        authenticate: async () => null,
+      }),
+    );
+
+    expect(response.status).toBe(401);
+    expect(audit.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorKind: "ANONYMOUS",
+        action: "HTTP_REQUEST_REJECTED",
+        resourceType: "http_route",
+        resourceId: "/api/v1/attempts/:attemptId/submit",
+        outcome: "DENIED",
+        reasonCode: "api_unauthenticated",
+      }),
+    );
+    expect(JSON.stringify(audit.append.mock.calls[0])).not.toContain(
+      protectedFixture,
+    );
+  });
+
   it("returns redacted dependency health and protects metrics export", async () => {
     const dependencyStatus = vi.fn(async () => ({
       status: "DEGRADED" as const,
@@ -303,11 +505,12 @@ describe("API HTTP boundary", () => {
       {
         method: "GET",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/versions/1/authoring`,
+        query: { scopeId: authoringRecord.scopeId },
         body: undefined,
       },
       dependencies({
         authenticate: async () => ({
-          principalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          principalId: authoringRecord.authorId,
           accountStatus: "ACTIVE",
           roles: ["AUTHOR"],
           scopes: [authoringRecord.scopeId],
@@ -329,12 +532,139 @@ describe("API HTTP boundary", () => {
       {
         method: "GET",
         path: `/api/v1/internal/content/${authoringRecord.contentId}/versions/1/authoring`,
+        query: { scopeId: authoringRecord.scopeId },
         body: undefined,
       },
       dependencies({ getInternalAuthoringRecord }),
     );
     expect(participantResponse.status).toBe(403);
-    expect(getInternalAuthoringRecord).toHaveBeenCalledTimes(2);
+    expect(getInternalAuthoringRecord).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists the B-07 draft evaluation only behind scoped moderation and returns theme aggregates", async () => {
+    const state: DiagnosticResultState = {
+      resultId: "33333333-3333-4333-8333-333333333333",
+      participantId: attempt.participantId,
+      scopeId: "11111111-1111-4111-8111-111111111111",
+      diagnosticId: "B07-DIAGNOSTIC-V1",
+      version: "0.1.0",
+      completedAt: "2026-08-23T12:00:00.000Z",
+      result: {
+        diagnosticId: "B07-DIAGNOSTIC-V1",
+        version: "0.1.0",
+        notPunitive: true,
+        noGlobalPassFail: true,
+        totalItemCount: 120,
+        answeredItemCount: 1,
+        themeResults: [
+          {
+            themeId: "B07-S1",
+            itemCount: 40,
+            answeredItemCount: 1,
+            earnedPoints: 1,
+            possiblePoints: 1,
+            percent: 100,
+            recommendedModuleIds: ["M01"],
+          },
+          {
+            themeId: "B07-S2",
+            itemCount: 40,
+            answeredItemCount: 0,
+            earnedPoints: 0,
+            possiblePoints: 0,
+            percent: 0,
+            recommendedModuleIds: ["M02"],
+          },
+          {
+            themeId: "B07-S3",
+            itemCount: 40,
+            answeredItemCount: 0,
+            earnedPoints: 0,
+            possiblePoints: 0,
+            percent: 0,
+            recommendedModuleIds: ["M11"],
+          },
+        ],
+        recommendedModuleIds: ["M01", "M02", "M11"],
+        remediationObjectiveIds: ["M01-OBJ-01"],
+      },
+    };
+    const evaluateDiagnosticDraft = vi.fn(async () => state);
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/diagnostics/b07/evaluate",
+        body: {
+          participantId: attempt.participantId,
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          completedAt: "2026-08-23T12:00:00.000Z",
+          answers: [{ itemId: "B07-S1-I001", selectedChoiceIds: ["a"] }],
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        evaluateDiagnosticDraft,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        diagnosticId: "B07-DIAGNOSTIC-V1",
+        themes: [
+          { themeId: "B07-S1", scorePercent: 100 },
+          expect.anything(),
+          expect.anything(),
+        ],
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain(
+      "remediationObjectiveIds",
+    );
+    expect(JSON.stringify(response.body)).not.toContain("answer_key");
+    expect(evaluateDiagnosticDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        participantId: attempt.participantId,
+        scopeId: "11111111-1111-4111-8111-111111111111",
+      }),
+    );
+  });
+
+  it("rejects a diagnostic draft for a participant outside the moderator scope", async () => {
+    const evaluateDiagnosticDraft = vi.fn(async () => {
+      throw new Error("must not evaluate an out-of-scope participant");
+    });
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/diagnostics/b07/evaluate",
+        body: {
+          participantId: attempt.participantId,
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          completedAt: "2026-08-23T12:00:00.000Z",
+          answers: [{ itemId: "B07-S1-I001", selectedChoiceIds: ["a"] }],
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        isParticipantInScope: async () => false,
+        evaluateDiagnosticDraft,
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(evaluateDiagnosticDraft).not.toHaveBeenCalled();
   });
 
   it("accepts a scoped clinical review without exposing it to the participant route", async () => {
@@ -452,6 +782,119 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(response.body)).not.toContain("accountId");
   });
 
+  it("changes a participant account only through an authorized scoped admin route", async () => {
+    const changeAccountStatus = vi.fn(async () => ({
+      accountId: attempt.participantId,
+      status: "DEACTIVATED" as const,
+      revokedSessions: 3,
+    }));
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const response = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/accounts/${attempt.participantId}/status`,
+        body: {
+          scopeId,
+          expectedStatus: "ACTIVE",
+          status: "DEACTIVATED",
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: [scopeId],
+        }),
+        changeAccountStatus,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(changeAccountStatus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetAccountId: attempt.participantId,
+        scopeId,
+        expectedStatus: "ACTIVE",
+        status: "DEACTIVATED",
+        correlationId: "request-123",
+      }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "DEACTIVATED", revokedSessions: 3 },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("accountId");
+  });
+
+  it("resends an invitation only to a scoped administrator and never returns its hash", async () => {
+    const resendAccountInvitation = vi.fn(async () => ({
+      invitationId: "99999999-9999-4999-8999-999999999999",
+      accountId: attempt.participantId,
+      professionalEmail: "vet@example.invalid",
+      token: "r".repeat(32),
+      expiresAt: new Date("2026-08-30T12:00:00.000Z"),
+    }));
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/accounts/${attempt.participantId}/invitation`,
+        body: { scopeId, expiresInSeconds: 3600 },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: [scopeId],
+        }),
+        resendAccountInvitation,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(resendAccountInvitation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetAccountId: attempt.participantId,
+        scopeId,
+      }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { professionalEmail: "vet@example.invalid", token: "r".repeat(32) },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("tokenHash");
+    expect(JSON.stringify(response.body)).not.toContain("accountId");
+  });
+
+  it("rejects lifecycle actions from a moderator or malformed target before persistence", async () => {
+    const changeAccountStatus = vi.fn();
+    const response = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: "/api/v1/internal/accounts/not-a-uuid/status",
+        body: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          expectedStatus: "ACTIVE",
+          status: "SUSPENDED",
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        changeAccountStatus,
+      }),
+    );
+
+    expect(response.status).toBe(422);
+    expect(changeAccountStatus).not.toHaveBeenCalled();
+  });
+
   it("accepts an invitation without authentication and sets a secure session cookie", async () => {
     const authenticate = vi.fn(async () => null);
     const acceptInvitation = vi.fn(async () => ({
@@ -492,6 +935,105 @@ describe("API HTTP boundary", () => {
     });
     expect(JSON.stringify(response.body)).not.toContain("accountId");
     expect(JSON.stringify(response.body)).not.toContain("b".repeat(32));
+  });
+
+  it("keeps malformed invitation tokens indistinguishable from unavailable tokens", async () => {
+    const acceptInvitation = vi.fn();
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/invitations/accept",
+        body: { token: "short", sessionExpiresInSeconds: 3600 },
+      },
+      dependencies({ acceptInvitation }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "not_found" },
+    });
+    expect(acceptInvitation).not.toHaveBeenCalled();
+  });
+
+  it("issues scoped recovery only through the internal administrator route", async () => {
+    const issueAccountRecovery = vi.fn(async () => ({
+      recoveryId: "99999999-9999-4999-8999-999999999999",
+      accountId: attempt.participantId,
+      professionalEmail: "vet@example.invalid",
+      token: "r".repeat(32),
+      expiresAt: new Date("2026-08-23T12:30:00.000Z"),
+      revokedSessions: 2,
+    }));
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/accounts/${attempt.participantId}/recovery`,
+        body: { scopeId, expiresInSeconds: 1800 },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: [scopeId],
+        }),
+        issueAccountRecovery,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(issueAccountRecovery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetAccountId: attempt.participantId,
+        scopeId,
+        expiresInSeconds: 1800,
+      }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { professionalEmail: "vet@example.invalid", token: "r".repeat(32) },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("tokenHash");
+  });
+
+  it("accepts a recovery link anonymously and creates only a new session cookie", async () => {
+    const authenticate = vi.fn(async () => null);
+    const acceptAccountRecovery = vi.fn(async () => ({
+      accountId: attempt.participantId,
+      session: {
+        sessionId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        token: "s".repeat(32),
+        expiresAt: new Date("2026-08-23T12:30:00.000Z"),
+        cookie:
+          "__Host-cvg_session=" +
+          "s".repeat(32) +
+          "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=3600",
+      },
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/recovery/accept",
+        body: { token: "r".repeat(32), sessionExpiresInSeconds: 3600 },
+      },
+      dependencies({ authenticate, acceptAccountRecovery }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(authenticate).not.toHaveBeenCalled();
+    expect(acceptAccountRecovery).toHaveBeenCalledWith({
+      token: "r".repeat(32),
+      sessionExpiresInSeconds: 3600,
+      correlationId: "request-123",
+    });
+    expect(response.headers?.["set-cookie"]).toContain("HttpOnly");
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "active" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("accountId");
   });
 
   it("revokes a session without revealing whether the cookie was active", async () => {
@@ -782,6 +1324,358 @@ describe("API HTTP boundary", () => {
     });
     expect(JSON.stringify(response.body)).not.toContain("scopeId");
     expect(JSON.stringify(response.body)).not.toContain("participantId");
+  });
+
+  it("returns the participant dashboard without internal identity or scope data", async () => {
+    const getParticipantLearningJourney = vi.fn(
+      async (): Promise<ParticipantLearningJourneyState> => ({
+        participantId: attempt.participantId,
+        assignments: [],
+        activities: [
+          {
+            scopeId: "scope-1",
+            activityId: activity.activityId,
+            slug: activity.slug,
+            title: activity.title,
+            status: "CONCLUIDO",
+            nextAction: "CONSULTAR_PROXIMO_PASSO",
+          },
+        ],
+        results: [],
+        runtimes: [],
+      }),
+    );
+
+    const response = await handleApiRequest(
+      { method: "GET", path: "/api/v1/dashboard", body: undefined },
+      dependencies({ getParticipantLearningJourney }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "participant",
+        nextAction: "CONSULTAR_PROXIMO_PASSO",
+        progress: {
+          assignedActivities: 1,
+          completedActivities: 1,
+          progressPercent: 100,
+        },
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("participantId");
+    expect(JSON.stringify(response.body)).not.toContain("scopeId");
+  });
+
+  it("returns a scoped staff dashboard only to an active moderator", async () => {
+    const getStaffDashboard = vi.fn(async () => staffDashboard);
+    const response = await handleApiRequest(
+      { method: "GET", path: "/api/v1/dashboard", body: undefined },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["scope-1"],
+        }),
+        getStaffDashboard,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getStaffDashboard).toHaveBeenCalledWith(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      ["scope-1"],
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "staff",
+        scopes: ["scope-1"],
+        metrics: { activeParticipants: 1 },
+        participants: [
+          {
+            professionalEmail: "vet@example.invalid",
+            diagnosticProfile: expect.arrayContaining([
+              expect.objectContaining({
+                themeId: "B07-S1",
+                scorePercent: 75,
+              }),
+            ]),
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("M01-OBJ-01");
+  });
+
+  it("fails closed when staff dashboard access is not scoped", async () => {
+    const getStaffDashboard = vi.fn(async () => staffDashboard);
+    const response = await handleApiRequest(
+      { method: "GET", path: "/api/v1/dashboard", body: undefined },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "SUSPENDED",
+          roles: ["ADMIN"],
+          scopes: ["scope-1"],
+        }),
+        getStaffDashboard,
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(getStaffDashboard).not.toHaveBeenCalled();
+  });
+
+  it("returns the filtered digital participation report only to scoped staff", async () => {
+    const getContinuingEducationReport = vi.fn(
+      async () => continuingEducationReport,
+    );
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/continuing-education",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          moduleId: "M02",
+          accountStatus: "ACTIVE",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        getContinuingEducationReport,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getContinuingEducationReport).toHaveBeenCalledWith(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      {
+        scopeId: "11111111-1111-4111-8111-111111111111",
+        moduleId: "M02",
+        accountStatus: "ACTIVE",
+      },
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "continuing_education_report",
+        summary: { completedDigitalHours: 6 },
+        hoursClaim: "NAO_CREDENCIADAS",
+        practicalCompetenceClaim: "PROIBIDO_MVP",
+      },
+    });
+  });
+
+  it("fails closed for an invalid or cross-scope metrics query", async () => {
+    const getContinuingEducationReport = vi.fn(
+      async () => continuingEducationReport,
+    );
+    const dependenciesValue = dependencies({
+      authenticate: async () => ({
+        principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        accountStatus: "ACTIVE",
+        roles: ["MODERATOR"],
+        scopes: ["11111111-1111-4111-8111-111111111111"],
+      }),
+      getContinuingEducationReport,
+    });
+    const invalid = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/continuing-education",
+        query: { scopeId: "not-a-uuid" },
+        body: undefined,
+      },
+      dependenciesValue,
+    );
+    expect(invalid.status).toBe(422);
+    expect(getContinuingEducationReport).not.toHaveBeenCalled();
+
+    const crossScope = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/continuing-education",
+        query: { scopeId: "44444444-4444-4444-8444-444444444444" },
+        body: undefined,
+      },
+      dependenciesValue,
+    );
+    expect(crossScope.status).toBe(403);
+    expect(getContinuingEducationReport).not.toHaveBeenCalled();
+  });
+
+  it("returns the scoped content review queue and rejects invalid scope input", async () => {
+    const getContentReviewQueue = vi.fn(async () => contentReviewQueue);
+    const dependenciesValue = dependencies({
+      authenticate: async () => ({
+        principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        accountStatus: "ACTIVE",
+        roles: ["AUTHOR"],
+        scopes: ["11111111-1111-4111-8111-111111111111"],
+      }),
+      getContentReviewQueue,
+    });
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/content/review-queue",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          status: "EM_REVISAO_CLINICA",
+          limit: "25",
+        },
+        body: undefined,
+      },
+      dependenciesValue,
+    );
+    expect(response.status).toBe(200);
+    expect(getContentReviewQueue).toHaveBeenCalledWith({
+      principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      accountStatus: "ACTIVE",
+      roles: ["AUTHOR"],
+      scopes: ["11111111-1111-4111-8111-111111111111"],
+      query: {
+        scopeId: "11111111-1111-4111-8111-111111111111",
+        status: "EM_REVISAO_CLINICA",
+        limit: 25,
+      },
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "content_review_queue",
+        items: [{ nextAction: "REVISAR_CLINICAMENTE" }],
+      },
+    });
+
+    const invalid = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/content/review-queue",
+        query: { scopeId: "not-a-uuid" },
+        body: undefined,
+      },
+      dependenciesValue,
+    );
+    expect(invalid.status).toBe(422);
+    expect(getContentReviewQueue).toHaveBeenCalledTimes(1);
+
+    const clinicalDenied = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/content/review-queue",
+        query: { scopeId: contentReviewQueue.scopeId },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [contentReviewQueue.scopeId],
+        }),
+        getContentReviewQueue,
+      }),
+    );
+    expect(clinicalDenied.status).toBe(403);
+
+    const clinicalAllowed = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/content/review-queue",
+        query: { scopeId: contentReviewQueue.scopeId },
+        body: undefined,
+      },
+      dependencies({
+        approvedClinicalApproverId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        authenticate: async () => ({
+          principalId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [contentReviewQueue.scopeId],
+        }),
+        getContentReviewQueue,
+      }),
+    );
+    expect(clinicalAllowed.status).toBe(200);
+    expect(getContentReviewQueue).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        approvedClinicalApproverId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      }),
+    );
+  });
+
+  it("fails closed when the content review queue dependency is unavailable", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/content/review-queue",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+      }),
+    );
+    expect(response.status).toBe(500);
+  });
+
+  it("returns only the authenticated internal session scopes", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/session/scopes",
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [
+            "11111111-1111-4111-8111-111111111111",
+            "22222222-2222-4222-8222-222222222222",
+          ],
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "internal_session_scopes",
+        scopes: [
+          "11111111-1111-4111-8111-111111111111",
+          "22222222-2222-4222-8222-222222222222",
+        ],
+      },
+    });
+
+    const denied = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/session/scopes",
+        body: undefined,
+      },
+      dependencies(),
+    );
+    expect(denied.status).toBe(403);
   });
 
   it("reads only the public curriculum runtime projection", async () => {

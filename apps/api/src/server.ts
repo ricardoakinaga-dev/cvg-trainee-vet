@@ -10,6 +10,7 @@ import { sanitizeCorrelationId, type Observability } from "@cvg/observability";
 
 import {
   handleApiRequest,
+  recordApiRejectionAudit,
   type ApiHttpDependencies,
   type ApiHttpResponse,
   type ApiHttpRequest,
@@ -130,6 +131,20 @@ function toPath(request: IncomingMessage): string {
   }
 }
 
+function toQuery(
+  request: IncomingMessage,
+): Readonly<Record<string, string | undefined>> {
+  try {
+    return Object.fromEntries(
+      new URLSearchParams(
+        new URL(request.url ?? "/", "http://127.0.0.1").search,
+      ).entries(),
+    );
+  } catch {
+    return {};
+  }
+}
+
 export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/health/live") return "/health/live";
   if (method === "GET" && path === "/health/ready") return "/health/ready";
@@ -141,6 +156,9 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (method === "POST" && path === "/api/v1/invitations/accept") {
     return "/api/v1/invitations/accept";
+  }
+  if (method === "POST" && path === "/api/v1/recovery/accept") {
+    return "/api/v1/recovery/accept";
   }
   if (method === "POST" && path === "/api/v1/session/revoke") {
     return "/api/v1/session/revoke";
@@ -168,6 +186,21 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (method === "GET" && path === "/api/v1/learning-path") {
     return "/api/v1/learning-path";
+  }
+  if (method === "GET" && path === "/api/v1/dashboard") {
+    return "/api/v1/dashboard";
+  }
+  if (
+    method === "GET" &&
+    path === "/api/v1/internal/reports/continuing-education"
+  ) {
+    return "/api/v1/internal/reports/continuing-education";
+  }
+  if (method === "GET" && path === "/api/v1/internal/content/review-queue") {
+    return "/api/v1/internal/content/review-queue";
+  }
+  if (method === "GET" && path === "/api/v1/internal/session/scopes") {
+    return "/api/v1/internal/session/scopes";
   }
   if (/^\/api\/v1\/activities\/[^/]+$/u.test(path)) {
     return "/api/v1/activities/:activityId";
@@ -213,6 +246,12 @@ export function routeTemplate(method: string, path: string): string {
     return "/api/v1/internal/curriculum/modules/:moduleId/evaluate";
   }
   if (
+    method === "POST" &&
+    path === "/api/v1/internal/diagnostics/b07/evaluate"
+  ) {
+    return "/api/v1/internal/diagnostics/b07/evaluate";
+  }
+  if (
     /^\/api\/v1\/internal\/learning-assignments\/[^/]+\/transition$/u.test(path)
   ) {
     return "/api/v1/internal/learning-assignments/:assignmentId/transition";
@@ -224,6 +263,9 @@ export function routeTemplate(method: string, path: string): string {
   }
   if (/^\/api\/v1\/internal\/feedback\/[^/]+$/u.test(path)) {
     return "/api/v1/internal/feedback/:ticketId";
+  }
+  if (/^\/api\/v1\/internal\/accounts\/[^/]+\/recovery$/u.test(path)) {
+    return "/api/v1/internal/accounts/:accountId/recovery";
   }
   if (/^\/api\/v1\/internal\/appeals\/[^/]+\/transition$/u.test(path)) {
     return "/api/v1/internal/appeals/:appealId/transition";
@@ -314,6 +356,11 @@ export function createApiServer(
               }),
         };
         request.resume();
+        await recordApiRejectionAudit(
+          dependencies,
+          { method, path, route, headers: requestHeaders(request) },
+          payload,
+        );
         observeRequest(dependencies.observability, request, payload, startedAt);
         writeResponse(response, payload);
         return;
@@ -327,6 +374,11 @@ export function createApiServer(
         body: apiErrorResponse("forbidden", dependencies.requestIdFactory()),
       };
       request.resume();
+      await recordApiRejectionAudit(
+        dependencies,
+        { method, path, route, headers },
+        payload,
+      );
       observeRequest(dependencies.observability, request, payload, startedAt);
       writeResponse(response, payload);
       return;
@@ -343,6 +395,11 @@ export function createApiServer(
           dependencies.requestIdFactory(),
         ),
       };
+      await recordApiRejectionAudit(
+        dependencies,
+        { method, path, route, headers },
+        payload,
+      );
       observeRequest(dependencies.observability, request, payload, startedAt);
       writeResponse(response, payload);
       return;
@@ -351,7 +408,9 @@ export function createApiServer(
     const apiRequest: ApiHttpRequest = {
       method,
       path,
+      route,
       body,
+      query: toQuery(request),
       headers,
     };
     const payload = await handleApiRequest(apiRequest, dependencies);

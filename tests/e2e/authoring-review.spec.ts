@@ -57,13 +57,47 @@ const authoringRecord = {
     },
     checkedAt: "2026-08-10T05:00:00.000Z",
   },
+  availableActions: {
+    requestAdjustments: false,
+    approveClinically: true,
+  },
 };
 
 test("clinical reviewer can inspect and decide an internal authoring item", async ({
   page,
 }) => {
+  await page.route("**/api/v1/internal/session/scopes", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          kind: "internal_session_scopes",
+          scopes: [scopeId],
+        }),
+      ),
+    });
+  });
   await page.route(
-    `**/api/v1/internal/content/${contentId}/versions/1/authoring`,
+    "**/api/v1/internal/content/review-queue**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            kind: "content_review_queue",
+            scopeId,
+            generatedAt: "2026-08-23T20:00:00.000Z",
+            filters: { scopeId, limit: 50 },
+            items: [],
+          }),
+        ),
+      });
+    },
+  );
+  await page.route(
+    `**/api/v1/internal/content/${contentId}/versions/1/authoring**`,
     async (route) => {
       await route.fulfill({
         status: 200,
@@ -88,7 +122,9 @@ test("clinical reviewer can inspect and decide an internal authoring item", asyn
     },
   );
 
-  await page.goto(`/authoring?contentId=${contentId}&version=1`);
+  await page.goto(
+    `/authoring?contentId=${contentId}&version=1&scopeId=${scopeId}`,
+  );
   await expect(
     page.getByRole("heading", { name: "Prioridade sintética" }),
   ).toBeVisible();
@@ -97,5 +133,82 @@ test("clinical reviewer can inspect and decide an internal authoring item", asyn
   await page.getByRole("button", { name: "Aprovar clinicamente" }).click();
   await expect(page.getByRole("status")).toHaveText(
     "Revisão clínica registrada.",
+  );
+});
+
+test("scoped reviewer can load the redacted queue and open an item", async ({
+  page,
+}) => {
+  await page.route("**/api/v1/internal/session/scopes", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          kind: "internal_session_scopes",
+          scopes: [scopeId],
+        }),
+      ),
+    });
+  });
+  await page.route(
+    "**/api/v1/internal/content/review-queue**",
+    async (route) => {
+      const requestUrl = new URL(route.request().url());
+      expect(requestUrl.searchParams.get("scopeId")).toBe(scopeId);
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            kind: "content_review_queue",
+            scopeId,
+            generatedAt: "2026-08-23T20:00:00.000Z",
+            filters: { scopeId, limit: 50 },
+            items: [
+              {
+                contentId,
+                version: 1,
+                scopeId,
+                moduleId: "M02",
+                sessionId: "M02-S1",
+                title: "Prioridade sintética",
+                authorId: "33333333-3333-4333-8333-333333333333",
+                status: "EM_REVISAO_CLINICA",
+                preflight: {
+                  technicalChecksPassed: true,
+                  checkedAt: "2026-08-23T19:00:00.000Z",
+                },
+                canOpenAuthoring: true,
+                updatedAt: "2026-08-23T19:30:00.000Z",
+                nextAction: "REVISAR_CLINICAMENTE",
+              },
+            ],
+          }),
+        ),
+      });
+    },
+  );
+  await page.route(
+    `**/api/v1/internal/content/${contentId}/versions/1/authoring**`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope(authoringRecord)),
+      });
+    },
+  );
+
+  await page.goto(`/authoring?scopeId=${scopeId}`);
+  await expect(
+    page.getByRole("heading", { name: "Revisão clínica pendente" }),
+  ).toBeVisible();
+  await expect(page.getByText("M02 · M02-S1 · versão 1")).toBeVisible();
+  await expect(page.locator(".queue-item")).not.toContainText("gabarito");
+  await expect(page.locator(".queue-item")).not.toContainText("fontes");
+  await page.getByRole("link", { name: "Abrir revisão" }).click();
+  await expect(page.locator("#review-title")).toHaveText(
+    "Prioridade sintética",
   );
 });

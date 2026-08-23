@@ -7,7 +7,6 @@ import {
   advanceContent,
   reviewAuthoringContent,
 } from "../../packages/application/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   accounts,
   contentEditorialRecords,
@@ -18,6 +17,12 @@ import {
   createContentUseCaseDependencies,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
@@ -25,11 +30,19 @@ const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL authoring and clinical review integration",
   () => {
-    it("persists item-level review and blocks publication until all gates are closed", async () => {
+    it("persists item-level review and blocks publication until all gates are closed", async ({
+      skip,
+    }) => {
       if (databaseUrl === undefined)
         throw new Error("test database URL is required");
 
-      const database = createPostgresDatabase(databaseUrl);
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
       const authorId = randomUUID();
       const reviewerId = randomUUID();
       const contentId = randomUUID();
@@ -86,7 +99,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       };
 
       try {
-        await database.db.insert(accounts).values([
+        await admin.db.insert(accounts).values([
           {
             id: authorId,
             professionalEmail: `${authorId}@example.invalid`,
@@ -98,7 +111,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             status: "ACTIVE",
           },
         ]);
-        await database.db.insert(contentVersions).values({
+        await admin.db.insert(contentVersions).values({
           id: contentVersionId,
           contentId,
           scopeId,
@@ -111,7 +124,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           participantOptions: bankItem.participant.choices,
           participantSelectionMode: "SINGLE",
         });
-        await database.db.insert(contentEditorialRecords).values({
+        await admin.db.insert(contentEditorialRecords).values({
           id: editorialRecordId,
           contentVersionId,
           contentId,
@@ -152,7 +165,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
 
         expect(reviewed.record.contentStatus).toBe("APROVADO_CLINICAMENTE");
         expect(reviewed.record.latestReview?.reviewerId).toBe(reviewerId);
-        const persisted = await authoringRepository.find(contentId, 1);
+        const persisted = await authoringRepository.find(contentId, 1, scopeId);
         expect(persisted?.latestReview?.decision).toBe("APROVAR_CLINICAMENTE");
         expect(persisted?.correctChoiceIds).toEqual(["a"]);
 
@@ -203,30 +216,30 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         );
         expect(published.status).toBe("PUBLICADO");
 
-        const reviews = await database.db
+        const reviews = await admin.db
           .select({ decision: contentReviewDecisions.decision })
           .from(contentReviewDecisions)
           .where(eq(contentReviewDecisions.contentId, contentId));
         expect(reviews).toHaveLength(1);
         expect(reviews[0]?.decision).toBe("APROVAR_CLINICAMENTE");
 
-        const stored = await createContentRepository(database.db).find(
+        const stored = await createContentRepository(admin.db).find(
           contentId,
           1,
         );
         expect(stored).toMatchObject({ publicationReady: true });
         expect(JSON.stringify(stored)).not.toContain("correctChoiceIds");
       } finally {
-        await database.db
+        await admin.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
-        await database.db
+        await admin.db
           .delete(contentReviewDecisions)
           .where(eq(contentReviewDecisions.contentId, contentId));
-        await database.db
+        await admin.db
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));
-        await database.db
+        await admin.db
           .delete(contentVersions)
           .where(
             and(
@@ -234,9 +247,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               eq(contentVersions.contentId, contentId),
             ),
           );
-        await database.db.delete(accounts).where(eq(accounts.id, authorId));
-        await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
-        await database.close();
+        await admin.db.delete(accounts).where(eq(accounts.id, authorId));
+        await admin.db.delete(accounts).where(eq(accounts.id, reviewerId));
+        await closeLivePostgresHarness(harness);
       }
     });
   },

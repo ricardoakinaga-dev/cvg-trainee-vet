@@ -11,6 +11,7 @@ import type {
 import {
   ApplicationError,
   clearSessionCookie,
+  createAuditEntry,
   type CorrectionResult,
   type CorrectOpenResponseCommand,
   type AcceptInvitationCommand,
@@ -23,6 +24,12 @@ import {
   type ReviewAuthoringCommand,
   canAccess,
   type AccountStatus,
+  type AccountStatusChangeCommand,
+  type AccountStatusChangeResult,
+  type AccountRecoveryAcceptCommand,
+  type AccountRecoveryAccepted,
+  type AccountRecoveryIssueCommand,
+  type AccountRecoveryIssueResult,
   type Capability,
   type ContentRecord,
   type CurriculumRuntimeState,
@@ -39,12 +46,25 @@ import {
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
+  deriveParticipantDashboard,
+  deriveParticipantDiagnosticProfile,
+  type DiagnosticResultState,
+  type EvaluateDiagnosticDraftCommand,
+  type ParticipantDashboardState,
+  type StaffDashboardState,
+  type ContinuingEducationReportState,
+  type ContentReviewQueueState,
+  type GetContentReviewQueueCommand,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
+  type ResendAccountInvitationCommand,
+  type ResendAccountInvitationResult,
   type StartAttemptCommand,
   type SubmitAttemptCommand,
   type TransactionSecurityContext,
+  type AuditPort,
+  type AuditOutcome,
 } from "@cvg/application";
 import {
   apiErrorResponse,
@@ -54,14 +74,31 @@ import {
   contentTransitionRequestSchema,
   parseParticipantActivity,
   curriculumRuntimeEvaluationRequestSchema,
+  diagnosticEvaluationRequestSchema,
   parseParticipantCurriculumRuntime,
   parseParticipantAttempt,
   parseParticipantProgress,
   parseParticipantLearningJourney,
+  parseDashboardProjection,
+  continuingEducationReportProjectionSchema,
+  continuingEducationReportQuerySchema,
+  contentReviewQueueProjectionSchema,
+  contentReviewQueueQuerySchema,
+  internalAuthoringRecordQuerySchema,
+  internalSessionScopesProjectionSchema,
+  parseDiagnosticResultProjection,
   parseInternalAuthoringRecordProjection,
   correctOpenResponseRequestSchema,
   correctionResultProjectionSchema,
   acceptInvitationRequestSchema,
+  accountStatusChangeProjectionSchema,
+  accountStatusChangeRequestSchema,
+  accountRecoveryAcceptProjectionSchema,
+  accountRecoveryAcceptRequestSchema,
+  accountRecoveryIssueProjectionSchema,
+  accountRecoveryIssueRequestSchema,
+  resendAccountInvitationRequestSchema,
+  resentAccountInvitationProjectionSchema,
   rotateSessionRequestSchema,
   createInvitationRequestSchema,
   assessmentWorkflowCreateRequestSchema,
@@ -88,7 +125,9 @@ import type { DependencyStatus } from "@cvg/integrations";
 export type ApiHttpRequest = Readonly<{
   readonly method: string;
   readonly path: string;
+  readonly route?: string;
   readonly body: unknown;
+  readonly query?: Readonly<Record<string, string | undefined>>;
   readonly headers?: Readonly<Record<string, string | undefined>>;
 }>;
 
@@ -102,13 +141,26 @@ export type ApiPrincipal = Readonly<{
 export interface ApiHttpDependencies {
   readonly requestIdFactory: () => string;
   readonly observability?: Observability;
+  readonly audit?: AuditPort;
   readonly approvedClinicalApproverId?: string;
   readonly createInvitation: (
     command: CreateInvitationCommand,
   ) => Promise<CreatedInvitation>;
+  readonly changeAccountStatus?: (
+    command: AccountStatusChangeCommand,
+  ) => Promise<AccountStatusChangeResult>;
+  readonly resendAccountInvitation?: (
+    command: ResendAccountInvitationCommand,
+  ) => Promise<ResendAccountInvitationResult>;
+  readonly issueAccountRecovery?: (
+    command: AccountRecoveryIssueCommand,
+  ) => Promise<AccountRecoveryIssueResult>;
   readonly acceptInvitation: (
     command: AcceptInvitationCommand,
   ) => Promise<AcceptedInvitation>;
+  readonly acceptAccountRecovery?: (
+    command: AccountRecoveryAcceptCommand,
+  ) => Promise<AccountRecoveryAccepted>;
   readonly revokeSession?: (cookieHeader: string | undefined) => Promise<void>;
   readonly rotateSession?: (
     cookieHeader: string | undefined,
@@ -156,6 +208,7 @@ export interface ApiHttpDependencies {
   readonly getInternalAuthoringRecord?: (
     contentId: string,
     version: number,
+    scopeId: string,
   ) => Promise<AuthoringRecord | null>;
   readonly reviewAuthoringContent?: (
     command: ReviewAuthoringCommand,
@@ -168,6 +221,21 @@ export interface ApiHttpDependencies {
     participantId: string,
     scopeIds: readonly string[],
   ) => Promise<ParticipantLearningJourneyState>;
+  readonly getStaffDashboard?: (
+    principalId: string,
+    scopeIds: readonly string[],
+  ) => Promise<StaffDashboardState>;
+  readonly getContinuingEducationReport?: (
+    principalId: string,
+    query: Readonly<{
+      readonly scopeId: string;
+      readonly moduleId?: string | undefined;
+      readonly accountStatus?: AccountStatus | undefined;
+    }>,
+  ) => Promise<ContinuingEducationReportState>;
+  readonly getContentReviewQueue?: (
+    command: GetContentReviewQueueCommand,
+  ) => Promise<ContentReviewQueueState>;
   readonly getParticipantCurriculumRuntime?: (
     participantId: string,
     moduleId: string,
@@ -175,6 +243,13 @@ export interface ApiHttpDependencies {
   readonly evaluateCurriculumRuntime?: (
     command: EvaluateCurriculumModuleCommand,
   ) => Promise<CurriculumRuntimeState>;
+  readonly evaluateDiagnosticDraft?: (
+    command: EvaluateDiagnosticDraftCommand,
+  ) => Promise<DiagnosticResultState>;
+  readonly isParticipantInScope?: (
+    participantId: string,
+    scopeId: string,
+  ) => Promise<boolean>;
   readonly getAttemptFeedback: (
     participantId: string,
     attemptId: string,
@@ -226,12 +301,72 @@ function validationResponse(
   };
 }
 
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+    value,
+  );
+}
+
 function errorResponse(
   code: ApiErrorCode,
   requestId: string,
   status = statusByErrorCode[code],
 ): ApiHttpResponse {
   return { status, body: apiErrorResponse(code, requestId) };
+}
+
+type ApiRejectionAuditRequest = Readonly<{
+  readonly method: string;
+  readonly path: string;
+  readonly route?: string;
+  readonly headers?: Readonly<Record<string, string | undefined>>;
+}>;
+
+function rejectionAuditOutcome(status: number): AuditOutcome {
+  return status === 401 || status === 403 || status === 404
+    ? "DENIED"
+    : "FAILURE";
+}
+
+export async function recordApiRejectionAudit(
+  dependencies: ApiHttpDependencies,
+  request: ApiRejectionAuditRequest,
+  response: ApiHttpResponse,
+  principal?: ApiPrincipal,
+): Promise<void> {
+  if (dependencies.audit === undefined || response.status < 400) return;
+
+  const requestId = response.body.meta.request_id;
+  if (!isUuid(requestId)) return;
+  const suppliedCorrelationId = request.headers?.["x-correlation-id"];
+  const correlationId =
+    suppliedCorrelationId !== undefined && isUuid(suppliedCorrelationId)
+      ? suppliedCorrelationId
+      : requestId;
+  const errorCode = response.body.success
+    ? "internal_error"
+    : response.body.error.code;
+
+  try {
+    const auditEntry = createAuditEntry({
+      auditId: randomUUID(),
+      actorKind: principal === undefined ? "ANONYMOUS" : "AUTHENTICATED",
+      ...(principal === undefined
+        ? {}
+        : { principalId: principal.principalId }),
+      action: "HTTP_REQUEST_REJECTED",
+      resourceType: "http_route",
+      resourceId: request.route ?? "unmatched",
+      outcome: rejectionAuditOutcome(response.status),
+      reasonCode: `api_${errorCode}`,
+      requestId,
+      correlationId,
+      occurredAt: new Date().toISOString(),
+    });
+    await dependencies.audit.append(auditEntry);
+  } catch {
+    // A rejection audit must never turn a safe public error into an internal error.
+  }
 }
 
 function publicAttemptProjection(
@@ -393,12 +528,99 @@ function publicLearningJourneyProjection(
   });
 }
 
+function publicParticipantDashboardProjection(
+  state: ParticipantDashboardState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return parseDashboardProjection({
+    kind: state.kind,
+    nextAction: state.nextAction,
+    path: state.path.map((item) => ({ ...item })),
+    profile: state.profile.map((item) => ({ ...item })),
+    ...(state.diagnosticProfile === undefined
+      ? {}
+      : {
+          diagnosticProfile: state.diagnosticProfile.map((item) => ({
+            ...item,
+            recommendedModuleIds: [...item.recommendedModuleIds],
+          })),
+        }),
+    progress: { ...state.progress },
+  });
+}
+
+function publicStaffDashboardProjection(
+  state: StaffDashboardState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return parseDashboardProjection({
+    kind: "staff",
+    scopes: [...state.scopes],
+    generatedAt: state.generatedAt,
+    metrics: {
+      ...state.metrics,
+      content: { ...state.metrics.content },
+    },
+    participants: state.participants.map((participant) => ({
+      ...participant,
+      ...(participant.lastSeenAt === undefined
+        ? {}
+        : { lastSeenAt: participant.lastSeenAt }),
+      progress: { ...participant.progress },
+      ...(participant.diagnosticProfile === undefined
+        ? {}
+        : {
+            diagnosticProfile: participant.diagnosticProfile.map((item) => ({
+              ...item,
+              recommendedModuleIds: [...item.recommendedModuleIds],
+            })),
+          }),
+    })),
+  });
+}
+
+function publicContinuingEducationReportProjection(
+  state: ContinuingEducationReportState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return continuingEducationReportProjectionSchema.parse({
+    kind: state.kind,
+    scopeId: state.scopeId,
+    generatedAt: state.generatedAt,
+    filters: { ...state.filters },
+    summary: { ...state.summary },
+    participants: state.participants.map((participant) => ({
+      ...participant,
+    })),
+    modules: state.modules.map((module) => ({ ...module })),
+    learningEvidence: state.learningEvidence,
+    hoursClaim: state.hoursClaim,
+    practicalCompetenceClaim: state.practicalCompetenceClaim,
+  });
+}
+
+function publicContentReviewQueueProjection(
+  state: ContentReviewQueueState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return contentReviewQueueProjectionSchema.parse({
+    kind: state.kind,
+    scopeId: state.scopeId,
+    generatedAt: state.generatedAt,
+    filters: { ...state.filters },
+    items: state.items.map((item) => ({
+      ...item,
+      preflight: { ...item.preflight },
+      ...(item.latestReview === undefined
+        ? {}
+        : { latestReview: { ...item.latestReview } }),
+    })),
+  });
+}
+
 function isAllowed(
   principal: ApiPrincipal,
   capability: Capability,
   resource: Readonly<{ ownerId?: string; scopeId?: string }>,
   approvedClinicalApproverId?: string,
 ): boolean {
+  const configuredClinicalIdentity = approvedClinicalApproverId;
   return canAccess({
     principalId: principal.principalId,
     accountStatus: principal.accountStatus,
@@ -408,10 +630,13 @@ function isAllowed(
     scopes: principal.scopes,
     ...(capability === "APPROVE_CLINICAL_CONTENT" ||
     capability === "PUBLISH_CONTENT" ||
-    capability === "VIEW_INTERNAL_SOURCE"
+    capability === "VIEW_INTERNAL_SOURCE" ||
+    capability === "VIEW_CONTENT_REVIEW_QUEUE" ||
+    capability === "VIEW_INTERNAL_SCOPES"
       ? {
-          approvedClinicalApproverId:
-            approvedClinicalApproverId ?? principal.principalId,
+          ...(configuredClinicalIdentity === undefined
+            ? {}
+            : { approvedClinicalApproverId: configuredClinicalIdentity }),
         }
       : {}),
   });
@@ -419,6 +644,10 @@ function isAllowed(
 
 function internalAuthoringProjection(
   record: AuthoringRecord,
+  availableActions: Readonly<{
+    readonly requestAdjustments: boolean;
+    readonly approveClinically: boolean;
+  }>,
 ): ApiSuccessEnvelope<unknown>["data"] {
   return parseInternalAuthoringRecordProjection({
     contentId: record.contentId,
@@ -448,6 +677,7 @@ function internalAuthoringProjection(
     ...(record.latestReview === undefined
       ? {}
       : { latestReview: record.latestReview }),
+    availableActions,
   });
 }
 
@@ -640,6 +870,182 @@ async function handleLearningPath(
   };
 }
 
+async function handleDashboard(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  const staffRole =
+    principal.roles.includes("ADMIN") ||
+    principal.roles.includes("MODERATOR") ||
+    principal.roles.includes("CLINICAL_APPROVER");
+  if (staffRole) {
+    const staffScopeId = principal.scopes[0];
+    if (
+      dependencies.getStaffDashboard === undefined ||
+      staffScopeId === undefined ||
+      !isAllowed(principal, "VIEW_STAFF_DASHBOARD", {
+        scopeId: staffScopeId,
+      })
+    ) {
+      return errorResponse("forbidden", requestId);
+    }
+    const state = await dependencies.getStaffDashboard(
+      principal.principalId,
+      principal.scopes,
+    );
+    return {
+      status: 200,
+      body: apiSuccessResponse(
+        publicStaffDashboardProjection(state),
+        requestId,
+      ),
+    };
+  }
+
+  if (
+    dependencies.getParticipantLearningJourney === undefined ||
+    !principal.roles.includes("PARTICIPANT")
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const canViewJourney = principal.scopes.some((scopeId) =>
+    isAllowed(principal, "VIEW_OWN_ACTIVITY", {
+      ownerId: principal.principalId,
+      scopeId,
+    }),
+  );
+  if (!canViewJourney) return errorResponse("forbidden", requestId);
+  const journey = await dependencies.getParticipantLearningJourney(
+    principal.principalId,
+    principal.scopes,
+  );
+  if (journey.participantId !== principal.principalId) {
+    return errorResponse("forbidden", requestId);
+  }
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicParticipantDashboardProjection(deriveParticipantDashboard(journey)),
+      requestId,
+    ),
+  };
+}
+
+async function handleContinuingEducationReport(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getContinuingEducationReport === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = continuingEducationReportQuerySchema.safeParse(
+    request.query ?? {},
+  );
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "VIEW_PROGRAM_METRICS", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getContinuingEducationReport(
+    principal.principalId,
+    parsed.data,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicContinuingEducationReportProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleContentReviewQueue(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getContentReviewQueue === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const rawQuery = request.query ?? {};
+  const rawLimit = rawQuery.limit;
+  const parsed = contentReviewQueueQuerySchema.safeParse({
+    scopeId: rawQuery.scopeId,
+    ...(rawQuery.status === undefined ? {} : { status: rawQuery.status }),
+    ...(rawLimit === undefined ? {} : { limit: Number(rawLimit) }),
+  });
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_CONTENT_REVIEW_QUEUE",
+      {
+        scopeId: parsed.data.scopeId,
+      },
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getContentReviewQueue({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+    query: {
+      scopeId: parsed.data.scopeId,
+      ...(parsed.data.status === undefined
+        ? {}
+        : { status: parsed.data.status }),
+      limit: parsed.data.limit,
+    },
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicContentReviewQueueProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleInternalSessionScopes(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_INTERNAL_SCOPES",
+      {},
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const data = internalSessionScopesProjectionSchema.parse({
+    kind: "internal_session_scopes",
+    scopes: [...principal.scopes],
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(data, requestId),
+  };
+}
+
 async function handleCurriculumRuntimeEvaluation(
   request: ApiHttpRequest,
   moduleId: string,
@@ -683,6 +1089,66 @@ async function handleCurriculumRuntimeEvaluation(
       publicCurriculumRuntimeProjection(state),
       requestId,
     ),
+  };
+}
+
+async function handleDiagnosticDraftEvaluation(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.evaluateDiagnosticDraft === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = diagnosticEvaluationRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "MODERATE_CONTENT", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (
+    dependencies.isParticipantInScope === undefined ||
+    !(await dependencies.isParticipantInScope(
+      parsed.data.participantId,
+      parsed.data.scopeId,
+    ))
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const command = {
+    participantId: parsed.data.participantId,
+    scopeId: parsed.data.scopeId,
+    answers: parsed.data.answers.map((answer) => ({
+      itemId: answer.itemId,
+      selectedChoiceIds: [...answer.selectedChoiceIds],
+    })),
+    completedAt: parsed.data.completedAt,
+  } satisfies EvaluateDiagnosticDraftCommand;
+  const state = await dependencies.evaluateDiagnosticDraft(command);
+  if (
+    state.participantId !== command.participantId ||
+    state.scopeId !== command.scopeId
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const themes = deriveParticipantDiagnosticProfile([state]);
+  const projection = parseDiagnosticResultProjection({
+    resultId: state.resultId,
+    diagnosticId: state.diagnosticId,
+    version: state.version,
+    completedAt: state.completedAt,
+    themes: themes.map((theme) => ({
+      ...theme,
+      recommendedModuleIds: [...theme.recommendedModuleIds],
+    })),
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(projection, requestId),
   };
 }
 
@@ -730,6 +1196,7 @@ async function handleContentTransition(
 }
 
 async function handleInternalAuthoringRecord(
+  request: ApiHttpRequest,
   contentId: string,
   versionText: string,
   requestId: string,
@@ -739,28 +1206,61 @@ async function handleInternalAuthoringRecord(
   if (dependencies.getInternalAuthoringRecord === undefined) {
     return errorResponse("internal_error", requestId);
   }
+  const parsedQuery = internalAuthoringRecordQuerySchema.safeParse(
+    request.query ?? {},
+  );
+  if (!parsedQuery.success) return validationResponse(requestId, "scopeId");
   const version = Number(versionText);
   if (!Number.isSafeInteger(version) || version < 1) {
     return validationResponse(requestId, "version");
   }
-  const record = await dependencies.getInternalAuthoringRecord(
-    contentId,
-    version,
-  );
-  if (record === null) return errorResponse("not_found", requestId);
   if (
     !isAllowed(
       principal,
       "VIEW_INTERNAL_SOURCE",
-      { scopeId: record.scopeId },
+      { scopeId: parsedQuery.data.scopeId },
       dependencies.approvedClinicalApproverId,
     )
   ) {
     return errorResponse("forbidden", requestId);
   }
+  const record = await dependencies.getInternalAuthoringRecord(
+    contentId,
+    version,
+    parsedQuery.data.scopeId,
+  );
+  if (record === null) return errorResponse("not_found", requestId);
+  if (record.scopeId !== parsedQuery.data.scopeId) {
+    return errorResponse("forbidden", requestId);
+  }
+  const isScopedStaff =
+    principal.roles.includes("MODERATOR") ||
+    principal.roles.includes("ADMIN") ||
+    (principal.roles.includes("CLINICAL_APPROVER") &&
+      dependencies.approvedClinicalApproverId === principal.principalId);
+  if (!isScopedStaff && record.authorId !== principal.principalId) {
+    return errorResponse("forbidden", requestId);
+  }
+  const availableActions = {
+    requestAdjustments: isAllowed(
+      principal,
+      "MODERATE_CONTENT",
+      { scopeId: record.scopeId },
+      dependencies.approvedClinicalApproverId,
+    ),
+    approveClinically: isAllowed(
+      principal,
+      "APPROVE_CLINICAL_CONTENT",
+      { scopeId: record.scopeId },
+      dependencies.approvedClinicalApproverId,
+    ),
+  } as const;
   return {
     status: 200,
-    body: apiSuccessResponse(internalAuthoringProjection(record), requestId),
+    body: apiSuccessResponse(
+      internalAuthoringProjection(record, availableActions),
+      requestId,
+    ),
   };
 }
 
@@ -811,7 +1311,20 @@ async function handleAuthoringReview(
   return {
     status: 200,
     body: apiSuccessResponse(
-      internalAuthoringProjection(result.record),
+      internalAuthoringProjection(result.record, {
+        requestAdjustments: isAllowed(
+          principal,
+          "MODERATE_CONTENT",
+          { scopeId: result.record.scopeId },
+          dependencies.approvedClinicalApproverId,
+        ),
+        approveClinically: isAllowed(
+          principal,
+          "APPROVE_CLINICAL_CONTENT",
+          { scopeId: result.record.scopeId },
+          dependencies.approvedClinicalApproverId,
+        ),
+      }),
       requestId,
     ),
   };
@@ -908,13 +1421,143 @@ async function handleCreateInvitation(
   };
 }
 
+async function handleAccountStatusChange(
+  request: ApiHttpRequest,
+  targetAccountId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.changeAccountStatus === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  if (!isUuid(targetAccountId)) return validationResponse(requestId);
+  const parsed = accountStatusChangeRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "MANAGE_ACCOUNT_LIFECYCLE", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const result = await dependencies.changeAccountStatus({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    targetAccountId,
+    scopeId: parsed.data.scopeId,
+    expectedStatus: parsed.data.expectedStatus,
+    status: parsed.data.status,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      accountStatusChangeProjectionSchema.parse({
+        status: result.status,
+        revokedSessions: result.revokedSessions,
+      }),
+      requestId,
+    ),
+  };
+}
+
+async function handleResendAccountInvitation(
+  request: ApiHttpRequest,
+  targetAccountId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.resendAccountInvitation === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  if (!isUuid(targetAccountId)) return validationResponse(requestId);
+  const parsed = resendAccountInvitationRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "MANAGE_ACCOUNT_LIFECYCLE", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const result = await dependencies.resendAccountInvitation({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    targetAccountId,
+    scopeId: parsed.data.scopeId,
+    expiresInSeconds: parsed.data.expiresInSeconds,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      resentAccountInvitationProjectionSchema.parse({
+        professionalEmail: result.professionalEmail,
+        token: result.token,
+        expiresAt: result.expiresAt.toISOString(),
+      }),
+      requestId,
+    ),
+  };
+}
+
+async function handleIssueAccountRecovery(
+  request: ApiHttpRequest,
+  targetAccountId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.issueAccountRecovery === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  if (!isUuid(targetAccountId)) return validationResponse(requestId);
+  const parsed = accountRecoveryIssueRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "MANAGE_ACCOUNT_LIFECYCLE", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const result = await dependencies.issueAccountRecovery({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    targetAccountId,
+    scopeId: parsed.data.scopeId,
+    expiresInSeconds: parsed.data.expiresInSeconds,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      accountRecoveryIssueProjectionSchema.parse({
+        professionalEmail: result.professionalEmail,
+        token: result.token,
+        expiresAt: result.expiresAt.toISOString(),
+        revokedSessions: result.revokedSessions,
+      }),
+      requestId,
+    ),
+  };
+}
+
 async function handleAcceptInvitation(
   request: ApiHttpRequest,
   requestId: string,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
   const parsed = acceptInvitationRequestSchema.safeParse(request.body);
-  if (!parsed.success) return validationResponse(requestId);
+  if (!parsed.success) return errorResponse("not_found", requestId);
 
   const accepted = await dependencies.acceptInvitation({
     token: parsed.data.token,
@@ -926,6 +1569,31 @@ async function handleAcceptInvitation(
     status: 200,
     headers: { "set-cookie": accepted.session.cookie },
     body: apiSuccessResponse({ status: "active" }, requestId),
+  };
+}
+
+async function handleAcceptAccountRecovery(
+  request: ApiHttpRequest,
+  requestId: string,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.acceptAccountRecovery === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = accountRecoveryAcceptRequestSchema.safeParse(request.body);
+  if (!parsed.success) return errorResponse("not_found", requestId);
+  const accepted = await dependencies.acceptAccountRecovery({
+    token: parsed.data.token,
+    sessionExpiresInSeconds: parsed.data.sessionExpiresInSeconds,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    headers: { "set-cookie": accepted.session.cookie },
+    body: apiSuccessResponse(
+      accountRecoveryAcceptProjectionSchema.parse({ status: "active" }),
+      requestId,
+    ),
   };
 }
 
@@ -1337,7 +2005,7 @@ async function handleSubmit(
   };
 }
 
-export async function handleApiRequest(
+async function handleApiRequestCore(
   request: ApiHttpRequest,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
@@ -1412,6 +2080,17 @@ export async function handleApiRequest(
 
     if (
       request.method === "POST" &&
+      request.path === "/api/v1/recovery/accept"
+    ) {
+      return await handleAcceptAccountRecovery(
+        request,
+        requestId,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
       request.path === "/api/v1/session/revoke"
     ) {
       return await handleRevokeSession(request, requestId, dependencies);
@@ -1433,6 +2112,54 @@ export async function handleApiRequest(
         return errorResponse("unauthenticated", requestId);
       return await handleCreateInvitation(
         request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const accountStatusMatch = request.path.match(
+      /^\/api\/v1\/internal\/accounts\/([^/]+)\/status$/u,
+    );
+    if (request.method === "PATCH" && accountStatusMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAccountStatusChange(
+        request,
+        accountStatusMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const accountInvitationMatch = request.path.match(
+      /^\/api\/v1\/internal\/accounts\/([^/]+)\/invitation$/u,
+    );
+    if (request.method === "POST" && accountInvitationMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleResendAccountInvitation(
+        request,
+        accountInvitationMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const accountRecoveryMatch = request.path.match(
+      /^\/api\/v1\/internal\/accounts\/([^/]+)\/recovery$/u,
+    );
+    if (request.method === "POST" && accountRecoveryMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleIssueAccountRecovery(
+        request,
+        accountRecoveryMatch[1],
         requestId,
         principal,
         dependencies,
@@ -1571,6 +2298,57 @@ export async function handleApiRequest(
       return await handleLearningPath(requestId, principal, dependencies);
     }
 
+    if (request.method === "GET" && request.path === "/api/v1/dashboard") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleDashboard(requestId, principal, dependencies);
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/reports/continuing-education"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleContinuingEducationReport(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/content/review-queue"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleContentReviewQueue(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/session/scopes"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleInternalSessionScopes(
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
     const activityMatch = request.path.match(
       /^\/api\/v1\/activities\/([^/]+)$/,
     );
@@ -1617,6 +2395,21 @@ export async function handleApiRequest(
       );
     }
 
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/internal/diagnostics/b07/evaluate"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleDiagnosticDraftEvaluation(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
     const contentMatch = request.path.match(
       /^\/api\/v1\/internal\/content\/([^/]+)\/transition$/,
     );
@@ -1645,6 +2438,7 @@ export async function handleApiRequest(
       if (principal === null)
         return errorResponse("unauthenticated", requestId);
       return await handleInternalAuthoringRecord(
+        request,
         authoringRecordMatch[1],
         authoringRecordMatch[2],
         requestId,
@@ -1754,4 +2548,23 @@ export async function handleApiRequest(
     }
     return errorResponse("internal_error", requestId);
   }
+}
+
+export async function handleApiRequest(
+  request: ApiHttpRequest,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  let principal: ApiPrincipal | undefined;
+  const trackedDependencies: ApiHttpDependencies = {
+    ...dependencies,
+    authenticate: async (authenticatedRequest) => {
+      const authenticatedPrincipal =
+        await dependencies.authenticate(authenticatedRequest);
+      principal = authenticatedPrincipal ?? undefined;
+      return authenticatedPrincipal;
+    },
+  };
+  const response = await handleApiRequestCore(request, trackedDependencies);
+  await recordApiRejectionAudit(dependencies, request, response, principal);
+  return response;
 }

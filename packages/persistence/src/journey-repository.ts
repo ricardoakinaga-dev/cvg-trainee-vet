@@ -16,12 +16,14 @@ import {
   curriculumRuntimeRowToState,
   type CurriculumRuntimeRowShape,
 } from "./curriculum-runtime-repository.js";
+import { diagnosticResultRowToState } from "./diagnostic-result-repository.js";
 import { PersistenceMappingError } from "./attempt-repository.js";
 import {
   activityAssignments,
   attempts,
   assessmentWorkflows,
   curriculumRuntimeStates,
+  diagnosticResults,
   learningActivities,
   learningAssignments,
 } from "./schema.js";
@@ -234,6 +236,29 @@ export function createParticipantJourneyRepository(
             ),
           );
         const runtimes = Object.freeze(runtimeRows.map(runtimeRowToState));
+        const diagnosticRows = await executor
+          .select()
+          .from(diagnosticResults)
+          .where(
+            and(
+              eq(diagnosticResults.participantId, participantId),
+              inArray(diagnosticResults.scopeId, normalizedScopeIds),
+            ),
+          )
+          .orderBy(desc(diagnosticResults.completedAt));
+        const diagnosticResultsState = Object.freeze(
+          diagnosticRows.map((row) =>
+            diagnosticResultRowToState({
+              id: row.id,
+              participantId: row.participantId,
+              scopeId: row.scopeId,
+              diagnosticId: row.diagnosticId,
+              diagnosticVersion: row.diagnosticVersion,
+              result: row.result,
+              completedAt: row.completedAt,
+            }),
+          ),
+        );
         const assignments =
           [] as ParticipantLearningJourneyState["assignments"] extends readonly (infer T)[]
             ? T[]
@@ -280,6 +305,7 @@ export function createParticipantJourneyRepository(
           activities,
           results: Object.freeze([...results]),
           runtimes,
+          diagnosticResults: diagnosticResultsState,
         });
       });
     },

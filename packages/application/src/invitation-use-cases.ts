@@ -148,12 +148,23 @@ export async function createInvitation(
   assertNonEmpty(command.correlationId, "correlationId");
   const professionalEmail = normalizeEmail(command.professionalEmail);
   assertLifetime(command.expiresInSeconds, "expiresInSeconds");
+  const invitedScopeId = command.invitedScopes[0];
+  if (
+    invitedScopeId === undefined ||
+    command.invitedScopes.some((scopeId) => !command.scopes.includes(scopeId))
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Invitation scopes must be within the administrator scope",
+    );
+  }
   if (
     !canAccess({
       principalId: command.principalId,
       accountStatus: command.accountStatus,
       roles: command.roles,
-      capability: "MANAGE_ROLES",
+      capability: "MANAGE_ACCOUNT_LIFECYCLE",
+      resource: { scopeId: invitedScopeId },
       scopes: command.scopes,
     })
   ) {

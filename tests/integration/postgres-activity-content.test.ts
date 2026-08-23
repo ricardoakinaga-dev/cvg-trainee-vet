@@ -7,7 +7,6 @@ import {
   getParticipantActivity,
   getParticipantProgress,
 } from "../../packages/application/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   createActivityReadRepository,
   createContentIndexSourceRepository,
@@ -20,18 +19,30 @@ import {
   learningActivities,
   learningActivityItems,
 } from "../../packages/persistence/src/schema.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL published activity integration",
   () => {
-    it("reads only assigned published participant content in ordinal order", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
+    it("reads only assigned published participant content in ordinal order", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
 
-      const database = createPostgresDatabase(databaseUrl);
       const participantId = randomUUID();
       const activityId = randomUUID();
       const scopeId = randomUUID();
@@ -44,7 +55,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const thirdVersionId = randomUUID();
 
       try {
-        await database.db.insert(contentVersions).values([
+        await admin.db.insert(contentVersions).values([
           {
             id: firstVersionId,
             contentId: firstContentId,
@@ -84,24 +95,24 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             participantSelectionMode: "MULTIPLE",
           },
         ]);
-        await database.db.insert(learningActivities).values({
+        await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId,
           slug: `synthetic-activity-${activityId}`,
           title: "Atividade sintética",
           status: "PUBLISHED",
         });
-        await database.db.insert(learningActivityItems).values([
+        await admin.db.insert(learningActivityItems).values([
           { activityId, contentVersionId: thirdVersionId, ordinal: 3 },
           { activityId, contentVersionId: secondVersionId, ordinal: 2 },
           { activityId, contentVersionId: firstVersionId, ordinal: 1 },
         ]);
-        await database.db.insert(activityAssignments).values({
+        await admin.db.insert(activityAssignments).values({
           participantId,
           activityId,
           status: "DISPONIVEL",
         });
-        await database.db.insert(attempts).values({
+        await admin.db.insert(attempts).values({
           id: attemptId,
           participantId,
           activityId,
@@ -172,17 +183,17 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           ]),
         );
       } finally {
-        await database.db.delete(attempts).where(eq(attempts.id, attemptId));
-        await database.db
+        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
+        await admin.db
           .delete(activityAssignments)
           .where(eq(activityAssignments.activityId, activityId));
-        await database.db
+        await admin.db
           .delete(learningActivityItems)
           .where(eq(learningActivityItems.activityId, activityId));
-        await database.db
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
-        await database.db
+        await admin.db
           .delete(contentVersions)
           .where(
             and(
@@ -194,7 +205,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               ]),
             ),
           );
-        await database.close();
+        await closeLivePostgresHarness(harness);
       }
     });
   },

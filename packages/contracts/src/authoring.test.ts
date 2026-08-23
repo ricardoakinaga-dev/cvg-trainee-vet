@@ -69,6 +69,10 @@ describe("internal authoring contracts", () => {
           },
           checkedAt: "2026-08-10T05:00:00.000Z",
         },
+        availableActions: {
+          requestAdjustments: false,
+          approveClinically: true,
+        },
       }),
     ).toMatchObject({ moduleId: "M02" });
   });

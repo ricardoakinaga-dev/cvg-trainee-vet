@@ -113,6 +113,10 @@ export const authoringReviewRequestSchema = z
   })
   .strict();
 
+export const internalAuthoringRecordQuerySchema = z
+  .object({ scopeId: idSchema })
+  .strict();
+
 export const internalAuthoringRecordProjectionSchema = z
   .object({
     contentId: idSchema,
@@ -137,6 +141,12 @@ export const internalAuthoringRecordProjectionSchema = z
     item: internalAuthoringItemSchema,
     preflight: preflightSchema,
     latestReview: reviewSchema.optional(),
+    availableActions: z
+      .object({
+        requestAdjustments: z.boolean(),
+        approveClinically: z.boolean(),
+      })
+      .strict(),
   })
   .strict();
 

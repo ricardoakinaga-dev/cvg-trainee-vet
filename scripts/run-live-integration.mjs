@@ -8,6 +8,12 @@ if (databaseUrl === undefined || databaseUrl.trim().length === 0) {
   );
   process.exit(2);
 }
+const adminDatabaseUrl = process.env.CVG_TEST_ADMIN_DATABASE_URL?.trim();
+if (adminDatabaseUrl === undefined) {
+  console.warn(
+    "CVG_TEST_ADMIN_DATABASE_URL is not configured; live suites requiring RLS fixture cleanup will report an explicit skip",
+  );
+}
 
 const qdrantUrl = process.env.CVG_TEST_QDRANT_URL?.trim();
 const includeQdrant = process.env.CVG_INCLUDE_LIVE_QDRANT === "true";
@@ -30,6 +36,9 @@ const environment = {
   CVG_RUN_LIVE_RESTORE_TESTS: includeRestore ? "true" : "false",
   CVG_RUN_LIVE_QDRANT_TESTS: includeQdrant ? "true" : "false",
   ...(qdrantUrl === undefined ? {} : { CVG_TEST_QDRANT_URL: qdrantUrl }),
+  ...(adminDatabaseUrl === undefined
+    ? {}
+    : { CVG_TEST_ADMIN_DATABASE_URL: adminDatabaseUrl }),
 };
 
 const optionalExcludes = [

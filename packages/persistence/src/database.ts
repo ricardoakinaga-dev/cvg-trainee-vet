@@ -72,17 +72,40 @@ export function createPostgresDatabase(
       const rows = await db.execute<{
         readonly isSuperuser: boolean;
         readonly bypassesRls: boolean;
+        readonly canCreateRoles: boolean;
+        readonly canCreateDatabases: boolean;
+        readonly canCreateInPublicSchema: boolean;
+        readonly ownedRelationCount: number;
       }>(sql`
         select
           rolsuper as "isSuperuser",
-          rolbypassrls as "bypassesRls"
+          rolbypassrls as "bypassesRls",
+          rolcreaterole as "canCreateRoles",
+          rolcreatedb as "canCreateDatabases",
+          has_schema_privilege(current_user, 'public', 'CREATE') as "canCreateInPublicSchema",
+          (
+            select count(*)::int
+            from pg_class relation
+            join pg_namespace namespace on namespace.oid = relation.relnamespace
+            where namespace.nspname = 'public'
+              and relation.relowner = pg_roles.oid
+              and relation.relkind in ('r', 'p', 'v', 'm', 'S', 'f')
+          ) as "ownedRelationCount"
         from pg_roles
         where rolname = current_user
       `);
       const role = rows[0];
-      if (role === undefined || role.isSuperuser || role.bypassesRls) {
+      if (
+        role === undefined ||
+        role.isSuperuser ||
+        role.bypassesRls ||
+        role.canCreateRoles ||
+        role.canCreateDatabases ||
+        role.canCreateInPublicSchema ||
+        role.ownedRelationCount > 0
+      ) {
         throw new Error(
-          "database connection must use a non-superuser role without BYPASSRLS",
+          "database connection must use a non-superuser role without BYPASSRLS, table ownership, role/database creation, or schema CREATE privilege",
         );
       }
     }

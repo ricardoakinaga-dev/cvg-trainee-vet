@@ -14,6 +14,11 @@ import { createSessionRepository } from "./session-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
 import { accountInvitations, accounts } from "./schema.js";
 import type * as schema from "./schema.js";
+import {
+  setDatabaseAccountProvisioningContext,
+  setDatabaseSecurityContext,
+  setDatabaseTokenSecurityContext,
+} from "./security-context.js";
 
 const roles: readonly Role[] = [
   "PARTICIPANT",
@@ -159,6 +164,9 @@ export function createInvitationUseCaseDependencies(
       }): Promise<void> => {
         assertNonEmpty(input.accountId, "accountId");
         const professionalEmail = normalizeEmail(input.professionalEmail);
+        await setDatabaseAccountProvisioningContext(executor, {
+          accountId: input.accountId,
+        });
         await executor.insert(accounts).values({
           id: input.accountId,
           professionalEmail,
@@ -183,9 +191,15 @@ export function createInvitationUseCaseDependencies(
     },
     invitation: {
       create: async (record: InvitationRecord): Promise<void> => {
-        await executor
-          .insert(accountInvitations)
-          .values(invitationRecordToRow(record));
+        const row = invitationRecordToRow(record);
+        const scopeId = row.scopes[0];
+        if (scopeId === undefined) {
+          throw new PersistenceMappingError(
+            "invitation scopes must include a scope",
+          );
+        }
+        await setDatabaseSecurityContext(executor, { scopeId });
+        await executor.insert(accountInvitations).values(row);
       },
       findActive: async (
         tokenHash: string,
@@ -197,6 +211,10 @@ export function createInvitationUseCaseDependencies(
           );
         }
         assertDate(now, "now");
+        await setDatabaseTokenSecurityContext(executor, {
+          kind: "invitation",
+          tokenHash,
+        });
         const rows = await executor
           .select({
             invitationId: accountInvitations.id,

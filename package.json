@@ -30,6 +30,7 @@
     "verify:ci-contract": "node scripts/verify-ci-contract.mjs",
     "verify:secrets": "node scripts/verify-secrets.mjs",
     "verify:traceability": "node scripts/verify-traceability.mjs",
+    "verify:traceability:release": "CVG_TRACEABILITY_RELEASE=true node scripts/verify-traceability.mjs",
     "verify:architecture": "vitest run tests/integration/architecture-boundaries.test.ts",
     "verify:documentation": "node scripts/verify-documentation.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",

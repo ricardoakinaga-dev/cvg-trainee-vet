@@ -8,24 +8,35 @@ import {
   getParticipantCurriculumRuntime,
 } from "../../packages/application/src/index.js";
 import { getModuleDraftPack } from "../../packages/curriculum/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   createCurriculumRuntimeRepository,
   curriculumRuntimeStates,
 } from "../../packages/persistence/src/index.js";
 import { accounts } from "../../packages/persistence/src/schema.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL curriculum runtime integration",
   () => {
-    it("persists, versions and reads scoped digital mastery without public internals", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
+    it("persists, versions and reads scoped digital mastery without public internals", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
 
-      const database = createPostgresDatabase(databaseUrl);
       const participantId = randomUUID();
       const scopeId = randomUUID();
       const repository = createCurriculumRuntimeRepository(database.db);
@@ -38,7 +49,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         }));
 
       try {
-        await database.db.insert(accounts).values({
+        await admin.db.insert(accounts).values({
           id: participantId,
           professionalEmail: `synthetic-runtime-${participantId}@example.invalid`,
           status: "ACTIVE",
@@ -92,13 +103,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           /source|chapter|page|pdf|answer_key|rubric_internal/iu,
         );
       } finally {
-        await database.db
+        await admin.db
           .delete(curriculumRuntimeStates)
           .where(eq(curriculumRuntimeStates.participantId, participantId));
-        await database.db
-          .delete(accounts)
-          .where(eq(accounts.id, participantId));
-        await database.close();
+        await admin.db.delete(accounts).where(eq(accounts.id, participantId));
+        await closeLivePostgresHarness(harness);
       }
     });
   },

@@ -2,6 +2,7 @@ import type { AttemptStatus, LearningAssignmentStatus } from "@cvg/domain";
 
 import { ApplicationError } from "./errors.js";
 import type { CurriculumRuntimeState } from "./curriculum-runtime-use-cases.js";
+import type { DiagnosticResultState } from "./diagnostic-use-cases.js";
 import type { ProgressNextAction } from "./progress-use-cases.js";
 import type {
   ScopedAssessmentWorkflow,
@@ -32,6 +33,7 @@ export type ParticipantLearningJourneyState = Readonly<{
   readonly activities: readonly ParticipantJourneyActivity[];
   readonly results: readonly ScopedAssessmentWorkflow[];
   readonly runtimes: readonly CurriculumRuntimeState[];
+  readonly diagnosticResults?: readonly DiagnosticResultState[];
   readonly nextAction?: JourneyNextAction;
 }>;
 
@@ -183,6 +185,11 @@ export async function getParticipantLearningJourney(
       (runtime) =>
         !allowedScopes.has(runtime.scopeId) ||
         runtime.participantId !== command.participantId,
+    ) ||
+    (state.diagnosticResults ?? []).some(
+      (result) =>
+        !allowedScopes.has(result.scopeId) ||
+        result.participantId !== command.participantId,
     )
   ) {
     throw new ApplicationError(
@@ -199,6 +206,36 @@ export async function getParticipantLearningJourney(
     ),
     results: Object.freeze(state.results.map(cloneResult)),
     runtimes: Object.freeze(state.runtimes.map(cloneRuntime)),
+    ...(state.diagnosticResults === undefined
+      ? {}
+      : {
+          diagnosticResults: Object.freeze(
+            state.diagnosticResults.map((result) =>
+              Object.freeze({
+                ...result,
+                result: Object.freeze({
+                  ...result.result,
+                  themeResults: Object.freeze(
+                    result.result.themeResults.map((theme) =>
+                      Object.freeze({
+                        ...theme,
+                        recommendedModuleIds: Object.freeze([
+                          ...theme.recommendedModuleIds,
+                        ]),
+                      }),
+                    ),
+                  ),
+                  recommendedModuleIds: Object.freeze([
+                    ...result.result.recommendedModuleIds,
+                  ]),
+                  remediationObjectiveIds: Object.freeze([
+                    ...result.result.remediationObjectiveIds,
+                  ]),
+                }),
+              }),
+            ),
+          ),
+        }),
   } satisfies Omit<ParticipantLearningJourneyState, "nextAction">;
 
   return Object.freeze({

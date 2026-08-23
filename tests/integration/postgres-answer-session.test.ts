@@ -11,7 +11,6 @@ import {
   saveAnswer,
   startAttempt,
 } from "../../packages/application/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   createAnswerUseCaseDependencies,
   createAttemptUseCaseDependencies,
@@ -29,17 +28,29 @@ import {
   outboxEvents,
   sessions,
 } from "../../packages/persistence/src/schema.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL answer, session, and audit integration",
   () => {
-    it("persists SaveAnswer atomically, redacts events, and authenticates server sessions", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
-      const database = createPostgresDatabase(databaseUrl);
+    it("persists SaveAnswer atomically, redacts events, and authenticates server sessions", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
       const accountId = randomUUID();
       const activityId = randomUUID();
       const participantId = accountId;
@@ -49,18 +60,18 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const now = new Date("2026-08-09T17:00:00.000Z");
 
       try {
-        await database.db.insert(accounts).values({
+        await admin.db.insert(accounts).values({
           id: accountId,
           professionalEmail: `synthetic-${accountId}@internal.invalid`,
           status: "ACTIVE",
         });
-        await database.db.insert(learningActivities).values({
+        await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId,
           slug: `synthetic-answer-${activityId}`,
           status: "PUBLISHED",
         });
-        await database.db.insert(activityAssignments).values({
+        await admin.db.insert(activityAssignments).values({
           participantId,
           activityId,
           status: "DISPONIVEL",
@@ -96,15 +107,15 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         } as const;
         const saved = await saveAnswer(command, answerDependencies);
         const replay = await saveAnswer(command, answerDependencies);
-        const storedAnswers = await database.db
+        const storedAnswers = await admin.db
           .select()
           .from(answers)
           .where(eq(answers.attemptId, attemptId));
-        const storedIdempotency = await database.db
+        const storedIdempotency = await admin.db
           .select()
           .from(answerIdempotency)
           .where(eq(answerIdempotency.key, command.idempotencyKey));
-        const storedEvents = await database.db
+        const storedEvents = await admin.db
           .select()
           .from(outboxEvents)
           .where(eq(outboxEvents.aggregateId, attemptId));
@@ -162,58 +173,56 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           authenticateSessionCookie(rotated.cookie, sessionRepository, now),
         ).resolves.toBeNull();
 
-        const storedAudit = await database.db.transaction(
-          async (transaction) => {
-            await transaction.execute(
-              sql`select set_config('cvg.audit_read', 'on', true)`,
+        const storedAudit = await admin.db.transaction(async (transaction) => {
+          await transaction.execute(
+            sql`select set_config('cvg.audit_read', 'on', true)`,
+          );
+          return transaction
+            .select()
+            .from(auditEntries)
+            .where(
+              and(
+                eq(auditEntries.resourceId, attemptId as string),
+                eq(auditEntries.action, "ANSWER_SAVED"),
+              ),
             );
-            return transaction
-              .select()
-              .from(auditEntries)
-              .where(
-                and(
-                  eq(auditEntries.resourceId, attemptId as string),
-                  eq(auditEntries.action, "ANSWER_SAVED"),
-                ),
-              );
-          },
-        );
+        });
         expect(storedAudit).toHaveLength(1);
         const auditId = storedAudit[0]?.id;
         if (auditId === undefined) throw new Error("audit row is required");
         await expect(
-          database.db
+          admin.db
             .update(auditEntries)
             .set({ action: "AUDIT_MUTATION_ATTEMPT" })
             .where(eq(auditEntries.id, auditId)),
         ).rejects.toThrow();
       } finally {
         if (attemptId !== null) {
-          await database.db
+          await admin.db
             .delete(outboxEvents)
             .where(eq(outboxEvents.aggregateId, attemptId));
-          await database.db
+          await admin.db
             .delete(answerIdempotency)
             .where(eq(answerIdempotency.attemptId, attemptId));
-          await database.db
+          await admin.db
             .delete(attemptIdempotency)
             .where(eq(attemptIdempotency.attemptId, attemptId));
-          await database.db
+          await admin.db
             .delete(answers)
             .where(eq(answers.attemptId, attemptId));
-          await database.db.delete(attempts).where(eq(attempts.id, attemptId));
+          await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
         }
-        await database.db
+        await admin.db
           .delete(sessions)
           .where(eq(sessions.accountId, accountId));
-        await database.db
+        await admin.db
           .delete(activityAssignments)
           .where(eq(activityAssignments.activityId, activityId));
-        await database.db
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
-        await database.db.delete(accounts).where(eq(accounts.id, accountId));
-        await database.close();
+        await admin.db.delete(accounts).where(eq(accounts.id, accountId));
+        await closeLivePostgresHarness(harness);
       }
     });
   },

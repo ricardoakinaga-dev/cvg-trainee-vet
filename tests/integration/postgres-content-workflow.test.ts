@@ -7,7 +7,6 @@ import {
   advanceContent,
   type AdvanceContentCommand,
 } from "../../packages/application/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   accounts,
   contentVersions,
@@ -16,6 +15,12 @@ import {
   createContentUseCaseDependencies,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
@@ -23,11 +28,19 @@ const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL content workflow integration",
   () => {
-    it("persists an authorized publication transition and a redacted outbox event", async () => {
+    it("persists an authorized publication transition and a redacted outbox event", async ({
+      skip,
+    }) => {
       if (databaseUrl === undefined)
         throw new Error("test database URL is required");
 
-      const database = createPostgresDatabase(databaseUrl);
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
       const contentId = randomUUID();
       const versionId = randomUUID();
       const scopeId = randomUUID();
@@ -36,12 +49,12 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const editorialRecordId = randomUUID();
 
       try {
-        await database.db.insert(accounts).values({
+        await admin.db.insert(accounts).values({
           id: approverId,
           professionalEmail: `${approverId}@example.invalid`,
           status: "ACTIVE",
         });
-        await database.db.insert(contentVersions).values({
+        await admin.db.insert(contentVersions).values({
           id: versionId,
           contentId,
           scopeId,
@@ -52,7 +65,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           participantText: "Texto autoral sintético.",
           responseMode: "NONE",
         });
-        await database.db.insert(contentEditorialRecords).values({
+        await admin.db.insert(contentEditorialRecords).values({
           id: editorialRecordId,
           contentVersionId: versionId,
           contentId,
@@ -108,7 +121,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             checkedAt: new Date().toISOString(),
           },
         });
-        await database.db.insert(contentReviewDecisions).values({
+        await admin.db.insert(contentReviewDecisions).values({
           contentEditorialRecordId: editorialRecordId,
           contentVersionId: versionId,
           contentId,
@@ -138,11 +151,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           randomUUID,
         );
         const published = await advanceContent(command, dependencies);
-        const stored = await database.db
+        const stored = await admin.db
           .select({ status: contentVersions.status })
           .from(contentVersions)
           .where(eq(contentVersions.id, versionId));
-        const events = await database.db
+        const events = await admin.db
           .select()
           .from(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
@@ -155,20 +168,20 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           "participantText",
         );
       } finally {
-        await database.db
+        await admin.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
-        await database.db
+        await admin.db
           .delete(contentReviewDecisions)
           .where(eq(contentReviewDecisions.contentId, contentId));
-        await database.db
+        await admin.db
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));
-        await database.db
+        await admin.db
           .delete(contentVersions)
           .where(eq(contentVersions.id, versionId));
-        await database.db.delete(accounts).where(eq(accounts.id, approverId));
-        await database.close();
+        await admin.db.delete(accounts).where(eq(accounts.id, approverId));
+        await closeLivePostgresHarness(harness);
       }
     });
   },

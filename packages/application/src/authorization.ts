@@ -21,7 +21,12 @@ export type Capability =
   | "PUBLISH_CONTENT"
   | "VIEW_INTERNAL_SOURCE"
   | "VIEW_INTERNAL_AUDIT"
+  | "VIEW_STAFF_DASHBOARD"
+  | "VIEW_PROGRAM_METRICS"
+  | "VIEW_CONTENT_REVIEW_QUEUE"
+  | "VIEW_INTERNAL_SCOPES"
   | "MANAGE_ROLES"
+  | "MANAGE_ACCOUNT_LIFECYCLE"
   | "GRANT_CLINICAL_APPROVER"
   | "MANAGE_LEARNING_ASSIGNMENTS"
   | "MANAGE_ASSESSMENT_WORKFLOWS"
@@ -121,8 +126,26 @@ export function canAccess(request: AuthorizationRequest): boolean {
       );
     case "VIEW_INTERNAL_AUDIT":
       return hasRole(request, "AUDITOR") || hasRole(request, "ADMIN");
+    case "VIEW_STAFF_DASHBOARD":
+      return hasScopedStaffRole(request) && hasScope(request);
+    case "VIEW_PROGRAM_METRICS":
+      return hasScopedStaffRole(request) && hasScope(request);
+    case "VIEW_CONTENT_REVIEW_QUEUE":
+      return (
+        (hasRole(request, "AUTHOR") || hasScopedStaffRole(request)) &&
+        hasScope(request)
+      );
+    case "VIEW_INTERNAL_SCOPES":
+      return (
+        hasRole(request, "AUTHOR") ||
+        hasRole(request, "MODERATOR") ||
+        hasRole(request, "ADMIN") ||
+        isApprovedClinicalIdentity(request)
+      );
     case "MANAGE_ROLES":
       return hasRole(request, "ADMIN");
+    case "MANAGE_ACCOUNT_LIFECYCLE":
+      return hasRole(request, "ADMIN") && hasScope(request);
     case "GRANT_CLINICAL_APPROVER":
       return false;
     default:

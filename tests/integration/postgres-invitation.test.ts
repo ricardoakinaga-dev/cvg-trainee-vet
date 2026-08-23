@@ -9,13 +9,18 @@ import {
   hashSessionToken,
   type CreateInvitationCommand,
 } from "../../packages/application/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   accountInvitations,
   accounts,
   createInvitationUseCaseDependencies,
   sessions,
 } from "../../packages/persistence/src/index.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
@@ -23,11 +28,17 @@ const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL invitation integration",
   () => {
-    it("stores only a token hash, activates once, and creates a session", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
-
-      const database = createPostgresDatabase(databaseUrl);
+    it("stores only a token hash, activates once, and creates a session", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      expect(harness.applicationRole.bypassesRls).toBe(false);
+      const { application, admin } = harness;
       const adminId = randomUUID();
       const scopeId = randomUUID();
       const invitedEmail = `trainee-${randomUUID()}@cvg.example`;
@@ -36,7 +47,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       let accountId: string | undefined;
 
       try {
-        await database.db.insert(accounts).values({
+        await admin.db.insert(accounts).values({
           id: adminId,
           professionalEmail: `admin-${randomUUID()}@cvg.example`,
           status: "ACTIVE",
@@ -55,13 +66,13 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           tokenFactory: () => "i".repeat(32),
         };
         const dependencies = createInvitationUseCaseDependencies(
-          database.db,
+          application.db,
           randomUUID,
         );
         const created = await createInvitation(command, dependencies);
         accountId = created.accountId;
 
-        const storedInvitation = await database.db
+        const storedInvitation = await admin.db
           .select({
             tokenHash: accountInvitations.tokenHash,
             acceptedAt: accountInvitations.acceptedAt,
@@ -85,11 +96,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         expect(accepted.accountId).toBe(accountId);
         expect(accepted.session.cookie).toContain("HttpOnly");
 
-        const storedAccount = await database.db
+        const storedAccount = await admin.db
           .select({ status: accounts.status })
           .from(accounts)
           .where(eq(accounts.id, created.accountId));
-        const storedSession = await database.db
+        const storedSession = await admin.db
           .select({ tokenHash: sessions.tokenHash })
           .from(sessions)
           .where(eq(sessions.id, sessionId));
@@ -109,16 +120,16 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         ).rejects.toMatchObject({ code: "not_found" });
       } finally {
         if (accountId !== undefined) {
-          await database.db
+          await admin.db
             .delete(sessions)
             .where(eq(sessions.accountId, accountId));
-          await database.db
+          await admin.db
             .delete(accountInvitations)
             .where(eq(accountInvitations.accountId, accountId));
-          await database.db.delete(accounts).where(eq(accounts.id, accountId));
+          await admin.db.delete(accounts).where(eq(accounts.id, accountId));
         }
-        await database.db.delete(accounts).where(eq(accounts.id, adminId));
-        await database.close();
+        await admin.db.delete(accounts).where(eq(accounts.id, adminId));
+        await closeLivePostgresHarness(harness);
       }
     });
   },

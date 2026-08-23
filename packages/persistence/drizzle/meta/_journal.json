@@ -106,6 +106,55 @@
       "when": 1786345414839,
       "tag": "0014_salty_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1787480000000,
+      "tag": "0015_staff_dashboard_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1787481000000,
+      "tag": "0016_diagnostic_result_profile",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1787482000000,
+      "tag": "0017_editorial_scope_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1787483000000,
+      "tag": "0018_account_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1787484000000,
+      "tag": "0019_identity_token_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1787485000000,
+      "tag": "0020_identity_accounts_sessions_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1787486000000,
+      "tag": "0021_audit_anonymous_rejections",
+      "breakpoints": true
     }
   ]
 }

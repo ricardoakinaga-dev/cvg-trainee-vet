@@ -38,6 +38,95 @@ test.describe("participant access and learning projection", () => {
         ),
       });
     });
+    await page.route("**/api/v1/dashboard", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            kind: "participant",
+            nextAction: "RETOMAR_ATIVIDADE",
+            progress: {
+              assignedActivities: 2,
+              completedActivities: 1,
+              progressPercent: 50,
+              remediationObjectives: 0,
+              retentionReviewsPending: 0,
+              pendingCorrections: 0,
+            },
+            path: [
+              {
+                moduleId: "M01",
+                month: 1,
+                status: "EM_ANDAMENTO",
+                nextAction: "RETOMAR_MODULO",
+              },
+              {
+                moduleId: "M02",
+                month: 2,
+                status: "NAO_ATRIBUIDO",
+                nextAction: "AGUARDAR_ATRIBUICAO",
+              },
+            ],
+            profile: [
+              {
+                moduleId: "M01",
+                month: 1,
+                competence:
+                  "Organizar dados, reconhecer risco e justificar um plano inicial.",
+                status: "EM_DESENVOLVIMENTO_DIGITAL",
+                scorePercent: 70,
+                lastEvaluatedAt: "2026-08-23T12:00:00.000Z",
+                evidence: "AVALIACAO_MODULAR_DIGITAL",
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+            ],
+            diagnosticProfile: [
+              {
+                themeId: "B07-S1",
+                themeLabel: "Núcleo clínico e segurança",
+                status: "BASELINE_REGISTRADA",
+                scorePercent: 75,
+                answeredItemCount: 30,
+                itemCount: 40,
+                recommendedModuleIds: ["M01", "M11"],
+                lastEvaluatedAt: "2026-08-23T12:00:00.000Z",
+                evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL",
+                notPunitive: true,
+                noGlobalPassFail: true,
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+              {
+                themeId: "B07-S2",
+                themeLabel: "Emergência e priorização",
+                status: "SEM_EVIDENCIA_DIGITAL",
+                scorePercent: null,
+                answeredItemCount: 0,
+                itemCount: 40,
+                recommendedModuleIds: [],
+                evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL",
+                notPunitive: true,
+                noGlobalPassFail: true,
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+              {
+                themeId: "B07-S3",
+                themeLabel: "Internação, monitoramento e integração",
+                status: "SEM_EVIDENCIA_DIGITAL",
+                scorePercent: null,
+                answeredItemCount: 0,
+                itemCount: 40,
+                recommendedModuleIds: [],
+                evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL",
+                notPunitive: true,
+                noGlobalPassFail: true,
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+            ],
+          }),
+        ),
+      });
+    });
   });
 
   test("loads the learning path and starts with its next action", async ({
@@ -96,6 +185,23 @@ test.describe("participant access and learning projection", () => {
       page.getByRole("heading", { name: "Emergência" }),
     ).toBeVisible();
     await expect(page.getByText("Retomar atividade").first()).toBeVisible();
+    await expect(
+      page.getByText(/Progresso digital: 1 de 2 concluídas/u),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Plano de 24 meses" }),
+    ).toBeVisible();
+    await expect(page.getByText("Retomar módulo")).toBeVisible();
+    await expect(page.getByText("Aguardando atribuição")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Competências acompanhadas" }),
+    ).toBeVisible();
+    await expect(page.getByText("Em desenvolvimento digital")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Diagnóstico por tema" }),
+    ).toBeVisible();
+    await expect(page.getByText("Baseline digital registrada")).toBeVisible();
+    await expect(page.getByText("Sem nota global")).toBeVisible();
   });
 
   test("accepts an internal invitation and renders only the participant activity", async ({

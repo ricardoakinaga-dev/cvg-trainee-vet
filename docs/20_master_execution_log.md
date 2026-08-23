@@ -42,6 +42,44 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-23 — EDITORIAL-QUEUE-027 / hardening e verificação final
+
+### TIMESTAMP
+
+2026-08-23 18:30:16 -03:00
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+Phase 13 / governança editorial
+
+### SPRINT
+
+EDITORIAL-QUEUE-027
+
+### TASK
+
+EDITORIAL-QUEUE-2026-08-23 — hardening de RLS, autorização, consistência e superfície role-aware
+
+### ACTION
+
+Aplicado o hardening editorial com migration `0017_editorial_scope_rls`, contexto transacional nos repositórios, filtro de fila por autor, identidade clínica configurada, memberships de sessão, `scopeId` obrigatório na autoria, ações calculadas no servidor, desempate determinístico da última decisão, rollback compensatório e UI sem paginação fictícia. A verificação foi repetida em build, E2E e PostgreSQL live com banco efêmero.
+
+### RESULT
+
+`pnpm verify` passou com 430 testes e 22 skips explícitos; cobertura 84,46% statements, 80,10% branches, 85,32% functions e 85,20% lines. `pnpm build` passou nos 12 workspaces. `pnpm test:e2e` passou 18/18. A integração PostgreSQL live passou 24 arquivos/35 testes, com conexão da aplicação sem `BYPASSRLS`; RLS `ENABLE/FORCE` e o índice editorial foram confirmados, e o banco/papel administrativo descartáveis foram removidos.
+
+### DECISIONS
+
+O slice editorial fica `COMPLETED_WITH_GAPS`/pronto para próxima fatia técnica. Não foram liberadas aprovação clínica, publicação, aplicação real ou competência prática. Auditoria negativa uniforme, entrega externa, contestação completa, transação editorial única e recuperação controlada de acesso permanecem pendentes.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
 ## 2026-08-09 — SPEC COMPLETA E HANDOFF PARA BUILD DOCUMENTAL
 
 ### TIMESTAMP
@@ -3083,3 +3121,924 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Abrir o item 16 — rastreabilidade de código e controle de mudança — mantendo release, piloto e publicação clínica nos gates humanos próprios.
+
+## 2026-08-23 — HARNESS-DB-2026-08-23: correção do harness live PostgreSQL/RLS
+
+### TIMESTAMP
+
+2026-08-23 13:39:17 -03:00
+
+### ENGINE
+
+BUILD / TDD / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — CI, reprodutibilidade e prontidão de build / hardening dos testes live
+
+### TASK
+
+Corrigir somente o harness dos testes live PostgreSQL/RLS, preservando domínio, UI e schema de produto.
+
+### ACTION
+
+Criado `tests/integration/live-postgres-harness.ts` para inspecionar capacidades da role sem expor credenciais e separar a conexão da aplicação da conexão administrativa de teste. Os testes afetados passaram a usar a conexão administrativa para fixtures sintéticas e cleanup protegido; o runtime é removido antes da conta; o bootstrap `CREATE ROLE` e a limpeza de roles são condicionais à capacidade detectada. O runner propaga `CVG_TEST_ADMIN_DATABASE_URL` e o workflow CI fornece a URL administrativa sintética já usada pelo serviço PostgreSQL.
+
+### RESULT
+
+RED reproduzido no banco local não privilegiado: inserções protegidas falhavam sem contexto, cleanup deixava `curriculum_runtime_states` referenciando a conta e `CREATE ROLE`/`REVOKE` falhavam sem capacidade administrativa. GREEN: live PostgreSQL com URL administrativa passou 19 arquivos/30 testes; sem URL administrativa, o runner advertiu explicitamente e passou 23 testes com 7 skips controlados. ESLint, Prettier, typecheck, `verify:ci-contract` e `git diff --check` passaram. Role e banco descartáveis locais foram removidos.
+
+### LIMITATIONS
+
+Não houve alteração em domínio, UI ou schema de produto. O workflow remoto ainda precisa ser executado/revisado após esta alteração; a cobertura live que exige cleanup protegido depende de `CVG_TEST_ADMIN_DATABASE_URL` com `SUPERUSER` ou `BYPASSRLS`, e o teste de role depende adicionalmente de `CREATEROLE`. A limitação não bloqueia a verificação da asserção de isolamento com uma conexão de aplicação não privilegiada quando disponível.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Revisar o diff do harness e executar o workflow CI autorizado; manter aprovação clínica, piloto e publicação fora deste patch.
+
+## 2026-08-23 — TRAINING-MANAGEMENT-2026-08-23: primeiro vertical slice de gestão
+
+### TIMESTAMP
+
+2026-08-23 13:52:00 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 5 — superfície web e gestão da evolução / hardening de integração
+
+### SPRINT
+
+SCORE-95-16 — rastreabilidade de código e controle de mudança
+
+### TASK
+
+TRAINING-MANAGEMENT-2026-08-23 / implementar dashboard staff por escopo e registrar pesquisa atual de treinamento veterinário
+
+### ACTION
+
+Pesquisadas fontes atuais de CBVE 2.0, EPAs, milestones, avaliação baseada em competências, RCVS Academy, padrões RACE, VetBloom, VetFolio, NAVC, VIN, VETgirl, prática de recuperação/espaçamento, feedback, TeamSTEPPS, simulação/debriefing, liderança e bem-estar. Registrado o artefato `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`. Implementado em TDD o contrato de dashboard participante/staff, use case imutável, capability server-side, repositório PostgreSQL agregado por escopo, migration `0015_staff_dashboard_rls.sql`, rota `GET /api/v1/dashboard`, superfície web interna e projeção sem IDs na tela pública. A fatia foi ampliada com path digital de 24 meses derivado de atribuições/runtime e onboarding administrativo de convite escopado usando o endpoint já governado.
+
+### RESULT
+
+Os testes unitários/contratuais/API do slice passaram; `pnpm verify` passou com 80 arquivos/371 testes/18 skips e cobertura 85,5% statements, 80,9% branches, 86,38% functions e 86,22% lines; `pnpm build`, audit de dependências e `git diff --check` passaram. A suíte E2E final passou 16/16, incluindo axe, path do participante e criação de convite. A suíte live PostgreSQL passou 20 arquivos/31 testes com role da aplicação sem privilégio amplo e URL administrativa sintética separada. A prova live confirmou métricas, próximo passo, path, escopo alternativo vazio e cleanup isolado; banco e roles descartáveis foram removidos. O defeito do harness que impedia `SET ROLE` foi corrigido concedendo a membership apenas na fixture descartável.
+
+### LIMITATIONS
+
+O slice de gestão/evolução não é o produto completo: faltam filtros/paginação/exports, filas editoriais completas, relatório CPD, persistência/aplicação do diagnóstico B-07 e perfil por competência; o token criado ainda exige entrega pelo canal interno aprovado. Conteúdo B-07, aprovação clínica, prática supervisionada, collector/retention/traces, carga/failover e piloto continuam gaps ou gates humanos. Nenhum dado clínico real, prontuário, tutor, foto ou PDF foi utilizado.
+
+### STATUS
+
+COMPLETED_WITH_GAPS
+
+### NEXT
+
+Abrir `LEARNING-PROFILE-2026-08-23` para diagnóstico/perfil por competência sem publicação clínica; executar o workflow remoto após a alteração do harness live e manter os gates humanos independentes.
+
+## 2026-08-23 — LEARNING-PROFILE-AND-STAFF-ONBOARDING-2026-08-23: fechamento da evolução digital e do onboarding
+
+### TIMESTAMP
+
+2026-08-23 14:29:07 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 5 — jornada adaptativa, gestão e entrada controlada
+
+### TASK
+
+Fechar a trilha digital de 24 meses no painel do participante e permitir convite administrativo escopado sem alterar os gates clínicos.
+
+### ACTION
+
+O runtime de currículo passou a aceitar atribuição, andamento e estados de evolução explícitos; a aplicação deriva path imutável de 24 módulos usando atribuições e runtime persistido; o contrato/API/web validam e projetam somente estados digitais permitidos. A tela interna passou a criar convite fixo de `PARTICIPANT` no primeiro escopo retornado pelo servidor, sem aceitar escopo digitado pelo operador. O token é exibido apenas na resposta autorizada e não é persistido pela UI.
+
+### RESULT
+
+RED/GREEN passou nos testes do currículo, aplicação, contrato e API. `pnpm verify` passou com 80 arquivos/371 testes/18 skips e cobertura 85,5% statements, 80,9% branches, 86,38% functions e 86,22% lines. `pnpm build`, `pnpm audit --audit-level=high`, `pnpm test:e2e` (16/16, incluindo axe), live PostgreSQL com role de aplicação não privilegiada e role administrativa separada (20 arquivos/31 testes), documentação, rastreabilidade, exposure e `git diff --check` passaram. O banco e as roles descartáveis usadas na prova foram removidos.
+
+### LIMITATIONS
+
+O path não substitui o diagnóstico B-07, o perfil clínico por competência nem a revisão humana; a plataforma continua digital-only e não libera prática ou autonomia. Filtros/paginação/exports, filas editoriais, relatório CPD, reenvio/desativação/revogação administrativa completa, collector/traces/retention, carga/failover e workflow remoto após o novo harness permanecem gaps.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Implementar a persistência e a aplicação técnica do diagnóstico/perfil por competência sem publicar o conteúdo draft; depois reexecutar o workflow CI remoto autorizado.
+
+## 2026-08-23 — LEARNING-PROFILE-AND-STAFF-ONBOARDING-2026-08-23: perfil digital por competência
+
+### TIMESTAMP
+
+2026-08-23 14:53:09 -03:00
+
+### ACTION
+
+Derivada a nova projeção de perfil digital por módulo/competência a partir do runtime persistido mais recente do participante. O perfil distingue ausência de evidência, desenvolvimento, domínio digital, reforço, retenção pendente e correção humana; cada item declara a evidência digital e mantém proibida qualquer inferência de competência prática. O contrato estrito, a rota de dashboard, a validação web e a tela do participante foram ampliados. A execução dos dois projetos Vitest foi ordenada por grupos para impedir corrida no diretório compartilhado de cobertura.
+
+### RESULT
+
+RED/GREEN passou nos testes da aplicação, contratos e API (37 testes direcionados). `pnpm test:coverage` passou com 80 arquivos/372 testes e 17/18 skips explícitos; cobertura 85,53% statements, 80,91% branches, 86,46% functions e 86,25% lines. `pnpm verify`, `pnpm build`, `pnpm test:e2e` (16/16), audit de dependências e gates de migração, segredos, arquitetura, documentação, produto, exposição e rastreabilidade passaram. A integração live PostgreSQL 20 arquivos/31 testes permanece evidência válida da fatia persistida anterior; o perfil é derivado e não adiciona escrita no banco.
+
+### LIMITATIONS
+
+O perfil atual é digital e modular: ainda não persiste/aplica a baseline B-07 nem calcula o perfil diagnóstico por tema/competência; não publica conteúdo clínico e não libera prática, autonomia ou procedimento. Persistem filtros/paginação/exports, filas editoriais e CPD, ciclo administrativo completo, operação externa, carga/failover e workflow CI remoto após a alteração do harness. Nenhum dado clínico real, prontuário, tutor, foto ou PDF foi utilizado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Implementar a persistência e aplicação técnica do diagnóstico/perfil por tema sem publicar o draft B-07; manter a revisão clínica, a aplicação real e o piloto como gates humanos independentes.
+
+## 2026-08-23 — DIAGNOSTIC-PROFILE-2026-08-23: baseline técnica B-07 e perfil por tema
+
+### TIMESTAMP
+
+2026-08-23 15:27:10 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 5 — jornada adaptativa, avaliação diagnóstica e gestão da evolução
+
+### TASK
+
+Persistir o agregado da avaliação diagnóstica, derivar o perfil longitudinal por tema e manter a publicação clínica bloqueada até B-07 ser revisado.
+
+### ACTION
+
+Após RED com contratos/casos de uso ausentes, foi criada a tabela `diagnostic_results` e a migration `0016_diagnostic_result_profile`. O repositório append-only aplica contexto transacional e FORCE RLS para participante/escopo; a aplicação avalia o pack draft de modo determinístico e grava somente o agregado. A rota interna `POST /api/v1/internal/diagnostics/b07/evaluate` exige `MODERATE_CONTENT`, valida participante/escopo retornados e responde somente temas, contagem, percentual formativo e recomendações de módulo. A jornada e o dashboard exibem três temas com `DIAGNOSTICO_FORMATIVO_DIGITAL`, `notPunitive`, `noGlobalPassFail` e `PROIBIDO_MVP`; a UI não recebe itens, respostas, fontes, gabarito ou objetivos de remediação.
+
+### RESULT
+
+RED/GREEN passou nos contratos, aplicação, persistência, jornada, API e rota-template (51 testes direcionados). `pnpm verify` integral, `pnpm build`, `pnpm test:e2e` (16/16, incluindo axe), `pnpm test:coverage` (83 arquivos/381 testes/19 skips; 84,83% statements, 80,43% branches, 85,40% functions, 85,52% lines), `pnpm audit --audit-level=high` e `pnpm test:integration:live` (21 arquivos/32 testes) passaram. A prova live usou PostgreSQL 16.15, role da aplicação sem SUPERUSER/BYPASSRLS, role administrativa descartável separada, fixture sintética e verificação de isolamento para outro participante; o banco e as roles foram removidos e sua ausência confirmada. Nenhum dado clínico real, prontuário, tutor, foto ou PDF foi usado.
+
+### LIMITATIONS
+
+O pack B-07 permanece `RASCUNHO`, `clinicalReview: PENDENTE` e `publicationAuthorized: false`; não existe rota pública para iniciar o diagnóstico draft. A persistência técnica não equivale a validação clínica, aplicação da baseline, competência prática, autonomia ou autorização de procedimento. Permanecem filtros/paginação/exports, filas editoriais e CPD, ciclo administrativo completo, collector/traces/retention, carga/failover e workflow remoto.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar o workflow remoto autorizado após a migration `0016` e abrir a próxima fatia de gestão/CPD sem alterar os gates humanos de B-07.
+
+## 2026-08-23 — STAFF-DIAGNOSTIC-PROFILE-024: baseline formativa no dashboard staff
+
+### TIMESTAMP
+
+2026-08-23 15:52:13 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — acompanhamento gerencial, segurança e prontidão de build
+
+### SPRINT
+
+SCORE-95-17 — acompanhamento gerencial da baseline formativa
+
+### TASK
+
+Exibir o perfil diagnóstico B-07 por tema no dashboard interno sem atravessar escopos ou sugerir competência prática.
+
+### ACTION
+
+O contrato staff passou a aceitar `diagnosticProfile` opcional com exatamente três agregados seguros. O repositório do dashboard consulta `diagnostic_results` somente dentro do contexto `cvg.scope_id`, deriva o último perfil por tema e omite o campo quando não há resultado. A API copia apenas a projeção validada. A rota interna de avaliação passou a exigir também membership participante–escopo via `createParticipantScopeResolver`; a matriz de isolamento live passou a incluir `diagnostic_results`. A tela de operações ganhou coluna de baseline formativa, disclaimer de “sem nota global”/não competência prática e região de tabela focável para rolagem horizontal.
+
+### RESULT
+
+RED/GREEN passou em contratos, aplicação, persistência e API; `pnpm typecheck` e `pnpm build` passaram. E2E da gestão passou 4/4 com axe. A integração live PostgreSQL passou 21 arquivos/32 testes, incluindo security isolation com papel sem `SUPERUSER/BYPASSRLS`, leitura participante/escopo e ausência de leitura cruzada; o banco e as roles descartáveis foram removidos e verificados ausentes. A revisão independente apontou e foi incorporada nos pontos de membership, matriz RLS e disclaimer. A verificação integral final passou: 83 arquivos/18 ignorados, 384 testes/19 ignorados; Statements 84,86% (3773/4446), Branches 80,43% (2692/3347), Functions 85,47% (912/1067) e Lines 85,57% (3626/4237). `pnpm audit --audit-level=high` reportou `No known vulnerabilities found` e `git diff --check` passou.
+
+### LIMITATIONS
+
+B-07 segue `RASCUNHO`/`PENDENTE`/não publicável; o perfil staff é evidência digital formativa e não comprova competência prática, aprovação, autonomia ou autorização clínica. Filtros/paginação/exports, filas editoriais, relatórios CPD, ciclo administrativo completo, operação externa, collector/traces/retention, carga/failover e workflow remoto continuam gaps independentes.
+
+### DECISIONS
+
+Não foram expostos itens, respostas, gabarito, fontes, objetivos de remediação ou IDs de módulo na superfície de gestão. A ausência do resolver de membership falha fechado. Nenhum dado clínico real, prontuário, tutor, foto, PDF ou segredo foi usado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar o workflow remoto autorizado após a migration `0016` e abrir a fatia de gestão/CPD (filas, educação continuada e ciclo administrativo), sem publicar B-07.
+
+## 2026-08-23 — ADMIN-LIFECYCLE-025: ciclo administrativo de contas e convites
+
+### TIMESTAMP
+
+2026-08-23 16:44:16 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — gestão operacional, identidade e prontidão de MVP
+
+### SPRINT
+
+ADMIN-LIFECYCLE-025 — ciclo administrativo de contas e convites
+
+### TASK
+
+Implementar o ciclo RF-009/UC-015 para conta de participante: reenviar convite somente para conta convidada e escopo autorizado, alterar estado sem apagar histórico e revogar sessões em transação auditável.
+
+### ACTION
+
+Implementado em TDD o contrato, caso de uso, persistência, rotas internas e superfície de operações. O convite inicial e o reenvio exigem `MANAGE_ACCOUNT_LIFECYCLE` com escopo autorizado; o reenvio expira o convite não aceito anterior e só expõe o token bruto na resposta autorizada. A mutação de estado usa `expectedStatus` como CAS, preserva histórico e revoga sessões na mesma transação. A autenticação exige conta `ACTIVE`, e a reativação revoga qualquer sessão residual criada durante a suspensão. Nenhuma ação de conta altera nota, gabarito, progresso, diagnóstico ou competência.
+
+### RESULT
+
+RED/GREEN passou nos contratos, aplicação, persistência, API e segurança de autorização; `pnpm build` e `pnpm typecheck` passaram. `pnpm verify` passou com 86 arquivos/401 testes/19 arquivos e 20 testes explicitamente ignorados; cobertura global: 84,56% statements, 80,13% branches, 85,31% functions e 85,30% lines. `pnpm test:integration:live` passou com PostgreSQL 16.15, 22 arquivos/33 testes, role da aplicação sem `SUPERUSER/BYPASSRLS` e role administrativa descartável separada; foram comprovados isolamento por escopo, reenvio one-time, aceite, CAS concorrente, revogação de sessões e rejeição de sessão de conta suspensa. E2E de operações passou 5/5 com axe. `pnpm audit --audit-level=high` reportou `No known vulnerabilities found` e `git diff --check` passou. O banco e as roles descartáveis foram removidos e sua ausência confirmada.
+
+### LIMITATIONS
+
+O MVP ainda não integra e-mail/SMS/IdP nem oferece recuperação pós-revogação; reativar a conta não restaura sessões antigas e exige um fluxo futuro de novo acesso. RLS contextual direto para `accounts`, `account_invitations` e `sessions` permanece hardening separado; a prova atual usa role de aplicação sem privilégio amplo, filtros server-side e membership revalidado. A publicação B-07, a aprovação clínica, a atribuição detalhada de papéis/trilhas e a prática supervisionada continuam gates humanos independentes.
+
+### DECISIONS
+
+O escopo de gestão é verificado no servidor e novamente no repositório por membership participante–escopo. Status `ACTIVE`, `SUSPENDED` e `DEACTIVATED` são os estados administrativos; convite ainda não aceito não pode ser ativado por esse endpoint; suspensão/desativação revoga sessões e preserva histórico; reativação não restaura sessão anterior. O token nunca entra em auditoria/log/seed. A política de recuperação pós-revogação e a decisão sobre RLS direto de identidade ficam registradas como próxima decisão de produto/segurança.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir a próxima fatia de filas editoriais, educação continuada/CPD e recuperação controlada de acesso, sem declarar este ciclo como plataforma completa nem liberar gates clínicos.
+
+## 2026-08-23 — CPD-REPORTING-026: abertura do relatório de participação digital
+
+### TIMESTAMP
+
+2026-08-23 16:52:38 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — acompanhamento gerencial, segurança e prontidão de MVP
+
+### SPRINT
+
+CPD-REPORTING-026 — participação digital e horas de trilha por escopo
+
+### TASK
+
+Implementar a primeira fatia de UC-016/RF-070/RF-073/RF-074: relatório interno, escopado e filtrável de atividade modular concluída, sem converter tempo digital em certificação ou competência clínica.
+
+### ACTION
+
+Requisitos e pesquisa foram relidos. A implementação será derivada apenas de atribuições persistidas, estados de conta e minutos do catálogo curricular; não haverá nova afirmação de produto para coorte/área/nível que ainda não possuem campos de domínio. O relatório terá filtros server-side por escopo, módulo e status, payload redigido, numerador/denominador explícitos quando aplicável e disclaimer de evidência educacional não credenciada.
+
+### RESULT
+
+Fatia aberta em `IN_PROGRESS`; RED de contrato, autorização, persistência, API e web é o próximo passo. Nenhum dado clínico real, prontuário, tutor, foto, PDF, fonte ou segredo será usado.
+
+### LIMITATIONS
+
+O recorte não cria certificado, registro regulatório, integração externa, coorte/área/nível não modelados, exportação, ranking, decisão de RH ou claim de competência prática. Filas editoriais, recuperação pós-revogação, RLS contextual direta de identidade e gates clínicos continuam independentes.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever os testes RED e materializar o contrato/repositório do relatório com prova de falha fechada por escopo.
+
+## 2026-08-23 — CPD-REPORTING-026: implementação, hardening administrativo e verificação direcionada
+
+### TIMESTAMP
+
+2026-08-23 17:21:23 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — acompanhamento gerencial, segurança e prontidão de MVP
+
+### SPRINT
+
+CPD-REPORTING-026 — participação digital e horas de trilha por escopo
+
+### TASK
+
+Materializar o relatório interno escopado e fechar as regressões de ciclo administrativo identificadas pela revisão independente.
+
+### ACTION
+
+Executado RED/GREEN para contrato, autorização, caso de uso, repositório PostgreSQL, API e superfície web do relatório de participação digital. O relatório deriva somente de atribuições, estados de conta, sessões e minutos do catálogo; filtra server-side por escopo, módulo e status e publica os limites `ATIVIDADE_MODULAR_DIGITAL`, `NAO_CREDENCIADAS` e `PROIBIDO_MVP`. No mesmo ciclo, o reenvio administrativo passou a persistir somente o escopo solicitado, recebeu lock transacional por conta para concorrência e a UI passou a escolher o escopo efetivo do participante em dashboards multi-escopo.
+
+### RESULT
+
+Testes direcionados unitários/API passaram; typecheck e build passaram; E2E de operações passou 5/5 com axe; PostgreSQL live passou 23 arquivos/34 testes com role de aplicação sem `SUPERUSER`/`BYPASSRLS` e role administrativa descartável separada. A prova live confirmou o convite reenviado sem escopo excedente, dois reenvios simultâneos com um único convite não aceito vigente e o fluxo web usando o segundo escopo autorizado. Nenhum dado clínico real, prontuário, tutor, foto, PDF, fonte, segredo, token bruto ou hash foi adicionado ao repositório.
+
+### LIMITATIONS
+
+O relatório não é CPD acreditado, certificado, ranking, exportação, decisão de RH ou prova de competência prática; coorte/área/nível permanecem fora porque não existem no domínio. RLS contextual direto de `accounts`, `account_invitations` e `sessions`, auditoria negativa uniforme de falhas, entrega externa, recuperação pós-revogação, operação externa e gates clínicos continuam gaps independentes.
+
+### DECISIONS
+
+`scopeIds` é metadado interno de roteamento do dashboard staff, validado como subconjunto dos escopos autorizados e não renderizado. O escopo enviado às ações administrativas permanece validado no servidor e no repositório; a serialização PostgreSQL garante a invariável de um convite não aceito vigente após concorrência, enquanto o último reenvio pode invalidar o token anterior.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar `pnpm verify`, revisar o diff e registrar o resultado final da rodada antes de abrir a próxima fatia de filas editoriais ou recuperação controlada.
+
+## 2026-08-23 — CPD-REPORTING-026: verificação integral e encerramento técnico do slice
+
+### TIMESTAMP
+
+2026-08-23 17:25:59 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — acompanhamento gerencial, segurança e prontidão de MVP
+
+### SPRINT
+
+CPD-REPORTING-026 — participação digital e horas de trilha por escopo
+
+### TASK
+
+Executar os gates integrais após a implementação do relatório e do hardening administrativo.
+
+### ACTION
+
+Executados `pnpm verify` e `pnpm build`; o banco e as roles PostgreSQL descartáveis foram removidos e a ausência foi confirmada.
+
+### RESULT
+
+`pnpm verify` passou com 89 arquivos, 411 testes, 20 arquivos e 21 testes explicitamente ignorados; cobertura global: 84,67% statements, 80,11% branches, 85,48% functions e 85,41% lines. Passaram CI contract, lint, typecheck, contratos, worker, migrations, secrets, traceability, architecture, documentation, product-definition e public exposure. `pnpm build` passou nos 12 workspaces; live PostgreSQL passou 23 arquivos/34 testes e E2E operations passou 5/5 com axe. O score técnico desta fatia fica `verified-with-gaps`.
+
+### DECISIONS
+
+O slice CPD-REPORTING-026 está tecnicamente encerrado com gaps documentados. Isso não libera publicação clínica, aplicação B-07, competência prática, certificado, operação externa ou MVP completo. A próxima execução deve atacar uma fatia pendente explicitamente registrada no backlog.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Selecionar e abrir a próxima fatia de filas editoriais ou hardening de identidade/recuperação, escrever RED e atualizar o plano antes de modificar código.
+
+## 2026-08-23 — EDITORIAL-QUEUE-027: abertura da fila interna de revisão clínica
+
+### TIMESTAMP
+
+2026-08-23 17:29:56 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 — governança editorial, segurança e prontidão de MVP
+
+### SPRINT
+
+EDITORIAL-QUEUE-027 — fila interna de revisão clínica por escopo
+
+### TASK
+
+Materializar `GetContentReviewQueue(scope)` como leitura interna limitada e rastreável de conteúdo aguardando revisão, sem ampliar o produto nem liberar publicação clínica.
+
+### ACTION
+
+Requisitos UC-013/014 e RF-034/RF-036/RF-037/RF-091/RF-094 foram relidos. O slice foi registrado para listar somente metadados operacionais de versões editoriais em `EM_REVISAO_CLINICA` ou `AJUSTES_SOLICITADOS`, com contexto de escopo, ordenação determinística e abertura posterior do registro autoral completo somente por rota interna autorizada.
+
+### RESULT
+
+Slice aberto em `IN_PROGRESS`; nenhum código foi alterado nesta abertura. A fila não aprova, publica, corrige, escolhe por IA/Qdrant, expõe fonte/gabarito ao participante ou converte preflight em aprovação clínica.
+
+## 2026-08-23 — EDITORIAL-QUEUE-027: leitura backend verificada e abertura da superfície interna
+
+### TIMESTAMP
+
+2026-08-23 17:44:40 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE
+
+### PHASE
+
+BUILD — Phase 13 / governança editorial
+
+### SPRINT
+
+EDITORIAL-QUEUE-027 — fila interna de revisão clínica por escopo
+
+### TASK
+
+EDITORIAL-QUEUE-2026-08-23 — contrato, autorização, leitura PostgreSQL e integração live
+
+### ACTION
+
+Implementados contrato Zod estrito, capability separada, caso de uso imutável, repositório PostgreSQL com contexto transacional, endpoint `GET /api/v1/internal/content/review-queue`, adapter de rota e exports. A projeção permite somente metadados operacionais, status limitado, filtro server-side, ordenação determinística e `hasMore`; prompt, gabarito, rubrica e fontes permanecem fora da fila.
+
+### RESULT
+
+61 testes direcionados passaram; contracts/application/persistence/API compilaram; a integração live passou em 24 arquivos/35 testes, incluindo dois escopos isolados, filtro de status, última decisão, paginação e ausência de campos autorais. Banco e papéis descartáveis foram removidos. A falha inicial do live fixture (`Invalid time value`) foi corrigida no próprio teste antes do GREEN.
+
+### DECISIONS
+
+O backend foi encerrado com gaps controlados, sem aprovação/publicação e sem decisão por IA/Qdrant. A superfície web ainda não consome a fila; ela é a próxima tarefa do mesmo sprint, com E2E/axe sintético obrigatório. RLS direto de tabelas editoriais, auditoria negativa uniforme, notificações externas e contestação completa permanecem gaps separados.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED da superfície interna da fila, adicionar links de abertura para a rota de autoria e reexecutar E2E/axe, typecheck/build/verify.
+
+## 2026-08-23 — EDITORIAL-QUEUE-027: superfície web e E2E/axe GREEN
+
+### TIMESTAMP
+
+2026-08-23 17:47:00 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE
+
+### PHASE
+
+BUILD — Phase 13 / governança editorial
+
+### SPRINT
+
+EDITORIAL-QUEUE-027 — fila interna de revisão clínica por escopo
+
+### TASK
+
+EDITORIAL-QUEUE-2026-08-23 — expor fila redigida na superfície interna e abrir autoria por link
+
+### ACTION
+
+Adicionada a fila à superfície `/authoring`: `scopeId` explícito, estados de carregamento/vazio/erro, validação de resposta `unknown`, itens limitados a metadados e link para a rota completa de autoria. O cliente não calcula autorização nem recebe prompt, gabarito, rubrica ou fontes na projeção da fila.
+
+### RESULT
+
+Build completo passou; E2E direcionado de autoria/acessibilidade passou 7/7 com axe. O primeiro teste falhou por uma asserção que encontrou a palavra “gabarito” na mensagem institucional fora da fila; a asserção foi corrigida para inspecionar somente `.queue-item`, e a repetição passou.
+
+### DECISIONS
+
+O item EDITORIAL-QUEUE-027 está tecnicamente encerrado com gaps controlados. O link abre a autoria completa somente em superfície interna; continua proibido ao participante. RLS direto editorial, auditoria negativa uniforme, recuperação controlada, operação externa e gates clínicos permanecem independentes.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar `pnpm verify` e abrir, após os gates, a próxima fatia de maior risco: hardening de RLS/auditoria editorial ou recuperação controlada de acesso, conforme evidência independente.
+
+### LIMITATIONS
+
+Contestação completa, notificações externas, publicação e revisão humana continuam independentes; conteúdo B-07 permanece atrás dos gates de Ricardo.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever os testes RED do contrato, capability e repositório PostgreSQL antes de criar o adaptador HTTP/web.
+
+## 2026-08-23 — EDITORIAL-QUEUE-027: hardening editorial GREEN parcial
+
+### TIMESTAMP
+
+2026-08-23 18:20:41 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE
+
+### PHASE
+
+BUILD — Phase 13 / governança editorial
+
+### SPRINT
+
+EDITORIAL-QUEUE-027 — fila interna de revisão clínica por escopo
+
+### TASK
+
+EDITORIAL-QUEUE-2026-08-23 — fechar gaps de isolamento, autorização, consistência e experiência role-aware
+
+### ACTION
+
+Aplicada a migration `0017_editorial_scope_rls.sql` com `ENABLE/FORCE RLS` em
+`content_editorial_records` e `content_review_decisions`. Autoria, fila e
+workflow de conteúdo passaram a aplicar `cvg.scope_id` em transações; a fila
+filtra registros de `AUTHOR` pelo próprio autor, exige a identidade clínica
+configurada para o papel clínico, desempata decisões por `reviewed_at`,
+`created_at` e `id`, e não expõe `hasMore` sem cursor real. A revisão autoral
+ganhou rollback compensatório quando a transição falha. A API ganhou
+`/api/v1/internal/session/scopes`, query `scopeId` obrigatório na autoria e
+ações calculadas no servidor; `/authoring` passou a usar memberships da sessão,
+mostrar última decisão e esconder ações/link quando o papel não pode executá-los.
+
+### RESULT
+
+RED dos gaps da crítica independente foi convertido em GREEN unitário: contratos,
+autorização, aplicação, persistência, API e rota passaram. `pnpm typecheck`,
+`pnpm verify:migrations` e formatação passaram. Em banco PostgreSQL descartável,
+com role de aplicação sem `SUPERUSER/BYPASSRLS` e role administrativa separada,
+as suítes editoriais selecionadas passaram 24 arquivos/35 testes; a leitura
+direta sem contexto retornou zero linhas. O E2E de autoria passou 2/2 após
+ajuste da interceptação para query `scopeId`; o E2E completo ainda será
+reexecutado.
+
+### DECISIONS
+
+O status do item permanece `COMPLETED_WITH_GAPS`: RLS/editorial, role-aware e
+consistência compensatória estão cobertos, mas auditoria negativa uniforme,
+notificações externas, contestação completa e transação editorial composta
+continuam fora desta fatia. Nenhuma aprovação clínica ou publicação foi
+liberada; B-07 e os gates humanos permanecem independentes.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar `pnpm verify`, E2E completo e integração live completa; revisar
+traceability/diff e só então abrir recuperação controlada de acesso.
+
+## 2026-08-23 — abertura da recuperação controlada de acesso
+
+### TIMESTAMP
+
+2026-08-23 18:35:02 -03:00
+
+### ENGINE
+
+BUILD
+
+### PHASE
+
+Phase 13 / identidade e segurança operacional
+
+### SPRINT
+
+ACCOUNT-RECOVERY-028
+
+### TASK
+
+Implementar recuperação de acesso por link aleatório, expirável e de uso único, sem armazenar senha, mantendo a conta inativa até decisão administrativa.
+
+### ACTION
+
+Slice aberto após a verificação final de `EDITORIAL-QUEUE-027`. A implementação seguirá a fronteira aprovada: provedor gerenciado continua responsável por senha/MFA; o produto só materializa o link controlado, a invalidação transacional e a criação de nova sessão quando o estado da conta permitir. A entrega externa e o adapter de provedor não serão simulados.
+
+### RESULT
+
+RED ainda não executado; contrato, caso de uso, migration, persistência, API, UI e testes negativos serão derivados antes do GREEN.
+
+### DECISIONS
+
+Não reativar automaticamente contas `SUSPENDED`/`DEACTIVATED`, não restaurar sessões antigas, não armazenar senha/token em claro e não expor recuperação para participante não autorizado. O token bruto, se necessário para prova interna, ficará restrito à resposta autorizada e fora de logs/auditoria.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Criar o contrato estrito e a prova RED para emissão/aceite/revogação de recovery; depois ligar PostgreSQL, API e testes live com dados sintéticos.
+
+## 2026-08-23 — fechamento técnico da recuperação controlada de acesso
+
+### TIMESTAMP
+
+2026-08-23 19:03:14 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / identidade e segurança operacional
+
+### SPRINT
+
+ACCOUNT-RECOVERY-028
+
+### TASK
+
+Fechar recuperação por link único e registrar a evidência final sem simular provedor de senha/MFA ou entrega externa.
+
+### ACTION
+
+Implementado o contrato estrito, emissão interna escopada, armazenamento hash-only, expiração, invalidação, revogação de sessões, consumo atômico, criação de sessão nova e auditoria redigida. A API adicionou as rotas interna/anônima; a web adicionou a ação em operações e `/recovery`, removendo o token da URL antes do aceite. A migration `0018_account_recovery.sql` foi aplicada em PostgreSQL descartável com role de aplicação sem `SUPERUSER`/`BYPASSRLS` e role administrativa de teste separada.
+
+### RESULT
+
+RED/GREEN de contratos, aplicação, persistência e API passou. `pnpm verify` passou com 96 arquivos/448 testes/22 skips de arquivo e 23 skips de teste; cobertura 84,73% statements, 80,50% branches, 85,49% functions e 85,50% lines. `pnpm build` passou nos 12 workspaces. Integração PostgreSQL live passou 25 arquivos/36 testes; `pnpm test:e2e` passou 19/19, incluindo recuperação e axe. `verify:migrations`, secrets, traceability, documentation, product-definition, exposure e `git diff --check` passaram. Banco e roles descartáveis foram removidos e confirmados ausentes.
+
+### DECISIONS
+
+O item fica `COMPLETED_WITH_GAPS`: o fluxo só emite para conta `ACTIVE`, não reativa conta inativa, não restaura sessões antigas e não armazena senha/token em claro. Provedor gerenciado, senha/MFA, e-mail/entrega externa, RLS direto de identidade/recuperação, auditoria negativa uniforme completa, operação produtiva, revisão clínica, B-07 e piloto permanecem gates independentes.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir hardening de RLS direto das tabelas de identidade/recuperação e auditoria negativa uniforme, preservando a fronteira de não simular fornecedor nem liberar gates clínicos.
+
+## 2026-08-23 — hardening de RLS para convites e recuperação
+
+### TIMESTAMP
+
+2026-08-23 19:12:34 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / identidade e segurança operacional
+
+### SPRINT
+
+IDENTITY-RLS-029
+
+### TASK
+
+Aplicar defesa direta no PostgreSQL para memberships de convite e solicitações de recuperação sem bloquear o aceite anônimo legítimo.
+
+### ACTION
+
+Criada a migration `0019_identity_token_rls.sql`, com `ENABLE/FORCE RLS` em `account_invitations` e `account_recovery_requests`. O contexto de banco agora aceita escopo transacional e hash SHA-256 de token para convite/recuperação; repositórios de convite, recuperação, dashboard e resolução de membership passaram a estabelecer o contexto antes das consultas. Testes live foram ajustados para separar aplicação e role administrativa.
+
+### RESULT
+
+RED/GREEN unitário passou em 18 testes direcionados. Banco PostgreSQL descartável aplicou 20 migrações; policies `relrowsecurity`/`relforcerowsecurity` foram confirmadas nas duas tabelas; role `cvg` permaneceu sem `SUPERUSER`/`BYPASSRLS`, role administrativa de teste teve somente `BYPASSRLS`; integração live completa passou 25 arquivos/36 testes e os recursos foram removidos/confirmados ausentes.
+
+### DECISIONS
+
+O item permanece em validação final e será `COMPLETED_WITH_GAPS` se os gates restantes passarem. A policy limita a tabela por escopo ou pelo hash apresentado; `accounts` e `sessions` continuam fora deste incremento porque autenticação por cookie, criação de sessão e inserção inicial precisam de matriz própria. Não foram simulados provedor, MFA, entrega externa ou decisão clínica.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar `pnpm verify`, build, E2E, gates documentais e `git diff --check`; depois registrar o status final e manter o hardening de `accounts`/`sessions` explícito.
+
+## 2026-08-23 — fechamento técnico de IDENTITY-RLS-029
+
+### TIMESTAMP
+
+2026-08-23 19:18:47 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / identidade e segurança operacional
+
+### SPRINT
+
+IDENTITY-RLS-029
+
+### TASK
+
+Fechar os gates do RLS direto de convites/recuperação e registrar as lacunas residuais sem ampliar a fronteira de autoridade.
+
+### ACTION
+
+Reexecutados `pnpm verify`, `pnpm build` e `pnpm test:e2e`; revisados os gates documentais, a rastreabilidade e o diff. A migration `0019_identity_token_rls.sql` permanece aplicada apenas nas tabelas `account_invitations` e `account_recovery_requests`, com contexto de escopo/hash e role de aplicação não privilegiada.
+
+### RESULT
+
+`pnpm verify` passou com 96 arquivos/449 testes/22 skips de arquivo e 23 skips de teste; cobertura 84,76% statements, 80,50% branches, 85,51% functions e 85,52% lines. `pnpm build` passou nos 12 workspaces e `pnpm test:e2e` passou 19/19. `pnpm verify:migrations` confirmou 20/20 migrações; a integração live PostgreSQL passou 25 arquivos/36 testes, confirmou `relrowsecurity`/`relforcerowsecurity` nas duas tabelas, role `cvg` sem `SUPERUSER`/`BYPASSRLS` e remoção dos recursos descartáveis.
+
+### DECISIONS
+
+O item fica `COMPLETED_WITH_GAPS`. `accounts`/`sessions` continuam sem RLS direto até existir uma matriz própria para autenticação por cookie, criação de sessão e inserção inicial; auditoria negativa uniforme, grants de produção, provedor/MFA, entrega externa, revisão clínica, piloto e operação produtiva continuam gates independentes. Nenhuma decisão clínica ou publicação foi liberada.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Desenhar e verificar a matriz residual de RLS para `accounts`/`sessions` e auditoria negativa uniforme, sem simular fornecedor, entrega externa ou aprovação clínica.
+
+## 2026-08-23 — fechamento técnico de IDENTITY-RLS-030
+
+### TIMESTAMP
+
+2026-08-23 19:30:20 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / identidade e segurança operacional
+
+### SPRINT
+
+IDENTITY-RLS-030
+
+### TASK
+
+Fechar RLS direto de `accounts`/`sessions` com contexto transacional e provar que o contexto não sobrevive fora da operação protegida.
+
+### ACTION
+
+Criada a migration `0020_identity_accounts_sessions_rls.sql`, com policies separadas para provisionamento, leitura/atualização por escopo ou hash e inserção escopada de sessão. O contexto ganhou `cvg.account_provisioning_id` e `cvg.session_token_hash`; `create`, `findActive`, `revoke` e `rotate` de sessão passaram a executar `set_config(..., true)` e a operação protegida na mesma transação. O aceite HTTP de convite passou a responder `not_found` também para token malformado.
+
+### RESULT
+
+`pnpm verify` passou com 96 arquivos/451 testes/22 skips de arquivo e 23 skips de teste; cobertura 84,54% statements, 80,47% branches, 85,33% functions e 85,27% lines. `pnpm build` passou nos 12 workspaces, `pnpm test:e2e` passou 19/19 e `pnpm verify:migrations` confirmou 21/21. A integração live PostgreSQL passou 25 arquivos/36 testes; leitura sem contexto de contas/sessões ficou vazia, inserções sem contexto foram negadas, as quatro tabelas de identidade confirmaram `relrowsecurity`/`relforcerowsecurity`, a role `cvg` permaneceu sem `SUPERUSER`/`BYPASSRLS` e os recursos descartáveis foram removidos. Traceability, documentation, product-definition, exposure e `git diff --check` passaram.
+
+### DECISIONS
+
+O item fica `COMPLETED_WITH_GAPS`. A autorização server-side continua sendo a fonte de decisão; RLS é defesa complementar. Auditoria negativa uniforme, grants/ownership de produção, provedor/MFA, entrega externa, operação produtiva, revisão clínica, B-07, piloto e publicação permanecem gates independentes. Nenhuma decisão clínica ou publicação foi liberada.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir auditoria negativa uniforme e verificar grants/ownership do papel de produção, sem simular fornecedor, entrega externa ou aprovação clínica.
+
+## 2026-08-23 — atualização da pesquisa de plataformas e práticas veterinárias
+
+### TIMESTAMP
+
+2026-08-23 19:39:22 -03:00
+
+### ENGINE
+
+DISCOVERY / PRD / BUILD SUPPORT / RUNTIME CONTROLLER
+
+### PHASE
+
+Pesquisa de produto e validação de contexto do MVP
+
+### TASK
+
+Revalidar referências institucionais atuais sobre educação veterinária, CPD e plataformas de treinamento sem transformar benchmark em dependência técnica ou autorização clínica.
+
+### ACTION
+
+Atualizado `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md` com validação oficial de CBVE 2.0/AAVMC, CPD/RCVS, VetFolio, VIN/VSPN e BSAVA/LUMOS.
+
+### RESULT
+
+As referências convergem em competências/milestones/EPAs, trilhas multimodais, microaprendizagem, progressão, feedback/reflexão, acompanhamento e registro. O documento mantém a decisão de produto: o CVG pode adotar esses padrões como requisitos digitais, mas não importa conteúdo protegido, horas regulatórias, acreditação ou claim de competência prática sem validação local/humana.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Manter a pesquisa como contexto de produto e concentrar a próxima fatia técnica em auditoria negativa uniforme e grants/ownership de produção, respeitando os gates clínicos.
+
+## 2026-08-23 — auditoria negativa uniforme e guard de privilégio
+
+### TIMESTAMP
+
+2026-08-23 20:02:26 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / identidade, segurança e operação
+
+### SPRINT
+
+AUDIT-NEGATIVE-031 / DB-PRIVILEGE-032
+
+### TASK
+
+Fechar a trilha negativa da borda HTTP e verificar que a role de aplicação não é superusuária, bypass, criadora ou owner das relações públicas.
+
+### ACTION
+
+Implementados `actor_kind` e rejeição anônima sem UUID sentinela; a migration `0021_audit_anonymous_rejections.sql` tornou `principal_id`/`resource_id` opcionais apenas para o ator anônimo, preservando append-only e `ENABLE/FORCE RLS`. `handleApiRequest` e a borda Node registram rejeições do handler e pré-handler com rota normalizada, sem body/cookie/token, e o runtime injeta o repositório de auditoria. O healthcheck `requireLeastPrivilege` passou a verificar `SUPERUSER`, `BYPASSRLS`, `CREATEROLE`, `CREATEDB`, `CREATE` no schema público e ownership de relações.
+
+### RESULT
+
+RED/GREEN unitário passou; typecheck passou; a integração PostgreSQL passou `25` arquivos/`37` testes em banco descartável com owner de migration separado, role de aplicação `NOSUPERUSER/NOBYPASSRLS` e role administrativa de teste separada. A rejeição anônima foi persistida com `principal_id = NULL`, as cinco tabelas auditadas (`account_invitations`, `account_recovery_requests`, `accounts`, `audit_entries`, `sessions`) confirmaram `relrowsecurity=true`/`relforcerowsecurity=true`, e o healthcheck da role sem ownership passou. O primeiro live revelou grants de fixture insuficientes; a matriz do harness foi corrigida com grant option e a execução seguinte passou sem falhas. Nenhuma URL, senha, token ou dado real foi registrado.
+
+### DECISIONS
+
+O núcleo técnico fica `COMPLETED_WITH_GAPS`: a aplicação agora falha fechado para privilégios administrativos quando `requireLeastPrivilege=true`, mas o grant matrix, owner de migration, rotação de credenciais e inspeção do ambiente produtivo real exigem runbook/autoridade operacional. A auditoria negativa registra metadados de segurança, não conteúdo; falha do append não altera a resposta pública. Provedor/MFA, entrega externa, revisão clínica, B-07, piloto e publicação continuam gates independentes.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar os gates completos pós-mudança, remover o banco/roles descartáveis e atualizar o estado final desta rodada; manter operação produtiva, grant matrix real e gates clínicos como pendências explícitas.
+
+## 2026-08-23 — fechamento dos gates pós-mudança
+
+### TIMESTAMP
+
+2026-08-23 20:14:50 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 13 / identidade, segurança e operação
+
+### SPRINT
+
+AUDIT-NEGATIVE-031 / DB-PRIVILEGE-032
+
+### TASK
+
+Reexecutar a verificação integral, validar o artefato compilado e registrar o estado operacional após o hardening.
+
+### ACTION
+
+Corrigidos somente os fixtures sintéticos dos testes HTTP para que o scanner não confunda um valor de teste com segredo. Em seguida foram executados `pnpm verify`, `pnpm build`, `pnpm test:e2e`, `pnpm audit --audit-level=high`, `git diff --check` e os gates live/documentais.
+
+### RESULT
+
+O pipeline oficial passou com `96` arquivos/`455` testes, `22` skips de arquivo/`24` skips de teste e cobertura de `84,56%` statements, `80,28%` branches, `85,41%` functions e `85,30%` lines. Contratos passaram `19/54`, worker `4/24`, migrações `22/22`, build passou nos `12` workspaces, E2E Chromium passou `19/19`, audit de dependências não encontrou vulnerabilidades conhecidas, e secrets/traceability/architecture/documentation/product-definition/exposure passaram. A evidência live PostgreSQL permaneceu em `25` arquivos/`37` testes, com role de aplicação sem `SUPERUSER`/`BYPASSRLS`/ownership e recursos descartáveis removidos. Estado, backlog, SPEC e manifesto de rastreabilidade foram atualizados; o worktree continua sem commit para preservar as alterações existentes do usuário.
+
+### DECISIONS
+
+`AUDIT-NEGATIVE-031` e `DB-PRIVILEGE-032` ficam `COMPLETED_WITH_GAPS`. A base técnica está verificada, mas não é declarada produção-pronta: grant matrix/owner de migration/rotação de credenciais no ambiente real, collector/retention/traces/carga/failover, provider/MFA/entrega externa e aprovação clínica/piloto/publicação dependem de autoridade e evidência próprias.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar o runbook operacional autorizado para grants/ownership/credenciais e anexar evidência redigida; manter os gates clínicos e dependências externas sem simulação.

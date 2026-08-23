@@ -7,7 +7,6 @@ import {
   correctOpenResponse,
   type CorrectOpenResponseCommand,
 } from "../../packages/application/src/index.js";
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   assessmentIdempotency,
   assessmentResults,
@@ -17,18 +16,30 @@ import {
   learningActivities,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL correction integration",
   () => {
-    it("persists a versioned human correction, audit event, and idempotent replay", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
+    it("persists a versioned human correction, audit event, and idempotent replay", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
 
-      const database = createPostgresDatabase(databaseUrl);
       const participantId = randomUUID();
       const approverId = randomUUID();
       const activityId = randomUUID();
@@ -37,14 +48,14 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const correlationId = randomUUID();
 
       try {
-        await database.db.insert(learningActivities).values({
+        await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId,
           slug: `synthetic-correction-${activityId}`,
           title: "Atividade sintética de correção",
           status: "PUBLISHED",
         });
-        await database.db.insert(attempts).values({
+        await admin.db.insert(attempts).values({
           id: attemptId,
           participantId,
           activityId,
@@ -79,11 +90,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         const crossParticipantFeedback = await createCorrectionReadRepository(
           database.db,
         ).findByParticipantAndAttempt(randomUUID(), attemptId);
-        const storedAttempt = await database.db
+        const storedAttempt = await admin.db
           .select({ status: attempts.status, version: attempts.version })
           .from(attempts)
           .where(eq(attempts.id, attemptId));
-        const storedResults = await database.db
+        const storedResults = await admin.db
           .select({
             version: assessmentResults.version,
             score: assessmentResults.score,
@@ -92,7 +103,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           })
           .from(assessmentResults)
           .where(eq(assessmentResults.attemptId, attemptId));
-        const storedEvents = await database.db
+        const storedEvents = await admin.db
           .select({
             eventType: outboxEvents.eventType,
             payload: outboxEvents.payload,
@@ -123,17 +134,17 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           "Feedback interno sintético",
         );
       } finally {
-        await database.db
+        await admin.db
           .delete(assessmentIdempotency)
           .where(eq(assessmentIdempotency.attemptId, attemptId));
-        await database.db
+        await admin.db
           .delete(assessmentResults)
           .where(eq(assessmentResults.attemptId, attemptId));
-        await database.db
+        await admin.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, attemptId));
-        await database.db.delete(attempts).where(eq(attempts.id, attemptId));
-        await database.db
+        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
+        await admin.db
           .delete(learningActivities)
           .where(
             and(
@@ -141,7 +152,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               inArray(learningActivities.id, [activityId]),
             ),
           );
-        await database.close();
+        await closeLivePostgresHarness(harness);
       }
     });
   },

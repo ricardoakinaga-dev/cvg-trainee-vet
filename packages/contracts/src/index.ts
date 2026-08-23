@@ -27,10 +27,23 @@ export type {
   ParticipantActivityProjection,
   ParticipantCurriculumRuntimeProjection,
 } from "./learning.js";
+export {
+  diagnosticEvaluationRequestSchema,
+  diagnosticResultProjectionSchema,
+  parseDiagnosticResultProjection,
+  parseParticipantDiagnosticProfile,
+  participantDiagnosticProfileItemSchema,
+} from "./diagnostic.js";
+export type {
+  DiagnosticEvaluationRequest,
+  DiagnosticResultProjection,
+  ParticipantDiagnosticProfileItem,
+} from "./diagnostic.js";
 export { contentTransitionRequestSchema } from "./content.js";
 export type { ContentTransitionRequest } from "./content.js";
 export {
   authoringReviewRequestSchema,
+  internalAuthoringRecordQuerySchema,
   internalAuthoringRecordProjectionSchema,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
@@ -38,6 +51,8 @@ export type {
   AuthoringReviewRequest,
   InternalAuthoringRecordProjection,
 } from "./authoring.js";
+export { internalSessionScopesProjectionSchema } from "./internal-context.js";
+export type { InternalSessionScopesProjection } from "./internal-context.js";
 export {
   correctOpenResponseRequestSchema,
   correctionResultProjectionSchema,
@@ -101,6 +116,58 @@ export {
   participantLearningJourneyProjectionSchema,
 } from "./journey.js";
 export type { ParticipantLearningJourneyProjection } from "./journey.js";
+export {
+  dashboardProjectionSchema,
+  parseDashboardProjection,
+  staffDashboardProjectionSchema,
+} from "./dashboard.js";
+export {
+  accountStatusChangeProjectionSchema,
+  accountStatusChangeRequestSchema,
+  resendAccountInvitationRequestSchema,
+  resentAccountInvitationProjectionSchema,
+} from "./account-management.js";
+export type {
+  AccountStatusChangeProjection,
+  AccountStatusChangeRequest,
+  ResendAccountInvitationRequest,
+  ResentAccountInvitationProjection,
+} from "./account-management.js";
+export {
+  accountRecoveryAcceptProjectionSchema,
+  accountRecoveryAcceptRequestSchema,
+  accountRecoveryIssueProjectionSchema,
+  accountRecoveryIssueRequestSchema,
+} from "./account-recovery.js";
+export type {
+  AccountRecoveryAcceptProjection,
+  AccountRecoveryAcceptRequest,
+  AccountRecoveryIssueProjection,
+  AccountRecoveryIssueRequest,
+} from "./account-recovery.js";
+export type {
+  DashboardProjection,
+  ParticipantDashboardProjection,
+  StaffDashboardProjection,
+} from "./dashboard.js";
+export {
+  continuingEducationReportProjectionSchema,
+  continuingEducationReportQuerySchema,
+  parseContinuingEducationReportProjection,
+} from "./continuing-education-report.js";
+export type {
+  ContinuingEducationReportProjection,
+  ContinuingEducationReportQuery,
+} from "./continuing-education-report.js";
+export {
+  contentReviewQueueProjectionSchema,
+  contentReviewQueueQuerySchema,
+  parseContentReviewQueueProjection,
+} from "./content-review-queue.js";
+export type {
+  ContentReviewQueueProjection,
+  ContentReviewQueueQuery,
+} from "./content-review-queue.js";
 export {
   apiErrorCodeSchema,
   apiErrorResponse,

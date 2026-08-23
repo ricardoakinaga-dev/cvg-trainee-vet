@@ -41,7 +41,10 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `POST /api/v1/session/rotate` | rotação server-side | cookie de sessão + CSRF |
 | `POST /api/v1/session/revoke` | logout/revogação | cookie de sessão + CSRF; resposta uniforme |
 | `POST /api/v1/invitations` | UC-015 | administrador |
+| `POST /api/v1/internal/accounts/:accountId/recovery` | recuperação controlada por link único | `MANAGE_ACCOUNT_LIFECYCLE` + conta interna ativa + escopo explícito |
+| `POST /api/v1/recovery/accept` | aceita link único e cria nova sessão | anônimo; resposta uniforme para token inválido/expirado/consumido |
 | `GET /api/v1/dashboard` | UC-009/016 | participante próprio; mod/admin escopado |
+| `GET /api/v1/internal/reports/continuing-education` | UC-016 / RF-070/RF-073 | `VIEW_PROGRAM_METRICS` + papel interno ativo + escopo explícito |
 | `GET /api/v1/learning-path` | UC-002/009 | participante próprio |
 | `GET /api/v1/modules/:moduleId` | UC-003–008 | atividade elegível |
 | `POST /api/v1/attempts` | UC-004–008 | participante elegível |
@@ -94,10 +97,29 @@ As rotas abaixo são a implementação mínima verificável do núcleo atual. Ro
 |---|---|---|
 | `POST /api/v1/internal/invitations` | schema estrito de e-mail, papéis, escopos e expiração; devolve o token uma única vez | somente sessão `ADMIN`; token não é logado nem persistido em claro |
 | `POST /api/v1/invitations/accept` | token + duração da sessão; devolve `{status:"active"}` | não exige sessão anterior; responde `Set-Cookie` `__Host-cvg_session` com `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/` |
+| `POST /api/v1/internal/accounts/:accountId/recovery` | `scopeId` + expiração entre 60 e 1.800 segundos; devolve token bruto somente uma vez | somente sessão autorizada por `MANAGE_ACCOUNT_LIFECYCLE`; a conta alvo deve estar `ACTIVE`; invalida links anteriores e revoga sessões |
+| `POST /api/v1/recovery/accept` | token + duração bounded da nova sessão; devolve `{status:"active"}` | não exige sessão anterior; consome atomicamente o link e responde `Set-Cookie` `__Host-cvg_session` seguro |
 | `POST /api/v1/internal/attempts/:attemptId/correct` | escopo, idempotência, nota, outcome, feedback e versão da rubrica | somente identidade clínica aprovada no escopo; resposta omite ator e IDs internos |
 | `GET /api/v1/attempts/:attemptId/feedback` | nenhum corpo | somente participante dono; devolve feedback educacional, nunca autoria da correção |
 
 O endpoint administrativo de convite existe para operação interna e não envia e-mail nem chama fornecedor externo. A entrega do token é uma ação interna controlada; a tabela guarda somente `SHA-256(token)`. Aceite, ativação da conta, consumo do convite e criação da sessão são uma transação PostgreSQL. Falhas de convite usam resposta uniforme `not_found` para não permitir enumeração.
+
+A recuperação controlada segue a mesma fronteira semântica, mas não ativa contas:
+o endpoint interno só emite para conta `ACTIVE`, invalida solicitações abertas e
+revoga sessões existentes na transação; o aceite anônimo consome o hash uma única
+vez e cria nova sessão com o snapshot de papéis/escopos autorizado. Contas
+`INVITED`, `SUSPENDED` e `DEACTIVATED` não são reativadas por este fluxo. O MVP
+não armazena senha nem simula provedor de identidade, MFA, e-mail ou entrega
+externa; falhas de recuperação usam `not_found` uniforme e não revelam se o
+token existiu.
+
+As tabelas de convite e recuperação usam RLS `ENABLE/FORCE` na migration `0019`,
+e `accounts`/`sessions` usam RLS `ENABLE/FORCE` na migration `0020`.
+Consultas internas estabelecem o `scopeId` em contexto transacional; os fluxos
+anônimos estabelecem somente o hash SHA-256 do token apresentado; provisionamento
+de conta e sessão usam contextos próprios na mesma transação da operação. A
+policy não é usada como autorização única: a aplicação continua validando papel,
+escopo, estado, expiração e consumo atômico.
 
 ## 7. Hardening de borda materializado no BUILD F3-S6
 
@@ -141,6 +163,13 @@ As rotas internas recebem o participante-alvo e o escopo somente como contexto v
 
 O contrato é estrito, rejeita campos internos e rejeita tentativa publicada parcialmente. A rota é consumida pela web após o aceite de convite; deep links continuam compatíveis com a atividade solicitada.
 
+Na projeção interna de staff, cada participante também carrega `scopeIds` como
+metadado de roteamento de ações administrativas. O servidor deriva esses
+escopos do membership participante–escopo, valida que todos pertencem aos
+escopos da sessão e a web não os renderiza. Reenvio de convite e transição de
+conta escolhem somente um desses escopos autorizados; o navegador nunca pode
+ampliar a lista nem confiar no primeiro escopo agregado.
+
 ## 10. Rotas internas de autoria materializadas no item 10
 
 | Método e rota | Entrada/saída | Autorização e exposição |
@@ -149,3 +178,48 @@ O contrato é estrito, rejeita campos internos e rejeita tentativa publicada par
 | `POST /api/v1/internal/content/:contentId/review` | versão, escopo, decisão e justificativa | `MODERATE_CONTENT` para ajustes ou `APPROVE_CLINICAL_CONTENT` para aprovação; o servidor impede autoaprovação |
 
 As respostas internas são validadas pelo contrato `internalAuthoringRecordProjectionSchema`. A API não recebe gabarito no corpo público nem confia na tela para autorização. A publicação continua recusada enquanto o repositório não calcular `publicationReady` a partir do preflight e da revisão clínica aprovada.
+
+## 11. Relatório interno de participação digital — CPD-REPORTING-026
+
+`GET /api/v1/internal/reports/continuing-education` aceita somente query
+estrita com `scopeId` obrigatório e filtros opcionais `moduleId` e
+`accountStatus`. O servidor valida que o escopo pertence à sessão, aplica o
+contexto PostgreSQL antes da leitura e deriva o resultado de
+`learning_assignments` e dos minutos do catálogo curricular.
+
+O contrato retorna, por escopo, participantes autorizados, módulos atribuídos
+e concluídos, percentual quando o denominador existe, minutos concluídos,
+horas digitais derivadas, status da conta e última atividade disponível. A
+resposta carrega os marcadores `ATIVIDADE_MODULAR_DIGITAL`,
+`NAO_CREDENCIADAS` e `PROIBIDO_MVP`. Esses minutos/horas são evidência interna
+de participação na trilha; não são CPD válido/acreditado, certificado, nota
+global, competência prática, autonomia clínica ou decisão de RH. O endpoint
+não cria filtros de coorte, área ou nível enquanto esses atributos não
+existirem no domínio persistido, não oferece ranking/exportação e não expõe
+fontes, gabaritos, objetivos internos ou conteúdo clínico.
+
+## 12. Fila interna de revisão clínica — EDITORIAL-QUEUE-027
+
+`GET /api/v1/internal/session/scopes` exige sessão ativa de identidade editorial
+e retorna somente os `scopeIds` já presentes na sessão, para que a superfície
+interna não dependa de um UUID digitado manualmente. `GET
+/api/v1/internal/content/review-queue` exige sessão ativa e query estrita:
+`scopeId` UUID obrigatório, `status` opcional em
+`EM_REVISAO_CLINICA|AJUSTES_SOLICITADOS` e `limit` opcional de 1–100 (padrão
+50). O servidor valida `VIEW_CONTENT_REVIEW_QUEUE` e o pertencimento do
+escopo antes do caso de uso; o frontend não pode ampliar escopos nem escolher
+colunas/ordenação.
+
+O envelope retorna `kind: content_review_queue`, filtros normalizados e itens
+redigidos. Cada item limita-se a `contentId`, versão, escopo, módulo, sessão,
+título, autor, estado, preflight, última decisão resumida, `canOpenAuthoring`,
+`updatedAt` e `nextAction`; o endpoint não anuncia paginação sem cursor. Prompt,
+gabarito, rubrica, fontes e conteúdo autoral completo ficam exclusivamente na
+rota interna de autoria. A rota é somente leitura: não aprova, publica, altera
+conteúdo ou consulta IA/Qdrant.
+
+`GET /api/v1/internal/content/:contentId/versions/:version/authoring` exige
+`scopeId` UUID na query antes da leitura. O servidor calcula
+`availableActions`, aplica RLS transacional e impede que um autor consulte
+registro de outro autor; a projeção completa continua restrita a papéis
+internos autorizados.

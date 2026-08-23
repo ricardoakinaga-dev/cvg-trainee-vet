@@ -21,6 +21,7 @@ import {
   outboxEvents,
 } from "./schema.js";
 import type * as schema from "./schema.js";
+import { setDatabaseSecurityContext } from "./security-context.js";
 
 export class ContentMappingError extends Error {
   public constructor(message: string) {
@@ -191,6 +192,7 @@ export function createContentRepository(
         .orderBy(
           desc(contentReviewDecisions.reviewedAt),
           desc(contentReviewDecisions.createdAt),
+          desc(contentReviewDecisions.id),
         )
         .limit(1);
       const gate = publicationGate(
@@ -327,10 +329,18 @@ export function createContentUseCaseDependencies(
     transaction: {
       run: async <Result>(
         work: (operations: ContentTransactionalOperations) => Promise<Result>,
+        securityContext?: Readonly<{
+          readonly participantId?: string;
+          readonly scopeId?: string;
+        }>,
       ): Promise<Result> =>
-        db.transaction(async (transaction) =>
-          work(createOperations(transaction as unknown as DatabaseExecutor)),
-        ),
+        db.transaction(async (transaction) => {
+          const executor = transaction as unknown as DatabaseExecutor;
+          if (securityContext !== undefined) {
+            await setDatabaseSecurityContext(executor, securityContext);
+          }
+          return work(createOperations(executor));
+        }),
     },
   });
 }

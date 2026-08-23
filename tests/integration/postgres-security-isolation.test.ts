@@ -19,6 +19,7 @@ import {
   createPostgresRateLimiter,
   setDatabaseSecurityContext,
 } from "../../packages/persistence/src/index.js";
+import type { DatabaseHandle } from "../../packages/persistence/src/database.js";
 import {
   accounts,
   answerIdempotency,
@@ -30,14 +31,21 @@ import {
   attempts,
   activityAssignments,
   curriculumRuntimeStates,
+  diagnosticResults,
   learningActivities,
   learningAssignments,
   outboxEvents,
   rateLimitBuckets,
 } from "../../packages/persistence/src/schema.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
 function quoteIdentifier(value: string): string {
   if (!/^cvg_rls_[a-f0-9]+$/u.test(value)) {
@@ -46,15 +54,20 @@ function quoteIdentifier(value: string): string {
   return `"${value}"`;
 }
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL participant security isolation",
   () => {
-    it("requires transaction context and isolates participant and staff scope paths", async () => {
-      if (databaseUrl === undefined) {
-        throw new Error("test database URL is required");
+    it("requires transaction context and isolates participant and staff scope paths", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
       }
 
-      const admin = createPostgresDatabase(databaseUrl);
+      const { application, admin } = harness;
       const roleName = `cvg_rls_${randomUUID().replaceAll("-", "")}`;
       const rolePassword = randomUUID().replaceAll("-", "");
       const role = quoteIdentifier(roleName);
@@ -70,10 +83,13 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const workflowId = randomUUID();
       const rateLimitKey = randomUUID();
       let attemptId: string | null = null;
+      let restricted: DatabaseHandle | null = null;
+      let roleCreated = false;
 
       const protectedTables = [
         "activity_assignments",
         "curriculum_runtime_states",
+        "diagnostic_results",
         "attempts",
         "answers",
         "attempt_idempotency",
@@ -86,33 +102,49 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       ] as const;
 
       try {
-        await admin.db.execute(
-          sql.raw(
-            `create role ${role} login password '${rolePassword}' nosuperuser nobypassrls`,
-          ),
-        );
-        await admin.db.execute(
-          sql.raw(`grant usage on schema public to ${role}`),
-        );
-        await admin.db.execute(
-          sql.raw(`grant select on learning_activities to ${role}`),
-        );
-        await admin.db.execute(
-          sql.raw(`grant select on activity_assignments to ${role}`),
-        );
-        for (const table of protectedTables) {
+        if (harness.adminRole.canCreateRoles) {
           await admin.db.execute(
-            sql.raw(`grant select, insert, update on ${table} to ${role}`),
+            sql.raw(
+              `create role ${role} login password '${rolePassword}' nosuperuser nobypassrls`,
+            ),
           );
+          roleCreated = true;
+          await admin.db.execute(
+            sql.raw(`grant usage on schema public to ${role}`),
+          );
+          await admin.db.execute(
+            sql.raw(`grant select on learning_activities to ${role}`),
+          );
+          await admin.db.execute(
+            sql.raw(`grant select on activity_assignments to ${role}`),
+          );
+          for (const table of protectedTables) {
+            await admin.db.execute(
+              sql.raw(`grant select, insert, update on ${table} to ${role}`),
+            );
+          }
+          await admin.db.execute(
+            sql.raw(
+              `grant insert on outbox_events, audit_entries, rate_limit_buckets to ${role}`,
+            ),
+          );
+          await admin.db.execute(
+            sql.raw(`grant delete on rate_limit_buckets to ${role}`),
+          );
+        } else {
+          console.warn(
+            "PostgreSQL CREATEROLE capability is absent; participant isolation uses the configured non-privileged application role",
+          );
+          if (
+            harness.applicationRole.isSuperuser ||
+            harness.applicationRole.bypassesRls
+          ) {
+            skip(
+              "CREATE ROLE is unavailable and CVG_TEST_DATABASE_URL is privileged; participant isolation cannot be evaluated safely",
+            );
+            return;
+          }
         }
-        await admin.db.execute(
-          sql.raw(
-            `grant insert on outbox_events, audit_entries, rate_limit_buckets to ${role}`,
-          ),
-        );
-        await admin.db.execute(
-          sql.raw(`grant delete on rate_limit_buckets to ${role}`),
-        );
 
         await admin.db.insert(accounts).values([
           {
@@ -183,10 +215,59 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           status: "DISPONIVEL",
           version: 0,
         });
+        await admin.db.insert(diagnosticResults).values({
+          id: randomUUID(),
+          participantId,
+          scopeId,
+          diagnosticId: "B07-DIAGNOSTIC-V1",
+          diagnosticVersion: "0.1.0",
+          result: {
+            diagnosticId: "B07-DIAGNOSTIC-V1",
+            version: "0.1.0",
+            notPunitive: true,
+            noGlobalPassFail: true,
+            totalItemCount: 120,
+            answeredItemCount: 1,
+            themeResults: [
+              {
+                themeId: "B07-S1",
+                itemCount: 40,
+                answeredItemCount: 1,
+                earnedPoints: 1,
+                possiblePoints: 1,
+                percent: 100,
+                recommendedModuleIds: ["M01"],
+              },
+              {
+                themeId: "B07-S2",
+                itemCount: 40,
+                answeredItemCount: 0,
+                earnedPoints: 0,
+                possiblePoints: 0,
+                percent: 0,
+                recommendedModuleIds: ["M02"],
+              },
+              {
+                themeId: "B07-S3",
+                itemCount: 40,
+                answeredItemCount: 0,
+                earnedPoints: 0,
+                possiblePoints: 0,
+                percent: 0,
+                recommendedModuleIds: ["M11"],
+              },
+            ],
+            recommendedModuleIds: ["M01", "M02", "M11"],
+            remediationObjectiveIds: ["M01-OBJ-01"],
+          },
+          completedAt: new Date("2026-08-10T05:00:00.000Z"),
+        });
 
-        const restricted = createPostgresDatabase(
-          `postgresql://${roleName}:${rolePassword}@127.0.0.1:${new URL(databaseUrl).port || "5432"}/${new URL(databaseUrl).pathname.slice(1)}`,
-        );
+        restricted = roleCreated
+          ? createPostgresDatabase(
+              `postgresql://${roleName}:${rolePassword}@127.0.0.1:${new URL(liveDatabaseUrl).port || "5432"}/${new URL(liveDatabaseUrl).pathname.slice(1)}`,
+            )
+          : application;
 
         try {
           await expect(restricted.healthcheck()).resolves.toBeUndefined();
@@ -207,15 +288,22 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           await expect(
             firstRateLimiter.check(rateLimitKey, 10_002),
           ).resolves.toMatchObject({ allowed: false, remaining: 0 });
-          const privilegedGuard = createPostgresDatabase(databaseUrl, {
-            requireLeastPrivilege: true,
-          });
-          try {
-            await expect(privilegedGuard.healthcheck()).rejects.toThrow(
-              "non-superuser role",
-            );
-          } finally {
-            await privilegedGuard.close();
+          if (
+            harness.applicationRole.isSuperuser ||
+            harness.applicationRole.bypassesRls
+          ) {
+            const privilegedGuard = createPostgresDatabase(liveDatabaseUrl, {
+              requireLeastPrivilege: true,
+            });
+            try {
+              await expect(privilegedGuard.healthcheck()).rejects.toThrow(
+                "non-superuser role",
+              );
+            } finally {
+              await privilegedGuard.close();
+            }
+          } else {
+            await expect(application.healthcheck()).resolves.toBeUndefined();
           }
 
           const withoutContext = await restricted.db.transaction(
@@ -224,11 +312,13 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               runtimes: await transaction
                 .select()
                 .from(curriculumRuntimeStates),
+              diagnostics: await transaction.select().from(diagnosticResults),
               attempts: await transaction.select().from(attempts),
             }),
           );
           expect(withoutContext.assignments).toHaveLength(0);
           expect(withoutContext.runtimes).toHaveLength(0);
+          expect(withoutContext.diagnostics).toHaveLength(0);
           expect(withoutContext.attempts).toHaveLength(0);
 
           const contextRows = await restricted.db.transaction(
@@ -241,12 +331,15 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
                 runtimes: await transaction
                   .select()
                   .from(curriculumRuntimeStates),
+                diagnostics: await transaction.select().from(diagnosticResults),
               };
             },
           );
           expect(contextRows.assignments).toHaveLength(1);
           expect(contextRows.assignments[0]?.participantId).toBe(participantId);
           expect(contextRows.runtimes).toHaveLength(1);
+          expect(contextRows.diagnostics).toHaveLength(1);
+          expect(contextRows.diagnostics[0]?.participantId).toBe(participantId);
 
           const runtimeRepository = createCurriculumRuntimeRepository(
             restricted.db,
@@ -395,12 +488,14 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
                 attempts: await transaction.select().from(attempts),
                 answers: await transaction.select().from(answers),
                 results: await transaction.select().from(assessmentResults),
+                diagnostics: await transaction.select().from(diagnosticResults),
               };
             },
           );
           expect(crossParticipantRows.attempts).toHaveLength(0);
           expect(crossParticipantRows.answers).toHaveLength(0);
           expect(crossParticipantRows.results).toHaveLength(0);
+          expect(crossParticipantRows.diagnostics).toHaveLength(0);
 
           const staffScopeRows = await restricted.db.transaction(
             async (transaction) => {
@@ -411,24 +506,32 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
                 correctionIdempotency: await transaction
                   .select()
                   .from(assessmentIdempotency),
+                diagnostics: await transaction.select().from(diagnosticResults),
               };
             },
           );
           expect(staffScopeRows.attempts).toHaveLength(1);
           expect(staffScopeRows.results).toHaveLength(1);
           expect(staffScopeRows.correctionIdempotency).toHaveLength(1);
+          expect(staffScopeRows.diagnostics).toHaveLength(1);
 
           const otherScopeRows = await restricted.db.transaction(
             async (transaction) => {
               await setDatabaseSecurityContext(transaction, {
                 scopeId: otherScopeId,
               });
-              return transaction.select().from(attempts);
+              return {
+                attempts: await transaction.select().from(attempts),
+                diagnostics: await transaction.select().from(diagnosticResults),
+              };
             },
           );
-          expect(otherScopeRows).toHaveLength(0);
+          expect(otherScopeRows.attempts).toHaveLength(0);
+          expect(otherScopeRows.diagnostics).toHaveLength(0);
         } finally {
-          await restricted.close();
+          if (restricted !== application) {
+            await restricted.close();
+          }
         }
       } finally {
         if (attemptId !== null) {
@@ -486,36 +589,42 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, otherActivityId));
+        await admin.db
+          .delete(diagnosticResults)
+          .where(eq(diagnosticResults.participantId, participantId));
         await admin.db.delete(accounts).where(eq(accounts.id, participantId));
         await admin.db
           .delete(accounts)
           .where(eq(accounts.id, otherParticipantId));
         await admin.db.delete(accounts).where(eq(accounts.id, staffId));
-        await admin.db.execute(
-          sql.raw(`revoke usage on schema public from ${role}`),
-        );
-        for (const table of [
-          "learning_activities",
-          "activity_assignments",
-          "curriculum_runtime_states",
-          "attempts",
-          "answers",
-          "attempt_idempotency",
-          "answer_idempotency",
-          "assessment_results",
-          "assessment_idempotency",
-          "learning_assignments",
-          "assessment_workflows",
-          "rate_limit_buckets",
-          "outbox_events",
-          "audit_entries",
-        ]) {
+        if (roleCreated) {
           await admin.db.execute(
-            sql.raw(`revoke all privileges on ${table} from ${role}`),
+            sql.raw(`revoke usage on schema public from ${role}`),
           );
+          for (const table of [
+            "learning_activities",
+            "activity_assignments",
+            "curriculum_runtime_states",
+            "diagnostic_results",
+            "attempts",
+            "answers",
+            "attempt_idempotency",
+            "answer_idempotency",
+            "assessment_results",
+            "assessment_idempotency",
+            "learning_assignments",
+            "assessment_workflows",
+            "rate_limit_buckets",
+            "outbox_events",
+            "audit_entries",
+          ]) {
+            await admin.db.execute(
+              sql.raw(`revoke all privileges on ${table} from ${role}`),
+            );
+          }
+          await admin.db.execute(sql.raw(`drop role if exists ${role}`));
         }
-        await admin.db.execute(sql.raw(`drop role if exists ${role}`));
-        await admin.close();
+        await closeLivePostgresHarness(harness);
       }
     });
   },

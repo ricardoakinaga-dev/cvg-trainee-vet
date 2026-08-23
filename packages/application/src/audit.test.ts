@@ -69,4 +69,27 @@ describe("audit entry contract", () => {
       "scopeId",
     );
   });
+
+  it("represents an anonymous rejection without inventing a principal", () => {
+    const entry = createAuditEntry({
+      auditId: "11111111-1111-4111-8111-111111111111",
+      actorKind: "ANONYMOUS",
+      action: "HTTP_REQUEST_REJECTED",
+      resourceType: "http_route",
+      resourceId: "/api/v1/invitations/accept",
+      requestId: "22222222-2222-4222-8222-222222222222",
+      correlationId: "33333333-3333-4333-8333-333333333333",
+      occurredAt: "2026-08-23T22:00:00.000Z",
+      outcome: "DENIED",
+      reasonCode: "api_unauthenticated",
+    });
+
+    expect(entry).toMatchObject({
+      actorKind: "ANONYMOUS",
+      resourceType: "http_route",
+      resourceId: "/api/v1/invitations/accept",
+      outcome: "DENIED",
+    });
+    expect(entry.principalId).toBeUndefined();
+  });
 });

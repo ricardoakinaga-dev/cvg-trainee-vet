@@ -165,6 +165,7 @@ describe("curriculum learning runtime", () => {
       masteredModuleIds: ["M01"],
       remediationModuleIds: [],
       retentionDueModuleIds: [],
+      assignedModuleIds: ["M01", "M02", "M03"],
     });
 
     expect(path.find((item) => item.moduleId === "M02")).toMatchObject({
@@ -174,6 +175,33 @@ describe("curriculum learning runtime", () => {
     expect(path.find((item) => item.moduleId === "M03")).toMatchObject({
       status: "BLOQUEADO_PRE_REQUISITO",
       nextAction: "CONCLUIR_PRE_REQUISITO",
+    });
+  });
+
+  it("marks unassigned, in-progress, remediation, and retention modules explicitly", () => {
+    const path = buildPersonalizedCurriculumPath({
+      masteredModuleIds: ["M01", "M02"],
+      remediationModuleIds: ["M04"],
+      retentionDueModuleIds: ["M01"],
+      inProgressModuleIds: ["M03"],
+      assignedModuleIds: ["M01", "M02", "M03", "M04"],
+    });
+
+    expect(path.find((item) => item.moduleId === "M01")).toMatchObject({
+      status: "RETENCAO_PENDENTE",
+      nextAction: "EXECUTAR_RETENCAO",
+    });
+    expect(path.find((item) => item.moduleId === "M04")).toMatchObject({
+      status: "EM_REMEDIACAO",
+      nextAction: "EXECUTAR_REMEDIACAO",
+    });
+    expect(path.find((item) => item.moduleId === "M03")).toMatchObject({
+      status: "EM_ANDAMENTO",
+      nextAction: "RETOMAR_MODULO",
+    });
+    expect(path.find((item) => item.moduleId === "M24")).toMatchObject({
+      status: "NAO_ATRIBUIDO",
+      nextAction: "AGUARDAR_ATRIBUICAO",
     });
   });
 

@@ -12,6 +12,7 @@ export default defineConfig({
           clearMocks: true,
           restoreMocks: true,
           mockReset: true,
+          sequence: { groupOrder: 1 },
         },
       },
       {
@@ -21,6 +22,7 @@ export default defineConfig({
           include: ["tests/integration/**/*.test.ts"],
           environment: "node",
           fileParallelism: false,
+          sequence: { groupOrder: 2 },
         },
       },
     ],

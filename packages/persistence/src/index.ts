@@ -12,9 +12,18 @@ export type {
 } from "./database.js";
 export {
   normalizeDatabaseSecurityContext,
+  setDatabaseAccountProvisioningContext,
   setDatabaseSecurityContext,
+  setDatabaseSessionSecurityContext,
+  setDatabaseTokenSecurityContext,
 } from "./security-context.js";
-export type { DatabaseSecurityContext } from "./security-context.js";
+export type {
+  DatabaseAccountProvisioningContext,
+  DatabaseSecurityContext,
+  DatabaseTokenContextKind,
+  DatabaseTokenSecurityContext,
+  DatabaseSessionSecurityContext,
+} from "./security-context.js";
 export {
   createPostgresRateLimiter,
   normalizeSharedRateLimitOptions,
@@ -26,6 +35,7 @@ export type {
 } from "./rate-limit-repository.js";
 export {
   accountInvitations,
+  accountRecoveryRequests,
   accounts,
   aiSuggestions,
   assessmentIdempotency,
@@ -42,6 +52,7 @@ export {
   contentVersions,
   contentEditorialRecords,
   contentReviewDecisions,
+  diagnosticResults,
   learningActivityItems,
   rateLimitBuckets,
 } from "./schema.js";
@@ -49,6 +60,7 @@ export type { KnowledgeDocument, NewKnowledgeDocument } from "./schema.js";
 export {
   createAttemptUseCaseDependencies,
   createActivityScopeResolver,
+  createParticipantScopeResolver,
   createOutboxInsert,
   attemptRowToState,
   attemptStateToRow,
@@ -75,6 +87,7 @@ export type {
   PersistedAnswerSnapshot,
   PersistedAttemptSnapshot,
   PersistedCorrectionSnapshot,
+  PersistedDiagnosticResult,
 } from "./schema.js";
 export {
   createLearningStateRepository,
@@ -155,6 +168,30 @@ export type {
   CurriculumRuntimeRowShape,
 } from "./curriculum-runtime-repository.js";
 export { createParticipantJourneyRepository } from "./journey-repository.js";
+export { createContinuingEducationReportRepository } from "./continuing-education-report-repository.js";
+export type { ContinuingEducationReportRepositoryOptions } from "./continuing-education-report-repository.js";
+export { createDashboardReadRepository } from "./dashboard-repository.js";
+export type { DashboardRepositoryOptions } from "./dashboard-repository.js";
+export { createContentReviewQueueRepository } from "./content-review-queue-repository.js";
+export {
+  AccountRecoveryConflictError,
+  createAccountRecoveryTransaction,
+} from "./account-recovery-repository.js";
+export {
+  AccountManagementConflictError,
+  accountStatusTransitionReason,
+  createAccountManagementRepository,
+} from "./account-management-repository.js";
+export {
+  createDiagnosticResultRepository,
+  diagnosticResultRowToState,
+  diagnosticResultStateToRow,
+  DiagnosticResultMappingError,
+} from "./diagnostic-result-repository.js";
+export type {
+  DiagnosticResultInsertRow,
+  DiagnosticResultRowShape,
+} from "./diagnostic-result-repository.js";
 export {
   authoringRowToRecord,
   createAuthoringRepository,

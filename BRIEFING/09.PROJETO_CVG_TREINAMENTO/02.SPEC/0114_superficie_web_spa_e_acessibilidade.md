@@ -43,8 +43,52 @@ O web nunca calcula nota oficial, autorização, transição, próxima ação ou
 
 `apps/web` já possui uma superfície inicial de participante para aceite de convite, leitura de atividade atribuída, início de tentativa, salvamento de resposta e submissão. A página consome somente envelopes públicos da API, mantém a sessão em cookie e não modela fonte, foto, PDF, OCR, prompt, gabarito ou identificadores internos proibidos.
 
+Na superfície interna de operações, a seção de participação digital consome o
+relatório escopado de `UC-016`, permite filtrar módulo e status da conta por
+query autorizada no servidor e mostra minutos/horas do catálogo com o aviso de
+que não são horas CPD credenciadas nem evidência de competência prática. A
+interface não exibe IDs de participante, escopos, fontes, gabaritos ou
+certificados.
+
+As ações de reenvio e mudança de status usam o `scopeIds` interno do
+participante retornado pelo dashboard para selecionar um membership autorizado
+mesmo quando a conta aparece em mais de um escopo; esse metadado não é
+renderizado e a API continua exigindo a validação server-side do escopo.
+
+Na superfície `/operations`, uma conta de participante `ACTIVE` pode iniciar a
+recuperação controlada após confirmação explícita. A tela exibe o token somente
+na resposta autorizada, sinaliza que ele é de uso único e não registra ou envia
+o valor a analytics; contas inativas não exibem essa ação. A rota pública
+`/recovery?token=...` remove o token da URL antes de concluir o aceite, envia o
+token somente ao endpoint anônimo de recuperação e mostra estados de validação,
+sucesso e erro sem revelar a causa específica. A nova sessão é entregue pelo
+cookie seguro da API; a web não armazena senha nem tenta reativar conta.
+
 O Playwright executa sete cenários sintéticos, incluindo consulta de `/api/v1/learning-path` sem `activityId`, escolha da atividade da próxima ação, ciclo iniciar–salvar–submeter e inspeção/decisão de um item de autoria interno. O recorte é `implemented-verified-with-gaps`: ainda faltam a integração do navegador com API real no ambiente de execução, superfícies completas de operação, axe e revisão manual de acessibilidade, recuperação/rotação e os fluxos educacionais completos.
 
 ## 14. Evidência adicional — autoria interna no item 10
 
 `apps/web/app/authoring/page.tsx` consome somente a rota interna autorizada e exibe prompt, alternativas, gabarito, rubrica, preflight e fontes para o revisor. As ações de `Solicitar ajustes` e `Aprovar clinicamente` enviam justificativa ao servidor; o navegador não calcula autorização, nota ou publicação. `tests/e2e/authoring-review.spec.ts` cobre a leitura redigida e o aviso de decisão usando fixtures sintéticos; o E2E real e a auditoria de acessibilidade continuam pendentes.
+
+## 15. Fila editorial interna no item EDITORIAL-QUEUE-027
+
+A superfície `/authoring` carrega os escopos da sessão por
+`GET /api/v1/internal/session/scopes` e consulta
+`GET /api/v1/internal/content/review-queue` somente com uma membership retornada
+pela sessão. A lista mostra somente título, módulo/sessão, versão, estado,
+próxima ação, acesso calculado e última decisão resumida; não renderiza prompt,
+gabarito, rubrica, fontes ou payload autoral. O link para a rota interna de
+autoria aparece somente quando a projeção permite e quando a próxima ação é
+revisão clínica; ajustes solicitados aguardam reenvio do autor.
+
+O cliente trata a resposta como `unknown`, valida a projeção redigida e exibe
+estados de carregamento, vazio e erro. O servidor continua sendo a autoridade
+para capability e escopo; a lista de memberships vem da sessão e inserir ou
+alterar o `scopeId` na URL não amplia acesso. O E2E sintético cobre consulta,
+ausência de campos internos, abertura do item e ações role-aware; axe continua
+cobrindo a entrada da superfície de autoria.
+
+O E2E `tests/e2e/recovery-access.spec.ts` cobre o aceite de um link sintético,
+a remoção do token da URL, o cookie de sessão e a mensagem de uso único. A
+verificação continua sintética no navegador; entrega por provedor, MFA, revisão
+manual de acessibilidade e operação com API real permanecem gaps explícitos.

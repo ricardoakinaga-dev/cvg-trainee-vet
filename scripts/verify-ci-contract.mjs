@@ -26,6 +26,7 @@ const requiredWorkflowChecks = Object.freeze([
   ["pinned pnpm setup", /corepack prepare pnpm@10\.33\.0/u],
   ["frozen lockfile install", /pnpm install --frozen-lockfile/u],
   ["quality verification", /run:\s*pnpm verify\b/u],
+  ["release traceability", /run:\s*pnpm verify:traceability:release\b/u],
   ["database migrations", /run:\s*pnpm db:migrate\b/u],
   ["live PostgreSQL integration", /run:\s*pnpm test:integration:live\b/u],
   ["live Qdrant integration", /run:\s*pnpm test:integration:qdrant\b/u],
@@ -83,6 +84,10 @@ export function validateCiContract(contract) {
       : ["pnpm-lock.yaml must use lockfileVersion 9.0"]),
     ...(contract.packageJson.scripts?.["test:integration:qdrant"] === undefined
       ? ["package.json must expose test:integration:qdrant"]
+      : []),
+    ...(contract.packageJson.scripts?.["verify:traceability:release"] ===
+    undefined
+      ? ["package.json must expose verify:traceability:release"]
       : []),
     ...(contract.packageJson.scripts?.verify?.includes(
       "pnpm verify:ci-contract",

@@ -12,6 +12,7 @@ export { createAuditEntry } from "./audit.js";
 export type {
   AuditEntry,
   AuditEntryInput,
+  AuditActorKind,
   AuditOutcome,
   AuditPort,
 } from "./audit.js";
@@ -103,6 +104,18 @@ export type {
   EvaluateCurriculumModuleCommand,
   GetParticipantCurriculumRuntimeCommand,
 } from "./curriculum-runtime-use-cases.js";
+export {
+  deriveParticipantDiagnosticProfile,
+  evaluateAndPersistDiagnosticDraft,
+} from "./diagnostic-use-cases.js";
+export type {
+  DiagnosticResultReadPort,
+  DiagnosticResultState,
+  DiagnosticResultWriteInput,
+  DiagnosticResultWritePort,
+  EvaluateDiagnosticDraftCommand,
+  ParticipantDiagnosticProfileItem,
+} from "./diagnostic-use-cases.js";
 export { advanceContent } from "./content-use-cases.js";
 export type {
   AdvanceContentCommand,
@@ -188,3 +201,68 @@ export type {
   ParticipantJourneyReadPort,
   ParticipantLearningJourneyState,
 } from "./journey-use-cases.js";
+export {
+  deriveParticipantCompetencyProfile,
+  deriveParticipantDashboard,
+  getStaffDashboard,
+} from "./dashboard-use-cases.js";
+export {
+  changeAccountStatus,
+  resendAccountInvitation,
+} from "./account-management-use-cases.js";
+export type {
+  AccountManagementRepositoryPort,
+  AccountManagementResendInput,
+  AccountManagementResendTarget,
+  AccountManagementStatusInput,
+  AccountManagementUseCaseDependencies,
+  AccountStatusChangeCommand,
+  AccountStatusChangeResult,
+  ManagedAccountStatus,
+  ResendAccountInvitationCommand,
+  ResendAccountInvitationResult,
+} from "./account-management-use-cases.js";
+export {
+  acceptAccountRecovery,
+  issueAccountRecovery,
+} from "./account-recovery-use-cases.js";
+export type {
+  AccountRecoveryAcceptCommand,
+  AccountRecoveryAccepted,
+  AccountRecoveryIssueCommand,
+  AccountRecoveryIssueRecord,
+  AccountRecoveryIssueResult,
+  AccountRecoveryManagedAccount,
+  AccountRecoveryRepositoryOperations,
+  AccountRecoveryTarget,
+  AccountRecoveryTransactionPort,
+  AccountRecoveryTransactionalOperations,
+  AccountRecoveryUseCaseDependencies,
+} from "./account-recovery-use-cases.js";
+export type {
+  DashboardNextAction,
+  DashboardReadPort,
+  GetStaffDashboardCommand,
+  ParticipantCompetencyProfileItem,
+  ParticipantDashboardState,
+  StaffDashboardMetrics,
+  StaffDashboardParticipant,
+  StaffDashboardState,
+} from "./dashboard-use-cases.js";
+export { getContentReviewQueue } from "./content-review-queue-use-cases.js";
+export type {
+  ContentReviewQueueItem,
+  ContentReviewQueueQuery,
+  ContentReviewQueueReadPort,
+  ContentReviewQueueState,
+  ContentReviewQueueStatus,
+  GetContentReviewQueueCommand,
+} from "./content-review-queue-use-cases.js";
+export { getContinuingEducationReport } from "./continuing-education-report-use-cases.js";
+export type {
+  ContinuingEducationReportParticipant,
+  ContinuingEducationReportQuery,
+  ContinuingEducationReportReadPort,
+  ContinuingEducationReportState,
+  GetContinuingEducationReportCommand,
+} from "./continuing-education-report-use-cases.js";

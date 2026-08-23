@@ -5,6 +5,22 @@ export type DatabaseSecurityContext = Readonly<{
   readonly scopeId?: string;
 }>;
 
+export type DatabaseTokenContextKind = "invitation" | "recovery";
+
+export type DatabaseTokenSecurityContext = Readonly<{
+  readonly kind: DatabaseTokenContextKind;
+  readonly tokenHash: string;
+}>;
+
+export type DatabaseAccountProvisioningContext = Readonly<{
+  readonly accountId: string;
+}>;
+
+export type DatabaseSessionSecurityContext = Readonly<{
+  readonly tokenHash: string;
+  readonly scopeId?: string;
+}>;
+
 type ContextExecutor = Readonly<{
   readonly execute: (query: SQL) => Promise<unknown>;
 }>;
@@ -39,6 +55,73 @@ export async function setDatabaseSecurityContext(
 ): Promise<void> {
   const normalized = normalizeDatabaseSecurityContext(context);
   await executor.execute(
-    sql`select set_config('cvg.participant_id', ${normalized.participantId ?? ""}, true), set_config('cvg.scope_id', ${normalized.scopeId ?? ""}, true)`,
+    sql`select
+      set_config('cvg.participant_id', ${normalized.participantId ?? ""}, true),
+      set_config('cvg.scope_id', ${normalized.scopeId ?? ""}, true),
+      set_config('cvg.account_provisioning_id', '', true),
+      set_config('cvg.invitation_token_hash', '', true),
+      set_config('cvg.recovery_token_hash', '', true),
+      set_config('cvg.session_token_hash', '', true)`,
+  );
+}
+
+export async function setDatabaseTokenSecurityContext(
+  executor: ContextExecutor,
+  context: DatabaseTokenSecurityContext,
+): Promise<void> {
+  if (!/^[a-f0-9]{64}$/u.test(context.tokenHash)) {
+    throw new TypeError("tokenHash must be a SHA-256 hex digest");
+  }
+  if (context.kind !== "invitation" && context.kind !== "recovery") {
+    throw new TypeError("token context kind is not supported");
+  }
+  const invitationHash = context.kind === "invitation" ? context.tokenHash : "";
+  const recoveryHash = context.kind === "recovery" ? context.tokenHash : "";
+  await executor.execute(
+    sql`select
+      set_config('cvg.participant_id', '', true),
+      set_config('cvg.scope_id', '', true),
+      set_config('cvg.account_provisioning_id', '', true),
+      set_config('cvg.invitation_token_hash', ${invitationHash}, true),
+      set_config('cvg.recovery_token_hash', ${recoveryHash}, true),
+      set_config('cvg.session_token_hash', '', true)`,
+  );
+}
+
+export async function setDatabaseAccountProvisioningContext(
+  executor: ContextExecutor,
+  context: DatabaseAccountProvisioningContext,
+): Promise<void> {
+  const accountId = normalizeValue(context.accountId, "accountId");
+  if (accountId.length === 0) {
+    throw new TypeError("accountId must not be empty");
+  }
+  await executor.execute(
+    sql`select
+      set_config('cvg.participant_id', '', true),
+      set_config('cvg.scope_id', '', true),
+      set_config('cvg.account_provisioning_id', ${accountId}, true),
+      set_config('cvg.invitation_token_hash', '', true),
+      set_config('cvg.recovery_token_hash', '', true),
+      set_config('cvg.session_token_hash', '', true)`,
+  );
+}
+
+export async function setDatabaseSessionSecurityContext(
+  executor: ContextExecutor,
+  context: DatabaseSessionSecurityContext,
+): Promise<void> {
+  if (!/^[a-f0-9]{64}$/u.test(context.tokenHash)) {
+    throw new TypeError("tokenHash must be a SHA-256 hex digest");
+  }
+  const scopeId = normalizeValue(context.scopeId, "scopeId");
+  await executor.execute(
+    sql`select
+      set_config('cvg.participant_id', '', true),
+      set_config('cvg.scope_id', ${scopeId}, true),
+      set_config('cvg.account_provisioning_id', '', true),
+      set_config('cvg.invitation_token_hash', '', true),
+      set_config('cvg.recovery_token_hash', '', true),
+      set_config('cvg.session_token_hash', ${context.tokenHash}, true)`,
   );
 }

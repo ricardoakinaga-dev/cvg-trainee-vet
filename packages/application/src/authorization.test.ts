@@ -134,4 +134,91 @@ describe("authorization policy", () => {
       }),
     ).toBe(false);
   });
+
+  it("limits account lifecycle actions to active administrators in scope", () => {
+    const administrator = {
+      principalId: "admin-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["ADMIN"] as const,
+      capability: "MANAGE_ACCOUNT_LIFECYCLE" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(administrator)).toBe(true);
+    expect(canAccess({ ...administrator, scopes: ["other-scope"] })).toBe(
+      false,
+    );
+    expect(canAccess({ ...administrator, roles: ["MODERATOR"] })).toBe(false);
+    expect(canAccess({ ...administrator, accountStatus: "SUSPENDED" })).toBe(
+      false,
+    );
+  });
+
+  it("limits program metrics to active scoped staff roles", () => {
+    const request = {
+      principalId: "moderator-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      capability: "VIEW_PROGRAM_METRICS" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(request)).toBe(true);
+    expect(
+      canAccess({ ...request, resource: { scopeId: "other-scope" } }),
+    ).toBe(false);
+    expect(canAccess({ ...request, roles: ["PARTICIPANT"] })).toBe(false);
+    expect(canAccess({ ...request, accountStatus: "SUSPENDED" })).toBe(false);
+  });
+
+  it("limits the content review queue to active scoped editorial identities", () => {
+    const author = {
+      principalId: "author-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["AUTHOR"] as const,
+      capability: "VIEW_CONTENT_REVIEW_QUEUE" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(author)).toBe(true);
+    expect(canAccess({ ...author, scopes: ["other-scope"] })).toBe(false);
+    expect(canAccess({ ...author, accountStatus: "SUSPENDED" })).toBe(false);
+    expect(canAccess({ ...author, roles: ["PARTICIPANT"] })).toBe(false);
+  });
+
+  it("requires the configured identity for a clinical queue reader", () => {
+    const request = {
+      principalId: "ricardo-account",
+      accountStatus: "ACTIVE" as const,
+      roles: ["CLINICAL_APPROVER"] as const,
+      capability: "VIEW_CONTENT_REVIEW_QUEUE" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(request)).toBe(false);
+    expect(
+      canAccess({ ...request, approvedClinicalApproverId: "ricardo-account" }),
+    ).toBe(true);
+  });
+
+  it("exposes only session scope context to internal editorial identities", () => {
+    expect(
+      canAccess({
+        principalId: "author-1",
+        accountStatus: "ACTIVE",
+        roles: ["AUTHOR"],
+        capability: "VIEW_INTERNAL_SCOPES",
+        scopes: [],
+      }),
+    ).toBe(true);
+    expect(
+      canAccess({
+        principalId: "participant-1",
+        accountStatus: "ACTIVE",
+        roles: ["PARTICIPANT"],
+        capability: "VIEW_INTERNAL_SCOPES",
+        scopes: [],
+      }),
+    ).toBe(false);
+  });
 });

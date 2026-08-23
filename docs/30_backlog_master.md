@@ -4,6 +4,10 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Item concluído mais recente da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade, reavaliado em 95/100. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados; o item 16 está liberado para abertura.
 
+**Atualização operacional 2026-08-23:** `HARNESS-DB-2026-08-23` foi concluído com gaps controlados; o harness live PostgreSQL/RLS agora separa conexão da aplicação e conexão administrativa de teste, e não mascara ausência de capacidade administrativa. `TRAINING-MANAGEMENT-2026-08-23` foi ampliado com a trilha digital de 24 meses, acompanhamento de evolução no participante, perfil digital por competência/módulo e convite administrativo escopado. `DIAGNOSTIC-PROFILE-2026-08-23` adicionou persistência/RLS do agregado B-07, perfil por tema e rota interna de avaliação técnica sem publicação clínica. `STAFF-DIAGNOSTIC-PROFILE-024` levou o mesmo agregado formativo ao acompanhamento gerencial, com membership participante–escopo, matriz RLS e disclaimer explícito. `ADMIN-LIFECYCLE-025` fechou o ciclo de convite/reenvio/status/sessões com CAS, filtro de conta ativa e live PostgreSQL; o hardening posterior limitou reenvios ao escopo pedido, serializou concorrência por conta e corrigiu ações da UI em múltiplos escopos. `CPD-REPORTING-026` materializou o relatório interno de participação digital com filtros server-side e limites explícitos de não credenciamento. `EDITORIAL-QUEUE-027` materializou a leitura backend da fila editorial por escopo, com contrato redigido, capability separada, limite explícito sem promessa de cursor, RLS editorial, ações role-aware e live PostgreSQL. `ACCOUNT-RECOVERY-028` fechou recuperação controlada por link único para contas ativas, com hash-only, revogação de sessões, consumo atômico, sessão nova, UI `/recovery`, live PostgreSQL e E2E 19/19; `IDENTITY-RLS-029`/`030` fecharam RLS direto de convites, recuperação, contas e sessões; `AUDIT-NEGATIVE-031` fechou a representação e a emissão centralizada de rejeições HTTP sem segredo; `DB-PRIVILEGE-032` ampliou o healthcheck para negar ownership e grants administrativos à role de aplicação. O pipeline pós-mudança passou com 96 arquivos/455 testes, cobertura global acima de 80%, build dos 12 workspaces e E2E 19/19. Provedor/MFA/entrega externa, grant matrix do ambiente produtivo e gates clínicos/operacionais permanecem explícitos. A pesquisa atual está registrada em `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`.
+
+**Atualização operacional 2026-08-23 (IDENTITY-RLS-029/030):** `account_invitations`, `account_recovery_requests`, `accounts` e `sessions` agora têm `ENABLE/FORCE RLS` com contextos transacionais de escopo, provisionamento ou hash apresentado; a aplicação continua sem `SUPERUSER`/`BYPASSRLS`. Os gates técnicos passaram; grants de produção, provedor/MFA, entrega externa e gates clínicos/operacionais permanecem explícitos. A auditoria negativa uniforme foi fechada em `AUDIT-NEGATIVE-031`.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -28,7 +32,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: pré-piloto — conteúdo diagnóstico
 - risco: alto — blueprint inadequado contamina a baseline e a personalização
 - impacto: alto
-- status: IN_PROGRESS
+- status: COMPLETED_WITH_GAPS
 - evidência: BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0012_blueprint_diagnostico_b07.md; conteúdo 8bed361; checkpoint ddc8383
 
 ### B07-02 — Produção dos itens diagnósticos
@@ -348,6 +352,216 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - impacto: alto
 - status: PENDENTE
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; gaps 0420/0421
+- resultado parcial: jornada mínima, dashboard staff/participante, trilha digital de 24 meses, próximo passo, reforço, retenção, convite administrativo escopado, persistência técnica do agregado B-07 e perfil formativo por tema estão materializados com contratos, persistência, RLS, autorização server-side, E2E e integração PostgreSQL; o dashboard staff agora exibe a baseline por tema somente para participantes pertencentes ao escopo autorizado e mantém explícito que ela não representa competência prática; filas editoriais completas, avaliação/contestação completas e relatórios CPD ainda não fecham o requisito integral
+- próxima ação: executar o workflow remoto autorizado após a migration `0016` e abrir a próxima fatia de gestão/CPD (filas, CPD e recuperação controlada), mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
+
+### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
+
+- título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais
+- descrição: transformar RF-070/072/073/074 em uma fatia vertical com agregado por escopo, próximos passos, progresso, reforço, retenção, correções, feedback, conteúdo e uma superfície web interna redigida
+- módulo: produto / gestão / API / persistência / web
+- dependência: domínio de jornada, autorização server-side, contratos públicos e migration baseline
+- fase: BUILD — Phase 5 / hardening de dashboard
+- risco: alto — indicadores de gestão não podem ampliar escopo, expor identidade indevida ou virar decisão clínica automática
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- evidência: `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`; `packages/application/src/dashboard-use-cases.ts`; `packages/contracts/src/dashboard.ts`; `packages/persistence/src/dashboard-repository.ts`; `apps/api/src/http.ts`; `apps/web/app/operations/page.tsx`; `tests/integration/postgres-dashboard.test.ts`; `tests/e2e/operations-dashboard.spec.ts`
+- resultado: endpoint `GET /api/v1/dashboard` diferencia participante e staff, capability `VIEW_STAFF_DASHBOARD` exige papel ativo e escopo, o PostgreSQL aplica políticas de leitura por `cvg.scope_id`, a tela interna exibe indicadores sem IDs internos, o participante recebe a trilha digital de 24 meses e o administrador pode criar convite de participante somente no escopo autorizado; `pnpm verify`, build, E2E 16/16, live PostgreSQL 20/31, audit e diff-check passaram
+- gaps remanescentes: filtros/paginação/exports, filas editoriais e relatórios CPD completos ainda não foram implementados; o token de convite ainda exige entrega pelo canal interno aprovado; conteúdo B-07, aprovação clínica, operação externa e prática supervisionada continuam gates humanos
+- próxima ação: manter o item em `COMPLETED_WITH_GAPS` e abrir `LEARNING-PROFILE-2026-08-23`/`STAFF-ONBOARDING-2026-08-23` como evidências derivadas; seguir para diagnóstico/perfil por competência sem declarar competência prática
+
+### LEARNING-PROFILE-2026-08-23 — Trilha digital adaptada e evolução do participante
+
+- título: exibir a evolução digital do participante ao longo dos 24 meses
+- descrição: derivar estados de módulo a partir de atribuições e runtime persistido, distinguindo não atribuído, pré-requisito, em andamento, domínio digital, reforço e retenção, sem nota global punitiva ou alegação de competência prática
+- módulo: currículo / evolução / contratos / web participante
+- dependência: `TRAINING-MANAGEMENT-2026-08-23`; runtime educacional e contratos públicos existentes
+- fase: BUILD — Phase 5 / jornada adaptativa
+- risco: alto — o resumo não pode converter estado digital em autorização clínica nem exibir campos internos
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- evidência: `packages/curriculum/src/learning-runtime.ts`; `packages/application/src/dashboard-use-cases.ts`; `packages/application/src/diagnostic-use-cases.ts`; `packages/contracts/src/dashboard.ts`; `packages/contracts/src/diagnostic.ts`; `packages/persistence/src/diagnostic-result-repository.ts`; `packages/persistence/drizzle/0016_diagnostic_result_profile.sql`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`
+- testes: `packages/curriculum/src/learning-runtime.test.ts`; `packages/application/src/dashboard-use-cases.test.ts`; `packages/application/src/diagnostic-use-cases.test.ts`; `packages/contracts/src/dashboard.test.ts`; `packages/contracts/src/diagnostic.test.ts`; `packages/persistence/src/diagnostic-result-repository.test.ts`; `packages/persistence/src/journey-repository.test.ts`; `apps/api/src/http.test.ts`; `tests/integration/postgres-diagnostic-results.test.ts`; `tests/e2e/participant-access.spec.ts`
+- resultado: path de 24 módulos, estados e ações de retomada/reforço/retenção/atribuição passaram nos testes; o participante recebe perfil digital por competência/módulo e três cartões de baseline formativa por tema derivados do último agregado B-07 persistido; a rota de avaliação é interna e escopada, a UI não expõe itens/gabarito/fontes/objetivos internos e os avisos mantêm explícito que evidência digital não comprova competência prática
+- gaps remanescentes: B-07 continua `RASCUNHO`/`PENDENTE`/não autorizado para publicação, portanto não há aplicação pública da baseline; permanecem filas editoriais, relatório CPD, RLS de identidade, recuperação pós-revogação, operação externa, prática supervisionada e gates humanos
+
+### STAFF-DIAGNOSTIC-PROFILE-024 — Baseline formativa no acompanhamento gerencial
+
+- título: permitir que a gestão acompanhe a baseline digital por tema sem transformar sinal educacional em decisão clínica
+- descrição: projetar o agregado B-07 no participante do dashboard staff somente quando houver resultado persistido em escopo autorizado; proteger membership, RLS, contrato público e acessibilidade
+- módulo: gestão / evolução / segurança / web
+- dependência: `DIAGNOSTIC-PROFILE-2026-08-23`; `TRAINING-MANAGEMENT-2026-08-23`; autorização server-side
+- fase: BUILD — Phase 13 / acompanhamento gerencial
+- risco: alto — dados de participante não podem atravessar escopo nem sugerir aprovação ou competência prática
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- evidência: `traceability.yml` / `STAFF-DIAGNOSTIC-PROFILE-024`; `packages/persistence/drizzle/0016_diagnostic_result_profile.sql`; `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`
+- código: `packages/persistence/src/dashboard-repository.ts`; `packages/persistence/src/attempt-repository.ts`; `packages/application/src/dashboard-use-cases.ts`; `packages/contracts/src/dashboard.ts`; `apps/api/src/http.ts`; `apps/api/src/main.ts`; `apps/web/app/operations/page.tsx`; `apps/web/app/globals.css`
+- testes: `packages/persistence/src/dashboard-repository.test.ts`; `packages/persistence/src/attempt-repository.db.test.ts`; `apps/api/src/http.test.ts`; `tests/integration/postgres-dashboard.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `tests/e2e/operations-dashboard.spec.ts`
+- resultado: perfil opcional com três cartões por tema, membership participante–escopo obrigatório antes de avaliar, isolamento direto de `diagnostic_results` comprovado com papel sem `SUPERUSER/BYPASSRLS`, E2E de gestão 4/4 e live PostgreSQL 21 arquivos/32 testes passaram; UI exibe status, contagem, percentual, “sem nota global” e disclaimer de não competência prática
+- gaps remanescentes: B-07 permanece draft sem publicação; filtros/paginação/exportação, filas editoriais, CPD, RLS de identidade, recuperação pós-revogação, operação externa e gates clínicos continuam pendentes
+- próxima ação: abrir a fatia de gestão/CPD para filas, relatórios de educação continuada e recuperação controlada, sem ampliar a exposição do diagnóstico
+
+### ADMIN-LIFECYCLE-025 — Ciclo administrativo de contas e convites
+
+- título: completar o ciclo administrativo seguro dos veterinários no escopo autorizado
+- descrição: permitir reenvio de convite para conta `INVITED`, transição administrativa entre `ACTIVE`, `SUSPENDED` e `DEACTIVATED`, revogação das sessões ativas e preservação do histórico, com auditoria e sem alterar dados educacionais
+- módulo: identidade / gestão / governança / API / web
+- dependência: `STAFF-ONBOARDING-2026-08-23`; autorização server-side; sessão e auditoria persistidas
+- fase: BUILD — Phase 13 / gestão operacional
+- risco: crítico — reenvio não pode vazar token, estado não pode atravessar escopo e desativação não pode apagar histórico nem deixar sessão utilizável
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-009`; `PRD-RF-074`; `PRD-RF-080`; `PRD-RF-081`; UC-015
+- evidência: `traceability.yml` / `ADMIN-LIFECYCLE-025`; contratos, caso de uso, persistência, API, tela de operações, testes unitários, integração live e E2E sintético
+- critério de pronto: membership participante–escopo validado no servidor e no repositório; reenvio invalida convite ativo anterior e só expõe token na resposta autorizada; status e sessões mudam atomicamente; auditoria redigida registra ator/alvo/escopo/resultado; histórico educacional permanece; acesso cruzado, concorrência e sessão revogada têm testes negativos
+- resultado: convite inicial e reenvio escopados, invalidação atômica do convite anterior, resposta redigida sem hash/IDs internos, transições com `expectedStatus`, revogação de sessões, filtro de autenticação para contas ativas, revogação de resíduos na reativação, auditoria append-only, API/web e confirmação destrutiva foram implementados. O reenvio agora persiste somente o escopo solicitado, usa lock transacional por conta para garantir um único convite não aceito vigente após concorrência, e a UI usa os escopos de membership retornados pelo dashboard em vez de assumir sempre o primeiro. A regressão live validou esses três casos; E2E operations passou 5/5 com axe.
+- gaps explícitos: RLS contextual direto para tabelas de identidade, entrega externa, atribuição detalhada de papéis/trilhas, recuperação por provedor de identidade/novo acesso após revogação e operação remota continuam fora desta fatia; falhas de autorização/not-found/CAS ainda não geram auditoria negativa uniforme; `DEACTIVATED`/reativação precisam de política de recuperação validada antes do uso produtivo.
+- próxima ação: abrir filas editoriais, educação continuada/CPD e recuperação controlada de acesso, mantendo o conteúdo clínico e B-07 atrás de revisão humana
+
+### CPD-REPORTING-026 — Participação digital e horas de trilha por escopo
+
+- título: consolidar um relatório interno de participação educacional digital
+- descrição: derivar, a partir das atribuições PostgreSQL e do catálogo curricular, participantes, módulos atribuídos/concluídos, minutos/horas de atividade modular e progresso por escopo; permitir filtros server-side por escopo, módulo e status da conta, sem ranking, exportação pública, certificado ou claim de competência prática
+- módulo: gestão educacional / métricas / API / persistência / web
+- dependência: `TRAINING-MANAGEMENT-2026-08-23`, `STAFF-DIAGNOSTIC-PROFILE-024`, `ADMIN-LIFECYCLE-025`, `RF-070`, `RF-073`, `RF-074`, `UC-016`, catálogo curricular digital
+- fase: BUILD — Phase 13 / acompanhamento gerencial
+- risco: alto — horas digitais não podem ser apresentadas como CPD acreditado, certificação ou competência clínica; filtros não podem atravessar escopos
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- evidência: `traceability.yml` / `CPD-REPORTING-026`; `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0015_metricas_de_sucesso.md`
+- critério de pronto: contrato estrito, caso de uso, repositório transacional com contexto de escopo, endpoint interno autorizado, tela web redigida, testes RED/GREEN de contrato/API/persistência, integração PostgreSQL live, E2E/axe, cobertura global preservada e gaps documentados
+- limites: `ATIVIDADE_MODULAR_DIGITAL` e minutos do catálogo são evidência educacional interna; não são horas válidas/acreditadas, certificado, nota global, competência prática, autonomia, autorização de procedimento ou decisão de RH
+- código: `packages/contracts/src/continuing-education-report.ts`; `packages/application/src/continuing-education-report-use-cases.ts`; `packages/persistence/src/continuing-education-report-repository.ts`; `apps/api/src/http.ts`; `apps/api/src/main.ts`; `apps/api/src/server.ts`; `apps/web/app/operations/page.tsx`; `apps/web/app/globals.css`
+- testes: contratos, autorização, aplicação, persistência, API, integração PostgreSQL live e E2E/axe em `packages/**`, `apps/api/src/**`, `tests/integration/postgres-continuing-education-report.test.ts` e `tests/e2e/operations-dashboard.spec.ts`
+- resultado: relatório interno por escopo, módulo e status da conta, com minutos/horas derivados do catálogo e marcadores `ATIVIDADE_MODULAR_DIGITAL`, `NAO_CREDENCIADAS` e `PROIBIDO_MVP`; verificação direcionada, live 23/34 e E2E 5/5 passaram
+- gaps explícitos: não há coorte/área/nível porque não existem no domínio, nem exportação, ranking, certificado, CPD acreditado, decisão de RH, integração externa ou prova de competência prática; filas editoriais, recuperação controlada, RLS direto de identidade, auditoria negativa uniforme e gates clínicos permanecem fora deste slice
+- verificação final: `pnpm verify` passou com 89 arquivos/411 testes/21 skips explícitos e cobertura 84,67%/80,11%/85,48%/85,41%; `pnpm build` passou; live PostgreSQL 23/34; E2E operations 5/5 com axe; banco e roles descartáveis removidos
+- próxima ação: abrir a próxima fatia de filas editoriais ou hardening de identidade/recuperação sem liberar gates clínicos
+
+### EDITORIAL-QUEUE-027 — Fila interna de revisão clínica por escopo
+
+- título: permitir que autores e revisores encontrem conteúdo aguardando revisão sem atravessar escopos
+- descrição: materializar `GetContentReviewQueue(scope)` como leitura interna limitada a versões editoriais em `EM_REVISAO_CLINICA` ou `AJUSTES_SOLICITADOS`, com filtros estritos, ordenação determinística e payload de metadados operacionais; a abertura do item completo continua na rota interna de autoria e a decisão continua humana
+- módulo: autoria / revisão clínica / API / persistência / web
+- dependência: `AUTHORING-GOVERNANCE-012`; `ADMIN-LIFECYCLE-025`; autorização server-side; registros editoriais e preflight persistidos
+- fase: BUILD — Phase 13 / governança editorial
+- risco: alto — fila fora de escopo, conteúdo autoral exposto a papel indevido ou ordenação instável pode causar revisão errada e perda de rastreabilidade
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-034`; `PRD-RF-036`; `PRD-RF-037`; `PRD-RF-091`; `PRD-RF-094`; UC-013; UC-014
+- evidência: `traceability.yml` / `EDITORIAL-QUEUE-027`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md`; `docs/99_runtime_state.md`; `docs/20_master_execution_log.md`
+- critério de pronto: contrato estrito, capability de leitura interna, caso de uso imutável, repositório PostgreSQL com contexto de escopo, query limitada e determinística, endpoint interno, testes RED/GREEN de escopo/campos/status, integração live, E2E/axe se houver superfície web e rastreabilidade atualizada
+- limites: a fila não aprova, publica, altera conteúdo, decide por IA/Qdrant, expõe fontes/gabaritos ao participante ou transforma preflight em aprovação clínica; não inclui contestação completa nem notificações externas
+- resultado: contrato Zod estrito, capability `VIEW_CONTENT_REVIEW_QUEUE`, caso de uso imutável, filtro por autor, identidade clínica configurada, repositório PostgreSQL com contexto transacional, RLS `ENABLE/FORCE` em tabelas editoriais, filtro de status limitado, ordenação determinística sem `hasMore` fictício, projeção sem prompt/gabarito/fontes, endpoint de fila, endpoint de memberships da sessão e autoria com `scopeId` obrigatório foram implementados. A integração live comprovou dois escopos isolados, leitura sem contexto negada, filtro de status, desempate da última decisão, compensação de review após falha de transição e ausência de campos autorais.
+- gaps explícitos: auditoria negativa uniforme, notificações/entrega externas e contestação completa permanecem fora da fatia; a transação editorial ainda usa compensação explícita entre persistência da decisão e transição de conteúdo, não uma única transação de composição. Nenhuma decisão clínica ou publicação foi liberada.
+- verificação final: `pnpm verify` passou com 430 testes/22 skips explícitos e cobertura 84,46%/80,10%/85,32%/85,20%; `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou 18/18; integração live passou 24 arquivos/35 testes com role de aplicação sem `BYPASSRLS`, RLS/índice editorial confirmados e role/banco descartáveis removidos.
+- resultado web: `/authoring` consulta memberships retornadas pela sessão, valida a projeção `unknown`, lista somente metadados da fila, mostra última decisão e abre autoria apenas quando `canOpenAuthoring`/`nextAction` permitem; o E2E confirma ausência de gabarito/fontes na fila.
+- próxima ação: abrir recuperação controlada de acesso sem liberar gates clínicos; manter auditoria negativa uniforme, entrega externa, contestação completa e transação editorial única como gaps explícitos.
+
+### ACCOUNT-RECOVERY-028 — Recuperação controlada de acesso por link único
+
+- título: permitir que a operação gere um acesso temporário para uma conta ativa sem armazenar senha nem reativar conta automaticamente
+- descrição: emitir um token aleatório, expirável e de uso único para uma conta `ACTIVE` em escopo autorizado, revogar sessões existentes, aceitar o token anonimamente e criar uma nova sessão server-side; a entrega do link permanece ação interna até haver provedor aprovado
+- módulo: identidade / segurança / API / persistência / web / governança
+- dependência: `ADMIN-LIFECYCLE-025`; `STAFF-ONBOARDING-2026-08-23`; capability `MANAGE_ACCOUNT_LIFECYCLE`; decisão de não simular provedor de senha/MFA/entrega externa
+- fase: BUILD — Phase 13 / identidade e segurança operacional
+- risco: alto — token exposto, reativação indevida, reutilização ou revogação incompleta pode conceder acesso indevido
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-008`; `PRD-RF-009`; UC-015; UC-021
+- evidência: `traceability.yml` / `ACCOUNT-RECOVERY-028`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md`; `docs/99_runtime_state.md`; `docs/20_master_execution_log.md`
+- critério de pronto: contrato estrito, emissão autorizada e self-deny, conta ativa/escopada, token hash-only, expiração/consumo/revogação atômicos, sessões antigas revogadas, sessão nova com snapshot server-side, resposta pública redigida, UI com remoção do token da URL, RED/GREEN de contrato/aplicação/persistência/API, integração PostgreSQL live, E2E e rastreabilidade atualizada
+- limites: não criar senha, não simular provedor/MFA/e-mail, não reativar `INVITED`/`SUSPENDED`/`DEACTIVATED`, não expor token a participante, não liberar publicação clínica; consulta operacional/retention/alertas da auditoria, grants/ownership de produção, entrega externa e operação produtiva continuam gaps; o RLS direto foi materializado nos itens `IDENTITY-RLS-029` e `IDENTITY-RLS-030`
+- resultado: contrato, caso de uso, migration `0018_account_recovery.sql`, transação PostgreSQL, endpoints interno/anônimo, UI `/recovery` e testes RED/GREEN foram implementados. A integração live completa passou em banco descartável com 25 arquivos/36 testes; a role da aplicação ficou sem `SUPERUSER`/`BYPASSRLS`, a role administrativa foi separada com `BYPASSRLS`, e ambas foram removidas ao final. O E2E completo passou 19/19, incluindo a remoção do token da URL.
+- verificação final: `pnpm verify` passou com 96 arquivos/448 testes/22 skips de arquivo e 23 skips de teste, cobertura 84,73%/80,50%/85,49%/85,50%; `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou 19/19; `pnpm verify:migrations` confirmou 19 migrações e `0018_account_recovery`; `verify:secrets`, `verify:traceability`, `verify:documentation`, `verify:product-definition`, `verify:exposure` e `git diff --check` foram executados sem falhas.
+- gaps explícitos: não há senha, MFA, provedor gerenciado, e-mail ou entrega externa; contas inativas não são reativadas; consulta operacional/retention/alertas da auditoria, grants/ownership de produção, operação produtiva e gates clínicos/piloto continuam pendentes; RLS direto de identidade/recuperação foi tratado pelos itens `IDENTITY-RLS-029` e `IDENTITY-RLS-030`.
+- próxima ação: manter o hardening de identidade fechado e aplicar o grant matrix/owner de migration/rotação de credenciais em ambiente autorizado, sem ampliar o escopo para fornecedor ou decisão clínica.
+
+### IDENTITY-RLS-029 — RLS direto para memberships e solicitações de acesso
+
+- título: aplicar defesa de banco aos registros de convite/recuperação sem quebrar aceite anônimo
+- descrição: materializar `ENABLE/FORCE ROW LEVEL SECURITY` em `account_invitations` e `account_recovery_requests`, permitindo somente contexto transacional de escopo ou hash de token; atualizar consultas internas para estabelecer o contexto antes de ler/gravar
+- módulo: identidade / segurança / persistência / integração
+- dependência: `ACCOUNT-RECOVERY-028`; `ADMIN-LIFECYCLE-025`; harness PostgreSQL com role de aplicação sem `BYPASSRLS`
+- fase: BUILD — Phase 13 / hardening de identidade
+- risco: crítico — policy ampla pode bloquear login/convite/recuperação ou permitir leitura cruzada de credenciais efêmeras
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-001`; `PRD-RF-003`; `PRD-RF-006`; `PRD-RF-009`; UC-015; UC-021
+- evidência: `traceability.yml` / `IDENTITY-RLS-029`; migration `0019_identity_token_rls.sql`; `packages/persistence/src/security-context.ts`; `docs/99_runtime_state.md`; `docs/20_master_execution_log.md`
+- critério de pronto: contexto de escopo/hash validado, RLS `ENABLE/FORCE`, convite administrativo e aceite anônimo funcionando, recuperação funcionando, leitura sem contexto vazia, role de aplicação sem bypass, testes unitários/live e documentação atualizada
+- resultado: migration `0019` e contexto token-aware foram implementados; convites, resolutor de membership, dashboard e recuperação estabelecem contexto; live em banco limpo confirmou 20 migrações, `ENABLE/FORCE RLS` nas duas tabelas, leitura sem contexto isolada, role de aplicação sem bypass, 25 arquivos/36 testes e remoção dos recursos descartáveis
+- gaps explícitos: o RLS direto de `accounts`/`sessions` foi deliberadamente separado no item `IDENTITY-RLS-030`; auditoria negativa uniforme, grants de produção, provedor/MFA e entrega externa permanecem fora
+- verificação final: `pnpm verify` passou com 96 arquivos/449 testes/22 skips de arquivo e 23 skips de teste, cobertura 84,76% statements, 80,50% branches, 85,51% functions e 85,52% lines; `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou 19/19; `pnpm verify:migrations` confirmou 20 migrações e `0019_identity_token_rls`; `verify:traceability`, `verify:documentation`, `verify:product-definition`, `verify:exposure` e `git diff --check` passaram.
+- próxima ação: manter `accounts`/`sessions` como hardening residual explícito, desenhar sua matriz de contexto antes de qualquer policy nova e não avançar fornecedor, entrega externa ou gates clínicos sem autoridade correspondente.
+
+### IDENTITY-RLS-030 — RLS direto de accounts e sessions
+
+- título: fechar a defesa de banco para contas e sessões sem quebrar provisionamento, autenticação, rotação ou revogação
+- descrição: aplicar `ENABLE/FORCE ROW LEVEL SECURITY` a `accounts` e `sessions`, com inserção de conta somente por contexto de provisionamento, lookup de sessão por hash, operações internas por escopo e todos os contextos estabelecidos na mesma transação da operação protegida
+- módulo: identidade / segurança / persistência / integração
+- dependência: `IDENTITY-RLS-029`; contexto token-aware; harness PostgreSQL com role de aplicação sem `BYPASSRLS`
+- fase: BUILD — Phase 13 / hardening residual de identidade
+- risco: crítico — contexto fora da transação pode negar autenticação ou abrir leitura cruzada de identidades/sessões
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-001`; `PRD-RF-003`; `PRD-RF-006`; `PRD-RF-009`; UC-015; UC-021
+- evidência: `traceability.yml` / `IDENTITY-RLS-030`; migration `0020_identity_accounts_sessions_rls.sql`; `packages/persistence/src/security-context.ts`; `packages/persistence/src/session-repository.ts`; `docs/99_runtime_state.md`; `docs/20_master_execution_log.md`
+- critério de pronto: matriz de contexto documentada, `ENABLE/FORCE RLS` em `accounts`/`sessions`, provisionamento/aceite/recovery/autenticação/rotação/revogação funcionando, leitura e escrita sem contexto negadas, role de aplicação sem bypass, live PostgreSQL e rastreabilidade atualizada
+- resultado: migration `0020` materializou policies separadas para leitura/atualização/provisionamento de contas e leitura/atualização/inserção de sessões; o contexto de provisionamento e sessão foi validado; `create`, `findActive`, `revoke` e `rotate` de sessão passaram a manter `set_config(..., true)` na mesma transação da operação; aceite de convite e recovery continuam funcionais
+- gaps explícitos: grants de produção, rotação de credenciais, provedor/MFA, entrega externa, operação produtiva e gates clínicos/piloto permanecem fora; a auditoria negativa uniforme foi tratada por `AUDIT-NEGATIVE-031`; o RLS usa contexto transacional como defesa complementar e não substitui autorização server-side
+- verificação final: `pnpm verify` passou com 96 arquivos/451 testes/22 skips de arquivo e 23 skips de teste, cobertura 84,54% statements, 80,47% branches, 85,33% functions e 85,27% lines; `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou 19/19; `pnpm verify:migrations` confirmou 21 migrações; integração live PostgreSQL passou 25 arquivos/36 testes com `accounts`, `sessions`, `account_invitations` e `account_recovery_requests` em `ENABLE/FORCE RLS`, leitura/escrita sem contexto negadas, role de aplicação sem `SUPERUSER`/`BYPASSRLS` e recursos descartáveis removidos; gates de traceability/documentation/product-definition/exposure e `git diff --check` passaram.
+- próxima ação: aplicar o grant matrix/owner de migration/rotação de credenciais em ambiente autorizado e anexar evidência redigida; manter fornecedor, entrega externa e gates clínicos atrás das dependências próprias.
+
+### AUDIT-NEGATIVE-031 — Auditoria negativa uniforme na borda HTTP
+
+- título: registrar rejeições de autenticação, autorização, não enumeração e borda sem expor credencial
+- descrição: representar ator anônimo explicitamente, registrar erro do handler e rejeição pré-handler com rota normalizada, correlação segura e falha de auditoria não mascarante
+- módulo: API / segurança / governança / observabilidade
+- dependência: `IDENTITY-RLS-030`; auditoria append-only existente; autorização server-side
+- fase: BUILD — Phase 13 / hardening de identidade e borda
+- risco: alto — ausência de trilha negativa dificulta detecção de enumeração e abuso; registrar token/caminho bruto criaria vazamento
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-001`; `PRD-RF-003`; `PRD-RF-006`; `PRD-RF-009`; `SPEC-0111`; `SPEC-0118`
+- evidência: `traceability.yml` / `AUDIT-NEGATIVE-031`; migration `0021_audit_anonymous_rejections.sql`; `packages/application/src/audit.ts`; `packages/persistence/src/audit-repository.ts`; `apps/api/src/http.ts`; `apps/api/src/server.ts`
+- testes: `packages/application/src/audit.test.ts`; `packages/persistence/src/audit-repository.test.ts`; `apps/api/src/http.test.ts`; `apps/api/src/server.test.ts`; `tests/integration/postgres-account-recovery.test.ts`
+- resultado: `actor_kind=ANONYMOUS` elimina UUID sentinela; `401/403/404` viram `DENIED`, demais rejeições viram `FAILURE`; o recurso usa rota normalizada e nenhuma auditoria recebe corpo, cookie ou token; live PostgreSQL persistiu a linha anônima com `principal_id` nulo
+- gaps explícitos: consulta operacional de auditoria por papel, retenção/alertas e evidência no ambiente produtivo ainda dependem de operação; não há autorização clínica, fornecedor, MFA ou entrega externa nesta fatia
+- verificação da rodada: typecheck, testes unitários direcionados e integração live PostgreSQL 25/37 passaram; `pnpm verify` passou com 96 arquivos/455 testes e cobertura 84,56%/80,28%/85,41%/85,30%; `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou 19/19; `pnpm audit --audit-level=high` não encontrou vulnerabilidades; migrações, secrets, traceability, architecture, documentation, product-definition, exposure e `git diff --check` passaram
+
+### DB-PRIVILEGE-032 — Guard de grants e ownership da role de aplicação
+
+- título: impedir que a conexão de runtime seja superusuária, bypass, criadora ou dona das relações públicas
+- descrição: fazer o healthcheck produtivo rejeitar `SUPERUSER`, `BYPASSRLS`, `CREATEROLE`, `CREATEDB`, `CREATE` no schema `public` e ownership de relações; provar a separação com owner de migration e role de aplicação descartáveis
+- módulo: PostgreSQL / segurança / operação / deployment
+- dependência: `AUDIT-NEGATIVE-031`; `SECURITY-08-01`; provisionamento seguro de ambiente
+- fase: BUILD/AUDIT — Phase 13 / hardening operacional
+- risco: crítico — owner ou grant administrativo permite contornar RLS e alterar políticas/esquema
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-001`; `PRD-RF-006`; `PRD-RF-009`; `SPEC-0111`; `SPEC-0112`; `SPEC-0118`
+- evidência: `traceability.yml` / `DB-PRIVILEGE-032`; `packages/persistence/src/database.ts`; `tests/integration/postgres-security-isolation.test.ts`; banco descartável com owner separado
+- testes: `packages/persistence/src/database.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `tests/integration/postgres-account-recovery.test.ts`
+- resultado: a role live de aplicação passou sem `SUPERUSER`, `BYPASSRLS`, `CREATEROLE`, `CREATEDB`, `CREATE` público e ownership; as tabelas de identidade e auditoria mantiveram `ENABLE/FORCE RLS`; a role administrativa ficou separada e o banco é descartável
+- gap explícito: o grant matrix, owner de migration, rotação de credenciais e inspeção do ambiente produtivo real ainda exigem execução operacional autorizada; o healthcheck é guard, não provisionamento automático
+- próxima ação: aplicar o runbook de roles em homologação/produção descartável, com owner de migration separado e rotação de credenciais, e anexar evidência sem registrar URL ou segredo
+
+### STAFF-ONBOARDING-2026-08-23 — Convite administrativo escopado
+
+- título: permitir entrada controlada de veterinários no programa
+- descrição: consumir o endpoint administrativo existente para criar convite de participante com e-mail profissional, papel fixo `PARTICIPANT` e primeiro escopo autorizado, exibindo token somente após resposta autorizada
+- módulo: identidade / gestão / web / governança
+- dependência: `TRAINING-MANAGEMENT-2026-08-23`; capacidade `MANAGE_ROLES` e sessão staff ativa
+- fase: BUILD — Phase 5 / onboarding administrativo
+- risco: alto — token de convite é credencial efêmera e não pode ser logado, exportado ou ampliado para outro escopo
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- evidência: `apps/web/app/operations/page.tsx`; `apps/web/app/globals.css`; `apps/api/src/http.ts`; `packages/application/src/invitation-use-cases.ts`
+- testes: `apps/api/src/http.test.ts`; `tests/e2e/operations-dashboard.spec.ts`; `tests/integration/postgres-invitation.test.ts`
+- resultado: convite escopado, validação de payload, token de 32–256 caracteres, expiração e erro 403 foram preservados; E2E de criação e axe passaram
+- gaps remanescentes: lista administrativa completa de contas, RLS direto das tabelas de identidade, recuperação pós-revogação e entrega externa segura permanecem nos itens de identidade/operação
 
 ### AUD-P1-002 — RLS contextual e isolamento live
 
@@ -373,6 +587,21 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - impacto: alto
 - status: PENDENTE
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `tests/e2e/participant-access.spec.ts`
+
+### HARNESS-DB-2026-08-23 — Harness live PostgreSQL/RLS
+
+- título: corrigir fixtures, cleanup e bootstrap administrativo dos testes live sem alterar o produto
+- descrição: separar conexão da aplicação e conexão administrativa sintética, evitar inserts protegidos sem contexto implícito, remover estados runtime antes de contas e preservar a asserção de isolamento quando `CREATE ROLE` não estiver disponível
+- módulo: testes de integração / CI / segurança
+- dependência: PostgreSQL descartável migrado e URL administrativa de teste quando o caso exigir cleanup
+- fase: BUILD — hardening do harness
+- risco: controlado — sem alteração de domínio, UI ou schema de produto; ausência de administração pode reduzir cobertura live por skip explícito
+- impacto: médio
+- status: COMPLETED_WITH_GAPS
+- evidência: `tests/integration/live-postgres-harness.ts`; `tests/integration/postgres-activity-content.test.ts`; `tests/integration/postgres-answer-session.test.ts`; `tests/integration/postgres-attempt-repository.test.ts`; `tests/integration/postgres-correction.test.ts`; `tests/integration/curriculum-runtime.test.ts`; `tests/integration/postgres-learning-state.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `scripts/run-live-integration.mjs`; `.github/workflows/quality.yml`
+- resultado: com URL administrativa, live PostgreSQL passou 19 arquivos/30 testes; sem ela, o runner informa a limitação e 23 testes passam com 7 skips explícitos; role e banco locais descartáveis foram removidos após a validação
+- gaps remanescentes: executar o workflow remoto após a integração; provisionamento administrativo de teste continua obrigatório para cleanup completo, e o fallback sem `CREATEROLE` cobre somente a asserção de isolamento com uma conexão de aplicação não privilegiada
+- próxima ação: executar/revisar o workflow CI autorizado e preservar os gates clínicos independentes
 
 ### AUD-P1-004 — Operação, observabilidade e restore
 

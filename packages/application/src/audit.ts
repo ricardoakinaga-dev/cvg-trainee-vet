@@ -1,11 +1,13 @@
 export type AuditOutcome = "SUCCESS" | "DENIED" | "FAILURE";
+export type AuditActorKind = "AUTHENTICATED" | "ANONYMOUS";
 
 export type AuditEntryInput = Readonly<{
   readonly auditId: string;
-  readonly principalId: string;
+  readonly actorKind?: AuditActorKind;
+  readonly principalId?: string;
   readonly action: string;
   readonly resourceType: string;
-  readonly resourceId: string;
+  readonly resourceId?: string;
   readonly scopeId?: string;
   readonly outcome: AuditOutcome;
   readonly reasonCode?: string;
@@ -22,8 +24,10 @@ export interface AuditPort {
   readonly append: (entry: AuditEntry) => Promise<void>;
 }
 
-function assertNonEmpty(value: string, field: string): void {
-  if (value.trim().length === 0) throw new Error(`${field} is required`);
+function assertNonEmpty(value: string | undefined, field: string): void {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`${field} is required`);
+  }
 }
 
 function assertSafeToken(value: string, field: string): void {
@@ -39,12 +43,30 @@ function assertHash(value: string | undefined, field: string): void {
   }
 }
 
+function assertActorKind(value: AuditActorKind): void {
+  if (value !== "AUTHENTICATED" && value !== "ANONYMOUS") {
+    throw new Error("actorKind is not supported");
+  }
+}
+
 export function createAuditEntry(input: AuditEntryInput): AuditEntry {
   assertNonEmpty(input.auditId, "auditId");
-  assertNonEmpty(input.principalId, "principalId");
+  const actorKind = input.actorKind ?? "AUTHENTICATED";
+  assertActorKind(actorKind);
+  if (actorKind === "AUTHENTICATED") {
+    if (input.principalId === undefined) {
+      throw new Error(
+        "principalId is required for authenticated audit entries",
+      );
+    }
+    assertNonEmpty(input.principalId, "principalId");
+  } else if (input.principalId !== undefined) {
+    throw new Error("anonymous audit entries cannot contain a principalId");
+  }
   assertSafeToken(input.action, "action");
   assertSafeToken(input.resourceType, "resourceType");
-  assertNonEmpty(input.resourceId, "resourceId");
+  if (input.resourceId !== undefined)
+    assertNonEmpty(input.resourceId, "resourceId");
   assertNonEmpty(input.requestId, "requestId");
   assertNonEmpty(input.correlationId, "correlationId");
   if (input.scopeId !== undefined) assertNonEmpty(input.scopeId, "scopeId");
@@ -59,10 +81,13 @@ export function createAuditEntry(input: AuditEntryInput): AuditEntry {
 
   return Object.freeze({
     auditId: input.auditId,
-    principalId: input.principalId,
+    actorKind,
+    ...(input.principalId === undefined
+      ? {}
+      : { principalId: input.principalId }),
     action: input.action,
     resourceType: input.resourceType,
-    resourceId: input.resourceId,
+    ...(input.resourceId === undefined ? {} : { resourceId: input.resourceId }),
     ...(input.scopeId === undefined ? {} : { scopeId: input.scopeId }),
     outcome: input.outcome,
     ...(input.reasonCode === undefined ? {} : { reasonCode: input.reasonCode }),

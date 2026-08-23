@@ -1391,6 +1391,927 @@ artifacts:
         "gh run view 31380183984 --repo ricardoakinaga-dev/cvg-trainee-vet",
       ]
     status: "verified-with-gaps"
+  - id: "LIVE-RLS-HARNESS-018"
+    requirements: ["SPEC-0118", "AUD-ITEM-8", "CI-15-01"]
+    documents:
+      [
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "tests/integration/live-postgres-harness.ts",
+        "tests/integration/curriculum-runtime.test.ts",
+        "tests/integration/postgres-activity-content.test.ts",
+        "tests/integration/postgres-answer-session.test.ts",
+        "tests/integration/postgres-attempt-repository.test.ts",
+        "tests/integration/postgres-correction.test.ts",
+        "tests/integration/postgres-learning-state.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "scripts/run-live-integration.mjs",
+        ".github/workflows/quality.yml",
+      ]
+    tests:
+      [
+        "tests/integration/curriculum-runtime.test.ts",
+        "tests/integration/postgres-activity-content.test.ts",
+        "tests/integration/postgres-answer-session.test.ts",
+        "tests/integration/postgres-attempt-repository.test.ts",
+        "tests/integration/postgres-correction.test.ts",
+        "tests/integration/postgres-learning-state.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+      ]
+    verification:
+      [
+        "pnpm test:integration:live",
+        "pnpm typecheck",
+        "pnpm verify:ci-contract",
+        "pnpm exec eslint scripts/run-live-integration.mjs tests/integration/live-postgres-harness.ts",
+        "pnpm exec prettier --check .github/workflows/quality.yml scripts/run-live-integration.mjs tests/integration/live-postgres-harness.ts",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "EDUCATION-BENCHMARK-019"
+    requirements: ["PRD-RF-070", "PRD-RF-072", "PRD-RF-073", "SPEC-0114"]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/04.AUDIT/0495_pesquisa_praticas_mundiais_treinamento_hospitalar.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0020_alinhamento_produto_pre_spec.md",
+      ]
+    tests: ["DOC-LINK-001"]
+    status: "decision-record"
+  - id: "TRAINING-MANAGEMENT-020"
+    requirements:
+      [
+        "PRD-RF-070",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "PRD-RF-074",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/04.AUDIT/0500_api_surface_audit.md",
+        "BRIEFING/04.AUDIT/0501_security_isolation_audit.md",
+        "BRIEFING/04.AUDIT/0506_web_ux_accessibility_audit.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/page.tsx",
+        "apps/web/app/globals.css",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/contracts/src/dashboard.ts",
+        "packages/curriculum/src/learning-runtime.ts",
+        "packages/persistence/src/dashboard-repository.ts",
+        "packages/persistence/drizzle/0015_staff_dashboard_rls.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+      ]
+    tests:
+      [
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "packages/contracts/src/dashboard.test.ts",
+        "packages/curriculum/src/learning-runtime.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-dashboard.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/integration/live-postgres-harness.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm typecheck",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm test:integration:live (with administrative test URL)",
+        "pnpm test:integration:live (without administrative test URL: explicit skips)",
+        "pnpm verify:traceability",
+        "pnpm verify:secrets",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "LEARNING-PROFILE-021"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-021",
+        "PRD-RF-025",
+        "PRD-RF-028",
+        "PRD-RF-070",
+        "SPEC-0107",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/curriculum/src/learning-runtime.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/application/src/diagnostic-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/contracts/src/dashboard.ts",
+        "packages/contracts/src/diagnostic.ts",
+        "packages/persistence/src/diagnostic-result-repository.ts",
+        "packages/persistence/src/journey-repository.ts",
+        "packages/persistence/drizzle/0016_diagnostic_result_profile.sql",
+        "apps/api/src/http.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/app/globals.css",
+        "vitest.config.ts",
+      ]
+    tests:
+      [
+        "packages/curriculum/src/learning-runtime.test.ts",
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "packages/application/src/diagnostic-use-cases.test.ts",
+        "packages/contracts/src/dashboard.test.ts",
+        "packages/contracts/src/diagnostic.test.ts",
+        "packages/persistence/src/diagnostic-result-repository.test.ts",
+        "packages/persistence/src/journey-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-diagnostic-results.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm test:integration:live (application/admin roles separated)",
+        "pnpm test:coverage",
+        "pnpm audit --audit-level=high",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "DIAGNOSTIC-PROFILE-023"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-021",
+        "PRD-RF-025",
+        "PRD-RF-070",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/04.AUDIT/0496_curriculum_runtime_preflight.md",
+        "BRIEFING/04.AUDIT/0500_api_surface_audit.md",
+        "BRIEFING/04.AUDIT/0501_security_isolation_audit.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/diagnostic-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/application/src/journey-use-cases.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/contracts/src/diagnostic.ts",
+        "packages/contracts/src/index.ts",
+        "packages/contracts/src/dashboard.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/diagnostic-result-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/src/journey-repository.ts",
+        "packages/persistence/drizzle/0016_diagnostic_result_profile.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "packages/application/src/diagnostic-use-cases.test.ts",
+        "packages/contracts/src/diagnostic.test.ts",
+        "packages/persistence/src/diagnostic-result-repository.test.ts",
+        "packages/persistence/src/journey-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-diagnostic-results.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm typecheck",
+        "pnpm build",
+        "pnpm test:coverage",
+        "pnpm test:e2e",
+        "pnpm test:integration:live (21 files/32 tests with separated roles)",
+        "pnpm verify:migrations",
+        "pnpm verify:exposure",
+        "pnpm verify:traceability",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "ADMIN-LIFECYCLE-025"
+    requirements:
+      [
+        "PRD-RF-009",
+        "PRD-RF-074",
+        "PRD-RF-080",
+        "PRD-RF-081",
+        "UC-015",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/account-management-use-cases.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/contracts/src/account-management.ts",
+        "packages/contracts/src/dashboard.ts",
+        "packages/persistence/src/account-management-repository.ts",
+        "packages/persistence/src/dashboard-repository.ts",
+        "packages/persistence/src/session-repository.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "packages/application/src/account-management-use-cases.test.ts",
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "packages/contracts/src/account-management.test.ts",
+        "packages/contracts/src/dashboard.test.ts",
+        "packages/persistence/src/account-management-repository.test.ts",
+        "packages/persistence/src/dashboard-repository.test.ts",
+        "packages/persistence/src/session-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/postgres-account-lifecycle.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify (89 arquivos/411 testes; 20 arquivos/21 testes skipped explícitos; cobertura 84,67%/80,11%/85,48%/85,41%)",
+        "pnpm build",
+        "pnpm test:integration:live (23 arquivos/34 testes; roles separadas; banco removido e ausência confirmada)",
+        "pnpm test:e2e operations-dashboard.spec.ts (5/5; axe)",
+        "pnpm audit --audit-level=high",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "STAFF-DIAGNOSTIC-PROFILE-024"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-021",
+        "PRD-RF-070",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "PRD-RF-074",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/04.AUDIT/0501_security_isolation_audit.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/contracts/src/dashboard.ts",
+        "packages/persistence/src/dashboard-repository.ts",
+        "packages/persistence/src/attempt-repository.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "packages/contracts/src/dashboard.test.ts",
+        "packages/persistence/src/dashboard-repository.test.ts",
+        "packages/persistence/src/attempt-repository.db.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/postgres-dashboard.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm test:integration:live (application/admin roles separated)",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:exposure",
+        "pnpm verify:traceability",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "STAFF-ONBOARDING-022"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-003",
+        "PRD-RF-009",
+        "PRD-RF-074",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/globals.css",
+        "apps/api/src/http.ts",
+        "packages/application/src/invitation-use-cases.ts",
+      ]
+    tests:
+      [
+        "apps/api/src/http.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/integration/postgres-invitation.test.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm audit --audit-level=high",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "CPD-REPORTING-026"
+    requirements:
+      [
+        "PRD-RF-070",
+        "PRD-RF-073",
+        "PRD-RF-074",
+        "UC-016",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0015_metricas_de_sucesso.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/continuing-education-report.ts",
+        "packages/application/src/continuing-education-report-use-cases.ts",
+        "packages/persistence/src/continuing-education-report-repository.ts",
+        "packages/persistence/src/dashboard-repository.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/index.ts",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/contracts/src/dashboard.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "packages/contracts/src/continuing-education-report.test.ts",
+        "packages/application/src/continuing-education-report-use-cases.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/persistence/src/continuing-education-report-repository.test.ts",
+        "packages/persistence/src/dashboard-repository.test.ts",
+        "packages/contracts/src/dashboard.test.ts",
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-continuing-education-report.test.ts",
+        "tests/integration/postgres-account-lifecycle.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm typecheck",
+        "pnpm build",
+        "pnpm test:integration:live (23 files/34 tests; application/admin roles separated; disposable database removed)",
+        "pnpm exec playwright test tests/e2e/operations-dashboard.spec.ts (5/5; axe)",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "EDITORIAL-QUEUE-027"
+    requirements:
+      [
+        "PRD-RF-034",
+        "PRD-RF-036",
+        "PRD-RF-037",
+        "PRD-RF-091",
+        "PRD-RF-094",
+        "UC-013",
+        "UC-014",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/content-review-queue.ts",
+        "packages/contracts/src/internal-context.ts",
+        "packages/contracts/src/authoring.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/content-review-queue-use-cases.ts",
+        "packages/application/src/authoring-use-cases.ts",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/content-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/content-review-queue-repository.ts",
+        "packages/persistence/src/authoring-repository.ts",
+        "packages/persistence/src/content-repository.ts",
+        "packages/persistence/drizzle/0017_editorial_scope_rls.sql",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "packages/contracts/src/content-review-queue.test.ts",
+        "packages/contracts/src/internal-context.test.ts",
+        "packages/application/src/content-review-queue-use-cases.test.ts",
+        "packages/application/src/authoring-use-cases.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/contracts/src/authoring.test.ts",
+        "packages/persistence/src/content-review-queue-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-content-review-queue.test.ts",
+        "tests/integration/postgres-authoring-workflow.test.ts",
+        "tests/integration/postgres-content-workflow.test.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/e2e/experience-accessibility.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify (430 tests passed/22 skipped; coverage 84.46% statements, 80.10% branches, 85.32% functions, 85.20% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:integration:live (24 files/35 tests; application role without BYPASSRLS; editorial RLS and tie-break evidence; disposable database and role removed)",
+        "pnpm test:e2e (18/18; authoring, operations, participant and axe)",
+        "pnpm verify:traceability",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "ACCOUNT-RECOVERY-028"
+    requirements:
+      [
+        "PRD-RF-008",
+        "PRD-RF-009",
+        "UC-015",
+        "UC-021",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/account-recovery.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/account-recovery-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/account-recovery-repository.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0018_account_recovery.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/recovery/page.tsx",
+      ]
+    tests:
+      [
+        "packages/contracts/src/account-recovery.test.ts",
+        "packages/application/src/account-recovery-use-cases.test.ts",
+        "packages/persistence/src/account-recovery-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+        "tests/e2e/recovery-access.spec.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:integration:live (application/admin roles separated)",
+        "pnpm test:e2e",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "IDENTITY-RLS-029"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-003",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "UC-015",
+        "UC-021",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/security-context.ts",
+        "packages/persistence/src/security-context.test.ts",
+        "packages/persistence/src/invitation-repository.ts",
+        "packages/persistence/src/account-recovery-repository.ts",
+        "packages/persistence/src/attempt-repository.ts",
+        "packages/persistence/src/dashboard-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0019_identity_token_rls.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "tests/integration/postgres-invitation.test.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/security-context.test.ts",
+        "packages/persistence/src/invitation-repository.test.ts",
+        "packages/persistence/src/account-recovery-repository.test.ts",
+        "packages/persistence/src/attempt-repository.db.test.ts",
+        "tests/integration/postgres-invitation.test.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:integration:live (application/admin roles separated)",
+        "pnpm test:e2e",
+        "pnpm verify:migrations",
+        "pnpm verify:traceability",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "IDENTITY-RLS-030"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-003",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "UC-015",
+        "UC-021",
+        "SPEC-0111",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/security-context.ts",
+        "packages/persistence/src/security-context.test.ts",
+        "packages/persistence/src/session-repository.ts",
+        "packages/persistence/src/invitation-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0020_identity_accounts_sessions_rls.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "tests/integration/postgres-account-recovery.test.ts",
+        "tests/integration/postgres-answer-session.test.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/security-context.test.ts",
+        "packages/persistence/src/session-repository.test.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+        "tests/integration/postgres-answer-session.test.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify (96 files/451 tests passed; 22 file skips/23 test skips; coverage 84.54% statements, 80.47% branches, 85.33% functions, 85.27% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (19/19)",
+        "pnpm verify:migrations (21 migrations)",
+        "pnpm test:integration:live (25 files/36 tests; application role without BYPASSRLS; four identity tables RLS; disposable database and role removed)",
+        "pnpm test:integration:live (no-context identity reads empty and account/session writes denied)",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "pnpm verify:traceability",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "AUDIT-NEGATIVE-031"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-003",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "SPEC-0111",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/audit.ts",
+        "packages/application/src/audit.test.ts",
+        "packages/persistence/src/audit-repository.ts",
+        "packages/persistence/src/audit-repository.test.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/drizzle/0021_audit_anonymous_rejections.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.ts",
+        "apps/api/src/server.test.ts",
+        "apps/api/src/main.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/audit.test.ts",
+        "packages/persistence/src/audit-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts: ["coverage/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify (96 files/455 tests passed; 22 file skips/24 test skips; coverage 84.56% statements, 80.28% branches, 85.41% functions, 85.30% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (19/19)",
+        "pnpm test:integration:live (25 files/37 tests; anonymous audit persisted)",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm verify:migrations (22 migrations)",
+        "pnpm verify:secrets",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "DB-PRIVILEGE-032"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "SPEC-0111",
+        "SPEC-0112",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0112_integracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/database.ts",
+        "packages/persistence/src/database.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/database.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "tests/integration/postgres-account-recovery.test.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts: ["coverage/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify (96 files/455 tests passed; 22 file skips/24 test skips; coverage 84.56% statements, 80.28% branches, 85.41% functions, 85.30% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (19/19)",
+        "pnpm test:integration:live (application role NOSUPERUSER/NOBYPASSRLS/non-owner)",
+        "database healthcheck requireLeastPrivilege",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm verify:migrations (22 migrations)",
+        "pnpm verify:secrets",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "TRACEABILITY-033"
+    requirements: ["AUD-P1-005", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+        "BRIEFING/04.AUDIT/0492_score_95_roadmap.md",
+        "BRIEFING/04.AUDIT/0493_score_95_backlog.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "scripts/verify-traceability.mjs",
+        "scripts/verify-ci-contract.mjs",
+        "package.json",
+        ".github/workflows/quality.yml",
+      ]
+    tests:
+      [
+        "tests/integration/traceability-governance.test.ts",
+        "tests/integration/ci-governance.test.ts",
+      ]
+    commit: "UNCOMMITTED-WORKTREE-2026-08-23"
+    artifacts: ["coverage/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: traceability governance tests failed before exported validators existed",
+        "GREEN: pnpm exec vitest run --project integration tests/integration/traceability-governance.test.ts (3/3)",
+        "pnpm exec vitest run --project integration tests/integration/ci-governance.test.ts (4/4)",
+        "pnpm verify:ci-contract (20 workflow checks)",
+        "pnpm format:check",
+        "pnpm exec eslint scripts/verify-traceability.mjs scripts/verify-ci-contract.mjs tests/integration/traceability-governance.test.ts",
+        "CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability (expected FAIL until intentional commit; 116 findings)",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

@@ -101,3 +101,24 @@ As operações entregues são `CreateLearningAssignment`, `TransitionLearningAss
 `RunAuthoringPreflight` recebe um registro autoral interno e devolve checks determinísticos de campos, correção, fronteira pública e rastreabilidade. `ReviewAuthoringContent` exige principal ativo, papel/capacidade, escopo, revisor diferente do autor e registro em `EM_REVISAO_CLINICA`; persiste a decisão e chama a transição de conteúdo somente depois do preflight. `APROVAR_CLINICAMENTE` não torna o item publicável sozinho: a publicação ainda exige o gate de registro editorial + preflight + última aprovação clínica no repositório.
 
 O registro autoral é versionado por `content_id + version`, liga módulo/sessão/objetivo/autor e mantém `correctChoiceIds` ou rubrica somente no limite interno. A projeção `participant` é uma cópia estrutural sem gabarito, rubrica, fontes ou autoria. IA e Qdrant permanecem adapters assistivos e nunca executam esse caso de uso nem alteram estado.
+
+## 10. Fila interna de revisão clínica — EDITORIAL-QUEUE-027
+
+`GetContentReviewQueue` é uma query imutável e escopada. Recebe principal ativo,
+escopos autorizados e `{ scopeId, status?, limit? }`; `status` aceita somente
+`EM_REVISAO_CLINICA` ou `AJUSTES_SOLICITADOS`, e `limit` é limitado a 1–100
+com padrão 50. `AUTHOR` recebe somente seus próprios registros, enquanto
+`MODERATOR`, `ADMIN` e a identidade clínica aprovada podem ler o escopo
+operacional completo. A capability `VIEW_CONTENT_REVIEW_QUEUE` não concede
+alteração, aprovação ou publicação.
+
+O port PostgreSQL aplica contexto transacional de `scopeId`, fica protegido por
+RLS `ENABLE/FORCE` nas tabelas editoriais, restringe ambas ao escopo pedido,
+ordena por atualização/identificador/versão de forma determinística e retorna
+no máximo `limit` linhas. A projeção contém apenas identificadores
+operacionais, módulo, sessão, título, autor, estado, preflight, última decisão
+resumida, acesso calculado à autoria, data de atualização e `nextAction`; não
+há `hasMore` sem cursor implementado. Prompt, gabarito, rubrica, fontes,
+conteúdo autoral completo e dados de participante não atravessam o contrato da
+fila; eles continuam protegidos pela query interna de autoria. A fila não
+decide por IA/Qdrant nem executa transição de estado.

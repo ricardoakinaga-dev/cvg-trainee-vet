@@ -46,4 +46,25 @@ describe("audit PostgreSQL mapping", () => {
   it("keeps the append-only audit table explicit", () => {
     expect(auditEntries).toBeDefined();
   });
+
+  it("maps anonymous HTTP rejection metadata without a fake UUID", () => {
+    const row = auditEntryToRow({
+      auditId: "11111111-1111-4111-8111-111111111111",
+      actorKind: "ANONYMOUS",
+      action: "HTTP_REQUEST_REJECTED",
+      resourceType: "http_route",
+      resourceId: "/api/v1/invitations/accept",
+      outcome: "DENIED",
+      reasonCode: "api_unauthenticated",
+      requestId: "22222222-2222-4222-8222-222222222222",
+      correlationId: "33333333-3333-4333-8333-333333333333",
+      occurredAt: "2026-08-23T22:00:00.000Z",
+    });
+
+    expect(row).toMatchObject({
+      actorKind: "ANONYMOUS",
+      principalId: null,
+      resourceId: "/api/v1/invitations/accept",
+    });
+  });
 });

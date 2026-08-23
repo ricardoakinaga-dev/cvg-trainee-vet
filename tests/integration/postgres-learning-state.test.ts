@@ -13,7 +13,6 @@ import {
   transitionLearningAssignment,
 } from "../../packages/domain/src/index.js";
 
-import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
 import {
   createLearningStateRepository,
   LearningStatePersistenceConflictError,
@@ -27,18 +26,30 @@ import {
   learningActivities,
   learningAssignments,
 } from "../../packages/persistence/src/schema.js";
+import {
+  closeLivePostgresHarness,
+  hasAdministrativeCleanupCapability,
+  liveAdminCapabilityMessage,
+  liveDatabaseUrl,
+  openLivePostgresHarness,
+} from "./live-postgres-harness.js";
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
-const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 
-describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
+describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL learning state persistence and contextual RLS",
   () => {
-    it("persists versioned learning states atomically and denies cross-context reads", async () => {
-      if (databaseUrl === undefined)
-        throw new Error("test database URL is required");
+    it("persists versioned learning states atomically and denies cross-context reads", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
 
-      const database = createPostgresDatabase(databaseUrl);
       const participantId = randomUUID();
       const otherParticipantId = randomUUID();
       const reviewerId = randomUUID();
@@ -52,10 +63,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const appealId = randomUUID();
       const itemId = randomUUID();
       const rlsRole = `cvg_rls_${randomUUID().replaceAll("-", "")}`;
+      let rlsRoleCreated = false;
       const context = { participantId, scopeId } as const;
 
       try {
-        await database.db.insert(accounts).values([
+        await admin.db.insert(accounts).values([
           {
             id: participantId,
             professionalEmail: `state-${participantId}@example.invalid`,
@@ -72,14 +84,14 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             status: "ACTIVE",
           },
         ]);
-        await database.db.insert(learningActivities).values({
+        await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId,
           slug: `state-activity-${activityId}`,
           title: "Atividade sintética de estados",
           status: "PUBLISHED",
         });
-        await database.db.insert(attempts).values({
+        await admin.db.insert(attempts).values({
           id: attemptId,
           participantId,
           activityId,
@@ -189,23 +201,48 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           await otherRepository.findFeedbackTicket(otherContext, ticketId),
         ).toBeNull();
 
-        await database.db.execute(
-          sql.raw(`create role "${rlsRole}" nologin nosuperuser nobypassrls`),
-        );
-        await database.db.execute(
-          sql.raw(
-            `grant usage on schema public to "${rlsRole}"; grant select, insert, update, delete on table learning_assignments, assessment_workflows, feedback_tickets, appeals to "${rlsRole}"`,
-          ),
-        );
+        if (harness.adminRole.canCreateRoles) {
+          await admin.db.execute(
+            sql.raw(`create role "${rlsRole}" nologin nosuperuser nobypassrls`),
+          );
+          rlsRoleCreated = true;
+          await admin.db.execute(
+            sql.raw(
+              `grant usage on schema public to "${rlsRole}"; grant select, insert, update, delete on table learning_assignments, assessment_workflows, feedback_tickets, appeals to "${rlsRole}"`,
+            ),
+          );
+          await admin.db.execute(
+            sql.raw(
+              `grant "${rlsRole}" to "${harness.applicationRole.roleName}"`,
+            ),
+          );
+        } else {
+          console.warn(
+            "PostgreSQL role-admin capability is absent; learning-state RLS probe uses the configured non-privileged application role",
+          );
+          if (
+            harness.applicationRole.isSuperuser ||
+            harness.applicationRole.bypassesRls
+          ) {
+            skip(
+              "CREATE ROLE is unavailable and CVG_TEST_DATABASE_URL is privileged; the RLS probe cannot be evaluated safely",
+            );
+            return;
+          }
+        }
         const noContextRows = await database.db.transaction(async (tx) => {
-          await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+          if (rlsRoleCreated) {
+            await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+          }
           return tx.execute(
             sql`select id from learning_assignments where id = ${assignmentId}`,
           );
         });
         expect(noContextRows).toHaveLength(0);
         const crossContextRows = await database.db.transaction(async (tx) => {
-          await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+          if (rlsRoleCreated) {
+            await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+          }
           await tx.execute(
             sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${otherScopeId}, true)`,
           );
@@ -215,7 +252,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         });
         expect(crossContextRows).toHaveLength(0);
 
-        const policyRows = await database.db.execute(sql`
+        const policyRows = await admin.db.execute(sql`
           select c.relname as table_name, c.relrowsecurity, c.relforcerowsecurity
           from pg_class c
           join pg_namespace n on n.oid = c.relnamespace
@@ -236,6 +273,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         const rollbackAssignmentId = randomUUID();
         await expect(
           database.db.transaction(async (tx) => {
+            await tx.execute(
+              sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+            );
             await tx.insert(learningAssignments).values({
               id: rollbackAssignmentId,
               participantId,
@@ -255,22 +295,24 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         expect(rollbackRows).toHaveLength(0);
 
         await expect(
-          database.db.insert(learningAssignments).values({
-            id: randomUUID(),
-            participantId,
-            scopeId,
-            moduleId: "M04",
-            availableAt: new Date("2026-08-10T12:00:00.000Z"),
-            status: "BLOQUEADO",
-            version: 0,
-            blockReason: null,
+          database.db.transaction(async (tx) => {
+            await tx.execute(
+              sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+            );
+            await tx.insert(learningAssignments).values({
+              id: randomUUID(),
+              participantId,
+              scopeId,
+              moduleId: "M04",
+              availableAt: new Date("2026-08-10T12:00:00.000Z"),
+              status: "BLOQUEADO",
+              version: 0,
+              blockReason: null,
+            });
           }),
         ).rejects.toThrow();
       } finally {
-        await database.db.transaction(async (tx) => {
-          await tx.execute(
-            sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
-          );
+        await admin.db.transaction(async (tx) => {
           await tx.delete(appeals).where(eq(appeals.id, appealId));
           await tx
             .delete(feedbackTickets)
@@ -282,11 +324,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             .delete(learningAssignments)
             .where(eq(learningAssignments.id, assignmentId));
         });
-        await database.db.delete(attempts).where(eq(attempts.id, attemptId));
-        await database.db
+        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
-        await database.db
+        await admin.db
           .delete(accounts)
           .where(
             and(
@@ -297,16 +339,18 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               ),
             ),
           );
-        await database.db
+        await admin.db
           .delete(accounts)
           .where(eq(accounts.id, otherParticipantId));
-        await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
-        await database.db.execute(
-          sql.raw(
-            `revoke all privileges on schema public from "${rlsRole}"; revoke all privileges on table learning_assignments, assessment_workflows, feedback_tickets, appeals from "${rlsRole}"; drop role if exists "${rlsRole}"`,
-          ),
-        );
-        await database.close();
+        await admin.db.delete(accounts).where(eq(accounts.id, reviewerId));
+        if (rlsRoleCreated) {
+          await admin.db.execute(
+            sql.raw(
+              `revoke all privileges on schema public from "${rlsRole}"; revoke all privileges on table learning_assignments, assessment_workflows, feedback_tickets, appeals from "${rlsRole}"; drop role if exists "${rlsRole}"`,
+            ),
+          );
+        }
+        await closeLivePostgresHarness(harness);
       }
     });
   },

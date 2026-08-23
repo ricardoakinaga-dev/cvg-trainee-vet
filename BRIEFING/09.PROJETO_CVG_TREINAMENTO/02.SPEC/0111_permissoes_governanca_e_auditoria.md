@@ -25,6 +25,12 @@ No MVP, `CLINICAL_APPROVER` é concedido somente à identidade de Ricardo no boo
 6. Qdrant só é acessado depois de o escopo ser validado no PostgreSQL;
 7. IA só recebe contexto selecionado pelo caso de uso interno e nunca uma sessão de participante.
 
+`VIEW_PROGRAM_METRICS` é uma capacidade de leitura interna para `ADMIN`,
+`MODERATOR` e a identidade clínica aprovada, sempre com conta ativa e escopo
+correspondente. Ela permite o relatório agregado de participação digital, mas
+não concede alteração de atribuição, nota, gabarito, conteúdo, papel ou
+competência.
+
 Toda falha de autorização responde `403` ou `404` conforme a política de não enumeração. Ocultar botão, rota ou menu no web não é controle de segurança.
 
 ## 3. Segregação de gabaritos e autoria
@@ -43,10 +49,11 @@ Cada ação sensível cria uma entrada append-only:
 {
   "audit_id": "uuid",
   "occurred_at": "iso-8601",
-  "principal_id": "uuid",
+  "actor_kind": "AUTHENTICATED",
+  "principal_id": "uuid|null",
   "action": "content.publish",
   "resource_type": "content_version",
-  "resource_id": "uuid",
+  "resource_id": "uuid|normalized-route|null",
   "scope_id": "uuid",
   "outcome": "allowed",
   "reason_code": "clinical_approval",
@@ -61,7 +68,8 @@ Auditar no mínimo: login/recovery sensível, convite, concessão/revogação, c
 
 ## 5. Critérios de auditoria
 
-- toda ação sensível tem `request_id`, principal, recurso, escopo, resultado e versão;
+- toda ação sensível tem `request_id`, ator (`principal_id` quando autenticado ou `actor_kind=ANONYMOUS`), recurso, escopo quando aplicável, resultado e versão;
+- rejeições de autenticação, autorização, não enumeração, validação, rate limit e falhas internas passam pela borda HTTP e criam auditoria negativa; o recurso HTTP usa rota normalizada, nunca caminho bruto, cookie, token ou corpo;
 - uma entrada não pode ser alterada pelo fluxo normal da aplicação;
 - auditoria de IA registra modelo, versão, hash de entrada/saída, status, latência e uso técnico, sem conteúdo bruto por padrão;
 - reconciliação compara eventos, PostgreSQL e Qdrant sem autorizar pelo vetor;
@@ -76,6 +84,7 @@ Auditar no mínimo: login/recovery sensível, convite, concessão/revogação, c
 - aceite sem sessão prévia executa ativação da conta e criação de sessão server-side na mesma transação;
 - tentativa inválida ou expirada responde uniformemente `not_found`, sem informar se o e-mail ou convite existiu;
 - a rota administrativa é interna e não entrega token a participante, não chama e-mail/fornecedor e não registra o valor em logs;
+- o reenvio de convite copia somente o escopo explicitamente autorizado na requisição, nunca a união de memberships persistidos; reenvios concorrentes da mesma conta são serializados na transação para manter um único convite não aceito vigente;
 - correção oficial exige identidade `CLINICAL_APPROVER` aprovada por configuração e escopo correspondente; `ADMIN` não pode alterar nota por atalho.
 
 ## 7. Proteção de requisições materializada no BUILD F3-S6
@@ -88,6 +97,19 @@ Auditar no mínimo: login/recovery sensível, convite, concessão/revogação, c
 - liveness/readiness são excluídos do limite para permitir operação e diagnóstico;
 - testes cobrem burst, expiração, limite de chaves, origem permitida/malformada, cross-origin e integração na borda HTTP;
 - esse controle não substitui recuperação/rotação de sessão ou RLS contextual; o limite compartilhado PostgreSQL é a defesa para serviço replicado.
+
+## 7.1 Recuperação controlada materializada no BUILD — ACCOUNT-RECOVERY-028
+
+- somente uma sessão interna com `MANAGE_ACCOUNT_LIFECYCLE` e escopo presente pode emitir recuperação para outra conta;
+- a conta alvo deve estar `ACTIVE`; o fluxo não reativa `INVITED`, `SUSPENDED` ou `DEACTIVATED` e não substitui decisão administrativa;
+- o link é aleatório, expirável, de uso único e armazenado somente como hash SHA-256; nova emissão revoga links anteriores do mesmo alvo/escopo;
+- a emissão revoga sessões abertas do alvo na mesma transação e registra apenas metadados redigidos na auditoria; token bruto, cookie e senha não entram em log, auditoria, Qdrant ou IA;
+- o aceite anônimo usa comparação por hash e consumo atômico, cria uma sessão nova com snapshot server-side de papéis/escopos e responde somente `{status:"active"}` com cookie seguro;
+- token inválido, expirado, revogado ou consumido usa resposta uniforme `not_found`; não há enumeração de conta, e-mail ou estado;
+- o MVP não implementa senha, MFA, provedor gerenciado, e-mail ou entrega externa; esses adapters e o runbook operacional permanecem gates de produção;
+- a migration `0021_audit_anonymous_rejections.sql` adiciona `actor_kind`, permite `principal_id`/`resource_id` nulos somente para rejeições anônimas e converte o recurso textual para permitir a rota normalizada sem UUID sentinela; a tabela permanece `ENABLE/FORCE RLS` e append-only;
+- `account_invitations` e `account_recovery_requests` agora usam `ENABLE/FORCE RLS` na migration `0019_identity_token_rls.sql`: operações internas exigem `cvg.scope_id`, e aceite anônimo só alcança o hash apresentado por contexto transacional `cvg.invitation_token_hash`/`cvg.recovery_token_hash`;
+- `accounts` e `sessions` usam `ENABLE/FORCE RLS` na migration `0020_identity_accounts_sessions_rls.sql`: contas só são inseridas com `cvg.account_provisioning_id` para o alvo convidado; contas existentes são alcançadas por escopo, hash de convite/recuperação ou hash de sessão; sessões são lidas/atualizadas por `cvg.session_token_hash` ou escopo e inseridas somente com snapshot que contém o escopo transacional. `create`, `findActive`, `revoke` e `rotate` estabelecem o contexto na mesma transação da operação. A auditoria negativa uniforme foi materializada na migration `0021_audit_anonymous_rejections.sql`; grants/ownership de produção, rotação de credenciais e operação real continuam gates separados; a autorização server-side permanece a fonte de decisão.
 
 ## 8. Rotação e revogação materializadas no BUILD F3-S8
 
@@ -104,8 +126,11 @@ Auditar no mínimo: login/recovery sensível, convite, concessão/revogação, c
 - contexto ausente nega leitura/escrita; contexto de participante restringe a própria identidade e contexto de escopo limita os caminhos operacionais associados às atividades do escopo;
 - repositórios protegidos só executam dentro de transação com o contexto aplicado antes da consulta; a aplicação não trata filtro de frontend como autorização;
 - `requireLeastPrivilege` consulta `pg_roles` no healthcheck e rejeita role `SUPERUSER` ou `BYPASSRLS`; produção liga essa exigência por configuração;
+- com `requireLeastPrivilege=true`, o healthcheck também rejeita `CREATEROLE`, `CREATEDB`, `CREATE` no schema `public` e qualquer relação do schema público pertencente à role de aplicação; migrations devem rodar com owner separado e a aplicação deve receber somente os grants operacionais provisionados pelo ambiente;
 - `0013_shared_rate_limit.sql` e `createPostgresRateLimiter` mantêm bucket transacional PostgreSQL para o limite compartilhado entre instâncias; a borda HTTP continua aplicando CSRF/origem antes do caso de uso;
-- o escopo cobre a fatia participante/execução protegida. Tabelas editoriais e administrativas adicionais, grants de produção, backup/restore e runbook permanecem nos respectivos itens de operação e jornada.
+- a migration `0017_editorial_scope_rls.sql` aplica `ENABLE/FORCE ROW LEVEL SECURITY` a `content_editorial_records` e `content_review_decisions`; contexto ausente não lê nem grava material editorial, e a fila/autoria aplicam o `scopeId` em transação antes de consultar;
+- `VIEW_CONTENT_REVIEW_QUEUE` é separado de moderação/aprovação/publicação; `AUTHOR` vê somente seus registros, enquanto equipe escopada recebe a fila operacional. `VIEW_INTERNAL_SCOPES` retorna apenas memberships já presentes na sessão, sem permitir fabricar escopo;
+- o escopo protegido cobre execução e material editorial. Tabelas de identidade/administrativas adicionais, grants de produção, backup/restore e runbook permanecem nos respectivos itens de operação e jornada.
 
 ## 9. Governança editorial materializada no item 10
 
@@ -117,3 +142,11 @@ Auditar no mínimo: login/recovery sensível, convite, concessão/revogação, c
 - `publicationReady` é derivado do preflight e da última aprovação, nunca de IA, Qdrant ou frontend;
 - a fonte, gabarito e rubrica são internos e ficam fora de contratos/projeções do participante;
 - aprovação técnica não equivale à aprovação clínica de Ricardo nem à competência prática.
+
+`VIEW_CONTENT_REVIEW_QUEUE` é uma capability separada para leitura da fila
+editorial. Exige conta `ACTIVE`, papel `AUTHOR`, `MODERATOR`, `ADMIN` ou
+identidade clínica aprovada, além de `scopeId` presente nos escopos da sessão.
+O resultado é uma projeção operacional redigida; possuir essa capability não
+concede `MODERATE_CONTENT`, `APPROVE_CLINICAL_CONTENT` ou `PUBLISH_CONTENT`.
+Reenvio, decisão clínica e publicação continuam casos de uso distintos e
+autorizados no servidor.

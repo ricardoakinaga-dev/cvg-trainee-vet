@@ -200,6 +200,8 @@ export type PersonalizedPathInput = Readonly<{
   readonly masteredModuleIds: readonly string[];
   readonly remediationModuleIds: readonly string[];
   readonly retentionDueModuleIds: readonly string[];
+  readonly inProgressModuleIds?: readonly string[];
+  readonly assignedModuleIds?: readonly string[];
 }>;
 
 export type PersonalizedPathItem = Readonly<{
@@ -210,13 +212,17 @@ export type PersonalizedPathItem = Readonly<{
     | "BLOQUEADO_PRE_REQUISITO"
     | "EM_REMEDIACAO"
     | "RETENCAO_PENDENTE"
-    | "CONCLUIDO";
+    | "CONCLUIDO"
+    | "EM_ANDAMENTO"
+    | "NAO_ATRIBUIDO";
   readonly nextAction:
     | "INICIAR_BASELINE"
     | "CONCLUIR_PRE_REQUISITO"
     | "EXECUTAR_REMEDIACAO"
     | "EXECUTAR_RETENCAO"
-    | "REVISAR_PROXIMO_MODULO";
+    | "REVISAR_PROXIMO_MODULO"
+    | "RETOMAR_MODULO"
+    | "AGUARDAR_ATRIBUICAO";
 }>;
 
 export type DraftPreflightModuleResult = Readonly<{
@@ -1019,9 +1025,22 @@ export function buildPersonalizedCurriculumPath(
   const mastered = new Set(input.masteredModuleIds);
   const remediation = new Set(input.remediationModuleIds);
   const retentionDue = new Set(input.retentionDueModuleIds);
+  const inProgress = new Set(input.inProgressModuleIds ?? []);
+  const assigned =
+    input.assignedModuleIds === undefined
+      ? undefined
+      : new Set(input.assignedModuleIds);
   return freeze(
     curriculumV3.modules.map((module, index) => {
       const previousModule = curriculumV3.modules[index - 1];
+      if (assigned !== undefined && !assigned.has(module.id)) {
+        return freeze({
+          moduleId: module.id,
+          month: module.month,
+          status: "NAO_ATRIBUIDO" as const,
+          nextAction: "AGUARDAR_ATRIBUICAO" as const,
+        });
+      }
       if (remediation.has(module.id)) {
         return freeze({
           moduleId: module.id,
@@ -1036,6 +1055,14 @@ export function buildPersonalizedCurriculumPath(
           month: module.month,
           status: "RETENCAO_PENDENTE" as const,
           nextAction: "EXECUTAR_RETENCAO" as const,
+        });
+      }
+      if (inProgress.has(module.id)) {
+        return freeze({
+          moduleId: module.id,
+          month: module.month,
+          status: "EM_ANDAMENTO" as const,
+          nextAction: "RETOMAR_MODULO" as const,
         });
       }
       if (mastered.has(module.id)) {

@@ -82,6 +82,7 @@ function repository(
       savedReview = review;
       return { ...value, latestReview: review };
     }),
+    rollbackReview: vi.fn(async () => undefined),
     get savedReview() {
       return savedReview;
     },
@@ -235,6 +236,40 @@ describe("authoring and clinical review use cases", () => {
         { repository: repository(), transition: vi.fn() },
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
+  });
+
+  it("compensates the persisted review when the workflow transition fails", async () => {
+    const repositoryPort = repository();
+    const transition = vi.fn(async () => {
+      throw new Error("transition unavailable");
+    });
+
+    await expect(
+      reviewAuthoringContent(
+        {
+          principalId: reviewerId,
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [scopeId],
+          approvedClinicalApproverId: reviewerId,
+          contentId,
+          version: 1,
+          scopeId,
+          decision: "APROVAR_CLINICAMENTE",
+          rationale: "Falha sintética após persistência.",
+          correlationId: "77777777-7777-4777-8777-777777777777",
+        },
+        { repository: repositoryPort, transition },
+      ),
+    ).rejects.toThrow("transition unavailable");
+    expect(repositoryPort.rollbackReview).toHaveBeenCalledWith(
+      record,
+      record.preflight,
+      expect.objectContaining({
+        reviewerId,
+        decision: "APROVAR_CLINICAMENTE",
+      }),
+    );
   });
 
   it("validates review commands, scope, status, and adjustment decisions", async () => {

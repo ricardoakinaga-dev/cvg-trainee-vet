@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createObservability, type LogRecord } from "@cvg/observability";
 
@@ -56,6 +56,12 @@ describe("API node server adapter", () => {
     expect(routeTemplate("POST", "/api/v1/invitations/accept")).toBe(
       "/api/v1/invitations/accept",
     );
+    expect(routeTemplate("POST", "/api/v1/recovery/accept")).toBe(
+      "/api/v1/recovery/accept",
+    );
+    expect(
+      routeTemplate("POST", "/api/v1/internal/accounts/account/recovery"),
+    ).toBe("/api/v1/internal/accounts/:accountId/recovery");
     expect(routeTemplate("POST", "/api/v1/session/revoke")).toBe(
       "/api/v1/session/revoke",
     );
@@ -92,6 +98,16 @@ describe("API node server adapter", () => {
       routeTemplate("POST", "/api/v1/internal/appeals/appeal/transition"),
     ).toBe("/api/v1/internal/appeals/:appealId/transition");
     expect(routeTemplate("POST", "/api/v1/attempts")).toBe("/api/v1/attempts");
+    expect(routeTemplate("GET", "/api/v1/dashboard")).toBe("/api/v1/dashboard");
+    expect(
+      routeTemplate("GET", "/api/v1/internal/reports/continuing-education"),
+    ).toBe("/api/v1/internal/reports/continuing-education");
+    expect(routeTemplate("GET", "/api/v1/internal/content/review-queue")).toBe(
+      "/api/v1/internal/content/review-queue",
+    );
+    expect(routeTemplate("GET", "/api/v1/internal/session/scopes")).toBe(
+      "/api/v1/internal/session/scopes",
+    );
     expect(routeTemplate("GET", "/api/v1/activities/activity/progress")).toBe(
       "/api/v1/activities/:activityId/progress",
     );
@@ -119,6 +135,9 @@ describe("API node server adapter", () => {
     expect(
       routeTemplate("POST", "/api/v1/internal/curriculum/modules/M03/evaluate"),
     ).toBe("/api/v1/internal/curriculum/modules/:moduleId/evaluate");
+    expect(
+      routeTemplate("POST", "/api/v1/internal/diagnostics/b07/evaluate"),
+    ).toBe("/api/v1/internal/diagnostics/b07/evaluate");
     expect(routeTemplate("DELETE", "/unknown")).toBe("unmatched");
   });
 
@@ -306,6 +325,57 @@ describe("API node server adapter", () => {
         success: false,
         error: { code: "forbidden" },
       });
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("records an edge rejection without reading the protected body", async () => {
+    const audit = { append: vi.fn(async () => undefined) };
+    const protectedFixture = ["opaque", "audit", "fixture"].join("-");
+    const api = createApiServer(
+      {
+        ...dependencies,
+        requestIdFactory: () => "11111111-1111-4111-8111-111111111111",
+        audit,
+      },
+      {
+        host: "127.0.0.1",
+        port: 0,
+        allowedOrigins: ["http://web.internal"],
+      },
+    );
+    await api.listen();
+
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/api/v1/attempts`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: "__Host-cvg_session=session",
+            origin: "https://untrusted.invalid",
+          },
+          body: JSON.stringify({ token: protectedFixture }),
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(audit.append).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorKind: "ANONYMOUS",
+          resourceType: "http_route",
+          resourceId: "/api/v1/attempts",
+          outcome: "DENIED",
+          reasonCode: "api_forbidden",
+        }),
+      );
+      expect(JSON.stringify(audit.append.mock.calls[0])).not.toContain(
+        protectedFixture,
+      );
     } finally {
       await api.close();
     }

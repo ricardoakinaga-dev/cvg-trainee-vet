@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 13 CI, reprodutibilidade e prontidão de build
-- current_sprint: SCORE-95-16 — rastreabilidade de código e controle de mudança
-- current_task: abrir o item 16 após fechar CI-15-01 com evidência local e remota
+- current_phase: BUILD — Phase 13 identidade e segurança operacional
+- current_sprint: AUDIT-NEGATIVE-031 / DB-PRIVILEGE-032 — auditoria negativa e guard de privilégios
+- current_task: AUDIT-NEGATIVE-2026-08-23-C — registrar rejeições HTTP sem segredo e negar ownership/grants administrativos à role de runtime
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: documentação canônica publicada no commit `4281f238e0a2644410c88801e670f2a9eda760c1` e validada pelo workflow final `31381262006`/job `93431720358` em 4m45s; artifact final `9060063069` preservado com digest `7745f6c5578416bf88971d6da2b336ffd2ea1aed7fab3033c30905778f64ce43`; a execução de código `31380183984` já havia provado E2E real 14/14
-- next_action: abrir o item 16 — rastreabilidade de código e controle de mudança — e iniciar sua task conforme `BRIEFING/03.BUILD/0302_backlog_master.md`
+- last_completed_action: `AUDIT-NEGATIVE-031` e `DB-PRIVILEGE-032` implementados em TDD; `actor_kind=ANONYMOUS` registra rejeições sem UUID sentinela, handler e pré-handler usam rota normalizada sem body/cookie/token, `0021_audit_anonymous_rejections.sql` preserva append-only/RLS, e `requireLeastPrivilege` rejeita SUPERUSER/BYPASSRLS/CREATEROLE/CREATEDB/CREATE público/ownership. O pipeline completo passou: 96 arquivos/455 testes, 22 skips de arquivo/24 skips de teste, cobertura 84,56% statements, 80,28% branches, 85,41% functions e 85,30% lines; contratos 19/54, worker 4/24, migrações 22/22, build dos 12 workspaces, E2E 19/19, audit de dependências sem vulnerabilidades conhecidas, secrets/traceability/architecture/documentation/product-definition/exposure verdes; PostgreSQL live passou 25 arquivos/37 testes com owner de migration, role de aplicação e role administrativa separados; banco/roles descartáveis removidos
+- next_action: aplicar, com autoridade operacional, o grant matrix/owner de migration/rotação de credenciais em homologação e produção descartável e anexar evidência redigida; depois tratar collector/retention/traces/carga/failover, provider/MFA/entrega externa e os gates clínicos/piloto/publicação sem simular dependências
 
 ## BLOQUEIOS
 
-- blockers: CI-REMOTE-001 — **RESOLVIDO** nesta rodada com repositório privado, origin, SHA e workflow remoto verde; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; AUD-P1-002/004/005/006 — collector/retention/traces/carga/failover, operação de ambiente, rastreabilidade e banco autoral permanecem para seus itens próprios
+- blockers: CI-REMOTE-001 — **RESOLVIDO** nesta rodada com repositório privado, origin, SHA e workflow remoto verde; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; AUD-P1-002/004/005/006 — collector/retention/traces/carga/failover, operação de ambiente, grant matrix/owner de migration do papel produtivo, rastreabilidade e banco autoral permanecem para seus itens próprios; provedor de senha/MFA e entrega externa exigem autoridade/contratação operacional e não serão simulados
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-10T08:00:56-03:00
+- last_update: 2026-08-23T20:14:50-03:00
 
 ## REGRAS DE USO
 
