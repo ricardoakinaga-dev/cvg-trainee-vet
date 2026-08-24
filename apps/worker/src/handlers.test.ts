@@ -17,6 +17,8 @@ import {
   type AppealRecalculationCommand,
 } from "./handlers.js";
 
+const syntheticLeaseMarker = "lease-11111111-1111-4111-8111-111111111111";
+
 const baseEvent: OutboxEventRecord = {
   id: "11111111-1111-4111-8111-111111111111",
   eventType: "content.published.v1",
@@ -34,6 +36,7 @@ const baseEvent: OutboxEventRecord = {
   attempts: 1,
   availableAt: new Date("2026-08-09T17:00:00.000Z"),
   lockedUntil: new Date("2026-08-09T17:01:00.000Z"),
+  leaseToken: syntheticLeaseMarker,
   lastErrorCode: null,
   processedAt: null,
   createdAt: new Date("2026-08-09T17:00:00.000Z"),

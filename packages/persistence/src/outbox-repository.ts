@@ -19,6 +19,7 @@ export type OutboxEventRecord = Readonly<{
   readonly attempts: number;
   readonly availableAt: Date;
   readonly lockedUntil: Date | null;
+  readonly leaseToken: string | null;
   readonly lastErrorCode: string | null;
   readonly processedAt: Date | null;
   readonly createdAt: Date;
@@ -30,15 +31,20 @@ export interface OutboxRepositoryPort {
     now: Date,
     leaseSeconds: number,
   ) => Promise<readonly OutboxEventRecord[]>;
-  readonly markProcessed: (eventId: string, now: Date) => Promise<void>;
+  readonly markProcessed: (
+    eventId: string,
+    leaseToken: string,
+    now: Date,
+  ) => Promise<boolean>;
   readonly markFailed: (
     eventId: string,
+    leaseToken: string,
     attempts: number,
     errorCode: string,
     now: Date,
     retryAfterSeconds: number,
     maxAttempts: number,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 }
 
 export class OutboxMappingError extends Error {
@@ -101,6 +107,19 @@ function nullableStringValue(
   return value;
 }
 
+function nullableLeaseTokenValue(
+  record: Record<string, unknown>,
+): string | null {
+  const value = record.lease_token;
+  if (value === null) return null;
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new OutboxMappingError(
+      "lease_token must be a non-empty string or null",
+    );
+  }
+  return value;
+}
+
 function statusValue(value: string): OutboxStatus {
   if (
     !(["PENDING", "PROCESSING", "PROCESSED", "FAILED"] as const).includes(
@@ -135,6 +154,7 @@ export function outboxRowToRecord(value: unknown): OutboxEventRecord {
     attempts: integerValue(row, "attempts"),
     availableAt: dateValue(row, "available_at"),
     lockedUntil: nullableDateValue(row, "locked_until"),
+    leaseToken: nullableLeaseTokenValue(row),
     lastErrorCode: nullableStringValue(row, "last_error_code"),
     processedAt: nullableDateValue(row, "processed_at"),
     createdAt: dateValue(row, "created_at"),
@@ -167,19 +187,16 @@ export function createOutboxRepository(
       assertPositiveInteger(limit, "limit");
       assertPositiveInteger(leaseSeconds, "leaseSeconds");
       assertDate(now, "now");
-      const lockedUntil = new Date(now.getTime() + leaseSeconds * 1_000);
-      const nowIso = now.toISOString();
-      const lockedUntilIso = lockedUntil.toISOString();
       const result = await db.execute(sql`
         with candidates as (
           select id
           from outbox_events
           where (
-            status = 'PENDING' and available_at <= ${nowIso}::timestamptz
+            status = 'PENDING' and available_at <= statement_timestamp()
           ) or (
             status = 'PROCESSING'
             and locked_until is not null
-            and locked_until <= ${nowIso}::timestamptz
+            and locked_until <= statement_timestamp()
           )
           order by created_at asc
           for update skip locked
@@ -188,7 +205,9 @@ export function createOutboxRepository(
         update outbox_events as event
         set status = 'PROCESSING',
             attempts = event.attempts + 1,
-            locked_until = ${lockedUntilIso}::timestamptz,
+            locked_until = statement_timestamp() +
+              (${leaseSeconds} * interval '1 second'),
+            lease_token = gen_random_uuid()::text,
             last_error_code = null
         from candidates
         where event.id = candidates.id
@@ -196,29 +215,44 @@ export function createOutboxRepository(
       `);
       return (result as unknown[]).map(outboxRowToRecord);
     },
-    markProcessed: async (eventId: string, now: Date): Promise<void> => {
+    markProcessed: async (
+      eventId: string,
+      leaseToken: string,
+      now: Date,
+    ): Promise<boolean> => {
       if (eventId.trim().length === 0)
         throw new TypeError("eventId is required");
+      if (leaseToken.trim().length === 0)
+        throw new TypeError("leaseToken is required");
       assertDate(now, "now");
-      const nowIso = now.toISOString();
-      await db.execute(sql`
+      const result = await db.execute(sql`
         update outbox_events
         set status = 'PROCESSED',
-            processed_at = ${nowIso}::timestamptz,
-            locked_until = null
-        where id = ${eventId} and status = 'PROCESSING'
+            processed_at = statement_timestamp(),
+            locked_until = null,
+            lease_token = null
+        where id = ${eventId}
+          and status = 'PROCESSING'
+          and lease_token = ${leaseToken}
+          and locked_until is not null
+          and locked_until > statement_timestamp()
+        returning id
       `);
+      return (result as unknown[]).length > 0;
     },
     markFailed: async (
       eventId: string,
+      leaseToken: string,
       attempts: number,
       errorCode: string,
       now: Date,
       retryAfterSeconds: number,
       maxAttempts: number,
-    ): Promise<void> => {
+    ): Promise<boolean> => {
       if (eventId.trim().length === 0)
         throw new TypeError("eventId is required");
+      if (leaseToken.trim().length === 0)
+        throw new TypeError("leaseToken is required");
       if (errorCode.trim().length === 0)
         throw new TypeError("errorCode is required");
       assertPositiveInteger(attempts, "attempts");
@@ -229,17 +263,23 @@ export function createOutboxRepository(
       assertDate(now, "now");
       const nextStatus: OutboxStatus =
         attempts >= maxAttempts ? "FAILED" : "PENDING";
-      const availableAt = new Date(now.getTime() + retryAfterSeconds * 1_000);
-      const availableAtIso = availableAt.toISOString();
-      await db.execute(sql`
+      const result = await db.execute(sql`
         update outbox_events
         set status = ${nextStatus},
-            available_at = ${availableAtIso}::timestamptz,
+            available_at = statement_timestamp() +
+              (${retryAfterSeconds} * interval '1 second'),
             locked_until = null,
+            lease_token = null,
             last_error_code = ${errorCode},
             processed_at = null
-        where id = ${eventId} and status = 'PROCESSING'
+        where id = ${eventId}
+          and status = 'PROCESSING'
+          and lease_token = ${leaseToken}
+          and locked_until is not null
+          and locked_until > statement_timestamp()
+        returning id
       `);
+      return (result as unknown[]).length > 0;
     },
   };
   return Object.freeze(repository);

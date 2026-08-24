@@ -23,6 +23,13 @@ export type WorkerBatchResult = Readonly<{
   readonly failed: number;
 }>;
 
+class WorkerLeaseLostError extends Error {
+  public constructor(message = "worker lease is no longer owned") {
+    super(message);
+    this.name = "WorkerLeaseLostError";
+  }
+}
+
 function positiveInteger(value: number, field: string): void {
   if (!Number.isInteger(value) || value < 1) {
     throw new RangeError(`${field} must be a positive integer`);
@@ -71,9 +78,17 @@ export async function processOutboxOnce(
   for (const event of events) {
     const handler = handlers[event.eventType];
     try {
+      if (event.leaseToken === null) {
+        throw new WorkerLeaseLostError("worker lease token is missing");
+      }
       if (handler === undefined) throw new Error("unhandled event");
       await handler(event);
-      await repository.markProcessed(event.id, now);
+      const markedProcessed = await repository.markProcessed(
+        event.id,
+        event.leaseToken,
+        options.now ?? new Date(),
+      );
+      if (!markedProcessed) throw new WorkerLeaseLostError();
       processed += 1;
       options.observability?.metrics.increment("worker.events.processed", {
         event_type: event.eventType,
@@ -83,15 +98,38 @@ export async function processOutboxOnce(
         correlationId: event.correlationId,
         fields: { event_type: event.eventType, outcome: "success" },
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof WorkerLeaseLostError) {
+        failed += 1;
+        options.observability?.metrics.increment("worker.events.failed", {
+          event_type: event.eventType,
+          outcome: "lease_lost",
+        });
+        options.observability?.logger.warn("worker.event.failed", {
+          correlationId: event.correlationId,
+          fields: {
+            event_type: event.eventType,
+            error_code: "worker_lease_lost",
+            outcome: "lease_lost",
+            retryable: true,
+          },
+        });
+        continue;
+      }
       const terminal = event.attempts >= maxAttempts;
-      await repository.markFailed(
+      const leaseToken = event.leaseToken;
+      if (leaseToken === null) {
+        failed += 1;
+        continue;
+      }
+      const markedFailed = await repository.markFailed(
         event.id,
+        leaseToken,
         event.attempts,
         handler === undefined
           ? "worker_event_unhandled"
           : "worker_handler_failed",
-        now,
+        options.now ?? new Date(),
         terminal
           ? 0
           : retryDelay(event.attempts, baseRetrySeconds, maxRetrySeconds),
@@ -100,7 +138,11 @@ export async function processOutboxOnce(
       failed += 1;
       options.observability?.metrics.increment("worker.events.failed", {
         event_type: event.eventType,
-        outcome: terminal ? "dead_letter" : "retry",
+        outcome: markedFailed
+          ? terminal
+            ? "dead_letter"
+            : "retry"
+          : "lease_lost",
       });
       options.observability?.logger.warn("worker.event.failed", {
         correlationId: event.correlationId,
@@ -110,8 +152,12 @@ export async function processOutboxOnce(
             handler === undefined
               ? "worker_event_unhandled"
               : "worker_handler_failed",
-          outcome: terminal ? "dead_letter" : "retry",
-          retryable: !terminal,
+          outcome: markedFailed
+            ? terminal
+              ? "dead_letter"
+              : "retry"
+            : "lease_lost",
+          retryable: !terminal || !markedFailed,
         },
       });
     }

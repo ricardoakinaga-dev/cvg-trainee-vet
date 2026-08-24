@@ -5,6 +5,8 @@ import type { OutboxEventRecord, OutboxRepositoryPort } from "@cvg/persistence";
 
 import { processOutboxOnce, type WorkerEventHandler } from "./loop.js";
 
+const syntheticLeaseMarker = "lease-11111111-1111-4111-8111-111111111111";
+
 const event: OutboxEventRecord = {
   id: "11111111-1111-4111-8111-111111111111",
   eventType: "content.published.v1",
@@ -18,12 +20,17 @@ const event: OutboxEventRecord = {
   attempts: 1,
   availableAt: new Date("2026-08-09T17:00:00.000Z"),
   lockedUntil: new Date("2026-08-09T17:01:00.000Z"),
+  leaseToken: syntheticLeaseMarker,
   lastErrorCode: null,
   processedAt: null,
   createdAt: new Date("2026-08-09T17:00:00.000Z"),
 };
 
-function outbox(events: readonly OutboxEventRecord[]): OutboxRepositoryPort & {
+function outbox(
+  events: readonly OutboxEventRecord[],
+  markProcessedOverride?: OutboxRepositoryPort["markProcessed"],
+  markFailedOverride?: OutboxRepositoryPort["markFailed"],
+): OutboxRepositoryPort & {
   readonly processed: string[];
   readonly failures: string[];
 } {
@@ -33,12 +40,18 @@ function outbox(events: readonly OutboxEventRecord[]): OutboxRepositoryPort & {
     processed,
     failures,
     claim: vi.fn(async () => events),
-    markProcessed: vi.fn(async (eventId: string) => {
-      processed.push(eventId);
-    }),
-    markFailed: vi.fn(async (eventId: string) => {
-      failures.push(eventId);
-    }),
+    markProcessed:
+      markProcessedOverride ??
+      vi.fn(async (eventId: string) => {
+        processed.push(eventId);
+        return true;
+      }),
+    markFailed:
+      markFailedOverride ??
+      vi.fn(async (eventId: string) => {
+        failures.push(eventId);
+        return true;
+      }),
   };
 }
 
@@ -51,6 +64,11 @@ describe("outbox worker loop", () => {
       processOutboxOnce(repository, { "content.published.v1": handler }),
     ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
     expect(handler).toHaveBeenCalledWith(event);
+    expect(repository.markProcessed).toHaveBeenCalledWith(
+      event.id,
+      event.leaseToken,
+      expect.any(Date),
+    );
     expect(repository.processed).toEqual([event.id]);
     expect(repository.failures).toEqual([]);
   });
@@ -73,6 +91,7 @@ describe("outbox worker loop", () => {
     ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
     expect(repository.markFailed).toHaveBeenCalledWith(
       event.id,
+      event.leaseToken,
       2,
       "worker_handler_failed",
       expect.any(Date),
@@ -89,6 +108,7 @@ describe("outbox worker loop", () => {
     ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
     expect(repository.markFailed).toHaveBeenCalledWith(
       event.id,
+      event.leaseToken,
       3,
       "worker_event_unhandled",
       expect.any(Date),
@@ -165,5 +185,56 @@ describe("outbox worker loop", () => {
       fields: { claimed: 2, processed: 1, failed: 1, outcome: "partial" },
     });
     expect(JSON.stringify(records)).not.toContain("internal payload");
+  });
+
+  it("does not count a stale worker as successful after its lease is fenced", async () => {
+    const markProcessed = vi.fn<OutboxRepositoryPort["markProcessed"]>(
+      async () => false,
+    );
+    const repository = outbox([event], markProcessed);
+    const handler = vi.fn<WorkerEventHandler>(async () => undefined);
+
+    await expect(
+      processOutboxOnce(repository, { "content.published.v1": handler }),
+    ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
+    expect(handler).toHaveBeenCalledWith(event);
+    expect(repository.markProcessed).toHaveBeenCalledWith(
+      event.id,
+      event.leaseToken,
+      expect.any(Date),
+    );
+    expect(repository.markFailed).not.toHaveBeenCalled();
+  });
+
+  it("does not report retry or dead-letter when failure fencing rejects the update", async () => {
+    const records: LogRecord[] = [];
+    const observability = createObservability({
+      service: "worker",
+      sink: (record) => records.push(record),
+    });
+    const markFailed = vi.fn<OutboxRepositoryPort["markFailed"]>(
+      async () => false,
+    );
+    const repository = outbox([event], undefined, markFailed);
+    const handler = vi.fn<WorkerEventHandler>(async () => {
+      throw new Error("stale handler failure");
+    });
+
+    await expect(
+      processOutboxOnce(
+        repository,
+        { "content.published.v1": handler },
+        { observability },
+      ),
+    ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
+    expect(records).toContainEqual(
+      expect.objectContaining({
+        event: "worker.event.failed",
+        fields: expect.objectContaining({
+          error_code: "worker_handler_failed",
+          outcome: "lease_lost",
+        }),
+      }),
+    );
   });
 });

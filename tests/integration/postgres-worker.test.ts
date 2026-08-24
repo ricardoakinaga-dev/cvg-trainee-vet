@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import type { AiTextPort } from "../../packages/integrations/src/ai.js";
@@ -65,6 +65,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               },
             }),
             availableAt: processingNow,
+            createdAt: processingNow,
           },
           {
             ...createOutboxInsert({
@@ -78,6 +79,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
               payload: { content_id: contentId, version: "1" },
             }),
             availableAt: processingNow,
+            createdAt: processingNow,
           },
         ]);
 
@@ -171,6 +173,176 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       }
     });
 
+    it("fences a stale lease before a reclaimed worker can finalize the event", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const database = createPostgresDatabase(databaseUrl);
+      const eventId = randomUUID();
+      const aggregateId = randomUUID();
+      const now = new Date();
+
+      try {
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "synthetic.lease.fenced.v1",
+            aggregateType: "synthetic",
+            aggregateId,
+            occurredAt: now.toISOString(),
+            schemaVersion: 1,
+            correlationId: randomUUID(),
+            payload: { operation: "lease-fencing" },
+          }),
+          availableAt: now,
+          createdAt: now,
+        });
+
+        const repository = createOutboxRepository(database.db);
+        const firstClaim = await repository.claim(1, now, 60);
+        const first = firstClaim[0];
+        if (first === undefined || first.leaseToken === null) {
+          throw new Error("first claim must carry a lease token");
+        }
+
+        await expect(
+          database.db.execute(sql`
+            update outbox_events
+            set status = 'PROCESSED',
+                processed_at = statement_timestamp(),
+                locked_until = null
+            where id = ${eventId}
+          `),
+        ).rejects.toThrow();
+        await database.db.execute(sql`
+          update outbox_events
+          set locked_until = statement_timestamp() - interval '1 second'
+          where id = ${eventId}
+        `);
+
+        const secondClaim = await repository.claim(1, new Date(), 60);
+        const second = secondClaim[0];
+        if (second === undefined || second.leaseToken === null) {
+          throw new Error("reclaimed claim must carry a lease token");
+        }
+        expect(second.leaseToken).not.toBe(first.leaseToken);
+
+        await expect(
+          repository.markProcessed(eventId, first.leaseToken, new Date()),
+        ).resolves.toBe(false);
+        await expect(
+          repository.markProcessed(eventId, second.leaseToken, new Date()),
+        ).resolves.toBe(true);
+
+        const stored = await database.db
+          .select({
+            status: outboxEvents.status,
+            attempts: outboxEvents.attempts,
+            leaseToken: outboxEvents.leaseToken,
+          })
+          .from(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        expect(stored).toEqual([
+          { status: "PROCESSED", attempts: 2, leaseToken: null },
+        ]);
+      } finally {
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        await database.close();
+      }
+    });
+
+    it("fences a stale worker failure before the reclaimed worker retries", async () => {
+      if (databaseUrl === undefined)
+        throw new Error("test database URL is required");
+
+      const database = createPostgresDatabase(databaseUrl);
+      const eventId = randomUUID();
+      const now = new Date();
+
+      try {
+        await database.db.insert(outboxEvents).values({
+          ...createOutboxInsert({
+            eventId,
+            eventType: "synthetic.lease.failure-fenced.v1",
+            aggregateType: "synthetic",
+            aggregateId: randomUUID(),
+            occurredAt: now.toISOString(),
+            schemaVersion: 1,
+            correlationId: randomUUID(),
+            payload: { operation: "lease-failure-fencing" },
+          }),
+          availableAt: now,
+          createdAt: now,
+        });
+
+        const repository = createOutboxRepository(database.db);
+        const firstClaim = await repository.claim(1, now, 60);
+        const first = firstClaim[0];
+        if (first === undefined || first.leaseToken === null) {
+          throw new Error("first claim must carry a lease token");
+        }
+
+        await database.db.execute(sql`
+          update outbox_events
+          set locked_until = statement_timestamp() - interval '1 second'
+          where id = ${eventId}
+        `);
+        const secondClaim = await repository.claim(1, new Date(), 60);
+        const second = secondClaim[0];
+        if (second === undefined || second.leaseToken === null) {
+          throw new Error("reclaimed claim must carry a lease token");
+        }
+
+        await expect(
+          repository.markFailed(
+            eventId,
+            first.leaseToken,
+            first.attempts,
+            "stale_failure",
+            new Date(),
+            0,
+            3,
+          ),
+        ).resolves.toBe(false);
+        await expect(
+          repository.markFailed(
+            eventId,
+            second.leaseToken,
+            second.attempts,
+            "reclaimed_failure",
+            new Date(),
+            0,
+            3,
+          ),
+        ).resolves.toBe(true);
+
+        const stored = await database.db
+          .select({
+            status: outboxEvents.status,
+            attempts: outboxEvents.attempts,
+            leaseToken: outboxEvents.leaseToken,
+            lastErrorCode: outboxEvents.lastErrorCode,
+          })
+          .from(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        expect(stored).toEqual([
+          {
+            status: "PENDING",
+            attempts: 2,
+            leaseToken: null,
+            lastErrorCode: "reclaimed_failure",
+          },
+        ]);
+      } finally {
+        await database.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.id, eventId));
+        await database.close();
+      }
+    });
+
     it("reclaims an expired lease and reaches dead-letter after bounded retries", async () => {
       if (databaseUrl === undefined)
         throw new Error("test database URL is required");
@@ -226,6 +398,11 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           }),
         ]);
 
+        await database.db.execute(sql`
+          update outbox_events
+          set locked_until = statement_timestamp() - interval '1 second'
+          where id = ${leaseEventId}
+        `);
         const reclaimedLease = await repository.claim(1, retryNow, 1);
         expect(reclaimedLease).toEqual([
           expect.objectContaining({
@@ -235,9 +412,12 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           }),
         ]);
         const reclaimed = reclaimedLease[0];
-        if (reclaimed === undefined) throw new Error("lease was not reclaimed");
+        if (reclaimed === undefined || reclaimed.leaseToken === null) {
+          throw new Error("lease was not reclaimed with a token");
+        }
         await repository.markFailed(
           reclaimed.id,
+          reclaimed.leaseToken,
           reclaimed.attempts,
           "synthetic_terminal",
           retryNow,

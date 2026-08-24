@@ -23,6 +23,8 @@ import {
 } from "../../packages/persistence/src/index.js";
 import type { OutboxEventRecord } from "../../packages/persistence/src/index.js";
 
+const syntheticLeaseMarker = "lease-11111111-1111-4111-8111-111111111111";
+
 const runLiveTests =
   process.env.CVG_RUN_LIVE_DB_TESTS === "true" &&
   process.env.CVG_RUN_LIVE_QDRANT_TESTS === "true";
@@ -168,6 +170,7 @@ describe.skipIf(
         attempts: 1,
         availableAt: new Date("2026-08-10T08:00:00.000Z"),
         lockedUntil: new Date("2026-08-10T08:01:00.000Z"),
+        leaseToken: syntheticLeaseMarker,
         lastErrorCode: null,
         processedAt: null,
         createdAt: new Date("2026-08-10T08:00:00.000Z"),

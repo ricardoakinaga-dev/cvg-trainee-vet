@@ -755,6 +755,7 @@ export const outboxEvents = pgTable(
       .notNull()
       .defaultNow(),
     lockedUntil: timestamp("locked_until", { withTimezone: true }),
+    leaseToken: text("lease_token"),
     lastErrorCode: text("last_error_code"),
     processedAt: timestamp("processed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -772,6 +773,10 @@ export const outboxEvents = pgTable(
       sql`${table.status} in ('PENDING', 'PROCESSING', 'PROCESSED', 'FAILED')`,
     ),
     check("outbox_events_attempts_check", sql`${table.attempts} >= 0`),
+    check(
+      "outbox_events_lease_token_check",
+      sql`${table.leaseToken} is null or length(trim(${table.leaseToken})) > 0`,
+    ),
   ],
 );
 

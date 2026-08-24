@@ -8,6 +8,8 @@ import {
 } from "./outbox-repository.js";
 import type * as schema from "./schema.js";
 
+const syntheticLeaseMarker = "lease-11111111-1111-4111-8111-111111111111";
+
 const row = {
   id: "11111111-1111-4111-8111-111111111111",
   event_type: "content.published.v1",
@@ -21,6 +23,7 @@ const row = {
   attempts: 1,
   available_at: new Date("2026-08-09T17:00:00.000Z"),
   locked_until: new Date("2026-08-09T17:01:00.000Z"),
+  lease_token: syntheticLeaseMarker,
   last_error_code: null,
   processed_at: null,
   created_at: new Date("2026-08-09T17:00:00.000Z"),
@@ -41,6 +44,7 @@ describe("outbox persistence", () => {
       eventType: row.event_type,
       status: "PROCESSING",
       attempts: 1,
+      leaseToken: row.lease_token,
     });
     expect(JSON.stringify(mapped.payload)).not.toContain("participantText");
   });
@@ -51,6 +55,7 @@ describe("outbox persistence", () => {
       occurred_at: "2026-08-09T17:00:00.000Z",
       available_at: "2026-08-09T17:00:00.000Z",
       locked_until: "2026-08-09T17:01:00.000Z",
+      lease_token: syntheticLeaseMarker,
       last_error_code: "temporary_failure",
       processed_at: "2026-08-09T17:02:00.000Z",
       created_at: "2026-08-09T17:00:00.000Z",
@@ -106,6 +111,9 @@ describe("outbox persistence", () => {
         OutboxMappingError,
       );
     }
+    expect(() => outboxRowToRecord({ ...row, lease_token: " " })).toThrow(
+      OutboxMappingError,
+    );
     expect(() => outboxRowToRecord({ ...row, last_error_code: 10 })).toThrow(
       OutboxMappingError,
     );
@@ -120,12 +128,45 @@ describe("outbox persistence", () => {
       outboxRowToRecord(row),
     ]);
     await expect(
-      repository.markProcessed(row.id, now),
-    ).resolves.toBeUndefined();
+      repository.markProcessed(
+        row.id,
+        "lease-11111111-1111-4111-8111-111111111111",
+        now,
+      ),
+    ).resolves.toBe(true);
     await expect(
-      repository.markFailed(row.id, 1, "handler_failed", now, 30, 3),
-    ).resolves.toBeUndefined();
+      repository.markFailed(
+        row.id,
+        "lease-11111111-1111-4111-8111-111111111111",
+        1,
+        "handler_failed",
+        now,
+        30,
+        3,
+      ),
+    ).resolves.toBe(true);
     expect(database.execute).toHaveBeenCalledTimes(3);
+  });
+
+  it("reports a fenced update when PostgreSQL returns no affected row", async () => {
+    const database = fakeDatabase([]);
+    const repository = createOutboxRepository(database);
+    const now = new Date("2026-08-09T17:00:00.000Z");
+
+    await expect(
+      repository.markProcessed(row.id, "lease-token", now),
+    ).resolves.toBe(false);
+    await expect(
+      repository.markFailed(
+        row.id,
+        "lease-token",
+        1,
+        "stale_failure",
+        now,
+        0,
+        2,
+      ),
+    ).resolves.toBe(false);
   });
 
   it("validates lease, completion, and retry parameters before SQL", async () => {
@@ -137,27 +178,43 @@ describe("outbox persistence", () => {
     await expect(repository.claim(0, now, 1)).rejects.toThrow("limit");
     await expect(repository.claim(1, now, 0)).rejects.toThrow("leaseSeconds");
     await expect(repository.claim(1, invalidDate, 1)).rejects.toThrow("now");
-    await expect(repository.markProcessed("", now)).rejects.toThrow("eventId");
-    await expect(repository.markProcessed(row.id, invalidDate)).rejects.toThrow(
-      "now",
+    await expect(
+      repository.markProcessed("", "lease-token", now),
+    ).rejects.toThrow("eventId");
+    await expect(repository.markProcessed(row.id, " ", now)).rejects.toThrow(
+      "leaseToken",
     );
     await expect(
-      repository.markFailed("", 1, "failure", now, 0, 2),
+      repository.markProcessed(row.id, "lease-token", invalidDate),
+    ).rejects.toThrow("now");
+    await expect(
+      repository.markFailed("", "lease-token", 1, "failure", now, 0, 2),
     ).rejects.toThrow("eventId");
     await expect(
-      repository.markFailed(row.id, 1, " ", now, 0, 2),
+      repository.markFailed(row.id, " ", 1, "failure", now, 0, 2),
+    ).rejects.toThrow("leaseToken");
+    await expect(
+      repository.markFailed(row.id, "lease-token", 1, " ", now, 0, 2),
     ).rejects.toThrow("errorCode");
     await expect(
-      repository.markFailed(row.id, 0, "failure", now, 0, 2),
+      repository.markFailed(row.id, "lease-token", 0, "failure", now, 0, 2),
     ).rejects.toThrow("attempts");
     await expect(
-      repository.markFailed(row.id, 1, "failure", now, 0, 0),
+      repository.markFailed(row.id, "lease-token", 1, "failure", now, 0, 0),
     ).rejects.toThrow("maxAttempts");
     await expect(
-      repository.markFailed(row.id, 1, "failure", now, -1, 2),
+      repository.markFailed(row.id, "lease-token", 1, "failure", now, -1, 2),
     ).rejects.toThrow("retryAfterSeconds");
     await expect(
-      repository.markFailed(row.id, 1, "failure", invalidDate, 0, 2),
+      repository.markFailed(
+        row.id,
+        "lease-token",
+        1,
+        "failure",
+        invalidDate,
+        0,
+        2,
+      ),
     ).rejects.toThrow("now");
   });
 
@@ -166,8 +223,24 @@ describe("outbox persistence", () => {
     const repository = createOutboxRepository(database);
     const now = new Date("2026-08-09T17:00:00.000Z");
 
-    await repository.markFailed(row.id, 1, "temporary_failure", now, 10, 2);
-    await repository.markFailed(row.id, 2, "terminal_failure", now, 0, 2);
+    await repository.markFailed(
+      row.id,
+      "lease-token",
+      1,
+      "temporary_failure",
+      now,
+      10,
+      2,
+    );
+    await repository.markFailed(
+      row.id,
+      "lease-token",
+      2,
+      "terminal_failure",
+      now,
+      0,
+      2,
+    );
 
     expect(database.execute).toHaveBeenCalledTimes(2);
   });
