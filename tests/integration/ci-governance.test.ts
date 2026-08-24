@@ -52,4 +52,20 @@ describe("CI reproducibility contract", () => {
     );
     expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
   });
+
+  it("provisions distinct migration, application, and fixture roles", async () => {
+    const contract = await readCiContract();
+
+    expect(contract.workflow).toMatch(
+      /CVG_MIGRATION_DATABASE_URL: postgresql:\/\/cvg:/u,
+    );
+    expect(contract.workflow).toMatch(/DATABASE_URL: postgresql:\/\/cvg_app:/u);
+    expect(contract.workflow).toMatch(
+      /CVG_TEST_ADMIN_DATABASE_URL: postgresql:\/\/cvg_test_admin:/u,
+    );
+    expect(contract.workflow).toMatch(
+      /run: node scripts\/provision-ci-postgres\.mjs/u,
+    );
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
 });

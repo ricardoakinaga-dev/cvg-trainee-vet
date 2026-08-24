@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { transitionAppealReviewState } from "../../packages/application/src/index.js";
@@ -222,27 +222,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           { appealVersion: 4, eventType: "CONCLUIR_RECALCULO" },
         ]);
       } finally {
-        await admin.db
-          .delete(outboxEvents)
-          .where(eq(outboxEvents.aggregateId, appealId));
-        await admin.db
-          .delete(appealReviewHistory)
-          .where(eq(appealReviewHistory.appealId, appealId));
-        await admin.db
-          .delete(assessmentResults)
-          .where(eq(assessmentResults.attemptId, attemptId));
-        await admin.db.delete(appeals).where(eq(appeals.id, appealId));
-        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
-        await admin.db
-          .delete(learningActivities)
-          .where(
-            and(
-              eq(learningActivities.id, activityId),
-              eq(learningActivities.scopeId, scopeId),
-            ),
-          );
-        await admin.db.delete(accounts).where(eq(accounts.id, participantId));
-        await admin.db.delete(accounts).where(eq(accounts.id, reviewerId));
+        // The history is append-only by design. This suite runs against a
+        // disposable database, so retaining this synthetic aggregate is safer
+        // than weakening the trigger for fixture cleanup.
         await closeLivePostgresHarness(harness);
       }
     });

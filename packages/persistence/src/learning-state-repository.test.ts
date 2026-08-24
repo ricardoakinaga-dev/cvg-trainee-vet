@@ -40,6 +40,7 @@ type FakeBuilder = {
 
 type FakeSelectBuilder = {
   from: () => FakeSelectBuilder;
+  innerJoin: () => FakeSelectBuilder;
   where: () => FakeSelectBuilder;
   orderBy: () => FakeSelectBuilder;
   limit: () => Promise<readonly unknown[]>;
@@ -79,6 +80,7 @@ function createFakeDatabase(
   const createSelectBuilder = (): FakeSelectBuilder => {
     const builder: FakeSelectBuilder = {
       from: () => builder,
+      innerJoin: () => builder,
       where: () => builder,
       orderBy: () => builder,
       limit: async () => selectQueue.shift() ?? [],
@@ -383,6 +385,7 @@ describe("learning state persistence mappings", () => {
       [
         [assignmentRow(assignmentId, "NAO_ATRIBUIDO", 0)],
         [assignmentRow(assignmentId, "ATRIBUIDO", 1)],
+        [],
         [workflowRow(resultId, "RESULTADO_EM_PROCESSAMENTO", 0)],
         [workflowRow(resultId, "RESULTADO_DISPONIVEL", 1)],
         [ticketRow(ticketId, "NOVO", 0)],
@@ -479,6 +482,7 @@ describe("learning state persistence mappings", () => {
         [
           [assignmentRow(assignmentId, "NAO_ATRIBUIDO", 0)],
           [assignmentRow(assignmentId, "ATRIBUIDO", 1)],
+          [],
         ],
         [[{ id: assignmentId }], [{ id: assignmentId }]],
         {

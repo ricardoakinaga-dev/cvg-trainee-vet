@@ -28,6 +28,10 @@ const requiredWorkflowChecks = Object.freeze([
   ["quality verification", /run:\s*pnpm verify\b/u],
   ["release traceability", /run:\s*pnpm verify:traceability:release\b/u],
   ["database migrations", /run:\s*pnpm db:migrate\b/u],
+  [
+    "least-privilege database roles",
+    /run:\s*node scripts\/provision-ci-postgres\.mjs/u,
+  ],
   ["live PostgreSQL integration", /run:\s*pnpm test:integration:live\b/u],
   ["live Qdrant integration", /run:\s*pnpm test:integration:qdrant\b/u],
   ["synthetic restore", /run:\s*pnpm test:integration:restore\b/u],

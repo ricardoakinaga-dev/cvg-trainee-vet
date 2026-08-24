@@ -1,17 +1,15 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { transitionAppealReviewState } from "../../packages/application/src/index.js";
 import { createAppealReviewTransitionRepository } from "../../packages/persistence/src/index.js";
 import {
   accounts,
-  appealReviewHistory,
   appeals,
   attempts,
   learningActivities,
-  outboxEvents,
 } from "../../packages/persistence/src/schema.js";
 import {
   closeLivePostgresHarness,
@@ -154,8 +152,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         ).resolves.toBeNull();
 
         if (
-          !database.applicationRole.isSuperuser &&
-          !database.applicationRole.bypassesRls
+          !harness.applicationRole.isSuperuser &&
+          !harness.applicationRole.bypassesRls
         ) {
           const noContextRows = await database.db.transaction((tx) =>
             tx.execute(sql`select id from appeals where id = ${appealId}`),
@@ -181,32 +179,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           decisionCorrelationId,
         });
       } finally {
-        await admin.db
-          .delete(outboxEvents)
-          .where(eq(outboxEvents.aggregateId, appealId));
-        await admin.db
-          .delete(appealReviewHistory)
-          .where(eq(appealReviewHistory.appealId, appealId));
-        await admin.db.delete(appeals).where(eq(appeals.id, appealId));
-        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
-        await admin.db
-          .delete(learningActivities)
-          .where(
-            and(
-              eq(learningActivities.id, activityId),
-              eq(learningActivities.scopeId, scopeId),
-            ),
-          );
-        await admin.db
-          .delete(accounts)
-          .where(
-            and(eq(accounts.id, participantId), eq(accounts.status, "ACTIVE")),
-          );
-        await admin.db
-          .delete(accounts)
-          .where(
-            and(eq(accounts.id, reviewerId), eq(accounts.status, "ACTIVE")),
-          );
+        // The history is append-only by design. This suite runs against a
+        // disposable database, so retaining this synthetic aggregate is safer
+        // than weakening the trigger for fixture cleanup.
         await closeLivePostgresHarness(harness);
       }
     });

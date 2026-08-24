@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AppealDecision,
@@ -763,8 +763,37 @@ async function syncBoundActivityAssignmentStatus(
   tx: DatabaseTransaction,
   context: PersistenceContext,
   assignmentId: string,
+  moduleId: string,
   status: PersistedAssignmentStatus,
 ): Promise<void> {
+  const inconsistentBinding = await tx
+    .select({ activityId: activityAssignments.activityId })
+    .from(activityAssignments)
+    .innerJoin(
+      learningActivities,
+      eq(activityAssignments.activityId, learningActivities.id),
+    )
+    .innerJoin(
+      learningAssignments,
+      eq(activityAssignments.learningAssignmentId, learningAssignments.id),
+    )
+    .where(
+      and(
+        eq(activityAssignments.participantId, context.participantId),
+        eq(activityAssignments.learningAssignmentId, assignmentId),
+        eq(learningAssignments.participantId, context.participantId),
+        eq(learningAssignments.scopeId, context.scopeId),
+        eq(learningActivities.scopeId, context.scopeId),
+        eq(learningActivities.status, "PUBLISHED"),
+        isNotNull(learningActivities.moduleId),
+        ne(learningActivities.moduleId, moduleId),
+      ),
+    )
+    .limit(1);
+  if (inconsistentBinding[0] !== undefined) {
+    conflict("bound activity module does not match learning assignment");
+  }
+
   const publishedActivityIds = tx
     .select({ id: learningActivities.id })
     .from(learningActivities)
@@ -894,6 +923,7 @@ export function createLearningStateRepository(
           tx,
           context,
           row.id,
+          row.moduleId,
           row.status,
         );
       }

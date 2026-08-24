@@ -25,18 +25,22 @@ import {
 
 const databaseUrl =
   process.env.DATABASE_URL ?? process.env.CVG_TEST_DATABASE_URL;
+const fixtureDatabaseUrl =
+  process.env.CVG_REAL_E2E_DATABASE_URL?.trim() ?? databaseUrl;
 const fixtureFile =
   process.env.CVG_REAL_E2E_FIXTURE_FILE ?? "/tmp/cvg-real-e2e-fixture.json";
 const port = Number(process.env.CVG_REAL_E2E_FIXTURE_PORT ?? "3102");
 
-if (databaseUrl === undefined) {
-  throw new Error("DATABASE_URL or CVG_TEST_DATABASE_URL is required");
+if (databaseUrl === undefined || fixtureDatabaseUrl === undefined) {
+  throw new Error(
+    "DATABASE_URL or CVG_TEST_DATABASE_URL is required for the API and fixture database",
+  );
 }
 if (!Number.isInteger(port) || port < 1 || port > 65_535) {
   throw new Error("CVG_REAL_E2E_FIXTURE_PORT is invalid");
 }
 
-const database = createPostgresDatabase(databaseUrl);
+const database = createPostgresDatabase(fixtureDatabaseUrl);
 const adminId = randomUUID();
 const scopeId = randomUUID();
 const activityId = randomUUID();

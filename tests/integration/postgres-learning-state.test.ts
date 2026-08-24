@@ -7,7 +7,6 @@ import {
   createAssessmentWorkflowResult,
   createFeedbackTicket,
   createLearningAssignment,
-  transitionAppeal,
   transitionAssessmentWorkflowResult,
   transitionFeedbackTicket,
   transitionLearningAssignment,
@@ -54,7 +53,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
 
       const participantId = randomUUID();
       const otherParticipantId = randomUUID();
-      const reviewerId = randomUUID();
       const scopeId = randomUUID();
       const otherScopeId = randomUUID();
       const activityId = randomUUID();
@@ -78,11 +76,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           {
             id: otherParticipantId,
             professionalEmail: `state-other-${otherParticipantId}@example.invalid`,
-            status: "ACTIVE",
-          },
-          {
-            id: reviewerId,
-            professionalEmail: `state-reviewer-${reviewerId}@example.invalid`,
             status: "ACTIVE",
           },
         ]);
@@ -164,12 +157,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           justification: "Solicito revisão do item sintético.",
           createdAt: "2026-08-10T12:00:00.000Z",
         });
-        const appeal = transitionAppeal(initialAppeal, {
-          type: "ATRIBUIR_REVISOR",
-          reviewerId,
-        });
         await repository.saveAppeal(context, initialAppeal);
-        await repository.saveAppeal(context, appeal);
 
         expect(
           await repository.findLearningAssignment(context, assignmentId),
@@ -185,7 +173,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           state: { status: "TRIADO", version: 1 },
         });
         expect(await repository.findAppeal(context, appealId)).toMatchObject({
-          state: { status: "EM_REVISAO", reviewerId, version: 1 },
+          state: { status: "ABERTA", version: 0 },
         });
         expect(
           await createAppealReadRepository(database.db).listAppeals(
@@ -195,7 +183,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         ).toMatchObject([
           {
             scopeId,
-            state: { appealId, attemptId, status: "EM_REVISAO" },
+            state: { appealId, attemptId, status: "ABERTA" },
           },
         ]);
 
@@ -361,7 +349,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db
           .delete(accounts)
           .where(eq(accounts.id, otherParticipantId));
-        await admin.db.delete(accounts).where(eq(accounts.id, reviewerId));
         if (rlsRoleCreated) {
           await admin.db.execute(
             sql.raw(
