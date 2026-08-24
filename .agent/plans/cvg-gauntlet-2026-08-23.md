@@ -181,13 +181,14 @@ recorded as a gap rather than converted into PASS.
 
 ## Current next action
 
-APPEAL-037 now has RED/GREEN/REFACTOR evidence for strict contracts,
+APPEAL-037 has RED/GREEN/REFACTOR evidence for strict contracts,
 authorization, application projection, persistence query/context, HTTP, the
 operations surface and E2E/axe. The live PostgreSQL boundary remains skipped
 without `CVG_TEST_DATABASE_URL`; the fresh read-only critic attempt timed out
-without a report and is not a PASS. Next: run the full regression, review the
-diff, bind code/docs to commits and run the clean release traceability gate.
-The milestone must not claim production, clinical, pilot, or CPD readiness.
+without a report and is not a PASS. Full regression and the clean release
+traceability gate passed; code is `d9dbf2f09c41a763d5607ef61c315f78f587ccb2`
+and docs are `b772b66b38e0dab43a6d91bc131219e668b8e912`. The milestone must not
+claim production, clinical, pilot, or CPD readiness.
 
 ## Progress history
 

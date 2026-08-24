@@ -4993,3 +4993,46 @@ IN_PROGRESS
 
 Revisar e commitar o conjunto documental; depois rodar o release traceability
 gate com worktree limpo e registrar o SHA documental.
+
+## 2026-08-24 — APPEAL-037: release traceability local fechado
+
+### TIMESTAMP
+
+2026-08-24 00:07:06 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### SPRINT
+
+APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
+
+### TASK
+
+APPEAL-2026-08-24-L — fechar a fatia local sem alegar prontidão externa
+
+### ACTION
+
+O conjunto documental foi consolidado no commit
+`b772b66b38e0dab43a6d91bc131219e668b8e912`, após o código
+`d9dbf2f09c41a763d5607ef61c315f78f587ccb2`. Foi executado
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo.
+
+### RESULT
+
+O release gate passou: os caminhos de código/teste estão rastreados e o
+artefato APPEAL-037 resolve para commit alcançável. A fatia fica
+`COMPLETED_WITH_GAPS` e o runtime state avança para `READY_FOR_NEXT_STEP`.
+PostgreSQL/RLS live, reviewer assignment, decisão, recálculo, notificações,
+provider/MFA, auditoria operacional, aprovação clínica, piloto e produção não
+foram simulados nem inferidos.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Disponibilizar o ambiente PostgreSQL/RLS autorizado para a prova live ou
+selecionar a próxima lacuna local priorizada pelo backlog.

@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
-- current_task: APPEAL-2026-08-23-K — fechar GREEN, evidência e release gate da fila interna
+- current_task: APPEAL-2026-08-24-L — fechar APPEAL-037 e entregar a próxima ação
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: APPEAL-037 passou o `pnpm verify` final após a documentação: 106 arquivos/508 testes, 26 skips, cobertura 84,50%/80,35%/85,64%/85,21%, contratos 62/62, worker 24/24, migrations 23/23, secrets, arquitetura, documentação, product-definition e exposure; build 12 workspaces, E2E 22/22 e audit de dependências sem vulnerabilidades
-- next_action: revisar e commitar o audit/SPEC/estado/log/backlog/manifesto; depois rodar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo e registrar o SHA documental; PostgreSQL/RLS live permanece GAP até ambiente autorizado
+- last_completed_action: APPEAL-037 foi fechado localmente como `COMPLETED_WITH_GAPS`: `pnpm verify` 106/508 com 26 skips, cobertura 84,50%/80,35%/85,64%/85,21%, build 12 workspaces, E2E 22/22, integração configurada 8 arquivos/20 testes PASS com 24 arquivos/26 skips, audit de dependências limpo e release traceability limpo nos commits de código `d9dbf2f09c41a763d5607ef61c315f78f587ccb2` e documentação `b772b66b38e0dab43a6d91bc131219e668b8e912`
+- next_action: disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para executar a prova PostgreSQL/RLS da fila ou selecionar a próxima lacuna local priorizada; manter atribuição, decisão, recálculo, notificação, provider/MFA, auditoria operacional, aprovação clínica, piloto e produção como gaps explícitos
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T00:06:11-03:00
+- last_update: 2026-08-24T00:07:06-03:00
 
 ## REGRAS DE USO
 

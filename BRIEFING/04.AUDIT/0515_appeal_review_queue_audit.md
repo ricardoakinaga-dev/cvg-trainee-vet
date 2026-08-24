@@ -88,7 +88,9 @@ fundamentada, recálculo versionado e idempotente, preservação de versões,
 identificação/notificação, trilha de auditoria consultável, entrega externa,
 provider/MFA, aprovação clínica, piloto e prova live sem ambiente autorizado.
 
-Próxima ação: revisar o diff documental, commitar o audit/SPEC/estado/log/backlog/
-manifesto e executar o release traceability gate em worktree limpo. Depois,
-quando houver ambiente autorizado, executar a prova PostgreSQL/RLS live sem
-converter o skip em PASS.
+O audit foi ligado ao código `d9dbf2f09c41a763d5607ef61c315f78f587ccb2` e à
+documentação `b772b66b38e0dab43a6d91bc131219e668b8e912`; o release traceability
+gate passou em worktree limpo. Próxima ação: quando houver ambiente autorizado,
+executar a prova PostgreSQL/RLS live sem converter o skip em PASS, ou selecionar
+a próxima lacuna local, mantendo os gaps de decisão, recálculo, notificação,
+provider, clínica, piloto e produção explícitos.
