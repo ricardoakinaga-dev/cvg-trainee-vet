@@ -476,6 +476,18 @@ function isTerminalAttemptStatus(value: string | undefined): boolean {
   );
 }
 
+function isEditableAttemptStatus(value: string | undefined): boolean {
+  return value === "CRIADA" || value === "EM_ANDAMENTO" || value === "SALVA";
+}
+
+function isRemediationStartableActivityStatus(
+  value: string | undefined,
+): boolean {
+  return (
+    value === "DISPONIVEL" || value === "EM_ANDAMENTO" || value === "EM_REFORCO"
+  );
+}
+
 function isJourneyActivity(value: unknown): value is JourneyActivityProjection {
   if (!isRecord(value)) return false;
   return (
@@ -1480,9 +1492,17 @@ export default function HomePage() {
           "invalid attempt projection",
         );
       setAttempt(data);
+      setAnswers({});
+      setAppeals([]);
+      setAppealItemId("");
+      setAppealJustification("");
+      setAppealState("idle");
       setCorrection(null);
       setCorrectionState("idle");
       await loadActivity(activity.activityId);
+      // The activity projection may still carry the prior reflection. A new
+      // attempt must begin with an empty response surface regardless of it.
+      setAnswers({});
       setNotice("Tentativa iniciada.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -1670,9 +1690,15 @@ export default function HomePage() {
   const currentJourneyActivity =
     journey?.activities.find((item) => item.activityId === activityId) ?? null;
   const canStartNewRemediationAttempt =
-    currentJourneyActivity?.status === "EM_REFORCO" &&
+    journey?.nextAction === "EXECUTAR_REMEDIACAO" &&
+    journey.nextActionTarget?.kind === "ACTIVITY" &&
+    journey.nextActionTarget.activityId ===
+      currentJourneyActivity?.activityId &&
+    isRemediationStartableActivityStatus(currentJourneyActivity?.status) &&
     attempt !== null &&
     isTerminalAttemptStatus(attempt.status);
+  const canEditAttempt =
+    attempt !== null && isEditableAttemptStatus(attempt.status);
   const correctionNextAction =
     currentJourneyActivity?.nextAction ?? journey?.nextAction;
 
@@ -1971,7 +1997,7 @@ export default function HomePage() {
                   <h2>{item.title}</h2>
                   <p>{item.text}</p>
                   {item.responseMode === "CHOICE" &&
-                  attempt !== null &&
+                  canEditAttempt &&
                   item.choices !== undefined ? (
                     <fieldset className="answer-area">
                       <legend>Selecione sua resposta</legend>
@@ -2018,7 +2044,7 @@ export default function HomePage() {
                         Salvar resposta
                       </button>
                     </fieldset>
-                  ) : item.responseMode === "TEXT" && attempt !== null ? (
+                  ) : item.responseMode === "TEXT" && canEditAttempt ? (
                     <div className="answer-area">
                       <label htmlFor={`answer-${item.itemId}`}>
                         Resposta — {item.title}
@@ -2059,8 +2085,16 @@ export default function HomePage() {
                     ? "Iniciar nova tentativa"
                     : "Iniciar tentativa"}
                 </button>
-              ) : isTerminalAttemptStatus(attempt.status) ? (
-                <p role="status">Tentativa concluída.</p>
+              ) : isTerminalAttemptStatus(attempt.status) ||
+                attempt.status === "SUBMETIDA" ||
+                attempt.status === "AGUARDA_CORRECAO_HUMANA" ? (
+                <p role="status">
+                  {attempt.status === "AGUARDA_CORRECAO_HUMANA"
+                    ? "Aguardando correção humana."
+                    : attempt.status === "SUBMETIDA"
+                      ? "Tentativa enviada; aguardando correção."
+                      : "Tentativa concluída."}
+                </p>
               ) : (
                 <button
                   type="button"

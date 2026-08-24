@@ -14,6 +14,8 @@ export type ParticipantJourneyActivity = Readonly<{
   readonly activityId: string;
   /** Internal curriculum binding; never cross the participant projection. */
   readonly moduleId?: string;
+  /** Internal assignment provenance; never cross the participant projection. */
+  readonly learningAssignmentId?: string;
   readonly slug: string;
   readonly title: string;
   readonly status: Exclude<LearningAssignmentStatus, "NAO_ATRIBUIDO">;
@@ -178,6 +180,7 @@ export function deriveJourneyNextActionTarget(
           (candidate) =>
             candidate.scopeId === runtime.scopeId &&
             candidate.moduleId === runtime.evaluation.moduleId &&
+            candidate.learningAssignmentId !== undefined &&
             candidate.status === status,
         ),
       )

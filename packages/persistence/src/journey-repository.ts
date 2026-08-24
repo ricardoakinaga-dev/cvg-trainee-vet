@@ -38,9 +38,11 @@ type JourneyActivityRow = Readonly<{
   readonly activityId: string;
   readonly scopeId: string;
   readonly moduleId: string | null;
+  readonly learningAssignmentId: string | null;
   readonly slug: string;
   readonly title: string;
   readonly status: string;
+  readonly contentStatus: string;
   readonly attemptId: string | null;
   readonly attemptStatus: string | null;
   readonly attemptVersion: number | null;
@@ -109,6 +111,15 @@ function parseModuleId(value: string | null): string | undefined {
   return value;
 }
 
+function parseOptionalBinding(
+  value: string | null,
+  field: string,
+): string | undefined {
+  if (value === null) return undefined;
+  assertNonEmpty(value, field);
+  return value;
+}
+
 function isLaterAttempt(
   candidate: JourneyActivityRow,
   current: JourneyActivityRow,
@@ -124,8 +135,14 @@ function isLaterAttempt(
 function activityRowsToJourney(
   rows: readonly JourneyActivityRow[],
 ): readonly ParticipantJourneyActivity[] {
+  const activitiesWithUnpublishedContent = new Set(
+    rows
+      .filter((row) => row.contentStatus !== "PUBLICADO")
+      .map((row) => row.activityId),
+  );
   const latestByActivity = new Map<string, JourneyActivityRow>();
   for (const row of rows) {
+    if (activitiesWithUnpublishedContent.has(row.activityId)) continue;
     const current = latestByActivity.get(row.activityId);
     if (current === undefined || isLaterAttempt(row, current)) {
       latestByActivity.set(row.activityId, row);
@@ -138,6 +155,10 @@ function activityRowsToJourney(
     assertNonEmpty(row.slug, "slug");
     assertNonEmpty(row.title, "title");
     const moduleId = parseModuleId(row.moduleId);
+    const learningAssignmentId = parseOptionalBinding(
+      row.learningAssignmentId,
+      "learningAssignmentId",
+    );
     const status = parseAssignmentStatus(row.status);
     const attemptStatus = parseAttemptStatus(row.attemptStatus);
     if (row.attemptId === null && attemptStatus !== undefined) {
@@ -155,6 +176,7 @@ function activityRowsToJourney(
       scopeId: row.scopeId,
       activityId: row.activityId,
       ...(moduleId === undefined ? {} : { moduleId }),
+      ...(learningAssignmentId === undefined ? {} : { learningAssignmentId }),
       slug: row.slug,
       title: row.title,
       status,
@@ -213,9 +235,11 @@ export function createParticipantJourneyRepository(
             activityId: activityAssignments.activityId,
             scopeId: learningActivities.scopeId,
             moduleId: learningActivities.moduleId,
+            learningAssignmentId: activityAssignments.learningAssignmentId,
             slug: learningActivities.slug,
             title: learningActivities.title,
             status: activityAssignments.status,
+            contentStatus: contentVersions.status,
             attemptId: attempts.id,
             attemptStatus: attempts.status,
             attemptVersion: attempts.version,
@@ -235,7 +259,6 @@ export function createParticipantJourneyRepository(
             and(
               eq(contentVersions.id, learningActivityItems.contentVersionId),
               eq(contentVersions.scopeId, learningActivities.scopeId),
-              eq(contentVersions.status, "PUBLICADO"),
             ),
           )
           .leftJoin(

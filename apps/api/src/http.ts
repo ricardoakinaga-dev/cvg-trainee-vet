@@ -50,6 +50,8 @@ import {
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
+  deriveJourneyNextAction,
+  deriveJourneyNextActionTarget,
   deriveParticipantDashboard,
   deriveParticipantDiagnosticProfile,
   type DiagnosticResultState,
@@ -657,6 +659,11 @@ function publicAppealsProjection(
 function publicLearningJourneyProjection(
   state: ParticipantLearningJourneyState,
 ): ApiSuccessEnvelope<unknown>["data"] {
+  // Re-derive the action and target at the public boundary. The participant
+  // projection must not trust an internal repository/wiring to supply a stale
+  // or provenance-free remediation target.
+  const nextAction = deriveJourneyNextAction(state);
+  const nextActionTarget = deriveJourneyNextActionTarget(state);
   return parseParticipantLearningJourney({
     assignments: state.assignments.map(({ state: assignment }) =>
       publicLearningAssignmentProjection(assignment),
@@ -683,10 +690,10 @@ function publicLearningJourneyProjection(
     runtimes: state.runtimes.map((runtime) =>
       publicCurriculumRuntimeProjection(runtime),
     ),
-    nextAction: state.nextAction ?? "CONSULTAR_PROXIMO_PASSO",
-    ...(state.nextActionTarget === undefined
+    nextAction,
+    ...(nextActionTarget === undefined
       ? {}
-      : { nextActionTarget: { ...state.nextActionTarget } }),
+      : { nextActionTarget: { ...nextActionTarget } }),
   });
 }
 

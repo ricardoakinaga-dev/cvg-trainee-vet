@@ -30,7 +30,11 @@ type FakeDatabaseState = {
     accountStatus: "INVITED" | "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
     acceptedAt: Date | null;
   }>;
-  readonly assignmentRows: Array<{ activityId: string; available: boolean }>;
+  readonly assignmentRows: Array<{
+    activityId: string;
+    available: boolean;
+    contentStatus: "PUBLICADO" | "EM_REVISAO_CLINICA";
+  }>;
   readonly outboxRows: FakeRow[];
   readonly auditRows: FakeRow[];
 };
@@ -65,6 +69,7 @@ function createFakeDatabase(
   options: {
     readonly accountStatus?: FakeDatabaseState["invitationRows"][number]["accountStatus"];
     readonly acceptedAt?: Date | null;
+    readonly contentStatus?: "PUBLICADO" | "EM_REVISAO_CLINICA";
   } = {},
 ): {
   readonly database: PostgresJsDatabase<typeof schema>;
@@ -85,7 +90,13 @@ function createFakeDatabase(
             : options.acceptedAt,
       },
     ],
-    assignmentRows: [{ activityId: "activity-1", available: true }],
+    assignmentRows: [
+      {
+        activityId: "activity-1",
+        available: true,
+        contentStatus: options.contentStatus ?? "PUBLICADO",
+      },
+    ],
     outboxRows: [],
     auditRows: [],
   };
@@ -132,7 +143,10 @@ function createFakeDatabase(
                   (whereValues.length === 0 ||
                     whereValues.includes(row.activityId)),
               )
-              .map((row) => ({ activityId: row.activityId }));
+              .map((row) => ({
+                activityId: row.activityId,
+                contentStatus: row.contentStatus,
+              }));
           }
           if (selectedTable === schema.learningActivities) {
             return state.activityRows
@@ -321,6 +335,25 @@ describe("database adapter operations", () => {
           correlationId: "correlation-start-1",
         },
         dependencies,
+      ),
+    ).rejects.toMatchObject({ code: "not_found" });
+
+    const unpublished = createFakeDatabase({
+      contentStatus: "EM_REVISAO_CLINICA",
+    });
+    await expect(
+      startAttempt(
+        {
+          participantId: "participant-1",
+          activityId: "activity-1",
+          scopeId: "scope-1",
+          idempotencyKey: "start-key-unpublished",
+          correlationId: "correlation-start-unpublished",
+        },
+        createAttemptUseCaseDependencies(
+          unpublished.database,
+          () => "generated-2",
+        ),
       ),
     ).rejects.toMatchObject({ code: "not_found" });
 

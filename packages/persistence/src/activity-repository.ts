@@ -33,6 +33,7 @@ export type ActivityRowShape = Readonly<{
   readonly itemId: string;
   readonly ordinal: number;
   readonly kind: string;
+  readonly contentStatus: string;
   readonly itemTitle: string;
   readonly text: string;
   readonly responseMode: string;
@@ -291,6 +292,7 @@ export function activityRowsToState(
 ): ParticipantActivityState | null {
   const first = rows[0];
   if (first === undefined) return null;
+  if (rows.some((row) => row.contentStatus !== "PUBLICADO")) return null;
 
   assertNonEmpty(first.activityId, "activityId");
   assertNonEmpty(first.scopeId, "scopeId");
@@ -374,6 +376,7 @@ export function createActivityReadRepository(
             itemId: contentVersions.id,
             ordinal: learningActivityItems.ordinal,
             kind: contentVersions.kind,
+            contentStatus: contentVersions.status,
             itemTitle: contentVersions.title,
             text: contentVersions.participantText,
             responseMode: contentVersions.responseMode,
@@ -403,7 +406,6 @@ export function createActivityReadRepository(
                 "EM_REFORCO",
               ]),
               eq(learningActivities.status, "PUBLISHED"),
-              eq(contentVersions.status, "PUBLICADO"),
             ),
           )
           .orderBy(asc(learningActivityItems.ordinal));

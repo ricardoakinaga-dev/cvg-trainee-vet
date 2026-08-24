@@ -14,7 +14,9 @@ import {
   activityAssignments,
   attemptIdempotency,
   attempts,
+  contentVersions,
   learningActivities,
+  learningActivityItems,
   outboxEvents,
 } from "./schema.js";
 import type { PersistedAttemptSnapshot } from "./schema.js";
@@ -320,8 +322,7 @@ function createOperations(
             eq(attempts.activityId, activityId),
             inArray(attempts.status, openAttemptStatuses),
           ),
-        )
-        .limit(1);
+        );
       const row = rows[0];
       return row ? attemptRowToState(row) : null;
     },
@@ -375,11 +376,25 @@ function createOperations(
       activityId: string,
     ): Promise<boolean> => {
       const rows = await db
-        .select({ activityId: activityAssignments.activityId })
+        .select({
+          activityId: activityAssignments.activityId,
+          contentStatus: contentVersions.status,
+        })
         .from(activityAssignments)
         .innerJoin(
           learningActivities,
           eq(activityAssignments.activityId, learningActivities.id),
+        )
+        .innerJoin(
+          learningActivityItems,
+          eq(learningActivityItems.activityId, learningActivities.id),
+        )
+        .innerJoin(
+          contentVersions,
+          and(
+            eq(contentVersions.id, learningActivityItems.contentVersionId),
+            eq(contentVersions.scopeId, learningActivities.scopeId),
+          ),
         )
         .where(
           and(
@@ -393,8 +408,11 @@ function createOperations(
             eq(learningActivities.status, "PUBLISHED"),
           ),
         )
-        .limit(1);
-      return rows.length > 0;
+        .limit(101);
+      return (
+        rows.length > 0 &&
+        rows.every((row) => row.contentStatus === "PUBLICADO")
+      );
     },
   };
 

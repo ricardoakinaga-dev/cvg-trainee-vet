@@ -17,9 +17,11 @@ const activityRow = {
   activityId,
   scopeId,
   moduleId: "M01" as string | null,
+  learningAssignmentId: assignmentId as string | null,
   slug: "emergencia-m01-v1",
   title: "Emergência",
   status: "EM_ANDAMENTO",
+  contentStatus: "PUBLICADO",
   attemptId: null,
   attemptStatus: null,
   attemptVersion: null,
@@ -223,6 +225,7 @@ describe("participant journey persistence", () => {
         attemptStatus: "SALVA",
         nextAction: "RETOMAR_ATIVIDADE",
         moduleId: "M01",
+        learningAssignmentId: assignmentId,
       },
     ]);
     expect(journey.assignments).toHaveLength(1);
@@ -340,6 +343,21 @@ describe("participant journey persistence", () => {
     await expect(
       repository.findParticipantLearningJourney(participantId, [scopeId]),
     ).rejects.toBeInstanceOf(PersistenceMappingError);
+  });
+
+  it("omits an activity when any bound content version is not public", async () => {
+    const repository = createParticipantJourneyRepository(
+      fakeDatabase({
+        activityRows: [{ ...activityRow, contentStatus: "EM_REVISAO_CLINICA" }],
+      }),
+    );
+
+    const journey = await repository.findParticipantLearningJourney(
+      participantId,
+      [scopeId],
+    );
+
+    expect(journey.activities).toEqual([]);
   });
 
   it("preserves a legacy activity without a module binding without making it a remediation target", async () => {

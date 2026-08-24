@@ -914,6 +914,8 @@ test.describe("participant access and learning projection", () => {
   test("restores a corrected attempt and its appeal protocol after reload", async ({
     page,
   }) => {
+    const newAttemptId = "55555555-5555-4555-8555-555555555555";
+    let activityReads = 0;
     await page.route("**/api/v1/invitations/accept", async (route) => {
       await route.fulfill({
         status: 200,
@@ -937,17 +939,29 @@ test.describe("participant access and learning projection", () => {
                 attemptId,
                 attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
                 attemptVersion: 3,
-                nextAction: "REVISAR_PROXIMO_CONTEUDO",
+                nextAction: "INICIAR_ATIVIDADE",
               },
             ],
             results: [],
-            runtimes: [],
-            nextAction: "REVISAR_PROXIMO_CONTEUDO",
+            runtimes: [
+              {
+                moduleId: "M02",
+                version: 1,
+                status: "EM_REMEDIACAO",
+                nextAction: "EXECUTAR_REMEDIACAO",
+                remediationCount: 1,
+                retentionReviews: [],
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+            ],
+            nextActionTarget: { kind: "ACTIVITY", activityId },
+            nextAction: "EXECUTAR_REMEDIACAO",
           }),
         ),
       });
     });
     await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      activityReads += 1;
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -965,7 +979,54 @@ test.describe("participant access and learning projection", () => {
                 text: "Descreva a primeira prioridade.",
                 responseMode: "TEXT",
               },
+              {
+                itemId: "66666666-6666-4666-8666-666666666666",
+                ordinal: 2,
+                kind: "REFLEXAO",
+                title: "Próxima ação",
+                text: "Descreva a próxima ação.",
+                responseMode: "TEXT",
+              },
             ],
+            ...(activityReads === 1
+              ? {
+                  reflection: {
+                    status: "EM_ANDAMENTO",
+                    nextAction: "RETOMAR_REFLEXAO",
+                    itemCount: 1,
+                    answeredItemCount: 1,
+                    answers: [
+                      {
+                        itemId: "66666666-6666-4666-8666-666666666666",
+                        response: "Resposta anterior.",
+                        savedAt: "2026-08-23T20:00:00.000Z",
+                      },
+                    ],
+                    evidence: "REFLEXAO_DIGITAL",
+                    practicalCompetenceClaim: "PROIBIDO_MVP",
+                  },
+                }
+              : {}),
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/attempts", async (route) => {
+      expect(route.request().method()).toBe("POST");
+      const body = route.request().postDataJSON() as Readonly<{
+        readonly activityId: string;
+      }>;
+      expect(body.activityId).toBe(activityId);
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId: newAttemptId,
+            activityId,
+            status: "EM_ANDAMENTO",
+            version: 1,
+            answers: [],
           }),
         ),
       });
@@ -1025,6 +1086,145 @@ test.describe("participant access and learning projection", () => {
     await expect(
       page.getByRole("button", { name: "Enviar tentativa" }),
     ).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Iniciar nova tentativa" }).click();
+    await expect(
+      page.getByRole("button", { name: "Enviar tentativa" }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Resposta — Próxima ação")).toHaveValue("");
+    await expect(page.getByTestId("appeals-panel")).toHaveCount(0);
+  });
+
+  test("does not offer a new attempt for a retention runtime state", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "emergencia-v1",
+                title: "Emergência",
+                status: "EM_REFORCO",
+                attemptId,
+                attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+                attemptVersion: 3,
+                nextAction: "REVISAR_PROXIMO_CONTEUDO",
+              },
+            ],
+            results: [],
+            runtimes: [
+              {
+                moduleId: "M02",
+                version: 1,
+                status: "DOMINIO_DIGITAL",
+                nextAction: "REVISAR_RETENCAO",
+                remediationCount: 0,
+                retentionReviews: [
+                  {
+                    day: 7,
+                    dueAt: "2026-08-31T22:00:00.000Z",
+                    status: "PENDENTE",
+                  },
+                ],
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+            ],
+            nextAction: "REVISAR_RETENCAO",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [
+              {
+                itemId,
+                ordinal: 1,
+                kind: "QUESTAO",
+                title: "Prioridades iniciais",
+                text: "Descreva a primeira prioridade.",
+                responseMode: "TEXT",
+              },
+            ],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/appeals*", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            appeals: [
+              {
+                appealId: "44444444-4444-4444-8444-444444444444",
+                attemptId,
+                itemId,
+                createdAt: "2026-08-23T22:00:00.000Z",
+                dueAt: "2026-09-02T22:00:00.000Z",
+                status: "ABERTA",
+                version: 0,
+              },
+            ],
+          }),
+        ),
+      });
+    });
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/feedback`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+              attemptVersion: 3,
+              resultVersion: 1,
+              score: 82,
+              outcome: "APROVADO",
+              feedback: "Feedback formativo próprio.",
+            }),
+          ),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(page.getByTestId("appeals-panel")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Iniciar nova tentativa" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Enviar tentativa" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("Tentativa concluída.", { exact: true }),
+    ).toBeVisible();
   });
 
   test("shows persisted digital correction feedback without internal fields", async ({

@@ -22,6 +22,7 @@ const rows = [
     itemId: "22222222-2222-4222-8222-222222222222",
     ordinal: 2,
     kind: "QUESTAO",
+    contentStatus: "PUBLICADO",
     itemTitle: "Conduta inicial",
     text: "Questão autoral.",
     responseMode: "TEXT",
@@ -34,6 +35,7 @@ const rows = [
     itemId: "33333333-3333-4333-8333-333333333333",
     ordinal: 1,
     kind: "LEITURA",
+    contentStatus: "PUBLICADO",
     itemTitle: "Prioridades",
     text: "Texto autoral.",
     responseMode: "NONE",
@@ -120,6 +122,15 @@ describe("published activity persistence mapping", () => {
     expect(() =>
       activityRowsToState([rows[0], { ...rows[1], ordinal: rows[0].ordinal }]),
     ).toThrow("ordinal");
+  });
+
+  it("fails closed when one activity item is not publicly released", () => {
+    expect(
+      activityRowsToState([
+        { ...rows[0], contentStatus: "EM_REVISAO_CLINICA" },
+        rows[1],
+      ]),
+    ).toBeNull();
   });
 
   it("maps published choice metadata without internal fields", () => {
@@ -237,6 +248,7 @@ describe("published activity persistence mapping", () => {
         itemId: "77777777-7777-4777-8777-777777777777",
         ordinal: 3,
         kind: "REFLEXAO",
+        contentStatus: "PUBLICADO",
         itemTitle: "Reflexão final",
         text: "Descreva a próxima ação.",
         responseMode: "TEXT",

@@ -1842,6 +1842,7 @@ describe("API HTTP boundary", () => {
             scopeId: "scope-1",
             activityId: activity.activityId,
             moduleId: "M02",
+            learningAssignmentId: "assignment-1",
             slug: activity.slug,
             title: activity.title,
             status: "EM_ANDAMENTO",
@@ -1913,6 +1914,79 @@ describe("API HTTP boundary", () => {
       (response.body as { readonly data?: { readonly activities?: unknown[] } })
         .data?.activities?.[0],
     ).not.toHaveProperty("moduleId");
+    expect(
+      (response.body as { readonly data?: { readonly activities?: unknown[] } })
+        .data?.activities?.[0],
+    ).not.toHaveProperty("learningAssignmentId");
+  });
+
+  it("re-derives remediation targets before exposing the public journey", async () => {
+    const getParticipantLearningJourney = vi.fn(
+      async (): Promise<ParticipantLearningJourneyState> => ({
+        participantId: attempt.participantId,
+        assignments: [],
+        activities: [
+          {
+            scopeId: "scope-1",
+            activityId: activity.activityId,
+            moduleId: "M02",
+            slug: activity.slug,
+            title: activity.title,
+            status: "EM_REFORCO",
+            attemptId: attempt.attemptId,
+            attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+            attemptVersion: 3,
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        results: [],
+        runtimes: [
+          {
+            participantId: attempt.participantId,
+            scopeId: "scope-1",
+            version: 1,
+            updatedAt: "2026-08-24T12:00:00.000Z",
+            evaluation: {
+              moduleId: "M02",
+              status: "EM_REMEDIACAO",
+              nextAction: "EXECUTAR_REMEDIACAO",
+              objectiveResults: [],
+              remediationObjectiveIds: ["M02-OBJ-01"],
+              criticalErrorItemIds: [],
+              invalidAnswerItemIds: [],
+              unansweredChoiceItemIds: [],
+              openResponseItemIds: [],
+              retentionReviews: [],
+              practicalCompetenceClaim: "PROIBIDO_MVP",
+            },
+          },
+        ],
+        nextAction: "CONSULTAR_PROXIMO_PASSO",
+        nextActionTarget: {
+          kind: "ACTIVITY",
+          activityId: "99999999-9999-4999-8999-999999999999",
+        },
+      }),
+    );
+    const response = await handleApiRequest(
+      { method: "GET", path: "/api/v1/learning-path", body: undefined },
+      dependencies({ getParticipantLearningJourney }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        nextAction: "EXECUTAR_REMEDIACAO",
+      },
+    });
+    expect(
+      (
+        response.body as {
+          readonly data?: { readonly nextActionTarget?: unknown };
+        }
+      ).data?.nextActionTarget,
+    ).toBeUndefined();
   });
 
   it("returns the participant dashboard without internal identity or scope data", async () => {

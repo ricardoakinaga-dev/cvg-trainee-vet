@@ -34,6 +34,7 @@ const state: ParticipantLearningJourneyState = {
       scopeId,
       activityId,
       moduleId: "M02",
+      learningAssignmentId: assignmentId,
       slug: "emergencia-m02-v1",
       title: "Emergência",
       status: "EM_ANDAMENTO",
@@ -231,6 +232,24 @@ describe("participant learning journey use case", () => {
             },
           },
         ],
+      }),
+    ).toBeUndefined();
+
+    expect(
+      deriveJourneyNextActionTarget({
+        ...state,
+        activities: [
+          {
+            scopeId: activity.scopeId,
+            activityId: activity.activityId,
+            moduleId: "M02",
+            slug: activity.slug,
+            title: activity.title,
+            status: "EM_REFORCO",
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        runtimes: [remediationRuntime],
       }),
     ).toBeUndefined();
 
