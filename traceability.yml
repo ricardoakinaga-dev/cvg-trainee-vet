@@ -3370,7 +3370,7 @@ artifacts:
         "apps/api/src/http.test.ts",
         "packages/contracts/src/correction.test.ts",
       ]
-    commit: "d60e48597fea4a3cc6d92cecd6881415091e1884"
+    commit: "2565e50f32a01348aa46684ef6d194bf2b6b0d23"
     artifacts:
       [
         "BRIEFING/04.AUDIT/0525_result_feedback_participant_audit.md",

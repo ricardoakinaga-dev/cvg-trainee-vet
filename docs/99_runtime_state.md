@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: RESULT-FEEDBACK-046 / AUD-P1-003 — feedback digital e debrief bounded
-- current_task: RESULT-FEEDBACK-2026-08-24-B — fechar auditoria, rastreabilidade e regressão final
+- current_task: RESULT-FEEDBACK-2026-08-24-C — validar rastreabilidade de release no SHA intencional
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: `RESULT-FEEDBACK-046` passou por RED/GREEN: a web consulta o feedback de correção digital já persistido, exibe score/outcome/feedback plain text e a próxima ação server-side, e mostra espera bounded quando `not_found`; não houve novo endpoint, migration, domínio, gabarito ou claim clínico. Foco 3/3 E2E, superfície participante 13/13, build web, lint e typecheck passaram; `pnpm verify` manteve 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; auditoria `0525`, SPEC, backlog, plano e manifesto estão em fechamento
-- next_action: concluir verificação final após atualizar o manifesto para o commit intencional, executar build/E2E/integration/audit/traceability release, revisar diff e registrar o estado como `READY_FOR_NEXT_STEP`; próxima fatia candidata é provar assignment→atividade com provenance/atomicidade quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis. Não declarar release/100% enquanto gaps de relação, live RLS, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: `RESULT-FEEDBACK-046` foi commitado em `2565e50f32a01348aa46684ef6d194bf2b6b0d23`; a verificação completa passou com 125 arquivos/572 testes, 29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, contratos 72/72, worker 25/25, migrations 26/26, build 12 workspaces, E2E 26/26, integração 20/20 com 29 skips, audit high sem vulnerabilidades, secrets, architecture, documentation, product-definition, exposure e diff-check. O bloco `RESULT-FEEDBACK-046` agora aponta para o SHA intencional; release traceability ainda precisa ser executado em worktree limpo
+- next_action: executar `CVG_TRACEABILITY_RELEASE=true PATH=/tmp:$PATH pnpm verify:traceability`, conferir worktree limpo e append final de log/runtime; então registrar `READY_FOR_NEXT_STEP`. Próxima fatia candidata: provar assignment→atividade com provenance/atomicidade quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis. Não declarar release/100% enquanto gaps de relação, live RLS, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T05:42:53-03:00
+- last_update: 2026-08-24T05:48:03-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `b69e588c9773d2f37f2fd50335262b7fe309e979`
-- origin: `fbbc692` (`origin/main`), local `main` ahead 43 commits
-- worktree: mudanças locais em andamento para fechar `RESULT-FEEDBACK-046`; não há push/deploy
+- head: `2565e50f32a01348aa46684ef6d194bf2b6b0d23`
+- origin: `fbbc692` (`origin/main`), local `main` ahead 46 commits
+- worktree: mudança documental local para ligar `RESULT-FEEDBACK-046` ao SHA intencional; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL focal/participante; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build web, lint, typecheck e E2E participante 13/13 passaram; a rodada final de build completo, integração, audit de dependências, traceability release e diff limpo ainda está pendente; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
+- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL no commit `2565e50`; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build 12 workspaces, E2E 26/26, integração 20/20 +29 skips, audit high, traceability estrutural e gates estáticos passaram; release traceability está pendente desta alteração documental; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
 ## REGRAS DE USO
 
