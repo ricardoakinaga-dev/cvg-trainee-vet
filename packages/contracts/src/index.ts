@@ -96,6 +96,7 @@ export {
   assessmentWorkflowScopedTransitionRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
   feedbackTicketCreateRequestSchema,
+  feedbackTicketInternalTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
   feedbackTicketScopedTransitionRequestSchema,
   feedbackTicketTransitionRequestSchema,
@@ -109,6 +110,7 @@ export {
   participantFeedbackTicketsProjectionSchema,
   participantLearningAssignmentProjectionSchema,
 } from "./learning-state.js";
+export type { FeedbackTicketInternalTransitionRequest } from "./learning-state.js";
 export {
   appealReviewHistoryEventProjectionSchema,
   appealReviewHistoryPathSchema,

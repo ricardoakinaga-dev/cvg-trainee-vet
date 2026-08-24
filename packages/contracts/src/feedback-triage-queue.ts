@@ -36,7 +36,6 @@ export const feedbackTriageQueueQuerySchema = z
 const queueItemSchema = z
   .object({
     ticketId: idSchema,
-    participantId: idSchema,
     type: typeSchema,
     description: plainTextSchema,
     createdAt: z.iso.datetime(),

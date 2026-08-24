@@ -19,7 +19,6 @@ export type FeedbackTriageQueueQuery = Readonly<{
 
 export type FeedbackTriageQueueItem = Readonly<{
   readonly ticketId: string;
-  readonly participantId: string;
   readonly type:
     | "BUG_TECNICO"
     | "USABILIDADE"
@@ -138,7 +137,6 @@ function assertQueueState(
   for (const item of state.items) {
     if (
       !uuidPattern.test(item.ticketId) ||
-      !uuidPattern.test(item.participantId) ||
       seen.has(item.ticketId) ||
       !queueStatuses.includes(item.status) ||
       typeof item.description !== "string" ||

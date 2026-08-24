@@ -308,6 +308,9 @@ export const feedbackTicketScopedTransitionRequestSchema =
     .extend({ participantId: idSchema, scopeId: idSchema })
     .strict();
 
+export const feedbackTicketInternalTransitionRequestSchema =
+  feedbackTicketTransitionRequestSchema.extend({ scopeId: idSchema }).strict();
+
 export const appealScopedTransitionRequestSchema =
   appealReviewTransitionRequestSchema;
 
@@ -345,6 +348,9 @@ export type AssessmentWorkflowScopedTransitionRequest = z.infer<
 >;
 export type FeedbackTicketScopedTransitionRequest = z.infer<
   typeof feedbackTicketScopedTransitionRequestSchema
+>;
+export type FeedbackTicketInternalTransitionRequest = z.infer<
+  typeof feedbackTicketInternalTransitionRequestSchema
 >;
 export type AppealScopedTransitionRequest = z.infer<
   typeof appealScopedTransitionRequestSchema

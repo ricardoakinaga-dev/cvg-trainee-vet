@@ -125,7 +125,7 @@ import {
   appealQuerySchema,
   appealReviewTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
-  feedbackTicketScopedTransitionRequestSchema,
+  feedbackTicketInternalTransitionRequestSchema,
   participantFeedbackTicketsProjectionSchema,
   learningAssignmentCreateRequestSchema,
   learningAssignmentScopedTransitionRequestSchema,
@@ -211,6 +211,10 @@ export interface ApiHttpDependencies {
   readonly transitionFeedbackTicket?: (
     command: TicketTransitionCommand,
   ) => Promise<FeedbackTicketState>;
+  readonly resolveFeedbackTicketParticipant?: (
+    ticketId: string,
+    scopeId: string,
+  ) => Promise<string | null>;
   readonly createAppeal?: (
     command: AppealCreateCommand,
   ) => Promise<AppealState>;
@@ -819,6 +823,8 @@ function isAllowed(
     capability === "PUBLISH_CONTENT" ||
     capability === "VIEW_INTERNAL_SOURCE" ||
     capability === "VIEW_CONTENT_REVIEW_QUEUE" ||
+    capability === "VIEW_FEEDBACK_QUEUE" ||
+    capability === "TRANSITION_FEEDBACK_TICKET" ||
     capability === "REVIEW_APPEAL" ||
     capability === "VIEW_INTERNAL_SCOPES"
       ? {
@@ -2291,22 +2297,35 @@ async function handleTransitionFeedbackTicket(
   if (dependencies.transitionFeedbackTicket === undefined) {
     return errorResponse("internal_error", requestId);
   }
-  const parsed = feedbackTicketScopedTransitionRequestSchema.safeParse(
+  if (dependencies.resolveFeedbackTicketParticipant === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = feedbackTicketInternalTransitionRequestSchema.safeParse(
     request.body,
   );
   if (!parsed.success || parsed.data.ticketId !== ticketId) {
     return validationResponse(requestId);
   }
   if (
-    !isAllowed(principal, "TRANSITION_FEEDBACK_TICKET", {
-      scopeId: parsed.data.scopeId,
-    })
+    !isAllowed(
+      principal,
+      "TRANSITION_FEEDBACK_TICKET",
+      {
+        scopeId: parsed.data.scopeId,
+      },
+      dependencies.approvedClinicalApproverId,
+    )
   ) {
     return errorResponse("forbidden", requestId);
   }
+  const participantId = await dependencies.resolveFeedbackTicketParticipant(
+    ticketId,
+    parsed.data.scopeId,
+  );
+  if (participantId === null) return errorResponse("not_found", requestId);
   const state = await dependencies.transitionFeedbackTicket({
     ticketId,
-    participantId: parsed.data.participantId,
+    participantId,
     scopeId: parsed.data.scopeId,
     version: parsed.data.version,
     event: { type: parsed.data.event },

@@ -191,7 +191,6 @@ const feedbackTriageQueue = {
   items: [
     {
       ticketId: "77777777-7777-4777-8777-777777777777",
-      participantId: "22222222-2222-4222-8222-222222222222",
       type: "BUG_TECNICO",
       description: "Relato sintético precisa de triagem.",
       createdAt: "2026-08-23T10:00:00.000Z",
@@ -297,14 +296,12 @@ test.describe("staff training dashboard", () => {
         if (route.request().method() === "PATCH") {
           const request = route.request().postDataJSON() as Readonly<{
             readonly ticketId?: string;
-            readonly participantId?: string;
             readonly scopeId?: string;
             readonly version?: number;
             readonly event?: string;
           }>;
           expect(request).toEqual({
             ticketId: "77777777-7777-4777-8777-777777777777",
-            participantId: "22222222-2222-4222-8222-222222222222",
             scopeId: "11111111-1111-4111-8111-111111111111",
             version: 0,
             event: "TRIAR",

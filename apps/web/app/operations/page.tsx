@@ -79,7 +79,6 @@ type FeedbackTriageQueue = Readonly<{
   }>;
   readonly items: readonly Readonly<{
     readonly ticketId: string;
-    readonly participantId: string;
     readonly type:
       | "BUG_TECNICO"
       | "USABILIDADE"
@@ -734,7 +733,6 @@ function isFeedbackTriageQueue(value: unknown): value is FeedbackTriageQueue {
       !isRecord(item) ||
       !hasOnlyKeys(item, [
         "ticketId",
-        "participantId",
         "type",
         "description",
         "createdAt",
@@ -742,7 +740,6 @@ function isFeedbackTriageQueue(value: unknown): value is FeedbackTriageQueue {
         "version",
       ]) ||
       !isUuid(item.ticketId) ||
-      !isUuid(item.participantId) ||
       (item.type !== "BUG_TECNICO" &&
         item.type !== "USABILIDADE" &&
         item.type !== "ERRO_CONTEUDO" &&
@@ -1366,7 +1363,6 @@ export default function OperationsPage() {
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               ticketId: item.ticketId,
-              participantId: item.participantId,
               scopeId: feedbackQueue.scopeId,
               version: item.version,
               event,

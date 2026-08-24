@@ -277,6 +277,11 @@ export function createApiRuntime(
       getParticipantFeedback(command, feedbackTicketReadRepository),
     transitionFeedbackTicket: (command) =>
       transitionFeedbackTicketState(command, learningStateRepository),
+    resolveFeedbackTicketParticipant: (ticketId, scopeId) =>
+      feedbackTriageQueueRepository.findFeedbackTicketParticipant(
+        ticketId,
+        scopeId,
+      ),
     createAppeal: (command) =>
       createAppealState(command, learningStateRepository),
     getParticipantAppeals: (command) =>

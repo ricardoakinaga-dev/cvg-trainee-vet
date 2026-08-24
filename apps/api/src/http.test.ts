@@ -288,7 +288,6 @@ const feedbackTriageQueue: FeedbackTriageQueueState = {
   items: [
     {
       ticketId: "22222222-2222-4222-8222-222222222222",
-      participantId: "33333333-3333-4333-8333-333333333333",
       type: "ERRO_CONTEUDO",
       description: "Relato sintético para triagem.",
       createdAt: "2026-08-24T11:00:00.000Z",
@@ -2191,6 +2190,7 @@ describe("API HTTP boundary", () => {
         items: [{ type: "ERRO_CONTEUDO", status: "NOVO" }],
       },
     });
+    expect(JSON.stringify(response.body)).not.toContain("participantId");
 
     const participant = await handleApiRequest(
       {
@@ -2965,7 +2965,6 @@ describe("API HTTP boundary", () => {
         path: `/api/v1/internal/feedback/${ticketId}`,
         body: {
           ticketId,
-          participantId,
           scopeId,
           version: 0,
           event: "TRIAR",
@@ -2973,10 +2972,18 @@ describe("API HTTP boundary", () => {
       },
       dependencies({
         transitionFeedbackTicket,
+        resolveFeedbackTicketParticipant: async () => participantId,
         authenticate: async () => staff,
       }),
     );
     expect(transitionedTicket.status).toBe(200);
+    expect(transitionFeedbackTicket).toHaveBeenCalledWith({
+      ticketId,
+      participantId,
+      scopeId,
+      version: 0,
+      event: { type: "TRIAR" },
+    });
 
     const transitionedAppeal = await handleApiRequest(
       {
@@ -3101,6 +3108,84 @@ describe("API HTTP boundary", () => {
       event: { type: "ATRIBUIR_REVISOR" },
     });
     expect(JSON.stringify(response.body)).not.toContain("reviewerId");
+  });
+
+  it("derives feedback transition identity server-side and allows only approved clinical staff", async () => {
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const ticketId = "55555555-5555-4555-8555-555555555555";
+    const participantId = "22222222-2222-4222-8222-222222222222";
+    const reviewerId = "88888888-8888-4888-8888-888888888888";
+    const ticket: FeedbackTicketState = {
+      ticketId,
+      participantId,
+      type: "BUG_TECNICO",
+      description: "Relato sintético.",
+      createdAt: "2026-08-10T17:00:00.000Z",
+      status: "TRIADO",
+      version: 1,
+    };
+    const transitionFeedbackTicket = vi.fn(async () => ticket);
+    const resolveFeedbackTicketParticipant = vi.fn(async () => participantId);
+    const staff = {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      scopes: [scopeId] as const,
+    };
+
+    const forged = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/feedback/${ticketId}`,
+        body: {
+          ticketId,
+          participantId,
+          scopeId,
+          version: 0,
+          event: "TRIAR",
+        },
+      },
+      dependencies({
+        transitionFeedbackTicket,
+        resolveFeedbackTicketParticipant,
+        authenticate: async () => staff,
+      }),
+    );
+    expect(forged.status).toBe(422);
+    expect(resolveFeedbackTicketParticipant).not.toHaveBeenCalled();
+    expect(transitionFeedbackTicket).not.toHaveBeenCalled();
+
+    const clinical = {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["CLINICAL_APPROVER"] as const,
+      scopes: [scopeId] as const,
+    };
+    const allowed = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/feedback/${ticketId}`,
+        body: { ticketId, scopeId, version: 0, event: "TRIAR" },
+      },
+      dependencies({
+        approvedClinicalApproverId: reviewerId,
+        transitionFeedbackTicket,
+        resolveFeedbackTicketParticipant,
+        authenticate: async () => clinical,
+      }),
+    );
+    expect(allowed.status).toBe(200);
+    expect(resolveFeedbackTicketParticipant).toHaveBeenCalledWith(
+      ticketId,
+      scopeId,
+    );
+    expect(transitionFeedbackTicket).toHaveBeenCalledWith({
+      ticketId,
+      participantId,
+      scopeId,
+      version: 0,
+      event: { type: "TRIAR" },
+    });
   });
 
   it("rejects client-controlled identities, direct closure, and transition conflicts", async () => {

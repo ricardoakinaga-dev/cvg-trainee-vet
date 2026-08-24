@@ -6,6 +6,7 @@ import {
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
   feedbackTicketCreateRequestSchema,
+  feedbackTicketInternalTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
   feedbackTicketTransitionRequestSchema,
   learningAssignmentCreateRequestSchema,
@@ -205,6 +206,23 @@ describe("learning state contracts", () => {
         event: "RESOLVER",
       }),
     ).toMatchObject({ event: "RESOLVER" });
+    expect(
+      feedbackTicketInternalTransitionRequestSchema.parse({
+        ticketId: ids.ticketId,
+        scopeId: ids.resultId,
+        version: 1,
+        event: "TRIAR",
+      }),
+    ).toMatchObject({ scopeId: ids.resultId });
+    expect(() =>
+      feedbackTicketInternalTransitionRequestSchema.parse({
+        ticketId: ids.ticketId,
+        scopeId: ids.resultId,
+        participantId: ids.resultId,
+        version: 1,
+        event: "TRIAR",
+      }),
+    ).toThrow();
     expect(() =>
       feedbackTicketTransitionRequestSchema.parse({
         ticketId: ids.ticketId,

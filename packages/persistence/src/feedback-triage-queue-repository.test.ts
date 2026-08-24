@@ -53,19 +53,33 @@ describe("feedback triage queue persistence", () => {
         work(executor),
     };
 
-    const result = await createFeedbackTriageQueueRepository(
-      executor as never,
-      {
-        now: () => new Date("2026-08-24T12:00:00.000Z"),
-      },
-    ).listFeedbackTickets({ scopeId, status: "NOVO", limit: 25 });
+    const repository = createFeedbackTriageQueueRepository(executor as never, {
+      now: () => new Date("2026-08-24T12:00:00.000Z"),
+    });
+    const result = await repository.listFeedbackTickets({
+      scopeId,
+      status: "NOVO",
+      limit: 25,
+    });
 
     expect(result).toMatchObject({
       kind: "feedback_triage_queue",
       scopeId,
       filters: { scopeId, status: "NOVO", limit: 25 },
-      items: [{ ticketId, participantId, status: "NOVO" }],
+      items: [{ ticketId, status: "NOVO" }],
     });
     expect(calls).toEqual(["security-context", "feedback-query"]);
+
+    const resolvedParticipant = await repository.findFeedbackTicketParticipant(
+      ticketId,
+      scopeId,
+    );
+    expect(resolvedParticipant).toBe(participantId);
+    expect(calls).toEqual([
+      "security-context",
+      "feedback-query",
+      "security-context",
+      "feedback-query",
+    ]);
   });
 });

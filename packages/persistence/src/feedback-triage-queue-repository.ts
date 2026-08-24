@@ -27,6 +27,17 @@ const queueStatuses: readonly FeedbackTriageQueueStatus[] = [
   "NAO_PLANEJADO",
 ];
 
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+export type FeedbackTriageQueueRepository = FeedbackTriageQueueReadPort &
+  Readonly<{
+    readonly findFeedbackTicketParticipant: (
+      ticketId: string,
+      scopeId: string,
+    ) => Promise<string | null>;
+  }>;
+
 function assertQuery(
   query: Parameters<FeedbackTriageQueueReadPort["listFeedbackTickets"]>[0],
 ): void {
@@ -41,10 +52,14 @@ function assertQuery(
   }
 }
 
+function assertUuid(value: string, field: string): void {
+  if (!uuidPattern.test(value)) throw new TypeError(`${field} is invalid`);
+}
+
 export function createFeedbackTriageQueueRepository(
   db: DatabaseExecutor,
   options: Readonly<{ readonly now?: () => Date }> = {},
-): FeedbackTriageQueueReadPort {
+): FeedbackTriageQueueRepository {
   const now = options.now ?? (() => new Date());
   return Object.freeze({
     listFeedbackTickets: async (
@@ -73,7 +88,6 @@ export function createFeedbackTriageQueueRepository(
           );
           return Object.freeze({
             ticketId: scoped.state.ticketId,
-            participantId: scoped.state.participantId,
             type: scoped.state.type,
             description: scoped.state.description,
             createdAt: scoped.state.createdAt,
@@ -96,6 +110,28 @@ export function createFeedbackTriageQueueRepository(
           }),
           items: Object.freeze(items),
         });
+      });
+    },
+    findFeedbackTicketParticipant: async (
+      ticketId: string,
+      scopeId: string,
+    ): Promise<string | null> => {
+      assertUuid(ticketId, "ticketId");
+      assertUuid(scopeId, "scopeId");
+      return db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSecurityContext(executor, { scopeId });
+        const rows = await executor
+          .select({ participantId: feedbackTickets.participantId })
+          .from(feedbackTickets)
+          .where(
+            and(
+              eq(feedbackTickets.id, ticketId),
+              eq(feedbackTickets.scopeId, scopeId),
+            ),
+          )
+          .limit(1);
+        return rows[0]?.participantId ?? null;
       });
     },
   });
