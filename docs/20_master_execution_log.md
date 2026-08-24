@@ -8344,3 +8344,36 @@ explícitos e sem declarar release.
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-08-24 — FEEDBACK-043: consolidação documental e transição
+
+### TIMESTAMP
+
+2026-08-24T20:12:03-03:00
+
+### ACTION
+
+Commitar a auditoria 0536, SPEC, backlog, plano, runtime state e manifesto de
+rastreabilidade após a verificação funcional e a remediação independente.
+
+### RESULT
+
+O commit documental é `d8e1ba1`; o worktree funcional/documental está limpo
+antes da última alteração de runtime. O item `FEEDBACK-043` permanece
+`COMPLETED_WITH_GAPS`, a evidência local está verde e a próxima lacuna local
+bounded é `APPEAL-043`. O release gate será executado após este registro.
+
+### LIMITES
+
+Continuam sem evidência PostgreSQL/RLS/grants live, concorrência real,
+browser→API→PostgreSQL, workflow remoto same-SHA, produção, restore/failover,
+provider/MFA e aprovação clínica/piloto.
+
+### NEXT ACTION
+
+Executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree
+limpo; depois abrir `APPEAL-043` sem declarar release.
+
+### STATUS
+
+READY_FOR_NEXT_STEP

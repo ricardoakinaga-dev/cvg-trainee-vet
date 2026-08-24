@@ -9,17 +9,17 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: FEEDBACK-043 — fechamento local da paginação por cursor
-- current_task: consolidar evidência, rastreabilidade e estado após corrigir retry obsoleto, reload tardio e índice keyset da fila interna
+- current_sprint: FEEDBACK-043 — encerramento documental da paginação por cursor
+- current_task: abrir a próxima lacuna local bounded `APPEAL-043` após o gate de release documental
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: implementar `FEEDBACK-043` no commit `ea9ee122676be620652f08019919ca59ed05fa02`; corrigir, após crítica Goodall, cursor obsoleto no retry e reload tardio de transição com identidade de consulta; adicionar migration 0040 com índices keyset; verificar coverage 134/667/35 skips com 84,24% statements, 80,14% branches, 86,20% functions e 84,95% lines, build 12 workspaces, typecheck, lint, E2E focal 5/5, E2E completa 31/31, contratos 81/81, worker 27/27, migrations 41/41, audit high e gates estáticos.
-- next_action: atualizar/commitá-los `traceability.yml`, auditoria 0536, backlog, log, plano e este runtime state; executar o release gate em worktree limpo; manter o live preflight pendente por ambiente/autoridade e sem declarar release
+- last_completed_action: implementar `FEEDBACK-043` em `ea9ee122676be620652f08019919ca59ed05fa02` e consolidar auditoria/SPEC/backlog/log/plano/runtime/traceability em `d8e1ba1`; corrigir, após crítica Goodall, cursor obsoleto no retry e reload tardio de transição; verificar coverage 134/667/35 skips com 84,24% statements, 80,14% branches, 86,20% functions e 84,95% lines, build 12 workspaces, E2E 31/31, migrations 41/41 e gates estáticos.
+- next_action: executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; depois abrir `APPEAL-043`; manter o live preflight pendente por ambiente/autoridade e sem declarar release
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T20:08:23-03:00
+- last_update: 2026-08-24T20:12:03-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `ea9ee122676be620652f08019919ca59ed05fa02`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; `FEEDBACK-043` tem cursor HMAC, keyset, índices 0040, meta HTTP, navegação e hardening de concorrência web; documentos de fechamento estão em atualização; o preflight live continua sem ambiente
+- head: `d8e1ba1`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; `FEEDBACK-043` tem cursor HMAC, keyset, índices 0040, meta HTTP, navegação e hardening de concorrência web; auditoria e rastreabilidade estão consolidadas; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: código funcional commitado; documentos de fechamento ainda modificados localmente até o próximo commit; não há push/deploy
+- worktree: código e documentação commitados; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-HISTORY-053` base e hardening estão GREEN/REFACTOR; actor/request/correlation server-owned, `audit_entries` atômico, migrations 0038/0039, linhagem e rollback estão cobertos localmente; `FEEDBACK-043` está GREEN/REFACTOR com cursor HMAC bound, keyset `limit + 1`, índices 0040, meta HTTP, retry/race web cobertos por E2E; coverage 134/667/35 skips com 84,24% statements, 80,14% branches, 86,20% functions e 84,95% lines; build 12 workspaces; typecheck/lint, Prettier, migration 41/41, contratos 81/81, worker 27/27, operations E2E 5/5, E2E 31/31 e gates estáticos/documentais passaram; release traceability será reexecutado após o commit documental; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `FEEDBACK-HISTORY-053` base e hardening estão GREEN/REFACTOR; actor/request/correlation server-owned, `audit_entries` atômico, migrations 0038/0039, linhagem e rollback estão cobertos localmente; `FEEDBACK-043` está GREEN/REFACTOR com cursor HMAC bound, keyset `limit + 1`, índices 0040, meta HTTP, retry/race web cobertos por E2E; coverage 134/667/35 skips com 84,24% statements, 80,14% branches, 86,20% functions e 84,95% lines; build 12 workspaces; typecheck/lint, Prettier, migration 41/41, contratos 81/81, worker 27/27, operations E2E 5/5, E2E 31/31 e gates estáticos/documentais passaram; release traceability está pendente desta última alteração de runtime; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 
