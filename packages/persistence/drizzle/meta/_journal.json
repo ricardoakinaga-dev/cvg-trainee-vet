@@ -225,6 +225,13 @@
       "when": 1787549562010,
       "tag": "0031_learning_activity_participant_rls_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1787550562010,
+      "tag": "0032_learning_activity_journey_visibility",
+      "breakpoints": true
     }
   ]
 }
