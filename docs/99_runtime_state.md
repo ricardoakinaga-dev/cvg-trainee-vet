@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: o commit de código `5bfa530710171cf1299e8e60d4645796b3886465` fechou fail-closed para vínculo `PUBLISHED` com módulo incompatível, rollback transacional e roles distintas no CI. PostgreSQL efêmero passou 31 arquivos/48 testes com app `NOSUPERUSER/NOBYPASSRLS` e fixture admin separada; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via web→API→PostgreSQL. A documentação, SPEC, backlog, plano e manifesto foram fechados no commit `21b11adb049f4718adcc9ee65ff266f10cd18c1e`; `pnpm verify` passou com 125 arquivos/576 testes, 31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, CI contract 21 checks e gates documentais/segurança verdes.
-- next_action: executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo e, somente com autoridade, rodar o workflow remoto no SHA `5bfa530710171cf1299e8e60d4645796b3886465`; depois tratar concorrência, grants produtivos, observabilidade e restore; não declarar release/100%
+- last_completed_action: o commit de código `5bfa530710171cf1299e8e60d4645796b3886465` fechou fail-closed para vínculo `PUBLISHED` com módulo incompatível, rollback transacional e roles distintas no CI. PostgreSQL efêmero passou 31 arquivos/48 testes com app `NOSUPERUSER/NOBYPASSRLS` e fixture admin separada; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via web→API→PostgreSQL. A documentação, SPEC, backlog, plano e manifesto foram fechados no commit `21b11adb049f4718adcc9ee65ff266f10cd18c1e`; `pnpm verify` passou com 125 arquivos/576 testes, 31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, CI contract 21 checks e gates documentais/segurança verdes. Em seguida, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`, `pnpm verify:documentation` e `pnpm audit --audit-level=high` passaram em worktree limpo.
+- next_action: somente com autoridade, rodar o workflow remoto no SHA `5bfa530710171cf1299e8e60d4645796b3886465`; depois tratar concorrência, grants produtivos, observabilidade e restore; não declarar release/100%
 
 ## BLOQUEIOS
 
@@ -32,11 +32,11 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T07:16:31-03:00
+- last_update: 2026-08-24T07:17:00-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `21b11adb049f4718adcc9ee65ff266f10cd18c1e` (última base de evidência documental; este estado é seu sucessor de continuidade)
+- head: `acd9410e91c37cbc459c763d11013f7dbe01b109` (último commit de continuidade; este estado é seu sucessor de continuidade)
 - origin: `fbbc692` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: limpo após o fechamento desta atualização de continuidade; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`

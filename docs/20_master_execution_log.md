@@ -6736,3 +6736,35 @@ Executar o workflow remoto no mesmo SHA quando autorizado e fechar, em ambiente
 apropriado, concorrência, grants/owners produtivos, observabilidade, restore,
 pipeline curricular autoral, gates clínicos, provider/MFA e piloto. Não fazer
 push/deploy por inferência.
+
+## 2026-08-24 — JOURNEY-REL-002: gate final de rastreabilidade local
+
+### TIMESTAMP
+
+2026-08-24T07:17:00-03:00
+
+### ACTION
+
+Após o fechamento documental e do runtime state, foi executado
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo,
+junto com `pnpm verify:ci-contract`, `pnpm verify:documentation` e
+`pnpm audit --audit-level=high`.
+
+### RESULT
+
+Todos os gates passaram: os artefatos resolvem para commits alcançáveis e paths
+rastreados, o contrato CI mantém 21 checks, a documentação canônica é
+consistente e não há vulnerabilidades conhecidas no nível auditado. Nenhum
+push, deploy ou workflow remoto foi executado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — construção local/live sintética rastreável; release,
+produção e aprovação clínica continuam bloqueados pelos gates registrados.
+
+### NEXT
+
+Com autoridade de repositório e ambiente, executar o workflow remoto no SHA de
+código `5bfa530710171cf1299e8e60d4645796b3886465`; depois tratar os gaps de
+concorrência, grants/owners produtivos, observabilidade, restore, currículo
+autoral, clínica, provider/MFA e piloto.
