@@ -637,6 +637,7 @@ Final local evidence for this slice: `pnpm verify` passed with 131 files/634
 tests and 27 files/33 tests skipped; coverage 84.90% statements, 81.11%
 branches, 86.41% functions and 85.64% lines; build 12 workspaces; E2E 28/28;
 integration 25 pass/33 skips; high-severity dependency audit clean; release
-traceability remains to be rerun after this control-plane update. The next
-authorized action is the live preflight with a disposable CVG database and
+traceability passed after the control-plane update. The final live preflight
+still exits 2 because `CVG_TEST_DATABASE_URL` is absent. The next authorized
+action is the live preflight with a disposable CVG database and
 human clinical/repository approval, not a production declaration.

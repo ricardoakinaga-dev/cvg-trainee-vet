@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: o commit técnico `de8d8bccbce13e3e4d10597f4b88245ae42601f` fechou a guarda server-side de `itemId`, a compatibilidade de provenance, a CTA condicionada a `nextAction` e a prova E2E de limpeza da justificativa; auditoria, backlog, manifesto, plano e log foram atualizados com a crítica final Kuhn e a evidência desta rodada. `pnpm verify`, build, E2E, integração, audit de dependências e traceability estrutural passaram localmente. O preflight `pnpm test:integration:live` confirmou bloqueio com código 2 por ausência de `CVG_TEST_DATABASE_URL`.
+- last_completed_action: o commit técnico `de8d8bccbce13e3e4d10597f4b88245ae42601f` fechou a guarda server-side de `itemId`, a compatibilidade de provenance, a CTA condicionada a `nextAction` e a prova E2E de limpeza da justificativa; auditoria, backlog, manifesto, plano e log foram atualizados com a crítica final Kuhn e a evidência desta rodada. O commit documental `20e01e2` e o gate de release traceability passaram; `pnpm verify`, build, E2E, integração e audit de dependências passaram localmente. O preflight final `pnpm test:integration:live` confirmou bloqueio com código 2 por ausência de `CVG_TEST_DATABASE_URL`.
 - next_action: com aprovação e ambiente CVG descartável, fornecer URLs distintas de app/admin, executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA; manter aprovação clínica/humana como gate de publicação e não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T14:33:23-03:00
+- last_update: 2026-08-24T14:35:07-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 

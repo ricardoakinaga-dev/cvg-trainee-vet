@@ -173,6 +173,37 @@ inferir competência prática, publicação clínica ou release.
 
 COMPLETED_WITH_GAPS
 
+## 2026-08-24 — RELEASE TRACEABILITY / LIVE PREFLIGHT FINAL
+
+### TIMESTAMP
+
+2026-08-24T14:35:07-03:00
+
+### ACTION
+
+Após o commit documental `20e01e2`, o gate
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou e confirmou
+que os artefatos atuais resolvem para commits alcançáveis e caminhos
+rastreados. O preflight final `pnpm test:integration:live` foi executado sem
+expor variáveis e terminou com código 2 porque
+`CVG_TEST_DATABASE_URL` é obrigatório; `DATABASE_URL` não é aceito.
+
+### RESULT
+
+O bloqueio de ambiente permanece reproduzido e registrado, sem converter
+ausência de PostgreSQL/RLS em aprovação. Não houve push, deploy, criação de
+credenciais ou mutação externa.
+
+### NEXT
+
+Com ambiente CVG descartável/autorizado e aprovação do proprietário, executar
+PostgreSQL/RLS, browser→API→PostgreSQL, concorrência, grants/owners e workflow
+remote same-SHA; manter os gates clínicos e de publicação humana.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## 2026-08-24 — JOURNEY-REMEDIATION-048: fechamento pós-crítica de item e provenance
 
 ### TIMESTAMP
