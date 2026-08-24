@@ -5779,3 +5779,115 @@ COMPLETED_WITH_GAPS
 
 Abrir uma fatia separada para consultar o histórico append-only interno de
 apelações, bounded e escopado, mantendo-o fora da projeção participante.
+
+## 2026-08-24 — APPEAL-042: abertura da timeline interna de histórico
+
+### TIMESTAMP
+
+2026-08-24 02:51:04 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / governança operacional
+
+APPEAL-042 / AUD-P1-001 / UC-018
+
+### TASK
+
+APPEAL-2026-08-24-H — consultar histórico append-only bounded por apelação e
+escopo, somente para revisão interna autorizada.
+
+### ACTION
+
+A crítica independente identificou que APPEAL-040 já persiste histórico
+append-only, mas ainda não havia port/use case/repositório/API/UI de leitura.
+O escopo foi congelado em uma rota interna read-only com limite de 100 eventos,
+contexto `cvg.appeal_review_scope_id`, autorização `REVIEW_APPEAL` e timeline
+sem qualquer comando de decisão ou recálculo.
+
+### RESULT
+
+Estado atualizado para `IN_PROGRESS`. O próximo passo obrigatório é RED em
+contrato, aplicação, persistência, HTTP e operations web; nenhuma alteração de
+estado de apelação será incluída nesta fatia.
+
+### REVIEW / GAPS
+
+IDOR entre escopos, rationale/reviewer/correlation IDs, ausência de limite,
+vazamento para participante e confusão com aprovação clínica são riscos
+críticos. Prova PostgreSQL/RLS live, grants, concorrência, workflow remoto,
+observabilidade, provider/MFA, piloto e produção permanecem fora da autoridade
+local.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED com casos sintéticos e manter o histórico exclusivamente em rota
+interna autorizada.
+
+## 2026-08-24 — APPEAL-042: implementação e encerramento local
+
+### TIMESTAMP
+
+2026-08-24 03:17:11 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / governança operacional
+
+APPEAL-042 / AUD-P1-001 / UC-018
+
+### TASK
+
+APPEAL-2026-08-24-H — consultar histórico append-only bounded por apelação e
+escopo, somente para revisão interna autorizada.
+
+### ACTION
+
+Implementado o contrato interno estrito, caso de uso, leitura persistente com
+contexto de revisão, rota HTTP e timeline read-only na superfície interna de
+operações. A correção defensiva do commit `e45b4677d651322e49fa1b2416dc0130c8778ee5`
+passou a validar também os eventos devolvidos pelo port antes da projeção.
+
+### RESULT
+
+O RED ocorreu antes da implementação e o GREEN focado passou em 4 arquivos /
+68 testes. No HEAD final, `pnpm verify` passou com 120 arquivos / 552 testes,
+26 skips de arquivos e 28 skips de testes, cobertura 84,52% statements,
+80,36% branches, 85,96% functions e 85,22% lines; build 12 workspaces, E2E
+23/23, integração configurada 8 arquivos/20 testes PASS e 26 arquivos/28
+testes SKIPPED, contratos 25/68, worker 4/25, migrations 26/26 e audit de
+dependências sem vulnerabilidades conhecidas. Os gates de secrets,
+traceability, architecture, documentation, product-definition, exposure e
+diff-check passaram.
+
+### DECISIONS
+
+APPEAL-042 fica `COMPLETED_WITH_GAPS` e pronto para próxima fatia local. As
+duas críticas read-only independentes solicitadas expiraram sem relatório e
+não foram tratadas como aprovação. PostgreSQL/RLS live, grants, concorrência,
+observabilidade/retention/restore, workflow remoto, aprovação clínica,
+provider/MFA, piloto e produção continuam dependentes de ambiente, autoridade
+ou decisão humana. Nenhum comando de decisão, recálculo, anulação, alteração de
+nota ou projeção participante foi adicionado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Selecionar e abrir uma próxima lacuna local bounded — triagem interna de
+feedback, fila/lembranças ou hardening operacional — mantendo os gaps explícitos
+e sem declarar o produto 100% concluído.

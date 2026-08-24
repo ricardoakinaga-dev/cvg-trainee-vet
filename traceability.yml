@@ -2585,6 +2585,88 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "APPEAL-042"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-060",
+        "PRD-RF-064",
+        "PRD-RF-065",
+        "PRD-RF-102",
+        "UC-018",
+        "RN-064",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0521_appeal_history_timeline_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/appeal-review-history.ts",
+        "packages/contracts/src/appeal-review-history.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/appeal-review-history-use-cases.ts",
+        "packages/application/src/appeal-review-history-use-cases.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/appeal-review-history-repository.ts",
+        "packages/persistence/src/appeal-review-history-repository.test.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/operations/page.tsx",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/contracts/src/appeal-review-history.test.ts",
+        "packages/application/src/appeal-review-history-use-cases.test.ts",
+        "packages/persistence/src/appeal-review-history-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "e45b4677d651322e49fa1b2416dc0130c8778ee5"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: rota HTTP de histórico falhou com 404 antes da implementação",
+        "GREEN: focused contracts/application/persistence/API passou 4 arquivos/68 testes",
+        "pnpm format:check",
+        "pnpm lint",
+        "pnpm typecheck",
+        "pnpm test:coverage (120 arquivos/552 testes; 26 skips de arquivos/28 skips de testes; coverage 84.52% statements, 80.36% branches, 85.96% functions, 85.22% lines)",
+        "pnpm test:contract (25 arquivos/68 testes)",
+        "pnpm test:worker (4 arquivos/25 testes)",
+        "pnpm test:integration (8 arquivos/20 testes PASS; 26 arquivos/28 testes SKIPPED sem dependências live)",
+        "pnpm verify:migrations (26 migrations; latest 0025_appeal_recalculation_history)",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm verify",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (23/23)",
+        "independent read-only critic requested twice; both timed out and were not treated as approval",
+        "defensive port-event validation fix committed in e45b4677d651322e49fa1b2416dc0130c8778ee5",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "EDITORIAL-QUEUE-027"
     requirements:
       [

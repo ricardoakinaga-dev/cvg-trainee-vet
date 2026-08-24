@@ -58,6 +58,7 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `GET /api/v1/feedback` | UC-022/023 | próprio ou escopo autorizado |
 | `POST /api/v1/feedback` | UC-022 | sessão autenticada |
 | `PATCH /api/v1/feedback/:ticketId` | UC-023 | mod/admin escopado |
+| `GET /api/v1/internal/appeals/:appealId/history` | UC-018 | `REVIEW_APPEAL` + escopo autorizado; somente leitura bounded |
 | `GET /api/v1/content/review-queue` | UC-013/014 | autor/revisor/admin |
 | `POST /api/v1/content/drafts` | UC-012 | autor autorizado |
 | `POST /api/v1/content/:contentId/review` | UC-013 | revisor/Ricardo |

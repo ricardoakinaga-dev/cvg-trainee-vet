@@ -502,6 +502,24 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps conhecidos: múltiplos escopos exigirão seleção server-side explícita; triagem/moderação, resposta ao participante, notificações, operação de suporte, prova live/RLS, restore/retention e workflow remoto continuam fora da fatia
 - próxima ação: implementar consulta interna read-only, bounded e escopada do histórico append-only de apelações, sem projetá-lo ao participante
 
+### APPEAL-042 — Timeline interna do histórico append-only de apelações
+
+- título: permitir que revisor autorizado consulte a linha do tempo interna de uma contestação
+- descrição: fechar a lacuna de leitura do histórico já persistido em `appeal_review_history`, com contrato interno estrito, contexto de escopo e timeline operacional sem qualquer mutação
+- módulo: apelação / revisão interna / contratos / API / persistência / operações web
+- dependência: `APPEAL-040`; `UC-018`; `SPEC-0106`; `SPEC-0107`; `SPEC-0111`; migration `0025_appeal_recalculation_history`
+- fase: BUILD — Phase 3–5 / governança operacional
+- risco: alto — IDOR entre escopos, vazamento de rationale/revisor/correlação e confusão entre consulta histórica e decisão clínica
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para contrato interno bounded, leitura por `appealId` + escopo, 401/403/404/422, query read-only com contexto de revisão, timeline acessível, E2E sintético, regressão, traceability e release gate — cumprido localmente
+- escopo desta fatia: `GET /api/v1/internal/appeals/:appealId/history`, limite máximo de 100 eventos, ordenação determinística por versão/data/ID, acesso somente a `REVIEW_APPEAL` no escopo autorizado
+- fora desta fatia: decisão, atribuição, recálculo, anulação, alteração de resultado, notificação, resposta ao participante, publicação, dados clínicos reais, PostgreSQL/RLS live, workflow remoto, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0521_appeal_history_timeline_audit.md`; commits técnicos `ba81a75f13df9bb1af5a753d423270ce452050df` e `e45b4677d651322e49fa1b2416dc0130c8778ee5`; contrato, aplicação, persistência, HTTP, operations web, testes de integração configurada e E2E
+- resultado local: RED observado antes da implementação; GREEN focado 4 arquivos/68 testes; `pnpm verify` no HEAD final 120 arquivos/552 testes/26 skips de arquivos/28 skips de testes, cobertura 84,52%/80,36%/85,96%/85,22%; build 12 workspaces; E2E 23/23; integração 8 arquivos/20 testes PASS e 26 arquivos/28 testes SKIPPED; contratos 25/68; worker 4/25; migrations 26/26; audit sem vulnerabilidades conhecidas; gates de secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- gaps conhecidos: as duas solicitações de crítica read-only independente expiraram sem relatório; prova live/RLS, grants, concorrência, observabilidade/retention/restore e operação remota seguem dependentes de ambiente/autoridade
+- próxima ação: selecionar e abrir uma próxima lacuna local bounded — triagem interna de feedback, fila/lembranças ou hardening operacional — sem ampliar a projeção participante nem declarar o produto 100% concluído
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais
