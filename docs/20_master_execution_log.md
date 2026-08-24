@@ -8264,3 +8264,83 @@ Selecionar a próxima lacuna P1 local bounded; manter o estado
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-08-24 — FEEDBACK-043: abertura da paginação da fila interna
+
+### TIMESTAMP
+
+2026-08-24T19:18:00-03:00
+
+### ACTION
+
+Abrir a próxima fatia local bounded recomendada na crítica de produto: paginação
+keyset por cursor assinado para a fila interna de feedback. O recorte atravessa
+contrato strict, caso de uso, repository PostgreSQL, envelope HTTP e navegação
+operations, preservando escopo/status/limite e sem inventar prioridade,
+assignment, SLA ou resposta ao participante.
+
+### RESULT
+
+A inspeção confirmou que a fila atual ordena por `createdAt`/`id` e aplica limite
+sem cursor, enquanto a superfície de audit trail já fornece um padrão local de
+cursor HMAC, `limit + 1`, metadados `has_next`/`next_cursor` e navegação. A
+implementação será feita em TDD com binding de escopo e filtros no cursor.
+
+### LIMITES
+
+Não haverá claim de PostgreSQL/RLS/grants live, concorrência real, produção,
+workflow remoto ou aprovação clínica; a evidência live permanece bloqueada por
+ausência de `CVG_TEST_DATABASE_URL`.
+
+### NEXT ACTION
+
+Escrever os testes RED para query/projection, forwarding do cursor, assinatura e
+keyset, metadados HTTP e controles web; então implementar GREEN e refatorar.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — FEEDBACK-043: fechamento da paginação e remediação independente
+
+### TIMESTAMP
+
+2026-08-24T20:08:23-03:00
+
+### ACTION
+
+Implementar e fechar a paginação keyset da fila interna de feedback em TDD,
+separando o commit funcional da reconciliação documental. O slice adicionou
+cursor opaco HMAC bound a escopo/status/limite, query `limit + 1`, metadados
+HTTP, índices PostgreSQL 0040, navegação anterior/próxima e proteção de estado
+web contra retry obsoleto e reload tardio após troca de filtro/escopo.
+
+### RESULT
+
+O código foi consolidado em
+`ea9ee122676be620652f08019919ca59ed05fa02`. A crítica independente Goodall
+retornou `CONDITIONAL PASS` sem P0; os dois P1 web encontrados foram
+reproduzidos em E2E e corrigidos. A verificação passou com coverage
+84,24%/80,14%/86,20%/84,95%, 667 testes PASS e 35 SKIPPED, build dos 12
+workspaces, contracts 81/81, worker 27/27, migrations 41/41, operations E2E
+5/5 e E2E completa 31/31; lint, typecheck, formato, audit high, secrets,
+architecture, documentation, product-definition, exposure e diff-check também
+passaram.
+
+### LIMITES
+
+`pnpm test:integration:live` continua saindo 2 antes de conexão por ausência de
+`CVG_TEST_DATABASE_URL`; não há evidência PostgreSQL/RLS/grants/owner/plano,
+concorrência live, browser→API→PostgreSQL, workflow remoto same-SHA, produção,
+restore/failover, provider/MFA ou gates clínicos. O keyset não oferece snapshot
+consistente nem total count por decisão de escopo.
+
+### NEXT ACTION
+
+Atualizar e validar manifesto, runtime state, backlog e plano; depois abrir a
+próxima lacuna local bounded `APPEAL-043`, mantendo os bloqueios live/humanos
+explícitos e sem declarar release.
+
+### STATUS
+
+READY_FOR_NEXT_STEP

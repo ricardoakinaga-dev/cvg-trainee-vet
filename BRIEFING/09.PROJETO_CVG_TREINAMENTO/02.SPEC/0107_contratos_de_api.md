@@ -78,7 +78,7 @@ Rotas internas de autoria podem retornar fonte, localizador, protocolo e decisã
 ## 4. Paginação e filtros
 
 - listas administrativas pequenas usam `page`/`per_page`, máximo 100;
-- filas de auditoria e eventos usam cursor opaco;
+- filas de auditoria, feedback interno e eventos usam cursor opaco;
 - filtros são whitelisted por rota;
 - `sort` não aceita coluna arbitrária;
 - toda lista devolve `meta.total` ou `meta.has_next` conforme estratégia;
@@ -182,12 +182,18 @@ A primeira fatia de API do item 7 materializa os estados persistidos do item 6 s
 | `POST /api/v1/internal/appeals/:appealId/transition` | autoatribuição, decisão ou solicitação de recálculo pendente com `appealId`, `scopeId`, `version` e evento strict | revisor/moderador/admin/identidade clínica aprovada no escopo; decisão e solicitação exigem o revisor persistido |
 
 Na fila interna de feedback, `GET /api/v1/internal/feedback` aceita somente
-`scopeId`, status opcional e limite bounded; a projeção não inclui
-`participantId`. O `PATCH /api/v1/internal/feedback/:ticketId` aceita somente
+`scopeId`, status opcional, `cursor` opaco e limite bounded; a projeção não inclui
+`participantId`. O endpoint retorna os itens ordenados por `createdAt DESC, id
+DESC` e usa `meta.has_next`/`meta.next_cursor` para avançar sem `COUNT(*)`. O
+cursor é assinado server-side com HMAC-SHA-256 e vinculado a escopo, status e
+limite; cursor malformado, adulterado ou pertencente a outro filtro responde
+`422`. A resposta de dados não incorpora o token: ele permanece somente no
+metadado do envelope. O `PATCH /api/v1/internal/feedback/:ticketId` aceita somente
 `ticketId`, `scopeId`, `version` e evento. O participante do ticket é resolvido
 no servidor por `ticketId + scopeId` sob contexto de escopo antes de reutilizar
 o comando versionado; identidade enviada pelo navegador é rejeitada pelo
-schema strict.
+schema strict. A fila continua sem prioridade, assignment, SLA, resposta,
+notificação ou decisão clínica.
 
 ### 8.1 Histórico state-only do ticket — FEEDBACK-HISTORY-053
 

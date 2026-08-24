@@ -147,6 +147,17 @@ a aprovação clínica, piloto ou release produtivo.
   `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40`: contratos, aplicação, migration
   append-only/RLS, repository, API, operações web, migration governance e E2E
   concluídos; item permanece `COMPLETED_WITH_GAPS` sem prova live.
+- [x] (2026-08-24T20:08:23-03:00) Fechar `FEEDBACK-043` no commit
+  `ea9ee122676be620652f08019919ca59ed05fa02`: cursor HMAC bound a
+  escopo/status/limite, keyset `limit + 1`, migration 0040 com índices,
+  metadados HTTP, paginação anterior/próxima e retry/race web protegido por
+  identidade de consulta. Goodall encontrou dois P1; ambos foram reproduzidos
+  em E2E e corrigidos. Coverage 84,24%/80,14%/86,20%/84,95%, 667 testes
+  passaram/35 skipped, build 12 workspaces, E2E 31/31 e gates estáticos passaram;
+  live PostgreSQL/RLS/grants e produção continuam gaps.
+- [ ] (próxima ação) Abrir `APPEAL-043`: preview de impacto read-only para
+  `ANULAR_ITEM`, sem executar decisão clínica, publicação ou mutação antes de
+  contrato e autoridade explícitos.
 
 ## Surprises & Discoveries
 

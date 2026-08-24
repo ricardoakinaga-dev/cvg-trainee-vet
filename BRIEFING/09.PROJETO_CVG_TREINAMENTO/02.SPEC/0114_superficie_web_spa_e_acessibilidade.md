@@ -106,3 +106,18 @@ O E2E `tests/e2e/recovery-access.spec.ts` cobre o aceite de um link sintético,
 a remoção do token da URL, o cookie de sessão e a mensagem de uso único. A
 verificação continua sintética no navegador; entrega por provedor, MFA, revisão
 manual de acessibilidade e operação com API real permanecem gaps explícitos.
+
+## 16. Fila interna paginada — FEEDBACK-043
+
+Na seção de relatos de `/operations`, a web consome `meta.has_next` e
+`meta.next_cursor` sem interpretar ou persistir o conteúdo do cursor. Uma pilha
+local permite voltar à página anterior; trocar escopo/status reinicia a pilha,
+e um contador de request ignora respostas antigas. `loading`, `forbidden`,
+`unauthenticated`, `error`, retry e empty continuam explícitos. A transição
+confirmada recarrega a página corrente e não decide status no cliente.
+
+Os controles são botões nativos, focáveis e `disabled` quando não há página
+anterior/próxima. O E2E usa duas páginas sintéticas, avança e retorna, e valida
+que a tela não mostra `participantId`, `scopeId` ou o token bruto. Prioridade,
+assignment, SLA, resposta, notificação e conteúdo clínico continuam fora da
+superfície.

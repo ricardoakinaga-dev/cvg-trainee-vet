@@ -2689,11 +2689,13 @@ artifacts:
     documents:
       [
         "BRIEFING/04.AUDIT/0522_feedback_triage_queue_audit.md",
+        "BRIEFING/04.AUDIT/0536_feedback_queue_pagination_audit.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
@@ -2715,6 +2717,9 @@ artifacts:
         "packages/application/src/index.ts",
         "packages/persistence/src/feedback-triage-queue-repository.ts",
         "packages/persistence/src/feedback-triage-queue-repository.test.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/drizzle/0040_feedback_queue_keyset_indexes.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
         "packages/persistence/src/index.ts",
         "apps/api/src/http.ts",
         "apps/api/src/http.test.ts",
@@ -2733,31 +2738,35 @@ artifacts:
         "apps/api/src/http.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
-    commit: "708082a9b62a18350c982d535fb1b4a9b47b7046"
+    commit: "ea9ee122676be620652f08019919ca59ed05fa02"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
       [
-        "RED: módulos novos ausentes, capability nova negada e rota HTTP retornando 404 antes da implementação",
-        "GREEN inicial: focused contracts/application/persistence/authorization/API passou 5 arquivos/80 testes",
-        "independent critic initial FAIL: client-controlled participant identity, incomplete clinical forwarding and missing HTTP negatives",
-        "hardening commits 2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b and 708082a9b62a18350c982d535fb1b4a9b47b7046 removed the projection/request identity and added server resolution plus clinical GET coverage",
-        "GREEN final: focused contracts/application/persistence/authorization/API passou 6 arquivos/87 testes",
+        "RED: cursor ausente no contrato, aplicação, repository e HTTP; web sem metadados/navegação",
+        "GREEN focal inicial: contracts/application/persistence/API passou 80/80 testes",
+        "hardening: cursor HMAC bound a scope/status/limit, keyset limit+1, erro de query tipado, migration 0040 e metadata HTTP",
+        "independent critic Goodall: CONDITIONAL PASS, sem P0; os dois P1 de retry/race web foram reproduzidos e corrigidos com identidade de consulta",
+        "GREEN web focal: operations E2E passou 5/5 com transição atrasada, troca de filtro, retry e duas páginas",
         "pnpm typecheck",
-        "pnpm test:coverage (coverage 84.50% statements, 80.34% branches, 85.91% functions, 85.24% lines)",
-        "pnpm test:contract (26 arquivos/70 testes)",
-        "pnpm test:worker (4 arquivos/25 testes)",
-        "pnpm test:integration (8 arquivos/20 testes PASS; 26 arquivos/28 testes SKIPPED sem dependências live)",
-        "pnpm verify:migrations (26 migrations; latest 0025_appeal_recalculation_history)",
+        "pnpm test:coverage (134 arquivos PASS/29 SKIPPED; 667 testes PASS/35 SKIPPED; 84.24% statements, 80.14% branches, 86.20% functions, 84.95% lines)",
+        "pnpm test:contract (28 arquivos/81 testes)",
+        "pnpm test:worker (4 arquivos/27 testes)",
+        "pnpm verify:migrations (41 migrations; latest 0040_feedback_queue_keyset_indexes)",
         "pnpm audit --audit-level=high (no known vulnerabilities)",
-        "pnpm verify",
         "pnpm build (12 workspaces)",
-        "pnpm test:e2e (23/23)",
-        "independent read-only review after hardening: CONDITIONAL PASS; RLS live remains inconclusive without infrastructure",
-        "pnpm verify:traceability",
+        "pnpm test:e2e -- tests/e2e/operations-dashboard.spec.ts (5/5)",
+        "pnpm test:e2e (31/31)",
+        "pnpm lint",
+        "pnpm format:check",
+        "pnpm verify:ci-contract",
+        "pnpm verify:secrets",
+        "pnpm verify:architecture",
         "pnpm verify:documentation",
+        "pnpm verify:product-definition",
         "pnpm verify:exposure",
         "git diff --check",
+        "pnpm test:integration:live (exit 2 before connection: CVG_TEST_DATABASE_URL is absent)",
       ]
     status: "verified-with-gaps"
   - id: "EDITORIAL-QUEUE-027"

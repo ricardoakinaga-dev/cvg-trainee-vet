@@ -113,6 +113,30 @@ escopos, atomicidade/rollback e concorrência; também deve haver evidência
 browser→API→PostgreSQL. Sem esse preflight, a feature permanece verificada
 localmente, sem claim de produção ou de auditoria completa.
 
+### 2.3 — Consulta paginada da fila de triagem — FEEDBACK-043
+
+`GetFeedbackTriageQueue` é uma query interna read-only para moderador,
+administrador ou identidade clínica aprovada, sempre com capability
+`VIEW_FEEDBACK_QUEUE` e escopo autorizado. O input normalizado é
+`{ scopeId, status?, cursor?, limit }`, com `limit` entre 1 e 100 e padrão 50;
+`cursor` é opaco, bounded e não pode ser interpretado ou fabricado pelo cliente.
+O port retorna itens allowlisted, `hasNext` e, quando aplicável, `nextCursor`;
+esses dois últimos campos são metadados internos da aplicação e não entram na
+projeção de dados do ticket.
+
+O repository usa ordenação keyset estável `created_at DESC, id DESC` e busca
+`limit + 1`, sem `COUNT(*)`. O cursor assinado com HMAC-SHA-256 contém somente
+versão, `ticketId`, `createdAt`, `scopeId` e fingerprint dos filtros
+`scopeId/status/limit`; assinatura inválida, cursor de outro escopo ou cursor
+de filtros diferentes falha como `validation_error`. O caso de uso valida
+novamente o shape da página e exige que `hasNext` e `nextCursor` sejam
+consistentes.
+
+A query não cria prioridade, atribuição, SLA, resposta, notificação, histórico,
+decisão clínica ou estado educacional. PostgreSQL continua sendo a fonte
+transacional; a assinatura e os testes locais não constituem evidência de RLS,
+grants, concorrência live ou produção.
+
 ## 3. Validação
 
 1. toda entrada externa é `unknown` até passar por schema Zod;

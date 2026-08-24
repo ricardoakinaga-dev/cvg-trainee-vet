@@ -801,14 +801,29 @@ permanece `COMPLETED_WITH_GAPS` e não há claim de produção.
 - risco: alto — IDOR por escopo, vazamento de relato ao participante, transição fora da máquina de estados e falso encerramento de suporte
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
-- critério de pronto: RED/GREEN/REFACTOR para query bounded interna, capability server-side, contexto RLS de escopo, projeção strict, 401/403/422, estados loading/empty/error/retry, transição com versão otimista, E2E sintético, regressão, traceability e release gate
-- escopo desta fatia: `GET /api/v1/internal/feedback?scopeId=<uuid>&status=<status>&limit=<1..100>`; filtro opcional por status; projeção de ticket sem anexos ou dados clínicos; ações UI para eventos permitidos pelo estado, usando `PATCH /api/v1/internal/feedback/:ticketId`
-- fora desta fatia: prioridade, atribuição a responsável, resposta ao participante, histórico dedicado de eventos, notificações, alerta/retirada clínica, SLA, anexos, provider/MFA, PostgreSQL/RLS live, workflow remoto, piloto e produção
-- evidência: `BRIEFING/04.AUDIT/0522_feedback_triage_queue_audit.md`; commits técnicos `5f7536259a1a7cfff5d85d6a5292ac6ea5427fac`, `2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b` e `708082a9b62a18350c982d535fb1b4a9b47b7046`; contrato, aplicação, persistência, HTTP, operations web, testes negativos, integração configurada e E2E
-- resultado local: RED observado antes da implementação; GREEN inicial 5 arquivos/80 testes; após crítica independente `FAIL`, hardening e cobertura clínica GET, GREEN final 6 arquivos/87 testes; `pnpm verify` passou com cobertura 84,50%/80,34%/85,91%/85,24%; build 12 workspaces; E2E 23/23; integração 8 arquivos/20 testes PASS e 26 arquivos/28 testes SKIPPED; contratos 26/70; worker 4/25; migrations 26/26; audit sem vulnerabilidades conhecidas; gates de secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
-- gaps conhecidos: o schema atual possui somente estado/versionamento; prioridade, atribuição, resposta e histórico dedicado exigem contrato/migration separados e não serão simulados
-- gaps de assurance: a segunda crítica read-only retornou `CONDITIONAL PASS`, sem novo defeito de código, mas prova PostgreSQL/RLS live, grants, concorrência real, observabilidade/retention/restore e operação remota seguem dependentes de ambiente/autoridade
-- próxima ação: selecionar uma próxima lacuna local bounded sem declarar o produto 100% concluído
+- critério de pronto: RED/GREEN/REFACTOR para query bounded interna, capability server-side, contexto RLS de escopo, projeção strict, 401/403/422, estados loading/empty/error/retry, transição com versão otimista, cursor HMAC bound a escopo/status/limite, keyset `limit + 1`, metadados HTTP, navegação anterior/próxima, E2E sintético, regressão, traceability e release gate
+- escopo desta fatia: `GET /api/v1/internal/feedback?scopeId=<uuid>&status=<status>&cursor=<opaque>&limit=<1..100>`; filtro opcional por status; projeção de ticket sem anexos ou dados clínicos; ações UI para eventos permitidos pelo estado, usando `PATCH /api/v1/internal/feedback/:ticketId`; retry e transições preservam somente a consulta ainda vigente
+- fora desta fatia: prioridade, atribuição a responsável, resposta ao participante, notificações, alerta/retirada clínica, SLA, anexos, provider/MFA, PostgreSQL/RLS live, workflow remoto, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0536_feedback_queue_pagination_audit.md` e `BRIEFING/04.AUDIT/0522_feedback_triage_queue_audit.md`; commit técnico `ea9ee122676be620652f08019919ca59ed05fa02`; contrato, aplicação, persistência, migration 0040, HTTP, operations web, testes negativos/concurrentes e E2E
+- resultado local: RED observado antes da implementação; GREEN focal inicial 80/80; crítica Goodall `CONDITIONAL PASS` sem P0, com os dois P1 de retry/race web reproduzidos e corrigidos; coverage 134 arquivos PASS/29 SKIPPED, 667 testes PASS/35 SKIPPED e 84,24%/80,14%/86,20%/84,95%; build 12 workspaces; operations E2E 5/5; E2E completa 31/31; contratos 28/81; worker 4/27; migrations 41/41; audit high sem vulnerabilidades conhecidas; lint, typecheck, formato, CI contract, secrets, architecture, documentation, product-definition, exposure e diff-check limpos
+- gaps conhecidos: a fila continua somente leitura/transição de estado; prioridade, atribuição, resposta e SLA exigem contrato/migration separados; keyset não fornece snapshot consistente nem total count, e esses limites permanecem explícitos
+- gaps de assurance: prova PostgreSQL/RLS/grants/owner, plano real, concorrência live, observabilidade/retention/restore, browser→API→PostgreSQL, workflow remoto same-SHA, operação produtiva e aprovação clínica seguem dependentes de ambiente/autoridade
+- próxima ação: abrir a próxima lacuna local bounded — preview de impacto para `ANULAR_ITEM` em `APPEAL-043` — sem declarar o produto 100% concluído
+
+**Abertura operacional 2026-08-24 (FEEDBACK-043 / cursor-pagination):** a
+próxima fatia local bounded foi aberta para remover o limite único da fila sem
+inventar workflow de suporte. O contrato será cursor-based/keyset, com cursor
+assinado e vinculado a escopo/status/limite, `limit + 1`, metadados HTTP e
+navegação anterior/próxima na operations web. Prioridade, assignment, SLA,
+resposta, notificação e histórico dedicado continuam fora deste recorte.
+
+**Fechamento operacional 2026-08-24 (FEEDBACK-043 / cursor-pagination):** o
+commit `ea9ee122676be620652f08019919ca59ed05fa02` entregou contrato strict,
+cursor HMAC, binding, keyset, índices `0040`, meta HTTP, retry seguro e proteção
+contra reload tardio após troca de filtro/escopo. O critic independente encontrou
+dois P1 web; ambos foram cobertos por E2E sintético e corrigidos antes do
+fechamento. A fatia está `COMPLETED_WITH_GAPS`: a evidência local está verde,
+mas não há claim live/produtivo.
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 

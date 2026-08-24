@@ -373,3 +373,23 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - limites: workflow remoto same-SHA, grants/owners produtivos, múltiplas
   réplicas/carga, observabilidade/restore, provider/MFA e gates clínicos
   permanecem independentes e não são aprovados por este slice.
+
+## 29. Evidência adicional — FEEDBACK-043
+
+- RED: os testes de contrato, aplicação, persistence e HTTP falharam antes do
+  cursor existir; a web/E2E também não possuía metadados nem controles de página.
+- GREEN: `feedbackTriageQueueQuerySchema` aceita somente cursor bounded; o caso
+  de uso encaminha cursor, normaliza falha criptográfica como `validation_error`
+  e valida a consistência de `hasNext`/`nextCursor`.
+- persistence: o cursor HMAC é ligado a escopo/status/limite, a query usa
+  keyset `createdAt/id`, `limit + 1`, e os testes cobrem round-trip, adulteração,
+  segredo errado, filtro divergente, contexto transacional e segunda página.
+- boundary/web: a API aceita somente as chaves allowlisted e devolve
+  `meta.has_next`/`meta.next_cursor`; a operations web mantém uma pilha de
+  cursores com proteção contra respostas fora de ordem; o E2E percorre avanço e
+  retorno em duas páginas sintéticas.
+- verificação focal: 80/80 testes nos quatro arquivos de contrato/aplicação/
+  persistence/API, typecheck/build e E2E operations 5/5 passaram.
+- limites: o E2E usa fixtures sintéticas; sem `CVG_TEST_DATABASE_URL` não há
+  prova de PostgreSQL/RLS/grants/concorrência live, browser→API→PostgreSQL,
+  produção, workflow remoto ou aprovação clínica.

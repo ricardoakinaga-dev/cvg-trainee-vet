@@ -254,3 +254,30 @@ efetivamente RLS, grants/owners, isolamento entre escopos, trigger append-only,
 unicidade/concorrência, rollback transacional e o percurso browser→API→banco.
 Sem essa evidência, a tabela permanece uma implementação local verificada, não
 uma garantia de produção ou de auditoria completa.
+
+## 8.6 Paginação keyset da fila de feedback — FEEDBACK-043
+
+`feedback_tickets` permanece a fonte de verdade da fila. A leitura escopada
+instala `cvg.scope_id` na mesma transação, filtra opcionalmente `status` e
+ordena por `created_at DESC, id DESC`. A página busca uma linha além do limite,
+descarta essa linha da projeção e deriva `hasNext`/`nextCursor`; não há contagem
+total nem offset, evitando páginas instáveis quando novos relatos entram.
+
+O cursor é um envelope base64url assinado com HMAC-SHA-256 por segredo
+server-side. Seu fingerprint inclui `scope_id`, `status` e `limit`, portanto a
+reutilização com outro escopo, filtro ou tamanho de página falha antes da
+query. O token não é persistido, logado ou renderizado no item; pode ser
+reconstruído pelo último `(created_at, id)` da página. Esta estratégia é
+somente leitura e não muda as invariantes de criação/transição/histórico.
+
+A migration `0040_feedback_queue_keyset_indexes.sql` mantém índices alinhados
+às duas formas autorizadas de leitura: `(scope_id, created_at, id)` quando o
+status não é filtrado e `(scope_id, status, created_at, id)` quando o filtro de
+status é aplicado. Esses índices reduzem o risco de sort/scan não bounded na
+fila administrativa, mas sua eficácia e plano real ainda exigem preflight
+PostgreSQL autorizado.
+
+O teste local cobre assinatura, adulteração, segredo incorreto, binding de
+filtros, limite adicional, segunda página e contexto transacional. A prova
+efetiva de RLS, owner/grants e concorrência PostgreSQL ainda depende de banco
+CVG descartável/autorizado e não é substituída por fake ou fixture.
