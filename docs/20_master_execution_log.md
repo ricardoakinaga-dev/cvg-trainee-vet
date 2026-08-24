@@ -6768,3 +6768,32 @@ Com autoridade de repositório e ambiente, executar o workflow remoto no SHA de
 código `5bfa530710171cf1299e8e60d4645796b3886465`; depois tratar os gaps de
 concorrência, grants/owners produtivos, observabilidade, restore, currículo
 autoral, clínica, provider/MFA e piloto.
+
+## 2026-08-24 — APPEAL-042: confirmação de escopo sem duplicação
+
+### TIMESTAMP
+
+2026-08-24T07:19:46-03:00
+
+### ACTION
+
+Foi feita uma inspeção read-only da próxima lacuna local bounded. O backlog
+`APPEAL-042` já está implementado no HEAD, com contrato interno estrito,
+use-case, repositório escopado, rota `GET /api/v1/internal/appeals/:appealId/history`,
+timeline operacional e testes HTTP/E2E.
+
+### RESULT
+
+Nenhuma alteração redundante foi criada. A fatia permanece
+`COMPLETED_WITH_GAPS`: live/RLS, grants produtivos, concorrência,
+observabilidade/restore e operação remota continuam dependentes de ambiente e
+autoridade; a projeção não é exposta ao participante.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar o workflow remoto no mesmo SHA quando houver autorização; não fazer
+push/deploy ou declarar 100% por inferência.
