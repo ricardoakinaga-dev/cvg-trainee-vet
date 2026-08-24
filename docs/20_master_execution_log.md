@@ -6864,3 +6864,63 @@ verificados; ainda não é release produtivo nem aprovação clínica.
 Executar build/E2E/audit high após o commit, fechar a documentação/traceability
 do slice em worktree limpo e então selecionar o pipeline authoring→atividade por
 `moduleId` explícito; workflow remoto e gates humanos somente com autoridade.
+
+## 2026-08-24 — AUTHORING-ACTIVITY-001: materialização authoring → atividade
+
+### TIMESTAMP
+
+2026-08-24T08:52:41-03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–5 / pipeline autoral e projeção curricular
+
+### TASK
+
+Materializar uma atividade publicada pela identidade explícita
+`scopeId + moduleId + sessionId`, com itens publicados, replay idempotente,
+RLS contextual e atomicidade, sem usar slug/título ou autoridade de IA.
+
+### ACTION
+
+Foi implementado TDD no commit `82ea6ab`:
+`learning_activities.session_id`, índice único por escopo/módulo/sessão,
+checks de `Mxx-S[1-4]`, migrations `0028`–`0030`, `ENABLE/FORCE RLS`, policies
+de escopo/participante/autoria e materialização no `content-repository.ts`.
+O materializador lê somente conteúdo `PUBLICADO`, valida identidade editorial,
+ordinal 1–100 e conjunto exato de itens, e falha fechado em mismatch,
+duplicidade, vínculo cruzado, escrita incompleta ou item inesperado. Uma crítica
+independente encontrou recursão nas policies iniciais e tolerância a item extra;
+`0030` corrigiu a recursão com functions booleanas `SECURITY DEFINER`, e o
+replay passou a rejeitar conjunto inesperado sem apagar histórico.
+
+### RESULT
+
+RED/GREEN focal passou 18/18 testes unitários; typecheck de persistence passou;
+`verify:migrations` passou com 31 migrations/índice 0030; authoring live passou
+1/1 com RLS, replay e duas transações concorrentes convergindo para uma
+atividade e dois itens; worker live passou 4/4; a suíte live completa passou
+31 arquivos/50 testes. A cobertura unitária passou com 125 arquivos/592
+testes/33 skips: 84,57% statements, 80,50% branches, 86,08% functions e
+85,30% lines. Só fixtures sintéticas foram usadas; nenhum dado clínico real,
+PDF, foto, prontuário, tutor, segredo ou fonte de terceiro entrou no código,
+seed, teste, log ou interface.
+
+### REVIEW / LIMITES
+
+Atividade legada com sessão nula permanece fora do agrupamento automático. O
+E2E navegador→API→PostgreSQL ainda não cria a atividade através do pipeline
+autoral; workflow remoto same-SHA, grants/owners produtivos,
+collector/retention/traces, carga/failover/restore, provider/MFA, revisão
+clínica, B-07 e piloto continuam gates separados. O slice fica
+`COMPLETED_WITH_GAPS`; não é release nem aprovação clínica.
+
+### NEXT
+
+Atualizar SPEC/AUDIT/backlog/manifesto/estado, rodar os gates finais locais e
+executar o workflow remoto e o E2E curricular autoral somente com autoridade
+de ambiente e repositório.

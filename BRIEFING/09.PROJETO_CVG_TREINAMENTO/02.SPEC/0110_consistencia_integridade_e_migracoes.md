@@ -58,3 +58,20 @@
 ## 6. Migração e verificação atuais
 
 `0006_unknown_randall_flagg.sql` foi gerada pelo Drizzle e aplicada no PostgreSQL efêmero. O teste live de identidade comprovou: criação de conta `INVITED`, token armazenado apenas como digest, aceite único, ativação para `ACTIVE`, sessão com hash e rejeição do segundo aceite. A migração é aditiva e o rollback operacional é restaurar o snapshot anterior ou desabilitar as rotas de convite; não se edita o arquivo depois de aplicado.
+
+## 7. Migrações 0028–0030 — projeção autoral de sessão
+
+`0028_authoring_activity_session.sql` é expand/contract: adiciona `session_id`
+nullable, check de não vazio e unicidade por `{ scope_id, module_id,
+session_id }`, preservando atividades legadas. `0029` adiciona a invariável de
+correspondência módulo/sessão e habilita/força RLS nas duas tabelas da
+projeção. `0030` substitui as policies que precisavam consultar as próprias
+tabelas por funções SQL `SECURITY DEFINER` de retorno booleano com
+`search_path=public`, mantendo escopo/participante e inserção autoral sem
+expor dados.
+
+O verificador de migrações confirmou journal contínuo `0000`–`0030` (31
+migrations, último índice 30). O rollback operacional é restaurar snapshot ou
+desabilitar a rota de publicação em ambiente descartável; não se edita SQL já
+aplicado. A remoção de `session_id`/projeções legadas exige migration posterior
+com evidência de retenção e aprovação operacional.

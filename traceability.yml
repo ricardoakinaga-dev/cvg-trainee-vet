@@ -3601,6 +3601,75 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "AUTHORING-ACTIVITY-001"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-022",
+        "PRD-UC-002",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0110_consistencia_integridade_e_migracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/content-repository.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/drizzle/0028_authoring_activity_session.sql",
+        "packages/persistence/drizzle/0029_learning_activity_projection_rls.sql",
+        "packages/persistence/drizzle/0030_learning_activity_projection_rls_functions.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+      ]
+    tests:
+      [
+        "packages/persistence/src/content-repository.test.ts",
+        "tests/integration/postgres-authoring-workflow.test.ts",
+        "tests/integration/postgres-content-workflow.test.ts",
+        "tests/integration/postgres-worker.test.ts",
+      ]
+    commit: "82ea6ab8802a36cf81278c59c25de516a97624ce"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: initial post-materialization coverage fell below the 80% branch gate; the independent critique also found RLS recursion and tolerated unexpected items",
+        "GREEN: packages/persistence/src/content-repository.test.ts 18/18",
+        "pnpm --filter @cvg/persistence typecheck",
+        "pnpm verify:migrations (31 migrations, last index 0030)",
+        "PostgreSQL live authoring: 1/1 with application NOSUPERUSER/NOBYPASSRLS, RLS cross-scope denial, replay and two concurrent transactions",
+        "PostgreSQL live worker: 4/4",
+        "pnpm test:integration:live (31 files/50 tests)",
+        "pnpm test:coverage (125 files/592 tests/33 skips; 84.57/80.50/86.08/85.30)",
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

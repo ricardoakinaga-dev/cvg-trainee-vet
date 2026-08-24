@@ -85,6 +85,13 @@ a aprovação clínica, piloto ou release produtivo.
   cobertura 84,48%/80,37%/85,97%/85,22% passaram. Fencing não equivale a
   exatamente-once; a prova live ainda inclui a disputa de finalização por duas
   conexões; efeitos externos continuam exigindo idempotência.
+- [x] (2026-08-24T08:47:00-03:00) Fechar o complemento local
+  `AUTHORING-ACTIVITY-001` no commit `82ea6ab`: publicação editorial agora
+  materializa atividade por `scopeId/moduleId/sessionId`, com migrations
+  `0028`–`0030`, `ENABLE/FORCE RLS`, itens `PUBLICADO`, ordinal bounded,
+  replay/convergência concorrente e falha fechada para conjunto inesperado.
+  RED/GREEN focal 18/18, authoring live 1/1, worker live 4/4 e suíte live
+  completa 31/50 passaram; cobertura unitária 84,57%/80,50%/86,08%/85,30%.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
@@ -159,6 +166,30 @@ a aprovação clínica, piloto ou release produtivo.
   Impact: o participante podia receber uma tentativa corrigida sem debrief
   mínimo; a lacuna foi fechada apenas na projeção digital, sem alterar nota,
   gabarito, decisão humana ou competência prática.
+
+- Observation: a projeção autoral não tinha identidade persistida de sessão;
+  materializar por slug/título seria ambíguo e não permitiria convergência
+  segura entre publicações concorrentes.
+  Evidence: `packages/persistence/src/content-repository.ts`, migrations
+  `0028`–`0030`, `tests/integration/postgres-authoring-workflow.test.ts`.
+  Impact: a sessão passou a ser `moduleId` + `sessionId` explícitos, com
+  unicidade, RLS e replay idempotente; atividade legada continua fora da
+  projeção automática.
+
+- Observation: as policies iniciais da projeção recursavam ao consultar
+  `learning_activities`/`learning_activity_items` sob FORCE RLS.
+  Evidence: probe PostgreSQL falhou com recursão infinita antes da migration
+  `0030`; o probe sequencial após as functions booleanas passou.
+  Impact: a migration histórica `0029` permanece imutável e `0030` troca as
+  policies recursivas por functions SQL `SECURITY DEFINER` que retornam somente
+  booleano; a role app continua sem bypass.
+
+- Observation: replay inicialmente tolerava itens extras já persistidos.
+  Evidence: crítica independente e caso unitário `with an unexpected persisted
+  item`.
+  Impact: o materializador agora falha fechado no conjunto não exato, sem
+  exclusão silenciosa de histórico; a operação de limpeza/retirada continua
+  dependente de uma política explícita futura.
 
 ## Decision Log
 
@@ -505,3 +536,10 @@ of `JOURNEY-REL-001` are now closed with gaps; no release or clinical approval
 is inferred. The next priority is the live assignment→activity provenance,
 rollback, RLS and concurrency proof, followed by state synchronization and
 the remaining digital/operational slices.
+
+Plan revision note, 2026-08-24 (AUTHORING-ACTIVITY-001): the bounded authoring
+projection was closed locally after the independent critique; RLS recursion and
+unexpected persisted items were fixed and live concurrency was re-run. The
+remaining next action is the remote same-SHA workflow plus browser evidence for
+an activity created by the authoring pipeline, with production and clinical
+gates still explicit.

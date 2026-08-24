@@ -286,3 +286,30 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - após o hardening, `pnpm verify` passou com 125 arquivos/576 testes, 31
   skips, cobertura 84,50% statements/80,34% branches/85,95% functions/85,22%,
   contratos 72/72, worker 25/25 e migrações 27/27.
+
+## 26. Evidência adicional — AUTHORING-ACTIVITY-001
+
+- RED/GREEN: a primeira execução de cobertura após a materialização autoral
+  caiu para 79,55% de branches; a matriz de persistência foi ampliada com
+  sucesso, sessão incompatível, vínculo cruzado, escrita incompleta e item
+  extra, retornando a 80,50% de branches. A crítica independente também
+  identificou que itens inesperados eram tolerados; a implementação passou a
+  rejeitar o conjunto não exato em fail-closed.
+- unidade: `packages/persistence/src/content-repository.test.ts` passou 18/18;
+  typecheck de `@cvg/persistence` passou; migrations `0028`–`0030` foram
+  verificadas em journal contínuo com 31 migrations e último índice 0030.
+- PostgreSQL/RLS: `tests/integration/postgres-authoring-workflow.test.ts`
+  passou 1/1 com role de aplicação `NOSUPERUSER/NOBYPASSRLS`, admin de fixture
+  separado, leitura cruzada negada, inserção fora do escopo negada, replay e
+  duas transações concorrentes produzindo uma atividade e dois itens.
+- regressão live: `tests/integration/postgres-worker.test.ts` passou 4/4 e
+  `pnpm test:integration:live` passou 31 arquivos/50 testes; os fixtures de
+  lease usam timestamp de criação determinístico para não depender da ordem
+  global de eventos.
+- cobertura unitária: `pnpm test:coverage` passou com 125 arquivos/592
+  testes/33 skips; statements 84,57%, branches 80,50%, functions 86,08% e
+  lines 85,30%.
+- limites: o teste navegador→API→PostgreSQL ainda usa atividade persistida por
+  fixture e não o pipeline authoring completo; workflow remoto, grants/owners
+  produtivos, observabilidade/restore, revisão clínica, B-07 e piloto continuam
+  gates separados.

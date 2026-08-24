@@ -154,3 +154,36 @@ do assignment quanto qualquer projeção de atividade. O workflow de integraçã
 mantém owner de migração, role de aplicação e role administrativa de fixture
 separados, sem colocar credenciais no repositório; a matriz produtiva de grants,
 rotação e ownership ainda exige inspeção operacional autorizada.
+
+## 8.4 Materialização authoring → atividade publicada — AUTHORING-ACTIVITY-001
+
+Quando a transição editorial chega a `PUBLICADO`, o repositório materializa a
+atividade pela identidade explícita `{ scopeId, moduleId, sessionId }` dentro da
+transação do caso de uso. `moduleId` aceita somente `M01`–`M24` e `sessionId`
+deve corresponder exatamente a `Mxx-S1`–`Mxx-S4`; atividades legadas podem manter
+`sessionId` nulo e não são agrupadas retroativamente.
+
+As migrations `0028_authoring_activity_session.sql`,
+`0029_learning_activity_projection_rls.sql` e
+`0030_learning_activity_projection_rls_functions.sql` adicionam a identidade
+da sessão, unicidade por escopo/módulo/sessão, check de correspondência e
+`ENABLE/FORCE RLS` em `learning_activities` e `learning_activity_items`. A
+role de aplicação só pode inserir a projeção publicada no escopo transacional;
+leituras são limitadas ao escopo ou à atribuição do participante. As funções
+`SECURITY DEFINER` usadas pelas policies retornam somente booleano e evitam
+recursão de RLS; não substituem autorização server-side.
+
+O materializador lê apenas registros editoriais cujo `content_versions.status`
+é `PUBLICADO`, valida identidade conteúdo/versão/escopo, exige ordinal de
+participante entre 1 e 100 e rejeita ordinais duplicados. A atividade recebe
+slug derivado não semântico, título controlado e estado `PUBLISHED`; os itens
+usam `on conflict` bounded para replay idempotente. Mismatch, atividade ausente,
+status incompatível, vínculo em outra atividade, escrita incompleta ou item
+inesperado falham fechado. A validação do conjunto exato ocorre antes do
+retorno e qualquer erro aborta a transação externa; não há exclusão implícita de
+histórico.
+
+Essa projeção técnica não autoriza publicação clínica: a transição continua
+dependendo do caso de uso, capability e decisão humana configurada. PostgreSQL
+permanece a autoridade; Qdrant/IA não criam atividade, escolhem item ou alteram
+estado.

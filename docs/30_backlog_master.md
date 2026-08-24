@@ -30,6 +30,18 @@ fica `COMPLETED_WITH_GAPS`: efeitos externos continuam at-least-once e
 idempotentes; remote same-SHA, múltiplas réplicas/carga, collector/traces/
 retention/restore produtivos, autoria curricular e gates clínicos permanecem.
 
+**Atualização operacional 2026-08-24 (AUTHORING-ACTIVITY-001):** a publicação
+editorial agora materializa uma atividade por `scopeId + moduleId + sessionId`
+explícitos, com itens somente de versões `PUBLICADO`, ordinal bounded,
+idempotência e validação do conjunto exato. As migrations `0028`–`0030` levam a
+journal a 31 e aplicam `ENABLE/FORCE RLS` nas duas tabelas da projeção; a role de
+aplicação não tem `SUPERUSER/BYPASSRLS`. RED/GREEN focal passou 18/18, o
+authoring live passou 1/1 com replay/RLS/duas transações concorrentes e a suíte
+live completa passou 31 arquivos/50 testes. `pnpm test:coverage` passou com
+125/592/33 skips e cobertura 84,57%/80,50%/86,08%/85,30%. O complemento fica
+`COMPLETED_WITH_GAPS`: E2E navegador usando o pipeline autoral, workflow remoto,
+grants/owners produtivos, observabilidade/restore e gates clínicos continuam.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -709,6 +721,27 @@ retention/restore produtivos, autoria curricular e gates clínicos permanecem.
 - resultado: vínculo explícito, provenance do resultado diagnóstico, replay e reparo legado foram confirmados no live sintético; a suíte PostgreSQL passou 31/48 com aplicação sem `SUPERUSER/BYPASSRLS` e admin separado; migration manifest passou 27/27; regressão completa passou com 125/576/31 skips
 - gaps explícitos: concorrência e policy failure live independente; pipeline autoral que persiste `moduleId` em atividade aprovada; E2E navegador→API→PostgreSQL curricular; grants/owners produtivos; conteúdo/revisão clínica, B-07 real, piloto, provider/MFA e assurance operacional
 - próxima ação: executar o workflow remoto no SHA `5bfa530710171cf1299e8e60d4645796b3886465` e, com autoridade de ambiente, provar concorrência e a jornada curricular persistida; não declarar release/100%
+
+### AUTHORING-ACTIVITY-001 — Materialização authoring → atividade publicada
+
+- título: criar a atividade publicada a partir de autoria aprovada por módulo e sessão explícitos
+- descrição: ao salvar uma versão `PUBLICADO`, materializar ou recuperar a atividade única do escopo/módulo/sessão, ligar os itens publicados por ordinal e falhar fechado diante de mismatch, duplicidade, vínculo cruzado, escrita incompleta ou item extra
+- módulo: autoria / publicação / currículo / persistência / segurança
+- dependência: `JOURNEY-REL-001`; SPEC 0109/0110/0111/0118; capability clínica e transação do caso de uso existentes
+- fase: BUILD — Phase 3–5 / pipeline autoral
+- risco: crítico — projeção incompleta ou identidade implícita pode publicar conteúdo errado, duplicar atividade ou atravessar escopo
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN focal; `moduleId` M01–M24 e `sessionId` Mxx-S1..S4 coerentes; unicidade e RLS `ENABLE/FORCE`; publicação somente para conteúdo `PUBLICADO`; replay e concorrência idempotentes; conjunto exato validado; regressão live e traceability atualizados — cumprido localmente
+- escopo: migrations `0028`–`0030`; `content-repository.ts`; `learning_activities.session_id`; materialização de `learning_activity_items`; policies de escopo/participante/autoria; testes unitários e PostgreSQL live
+- fora desta fatia: limpeza destrutiva de itens históricos, alteração de nota/gabarito, publicação clínica sem capability, E2E navegador criado pelo pipeline, workflow remoto, grants produtivos, observabilidade/restore, provider/MFA, piloto e release
+- controles obrigatórios: identidade vem do registro editorial e do contexto transacional; atividade legada com sessão nula não é agrupada; RLS não pode ser bypassado pela role app; IA/Qdrant não participam da decisão
+- evidência: `BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md`; SPEC 0109/0110/0118; `traceability.yml` / `AUTHORING-ACTIVITY-001`
+- código: `packages/persistence/src/content-repository.ts`; `packages/persistence/src/schema.ts`; migrations `0028_authoring_activity_session.sql`, `0029_learning_activity_projection_rls.sql`, `0030_learning_activity_projection_rls_functions.sql`
+- testes: `packages/persistence/src/content-repository.test.ts` (18/18); `tests/integration/postgres-authoring-workflow.test.ts` (1/1 live); `tests/integration/postgres-content-workflow.test.ts`; `tests/integration/postgres-worker.test.ts` (4/4 live)
+- resultado: commit `82ea6ab` criou a projeção com validação fail-closed e duas transações concorrentes convergindo para uma atividade/dois itens; cobertura e migrations passaram; nenhum dado real, PDF, foto, prontuário, tutor ou segredo foi usado
+- gaps explícitos: E2E curricular navegador→API→PostgreSQL com atividade criada pelo pipeline; workflow remoto no mesmo SHA; grants/owners produtivos; collector/retention/traces; carga/failover/restore; revisão clínica/B-07/piloto; provider/MFA
+- próxima ação: executar workflow remoto e E2E curricular do pipeline somente com autoridade de ambiente; não declarar release/100%
 
 ### JOURNEY-REL-002 — Sincronização bounded assignment → atividade
 
