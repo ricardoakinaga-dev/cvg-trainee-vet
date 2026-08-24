@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   deriveJourneyNextAction,
+  deriveJourneyNextActionTarget,
   getParticipantLearningJourney,
   type ParticipantJourneyActivity,
   type ParticipantLearningJourneyState,
@@ -32,6 +33,7 @@ const state: ParticipantLearningJourneyState = {
     {
       scopeId,
       activityId,
+      moduleId: "M02",
       slug: "emergencia-m02-v1",
       title: "Emergência",
       status: "EM_ANDAMENTO",
@@ -154,35 +156,115 @@ describe("participant learning journey use case", () => {
   });
 
   it("prioritizes remediation and rejects a repository identity mismatch", async () => {
+    const remediationRuntime = {
+      participantId,
+      scopeId,
+      version: 1,
+      updatedAt: "2026-08-10T05:00:00.000Z",
+      evaluation: {
+        moduleId: "M02",
+        status: "EM_REMEDIACAO" as const,
+        nextAction: "EXECUTAR_REMEDIACAO" as const,
+        objectiveResults: [],
+        remediationObjectiveIds: ["OBJ-1"],
+        criticalErrorItemIds: [],
+        invalidAnswerItemIds: [],
+        unansweredChoiceItemIds: [],
+        openResponseItemIds: [],
+        retentionReviews: [],
+        practicalCompetenceClaim: "PROIBIDO_MVP" as const,
+      },
+    };
+
+    expect(
+      deriveJourneyNextActionTarget({
+        ...state,
+        activities: [
+          {
+            ...activity,
+            status: "EM_REFORCO",
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        runtimes: [remediationRuntime],
+      }),
+    ).toEqual({ kind: "ACTIVITY", activityId });
+
     await expect(
       getParticipantLearningJourney(
         { participantId, scopeIds: [scopeId] },
         repository({
           ...state,
-          runtimes: [
+          activities: [
             {
-              participantId,
-              scopeId,
-              version: 1,
-              updatedAt: "2026-08-10T05:00:00.000Z",
-              evaluation: {
-                moduleId: "M02",
-                status: "EM_REMEDIACAO",
-                nextAction: "EXECUTAR_REMEDIACAO",
-                objectiveResults: [],
-                remediationObjectiveIds: ["OBJ-1"],
-                criticalErrorItemIds: [],
-                invalidAnswerItemIds: [],
-                unansweredChoiceItemIds: [],
-                openResponseItemIds: [],
-                retentionReviews: [],
-                practicalCompetenceClaim: "PROIBIDO_MVP",
-              },
+              ...activity,
+              status: "EM_REFORCO",
+              nextAction: "INICIAR_ATIVIDADE",
             },
           ],
+          runtimes: [remediationRuntime],
         }),
       ),
-    ).resolves.toMatchObject({ nextAction: "EXECUTAR_REMEDIACAO" });
+    ).resolves.toMatchObject({
+      nextAction: "EXECUTAR_REMEDIACAO",
+      nextActionTarget: { kind: "ACTIVITY", activityId },
+    });
+
+    expect(
+      deriveJourneyNextActionTarget({
+        ...state,
+        runtimes: [
+          {
+            ...remediationRuntime,
+            evaluation: {
+              ...remediationRuntime.evaluation,
+              nextAction: "REVISAR_RETENCAO",
+              status: "DOMINIO_DIGITAL",
+              remediationObjectiveIds: [],
+              retentionReviews: [
+                {
+                  day: 7,
+                  dueAt: "2026-08-17T05:00:00.000Z",
+                  status: "PENDENTE",
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    ).toBeUndefined();
+
+    expect(
+      deriveJourneyNextActionTarget({
+        ...state,
+        activities: [
+          {
+            scopeId: activity.scopeId,
+            activityId: activity.activityId,
+            slug: activity.slug,
+            title: activity.title,
+            status: "EM_REFORCO",
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        runtimes: [remediationRuntime],
+      }),
+    ).toBeUndefined();
+
+    expect(
+      deriveJourneyNextActionTarget({
+        ...state,
+        activities: [
+          {
+            ...activity,
+            scopeId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            status: "EM_REFORCO",
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        runtimes: [remediationRuntime],
+      }),
+    ).toBeUndefined();
 
     await expect(
       getParticipantLearningJourney(

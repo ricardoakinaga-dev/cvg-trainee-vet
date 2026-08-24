@@ -61,6 +61,21 @@ describe("participant progress use case", () => {
     ).resolves.toMatchObject({ nextAction: "REVISAR_PROXIMO_CONTEUDO" });
   });
 
+  it("makes an assigned reinforcement activity startable when it has no open attempt", async () => {
+    await expect(
+      getParticipantProgress(
+        { participantId: base.participantId, activityId: base.activityId },
+        repository({
+          participantId: base.participantId,
+          activityId: base.activityId,
+          scopeId: base.scopeId,
+          assignmentStatus: "EM_REFORCO",
+          nextAction: "INICIAR_ATIVIDADE",
+        }),
+      ),
+    ).resolves.toMatchObject({ nextAction: "INICIAR_ATIVIDADE" });
+  });
+
   it("returns not found and rejects missing identity", async () => {
     await expect(
       getParticipantProgress(

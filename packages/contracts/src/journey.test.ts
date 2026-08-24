@@ -85,6 +85,15 @@ describe("participant learning journey projection", () => {
     ).toThrow();
   });
 
+  it("rejects a target attached to a non-actionable retention state", () => {
+    expect(() =>
+      parseParticipantLearningJourney({
+        ...journey,
+        nextAction: "REVISAR_RETENCAO",
+      }),
+    ).toThrow();
+  });
+
   it("rejects internal fields on the next-action target", () => {
     expect(() =>
       parseParticipantLearningJourney({

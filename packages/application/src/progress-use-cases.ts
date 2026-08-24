@@ -74,6 +74,9 @@ export function deriveProgressNextAction(
   if (assignmentStatus === "DISPONIVEL" || assignmentStatus === "ATRIBUIDO") {
     return "INICIAR_ATIVIDADE";
   }
+  if (assignmentStatus === "EM_REFORCO") {
+    return "INICIAR_ATIVIDADE";
+  }
   if (assignmentStatus === "CONCLUIDO") {
     return "REVISAR_PROXIMO_CONTEUDO";
   }

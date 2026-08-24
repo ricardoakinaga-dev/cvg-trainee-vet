@@ -109,6 +109,20 @@ export const participantLearningJourneyProjectionSchema = z
         message: "next action target must be a published journey activity",
       });
     }
+    if (
+      value.nextActionTarget !== undefined &&
+      ![
+        "INICIAR_ATIVIDADE",
+        "RETOMAR_ATIVIDADE",
+        "EXECUTAR_REMEDIACAO",
+      ].includes(value.nextAction)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["nextActionTarget"],
+        message: "next action target is incompatible with the next action",
+      });
+    }
   });
 
 export type ParticipantLearningJourneyProjection = z.infer<

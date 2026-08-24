@@ -12,6 +12,8 @@ import type {
 export type ParticipantJourneyActivity = Readonly<{
   readonly scopeId: string;
   readonly activityId: string;
+  /** Internal curriculum binding; never cross the participant projection. */
+  readonly moduleId?: string;
   readonly slug: string;
   readonly title: string;
   readonly status: Exclude<LearningAssignmentStatus, "NAO_ATRIBUIDO">;
@@ -160,9 +162,34 @@ export function deriveJourneyNextAction(
 export function deriveJourneyNextActionTarget(
   state: ParticipantLearningJourneyState,
 ): JourneyNextActionTarget | undefined {
-  const runtimeAction = state.runtimes.find(
-    (runtime) => runtime.evaluation.nextAction !== undefined,
-  )?.evaluation.nextAction;
+  const runtime = state.runtimes.find(
+    (candidate) => candidate.evaluation.nextAction !== undefined,
+  );
+  const runtimeAction = runtime?.evaluation.nextAction;
+  if (runtimeAction === "EXECUTAR_REMEDIACAO" && runtime !== undefined) {
+    const actionableStatuses = [
+      "EM_REFORCO",
+      "EM_ANDAMENTO",
+      "DISPONIVEL",
+    ] as const;
+    const activity = actionableStatuses
+      .map((status) =>
+        state.activities.find(
+          (candidate) =>
+            candidate.scopeId === runtime.scopeId &&
+            candidate.moduleId === runtime.evaluation.moduleId &&
+            candidate.status === status,
+        ),
+      )
+      .find((candidate) => candidate !== undefined);
+    if (activity !== undefined) {
+      return Object.freeze({
+        kind: "ACTIVITY",
+        activityId: activity.activityId,
+      });
+    }
+    return undefined;
+  }
   if (runtimeAction !== undefined) return undefined;
 
   const activity = state.activities.find(

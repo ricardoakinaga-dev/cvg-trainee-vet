@@ -22,9 +22,11 @@ import {
   activityAssignments,
   attempts,
   assessmentWorkflows,
+  contentVersions,
   curriculumRuntimeStates,
   diagnosticResults,
   learningActivities,
+  learningActivityItems,
   learningAssignments,
 } from "./schema.js";
 import type * as schema from "./schema.js";
@@ -35,6 +37,7 @@ type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 type JourneyActivityRow = Readonly<{
   readonly activityId: string;
   readonly scopeId: string;
+  readonly moduleId: string | null;
   readonly slug: string;
   readonly title: string;
   readonly status: string;
@@ -69,6 +72,8 @@ const attemptStatuses: readonly AttemptStatus[] = [
   "ANULADA",
 ];
 
+const moduleIdPattern = /^M(?:0[1-9]|1[0-9]|2[0-4])$/u;
+
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) {
     throw new PersistenceMappingError(`${field} must not be empty`);
@@ -92,6 +97,16 @@ function parseAttemptStatus(value: string | null): AttemptStatus | undefined {
     throw new PersistenceMappingError("journey attempt status is invalid");
   }
   return value as AttemptStatus;
+}
+
+function parseModuleId(value: string | null): string | undefined {
+  if (value === null) return undefined;
+  if (!moduleIdPattern.test(value)) {
+    throw new PersistenceMappingError(
+      "journey activity module binding is invalid",
+    );
+  }
+  return value;
 }
 
 function isLaterAttempt(
@@ -122,6 +137,7 @@ function activityRowsToJourney(
     assertNonEmpty(row.scopeId, "scopeId");
     assertNonEmpty(row.slug, "slug");
     assertNonEmpty(row.title, "title");
+    const moduleId = parseModuleId(row.moduleId);
     const status = parseAssignmentStatus(row.status);
     const attemptStatus = parseAttemptStatus(row.attemptStatus);
     if (row.attemptId === null && attemptStatus !== undefined) {
@@ -138,6 +154,7 @@ function activityRowsToJourney(
     return Object.freeze({
       scopeId: row.scopeId,
       activityId: row.activityId,
+      ...(moduleId === undefined ? {} : { moduleId }),
       slug: row.slug,
       title: row.title,
       status,
@@ -195,6 +212,7 @@ export function createParticipantJourneyRepository(
           .select({
             activityId: activityAssignments.activityId,
             scopeId: learningActivities.scopeId,
+            moduleId: learningActivities.moduleId,
             slug: learningActivities.slug,
             title: learningActivities.title,
             status: activityAssignments.status,
@@ -207,6 +225,18 @@ export function createParticipantJourneyRepository(
           .innerJoin(
             learningActivities,
             eq(activityAssignments.activityId, learningActivities.id),
+          )
+          .innerJoin(
+            learningActivityItems,
+            eq(learningActivityItems.activityId, learningActivities.id),
+          )
+          .innerJoin(
+            contentVersions,
+            and(
+              eq(contentVersions.id, learningActivityItems.contentVersionId),
+              eq(contentVersions.scopeId, learningActivities.scopeId),
+              eq(contentVersions.status, "PUBLICADO"),
+            ),
           )
           .leftJoin(
             attempts,

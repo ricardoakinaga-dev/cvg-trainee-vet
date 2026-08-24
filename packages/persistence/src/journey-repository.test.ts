@@ -16,6 +16,7 @@ const runtimeId = "77777777-7777-4777-8777-777777777777";
 const activityRow = {
   activityId,
   scopeId,
+  moduleId: "M01" as string | null,
   slug: "emergencia-m01-v1",
   title: "Emergência",
   status: "EM_ANDAMENTO",
@@ -221,6 +222,7 @@ describe("participant journey persistence", () => {
         attemptId,
         attemptStatus: "SALVA",
         nextAction: "RETOMAR_ATIVIDADE",
+        moduleId: "M01",
       },
     ]);
     expect(journey.assignments).toHaveLength(1);
@@ -326,5 +328,33 @@ describe("participant journey persistence", () => {
     await expect(
       repository.findParticipantLearningJourney(participantId, [scopeId]),
     ).rejects.toBeInstanceOf(PersistenceMappingError);
+  });
+
+  it("fails closed when a published activity carries an invalid module binding", async () => {
+    const repository = createParticipantJourneyRepository(
+      fakeDatabase({
+        activityRows: [{ ...activityRow, moduleId: "M99" }],
+      }),
+    );
+
+    await expect(
+      repository.findParticipantLearningJourney(participantId, [scopeId]),
+    ).rejects.toBeInstanceOf(PersistenceMappingError);
+  });
+
+  it("preserves a legacy activity without a module binding without making it a remediation target", async () => {
+    const repository = createParticipantJourneyRepository(
+      fakeDatabase({
+        activityRows: [{ ...activityRow, moduleId: null }],
+      }),
+    );
+
+    const journey = await repository.findParticipantLearningJourney(
+      participantId,
+      [scopeId],
+    );
+
+    expect(journey.activities[0]).not.toHaveProperty("moduleId");
+    expect(journey.activities[0]?.nextAction).toBe("CONSULTAR_PROXIMO_PASSO");
   });
 });

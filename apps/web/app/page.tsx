@@ -468,6 +468,14 @@ function isRuntime(value: unknown): value is CurriculumRuntimeProjection {
   );
 }
 
+function isTerminalAttemptStatus(value: string | undefined): boolean {
+  return (
+    value === "CORRIGIDA_AUTOMATICAMENTE" ||
+    value === "CORRIGIDA_HUMANAMENTE" ||
+    value === "ANULADA"
+  );
+}
+
 function isJourneyActivity(value: unknown): value is JourneyActivityProjection {
   if (!isRecord(value)) return false;
   return (
@@ -1661,6 +1669,10 @@ export default function HomePage() {
     ) ?? [];
   const currentJourneyActivity =
     journey?.activities.find((item) => item.activityId === activityId) ?? null;
+  const canStartNewRemediationAttempt =
+    currentJourneyActivity?.status === "EM_REFORCO" &&
+    attempt !== null &&
+    isTerminalAttemptStatus(attempt.status);
   const correctionNextAction =
     currentJourneyActivity?.nextAction ?? journey?.nextAction;
 
@@ -2037,14 +2049,18 @@ export default function HomePage() {
               ))}
             </div>
             <div className="action-row">
-              {attempt === null ? (
+              {attempt === null || canStartNewRemediationAttempt ? (
                 <button
                   type="button"
                   onClick={() => void handleStartAttempt()}
                   disabled={busy}
                 >
-                  Iniciar tentativa
+                  {canStartNewRemediationAttempt
+                    ? "Iniciar nova tentativa"
+                    : "Iniciar tentativa"}
                 </button>
+              ) : isTerminalAttemptStatus(attempt.status) ? (
+                <p role="status">Tentativa concluída.</p>
               ) : (
                 <button
                   type="button"

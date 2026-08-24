@@ -329,6 +329,111 @@ test.describe("participant access and learning projection", () => {
     await expect(page.getByLabel("Token de convite")).toHaveCount(0);
   });
 
+  test("opens the server-selected activity for digital remediation", async ({
+    page,
+  }) => {
+    const remediationActivityId = "66666666-6666-4666-8666-666666666666";
+    await page.unroute("**/api/v1/learning-path");
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "emergencia-v1",
+                title: "Emergência",
+                status: "EM_REFORCO",
+                nextAction: "INICIAR_ATIVIDADE",
+              },
+              {
+                activityId: remediationActivityId,
+                slug: "emergencia-reforco-v1",
+                title: "Reforço de emergência",
+                status: "EM_REFORCO",
+                nextAction: "INICIAR_ATIVIDADE",
+              },
+            ],
+            results: [],
+            runtimes: [
+              {
+                moduleId: "M02",
+                version: 2,
+                status: "EM_REMEDIACAO",
+                nextAction: "EXECUTAR_REMEDIACAO",
+                remediationCount: 1,
+                retentionReviews: [],
+                practicalCompetenceClaim: "PROIBIDO_MVP",
+              },
+            ],
+            nextActionTarget: {
+              kind: "ACTIVITY",
+              activityId: remediationActivityId,
+            },
+            nextAction: "EXECUTAR_REMEDIACAO",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+    await page.route(
+      `**/api/v1/activities/${remediationActivityId}`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              activityId: remediationActivityId,
+              slug: "emergencia-reforco-v1",
+              title: "Reforço de emergência",
+              items: [],
+            }),
+          ),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(page.getByText("Executar remediação").first()).toBeVisible();
+    await page
+      .getByRole("button", { name: "Abrir atividade: Reforço de emergência" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Reforço de emergência" }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(
+      new RegExp(`activityId=${remediationActivityId}`),
+    );
+    await expect(page.getByLabel("Token de convite")).toHaveCount(0);
+  });
+
   test("reports feedback and shows only the participant ticket projection", async ({
     page,
   }) => {
@@ -828,7 +933,7 @@ test.describe("participant access and learning projection", () => {
                 activityId,
                 slug: "emergencia-v1",
                 title: "Emergência",
-                status: "CONCLUIDO",
+                status: "EM_REFORCO",
                 attemptId,
                 attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
                 attemptVersion: 3,
@@ -914,6 +1019,12 @@ test.describe("participant access and learning projection", () => {
 
     await expect(page.getByTestId("appeals-panel")).toBeVisible();
     await expect(page.getByTestId("appeals-panel")).toContainText("Recebida");
+    await expect(
+      page.getByRole("button", { name: "Iniciar nova tentativa" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Enviar tentativa" }),
+    ).toHaveCount(0);
   });
 
   test("shows persisted digital correction feedback without internal fields", async ({

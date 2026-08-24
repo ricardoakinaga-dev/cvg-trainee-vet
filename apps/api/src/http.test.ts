@@ -1841,6 +1841,7 @@ describe("API HTTP boundary", () => {
           {
             scopeId: "scope-1",
             activityId: activity.activityId,
+            moduleId: "M02",
             slug: activity.slug,
             title: activity.title,
             status: "EM_ANDAMENTO",
@@ -1851,12 +1852,32 @@ describe("API HTTP boundary", () => {
           },
         ],
         results: [],
-        runtimes: [],
+        runtimes: [
+          {
+            participantId: attempt.participantId,
+            scopeId: "scope-1",
+            version: 1,
+            updatedAt: "2026-08-24T12:00:00.000Z",
+            evaluation: {
+              moduleId: "M02",
+              status: "EM_REMEDIACAO",
+              nextAction: "EXECUTAR_REMEDIACAO",
+              objectiveResults: [],
+              remediationObjectiveIds: ["M02-OBJ-01"],
+              criticalErrorItemIds: [],
+              invalidAnswerItemIds: [],
+              unansweredChoiceItemIds: [],
+              openResponseItemIds: [],
+              retentionReviews: [],
+              practicalCompetenceClaim: "PROIBIDO_MVP",
+            },
+          },
+        ],
         nextActionTarget: {
           kind: "ACTIVITY",
           activityId: activity.activityId,
         },
-        nextAction: "RETOMAR_ATIVIDADE",
+        nextAction: "EXECUTAR_REMEDIACAO",
       }),
     );
     const response = await handleApiRequest(
@@ -1882,11 +1903,16 @@ describe("API HTTP boundary", () => {
           kind: "ACTIVITY",
           activityId: activity.activityId,
         },
-        nextAction: "RETOMAR_ATIVIDADE",
+        nextAction: "EXECUTAR_REMEDIACAO",
+        runtimes: [{ moduleId: "M02", nextAction: "EXECUTAR_REMEDIACAO" }],
       },
     });
     expect(JSON.stringify(response.body)).not.toContain("scopeId");
     expect(JSON.stringify(response.body)).not.toContain("participantId");
+    expect(
+      (response.body as { readonly data?: { readonly activities?: unknown[] } })
+        .data?.activities?.[0],
+    ).not.toHaveProperty("moduleId");
   });
 
   it("returns the participant dashboard without internal identity or scope data", async () => {
