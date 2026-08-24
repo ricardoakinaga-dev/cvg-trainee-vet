@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: incorporar a crítica final Wegener e consolidar `4680675555aac40246b80bc8ef099a7b2252ebfb`; tornar correlation de feedback server-owned, adicionar migration 0039 para `CRIADO→NOVO`/predecessor, isolar cleanup live e assertar IDs; verificar RED/GREEN focal, coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines, build 12 workspaces, typecheck, lint, E2E 31/31, contratos 81/81, worker 27/27 e migrations 40/40; preflight live saiu 2 por ausência de `CVG_TEST_DATABASE_URL`; commitar documentação em `d10abd1e1e62faa1c182d00425f23bf72991e614` e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`.
+- last_completed_action: incorporar a crítica final Wegener e consolidar `4680675555aac40246b80bc8ef099a7b2252ebfb`; tornar correlation de feedback server-owned, adicionar migration 0039 para `CRIADO→NOVO`/predecessor, isolar cleanup live e assertar IDs; verificar RED/GREEN focal, coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines, build 12 workspaces, typecheck, lint, E2E 31/31, contratos 81/81, worker 27/27 e migrations 40/40; preflight live saiu 2 por ausência de `CVG_TEST_DATABASE_URL`; commits documentais `d10abd1e1e62faa1c182d00425f23bf72991e614` e `2f075d430dbd599ee13131b18e66c63765082a92`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou novamente em worktree limpo.
 - next_action: selecionar e abrir a próxima lacuna P1 local bounded, mantendo o live preflight pendente por ambiente/autoridade e sem declarar release
 
 ## BLOQUEIOS
@@ -32,11 +32,11 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T19:13:06-03:00
+- last_update: 2026-08-24T19:14:26-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `d10abd1e1e62faa1c182d00425f23bf72991e614`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; documentação e rastreabilidade release estão fechadas; o preflight live continua sem ambiente
+- head: `2f075d430dbd599ee13131b18e66c63765082a92`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; documentação e rastreabilidade release estão fechadas; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: limpo após os commits de código e documentação; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
