@@ -5533,3 +5533,116 @@ Obter ambiente/autoridade para a prova live PostgreSQL/RLS e workflow remoto do
 SHA atual, ou selecionar a próxima lacuna local — diagnóstico→trilha adaptada,
 contestação completa, lembretes/filas internas ou hardening operacional — sem
 liberar os gates clínicos.
+
+## 2026-08-24 — APPEAL-040: abertura do recálculo local bounded
+
+### TIMESTAMP
+
+2026-08-24 01:59:17 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–5 / governança de contestação
+
+### SPRINT
+
+APPEAL-040 / AUD-P1-001 / APPEAL-039-FOLLOWUP
+
+### TASK
+
+APPEAL-2026-08-24-R — implementar recálculo idempotente somente de `MANTER_RESULTADO`
+
+### ACTION
+
+A crítica estática disponível confirmou que o ciclo ainda não preserva versões,
+não possui recálculo worker-backed e não fecha de forma consultável; o relatório
+estava baseado em commit anterior e não foi tratado como crítica da paginação.
+A próxima fatia foi registrada com escopo explícito: histórico append-only,
+outbox transacional, nova versão imutável sem mudança do resultado vigente,
+idempotência/replay e encerramento posterior. `ANULAR_ITEM` e
+`ALTERAR_RESULTADO` permanecem bloqueados até motores próprios.
+
+### RESULT
+
+Escopo selecionado e estado atualizado para `IN_PROGRESS`. Nenhuma alteração de
+código foi promovida ainda; o próximo passo obrigatório é o RED com registros
+sintéticos e a manutenção da fronteira participante sem rationale, score,
+resposta, gabarito ou metadados internos.
+
+### REVIEW / GAPS
+
+A crítica independente da entrega REPORT-040 não retornou antes do encerramento
+do worker e permanece como ausência de evidência, não como aprovação. O ambiente
+PostgreSQL/RLS live, workflow remoto, notificações, provider/MFA, gates clínicos,
+piloto e produção continuam fora da autoridade local.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar RED, implementar a fatia bounded e rodar a regressão proporcional; só
+depois atualizar auditoria, backlog, estado e manifesto de rastreabilidade.
+
+## 2026-08-24 — APPEAL-040: GREEN/VERIFY local concluído
+
+### TIMESTAMP
+
+2026-08-24 02:23:00 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–5 / governança de contestação
+
+### SPRINT / TASK
+
+APPEAL-040 / AUD-P1-001 — APPEAL-2026-08-24-R
+
+### ACTION
+
+O RED foi transformado em implementação bounded. O domínio agora restringe
+`SOLICITAR_RECALCULO` e `CONCLUIR_RECALCULO` a `MANTER_RESULTADO`; a transição
+persiste histórico interno append-only e outbox no mesmo contexto transacional;
+o worker valida o evento e o processador grava nova versão imutável antes de
+encerrar a contestação. A idempotência usa a fronteira transacional e o estado
+`ENCERRADA`, sem usar `ruleVersion` como marcador entre itens distintos da
+mesma tentativa.
+
+### RESULT
+
+Commit técnico: `c57c8ca095019fb0715a75b5c595b50df25fd8eb`. GREEN focado passou
+5 arquivos/32 testes. `pnpm verify` passou com 115 arquivos/541 testes/28
+skips; cobertura 84,53% statements, 80,49% branches, 85,83% functions e
+85,22% lines. `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou
+22/22; `pnpm test:integration` passou 8 arquivos/20 testes, com 26 arquivos/
+28 testes skipped por dependências live ausentes; migration 26/26 e todos os
+gates locais passaram.
+
+### REVIEW / GAPS
+
+O agente crítico independente não entregou relatório antes do timeout
+controlado; isso permanece ausência de evidência, não aprovação. A prova
+PostgreSQL/RLS live, workflow remoto, concorrência/observabilidade produtiva,
+notificação, provider/MFA, `ANULAR_ITEM`/`ALTERAR_RESULTADO`, gates clínicos,
+piloto e produção continuam fora do recorte e da autoridade desta rodada.
+Nenhum dado real, prontuário, tutor, foto, PDF, segredo ou decisão clínica foi
+usado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP / APPEAL-040 `COMPLETED_WITH_GAPS`
+
+### NEXT
+
+Selecionar diagnóstico→trilha adaptada, contestação completa, filas/lembranças
+internas ou hardening operacional. Executar live/remoto somente quando houver
+ambiente e autoridade explícitos.

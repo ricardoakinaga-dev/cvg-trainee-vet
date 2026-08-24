@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: REPORT-040 / AUD-P1-001 — acompanhamento paginado da participação digital
-- current_task: REPORT-2026-08-24-P — paginar e exportar a página autorizada do relatório interno
+- current_sprint: APPEAL-040 / AUD-P1-001 — recálculo local idempotente de contestação
+- current_task: APPEAL-2026-08-24-R — preservar versão, executar recálculo bounded e encerrar somente após sucesso
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `REPORT-040` foi implementado em TDD e commitado em `6fa662b8d80a8cba06ff4dfab3b6708b34674e71`; o relatório interno agora tem paginação bounded server-side, resumo global separado, tabela de participantes e CSV somente da página autorizada com escape contra fórmula; a pesquisa oficial foi atualizada em `0509`; `pnpm verify` passou com 113 arquivos/534 testes/27 skips, cobertura 84,64%/80,77%/85,85%/85,34%, build 12, E2E operations 5/5 com axe/CSV, migrations, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
-- next_action: obter ambiente/autoridade para provar PostgreSQL/RLS live do relatório e workflow remoto do SHA atual, ou selecionar a próxima lacuna local — diagnóstico→trilha adaptada, contestação completa ou hardening operacional — mantendo ausência de parecer independente, histórico append-only, recálculo, notificação, encerramento e gates clínicos como gaps
+- last_completed_action: `APPEAL-040` foi implementado em TDD e commitado em `c57c8ca095019fb0715a75b5c595b50df25fd8eb`; o ciclo bounded de `MANTER_RESULTADO` agora preserva a versão anterior, grava histórico append-only, publica outbox transacional, cria uma versão imutável sem alterar score/outcome/feedback e encerra somente após sucesso; `pnpm verify` passou com 115 arquivos/541 testes/28 skips, cobertura 84,53%/80,49%/85,83%/85,22%, build 12, E2E 22/22, integration 8/20 com 28 skips, migrations 26/26, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- next_action: selecionar diagnóstico→trilha adaptada, contestação completa, filas/lembranças internas ou hardening operacional; executar PostgreSQL/RLS live e workflow remoto somente com ambiente/autoridade, mantendo `ANULAR_ITEM`/`ALTERAR_RESULTADO`, notificação, provider/MFA, gates clínicos e produção como gaps explícitos
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; APPEAL-039-FOLLOWUP — histórico append-only da decisão, snapshots, recálculo versionado/idempotente, identificação/notificação e encerramento pós-recálculo ficam fora desta fatia
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; APPEAL-040-SCOPE — esta rodada não altera `ANULAR_ITEM`/`ALTERAR_RESULTADO`, não envia notificação e não prova ambiente live/remoto; essas extensões permanecem dependências futuras
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T01:49:58-03:00
+- last_update: 2026-08-24T02:23:00-03:00
 
 ## REGRAS DE USO
 

@@ -2412,7 +2412,8 @@ artifacts:
         "tests/e2e/operations-dashboard.spec.ts",
       ]
     commit: "6fa662b8d80a8cba06ff4dfab3b6708b34674e71"
-    artifacts: ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
       [
         "RED: focused report harness failed before pagination contract/repository/HTTP implementation",
@@ -2421,6 +2422,80 @@ artifacts:
         "pnpm build (12 workspaces)",
         "pnpm exec playwright test tests/e2e/operations-dashboard.spec.ts (5/5; axe; CSV download)",
         "pnpm verify:migrations",
+        "pnpm verify:secrets",
+        "pnpm verify:traceability",
+        "pnpm verify:architecture",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
+  - id: "APPEAL-040"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-064",
+        "PRD-RF-065",
+        "PRD-RF-080",
+        "UC-018",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0110",
+        "SPEC-0111",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0519_appeal_recalculation_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0110_consistencia_integridade_e_migracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/domain/src/appeal.ts",
+        "packages/application/src/appeal-recalculation-use-cases.ts",
+        "packages/application/src/appeal-review-transition-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/appeal-review-history.ts",
+        "packages/persistence/src/appeal-review-transition-repository.ts",
+        "packages/persistence/src/appeal-recalculation-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0025_appeal_recalculation_history.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/worker/src/handlers.ts",
+        "apps/worker/src/main.ts",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/domain/src/appeal.test.ts",
+        "packages/application/src/appeal-recalculation-use-cases.test.ts",
+        "packages/application/src/appeal-review-transition-use-cases.test.ts",
+        "packages/persistence/src/appeal-recalculation-repository.test.ts",
+        "packages/persistence/src/appeal-review-transition-repository.test.ts",
+        "apps/worker/src/handlers.test.ts",
+        "tests/integration/postgres-appeal-recalculation.test.ts",
+        "tests/integration/postgres-appeal-review-transition.test.ts",
+      ]
+    commit: "c57c8ca095019fb0715a75b5c595b50df25fd8eb"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: domínio, módulo de aplicação e handler worker falharam antes da implementação",
+        "GREEN: focused domain/application/persistence/worker passou 5 arquivos/32 testes",
+        "pnpm verify (115 arquivos/541 testes; 28 skips; coverage 84.53% statements, 80.49% branches, 85.83% functions, 85.22% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (22/22)",
+        "pnpm test:integration (8 arquivos/20 testes PASS; 26 arquivos/28 testes SKIPPED sem dependências live)",
+        "pnpm verify:migrations (26 migrations; latest 0025_appeal_recalculation_history)",
         "pnpm verify:secrets",
         "pnpm verify:traceability",
         "pnpm verify:architecture",

@@ -465,6 +465,25 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps remanescentes: paginação ainda agrega em memória após leitura escopada e não é prova de carga; exportação é da página, não relatório assíncrono completo; prova PostgreSQL/RLS live do recorte depende de ambiente autorizado; coorte/área/nível, CPD acreditado, certificado, ranking, integração externa e competência prática continuam fora
 - próxima ação: validar o SHA em workflow remoto autorizado ou selecionar a próxima lacuna local — diagnóstico→trilha adaptada, contestação completa, filas/lembranças internas ou hardening operacional — sem liberar gates clínicos
 
+### APPEAL-040 — Recálculo local idempotente de `MANTER_RESULTADO`
+
+- título: preservar a tentativa anterior, gerar uma nova versão imutável e encerrar a contestação somente depois de um recálculo bounded concluído
+- descrição: fechar uma única decisão segura da contestação com histórico append-only, outbox transacional e worker replay-safe; o recálculo repete o resultado vigente sem alterar score/outcome/feedback e não afirma competência clínica
+- módulo: contestação / recálculo / histórico / worker / persistência
+- dependência: `APPEAL-039`; `PRD-RF-064`; `PRD-RF-065`; `PRD-RF-080`; `UC-018`; `SPEC-0106`; `SPEC-0107`; `SPEC-0110`; `SPEC-0111`
+- fase: BUILD — Phase 3–5 / governança de contestação
+- risco: crítico — retry não pode duplicar versão, encerrar antes da escrita ou permitir que decisões ainda não implementadas alterem resultado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para transição, histórico, outbox, versão imutável, idempotência/replay, worker e ausência de exposição pública; migration e regressão completas
+- escopo desta fatia: `SOLICITAR_RECALCULO` somente para `MANTER_RESULTADO`; histórico interno append-only da transição; evento `appeal.recalculation.requested.v1`; nova linha de `assessment_results` com mesmo score/outcome/feedback e regra bounded; `CONCLUIR_RECALCULO` somente após a nova versão existir; reprocessamento sem duplicar resultado
+- fora desta fatia: `ANULAR_ITEM`, `ALTERAR_RESULTADO`, alteração de resposta/tentativa, recomputação clínica, notificação, identificação de afetados, provider/MFA, PostgreSQL/RLS live, workflow remoto, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0519_appeal_recalculation_audit.md`; commit técnico `c57c8ca095019fb0715a75b5c595b50df25fd8eb`; código em `packages/domain`, `packages/application`, `packages/persistence`, `apps/worker`; testes unitários, aplicação, persistência, worker e integração configurada
+- resultado local: RED observado antes da implementação; GREEN focado 5 arquivos/32 testes; `pnpm verify` 115 arquivos/541 testes/28 skips, cobertura 84,53%/80,49%/85,83%/85,22%; `pnpm build` 12 workspaces; `pnpm test:e2e` 22/22; `pnpm test:integration` 8 arquivos/20 testes PASS e 26 arquivos/28 testes SKIPPED; migration 26/26; gates de secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- gaps conhecidos: ambiente live/RLS e workflow remoto ainda ausentes; decisão clínica, conteúdo B-07/M02 e operação real continuam atrás de revisão humana
+- gaps remanescentes: PostgreSQL/RLS live, workflow remoto, concorrência real entre workers, observabilidade/retention/restore, `ANULAR_ITEM`, `ALTERAR_RESULTADO`, notificação, alteração de tentativa/resposta, recomputação clínica, provider/MFA, piloto e produção
+- próxima ação: obter ambiente/autoridade para prova live e selecionar a próxima lacuna local — diagnóstico→trilha adaptada, contestação completa, filas/lembranças internas ou hardening operacional — sem promover ausência de crítica independente a PASS
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais
