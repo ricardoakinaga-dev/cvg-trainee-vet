@@ -187,3 +187,70 @@ Essa projeção técnica não autoriza publicação clínica: a transição cont
 dependendo do caso de uso, capability e decisão humana configurada. PostgreSQL
 permanece a autoridade; Qdrant/IA não criam atividade, escolhem item ou alteram
 estado.
+
+## 8.5 Histórico state-only de feedback — FEEDBACK-HISTORY-053
+
+`feedback_ticket_history` é uma tabela interna append-only para a linha do tempo
+bounded de estados da triagem. Ela não é a tabela de auditoria de ações e não
+pretende registrar ator, request ou correlação.
+
+| Coluna | Tipo/regra | Finalidade |
+|---|---|---|
+| `id` | UUID, PK, `defaultRandom()` | identificador técnico do evento |
+| `ticket_id` | UUID, obrigatório, FK para `feedback_tickets.id`, `ON DELETE RESTRICT` | vínculo ao ticket |
+| `scope_id` | UUID, obrigatório | contexto de escopo para autorização/RLS |
+| `ticket_version` | inteiro, obrigatório, `>= 0`, único por ticket | ordenação e concorrência do estado |
+| `event_type` | `CRIADO` ou `STATUS_ALTERADO` | natureza da mudança |
+| `from_status` | nulo para criação; obrigatório para mudança | estado anterior, quando aplicável |
+| `to_status` | status allowlisted, obrigatório | estado resultante |
+| `created_at` | timestamp com timezone, obrigatório, default `now()` | momento do evento |
+
+As invariantes são: `(ticket_id, ticket_version)` único; `CRIADO` somente na
+versão 0 e sem `from_status`; `STATUS_ALTERADO` somente a partir da versão 1 e
+com estado anterior; `to_status` e `from_status` pertencem ao vocabulário do
+ticket. O índice de consulta é `(scope_id, created_at, id)`, enquanto a leitura
+do histórico usa ticket, escopo, versão, data e id para ordenação determinística
+e limite máximo de 100 eventos. O vocabulário de status é
+`NOVO`, `TRIADO`, `EM_TRATAMENTO`, `AGUARDA_USUARIO`, `RESOLVIDO`, `DUPLICADO`,
+`NAO_REPRODUZIDO` e `NAO_PLANEJADO`.
+
+Ao criar ou alterar um ticket, o evento correspondente é inserido na mesma
+transação PostgreSQL: a criação gera `CRIADO` na versão 0; uma transição gera
+`STATUS_ALTERADO` com o status anterior e a nova versão. Falha na inserção do
+evento, do ticket ou da auditoria reverte a unidade inteira. Nas gravações feitas
+pela API, a mesma unidade insere também uma entrada metadata-only em
+`audit_entries` com ator, request, correlação, recurso, escopo e resultado. O trigger
+`cvg_prevent_feedback_ticket_history_mutation` bloqueia `UPDATE` e `DELETE`, e
+`REVOKE UPDATE, DELETE` reforça a fronteira de escrita.
+
+A migration `0037_feedback_ticket_history.sql` habilita e força RLS; a
+`0038_feedback_ticket_history_integrity.sql` adiciona a identidade composta
+`ticket_id + scope_id` e um trigger invoker que compara versão/status do evento
+com o ticket pai e repete as invariantes de forma fail-closed. A
+`0039_feedback_ticket_history_event_lineage.sql` reforça a função do trigger
+para exigir `CRIADO → NOVO` e, quando disponível, `from_status` igual ao evento
+anterior. A leitura e a
+inserção exigem `current_setting('cvg.scope_id', true)` igual ao `scope_id`; o
+repositório, antes de ler eventos, também resolve o ticket por
+`ticket_id + scope_id`. A efetividade dos grants, owners, RLS e resistência a
+um escritor SQL direto ainda exigem o preflight live; as declarações estáticas
+não são convertidas em evidência de produção.
+
+O modelo da timeline deliberadamente não possui `principal_id`, ator, papel,
+request ID, correlation ID, descrição, resposta, prioridade, responsável, SLA
+ou conteúdo clínico. Essas informações não podem ser inferidas da timeline. A
+trilha de auditoria completa e actor-aware permanece separada, conforme 0111 e
+o contrato `GetAuditTrail`; para gravações da API ela é vinculada ao ticket e
+persistida atomicamente em `audit_entries`, enquanto o endpoint state-only
+continua redigindo esses campos. Assim, o histórico de estado não satisfaz
+sozinho RF-004, mas a operação não perde a responsabilidade auditável quando
+passa pelo boundary autenticado.
+
+Tickets criados antes da migration não recebem backfill sintético. Por isso,
+um ticket legado pode ter histórico vazio ou incompleto; a aplicação não deve
+inventar eventos para preencher a lacuna. Antes de release, o gate live exige
+executar em PostgreSQL descartável/autorizado a migration e verificar
+efetivamente RLS, grants/owners, isolamento entre escopos, trigger append-only,
+unicidade/concorrência, rollback transacional e o percurso browser→API→banco.
+Sem essa evidência, a tabela permanece uma implementação local verificada, não
+uma garantia de produção ou de auditoria completa.

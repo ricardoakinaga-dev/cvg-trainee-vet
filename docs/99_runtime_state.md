@@ -9,21 +9,21 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: AUTHORING-DRAFT-052 — fatia local fechada, preflight live pendente
-- current_task: executar a prova PostgreSQL/RLS/grants e browser→API→PostgreSQL quando houver banco CVG descartável/autorizado
+- current_sprint: FEEDBACK-HISTORY-053 — remediação pós-crítica e fechamento documental
+- current_task: reconciliar migrations 0038/0039, evidência de auditoria e commit de fixture antes de rodar o gate release de rastreabilidade
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: concluir `AUTHORING-DRAFT-052` em TDD, corrigir os achados P1/P2 da crítica independente, confirmar E2E autoral 5/5 e E2E completa 31/31, registrar `0534_authoring_draft_audit.md`, reconciliar backlog/traceability e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo após os commits `6630d8c`, `f6a1234` e `19f314b`.
-- next_action: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; se houver ambiente, provar RLS/grants/atomicidade e browser→API→PostgreSQL; sem esse ambiente, selecionar a próxima fatia P1 sem declarar release
+- last_completed_action: incorporar a crítica final Wegener e consolidar `4680675555aac40246b80bc8ef099a7b2252ebfb`; tornar correlation de feedback server-owned, adicionar migration 0039 para `CRIADO→NOVO`/predecessor, isolar cleanup live e assertar IDs; verificar RED/GREEN focal, coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines, build 12 workspaces, typecheck, lint, E2E 31/31, contratos 81/81, worker 27/27 e migrations 40/40; executar o preflight live, que saiu 2 por ausência de `CVG_TEST_DATABASE_URL` sem abrir conexão.
+- next_action: commitar a reconciliação documental, executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo e então selecionar a próxima lacuna P1; não declarar release
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `RLS-FUNCTION-EXECUTE-051` e `ACTIVITY-RLS-047` ainda não têm ACL/RLS live; workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `RLS-FUNCTION-EXECUTE-051`, `ACTIVITY-RLS-047` e `FEEDBACK-HISTORY-053` ainda não têm ACL/RLS live; workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/prioridade/SLA/assignment de feedback e debrief/reflexão completa permanecem fora do produto implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T17:21:43-03:00
+- last_update: 2026-08-24T19:11:40-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `f6a123462a02fefbba9168cf974d9c824b78433b`; `AUTHORING-DRAFT-052` fechado localmente com gaps explícitos; o preflight live continua sem ambiente
+- head: `4680675555aac40246b80bc8ef099a7b2252ebfb`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; a reconciliação documental está em andamento; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: implementação autoral e artefatos de control plane reconciliados; não há push/deploy
+- worktree: há alterações documentais de controle/SPEC/auditoria desta rodada aguardando commit; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUTHORING-DRAFT-052` READY_FOR_NEXT_STEP; `pnpm verify` passou com 131/647/35 skips, cobertura 84,33% statements, 80,16% branches, 86,04% functions e 85,01% lines; build 12 workspaces; E2E autoral 5/5 e E2E completa 31/31; migrations 37/37; audit/secrets/traceability/documentation/product-definition/exposure/architecture passaram. `pnpm test:integration:live` saiu 2 sem `CVG_TEST_DATABASE_URL`; produção permanece sem ACL/RLS PostgreSQL live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos
+- verification_state: `FEEDBACK-HISTORY-053` base e hardening estão GREEN/REFACTOR; actor/request/correlation server-owned, `audit_entries` atômico, migrations 0038/0039, linhagem e rollback estão cobertos localmente; coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines; build 12 workspaces; typecheck/lint, Prettier, migration 40/40, contratos 81/81, worker 27/27, E2E 31/31 e gates estáticos/documentais anteriores passaram; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 

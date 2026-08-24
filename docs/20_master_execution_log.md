@@ -7871,3 +7871,327 @@ P1 sem declarar release ou competência prática.
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: abertura da timeline interna
+
+### TIMESTAMP
+
+2026-08-24T17:30:40-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP · ORCHESTRATE
+
+### TASK
+
+FEEDBACK-HISTORY-053 / `GET /api/v1/internal/feedback/:ticketId/history`
+
+### ACTION
+
+Selecionar a próxima fatia local após `AUTHORING-DRAFT-052`, comparando gaps
+do PRD/SPEC e duas críticas independentes. O escopo congelado é uma timeline
+append-only, read-only, por ticket e escopo, com projeção interna allowlisted.
+
+### DECISIONS
+
+O histórico deve reutilizar o padrão de `APPEAL-042`, negar `ticketId` fora do
+escopo e não projetar eventos ao participante. Prioridade, atribuição, SLA,
+resposta, notificação, anexos e retirada clínica ficam fora desta abertura para
+não inventar vocabulário ou autoridade.
+
+### NEXT ACTION
+
+Escrever testes RED de contrato, caso de uso, repository mapping, HTTP,
+governança da migration e boundary participante antes de implementar a tabela
+append-only e a timeline web.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: fechamento local com gaps explícitos
+
+### TIMESTAMP
+
+2026-08-24T18:01:46-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP · ORCHESTRATE
+
+### TASK
+
+FEEDBACK-HISTORY-053 / timeline interna append-only de relatos
+
+### ACTION
+
+Implementar e verificar a leitura histórica interna por `ticketId` e escopo,
+ligando contrato strict, autorização server-side, persistence append-only,
+API, telemetria, tela operacional e evidência navegável.
+
+### RESULT
+
+O commit de código `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40` passou RED/GREEN/
+REFACTOR. A migration `0037_feedback_ticket_history` possui FK, unicidade por
+versão, checks, trigger append-only, revoke de mutações, FORCE RLS e policies
+contextuais. `pnpm test:coverage` passou com 134 arquivos/660 testes/35 skips e
+cobertura 84,26% statements, 80,07% branches, 86,08% functions e 84,97% lines;
+`pnpm build` passou nos 12 workspaces e `pnpm test:e2e` passou 31/31. Os gates
+de migration, CI contract, secrets, exposure, architecture, documentation,
+product-definition, audit e diff-check passaram.
+
+### LIMITES
+
+`pnpm test:integration:live` não foi executado por ausência de
+`CVG_TEST_DATABASE_URL`; não há evidência live de PostgreSQL/RLS/grants,
+browser→API→PostgreSQL, produção, workflow remoto same-SHA ou aprovação
+clínica. Tickets anteriores à migration 0037 não recebem backfill inventado e
+podem ter timeline vazia.
+
+### NEXT ACTION
+
+Executar o preflight live em banco CVG descartável/autorizado; depois selecionar
+a próxima lacuna P1, sem declarar release, competência clínica ou produção.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: abertura do hardening de integridade
+
+### TIMESTAMP
+
+2026-08-24T18:22:05-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP
+
+### TASK
+
+FEEDBACK-HISTORY-053 / P1 database-integrity gap
+
+### ACTION
+
+Abrir a correção delimitada após crítica independente: a tabela de histórico
+deve relacionar `ticket_id` e `scope_id` ao mesmo pai, e o PostgreSQL deve
+recusar inserts cujo version/status/event shape não reflita o ticket atual.
+
+### DECISIONS
+
+O patch será somente aditivo em uma nova migration (`0038`), com journal e
+declarações Drizzle; a FK composta será `NOT VALID` para preservar rows/tickets
+legados sem backfill, o trigger atuará apenas em `INSERT`, e `0037`,
+actor/correlation e o fluxo da aplicação não serão alterados. Não haverá
+execução live nem claim de PostgreSQL/RLS.
+
+### NEXT ACTION
+
+Escrever assertions RED de governança antes da migration e, em seguida,
+executar os gates focais e revisar o diff sem commit.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: fechamento do hardening P1 local
+
+### TIMESTAMP
+
+2026-08-24T18:30:00-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP
+
+### TASK
+
+FEEDBACK-HISTORY-053 / integridade PostgreSQL da timeline
+
+### ACTION
+
+Adicionar somente a migration Drizzle `0038_feedback_ticket_history_integrity`,
+seu journal, as declarações compostas no schema e assertions focadas de
+governança, sem reescrever `0037`, alterar aplicação, actor/correlation ou
+executar integração live.
+
+### RESULT
+
+O RED falhou com o arquivo `0038` ausente; o GREEN passou em 7/7 no teste de
+governança. A migration cria o índice único pai `(id, scope_id)`, substitui a
+FK simples pela FK `(ticket_id, scope_id)` `NOT VALID` com `ON DELETE RESTRICT`,
+e adiciona trigger `BEFORE INSERT` que exige pai no mesmo escopo,
+trava o pai com `FOR UPDATE`, exige `ticket_version/status` iguais ao pai corrente
+e o shape existente de
+`CRIADO`/`STATUS_ALTERADO`. `0037` continua append-only e com RLS inalterados.
+`pnpm typecheck`, `pnpm verify:migrations` (39/39) e Prettier focal passaram;
+o patch permanece sem commit por solicitação.
+
+### LIMITES
+
+Não há claim live de PostgreSQL, RLS, grants, trigger efetivo ou produção;
+`CVG_TEST_DATABASE_URL` continua ausente. A FK `NOT VALID` não revalida nem
+backfilla rows históricos e tickets legados sem histórico continuam válidos.
+
+### NEXT ACTION
+
+Revisar este patch local e, somente com autorização explícita, commitá-lo ou
+executá-lo em banco CVG descartável/autorizado; não declarar release.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: verificação final do patch sem commit
+
+### TIMESTAMP
+
+2026-08-24T18:41:28-03:00
+
+### ACTION
+
+Reexecutar a verificação focal após a atualização do controle documental.
+
+### RESULT
+
+`tests/integration/migration-governance.test.ts` passou 7/7; coverage passou
+134 arquivos/663 testes/35 skips com 84,28% statements, 80,15% branches,
+86,15% functions e 84,99% lines; build 12 workspaces, typecheck, lint,
+`verify:migrations` 39/39, traceability, documentation, product-definition,
+exposure, architecture, Prettier focal e `git diff --check` passaram. O
+`format:check` geral continua acusando somente o export preexistente de
+`packages/persistence/src/index.ts`. Não foi executado live, não houve commit,
+push ou deploy.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: fechamento do contexto de auditoria
+
+### TIMESTAMP
+
+2026-08-24T18:49:46-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP · ORCHESTRATE
+
+### TASK
+
+FEEDBACK-HISTORY-053 / propagação server-owned e trilha metadata-only
+
+### ACTION
+
+Consolidar o hardening local após a correção de integridade SQL. A API e os
+casos de uso agora encaminham `actorId`, `requestId` e `correlationId` derivados
+da sessão/request; `saveTicket` exige esses UUIDs e insere `audit_entries` na
+mesma transação do ticket e do evento histórico. O teste de integração foi
+ajustado para limpar a dependência histórica e verificar auditoria e rollback.
+
+### RESULT
+
+O código foi consolidado no commit
+`06b8f3720a9841d6d2335e51b28a8eb156a9191f`. Migration `0038`, schema/journal,
+aplicação, API, persistência e testes estão alinhados. `pnpm test:coverage`
+passou com 134 arquivos/663 testes e 35 skips; cobertura 84,28% statements,
+80,15% branches, 86,15% functions e 84,99% lines. Build de 12 workspaces,
+typecheck, lint, E2E 31/31, migrations 39/39, gates estáticos/documentais e
+audit de dependências passaram.
+
+### LIMITES
+
+`pnpm test:integration:live` continua sem execução por ausência de
+`CVG_TEST_DATABASE_URL`; portanto não há evidência live de RLS, grants,
+owners, trigger efetivo ou browser→API→PostgreSQL. Também não há evidência de
+produção, workflow remoto same-SHA, operação externa ou aprovação clínica.
+`0038` preserva legado com FK `NOT VALID` e não faz backfill de eventos.
+
+### NEXT ACTION
+
+Concluir a reconciliação documental e aguardar a crítica independente final;
+depois selecionar a próxima lacuna P1 com base em evidência, sem declarar
+release.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: fechamento da crítica e remediação P1
+
+### TIMESTAMP
+
+2026-08-24T19:10:17-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP · ORCHESTRATE
+
+### TASK
+
+FEEDBACK-HISTORY-053 / crítica independente final e remediação de invariantes
+
+### ACTION
+
+Wegener revisou o commit `06b8f3720a9841d6d2335e51b28a8eb156a9191f` em modo
+somente leitura e retornou `CONDITIONAL PASS`, sem P0. A crítica apontou que o
+correlation de feedback ainda aceitava UUID do header, que a migration não
+fechava `from_status`/`CRIADO → NOVO`, e que o fixture live usava `TRUNCATE`
+amplo sem asserts dos IDs de auditoria.
+
+### RESULT
+
+O RED foi reproduzido nos testes de HTTP/governança. O commit
+`4680675555aac40246b80bc8ef099a7b2252ebfb` tornou o correlation de feedback
+server-owned pelo request ID, adicionou `0039_feedback_ticket_history_event_lineage`
+com validação de predecessor, trocou o cleanup por deletes filtrados por
+ticket/escopo e verificou request/correlation IDs distintos para criação e
+transição. A verificação GREEN passou com 134 arquivos/665 testes/35 skips;
+coverage 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines;
+build, lint, typecheck, contratos 81/81, worker 27/27, E2E 31/31 e migrations
+40/40.
+
+### LIMITES
+
+O banco CVG live continua ausente, então o teste de integração permanece
+skipped e não há claim de RLS, grants, owners, trigger efetivo,
+browser→API→PostgreSQL, produção ou aprovação clínica. O sidecar sem
+`ticket_version` explícito e a compatibilidade `NOT VALID`/legado permanecem
+P2 documentados.
+
+### NEXT ACTION
+
+Reconciliar e commitar o controle documental, rodar o gate de rastreabilidade
+em worktree limpo e selecionar a próxima lacuna local P1; não declarar release.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: preflight live explicitamente bloqueado
+
+### TIMESTAMP
+
+2026-08-24T19:11:40-03:00
+
+### ACTION
+
+Executar `pnpm test:integration:live` após a remediação P1, sem injetar
+credenciais ou aceitar `DATABASE_URL` como substituto do contrato CVG.
+
+### RESULT
+
+O comando saiu com código 2 e a mensagem
+`CVG_TEST_DATABASE_URL is required for live integration; DATABASE_URL is not
+accepted`. Nenhuma conexão, migration, role, RLS, grant, trigger ou dado foi
+executado; não há evidência live nova.
+
+### NEXT ACTION
+
+Commitar a reconciliação documental no SHA atual, executar o gate de
+rastreabilidade em worktree limpo e manter o item como
+`COMPLETED_WITH_GAPS`.
+
+### STATUS
+
+IN_PROGRESS

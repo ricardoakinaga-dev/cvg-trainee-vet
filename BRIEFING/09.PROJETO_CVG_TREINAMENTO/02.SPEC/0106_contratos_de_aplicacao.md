@@ -40,6 +40,7 @@
 - `GetCorrectionQueue(scope)`;
 - `GetAdminDashboard(scope, period)`;
 - `GetFeedbackTickets(scope, filters)`;
+- `GetFeedbackTicketHistory(ticket_id, principal_context, limit)` — leitura interna, bounded e somente de estados versionados do ticket;
 - `GetAuditTrail(scope, filters)`;
 - `GetInternalAuthoringRecord(content_version_id)` — somente workflow interno autorizado.
 - `SearchInternalKnowledge(principal_id, query, filters)` — somente autoria/revisão/Ricardo, com filtro de escopo antes da busca vetorial;
@@ -60,6 +61,57 @@ O cursor é opaco, bounded e ligado à ordenação determinística
 `occurred_at DESC, id DESC`; o repositório busca `limit + 1` para calcular
 `hasNext`, sem `COUNT(*)` nem ordenação arbitrária. O caso de uso não permite
 edição, exportação ou emissão de achado nessa primeira leitura.
+
+### 2.2 — Consulta state-only de histórico de feedback — FEEDBACK-HISTORY-053
+
+`GetFeedbackTicketHistory` é uma query interna, read-only e bounded para
+reconstruir somente a evolução de estado da triagem de um ticket. Recebe o
+`ticketId` UUID, o contexto do principal autenticado (`principalId`, estado da
+conta, papéis e escopos autorizados) e `limit` opcional entre 1 e 100, com
+padrão 100. O caso de uso exige identidade interna ativa e a capability
+`VIEW_FEEDBACK_QUEUE`; o ticket só é alcançado quando pertence a um escopo
+autorizado. Ausência no escopo autorizado retorna `null` e é convertida em
+`not_found` pela API.
+
+O resultado de aplicação é uma cópia imutável contendo o `ticketId`, o escopo
+validado apenas para a checagem de boundary e uma lista ordenada por
+`ticketVersion`, `createdAt` e `historyId`. Cada evento contém somente:
+`historyId`, `ticketId`, `ticketVersion`, `eventType`, `fromStatus` opcional,
+`toStatus` e `createdAt`. Os tipos permitidos são `CRIADO` (versão 0, sem
+`fromStatus`) e `STATUS_ALTERADO` (versão a partir de 1, com `fromStatus`);
+versões duplicadas, estados desconhecidos, escopos não autorizados e payloads
+acima do limite falham fechado. O vocabulário de estado é
+`NOVO`, `TRIADO`, `EM_TRATAMENTO`, `AGUARDA_USUARIO`, `RESOLVIDO`, `DUPLICADO`,
+`NAO_REPRODUZIDO` e `NAO_PLANEJADO`.
+
+Esta query não é a trilha de auditoria completa nem registra o ator responsável.
+Não aceita nem devolve `participantId`, descrição, resposta, prioridade,
+responsável, SLA, correlação, request, fonte, conteúdo clínico ou qualquer
+texto do relato. `GetAuditTrail`, definido em 0106/0111, permanece o contrato
+separado para ações sensíveis, ator, recurso, escopo, resultado, versão e
+correlação; o histórico state-only não satisfaz sozinho RF-004 nem substitui a
+auditoria append-only. Nas gravações da API de criação/transição, o repositório
+registra também uma entrada metadata-only em `audit_entries`, na mesma
+transação, com `principalId`/ator, `requestId`, `correlationId`, recurso
+`feedback_ticket`, escopo e resultado. Essa trilha é consultada pelo contrato
+de auditoria, não é incorporada à projeção desta query.
+
+A migration `0037_feedback_ticket_history.sql` registra o evento de criação ou
+de mudança de estado na mesma transação que grava o ticket; as migrations
+`0038_feedback_ticket_history_integrity.sql` e
+`0039_feedback_ticket_history_event_lineage.sql` reforçam a relação
+ticket/escopo, a versão/status do pai e a linhagem de eventos novos. Tickets
+existentes
+antes dessa migration não recebem backfill sintético: podem retornar uma lista
+vazia ou um histórico incompleto, limitação que deve permanecer visível na
+experiência interna.
+
+O contrato local não constitui evidência de produção. Antes de release, o gate
+live deve provar em PostgreSQL descartável/autorizado a migration, grants e
+owners efetivos, RLS e contexto de escopo, append-only, isolamento entre
+escopos, atomicidade/rollback e concorrência; também deve haver evidência
+browser→API→PostgreSQL. Sem esse preflight, a feature permanece verificada
+localmente, sem claim de produção ou de auditoria completa.
 
 ## 3. Validação
 

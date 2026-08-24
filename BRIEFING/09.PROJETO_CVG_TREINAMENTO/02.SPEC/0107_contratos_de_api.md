@@ -59,6 +59,7 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `POST /api/v1/feedback` | UC-022 | sessão autenticada |
 | `GET /api/v1/internal/feedback` | UC-023 | `VIEW_FEEDBACK_QUEUE` + escopo autorizado; leitura bounded |
 | `PATCH /api/v1/internal/feedback/:ticketId` | UC-023 | `TRANSITION_FEEDBACK_TICKET` + escopo autorizado |
+| `GET /api/v1/internal/feedback/:ticketId/history` | UC-023 / FEEDBACK-HISTORY-053 | `VIEW_FEEDBACK_QUEUE` + identidade interna ativa + escopo autorizado; leitura state-only bounded |
 | `GET /api/v1/internal/appeals/:appealId/history` | UC-018 | `REVIEW_APPEAL` + escopo autorizado; somente leitura bounded |
 | `GET /api/v1/content/review-queue` | UC-013/014 | autor/revisor/admin |
 | `POST /api/v1/content/drafts` | UC-012 | autor autorizado |
@@ -187,6 +188,61 @@ Na fila interna de feedback, `GET /api/v1/internal/feedback` aceita somente
 no servidor por `ticketId + scopeId` sob contexto de escopo antes de reutilizar
 o comando versionado; identidade enviada pelo navegador é rejeitada pelo
 schema strict.
+
+### 8.1 Histórico state-only do ticket — FEEDBACK-HISTORY-053
+
+`GET /api/v1/internal/feedback/:ticketId/history` é uma rota interna somente
+de leitura. O path aceita somente `ticketId` UUID; o query string aceita somente
+`limit` inteiro entre 1 e 100, padrão 100; o corpo é vazio. Chaves desconhecidas,
+UUID inválido, limite fora da faixa ou valor não inteiro respondem `422`.
+
+O servidor autentica a sessão, exige conta interna ativa, capability
+`VIEW_FEEDBACK_QUEUE` e escopo autorizado, e resolve o ticket no PostgreSQL por
+`ticketId + scopeId`. Participante não obtém acesso por alterar a URL. A rota
+responde `401` sem sessão, `403` sem papel/capability/escopo, `404` quando o
+ticket não existe no escopo autorizado, `422` para entrada inválida e `500`
+para falha interna sem detalhes técnicos.
+
+O sucesso usa o envelope comum e expõe somente a projeção abaixo, com no máximo
+100 eventos ordenados por versão ascendente:
+
+```json
+{
+  "success": true,
+  "data": {
+    "ticketId": "<uuid>",
+    "events": [
+      {
+        "historyId": "<uuid>",
+        "ticketId": "<uuid>",
+        "ticketVersion": 0,
+        "eventType": "CRIADO",
+        "toStatus": "NOVO",
+        "createdAt": "<iso-8601>"
+      }
+    ]
+  },
+  "meta": { "request_id": "<request-id>" }
+}
+```
+
+`STATUS_ALTERADO` também contém `fromStatus`; os estados e tipos são
+allowlisted. A resposta não contém `scopeId`, `participantId`, descrição,
+resposta, prioridade, responsável, SLA, ator, correlação, fonte, conteúdo
+clínico ou texto do relato. A operação não altera ticket, status ou auditoria.
+
+Esta rota não é `/api/v1/audit` e não pretende cumprir o contrato de auditoria
+completa com ator de 0106/0111. Ela oferece apenas uma linha do tempo técnica de
+estado; a identificação do responsável e a correlação de ações permanecem na
+trilha de auditoria própria quando aplicável. Tickets anteriores à migration
+`0037_feedback_ticket_history.sql` não recebem evento sintético e podem exibir
+histórico vazio/incompleto.
+
+A disponibilidade local da rota não libera produção. O gate live deve demonstrar
+PostgreSQL/RLS/grants efetivos, isolamento entre escopos, trigger append-only,
+atomicidade e rollback da gravação, concorrência/versionamento e o percurso
+browser→API→PostgreSQL em ambiente descartável/autorizado. Até esse preflight,
+o contrato é apenas verificado localmente.
 
 As rotas internas recebem somente o escopo necessário como contexto validado pelo
 servidor; a capacidade e o escopo do principal são verificados antes do caso de

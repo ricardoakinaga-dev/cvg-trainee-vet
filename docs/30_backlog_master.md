@@ -106,6 +106,26 @@ autoral 5/5 e E2E completa 31/31. A crítica independente final retornou `CONDIT
 P0/P1 restantes; o teste live continua indisponível sem
 `CVG_TEST_DATABASE_URL`, portanto não há release ou claim de produção.
 
+**Abertura operacional 2026-08-24 (FEEDBACK-HISTORY-053):** foi selecionada
+uma fatia local bounded para fechar a rastreabilidade operacional da fila de
+relatos: timeline interna append-only por `ticketId` e escopo, read-only,
+allowlisted e sem projeção ao participante. A implementação reutilizará o
+padrão de histórico de apelações; prioridade, atribuição, SLA, resposta,
+notificação e retirada clínica permanecem fora do recorte até existir contrato
+e autoridade explícitos.
+
+**Fechamento operacional 2026-08-24 (FEEDBACK-HISTORY-053):** a fatia foi
+fechada no commit `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40` após RED/GREEN/
+REFACTOR. Contratos, caso de uso, repository, migration 0037, append-only/
+RLS/provisionamento, API, template de rota, timeline web e E2E foram ligados;
+`pnpm test:coverage` passou com 134 arquivos/660 testes/35 skips e cobertura
+84,26%/80,07%/86,08%/84,97%, `pnpm build` passou nos 12 workspaces e
+`pnpm test:e2e` passou 31/31. O item segue `COMPLETED_WITH_GAPS`: o preflight
+live continua sem `CVG_TEST_DATABASE_URL`, logo não há claim de PostgreSQL/RLS/
+grants live, browser→API→PostgreSQL, produção, workflow remoto ou aprovação
+clínica; tickets anteriores à migration 0037 podem ter timeline vazia sem
+backfill inventado.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -529,6 +549,68 @@ P0/P1 restantes; o teste live continua indisponível sem
 - resultado: RED/GREEN/REFACTOR concluído; `pnpm verify` passou com 131 arquivos/647 testes e 35 skips; cobertura 84,33% statements, 80,16% branches, 86,04% functions e 85,01% lines; build 12 workspaces; E2E autoral 5/5 e E2E completa 31/31; a rota é reconhecida por rate limit/métricas/auditoria; replay retorna os mesmos IDs e fingerprint divergente falha fechado
 - gaps explícitos: `CVG_TEST_DATABASE_URL` ausente impede PostgreSQL/RLS/grants live e browser→API→PostgreSQL; grants/owners produtivos, workflow remoto same-SHA, operação externa, publicação e conteúdo clínico continuam sem evidência/autoridade
 - próxima ação: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; depois selecionar a próxima fatia P1, mantendo publicação clínica sob revisão humana
+
+### FEEDBACK-HISTORY-053 — Timeline interna append-only da triagem de relatos
+
+- título: permitir que moderador/administrador reconstrua a evolução de um relato autorizado sem mutação e sem expor histórico interno ao participante
+- descrição: consultar eventos append-only por `ticketId` e escopo, com ordenação determinística, limite bounded, contrato estrito e projeção redigida
+- módulo: feedback / triagem interna / governança / API / persistência / operações web
+- dependência: `FEEDBACK-043`; `APPEAL-042`; `PRD-RF-072`; `PRD-RF-073`; `PRD-RF-104`; `SPEC-0106`; `SPEC-0107`; `SPEC-0111`; `SPEC-0114`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / governança operacional
+- risco: alto — histórico fora do escopo, conteúdo livre exposto ou leitura mutável pode comprometer a reconstrução de suporte
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para contrato interno strict, capability server-side, contexto de escopo, `401/403/404/422`, limite máximo 100, ordenação determinística, tabela append-only e E2E sintético; nenhuma mutação ou projeção participante — atendido localmente
+- fora desta fatia: prioridade, atribuição, prazo/SLA, resposta ao participante, notificação externa, anexos, retirada clínica, provider/MFA, PostgreSQL/RLS live, concorrência real, workflow remoto, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0535_feedback_history_audit.md`; `traceability.yml` / `FEEDBACK-HISTORY-053`; commits de hardening `06b8f3720a9841d6d2335e51b28a8eb156a9191f` e `4680675555aac40246b80bc8ef099a7b2252ebfb` sobre `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40`
+- resultado: contrato strict, autorização server-side, leitura contextual, projection redigida, migrations 0037/0038/0039 com append-only/RLS, integridade composta e linhagem de eventos, evento e `audit_entries` metadata-only atômicos, contexto server-owned de ator/request/correlation, API, telemetria, timeline web e E2E sintético concluídos; 31/31 E2E, 665 testes e todos os gates locais passaram
+- gaps explícitos: `CVG_TEST_DATABASE_URL` ausente impede PostgreSQL/RLS/grants live e browser→API→PostgreSQL; a FK `0038` é `NOT VALID` e tickets/rows legados não recebem histórico retroativo; prioridade, assignment, SLA, resposta, notificação, anexos, retirada clínica, provider/MFA, workflow remoto, produção e aprovação clínica permanecem fora
+- próxima ação: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; depois selecionar a próxima lacuna P1 sem declarar release
+
+**Abertura operacional 2026-08-24 (FEEDBACK-HISTORY-053 / P1-integrity):** a
+crítica independente encontrou uma lacuna de defesa no banco: `scope_id` ainda
+não participa da relação pai e o histórico aceita metadados que podem divergir
+do `version/status` corrente do ticket. O recorte desta correção é somente uma
+migration Drizzle aditiva, journal, declarações de persistência e assertions de
+governança; a FK será `NOT VALID` para preservar legado, e não haverá alteração
+de `0037`, actor/correlation, aplicação ou claims live.
+
+**Fechamento local 2026-08-24 (FEEDBACK-HISTORY-053 / P1-integrity):** a
+correção foi implementada sem commit em
+`packages/persistence/drizzle/0038_feedback_ticket_history_integrity.sql`, no
+journal e no schema Drizzle. A FK composta `(ticket_id, scope_id)` mantém
+`ON DELETE RESTRICT` e `NOT VALID`; o trigger `BEFORE INSERT` exige o pai no
+mesmo escopo, `ticket_version/status` correntes e o shape existente de
+`CRIADO`/`STATUS_ALTERADO`. `0037` append-only/RLS, aplicação e
+actor/correlation permanecem intocados. RED/ GREEN focal, typecheck,
+`verify:migrations` 39/39 e Prettier passaram; sem evidência live e sem claim
+de produção. Tickets legados sem histórico e rows antigos não recebem
+backfill.
+
+**Fechamento operacional 2026-08-24 (FEEDBACK-HISTORY-053 / audit-context):**
+o hardening foi consolidado no commit
+`06b8f3720a9841d6d2335e51b28a8eb156a9191f`. API, aplicação e persistência
+propagam `actorId`, `requestId` e `correlationId` server-owned; cada criação ou
+transição grava uma entrada metadata-only em `audit_entries` na mesma transação
+do ticket e do evento. A integração configurada agora verifica histórico,
+auditoria e rollback; segue skipped sem `CVG_TEST_DATABASE_URL`. A verificação
+local passou com cobertura 84,28% statements / 80,15% branches / 86,15%
+functions / 84,99% lines, build de 12 workspaces, lint, typecheck, 31/31 E2E,
+39/39 migrations, gates documentais e audit de dependências. Permanece
+`COMPLETED_WITH_GAPS`: sem PostgreSQL live, RLS/grants efetivos, produção,
+workflow remoto same-SHA ou aprovação clínica não há claim de release.
+
+**Fechamento da crítica independente 2026-08-24 (FEEDBACK-HISTORY-053):**
+Wegener retornou `CONDITIONAL PASS`, sem P0, mas encontrou P1 na origem do
+correlation ID, na linhagem `from_status`/`CRIADO → NOVO`, no `TRUNCATE` amplo do
+fixture live e na ausência de asserts de IDs exatos. O commit
+`4680675555aac40246b80bc8ef099a7b2252ebfb` corrigiu os gaps codificáveis:
+correlation de feedback usa o request ID gerado pelo servidor, migration
+`0039` valida a linhagem de eventos novos, cleanup é filtrado por
+ticket/escopo e os IDs de auditoria são assertados. A rodada passou com
+665 testes, coverage 84,28% / 80,13% / 86,14% / 84,99%, build, lint, typecheck,
+31/31 E2E e 40/40 migrations. O banco live continua ausente; por isso o item
+permanece `COMPLETED_WITH_GAPS` e não há claim de produção.
 
 ### AUD-P1-001 — Fechamento da jornada de produto
 

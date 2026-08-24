@@ -140,6 +140,13 @@ a aprovação clínica, piloto ou release produtivo.
   sem P0/P1 restantes; `pnpm verify` passou 131/647/35 skips com cobertura
   84,33%/80,16%/86,04%/85,01%. O live PostgreSQL segue pendente sem
   `CVG_TEST_DATABASE_URL`; publicação, clínica e produção permanecem fora.
+- [x] (2026-08-24T17:30:40-03:00) Abrir `FEEDBACK-HISTORY-053`: timeline interna
+  append-only de triagem por escopo, com leitura read-only, projeção allowlisted,
+  sem resposta pública, notificação, decisão clínica ou alteração educacional.
+- [x] (2026-08-24T18:01:46-03:00) Fechar `FEEDBACK-HISTORY-053` em
+  `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40`: contratos, aplicação, migration
+  append-only/RLS, repository, API, operações web, migration governance e E2E
+  concluídos; item permanece `COMPLETED_WITH_GAPS` sem prova live.
 
 ## Surprises & Discoveries
 
@@ -678,3 +685,54 @@ critique is CONDITIONAL PASS with no P0/P1; live PostgreSQL/RLS/grants,
 browser→API→DB, productive operations, same-SHA remote evidence and clinical
 approval remain explicit gaps. Next authorized action is the live preflight in
 a disposable CVG environment, not a release declaration.
+
+Plan revision note, 2026-08-24 (FEEDBACK-HISTORY-053): the next local bounded
+slice is the append-only internal timeline of feedback triage, selected after
+two independent read-only scouts converged on the remaining RF-104 gap. It
+must preserve scope isolation and participant redaction; priority, assignment,
+SLA, response delivery, clinical withdrawal and external notification remain
+outside this slice until their vocabulary and authority are explicitly frozen.
+
+Plan revision note, 2026-08-24 (FEEDBACK-HISTORY-053 closure): the bounded
+timeline was implemented in `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40` after
+RED/GREEN/REFACTOR. It has strict contracts, capability/scope checks, atomic
+status-event persistence, append-only/RLS migration, API route telemetry,
+redacted operations UI and synthetic browser evidence. The local bar passed
+typecheck, lint, build, coverage, all static gates and 31/31 E2E. The final
+limitation remains the absent CVG test database and the resulting lack of
+live PostgreSQL/RLS/grants/browser-to-API evidence, production operation and
+clinical approval.
+
+Plan revision note, 2026-08-24 (FEEDBACK-HISTORY-053 P1 integrity): the
+database-only hardening remains an uncommitted local patch by request. Migration
+`0038_feedback_ticket_history_integrity.sql` adds the composite parent FK as
+`NOT VALID` to preserve legacy rows/tickets and a caller-RLS `BEFORE INSERT`
+trigger with `FOR UPDATE` for current parent version/status and the existing event shape. The
+Drizzle schema, journal and focused migration-governance test are aligned;
+`7/7` focal governance tests, typecheck, Prettier and `verify:migrations` 39/39
+passed. No actor/correlation propagation or live claim was added.
+
+Plan revision note, 2026-08-24 (FEEDBACK-HISTORY-053 audit-context hardening):
+the code is consolidated in `06b8f3720a9841d6d2335e51b28a8eb156a9191f`.
+Server-owned actor/request/correlation context now reaches feedback writes;
+`saveTicket` records a metadata-only `audit_entries` sidecar atomically with
+the ticket and state event, and the live fixture asserts history, audit and
+rollback when configured. The local bar passed with 134/663/35 skips,
+84.28%/80.15%/86.15%/84.99% coverage, 12-workspace build, typecheck, lint,
+31/31 E2E, 39/39 migrations and static/documentation gates. The live database,
+productive ACL/RLS, browser-to-API-to-PostgreSQL, remote same-SHA workflow,
+operations and clinical approval remain unobserved; the final independent
+critic is still pending.
+
+Plan revision note, 2026-08-24 (FEEDBACK-HISTORY-053 final critique/remediation):
+Wegener returned `CONDITIONAL PASS` without P0 and identified P1 in
+client-supplied feedback correlation, event lineage, broad live-fixture
+cleanup and weak audit-ID assertions. Commit
+`4680675555aac40246b80bc8ef099a7b2252ebfb` made correlation server-owned for
+feedback, added migration `0039` for `CRIADO → NOVO` and predecessor status,
+scoped cleanup to ticket/scope and asserted request/correlation IDs. GREEN
+verification now reports 134/665/35 skips, 84.28%/80.13%/86.14%/84.99%
+coverage, build, lint, typecheck, 31/31 E2E and 40/40 migrations. Live
+PostgreSQL/RLS/grants, production, remote same-SHA workflow and clinical
+approval remain unobserved; the next step is a clean control-plane commit and
+selection of the next local P1, not a release declaration.

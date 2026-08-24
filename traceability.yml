@@ -117,6 +117,7 @@ artifacts:
         "SPEC-0105",
         "SPEC-0106",
         "SPEC-0107",
+        "SPEC-0109",
         "SPEC-0111",
         "SPEC-0118",
       ]
@@ -126,6 +127,7 @@ artifacts:
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
       ]
     code:
@@ -4097,6 +4099,107 @@ artifacts:
         "idempotency replay/conflict, server-owned projection, atomic rollback probe, scoped audit, route telemetry and scope retry are covered locally",
         "pnpm test:integration:live exited 2 because CVG_TEST_DATABASE_URL is absent; no live PostgreSQL/RLS/browser-to-API evidence is inferred",
         "clinical approval/publication, productive grants/owners, same-SHA remote workflow and external operations remain unobserved",
+      ]
+    status: "verified-with-gaps"
+  - id: "FEEDBACK-HISTORY-053"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "PRD-RF-104",
+        "UC-023",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0535_feedback_history_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/feedback-ticket-history.ts",
+        "packages/contracts/src/feedback-ticket-history.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/feedback-ticket-history-use-cases.ts",
+        "packages/application/src/feedback-ticket-history-use-cases.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/feedback-ticket-history-repository.ts",
+        "packages/persistence/src/feedback-ticket-history-repository.test.ts",
+        "packages/persistence/src/learning-state-repository.ts",
+        "packages/persistence/src/learning-state-repository.test.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0037_feedback_ticket_history.sql",
+        "packages/persistence/drizzle/0038_feedback_ticket_history_integrity.sql",
+        "packages/persistence/drizzle/0039_feedback_ticket_history_event_lineage.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "scripts/provision-ci-postgres.mjs",
+        "scripts/verify-traceability.mjs",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/api/src/server.test.ts",
+        "apps/web/app/operations/page.tsx",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-learning-state.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    tests:
+      [
+        "packages/contracts/src/feedback-ticket-history.test.ts",
+        "packages/application/src/feedback-ticket-history-use-cases.test.ts",
+        "packages/persistence/src/feedback-ticket-history-repository.test.ts",
+        "packages/persistence/src/learning-state-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-learning-state.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "4680675555aac40246b80bc8ef099a7b2252ebfb"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0535_feedback_history_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: contratos/aplicação/persistência começaram com módulos ausentes; HTTP 404/unmatched; E2E sem timeline antes da implementação",
+        "GREEN focal: contratos, aplicação, persistência, HTTP, server e migration governance passaram após a implementação",
+        "pnpm typecheck, pnpm build (12 workspaces) e pnpm lint",
+        "pnpm test:coverage: 134 arquivos/665 testes PASS, 29 arquivos e 35 testes skipped; 84.28% statements, 80.13% branches, 86.14% functions, 84.99% lines",
+        "pnpm test:e2e: 31/31 PASS",
+        "pnpm verify:migrations: 40 migrations aligned through 0039_feedback_ticket_history_event_lineage",
+        "P1 database integrity: composite (ticket_id, scope_id) FK is NOT VALID for legacy preservation; INSERT trigger checks current parent version/status, CRIADO→NOVO and predecessor from_status for new lineage; 0037 append-only/RLS remain untouched",
+        "focused migration governance: 9/9 PASS; persistence/API tests cover server-owned actorId/requestId/correlationId and atomic metadata-only audit_entries sidecars",
+        "live integration fixture asserts v0/v1 history, exact audit request/correlation IDs, scoped cleanup and transactional rollback of invalid history; it remains skipped without CVG_TEST_DATABASE_URL",
+        "migration 0039 and HTTP/fixture hardening are contained in commit 4680675555aac40246b80bc8ef099a7b2252ebfb; no live PostgreSQL/RLS/grants claim",
+        "pnpm verify:ci-contract, verify:secrets, verify:exposure, verify:architecture, verify:documentation e verify:product-definition PASS",
+        "pnpm audit --audit-level=high: no known vulnerabilities",
+        "pnpm test:integration:live não executado por ausência de CVG_TEST_DATABASE_URL; nenhuma evidência live é inferida",
+        "produção, grants/owners produtivos, browser→API→PostgreSQL, workflow remoto same-SHA e aprovação clínica continuam sem evidência",
       ]
     status: "verified-with-gaps"
 notes:
