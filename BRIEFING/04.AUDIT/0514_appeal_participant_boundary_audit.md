@@ -64,7 +64,10 @@ server-side. Após a implementação, a fatia passou por:
 - `pnpm exec vitest run tests/integration/postgres-learning-state.test.ts --project integration` — preparado para o cenário live; sem `CVG_TEST_DATABASE_URL`, o teste é skipped e não constitui evidência de PASS;
 - `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm verify:documentation`,
   `pnpm verify:traceability`, `pnpm verify:exposure` e `git diff --check` — PASS
-  no gate completo; o release gate ainda depende de commit e worktree limpo.
+  no gate completo;
+- `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` — PASS em worktree
+  limpo após `7ac18365998b1bdd5ff1f2600c783b1352c42f03` e o commit documental
+  `d62e513`.
 
 Nenhum dado clínico real, prontuário, tutor, foto, PDF, resposta real ou fonte de
 terceiro foi usado. A literatura atual consultada orienta interpretar a

@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: APPEAL-036 / AUD-P1-001 — contestação participante e próxima ação
-- current_task: APPEAL-2026-08-23-B — criticar e fechar a primeira fatia da fronteira de contestação
+- current_task: APPEAL-2026-08-23-F — fechar rastreabilidade e selecionar a próxima fatia
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: APPEAL-036 passou RED/GREEN/REFACTOR local, fechou REDs de reload da tentativa corrigida e de item não avaliável, passou o foco API/persistência 62/62, `pnpm verify` (103 arquivos/495 testes, 25 skips), build e E2E completo 22/22; a integração PostgreSQL específica ficou 1/1 skipped sem `CVG_TEST_DATABASE_URL`
-- next_action: ajustar/confirmar o SHA do artefato `APPEAL-036` para `7ac18365998b1bdd5ff1f2600c783b1352c42f03` e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; manter a prova PostgreSQL/RLS e os follow-ups de revisor/recálculo/notificação explícitos
+- last_completed_action: APPEAL-036 passou RED/GREEN/REFACTOR local, fechou REDs de reload da tentativa corrigida e de item não avaliável, passou o foco API/persistência 62/62, `pnpm verify` (103 arquivos/495 testes, 25 skips), build e E2E completo 22/22; a integração PostgreSQL específica ficou 1/1 skipped sem `CVG_TEST_DATABASE_URL`; o release traceability gate passou em worktree limpo nos commits `7ac1836`/`d62e513`
+- next_action: manter o estado como fonte de continuidade; executar PostgreSQL/RLS live quando o ambiente autorizado existir e escolher a próxima fatia local entre fila interna de decisão/recálculo e filtros/paginação/exportação, sem simular governança clínica ou fornecedor
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T23:21:44-03:00
+- last_update: 2026-08-23T23:22:29-03:00
 
 ## REGRAS DE USO
 

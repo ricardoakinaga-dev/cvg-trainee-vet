@@ -4731,3 +4731,42 @@ IN_PROGRESS
 
 Commitar o ajuste documental do SHA e executar
 `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo.
+
+## 2026-08-23 — APPEAL-036: release traceability aprovado localmente
+
+### TIMESTAMP
+
+2026-08-23 23:22:29 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### TASK
+
+APPEAL-2026-08-23-F — fechar rastreabilidade sem alegar prontidão externa
+
+### ACTION
+
+O SHA do artefato `APPEAL-036` foi ligado ao commit de implementação
+`7ac18365998b1bdd5ff1f2600c783b1352c42f03`; o commit documental `d62e513`
+registrou plano, estado, backlog e log. Em seguida foi executado
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo.
+
+### RESULT
+
+O release gate passou: os artefatos atuais resolvem para commits alcançáveis e
+caminhos rastreáveis. `APPEAL-036` fica `COMPLETED_WITH_GAPS` somente para a
+primeira fatia. PostgreSQL/RLS live, reviewer queue, decisão, recálculo,
+notificações, provider/MFA, collector/OTel, carga, failover, restore, aprovação
+clínica, piloto e crítica independente continuam sem evidência/autorização; nada
+disso foi simulado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar a prova live quando o ambiente for disponibilizado e escolher a próxima
+fatia local pelo backlog, mantendo o boundary participante redigido.

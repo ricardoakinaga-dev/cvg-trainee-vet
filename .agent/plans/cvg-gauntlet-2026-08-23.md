@@ -158,12 +158,11 @@ support the boundary.
 ## Current next action
 
 The two bounded independent read-only critic attempts timed out and were closed;
-no independent PASS is inferred. The local diff is implemented and committed as
-`7ac18365998b1bdd5ff1f2600c783b1352c42f03`; update the manifest SHA and run the
-clean release traceability gate. The live PostgreSQL boundary for reflection and
-appeals remains an explicit unavailable check when its required environment
-variables are absent; this milestone must not claim production, clinical, pilot,
-or CPD readiness.
+no independent PASS is inferred. The local diff is implemented in
+`7ac18365998b1bdd5ff1f2600c783b1352c42f03`, the manifest is bound, and the clean
+release traceability gate passed. The next action is to choose the next local
+slice while retaining the live PostgreSQL boundary and external governance gaps;
+this milestone must not claim production, clinical, pilot, or CPD readiness.
 
 ## Progress history
 
@@ -173,3 +172,4 @@ or CPD readiness.
 - 2026-08-23: APPEAL-036 first slice passed focused unit tests, full verification (103 files/495 tests, 25 skips, 84,33% statements/80,14% branches), build and full E2E 22/22; live PostgreSQL remained skipped without `CVG_TEST_DATABASE_URL`.
 - 2026-08-23: a RED E2E exposed that a corrected attempt/protocol disappeared after reload; the web now restores the own attempt from the journey projection and the participant E2E file passes 9/9. The independent critic was attempted twice after implementation but timed out without a report, so no independent PASS is inferred.
 - 2026-08-23: a review RED exposed that the fallback/API boundary accepted a non-answerable item; `QUESTAO`/`CASO` filtering was added to HTTP, PostgreSQL resolver and web, targeted 62/62 passed, full verification reached 495 tests and E2E 22/22.
+- 2026-08-23: implementation commit `7ac18365998b1bdd5ff1f2600c783b1352c42f03` and documentation commit `d62e513` were created; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed with a clean worktree. APPEAL-036 remains `PASS_WITH_GAPS`.
