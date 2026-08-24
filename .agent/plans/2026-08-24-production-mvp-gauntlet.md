@@ -109,6 +109,21 @@ a aprovação clínica, piloto ou release produtivo.
   84,82%/80,97%/86,32%/85,56%), build, integração 25/33, E2E 26/26,
   audit high e secrets passaram; live PostgreSQL/RLS e browser→API→PostgreSQL
   continuam não observados.
+- [x] (2026-08-24T13:51:24-03:00) Fechar `JOURNEY-REMEDIATION-048` no código
+  `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d`: CTA de remediação derivada por
+  `nextAction`/target server-side, assignment/proveniência explícitos,
+  conteúdo integralmente `PUBLICADO`, tentativa humana/terminal somente
+  leitura, nova tentativa sem respostas/apelos/justificativa antigos e
+  boundary HTTP defensivo. Einstein apontou cinco gaps e Bacon aprovou local
+  após apontar três P2; todos foram fechados. `pnpm verify` passou 131/632/33
+  skips, cobertura 84,92%/81,13%/86,46%/85,67%, build 12 workspaces, E2E
+  28/28, integração 25/33 e audit high.
+- [x] (2026-08-24T13:54:48-03:00) Fechar a auditoria/documentação de
+  `JOURNEY-REMEDIATION-048` em `7a24051` e atualizar o runtime state em
+  `95dc52a`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou
+  em worktree limpo. A próxima ação continua sendo a prova live autorizada,
+  gates clínicos/humanos e os gaps de retenção completa; nenhum release/100%
+  foi declarado.
 
 ## Surprises & Discoveries
 
