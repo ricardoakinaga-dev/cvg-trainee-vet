@@ -1712,7 +1712,22 @@ describe("API HTTP boundary", () => {
           idempotencyKey: "save-answer-2026-08-09",
         },
       },
-      dependencies({ saveAnswer }),
+      dependencies({
+        saveAnswer,
+        getParticipantActivity: async () => ({
+          ...activity,
+          items: [
+            {
+              itemId: answer.itemId,
+              ordinal: 1,
+              kind: "QUESTAO",
+              title: "Prioridades",
+              text: "Texto autoral.",
+              responseMode: "TEXT",
+            },
+          ],
+        }),
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -1730,6 +1745,33 @@ describe("API HTTP boundary", () => {
     });
     expect(JSON.stringify(response.body)).not.toContain("participantId");
     expect(JSON.stringify(response.body)).not.toContain("answer_key");
+  });
+
+  it("rejects an answer item outside the participant activity", async () => {
+    const saveAnswer = vi.fn(async () => ({
+      attempt: { ...attempt, status: "SALVA" as const, version: 2 },
+      answer,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/attempts/${attempt.attemptId}/answers`,
+        body: {
+          attemptId: attempt.attemptId,
+          activityId: attempt.activityId,
+          itemId: "99999999-9999-4999-8999-999999999999",
+          response: "Resposta sintética.",
+          idempotencyKey: "save-answer-outside-activity",
+        },
+      },
+      dependencies({
+        saveAnswer,
+        hasParticipantActivityItem: async () => false,
+      }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(saveAnswer).not.toHaveBeenCalled();
   });
 
   it("reads only an assigned published activity projection", async () => {

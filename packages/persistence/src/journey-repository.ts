@@ -251,6 +251,18 @@ export function createParticipantJourneyRepository(
             eq(activityAssignments.activityId, learningActivities.id),
           )
           .innerJoin(
+            learningAssignments,
+            and(
+              eq(
+                learningAssignments.id,
+                activityAssignments.learningAssignmentId,
+              ),
+              eq(learningAssignments.participantId, participantId),
+              eq(learningAssignments.scopeId, learningActivities.scopeId),
+              eq(learningAssignments.moduleId, learningActivities.moduleId),
+            ),
+          )
+          .innerJoin(
             learningActivityItems,
             eq(learningActivityItems.activityId, learningActivities.id),
           )

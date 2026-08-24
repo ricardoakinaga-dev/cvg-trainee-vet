@@ -487,16 +487,24 @@ export function createActivityReadRepository(
   return Object.freeze(repository);
 }
 
+export type ParticipantActivityItemKind = "QUESTAO" | "CASO" | "REFLEXAO";
+
 export type ParticipantActivityItemResolver = (
   participantId: string,
   activityId: string,
   itemId: string,
+  itemKinds?: readonly ParticipantActivityItemKind[],
 ) => Promise<boolean>;
 
 export function createParticipantActivityItemResolver(
   db: PostgresJsDatabase<typeof schema>,
 ): ParticipantActivityItemResolver {
-  return async (participantId, activityId, itemId) =>
+  return async (
+    participantId,
+    activityId,
+    itemId,
+    itemKinds = ["QUESTAO", "CASO"],
+  ) =>
     db.transaction(async (transaction) => {
       const executor = transaction as unknown as DatabaseExecutor;
       await setDatabaseSecurityContext(executor, { participantId });
@@ -520,7 +528,7 @@ export function createParticipantActivityItemResolver(
             eq(activityAssignments.participantId, participantId),
             eq(activityAssignments.activityId, activityId),
             eq(learningActivityItems.contentVersionId, itemId),
-            inArray(contentVersions.kind, ["QUESTAO", "CASO"]),
+            inArray(contentVersions.kind, itemKinds),
           ),
         )
         .limit(1);

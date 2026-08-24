@@ -888,7 +888,6 @@ test.describe("participant access and learning projection", () => {
         });
       },
     );
-
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
     await page.getByRole("button", { name: "Ativar acesso" }).click();
@@ -980,8 +979,16 @@ test.describe("participant access and learning projection", () => {
                 responseMode: "TEXT",
               },
               {
-                itemId: "66666666-6666-4666-8666-666666666666",
+                itemId: "77777777-7777-4777-8777-777777777777",
                 ordinal: 2,
+                kind: "QUESTAO",
+                title: "Comunicação da equipe",
+                text: "Descreva como comunicaria a prioridade.",
+                responseMode: "TEXT",
+              },
+              {
+                itemId: "66666666-6666-4666-8666-666666666666",
+                ordinal: 3,
                 kind: "REFLEXAO",
                 title: "Próxima ação",
                 text: "Descreva a próxima ação.",
@@ -1031,24 +1038,69 @@ test.describe("participant access and learning projection", () => {
         ),
       });
     });
+    await page.route(
+      `**/api/v1/attempts/${newAttemptId}/submit`,
+      async (route) => {
+        expect(route.request().method()).toBe("POST");
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptId: newAttemptId,
+              activityId,
+              status: "CORRIGIDA_AUTOMATICAMENTE",
+              version: 2,
+              answers: [],
+            }),
+          ),
+        });
+      },
+    );
+    await page.route(
+      `**/api/v1/attempts/${newAttemptId}/feedback`,
+      async (route) => {
+        expect(route.request().method()).toBe("GET");
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+              attemptVersion: 2,
+              resultVersion: 1,
+              score: 78,
+              outcome: "REFORCO_RECOMENDADO",
+              feedback: "Feedback de reforço sintético.",
+            }),
+          ),
+        });
+      },
+    );
     await page.route("**/api/v1/appeals*", async (route) => {
       expect(route.request().method()).toBe("GET");
+      const requestedAttemptId = new URL(
+        route.request().url(),
+      ).searchParams.get("attemptId");
       await route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify(
           successEnvelope({
-            appeals: [
-              {
-                appealId: "44444444-4444-4444-8444-444444444444",
-                attemptId,
-                itemId,
-                createdAt: "2026-08-23T22:00:00.000Z",
-                dueAt: "2026-09-02T22:00:00.000Z",
-                status: "ABERTA",
-                version: 0,
-              },
-            ],
+            appeals:
+              requestedAttemptId === newAttemptId
+                ? []
+                : [
+                    {
+                      appealId: "44444444-4444-4444-8444-444444444444",
+                      attemptId,
+                      itemId,
+                      createdAt: "2026-08-23T22:00:00.000Z",
+                      dueAt: "2026-09-02T22:00:00.000Z",
+                      status: "ABERTA",
+                      version: 0,
+                    },
+                  ],
           }),
         ),
       });
@@ -1087,12 +1139,17 @@ test.describe("participant access and learning projection", () => {
       page.getByRole("button", { name: "Enviar tentativa" }),
     ).toHaveCount(0);
 
+    await page.getByLabel("Justificativa").fill("Justificativa anterior.");
     await page.getByRole("button", { name: "Iniciar nova tentativa" }).click();
     await expect(
       page.getByRole("button", { name: "Enviar tentativa" }),
     ).toBeVisible();
     await expect(page.getByLabel("Resposta — Próxima ação")).toHaveValue("");
     await expect(page.getByTestId("appeals-panel")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Enviar tentativa" }).click();
+    await expect(page.getByTestId("appeals-panel")).toBeVisible();
+    await expect(page.getByLabel("Justificativa")).toHaveValue("");
   });
 
   test("does not offer a new attempt for a retention runtime state", async ({
@@ -1142,6 +1199,7 @@ test.describe("participant access and learning projection", () => {
                 practicalCompetenceClaim: "PROIBIDO_MVP",
               },
             ],
+            nextActionTarget: { kind: "ACTIVITY", activityId },
             nextAction: "REVISAR_RETENCAO",
           }),
         ),

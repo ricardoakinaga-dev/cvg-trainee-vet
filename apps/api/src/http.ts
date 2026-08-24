@@ -172,6 +172,8 @@ export type ApiPrincipal = Readonly<{
   readonly scopes: readonly string[];
 }>;
 
+type ParticipantActivityItemKind = "QUESTAO" | "CASO" | "REFLEXAO";
+
 export interface ApiHttpDependencies {
   readonly requestIdFactory: () => string;
   readonly observability?: Observability;
@@ -248,6 +250,7 @@ export interface ApiHttpDependencies {
     participantId: string,
     activityId: string,
     itemId: string,
+    itemKinds?: readonly ParticipantActivityItemKind[],
   ) => Promise<boolean>;
   readonly resolveAttempt: (
     attemptId: string,
@@ -998,6 +1001,35 @@ async function handleSaveAnswer(
     })
   ) {
     return errorResponse("forbidden", requestId);
+  }
+
+  const answerableItemKinds: readonly ParticipantActivityItemKind[] = [
+    "QUESTAO",
+    "CASO",
+    "REFLEXAO",
+  ];
+  const itemBelongsToActivity =
+    dependencies.hasParticipantActivityItem === undefined
+      ? (
+          await dependencies.getParticipantActivity(
+            principal.principalId,
+            current.activityId,
+          )
+        ).items.some(
+          (item) =>
+            item.itemId === parsed.data.itemId &&
+            (item.kind === "QUESTAO" ||
+              item.kind === "CASO" ||
+              item.kind === "REFLEXAO"),
+        )
+      : await dependencies.hasParticipantActivityItem(
+          principal.principalId,
+          current.activityId,
+          parsed.data.itemId,
+          answerableItemKinds,
+        );
+  if (!itemBelongsToActivity) {
+    return errorResponse("not_found", requestId);
   }
 
   const result = await dependencies.saveAnswer({

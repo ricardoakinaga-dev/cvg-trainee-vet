@@ -17,7 +17,9 @@ const currentAttempt: AttemptState = {
   version: 1,
 };
 
-function dependencies(): AnswerUseCaseDependencies & {
+function dependencies(
+  itemBelongsToActivity = true,
+): AnswerUseCaseDependencies & {
   attempts: AttemptState[];
   answers: AnswerState[];
   events: unknown[];
@@ -30,6 +32,7 @@ function dependencies(): AnswerUseCaseDependencies & {
   const audits: unknown[] = [];
   const idempotencies = new Map<string, AnswerIdempotencyRecord>();
   const operations = {
+    hasActivityItem: async () => itemBelongsToActivity,
     attemptsPort: {
       findById: async (attemptId: string) =>
         attempts.find((attempt) => attempt.attemptId === attemptId) ?? null,
@@ -172,6 +175,29 @@ describe("SaveAnswer application command", () => {
         deps,
       ),
     ).rejects.toMatchObject({ code: "forbidden", status: 403 });
+  });
+
+  it("rejects an item outside the participant's published activity", async () => {
+    const deps = dependencies(false);
+
+    await expect(
+      saveAnswer(
+        {
+          attemptId: "attempt-1",
+          participantId: "participant-1",
+          activityId: "activity-1",
+          scopeId: "scope-1",
+          itemId: "item-from-another-activity",
+          response: "resposta",
+          idempotencyKey: "answer-key-item-outside-activity",
+          correlationId: "correlation-1",
+          savedAt: "2026-08-09T17:00:00.000Z",
+        },
+        deps,
+      ),
+    ).rejects.toMatchObject({ code: "not_found", status: 404 });
+    expect(deps.answers).toHaveLength(0);
+    expect(deps.events).toHaveLength(0);
   });
 
   it("maps a submitted attempt to a state conflict", async () => {

@@ -806,11 +806,13 @@ function ParticipantPath({
 
 function JourneyActivities({
   activities,
+  nextAction,
   nextActionTarget,
   busy,
   onSelect,
 }: Readonly<{
   readonly activities: readonly JourneyActivityProjection[];
+  readonly nextAction: LearningJourneyProjection["nextAction"];
   readonly nextActionTarget: LearningJourneyProjection["nextActionTarget"];
   readonly busy: boolean;
   readonly onSelect: (activityId: string) => Promise<void>;
@@ -827,7 +829,10 @@ function JourneyActivities({
             <strong>{item.title}</strong>
             <span>{nextActionLabel(item.nextAction)}</span>
           </div>
-          {nextActionTarget?.activityId === item.activityId ? (
+          {(nextAction === "INICIAR_ATIVIDADE" ||
+            nextAction === "RETOMAR_ATIVIDADE" ||
+            nextAction === "EXECUTAR_REMEDIACAO") &&
+          nextActionTarget?.activityId === item.activityId ? (
             <button
               type="button"
               className="button-link"
@@ -1898,6 +1903,7 @@ export default function HomePage() {
                 <h2>{nextActionLabel(journey.nextAction)}</h2>
                 <JourneyActivities
                   activities={journey.activities}
+                  nextAction={journey.nextAction}
                   nextActionTarget={journey.nextActionTarget}
                   busy={busy}
                   onSelect={handleSelectJourneyActivity}
@@ -2227,6 +2233,7 @@ export default function HomePage() {
                 </p>
                 <JourneyActivities
                   activities={journey.activities}
+                  nextAction={journey.nextAction}
                   nextActionTarget={journey.nextActionTarget}
                   busy={busy}
                   onSelect={handleSelectJourneyActivity}

@@ -151,6 +151,7 @@ export {
 } from "./activity-repository.js";
 export type {
   ActivityRowShape,
+  ParticipantActivityItemKind,
   ParticipantActivityItemResolver,
   ReflectionRowShape,
 } from "./activity-repository.js";

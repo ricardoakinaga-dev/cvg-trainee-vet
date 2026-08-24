@@ -69,6 +69,12 @@ export interface AnswerEventPublisherPort {
 }
 
 export interface AnswerTransactionalOperations {
+  readonly hasActivityItem: (
+    participantId: string,
+    activityId: string,
+    scopeId: string,
+    itemId: string,
+  ) => Promise<boolean>;
   readonly attemptsPort: Readonly<{
     readonly findById: (attemptId: string) => Promise<AttemptState | null>;
     readonly update: (attempt: AttemptState) => Promise<void>;
@@ -174,6 +180,19 @@ export async function saveAnswer(
           throw new ApplicationError(
             "forbidden",
             "Attempt is outside the current scope",
+          );
+        }
+
+        const itemBelongsToActivity = await operations.hasActivityItem(
+          command.participantId,
+          current.activityId,
+          command.scopeId,
+          command.itemId,
+        );
+        if (!itemBelongsToActivity) {
+          throw new ApplicationError(
+            "not_found",
+            "Answer item was not found in the published activity",
           );
         }
 

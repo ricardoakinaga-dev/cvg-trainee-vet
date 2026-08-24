@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AnswerIdempotencyRecord,
@@ -23,9 +23,14 @@ import type {
   PersistedAttemptSnapshot,
 } from "./schema.js";
 import {
+  activityAssignments,
   answerIdempotency,
   answers,
   attempts,
+  contentVersions,
+  learningActivities,
+  learningAssignments,
+  learningActivityItems,
   outboxEvents,
 } from "./schema.js";
 import type * as schema from "./schema.js";
@@ -228,6 +233,59 @@ function createAnswerOperations(
     },
   };
 
+  const hasActivityItem = async (
+    participantId: string,
+    activityId: string,
+    scopeId: string,
+    itemId: string,
+  ): Promise<boolean> => {
+    const rows = await db
+      .select({ itemId: learningActivityItems.contentVersionId })
+      .from(activityAssignments)
+      .innerJoin(
+        learningActivities,
+        eq(activityAssignments.activityId, learningActivities.id),
+      )
+      .innerJoin(
+        learningAssignments,
+        and(
+          eq(learningAssignments.id, activityAssignments.learningAssignmentId),
+          eq(learningAssignments.participantId, participantId),
+          eq(learningAssignments.scopeId, learningActivities.scopeId),
+          eq(learningAssignments.moduleId, learningActivities.moduleId),
+        ),
+      )
+      .innerJoin(
+        learningActivityItems,
+        eq(learningActivityItems.activityId, learningActivities.id),
+      )
+      .innerJoin(
+        contentVersions,
+        and(
+          eq(contentVersions.id, learningActivityItems.contentVersionId),
+          eq(contentVersions.scopeId, learningActivities.scopeId),
+        ),
+      )
+      .where(
+        and(
+          eq(activityAssignments.participantId, participantId),
+          eq(activityAssignments.activityId, activityId),
+          eq(learningActivities.scopeId, scopeId),
+          eq(learningActivities.status, "PUBLISHED"),
+          inArray(activityAssignments.status, [
+            "DISPONIVEL",
+            "EM_ANDAMENTO",
+            "EM_REFORCO",
+          ]),
+          eq(contentVersions.id, itemId),
+          eq(contentVersions.status, "PUBLICADO"),
+          inArray(contentVersions.kind, ["QUESTAO", "CASO", "REFLEXAO"]),
+        ),
+      )
+      .limit(1);
+    return rows.length > 0;
+  };
+
   const attemptsPort = {
     findById: async (attemptId: string): Promise<AttemptState | null> => {
       const rows = await db
@@ -350,6 +408,7 @@ function createAnswerOperations(
   const audit = createAuditRepository(db);
 
   return Object.freeze({
+    hasActivityItem,
     attemptsPort,
     answersPort,
     idempotency,
