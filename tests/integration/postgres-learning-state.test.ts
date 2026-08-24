@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import {
   createAppeal,
@@ -22,8 +22,10 @@ import {
   accounts,
   appeals,
   assessmentWorkflows,
+  auditEntries,
   attempts,
   feedbackTickets,
+  feedbackTicketHistory,
   learningActivities,
   learningAssignments,
 } from "../../packages/persistence/src/schema.js";
@@ -64,7 +66,13 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const itemId = randomUUID();
       const rlsRole = `cvg_rls_${randomUUID().replaceAll("-", "")}`;
       let rlsRoleCreated = false;
-      const context = { participantId, scopeId } as const;
+      const context = {
+        participantId,
+        scopeId,
+        actorId: participantId,
+        requestId: randomUUID(),
+        correlationId: randomUUID(),
+      } as const;
 
       try {
         await admin.db.insert(accounts).values([
@@ -148,6 +156,129 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         });
         await repository.saveFeedbackTicket(context, initialTicket);
         await repository.saveFeedbackTicket(context, ticket);
+
+        const history = await admin.db
+          .select({
+            scopeId: feedbackTicketHistory.scopeId,
+            ticketVersion: feedbackTicketHistory.ticketVersion,
+            eventType: feedbackTicketHistory.eventType,
+            fromStatus: feedbackTicketHistory.fromStatus,
+            toStatus: feedbackTicketHistory.toStatus,
+          })
+          .from(feedbackTicketHistory)
+          .where(
+            and(
+              eq(feedbackTicketHistory.ticketId, ticketId),
+              eq(feedbackTicketHistory.scopeId, scopeId),
+            ),
+          )
+          .orderBy(asc(feedbackTicketHistory.ticketVersion));
+        expect(history).toEqual([
+          {
+            scopeId,
+            ticketVersion: 0,
+            eventType: "CRIADO",
+            fromStatus: null,
+            toStatus: "NOVO",
+          },
+          {
+            scopeId,
+            ticketVersion: 1,
+            eventType: "STATUS_ALTERADO",
+            fromStatus: "NOVO",
+            toStatus: "TRIADO",
+          },
+        ]);
+        const auditHistory = await admin.db
+          .select({
+            principalId: auditEntries.principalId,
+            action: auditEntries.action,
+            resourceType: auditEntries.resourceType,
+            resourceId: auditEntries.resourceId,
+            scopeId: auditEntries.scopeId,
+            requestId: auditEntries.requestId,
+            correlationId: auditEntries.correlationId,
+          })
+          .from(auditEntries)
+          .where(eq(auditEntries.resourceId, ticketId));
+        expect(auditHistory).toHaveLength(2);
+        expect(auditHistory).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              principalId: participantId,
+              action: "FEEDBACK_TICKET_CREATED",
+              resourceType: "feedback_ticket",
+              resourceId: ticketId,
+              scopeId,
+            }),
+            expect.objectContaining({
+              principalId: participantId,
+              action: "FEEDBACK_TICKET_STATUS_CHANGED",
+              resourceType: "feedback_ticket",
+              resourceId: ticketId,
+              scopeId,
+            }),
+          ]),
+        );
+
+        const historyBeforeRollback = await admin.db
+          .select({
+            ticketVersion: feedbackTicketHistory.ticketVersion,
+            eventType: feedbackTicketHistory.eventType,
+            fromStatus: feedbackTicketHistory.fromStatus,
+            toStatus: feedbackTicketHistory.toStatus,
+          })
+          .from(feedbackTicketHistory)
+          .where(eq(feedbackTicketHistory.ticketId, ticketId))
+          .orderBy(asc(feedbackTicketHistory.ticketVersion));
+
+        await expect(
+          admin.db.transaction(async (tx) => {
+            await tx
+              .update(feedbackTickets)
+              .set({
+                status: "EM_TRATAMENTO",
+                version: 2,
+                updatedAt: new Date("2026-08-10T12:01:00.000Z"),
+              })
+              .where(
+                and(
+                  eq(feedbackTickets.id, ticketId),
+                  eq(feedbackTickets.version, 1),
+                ),
+              );
+            await tx.insert(feedbackTicketHistory).values({
+              ticketId,
+              scopeId,
+              ticketVersion: 2,
+              eventType: "STATUS_ALTERADO",
+              fromStatus: "TRIADO",
+              toStatus: "RESOLVIDO",
+              createdAt: new Date("2026-08-10T12:01:00.000Z"),
+            });
+          }),
+        ).rejects.toThrow();
+        await expect(
+          admin.db
+            .select({
+              status: feedbackTickets.status,
+              version: feedbackTickets.version,
+            })
+            .from(feedbackTickets)
+            .where(eq(feedbackTickets.id, ticketId)),
+        ).resolves.toEqual([{ status: "TRIADO", version: 1 }]);
+        await expect(
+          admin.db
+            .select({
+              ticketVersion: feedbackTicketHistory.ticketVersion,
+              eventType: feedbackTicketHistory.eventType,
+              fromStatus: feedbackTicketHistory.fromStatus,
+              toStatus: feedbackTicketHistory.toStatus,
+            })
+            .from(feedbackTicketHistory)
+            .where(eq(feedbackTicketHistory.ticketId, ticketId))
+            .orderBy(asc(feedbackTicketHistory.ticketVersion)),
+        ).resolves.toEqual(historyBeforeRollback);
 
         const initialAppeal = createAppeal({
           appealId,
@@ -321,6 +452,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       } finally {
         await admin.db.transaction(async (tx) => {
           await tx.delete(appeals).where(eq(appeals.id, appealId));
+          // The history/audit triggers are append-only; this disposable suite
+          // has no other fixtures in these tables, so truncate them during
+          // cleanup before removing the ticket/account parents.
+          await tx.execute(
+            sql`truncate table "feedback_ticket_history", "audit_entries"`,
+          );
           await tx
             .delete(feedbackTickets)
             .where(eq(feedbackTickets.id, ticketId));

@@ -68,9 +68,7 @@ export {
   createFeedbackTicketHistoryRepository,
   feedbackTicketHistoryRowToEvent,
 } from "./feedback-ticket-history-repository.js";
-export type {
-  FeedbackTicketHistoryRowShape,
-} from "./feedback-ticket-history-repository.js";
+export type { FeedbackTicketHistoryRowShape } from "./feedback-ticket-history-repository.js";
 export {
   createAttemptUseCaseDependencies,
   createActivityScopeResolver,

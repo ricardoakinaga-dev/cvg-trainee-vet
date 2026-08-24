@@ -3433,7 +3433,13 @@ describe("API HTTP boundary", () => {
     );
     expect(feedbackResponse.status).toBe(201);
     expect(createFeedbackTicket).toHaveBeenCalledWith(
-      expect.objectContaining({ participantId, scopeId }),
+      expect.objectContaining({
+        participantId,
+        scopeId,
+        actorId: participantId,
+        requestId: "request-123",
+        correlationId: "request-123",
+      }),
     );
     expect(JSON.stringify(feedbackResponse.body)).not.toContain(
       "participantId",
@@ -3653,6 +3659,9 @@ describe("API HTTP boundary", () => {
       {
         method: "PATCH",
         path: `/api/v1/internal/feedback/${ticketId}`,
+        headers: {
+          "x-correlation-id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        },
         body: {
           ticketId,
           scopeId,
@@ -3673,6 +3682,9 @@ describe("API HTTP boundary", () => {
       scopeId,
       version: 0,
       event: { type: "TRIAR" },
+      actorId: staff.principalId,
+      requestId: "request-123",
+      correlationId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     });
 
     const transitionedAppeal = await handleApiRequest(
@@ -3875,6 +3887,9 @@ describe("API HTTP boundary", () => {
       scopeId,
       version: 0,
       event: { type: "TRIAR" },
+      actorId: clinical.principalId,
+      requestId: "request-123",
+      correlationId: "request-123",
     });
   });
 

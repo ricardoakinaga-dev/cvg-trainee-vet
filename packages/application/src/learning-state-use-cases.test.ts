@@ -206,6 +206,66 @@ describe("learning state application use cases", () => {
     expect(appeal).toMatchObject({ status: "ABERTA", version: 0 });
   });
 
+  it("forwards the authenticated actor and request correlation for feedback writes", async () => {
+    const contexts: Array<Readonly<Record<string, string>>> = [];
+    const base = repository();
+    const port: LearningStateRepositoryPort = {
+      ...base,
+      saveFeedbackTicket: async (context, state) => {
+        contexts.push(context);
+        return base.saveFeedbackTicket(context, state);
+      },
+    };
+    const actorId = "99999999-9999-4999-8999-999999999999";
+    const requestId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const correlationId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+    const created = await createFeedbackTicketState(
+      {
+        ticketId: ids.ticketId,
+        participantId: ids.participantId,
+        scopeId: ids.scopeId,
+        type: "CONTESTACAO",
+        description: "Relato sintético de auditoria.",
+        createdAt: "2026-08-10T17:00:00.000Z",
+        actorId,
+        requestId,
+        correlationId,
+      },
+      port,
+    );
+    await transitionFeedbackTicketState(
+      {
+        ticketId: ids.ticketId,
+        participantId: ids.participantId,
+        scopeId: ids.scopeId,
+        version: created.version,
+        event: { type: "TRIAR" },
+        actorId,
+        requestId,
+        correlationId,
+      },
+      port,
+    );
+
+    expect(contexts).toEqual([
+      {
+        participantId: ids.participantId,
+        scopeId: ids.scopeId,
+        actorId,
+        requestId,
+        correlationId,
+      },
+      {
+        participantId: ids.participantId,
+        scopeId: ids.scopeId,
+        actorId,
+        requestId,
+        correlationId,
+      },
+    ]);
+  });
+
   it("rejects missing persisted resources before attempting a transition", async () => {
     const port = repository();
     await expect(

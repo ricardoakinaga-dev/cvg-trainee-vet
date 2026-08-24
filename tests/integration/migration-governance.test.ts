@@ -213,4 +213,63 @@ describe("migration governance", () => {
       'REVOKE UPDATE, DELETE ON TABLE "feedback_ticket_history"',
     );
   });
+
+  it("keeps feedback history parent identity and insert integrity bounded", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0038_feedback_ticket_history_integrity.sql",
+        import.meta.url,
+      ),
+    );
+    const schemaPath = fileURLToPath(
+      new URL("../../packages/persistence/src/schema.ts", import.meta.url),
+    );
+    const [migration, schema] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(schemaPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      'CREATE UNIQUE INDEX "feedback_tickets_id_scope_idx"',
+    );
+    expect(migration).toContain(
+      'DROP CONSTRAINT "feedback_ticket_history_ticket_id_feedback_tickets_id_fk"',
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("ticket_id", "scope_id") REFERENCES "public"."feedback_tickets"("id", "scope_id")',
+    );
+    expect(migration).toContain("NOT VALID");
+    expect(migration).toContain(
+      "CREATE FUNCTION cvg_validate_feedback_ticket_history_insert()",
+    );
+    expect(migration).toContain("SECURITY INVOKER");
+    expect(migration).toContain(
+      "CREATE TRIGGER feedback_ticket_history_parent_integrity",
+    );
+    expect(migration).toContain(
+      "NEW.ticket_version IS DISTINCT FROM parent_version",
+    );
+    expect(migration).toContain("NEW.to_status IS DISTINCT FROM parent_status");
+    expect(migration).toContain("NEW.event_type = 'CRIADO'");
+    expect(migration).toContain("NEW.ticket_version <> 0");
+    expect(migration).toContain("NEW.from_status IS NOT NULL");
+    expect(migration).toContain("NEW.event_type = 'STATUS_ALTERADO'");
+    expect(migration).toContain("NEW.ticket_version < 1");
+    expect(migration).toContain("NEW.from_status IS NULL");
+    expect(migration).toContain("FOR UPDATE");
+    expect(migration).not.toContain(
+      "DROP TRIGGER feedback_ticket_history_append_only",
+    );
+    expect(migration).not.toContain(
+      'DISABLE ROW LEVEL SECURITY ON "feedback_ticket_history"',
+    );
+    expect(schema).toContain(
+      'uniqueIndex("feedback_tickets_id_scope_idx").on(table.id, table.scopeId)',
+    );
+    expect(schema).toContain('name: "feedback_ticket_history_ticket_scope_fk"');
+    expect(schema).toContain("columns: [table.ticketId, table.scopeId]");
+    expect(schema).toContain(
+      "foreignColumns: [feedbackTickets.id, feedbackTickets.scopeId]",
+    );
+  });
 });

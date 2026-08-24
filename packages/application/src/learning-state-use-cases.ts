@@ -20,6 +20,9 @@ import { ApplicationError } from "./errors.js";
 export type LearningStateContext = Readonly<{
   readonly participantId: string;
   readonly scopeId: string;
+  readonly actorId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
 }>;
 
 export type ScopedLearningAssignment = Readonly<{
@@ -117,6 +120,9 @@ export type TicketCreateCommand = Readonly<{
   readonly type: FeedbackTicketState["type"];
   readonly description: string;
   readonly createdAt: string;
+  readonly actorId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
 }>;
 
 export type TicketTransitionCommand = Readonly<{
@@ -125,6 +131,9 @@ export type TicketTransitionCommand = Readonly<{
   readonly scopeId: string;
   readonly version: number;
   readonly event: FeedbackTicketEvent;
+  readonly actorId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
 }>;
 
 export type AppealCreateCommand = Readonly<{
@@ -144,6 +153,15 @@ function assertContext(context: LearningStateContext): void {
     context.scopeId.trim().length === 0
   ) {
     throw new TypeError("participantId and scopeId are required");
+  }
+  for (const [field, value] of [
+    ["actorId", context.actorId],
+    ["requestId", context.requestId],
+    ["correlationId", context.correlationId],
+  ] as const) {
+    if (value !== undefined && value.trim().length === 0) {
+      throw new TypeError(`${field} must not be empty when provided`);
+    }
   }
 }
 
@@ -280,6 +298,13 @@ export async function createFeedbackTicketState(
   const context = {
     participantId: command.participantId,
     scopeId: command.scopeId,
+    ...(command.actorId === undefined ? {} : { actorId: command.actorId }),
+    ...(command.requestId === undefined
+      ? {}
+      : { requestId: command.requestId }),
+    ...(command.correlationId === undefined
+      ? {}
+      : { correlationId: command.correlationId }),
   } as const;
   assertContext(context);
   try {
@@ -297,6 +322,13 @@ export async function transitionFeedbackTicketState(
   const context = {
     participantId: command.participantId,
     scopeId: command.scopeId,
+    ...(command.actorId === undefined ? {} : { actorId: command.actorId }),
+    ...(command.requestId === undefined
+      ? {}
+      : { requestId: command.requestId }),
+    ...(command.correlationId === undefined
+      ? {}
+      : { correlationId: command.correlationId }),
   } as const;
   assertContext(context);
   assertVersion(command.version);

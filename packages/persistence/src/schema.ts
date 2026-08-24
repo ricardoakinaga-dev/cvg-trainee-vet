@@ -1049,6 +1049,7 @@ export const feedbackTickets = pgTable(
       .defaultNow(),
   },
   (table) => [
+    uniqueIndex("feedback_tickets_id_scope_idx").on(table.id, table.scopeId),
     index("feedback_tickets_participant_scope_status_idx").on(
       table.participantId,
       table.scopeId,
@@ -1074,9 +1075,7 @@ export const feedbackTicketHistory = pgTable(
   "feedback_ticket_history",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    ticketId: uuid("ticket_id")
-      .notNull()
-      .references(() => feedbackTickets.id, { onDelete: "restrict" }),
+    ticketId: uuid("ticket_id").notNull(),
     scopeId: uuid("scope_id").notNull(),
     ticketVersion: integer("ticket_version").notNull(),
     eventType: text("event_type").notNull(),
@@ -1087,6 +1086,11 @@ export const feedbackTicketHistory = pgTable(
       .defaultNow(),
   },
   (table) => [
+    foreignKey({
+      columns: [table.ticketId, table.scopeId],
+      foreignColumns: [feedbackTickets.id, feedbackTickets.scopeId],
+      name: "feedback_ticket_history_ticket_scope_fk",
+    }).onDelete("restrict"),
     uniqueIndex("feedback_ticket_history_version_idx").on(
       table.ticketId,
       table.ticketVersion,

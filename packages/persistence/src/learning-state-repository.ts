@@ -18,6 +18,7 @@ import type {
 
 import {
   activityAssignments,
+  auditEntries,
   appeals,
   assessmentWorkflows,
   feedbackTicketHistory,
@@ -89,6 +90,9 @@ export class LearningStatePersistenceConflictError extends Error {
 export type PersistenceContext = Readonly<{
   readonly participantId: string;
   readonly scopeId: string;
+  readonly actorId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
 }>;
 
 export type ScopedLearningAssignment = Readonly<{
@@ -346,6 +350,27 @@ function assertPlainText(value: string, field: string): void {
 function assertContext(context: PersistenceContext): void {
   assertNonEmpty(context.participantId, "participantId");
   assertNonEmpty(context.scopeId, "scopeId");
+}
+
+function assertFeedbackAuditContext(
+  context: PersistenceContext,
+): asserts context is PersistenceContext & {
+  readonly actorId: string;
+  readonly requestId: string;
+  readonly correlationId: string;
+} {
+  const fields = [
+    ["actorId", context.actorId],
+    ["requestId", context.requestId],
+    ["correlationId", context.correlationId],
+  ] as const;
+  for (const [field, value] of fields) {
+    if (value === undefined || !uuidPattern.test(value)) {
+      throw new LearningStateMappingError(
+        `${field} is required for feedback audit`,
+      );
+    }
+  }
 }
 
 function assertContextMatches(
@@ -1030,6 +1055,7 @@ export function createLearningStateRepository(
     state: FeedbackTicketState,
   ): Promise<ScopedFeedbackTicket> =>
     withContext(db, context, async (tx) => {
+      assertFeedbackAuditContext(context);
       const row = feedbackTicketStateToRow({ scopeId: context.scopeId, state });
       const now = new Date();
       let fromStatus: string | null = null;
@@ -1097,6 +1123,34 @@ export function createLearningStateRepository(
         fromStatus,
         toStatus: row.status,
         createdAt: now,
+      });
+      await tx.execute(
+        sql`select
+          set_config('cvg.audit_write', 'on', true),
+          set_config('cvg.audit_read', '', true),
+          set_config('cvg.audit_scope_id', ${context.scopeId}, true)`,
+      );
+      await tx.insert(auditEntries).values({
+        id: randomUUID(),
+        actorKind: "AUTHENTICATED",
+        principalId: context.actorId,
+        action:
+          row.version === 0
+            ? "FEEDBACK_TICKET_CREATED"
+            : "FEEDBACK_TICKET_STATUS_CHANGED",
+        resourceType: "feedback_ticket",
+        resourceId: row.id,
+        scopeId: context.scopeId,
+        outcome: "SUCCESS",
+        reasonCode:
+          row.version === 0
+            ? "feedback_ticket_created"
+            : "feedback_ticket_status_changed",
+        requestId: context.requestId,
+        correlationId: context.correlationId,
+        beforeHash: null,
+        afterHash: null,
+        occurredAt: now,
       });
       return feedbackTicketRowToState(saved);
     });

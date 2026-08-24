@@ -435,6 +435,14 @@ function isUuid(value: string): boolean {
   );
 }
 
+function requestCorrelationId(
+  request: ApiHttpRequest,
+  requestId: string,
+): string {
+  const supplied = request.headers?.["x-correlation-id"];
+  return supplied !== undefined && isUuid(supplied) ? supplied : requestId;
+}
+
 function errorResponse(
   code: ApiErrorCode,
   requestId: string,
@@ -2655,6 +2663,9 @@ async function handleCreateFeedbackTicket(
     type: parsed.data.type,
     description: parsed.data.description,
     createdAt: new Date().toISOString(),
+    actorId: principal.principalId,
+    requestId,
+    correlationId: requestCorrelationId(request, requestId),
   });
   return {
     status: 201,
@@ -2736,6 +2747,9 @@ async function handleTransitionFeedbackTicket(
     scopeId: parsed.data.scopeId,
     version: parsed.data.version,
     event: { type: parsed.data.event },
+    actorId: principal.principalId,
+    requestId,
+    correlationId: requestCorrelationId(request, requestId),
   });
   return {
     status: 200,

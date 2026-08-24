@@ -19,11 +19,12 @@ import {
   createLearningStateRepository,
   feedbackTicketRowToState,
   feedbackTicketStateToRow,
+  LearningStateMappingError,
   LearningStatePersistenceConflictError,
   learningAssignmentRowToState,
   learningAssignmentStateToRow,
 } from "./learning-state-repository.js";
-import { activityAssignments } from "./schema.js";
+import { activityAssignments, auditEntries } from "./schema.js";
 
 const participantId = "11111111-1111-4111-8111-111111111111";
 const reviewerId = "22222222-2222-4222-8222-222222222222";
@@ -31,7 +32,7 @@ const scopeId = "33333333-3333-4333-8333-333333333333";
 const now = "2026-08-10T12:00:00.000Z";
 
 type FakeBuilder = {
-  values: () => FakeBuilder;
+  values: (values?: unknown) => FakeBuilder;
   onConflictDoNothing: () => FakeBuilder;
   set: (values?: unknown) => FakeBuilder;
   where: () => FakeBuilder;
@@ -48,13 +49,14 @@ type FakeSelectBuilder = {
 
 type FakeTransaction = {
   execute: () => Promise<readonly []>;
-  insert: () => FakeBuilder;
+  insert: (table?: unknown) => FakeBuilder;
   update: (table?: unknown) => FakeBuilder;
   select: () => FakeSelectBuilder;
 };
 
 type FakeDatabaseOptions = Readonly<{
   readonly onUpdate?: (table: unknown, values: unknown) => void;
+  readonly onInsert?: (table: unknown, values: unknown) => void;
 }>;
 
 function createFakeDatabase(
@@ -66,7 +68,10 @@ function createFakeDatabase(
   const returningQueue = [...returningRows];
   const createBuilder = (table?: unknown): FakeBuilder => {
     const builder: FakeBuilder = {
-      values: () => builder,
+      values: (values?: unknown) => {
+        options.onInsert?.(table, values);
+        return builder;
+      },
       onConflictDoNothing: () => builder,
       set: (values) => {
         options.onUpdate?.(table, values);
@@ -89,7 +94,7 @@ function createFakeDatabase(
   };
   const tx: FakeTransaction = {
     execute: async () => [] as const,
-    insert: () => createBuilder(),
+    insert: (table) => createBuilder(table),
     update: (table) => createBuilder(table),
     select: () => createSelectBuilder(),
   };
@@ -339,7 +344,14 @@ describe("learning state persistence mappings", () => {
     const ticketId = "77777777-7777-4777-8777-777777777777";
     const appealId = "88888888-8888-4888-8888-888888888888";
     const itemId = "99999999-9999-4999-8999-999999999999";
-    const context = { participantId, scopeId };
+    const context = {
+      participantId,
+      scopeId,
+      actorId: participantId,
+      requestId: "44444444-4444-4444-8444-444444444444",
+      correlationId: "55555555-5555-4555-8555-555555555555",
+    };
+    const auditRows: unknown[] = [];
     const initialAssignment = createLearningAssignment({
       assignmentId,
       participantId,
@@ -410,6 +422,11 @@ describe("learning state persistence mappings", () => {
         [{ id: appealId }],
         [],
       ],
+      {
+        onInsert: (table, values) => {
+          if (table === auditEntries) auditRows.push(values);
+        },
+      },
     );
     const repository = createLearningStateRepository(fakeDatabase);
 
@@ -437,6 +454,29 @@ describe("learning state persistence mappings", () => {
     await expect(
       repository.saveAppeal(context, assignedAppeal),
     ).resolves.toMatchObject({ state: assignedAppeal });
+
+    expect(auditRows).toEqual([
+      expect.objectContaining({
+        actorKind: "AUTHENTICATED",
+        principalId: participantId,
+        action: "FEEDBACK_TICKET_CREATED",
+        resourceType: "feedback_ticket",
+        resourceId: ticketId,
+        scopeId,
+        requestId: "44444444-4444-4444-8444-444444444444",
+        correlationId: "55555555-5555-4555-8555-555555555555",
+      }),
+      expect.objectContaining({
+        actorKind: "AUTHENTICATED",
+        principalId: participantId,
+        action: "FEEDBACK_TICKET_STATUS_CHANGED",
+        resourceType: "feedback_ticket",
+        resourceId: ticketId,
+        scopeId,
+        requestId: "44444444-4444-4444-8444-444444444444",
+        correlationId: "55555555-5555-4555-8555-555555555555",
+      }),
+    ]);
 
     await expect(
       repository.findLearningAssignment(context, assignmentId),
@@ -467,7 +507,13 @@ describe("learning state persistence mappings", () => {
 
   it("synchronizes the status of an explicitly bound published activity", async () => {
     const assignmentId = "44444444-4444-4444-8444-444444444444";
-    const context = { participantId, scopeId };
+    const context = {
+      participantId,
+      scopeId,
+      actorId: participantId,
+      requestId: "44444444-4444-4444-8444-444444444444",
+      correlationId: "55555555-5555-4555-8555-555555555555",
+    };
     const initial = createLearningAssignment({
       assignmentId,
       participantId,
@@ -500,8 +546,31 @@ describe("learning state persistence mappings", () => {
     expect(activityUpdates).toEqual([{ status: "ATRIBUIDO" }]);
   });
 
+  it("fails closed when a feedback write has no audit actor context", async () => {
+    const ticket = createFeedbackTicket({
+      ticketId: "77777777-7777-4777-8777-777777777777",
+      participantId,
+      type: "CONTESTACAO",
+      description: "Relato sintético sem contexto de auditoria.",
+      createdAt: now,
+    });
+    const repository = createLearningStateRepository(
+      createFakeDatabase([], [[{ id: ticket.ticketId }]]),
+    );
+
+    await expect(
+      repository.saveFeedbackTicket({ participantId, scopeId }, ticket),
+    ).rejects.toBeInstanceOf(LearningStateMappingError);
+  });
+
   it("surfaces insert, optimistic-update and read persistence conflicts", async () => {
-    const context = { participantId, scopeId };
+    const context = {
+      participantId,
+      scopeId,
+      actorId: participantId,
+      requestId: "44444444-4444-4444-8444-444444444444",
+      correlationId: "55555555-5555-4555-8555-555555555555",
+    };
     const workflow = createAssessmentWorkflowResult({
       resultId: "55555555-5555-4555-8555-555555555555",
       attemptId: "66666666-6666-4666-8666-666666666666",
