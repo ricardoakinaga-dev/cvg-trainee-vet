@@ -14,6 +14,7 @@ describe("appeal review transition contract", () => {
         version: 1,
         event: "DECIDIR",
         decision: "MANTER_RESULTADO",
+        decisionRationale: "Decisão sintética.",
       }),
     ).toEqual({
       appealId,
@@ -21,6 +22,7 @@ describe("appeal review transition contract", () => {
       version: 1,
       event: "DECIDIR",
       decision: "MANTER_RESULTADO",
+      decisionRationale: "Decisão sintética.",
     });
     expect(
       appealReviewTransitionRequestSchema.parse({

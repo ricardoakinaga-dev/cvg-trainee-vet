@@ -73,6 +73,9 @@ export function createAppealReviewQueueRepository(
             status: appeals.status,
             reviewerId: appeals.reviewerId,
             decision: appeals.decision,
+            decisionRationale: appeals.decisionRationale,
+            decisionAt: appeals.decisionAt,
+            decisionCorrelationId: appeals.decisionCorrelationId,
             updatedAt: appeals.updatedAt,
           })
           .from(appeals)

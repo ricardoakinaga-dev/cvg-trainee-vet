@@ -109,6 +109,9 @@ describe("appeal review queue use case", () => {
           status: "DECIDIDA" as const,
           reviewerId,
           decision: "MANTER_RESULTADO" as const,
+          decisionRationale: "A decisão sintética mantém o resultado.",
+          decisionAt: "2026-08-23T20:00:30.000Z",
+          decisionCorrelationId: "88888888-8888-4888-8888-888888888888",
         },
       },
     ]);
@@ -131,6 +134,9 @@ describe("appeal review queue use case", () => {
     expect(result.items[0]).toMatchObject({
       reviewerId,
       decision: "MANTER_RESULTADO",
+      decisionRationale: "A decisão sintética mantém o resultado.",
+      decisionAt: "2026-08-23T20:00:30.000Z",
+      decisionCorrelationId: "88888888-8888-4888-8888-888888888888",
     });
 
     await expect(

@@ -956,6 +956,9 @@ export const appeals = pgTable(
       onDelete: "restrict",
     }),
     decision: text("decision"),
+    decisionRationale: text("decision_rationale"),
+    decisionAt: timestamp("decision_at", { withTimezone: true }),
+    decisionCorrelationId: uuid("decision_correlation_id"),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -982,7 +985,7 @@ export const appeals = pgTable(
     ),
     check(
       "appeals_decision_check",
-      sql`((${table.status} in ('DECIDIDA', 'RECALCULO_PENDENTE', 'ENCERRADA') and ${table.decision} is not null and ${table.decision} in ('MANTER_RESULTADO', 'ANULAR_ITEM', 'ALTERAR_RESULTADO')) or (${table.status} in ('ABERTA', 'EM_REVISAO') and ${table.decision} is null))`,
+      sql`((${table.status} in ('DECIDIDA', 'RECALCULO_PENDENTE', 'ENCERRADA') and ${table.decision} is not null and ${table.decision} in ('MANTER_RESULTADO', 'ANULAR_ITEM', 'ALTERAR_RESULTADO') and ${table.decisionRationale} is not null and length(trim(${table.decisionRationale})) between 1 and 10000 and ${table.decisionRationale} not like '%<%>%' and ${table.decisionAt} is not null and ${table.decisionCorrelationId} is not null) or (${table.status} in ('ABERTA', 'EM_REVISAO') and ${table.decision} is null and ${table.decisionRationale} is null and ${table.decisionAt} is null and ${table.decisionCorrelationId} is null))`,
     ),
     check(
       "appeals_reviewer_check",

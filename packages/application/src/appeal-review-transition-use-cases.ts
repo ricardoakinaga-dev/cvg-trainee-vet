@@ -9,7 +9,11 @@ import { ApplicationError } from "./errors.js";
 
 export type AppealReviewTransitionEvent =
   | { readonly type: "ATRIBUIR_REVISOR" }
-  | { readonly type: "DECIDIR"; readonly decision: AppealDecision }
+  | {
+      readonly type: "DECIDIR";
+      readonly decision: AppealDecision;
+      readonly decisionRationale: string;
+    }
   | { readonly type: "SOLICITAR_RECALCULO" };
 
 export type AppealReviewTransitionCommand = Readonly<{
@@ -17,7 +21,12 @@ export type AppealReviewTransitionCommand = Readonly<{
   readonly scopeId: string;
   readonly actorId: string;
   readonly version: number;
+  readonly correlationId: string;
   readonly event: AppealReviewTransitionEvent;
+}>;
+
+export type AppealReviewTransitionOptions = Readonly<{
+  readonly now?: () => string;
 }>;
 
 export type AppealReviewTransitionContext = Readonly<{
@@ -55,6 +64,34 @@ function assertVersion(version: number): void {
   }
 }
 
+function assertPlainText(
+  value: unknown,
+  field: string,
+): asserts value is string {
+  if (
+    typeof value !== "string" ||
+    value.trim().length === 0 ||
+    value.length > 10_000 ||
+    /<[^>]*>/u.test(value)
+  ) {
+    throw new ApplicationError("validation_error", `${field} is invalid`);
+  }
+}
+
+function decisionTimestamp(options: AppealReviewTransitionOptions): string {
+  const value = (options.now ?? (() => new Date().toISOString()))();
+  if (
+    typeof value !== "string" ||
+    Number.isNaN(Date.parse(value)) ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/u.test(
+      value,
+    )
+  ) {
+    throw new ApplicationError("validation_error", "decisionAt is invalid");
+  }
+  return value;
+}
+
 function assertCurrentVersion(actual: number, expected: number): void {
   if (actual !== expected) {
     throw new ApplicationError("state_conflict", "Learning state changed");
@@ -75,6 +112,7 @@ function mapTransitionError(error: unknown): never {
 function toDomainEvent(
   command: AppealReviewTransitionCommand,
   persisted: AppealState,
+  decidedAt: string | undefined,
 ): AppealEvent {
   if (command.event.type === "ATRIBUIR_REVISOR") {
     return { type: "ATRIBUIR_REVISOR", reviewerId: command.actorId };
@@ -86,7 +124,16 @@ function toDomainEvent(
     );
   }
   if (command.event.type === "DECIDIR") {
-    return { type: "DECIDIR", decision: command.event.decision };
+    if (decidedAt === undefined) {
+      throw new ApplicationError("validation_error", "decisionAt is required");
+    }
+    return {
+      type: "DECIDIR",
+      decision: command.event.decision,
+      rationale: command.event.decisionRationale,
+      decidedAt,
+      correlationId: command.correlationId,
+    };
   }
   if (command.event.type === "SOLICITAR_RECALCULO") {
     return { type: "SOLICITAR_RECALCULO" };
@@ -97,11 +144,16 @@ function toDomainEvent(
 export async function transitionAppealReviewState(
   command: AppealReviewTransitionCommand,
   repository: AppealReviewTransitionRepositoryPort,
+  options: AppealReviewTransitionOptions = {},
 ): Promise<AppealState> {
   assertUuid(command.appealId, "appealId");
   assertUuid(command.scopeId, "scopeId");
   assertUuid(command.actorId, "actorId");
+  assertUuid(command.correlationId, "correlationId");
   assertVersion(command.version);
+  if (command.event.type === "DECIDIR") {
+    assertPlainText(command.event.decisionRationale, "decisionRationale");
+  }
 
   const context = Object.freeze({ scopeId: command.scopeId });
   const persisted = await repository.findAppealForReview(
@@ -114,9 +166,11 @@ export async function transitionAppealReviewState(
   assertCurrentVersion(persisted.state.version, command.version);
 
   try {
+    const decidedAt =
+      command.event.type === "DECIDIR" ? decisionTimestamp(options) : undefined;
     const nextState = transitionAppeal(
       persisted.state,
-      toDomainEvent(command, persisted.state),
+      toDomainEvent(command, persisted.state, decidedAt),
     );
     return (await repository.saveAppealForReview(context, nextState)).state;
   } catch (error) {

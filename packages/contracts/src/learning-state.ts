@@ -253,6 +253,7 @@ export const appealReviewTransitionRequestSchema = z
     decision: z
       .enum(["MANTER_RESULTADO", "ANULAR_ITEM", "ALTERAR_RESULTADO"])
       .optional(),
+    decisionRationale: plainTextSchema.optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -263,11 +264,25 @@ export const appealReviewTransitionRequestSchema = z
         message: "decision is required",
       });
     }
+    if (value.event === "DECIDIR" && value.decisionRationale === undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["decisionRationale"],
+        message: "decision rationale is required",
+      });
+    }
     if (value.event !== "DECIDIR" && value.decision !== undefined) {
       context.addIssue({
         code: "custom",
         path: ["decision"],
         message: "decision is only valid for decision events",
+      });
+    }
+    if (value.event !== "DECIDIR" && value.decisionRationale !== undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["decisionRationale"],
+        message: "decision rationale is only valid for decision events",
       });
     }
   });

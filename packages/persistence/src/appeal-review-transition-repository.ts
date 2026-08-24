@@ -42,6 +42,9 @@ const appealReviewColumns = {
   status: appeals.status,
   reviewerId: appeals.reviewerId,
   decision: appeals.decision,
+  decisionRationale: appeals.decisionRationale,
+  decisionAt: appeals.decisionAt,
+  decisionCorrelationId: appeals.decisionCorrelationId,
   updatedAt: appeals.updatedAt,
 } as const;
 
@@ -105,6 +108,9 @@ export function createAppealReviewTransitionRepository(
             version: row.version,
             reviewerId: row.reviewerId,
             decision: row.decision,
+            decisionRationale: row.decisionRationale,
+            decisionAt: row.decisionAt,
+            decisionCorrelationId: row.decisionCorrelationId,
             updatedAt: new Date(),
           })
           .where(

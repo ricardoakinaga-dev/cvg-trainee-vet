@@ -85,6 +85,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "ABERTA",
             reviewerId: null,
             decision: null,
+            decisionRationale: null,
+            decisionAt: null,
+            decisionCorrelationId: null,
           },
           {
             id: appealIds[1]!,
@@ -99,6 +102,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "EM_REVISAO",
             reviewerId,
             decision: null,
+            decisionRationale: null,
+            decisionAt: null,
+            decisionCorrelationId: null,
           },
           {
             id: appealIds[2]!,
@@ -113,6 +119,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "ABERTA",
             reviewerId: null,
             decision: null,
+            decisionRationale: null,
+            decisionAt: null,
+            decisionCorrelationId: null,
           },
         ]);
 
@@ -149,6 +158,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           status: "ENCERRADA",
           reviewerId,
           decision: "MANTER_RESULTADO",
+          decisionRationale: "A decisão sintética mantém o resultado.",
+          decisionAt: new Date("2026-08-24T12:01:00.000Z"),
+          decisionCorrelationId: randomUUID(),
         });
         const closedQueue = await repository.listAppeals({
           scopeId,

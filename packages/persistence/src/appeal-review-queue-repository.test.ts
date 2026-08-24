@@ -22,6 +22,9 @@ const row = {
   status: "ABERTA",
   reviewerId: null,
   decision: null,
+  decisionRationale: null,
+  decisionAt: null,
+  decisionCorrelationId: null,
   updatedAt: new Date("2026-08-23T20:00:00.000Z"),
 };
 

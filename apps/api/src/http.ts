@@ -740,6 +740,13 @@ function internalAppealReviewQueueProjection(
       version: item.version,
       ...(item.reviewerId === undefined ? {} : { reviewerId: item.reviewerId }),
       ...(item.decision === undefined ? {} : { decision: item.decision }),
+      ...(item.decisionRationale === undefined
+        ? {}
+        : { decisionRationale: item.decisionRationale }),
+      ...(item.decisionAt === undefined ? {} : { decisionAt: item.decisionAt }),
+      ...(item.decisionCorrelationId === undefined
+        ? {}
+        : { decisionCorrelationId: item.decisionCorrelationId }),
     })),
   });
 }
@@ -2230,12 +2237,16 @@ async function handleTransitionAppeal(
     ...(parsed.data.decision === undefined
       ? {}
       : { decision: parsed.data.decision }),
+    ...(parsed.data.decisionRationale === undefined
+      ? {}
+      : { decisionRationale: parsed.data.decisionRationale }),
   } as AppealReviewTransitionCommand["event"];
   const state = await dependencies.transitionAppealReview({
     appealId,
     scopeId: parsed.data.scopeId,
     version: parsed.data.version,
     actorId: principal.principalId,
+    correlationId: requestId,
     event,
   });
   return {

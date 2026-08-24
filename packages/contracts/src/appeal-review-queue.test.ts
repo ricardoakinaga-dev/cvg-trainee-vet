@@ -60,7 +60,18 @@ describe("appeal review queue contracts", () => {
       scopeId,
       generatedAt: "2026-08-23T20:01:00.000Z",
       filters: { scopeId, limit: 50 },
-      items: [item],
+      items: [
+        {
+          ...item,
+          status: "DECIDIDA",
+          version: 2,
+          reviewerId: "66666666-6666-4666-8666-666666666666",
+          decision: "MANTER_RESULTADO",
+          decisionRationale: "Rationale interna sintética.",
+          decisionAt: "2026-08-23T20:00:30.000Z",
+          decisionCorrelationId: "77777777-7777-4777-8777-777777777777",
+        },
+      ],
     });
     expect(projection.items[0]).toMatchObject({
       appealId,

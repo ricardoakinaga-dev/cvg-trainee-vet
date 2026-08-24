@@ -153,6 +153,9 @@ export type AppealRowShape = Readonly<{
   readonly status: string;
   readonly reviewerId: string | null;
   readonly decision: string | null;
+  readonly decisionRationale: string | null;
+  readonly decisionAt: Date | null;
+  readonly decisionCorrelationId: string | null;
   readonly updatedAt: Date;
 }>;
 
@@ -169,6 +172,9 @@ export type AppealInsertRow = Readonly<{
   readonly status: AppealStatus;
   readonly reviewerId: string | null;
   readonly decision: AppealDecision | null;
+  readonly decisionRationale: string | null;
+  readonly decisionAt: Date | null;
+  readonly decisionCorrelationId: string | null;
 }>;
 
 const assignmentStatuses: readonly LearningAssignmentStatus[] = [
@@ -236,6 +242,8 @@ const appealDecisions: readonly AppealDecision[] = [
   "ANULAR_ITEM",
   "ALTERAR_RESULTADO",
 ];
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 function assertNonEmpty(
   value: unknown,
@@ -552,8 +560,41 @@ export function appealStateToRow(input: ScopedAppeal): AppealInsertRow {
   ) {
     throw new LearningStateMappingError("appeal decision is required");
   }
+  const decisionMetadata = [
+    input.state.decisionRationale,
+    input.state.decisionAt,
+    input.state.decisionCorrelationId,
+  ];
+  const decided = ["DECIDIDA", "RECALCULO_PENDENTE", "ENCERRADA"].includes(
+    input.state.status,
+  );
+  if (decided && decisionMetadata.some((value) => value === undefined)) {
+    throw new LearningStateMappingError("appeal decision metadata is required");
+  }
+  if (!decided && decisionMetadata.some((value) => value !== undefined)) {
+    throw new LearningStateMappingError(
+      "appeal decision metadata is only valid after deciding",
+    );
+  }
   if (input.state.decision !== undefined) {
     assertOneOf(input.state.decision, appealDecisions, "decision");
+  }
+  const decisionRationale = input.state.decisionRationale ?? null;
+  if (decisionRationale !== null) {
+    assertPlainText(decisionRationale, "decisionRationale");
+  }
+  const decisionAt =
+    input.state.decisionAt === undefined
+      ? null
+      : assertTimestamp(input.state.decisionAt, "decisionAt");
+  const decisionCorrelationId = input.state.decisionCorrelationId ?? null;
+  if (decisionCorrelationId !== null) {
+    assertNonEmpty(decisionCorrelationId, "decisionCorrelationId");
+    if (!uuidPattern.test(decisionCorrelationId)) {
+      throw new LearningStateMappingError(
+        "decisionCorrelationId must be a UUID",
+      );
+    }
   }
   return Object.freeze({
     id: input.state.appealId,
@@ -568,6 +609,9 @@ export function appealStateToRow(input: ScopedAppeal): AppealInsertRow {
     status: input.state.status,
     reviewerId: input.state.reviewerId ?? null,
     decision: input.state.decision ?? null,
+    decisionRationale,
+    decisionAt,
+    decisionCorrelationId,
   });
 }
 
@@ -597,8 +641,40 @@ export function appealRowToState(row: AppealRowShape): ScopedAppeal {
   ) {
     throw new LearningStateMappingError("appeal decision is required");
   }
+  const decisionMetadata = [
+    row.decisionRationale,
+    row.decisionAt,
+    row.decisionCorrelationId,
+  ];
+  const decided = ["DECIDIDA", "RECALCULO_PENDENTE", "ENCERRADA"].includes(
+    row.status,
+  );
+  if (decided && decisionMetadata.some((value) => value === null)) {
+    throw new LearningStateMappingError("appeal decision metadata is required");
+  }
+  if (!decided && decisionMetadata.some((value) => value !== null)) {
+    throw new LearningStateMappingError(
+      "appeal decision metadata is only valid after deciding",
+    );
+  }
   if (row.decision !== null)
     assertOneOf(row.decision, appealDecisions, "decision");
+  const decisionRationale = row.decisionRationale;
+  if (decisionRationale !== null) {
+    assertPlainText(decisionRationale, "decisionRationale");
+  }
+  const decisionAt =
+    row.decisionAt === null
+      ? undefined
+      : dateToIso(row.decisionAt, "decisionAt");
+  if (row.decisionCorrelationId !== null) {
+    assertNonEmpty(row.decisionCorrelationId, "decisionCorrelationId");
+    if (!uuidPattern.test(row.decisionCorrelationId)) {
+      throw new LearningStateMappingError(
+        "decisionCorrelationId must be a UUID",
+      );
+    }
+  }
   dateToIso(row.updatedAt, "updatedAt");
   return Object.freeze({
     scopeId: row.scopeId,
@@ -614,6 +690,11 @@ export function appealRowToState(row: AppealRowShape): ScopedAppeal {
       status: row.status,
       ...(row.reviewerId === null ? {} : { reviewerId: row.reviewerId }),
       ...(row.decision === null ? {} : { decision: row.decision }),
+      ...(decisionRationale === null ? {} : { decisionRationale }),
+      ...(decisionAt === undefined ? {} : { decisionAt }),
+      ...(row.decisionCorrelationId === null
+        ? {}
+        : { decisionCorrelationId: row.decisionCorrelationId }),
     }),
   });
 }
@@ -930,6 +1011,9 @@ export function createLearningStateRepository(
             version: row.version,
             reviewerId: row.reviewerId,
             decision: row.decision,
+            decisionRationale: row.decisionRationale,
+            decisionAt: row.decisionAt,
+            decisionCorrelationId: row.decisionCorrelationId,
             updatedAt: now,
           })
           .where(

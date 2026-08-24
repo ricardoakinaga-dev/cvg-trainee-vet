@@ -18,11 +18,20 @@ export interface AppealState {
   readonly status: AppealStatus;
   readonly reviewerId?: string;
   readonly decision?: AppealDecision;
+  readonly decisionRationale?: string;
+  readonly decisionAt?: string;
+  readonly decisionCorrelationId?: string;
 }
 
 export type AppealEvent =
   | { readonly type: "ATRIBUIR_REVISOR"; readonly reviewerId: string }
-  | { readonly type: "DECIDIR"; readonly decision: AppealDecision }
+  | {
+      readonly type: "DECIDIR";
+      readonly decision: AppealDecision;
+      readonly rationale: string;
+      readonly decidedAt: string;
+      readonly correlationId: string;
+    }
   | { readonly type: "SOLICITAR_RECALCULO" }
   | { readonly type: "CONCLUIR_RECALCULO" };
 
@@ -105,6 +114,32 @@ function assertValidState(state: AppealState): void {
   ) {
     throw new AppealDomainError("appeal decision is required");
   }
+  const decisionMetadata = [
+    state.decisionRationale,
+    state.decisionAt,
+    state.decisionCorrelationId,
+  ];
+  const requiresDecisionMetadata = [
+    "DECIDIDA",
+    "RECALCULO_PENDENTE",
+    "ENCERRADA",
+  ].includes(state.status);
+  if (requiresDecisionMetadata) {
+    if (state.decisionRationale === undefined) {
+      throw new AppealDomainError("appeal decision rationale is required");
+    }
+    if (!isValidIsoTimestamp(state.decisionAt)) {
+      throw new AppealDomainError(
+        "appeal decisionAt must be a valid timestamp",
+      );
+    }
+    assertNonEmpty(state.decisionCorrelationId, "decisionCorrelationId");
+    assertPlainText(state.decisionRationale, "decisionRationale");
+  } else if (decisionMetadata.some((value) => value !== undefined)) {
+    throw new AppealDomainError(
+      "appeal decision metadata is only valid after deciding",
+    );
+  }
 }
 
 const transitions: Readonly<
@@ -167,6 +202,13 @@ export function transitionAppeal(
   ) {
     throw new AppealDomainError("appeal decision is not supported");
   }
+  if (event.type === "DECIDIR") {
+    assertPlainText(event.rationale, "decisionRationale");
+    if (!isValidIsoTimestamp(event.decidedAt)) {
+      throw new AppealDomainError("decisionAt must be a valid timestamp");
+    }
+    assertNonEmpty(event.correlationId, "decisionCorrelationId");
+  }
   const nextStatus = transitions[state.status][event.type];
   if (nextStatus === undefined) {
     throw new AppealDomainError(
@@ -180,6 +222,13 @@ export function transitionAppeal(
     ...(event.type === "ATRIBUIR_REVISOR"
       ? { reviewerId: event.reviewerId }
       : {}),
-    ...(event.type === "DECIDIR" ? { decision: event.decision } : {}),
+    ...(event.type === "DECIDIR"
+      ? {
+          decision: event.decision,
+          decisionRationale: event.rationale,
+          decisionAt: event.decidedAt,
+          decisionCorrelationId: event.correlationId,
+        }
+      : {}),
   });
 }

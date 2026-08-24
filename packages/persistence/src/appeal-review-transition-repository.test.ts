@@ -26,6 +26,9 @@ function row(status: string, version: number, assignedReviewer: string | null) {
     status,
     reviewerId: assignedReviewer,
     decision: null,
+    decisionRationale: null,
+    decisionAt: null,
+    decisionCorrelationId: null,
     updatedAt: new Date(now),
   };
 }
@@ -153,6 +156,81 @@ describe("appeal review transition persistence", () => {
     await expect(
       repository.findAppealForReview({ scopeId }, " "),
     ).rejects.toThrow("appealId");
+  });
+
+  it("persists decision rationale and server metadata within the transition allowlist", async () => {
+    const assigned = transitionAppeal(
+      createAppeal({
+        appealId,
+        participantId,
+        attemptId,
+        itemId,
+        justification: "Justificativa sintética de teste.",
+        createdAt: now,
+      }),
+      { type: "ATRIBUIR_REVISOR", reviewerId },
+    );
+    const decided = transitionAppeal(assigned, {
+      type: "DECIDIR",
+      decision: "MANTER_RESULTADO",
+      rationale: "A decisão sintética mantém o resultado.",
+      decidedAt: now,
+      correlationId: "77777777-7777-4777-8777-777777777777",
+    });
+    let updateValues: Record<string, unknown> | undefined;
+    const executor = {
+      execute: async () => [],
+      update: () => {
+        const builder = {
+          set(values: Record<string, unknown>) {
+            updateValues = values;
+            return builder;
+          },
+          where() {
+            return builder;
+          },
+          returning: async () => [{ id: appealId }],
+        };
+        return builder;
+      },
+      select: () => {
+        const builder = {
+          from: () => builder,
+          where: () => builder,
+          limit: async () => [
+            {
+              ...row("DECIDIDA", 2, reviewerId),
+              decision: "MANTER_RESULTADO",
+              decisionRationale: "A decisão sintética mantém o resultado.",
+              decisionAt: new Date(now),
+              decisionCorrelationId: "77777777-7777-4777-8777-777777777777",
+            },
+          ],
+        };
+        return builder;
+      },
+      transaction: async (work: (current: unknown) => Promise<unknown>) =>
+        work(executor),
+    };
+
+    const repository = createAppealReviewTransitionRepository(
+      executor as never,
+    );
+    await repository.saveAppealForReview({ scopeId }, decided);
+
+    expect(updateValues).toMatchObject({
+      status: "DECIDIDA",
+      version: 2,
+      reviewerId,
+      decision: "MANTER_RESULTADO",
+      decisionRationale: "A decisão sintética mantém o resultado.",
+      decisionAt: new Date(now),
+      decisionCorrelationId: "77777777-7777-4777-8777-777777777777",
+    });
+    expect(updateValues).not.toHaveProperty("participantId");
+    expect(updateValues).not.toHaveProperty("attemptId");
+    expect(updateValues).not.toHaveProperty("itemId");
+    expect(updateValues).not.toHaveProperty("justification");
   });
 
   it("returns null for an invisible row and maps an optimistic update miss", async () => {

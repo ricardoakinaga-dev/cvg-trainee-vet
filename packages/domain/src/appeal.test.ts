@@ -39,6 +39,9 @@ describe("appeal workflow", () => {
     const decided = transitionAppeal(review, {
       type: "DECIDIR",
       decision: "ANULAR_ITEM",
+      rationale: "Decisão sintética baseada na revisão independente.",
+      decidedAt: "2026-08-07T17:01:00.000Z",
+      correlationId: "correlation-1",
     });
     const pendingRecalculation = transitionAppeal(decided, {
       type: "SOLICITAR_RECALCULO",
@@ -61,6 +64,9 @@ describe("appeal workflow", () => {
       transitionAppeal(createAppeal(input), {
         type: "DECIDIR",
         decision: "MANTER_RESULTADO",
+        rationale: "Decisão sintética.",
+        decidedAt: "2026-08-07T17:01:00.000Z",
+        correlationId: "correlation-2",
       }),
     ).toThrow();
   });
@@ -73,6 +79,9 @@ describe("appeal workflow", () => {
     const decided = transitionAppeal(review, {
       type: "DECIDIR",
       decision: "MANTER_RESULTADO",
+      rationale: "Decisão sintética.",
+      decidedAt: "2026-08-07T17:01:00.000Z",
+      correlationId: "correlation-3",
     });
 
     expect(() =>

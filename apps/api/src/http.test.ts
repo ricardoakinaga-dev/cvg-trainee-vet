@@ -2775,6 +2775,7 @@ describe("API HTTP boundary", () => {
       scopeId,
       version: 0,
       actorId: reviewerId,
+      correlationId: "request-123",
       event: { type: "ATRIBUIR_REVISOR" },
     });
     expect(JSON.stringify(response.body)).not.toContain("reviewerId");
@@ -2843,6 +2844,29 @@ describe("API HTTP boundary", () => {
     expect(directClosure.status).toBe(422);
     expect(transitionAppealReview).not.toHaveBeenCalled();
 
+    const clientMetadata = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 1,
+          event: "DECIDIR",
+          decision: "MANTER_RESULTADO",
+          decisionRationale: "A decisão sintética mantém o resultado.",
+          decisionAt: "2026-08-24T12:01:00.000Z",
+          decisionCorrelationId: "99999999-9999-4999-8999-999999999999",
+        },
+      },
+      dependencies({
+        transitionAppealReview,
+        authenticate: async () => staff,
+      }),
+    );
+    expect(clientMetadata.status).toBe(422);
+    expect(transitionAppealReview).not.toHaveBeenCalled();
+
     const forbiddenTransition = vi.fn(async () => {
       throw new ApplicationError(
         "forbidden",
@@ -2859,6 +2883,7 @@ describe("API HTTP boundary", () => {
           version: 1,
           event: "DECIDIR",
           decision: "MANTER_RESULTADO",
+          decisionRationale: "A decisão sintética mantém o resultado.",
         },
       },
       dependencies({
@@ -2872,7 +2897,12 @@ describe("API HTTP boundary", () => {
       scopeId,
       version: 1,
       actorId: reviewerId,
-      event: { type: "DECIDIR", decision: "MANTER_RESULTADO" },
+      correlationId: "request-123",
+      event: {
+        type: "DECIDIR",
+        decision: "MANTER_RESULTADO",
+        decisionRationale: "A decisão sintética mantém o resultado.",
+      },
     });
 
     const staleTransition = vi.fn(async () => {
@@ -2895,6 +2925,72 @@ describe("API HTTP boundary", () => {
       }),
     );
     expect(stale.status).toBe(409);
+  });
+
+  it("accepts internal decision rationale, binds request correlation, and keeps it out of the public projection", async () => {
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const appealId = "66666666-6666-4666-8666-666666666666";
+    const reviewerId = "88888888-8888-4888-8888-888888888888";
+    const correlationId = "99999999-9999-4999-8999-999999999999";
+    const decisionRationale = "A revisão sintética fundamenta a decisão.";
+    const transitionAppealReview = vi.fn(async () => ({
+      appealId,
+      participantId: "22222222-2222-4222-8222-222222222222",
+      attemptId: "44444444-4444-4444-8444-444444444444",
+      itemId: "77777777-7777-4777-8777-777777777777",
+      justification: "Justificativa sintética.",
+      createdAt: "2026-08-10T17:00:00.000Z",
+      dueAt: "2026-08-19T17:00:00.000Z",
+      status: "DECIDIDA" as const,
+      version: 2,
+      reviewerId,
+      decision: "ANULAR_ITEM" as const,
+      decisionRationale,
+      decisionAt: "2026-08-24T12:01:00.000Z",
+      decisionCorrelationId: correlationId,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 1,
+          event: "DECIDIR",
+          decision: "ANULAR_ITEM",
+          decisionRationale,
+        },
+      },
+      dependencies({
+        requestIdFactory: () => correlationId,
+        transitionAppealReview,
+        authenticate: async () => ({
+          principalId: reviewerId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(transitionAppealReview).toHaveBeenCalledWith({
+      appealId,
+      scopeId,
+      version: 1,
+      actorId: reviewerId,
+      correlationId,
+      event: {
+        type: "DECIDIR",
+        decision: "ANULAR_ITEM",
+        decisionRationale,
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("decisionRationale");
+    expect(
+      JSON.stringify((response.body as { data?: unknown }).data),
+    ).not.toContain(correlationId);
   });
 
   it("allows only the configured internal correction route and projects no internal actor data", async () => {

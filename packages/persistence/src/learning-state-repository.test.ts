@@ -165,6 +165,9 @@ function appealRow(
     version,
     reviewerId,
     decision,
+    decisionRationale: null,
+    decisionAt: null,
+    decisionCorrelationId: null,
     updatedAt: new Date(now),
   };
 }
@@ -297,7 +300,13 @@ describe("learning state persistence mappings", () => {
         }),
         { type: "ATRIBUIR_REVISOR", reviewerId },
       ),
-      { type: "DECIDIR", decision: "MANTER_RESULTADO" },
+      {
+        type: "DECIDIR",
+        decision: "MANTER_RESULTADO",
+        rationale: "A decisão sintética mantém o resultado.",
+        decidedAt: "2026-08-10T12:01:00.000Z",
+        correlationId: "33333333-3333-4333-8333-333333333333",
+      },
     );
     const row = appealStateToRow({ scopeId, state: decided });
 

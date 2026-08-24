@@ -305,6 +305,7 @@ export type {
   AppealReviewTransitionCommand,
   AppealReviewTransitionContext,
   AppealReviewTransitionEvent,
+  AppealReviewTransitionOptions,
   AppealReviewTransitionRepositoryPort,
   ScopedAppealReview,
 } from "./appeal-review-transition-use-cases.js";

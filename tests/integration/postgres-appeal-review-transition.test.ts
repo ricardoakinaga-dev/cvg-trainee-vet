@@ -43,6 +43,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const attemptId = randomUUID();
       const appealId = randomUUID();
       const itemId = randomUUID();
+      const decisionCorrelationId = randomUUID();
       const createdAt = new Date("2026-08-24T12:00:00.000Z");
 
       try {
@@ -86,6 +87,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           status: "ABERTA",
           reviewerId: null,
           decision: null,
+          decisionRationale: null,
+          decisionAt: null,
+          decisionCorrelationId: null,
         });
 
         const repository = createAppealReviewTransitionRepository(database.db);
@@ -96,6 +100,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               scopeId,
               actorId: reviewerId,
               version: 0,
+              correlationId: randomUUID(),
               event: { type: "ATRIBUIR_REVISOR" },
             },
             repository,
@@ -113,7 +118,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               scopeId,
               actorId: reviewerId,
               version: 1,
-              event: { type: "DECIDIR", decision: "MANTER_RESULTADO" },
+              correlationId: decisionCorrelationId,
+              event: {
+                type: "DECIDIR",
+                decision: "MANTER_RESULTADO",
+                decisionRationale: "A decisão sintética mantém o resultado.",
+              },
             },
             repository,
           ),
@@ -130,6 +140,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               scopeId,
               actorId: reviewerId,
               version: 2,
+              correlationId: randomUUID(),
               event: { type: "SOLICITAR_RECALCULO" },
             },
             repository,
@@ -151,13 +162,21 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         }
 
         const persisted = await admin.db
-          .select({ status: appeals.status, version: appeals.version })
+          .select({
+            status: appeals.status,
+            version: appeals.version,
+            decisionRationale: appeals.decisionRationale,
+            decisionAt: appeals.decisionAt,
+            decisionCorrelationId: appeals.decisionCorrelationId,
+          })
           .from(appeals)
           .where(eq(appeals.id, appealId))
           .limit(1);
         expect(persisted[0]).toMatchObject({
           status: "RECALCULO_PENDENTE",
           version: 3,
+          decisionRationale: "A decisão sintética mantém o resultado.",
+          decisionCorrelationId,
         });
       } finally {
         await admin.db.delete(appeals).where(eq(appeals.id, appealId));

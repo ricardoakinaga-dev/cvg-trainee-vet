@@ -28,6 +28,9 @@ export type AppealReviewQueueItem = Readonly<{
   readonly version: number;
   readonly reviewerId?: string;
   readonly decision?: AppealState["decision"];
+  readonly decisionRationale?: string;
+  readonly decisionAt?: string;
+  readonly decisionCorrelationId?: string;
 }>;
 
 export type AppealReviewQueueState = Readonly<{
@@ -118,6 +121,13 @@ function freezeItem(state: AppealState): AppealReviewQueueItem {
     version: state.version,
     ...(state.reviewerId === undefined ? {} : { reviewerId: state.reviewerId }),
     ...(state.decision === undefined ? {} : { decision: state.decision }),
+    ...(state.decisionRationale === undefined
+      ? {}
+      : { decisionRationale: state.decisionRationale }),
+    ...(state.decisionAt === undefined ? {} : { decisionAt: state.decisionAt }),
+    ...(state.decisionCorrelationId === undefined
+      ? {}
+      : { decisionCorrelationId: state.decisionCorrelationId }),
   });
 }
 
