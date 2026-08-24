@@ -51,6 +51,7 @@ export {
   auditEntries,
   assessmentWorkflows,
   feedbackTickets,
+  feedbackTicketHistory,
   knowledgeDocuments,
   learningAssignments,
   sessions,
@@ -63,6 +64,13 @@ export {
   rateLimitBuckets,
 } from "./schema.js";
 export type { KnowledgeDocument, NewKnowledgeDocument } from "./schema.js";
+export {
+  createFeedbackTicketHistoryRepository,
+  feedbackTicketHistoryRowToEvent,
+} from "./feedback-ticket-history-repository.js";
+export type {
+  FeedbackTicketHistoryRowShape,
+} from "./feedback-ticket-history-repository.js";
 export {
   createAttemptUseCaseDependencies,
   createActivityScopeResolver,

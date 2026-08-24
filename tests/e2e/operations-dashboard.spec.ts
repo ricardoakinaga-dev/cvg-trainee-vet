@@ -200,6 +200,29 @@ const feedbackTriageQueue = {
   ],
 };
 
+const feedbackTicketHistory = {
+  ticketId: "77777777-7777-4777-8777-777777777777",
+  events: [
+    {
+      historyId: "88888888-8888-4888-8888-888888888888",
+      ticketId: "77777777-7777-4777-8777-777777777777",
+      ticketVersion: 0,
+      eventType: "CRIADO",
+      toStatus: "NOVO",
+      createdAt: "2026-08-23T10:00:00.000Z",
+    },
+    {
+      historyId: "99999999-9999-4999-8999-999999999999",
+      ticketId: "77777777-7777-4777-8777-777777777777",
+      ticketVersion: 1,
+      eventType: "STATUS_ALTERADO",
+      fromStatus: "NOVO",
+      toStatus: "TRIADO",
+      createdAt: "2026-08-23T12:00:00.000Z",
+    },
+  ],
+};
+
 const appealReviewHistory = {
   appealId: "44444444-4444-4444-8444-444444444444",
   events: [
@@ -333,6 +356,15 @@ test.describe("staff training dashboard", () => {
     await page.route(
       /\/api\/v1\/internal\/feedback(?:\/[^?]+)?(?:\?.*)?$/u,
       async (route) => {
+        if (route.request().url().includes("/history")) {
+          expect(route.request().method()).toBe("GET");
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(successEnvelope(feedbackTicketHistory)),
+          });
+          return;
+        }
         if (route.request().method() === "PATCH") {
           const request = route.request().postDataJSON() as Readonly<{
             readonly ticketId?: string;
@@ -428,12 +460,39 @@ test.describe("staff training dashboard", () => {
     await expect(
       page.getByText("Relato sintético precisa de triagem."),
     ).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: "Ver histórico do relato",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", {
+        name: "Ver histórico do relato",
+        exact: true,
+      })
+      .click();
+    await expect(page.getByTestId("feedback-history")).toBeVisible();
+    await expect(page.getByText("Relato criado")).toBeVisible();
+    await expect(page.getByText("Status alterado")).toBeVisible();
+    await expect(
+      page.getByTestId("feedback-history").getByText("Somente leitura"),
+    ).toBeVisible();
+    await expect(page.getByTestId("feedback-history")).not.toContainText(
+      "participantId",
+    );
+    await expect(page.getByTestId("feedback-history")).not.toContainText(
+      "scopeId",
+    );
     await page.getByRole("button", { name: "Triar" }).click();
     await expect(page.getByRole("cell", { name: "Triado" })).toBeVisible();
     await expect(
       page.getByText("A justificativa sintética aguarda revisão interna."),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Ver histórico" }).click();
+    await page
+      .getByTestId("appeal-review-queue")
+      .getByRole("button", { name: "Ver histórico" })
+      .click();
     await expect(page.getByTestId("appeal-history")).toBeVisible();
     await expect(page.getByText("Rationale interno sintético.")).toBeVisible();
     await expect(page.getByText("Decisão registrada")).toBeVisible();

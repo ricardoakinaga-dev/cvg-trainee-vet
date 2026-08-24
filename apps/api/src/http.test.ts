@@ -25,6 +25,7 @@ import {
   type AppealReviewQueueState,
   type AppealReviewHistoryState,
   type FeedbackTriageQueueState,
+  type FeedbackTicketHistoryState,
   type CreateAuthoringDraftCommand,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
@@ -294,6 +295,30 @@ const feedbackTriageQueue: FeedbackTriageQueueState = {
       createdAt: "2026-08-24T11:00:00.000Z",
       status: "NOVO",
       version: 0,
+    },
+  ],
+};
+
+const feedbackTicketHistory: FeedbackTicketHistoryState = {
+  ticketId: "22222222-2222-4222-8222-222222222222",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  events: [
+    {
+      historyId: "33333333-3333-4333-8333-333333333333",
+      ticketId: "22222222-2222-4222-8222-222222222222",
+      ticketVersion: 0,
+      eventType: "CRIADO",
+      toStatus: "NOVO",
+      createdAt: "2026-08-24T11:00:00.000Z",
+    },
+    {
+      historyId: "44444444-4444-4444-8444-444444444444",
+      ticketId: "22222222-2222-4222-8222-222222222222",
+      ticketVersion: 1,
+      eventType: "STATUS_ALTERADO",
+      fromStatus: "NOVO",
+      toStatus: "TRIADO",
+      createdAt: "2026-08-24T12:00:00.000Z",
     },
   ],
 };
@@ -2739,6 +2764,119 @@ describe("API HTTP boundary", () => {
     );
     expect(invalid.status).toBe(422);
     expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns a scoped read-only feedback history without queue or participant fields", async () => {
+    const getFeedbackTicketHistory = vi.fn(async () => feedbackTicketHistory);
+    const principalId = "55555555-5555-4555-8555-555555555555";
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/feedback/${feedbackTicketHistory.ticketId}/history`,
+        query: { limit: "25" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [feedbackTicketHistory.scopeId],
+        }),
+        getFeedbackTicketHistory,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getFeedbackTicketHistory).toHaveBeenCalledWith({
+      principalId,
+      accountStatus: "ACTIVE",
+      roles: ["MODERATOR"],
+      scopes: [feedbackTicketHistory.scopeId],
+      ticketId: feedbackTicketHistory.ticketId,
+      limit: 25,
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        ticketId: feedbackTicketHistory.ticketId,
+        events: [
+          { eventType: "CRIADO", ticketVersion: 0, toStatus: "NOVO" },
+          {
+            eventType: "STATUS_ALTERADO",
+            ticketVersion: 1,
+            fromStatus: "NOVO",
+            toStatus: "TRIADO",
+          },
+        ],
+      },
+    });
+    const serialized = JSON.stringify(response.body);
+    expect(serialized).not.toContain("scopeId");
+    expect(serialized).not.toContain("participantId");
+    expect(serialized).not.toContain("description");
+
+    const participantResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/feedback/${feedbackTicketHistory.ticketId}/history`,
+        query: {},
+        body: undefined,
+      },
+      dependencies({ getFeedbackTicketHistory }),
+    );
+    expect(participantResponse.status).toBe(403);
+    expect(getFeedbackTicketHistory).toHaveBeenCalledTimes(1);
+
+    const invalidPathResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/feedback/not-an-id/history",
+        query: {},
+        body: undefined,
+      },
+      dependencies({ getFeedbackTicketHistory }),
+    );
+    expect(invalidPathResponse.status).toBe(422);
+
+    const invalidQueryResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/feedback/${feedbackTicketHistory.ticketId}/history`,
+        query: { limit: "101" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [feedbackTicketHistory.scopeId],
+        }),
+        getFeedbackTicketHistory,
+      }),
+    );
+    expect(invalidQueryResponse.status).toBe(422);
+    expect(getFeedbackTicketHistory).toHaveBeenCalledTimes(1);
+
+    const missingResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/feedback/${feedbackTicketHistory.ticketId}/history`,
+        query: {},
+        body: undefined,
+      },
+      dependencies({
+        getFeedbackTicketHistory: async () => null,
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [feedbackTicketHistory.scopeId],
+        }),
+      }),
+    );
+    expect(missingResponse.status).toBe(404);
   });
 
   it("returns the scoped appeal review queue without mutation or public fields", async () => {

@@ -389,6 +389,7 @@ describe("learning state persistence mappings", () => {
         [workflowRow(resultId, "RESULTADO_EM_PROCESSAMENTO", 0)],
         [workflowRow(resultId, "RESULTADO_DISPONIVEL", 1)],
         [ticketRow(ticketId, "NOVO", 0)],
+        [ticketRow(ticketId, "NOVO", 0)],
         [ticketRow(ticketId, "TRIADO", 1)],
         [appealRow(appealId, "ABERTA", 0, null, null)],
         [appealRow(appealId, "EM_REVISAO", 1, reviewerId, null)],

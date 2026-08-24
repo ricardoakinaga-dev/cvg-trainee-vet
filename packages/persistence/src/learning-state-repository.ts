@@ -20,6 +20,7 @@ import {
   activityAssignments,
   appeals,
   assessmentWorkflows,
+  feedbackTicketHistory,
   feedbackTickets,
   learningActivities,
   learningAssignments,
@@ -1031,6 +1032,26 @@ export function createLearningStateRepository(
     withContext(db, context, async (tx) => {
       const row = feedbackTicketStateToRow({ scopeId: context.scopeId, state });
       const now = new Date();
+      let fromStatus: string | null = null;
+      if (row.version > 0) {
+        const previousRows = await tx
+          .select({ status: feedbackTickets.status })
+          .from(feedbackTickets)
+          .where(
+            and(
+              eq(feedbackTickets.id, row.id),
+              eq(feedbackTickets.participantId, row.participantId),
+              eq(feedbackTickets.scopeId, row.scopeId),
+              eq(feedbackTickets.version, row.version - 1),
+            ),
+          )
+          .limit(1);
+        const previous = previousRows[0];
+        if (previous === undefined) {
+          conflict("feedback ticket previous version was not found");
+        }
+        fromStatus = previous.status;
+      }
       if (row.version === 0) {
         const inserted = await tx
           .insert(feedbackTickets)
@@ -1068,6 +1089,15 @@ export function createLearningStateRepository(
         .limit(1);
       const saved = rows[0];
       if (saved === undefined) conflict("feedback ticket was not persisted");
+      await tx.insert(feedbackTicketHistory).values({
+        ticketId: row.id,
+        scopeId: row.scopeId,
+        ticketVersion: row.version,
+        eventType: row.version === 0 ? "CRIADO" : "STATUS_ALTERADO",
+        fromStatus,
+        toStatus: row.status,
+        createdAt: now,
+      });
       return feedbackTicketRowToState(saved);
     });
 

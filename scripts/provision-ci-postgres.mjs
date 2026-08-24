@@ -100,6 +100,7 @@ $cvg_provision$;`;
     rlsHelperGrantSql(application.role),
     `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${appIdentifier};`,
     `REVOKE UPDATE, DELETE ON TABLE "authoring_draft_idempotency" FROM ${appIdentifier}, PUBLIC;`,
+    `REVOKE UPDATE, DELETE ON TABLE "feedback_ticket_history" FROM ${appIdentifier}, PUBLIC;`,
     `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,
     `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${appIdentifier};`,
     `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,

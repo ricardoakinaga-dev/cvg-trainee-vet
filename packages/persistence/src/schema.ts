@@ -1070,6 +1070,55 @@ export const feedbackTickets = pgTable(
   ],
 );
 
+export const feedbackTicketHistory = pgTable(
+  "feedback_ticket_history",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ticketId: uuid("ticket_id")
+      .notNull()
+      .references(() => feedbackTickets.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    ticketVersion: integer("ticket_version").notNull(),
+    eventType: text("event_type").notNull(),
+    fromStatus: text("from_status"),
+    toStatus: text("to_status").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("feedback_ticket_history_version_idx").on(
+      table.ticketId,
+      table.ticketVersion,
+    ),
+    index("feedback_ticket_history_scope_created_idx").on(
+      table.scopeId,
+      table.createdAt,
+      table.id,
+    ),
+    check(
+      "feedback_ticket_history_event_check",
+      sql`${table.eventType} in ('CRIADO', 'STATUS_ALTERADO')`,
+    ),
+    check(
+      "feedback_ticket_history_from_status_check",
+      sql`${table.fromStatus} is null or ${table.fromStatus} in ('NOVO', 'TRIADO', 'EM_TRATAMENTO', 'AGUARDA_USUARIO', 'RESOLVIDO', 'DUPLICADO', 'NAO_REPRODUZIDO', 'NAO_PLANEJADO')`,
+    ),
+    check(
+      "feedback_ticket_history_to_status_check",
+      sql`${table.toStatus} in ('NOVO', 'TRIADO', 'EM_TRATAMENTO', 'AGUARDA_USUARIO', 'RESOLVIDO', 'DUPLICADO', 'NAO_REPRODUZIDO', 'NAO_PLANEJADO')`,
+    ),
+    check(
+      "feedback_ticket_history_version_check",
+      sql`${table.ticketVersion} >= 0`,
+    ),
+    check(
+      "feedback_ticket_history_creation_shape_check",
+      sql`((${table.eventType} = 'CRIADO' and ${table.ticketVersion} = 0 and ${table.fromStatus} is null) or (${table.eventType} = 'STATUS_ALTERADO' and ${table.ticketVersion} >= 1 and ${table.fromStatus} is not null))`,
+    ),
+  ],
+);
+
 export const appeals = pgTable(
   "appeals",
   {

@@ -111,6 +111,21 @@ type AppealReviewHistory = Readonly<{
   readonly events: readonly AppealReviewHistoryEvent[];
 }>;
 
+type FeedbackTicketHistoryEvent = Readonly<{
+  readonly historyId: string;
+  readonly ticketId: string;
+  readonly ticketVersion: number;
+  readonly eventType: "CRIADO" | "STATUS_ALTERADO";
+  readonly fromStatus?: FeedbackTriageQueueStatus;
+  readonly toStatus: FeedbackTriageQueueStatus;
+  readonly createdAt: string;
+}>;
+
+type FeedbackTicketHistory = Readonly<{
+  readonly ticketId: string;
+  readonly events: readonly FeedbackTicketHistoryEvent[];
+}>;
+
 type FeedbackTriageQueue = Readonly<{
   readonly kind: "feedback_triage_queue";
   readonly scopeId: string;
@@ -809,6 +824,63 @@ function isFeedbackTriageQueue(value: unknown): value is FeedbackTriageQueue {
   });
 }
 
+function isFeedbackTicketHistoryEvent(
+  value: unknown,
+): value is FeedbackTicketHistoryEvent {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, [
+      "historyId",
+      "ticketId",
+      "ticketVersion",
+      "eventType",
+      "fromStatus",
+      "toStatus",
+      "createdAt",
+    ]) ||
+    !isUuid(value.historyId) ||
+    !isUuid(value.ticketId) ||
+    !isCount(value.ticketVersion) ||
+    (value.eventType !== "CRIADO" && value.eventType !== "STATUS_ALTERADO") ||
+    (value.fromStatus !== undefined &&
+      !isFeedbackTriageQueueStatus(value.fromStatus)) ||
+    !isFeedbackTriageQueueStatus(value.toStatus) ||
+    typeof value.createdAt !== "string" ||
+    Number.isNaN(new Date(value.createdAt).getTime()) ||
+    (value.eventType === "CRIADO" && value.fromStatus !== undefined) ||
+    (value.eventType === "STATUS_ALTERADO" && value.fromStatus === undefined)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function isFeedbackTicketHistory(
+  value: unknown,
+): value is FeedbackTicketHistory {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, ["ticketId", "events"]) ||
+    !isUuid(value.ticketId) ||
+    !Array.isArray(value.events) ||
+    value.events.length > 100 ||
+    !value.events.every(isFeedbackTicketHistoryEvent)
+  ) {
+    return false;
+  }
+  const versions = new Set<number>();
+  return value.events.every((event) => {
+    if (
+      event.ticketId !== value.ticketId ||
+      versions.has(event.ticketVersion)
+    ) {
+      return false;
+    }
+    versions.add(event.ticketVersion);
+    return true;
+  });
+}
+
 function isAppealReviewHistoryEvent(
   value: unknown,
 ): value is AppealReviewHistoryEvent {
@@ -1270,6 +1342,13 @@ export default function OperationsPage() {
   const [feedbackActionError, setFeedbackActionError] = useState<string | null>(
     null,
   );
+  const [feedbackHistoryState, setFeedbackHistoryState] =
+    useState<ReportLoadState>("idle");
+  const [feedbackHistory, setFeedbackHistory] =
+    useState<FeedbackTicketHistory | null>(null);
+  const [feedbackHistoryTicketId, setFeedbackHistoryTicketId] = useState<
+    string | null
+  >(null);
   const [appealQueueState, setAppealQueueState] =
     useState<ReportLoadState>("idle");
   const [appealQueue, setAppealQueue] = useState<AppealReviewQueue | null>(
@@ -1574,6 +1653,38 @@ export default function OperationsPage() {
       } catch {
         setFeedbackQueue(null);
         setFeedbackQueueState("error");
+      }
+    },
+    [],
+  );
+
+  const loadFeedbackTicketHistory = useCallback(
+    async (ticketId: string): Promise<void> => {
+      setFeedbackHistoryTicketId(ticketId);
+      setFeedbackHistoryState("loading");
+      try {
+        const response = await fetch(
+          `/api/v1/internal/feedback/${encodeURIComponent(ticketId)}/history?limit=100`,
+          { cache: "no-store", credentials: "include" },
+        );
+        if (!response.ok) {
+          setFeedbackHistory(null);
+          setFeedbackHistoryState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isFeedbackTicketHistory(payload.data)
+        ) {
+          throw new Error();
+        }
+        setFeedbackHistory(payload.data);
+        setFeedbackHistoryState("ready");
+      } catch {
+        setFeedbackHistory(null);
+        setFeedbackHistoryState("error");
       }
     },
     [],
@@ -2491,34 +2602,48 @@ export default function OperationsPage() {
                                   {feedbackTriageStatusLabel(item.status)}
                                 </td>
                                 <td>
-                                  {events.length === 0 ? (
-                                    <span>Estado final</span>
-                                  ) : (
-                                    <div className="account-actions">
-                                      {events.map((event) => {
-                                        const actionKey = `${item.ticketId}:${event}`;
-                                        return (
-                                          <button
-                                            key={event}
-                                            type="button"
-                                            disabled={
-                                              feedbackActionKey !== null
-                                            }
-                                            onClick={() =>
-                                              void transitionFeedbackTicket(
-                                                item,
-                                                event,
-                                              )
-                                            }
-                                          >
-                                            {feedbackActionKey === actionKey
-                                              ? "Atualizando…"
-                                              : feedbackTriageEventLabel(event)}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
+                                  <div className="account-actions">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void loadFeedbackTicketHistory(
+                                          item.ticketId,
+                                        )
+                                      }
+                                    >
+                                      Ver histórico do relato
+                                    </button>
+                                    {events.length === 0 ? (
+                                      <span>Estado final</span>
+                                    ) : (
+                                      <div className="account-actions">
+                                        {events.map((event) => {
+                                          const actionKey = `${item.ticketId}:${event}`;
+                                          return (
+                                            <button
+                                              key={event}
+                                              type="button"
+                                              disabled={
+                                                feedbackActionKey !== null
+                                              }
+                                              onClick={() =>
+                                                void transitionFeedbackTicket(
+                                                  item,
+                                                  event,
+                                                )
+                                              }
+                                            >
+                                              {feedbackActionKey === actionKey
+                                                ? "Atualizando…"
+                                                : feedbackTriageEventLabel(
+                                                    event,
+                                                  )}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -2531,6 +2656,71 @@ export default function OperationsPage() {
                     <p className="feedback error" role="alert">
                       {feedbackActionError}
                     </p>
+                  ) : null}
+                  {feedbackHistoryTicketId !== null ? (
+                    <section
+                      className="experience-panel"
+                      aria-labelledby="feedback-history-title"
+                      data-testid="feedback-history"
+                    >
+                      <div className="section-heading compact-heading">
+                        <div>
+                          <p className="eyebrow">Trilha interna</p>
+                          <h4 id="feedback-history-title">
+                            Linha do tempo do relato
+                          </h4>
+                        </div>
+                        <span className="status-pill">Somente leitura</span>
+                      </div>
+                      {feedbackHistoryState === "loading" ? (
+                        <p role="status">Consultando o histórico…</p>
+                      ) : feedbackHistoryState === "forbidden" ||
+                        feedbackHistoryState === "unauthenticated" ? (
+                        <p>
+                          Esta conta não possui autorização para consultar este
+                          histórico.
+                        </p>
+                      ) : feedbackHistoryState === "error" ||
+                        feedbackHistory === null ? (
+                        <div role="alert">
+                          <p>Não foi possível carregar o histórico.</p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void loadFeedbackTicketHistory(
+                                feedbackHistoryTicketId,
+                              )
+                            }
+                          >
+                            Tentar novamente
+                          </button>
+                        </div>
+                      ) : feedbackHistory.events.length === 0 ? (
+                        <p>Nenhum evento histórico registrado.</p>
+                      ) : (
+                        <ol className="journey-list">
+                          {feedbackHistory.events.map((event) => (
+                            <li key={event.historyId}>
+                              <strong>
+                                v{event.ticketVersion} ·{" "}
+                                {event.eventType === "CRIADO"
+                                  ? "Relato criado"
+                                  : "Status alterado"}
+                              </strong>
+                              <br />
+                              {event.fromStatus === undefined
+                                ? "Sem status anterior"
+                                : feedbackTriageStatusLabel(
+                                    event.fromStatus,
+                                  )}{" "}
+                              → {feedbackTriageStatusLabel(event.toStatus)}
+                              <br />
+                              Registrado {lastSeenLabel(event.createdAt)}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </section>
                   ) : null}
                 </>
               )}

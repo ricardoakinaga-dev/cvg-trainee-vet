@@ -154,4 +154,63 @@ describe("migration governance", () => {
     expect(repository).toContain("pg_advisory_xact_lock");
     expect(repository).toContain("PersistenceConflictError");
   });
+
+  it("keeps feedback history append-only, scoped and free of participant text", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0037_feedback_ticket_history.sql",
+        import.meta.url,
+      ),
+    );
+    const repositoryPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/feedback-ticket-history-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const learningStatePath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/learning-state-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, repository, learningState, provisioning] =
+      await Promise.all([
+        readFile(migrationPath, "utf8"),
+        readFile(repositoryPath, "utf8"),
+        readFile(learningStatePath, "utf8"),
+        readFile(provisioningPath, "utf8"),
+      ]);
+
+    expect(migration).toContain('CREATE TABLE "feedback_ticket_history"');
+    expect(migration).toContain(
+      'CREATE UNIQUE INDEX "feedback_ticket_history_version_idx"',
+    );
+    expect(migration).toContain(
+      "CREATE TRIGGER feedback_ticket_history_append_only",
+    );
+    expect(migration).toContain(
+      'REVOKE UPDATE, DELETE ON "feedback_ticket_history" FROM PUBLIC',
+    );
+    expect(migration).toContain(
+      'ALTER TABLE "feedback_ticket_history" FORCE ROW LEVEL SECURITY',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_ticket_history_scope_select_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_ticket_history_scope_insert_policy"',
+    );
+    expect(repository).toContain("setDatabaseSecurityContext");
+    expect(repository).toContain("feedbackTicketHistoryRowToEvent");
+    expect(repository).not.toContain("description");
+    expect(repository).not.toContain("participantId");
+    expect(learningState).toContain("tx.insert(feedbackTicketHistory)");
+    expect(provisioning).toContain(
+      'REVOKE UPDATE, DELETE ON TABLE "feedback_ticket_history"',
+    );
+  });
 });

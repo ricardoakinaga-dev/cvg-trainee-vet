@@ -350,6 +350,14 @@ export type {
   AppealReviewHistoryState,
   GetAppealReviewHistoryCommand,
 } from "./appeal-review-history-use-cases.js";
+export { getFeedbackTicketHistory } from "./feedback-ticket-history-use-cases.js";
+export type {
+  FeedbackTicketHistoryEvent,
+  FeedbackTicketHistoryReadPort,
+  FeedbackTicketHistoryReadResult,
+  FeedbackTicketHistoryState,
+  GetFeedbackTicketHistoryCommand,
+} from "./feedback-ticket-history-use-cases.js";
 export { transitionAppealReviewState } from "./appeal-review-transition-use-cases.js";
 export type {
   AppealReviewTransitionCommand,

@@ -282,6 +282,12 @@ export function routeTemplate(method: string, path: string): string {
   ) {
     return "/api/v1/internal/assessment-workflows/:resultId/transition";
   }
+  if (
+    method === "GET" &&
+    /^\/api\/v1\/internal\/feedback\/[^/]+\/history$/u.test(path)
+  ) {
+    return "/api/v1/internal/feedback/:ticketId/history";
+  }
   if (/^\/api\/v1\/internal\/feedback\/[^/]+$/u.test(path)) {
     return "/api/v1/internal/feedback/:ticketId";
   }

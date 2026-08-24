@@ -229,6 +229,17 @@ export type {
   FeedbackTriageQueueQuery,
 } from "./feedback-triage-queue.js";
 export {
+  feedbackTicketHistoryPathSchema,
+  feedbackTicketHistoryProjectionSchema,
+  feedbackTicketHistoryQuerySchema,
+} from "./feedback-ticket-history.js";
+export type {
+  FeedbackTicketHistoryEventProjection,
+  FeedbackTicketHistoryPath,
+  FeedbackTicketHistoryProjection,
+  FeedbackTicketHistoryQuery,
+} from "./feedback-ticket-history.js";
+export {
   auditTrailProjectionSchema,
   auditTrailQuerySchema,
   parseAuditTrailProjection,

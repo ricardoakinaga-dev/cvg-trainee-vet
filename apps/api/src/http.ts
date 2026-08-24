@@ -69,6 +69,8 @@ import {
   type GetAppealReviewHistoryCommand,
   type FeedbackTriageQueueState,
   type GetFeedbackTriageQueueCommand,
+  type FeedbackTicketHistoryState,
+  type GetFeedbackTicketHistoryCommand,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
@@ -110,6 +112,9 @@ import {
   appealReviewHistoryQuerySchema,
   feedbackTriageQueueProjectionSchema,
   feedbackTriageQueueQuerySchema,
+  feedbackTicketHistoryPathSchema,
+  feedbackTicketHistoryProjectionSchema,
+  feedbackTicketHistoryQuerySchema,
   auditTrailProjectionSchema,
   auditTrailQuerySchema,
   internalAuthoringRecordQuerySchema,
@@ -309,6 +314,9 @@ export interface ApiHttpDependencies {
   readonly getFeedbackTriageQueue?: (
     command: GetFeedbackTriageQueueCommand,
   ) => Promise<FeedbackTriageQueueState>;
+  readonly getFeedbackTicketHistory?: (
+    command: GetFeedbackTicketHistoryCommand,
+  ) => Promise<FeedbackTicketHistoryState | null>;
   readonly getAppealReviewHistory?: (
     command: GetAppealReviewHistoryCommand,
   ) => Promise<AppealReviewHistoryState | null>;
@@ -821,6 +829,15 @@ function internalFeedbackTriageQueueProjection(
     generatedAt: state.generatedAt,
     filters: { ...state.filters },
     items: state.items.map((item) => ({ ...item })),
+  });
+}
+
+function internalFeedbackTicketHistoryProjection(
+  state: FeedbackTicketHistoryState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return feedbackTicketHistoryProjectionSchema.parse({
+    ticketId: state.ticketId,
+    events: state.events.map((event) => ({ ...event })),
   });
 }
 
@@ -1664,6 +1681,66 @@ async function handleAppealReviewHistory(
     status: 200,
     body: apiSuccessResponse(
       internalAppealReviewHistoryProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleFeedbackTicketHistory(
+  request: ApiHttpRequest,
+  ticketId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getFeedbackTicketHistory === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsedPath = feedbackTicketHistoryPathSchema.safeParse({ ticketId });
+  if (!parsedPath.success) return validationResponse(requestId);
+  const rawQuery = request.query ?? {};
+  if (Object.keys(rawQuery).some((key) => key !== "limit")) {
+    return validationResponse(requestId);
+  }
+  const parsedQuery = feedbackTicketHistoryQuerySchema.safeParse({
+    ...(rawQuery.limit === undefined ? {} : { limit: Number(rawQuery.limit) }),
+  });
+  if (!parsedQuery.success) return validationResponse(requestId);
+  if (
+    !principal.scopes.some((scopeId) =>
+      isAllowed(
+        principal,
+        "VIEW_FEEDBACK_QUEUE",
+        { scopeId },
+        dependencies.approvedClinicalApproverId,
+      ),
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getFeedbackTicketHistory({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ticketId: parsedPath.data.ticketId,
+    ...(parsedQuery.data.limit === undefined
+      ? {}
+      : { limit: parsedQuery.data.limit }),
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+  });
+  if (state === null) return errorResponse("not_found", requestId);
+  if (!principal.scopes.includes(state.scopeId)) {
+    return errorResponse("internal_error", requestId);
+  }
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalFeedbackTicketHistoryProjection(state),
       requestId,
     ),
   };
@@ -3172,6 +3249,22 @@ async function handleApiRequestCore(
       return await handleTransitionFeedbackTicket(
         request,
         feedbackTransitionMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const feedbackHistoryMatch = request.path.match(
+      /^\/api\/v1\/internal\/feedback\/([^/]+)\/history$/u,
+    );
+    if (request.method === "GET" && feedbackHistoryMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleFeedbackTicketHistory(
+        request,
+        feedbackHistoryMatch[1],
         requestId,
         principal,
         dependencies,
