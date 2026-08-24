@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação: rederivação do alvo no boundary HTTP, assignment/proveniência explícitos, todos os itens/versões `PUBLICADO`, tentativa humana/terminal somente leitura, limpeza de respostas/apelos/justificativa na nova tentativa e regressão E2E; `pnpm verify`, build, E2E, integração e audit de dependências passaram localmente.
+- last_completed_action: commit técnico `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação e commit documental `7a24051a85881706e809deb3ac17f450c771c0fd` fechou auditoria, backlog, SPEC, log, runtime e manifesto; `pnpm verify`, build, E2E, integração, audit de dependências e traceability release passaram localmente.
 - next_action: executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA somente em ambiente CVG descartável/autorizado, mantendo aprovação clínica/humana como gate de publicação; não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
 
 ## BLOQUEIOS
@@ -32,13 +32,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T13:49:16-03:00
+- last_update: 2026-08-24T13:54:48-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` — hardening final da jornada de remediação digital e guardas da projeção/tentativa; control plane documental em fechamento
+- head: `7a24051a85881706e809deb3ac17f450c771c0fd` — auditoria e control plane documental da jornada de remediação fechados sobre o hardening técnico `c16c52e`
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: código técnico commitado; documentação, estado, backlog, auditoria e manifesto de fechamento aguardam commit de control plane; não há push/deploy
+- worktree: clean após commits técnico e documental; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `JOURNEY-REMEDIATION-048` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/632 testes e 27 arquivos/33 testes ignorados; cobertura 84,92% statements, 81,13% branches, 86,46% functions e 85,67% lines; build nos 12 workspaces, Playwright sintético 28/28, integração 25 pass/33 skips e audit high sem vulnerabilidades conhecidas. PostgreSQL/RLS live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos continuam não observados
 
