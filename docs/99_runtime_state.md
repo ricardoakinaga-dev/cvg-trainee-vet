@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: APPEAL-038 foi implementado no commit `91bd3e0`: contrato interno sem identidades escolhidas pelo cliente, actor binding, revisor atribuído, optimistic locking, update allowlisted, policy RLS dedicada, policy de participante limitada a SELECT/INSERT, remoção do encerramento direto no domínio e remoção do use case legado; crítica independente encontrou e confirmou a correção desses dois caminhos; `pnpm verify` passou com 109/522 e 27 skips, cobertura 84,69%/80,62%/85,81%/85,40%, build 12 workspaces, E2E 22/22, integração configurada 8 arquivos/20 testes com 25 arquivos/27 skips, audit sem vulnerabilidades e migration 24/24
-- next_action: executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` após o commit documental em worktree limpo; depois disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para a prova PostgreSQL/RLS live ou selecionar a próxima lacuna local priorizada pelo backlog
+- next_action: disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para a prova PostgreSQL/RLS live ou selecionar a próxima lacuna local priorizada pelo backlog; não simular o live ausente
 
 ## BLOQUEIOS
 

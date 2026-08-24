@@ -5141,3 +5141,43 @@ READY_FOR_NEXT_STEP
 Comitar o conjunto documental final e executar
 `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois disponibilizar
 o ambiente PostgreSQL/RLS autorizado ou selecionar a próxima lacuna local.
+
+## 2026-08-24 — APPEAL-038: release traceability local aprovado
+
+### TIMESTAMP
+
+2026-08-24 00:45:00 -03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / AUDIT
+
+### SPRINT
+
+APPEAL-038 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-O — confirmar release traceability em worktree limpo
+
+### ACTION
+
+O conjunto documental foi consolidado no commit
+`4b564adc456f46d9518326ad197a84eb5b5dbee9`, após o código
+`91bd3e07c587315efeeddb69bb97393d3dbe5d42`.
+
+### RESULT
+
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo: os artefatos atuais resolvem para commits alcançáveis e paths rastreados.
+Nenhuma evidência live foi promovida de `SKIPPED` para `PASS`.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para provar PostgreSQL/RLS
+da fila e da transição ou selecionar a próxima lacuna local priorizada pelo
+backlog.

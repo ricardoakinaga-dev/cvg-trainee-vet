@@ -188,9 +188,9 @@ closure invariant. The independent critic found and the code commit
 `91bd3e07c587315efeeddb69bb97393d3dbe5d42` fixed the direct-close and legacy
 participant-context paths. Full local verification, build, E2E and dependency
 audit passed; integration and the new PostgreSQL/RLS scenario remain skipped
-without `CVG_TEST_DATABASE_URL`. The documentary release traceability gate is
-the immediate next action; the milestone must not claim production, clinical,
-pilot, or CPD readiness.
+without `CVG_TEST_DATABASE_URL`. The documentary release traceability gate
+passed in clean worktree after commit `4b564adc`; the milestone must not claim
+production, clinical, pilot, or CPD readiness.
 
 ## Next milestone — APPEAL-038 secure internal appeal transition
 
@@ -218,14 +218,14 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 
 ## APPEAL-038 execution ledger
 
-| ID           | Role         | Objective                                                             | Dependencies | Validation                                                | Status               |
-| ------------ | ------------ | --------------------------------------------------------------------- | ------------ | --------------------------------------------------------- | -------------------- |
-| A38-RED      | Lead         | Write contract, application, persistence, HTTP, RLS and negative REDs | APPEAL-037   | targeted tests fail for missing secure boundary           | completed            |
-| A38-GREEN    | Lead         | Implement reviewer-bound transition port and API wiring               | A38-RED      | focused unit/contract/persistence/API tests               | completed            |
-| A38-REFactor | Lead         | Tighten allowlist, projections, docs and migration wiring             | A38-GREEN    | typecheck, format, lint, exposure/migration gates         | completed            |
-| A38-VERIFY   | Lead         | Run integration, E2E, full verify and build                           | A38-REFactor | exact command evidence; live skip explicit                | completed            |
-| A38-CRITIC   | fresh critic | Review security/data/API boundary read-only                           | A38-VERIFY   | report found direct-close/legacy-path gaps; fixes applied | completed-with-fixes |
-| A38-RELEASE  | Lead         | Fix confirmed gaps, update artifacts and commit                       | A38-CRITIC   | code `91bd3e0`; documentary release gate pending          | in_progress          |
+| ID           | Role         | Objective                                                             | Dependencies | Validation                                                 | Status               |
+| ------------ | ------------ | --------------------------------------------------------------------- | ------------ | ---------------------------------------------------------- | -------------------- |
+| A38-RED      | Lead         | Write contract, application, persistence, HTTP, RLS and negative REDs | APPEAL-037   | targeted tests fail for missing secure boundary            | completed            |
+| A38-GREEN    | Lead         | Implement reviewer-bound transition port and API wiring               | A38-RED      | focused unit/contract/persistence/API tests                | completed            |
+| A38-REFactor | Lead         | Tighten allowlist, projections, docs and migration wiring             | A38-GREEN    | typecheck, format, lint, exposure/migration gates          | completed            |
+| A38-VERIFY   | Lead         | Run integration, E2E, full verify and build                           | A38-REFactor | exact command evidence; live skip explicit                 | completed            |
+| A38-CRITIC   | fresh critic | Review security/data/API boundary read-only                           | A38-VERIFY   | report found direct-close/legacy-path gaps; fixes applied  | completed-with-fixes |
+| A38-RELEASE  | Lead         | Fix confirmed gaps, update artifacts and commit                       | A38-CRITIC   | code `91bd3e0`, docs `4b564adc`; clean release gate passed | completed            |
 
 ## Progress history
 
@@ -238,4 +238,5 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 - 2026-08-23: implementation commit `7ac18365998b1bdd5ff1f2600c783b1352c42f03` and documentation commit `d62e513` were created; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed with a clean worktree. APPEAL-036 remains `PASS_WITH_GAPS`.
 - 2026-08-23 23:32: APPEAL-037 was selected from the explicit APPEAL-036 follow-up gap. Its first step is RED for an internal, read-only, scope-bound reviewer queue; decision, recalc, notification, provider, clinical, and pilot work remain separate.
 - 2026-08-23 23:54: APPEAL-037 GREEN local materialized the strict queue contract, `REVIEW_APPEAL` case, dedicated RLS context, migration 0022, HTTP route, operations panel and synthetic live-test fixture. Focused 78/78, build 12 workspaces, operations E2E 5/5 and migrations 23/23 passed; live PostgreSQL remains a GAP.
-- 2026-08-24 00:37–00:42: APPEAL-038 completed local RED/GREEN/REFACTOR and verification. The independent critic found direct `DECIDIDA → ENCERRADA` and the legacy participant-context mutator; domain event/contract and legacy use case were removed, participant RLS was narrowed to `SELECT`/`INSERT`, and HTTP negatives were added. Commit `91bd3e0`; `pnpm verify` passed 109/522 with 27 skips, coverage 84,69%/80,62%/85,81%/85,40%, build 12 workspaces, E2E 22/22, integration configured 8/20 with 25 files/27 skips, and dependency audit was clean. The live PostgreSQL proof remains a GAP; documentary release traceability is the next action.
+- 2026-08-24 00:37–00:42: APPEAL-038 completed local RED/GREEN/REFACTOR and verification. The independent critic found direct `DECIDIDA → ENCERRADA` and the legacy participant-context mutator; domain event/contract and legacy use case were removed, participant RLS was narrowed to `SELECT`/`INSERT`, and HTTP negatives were added. Commit `91bd3e0`; `pnpm verify` passed 109/522 with 27 skips, coverage 84,69%/80,62%/85,81%/85,40%, build 12 workspaces, E2E 22/22, integration configured 8/20 with 25 files/27 skips, and dependency audit was clean. The live PostgreSQL proof remains a GAP.
+- 2026-08-24 00:45: documentation commit `4b564adc` consolidated audit, SPEC, state, log, backlog and manifest; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed in a clean worktree. APPEAL-038 is locally `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`; the next action is authorized PostgreSQL/RLS live evidence or the next local backlog gap.

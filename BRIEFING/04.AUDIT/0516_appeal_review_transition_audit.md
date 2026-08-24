@@ -74,7 +74,9 @@ achados.
 
 ## Gaps de fechamento
 
-O release traceability será executado após o commit documental desta auditoria.
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo após o commit documental `4b564adc456f46d9518326ad197a84eb5b5dbee9`;
+os paths de código/teste resolvem para commits alcançáveis e rastreados.
 Também permanecem fora desta fatia: justificativa persistida, recálculo
 versionado/idempotente, snapshots, `CONCLUIR_RECALCULO`, encerramento,
 notificação, auditoria consultável, provider/MFA, aprovação clínica, piloto e
