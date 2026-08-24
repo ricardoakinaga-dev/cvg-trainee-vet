@@ -4013,6 +4013,92 @@ artifacts:
         "pnpm audit --audit-level=high, same-SHA remote workflow, productive grants/owners and clinical gates remain unobserved",
       ]
     status: "verified-with-gaps"
+  - id: "AUTHORING-DRAFT-052"
+    requirements:
+      [
+        "PRD-RF-034",
+        "PRD-RF-035",
+        "PRD-RF-036",
+        "PRD-RF-038",
+        "PRD-RF-091",
+        "PRD-RF-096",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0112",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0112_deploy_observabilidade_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/04.AUDIT/0534_authoring_draft_audit.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/authoring.ts",
+        "packages/contracts/src/authoring.test.ts",
+        "packages/application/src/authoring-use-cases.ts",
+        "packages/application/src/authoring-use-cases.test.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/authoring-repository.ts",
+        "packages/persistence/src/audit-repository.ts",
+        "packages/persistence/drizzle/0036_authoring_draft_idempotency.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "scripts/provision-ci-postgres.mjs",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/api/src/server.test.ts",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/globals.css",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-authoring-draft.test.ts",
+      ]
+    tests:
+      [
+        "packages/contracts/src/authoring.test.ts",
+        "packages/application/src/authoring-use-cases.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-authoring-draft.test.ts",
+        "tests/e2e/authoring-review.spec.ts",
+      ]
+    commit: "f6a123462a02fefbba9168cf974d9c824b78433b"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0534_authoring_draft_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: strict authoring contract/use-case focal tests failed before implementation",
+        "GREEN: focal authoring/API/server/governance/application tests 91/91 passed",
+        "pnpm verify: 131 files/647 tests passed, 35 configuration skips; coverage 84.33% statements, 80.16% branches, 86.04% functions, 85.01% lines",
+        "pnpm build: 12 workspaces passed; authoring E2E 5/5 and full E2E 31/31 passed",
+        "pnpm verify:migrations: 37 migrations aligned through 0036",
+        "idempotency replay/conflict, server-owned projection, atomic rollback probe, scoped audit, route telemetry and scope retry are covered locally",
+        "pnpm test:integration:live exited 2 because CVG_TEST_DATABASE_URL is absent; no live PostgreSQL/RLS/browser-to-API evidence is inferred",
+        "clinical approval/publication, productive grants/owners, same-SHA remote workflow and external operations remain unobserved",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

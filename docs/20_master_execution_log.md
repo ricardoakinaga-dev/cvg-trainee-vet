@@ -243,6 +243,63 @@ autorização e projeção. A ação deve preservar a sessão sem recarregar a p
 
 IN_PROGRESS
 
+## 2026-08-24 — AUTHORING-DRAFT-052: fechamento local com gaps explícitos
+
+### TIMESTAMP
+
+2026-08-24T17:03:24-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP · ORCHESTRATE
+
+### TASK
+
+AUTHORING-DRAFT-052
+
+### ACTION
+
+Executar RED/GREEN/REFACTOR da criação autoral sintética em
+`POST /api/v1/content/drafts`; integrar contrato, caso de uso, persistência,
+RLS, FKs compostas, auditoria, API, superfície web, E2E e gates de release
+local. A crítica independente foi executada novamente após as correções.
+
+### RESULT
+
+Os commits técnicos `6630d8ca4514ce49c34fd2f013c7cacaa83adab0` e
+`f6a123462a02fefbba9168cf974d9c824b78433b` materializam somente `RASCUNHO`
+versão 1. O servidor deriva identidade, IDs, escopo, projeção
+participante e bloqueio de publicação; replay com mesma fingerprint retorna o
+mesmo registro e conflito diverge com `idempotency_conflict`. A inserção de
+conteúdo/editorial/audit/idempotência é transacional, e `UPDATE/DELETE` da
+chave idempotente ficam fora do privilégio da aplicação.
+
+`pnpm verify` passou com 131 arquivos/647 testes e 35 skips; cobertura
+84,33% statements, 80,16% branches, 86,04% functions e 85,01% lines. Build dos
+12 workspaces, E2E autoral 5/5, migrations 37/37, typecheck, lint, audit high,
+secrets, exposição, documentação, product-definition, arquitetura,
+traceability estrutural e `git diff --check` passaram.
+
+### CRITIC / LIMITS
+
+A crítica final retornou **CONDITIONAL PASS**, sem P0/P1 restantes; o P2 de
+nova tentativa após `409` foi fechado com ação explícita na UI. O preflight
+`pnpm test:integration:live` saiu 2 porque `CVG_TEST_DATABASE_URL` não está
+configurada. Não há evidência nesta rodada de PostgreSQL/RLS/grants live,
+browser→API→PostgreSQL, roles/owners produtivos, workflow remoto same-SHA,
+collector/retention/traces externos, carga/failover/restore ou gates clínicos.
+
+### NEXT ACTION
+
+Executar `pnpm test:integration:live` em banco CVG descartável/autorizado;
+depois selecionar a próxima fatia P1. Nenhuma publicação, aprovação clínica,
+piloto, claim de competência ou release produtivo está autorizado por esta
+evidência local.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
 ## 2026-08-24 — AUDIT-TRAIL-034: fechamento local da fatia
 
 ### TIMESTAMP
@@ -7696,3 +7753,94 @@ debrief e authoring, sem inventar regra clínica ou publicar conteúdo.
 ### STATUS
 
 COMPLETED_WITH_GAPS
+## 2026-08-24 — AUTHORING-DRAFT-052: abertura da criação idempotente em RASCUNHO
+
+### TIMESTAMP
+
+2026-08-24T15:59:57-03:00
+
+### ENGINES
+
+BUILD ENGINE · RUNTIME CONTROLLER · GAUNTLET LOOP · ORCHESTRATE
+
+### TASK
+
+AUTHORING-DRAFT-052
+
+### ACTION
+
+Inspecionar o fluxo de autoria, contratos, transições de conteúdo, persistência,
+RLS e catálogo curricular; comparar a rota documentada e a superfície existente;
+congelar uma fatia vertical de criação sintética, idempotente e não publicadora.
+
+### RESULT
+
+A task foi aberta em `IN_PROGRESS`. A autoridade de rota é `SPEC-0107`,
+`POST /api/v1/content/drafts`; o endpoint deve aceitar apenas o payload editorial
+estrito. `authorId`, `contentId`, `contentVersionId`, `version`, `status`,
+`participant` e `preflight` serão derivados/recalculados no servidor. O primeiro
+estado permitido é `RASCUNHO`; a transição para revisão continua sendo posterior
+e não é criada nesta abertura.
+
+### INVARIANTS FROZEN
+
+- `AUTHOR_CONTENT`, conta ativa e membership no escopo são obrigatórios;
+- content/version/editorial IDs e projeção participante são server-side;
+- fonte, rubrica/gabarito e texto são internos, sintéticos e sem PDF/foto/cópia;
+- replay da mesma chave deve retornar o mesmo registro; payload divergente deve
+  falhar com `idempotency_conflict`;
+- inserção em `content_versions` e `content_editorial_records` é atômica;
+- nenhum item criado por esta task pode publicar, aprovar clinicamente, criar
+  atividade publicada, chamar IA ou chamar Qdrant.
+
+### CRITIC / LIMITS
+
+O scout Mill confirmou viabilidade técnica sem aprovação clínica, mas apontou a
+necessidade de uma nova persistência de idempotência e de testes de rollback/RLS.
+O PostgreSQL/RLS live, browser→API→PostgreSQL, grants produtivos, conteúdo
+clínico e publicação permanecem sem evidência/autorização.
+
+### NEXT ACTION
+
+Escrever testes RED de contrato, autorização, derivação server-side, atomicidade
+e replay antes de implementar a fatia.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — AUTHORING-DRAFT-052: verificação final reconciliada
+
+### TIMESTAMP
+
+2026-08-24T17:15:40-03:00
+
+### ACTION
+
+Reconciliar a evidência final após a correção de recuperação de conflito e
+reexecutar a regressão navegável completa antes do fechamento documental.
+
+### RESULT
+
+`pnpm test:e2e` passou em **31/31**, incluindo os **5/5** cenários de autoria;
+`pnpm verify` já havia passado em 131 arquivos/647 testes/35 skips, com
+84,33% statements, 80,16% branches, 86,04% functions e 85,01% lines. A
+inconsistência `4/4` no registro anterior foi corrigida para `5/5`. Não houve
+alteração de código, dependência, banco externo, deploy ou push nesta
+verificação.
+
+### LIMITS
+
+`pnpm test:integration:live` permanece sem execução por ausência de
+`CVG_TEST_DATABASE_URL`; não há claim de RLS/grants live, browser→API→PostgreSQL,
+produção ou publicação clínica.
+
+### NEXT ACTION
+
+Executar `pnpm verify:traceability` em worktree limpo após o commit documental;
+depois aguardar banco CVG descartável/autorizado e aprovação humana para provas
+live e qualquer transição clínica.
+
+### STATUS
+
+READY_FOR_NEXT_STEP

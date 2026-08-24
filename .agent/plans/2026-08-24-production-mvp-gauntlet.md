@@ -131,6 +131,15 @@ a aprovação clínica, piloto ou release produtivo.
   bypass e cleanup resiliente. `pnpm verify` passou com 131/637/34 skips e
   cobertura 84,90%/81,13%/86,41%/85,65%; a prova PostgreSQL continua
   dependente de ambiente autorizado.
+- [x] (2026-08-24T17:03:24-03:00) Fechar `AUTHORING-DRAFT-052` nos commits
+  `6630d8ca4514ce49c34fd2f013c7cacaa83adab0` e
+  `f6a123462a02fefbba9168cf974d9c824b78433b`: contrato strict, autorização,
+  identidade/projeção/preflight server-side, persistência atômica, RLS,
+  FKs compostas, replay idempotente, rota operacional, retry/timeout web e
+  E2E autoral 5/5 (E2E completa 31/31). A crítica independente final retornou CONDITIONAL PASS,
+  sem P0/P1 restantes; `pnpm verify` passou 131/647/35 skips com cobertura
+  84,33%/80,16%/86,04%/85,01%. O live PostgreSQL segue pendente sem
+  `CVG_TEST_DATABASE_URL`; publicação, clínica e produção permanecem fora.
 
 ## Surprises & Discoveries
 
@@ -659,3 +668,13 @@ incomplete cleanup and dropped URL parameters; all three were corrected before
 commit `425e8d6`. The local release bar is green, but ACL/RLS live,
 browser→API→PostgreSQL, productive grants/owners, external operations,
 clinical approval and same-SHA remote evidence remain unavailable.
+
+Plan revision note, 2026-08-24 (AUTHORING-DRAFT-052): the bounded authoring
+draft slice was completed locally after RED/GREEN/REFACTOR. Independent critics
+found and the implementation corrected route telemetry, scope retry, timeout
+and session recovery, idempotency UPDATE/DELETE privileges, composed replay
+identity, scoped audit policy and the post-conflict new-attempt action. Final
+critique is CONDITIONAL PASS with no P0/P1; live PostgreSQL/RLS/grants,
+browser→API→DB, productive operations, same-SHA remote evidence and clinical
+approval remain explicit gaps. Next authorized action is the live preflight in
+a disposable CVG environment, not a release declaration.

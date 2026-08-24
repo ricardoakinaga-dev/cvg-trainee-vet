@@ -9,17 +9,17 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: RLS-FUNCTION-EXECUTE-051 — privacidade dos helpers RLS `SECURITY DEFINER`
-- current_task: manter os cinco helpers RLS sem `PUBLIC EXECUTE`, com grant direto apenas à role de aplicação e prova live negativa preparada
+- current_sprint: AUTHORING-DRAFT-052 — fatia local fechada, preflight live pendente
+- current_task: executar a prova PostgreSQL/RLS/grants e browser→API→PostgreSQL quando houver banco CVG descartável/autorizado
 
 ## STATUS
 
-- status: WAITING_HUMAN_APPROVAL
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: o commit técnico `425e8d6` adicionou `0035_rls_helper_execute_hardening.sql`, revogou `PUBLIC EXECUTE` de todos os helpers RLS, tornou o provisionamento revoke + grant idempotente e corrigiu o teste live para afirmar ACL direta, role sem bypass/owner distinto, cleanup resiliente e preservação da URL; `pnpm verify` passou.
-- next_action: executar `pnpm test:integration:live` com `CVG_TEST_DATABASE_URL` e `CVG_TEST_ADMIN_DATABASE_URL` autorizadas, aplicar as migrations/provisionamento em banco descartável e anexar a evidência redigida; manter publicação clínica, pilotagem e decisões de produto fora de inferência técnica
+- last_completed_action: concluir `AUTHORING-DRAFT-052` em TDD, corrigir os achados P1/P2 da crítica independente, confirmar E2E autoral 5/5 e E2E completa 31/31, registrar `0534_authoring_draft_audit.md` e reconciliar backlog/traceability após os commits técnicos `6630d8c` e `f6a1234`.
+- next_action: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; se houver ambiente, provar RLS/grants/atomicidade e browser→API→PostgreSQL; sem esse ambiente, selecionar a próxima fatia P1 sem declarar release
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T15:42:48-03:00
+- last_update: 2026-08-24T17:15:40-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: contexto técnico `425e8d6` e control plane desta rodada; o HEAD Git deve ser confirmado pelo histórico, e o preflight live continua sem ambiente
+- head: `f6a123462a02fefbba9168cf974d9c824b78433b`; `AUTHORING-DRAFT-052` fechado localmente com gaps explícitos; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: somente o slice RLS e seus artefatos de control plane estão em escopo; não há push/deploy
+- worktree: implementação autoral e artefatos de control plane reconciliados; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `RLS-FUNCTION-EXECUTE-051` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/637 testes e 28 arquivos/34 testes ignorados; cobertura 84,90% statements, 81,13% branches, 86,41% functions e 85,65% lines; migration governance 36/36, typecheck, lint, secrets, architecture, documentation, product-definition, exposure e diff-check passaram. O teste live foi preparado e o preflight saiu 2 por ausência de `CVG_TEST_DATABASE_URL`; produção permanece FAIL sem ACL/RLS PostgreSQL live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos
+- verification_state: `AUTHORING-DRAFT-052` READY_FOR_NEXT_STEP; `pnpm verify` passou com 131/647/35 skips, cobertura 84,33% statements, 80,16% branches, 86,04% functions e 85,01% lines; build 12 workspaces; E2E autoral 5/5 e E2E completa 31/31; migrations 37/37; audit/secrets/traceability/documentation/product-definition/exposure/architecture passaram. `pnpm test:integration:live` saiu 2 sem `CVG_TEST_DATABASE_URL`; produção permanece sem ACL/RLS PostgreSQL live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos
 
 ## REGRAS DE USO
 

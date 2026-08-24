@@ -90,6 +90,22 @@ typecheck, lint, migrations 36/36 e gates estáticos passaram. O preflight live
 saiu 2 sem `CVG_TEST_DATABASE_URL`; a fatia fica `COMPLETED_WITH_GAPS`, sem
 release ou claim de produção.
 
+**Abertura operacional 2026-08-24 (AUTHORING-DRAFT-052):** foi escolhida a
+menor fatia vertical segura do fluxo autoral: criar conteúdo sintético em
+`RASCUNHO`, com `AUTHOR_CONTENT`, identidade/versão/status/projeção participante
+derivados no servidor, preflight recalculado e replay idempotente. A rota
+canônica será a especificada em `SPEC-0107`, `POST /api/v1/content/drafts`;
+as rotas internas de fila/revisão existentes permanecem compatíveis e não serão
+duplicadas silenciosamente. Nenhum conteúdo clínico real, submissão clínica,
+publicação, IA ou Qdrant entra nesta task.
+
+**Fechamento operacional 2026-08-24 (AUTHORING-DRAFT-052):** a fatia foi
+fechada nos commits `6630d8c`/`f6a1234` após RED/GREEN/REFACTOR, `pnpm verify` 131/647/35
+skips, cobertura 84,33%/80,16%/86,04%/85,01%, build 12 workspaces, E2E
+autoral 5/5 e E2E completa 31/31. A crítica independente final retornou `CONDITIONAL PASS`, sem
+P0/P1 restantes; o teste live continua indisponível sem
+`CVG_TEST_DATABASE_URL`, portanto não há release ou claim de produção.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -494,6 +510,25 @@ release ou claim de produção.
 - resultado: RED por migration ausente; GREEN focal e regressão completa local passaram; cinco assinaturas cobertas; o teste PostgreSQL negativo está pronto, mas não executado sem `CVG_TEST_DATABASE_URL`
 - gaps explícitos: aplicação das migrations em banco autorizado, ACL/RLS live, browser→API→PostgreSQL, grants/owners produtivos, workflow remoto same-SHA, operação externa e gates clínicos continuam pendentes
 - próxima ação: executar `pnpm test:integration:live` em ambiente CVG descartável/autorizado e anexar os resultados redigidos; depois selecionar a próxima lacuna P1 sem inventar regra clínica
+
+### AUTHORING-DRAFT-052 — Criação idempotente de conteúdo autoral em rascunho
+
+- título: permitir que autor autorizado crie um item editorial sintético e rastreável em `RASCUNHO`
+- descrição: aceitar somente o payload editorial estrito; derivar `authorId`, `contentId`, `contentVersionId`, `version`, `participant` e `preflight` no servidor; persistir `content_versions` + `content_editorial_records` atomicamente; proteger replay por chave idempotente
+- módulo: autoria / conteúdo editorial / API / persistência / autorização
+- dependência: `AUTHORING-GOVERNANCE-012`; `SPEC-0106`; `SPEC-0107`; `SPEC-0109`; `SPEC-0111`; `SPEC-0112`; `SPEC-0118`; `RLS-FUNCTION-EXECUTE-051`
+- fase: BUILD — Phase 13 / authoring bounded
+- risco: crítico — identidade ou estado editorial controlado pelo cliente pode atravessar escopo ou liberar material não revisado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-034`; `PRD-RF-035`; `PRD-RF-036`; `PRD-RF-038`; `PRD-RF-091`; `PRD-RF-096`; `SPEC-0106`; `SPEC-0107`; `SPEC-0109`; `SPEC-0111`; `SPEC-0112`; `SPEC-0118`; `AGENTS-TDD`
+- critério de pronto: contrato estrito rejeita identidade/status/preflight/projeção do cliente; capability e membership são validadas; IDs e projeção pública são server-side; preflight permanece não publicável; replay da mesma chave retorna o mesmo registro e payload divergente falha com `idempotency_conflict`; falha entre tabelas faz rollback; sem atividade publicada, review clínico, IA ou Qdrant
+- evidência: `BRIEFING/04.AUDIT/0534_authoring_draft_audit.md`; `traceability.yml` / `AUTHORING-DRAFT-052`; SHA final `f6a123462a02fefbba9168cf974d9c824b78433b` (base `6630d8ca4514ce49c34fd2f013c7cacaa83adab0`)
+- código: contratos strict, caso de uso, migration `0036`, RLS/policies, FKs compostas, provisionamento, repositório transacional, API, tela web e E2E autoral
+- testes: `packages/contracts/src/authoring.test.ts`; `packages/application/src/authoring-use-cases.test.ts`; `apps/api/src/http.test.ts`; `apps/api/src/server.test.ts`; `tests/integration/migration-governance.test.ts`; `tests/integration/postgres-authoring-draft.test.ts`; `tests/e2e/authoring-review.spec.ts`
+- resultado: RED/GREEN/REFACTOR concluído; `pnpm verify` passou com 131 arquivos/647 testes e 35 skips; cobertura 84,33% statements, 80,16% branches, 86,04% functions e 85,01% lines; build 12 workspaces; E2E autoral 5/5 e E2E completa 31/31; a rota é reconhecida por rate limit/métricas/auditoria; replay retorna os mesmos IDs e fingerprint divergente falha fechado
+- gaps explícitos: `CVG_TEST_DATABASE_URL` ausente impede PostgreSQL/RLS/grants live e browser→API→PostgreSQL; grants/owners produtivos, workflow remoto same-SHA, operação externa, publicação e conteúdo clínico continuam sem evidência/autoridade
+- próxima ação: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; depois selecionar a próxima fatia P1, mantendo publicação clínica sob revisão humana
 
 ### AUD-P1-001 — Fechamento da jornada de produto
 
