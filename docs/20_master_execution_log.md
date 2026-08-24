@@ -6250,3 +6250,32 @@ ainda não disponível, depois exibir a projeção pública existente com estado
 de espera, erro e retry. Manter live RLS, relação assignment→atividade,
 provenance, gates clínicos e assurance operacional fora de qualquer claim de
 release/100%.
+
+## 2026-08-24 — JOURNEY-045: fechamento de commit e rastreabilidade
+
+### TIMESTAMP
+
+2026-08-24 05:22:30 -03:00
+
+### ACTION
+
+O incremento `JOURNEY-045` foi fechado no commit local
+`d60e48597fea4a3cc6d92cecd6881415091e1884`. O bloco do manifesto
+`traceability.yml` foi ligado a esse SHA; o worktree permanece sem push/deploy.
+
+### RESULT
+
+`JOURNEY-045` tem código, testes, auditoria, SPEC, backlog, log, runtime e
+ExecPlan sincronizados. A evidência local permanece PASS; live RLS,
+assignment→atividade real, provenance/atomicidade, gates clínicos e assurance
+operacional continuam gaps explícitos.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir `RESULT-FEEDBACK-046` pelo RED E2E de tentativa corrigida e feedback
+indisponível, preservando o limite de não publicar gabarito, fonte ou claim
+clínico.

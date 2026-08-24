@@ -3310,7 +3310,7 @@ artifacts:
         "apps/api/src/http.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
-    commit: "aeea5f41513ad23570f704695e10c4f41e1204c5"
+    commit: "d60e48597fea4a3cc6d92cecd6881415091e1884"
     artifacts:
       [
         "BRIEFING/04.AUDIT/0524_journey_cta_audit.md",
