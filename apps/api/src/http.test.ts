@@ -20,6 +20,7 @@ import {
   type ParticipantProgressState,
   type StaffDashboardState,
   type ContinuingEducationReportState,
+  type ReflectionManagementState,
   type ContentReviewQueueState,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
@@ -217,6 +218,21 @@ const continuingEducationReport: ContinuingEducationReportState = {
   ],
   learningEvidence: "ATIVIDADE_MODULAR_DIGITAL",
   hoursClaim: "NAO_CREDENCIADAS",
+  practicalCompetenceClaim: "PROIBIDO_MVP",
+};
+
+const reflectionManagementReport: ReflectionManagementState = {
+  kind: "reflection_management_aggregate",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T20:00:00.000Z",
+  modules: [
+    {
+      moduleId: "M02",
+      totalAssignments: 3,
+      counts: { NAO_INICIADA: 1, EM_ANDAMENTO: 1, CONCLUIDA: 1 },
+    },
+  ],
+  evidence: "REFLEXAO_DIGITAL",
   practicalCompetenceClaim: "PROIBIDO_MVP",
 };
 
@@ -1788,6 +1804,118 @@ describe("API HTTP boundary", () => {
     );
     expect(crossScope.status).toBe(403);
     expect(getContinuingEducationReport).not.toHaveBeenCalled();
+  });
+
+  it("returns only scoped reflection state counts and never participant responses", async () => {
+    const getReflectionManagementReport = vi.fn(
+      async () => reflectionManagementReport,
+    );
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/reflections",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        getReflectionManagementReport,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getReflectionManagementReport).toHaveBeenCalledWith(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      { scopeId: "11111111-1111-4111-8111-111111111111" },
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "reflection_management_aggregate",
+        modules: [
+          {
+            moduleId: "M02",
+            counts: {
+              NAO_INICIADA: 1,
+              EM_ANDAMENTO: 1,
+              CONCLUIDA: 1,
+            },
+          },
+        ],
+        practicalCompetenceClaim: "PROIBIDO_MVP",
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("participantId");
+    expect(JSON.stringify(response.body)).not.toContain("response");
+  });
+
+  it("fails closed for participant, cross-scope, and unexpected reflection query input", async () => {
+    const getReflectionManagementReport = vi.fn(
+      async () => reflectionManagementReport,
+    );
+    const participant = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/reflections",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+        },
+        body: undefined,
+      },
+      dependencies({ getReflectionManagementReport }),
+    );
+    expect(participant.status).toBe(403);
+
+    const crossScope = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/reflections",
+        query: {
+          scopeId: "44444444-4444-4444-8444-444444444444",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        getReflectionManagementReport,
+      }),
+    );
+    expect(crossScope.status).toBe(403);
+
+    const unexpected = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/reflections",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          participantId: attempt.participantId,
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        getReflectionManagementReport,
+      }),
+    );
+    expect(unexpected.status).toBe(422);
+    expect(getReflectionManagementReport).not.toHaveBeenCalled();
   });
 
   it("returns the scoped content review queue and rejects invalid scope input", async () => {

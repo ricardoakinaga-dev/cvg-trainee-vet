@@ -21,6 +21,7 @@ import {
   getParticipantProgress,
   getStaffDashboard,
   getContinuingEducationReport,
+  getReflectionManagementReport,
   getContentReviewQueue,
   issueAccountRecovery,
   reviewAuthoringContent,
@@ -63,6 +64,7 @@ import {
   createAccountRecoveryTransaction,
   createAuditRepository,
   createContinuingEducationReportRepository,
+  createReflectionManagementReadRepository,
   createContentReviewQueueRepository,
   createSessionRepository,
 } from "@cvg/persistence";
@@ -143,6 +145,8 @@ export function createApiRuntime(
   );
   const continuingEducationReportRepository =
     createContinuingEducationReportRepository(integrations.database.db);
+  const reflectionManagementReadRepository =
+    createReflectionManagementReadRepository(integrations.database.db);
   const contentReviewQueueRepository = createContentReviewQueueRepository(
     integrations.database.db,
   );
@@ -275,6 +279,11 @@ export function createApiRuntime(
       getContinuingEducationReport(
         { principalId, query },
         continuingEducationReportRepository,
+      ),
+    getReflectionManagementReport: (principalId, query) =>
+      getReflectionManagementReport(
+        { principalId, query },
+        reflectionManagementReadRepository,
       ),
     getContentReviewQueue: (command) =>
       getContentReviewQueue(command, contentReviewQueueRepository),

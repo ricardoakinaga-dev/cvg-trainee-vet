@@ -176,6 +176,14 @@ export { createContinuingEducationReportRepository } from "./continuing-educatio
 export type { ContinuingEducationReportRepositoryOptions } from "./continuing-education-report-repository.js";
 export { createDashboardReadRepository } from "./dashboard-repository.js";
 export type { DashboardRepositoryOptions } from "./dashboard-repository.js";
+export {
+  createReflectionManagementReadRepository,
+  reflectionManagementRowsToInstances,
+} from "./reflection-management-repository.js";
+export type {
+  ReflectionManagementRepositoryOptions,
+  ReflectionManagementRowShape,
+} from "./reflection-management-repository.js";
 export { createContentReviewQueueRepository } from "./content-review-queue-repository.js";
 export {
   AccountRecoveryConflictError,

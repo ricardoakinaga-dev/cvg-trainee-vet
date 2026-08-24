@@ -352,8 +352,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - impacto: alto
 - status: PENDENTE
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; gaps 0420/0421
-- resultado parcial: jornada mínima, dashboard staff/participante, trilha digital de 24 meses, próximo passo, reforço, retenção, convite administrativo escopado, persistência técnica do agregado B-07 e perfil formativo por tema estão materializados com contratos, persistência, RLS, autorização server-side, E2E e integração PostgreSQL; o dashboard staff agora exibe a baseline por tema somente para participantes pertencentes ao escopo autorizado e mantém explícito que ela não representa competência prática; filas editoriais completas, avaliação/contestação completas e relatórios CPD ainda não fecham o requisito integral
-- próxima ação: fechar o agregado gerencial de reflexão sem texto bruto; depois tratar apelações e filtros/paginação/exportação, mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
+- resultado parcial: jornada mínima, dashboard staff/participante, trilha digital de 24 meses, próximo passo, reforço, retenção, convite administrativo escopado, persistência técnica do agregado B-07, perfil formativo por tema e agregado gerencial de reflexão por escopo/módulo estão materializados com contratos, persistência, RLS, autorização server-side, E2E e integração PostgreSQL preparada; o dashboard staff exibe a baseline por tema somente para participantes pertencentes ao escopo autorizado e mantém explícito que ela não representa competência prática; filas editoriais completas, avaliação/contestação completas e relatórios CPD ainda não fecham o requisito integral
+- próxima ação: executar a prova live autorizada do agregado de reflexão; depois tratar apelações e filtros/paginação/exportação, mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
 
 ### REFLECTION-035 — Reflexão digital e próxima ação
 
@@ -365,11 +365,11 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: alto — reflexão não pode virar nota, competência prática, decisão clínica, exposição de texto livre ou relatório individual indevido
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
-- critério parcial atendido: RED/GREEN/REFACTOR; refresh/interrupção preservam o estado; replay segue a idempotência de tentativa/resposta; participante vê próxima ação; boundary público, acessibilidade e E2E sintético cobrem os casos negativos
-- evidência: `BRIEFING/04.AUDIT/0512_reflection_digital_audit.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md`; `packages/application/src/reflection-use-cases.ts`; `packages/contracts/src/reflection.ts`; `packages/persistence/src/activity-repository.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; `tests/e2e/participant-access.spec.ts`
-- resultado: ciclo participante `NAO_INICIADA → EM_ANDAMENTO → CONCLUIDA` materializado sem score, gabarito ou competência prática; a leitura escolhe a tentativa mais recente e só reidrata respostas próprias; não houve migração
-- gap explícito: ainda falta agregado interno por escopo/módulo com contagem allowlisted, sem texto bruto, além de prova live/operacional da consulta
-- próxima ação: implementar o agregado gerencial protegido e cobri-lo com RLS, contrato, API, web interna e E2E sintético
+- critério parcial atendido: RED/GREEN/REFACTOR; refresh/interrupção preservam o estado; replay segue a idempotência de tentativa/resposta; participante vê próxima ação; gestão recebe contagens allowlisted por escopo/módulo sem texto bruto; boundary público, acessibilidade e E2E sintético cobrem os casos negativos
+- evidência: `BRIEFING/04.AUDIT/0512_reflection_digital_audit.md`; `BRIEFING/04.AUDIT/0513_reflection_management_aggregate_audit.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md`; `packages/application/src/reflection-use-cases.ts`; `packages/application/src/reflection-management-use-cases.ts`; `packages/contracts/src/reflection.ts`; `packages/contracts/src/reflection-management.ts`; `packages/persistence/src/activity-repository.ts`; `packages/persistence/src/reflection-management-repository.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; `apps/web/app/operations/page.tsx`; `tests/integration/postgres-reflection-management.test.ts`; `tests/e2e/participant-access.spec.ts`; `tests/e2e/operations-dashboard.spec.ts`
+- resultado: ciclo participante `NAO_INICIADA → EM_ANDAMENTO → CONCLUIDA` e agregado interno `scopeId/moduleId` materializados sem score, gabarito, resposta livre ou competência prática; a leitura escolhe a tentativa mais recente, usa contexto `{scopeId, participantId}` e só conta IDs de itens respondidos; não houve migração
+- gap explícito: prova live PostgreSQL/RLS da consulta, custo O(participantes), operação collector/OTel, retenção, carga, failover, restore e gates clínicos/externos continuam pendentes
+- próxima ação: executar a integração live quando houver ambiente autorizado; em seguida tratar apelações e filtros/paginação/exportação sem ampliar a fronteira pública
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 

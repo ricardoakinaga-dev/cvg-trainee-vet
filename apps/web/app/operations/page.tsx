@@ -138,6 +138,23 @@ type ContinuingEducationReport = Readonly<{
   readonly practicalCompetenceClaim: "PROIBIDO_MVP";
 }>;
 
+type ReflectionManagementReport = Readonly<{
+  readonly kind: "reflection_management_aggregate";
+  readonly scopeId: string;
+  readonly generatedAt: string;
+  readonly modules: readonly Readonly<{
+    readonly moduleId: string;
+    readonly totalAssignments: number;
+    readonly counts: Readonly<{
+      readonly NAO_INICIADA: number;
+      readonly EM_ANDAMENTO: number;
+      readonly CONCLUIDA: number;
+    }>;
+  }>[];
+  readonly evidence: "REFLEXAO_DIGITAL";
+  readonly practicalCompetenceClaim: "PROIBIDO_MVP";
+}>;
+
 type ManagedAccountStatus = Exclude<
   StaffDashboard["participants"][number]["accountStatus"],
   "INVITED"
@@ -409,6 +426,48 @@ function isContinuingEducationReport(
   });
 }
 
+function isReflectionManagementReport(
+  value: unknown,
+): value is ReflectionManagementReport {
+  if (
+    !isRecord(value) ||
+    value.kind !== "reflection_management_aggregate" ||
+    typeof value.scopeId !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+      value.scopeId,
+    ) ||
+    typeof value.generatedAt !== "string" ||
+    value.evidence !== "REFLEXAO_DIGITAL" ||
+    value.practicalCompetenceClaim !== "PROIBIDO_MVP" ||
+    !Array.isArray(value.modules) ||
+    value.modules.length > 24
+  ) {
+    return false;
+  }
+  const moduleIds = new Set<string>();
+  return value.modules.every((module) => {
+    if (!isRecord(module)) return false;
+    const counts = module.counts;
+    if (
+      typeof module.moduleId !== "string" ||
+      !/^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(module.moduleId) ||
+      moduleIds.has(module.moduleId) ||
+      !isCount(module.totalAssignments) ||
+      !isRecord(counts) ||
+      !isCount(counts.NAO_INICIADA) ||
+      !isCount(counts.EM_ANDAMENTO) ||
+      !isCount(counts.CONCLUIDA)
+    ) {
+      return false;
+    }
+    moduleIds.add(module.moduleId);
+    return (
+      counts.NAO_INICIADA + counts.EM_ANDAMENTO + counts.CONCLUIDA ===
+      module.totalAssignments
+    );
+  });
+}
+
 function isInvitationResult(value: unknown): value is InvitationResult {
   if (!isRecord(value)) return false;
   return (
@@ -505,6 +564,10 @@ export default function OperationsPage() {
   const [dashboard, setDashboard] = useState<StaffDashboard | null>(null);
   const [reportState, setReportState] = useState<ReportLoadState>("idle");
   const [report, setReport] = useState<ContinuingEducationReport | null>(null);
+  const [reflectionReportState, setReflectionReportState] =
+    useState<ReportLoadState>("idle");
+  const [reflectionReport, setReflectionReport] =
+    useState<ReflectionManagementReport | null>(null);
   const [reportModuleFilter, setReportModuleFilter] = useState("");
   const [reportStatusFilter, setReportStatusFilter] =
     useState<ReportStatusFilter>("");
@@ -634,6 +697,48 @@ export default function OperationsPage() {
     reportModuleFilter,
     reportStatusFilter,
   ]);
+
+  const loadReflectionManagementReport = useCallback(
+    async (scopeId: string): Promise<void> => {
+      setReflectionReportState("loading");
+      try {
+        const query = new URLSearchParams({ scopeId });
+        const response = await fetch(
+          `/api/v1/internal/reports/reflections?${query.toString()}`,
+          { cache: "no-store", credentials: "include" },
+        );
+        if (!response.ok) {
+          setReflectionReport(null);
+          setReflectionReportState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isReflectionManagementReport(payload.data)
+        ) {
+          throw new Error();
+        }
+        setReflectionReport(payload.data);
+        setReflectionReportState("ready");
+      } catch {
+        setReflectionReport(null);
+        setReflectionReportState("error");
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const scopeId = dashboard?.scopes[0];
+    if (scopeId === undefined) {
+      setReflectionReport(null);
+      setReflectionReportState("idle");
+      return;
+    }
+    void loadReflectionManagementReport(scopeId);
+  }, [dashboard, loadReflectionManagementReport]);
 
   async function createParticipantInvitation(
     event: FormEvent<HTMLFormElement>,
@@ -1162,6 +1267,99 @@ export default function OperationsPage() {
                     </table>
                   </div>
                 </>
+              )}
+            </section>
+
+            <section
+              className="dashboard-panel"
+              aria-labelledby="reflection-management-title"
+              data-testid="reflection-management-report"
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Reflexão digital</p>
+                  <h3 id="reflection-management-title">
+                    Estado agregado por módulo
+                  </h3>
+                  <p>
+                    Conta atribuições digitais não iniciadas, em andamento e
+                    concluídas. Não exibe respostas, identidade de
+                    participantes, nota ou competência prática.
+                  </p>
+                </div>
+                {reflectionReportState === "ready" &&
+                reflectionReport !== null ? (
+                  <span className="status-pill">
+                    Atualizado {lastSeenLabel(reflectionReport.generatedAt)}
+                  </span>
+                ) : null}
+              </div>
+              {reflectionReportState === "loading" ? (
+                <div className="experience-panel" role="status">
+                  Consolidando estados de reflexão…
+                </div>
+              ) : reflectionReportState === "forbidden" ||
+                reflectionReportState === "unauthenticated" ? (
+                <div className="experience-panel dashboard-message">
+                  <strong>Visão restrita</strong>
+                  <span>
+                    Esta conta não possui autorização para consultar este
+                    agregado.
+                  </span>
+                </div>
+              ) : reflectionReportState === "error" ||
+                reflectionReport === null ? (
+                <div className="experience-panel error-panel" role="alert">
+                  <p>Não foi possível carregar o agregado de reflexão.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const scopeId = dashboard?.scopes[0];
+                      if (scopeId !== undefined) {
+                        void loadReflectionManagementReport(scopeId);
+                      }
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
+              ) : reflectionReport.modules.length === 0 ? (
+                <p className="dashboard-empty">
+                  Nenhuma atribuição de reflexão digital publicada neste escopo.
+                </p>
+              ) : (
+                <div
+                  className="dashboard-table-wrap"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Tabela de estados de reflexão digital por módulo"
+                >
+                  <table className="dashboard-table">
+                    <caption className="visually-hidden">
+                      Estados agregados de reflexão digital por módulo
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Módulo</th>
+                        <th scope="col">Não iniciada</th>
+                        <th scope="col">Em andamento</th>
+                        <th scope="col">Concluída</th>
+                        <th scope="col">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reflectionReport.modules.map((module) => (
+                        <tr key={module.moduleId}>
+                          <th scope="row">{module.moduleId}</th>
+                          <td>{module.counts.NAO_INICIADA}</td>
+                          <td>{module.counts.EM_ANDAMENTO}</td>
+                          <td>{module.counts.CONCLUIDA}</td>
+                          <td>{module.totalAssignments}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </section>
 

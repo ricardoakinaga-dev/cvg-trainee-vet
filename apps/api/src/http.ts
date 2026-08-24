@@ -53,6 +53,7 @@ import {
   type ParticipantDashboardState,
   type StaffDashboardState,
   type ContinuingEducationReportState,
+  type ReflectionManagementState,
   type ContentReviewQueueState,
   type GetContentReviewQueueCommand,
   type SaveAnswerCommand,
@@ -82,6 +83,8 @@ import {
   parseDashboardProjection,
   continuingEducationReportProjectionSchema,
   continuingEducationReportQuerySchema,
+  reflectionManagementProjectionSchema,
+  reflectionManagementQuerySchema,
   contentReviewQueueProjectionSchema,
   contentReviewQueueQuerySchema,
   internalAuthoringRecordQuerySchema,
@@ -236,6 +239,10 @@ export interface ApiHttpDependencies {
       readonly accountStatus?: AccountStatus | undefined;
     }>,
   ) => Promise<ContinuingEducationReportState>;
+  readonly getReflectionManagementReport?: (
+    principalId: string,
+    query: Readonly<{ readonly scopeId: string }>,
+  ) => Promise<ReflectionManagementState>;
   readonly getContentReviewQueue?: (
     command: GetContentReviewQueueCommand,
   ) => Promise<ContentReviewQueueState>;
@@ -650,6 +657,23 @@ function publicContinuingEducationReportProjection(
   });
 }
 
+function publicReflectionManagementProjection(
+  state: ReflectionManagementState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return reflectionManagementProjectionSchema.parse({
+    kind: state.kind,
+    scopeId: state.scopeId,
+    generatedAt: state.generatedAt,
+    modules: state.modules.map((module) => ({
+      moduleId: module.moduleId,
+      totalAssignments: module.totalAssignments,
+      counts: { ...module.counts },
+    })),
+    evidence: state.evidence,
+    practicalCompetenceClaim: state.practicalCompetenceClaim,
+  });
+}
+
 function publicContentReviewQueueProjection(
   state: ContentReviewQueueState,
 ): ApiSuccessEnvelope<unknown>["data"] {
@@ -1014,6 +1038,37 @@ async function handleContinuingEducationReport(
     status: 200,
     body: apiSuccessResponse(
       publicContinuingEducationReportProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleReflectionManagementReport(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getReflectionManagementReport === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = reflectionManagementQuerySchema.safeParse(request.query ?? {});
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "VIEW_PROGRAM_METRICS", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getReflectionManagementReport(
+    principal.principalId,
+    parsed.data,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicReflectionManagementProjection(state),
       requestId,
     ),
   };
@@ -2417,6 +2472,21 @@ async function handleApiRequestCore(
       if (principal === null)
         return errorResponse("unauthenticated", requestId);
       return await handleContinuingEducationReport(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/reports/reflections"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleReflectionManagementReport(
         request,
         requestId,
         principal,

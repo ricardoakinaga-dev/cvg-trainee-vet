@@ -238,6 +238,25 @@ com contexto de participante.
 O contrato não possui `score`, gabarito, rubrica ou competência prática; carrega
 `evidence: REFLEXAO_DIGITAL` e `practicalCompetenceClaim: PROIBIDO_MVP`. A API
 valida que cada resposta pertence a item `REFLEXAO` publicado, e a web reidrata a
-resposta após refresh, salvamento ou submissão. Agregado gerencial por escopo/módulo
-sem texto livre, apelações e a jornada completa continuam itens separados do
-backlog; esta fatia não altera schema, publicação clínica ou estado de nota.
+resposta após refresh, salvamento ou submissão.
+
+`GET /api/v1/internal/reports/reflections?scopeId=<uuid>` é a leitura interna do
+agregado gerencial bounded. A query é strict e exige `scopeId`; o servidor exige
+`VIEW_PROGRAM_METRICS` para conta `ACTIVE` com o escopo correspondente antes de
+chamar o caso de uso. A resposta tem somente `kind:
+reflection_management_aggregate`, `scopeId`, `generatedAt`, módulos `M01`–`M24`,
+`totalAssignments`, contagens `NAO_INICIADA`/`EM_ANDAMENTO`/`CONCLUIDA`,
+`evidence: REFLEXAO_DIGITAL` e `practicalCompetenceClaim: PROIBIDO_MVP`.
+
+O repositório lê membros participantes dentro do escopo em uma transação, troca
+o contexto PostgreSQL para `{scopeId, participantId}` por participante e seleciona
+somente IDs de item respondido; nunca seleciona `answers.response`. A tentativa
+mais recente é determinística por `updatedAt`, `version` e `id`. Cada par
+`participantId/activityId` entra uma vez, e o denominador é a quantidade de
+atribuições digitais publicadas naquele módulo. Esta primeira fatia aceita custo
+O(participantes) por não ampliar a policy staff de `answers` nem criar migração;
+uma consulta set-based futura exige evidência de escala e revisão de segurança.
+
+Agregado gerencial, apelações e a jornada completa continuam itens separados do
+backlog; esta fatia não altera schema, publicação clínica, estado de nota ou
+competência prática.

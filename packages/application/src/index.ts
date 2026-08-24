@@ -92,7 +92,11 @@ export type {
   ParticipantActivityItem,
   ParticipantActivityState,
 } from "./activity-use-cases.js";
-export { deriveReflectionState } from "./reflection-use-cases.js";
+export {
+  deriveReflectionState,
+  deriveReflectionStatus,
+  isSubmittedReflectionAttemptStatus,
+} from "./reflection-use-cases.js";
 export type {
   DeriveReflectionStateCommand,
   ParticipantReflectionAnswer,
@@ -100,6 +104,20 @@ export type {
   ReflectionNextAction,
   ReflectionStatus,
 } from "./reflection-use-cases.js";
+export {
+  aggregateReflectionManagement,
+  getReflectionManagementReport,
+} from "./reflection-management-use-cases.js";
+export type {
+  AggregateReflectionManagementCommand,
+  GetReflectionManagementCommand,
+  ReflectionManagementCounts,
+  ReflectionManagementInstance,
+  ReflectionManagementModule,
+  ReflectionManagementQuery,
+  ReflectionManagementReadPort,
+  ReflectionManagementState,
+} from "./reflection-management-use-cases.js";
 export {
   evaluateAndPersistCurriculumModule,
   getParticipantCurriculumRuntime,

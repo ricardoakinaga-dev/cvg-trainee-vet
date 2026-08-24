@@ -123,6 +123,21 @@ const continuingEducationReport = {
   practicalCompetenceClaim: "PROIBIDO_MVP",
 };
 
+const reflectionManagementReport = {
+  kind: "reflection_management_aggregate",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T12:00:00.000Z",
+  modules: [
+    {
+      moduleId: "M02",
+      totalAssignments: 3,
+      counts: { NAO_INICIADA: 1, EM_ANDAMENTO: 1, CONCLUIDA: 1 },
+    },
+  ],
+  evidence: "REFLEXAO_DIGITAL",
+  practicalCompetenceClaim: "PROIBIDO_MVP",
+};
+
 const multiScopeStaffDashboard = {
   ...staffDashboard,
   scopes: [
@@ -172,6 +187,16 @@ test.describe("staff training dashboard", () => {
         });
       },
     );
+    await page.route(
+      "**/api/v1/internal/reports/reflections**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(reflectionManagementReport)),
+        });
+      },
+    );
 
     await page.goto("/operations");
 
@@ -183,6 +208,18 @@ test.describe("staff training dashboard", () => {
       page.getByRole("heading", { name: "Participação digital da trilha" }),
     ).toBeVisible();
     await expect(page.getByText("Horas digitais concluídas")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Estado agregado por módulo" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Não iniciada" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Em andamento" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Concluída" }),
+    ).toBeVisible();
     await expect(page.getByText("não hora CPD credenciada")).toBeVisible();
     await expect(page.getByText("vet.synthetic@example.invalid")).toBeVisible();
     await expect(page.getByText("Aguardar correção humana")).toBeVisible();
@@ -230,6 +267,16 @@ test.describe("staff training dashboard", () => {
         }),
       });
     });
+    await page.route(
+      "**/api/v1/internal/reports/reflections**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(reflectionManagementReport)),
+        });
+      },
+    );
 
     await page.goto("/operations");
 
@@ -262,6 +309,16 @@ test.describe("staff training dashboard", () => {
         body: JSON.stringify(successEnvelope(staffDashboard)),
       });
     });
+    await page.route(
+      "**/api/v1/internal/reports/reflections**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(reflectionManagementReport)),
+        });
+      },
+    );
     await page.route("**/api/v1/internal/invitations", async (route) => {
       const request = route.request().postDataJSON() as Readonly<{
         readonly professionalEmail?: string;
@@ -381,6 +438,17 @@ test.describe("staff training dashboard", () => {
         body: JSON.stringify(successEnvelope(staffDashboard)),
       });
     });
+
+    await page.route(
+      "**/api/v1/internal/reports/reflections**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(reflectionManagementReport)),
+        });
+      },
+    );
 
     await page.goto("/operations");
     await expect(page.getByTestId("staff-dashboard")).toBeVisible();

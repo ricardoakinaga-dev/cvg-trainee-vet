@@ -1351,6 +1351,66 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "REFLECTION-MANAGEMENT-035"
+    requirements:
+      [
+        "AUD-P1-001",
+        "RF-072",
+        "RF-073",
+        "RF-074",
+        "RN-064",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0513_reflection_management_aggregate_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/reflection-management-use-cases.ts",
+        "packages/application/src/reflection-use-cases.ts",
+        "packages/contracts/src/reflection-management.ts",
+        "packages/persistence/src/reflection-management-repository.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/operations/page.tsx",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/application/src/reflection-management-use-cases.test.ts",
+        "packages/contracts/src/reflection-management.test.ts",
+        "packages/persistence/src/reflection-management-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/postgres-reflection-management.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "e53018e8846309e069c4752517f50e9bb368721e"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm exec vitest run --coverage --project unit",
+        "pnpm exec tsc -b --pretty false",
+        "pnpm build",
+        "pnpm test:e2e -- tests/e2e/operations-dashboard.spec.ts",
+        "CVG_RUN_LIVE_DB_TESTS=true pnpm exec vitest run tests/integration/postgres-reflection-management.test.ts --project integration",
+        "pnpm verify",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:documentation",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
     requirements:
       ["SPEC-0118", "AUD-ITEM-13", "EXPERIENCE-13-01", "WCAG-2.2-AA"]

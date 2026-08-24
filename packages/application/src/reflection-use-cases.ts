@@ -36,6 +36,40 @@ const submittedAttemptStatuses: readonly AttemptStatus[] = [
   "CORRIGIDA_HUMANAMENTE",
 ];
 
+export function isSubmittedReflectionAttemptStatus(
+  value: AttemptStatus | undefined,
+): boolean {
+  return value !== undefined && submittedAttemptStatuses.includes(value);
+}
+
+export function deriveReflectionStatus(
+  command: Readonly<{
+    readonly itemCount: number;
+    readonly answeredItemCount: number;
+    readonly attemptStatus: AttemptStatus | undefined;
+  }>,
+): ReflectionStatus {
+  if (
+    !Number.isInteger(command.itemCount) ||
+    command.itemCount < 1 ||
+    !Number.isInteger(command.answeredItemCount) ||
+    command.answeredItemCount < 0 ||
+    command.answeredItemCount > command.itemCount
+  ) {
+    throw new ApplicationError(
+      "validation_error",
+      "reflection answer counts are invalid",
+    );
+  }
+  const hasAttempt = command.attemptStatus !== undefined;
+  return command.answeredItemCount === command.itemCount &&
+    isSubmittedReflectionAttemptStatus(command.attemptStatus)
+    ? "CONCLUIDA"
+    : hasAttempt
+      ? "EM_ANDAMENTO"
+      : "NAO_INICIADA";
+}
+
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) {
     throw new ApplicationError("validation_error", `${field} is required`);
@@ -115,15 +149,11 @@ export function deriveReflectionState(
       "reflection answers require an attempt",
     );
   }
-  const submitted =
-    command.attemptStatus !== undefined &&
-    submittedAttemptStatuses.includes(command.attemptStatus);
-  const status: ReflectionStatus =
-    allItemsAnswered && submitted
-      ? "CONCLUIDA"
-      : hasAttempt
-        ? "EM_ANDAMENTO"
-        : "NAO_INICIADA";
+  const status = deriveReflectionStatus({
+    itemCount,
+    answeredItemCount,
+    attemptStatus: command.attemptStatus,
+  });
   const nextAction: ReflectionNextAction =
     status === "CONCLUIDA"
       ? "PROXIMA_ACAO"

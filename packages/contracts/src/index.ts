@@ -33,6 +33,15 @@ export {
 } from "./reflection.js";
 export type { ParticipantReflectionProjection } from "./reflection.js";
 export {
+  parseReflectionManagementProjection,
+  reflectionManagementProjectionSchema,
+  reflectionManagementQuerySchema,
+} from "./reflection-management.js";
+export type {
+  ReflectionManagementProjection,
+  ReflectionManagementQuery,
+} from "./reflection-management.js";
+export {
   diagnosticEvaluationRequestSchema,
   diagnosticResultProjectionSchema,
   parseDiagnosticResultProjection,

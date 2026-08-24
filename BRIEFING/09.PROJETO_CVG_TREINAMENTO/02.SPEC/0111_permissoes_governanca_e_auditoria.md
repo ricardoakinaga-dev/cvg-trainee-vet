@@ -27,9 +27,10 @@ No MVP, `CLINICAL_APPROVER` é concedido somente à identidade de Ricardo no boo
 
 `VIEW_PROGRAM_METRICS` é uma capacidade de leitura interna para `ADMIN`,
 `MODERATOR` e a identidade clínica aprovada, sempre com conta ativa e escopo
-correspondente. Ela permite o relatório agregado de participação digital, mas
-não concede alteração de atribuição, nota, gabarito, conteúdo, papel ou
-competência.
+correspondente. Ela permite os relatórios agregados de participação digital e
+reflexão por escopo/módulo, mas não concede leitura de resposta livre, identidade
+individual fora do mínimo operacional, alteração de atribuição, nota, gabarito,
+conteúdo, papel ou competência.
 
 Toda falha de autorização responde `403` ou `404` conforme a política de não enumeração. Ocultar botão, rota ou menu no web não é controle de segurança.
 
@@ -129,6 +130,7 @@ Auditar no mínimo: login/recovery sensível, convite, concessão/revogação, c
 - com `requireLeastPrivilege=true`, o healthcheck também rejeita `CREATEROLE`, `CREATEDB`, `CREATE` no schema `public` e qualquer relação do schema público pertencente à role de aplicação; migrations devem rodar com owner separado e a aplicação deve receber somente os grants operacionais provisionados pelo ambiente;
 - `0013_shared_rate_limit.sql` e `createPostgresRateLimiter` mantêm bucket transacional PostgreSQL para o limite compartilhado entre instâncias; a borda HTTP continua aplicando CSRF/origem antes do caso de uso;
 - a migration `0017_editorial_scope_rls.sql` aplica `ENABLE/FORCE ROW LEVEL SECURITY` a `content_editorial_records` e `content_review_decisions`; contexto ausente não lê nem grava material editorial, e a fila/autoria aplicam o `scopeId` em transação antes de consultar;
+- o agregado interno de reflexão não amplia a leitura staff de `answers`: o repositório primeiro enumera somente participantes pertencentes ao escopo e, na mesma transação, usa contexto `{cvg.scope_id, cvg.participant_id}` para selecionar apenas `answers.item_id`; `answers.response` nunca é selecionado nem serializado;
 - `VIEW_CONTENT_REVIEW_QUEUE` é separado de moderação/aprovação/publicação; `AUTHOR` vê somente seus registros, enquanto equipe escopada recebe a fila operacional. `VIEW_INTERNAL_SCOPES` retorna apenas memberships já presentes na sessão, sem permitir fabricar escopo;
 - o escopo protegido cobre execução e material editorial. Tabelas de identidade/administrativas adicionais, grants de produção, backup/restore e runbook permanecem nos respectivos itens de operação e jornada.
 

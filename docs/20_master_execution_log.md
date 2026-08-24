@@ -4303,3 +4303,59 @@ READY_FOR_NEXT_STEP
 Abrir o agregado gerencial protegido por escopo/módulo, com contagens allowlisted e
 sem texto livre; manter apelações, exportação, gates clínicos, provider/MFA e
 workflow remoto como dependências separadas.
+
+## 2026-08-23 — REFLECTION-035: agregado gerencial protegido
+
+### TIMESTAMP
+
+2026-08-23 22:18:39 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / jornada de produto
+
+### SPRINT
+
+REFLECTION-035 / AUD-P1-001
+
+### TASK
+
+Fechar a lacuna de gestão com contagens digitais por escopo/módulo, mantendo
+respostas livres e identidade fora da superfície interna.
+
+### ACTION
+
+Implementados o agregado imutável, contrato e query strict, repositório PostgreSQL
+bounded, rota `GET /api/v1/internal/reports/reflections`, wiring do runtime e seção
+operacional web. A leitura enumera participantes do escopo em uma transação, aplica
+`{scopeId, participantId}` antes de consultar e seleciona apenas `answers.itemId`;
+`answers.response` não é selecionado. A tentativa mais recente usa `updatedAt`,
+`version` e `id` como ordem determinística. Não foi criada migration nem policy staff
+mais ampla.
+
+### RESULT
+
+O contrato publica somente estados `NAO_INICIADA`, `EM_ANDAMENTO` e `CONCLUIDA`,
+denominador `totalAssignments`, evidência `REFLEXAO_DIGITAL` e claim
+`PROIBIDO_MVP`. A API reaproveita `VIEW_PROGRAM_METRICS`, rejeita query extra e
+escopo cruzado; a web tem loading, vazio, erro/retry, forbidden, tabela acessível e
+E2E sem identidade/texto. Unit coverage passou com 94 arquivos/466 testes e
+84,20% statements, 80,03% branches, 85,09% functions e 84,91% lines; E2E focado
+passou 5/5 e o build passou nos 12 workspaces. A integração live foi preparada,
+mas ficou skip porque `CVG_TEST_DATABASE_URL` não está disponível.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Receber a crítica independente, corrigir achados materiais, executar o verify
+completo, atualizar o manifesto com commit/artefatos e fechar somente como
+`COMPLETED_WITH_GAPS` se as provas locais e o release gate passarem. Manter como
+gaps a prova live/RLS, operação externa, gates clínicos, provider/MFA e workflow
+remoto.
