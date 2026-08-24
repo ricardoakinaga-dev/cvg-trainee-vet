@@ -6376,3 +6376,38 @@ o diff e registrar `READY_FOR_NEXT_STEP`. A próxima fatia candidata é a prova
 assignment→atividade com provenance/atomicidade quando o ambiente live e a
 autoridade correspondente estiverem disponíveis; release/100% continuam
 bloqueados pelos gaps explícitos.
+
+## 2026-08-24 — RESULT-FEEDBACK-046: encerramento local rastreável
+
+### TIMESTAMP
+
+2026-08-24 05:49:06 -03:00
+
+### ACTION
+
+Após o commit de implementação `2565e50f32a01348aa46684ef6d194bf2b6b0d23`,
+o manifesto foi ligado ao SHA intencional no commit documental
+`d6c7d84a1123dbfe06304e72a5c5517b7b814f84`. O worktree foi revisado e
+permaneceu limpo; não houve push ou deploy.
+
+### RESULT
+
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou, resolvendo
+todos os artefatos atuais para commits alcançáveis e paths rastreados. A
+verificação local da fatia registra 125 arquivos/572 testes, 29 skips,
+84,51% statements/80,33% branches/86,03% functions/85,23% lines, contratos
+72/72, worker 25/25, migrations 26/26, build 12 workspaces, E2E 26/26,
+integração 20/20 com 29 skips, audit high sem vulnerabilidades e gates
+documentais/segurança/exposição/arquitetura verdes.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — `RESULT-FEEDBACK-046` concluído localmente com gaps
+explícitos; não é release produtivo nem aprovação clínica.
+
+### NEXT
+
+Quando `CVG_TEST_DATABASE_URL` e a autoridade de ambiente estiverem
+disponíveis, preparar a prova assignment→atividade com provenance, atomicidade,
+RLS e concorrência. Manter bloqueados publicação clínica, piloto, provider/MFA,
+assurance operacional e qualquer claim de competência prática.

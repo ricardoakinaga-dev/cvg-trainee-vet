@@ -9,17 +9,17 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: RESULT-FEEDBACK-046 / AUD-P1-003 — feedback digital e debrief bounded
-- current_task: RESULT-FEEDBACK-2026-08-24-C — validar rastreabilidade de release no SHA intencional
+- current_sprint: RESULT-FEEDBACK-046 / AUD-P1-003 — feedback digital e debrief bounded, encerrado localmente
+- current_task: JOURNEY-REL-001 — preparar prova assignment→atividade com provenance/atomicidade quando o ambiente live estiver disponível
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: `RESULT-FEEDBACK-046` foi commitado em `2565e50f32a01348aa46684ef6d194bf2b6b0d23`; a verificação completa passou com 125 arquivos/572 testes, 29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, contratos 72/72, worker 25/25, migrations 26/26, build 12 workspaces, E2E 26/26, integração 20/20 com 29 skips, audit high sem vulnerabilidades, secrets, architecture, documentation, product-definition, exposure e diff-check. O bloco `RESULT-FEEDBACK-046` agora aponta para o SHA intencional; release traceability ainda precisa ser executado em worktree limpo
-- next_action: executar `CVG_TRACEABILITY_RELEASE=true PATH=/tmp:$PATH pnpm verify:traceability`, conferir worktree limpo e append final de log/runtime; então registrar `READY_FOR_NEXT_STEP`. Próxima fatia candidata: provar assignment→atividade com provenance/atomicidade quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis. Não declarar release/100% enquanto gaps de relação, live RLS, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: `RESULT-FEEDBACK-046` foi implementado em `2565e50f32a01348aa46684ef6d194bf2b6b0d23`, ligado ao manifesto no commit `d6c7d84a1123dbfe06304e72a5c5517b7b814f84`; a verificação passou com 125 arquivos/572 testes, 29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, contratos 72/72, worker 25/25, migrations 26/26, build 12 workspaces, E2E 26/26, integração 20/20 com 29 skips, audit high sem vulnerabilidades, secrets, architecture, documentation, product-definition, exposure e diff-check. `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo
+- next_action: preparar a prova live assignment→atividade com provenance/atomicidade/RLS/concorrência quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis; manter a fatia local pronta para retomada e não declarar release/100% enquanto gaps de relação, live RLS, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T05:48:03-03:00
+- last_update: 2026-08-24T05:49:06-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `2565e50f32a01348aa46684ef6d194bf2b6b0d23`
-- origin: `fbbc692` (`origin/main`), local `main` ahead 46 commits
-- worktree: mudança documental local para ligar `RESULT-FEEDBACK-046` ao SHA intencional; não há push/deploy
+- head: `d6c7d84a1123dbfe06304e72a5c5517b7b814f84`
+- origin: `fbbc692` (`origin/main`), local `main` ahead 47 commits
+- worktree: limpo após os commits `2565e50`/`d6c7d84`; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL no commit `2565e50`; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build 12 workspaces, E2E 26/26, integração 20/20 +29 skips, audit high, traceability estrutural e gates estáticos passaram; release traceability está pendente desta alteração documental; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
+- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL nos commits `2565e50`/`d6c7d84`; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build 12 workspaces, E2E 26/26, integração 20/20 +29 skips, audit high, traceability estrutural/release e gates estáticos passaram; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
 ## REGRAS DE USO
 
