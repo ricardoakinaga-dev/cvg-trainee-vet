@@ -210,6 +210,15 @@ export type {
   AppealReviewQueueQuery,
 } from "./appeal-review-queue.js";
 export {
+  feedbackTriageQueueProjectionSchema,
+  feedbackTriageQueueQuerySchema,
+  parseFeedbackTriageQueueProjection,
+} from "./feedback-triage-queue.js";
+export type {
+  FeedbackTriageQueueProjection,
+  FeedbackTriageQueueQuery,
+} from "./feedback-triage-queue.js";
+export {
   apiErrorCodeSchema,
   apiErrorResponse,
   apiSuccessResponse,

@@ -205,6 +205,21 @@ describe("authorization policy", () => {
     expect(canAccess({ ...author, roles: ["PARTICIPANT"] })).toBe(false);
   });
 
+  it("limits the feedback triage queue to active scoped staff identities", () => {
+    const moderator = {
+      principalId: "moderator-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      capability: "VIEW_FEEDBACK_QUEUE" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(moderator)).toBe(true);
+    expect(canAccess({ ...moderator, scopes: ["other-scope"] })).toBe(false);
+    expect(canAccess({ ...moderator, roles: ["PARTICIPANT"] })).toBe(false);
+    expect(canAccess({ ...moderator, accountStatus: "SUSPENDED" })).toBe(false);
+  });
+
   it("requires the configured identity for a clinical queue reader", () => {
     const request = {
       principalId: "ricardo-account",

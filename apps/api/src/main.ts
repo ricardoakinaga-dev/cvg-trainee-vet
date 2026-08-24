@@ -27,6 +27,7 @@ import {
   getContentReviewQueue,
   getAppealReviewQueue,
   getAppealReviewHistory,
+  getFeedbackTriageQueue,
   issueAccountRecovery,
   reviewAuthoringContent,
   saveAnswer,
@@ -76,6 +77,7 @@ import {
   createAppealReviewHistoryRepository,
   createAppealReviewTransitionRepository,
   createContentReviewQueueRepository,
+  createFeedbackTriageQueueRepository,
   createSessionRepository,
 } from "@cvg/persistence";
 
@@ -158,6 +160,9 @@ export function createApiRuntime(
   const reflectionManagementReadRepository =
     createReflectionManagementReadRepository(integrations.database.db);
   const contentReviewQueueRepository = createContentReviewQueueRepository(
+    integrations.database.db,
+  );
+  const feedbackTriageQueueRepository = createFeedbackTriageQueueRepository(
     integrations.database.db,
   );
   const diagnosticResultRepository = createDiagnosticResultRepository(
@@ -320,6 +325,8 @@ export function createApiRuntime(
       getContentReviewQueue(command, contentReviewQueueRepository),
     getAppealReviewQueue: (command) =>
       getAppealReviewQueue(command, appealReviewQueueRepository),
+    getFeedbackTriageQueue: (command) =>
+      getFeedbackTriageQueue(command, feedbackTriageQueueRepository),
     getAppealReviewHistory: (command) =>
       getAppealReviewHistory(command, appealReviewHistoryRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>

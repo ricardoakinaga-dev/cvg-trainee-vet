@@ -22,6 +22,25 @@ type ReportStatusFilter =
 type AppealReviewQueueStatus =
   "ABERTA" | "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE" | "ENCERRADA";
 type AppealReviewQueueStatusFilter = "" | AppealReviewQueueStatus;
+type FeedbackTriageQueueStatus =
+  | "NOVO"
+  | "TRIADO"
+  | "EM_TRATAMENTO"
+  | "AGUARDA_USUARIO"
+  | "RESOLVIDO"
+  | "DUPLICADO"
+  | "NAO_REPRODUZIDO"
+  | "NAO_PLANEJADO";
+type FeedbackTriageQueueStatusFilter = "" | FeedbackTriageQueueStatus;
+type FeedbackTriageEvent =
+  | "TRIAR"
+  | "INICIAR_TRATAMENTO"
+  | "AGUARDAR_USUARIO"
+  | "RESOLVER"
+  | "MARCAR_DUPLICADO"
+  | "MARCAR_NAO_REPRODUZIDO"
+  | "MARCAR_NAO_PLANEJADO"
+  | "RETOMAR_TRATAMENTO";
 
 type AppealReviewHistoryEvent = Readonly<{
   readonly historyId: string;
@@ -47,6 +66,31 @@ type AppealReviewHistoryEvent = Readonly<{
 type AppealReviewHistory = Readonly<{
   readonly appealId: string;
   readonly events: readonly AppealReviewHistoryEvent[];
+}>;
+
+type FeedbackTriageQueue = Readonly<{
+  readonly kind: "feedback_triage_queue";
+  readonly scopeId: string;
+  readonly generatedAt: string;
+  readonly filters: Readonly<{
+    readonly scopeId: string;
+    readonly status?: FeedbackTriageQueueStatus;
+    readonly limit: number;
+  }>;
+  readonly items: readonly Readonly<{
+    readonly ticketId: string;
+    readonly participantId: string;
+    readonly type:
+      | "BUG_TECNICO"
+      | "USABILIDADE"
+      | "ERRO_CONTEUDO"
+      | "MELHORIA"
+      | "CONTESTACAO";
+    readonly description: string;
+    readonly createdAt: string;
+    readonly status: FeedbackTriageQueueStatus;
+    readonly version: number;
+  }>[];
 }>;
 
 type InvitationState = "idle" | "submitting" | "success" | "error";
@@ -641,6 +685,84 @@ function isAppealReviewQueue(value: unknown): value is AppealReviewQueue {
   });
 }
 
+function isFeedbackTriageQueueStatus(
+  value: unknown,
+): value is FeedbackTriageQueueStatus {
+  return (
+    value === "NOVO" ||
+    value === "TRIADO" ||
+    value === "EM_TRATAMENTO" ||
+    value === "AGUARDA_USUARIO" ||
+    value === "RESOLVIDO" ||
+    value === "DUPLICADO" ||
+    value === "NAO_REPRODUZIDO" ||
+    value === "NAO_PLANEJADO"
+  );
+}
+
+function isFeedbackTriageQueue(value: unknown): value is FeedbackTriageQueue {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, [
+      "kind",
+      "scopeId",
+      "generatedAt",
+      "filters",
+      "items",
+    ]) ||
+    value.kind !== "feedback_triage_queue" ||
+    !isUuid(value.scopeId) ||
+    typeof value.generatedAt !== "string" ||
+    Number.isNaN(new Date(value.generatedAt).getTime()) ||
+    !isRecord(value.filters) ||
+    !hasOnlyKeys(value.filters, ["scopeId", "status", "limit"]) ||
+    !isUuid(value.filters.scopeId) ||
+    value.filters.scopeId !== value.scopeId ||
+    (value.filters.status !== undefined &&
+      !isFeedbackTriageQueueStatus(value.filters.status)) ||
+    !isCount(value.filters.limit) ||
+    value.filters.limit < 1 ||
+    value.filters.limit > 100 ||
+    !Array.isArray(value.items) ||
+    value.items.length > 100
+  ) {
+    return false;
+  }
+
+  return value.items.every((item) => {
+    if (
+      !isRecord(item) ||
+      !hasOnlyKeys(item, [
+        "ticketId",
+        "participantId",
+        "type",
+        "description",
+        "createdAt",
+        "status",
+        "version",
+      ]) ||
+      !isUuid(item.ticketId) ||
+      !isUuid(item.participantId) ||
+      (item.type !== "BUG_TECNICO" &&
+        item.type !== "USABILIDADE" &&
+        item.type !== "ERRO_CONTEUDO" &&
+        item.type !== "MELHORIA" &&
+        item.type !== "CONTESTACAO") ||
+      typeof item.description !== "string" ||
+      item.description.trim().length === 0 ||
+      item.description.length > 10_000 ||
+      /<[^>]*>/u.test(item.description) ||
+      typeof item.createdAt !== "string" ||
+      Number.isNaN(new Date(item.createdAt).getTime()) ||
+      !isFeedbackTriageQueueStatus(item.status) ||
+      !isCount(item.version)
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function isAppealReviewHistoryEvent(
   value: unknown,
 ): value is AppealReviewHistoryEvent {
@@ -822,6 +944,72 @@ function appealReviewHistoryStatusLabel(
   return labels[value];
 }
 
+function feedbackTriageStatusLabel(value: FeedbackTriageQueueStatus): string {
+  const labels: Readonly<Record<FeedbackTriageQueueStatus, string>> = {
+    NOVO: "Novo",
+    TRIADO: "Triado",
+    EM_TRATAMENTO: "Em tratamento",
+    AGUARDA_USUARIO: "Aguardando usuário",
+    RESOLVIDO: "Resolvido",
+    DUPLICADO: "Duplicado",
+    NAO_REPRODUZIDO: "Não reproduzido",
+    NAO_PLANEJADO: "Não planejado",
+  };
+  return labels[value];
+}
+
+function feedbackTriageTypeLabel(
+  value: FeedbackTriageQueue["items"][number]["type"],
+): string {
+  const labels: Readonly<
+    Record<FeedbackTriageQueue["items"][number]["type"], string>
+  > = {
+    BUG_TECNICO: "Bug técnico",
+    USABILIDADE: "Usabilidade",
+    ERRO_CONTEUDO: "Erro de conteúdo",
+    MELHORIA: "Melhoria",
+    CONTESTACAO: "Contestação",
+  };
+  return labels[value];
+}
+
+function feedbackTriageEventLabel(value: FeedbackTriageEvent): string {
+  const labels: Readonly<Record<FeedbackTriageEvent, string>> = {
+    TRIAR: "Triar",
+    INICIAR_TRATAMENTO: "Iniciar tratamento",
+    AGUARDAR_USUARIO: "Aguardar usuário",
+    RESOLVER: "Resolver",
+    MARCAR_DUPLICADO: "Marcar duplicado",
+    MARCAR_NAO_REPRODUZIDO: "Não reproduzido",
+    MARCAR_NAO_PLANEJADO: "Não planejado",
+    RETOMAR_TRATAMENTO: "Retomar tratamento",
+  };
+  return labels[value];
+}
+
+function feedbackTriageEvents(
+  status: FeedbackTriageQueueStatus,
+): readonly FeedbackTriageEvent[] {
+  switch (status) {
+    case "NOVO":
+      return ["TRIAR"];
+    case "TRIADO":
+      return ["INICIAR_TRATAMENTO"];
+    case "EM_TRATAMENTO":
+      return [
+        "AGUARDAR_USUARIO",
+        "RESOLVER",
+        "MARCAR_DUPLICADO",
+        "MARCAR_NAO_REPRODUZIDO",
+        "MARCAR_NAO_PLANEJADO",
+      ];
+    case "AGUARDA_USUARIO":
+      return ["RETOMAR_TRATAMENTO"];
+    default:
+      return [];
+  }
+}
+
 function lastSeenLabel(value: string | undefined): string {
   if (value === undefined) return "Nunca acessou";
   const date = new Date(value);
@@ -910,6 +1098,18 @@ export default function OperationsPage() {
     useState<ReportLoadState>("idle");
   const [reflectionReport, setReflectionReport] =
     useState<ReflectionManagementReport | null>(null);
+  const [feedbackQueueState, setFeedbackQueueState] =
+    useState<ReportLoadState>("idle");
+  const [feedbackQueue, setFeedbackQueue] =
+    useState<FeedbackTriageQueue | null>(null);
+  const [feedbackQueueStatusFilter, setFeedbackQueueStatusFilter] =
+    useState<FeedbackTriageQueueStatusFilter>("");
+  const [feedbackActionKey, setFeedbackActionKey] = useState<string | null>(
+    null,
+  );
+  const [feedbackActionError, setFeedbackActionError] = useState<string | null>(
+    null,
+  );
   const [appealQueueState, setAppealQueueState] =
     useState<ReportLoadState>("idle");
   const [appealQueue, setAppealQueue] = useState<AppealReviewQueue | null>(
@@ -1100,6 +1300,96 @@ export default function OperationsPage() {
     }
     void loadReflectionManagementReport(scopeId);
   }, [dashboard, loadReflectionManagementReport]);
+
+  const loadFeedbackTriageQueue = useCallback(
+    async (
+      scopeId: string,
+      status: FeedbackTriageQueueStatusFilter,
+    ): Promise<void> => {
+      setFeedbackQueueState("loading");
+      setFeedbackActionError(null);
+      const query = new URLSearchParams({ scopeId });
+      if (status.length > 0) query.set("status", status);
+      try {
+        const response = await fetch(
+          `/api/v1/internal/feedback?${query.toString()}`,
+          { cache: "no-store", credentials: "include" },
+        );
+        if (!response.ok) {
+          setFeedbackQueue(null);
+          setFeedbackQueueState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isFeedbackTriageQueue(payload.data)
+        ) {
+          throw new Error();
+        }
+        setFeedbackQueue(payload.data);
+        setFeedbackQueueState("ready");
+      } catch {
+        setFeedbackQueue(null);
+        setFeedbackQueueState("error");
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const scopeId = dashboard?.scopes[0];
+    if (scopeId === undefined) {
+      setFeedbackQueue(null);
+      setFeedbackQueueState("idle");
+      return;
+    }
+    void loadFeedbackTriageQueue(scopeId, feedbackQueueStatusFilter);
+  }, [dashboard, feedbackQueueStatusFilter, loadFeedbackTriageQueue]);
+
+  const transitionFeedbackTicket = useCallback(
+    async (
+      item: FeedbackTriageQueue["items"][number],
+      event: FeedbackTriageEvent,
+    ) => {
+      if (feedbackQueue === null) return;
+      const actionKey = `${item.ticketId}:${event}`;
+      setFeedbackActionKey(actionKey);
+      setFeedbackActionError(null);
+      try {
+        const response = await fetch(
+          `/api/v1/internal/feedback/${encodeURIComponent(item.ticketId)}`,
+          {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              ticketId: item.ticketId,
+              participantId: item.participantId,
+              scopeId: feedbackQueue.scopeId,
+              version: item.version,
+              event,
+            }),
+          },
+        );
+        if (!response.ok) throw new Error();
+        const payload: unknown = await response.json().catch(() => null);
+        if (!isRecord(payload) || payload.success !== true) throw new Error();
+        await loadFeedbackTriageQueue(
+          feedbackQueue.scopeId,
+          feedbackQueueStatusFilter,
+        );
+      } catch {
+        setFeedbackActionError(
+          "Não foi possível atualizar o relato. O estado pode ter mudado; tente novamente.",
+        );
+      } finally {
+        setFeedbackActionKey(null);
+      }
+    },
+    [feedbackQueue, feedbackQueueStatusFilter, loadFeedbackTriageQueue],
+  );
 
   const loadAppealReviewQueue = useCallback(
     async (scopeId: string, status: AppealReviewQueueStatusFilter) => {
@@ -1793,6 +2083,176 @@ export default function OperationsPage() {
                       </tbody>
                     </table>
                   </div>
+                </>
+              )}
+            </section>
+
+            <section
+              className="dashboard-panel"
+              aria-labelledby="feedback-triage-queue-title"
+              data-testid="feedback-triage-queue"
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Suporte interno</p>
+                  <h3 id="feedback-triage-queue-title">
+                    Fila de relatos do produto
+                  </h3>
+                  <p>
+                    Consulta escopada de relatos sem anexos ou dados clínicos.
+                    Esta tela só aplica transições previstas; prioridade,
+                    atribuição, resposta e SLA ainda não fazem parte deste
+                    recorte.
+                  </p>
+                </div>
+                {feedbackQueueState === "ready" && feedbackQueue !== null ? (
+                  <span className="status-pill">
+                    Atualizado {lastSeenLabel(feedbackQueue.generatedAt)}
+                  </span>
+                ) : null}
+              </div>
+              {feedbackQueueState === "loading" ? (
+                <div className="experience-panel" role="status">
+                  Consultando relatos…
+                </div>
+              ) : feedbackQueueState === "forbidden" ||
+                feedbackQueueState === "unauthenticated" ? (
+                <div className="experience-panel dashboard-message">
+                  <strong>Fila restrita</strong>
+                  <span>
+                    Esta conta não possui autorização para triagem de relatos.
+                  </span>
+                </div>
+              ) : feedbackQueueState === "error" || feedbackQueue === null ? (
+                <div className="experience-panel error-panel" role="alert">
+                  <p>Não foi possível carregar a fila de relatos.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const scopeId = dashboard?.scopes[0];
+                      if (scopeId !== undefined) {
+                        void loadFeedbackTriageQueue(
+                          scopeId,
+                          feedbackQueueStatusFilter,
+                        );
+                      }
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="report-filter-row"
+                    aria-label="Filtros da fila de relatos"
+                  >
+                    <label>
+                      Status
+                      <select
+                        value={feedbackQueueStatusFilter}
+                        onChange={(event) =>
+                          setFeedbackQueueStatusFilter(
+                            event.target
+                              .value as FeedbackTriageQueueStatusFilter,
+                          )
+                        }
+                      >
+                        <option value="">Todos os estados</option>
+                        <option value="NOVO">Novos</option>
+                        <option value="TRIADO">Triados</option>
+                        <option value="EM_TRATAMENTO">Em tratamento</option>
+                        <option value="AGUARDA_USUARIO">
+                          Aguardando usuário
+                        </option>
+                        <option value="RESOLVIDO">Resolvidos</option>
+                        <option value="DUPLICADO">Duplicados</option>
+                        <option value="NAO_REPRODUZIDO">
+                          Não reproduzidos
+                        </option>
+                        <option value="NAO_PLANEJADO">Não planejados</option>
+                      </select>
+                    </label>
+                  </div>
+                  {feedbackQueue.items.length === 0 ? (
+                    <p className="dashboard-empty">
+                      Nenhum relato no recorte autorizado.
+                    </p>
+                  ) : (
+                    <div
+                      className="dashboard-table-wrap"
+                      tabIndex={0}
+                      role="region"
+                      aria-label="Tabela de relatos para triagem"
+                    >
+                      <table className="dashboard-table">
+                        <caption className="visually-hidden">
+                          Relatos para triagem interna
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Relato</th>
+                            <th scope="col">Criado</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {feedbackQueue.items.map((item) => {
+                            const events = feedbackTriageEvents(item.status);
+                            return (
+                              <tr key={item.ticketId}>
+                                <th scope="row">
+                                  {feedbackTriageTypeLabel(item.type)}
+                                </th>
+                                <td>{item.description}</td>
+                                <td>{lastSeenLabel(item.createdAt)}</td>
+                                <td>
+                                  {feedbackTriageStatusLabel(item.status)}
+                                </td>
+                                <td>
+                                  {events.length === 0 ? (
+                                    <span>Estado final</span>
+                                  ) : (
+                                    <div className="account-actions">
+                                      {events.map((event) => {
+                                        const actionKey = `${item.ticketId}:${event}`;
+                                        return (
+                                          <button
+                                            key={event}
+                                            type="button"
+                                            disabled={
+                                              feedbackActionKey !== null
+                                            }
+                                            onClick={() =>
+                                              void transitionFeedbackTicket(
+                                                item,
+                                                event,
+                                              )
+                                            }
+                                          >
+                                            {feedbackActionKey === actionKey
+                                              ? "Atualizando…"
+                                              : feedbackTriageEventLabel(event)}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {feedbackActionError !== null ? (
+                    <p className="feedback error" role="alert">
+                      {feedbackActionError}
+                    </p>
+                  ) : null}
                 </>
               )}
             </section>

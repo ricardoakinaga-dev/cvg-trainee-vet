@@ -69,6 +69,15 @@ export type {
   ParticipantFeedbackReadPort,
   ParticipantFeedbackReadRecord,
 } from "./feedback-ticket-read-use-cases.js";
+export { getFeedbackTriageQueue } from "./feedback-triage-queue-use-cases.js";
+export type {
+  FeedbackTriageQueueItem,
+  FeedbackTriageQueueQuery,
+  FeedbackTriageQueueReadPort,
+  FeedbackTriageQueueState,
+  FeedbackTriageQueueStatus,
+  GetFeedbackTriageQueueCommand,
+} from "./feedback-triage-queue-use-cases.js";
 export { acceptInvitation, createInvitation } from "./invitation-use-cases.js";
 export type {
   AcceptInvitationCommand,

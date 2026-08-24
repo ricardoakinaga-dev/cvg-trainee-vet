@@ -25,6 +25,7 @@ export type Capability =
   | "VIEW_STAFF_DASHBOARD"
   | "VIEW_PROGRAM_METRICS"
   | "VIEW_CONTENT_REVIEW_QUEUE"
+  | "VIEW_FEEDBACK_QUEUE"
   | "VIEW_INTERNAL_SCOPES"
   | "MANAGE_ROLES"
   | "MANAGE_ACCOUNT_LIFECYCLE"
@@ -105,6 +106,7 @@ export function canAccess(request: AuthorizationRequest): boolean {
       );
     case "MANAGE_LEARNING_ASSIGNMENTS":
     case "MANAGE_ASSESSMENT_WORKFLOWS":
+    case "VIEW_FEEDBACK_QUEUE":
     case "TRANSITION_FEEDBACK_TICKET":
       return hasScopedStaffRole(request) && hasScope(request);
     case "REVIEW_APPEAL":

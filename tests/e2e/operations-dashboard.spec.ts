@@ -180,6 +180,27 @@ const appealReviewQueue = {
   ],
 };
 
+const feedbackTriageQueue = {
+  kind: "feedback_triage_queue",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T12:00:00.000Z",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    limit: 50,
+  },
+  items: [
+    {
+      ticketId: "77777777-7777-4777-8777-777777777777",
+      participantId: "22222222-2222-4222-8222-222222222222",
+      type: "BUG_TECNICO",
+      description: "Relato sintético precisa de triagem.",
+      createdAt: "2026-08-23T10:00:00.000Z",
+      status: "NOVO",
+      version: 0,
+    },
+  ],
+};
+
 const appealReviewHistory = {
   appealId: "44444444-4444-4444-8444-444444444444",
   events: [
@@ -269,6 +290,58 @@ test.describe("staff training dashboard", () => {
         });
       },
     );
+    let currentFeedbackQueue = feedbackTriageQueue;
+    await page.route(
+      /\/api\/v1\/internal\/feedback(?:\/[^?]+)?(?:\?.*)?$/u,
+      async (route) => {
+        if (route.request().method() === "PATCH") {
+          const request = route.request().postDataJSON() as Readonly<{
+            readonly ticketId?: string;
+            readonly participantId?: string;
+            readonly scopeId?: string;
+            readonly version?: number;
+            readonly event?: string;
+          }>;
+          expect(request).toEqual({
+            ticketId: "77777777-7777-4777-8777-777777777777",
+            participantId: "22222222-2222-4222-8222-222222222222",
+            scopeId: "11111111-1111-4111-8111-111111111111",
+            version: 0,
+            event: "TRIAR",
+          });
+          currentFeedbackQueue = {
+            ...currentFeedbackQueue,
+            items: [
+              {
+                ...currentFeedbackQueue.items[0],
+                status: "TRIADO",
+                version: 1,
+              },
+            ],
+          };
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(
+              successEnvelope({
+                ticketId: "77777777-7777-4777-8777-777777777777",
+                type: "BUG_TECNICO",
+                description: "Relato sintético precisa de triagem.",
+                createdAt: "2026-08-23T10:00:00.000Z",
+                status: "TRIADO",
+                version: 1,
+              }),
+            ),
+          });
+          return;
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(currentFeedbackQueue)),
+        });
+      },
+    );
     await page.route("**/api/v1/internal/appeals/*/history", async (route) => {
       expect(route.request().method()).toBe("GET");
       await route.fulfill({
@@ -300,6 +373,14 @@ test.describe("staff training dashboard", () => {
     await expect(
       page.getByRole("heading", { name: "Fila de contestação" }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Fila de relatos do produto" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Relato sintético precisa de triagem."),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Triar" }).click();
+    await expect(page.getByRole("cell", { name: "Triado" })).toBeVisible();
     await expect(
       page.getByText("A justificativa sintética aguarda revisão interna."),
     ).toBeVisible();

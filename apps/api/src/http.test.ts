@@ -24,6 +24,7 @@ import {
   type ContentReviewQueueState,
   type AppealReviewQueueState,
   type AppealReviewHistoryState,
+  type FeedbackTriageQueueState,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
 
@@ -271,6 +272,28 @@ const contentReviewQueue: ContentReviewQueueState = {
       updatedAt: "2026-08-23T19:30:00.000Z",
       canOpenAuthoring: true,
       nextAction: "REVISAR_CLINICAMENTE",
+    },
+  ],
+};
+
+const feedbackTriageQueue: FeedbackTriageQueueState = {
+  kind: "feedback_triage_queue",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-24T12:00:00.000Z",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    status: "NOVO",
+    limit: 25,
+  },
+  items: [
+    {
+      ticketId: "22222222-2222-4222-8222-222222222222",
+      participantId: "33333333-3333-4333-8333-333333333333",
+      type: "ERRO_CONTEUDO",
+      description: "Relato sintético para triagem.",
+      createdAt: "2026-08-24T11:00:00.000Z",
+      status: "NOVO",
+      version: 0,
     },
   ],
 };
@@ -2130,6 +2153,76 @@ describe("API HTTP boundary", () => {
       }),
     );
     expect(response.status).toBe(500);
+  });
+
+  it("returns the bounded internal feedback queue and denies participant access", async () => {
+    const getFeedbackTriageQueue = vi.fn(async () => feedbackTriageQueue);
+    const scopeId = feedbackTriageQueue.scopeId;
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/feedback",
+        query: { scopeId, status: "NOVO", limit: "25" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "44444444-4444-4444-8444-444444444444",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getFeedbackTriageQueue,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getFeedbackTriageQueue).toHaveBeenCalledWith({
+      principalId: "44444444-4444-4444-8444-444444444444",
+      accountStatus: "ACTIVE",
+      roles: ["MODERATOR"],
+      scopes: [scopeId],
+      query: { scopeId, status: "NOVO", limit: 25 },
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "feedback_triage_queue",
+        items: [{ type: "ERRO_CONTEUDO", status: "NOVO" }],
+      },
+    });
+
+    const participant = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/feedback",
+        query: { scopeId },
+        body: undefined,
+      },
+      dependencies({ getFeedbackTriageQueue }),
+    );
+    expect(participant.status).toBe(403);
+    expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(1);
+
+    const invalid = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/feedback",
+        query: { scopeId, participantId: attempt.participantId },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "44444444-4444-4444-8444-444444444444",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getFeedbackTriageQueue,
+      }),
+    );
+    expect(invalid.status).toBe(422);
+    expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(1);
   });
 
   it("returns the scoped appeal review queue without mutation or public fields", async () => {

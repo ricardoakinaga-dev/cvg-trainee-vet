@@ -62,6 +62,8 @@ import {
   type GetAppealReviewQueueCommand,
   type AppealReviewHistoryState,
   type GetAppealReviewHistoryCommand,
+  type FeedbackTriageQueueState,
+  type GetFeedbackTriageQueueCommand,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
@@ -98,6 +100,8 @@ import {
   appealReviewHistoryPathSchema,
   appealReviewHistoryProjectionSchema,
   appealReviewHistoryQuerySchema,
+  feedbackTriageQueueProjectionSchema,
+  feedbackTriageQueueQuerySchema,
   internalAuthoringRecordQuerySchema,
   internalSessionScopesProjectionSchema,
   parseDiagnosticResultProjection,
@@ -274,6 +278,9 @@ export interface ApiHttpDependencies {
   readonly getAppealReviewQueue?: (
     command: GetAppealReviewQueueCommand,
   ) => Promise<AppealReviewQueueState>;
+  readonly getFeedbackTriageQueue?: (
+    command: GetFeedbackTriageQueueCommand,
+  ) => Promise<FeedbackTriageQueueState>;
   readonly getAppealReviewHistory?: (
     command: GetAppealReviewHistoryCommand,
   ) => Promise<AppealReviewHistoryState | null>;
@@ -739,6 +746,18 @@ function publicContentReviewQueueProjection(
         ? {}
         : { latestReview: { ...item.latestReview } }),
     })),
+  });
+}
+
+function internalFeedbackTriageQueueProjection(
+  state: FeedbackTriageQueueState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return feedbackTriageQueueProjectionSchema.parse({
+    kind: state.kind,
+    scopeId: state.scopeId,
+    generatedAt: state.generatedAt,
+    filters: { ...state.filters },
+    items: state.items.map((item) => ({ ...item })),
   });
 }
 
@@ -1282,6 +1301,67 @@ async function handleAppealReviewQueue(
     status: 200,
     body: apiSuccessResponse(
       internalAppealReviewQueueProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleFeedbackTriageQueue(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getFeedbackTriageQueue === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const rawQuery = request.query ?? {};
+  if (
+    Object.keys(rawQuery).some(
+      (key) => key !== "scopeId" && key !== "status" && key !== "limit",
+    )
+  ) {
+    return validationResponse(requestId);
+  }
+  const rawLimit = rawQuery.limit;
+  const parsed = feedbackTriageQueueQuerySchema.safeParse({
+    scopeId: rawQuery.scopeId,
+    ...(rawQuery.status === undefined ? {} : { status: rawQuery.status }),
+    ...(rawLimit === undefined ? {} : { limit: Number(rawLimit) }),
+  });
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_FEEDBACK_QUEUE",
+      { scopeId: parsed.data.scopeId },
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getFeedbackTriageQueue({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+    query: {
+      scopeId: parsed.data.scopeId,
+      ...(parsed.data.status === undefined
+        ? {}
+        : { status: parsed.data.status }),
+      limit: parsed.data.limit,
+    },
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalFeedbackTriageQueueProjection(state),
       requestId,
     ),
   };
@@ -2872,6 +2952,21 @@ async function handleApiRequestCore(
       if (principal === null)
         return errorResponse("unauthenticated", requestId);
       return await handleAppealReviewQueue(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/feedback"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleFeedbackTriageQueue(
         request,
         requestId,
         principal,
