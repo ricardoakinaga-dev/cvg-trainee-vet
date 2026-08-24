@@ -3761,6 +3761,7 @@ artifacts:
         "GREEN: migration 0032 preserves all persisted journey states while its content policy remains limited to startable states; static RLS contract passed 2/2",
         "verify:migrations passed 33/33 and session/module schema check is aligned",
         "integration without a database passed 23/56 (33 expected skips)",
+        "CVG_TRACEABILITY_RELEASE=true verify:traceability passed on a clean worktree",
         "live PostgreSQL/RLS was not executed because no authorized CVG database URL was present",
       ]
     status: "verified-with-gaps"

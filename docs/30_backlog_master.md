@@ -62,9 +62,9 @@ visibilidade de todos os estados persistidos da jornada e restringem itens a
 assignments iniciáveis. A constraint `session_id` sem `module_id` também foi
 fechada. Fixtures live sintéticos foram alinhados com memberships aceitos.
 Unitário passou 117/572, contrato RLS 2/2, integração 23 pass/33 skips,
-migrations 33/33 e typecheck/lint/formatação/diff-check passaram; PostgreSQL
-live e E2E autoral continuam pendentes por falta de banco CVG descartável
-autorizado.
+migrations 33/33, traceability release e typecheck/lint/formatação/diff-check
+passaram; PostgreSQL live e E2E autoral continuam pendentes por falta de banco
+CVG descartável autorizado.
 
 ## P0 — CRÍTICO
 
@@ -805,7 +805,7 @@ autorizado.
 - evidência: `BRIEFING/04.AUDIT/0529_activity_rls_attempt_context_audit.md`; SPEC 0118 seção 28; `traceability.yml` / `ACTIVITY-RLS-047`
 - código: `packages/persistence/src/attempt-repository.ts`; `apps/api/src/http.ts`; `packages/persistence/drizzle/0031_learning_activity_participant_rls_hardening.sql`; `packages/persistence/drizzle/0032_learning_activity_journey_visibility.sql`; `packages/persistence/src/schema.ts`
 - testes: `packages/persistence/src/attempt-repository.db.test.ts`; `tests/integration/activity-rls-governance.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `tests/integration/postgres-activity-content.test.ts`; `tests/integration/postgres-adaptive-assignment.test.ts`
-- resultado: commits `743b755` e `b85b059` corrigiram o P0, endureceram o P1/P2 e preservaram o contrato de jornada; unitário 117/572, contrato RLS 2/2, integração 23/56 e migrations 33/33 passaram; nenhuma execução live foi inferida
+- resultado: commits `743b755` e `b85b059` corrigiram o P0, endureceram o P1/P2 e preservaram o contrato de jornada; unitário 117/572, contrato RLS 2/2, integração 23/56, migrations 33/33 e traceability release passaram; nenhuma execução live foi inferida
 - gaps explícitos: aplicação da migration e suíte PostgreSQL live em banco descartável, E2E autoral navegador→API→PostgreSQL, workflow same-SHA, operação produtiva e gates clínicos
 - próxima ação: executar `CVG_RUN_LIVE_DB_TESTS=true` e `CVG_RUN_REAL_E2E=true` em ambiente autorizado, registrando resultado PASS ou falha sem mascaramento
 

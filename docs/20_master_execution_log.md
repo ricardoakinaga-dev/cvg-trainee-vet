@@ -7100,3 +7100,27 @@ sem bypass continuam pendentes por falta de banco CVG descartável autorizado.
 Aplicar `0031`/`0032` e executar a suíte live com `CVG_RUN_LIVE_DB_TESTS=true`,
 seguida do E2E `CVG_RUN_REAL_E2E=true`, somente em ambiente autorizado; não
 usar o schema PostgreSQL de outro sistema.
+
+## 2026-08-24 — ACTIVITY-RLS-047: gates finais locais
+
+### TIMESTAMP
+
+2026-08-24T10:01:16-03:00
+
+### ACTION
+
+Reexecutados os gates de fechamento após os commits técnico, documental e de
+estado: migration governance, documentação, traceability estrutural e release,
+diff-check, sintaxe do fixture e descoberta Playwright.
+
+### RESULT
+
+Passaram migrations 33/33, documentação, traceability estrutural e
+`CVG_TRACEABILITY_RELEASE=true`, `git diff --check`, sintaxe do fixture e
+Playwright `--list` com os dois cenários E2E reais. O worktree está limpo.
+
+### LIMITES
+
+O teste E2E foi apenas descoberto, não executado; live PostgreSQL/RLS continua
+sem evidência porque não há URL de banco CVG descartável nem role autorizada.
+Não houve push, deploy, workflow remoto ou aprovação clínica.
