@@ -233,3 +233,50 @@ acreditação externa.
 
 Este documento é evidência de pesquisa e decisão de produto. Ele não altera
 os gates de `PRD`, `SPEC`, `BUILD`, `AUDIT` nem os bloqueios clínicos.
+
+## 6. Verificação oficial adicional — 2026-08-24
+
+Uma nova consulta às páginas oficiais confirmou e refinou a barra de qualidade
+sem alterar as fronteiras do MVP:
+
+- o [CBVE Education 2.0 da AAVMC](https://www.aavmc.org/resources/competency-based-veterinary-education/cbve-education-2-0-model/)
+  organiza a formação em torno de competências e experiências de avaliação
+  centradas no aprendiz, reduzindo a dependência de tempo como proxy de
+  resultado; o CVG mantém 24 meses como sequência de programa, mas conserva
+  domínio digital separado de competência prática, EPA ou autonomia;
+- o [CPD atual do RCVS](https://www.rcvs.org.uk/veterinary-professionals/learning-and-development/continuing-professional-development-cpd)
+  explicita o ciclo plan/do/record/reflect e informa que regras, horas e
+  reconhecimento são jurisdicionais; o CVG deve continuar chamando seu
+  relatório de evidência digital interna e não de CPD acreditado;
+- a [RCVS Academy](https://www.rcvs.org.uk/veterinary-professionals/learning-and-development/rcvs-academy)
+  confirma valor em testes, cenários, atividades, acesso móvel, feedback,
+  área personalizada, busca e sugestão de aprendizagem; o CVG já tem
+  microlições, casos, feedback, retomada e retenção, mas ainda precisa de
+  descoberta de catálogo, calendário e multimodalidade autoral se esses itens
+  forem aprovados para o escopo;
+- o [VetBloom](https://vetbloom.com/offerings/) confirma como benchmark
+  comercial trilhas por papel, grupos, relações coach–aprendiz, gestão de
+  conteúdo e badges de competência; o CVG pode estudar grupos e acompanhamento
+  humano, mas badges não podem virar selo de competência clínica automática;
+- o [VetFolio/NAVC](https://www.vetfolio.com/pages/subscribe) confirma a
+  combinação de cursos autoformativos, eventos, vídeos demonstrativos,
+  microlearning, artigos, certificados e ferramentas de gestão de equipes;
+  conteúdo externo, certificados e integração de catálogo continuam fora do
+  runtime até haver licença, decisão jurisdicional e operação aprovadas;
+- o [TeamSTEPPS 3.0 da AHRQ](https://www.ahrq.gov/teamstepps-program/index.html)
+  reforça simulação, aprendizagem ativa e reflexão/debriefing para
+  comunicação e trabalho em equipe; o CVG pode preparar e medir essas
+  atividades digitalmente, mas não pode inferir execução clínica observada.
+
+Decisão operacional desta verificação: manter a barra como competência →
+objetivo → comportamento observável → atividade interativa → feedback →
+reflexão → retenção → próxima ação, sempre com revisão humana para conteúdo
+clínico e com relatórios escopados. A nova fatia `REPORT-040` materializa
+paginação bounded e exportação CSV somente da página já autorizada do relatório
+interno; não adiciona ranking, certificado, fonte externa ou claim clínico.
+
+Gaps de produto confirmados pela pesquisa: diagnóstico ainda não alimenta uma
+atribuição adaptativa persistida; B-07 e packs continuam sem publicação clínica;
+avaliação/contestação não têm recálculo versionado, snapshots, encerramento e
+notificação; e a operação live ainda precisa provar RLS, menor privilégio,
+telemetria, carga, failover e restore em ambiente autorizado.

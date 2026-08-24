@@ -5471,3 +5471,65 @@ READY_FOR_NEXT_STEP
 
 Obter ambiente/autoridade para PostgreSQL/RLS live e backfill/validação de
 registros legados, ou selecionar a próxima lacuna local do backlog.
+
+## 2026-08-24 — REPORT-040: paginação e exportação do relatório interno
+
+### TIMESTAMP
+
+2026-08-24 01:49:58 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 5 / acompanhamento gerencial
+
+### SPRINT
+
+REPORT-040 / AUD-P1-001 / CPD-REPORTING-026
+
+### TASK
+
+REPORT-2026-08-24-P — paginar e exportar a página autorizada da participação digital
+
+### ACTION
+
+Seguido o ciclo RED → GREEN → REFACTOR. O contrato de relatório recebeu
+`page`/`pageSize` bounded e metadados de paginação; a aplicação normaliza
+defaults 1/25 e verifica que a resposta corresponde à consulta; o repositório
+mantém o resumo global e recorta apenas as linhas de participantes depois do
+contexto de escopo; a API converte query strings numericamente; a superfície
+staff ganhou navegação, tabela de participantes e exportação CSV da página
+visível com escaping e proteção contra fórmula.
+
+### RESULT
+
+Commit técnico `6fa662b8d80a8cba06ff4dfab3b6708b34674e71`. O foco dirigido passou
+68/68 testes; `pnpm verify` passou com 113 arquivos/534 testes e 27 skips,
+cobertura 84,64% statements, 80,77% branches, 85,85% functions e 85,34% lines;
+`pnpm build` passou nos 12 workspaces; E2E de operations passou 5/5 com axe e
+download CSV; migrations, secrets, traceability, architecture, documentation,
+product-definition, exposure e `git diff --check` passaram. A pesquisa oficial
+de práticas/plataformas foi verificada e atualizada em `0509` com AAVMC, RCVS,
+VetBloom, VetFolio/NAVC e AHRQ.
+
+### REVIEW / GAPS
+
+O resultado é `PASS_WITH_GAPS` local. A crítica independente de código ainda
+está pendente nesta rodada; a fatia não prova carga, RLS PostgreSQL live,
+workflow remoto, exportação assíncrona completa ou operação de produção. Não
+foram adicionados ranking, certificado, CPD acreditado, dados clínicos,
+competência prática ou publicação clínica.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Obter ambiente/autoridade para a prova live PostgreSQL/RLS e workflow remoto do
+SHA atual, ou selecionar a próxima lacuna local — diagnóstico→trilha adaptada,
+contestação completa, lembretes/filas internas ou hardening operacional — sem
+liberar os gates clínicos.

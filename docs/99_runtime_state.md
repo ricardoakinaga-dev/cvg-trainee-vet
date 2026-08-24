@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: APPEAL-039 / AUD-P1-001 — justificativa interna versionada da decisão
-- current_task: APPEAL-2026-08-24-P — tornar rationale, data e correlação obrigatórios na decisão
+- current_sprint: REPORT-040 / AUD-P1-001 — acompanhamento paginado da participação digital
+- current_task: REPORT-2026-08-24-P — paginar e exportar a página autorizada do relatório interno
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: APPEAL-039 foi fechado no recorte local com auditoria `PASS_WITH_GAPS`; os commits técnico/documentais foram criados, o estado final foi reconciliado e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou novamente em worktree limpo; regressão 113/532, cobertura 84,64%/80,71%/85,85%/85,33%, build 12, E2E 22/22, migration 25/25, integração 20 PASS/27 SKIP e audit limpo
-- next_action: obter ambiente/autoridade para PostgreSQL/RLS live e backfill/validação de registros legados, ou selecionar a próxima lacuna local; manter ausência de parecer independente, histórico append-only, recálculo, notificação e encerramento como gaps
+- last_completed_action: `REPORT-040` foi implementado em TDD e commitado em `6fa662b8d80a8cba06ff4dfab3b6708b34674e71`; o relatório interno agora tem paginação bounded server-side, resumo global separado, tabela de participantes e CSV somente da página autorizada com escape contra fórmula; a pesquisa oficial foi atualizada em `0509`; `pnpm verify` passou com 113 arquivos/534 testes/27 skips, cobertura 84,64%/80,77%/85,85%/85,34%, build 12, E2E operations 5/5 com axe/CSV, migrations, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- next_action: obter ambiente/autoridade para provar PostgreSQL/RLS live do relatório e workflow remoto do SHA atual, ou selecionar a próxima lacuna local — diagnóstico→trilha adaptada, contestação completa ou hardening operacional — mantendo ausência de parecer independente, histórico append-only, recálculo, notificação, encerramento e gates clínicos como gaps
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T01:32:00-03:00
+- last_update: 2026-08-24T01:49:58-03:00
 
 ## REGRAS DE USO
 

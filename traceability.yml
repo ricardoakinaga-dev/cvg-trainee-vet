@@ -2370,6 +2370,66 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "REPORT-040"
+    requirements:
+      [
+        "CPD-REPORTING-026",
+        "PRD-RF-070",
+        "PRD-RF-073",
+        "PRD-RF-074",
+        "UC-016",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/04.AUDIT/0518_report_pagination_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/continuing-education-report.ts",
+        "packages/application/src/continuing-education-report-use-cases.ts",
+        "packages/persistence/src/continuing-education-report-repository.ts",
+        "apps/api/src/http.ts",
+        "apps/web/app/operations/page.tsx",
+      ]
+    tests:
+      [
+        "packages/contracts/src/continuing-education-report.test.ts",
+        "packages/application/src/continuing-education-report-use-cases.test.ts",
+        "packages/persistence/src/continuing-education-report-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "6fa662b8d80a8cba06ff4dfab3b6708b34674e71"
+    artifacts: ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: focused report harness failed before pagination contract/repository/HTTP implementation",
+        "GREEN: focused contracts/application/persistence/API harness passed 68/68",
+        "pnpm verify (113 files/534 tests; 27 skips; coverage 84.64% statements, 80.77% branches, 85.85% functions, 85.34% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm exec playwright test tests/e2e/operations-dashboard.spec.ts (5/5; axe; CSV download)",
+        "pnpm verify:migrations",
+        "pnpm verify:secrets",
+        "pnpm verify:traceability",
+        "pnpm verify:architecture",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "EDITORIAL-QUEUE-027"
     requirements:
       [
