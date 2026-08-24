@@ -3783,6 +3783,7 @@ artifacts:
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
         "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/08.RUNTIME/0803_secrets_config_and_observability.md",
         "BRIEFING/04.AUDIT/0530_audit_trail_read_audit.md",
         "docs/20_master_execution_log.md",
         "docs/30_backlog_master.md",
@@ -3800,6 +3801,9 @@ artifacts:
         "packages/persistence/src/audit-repository.ts",
         "packages/persistence/src/security-context.ts",
         "packages/persistence/drizzle/0033_audit_read_scope_hardening.sql",
+        "packages/config/src/env.ts",
+        ".env.example",
+        "scripts/verify-ci-contract.mjs",
         "apps/api/src/http.ts",
         "apps/api/src/main.ts",
         "apps/api/src/server.ts",
@@ -3816,13 +3820,14 @@ artifacts:
         "apps/api/src/http.test.ts",
         "tests/integration/audit-trail-governance.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
+        "packages/config/src/env.test.ts",
       ]
-    commit: "1652991cf78e09ff4d67eb02bc85c8bf5c6bc440"
+    commit: "28749dd2f239cbcb5345e903f8bac8ce2765c6a7"
     artifacts: ["BRIEFING/04.AUDIT/0530_audit_trail_read_audit.md"]
     verification:
       [
         "Node 22.22.0 / pnpm 10.33.0",
-        "pnpm verify: 131 files/623 tests passed, 27 files/33 tests skipped; coverage 84.79% statements, 80.92% branches, 86.29% functions, 85.54% lines",
+        "pnpm verify: 131 files/625 tests passed, 27 files/33 tests skipped; coverage 84.82% statements, 80.97% branches, 86.32% functions, 85.56% lines",
         "pnpm build passed",
         "pnpm test:integration: 25 passed/33 skipped without an authorized CVG database",
         "pnpm exec playwright test: 26/26 passed with synthetic operational fixtures",
