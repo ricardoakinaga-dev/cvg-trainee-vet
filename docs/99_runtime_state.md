@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: REFLECTION-035 / AUD-P1-001 — reflexão digital e próxima ação
-- current_task: REFLECTION-2026-08-23-A — definir contrato da reflexão digital
+- current_task: REFLECTION-2026-08-23-B — fechar projeção participante e hardening operacional
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `OPS-034` foi commitado em `1d6a268` e o `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou com worktree limpo; o bridge `GET /internal/operations` permanece `COMPLETED_WITH_GAPS` por depender de collector/ambiente externo
-- next_action: abrir o RED e o contrato da fatia de reflexão digital → próxima ação, sem alterar nota, competência prática, publicação clínica ou agregados com texto bruto
+- last_completed_action: reflexão digital vertical implementada sem migration/nota/competência prática; OPS-034 endurecido com 422 para entrada inesperada e allowlist runtime; verify 99/474, cobertura acima de 80%, build e E2E 20/20 passaram
+- next_action: incorporar crítica independente, congelar commit/artefatos no manifesto e executar o gate de release com worktree limpo; manter agregado gerencial e provas live/operacionais como gaps
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T21:11:15-03:00
+- last_update: 2026-08-23T21:35:42-03:00
 
 ## REGRAS DE USO
 

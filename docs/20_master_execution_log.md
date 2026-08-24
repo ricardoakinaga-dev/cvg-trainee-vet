@@ -4168,3 +4168,90 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Abrir a fatia de reflexão digital → próxima ação, mantendo apelações, exportação, gates clínicos, provider/MFA e workflow remoto como dependências separadas.
+
+## 2026-08-23 — REFLECTION-035: abertura da fatia de reflexão digital
+
+### TIMESTAMP
+
+2026-08-23 21:15:02 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / jornada de produto
+
+### SPRINT
+
+REFLECTION-035 / AUD-P1-001
+
+### TASK
+
+Fechar o ciclo digital de feedback, reflexão e próxima ação usando conteúdo `REFLEXAO` já suportado, sem nota ou competência prática.
+
+### ACTION
+
+Item aberto no backlog e no runtime state. O recorte inicial será uma regra pura de classificação, seguida de leitura persistida das respostas próprias, contrato público redigido e superfície participante. Não será criada migração, chamada de IA, agregação de texto para gestão ou publicação clínica nesta etapa.
+
+### RESULT
+
+`REFLECTION-035` fica `IN_PROGRESS`; nenhuma alteração de código foi feita nesta abertura.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever o teste RED de `NAO_INICIADA`, `EM_ANDAMENTO` e `CONCLUIDA`, incluindo replay/ausência de resposta, antes de implementar a regra.
+
+## 2026-08-23 — REFLECTION-035 / OPS-034: implementação vertical e hardening
+
+### TIMESTAMP
+
+2026-08-23 21:35:42 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / jornada de produto + hardening operacional
+
+### SPRINT
+
+REFLECTION-035 / AUD-P1-001 + OPS-034 / AUD-P1-004
+
+### TASK
+
+Materializar reflexão digital participante e corrigir os achados C2 da crítica independente do snapshot operacional.
+
+### ACTION
+
+Implementados a regra imutável de estados e próxima ação, contrato público estrito,
+leitura PostgreSQL da tentativa mais recente com respostas próprias, projeção API,
+reidratação web e E2E sintético. A rota operacional passou a rejeitar query/body,
+validar estados em runtime e aplicar allowlist de dependências.
+
+### RESULT
+
+`PATH=/tmp:$PATH pnpm verify` passou com 99 arquivos/474 testes, 22 skips de arquivo e
+24 skips de teste; cobertura 84,49% statements, 80,22% branches, 85,64% functions e
+85,18% lines. Build dos 12 workspaces, E2E 20/20, testes direcionados OPS 67/67,
+lint, typecheck, migrações, documentação, exposição, secrets, arquitetura e audit de
+dependências passaram. A reflexão não calcula nota, gabarito ou competência prática;
+o agregado gerencial sem texto bruto e as provas live/operacionais externas seguem
+gaps explícitos.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Incorporar o veredicto independente, congelar o commit rastreável, atualizar o
+manifesto `traceability.yml` com SHA/artefatos e executar o gate de release com
+worktree limpo.

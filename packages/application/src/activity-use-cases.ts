@@ -1,4 +1,5 @@
 import { ApplicationError } from "./errors.js";
+import type { ParticipantReflectionState } from "./reflection-use-cases.js";
 
 export type ParticipantActivityChoice = Readonly<{
   readonly id: string;
@@ -23,6 +24,7 @@ export type ParticipantActivityState = Readonly<{
   readonly slug: string;
   readonly title: string;
   readonly items: readonly ParticipantActivityItem[];
+  readonly reflection?: ParticipantReflectionState;
 }>;
 
 export type GetParticipantActivityCommand = Readonly<{
@@ -65,5 +67,17 @@ export async function getParticipantActivity(
     items: Object.freeze(
       activity.items.map((item) => Object.freeze({ ...item })),
     ),
+    ...(activity.reflection === undefined
+      ? {}
+      : {
+          reflection: Object.freeze({
+            ...activity.reflection,
+            answers: Object.freeze(
+              activity.reflection.answers.map((answer) =>
+                Object.freeze({ ...answer }),
+              ),
+            ),
+          }),
+        }),
   });
 }

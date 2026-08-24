@@ -83,6 +83,54 @@ describe("participant activity contract", () => {
     ).toThrow();
   });
 
+  it("binds reflection answers to published reflection items", () => {
+    const reflectionItem = {
+      itemId: "33333333-3333-4333-8333-333333333333",
+      ordinal: 1,
+      kind: "REFLEXAO",
+      title: "Próxima ação",
+      text: "Descreva uma próxima ação sintética.",
+      responseMode: "TEXT",
+    } as const;
+    const activityWithReflection = {
+      ...projection,
+      items: [reflectionItem],
+      reflection: {
+        status: "EM_ANDAMENTO",
+        nextAction: "RETOMAR_REFLEXAO",
+        itemCount: 1,
+        answeredItemCount: 1,
+        answers: [
+          {
+            itemId: reflectionItem.itemId,
+            response: "Uma próxima ação própria.",
+            savedAt: "2026-08-23T20:00:00.000Z",
+          },
+        ],
+        evidence: "REFLEXAO_DIGITAL",
+        practicalCompetenceClaim: "PROIBIDO_MVP",
+      },
+    } as const;
+
+    expect(parseParticipantActivity(activityWithReflection)).toEqual(
+      activityWithReflection,
+    );
+    expect(() =>
+      parseParticipantActivity({
+        ...activityWithReflection,
+        reflection: {
+          ...activityWithReflection.reflection,
+          answers: [
+            {
+              ...activityWithReflection.reflection.answers[0],
+              itemId: "44444444-4444-4444-8444-444444444444",
+            },
+          ],
+        },
+      }),
+    ).toThrow();
+  });
+
   it("validates internal evaluation input without changing the public state boundary", () => {
     const request = {
       participantId: "11111111-1111-4111-8111-111111111111",

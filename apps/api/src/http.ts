@@ -304,6 +304,47 @@ function validationResponse(
   };
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function redactDependencyStatus(value: DependencyStatus): DependencyStatus {
+  const candidate: unknown = value;
+  if (!isPlainRecord(candidate) || !isPlainRecord(candidate.dependencies)) {
+    throw new Error("dependency status shape is invalid");
+  }
+  const status = candidate.status;
+  const postgres = candidate.dependencies.postgres;
+  const qdrant = candidate.dependencies.qdrant;
+  const ai = candidate.dependencies.ai;
+  if (status !== "READY" && status !== "DEGRADED" && status !== "NOT_READY") {
+    throw new Error("dependency status value is invalid");
+  }
+  if (postgres !== "UP" && postgres !== "DOWN") {
+    throw new Error("postgres dependency status is invalid");
+  }
+  if (qdrant !== "UP" && qdrant !== "DOWN" && qdrant !== "DISABLED") {
+    throw new Error("qdrant dependency status is invalid");
+  }
+  if (ai !== "ENABLED" && ai !== "DISABLED") {
+    throw new Error("ai dependency status is invalid");
+  }
+  return Object.freeze({
+    status,
+    dependencies: Object.freeze({ postgres, qdrant, ai }),
+  });
+}
+
+function unexpectedOperationalInput(
+  request: ApiHttpRequest,
+): "body" | "query" | undefined {
+  if (request.body !== undefined) return "body";
+  if (request.query !== undefined && Object.keys(request.query).length > 0) {
+    return "query";
+  }
+  return undefined;
+}
+
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
     value,
@@ -397,6 +438,16 @@ function publicActivityProjection(
     slug: activity.slug,
     title: activity.title,
     items: activity.items.map((item) => ({ ...item })),
+    ...(activity.reflection === undefined
+      ? {}
+      : {
+          reflection: {
+            ...activity.reflection,
+            answers: activity.reflection.answers.map((answer) => ({
+              ...answer,
+            })),
+          },
+        }),
   });
 }
 
@@ -2039,7 +2090,9 @@ async function handleApiRequestCore(
         return errorResponse("internal_error", requestId, 503);
       }
       try {
-        const status = await dependencies.dependencyStatus();
+        const status = redactDependencyStatus(
+          await dependencies.dependencyStatus(),
+        );
         return {
           status: status.status === "NOT_READY" ? 503 : 200,
           body: apiSuccessResponse(status, requestId),
@@ -2068,8 +2121,14 @@ async function handleApiRequestCore(
       ) {
         return errorResponse("internal_error", requestId, 503);
       }
+      const unexpectedInput = unexpectedOperationalInput(request);
+      if (unexpectedInput !== undefined) {
+        return validationResponse(requestId, unexpectedInput);
+      }
       try {
-        const dependencyStatus = await dependencies.dependencyStatus();
+        const dependencyStatus = redactDependencyStatus(
+          await dependencies.dependencyStatus(),
+        );
         const snapshot = deriveOperationalSnapshot(
           dependencyStatus.status,
           dependencies.observability.metrics.snapshot(),

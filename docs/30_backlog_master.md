@@ -353,7 +353,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - status: PENDENTE
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; gaps 0420/0421
 - resultado parcial: jornada mínima, dashboard staff/participante, trilha digital de 24 meses, próximo passo, reforço, retenção, convite administrativo escopado, persistência técnica do agregado B-07 e perfil formativo por tema estão materializados com contratos, persistência, RLS, autorização server-side, E2E e integração PostgreSQL; o dashboard staff agora exibe a baseline por tema somente para participantes pertencentes ao escopo autorizado e mantém explícito que ela não representa competência prática; filas editoriais completas, avaliação/contestação completas e relatórios CPD ainda não fecham o requisito integral
-- próxima ação: abrir `REFLECTION-035` para fechar reflexão digital → próxima ação; depois tratar apelações e filtros/paginação/exportação, mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
+- próxima ação: fechar o agregado gerencial de reflexão sem texto bruto; depois tratar apelações e filtros/paginação/exportação, mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
 
 ### REFLECTION-035 — Reflexão digital e próxima ação
 
@@ -364,10 +364,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 3–5 / jornada de produto
 - risco: alto — reflexão não pode virar nota, competência prática, decisão clínica, exposição de texto livre ou relatório individual indevido
 - impacto: alto
-- status: PENDENTE
-- critério: RED/GREEN/REFACTOR; refresh/interrupção preservam o estado; replay não duplica resposta; participante vê próxima ação; gestão vê somente contagem por escopo/módulo; RLS, boundary público, acessibilidade e E2E cobrem os casos negativos
-- evidência de direção: `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`; `packages/contracts/src/learning.ts`; `packages/application/src/answer-use-cases.ts`; `apps/web/app/page.tsx`
-- próxima ação: escrever contrato/teste RED e confirmar o desenho de persistência antes de editar schema ou UI
+- status: COMPLETED_WITH_GAPS
+- critério parcial atendido: RED/GREEN/REFACTOR; refresh/interrupção preservam o estado; replay segue a idempotência de tentativa/resposta; participante vê próxima ação; boundary público, acessibilidade e E2E sintético cobrem os casos negativos
+- evidência: `BRIEFING/04.AUDIT/0512_reflection_digital_audit.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md`; `packages/application/src/reflection-use-cases.ts`; `packages/contracts/src/reflection.ts`; `packages/persistence/src/activity-repository.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; `tests/e2e/participant-access.spec.ts`
+- resultado: ciclo participante `NAO_INICIADA → EM_ANDAMENTO → CONCLUIDA` materializado sem score, gabarito ou competência prática; a leitura escolhe a tentativa mais recente e só reidrata respostas próprias; não houve migração
+- gap explícito: ainda falta agregado interno por escopo/módulo com contagem allowlisted, sem texto bruto, além de prova live/operacional da consulta
+- próxima ação: implementar o agregado gerencial protegido e cobri-lo com RLS, contrato, API, web interna e E2E sintético
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
@@ -630,9 +632,9 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; 0412–0418 e 0421; `BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md`
 - recorte atual: snapshot operacional local protegido, derivação de SLO/alertas a partir de sinais redigidos e testes negativos; não fecha collector/OTel, retenção, carga, failover, restore agendado ou ambiente produtivo
 - critério desta iteração: endpoint interno com autorização server-side, `NO_DATA` explícito, estados de dependência redigidos, ausência de payload sensível e regressão completa verde
-- resultado atual: `OPS-034` implementou `deriveOperationalSnapshot` e `GET /internal/operations`; `READY`/`DEGRADED` retornam 200, `NOT_READY` retorna 503 com snapshot seguro; p95 sem quantis permanece `NO_DATA`
-- verificação: `pnpm verify`/cobertura serial passaram com 97 arquivos/463 testes e 84,59% statements, 80,36% branches, 85,48% functions e 85,32% lines; build 12 workspaces; E2E 19/19; audit, documentação, traceability e exposure passaram
-- próxima ação: executar o commit rastreável e o gate release local; depois avançar para reflexão digital → próxima ação sem fechar os gates externos
+- resultado atual: `OPS-034` implementou `deriveOperationalSnapshot` e `GET /internal/operations`; `READY`/`DEGRADED` retornam 200, `NOT_READY` retorna 503 com snapshot seguro; p95 sem quantis permanece `NO_DATA`; query/body inesperados retornam 422 e a resposta aplica allowlist runtime das dependências
+- verificação: `pnpm verify` passou com 99 arquivos/474 testes, 22 skips de arquivo/24 skips de teste e cobertura 84,49% statements, 80,22% branches, 85,64% functions e 85,18% lines; build 12 workspaces; E2E 20/20; testes OPS direcionados 67/67; documentação, exposure, migrations, secrets, architecture e audit de dependências passaram
+- próxima ação: fechar a atualização do artefato rastreável no SHA desta rodada; collector/OTel, retenção, carga, failover, restore e workflow remoto continuam gaps externos
 
 ### AUD-P1-005 — Congelamento e rastreabilidade da construção
 

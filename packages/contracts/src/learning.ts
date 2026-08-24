@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { assertPublicProjection } from "./public-boundary.js";
+import { participantReflectionProjectionSchema } from "./reflection.js";
 
 const idSchema = z.string().uuid();
 const moduleIdSchema = z.string().regex(/^M(?:0[1-9]|1[0-9]|2[0-4])$/u);
@@ -45,10 +46,12 @@ export const participantActivityProjectionSchema = z
     slug: z.string().trim().min(1).max(128),
     title: z.string().trim().min(1).max(300),
     items: z.array(participantItemSchema).max(100),
+    reflection: participantReflectionProjectionSchema.optional(),
   })
   .strict()
   .superRefine((value, context) => {
     const ordinals = new Set<number>();
+    const reflectionItemIds = new Set<string>();
     for (const [index, item] of value.items.entries()) {
       if (ordinals.has(item.ordinal)) {
         context.addIssue({
@@ -58,6 +61,7 @@ export const participantActivityProjectionSchema = z
         });
       }
       ordinals.add(item.ordinal);
+      if (item.kind === "REFLEXAO") reflectionItemIds.add(item.itemId);
       if (item.responseMode === "CHOICE") {
         if (item.choices === undefined) {
           context.addIssue({
@@ -71,6 +75,24 @@ export const participantActivityProjectionSchema = z
             code: "custom",
             path: ["items", index, "selectionMode"],
             message: "choice items must publish selection mode",
+          });
+        }
+      }
+    }
+    if (value.reflection !== undefined) {
+      if (value.reflection.itemCount !== reflectionItemIds.size) {
+        context.addIssue({
+          code: "custom",
+          path: ["reflection", "itemCount"],
+          message: "reflection item count must match the published activity",
+        });
+      }
+      for (const [index, answer] of value.reflection.answers.entries()) {
+        if (!reflectionItemIds.has(answer.itemId)) {
+          context.addIssue({
+            code: "custom",
+            path: ["reflection", "answers", index, "itemId"],
+            message: "reflection answer must belong to a reflection item",
           });
         }
       }

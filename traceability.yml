@@ -1299,6 +1299,41 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "REFLECTION-DIGITAL-035"
+    requirements:
+      ["AUD-P1-001", "PRD-UC-001", "PRD-RF-070", "SPEC-0107", "SPEC-0118"]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/04.AUDIT/0512_reflection_digital_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0017_programa_curricular_24_meses.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/reflection-use-cases.ts",
+        "packages/application/src/activity-use-cases.ts",
+        "packages/contracts/src/reflection.ts",
+        "packages/contracts/src/learning.ts",
+        "packages/persistence/src/activity-repository.ts",
+        "apps/api/src/http.ts",
+        "apps/web/app/page.tsx",
+      ]
+    tests:
+      [
+        "packages/application/src/reflection-use-cases.test.ts",
+        "packages/contracts/src/reflection.test.ts",
+        "packages/contracts/src/learning.test.ts",
+        "packages/persistence/src/activity-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+      ]
+    status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
     requirements:
       ["SPEC-0118", "AUD-ITEM-13", "EXPERIENCE-13-01", "WCAG-2.2-AA"]

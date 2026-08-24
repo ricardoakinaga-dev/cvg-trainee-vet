@@ -92,6 +92,14 @@ export type {
   ParticipantActivityItem,
   ParticipantActivityState,
 } from "./activity-use-cases.js";
+export { deriveReflectionState } from "./reflection-use-cases.js";
+export type {
+  DeriveReflectionStateCommand,
+  ParticipantReflectionAnswer,
+  ParticipantReflectionState,
+  ReflectionNextAction,
+  ReflectionStatus,
+} from "./reflection-use-cases.js";
 export {
   evaluateAndPersistCurriculumModule,
   getParticipantCurriculumRuntime,

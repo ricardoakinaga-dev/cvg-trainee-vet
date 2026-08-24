@@ -223,3 +223,21 @@ conteúdo ou consulta IA/Qdrant.
 `availableActions`, aplica RLS transacional e impede que um autor consulte
 registro de outro autor; a projeção completa continua restrita a papéis
 internos autorizados.
+
+## 13. Reflexão digital materializada — REFLECTION-035
+
+Atividades publicadas com itens `REFLEXAO` reutilizam a tentativa e a resposta
+idempotente já existentes. A leitura participante de
+`GET /api/v1/activities/:activityId` pode incluir um resumo `reflection` com
+`NAO_INICIADA`, `EM_ANDAMENTO` ou `CONCLUIDA`, a próxima ação (`INICIAR_REFLEXAO`,
+`RETOMAR_REFLEXAO`, `ENVIAR_REFLEXAO` ou `PROXIMA_ACAO`), contagens e somente as
+respostas do próprio participante. A persistência lê a tentativa mais recente e
+restringe as respostas aos itens `REFLEXAO` da atividade dentro da mesma transação
+com contexto de participante.
+
+O contrato não possui `score`, gabarito, rubrica ou competência prática; carrega
+`evidence: REFLEXAO_DIGITAL` e `practicalCompetenceClaim: PROIBIDO_MVP`. A API
+valida que cada resposta pertence a item `REFLEXAO` publicado, e a web reidrata a
+resposta após refresh, salvamento ou submissão. Agregado gerencial por escopo/módulo
+sem texto livre, apelações e a jornada completa continuam itens separados do
+backlog; esta fatia não altera schema, publicação clínica ou estado de nota.

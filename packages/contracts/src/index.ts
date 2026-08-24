@@ -28,6 +28,11 @@ export type {
   ParticipantCurriculumRuntimeProjection,
 } from "./learning.js";
 export {
+  parseParticipantReflection,
+  participantReflectionProjectionSchema,
+} from "./reflection.js";
+export type { ParticipantReflectionProjection } from "./reflection.js";
+export {
   diagnosticEvaluationRequestSchema,
   diagnosticResultProjectionSchema,
   parseDiagnosticResultProjection,

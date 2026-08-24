@@ -18,8 +18,8 @@ clínico.
 | Derivação de disponibilidade | PASS | `deriveOperationalSnapshot` soma somente `api.requests.total` e classifica `success` como evento bom. |
 | SLOs sem amostra | PASS | `api.read.p95` e `api.mutation.p95` ficam `NO_DATA`; cada ausência abre `slo_no_data`. Nenhum p95 é inferido de `min/max`. |
 | Estados de dependência | PASS | `READY`, `DEGRADED` e `NOT_READY` preservam `qdrant_degraded` e `postgres_not_ready` com severidade definida. |
-| Boundary HTTP | PASS | `GET /internal/operations` usa `VIEW_INTERNAL_AUDIT`; testes cobrem 401, 403, 200 redigido e 503 em falha da dependência. |
-| Redaction | PASS | Snapshot e respostas não carregam participante, e-mail, token, cookie, prompt, fonte, foto, PDF ou texto clínico. |
+| Boundary HTTP | PASS | `GET /internal/operations` usa `VIEW_INTERNAL_AUDIT`; testes cobrem 401, 403, 200 redigido, 422 para query/body inesperados e 503 em falha da dependência. |
+| Redaction | PASS | O handler valida os enums em runtime e projeta somente `postgres`, `qdrant` e `ai`; snapshot e respostas não carregam participante, e-mail, token, cookie, prompt, fonte, foto, PDF ou texto clínico. |
 | Operação externa | GAP | collector/OTel, retenção, dashboard histórico, restart/crash, carga, múltiplas réplicas e failover dependem de ambiente autorizado. |
 
 ## TDD
@@ -34,11 +34,11 @@ clínico.
 
 - `PATH=/tmp:$PATH pnpm typecheck` — PASS;
 - `PATH=/tmp:$PATH pnpm lint` — PASS;
-- testes direcionados API/observabilidade — PASS, 64 testes;
-- `PATH=/tmp:$PATH pnpm verify` — PASS, 97 arquivos/462 testes, 22 skips de arquivo/24 skips de teste; cobertura 84,57% statements, 80,33% branches, 85,48% functions e 85,32% lines;
-- `PATH=/tmp:$PATH pnpm exec vitest run apps/api/src/http.test.ts apps/api/src/server.test.ts packages/observability/src --project unit` — PASS, 65 testes direcionados;
+- testes direcionados API/observabilidade — PASS, incluindo matriz 401/403/422/503;
+- `PATH=/tmp:$PATH pnpm verify` — PASS, 99 arquivos/474 testes, 22 skips de arquivo/24 skips de teste; cobertura 84,49% statements, 80,22% branches, 85,64% functions e 85,18% lines;
+- `PATH=/tmp:$PATH pnpm exec vitest run apps/api/src/http.test.ts apps/api/src/server.test.ts packages/observability/src --project unit` — PASS, 67 testes;
 - `PATH=/tmp:$PATH pnpm build` — PASS nos 12 workspaces;
-- `PATH=/tmp:$PATH pnpm test:e2e` — PASS, 19/19 cenários;
+- `PATH=/tmp:$PATH pnpm test:e2e` — PASS, 20/20 cenários;
 - `PATH=/tmp:$PATH pnpm audit --audit-level=high` — nenhum advisory conhecido;
 - `pnpm verify:ci-contract`, `verify:migrations`, `verify:documentation`, `verify:traceability` e `verify:exposure` — PASS;
 - `git diff --check` — PASS.

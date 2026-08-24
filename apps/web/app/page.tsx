@@ -17,11 +17,30 @@ type ActivityItem = Readonly<{
   readonly selectionMode?: "SINGLE" | "MULTIPLE";
 }>;
 
+type ReflectionProjection = Readonly<{
+  readonly status: "NAO_INICIADA" | "EM_ANDAMENTO" | "CONCLUIDA";
+  readonly nextAction:
+    | "INICIAR_REFLEXAO"
+    | "RETOMAR_REFLEXAO"
+    | "ENVIAR_REFLEXAO"
+    | "PROXIMA_ACAO";
+  readonly itemCount: number;
+  readonly answeredItemCount: number;
+  readonly answers: readonly Readonly<{
+    readonly itemId: string;
+    readonly response: string;
+    readonly savedAt: string;
+  }>[];
+  readonly evidence: "REFLEXAO_DIGITAL";
+  readonly practicalCompetenceClaim: "PROIBIDO_MVP";
+}>;
+
 type ActivityProjection = Readonly<{
   readonly activityId: string;
   readonly slug: string;
   readonly title: string;
   readonly items: readonly ActivityItem[];
+  readonly reflection?: ReflectionProjection;
 }>;
 
 type AttemptProjection = Readonly<{
@@ -155,6 +174,43 @@ function isChoice(value: unknown): value is Readonly<{
   );
 }
 
+function isReflection(value: unknown): value is ReflectionProjection {
+  if (!isRecord(value)) return false;
+  const status =
+    value.status === "NAO_INICIADA" ||
+    value.status === "EM_ANDAMENTO" ||
+    value.status === "CONCLUIDA";
+  const nextAction =
+    value.nextAction === "INICIAR_REFLEXAO" ||
+    value.nextAction === "RETOMAR_REFLEXAO" ||
+    value.nextAction === "ENVIAR_REFLEXAO" ||
+    value.nextAction === "PROXIMA_ACAO";
+  return (
+    status &&
+    nextAction &&
+    typeof value.itemCount === "number" &&
+    Number.isInteger(value.itemCount) &&
+    value.itemCount >= 1 &&
+    value.itemCount <= 100 &&
+    typeof value.answeredItemCount === "number" &&
+    Number.isInteger(value.answeredItemCount) &&
+    value.answeredItemCount >= 0 &&
+    value.answeredItemCount <= value.itemCount &&
+    Array.isArray(value.answers) &&
+    value.answers.length === value.answeredItemCount &&
+    value.answers.every(
+      (answer) =>
+        isRecord(answer) &&
+        isString(answer.itemId) &&
+        isString(answer.response) &&
+        answer.response.trim().length > 0 &&
+        isString(answer.savedAt),
+    ) &&
+    value.evidence === "REFLEXAO_DIGITAL" &&
+    value.practicalCompetenceClaim === "PROIBIDO_MVP"
+  );
+}
+
 function isActivity(value: unknown): value is ActivityProjection {
   if (!isRecord(value)) return false;
   if (
@@ -163,6 +219,9 @@ function isActivity(value: unknown): value is ActivityProjection {
     !isString(value.title) ||
     !Array.isArray(value.items)
   ) {
+    return false;
+  }
+  if (value.reflection !== undefined && !isReflection(value.reflection)) {
     return false;
   }
 
@@ -568,8 +627,21 @@ function nextActionLabel(value: string): string {
     EXECUTAR_REMEDIACAO: "Executar remediação",
     REVISAR_RETENCAO: "Revisar retenção",
     AGUARDAR_CORRECAO_HUMANA: "Aguardar correção humana",
+    INICIAR_REFLEXAO: "Iniciar reflexão",
+    RETOMAR_REFLEXAO: "Retomar reflexão",
+    ENVIAR_REFLEXAO: "Enviar reflexão",
+    PROXIMA_ACAO: "Próxima ação",
   };
   return labels[value] ?? value;
+}
+
+function reflectionStatusLabel(value: ReflectionProjection["status"]): string {
+  const labels: Readonly<Record<ReflectionProjection["status"], string>> = {
+    NAO_INICIADA: "Ainda não iniciada",
+    EM_ANDAMENTO: "Em andamento",
+    CONCLUIDA: "Concluída",
+  };
+  return labels[value];
 }
 
 function moduleIdFromActivity(activity: ActivityProjection): string | null {
@@ -675,6 +747,15 @@ export default function HomePage() {
       if (!isActivity(data))
         throw new PublicApiError("internal_error", "invalid projection");
       setActivity(data);
+      if (data.reflection !== undefined) {
+        const persistedAnswers = Object.fromEntries(
+          data.reflection.answers.map((answer) => [
+            answer.itemId,
+            answer.response,
+          ]),
+        );
+        setAnswers((previous) => ({ ...previous, ...persistedAnswers }));
+      }
       const moduleId = moduleIdFromActivity(data);
       if (moduleId === null) {
         setRuntime(null);
@@ -844,6 +925,7 @@ export default function HomePage() {
           "invalid attempt projection",
         );
       setAttempt(data);
+      await loadActivity(activity.activityId);
       setNotice("Tentativa iniciada.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -899,6 +981,7 @@ export default function HomePage() {
       if (!isAttempt(data))
         throw new PublicApiError("internal_error", "invalid answer projection");
       setAttempt(data);
+      await loadActivity(activity.activityId);
       setNotice("Resposta salva.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -926,6 +1009,7 @@ export default function HomePage() {
           "invalid submission projection",
         );
       setAttempt(data);
+      await loadActivity(attempt.activityId);
       setNotice("Tentativa submetida.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -1096,12 +1180,41 @@ export default function HomePage() {
               Responda no seu ritmo. O sistema salva apenas a sua projeção de
               aprendizagem e permite retomar depois.
             </p>
+            {activity.reflection !== undefined ? (
+              <section
+                className="item-card"
+                data-testid="reflection-state"
+                aria-label="Estado da reflexão digital"
+              >
+                <div className="section-heading compact-heading">
+                  <div>
+                    <p className="eyebrow">Reflexão digital</p>
+                    <h2>{reflectionStatusLabel(activity.reflection.status)}</h2>
+                  </div>
+                  <span className="status-pill">
+                    {nextActionLabel(activity.reflection.nextAction)}
+                  </span>
+                </div>
+                <p>
+                  {activity.reflection.answeredItemCount} de{" "}
+                  {activity.reflection.itemCount} itens respondidos.
+                </p>
+                <p className="path-disclaimer">
+                  Esta é uma reflexão digital para orientar a próxima ação. Não
+                  gera nota, gabarito ou comprovação de competência prática.
+                </p>
+              </section>
+            ) : null}
             <div className="item-list">
               {activity.items.map((item) => (
                 <article className="item-card" key={item.itemId}>
                   <div className="item-meta">
                     <span>Item {item.ordinal}</span>
-                    <span>{item.kind}</span>
+                    <span>
+                      {item.kind === "REFLEXAO"
+                        ? "Reflexão digital"
+                        : item.kind}
+                    </span>
                   </div>
                   <h2>{item.title}</h2>
                   <p>{item.text}</p>

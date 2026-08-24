@@ -15,6 +15,7 @@ import {
   type CurriculumRuntimeState,
   type DiagnosticResultState,
   type ParticipantActivityState,
+  type ParticipantReflectionState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
   type StaffDashboardState,
@@ -56,6 +57,22 @@ const activity: ParticipantActivityState = {
       responseMode: "NONE",
     },
   ],
+};
+
+const reflection: ParticipantReflectionState = {
+  status: "EM_ANDAMENTO",
+  nextAction: "RETOMAR_REFLEXAO",
+  itemCount: 1,
+  answeredItemCount: 1,
+  answers: [
+    {
+      itemId: answer.itemId,
+      response: "Próxima ação própria.",
+      savedAt: "2026-08-23T20:00:00.000Z",
+    },
+  ],
+  evidence: "REFLEXAO_DIGITAL",
+  practicalCompetenceClaim: "PROIBIDO_MVP",
 };
 
 const progress: ParticipantProgressState = {
@@ -647,6 +664,72 @@ describe("API HTTP boundary", () => {
         },
       },
     });
+  });
+
+  it("rejects unexpected operational input and allowlists dependency redaction", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    const dependencyStatus = vi.fn(
+      async () =>
+        ({
+          status: "READY",
+          dependencies: {
+            postgres: "UP",
+            qdrant: "DISABLED",
+            ai: "DISABLED",
+            internalLeak: "must-not-publish",
+          },
+        }) as unknown as Awaited<
+          ReturnType<NonNullable<ApiHttpDependencies["dependencyStatus"]>>
+        >,
+    );
+    const auditor = async () => ({
+      principalId: "auditor-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["AUDITOR" as const],
+      scopes: [],
+    });
+    const base = dependencies({
+      observability,
+      dependencyStatus,
+      authenticate: auditor,
+    });
+    const unexpectedQuery = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/internal/operations",
+        query: { participantId: "not-accepted" },
+        body: undefined,
+      },
+      base,
+    );
+    const unexpectedBody = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/internal/operations",
+        body: {},
+      },
+      base,
+    );
+
+    expect(unexpectedQuery.status).toBe(422);
+    expect(unexpectedBody.status).toBe(422);
+    expect(dependencyStatus).not.toHaveBeenCalled();
+
+    const valid = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      base,
+    );
+    expect(valid.status).toBe(200);
+    expect(valid.body).toMatchObject({
+      success: true,
+      data: {
+        dependencies: { postgres: "UP", qdrant: "DISABLED", ai: "DISABLED" },
+      },
+    });
+    expect(JSON.stringify(valid)).not.toContain("must-not-publish");
   });
 
   it("keeps internal authoring metadata behind staff authorization", async () => {
@@ -1425,6 +1508,50 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(response.body)).not.toContain("participantId");
     expect(JSON.stringify(response.body)).not.toContain("attemptId");
     expect(JSON.stringify(response.body)).not.toContain("scopeId");
+  });
+
+  it("publishes the participant reflection state without internal or scoring fields", async () => {
+    const baseItem = activity.items[0];
+    if (baseItem === undefined)
+      throw new Error("synthetic activity item missing");
+    const reflectionActivity: ParticipantActivityState = {
+      ...activity,
+      items: [
+        {
+          ...baseItem,
+          kind: "REFLEXAO",
+          responseMode: "TEXT",
+        },
+      ],
+      reflection,
+    };
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/activities/${activity.activityId}`,
+        body: undefined,
+      },
+      dependencies({ getParticipantActivity: async () => reflectionActivity }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        reflection: {
+          status: "EM_ANDAMENTO",
+          nextAction: "RETOMAR_REFLEXAO",
+          answeredItemCount: 1,
+          answers: [
+            { itemId: answer.itemId, response: "Próxima ação própria." },
+          ],
+          practicalCompetenceClaim: "PROIBIDO_MVP",
+        },
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toMatch(
+      /score|gabarito|competencia_pratica|scopeId/iu,
+    );
   });
 
   it("returns the participant learning path as one scoped public projection", async () => {

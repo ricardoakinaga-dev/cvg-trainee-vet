@@ -137,8 +137,12 @@ export type {
 export {
   activityRowsToState,
   createActivityReadRepository,
+  reflectionRowsToState,
 } from "./activity-repository.js";
-export type { ActivityRowShape } from "./activity-repository.js";
+export type {
+  ActivityRowShape,
+  ReflectionRowShape,
+} from "./activity-repository.js";
 export {
   ContentMappingError,
   createContentIndexSourceRepository,

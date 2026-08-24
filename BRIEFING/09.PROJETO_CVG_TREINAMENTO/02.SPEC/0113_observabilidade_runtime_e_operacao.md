@@ -79,8 +79,9 @@ estado de dependências e expõe `GET /internal/operations` para a mesma capabil
 interna. A disponibilidade é calculada somente de eventos `success`; p95 de leitura e
 mutação permanece `NO_DATA` até o runtime ter buckets/quantis, abrindo alerta explícito
 em vez de inferir latência a partir de `min/max`. A resposta contém apenas estado
-redigido, avaliações e códigos de alerta; não é collector, retenção ou tracing
-distribuído.
+redigido, avaliações e códigos de alerta; o handler rejeita query/body inesperados,
+valida os enums em runtime e aplica allowlist explícita a `postgres`, `qdrant` e `ai`.
+Não é collector, retenção ou tracing distribuído.
 
 O runbook BRIEFING/08.RUNTIME/0804_observability_operational_contract.md define collector, retenção, dashboard agregado, alertas, correlação e limites de trace. scripts/verify-postgres-restore.mjs e tests/integration/postgres-restore.test.ts executam pg_dump/pg_restore em destino temporário isolado com marcador sintético; a execução local desta janela recuperou o marcador e mediu RTO de 2.581 ms. Essa prova é local e descartável: collector/OTel externo, retenção efetiva, dashboard, traces distribuídos, crash/failover, carga e múltiplas réplicas continuam pendentes.
 

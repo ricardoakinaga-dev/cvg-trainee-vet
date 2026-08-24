@@ -19,6 +19,9 @@ clínico.
 - latências sem amostra p95 não são inferidas: ficam `NO_DATA` e abrem `slo_no_data`;
 - `NOT_READY` do agregado abre `postgres_not_ready` crítico; `DEGRADED` abre
   `qdrant_degraded` de atenção;
+- query parameters e body presentes são rejeitados com `422`; estados de dependência
+  são validados em runtime e somente `status`, `postgres`, `qdrant` e `ai` entram na
+  projeção;
 - a superfície não aceita query, payload ou identificador de participante e não
   substitui o endpoint de métricas, um collector, retenção, tracing distribuído,
   failover ou restore operacional.

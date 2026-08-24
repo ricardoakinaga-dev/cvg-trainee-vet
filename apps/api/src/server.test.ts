@@ -283,6 +283,10 @@ describe("API node server adapter", () => {
       const operations = await fetch(`${baseUrl}/internal/operations`, {
         headers: { "x-test-auditor": "true" },
       });
+      const operationsWithQuery = await fetch(
+        `${baseUrl}/internal/operations?participantId=not-accepted`,
+        { headers: { "x-test-auditor": "true" } },
+      );
       const exportedBody = (await exported.json()) as {
         data: { format: string; text: string };
       };
@@ -301,6 +305,7 @@ describe("API node server adapter", () => {
       expect(exportedBody.data.text).toContain("api_requests_total");
       expect(exportedBody.data.text).not.toContain("participant");
       expect(operations.status).toBe(200);
+      expect(operationsWithQuery.status).toBe(422);
       expect(operationsBody.data.status).toBe("DEGRADED");
       expect(operationsBody.data.alerts).toEqual(
         expect.arrayContaining([

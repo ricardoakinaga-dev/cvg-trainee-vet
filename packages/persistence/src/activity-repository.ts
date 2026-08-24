@@ -1,15 +1,21 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { AttemptStatus } from "@cvg/domain";
 import type {
   ActivityReadPort,
+  ParticipantReflectionAnswer,
+  ParticipantReflectionState,
   ParticipantActivityChoice,
   ParticipantActivityItem,
   ParticipantActivityState,
 } from "@cvg/application";
+import { deriveReflectionState as deriveReflectionStateUseCase } from "@cvg/application";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
 import {
   activityAssignments,
+  answers,
+  attempts,
   contentVersions,
   learningActivities,
   learningActivityItems,
@@ -34,8 +40,28 @@ export type ActivityRowShape = Readonly<{
   readonly selectionMode?: unknown;
 }>;
 
+export type ReflectionRowShape = Readonly<{
+  readonly itemId: string;
+  readonly attemptId: string | null;
+  readonly attemptStatus: string | null;
+  readonly attemptVersion: number | null;
+  readonly attemptUpdatedAt: Date | null;
+  readonly response: string | null;
+  readonly savedAt: Date | null;
+}>;
+
 const supportedKinds = ["LEITURA", "QUESTAO", "CASO", "REFLEXAO"] as const;
 const supportedResponseModes = ["TEXT", "CHOICE", "NONE"] as const;
+const supportedAttemptStatuses = [
+  "CRIADA",
+  "EM_ANDAMENTO",
+  "SALVA",
+  "SUBMETIDA",
+  "CORRIGIDA_AUTOMATICAMENTE",
+  "AGUARDA_CORRECAO_HUMANA",
+  "CORRIGIDA_HUMANAMENTE",
+  "ANULADA",
+] as const satisfies readonly AttemptStatus[];
 
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) {
@@ -127,6 +153,137 @@ function parseSelectionMode(value: unknown): "SINGLE" | "MULTIPLE" | undefined {
     throw new PersistenceMappingError("content selection mode is invalid");
   }
   return value;
+}
+
+function parseAttemptStatus(value: string): AttemptStatus {
+  if (
+    !supportedAttemptStatuses.includes(
+      value as (typeof supportedAttemptStatuses)[number],
+    )
+  ) {
+    throw new PersistenceMappingError("reflection attempt status is invalid");
+  }
+  return value as AttemptStatus;
+}
+
+function parseTimestamp(value: Date, field: string): string {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    throw new PersistenceMappingError(`${field} must be a valid timestamp`);
+  }
+  return value.toISOString();
+}
+
+function compareAttemptRows(
+  left: ReflectionRowShape,
+  right: ReflectionRowShape,
+): number {
+  if (left.attemptUpdatedAt === null || right.attemptUpdatedAt === null) {
+    throw new PersistenceMappingError(
+      "reflection attempt updated timestamp is required",
+    );
+  }
+  const updatedAtDifference =
+    left.attemptUpdatedAt.getTime() - right.attemptUpdatedAt.getTime();
+  if (updatedAtDifference !== 0) return updatedAtDifference;
+  return (left.attemptVersion ?? -1) - (right.attemptVersion ?? -1);
+}
+
+export function reflectionRowsToState(
+  itemIds: readonly string[],
+  rows: readonly ReflectionRowShape[],
+): ParticipantReflectionState {
+  if (itemIds.length === 0 || itemIds.length > 100) {
+    throw new PersistenceMappingError("reflection item count is invalid");
+  }
+  const itemSet = new Set(itemIds);
+  if (itemSet.size !== itemIds.length) {
+    throw new PersistenceMappingError("reflection item ids must be unique");
+  }
+
+  let latestAttempt: ReflectionRowShape | undefined;
+  for (const row of rows) {
+    if (!itemSet.has(row.itemId)) {
+      throw new PersistenceMappingError(
+        "reflection row is outside the current activity",
+      );
+    }
+    if (row.attemptId === null) {
+      if (
+        row.attemptStatus !== null ||
+        row.attemptVersion !== null ||
+        row.attemptUpdatedAt !== null ||
+        row.response !== null ||
+        row.savedAt !== null
+      ) {
+        throw new PersistenceMappingError(
+          "reflection row without attempt contains state",
+        );
+      }
+      continue;
+    }
+    if (
+      row.attemptStatus === null ||
+      row.attemptVersion === null ||
+      row.attemptUpdatedAt === null
+    ) {
+      throw new PersistenceMappingError(
+        "reflection attempt metadata is incomplete",
+      );
+    }
+    parseAttemptStatus(row.attemptStatus);
+    if (!Number.isInteger(row.attemptVersion) || row.attemptVersion < 0) {
+      throw new PersistenceMappingError(
+        "reflection attempt version is invalid",
+      );
+    }
+    parseTimestamp(row.attemptUpdatedAt, "attemptUpdatedAt");
+    if (
+      (row.response === null && row.savedAt !== null) ||
+      (row.response !== null && row.savedAt === null)
+    ) {
+      throw new PersistenceMappingError(
+        "reflection answer metadata is incomplete",
+      );
+    }
+    if (
+      latestAttempt === undefined ||
+      compareAttemptRows(row, latestAttempt) > 0
+    ) {
+      latestAttempt = row;
+    }
+  }
+
+  const attemptId = latestAttempt?.attemptId;
+  const attemptStatus = latestAttempt
+    ? parseAttemptStatus(latestAttempt.attemptStatus as string)
+    : undefined;
+  const answerByItemId = new Map<string, ParticipantReflectionAnswer>();
+  for (const row of rows) {
+    if (
+      row.attemptId !== attemptId ||
+      row.response === null ||
+      row.savedAt === null
+    ) {
+      continue;
+    }
+    if (answerByItemId.has(row.itemId)) {
+      throw new PersistenceMappingError("reflection answers must be unique");
+    }
+    answerByItemId.set(
+      row.itemId,
+      Object.freeze({
+        itemId: row.itemId,
+        response: row.response,
+        savedAt: parseTimestamp(row.savedAt, "savedAt"),
+      }),
+    );
+  }
+
+  return deriveReflectionStateUseCase({
+    itemIds,
+    attemptStatus,
+    answers: [...answerByItemId.values()],
+  });
 }
 
 export function activityRowsToState(
@@ -251,7 +408,77 @@ export function createActivityReadRepository(
           )
           .orderBy(asc(learningActivityItems.ordinal));
 
-        return activityRowsToState(rows);
+        const activity = activityRowsToState(rows);
+        if (activity === null) return null;
+
+        const reflectionItemIds = activity.items
+          .filter((item) => item.kind === "REFLEXAO")
+          .map((item) => item.itemId);
+        if (reflectionItemIds.length === 0) return activity;
+
+        const reflectionRows = await executor
+          .select({
+            itemId: contentVersions.id,
+            attemptId: attempts.id,
+            attemptStatus: attempts.status,
+            attemptVersion: attempts.version,
+            attemptUpdatedAt: attempts.updatedAt,
+            response: answers.response,
+            savedAt: answers.savedAt,
+          })
+          .from(activityAssignments)
+          .innerJoin(
+            learningActivities,
+            eq(activityAssignments.activityId, learningActivities.id),
+          )
+          .innerJoin(
+            learningActivityItems,
+            eq(learningActivityItems.activityId, learningActivities.id),
+          )
+          .innerJoin(
+            contentVersions,
+            eq(learningActivityItems.contentVersionId, contentVersions.id),
+          )
+          .leftJoin(
+            attempts,
+            and(
+              eq(attempts.participantId, participantId),
+              eq(attempts.activityId, activityId),
+            ),
+          )
+          .leftJoin(
+            answers,
+            and(
+              eq(answers.attemptId, attempts.id),
+              eq(answers.itemId, contentVersions.id),
+              inArray(answers.itemId, reflectionItemIds),
+            ),
+          )
+          .where(
+            and(
+              eq(activityAssignments.participantId, participantId),
+              eq(activityAssignments.activityId, activityId),
+              inArray(activityAssignments.status, [
+                "DISPONIVEL",
+                "EM_ANDAMENTO",
+                "EM_REFORCO",
+              ]),
+              eq(learningActivities.status, "PUBLISHED"),
+              eq(contentVersions.status, "PUBLICADO"),
+              eq(contentVersions.kind, "REFLEXAO"),
+              inArray(contentVersions.id, reflectionItemIds),
+            ),
+          )
+          .orderBy(
+            asc(learningActivityItems.ordinal),
+            desc(attempts.updatedAt),
+            desc(attempts.version),
+          );
+
+        return Object.freeze({
+          ...activity,
+          reflection: reflectionRowsToState(reflectionItemIds, reflectionRows),
+        });
       });
     },
   };
