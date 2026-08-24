@@ -194,5 +194,20 @@ describe("continuing education report persistence adapter", () => {
       completedModules: 1,
       completedDigitalMinutes: 420,
     });
+
+    const page = await repository.findContinuingEducationReport({
+      scopeId,
+      page: 2,
+      pageSize: 2,
+    });
+    expect(page.participants).toHaveLength(1);
+    expect(page.participants[0]?.participantId).toBe(participantIds.suspended);
+    expect(page.pagination).toEqual({
+      page: 2,
+      pageSize: 2,
+      totalParticipants: 3,
+      totalPages: 2,
+      hasNextPage: false,
+    });
   });
 });

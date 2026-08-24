@@ -5,6 +5,8 @@ export type ContinuingEducationReportQuery = Readonly<{
   readonly moduleId?: string | undefined;
   readonly accountStatus?:
     "INVITED" | "ACTIVE" | "SUSPENDED" | "DEACTIVATED" | undefined;
+  readonly page?: number | undefined;
+  readonly pageSize?: number | undefined;
 }>;
 
 export type ContinuingEducationReportParticipant = Readonly<{
@@ -45,6 +47,13 @@ export type ContinuingEducationReportState = Readonly<{
     readonly completedParticipants: number;
     readonly completionRatePercent: number | null;
   }>[];
+  readonly pagination: Readonly<{
+    readonly page: number;
+    readonly pageSize: number;
+    readonly totalParticipants: number;
+    readonly totalPages: number;
+    readonly hasNextPage: boolean;
+  }>;
   readonly learningEvidence: "ATIVIDADE_MODULAR_DIGITAL";
   readonly hoursClaim: "NAO_CREDENCIADAS";
   readonly practicalCompetenceClaim: "PROIBIDO_MVP";
@@ -95,12 +104,22 @@ function normalizeQuery(
   ) {
     throw new ApplicationError("validation_error", "accountStatus is invalid");
   }
+  const page = query.page ?? 1;
+  const pageSize = query.pageSize ?? 25;
+  if (!Number.isInteger(page) || page < 1 || page > 10_000) {
+    throw new ApplicationError("validation_error", "page is invalid");
+  }
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+    throw new ApplicationError("validation_error", "pageSize is invalid");
+  }
   return Object.freeze({
     scopeId,
     ...(moduleId === undefined ? {} : { moduleId }),
     ...(query.accountStatus === undefined
       ? {}
       : { accountStatus: query.accountStatus }),
+    page,
+    pageSize,
   });
 }
 
@@ -129,6 +148,15 @@ function freezeState(
       "Report filters do not match the requested query",
     );
   }
+  if (
+    state.pagination.page !== query.page ||
+    state.pagination.pageSize !== query.pageSize
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Report pagination does not match the requested query",
+    );
+  }
   return Object.freeze({
     ...state,
     filters: Object.freeze({ ...state.filters }),
@@ -141,6 +169,7 @@ function freezeState(
     modules: Object.freeze(
       state.modules.map((module) => Object.freeze({ ...module })),
     ),
+    pagination: Object.freeze({ ...state.pagination }),
   });
 }
 

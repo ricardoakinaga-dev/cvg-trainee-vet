@@ -136,6 +136,13 @@ type ContinuingEducationReport = Readonly<{
     readonly completedParticipants: number;
     readonly completionRatePercent: number | null;
   }>[];
+  readonly pagination: Readonly<{
+    readonly page: number;
+    readonly pageSize: number;
+    readonly totalParticipants: number;
+    readonly totalPages: number;
+    readonly hasNextPage: boolean;
+  }>;
   readonly learningEvidence: "ATIVIDADE_MODULAR_DIGITAL";
   readonly hoursClaim: "NAO_CREDENCIADAS";
   readonly practicalCompetenceClaim: "PROIBIDO_MVP";
@@ -433,6 +440,19 @@ function isContinuingEducationReport(
   ) {
     return false;
   }
+  if (!isRecord(value.pagination)) return false;
+  if (
+    !isCount(value.pagination.page) ||
+    value.pagination.page < 1 ||
+    !isCount(value.pagination.pageSize) ||
+    value.pagination.pageSize < 1 ||
+    value.pagination.pageSize > 100 ||
+    !isCount(value.pagination.totalParticipants) ||
+    !isCount(value.pagination.totalPages) ||
+    typeof value.pagination.hasNextPage !== "boolean"
+  ) {
+    return false;
+  }
   if (
     value.participants.some((participant) => {
       if (!isRecord(participant)) return true;
@@ -688,6 +708,49 @@ function lastSeenLabel(value: string | undefined): string {
   }).format(date);
 }
 
+function csvCell(value: string | number | null | undefined): string {
+  const text = value === null || value === undefined ? "" : String(value);
+  const safeText = /^[=+\-@]/u.test(text) ? `\t${text}` : text;
+  return /[",\r\n]/u.test(safeText)
+    ? `"${safeText.replaceAll('"', '""')}"`
+    : safeText;
+}
+
+function downloadContinuingEducationCsv(
+  report: ContinuingEducationReport,
+): void {
+  const header = [
+    "email_profissional",
+    "status_conta",
+    "modulos_atribuidos",
+    "modulos_concluidos",
+    "progresso_percentual",
+    "minutos_digitais_concluidos",
+    "horas_digitais_concluidas",
+    "ultimo_acesso",
+  ];
+  const rows = report.participants.map((participant) => [
+    participant.professionalEmail,
+    participant.accountStatus,
+    participant.assignedModules,
+    participant.completedModules,
+    participant.progressPercent,
+    participant.completedDigitalMinutes,
+    participant.completedDigitalHours,
+    participant.lastSeenAt,
+  ]);
+  const csv = [header, ...rows]
+    .map((row) => row.map((value) => csvCell(value)).join(","))
+    .join("\r\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `cvg-participacao-digital-pagina-${report.pagination.page}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function diagnosticStatusLabel(value: string): string {
   return value === "BASELINE_REGISTRADA"
     ? "Baseline registrada"
@@ -717,6 +780,8 @@ export default function OperationsPage() {
   const [dashboard, setDashboard] = useState<StaffDashboard | null>(null);
   const [reportState, setReportState] = useState<ReportLoadState>("idle");
   const [report, setReport] = useState<ContinuingEducationReport | null>(null);
+  const [reportPage, setReportPage] = useState(1);
+  const reportPageSize = 25;
   const [reflectionReportState, setReflectionReportState] =
     useState<ReportLoadState>("idle");
   const [reflectionReport, setReflectionReport] =
@@ -806,9 +871,12 @@ export default function OperationsPage() {
       scopeId: string,
       moduleId: string,
       accountStatus: ReportStatusFilter,
+      page: number,
     ): Promise<void> => {
       setReportState("loading");
       const query = new URLSearchParams({ scopeId });
+      query.set("page", String(page));
+      query.set("pageSize", String(reportPageSize));
       if (moduleId.length > 0) query.set("moduleId", moduleId);
       if (accountStatus.length > 0) query.set("accountStatus", accountStatus);
       try {
@@ -836,7 +904,7 @@ export default function OperationsPage() {
         setReportState("error");
       }
     },
-    [],
+    [reportPageSize],
   );
 
   useEffect(() => {
@@ -850,11 +918,13 @@ export default function OperationsPage() {
       scopeId,
       reportModuleFilter,
       reportStatusFilter,
+      reportPage,
     );
   }, [
     dashboard,
     loadContinuingEducationReport,
     reportModuleFilter,
+    reportPage,
     reportStatusFilter,
   ]);
 
@@ -1352,6 +1422,7 @@ export default function OperationsPage() {
                           scopeId,
                           reportModuleFilter,
                           reportStatusFilter,
+                          reportPage,
                         );
                       }
                     }}
@@ -1369,9 +1440,10 @@ export default function OperationsPage() {
                       Módulo
                       <select
                         value={reportModuleFilter}
-                        onChange={(event) =>
-                          setReportModuleFilter(event.target.value)
-                        }
+                        onChange={(event) => {
+                          setReportPage(1);
+                          setReportModuleFilter(event.target.value);
+                        }}
                       >
                         <option value="">Todos os módulos</option>
                         {report.modules.map((module) => (
@@ -1385,11 +1457,12 @@ export default function OperationsPage() {
                       Conta
                       <select
                         value={reportStatusFilter}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          setReportPage(1);
                           setReportStatusFilter(
                             event.target.value as ReportStatusFilter,
-                          )
-                        }
+                          );
+                        }}
                       >
                         <option value="">Todos os status</option>
                         <option value="ACTIVE">Ativas</option>
@@ -1463,6 +1536,94 @@ export default function OperationsPage() {
                               <td>
                                 {percentageLabel(module.completionRatePercent)}
                               </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div
+                    className="report-filter-row"
+                    aria-label="Participantes paginados do relatório"
+                  >
+                    <button
+                      type="button"
+                      disabled={report.pagination.page <= 1}
+                      onClick={() =>
+                        setReportPage((page) => Math.max(1, page - 1))
+                      }
+                    >
+                      Página anterior
+                    </button>
+                    <span role="status">
+                      Página {report.pagination.page} de{" "}
+                      {Math.max(report.pagination.totalPages, 1)} ·{" "}
+                      {report.pagination.totalParticipants} participantes
+                    </span>
+                    <button
+                      type="button"
+                      disabled={!report.pagination.hasNextPage}
+                      onClick={() => setReportPage((page) => page + 1)}
+                    >
+                      Próxima página
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => downloadContinuingEducationCsv(report)}
+                    >
+                      Exportar página CSV
+                    </button>
+                  </div>
+                  <div
+                    className="dashboard-table-wrap"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="Participantes do relatório de participação digital"
+                  >
+                    <table className="dashboard-table">
+                      <caption className="visually-hidden">
+                        Participantes na página atual do relatório de
+                        participação digital
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Profissional</th>
+                          <th scope="col">Conta</th>
+                          <th scope="col">Módulos</th>
+                          <th scope="col">Progresso</th>
+                          <th scope="col">Minutos digitais</th>
+                          <th scope="col">Horas digitais</th>
+                          <th scope="col">Último acesso</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.participants.length === 0 ? (
+                          <tr>
+                            <td colSpan={7}>
+                              Nenhum participante no recorte atual.
+                            </td>
+                          </tr>
+                        ) : (
+                          report.participants.map((participant) => (
+                            <tr key={participant.participantId}>
+                              <th scope="row">
+                                <span className="participant-email">
+                                  {participant.professionalEmail}
+                                </span>
+                              </th>
+                              <td>
+                                {accountStatusLabel(participant.accountStatus)}
+                              </td>
+                              <td>
+                                {participant.completedModules} de{" "}
+                                {participant.assignedModules} concluídos
+                              </td>
+                              <td>
+                                {percentageLabel(participant.progressPercent)}
+                              </td>
+                              <td>{participant.completedDigitalMinutes}</td>
+                              <td>{participant.completedDigitalHours}</td>
+                              <td>{lastSeenLabel(participant.lastSeenAt)}</td>
                             </tr>
                           ))
                         )}

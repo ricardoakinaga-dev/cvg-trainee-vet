@@ -27,6 +27,13 @@ const report: ContinuingEducationReportState = {
   },
   participants: [],
   modules: [],
+  pagination: {
+    page: 1,
+    pageSize: 25,
+    totalParticipants: 0,
+    totalPages: 0,
+    hasNextPage: false,
+  },
   learningEvidence: "ATIVIDADE_MODULAR_DIGITAL",
   hoursClaim: "NAO_CREDENCIADAS",
   practicalCompetenceClaim: "PROIBIDO_MVP",
@@ -55,6 +62,13 @@ describe("continuing education report use case", () => {
     );
 
     expect(result.filters).toEqual({ scopeId, moduleId: "M02" });
+    expect(result.pagination).toEqual({
+      page: 1,
+      pageSize: 25,
+      totalParticipants: 0,
+      totalPages: 0,
+      hasNextPage: false,
+    });
     expect(result.scopeId).toBe(scopeId);
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.summary)).toBe(true);
@@ -99,6 +113,45 @@ describe("continuing education report use case", () => {
         repository({
           ...report,
           scopeId: "44444444-4444-4444-8444-444444444444",
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+  });
+
+  it("normalizes bounded pagination and rejects a mismatched repository page", async () => {
+    const result = await getContinuingEducationReport(
+      {
+        principalId: "33333333-3333-4333-8333-333333333333",
+        query: { scopeId, page: 2, pageSize: 10 },
+      },
+      repository({
+        ...report,
+        pagination: {
+          page: 2,
+          pageSize: 10,
+          totalParticipants: 11,
+          totalPages: 2,
+          hasNextPage: false,
+        },
+      }),
+    );
+
+    expect(result.pagination.page).toBe(2);
+    await expect(
+      getContinuingEducationReport(
+        {
+          principalId: "33333333-3333-4333-8333-333333333333",
+          query: { scopeId, page: 2, pageSize: 10 },
+        },
+        repository({
+          ...report,
+          pagination: {
+            page: 1,
+            pageSize: 10,
+            totalParticipants: 11,
+            totalPages: 2,
+            hasNextPage: true,
+          },
         }),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });

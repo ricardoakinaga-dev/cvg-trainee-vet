@@ -679,6 +679,7 @@ function publicContinuingEducationReportProjection(
       ...participant,
     })),
     modules: state.modules.map((module) => ({ ...module })),
+    pagination: { ...state.pagination },
     learningEvidence: state.learningEvidence,
     hoursClaim: state.hoursClaim,
     practicalCompetenceClaim: state.practicalCompetenceClaim,
@@ -1079,9 +1080,14 @@ async function handleContinuingEducationReport(
   if (dependencies.getContinuingEducationReport === undefined) {
     return errorResponse("internal_error", requestId);
   }
-  const parsed = continuingEducationReportQuerySchema.safeParse(
-    request.query ?? {},
-  );
+  const rawQuery = request.query ?? {};
+  const parsed = continuingEducationReportQuerySchema.safeParse({
+    ...rawQuery,
+    ...(rawQuery.page === undefined ? {} : { page: Number(rawQuery.page) }),
+    ...(rawQuery.pageSize === undefined
+      ? {}
+      : { pageSize: Number(rawQuery.pageSize) }),
+  });
   if (!parsed.success) return validationResponse(requestId);
   if (
     !isAllowed(principal, "VIEW_PROGRAM_METRICS", {

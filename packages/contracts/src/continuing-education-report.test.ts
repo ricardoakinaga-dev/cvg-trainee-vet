@@ -49,6 +49,13 @@ const report = {
       completionRatePercent: 100,
     },
   ],
+  pagination: {
+    page: 1,
+    pageSize: 25,
+    totalParticipants: 1,
+    totalPages: 1,
+    hasNextPage: false,
+  },
   learningEvidence: "ATIVIDADE_MODULAR_DIGITAL" as const,
   hoursClaim: "NAO_CREDENCIADAS" as const,
   practicalCompetenceClaim: "PROIBIDO_MVP" as const,
@@ -67,6 +74,19 @@ describe("continuing education report contracts", () => {
       moduleId: "M24",
       accountStatus: "SUSPENDED",
     });
+    expect(
+      continuingEducationReportQuerySchema.parse({
+        scopeId,
+        page: 2,
+        pageSize: 50,
+      }),
+    ).toEqual({ scopeId, page: 2, pageSize: 50 });
+    expect(() =>
+      continuingEducationReportQuerySchema.parse({
+        scopeId,
+        page: 0,
+      }),
+    ).toThrow();
     expect(() =>
       continuingEducationReportQuerySchema.parse({
         scopeId,

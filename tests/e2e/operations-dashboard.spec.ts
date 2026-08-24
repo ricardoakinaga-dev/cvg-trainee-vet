@@ -107,7 +107,19 @@ const continuingEducationReport = {
     completedDigitalMinutes: 360,
     completedDigitalHours: 6,
   },
-  participants: [],
+  participants: [
+    {
+      participantId: "22222222-2222-4222-8222-222222222222",
+      professionalEmail: "report.synthetic@example.invalid",
+      accountStatus: "ACTIVE",
+      assignedModules: 2,
+      completedModules: 1,
+      progressPercent: 50,
+      completedDigitalMinutes: 360,
+      completedDigitalHours: 6,
+      lastSeenAt: "2026-08-23T11:00:00.000Z",
+    },
+  ],
   modules: [
     {
       moduleId: "M02",
@@ -118,6 +130,13 @@ const continuingEducationReport = {
       completionRatePercent: 100,
     },
   ],
+  pagination: {
+    page: 1,
+    pageSize: 25,
+    totalParticipants: 1,
+    totalPages: 1,
+    hasNextPage: false,
+  },
   learningEvidence: "ATIVIDADE_MODULAR_DIGITAL",
   hoursClaim: "NAO_CREDENCIADAS",
   practicalCompetenceClaim: "PROIBIDO_MVP",
@@ -242,6 +261,12 @@ test.describe("staff training dashboard", () => {
     ).toBeVisible();
     await expect(page.getByText("Horas digitais concluídas")).toBeVisible();
     await expect(
+      page.getByRole("button", { name: "Exportar página CSV" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("report.synthetic@example.invalid"),
+    ).toBeVisible();
+    await expect(
       page.getByRole("heading", { name: "Estado agregado por módulo" }),
     ).toBeVisible();
     await expect(
@@ -270,6 +295,12 @@ test.describe("staff training dashboard", () => {
     await expect(
       page.getByText("não representa competência prática"),
     ).toBeVisible();
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Exportar página CSV" }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe(
+      "cvg-participacao-digital-pagina-1.csv",
+    );
     await expect(page.locator("body")).not.toContainText(
       "22222222-2222-4222-8222-222222222222",
     );

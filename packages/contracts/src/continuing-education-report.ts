@@ -16,6 +16,8 @@ export const continuingEducationReportQuerySchema = z
     scopeId: z.string().uuid(),
     moduleId: moduleIdSchema.optional(),
     accountStatus: accountStatusSchema.optional(),
+    page: z.number().int().min(1).max(10_000).optional(),
+    pageSize: z.number().int().min(1).max(100).optional(),
   })
   .strict();
 
@@ -66,6 +68,15 @@ export const continuingEducationReportProjectionSchema = z
       .strict(),
     participants: z.array(participantSchema).max(100),
     modules: z.array(moduleSummarySchema).max(24),
+    pagination: z
+      .object({
+        page: z.number().int().min(1).max(10_000),
+        pageSize: z.number().int().min(1).max(100),
+        totalParticipants: countSchema,
+        totalPages: z.number().int().nonnegative().max(10_000),
+        hasNextPage: z.boolean(),
+      })
+      .strict(),
     learningEvidence: z.literal("ATIVIDADE_MODULAR_DIGITAL"),
     hoursClaim: z.literal("NAO_CREDENCIADAS"),
     practicalCompetenceClaim: z.literal("PROIBIDO_MVP"),

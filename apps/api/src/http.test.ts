@@ -217,6 +217,13 @@ const continuingEducationReport: ContinuingEducationReportState = {
       completionRatePercent: 100,
     },
   ],
+  pagination: {
+    page: 1,
+    pageSize: 25,
+    totalParticipants: 1,
+    totalPages: 1,
+    hasNextPage: false,
+  },
   learningEvidence: "ATIVIDADE_MODULAR_DIGITAL",
   hoursClaim: "NAO_CREDENCIADAS",
   practicalCompetenceClaim: "PROIBIDO_MVP",
@@ -1829,6 +1836,43 @@ describe("API HTTP boundary", () => {
     );
     expect(crossScope.status).toBe(403);
     expect(getContinuingEducationReport).not.toHaveBeenCalled();
+  });
+
+  it("passes bounded report pagination to the scoped application port", async () => {
+    const getContinuingEducationReport = vi.fn(
+      async () => continuingEducationReport,
+    );
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/reports/continuing-education",
+        query: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+          page: "2",
+          pageSize: "50",
+        },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+        getContinuingEducationReport,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getContinuingEducationReport).toHaveBeenCalledWith(
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      {
+        scopeId: "11111111-1111-4111-8111-111111111111",
+        page: 2,
+        pageSize: 50,
+      },
+    );
   });
 
   it("returns only scoped reflection state counts and never participant responses", async () => {

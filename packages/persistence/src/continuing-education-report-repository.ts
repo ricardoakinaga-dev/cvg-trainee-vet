@@ -143,6 +143,8 @@ export function createContinuingEducationReportRepository(
       return db.transaction(async (transaction) => {
         const executor = transaction as unknown as DatabaseExecutor;
         await setDatabaseSecurityContext(executor, { scopeId });
+        const page = query.page ?? 1;
+        const pageSize = query.pageSize ?? 25;
 
         const memberRows = await executor
           .select({
@@ -265,6 +267,13 @@ export function createContinuingEducationReportRepository(
           (total, participant) => total + participant.completedDigitalMinutes,
           0,
         );
+        const totalParticipants = participantRows.length;
+        const totalPages = Math.ceil(totalParticipants / pageSize);
+        const start = (page - 1) * pageSize;
+        const pagedParticipants = participantRows.slice(
+          start,
+          start + pageSize,
+        );
 
         return Object.freeze({
           kind: "continuing_education_report" as const,
@@ -299,8 +308,15 @@ export function createContinuingEducationReportRepository(
             completedDigitalMinutes,
             completedDigitalHours: hours(completedDigitalMinutes),
           }),
-          participants: Object.freeze(participantRows),
+          participants: Object.freeze(pagedParticipants),
           modules: Object.freeze(moduleRows),
+          pagination: Object.freeze({
+            page,
+            pageSize,
+            totalParticipants,
+            totalPages,
+            hasNextPage: page < totalPages,
+          }),
           learningEvidence: "ATIVIDADE_MODULAR_DIGITAL" as const,
           hoursClaim: "NAO_CREDENCIADAS" as const,
           practicalCompetenceClaim: "PROIBIDO_MVP" as const,
