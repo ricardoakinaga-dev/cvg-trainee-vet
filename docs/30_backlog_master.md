@@ -444,7 +444,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fora desta fatia: histórico append-only separado, snapshots, recálculo versionado/idempotente, alteração de nota/tentativa/resultado, notificação, `CONCLUIR_RECALCULO`, encerramento, provider/MFA, aprovação clínica, piloto e produção
 - evidência local: `BRIEFING/04.AUDIT/0517_appeal_decision_rationale_audit.md`; commit técnico `3d11112`; `pnpm verify` 113/532 com 27 skips, cobertura 84,64%/80,71%/85,85%/85,33%, build 12 workspaces, E2E 22/22, migration 25/25 e integração configurada 8/20 com 25 arquivos/27 skips
 - gaps remanescentes: duas tentativas de crítica independente read-only terminaram sem relatório; PostgreSQL/RLS live sem `CVG_TEST_DATABASE_URL`, backfill/validação de decisões legadas por migration `NOT VALID`, histórico append-only, snapshots, recálculo versionado/idempotente, nota/tentativa/resultado, notificação, `CONCLUIR_RECALCULO`, encerramento, provider/MFA, aprovação clínica, piloto e produção
-- próxima ação: fechar manifesto e executar release traceability; não promover ausência de crítica, gap live, backfill ou histórico append-only a PASS
+- próxima ação: obter ambiente/autoridade para PostgreSQL/RLS live e backfill/validação de registros legados, ou selecionar a próxima lacuna local; não promover ausência de crítica, gap live, backfill ou histórico append-only a PASS
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 

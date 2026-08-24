@@ -52,6 +52,9 @@ no mapeamento de persistência e o retorno HTTP `422` para o request interno.
 - `pnpm build`: 12 workspaces; `pnpm test:e2e`: 22/22; migrations: 25/25;
   integração configurada: 8/20 testes PASS, 25 arquivos/27 testes SKIPPED;
   audit de dependências sem vulnerabilidades de nível alto.
+- após o commit documental `db9a2c9`,
+  `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou com os
+  artefatos atuais resolvendo para commits alcançáveis e paths rastreados.
 
 ## Crítica independente
 

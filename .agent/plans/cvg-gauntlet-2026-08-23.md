@@ -242,7 +242,7 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 | A39-REFACTOR | Lead         | Tighten projection, schema, migration and traceability           | A39-GREEN    | format, lint, typecheck, exposure/migration     | completed   |
 | A39-VERIFY   | Lead         | Run full regression, build, integration and E2E                  | A39-REFACTOR | 113/532 verify; 12 build; 22/22 E2E; live skip   | completed   |
 | A39-CRITIC   | fresh critics | Review rationale exposure, authorization and persistence boundary | A39-VERIFY   | two read-only attempts timed out; no PASS inferred | completed-with-gap |
-| A39-RELEASE  | Lead         | Consolidate docs and pass the clean release gate                 | A39-CRITIC   | traceability release gate on clean worktree     | in_progress |
+| A39-RELEASE  | Lead         | Consolidate docs and pass the clean release gate                 | A39-CRITIC   | `db9a2c9`; clean traceability release gate passed | completed   |
 
 ## Progress history
 
@@ -262,3 +262,4 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 - 2026-08-24 01:22: APPEAL-039 GREEN/REFACTOR/VERIFY was recorded in code commit `3d11112`; final local verify passed 113/532 with 27 skips and coverage 84.64%/80.71%/85.85%/85.33%, build 12, E2E 22/22, migration 25/25 and integration 8/20 with 27 skips. Independent criticism remains pending; live PostgreSQL/RLS and legacy backfill remain explicit gaps.
 - 2026-08-24 01:26: two fresh read-only critic attempts were closed after timeout without a report; no independent PASS is inferred. The audit is `PASS_WITH_GAPS` on local evidence, with the absence of the critic report, live PostgreSQL/RLS, legacy backfill and append-only history recorded as gaps. Documentation and clean release traceability remain in progress.
 - 2026-08-24 01:29: final verification was repeated after the documentation update: `pnpm verify` 113/532, build 12, E2E 22/22, migrations 25/25, integration 20 PASS plus 27 SKIP, dependency audit clean and `git diff --check` clean. Only the documentation commit and clean release traceability gate remain.
+- 2026-08-24 01:30: documentation commit `db9a2c9` was created and `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed with a clean worktree. APPEAL-039 is `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`; live PostgreSQL/RLS, legacy backfill, absent independent report and follow-up appeal flows remain open.

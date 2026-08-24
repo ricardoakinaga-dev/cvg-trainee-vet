@@ -5389,3 +5389,45 @@ IN_PROGRESS
 
 Commitar os artefatos documentais e executar o gate
 `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo.
+
+## 2026-08-24 — APPEAL-039: release traceability aprovado
+
+### TIMESTAMP
+
+2026-08-24 01:30:00 -03:00
+
+### ENGINE
+
+BUILD ENGINE / RUNTIME CONTROLLER
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-P — fechar a fatia local com rastreabilidade executável
+
+### ACTION
+
+Criado o commit documental `db9a2c9` sobre o commit técnico
+`3d11112d84d4f9d79fcf0703f30d2ab33b61b016`; executado
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo.
+
+### RESULT
+
+O gate passou: os artefatos atuais resolvem para commits alcançáveis e paths
+rastreados. APPEAL-039 fica `COMPLETED_WITH_GAPS` no recorte local. Nenhum
+parecer independente é inferido; live PostgreSQL/RLS, backfill/validação de
+legados, histórico append-only, recálculo, notificação e encerramento continuam
+gaps.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Obter ambiente/autoridade para provar PostgreSQL/RLS live e backfill/validação
+legados, ou selecionar a próxima lacuna local priorizada no backlog; não
+promover este gate técnico a prontidão clínica, piloto ou produção.
