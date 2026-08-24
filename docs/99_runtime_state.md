@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: APPEAL-040 / AUD-P1-001 — recálculo local idempotente de contestação
-- current_task: APPEAL-2026-08-24-R — preservar versão, executar recálculo bounded e encerrar somente após sucesso
+- current_sprint: FEEDBACK-041 / AUD-P1-001 — ciclo participante de relato e acompanhamento
+- current_task: FEEDBACK-2026-08-24-F — derivar escopo no servidor e expor feedback próprio redigido
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `APPEAL-040` foi implementado em TDD e commitado em `c57c8ca095019fb0715a75b5c595b50df25fd8eb`; o ciclo bounded de `MANTER_RESULTADO` agora preserva a versão anterior, grava histórico append-only, publica outbox transacional, cria uma versão imutável sem alterar score/outcome/feedback e encerra somente após sucesso; a verificação final em worktree limpo passou com 115 arquivos/541 testes/28 skips, cobertura 84,53%/80,49%/85,83%/85,22%, build 12, E2E 22/22, integration 8/20 com 28 skips, migrations 26/26, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
-- next_action: selecionar diagnóstico→trilha adaptada, contestação completa, filas/lembranças internas ou hardening operacional; executar PostgreSQL/RLS live e workflow remoto somente com ambiente/autoridade, mantendo `ANULAR_ITEM`/`ALTERAR_RESULTADO`, notificação, provider/MFA, gates clínicos e produção como gaps explícitos
+- last_completed_action: `FEEDBACK-041` foi implementado em TDD e commitado em `568c9efd12ff27d56e4b5edf1ee4c4922fe0d55f`; o participante agora relata e consulta tickets próprios com projeção allowlisted, escopo derivado da sessão, autorização server-side, contexto transacional participante/escopo e formulário web acessível. O RED foi observado antes da implementação; a verificação final passou com 117 arquivos/544 testes/26 skips de arquivos e 28 skips de testes, cobertura 84,47%/80,45%/85,80%/85,20%, build 12, E2E 23/23, integração configurada 8/20 com 26 arquivos/28 testes skipped, contratos 24/66, worker 4/25, migrations 26/26, audit sem vulnerabilidades conhecidas, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- next_action: implementar consulta interna read-only, bounded e escopada do histórico append-only de apelações; manter histórico fora da projeção participante e preservar workflow remoto, provider/MFA, gates clínicos e produção como gaps explícitos
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; APPEAL-040-SCOPE — esta rodada não altera `ANULAR_ITEM`/`ALTERAR_RESULTADO`, não envia notificação e não prova ambiente live/remoto; essas extensões permanecem dependências futuras
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; FEEDBACK-041-SCOPE — múltiplos escopos, triagem, comunicação, suporte e prova RLS live permanecem fora da fatia; essas extensões permanecem dependências futuras
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T02:25:45-03:00
+- last_update: 2026-08-24T02:47:37-03:00
 
 ## REGRAS DE USO
 

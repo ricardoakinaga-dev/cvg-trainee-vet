@@ -5672,3 +5672,110 @@ pendentes no worktree.
 Selecionar a próxima lacuna local — diagnóstico→trilha adaptada,
 contestação completa, filas/lembranças internas ou hardening operacional — e
 manter provas live/remotas condicionadas a ambiente e autoridade explícitos.
+
+## 2026-08-24 — FEEDBACK-041: abertura do ciclo participante de feedback
+
+### TIMESTAMP
+
+2026-08-24 02:30:21 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada de produto
+
+FEEDBACK-041 / AUD-P1-001 / UC-022
+
+### TASK
+
+FEEDBACK-2026-08-24-F — derivar escopo no servidor e permitir que o participante
+relate e acompanhe feedback próprio sem exposição de campos internos.
+
+### ACTION
+
+O backend já possui ticket versionado e transições internas, mas a superfície
+participante não oferece criação nem consulta própria. A fatia foi congelada
+com `GET`/`POST` bounded, texto simples, máximo de 100 tickets, escopo
+server-derived quando a sessão participante tem um único escopo e nenhum
+canal externo ou promessa de SLA.
+
+### RESULT
+
+Estado atualizado para `IN_PROGRESS`. O próximo passo obrigatório é RED em
+contrato, aplicação, persistência, HTTP e web; nenhum código desta fatia foi
+promovido ainda.
+
+### REVIEW / GAPS
+
+Múltiplos escopos, triagem interna, PostgreSQL/RLS live, notificações, provider,
+workflow remoto, operação de suporte e aprovação clínica permanecem fora da
+autoridade local e não serão simulados.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED com casos sintéticos e manter a projeção pública sem identidade,
+escopo, rationale, resposta, gabarito, fontes ou dados clínicos reais.
+
+## 2026-08-24 — FEEDBACK-041: implementação e encerramento local
+
+### TIMESTAMP
+
+2026-08-24 02:47:37 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada de produto
+
+FEEDBACK-041 / AUD-P1-001 / UC-022
+
+### TASK
+
+FEEDBACK-2026-08-24-F — derivar escopo no servidor e expor feedback próprio
+redigido.
+
+### ACTION
+
+Após o RED, foram adicionados o contrato de leitura bounded, caso de uso com
+validação de identidade/escopo, repositório transacional com contexto
+participante/escopo, rota `GET /api/v1/feedback`, criação server-derived no
+`POST`, projeção pública allowlisted e painel participante com estados de
+carregamento, vazio, erro, retry e envio. O teste HTTP também confirmou que um
+`scopeId` adulterado no corpo é ignorado e que staff não acessa a rota própria.
+
+### RESULT
+
+`COMPLETED_WITH_GAPS`. Commit técnico:
+`568c9efd12ff27d56e4b5edf1ee4c4922fe0d55f`. O gate completo passou com 117
+arquivos/544 testes, cobertura 84,47%/80,45%/85,80%/85,20%, build em 12
+workspaces, E2E 23/23, integração configurada 8/20 com 26 arquivos/28 testes
+skipped, migrations 26/26, audit de dependências sem vulnerabilidades
+conhecidas e gates documentais/arquiteturais/de exposição limpos.
+
+### REVIEW / GAPS
+
+A crítica independente do loop retornou `CONDITIONAL PASS`, sem certificar a
+implementação em worktree limpo, e recomendou como próxima fatia a consulta
+interna do histórico de apelações. Não houve prova PostgreSQL/RLS live por
+ausência de `CVG_TEST_DATABASE_URL`/capacidade administrativa. Múltiplos
+escopos, triagem, notificações, suporte, operação remota, restore/retention,
+provider/MFA, gates clínicos, piloto e produção permanecem gaps explícitos.
+
+### STATUS
+
+COMPLETED_WITH_GAPS
+
+### NEXT
+
+Abrir uma fatia separada para consultar o histórico append-only interno de
+apelações, bounded e escopado, mantendo-o fora da projeção participante.

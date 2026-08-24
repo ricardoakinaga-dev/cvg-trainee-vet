@@ -2505,6 +2505,86 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "FEEDBACK-041"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-100",
+        "PRD-RF-101",
+        "PRD-RF-102",
+        "PRD-RF-103",
+        "PRD-RF-106",
+        "UC-022",
+        "UC-023",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0520_feedback_participant_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0015_metricas_de_sucesso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/learning-state.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/feedback-ticket-read-use-cases.ts",
+        "packages/application/src/feedback-ticket-read-use-cases.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/feedback-ticket-read-repository.ts",
+        "packages/persistence/src/feedback-ticket-read-repository.test.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/page.tsx",
+        "tests/e2e/participant-access.spec.ts",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/contracts/src/learning-state.test.ts",
+        "packages/application/src/feedback-ticket-read-use-cases.test.ts",
+        "packages/persistence/src/feedback-ticket-read-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+      ]
+    commit: "568c9efd12ff27d56e4b5edf1ee4c4922fe0d55f"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: contrato/aplicação ainda sem leitura, persistência ausente e POST HTTP 422 antes da implementação",
+        "GREEN: focused contracts/application/persistence/API passou 4 arquivos/69 testes",
+        "pnpm format:check",
+        "pnpm lint",
+        "pnpm typecheck",
+        "pnpm test:coverage (117 arquivos/544 testes; 26 skips de arquivos/28 skips de testes; coverage 84.47% statements, 80.45% branches, 85.80% functions, 85.20% lines)",
+        "pnpm test:contract (24 arquivos/66 testes)",
+        "pnpm test:worker (4 arquivos/25 testes)",
+        "pnpm test:integration (8 arquivos/20 testes PASS; 26 arquivos/28 testes SKIPPED sem dependências live)",
+        "pnpm verify:migrations (26 migrations; latest 0025_appeal_recalculation_history)",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm verify",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (23/23)",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "EDITORIAL-QUEUE-027"
     requirements:
       [

@@ -484,6 +484,24 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps remanescentes: PostgreSQL/RLS live, workflow remoto, concorrência real entre workers, observabilidade/retention/restore, `ANULAR_ITEM`, `ALTERAR_RESULTADO`, notificação, alteração de tentativa/resposta, recomputação clínica, provider/MFA, piloto e produção
 - próxima ação: obter ambiente/autoridade para prova live e selecionar a próxima lacuna local — diagnóstico→trilha adaptada, contestação completa, filas/lembranças internas ou hardening operacional — sem promover ausência de crítica independente a PASS
 
+### FEEDBACK-041 — Relato e acompanhamento de feedback do participante
+
+- título: permitir que o participante relate bug, erro de conteúdo, usabilidade ou melhoria e acompanhe somente seus próprios tickets
+- descrição: fechar a superfície web do UC-022 sobre o backend de feedback já persistido; a criação aceita texto simples, o servidor deriva o escopo da sessão quando possível, a leitura retorna projeção allowlisted e nenhum campo de identidade ou operação interna atravessa a fronteira pública
+- módulo: feedback / jornada participante / contratos / API / persistência / web
+- dependência: `UC-022`; `UC-023`; `SPEC-0107`; `SPEC-0111`; `FEEDBACK_TICKETS` existente em `learning-state`
+- fase: BUILD — Phase 3–5 / jornada de produto
+- risco: alto — relato não pode atravessar escopo, expor dados internos, aceitar HTML ou prometer canal externo/SLA não contratado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para contrato opcional server-derived, listagem própria, persistência/RLS por escopo, HTTP, formulário acessível, estados loading/empty/error/retry, E2E sintético, regressão, traceability e release gate
+- escopo desta fatia: `GET /api/v1/feedback` e `POST /api/v1/feedback` para participante autenticado; tipos `BUG_TECNICO`, `USABILIDADE`, `ERRO_CONTEUDO`, `MELHORIA` e `CONTESTACAO`; máximo bounded de 100 tickets; escopo enviado pelo cliente não é confiado e, quando omitido, é derivado somente de sessão participante de escopo único
+- fora desta fatia: canal de e-mail/chat, notificações, anexos, dados clínicos reais, integração externa, decisão de suporte, SLA operacional, triagem automática, provider/MFA, PostgreSQL/RLS live, workflow remoto, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0520_feedback_participant_audit.md`; commit técnico `568c9efd12ff27d56e4b5edf1ee4c4922fe0d55f`; contratos, aplicação, persistência, API, web, testes HTTP e E2E
+- resultado local: RED observado antes da implementação; GREEN focado 4 arquivos/69 testes; `pnpm verify` passou com 117 arquivos/544 testes/26 skips de arquivos/28 skips de testes, cobertura 84,47%/80,45%/85,80%/85,20%; `pnpm build` 12 workspaces; `pnpm test:e2e` 23/23; `pnpm test:integration` 8 arquivos/20 testes PASS e 26 arquivos/28 testes SKIPPED; contracts 24/66; worker 4/25; migrations 26/26; audit sem vulnerabilidades conhecidas; gates de secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- gaps conhecidos: múltiplos escopos exigirão seleção server-side explícita; triagem/moderação, resposta ao participante, notificações, operação de suporte, prova live/RLS, restore/retention e workflow remoto continuam fora da fatia
+- próxima ação: implementar consulta interna read-only, bounded e escopada do histórico append-only de apelações, sem projetá-lo ao participante
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais
