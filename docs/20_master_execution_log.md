@@ -8195,3 +8195,40 @@ rastreabilidade em worktree limpo e manter o item como
 ### STATUS
 
 IN_PROGRESS
+
+## 2026-08-24 — FEEDBACK-HISTORY-053: fechamento documental local
+
+### TIMESTAMP
+
+2026-08-24T19:13:06-03:00
+
+### ACTION
+
+Commitar a auditoria, SPEC, backlog, plano, runtime state e manifesto de
+rastreabilidade após a crítica e as remediações P1.
+
+### RESULT
+
+O controle documental foi consolidado em
+`d10abd1e1e62faa1c182d00425f23bf72991e614`, com o código de produção da fatia
+em `4680675555aac40246b80bc8ef099a7b2252ebfb`. O gate
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo. A evidência local atual é 134/665/35 skips, cobertura
+84,28%/80,13%/86,14%/84,99%, build 12 workspaces, typecheck, lint, contratos
+81/81, worker 27/27, E2E 31/31 e migrations 40/40.
+
+### LIMITES
+
+O preflight live saiu 2 por ausência de `CVG_TEST_DATABASE_URL`; não houve
+conexão nem evidência de PostgreSQL/RLS/grants/trigger efetivo,
+browser→API→PostgreSQL, produção, workflow remoto same-SHA ou aprovação
+clínica. O slice segue `COMPLETED_WITH_GAPS`.
+
+### NEXT ACTION
+
+Selecionar a próxima lacuna P1 local bounded, mantendo o live preflight sob
+dependência de ambiente CVG autorizado e sem declarar release.
+
+### STATUS
+
+READY_FOR_NEXT_STEP

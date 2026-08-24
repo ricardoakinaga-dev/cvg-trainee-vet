@@ -565,7 +565,7 @@ backfill inventado.
 - evidência: `BRIEFING/04.AUDIT/0535_feedback_history_audit.md`; `traceability.yml` / `FEEDBACK-HISTORY-053`; commits de hardening `06b8f3720a9841d6d2335e51b28a8eb156a9191f` e `4680675555aac40246b80bc8ef099a7b2252ebfb` sobre `5f93cbb55732da2b89c0d6322ccc2a00e76cbd40`
 - resultado: contrato strict, autorização server-side, leitura contextual, projection redigida, migrations 0037/0038/0039 com append-only/RLS, integridade composta e linhagem de eventos, evento e `audit_entries` metadata-only atômicos, contexto server-owned de ator/request/correlation, API, telemetria, timeline web e E2E sintético concluídos; 31/31 E2E, 665 testes e todos os gates locais passaram
 - gaps explícitos: `CVG_TEST_DATABASE_URL` ausente impede PostgreSQL/RLS/grants live e browser→API→PostgreSQL; a FK `0038` é `NOT VALID` e tickets/rows legados não recebem histórico retroativo; prioridade, assignment, SLA, resposta, notificação, anexos, retirada clínica, provider/MFA, workflow remoto, produção e aprovação clínica permanecem fora
-- próxima ação: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; depois selecionar a próxima lacuna P1 sem declarar release
+- próxima ação: o preflight `pnpm test:integration:live` foi tentado e saiu 2 por ausência de `CVG_TEST_DATABASE_URL`; selecionar a próxima lacuna P1 local bounded e repetir o live somente em banco CVG descartável/autorizado, sem declarar release
 
 **Abertura operacional 2026-08-24 (FEEDBACK-HISTORY-053 / P1-integrity):** a
 crítica independente encontrou uma lacuna de defesa no banco: `scope_id` ainda

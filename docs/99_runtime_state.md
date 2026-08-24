@@ -9,17 +9,17 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: FEEDBACK-HISTORY-053 — remediação pós-crítica e fechamento documental
-- current_task: reconciliar migrations 0038/0039, evidência de auditoria e commit de fixture antes de rodar o gate release de rastreabilidade
+- current_sprint: FEEDBACK-HISTORY-053 — fechamento local e seleção da próxima fatia
+- current_task: selecionar a próxima lacuna P1 bounded após o fechamento local, sem confundir gate de rastreabilidade com prova live ou aprovação clínica
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: incorporar a crítica final Wegener e consolidar `4680675555aac40246b80bc8ef099a7b2252ebfb`; tornar correlation de feedback server-owned, adicionar migration 0039 para `CRIADO→NOVO`/predecessor, isolar cleanup live e assertar IDs; verificar RED/GREEN focal, coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines, build 12 workspaces, typecheck, lint, E2E 31/31, contratos 81/81, worker 27/27 e migrations 40/40; executar o preflight live, que saiu 2 por ausência de `CVG_TEST_DATABASE_URL` sem abrir conexão.
-- next_action: commitar a reconciliação documental, executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo e então selecionar a próxima lacuna P1; não declarar release
+- last_completed_action: incorporar a crítica final Wegener e consolidar `4680675555aac40246b80bc8ef099a7b2252ebfb`; tornar correlation de feedback server-owned, adicionar migration 0039 para `CRIADO→NOVO`/predecessor, isolar cleanup live e assertar IDs; verificar RED/GREEN focal, coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines, build 12 workspaces, typecheck, lint, E2E 31/31, contratos 81/81, worker 27/27 e migrations 40/40; preflight live saiu 2 por ausência de `CVG_TEST_DATABASE_URL`; commitar documentação em `d10abd1e1e62faa1c182d00425f23bf72991e614` e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`.
+- next_action: selecionar e abrir a próxima lacuna P1 local bounded, mantendo o live preflight pendente por ambiente/autoridade e sem declarar release
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T19:11:40-03:00
+- last_update: 2026-08-24T19:13:06-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `4680675555aac40246b80bc8ef099a7b2252ebfb`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; a reconciliação documental está em andamento; o preflight live continua sem ambiente
+- head: `d10abd1e1e62faa1c182d00425f23bf72991e614`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; documentação e rastreabilidade release estão fechadas; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: há alterações documentais de controle/SPEC/auditoria desta rodada aguardando commit; não há push/deploy
+- worktree: limpo após os commits de código e documentação; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-HISTORY-053` base e hardening estão GREEN/REFACTOR; actor/request/correlation server-owned, `audit_entries` atômico, migrations 0038/0039, linhagem e rollback estão cobertos localmente; coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines; build 12 workspaces; typecheck/lint, Prettier, migration 40/40, contratos 81/81, worker 27/27, E2E 31/31 e gates estáticos/documentais anteriores passaram; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `FEEDBACK-HISTORY-053` base e hardening estão GREEN/REFACTOR; actor/request/correlation server-owned, `audit_entries` atômico, migrations 0038/0039, linhagem e rollback estão cobertos localmente; coverage 134/665/35 skips com 84,28% statements, 80,13% branches, 86,14% functions e 84,99% lines; build 12 workspaces; typecheck/lint, Prettier, migration 40/40, contratos 81/81, worker 27/27, E2E 31/31 e gates estáticos/documentais passaram; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 
