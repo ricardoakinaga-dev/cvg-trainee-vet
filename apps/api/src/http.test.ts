@@ -2208,7 +2208,7 @@ describe("API HTTP boundary", () => {
       appealId: "77777777-7777-4777-8777-777777777777",
       participantId,
       attemptId: workflow.attemptId,
-      itemId: "88888888-8888-4888-8888-888888888888",
+      itemId: answer.itemId,
       justification: "Justificativa sintética.",
       createdAt: "2026-08-10T17:00:00.000Z",
       dueAt: "2026-08-19T17:00:00.000Z",
@@ -2356,7 +2356,9 @@ describe("API HTTP boundary", () => {
           ...attempt,
           participantId,
           activityId: attempt.activityId,
+          status: "CORRIGIDA_AUTOMATICAMENTE",
         }),
+        hasParticipantActivityItem: async () => true,
         resolveActivityScope: async () => scopeId,
         authenticate: async () => ({
           principalId: participantId,
@@ -2806,5 +2808,136 @@ describe("API HTTP boundary", () => {
       error: { code: "internal_error" },
     });
     expect(JSON.stringify(response.body)).not.toContain("secret");
+  });
+
+  it("lists only the participant's redacted appeal protocol", async () => {
+    const appeal: AppealState = {
+      appealId: "66666666-6666-4666-8666-666666666666",
+      participantId: attempt.participantId,
+      attemptId: attempt.attemptId,
+      itemId: answer.itemId,
+      justification: "Não expor esta justificativa na projeção.",
+      createdAt: "2026-08-10T17:00:00.000Z",
+      dueAt: "2026-08-19T17:00:00.000Z",
+      version: 0,
+      status: "ABERTA",
+      reviewerId: "77777777-7777-4777-8777-777777777777",
+    };
+    const getParticipantAppeals = vi.fn(async () => [appeal]);
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/appeals",
+        query: { attemptId: attempt.attemptId },
+        body: undefined,
+      },
+      dependencies({ getParticipantAppeals }),
+    );
+    expect(response.status).toBe(200);
+    expect(getParticipantAppeals).toHaveBeenCalledWith({
+      participantId: attempt.participantId,
+      scopeId: activity.scopeId,
+      attemptId: attempt.attemptId,
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        appeals: [
+          {
+            appealId: appeal.appealId,
+            attemptId: appeal.attemptId,
+            itemId: appeal.itemId,
+            createdAt: appeal.createdAt,
+            dueAt: appeal.dueAt,
+            status: "ABERTA",
+            version: 0,
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("justificativa");
+    expect(JSON.stringify(response.body)).not.toContain("reviewerId");
+  });
+
+  it("does not create an appeal for an item outside the owned activity", async () => {
+    const createAppeal = vi.fn(async () => {
+      throw new Error("must not be called");
+    });
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/appeals",
+        body: {
+          attemptId: attempt.attemptId,
+          itemId: "88888888-8888-4888-8888-888888888888",
+          justification: "Item sintético não pertence à atividade.",
+        },
+      },
+      dependencies({
+        createAppeal,
+        resolveAttempt: async () => ({
+          ...attempt,
+          status: "CORRIGIDA_AUTOMATICAMENTE",
+        }),
+        hasParticipantActivityItem: async () => false,
+      }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "not_found" },
+    });
+    expect(createAppeal).not.toHaveBeenCalled();
+  });
+
+  it("does not create an appeal for a non-answerable activity item", async () => {
+    const createAppeal = vi.fn(async () => {
+      throw new Error("must not be called");
+    });
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/appeals",
+        body: {
+          attemptId: attempt.attemptId,
+          itemId: answer.itemId,
+          justification: "Item de leitura não deve gerar contestação.",
+        },
+      },
+      dependencies({
+        createAppeal,
+        resolveAttempt: async () => ({
+          ...attempt,
+          status: "CORRIGIDA_AUTOMATICAMENTE",
+        }),
+        getParticipantActivity: async () => ({
+          ...activity,
+          items: activity.items.map((item) => ({
+            ...item,
+            kind: "LEITURA",
+          })),
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(createAppeal).not.toHaveBeenCalled();
+  });
+
+  it("rejects unexpected appeal query fields at the HTTP boundary", async () => {
+    const getParticipantAppeals = vi.fn(async () => []);
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/appeals",
+        query: { attemptId: attempt.attemptId, scopeId: "scope-1" },
+        body: undefined,
+      },
+      dependencies({ getParticipantAppeals }),
+    );
+
+    expect(response.status).toBe(422);
+    expect(getParticipantAppeals).not.toHaveBeenCalled();
   });
 });

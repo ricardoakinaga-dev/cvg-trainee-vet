@@ -14,6 +14,7 @@ import {
 } from "../../packages/domain/src/index.js";
 
 import {
+  createAppealReadRepository,
   createLearningStateRepository,
   LearningStatePersistenceConflictError,
 } from "../../packages/persistence/src/learning-state-repository.js";
@@ -185,6 +186,17 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         expect(await repository.findAppeal(context, appealId)).toMatchObject({
           state: { status: "EM_REVISAO", reviewerId, version: 1 },
         });
+        expect(
+          await createAppealReadRepository(database.db).listAppeals(
+            context,
+            attemptId,
+          ),
+        ).toMatchObject([
+          {
+            scopeId,
+            state: { appealId, attemptId, status: "EM_REVISAO" },
+          },
+        ]);
 
         const otherContext = {
           participantId: otherParticipantId,
@@ -200,6 +212,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         expect(
           await otherRepository.findFeedbackTicket(otherContext, ticketId),
         ).toBeNull();
+        expect(
+          await createAppealReadRepository(database.db).listAppeals(
+            otherContext,
+            attemptId,
+          ),
+        ).toEqual([]);
 
         if (harness.adminRole.canCreateRoles) {
           await admin.db.execute(

@@ -129,15 +129,46 @@ The manager aggregate lane owns only the reflection aggregate contract/use case/
 - If authorization, provider, clinical approval, external runtime, or remote CI is required, record the exact missing authority and continue only with safe local work.
 - Never convert an unavailable check into PASS. Keep `PASS_WITH_GAPS`, `WAITING_HUMAN_APPROVAL`, or `BLOCKED` explicit as applicable.
 
+## Next milestone — APPEAL-036 participant contestation boundary
+
+The reflection aggregate slice is complete locally and its focused independent
+critic, full verification, local commits, artifact SHA, and clean release
+traceability gate are recorded. The next local product gap is the participant
+contestation boundary, selected from `AUD-P1-001` and RF-060/RF-064/RF-065.
+
+The bounded first slice is deliberately narrower than the full appeal program:
+
+- expose a participant's own appeal protocol for a submitted/corrected attempt;
+- validate the attempt/item relationship and eligibility server-side before
+  creating an appeal, preserving the existing independent-review state machine;
+- keep justification, reviewer identity, answer text, score, answer key, and
+  internal references out of the participant projection;
+- provide a strict, accessible participant surface with loading, empty, error,
+  retry, duplicate, and terminal-state feedback;
+- leave reviewer queue assignment, decision rationale, result recalculation,
+  affected-user notification, provider delivery, and clinical approval as
+  explicit follow-up gaps rather than simulating them.
+
+Frozen slice bar: participant isolation, attempt/item eligibility, no duplicate
+open appeal, strict response allowlist, optimistic versioning, no public
+clinical/practical claim, RED/GREEN/REFACTOR, full regression, and a fresh
+read-only critic. No migration is preferred unless the existing schema cannot
+support the boundary.
+
 ## Current next action
 
-The focused independent C0 PASS, full verification, local commits, artifact SHA,
-and clean release traceability gate are complete for this slice. The live
-PostgreSQL boundary remains an explicit unavailable check when its required
-environment variables are absent; next work must follow the backlog without
-claiming production or clinical readiness.
+Obtain a fresh independent read-only critic for the implemented APPEAL-036
+boundary, then close the code/documentation commit and run the clean release
+traceability gate. The live PostgreSQL boundary for reflection and appeals
+remains an explicit unavailable check when its required environment variables are
+absent; this milestone must not claim production, clinical, pilot, or CPD
+readiness.
 
 ## Progress history
 
 - 2026-08-23 recovery: read all files under `docs/` (state, log, backlog), applicable root/nested instructions, lifecycle gates, BUILD records, current reflection/OPS audits, and required Gauntlet/Orchestrate/Engineering references.
 - 2026-08-23: `REFLECTION-035` participant slice and `OPS-034` local snapshot are existing evidence; the global project remains incomplete and the next largest local product gap is the protected management aggregate.
+- 2026-08-23: reflection management aggregate closed with focused independent PASS and clean traceability; current local gap ranked next as the participant contestation boundary, with recalc/notification/reviewer-operations explicitly deferred.
+- 2026-08-23: APPEAL-036 first slice passed focused unit tests, full verification (103 files/495 tests, 25 skips, 84,33% statements/80,14% branches), build and full E2E 22/22; live PostgreSQL remained skipped without `CVG_TEST_DATABASE_URL`.
+- 2026-08-23: a RED E2E exposed that a corrected attempt/protocol disappeared after reload; the web now restores the own attempt from the journey projection and the participant E2E file passes 9/9. The independent critic was attempted twice after implementation but timed out without a report, so no independent PASS is inferred.
+- 2026-08-23: a review RED exposed that the fallback/API boundary accepted a non-answerable item; `QUESTAO`/`CASO` filtering was added to HTTP, PostgreSQL resolver and web, targeted 62/62 passed, full verification reached 495 tests and E2E 22/22.

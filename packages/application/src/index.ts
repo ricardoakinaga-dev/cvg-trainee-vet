@@ -200,6 +200,7 @@ export {
   transitionFeedbackTicketState,
   transitionLearningAssignmentState,
 } from "./learning-state-use-cases.js";
+export { getParticipantAppeals } from "./appeal-use-cases.js";
 export type {
   AppealCreateCommand,
   AppealTransitionCommand,
@@ -216,6 +217,12 @@ export type {
   ScopedFeedbackTicket,
   ScopedLearningAssignment,
 } from "./learning-state-use-cases.js";
+export type {
+  GetParticipantAppealsCommand,
+  ParticipantAppealReadContext,
+  ParticipantAppealReadPort,
+  ScopedParticipantAppeal,
+} from "./appeal-use-cases.js";
 export {
   deriveJourneyNextAction,
   getParticipantLearningJourney,

@@ -89,6 +89,7 @@ export { rotateSessionRequestSchema } from "./session.js";
 export type { RotateSessionRequest } from "./session.js";
 export {
   appealCreateRequestSchema,
+  appealQuerySchema,
   appealScopedTransitionRequestSchema,
   appealTransitionRequestSchema,
   assessmentWorkflowCreateRequestSchema,
@@ -102,12 +103,14 @@ export {
   learningAssignmentScopedTransitionRequestSchema,
   learningAssignmentTransitionRequestSchema,
   participantAppealProjectionSchema,
+  participantAppealsProjectionSchema,
   participantAssessmentWorkflowProjectionSchema,
   participantFeedbackTicketProjectionSchema,
   participantLearningAssignmentProjectionSchema,
 } from "./learning-state.js";
 export type {
   AppealCreateRequest,
+  AppealQuery,
   AppealScopedTransitionRequest,
   AppealTransitionRequest,
   AssessmentWorkflowCreateRequest,
@@ -121,6 +124,7 @@ export type {
   LearningAssignmentScopedTransitionRequest,
   LearningAssignmentTransitionRequest,
   ParticipantAppealProjection,
+  ParticipantAppealsProjection,
   ParticipantAssessmentWorkflowProjection,
   ParticipantFeedbackTicketProjection,
   ParticipantLearningAssignmentProjection,

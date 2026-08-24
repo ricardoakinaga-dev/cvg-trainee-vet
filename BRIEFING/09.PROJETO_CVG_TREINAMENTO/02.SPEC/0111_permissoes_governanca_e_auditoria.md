@@ -6,7 +6,7 @@
 
 | Papel/capacidade | Escopo | Pode fazer | Não pode fazer |
 |---|---|---|---|
-| `PARTICIPANT` | próprio vínculo | estudar, responder, consultar progresso e relatar problema | ver gabarito, fontes, auditoria ou outro participante |
+| `PARTICIPANT` | próprio vínculo | estudar, responder, consultar progresso, acompanhar protocolos próprios e relatar problema | ver gabarito, fontes, auditoria ou outro participante |
 | `MODERATOR` | participantes/filas atribuídos | triar feedback e acompanhar evolução autorizada | corrigir oficialmente, conceder papel, publicar conteúdo ou consultar fontes completas |
 | `ADMIN` | coorte administrativa | convidar, atribuir trilha, gerir contas, operar filas e consultar indicadores | aprovar conteúdo clínico ou alterar nota fora de fluxo |
 | `CLINICAL_APPROVER` | conteúdo clínico | aprovar/retirar conteúdo e protocolo interno após revisão | delegar a própria capacidade ou publicar sem versão |
@@ -31,6 +31,13 @@ correspondente. Ela permite os relatórios agregados de participação digital e
 reflexão por escopo/módulo, mas não concede leitura de resposta livre, identidade
 individual fora do mínimo operacional, alteração de atribuição, nota, gabarito,
 conteúdo, papel ou competência.
+
+`VIEW_OWN_APPEALS` é uma capacidade participante separada de
+`CREATE_APPEAL`: exige conta `ACTIVE`, papel `PARTICIPANT`, `ownerId` igual ao
+principal e escopo presente na sessão. Ela só permite ler protocolos vinculados
+à tentativa própria. A projeção não contém justificativa, `reviewerId`, resposta,
+score, gabarito, fontes ou competência prática. `REVIEW_APPEAL` continua
+restrita a equipe interna escopada e não é concedida por alterar a URL.
 
 Toda falha de autorização responde `403` ou `404` conforme a política de não enumeração. Ocultar botão, rota ou menu no web não é controle de segurança.
 

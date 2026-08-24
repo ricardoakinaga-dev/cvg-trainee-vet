@@ -54,6 +54,22 @@ type AttemptProjection = Readonly<{
   }>[];
 }>;
 
+type ParticipantAppealProjection = Readonly<{
+  readonly appealId: string;
+  readonly attemptId: string;
+  readonly itemId: string;
+  readonly createdAt: string;
+  readonly dueAt: string;
+  readonly status:
+    "ABERTA" | "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE" | "ENCERRADA";
+  readonly version: number;
+  readonly decision?: "MANTER_RESULTADO" | "ANULAR_ITEM" | "ALTERAR_RESULTADO";
+}>;
+
+type ParticipantAppealsProjection = Readonly<{
+  readonly appeals: readonly ParticipantAppealProjection[];
+}>;
+
 type CurriculumRuntimeProjection = Readonly<{
   readonly moduleId: string;
   readonly version: number;
@@ -138,7 +154,7 @@ type ApiRecord = Readonly<Record<string, unknown>>;
 const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 
 type ExperienceState = "idle" | "loading" | "ready" | "empty" | "error";
-type RetryAction = "access" | "journey" | "activity" | null;
+type RetryAction = "access" | "journey" | "activity" | "appeals" | null;
 
 class PublicApiError extends Error {
   public constructor(
@@ -272,6 +288,46 @@ function isAttempt(value: unknown): value is AttemptProjection {
         isString(answer.itemId) &&
         isString(answer.response),
     )
+  );
+}
+
+function isParticipantAppeal(
+  value: unknown,
+): value is ParticipantAppealProjection {
+  if (!isRecord(value)) return false;
+  const status =
+    value.status === "ABERTA" ||
+    value.status === "EM_REVISAO" ||
+    value.status === "DECIDIDA" ||
+    value.status === "RECALCULO_PENDENTE" ||
+    value.status === "ENCERRADA";
+  const decision =
+    value.decision === undefined ||
+    value.decision === "MANTER_RESULTADO" ||
+    value.decision === "ANULAR_ITEM" ||
+    value.decision === "ALTERAR_RESULTADO";
+  return (
+    isString(value.appealId) &&
+    isString(value.attemptId) &&
+    isString(value.itemId) &&
+    isString(value.createdAt) &&
+    isString(value.dueAt) &&
+    status &&
+    typeof value.version === "number" &&
+    Number.isInteger(value.version) &&
+    value.version >= 0 &&
+    decision
+  );
+}
+
+function isParticipantAppeals(
+  value: unknown,
+): value is ParticipantAppealsProjection {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.appeals) &&
+    value.appeals.length <= 100 &&
+    value.appeals.every(isParticipantAppeal)
   );
 }
 
@@ -644,6 +700,21 @@ function reflectionStatusLabel(value: ReflectionProjection["status"]): string {
   return labels[value];
 }
 
+function appealStatusLabel(
+  value: ParticipantAppealProjection["status"],
+): string {
+  const labels: Readonly<
+    Record<ParticipantAppealProjection["status"], string>
+  > = {
+    ABERTA: "Recebida",
+    EM_REVISAO: "Em revisão",
+    DECIDIDA: "Decidida",
+    RECALCULO_PENDENTE: "Recálculo pendente",
+    ENCERRADA: "Encerrada",
+  };
+  return labels[value];
+}
+
 function moduleIdFromActivity(activity: ActivityProjection): string | null {
   const match = /(?:^|-)m(0[1-9]|1[0-9]|2[0-4])(?:-|$)/iu.exec(activity.slug);
   return match?.[1] === undefined ? null : `M${match[1]}`;
@@ -724,6 +795,12 @@ export default function HomePage() {
     null,
   );
   const [attempt, setAttempt] = useState<AttemptProjection | null>(null);
+  const [appeals, setAppeals] = useState<
+    readonly ParticipantAppealProjection[]
+  >([]);
+  const [appealState, setAppealState] = useState<ExperienceState>("idle");
+  const [appealItemId, setAppealItemId] = useState("");
+  const [appealJustification, setAppealJustification] = useState("");
   const [answers, setAnswers] = useState<Readonly<Record<string, string>>>({});
   const [authenticated, setAuthenticated] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -784,6 +861,40 @@ export default function HomePage() {
     }
   }
 
+  async function restoreAttemptFromJourney(
+    loadedJourney: LearningJourneyProjection,
+    nextActivityId: string,
+  ): Promise<void> {
+    const journeyActivity = loadedJourney.activities.find(
+      (item) => item.activityId === nextActivityId,
+    );
+    if (
+      journeyActivity?.attemptId === undefined ||
+      journeyActivity.attemptStatus === undefined ||
+      journeyActivity.attemptVersion === undefined
+    ) {
+      setAttempt(null);
+      setAppeals([]);
+      setAppealState("idle");
+      return;
+    }
+
+    const restoredAttempt: AttemptProjection = {
+      attemptId: journeyActivity.attemptId,
+      activityId: nextActivityId,
+      status: journeyActivity.attemptStatus,
+      version: journeyActivity.attemptVersion,
+      answers: [],
+    };
+    setAttempt(restoredAttempt);
+    if (
+      journeyActivity.attemptStatus === "CORRIGIDA_AUTOMATICAMENTE" ||
+      journeyActivity.attemptStatus === "CORRIGIDA_HUMANAMENTE"
+    ) {
+      await loadAppeals(restoredAttempt.attemptId);
+    }
+  }
+
   async function loadJourney(): Promise<LearningJourneyProjection> {
     setJourneyState("loading");
     setRetryAction("journey");
@@ -817,6 +928,37 @@ export default function HomePage() {
     }
   }
 
+  async function loadAppeals(attemptId: string): Promise<void> {
+    if (attemptId.trim().length === 0) return;
+    setAppealState("loading");
+    setRetryAction("appeals");
+    try {
+      const data = await requestJson(
+        `/api/v1/appeals?attemptId=${encodeURIComponent(attemptId)}`,
+        { method: "GET" },
+      );
+      if (!isParticipantAppeals(data)) {
+        throw new PublicApiError("internal_error", "invalid appeal projection");
+      }
+      setAppeals(data.appeals);
+      setAppealItemId((current) => {
+        if (
+          current.length > 0 &&
+          activity?.items.some((item) => item.itemId === current)
+        ) {
+          return current;
+        }
+        return activity?.items[0]?.itemId ?? "";
+      });
+      setAppealState(data.appeals.length === 0 ? "empty" : "ready");
+      setRetryAction(null);
+    } catch (caught) {
+      setAppealState("error");
+      setRetryAction("appeals");
+      setError(publicErrorMessage(caught));
+    }
+  }
+
   async function activateAccess(): Promise<void> {
     setBusy(true);
     setError(null);
@@ -838,16 +980,16 @@ export default function HomePage() {
     setNotice("Acesso ativado.");
     try {
       const loadedJourney = await loadJourney();
-      if (activityId.trim().length > 0) {
-        await loadActivity(activityId);
-      } else {
-        const nextActivity = loadedJourney.activities.find(
-          (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-        );
-        if (nextActivity !== undefined) {
-          setActivityId(nextActivity.activityId);
-          await loadActivity(nextActivity.activityId);
-        }
+      const nextActivityId =
+        activityId.trim().length > 0
+          ? activityId
+          : loadedJourney.activities.find(
+              (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
+            )?.activityId;
+      if (nextActivityId !== undefined && nextActivityId.length > 0) {
+        setActivityId(nextActivityId);
+        await loadActivity(nextActivityId);
+        await restoreAttemptFromJourney(loadedJourney, nextActivityId);
       }
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -876,6 +1018,7 @@ export default function HomePage() {
       if (nextActivityId !== undefined && nextActivityId.length > 0) {
         setActivityId(nextActivityId);
         await loadActivity(nextActivityId);
+        await restoreAttemptFromJourney(loadedJourney, nextActivityId);
       }
       setNotice("Jornada atualizada.");
     } catch (caught) {
@@ -904,6 +1047,9 @@ export default function HomePage() {
     if (retryAction === "access") void activateAccess();
     if (retryAction === "journey") void refreshJourney();
     if (retryAction === "activity") void refreshActivity();
+    if (retryAction === "appeals" && attempt !== null) {
+      void loadAppeals(attempt.attemptId);
+    }
   }
 
   async function handleStartAttempt(): Promise<void> {
@@ -1010,6 +1156,12 @@ export default function HomePage() {
         );
       setAttempt(data);
       await loadActivity(attempt.activityId);
+      if (
+        data.status === "CORRIGIDA_AUTOMATICAMENTE" ||
+        data.status === "CORRIGIDA_HUMANAMENTE"
+      ) {
+        await loadAppeals(data.attemptId);
+      }
       setNotice("Tentativa submetida.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
@@ -1017,6 +1169,53 @@ export default function HomePage() {
       setBusy(false);
     }
   }
+
+  async function handleCreateAppeal(): Promise<void> {
+    if (
+      attempt === null ||
+      appealItemId.length === 0 ||
+      appealJustification.trim().length === 0
+    ) {
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const data = await requestJson("/api/v1/appeals", {
+        method: "POST",
+        body: {
+          attemptId: attempt.attemptId,
+          itemId: appealItemId,
+          justification: appealJustification,
+        },
+      });
+      if (!isParticipantAppeal(data)) {
+        throw new PublicApiError("internal_error", "invalid appeal projection");
+      }
+      setAppeals((previous) => [...previous, data]);
+      setAppealState("ready");
+      setAppealJustification("");
+      setNotice("Contestação registrada. Acompanhe o protocolo nesta tela.");
+    } catch (caught) {
+      setError(publicErrorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const appealEligibleAttempt =
+    attempt?.status === "CORRIGIDA_AUTOMATICAMENTE" ||
+    attempt?.status === "CORRIGIDA_HUMANAMENTE";
+  const appealableItems =
+    activity?.items.filter(
+      (item) =>
+        (item.kind === "QUESTAO" || item.kind === "CASO") &&
+        !appeals.some(
+          (appeal) =>
+            appeal.itemId === item.itemId && appeal.status !== "ENCERRADA",
+        ),
+    ) ?? [];
 
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
@@ -1315,6 +1514,110 @@ export default function HomePage() {
                 </button>
               )}
             </div>
+            {appealEligibleAttempt ? (
+              <section
+                className="item-card"
+                data-testid="appeals-panel"
+                aria-labelledby="appeals-title"
+              >
+                <div className="section-heading compact-heading">
+                  <div>
+                    <p className="eyebrow">Contestação</p>
+                    <h2 id="appeals-title">Questão ou resultado</h2>
+                  </div>
+                  <span className="status-pill">Fluxo auditável</span>
+                </div>
+                <p>
+                  Registre uma justificativa para uma questão desta tentativa. O
+                  protocolo tem prazo de resposta de sete dias úteis.
+                </p>
+                <p className="path-disclaimer">
+                  A contestação não altera sua nota automaticamente e não
+                  representa competência prática ou autorização clínica.
+                </p>
+                {appealState === "loading" ? (
+                  <p className="feedback pending" role="status">
+                    Consultando seus protocolos…
+                  </p>
+                ) : appealState === "error" ? (
+                  <p className="feedback warning" role="status">
+                    Não foi possível consultar os protocolos. Tente novamente.
+                  </p>
+                ) : null}
+                {appealState !== "loading" && appealState !== "error" ? (
+                  <>
+                    {appealableItems.length > 0 ? (
+                      <form
+                        className="answer-area"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          void handleCreateAppeal();
+                        }}
+                      >
+                        <label htmlFor="appeal-item">Questão</label>
+                        <select
+                          id="appeal-item"
+                          value={appealItemId}
+                          onChange={(event) =>
+                            setAppealItemId(event.target.value)
+                          }
+                          required
+                        >
+                          <option value="">Selecione uma questão</option>
+                          {appealableItems.map((item) => (
+                            <option key={item.itemId} value={item.itemId}>
+                              Item {item.ordinal} — {item.title}
+                            </option>
+                          ))}
+                        </select>
+                        <label htmlFor="appeal-justification">
+                          Justificativa
+                        </label>
+                        <textarea
+                          id="appeal-justification"
+                          value={appealJustification}
+                          onChange={(event) =>
+                            setAppealJustification(event.target.value)
+                          }
+                          maxLength={10_000}
+                          rows={4}
+                          required
+                        />
+                        <button
+                          type="submit"
+                          disabled={
+                            busy || appealJustification.trim().length === 0
+                          }
+                        >
+                          Enviar contestação
+                        </button>
+                      </form>
+                    ) : (
+                      <p role="status">
+                        Todas as questões desta tentativa já possuem um
+                        protocolo aberto ou encerrado.
+                      </p>
+                    )}
+                    {appeals.length > 0 ? (
+                      <ul className="journey-list" aria-label="Meus protocolos">
+                        {appeals.map((appeal) => {
+                          const item = activity.items.find(
+                            (candidate) => candidate.itemId === appeal.itemId,
+                          );
+                          return (
+                            <li key={appeal.appealId}>
+                              Item {item?.ordinal ?? "—"} ·{" "}
+                              {appealStatusLabel(appeal.status)} · prazo{" "}
+                              {appeal.dueAt.slice(0, 10)}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
+                  </>
+                ) : null}
+              </section>
+            ) : null}
           </div>
           <aside className="privacy-card" aria-label="Proteção de dados">
             <p className="eyebrow">Superfície do participante</p>

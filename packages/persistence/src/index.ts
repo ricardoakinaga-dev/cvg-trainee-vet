@@ -91,6 +91,7 @@ export type {
 } from "./schema.js";
 export {
   createLearningStateRepository,
+  createAppealReadRepository,
   appealRowToState,
   appealStateToRow,
   assessmentWorkflowRowToState,
@@ -103,6 +104,7 @@ export {
   LearningStatePersistenceConflictError,
 } from "./learning-state-repository.js";
 export type {
+  AppealReadRepository,
   AppealInsertRow,
   AppealRowShape,
   AssessmentWorkflowInsertRow,
@@ -137,10 +139,12 @@ export type {
 export {
   activityRowsToState,
   createActivityReadRepository,
+  createParticipantActivityItemResolver,
   reflectionRowsToState,
 } from "./activity-repository.js";
 export type {
   ActivityRowShape,
+  ParticipantActivityItemResolver,
   ReflectionRowShape,
 } from "./activity-repository.js";
 export {

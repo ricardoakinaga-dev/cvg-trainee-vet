@@ -21,6 +21,7 @@ import {
   getParticipantProgress,
   getStaffDashboard,
   getContinuingEducationReport,
+  getParticipantAppeals,
   getReflectionManagementReport,
   getContentReviewQueue,
   issueAccountRecovery,
@@ -58,6 +59,7 @@ import {
   createProgressReadRepository,
   createParticipantJourneyRepository,
   createParticipantScopeResolver,
+  createParticipantActivityItemResolver,
   createDashboardReadRepository,
   createDiagnosticResultRepository,
   createAccountManagementRepository,
@@ -65,6 +67,7 @@ import {
   createAuditRepository,
   createContinuingEducationReportRepository,
   createReflectionManagementReadRepository,
+  createAppealReadRepository,
   createContentReviewQueueRepository,
   createSessionRepository,
 } from "@cvg/persistence";
@@ -165,6 +168,9 @@ export function createApiRuntime(
   const learningStateRepository = createLearningStateRepository(
     integrations.database.db,
   );
+  const appealReadRepository = createAppealReadRepository(
+    integrations.database.db,
+  );
   const rateLimiter = createPostgresRateLimiter(integrations.database.db);
   const audit = createAuditRepository(integrations.database.db);
   const apiDependencies: ApiHttpDependencies = {
@@ -191,6 +197,9 @@ export function createApiRuntime(
             } satisfies ApiPrincipal);
       }),
     resolveActivityScope: createActivityScopeResolver(integrations.database.db),
+    hasParticipantActivityItem: createParticipantActivityItemResolver(
+      integrations.database.db,
+    ),
     isParticipantInScope: createParticipantScopeResolver(
       integrations.database.db,
     ),
@@ -245,6 +254,8 @@ export function createApiRuntime(
       transitionFeedbackTicketState(command, learningStateRepository),
     createAppeal: (command) =>
       createAppealState(command, learningStateRepository),
+    getParticipantAppeals: (command) =>
+      getParticipantAppeals(command, appealReadRepository),
     transitionAppeal: (command) =>
       transitionAppealState(command, learningStateRepository),
     getParticipantActivity: (participantId, activityId) =>

@@ -127,9 +127,17 @@ export const participantAppealProjectionSchema = z
     appealId: idSchema,
     attemptId: idSchema,
     itemId: idSchema,
+    createdAt: timestampSchema,
+    dueAt: timestampSchema,
     status: appealStatusSchema,
     version: versionSchema,
     decision: appealDecisionSchema.optional(),
+  })
+  .strict();
+
+export const participantAppealsProjectionSchema = z
+  .object({
+    appeals: z.array(participantAppealProjectionSchema).max(100),
   })
   .strict();
 
@@ -230,6 +238,12 @@ export const appealCreateRequestSchema = z
   })
   .strict();
 
+export const appealQuerySchema = z
+  .object({
+    attemptId: idSchema,
+  })
+  .strict();
+
 export const appealTransitionRequestSchema = z
   .object({
     appealId: idSchema,
@@ -319,6 +333,7 @@ export type FeedbackTicketTransitionRequest = z.infer<
   typeof feedbackTicketTransitionRequestSchema
 >;
 export type AppealCreateRequest = z.infer<typeof appealCreateRequestSchema>;
+export type AppealQuery = z.infer<typeof appealQuerySchema>;
 export type AppealTransitionRequest = z.infer<
   typeof appealTransitionRequestSchema
 >;
@@ -345,4 +360,7 @@ export type ParticipantFeedbackTicketProjection = z.infer<
 >;
 export type ParticipantAppealProjection = z.infer<
   typeof participantAppealProjectionSchema
+>;
+export type ParticipantAppealsProjection = z.infer<
+  typeof participantAppealsProjectionSchema
 >;

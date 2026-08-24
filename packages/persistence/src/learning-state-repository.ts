@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AppealDecision,
@@ -671,6 +671,13 @@ export type LearningStateRepository = Readonly<{
   ) => Promise<ScopedAppeal | null>;
 }>;
 
+export type AppealReadRepository = Readonly<{
+  readonly listAppeals: (
+    context: PersistenceContext,
+    attemptId: string,
+  ) => Promise<readonly ScopedAppeal[]>;
+}>;
+
 function conflict(message: string): never {
   throw new LearningStatePersistenceConflictError(message);
 }
@@ -975,6 +982,29 @@ export function createLearningStateRepository(
     findFeedbackTicket: findTicket,
     saveAppeal: saveAppealState,
     findAppeal: findAppealState,
+  });
+}
+
+export function createAppealReadRepository(
+  db: DatabaseExecutor,
+): AppealReadRepository {
+  return Object.freeze({
+    listAppeals: (context: PersistenceContext, attemptId: string) =>
+      withContext(db, context, async (tx) => {
+        const rows = await tx
+          .select()
+          .from(appeals)
+          .where(
+            and(
+              eq(appeals.participantId, context.participantId),
+              eq(appeals.scopeId, context.scopeId),
+              eq(appeals.attemptId, attemptId),
+            ),
+          )
+          .orderBy(asc(appeals.createdAt), asc(appeals.id))
+          .limit(100);
+        return Object.freeze(rows.map((row) => appealRowToState(row)));
+      }),
   });
 }
 

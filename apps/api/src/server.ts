@@ -184,6 +184,9 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "POST" && path === "/api/v1/appeals") {
     return "/api/v1/appeals";
   }
+  if (method === "GET" && path === "/api/v1/appeals") {
+    return "/api/v1/appeals";
+  }
   if (method === "POST" && path === "/api/v1/attempts") {
     return "/api/v1/attempts";
   }

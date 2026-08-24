@@ -371,6 +371,25 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gap explícito: prova live PostgreSQL/RLS da consulta, custo O(participantes), operação collector/OTel, retenção, carga, failover, restore e gates clínicos/externos continuam pendentes
 - próxima ação: executar a integração live quando houver ambiente autorizado; em seguida tratar apelações e filtros/paginação/exportação sem ampliar a fronteira pública
 
+### APPEAL-036 — Protocolo de contestação do participante
+
+- título: permitir que o participante abra e acompanhe uma contestação própria de questão/resultado com isolamento e prazo explícitos
+- descrição: fechar a primeira fronteira vertical de RF-060/RF-064/RF-065 sobre o domínio de apelação já existente, validando no servidor que tentativa e item pertencem à atividade do participante e expondo somente o protocolo redigido; a revisão independente, decisão, recálculo e notificação permanecem fases posteriores
+- módulo: avaliação / contestação / contratos / persistência / API / web
+- dependência: `AUD-P1-001`; máquina de estados de `packages/domain/src/appeal.ts`; tentativas e atividades publicadas; autorização server-side `CREATE_APPEAL`
+- fase: BUILD — Phase 3–5 / jornada de produto
+- risco: crítico — apelação não pode ser criada para item alheio, duplicada em aberto, usada para atravessar escopo ou expor justificativa/resposta/gabarito/identidade interna
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-060`; `PRD-RF-064`; `PRD-RF-065`; `PRD-RF-102`; UC-010; UC-018; RN-064
+- critério de pronto da primeira fatia: RED/GREEN/REFACTOR para elegibilidade, vínculo tentativa/item, isolamento, duplicata aberta, contrato estrito e estados loading/empty/error/retry/terminal; POST participante e leitura do próprio protocolo persistem/consultam sob contexto de escopo; E2E sintético com axe; integração live quando ambiente autorizado; rastreabilidade atualizada
+- projeção permitida: `appealId`, `attemptId`, `itemId`, `status`, `version`, `decision` e, se aprovado no contrato, prazo sem dados internos; justificativa, `reviewerId`, resposta, score, gabarito, fontes e competência prática são proibidos
+- evidência: `BRIEFING/04.AUDIT/0514_appeal_participant_boundary_audit.md`; `traceability.yml`; `packages/application/src/appeal-use-cases.ts`; `packages/persistence/src/activity-repository.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; `tests/e2e/participant-access.spec.ts`
+- verificação: `pnpm verify` (103 arquivos/495 testes, 25 skips; cobertura 84,33%/80,14%/85,58%/85,04%); `pnpm test:e2e` (22/22); build 12 workspaces; integração `postgres-learning-state` 1/1 skipped sem `CVG_TEST_DATABASE_URL`; lint/typecheck/contratos/worker/migrations/secrets/arquitetura/documentação/product-definition/exposure e diff-check passaram
+- resultado atual: a primeira fatia foi implementada em TDD; `GET /api/v1/appeals` lista somente protocolos próprios redigidos, `POST` aceita apenas tentativas corrigidas e valida o item no servidor, a persistência mantém isolamento/ordenação e a tela acompanha o ciclo sem campos internos. Uma RED E2E adicional revelou a perda da tentativa corrigida após recarga; a jornada agora restaura essa projeção e reconsulta o protocolo persistido. O trabalho fecha este boundary sem ampliar as policies de `answers`.
+- gaps explícitos: atribuição/queue de revisor, justificativa da decisão, recálculo versionado de tentativas afetadas, preservação e projeção de versões anteriores, identificação/notificação de afetados, auditoria operacional consultável, entrega externa, clinical review e piloto continuam fora da primeira fatia
+- próxima ação: obter crítica independente read-only e fechar o commit/release gate; depois escolher fila interna de decisão/recálculo ou filtros/paginação/exportação como próxima fatia local
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais

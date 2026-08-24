@@ -37,6 +37,7 @@ import {
   type EvaluateCurriculumModuleCommand,
   type AppealCreateCommand,
   type AppealTransitionCommand,
+  type GetParticipantAppealsCommand,
   type AssignmentCreateCommand,
   type AssignmentTransitionCommand,
   type WorkflowCreateCommand,
@@ -107,12 +108,14 @@ import {
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
   appealCreateRequestSchema,
+  appealQuerySchema,
   appealScopedTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
   feedbackTicketScopedTransitionRequestSchema,
   learningAssignmentCreateRequestSchema,
   learningAssignmentScopedTransitionRequestSchema,
   participantAppealProjectionSchema,
+  participantAppealsProjectionSchema,
   participantAssessmentWorkflowProjectionSchema,
   participantFeedbackTicketProjectionSchema,
   participantLearningAssignmentProjectionSchema,
@@ -193,6 +196,9 @@ export interface ApiHttpDependencies {
   readonly createAppeal?: (
     command: AppealCreateCommand,
   ) => Promise<AppealState>;
+  readonly getParticipantAppeals?: (
+    command: GetParticipantAppealsCommand,
+  ) => Promise<readonly AppealState[]>;
   readonly transitionAppeal?: (
     command: AppealTransitionCommand,
   ) => Promise<AppealState>;
@@ -200,6 +206,11 @@ export interface ApiHttpDependencies {
     request: ApiHttpRequest,
   ) => Promise<ApiPrincipal | null>;
   readonly resolveActivityScope: (activityId: string) => Promise<string | null>;
+  readonly hasParticipantActivityItem?: (
+    participantId: string,
+    activityId: string,
+    itemId: string,
+  ) => Promise<boolean>;
   readonly resolveAttempt: (
     attemptId: string,
     context?: TransactionSecurityContext,
@@ -550,9 +561,19 @@ function publicAppealProjection(
     appealId: state.appealId,
     attemptId: state.attemptId,
     itemId: state.itemId,
+    createdAt: state.createdAt,
+    dueAt: state.dueAt,
     status: state.status,
     version: state.version,
     ...(state.decision === undefined ? {} : { decision: state.decision }),
+  });
+}
+
+function publicAppealsProjection(
+  states: readonly AppealState[],
+): ApiSuccessEnvelope<unknown>["data"] {
+  return participantAppealsProjectionSchema.parse({
+    appeals: states.map((state) => publicAppealProjection(state)),
   });
 }
 
@@ -1986,6 +2007,44 @@ async function handleTransitionFeedbackTicket(
   };
 }
 
+async function handleGetParticipantAppeals(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getParticipantAppeals === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = appealQuerySchema.safeParse(request.query ?? {});
+  if (!parsed.success) return validationResponse(requestId);
+
+  const attempt = await dependencies.resolveAttempt(parsed.data.attemptId, {
+    participantId: principal.principalId,
+  });
+  if (attempt === null) return errorResponse("not_found", requestId);
+  const scopeId = await dependencies.resolveActivityScope(attempt.activityId);
+  if (scopeId === null) return errorResponse("not_found", requestId);
+  if (
+    !isAllowed(principal, "VIEW_OWN_APPEALS", {
+      ownerId: attempt.participantId,
+      scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+
+  const states = await dependencies.getParticipantAppeals({
+    participantId: principal.principalId,
+    scopeId,
+    attemptId: parsed.data.attemptId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(publicAppealsProjection(states), requestId),
+  };
+}
+
 async function handleCreateAppeal(
   request: ApiHttpRequest,
   requestId: string,
@@ -2001,6 +2060,12 @@ async function handleCreateAppeal(
     participantId: principal.principalId,
   });
   if (attempt === null) return errorResponse("not_found", requestId);
+  if (
+    attempt.status !== "CORRIGIDA_AUTOMATICAMENTE" &&
+    attempt.status !== "CORRIGIDA_HUMANAMENTE"
+  ) {
+    return errorResponse("state_conflict", requestId);
+  }
   const scopeId = await dependencies.resolveActivityScope(attempt.activityId);
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
@@ -2010,6 +2075,26 @@ async function handleCreateAppeal(
     })
   ) {
     return errorResponse("forbidden", requestId);
+  }
+  const itemBelongsToActivity =
+    dependencies.hasParticipantActivityItem === undefined
+      ? (
+          await dependencies.getParticipantActivity(
+            principal.principalId,
+            attempt.activityId,
+          )
+        ).items.some(
+          (item) =>
+            item.itemId === parsed.data.itemId &&
+            (item.kind === "QUESTAO" || item.kind === "CASO"),
+        )
+      : await dependencies.hasParticipantActivityItem(
+          principal.principalId,
+          attempt.activityId,
+          parsed.data.itemId,
+        );
+  if (!itemBelongsToActivity) {
+    return errorResponse("not_found", requestId);
   }
   const state = await dependencies.createAppeal({
     appealId: randomUUID(),
@@ -2409,6 +2494,18 @@ async function handleApiRequestCore(
       return await handleTransitionFeedbackTicket(
         request,
         feedbackTransitionMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (request.method === "GET" && request.path === "/api/v1/appeals") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleGetParticipantAppeals(
+        request,
         requestId,
         principal,
         dependencies,

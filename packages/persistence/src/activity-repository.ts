@@ -485,4 +485,45 @@ export function createActivityReadRepository(
   return Object.freeze(repository);
 }
 
+export type ParticipantActivityItemResolver = (
+  participantId: string,
+  activityId: string,
+  itemId: string,
+) => Promise<boolean>;
+
+export function createParticipantActivityItemResolver(
+  db: PostgresJsDatabase<typeof schema>,
+): ParticipantActivityItemResolver {
+  return async (participantId, activityId, itemId) =>
+    db.transaction(async (transaction) => {
+      const executor = transaction as unknown as DatabaseExecutor;
+      await setDatabaseSecurityContext(executor, { participantId });
+      const rows = await executor
+        .select({ itemId: learningActivityItems.contentVersionId })
+        .from(activityAssignments)
+        .innerJoin(
+          learningActivities,
+          eq(activityAssignments.activityId, learningActivities.id),
+        )
+        .innerJoin(
+          learningActivityItems,
+          eq(learningActivityItems.activityId, learningActivities.id),
+        )
+        .innerJoin(
+          contentVersions,
+          eq(learningActivityItems.contentVersionId, contentVersions.id),
+        )
+        .where(
+          and(
+            eq(activityAssignments.participantId, participantId),
+            eq(activityAssignments.activityId, activityId),
+            eq(learningActivityItems.contentVersionId, itemId),
+            inArray(contentVersions.kind, ["QUESTAO", "CASO"]),
+          ),
+        )
+        .limit(1);
+      return rows.length > 0;
+    });
+}
+
 export type { DatabaseExecutor };

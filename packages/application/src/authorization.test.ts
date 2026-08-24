@@ -26,6 +26,25 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
+  it("allows a participant to read only their own scoped appeal protocols", () => {
+    expect(
+      canAccess(
+        participant({
+          capability: "VIEW_OWN_APPEALS",
+          resource: { ownerId: "participant-1", scopeId: "curriculum-1" },
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      canAccess(
+        participant({
+          capability: "VIEW_OWN_APPEALS",
+          resource: { ownerId: "participant-2", scopeId: "curriculum-1" },
+        }),
+      ),
+    ).toBe(false);
+  });
+
   it("denies inactive accounts and unknown capabilities by default", () => {
     expect(canAccess(participant({ accountStatus: "SUSPENDED" }))).toBe(false);
     expect(

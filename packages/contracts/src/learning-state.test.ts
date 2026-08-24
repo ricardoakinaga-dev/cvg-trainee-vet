@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   appealCreateRequestSchema,
+  appealQuerySchema,
   appealTransitionRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
@@ -11,6 +12,7 @@ import {
   learningAssignmentCreateRequestSchema,
   learningAssignmentTransitionRequestSchema,
   participantAppealProjectionSchema,
+  participantAppealsProjectionSchema,
   participantAssessmentWorkflowProjectionSchema,
   participantFeedbackTicketProjectionSchema,
   participantLearningAssignmentProjectionSchema,
@@ -100,10 +102,27 @@ describe("learning state contracts", () => {
         appealId: ids.resultId,
         attemptId: ids.resultId,
         itemId: ids.ticketId,
+        createdAt: "2026-08-10T17:00:00.000Z",
+        dueAt: "2026-08-19T17:00:00.000Z",
         status: "ABERTA",
         version: 0,
       }),
     ).toMatchObject({ status: "ABERTA" });
+    expect(
+      participantAppealsProjectionSchema.parse({
+        appeals: [
+          {
+            appealId: ids.resultId,
+            attemptId: ids.resultId,
+            itemId: ids.ticketId,
+            createdAt: "2026-08-10T17:00:00.000Z",
+            dueAt: "2026-08-19T17:00:00.000Z",
+            status: "ABERTA",
+            version: 0,
+          },
+        ],
+      }),
+    ).toMatchObject({ appeals: [{ status: "ABERTA" }] });
   });
 
   it("rejects participant projections containing internal context or authoring fields", () => {
@@ -123,6 +142,8 @@ describe("learning state contracts", () => {
         appealId: ids.resultId,
         attemptId: ids.resultId,
         itemId: ids.ticketId,
+        createdAt: "2026-08-10T17:00:00.000Z",
+        dueAt: "2026-08-19T17:00:00.000Z",
         status: "ABERTA",
         version: 0,
         reviewerId: ids.resultId,
@@ -174,6 +195,15 @@ describe("learning state contracts", () => {
   });
 
   it("validates contestation inputs without accepting source or answer internals", () => {
+    expect(appealQuerySchema.parse({ attemptId: ids.resultId })).toMatchObject({
+      attemptId: ids.resultId,
+    });
+    expect(() =>
+      appealQuerySchema.parse({
+        attemptId: ids.resultId,
+        scopeId: ids.ticketId,
+      }),
+    ).toThrow();
     expect(
       appealCreateRequestSchema.parse({
         attemptId: ids.resultId,

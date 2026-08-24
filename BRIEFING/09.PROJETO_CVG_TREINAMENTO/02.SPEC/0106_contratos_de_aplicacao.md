@@ -96,6 +96,25 @@ As operações entregues são `CreateLearningAssignment`, `TransitionLearningAss
 
 `GetParticipantLearningJourney` recebe somente `participantId` e os `scopeIds` autorizados pela sessão. O port de leitura retorna atribuições, atividades com a tentativa mais recente, workflows de resultado e estados de runtime; o caso de uso valida identidade/escopo, clona sem mutar e calcula a `nextAction` com precedência para remediação, retenção e correção pendente. A composição PostgreSQL permanece fora da aplicação.
 
+## 9.1 Protocolo de contestação do participante — APPEAL-036
+
+`GetParticipantAppeals` recebe somente `{ participantId, scopeId, attemptId }` já
+derivados da sessão e da tentativa resolvida no escopo próprio. O port de leitura
+ordena por `createdAt`/identificador, limita a 100 registros e retorna uma cópia
+imutável de `AppealState`; o caso de uso rejeita contexto incompleto e não aceita
+`reviewerId`, justificativa, resposta, score, gabarito, fonte ou competência
+clínica como entrada ou saída participante.
+
+`CreateAppeal` só pode ser chamado para tentativa corrigida automaticamente ou
+humanamente e item avaliável (`QUESTAO`/`CASO`). A API valida novamente
+participante, escopo, atividade e item antes de delegar ao domínio; a persistência
+mantém a unicidade condicional do protocolo aberto e normaliza duplicidade como
+`idempotency_conflict`. A tela participante
+expõe apenas o protocolo próprio, com estados de carregamento, vazio, erro/retry,
+duplicidade e terminal. Fila de revisor, decisão fundamentada, recálculo
+versionado e notificações de afetados continuam sendo contratos internos
+posteriores e não são inferidos por esta fatia.
+
 ## 9. Autoria e revisão materializadas no item 10
 
 `RunAuthoringPreflight` recebe um registro autoral interno e devolve checks determinísticos de campos, correção, fronteira pública e rastreabilidade. `ReviewAuthoringContent` exige principal ativo, papel/capacidade, escopo, revisor diferente do autor e registro em `EM_REVISAO_CLINICA`; persiste a decisão e chama a transição de conteúdo somente depois do preflight. `APROVAR_CLINICAMENTE` não torna o item publicável sozinho: a publicação ainda exige o gate de registro editorial + preflight + última aprovação clínica no repositório.

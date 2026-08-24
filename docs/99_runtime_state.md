@@ -9,21 +9,21 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: REFLECTION-035 / AUD-P1-001 — reflexão digital e próxima ação
-- current_task: REFLECTION-2026-08-23-F — preservar gaps e abrir próxima lacuna
+- current_sprint: APPEAL-036 / AUD-P1-001 — contestação participante e próxima ação
+- current_task: APPEAL-2026-08-23-B — criticar e fechar a primeira fatia da fronteira de contestação
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `8bfb645` registrou a evidência final; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo e resolveu `REFLECTION-MANAGEMENT-035` para o commit `9a618e9c`
-- next_action: quando houver ambiente autorizado, executar a prova PostgreSQL/RLS live do agregado; em paralelo abrir a próxima lacuna local de apelação/contestação ou filtros-paginação-exportação, sem alterar os gates clínicos/externos
+- last_completed_action: APPEAL-036 passou RED/GREEN/REFACTOR local, fechou REDs de reload da tentativa corrigida e de item não avaliável, passou o foco API/persistência 62/62, `pnpm verify` (103 arquivos/495 testes, 25 skips), build e E2E completo 22/22; a integração PostgreSQL específica ficou 1/1 skipped sem `CVG_TEST_DATABASE_URL`
+- next_action: obter crítica independente read-only, revisar o diff, criar commits reversíveis e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; manter a prova PostgreSQL/RLS e os follow-ups de revisor/recálculo/notificação explícitos
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; APPEAL-036-FOLLOWUP — revisor/recálculo/notificação completa ainda não fazem parte desta primeira fatia
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T22:32:03-03:00
+- last_update: 2026-08-23T23:20:45-03:00
 
 ## REGRAS DE USO
 

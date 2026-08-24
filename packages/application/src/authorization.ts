@@ -14,6 +14,7 @@ export type Capability =
   | "SAVE_OWN_ANSWER"
   | "SUBMIT_OWN_ATTEMPT"
   | "VIEW_OWN_FEEDBACK"
+  | "VIEW_OWN_APPEALS"
   | "CORRECT_ATTEMPT"
   | "MODERATE_CONTENT"
   | "AUTHOR_CONTENT"
@@ -89,6 +90,7 @@ export function canAccess(request: AuthorizationRequest): boolean {
     case "SAVE_OWN_ANSWER":
     case "SUBMIT_OWN_ATTEMPT":
     case "VIEW_OWN_FEEDBACK":
+    case "VIEW_OWN_APPEALS":
       return (
         hasRole(request, "PARTICIPANT") &&
         ownsResource(request) &&

@@ -474,6 +474,235 @@ test.describe("participant access and learning projection", () => {
     await expect(page.getByText("Tentativa submetida.")).toBeVisible();
   });
 
+  test("opens and tracks a redacted appeal protocol after a digital result", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [
+              {
+                itemId,
+                ordinal: 1,
+                kind: "QUESTAO",
+                title: "Prioridades iniciais",
+                text: "Descreva a primeira prioridade.",
+                responseMode: "TEXT",
+              },
+            ],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/attempts", async (route) => {
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId,
+            activityId,
+            status: "EM_ANDAMENTO",
+            version: 1,
+            answers: [],
+          }),
+        ),
+      });
+    });
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/answers`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptId,
+              activityId,
+              status: "SALVA",
+              version: 2,
+              answers: [{ itemId, response: "Prioridade sintética." }],
+            }),
+          ),
+        });
+      },
+    );
+    await page.route("**/api/v1/appeals*", async (route) => {
+      if (route.request().method() === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope({ appeals: [] })),
+        });
+        return;
+      }
+      const body = route.request().postDataJSON() as Readonly<{
+        readonly attemptId: string;
+        readonly itemId: string;
+        readonly justification: string;
+      }>;
+      expect(body).toMatchObject({ attemptId, itemId });
+      expect(body.justification).toBe("Justificativa sintética.");
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            appealId: "44444444-4444-4444-8444-444444444444",
+            attemptId,
+            itemId,
+            createdAt: "2026-08-23T22:00:00.000Z",
+            dueAt: "2026-09-02T22:00:00.000Z",
+            status: "ABERTA",
+            version: 0,
+          }),
+        ),
+      });
+    });
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/submit`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptId,
+              activityId,
+              status: "CORRIGIDA_AUTOMATICAMENTE",
+              version: 3,
+              answers: [{ itemId, response: "Prioridade sintética." }],
+            }),
+          ),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+    await page.getByRole("button", { name: "Iniciar tentativa" }).click();
+    await page
+      .getByLabel("Resposta — Prioridades iniciais")
+      .fill("Prioridade sintética.");
+    await page.getByRole("button", { name: "Salvar resposta" }).click();
+    await page.getByRole("button", { name: "Enviar tentativa" }).click();
+    await expect(page.getByTestId("appeals-panel")).toBeVisible();
+    await page.getByLabel("Justificativa").fill("Justificativa sintética.");
+    await page.getByRole("button", { name: "Enviar contestação" }).click();
+    await expect(
+      page.getByText(
+        "Contestação registrada. Acompanhe o protocolo nesta tela.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByTestId("appeals-panel")).toContainText("Recebida");
+    await expect(page.locator("body")).not.toContainText("reviewerId");
+    await expect(page.locator("body")).not.toContainText("gabarito");
+  });
+
+  test("restores a corrected attempt and its appeal protocol after reload", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "emergencia-v1",
+                title: "Emergência",
+                status: "CONCLUIDO",
+                attemptId,
+                attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+                attemptVersion: 3,
+                nextAction: "REVISAR_PROXIMO_CONTEUDO",
+              },
+            ],
+            results: [],
+            runtimes: [],
+            nextAction: "REVISAR_PROXIMO_CONTEUDO",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [
+              {
+                itemId,
+                ordinal: 1,
+                kind: "QUESTAO",
+                title: "Prioridades iniciais",
+                text: "Descreva a primeira prioridade.",
+                responseMode: "TEXT",
+              },
+            ],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/appeals*", async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            appeals: [
+              {
+                appealId: "44444444-4444-4444-8444-444444444444",
+                attemptId,
+                itemId,
+                createdAt: "2026-08-23T22:00:00.000Z",
+                dueAt: "2026-09-02T22:00:00.000Z",
+                status: "ABERTA",
+                version: 0,
+              },
+            ],
+          }),
+        ),
+      });
+    });
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(page.getByTestId("appeals-panel")).toBeVisible();
+    await expect(page.getByTestId("appeals-panel")).toContainText("Recebida");
+  });
+
   test("resumes a digital reflection from its persisted participant projection", async ({
     page,
   }) => {

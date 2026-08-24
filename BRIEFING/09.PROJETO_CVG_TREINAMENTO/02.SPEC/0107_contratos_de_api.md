@@ -53,6 +53,7 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `GET /api/v1/corrections` | UC-005/006 | Ricardo/moderador escopado |
 | `POST /api/v1/corrections/:correctionId` | UC-005/006 | Ricardo/moderador atribuído |
 | `POST /api/v1/appeals` | UC-010 | participante próprio |
+| `GET /api/v1/appeals?attemptId=<uuid>` | UC-010/018 | participante próprio, somente protocolos da tentativa própria |
 | `POST /api/v1/appeals/:appealId/decision` | UC-018 | revisor autorizado |
 | `GET /api/v1/feedback` | UC-022/023 | próprio ou escopo autorizado |
 | `POST /api/v1/feedback` | UC-022 | sessão autenticada |
@@ -147,9 +148,27 @@ A primeira fatia de API do item 7 materializa os estados persistidos do item 6 s
 | `POST /api/v1/feedback` | ticket participante com escopo, tipo e texto simples | participante dono do escopo |
 | `PATCH /api/v1/internal/feedback/:ticketId` | triagem/tratamento/resolução com versão | moderador/admin/identidade clínica aprovada no escopo |
 | `POST /api/v1/appeals` | contestação vinculada a tentativa própria | participante dono da tentativa e do escopo |
+| `GET /api/v1/appeals?attemptId=<uuid>` | protocolos redigidos da tentativa própria; query estrita | participante dono da tentativa e do escopo |
 | `POST /api/v1/internal/appeals/:appealId/transition` | atribuição de revisor, decisão e recálculo com versão | revisor/moderador/admin/identidade clínica aprovada no escopo |
 
 As rotas internas recebem o participante-alvo e o escopo somente como contexto validado pelo servidor; a capacidade e o escopo do principal são verificados antes do caso de uso. A API não confia em ocultação visual e nunca permite que o participante chame uma operação interna por alterar a URL.
+
+Na primeira fatia de contestação, `POST /api/v1/appeals` só aceita tentativa
+própria em estado corrigido (`CORRIGIDA_AUTOMATICAMENTE` ou
+`CORRIGIDA_HUMANAMENTE`) e verifica no servidor que o `itemId` pertence à
+atividade atribuída ao participante e que o conteúdo seja avaliável (`QUESTAO` ou
+`CASO`). A consulta de item usa o vínculo participante–atividade sem depender de
+a atribuição ainda estar em estado disponível, permitindo acompanhar um
+resultado já concluído sem reabrir a atividade.
+
+`GET /api/v1/appeals?attemptId=<uuid>` valida uma query strict, resolve a
+tentativa no contexto do participante e retorna no máximo 100 protocolos
+ordenados pela criação. A projeção contém apenas `appealId`, `attemptId`,
+`itemId`, `createdAt`, `dueAt`, `status`, `version` e decisão allowlisted. Não
+retorna justificativa, `reviewerId`, resposta, score, gabarito, fonte ou claim
+de competência. A primeira fatia não simula a atribuição de revisor,
+justificativa da decisão, recálculo versionado, identificação/notificação de
+afetados ou entrega externa.
 
 ## 9. Jornada agregada materializada no item 9
 
@@ -260,3 +279,20 @@ uma consulta set-based futura exige evidência de escala e revisão de seguranç
 Agregado gerencial, apelações e a jornada completa continuam itens separados do
 backlog; esta fatia não altera schema, publicação clínica, estado de nota ou
 competência prática.
+
+## 14. Protocolo de contestação do participante — APPEAL-036
+
+O boundary participante usa o domínio de `AppealState` e a persistência
+existente de `appeals`, sem migration nova. O caso de uso de leitura exige
+`participantId`, `scopeId` e `attemptId`, e o adapter PostgreSQL aplica o
+contexto transacional antes de filtrar por participante, escopo e tentativa.
+Uma consulta cruzada retorna vazio por RLS/contexto e não enumera protocolos de
+outra identidade.
+
+O endpoint de leitura exige a capability própria `VIEW_OWN_APPEALS`; a criação
+usa `CREATE_APPEAL`. O servidor continua sendo a fonte de autorização e a
+unicidade condicional de `appeals` impede mais de um protocolo aberto para a
+mesma questão da mesma tentativa. Conflito de versão/duplicata permanece
+`state_conflict` (409). A web participante oferece estados de carregamento,
+vazio, erro/retry, terminal e formulário sem transportar identificadores
+internos para o texto visual.

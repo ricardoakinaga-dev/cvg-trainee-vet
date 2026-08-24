@@ -4,6 +4,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   PersistenceMappingError,
   activityRowsToState,
+  createParticipantActivityItemResolver,
   createActivityReadRepository,
   reflectionRowsToState,
   type ActivityRowShape,
@@ -47,6 +48,7 @@ type FakeQuery = {
   readonly orderBy: (
     ...columns: readonly unknown[]
   ) => Promise<readonly unknown[]>;
+  readonly limit: (value: number) => Promise<readonly unknown[]>;
 };
 
 function fakeDatabase(
@@ -61,6 +63,7 @@ function fakeDatabase(
     leftJoin: () => query,
     where: () => query,
     orderBy: async () => results[selectIndex++] ?? [],
+    limit: async () => results[selectIndex++] ?? [],
   };
   const transaction = {
     execute: async () => undefined,
@@ -68,6 +71,26 @@ function fakeDatabase(
   };
   return {
     select: () => query,
+    transaction: async (
+      callback: (value: typeof transaction) => Promise<unknown>,
+    ) => callback(transaction),
+  } as unknown as PostgresJsDatabase<typeof schema>;
+}
+
+function fakeItemResolverDatabase(
+  result: readonly Readonly<{ readonly itemId: string }>[],
+): PostgresJsDatabase<typeof schema> {
+  const query = {
+    from: () => query,
+    innerJoin: () => query,
+    where: () => query,
+    limit: async () => result,
+  };
+  const transaction = {
+    execute: async () => undefined,
+    select: () => query,
+  };
+  return {
     transaction: async (
       callback: (value: typeof transaction) => Promise<unknown>,
     ) => callback(transaction),
@@ -131,6 +154,27 @@ describe("published activity persistence mapping", () => {
   it("keeps content and activity-item tables explicit", () => {
     expect(contentVersions).toBeDefined();
     expect(learningActivityItems).toBeDefined();
+  });
+
+  it("resolves only an owned answerable activity item", async () => {
+    const resolver = createParticipantActivityItemResolver(
+      fakeItemResolverDatabase([{ itemId: rows[0].itemId }]),
+    );
+
+    await expect(
+      resolver(
+        "22222222-2222-4222-8222-222222222222",
+        rows[0].activityId,
+        rows[0].itemId,
+      ),
+    ).resolves.toBe(true);
+    await expect(
+      createParticipantActivityItemResolver(fakeItemResolverDatabase([]))(
+        "22222222-2222-4222-8222-222222222222",
+        rows[0].activityId,
+        rows[1].itemId,
+      ),
+    ).resolves.toBe(false);
   });
 
   it("derives a participant reflection from the latest attempt and its own answers", () => {

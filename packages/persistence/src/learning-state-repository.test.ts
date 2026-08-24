@@ -13,6 +13,7 @@ import {
 import {
   appealRowToState,
   appealStateToRow,
+  createAppealReadRepository,
   assessmentWorkflowRowToState,
   assessmentWorkflowStateToRow,
   createLearningStateRepository,
@@ -39,6 +40,7 @@ type FakeBuilder = {
 type FakeSelectBuilder = {
   from: () => FakeSelectBuilder;
   where: () => FakeSelectBuilder;
+  orderBy: () => FakeSelectBuilder;
   limit: () => Promise<readonly unknown[]>;
 };
 
@@ -69,6 +71,7 @@ function createFakeDatabase(
     const builder: FakeSelectBuilder = {
       from: () => builder,
       where: () => builder,
+      orderBy: () => builder,
       limit: async () => selectQueue.shift() ?? [],
     };
     return builder;
@@ -167,6 +170,23 @@ function appealRow(
 }
 
 describe("learning state persistence mappings", () => {
+  it("lists appeals only in the participant and scope context", async () => {
+    const attemptId = "66666666-6666-4666-8666-666666666666";
+    const appealId = "88888888-8888-4888-8888-888888888888";
+    const repository = createAppealReadRepository(
+      createFakeDatabase([[appealRow(appealId, "ABERTA", 0, null, null)]], []),
+    );
+
+    await expect(
+      repository.listAppeals({ participantId, scopeId }, attemptId),
+    ).resolves.toMatchObject([
+      {
+        scopeId,
+        state: { appealId, attemptId, status: "ABERTA" },
+      },
+    ]);
+  });
+
   it("round-trips assignment state and keeps nullable transition context explicit", () => {
     const initial = createLearningAssignment({
       assignmentId: "44444444-4444-4444-8444-444444444444",

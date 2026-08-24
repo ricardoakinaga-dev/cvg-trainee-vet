@@ -1411,6 +1411,78 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "APPEAL-036"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-060",
+        "PRD-RF-064",
+        "PRD-RF-065",
+        "PRD-RF-102",
+        "UC-010",
+        "UC-018",
+        "RN-064",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0514_appeal_participant_boundary_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/appeal-use-cases.ts",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/index.ts",
+        "packages/contracts/src/learning-state.ts",
+        "packages/contracts/src/index.ts",
+        "packages/persistence/src/activity-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/src/learning-state-repository.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/app/globals.css",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/application/src/appeal-use-cases.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "packages/persistence/src/activity-repository.test.ts",
+        "packages/persistence/src/learning-state-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/postgres-learning-state.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+      ]
+    commit: "TBD"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm exec vitest run packages/application/src/authorization.test.ts packages/application/src/appeal-use-cases.test.ts packages/contracts/src/learning-state.test.ts packages/persistence/src/learning-state-repository.test.ts apps/api/src/http.test.ts",
+        "pnpm exec vitest run tests/integration/postgres-learning-state.test.ts --project integration",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm verify",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:documentation",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
     requirements:
       ["SPEC-0118", "AUD-ITEM-13", "EXPERIENCE-13-01", "WCAG-2.2-AA"]

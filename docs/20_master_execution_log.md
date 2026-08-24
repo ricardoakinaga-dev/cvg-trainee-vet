@@ -4440,6 +4440,63 @@ READY_FOR_NEXT_STEP
 Manter o runtime state como fonte de continuidade e retomar pela prova live
 autorizada ou pela próxima lacuna de produto priorizada no backlog.
 
+## 2026-08-23 — APPEAL-036: abertura da próxima lacuna local
+
+### TIMESTAMP
+
+2026-08-23 22:39:35 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto
+
+### SPRINT
+
+APPEAL-036 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-23-A — escrever RED para a fronteira de contestação do próprio participante
+
+### ACTION
+
+A leitura do estado, backlog, PRD, SPEC e código confirmou que o domínio,
+persistência básica e comandos HTTP de apelação existem, mas a jornada
+verificável ainda não expõe o protocolo do participante nem valida
+completamente o vínculo tentativa/item antes da criação. A pesquisa atualizada
+de práticas reforça a separação entre evidência digital, feedback/assessment
+longitudinal e competência clínica; o primeiro recorte foi limitado a
+isolamento, elegibilidade, protocolo e projeção redigida.
+
+### RESULT
+
+APPEAL-036 foi aberto como fatia `IN_PROGRESS`. Reviewer queue completa,
+justificativa da decisão, recálculo versionado, identificação/notificação de
+afetados, provedor, publicação clínica e piloto foram registrados como gaps
+explícitos, não simulados. Dois scouts independentes foram tentados como
+leitura paralela, mas não produziram relatório antes do encerramento e foram
+fechados; a decisão segue evidência local direta.
+
+### DECISIONS
+
+Seguir TDD RED → GREEN → REFACTOR. Preferir nenhuma migration. A projeção
+participante não poderá conter justificativa, reviewerId, resposta, score,
+gabarito, fontes ou competência prática. O gate live de reflexão continua
+pendente por ausência de `CVG_TEST_DATABASE_URL`.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED para eligibility/listagem/projeção e depois implementar somente o
+recorte aprovado, atualizando audit, backlog, estado, log e traceability.
+
 ## 2026-08-23 — REFLECTION-035: release traceability local
 
 ### TIMESTAMP
@@ -4477,3 +4534,158 @@ READY_FOR_NEXT_STEP
 Executar a prova live quando o ambiente for disponibilizado e abrir a próxima
 lacuna local priorizada, mantendo a fronteira digital sem score, competência
 prática ou publicação clínica.
+
+## 2026-08-23 — APPEAL-036: GREEN local e verificação completa
+
+### TIMESTAMP
+
+2026-08-23 23:03:20 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto
+
+### SPRINT
+
+APPEAL-036 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-23-B — verificar a primeira fatia de contestação e registrar evidência
+
+### ACTION
+
+Depois do RED, a implementação foi fechada em GREEN/REFACTOR com contrato strict,
+caso de uso de leitura própria, repositório PostgreSQL limitado, resolver
+server-side de atividade/item, rota `GET /api/v1/appeals`, elegibilidade no
+`POST` e superfície web acessível. O audit 0514, SPEC 0106 e o artefato
+`APPEAL-036` foram adicionados ao conjunto documental.
+
+### RESULT
+
+`pnpm verify` passou com 103 arquivos/495 testes e 25 skips; cobertura 84,33%
+statements, 80,14% branches, 85,58% functions e 85,04% lines. Contratos 59/59,
+worker 24/24, lint, typecheck, migrations, secrets, arquitetura, documentação,
+product-definition e exposure passaram. O build dos 12 workspaces passou; a
+suíte E2E completa passou 22/22 após a correção de reload. O teste
+`tests/integration/postgres-learning-state.test.ts` foi executado e ficou 1/1
+skipped por ausência de `CVG_TEST_DATABASE_URL`; isso permanece GAP, não PASS.
+
+### DECISIONS
+
+APPEAL-036 fica `COMPLETED_WITH_GAPS` somente para a primeira fatia local. A
+projeção continua sem justificativa, reviewerId, resposta, score, gabarito,
+fontes ou claim de competência; reviewer queue, decisão, recálculo,
+notificações, provedor, aprovação clínica e piloto permanecem fora do escopo.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Obter crítica independente read-only, revisar o diff, criar commits reversíveis e
+executar o release traceability gate em worktree limpo.
+
+## 2026-08-23 — APPEAL-036: correção de restauração após recarga
+
+### TIMESTAMP
+
+2026-08-23 23:12:48 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto
+
+### SPRINT
+
+APPEAL-036 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-23-C — garantir consulta do protocolo próprio após recarga
+
+### ACTION
+
+Uma nova RED E2E reproduziu a lacuna: a API de jornada já devolvia `attemptId`,
+estado e versão, mas a tela descartava esses campos e não chamava `GET /appeals`
+após reabrir a sessão. Foi adicionada uma restauração estrita da projeção de
+tentativa própria, seguida da consulta redigida quando o estado é corrigido; a
+implementação não cria migration nem altera regras clínicas.
+
+### RESULT
+
+O RED falhou com o painel ausente; após a correção, o arquivo participante passou
+9/9, incluindo `restores a corrected attempt and its appeal protocol after
+reload`. O teste mantém a resposta sem reviewer/gabarito e consulta somente o
+envelope próprio.
+
+### DECISIONS
+
+O restore usa somente `LearningJourneyProjection` server-side já autorizada;
+respostas não são inventadas na recarga e a projeção de contestação continua
+allowlisted. Duas tentativas de crítica independente read-only atingiram duas
+janelas de 30 segundos cada e foram encerradas sem relatório; isso permanece
+pendência, não PASS.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar o E2E completo/regressão final, revisar o diff, criar commits reversíveis
+e executar o release traceability gate em worktree limpo.
+
+## 2026-08-23 — APPEAL-036: filtro de item avaliável e regressão final
+
+### TIMESTAMP
+
+2026-08-23 23:20:45 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto
+
+### SPRINT
+
+APPEAL-036 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-23-D — restringir contestação a item avaliável e repetir gates
+
+### ACTION
+
+Uma revisão de boundary abriu RED para impedir contestação de `LEITURA`/`REFLEXAO`.
+O fallback HTTP, o resolver PostgreSQL e a seleção web passaram a aceitar somente
+`QUESTAO`/`CASO`; a consulta segue sem selecionar resposta, texto ou gabarito.
+
+### RESULT
+
+O RED falhou com 500 porque o mock permitia a criação; depois da implementação o
+foco API/persistência passou 2 arquivos/62 testes, `pnpm verify` passou 103
+arquivos/495 testes/25 skips com 84,33% statements, 80,14% branches, 85,58%
+functions e 85,04% lines, e `pnpm test:e2e` passou 22/22. `pnpm audit` não
+encontrou vulnerabilidades e `git diff --check` passou.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Revisar o diff final, criar o commit de implementação e ajustar o SHA do artefato;
+depois executar o release traceability gate com worktree limpo.
