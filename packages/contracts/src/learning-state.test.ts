@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   appealCreateRequestSchema,
+  adaptiveCurriculumAssignmentProjectionSchema,
   appealQuerySchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
@@ -9,6 +10,7 @@ import {
   feedbackTicketInternalTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
   feedbackTicketTransitionRequestSchema,
+  assignCurriculumFromDiagnosticRequestSchema,
   learningAssignmentCreateRequestSchema,
   learningAssignmentTransitionRequestSchema,
   participantAppealProjectionSchema,
@@ -47,6 +49,17 @@ describe("learning state contracts", () => {
 
   it("validates internal creation commands and redacted participant projections", () => {
     expect(
+      assignCurriculumFromDiagnosticRequestSchema.parse({
+        scopeId: ids.resultId,
+      }),
+    ).toEqual({ scopeId: ids.resultId });
+    expect(() =>
+      assignCurriculumFromDiagnosticRequestSchema.parse({
+        scopeId: ids.resultId,
+        participantId: ids.ticketId,
+      }),
+    ).toThrow();
+    expect(
       learningAssignmentCreateRequestSchema.parse({
         assignmentId: ids.assignmentId,
         participantId: ids.resultId,
@@ -81,6 +94,20 @@ describe("learning state contracts", () => {
         version: 1,
       }),
     ).toMatchObject({ assignmentId: ids.assignmentId });
+    expect(
+      adaptiveCurriculumAssignmentProjectionSchema.parse({
+        diagnosticResultId: ids.resultId,
+        assignments: [
+          {
+            assignmentId: ids.assignmentId,
+            moduleId: "M03",
+            availableAt: "2026-08-10T17:00:00.000Z",
+            status: "ATRIBUIDO",
+            version: 1,
+          },
+        ],
+      }),
+    ).toMatchObject({ diagnosticResultId: ids.resultId });
     expect(
       participantAssessmentWorkflowProjectionSchema.parse({
         resultId: ids.resultId,

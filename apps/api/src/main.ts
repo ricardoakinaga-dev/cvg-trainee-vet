@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import {
   authenticateSessionCookie,
   acceptAccountRecovery,
+  assignCurriculumFromDiagnostic,
   changeAccountStatus,
   acceptInvitation,
   advanceContent,
@@ -49,6 +50,7 @@ import {
 import { createObservability } from "@cvg/observability";
 import {
   createActivityScopeResolver,
+  createAdaptiveAssignmentRepository,
   createActivityReadRepository,
   createAuthoringRepository,
   createAnswerUseCaseDependencies,
@@ -168,6 +170,9 @@ export function createApiRuntime(
   const diagnosticResultRepository = createDiagnosticResultRepository(
     integrations.database.db,
   );
+  const adaptiveAssignmentRepository = createAdaptiveAssignmentRepository(
+    integrations.database.db,
+  );
   const accountManagementRepository = createAccountManagementRepository(
     integrations.database.db,
   );
@@ -265,6 +270,12 @@ export function createApiRuntime(
       ),
     createLearningAssignment: (command) =>
       createLearningAssignmentState(command, learningStateRepository),
+    assignCurriculumFromDiagnostic: (command) =>
+      assignCurriculumFromDiagnostic(
+        command,
+        diagnosticResultRepository,
+        adaptiveAssignmentRepository,
+      ),
     transitionLearningAssignment: (command) =>
       transitionLearningAssignmentState(command, learningStateRepository),
     createAssessmentWorkflow: (command) =>

@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
+  DiagnosticResultByIdReadPort,
   DiagnosticResultReadPort,
   DiagnosticResultState,
   DiagnosticResultWriteInput,
@@ -167,7 +168,9 @@ function toRow(
 export function createDiagnosticResultRepository(
   db: DatabaseExecutor,
   idFactory: () => string = randomUUID,
-): DiagnosticResultReadPort & DiagnosticResultWritePort {
+): DiagnosticResultReadPort &
+  DiagnosticResultByIdReadPort &
+  DiagnosticResultWritePort {
   const repository = {
     findDiagnosticResults: async (
       participantId: string,
@@ -203,6 +206,31 @@ export function createDiagnosticResultRepository(
         );
       });
     },
+    findDiagnosticResultById: async (
+      diagnosticResultId: string,
+      scopeId: string,
+    ): Promise<DiagnosticResultState | null> => {
+      assertNonEmpty(diagnosticResultId, "diagnosticResultId");
+      assertNonEmpty(scopeId, "scopeId");
+      return db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseSecurityContext(executor, { scopeId });
+        const rows = await executor
+          .select()
+          .from(diagnosticResults)
+          .where(
+            and(
+              eq(diagnosticResults.id, diagnosticResultId),
+              eq(diagnosticResults.scopeId, scopeId),
+            ),
+          )
+          .limit(1);
+        const row = rows[0];
+        return row === undefined
+          ? null
+          : diagnosticResultRowToState(toRow(row));
+      });
+    },
     saveDiagnosticResult: async (
       input: DiagnosticResultWriteInput,
     ): Promise<DiagnosticResultState> => {
@@ -229,6 +257,8 @@ export function createDiagnosticResultRepository(
         return diagnosticResultRowToState(toRow(stored));
       });
     },
-  } satisfies DiagnosticResultReadPort & DiagnosticResultWritePort;
+  } satisfies DiagnosticResultReadPort &
+    DiagnosticResultByIdReadPort &
+    DiagnosticResultWritePort;
   return Object.freeze(repository);
 }

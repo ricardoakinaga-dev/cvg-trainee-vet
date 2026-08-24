@@ -204,3 +204,25 @@ dedicado. A fila interna pode projetá-los para revisão escopada; a projeção
 participante continua explicitamente sem rationale, data/correlação de decisão
 ou identidade interna. Histórico append-only separado, snapshot, recálculo,
 notificação e encerramento são contratos posteriores.
+
+## 9.5 Atribuição adaptativa derivada do diagnóstico — ADAPTIVE-044
+
+`AssignCurriculumFromDiagnostic` recebe somente `{ diagnosticResultId, scopeId }`.
+Ele reidrata o resultado B-07 persistido pelo port de leitura escopado, valida
+as flags formativas não punitivas e combina o núcleo obrigatório da onda
+(`M01`, `M02`, `M11`) com `recommendedModuleIds`, sem permitir dispensa ou
+alteração de nota. O participante não é parâmetro do comando.
+
+O port de escrita recebe resultado, escopo e módulos já ordenados. O adapter
+PostgreSQL deriva participante e `availableAt` da linha diagnóstica dentro da
+mesma transação em que aplica o contexto RLS das atribuições. Cada nova linha é
+criada pela máquina de estados (`NAO_ATRIBUIDO → ATRIBUIDO`); linha existente
+é preservada ou promovida com versionamento otimista, e replay utiliza a
+unicidade participante–escopo–módulo. Conflito concorrente vira
+`state_conflict`; ausência fora do escopo vira `not_found`.
+
+O retorno de aplicação é interno e a projeção participante é allowlisted. Ela
+não contém `participantId`, gabarito, fonte, rubrica, objetivos internos,
+prompt, nota global ou competência prática. A falha ou sucesso desta operação
+não altera publicação, resultado diagnóstico, runtime, aprovação clínica ou
+autonomia.

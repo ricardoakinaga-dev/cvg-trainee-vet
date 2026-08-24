@@ -3176,6 +3176,99 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "ADAPTIVE-044"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-021",
+        "PRD-RF-022",
+        "PRD-RN-010",
+        "PRD-RN-013",
+        "PRD-RN-014",
+        "PRD-RN-017",
+        "PRD-RN-072",
+        "PRD-RN-090",
+        "UC-001",
+        "UC-002",
+        "SPEC-0105",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0017_programa_curricular_24_meses.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/adaptive-assignment-use-cases.ts",
+        "packages/application/src/adaptive-assignment-use-cases.test.ts",
+        "packages/application/src/index.ts",
+        "packages/contracts/src/learning-state.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/persistence/src/adaptive-assignment-repository.ts",
+        "packages/persistence/src/adaptive-assignment-repository.test.ts",
+        "packages/persistence/src/diagnostic-result-repository.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/api/src/server.test.ts",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/application/src/adaptive-assignment-use-cases.test.ts",
+        "packages/persistence/src/adaptive-assignment-repository.test.ts",
+        "packages/persistence/src/diagnostic-result-repository.test.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-adaptive-assignment.test.ts",
+        "tests/e2e/participant-access.spec.ts",
+      ]
+    commit: "9a2e07a2ce06f57534ba64ad4b6c5bfb9c83d511"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: adaptive application test failed before the use case existed",
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:integration",
+        "pnpm test:e2e",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

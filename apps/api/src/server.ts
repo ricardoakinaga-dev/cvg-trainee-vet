@@ -261,6 +261,12 @@ export function routeTemplate(method: string, path: string): string {
     return "/api/v1/internal/diagnostics/b07/evaluate";
   }
   if (
+    method === "POST" &&
+    /^\/api\/v1\/internal\/diagnostics\/[^/]+\/assign$/u.test(path)
+  ) {
+    return "/api/v1/internal/diagnostics/:diagnosticResultId/assign";
+  }
+  if (
     /^\/api\/v1\/internal\/learning-assignments\/[^/]+\/transition$/u.test(path)
   ) {
     return "/api/v1/internal/learning-assignments/:assignmentId/transition";

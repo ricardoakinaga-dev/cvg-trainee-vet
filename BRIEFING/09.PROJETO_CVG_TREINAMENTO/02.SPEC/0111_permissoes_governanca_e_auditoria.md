@@ -218,3 +218,23 @@ não os recebem. Esses metadados não são apresentados como histórico append-o
 backfill/validação de registros legados, trilha imutável, snapshots, recálculo,
 notificação e encerramento permanecem gaps posteriores e exigem ambiente ou
 decisão autorizada.
+
+## 9.4 Atribuição adaptativa e identidade server-side — ADAPTIVE-044
+
+`MANAGE_LEARNING_ASSIGNMENTS` protege a rota interna de materialização e exige
+conta ativa, papel interno permitido e `scopeId` presente na sessão. O corpo
+não aceita `participantId`; o caso de uso reidrata o diagnóstico pelo
+`diagnosticResultId + scopeId` e o adapter deriva a identidade da linha
+persistida. Assim, escopo autorizado não se converte em permissão para escolher
+outro participante.
+
+O contexto PostgreSQL de escopo é aplicado antes de selecionar o resultado; o
+contexto de participante + escopo é aplicado antes de selecionar ou mutar
+`learning_assignments`. A saída passa por schema público separado e remove
+identidade, autoria, gabarito, fonte, rubrica, prompt, objetivo interno e
+competência prática. A recomendação somente adiciona módulos; não remove o
+núcleo obrigatório, não altera nota e não publica conteúdo.
+
+Auditoria operacional detalhada de cada materialização, métricas distribuídas,
+grants/owners produtivos e prova RLS live continuam gates de ambiente e não são
+simulados por esta implementação local.

@@ -40,6 +40,8 @@ import {
   type GetParticipantAppealsCommand,
   type AssignmentCreateCommand,
   type AssignmentTransitionCommand,
+  type AssignCurriculumFromDiagnosticCommand,
+  type MaterializedCurriculumAssignments,
   type WorkflowCreateCommand,
   type WorkflowTransitionCommand,
   type TicketCreateCommand,
@@ -115,6 +117,8 @@ import {
   accountRecoveryAcceptRequestSchema,
   accountRecoveryIssueProjectionSchema,
   accountRecoveryIssueRequestSchema,
+  adaptiveCurriculumAssignmentProjectionSchema,
+  assignCurriculumFromDiagnosticRequestSchema,
   resendAccountInvitationRequestSchema,
   resentAccountInvitationProjectionSchema,
   rotateSessionRequestSchema,
@@ -193,6 +197,9 @@ export interface ApiHttpDependencies {
   readonly createLearningAssignment?: (
     command: AssignmentCreateCommand,
   ) => Promise<LearningAssignmentState>;
+  readonly assignCurriculumFromDiagnostic?: (
+    command: AssignCurriculumFromDiagnosticCommand,
+  ) => Promise<MaterializedCurriculumAssignments>;
   readonly transitionLearningAssignment?: (
     command: AssignmentTransitionCommand,
   ) => Promise<LearningAssignmentState>;
@@ -559,6 +566,17 @@ function publicLearningAssignmentProjection(
     ...(state.blockReason === undefined
       ? {}
       : { blockReason: state.blockReason }),
+  });
+}
+
+function publicAdaptiveAssignmentProjection(
+  state: MaterializedCurriculumAssignments,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return adaptiveCurriculumAssignmentProjectionSchema.parse({
+    diagnosticResultId: state.diagnosticResultId,
+    assignments: state.assignments.map(({ state: assignment }) =>
+      publicLearningAssignmentProjection(assignment),
+    ),
   });
 }
 
@@ -1544,6 +1562,12 @@ async function handleDiagnosticDraftEvaluation(
   ) {
     return errorResponse("forbidden", requestId);
   }
+  if (dependencies.assignCurriculumFromDiagnostic !== undefined) {
+    await dependencies.assignCurriculumFromDiagnostic({
+      diagnosticResultId: state.resultId,
+      scopeId: state.scopeId,
+    });
+  }
   const themes = deriveParticipantDiagnosticProfile([state]);
   const projection = parseDiagnosticResultProjection({
     resultId: state.resultId,
@@ -1558,6 +1582,44 @@ async function handleDiagnosticDraftEvaluation(
   return {
     status: 200,
     body: apiSuccessResponse(projection, requestId),
+  };
+}
+
+async function handleAssignCurriculumFromDiagnostic(
+  request: ApiHttpRequest,
+  diagnosticResultId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.assignCurriculumFromDiagnostic === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  if (!isUuid(diagnosticResultId)) return validationResponse(requestId);
+  const parsed = assignCurriculumFromDiagnosticRequestSchema.safeParse(
+    request.body,
+  );
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "MANAGE_LEARNING_ASSIGNMENTS", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.assignCurriculumFromDiagnostic({
+    diagnosticResultId,
+    scopeId: parsed.data.scopeId,
+  });
+  if (state.scopeId !== parsed.data.scopeId) {
+    return errorResponse("forbidden", requestId);
+  }
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicAdaptiveAssignmentProjection(state),
+      requestId,
+    ),
   };
 }
 
@@ -3062,6 +3124,22 @@ async function handleApiRequestCore(
         return errorResponse("unauthenticated", requestId);
       return await handleDiagnosticDraftEvaluation(
         request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const diagnosticAssignmentMatch = request.path.match(
+      /^\/api\/v1\/internal\/diagnostics\/([^/]+)\/assign$/u,
+    );
+    if (request.method === "POST" && diagnosticAssignmentMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAssignCurriculumFromDiagnostic(
+        request,
+        diagnosticAssignmentMatch[1],
         requestId,
         principal,
         dependencies,

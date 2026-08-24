@@ -144,6 +144,9 @@ describe("API node server adapter", () => {
     expect(
       routeTemplate("POST", "/api/v1/internal/diagnostics/b07/evaluate"),
     ).toBe("/api/v1/internal/diagnostics/b07/evaluate");
+    expect(
+      routeTemplate("POST", "/api/v1/internal/diagnostics/result/assign"),
+    ).toBe("/api/v1/internal/diagnostics/:diagnosticResultId/assign");
     expect(routeTemplate("DELETE", "/unknown")).toBe("unmatched");
   });
 

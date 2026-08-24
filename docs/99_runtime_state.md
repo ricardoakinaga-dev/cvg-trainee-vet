@@ -3,14 +3,14 @@
 ## CONTEXTO
 
 - project: cvg-trainee-vet
-- current_engine: BUILD ENGINE
+- current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: FEEDBACK-043 / AUD-P1-001 — fila interna bounded de triagem
-- current_task: FEEDBACK-2026-08-24-I — consultar relatos escopados e transicionar estados permitidos
+- current_sprint: ADAPTIVE-044 / AUD-P1-001 — atribuição adaptativa derivada do diagnóstico
+- current_task: ADAPTIVE-2026-08-24-A — consolidar evidência, rastreabilidade e handoff da atribuição adaptativa
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `FEEDBACK-043` foi implementado e endurecido em TDD nos commits `5f7536259a1a7cfff5d85d6a5292ac6ea5427fac`, `2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b` e `708082a9b62a18350c982d535fb1b4a9b47b7046`; a fila interna bounded consulta relatos por escopo/status/limite, não projeta `participantId`, e a UI reutiliza a transição versionada existente com resolução server-side do participante por ticket+escopo. O RED foi observado antes da implementação; a primeira crítica encontrou e o hardening fechou identidade client-controlled e encaminhamento clínico incompleto; no HEAD final `pnpm verify` passou com cobertura 84,50%/80,34%/85,91%/85,24%, build 12, E2E 23/23, integração configurada 8/20 com 26 arquivos/28 testes skipped, contratos 26/70, worker 4/25, migrations 26/26 e audit sem vulnerabilidades conhecidas. Secrets, traceability, architecture, documentation, product-definition, exposure e diff-check passaram. A segunda crítica read-only retornou `CONDITIONAL PASS`; RLS live continua inconclusivo sem infraestrutura
-- next_action: selecionar e abrir uma próxima lacuna local bounded; manter FEEDBACK-043 em `COMPLETED_WITH_GAPS`, sem ampliar esta fila para prioridade, atribuição, resposta, histórico dedicado, alerta clínico ou SLA
+- last_completed_action: `ADAPTIVE-044` foi implementado em TDD: RED inicial, caso de uso de reidratação/allowlist, adapter PostgreSQL com identidade e disponibilidade derivadas da linha diagnóstica, contrato/API strict sem `participantId`, capability server-side, replay/estado/CAS e projeção redigida. Auditoria `0523`, SPEC, backlog, log e manifesto foram atualizados; `pnpm verify` passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%, contratos 70/70, worker 25/25 e migrations 26/26; build 12 workspaces, E2E 23/23, integração configurada 8/20 com 27 arquivos/29 testes skipped e `pnpm audit --audit-level=high` limpo
+- next_action: selecionar a próxima fatia local bounded para ligar assignments a CTA/deep link e feedback/debrief; quando `CVG_TEST_DATABASE_URL` estiver disponível, executar a prova live PostgreSQL/RLS de `ADAPTIVE-044`. Não declarar release/100% enquanto live, gates clínicos, CTA/jornada completa e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; FEEDBACK-041-SCOPE — múltiplos escopos, triagem, comunicação, suporte e prova RLS live permanecem fora da fatia; APPEAL-042-SCOPE — esta fatia somente lê histórico interno existente e não prova grants/RLS live, concorrência ou workflow remoto; FEEDBACK-043-SCOPE — prioridade, atribuição, resposta, histórico dedicado, alerta clínico e prova live/RLS continuam fora desta fatia; essas extensões permanecem dependências futuras
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado e de `ADAPTIVE-044`; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local `9a2e07a`; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; as extensões FEEDBACK-043/APPEAL-042 permanecem fora do recorte. Esses bloqueios não impedem o slice local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T03:58:13-03:00
+- last_update: 2026-08-24T04:49:39-03:00
+
+## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
+
+- head: `9a2e07a2ce06f57534ba64ad4b6c5bfb9c83d511`
+- origin: `fbbc692` (`origin/main`), local `main` ahead 39 commits
+- worktree: contém as alterações locais da fatia `ADAPTIVE-044`, a auditoria `0523`, SPEC/backlog/log/state/manifesto atualizados e o plano `.agent/plans/2026-08-24-production-mvp-gauntlet.md`; ainda não há push/deploy
+- active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
+- verification_state: slice local PASS; `pnpm verify`, build, E2E 23/23, audit de dependências, traceability/documentation/product/exposure e diff-check PASS; prova live PostgreSQL/RLS do novo slice, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
 ## REGRAS DE USO
 

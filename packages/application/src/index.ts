@@ -8,6 +8,17 @@ export type {
 } from "./authorization.js";
 export { ApplicationError, toApplicationError } from "./errors.js";
 export type { ApplicationErrorCode, ApplicationErrorDetail } from "./errors.js";
+export {
+  assignCurriculumFromDiagnostic,
+  pilotMandatoryModuleIds,
+} from "./adaptive-assignment-use-cases.js";
+export type {
+  AdaptiveCurriculumAssignmentPort,
+  AssignCurriculumFromDiagnosticCommand,
+  DiagnosticResultByIdReadPort,
+  MaterializeCurriculumAssignmentsInput,
+  MaterializedCurriculumAssignments,
+} from "./adaptive-assignment-use-cases.js";
 export { createAuditEntry } from "./audit.js";
 export type {
   AuditEntry,

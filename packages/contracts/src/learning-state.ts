@@ -74,6 +74,12 @@ export const learningAssignmentCreateRequestSchema = z
   })
   .strict();
 
+export const assignCurriculumFromDiagnosticRequestSchema = z
+  .object({
+    scopeId: idSchema,
+  })
+  .strict();
+
 export const assessmentWorkflowCreateRequestSchema = z
   .object({
     resultId: idSchema,
@@ -100,6 +106,16 @@ export const participantLearningAssignmentProjectionSchema = z
     status: learningAssignmentStatusSchema,
     version: versionSchema,
     blockReason: learningAssignmentBlockReasonSchema.optional(),
+  })
+  .strict();
+
+export const adaptiveCurriculumAssignmentProjectionSchema = z
+  .object({
+    diagnosticResultId: idSchema,
+    assignments: z
+      .array(participantLearningAssignmentProjectionSchema)
+      .min(1)
+      .max(24),
   })
   .strict();
 
@@ -320,6 +336,9 @@ export type LearningAssignmentTransitionRequest = z.infer<
 export type LearningAssignmentCreateRequest = z.infer<
   typeof learningAssignmentCreateRequestSchema
 >;
+export type AssignCurriculumFromDiagnosticRequest = z.infer<
+  typeof assignCurriculumFromDiagnosticRequestSchema
+>;
 export type AssessmentWorkflowCreateRequest = z.infer<
   typeof assessmentWorkflowCreateRequestSchema
 >;
@@ -357,6 +376,9 @@ export type AppealScopedTransitionRequest = z.infer<
 >;
 export type ParticipantLearningAssignmentProjection = z.infer<
   typeof participantLearningAssignmentProjectionSchema
+>;
+export type AdaptiveCurriculumAssignmentProjection = z.infer<
+  typeof adaptiveCurriculumAssignmentProjectionSchema
 >;
 export type ParticipantAssessmentWorkflowProjection = z.infer<
   typeof participantAssessmentWorkflowProjectionSchema

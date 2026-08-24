@@ -92,3 +92,20 @@ O adaptador deve permitir Qdrant local em desenvolvimento/teste e endpoint prote
 `content_editorial_records` guarda a versão autoral, escopo, módulo, sessão, objetivo, autor, item interno e preflight. `content_review_decisions` guarda cada decisão clínica com revisor, justificativa, correlação e data. A migration `0014_salty_penance.sql` aplica as FKs para `content_versions`/`accounts`, unicidade de `content_id + version`, índices por escopo/versão e checks de versão/decisão.
 
 O repositório lê a última decisão clínica, calcula motivos de bloqueio e nunca coloca o JSON editorial na projeção participante. A atualização do preflight e o registro da decisão são persistidos com mapeamento estrito; a transição de conteúdo permanece coordenada pelo caso de uso e deve ser tornada transação única antes de uma publicação operacional em escala.
+
+## 8.1 Atribuição adaptativa derivada — ADAPTIVE-044
+
+Não há migration nova para esta fatia. `learning_assignments` já possui
+unicidade em `(participant_id, scope_id, module_id)`, checks de módulo/estado,
+versionamento e policies RLS contextualizadas. O repositório adaptativo abre
+uma transação, aplica primeiro o contexto de escopo para ler
+`diagnostic_results`, deriva `participant_id` e `completed_at` da linha
+encontrada e então troca para `{ participantId, scopeId }` antes de ler/escrever
+atribuições.
+
+Inserções usam `onConflictDoNothing` e uma releitura bounded para tornar retry
+sequencial idempotente. Uma atribuição `NAO_ATRIBUIDO` existente só é promovida
+com predicado de versão/status; qualquer conflito é exposto como erro de estado
+e não como sobrescrita silenciosa. O índice único é a garantia de não duplicar
+progresso, enquanto PostgreSQL continua a autoridade e a jornada agregada
+continua calculando a próxima ação a partir das linhas persistidas.

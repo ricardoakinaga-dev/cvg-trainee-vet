@@ -212,6 +212,12 @@ export {
   createAccountManagementRepository,
 } from "./account-management-repository.js";
 export {
+  createAdaptiveAssignmentRepository,
+  AdaptiveAssignmentConflictError,
+  AdaptiveAssignmentNotFoundError,
+  AdaptiveAssignmentPersistenceError,
+} from "./adaptive-assignment-repository.js";
+export {
   createDiagnosticResultRepository,
   diagnosticResultRowToState,
   diagnosticResultStateToRow,

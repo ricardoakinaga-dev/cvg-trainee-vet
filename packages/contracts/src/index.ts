@@ -92,6 +92,8 @@ export {
   appealQuerySchema,
   appealReviewTransitionRequestSchema,
   appealScopedTransitionRequestSchema,
+  adaptiveCurriculumAssignmentProjectionSchema,
+  assignCurriculumFromDiagnosticRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
@@ -110,7 +112,11 @@ export {
   participantFeedbackTicketsProjectionSchema,
   participantLearningAssignmentProjectionSchema,
 } from "./learning-state.js";
-export type { FeedbackTicketInternalTransitionRequest } from "./learning-state.js";
+export type {
+  AdaptiveCurriculumAssignmentProjection,
+  AssignCurriculumFromDiagnosticRequest,
+  FeedbackTicketInternalTransitionRequest,
+} from "./learning-state.js";
 export {
   appealReviewHistoryEventProjectionSchema,
   appealReviewHistoryPathSchema,

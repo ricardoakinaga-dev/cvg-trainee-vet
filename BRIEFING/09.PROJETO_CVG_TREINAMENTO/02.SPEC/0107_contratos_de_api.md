@@ -353,3 +353,23 @@ correlação ou revisor, mesmo quando a transição ocorre numa rota interna. A
 fila interna é o único contrato desta fatia que pode ler os metadados de decisão
 com autorização e escopo; a rota não recalcula nota, altera tentativa, publica
 aprovação ou encerra protocolo.
+
+## 15.2 Atribuição inicial a partir do diagnóstico — ADAPTIVE-044
+
+`POST /api/v1/internal/diagnostics/:diagnosticResultId/assign` é uma rota
+interna para materializar a trilha inicial de um resultado B-07 já persistido.
+O corpo é strict e aceita somente `{ scopeId }`; `participantId` e qualquer
+lista de módulos fornecida pelo cliente são rejeitados. A sessão precisa estar
+ativa, possuir `MANAGE_LEARNING_ASSIGNMENTS` e conter o escopo solicitado.
+
+O servidor valida UUID, reidrata o diagnóstico pelo identificador + escopo e
+chama `AssignCurriculumFromDiagnostic`. A resposta contém somente
+`diagnosticResultId` e atribuições públicas (`assignmentId`, `moduleId`,
+`availableAt`, `status`, `version` e eventual `blockReason`); identidade do
+participante, dados editoriais, gabarito, fonte, prompt e competência prática
+ficam fora do envelope. A avaliação B-07 pode disparar a mesma operação após
+persistir o resultado, e o endpoint permite retry operacional seguro.
+
+As respostas de 401/403/404/409/422 seguem o envelope comum. A rota não publica
+conteúdo, não decide nota, não dispensa núcleo obrigatório e não autoriza IA,
+Qdrant ou frontend a alterar estado.

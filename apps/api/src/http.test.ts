@@ -915,6 +915,12 @@ describe("API HTTP boundary", () => {
       },
     };
     const evaluateDiagnosticDraft = vi.fn(async () => state);
+    const assignCurriculumFromDiagnostic = vi.fn(async () => ({
+      diagnosticResultId: state.resultId,
+      participantId: state.participantId,
+      scopeId: state.scopeId,
+      assignments: [],
+    }));
     const response = await handleApiRequest(
       {
         method: "POST",
@@ -934,6 +940,7 @@ describe("API HTTP boundary", () => {
           scopes: ["11111111-1111-4111-8111-111111111111"],
         }),
         evaluateDiagnosticDraft,
+        assignCurriculumFromDiagnostic,
       }),
     );
 
@@ -959,6 +966,10 @@ describe("API HTTP boundary", () => {
         scopeId: "11111111-1111-4111-8111-111111111111",
       }),
     );
+    expect(assignCurriculumFromDiagnostic).toHaveBeenCalledWith({
+      diagnosticResultId: state.resultId,
+      scopeId: state.scopeId,
+    });
   });
 
   it("rejects a diagnostic draft for a participant outside the moderator scope", async () => {
@@ -990,6 +1001,154 @@ describe("API HTTP boundary", () => {
 
     expect(response.status).toBe(403);
     expect(evaluateDiagnosticDraft).not.toHaveBeenCalled();
+  });
+
+  it("materializes a diagnostic curriculum without accepting participant identity", async () => {
+    const diagnosticResultId = "33333333-3333-4333-8333-333333333333";
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const assignment = {
+      assignmentId: "44444444-4444-4444-8444-444444444444",
+      participantId: attempt.participantId,
+      moduleId: "M01",
+      availableAt: "2026-08-23T12:00:00.000Z",
+      status: "ATRIBUIDO" as const,
+      version: 1,
+    };
+    const assignCurriculumFromDiagnostic = vi.fn(async () => ({
+      diagnosticResultId,
+      participantId: attempt.participantId,
+      scopeId,
+      assignments: [{ scopeId, state: assignment }],
+    }));
+
+    const staffResponse = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/diagnostics/${diagnosticResultId}/assign`,
+        body: { scopeId },
+      },
+      dependencies({
+        assignCurriculumFromDiagnostic,
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+
+    expect(staffResponse.status).toBe(200);
+    expect(staffResponse.body).toMatchObject({
+      success: true,
+      data: {
+        diagnosticResultId,
+        assignments: [{ assignmentId: assignment.assignmentId }],
+      },
+    });
+    expect(JSON.stringify(staffResponse.body)).not.toContain("participantId");
+    expect(assignCurriculumFromDiagnostic).toHaveBeenCalledWith({
+      diagnosticResultId,
+      scopeId,
+    });
+
+    const participantResponse = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/diagnostics/${diagnosticResultId}/assign`,
+        body: { scopeId },
+      },
+      dependencies({ assignCurriculumFromDiagnostic }),
+    );
+    expect(participantResponse.status).toBe(403);
+    expect(assignCurriculumFromDiagnostic).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects an invalid diagnostic result identifier before assignment", async () => {
+    const assignCurriculumFromDiagnostic = vi.fn();
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/diagnostics/not-a-uuid/assign",
+        body: {
+          scopeId: "11111111-1111-4111-8111-111111111111",
+        },
+      },
+      dependencies({
+        assignCurriculumFromDiagnostic,
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(422);
+    expect(assignCurriculumFromDiagnostic).not.toHaveBeenCalled();
+  });
+
+  it("keeps authentication, not-found, and conflict errors bounded", async () => {
+    const diagnosticResultId = "33333333-3333-4333-8333-333333333333";
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const request = {
+      method: "POST" as const,
+      path: `/api/v1/internal/diagnostics/${diagnosticResultId}/assign`,
+      body: { scopeId },
+    };
+    const unauthenticatedAssignment = vi.fn();
+    const unauthenticated = await handleApiRequest(
+      request,
+      dependencies({
+        assignCurriculumFromDiagnostic: unauthenticatedAssignment,
+        authenticate: async () => null,
+      }),
+    );
+    expect(unauthenticated.status).toBe(401);
+    expect(unauthenticatedAssignment).not.toHaveBeenCalled();
+
+    const notFoundAssignment = vi.fn(async () => {
+      throw new ApplicationError("not_found", "synthetic missing result");
+    });
+    const notFound = await handleApiRequest(
+      request,
+      dependencies({
+        assignCurriculumFromDiagnostic: notFoundAssignment,
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(notFound.status).toBe(404);
+    expect(notFound.body).toMatchObject({
+      success: false,
+      error: { code: "not_found" },
+    });
+
+    const conflictAssignment = vi.fn(async () => {
+      throw new ApplicationError("state_conflict", "synthetic conflict");
+    });
+    const conflict = await handleApiRequest(
+      request,
+      dependencies({
+        assignCurriculumFromDiagnostic: conflictAssignment,
+        authenticate: async () => ({
+          principalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(conflict.status).toBe(409);
+    expect(conflict.body).toMatchObject({
+      success: false,
+      error: { code: "state_conflict" },
+    });
   });
 
   it("accepts a scoped clinical review without exposing it to the participant route", async () => {

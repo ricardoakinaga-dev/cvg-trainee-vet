@@ -6011,3 +6011,129 @@ crítica read-only retornou `CONDITIONAL PASS`: a fila não projeta
 `participantId`, o PATCH resolve a identidade no servidor e o aprovador
 clínico está coberto em GET/PATCH; RLS live permanece inconclusivo sem
 infraestrutura.
+
+## 2026-08-24 — ADAPTIVE-044: abertura da atribuição adaptativa bounded
+
+### TIMESTAMP
+
+2026-08-24 04:15:00 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada adaptativa
+
+ADAPTIVE-044 / AUD-P1-001 / UC-001–UC-002
+
+### TASK
+
+ADAPTIVE-2026-08-24-A — escrever RED para transformar resultado diagnóstico
+persistido em atribuições server-side idempotentes.
+
+### ACTION
+
+O control plane foi reconciliado com o repositório: HEAD local
+`9a2e07a2ce06f57534ba64ad4b6c5bfb9c83d511`, `origin/main` em `fbbc692`, local
+ahead 39 commits. A pesquisa oficial e a leitura completa de `docs/` foram
+incorporadas ao ExecPlan. Três scouts independentes confirmaram que o perfil
+diagnóstico já persiste `recommendedModuleIds`, mas não materializa
+`learning_assignments`; também confirmaram que gates live, grants produtivos,
+fencing do worker, observabilidade externa, restore e CI no mesmo SHA não têm
+prova atual.
+
+### RESULT
+
+O baseline local fresco passou: Node `22.22.0`, pnpm `10.33.0`, 123 arquivos/560
+testes, 28 testes skipped, cobertura 84,50% statements, 80,34% branches,
+85,91% functions e 85,24% lines; contratos 70/70, worker 25/25, migrações
+26/26 e gates de lint, typecheck, secrets, traceability, architecture,
+documentation, product-definition, exposure e diff-check limpos. O backlog
+abriu `ADAPTIVE-044` em `IN_PROGRESS`, o plano congelou `QB-01`–`QB-11` e o
+estado operacional mudou para `IN_PROGRESS` com RED como próxima ação.
+
+### DECISIONS
+
+A fatia recebe somente `diagnosticResultId + scopeId`; o participante é
+reidratado do resultado persistido no escopo autorizado. O núcleo da onda
+piloto e as recomendações serão allowlistados deterministicamente, sem
+dispensa automática, alteração de nota/gabarito/publicação ou claim clínico.
+Replay deve preservar assignments e estados existentes. O bloqueio de release
+por live RLS/grants, mesmo-SHA CI, provider/MFA, conteúdo clínico e assurance
+operacional permanece explícito; não houve push, deploy, acesso a segredo,
+aplicação real de B-07 ou decisão clínica.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever e executar RED de aplicação, persistência e API para reidratação
+server-side, núcleo obrigatório, recomendações, replay e isolamento de
+escopo; somente depois iniciar GREEN.
+
+## 2026-08-24 — ADAPTIVE-044: slice local verificado e handoff
+
+### TIMESTAMP
+
+2026-08-24 04:49:39 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada adaptativa — ADAPTIVE-044 / AUD-P1-001
+
+### TASK
+
+ADAPTIVE-2026-08-24-A — fechar diagnóstico persistido → atribuição server-side
+idempotente, com boundary seguro e evidência reproduzível.
+
+### ACTION
+
+Depois da RED inicial, foi implementado o menor vertical slice: o caso de uso
+reidrata `diagnosticResultId + scopeId`, valida B-07 formativo, combina
+`M01`/`M02`/`M11` com recomendações ordenadas pelo catálogo e passa somente
+resultado/escopo/módulos ao adapter. A persistência deriva `participantId` e
+`completedAt` da linha diagnóstica, aplica contexto RLS transacional, promove
+`NAO_ATRIBUIDO` por domínio + CAS, usa unicidade para replay e não cria
+migration. A API interna valida UUID/body strict, capability e projeção sem
+identidade do participante; avaliação diagnóstica pode disparar a materialização
+após salvar o resultado.
+
+### RESULT
+
+`pnpm verify` passou com 125 arquivos/570 testes e 29 skips; cobertura global
+84,49% statements, 80,31% branches, 85,98% functions e 85,22% lines.
+Contratos 70/70, worker 25/25, migrations 26/26, build dos 12 workspaces,
+`pnpm audit --audit-level=high`, lint, typecheck, secrets, arquitetura,
+documentação, product-definition, exposure e `git diff --check` passaram.
+`pnpm test:e2e` passou 23/23; `pnpm test:integration` passou 8 arquivos/20
+testes e manteve 27 arquivos/29 testes skipped por configuração. O teste live
+`postgres-adaptive-assignment` não foi contado como PASS porque
+`CVG_TEST_DATABASE_URL` não está configurado.
+
+### DECISIONS
+
+`ADAPTIVE-044` fica `COMPLETED_WITH_GAPS` no backlog e o runtime state avança
+para `READY_FOR_NEXT_STEP`. O incremento não publica B-07, não aplica a pessoas
+reais, não dispensa núcleo, não altera nota/gabarito/runtime, não afirma
+competência prática e não autoriza IA/Qdrant. A próxima fatia local é CTA/deep
+link + feedback/debrief; live RLS, conteúdo clínico, grants/owners produtivos,
+observabilidade externa, carga/failover/restore, piloto e release continuam
+gates separados. Nenhum segredo, dado real, push ou deploy foi usado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Selecionar a próxima lacuna local bounded; executar a prova live de
+`ADAPTIVE-044` somente quando o ambiente autorizado existir e manter o
+manifesto/estado sincronizados após o commit local.
