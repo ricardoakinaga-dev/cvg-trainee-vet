@@ -57,7 +57,8 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `POST /api/v1/appeals/:appealId/decision` | UC-018 | revisor autorizado |
 | `GET /api/v1/feedback` | UC-022/023 | próprio ou escopo autorizado |
 | `POST /api/v1/feedback` | UC-022 | sessão autenticada |
-| `PATCH /api/v1/feedback/:ticketId` | UC-023 | mod/admin escopado |
+| `GET /api/v1/internal/feedback` | UC-023 | `VIEW_FEEDBACK_QUEUE` + escopo autorizado; leitura bounded |
+| `PATCH /api/v1/internal/feedback/:ticketId` | UC-023 | `TRANSITION_FEEDBACK_TICKET` + escopo autorizado |
 | `GET /api/v1/internal/appeals/:appealId/history` | UC-018 | `REVIEW_APPEAL` + escopo autorizado; somente leitura bounded |
 | `GET /api/v1/content/review-queue` | UC-013/014 | autor/revisor/admin |
 | `POST /api/v1/content/drafts` | UC-012 | autor autorizado |
@@ -151,6 +152,14 @@ A primeira fatia de API do item 7 materializa os estados persistidos do item 6 s
 | `POST /api/v1/appeals` | contestação vinculada a tentativa própria | participante dono da tentativa e do escopo |
 | `GET /api/v1/appeals?attemptId=<uuid>` | protocolos redigidos da tentativa própria; query estrita | participante dono da tentativa e do escopo |
 | `POST /api/v1/internal/appeals/:appealId/transition` | autoatribuição, decisão ou solicitação de recálculo pendente com `appealId`, `scopeId`, `version` e evento strict | revisor/moderador/admin/identidade clínica aprovada no escopo; decisão e solicitação exigem o revisor persistido |
+
+Na fila interna de feedback, `GET /api/v1/internal/feedback` aceita somente
+`scopeId`, status opcional e limite bounded; a projeção não inclui
+`participantId`. O `PATCH /api/v1/internal/feedback/:ticketId` aceita somente
+`ticketId`, `scopeId`, `version` e evento. O participante do ticket é resolvido
+no servidor por `ticketId + scopeId` sob contexto de escopo antes de reutilizar
+o comando versionado; identidade enviada pelo navegador é rejeitada pelo
+schema strict.
 
 As rotas internas recebem somente o escopo necessário como contexto validado pelo
 servidor; a capacidade e o escopo do principal são verificados antes do caso de

@@ -2667,6 +2667,97 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "FEEDBACK-043"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "PRD-RF-103",
+        "PRD-RF-104",
+        "UC-023",
+        "SPEC-0105",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0522_feedback_triage_queue_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/feedback-triage-queue.ts",
+        "packages/contracts/src/feedback-triage-queue.test.ts",
+        "packages/contracts/src/learning-state.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/feedback-triage-queue-use-cases.ts",
+        "packages/application/src/feedback-triage-queue-use-cases.test.ts",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/feedback-triage-queue-repository.ts",
+        "packages/persistence/src/feedback-triage-queue-repository.test.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/operations/page.tsx",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/contracts/src/feedback-triage-queue.test.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "packages/application/src/feedback-triage-queue-use-cases.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/persistence/src/feedback-triage-queue-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "708082a9b62a18350c982d535fb1b4a9b47b7046"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: módulos novos ausentes, capability nova negada e rota HTTP retornando 404 antes da implementação",
+        "GREEN inicial: focused contracts/application/persistence/authorization/API passou 5 arquivos/80 testes",
+        "independent critic initial FAIL: client-controlled participant identity, incomplete clinical forwarding and missing HTTP negatives",
+        "hardening commits 2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b and 708082a9b62a18350c982d535fb1b4a9b47b7046 removed the projection/request identity and added server resolution plus clinical GET coverage",
+        "GREEN final: focused contracts/application/persistence/authorization/API passou 6 arquivos/87 testes",
+        "pnpm typecheck",
+        "pnpm test:coverage (coverage 84.50% statements, 80.34% branches, 85.91% functions, 85.24% lines)",
+        "pnpm test:contract (26 arquivos/70 testes)",
+        "pnpm test:worker (4 arquivos/25 testes)",
+        "pnpm test:integration (8 arquivos/20 testes PASS; 26 arquivos/28 testes SKIPPED sem dependências live)",
+        "pnpm verify:migrations (26 migrations; latest 0025_appeal_recalculation_history)",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm verify",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (23/23)",
+        "independent read-only review after hardening: CONDITIONAL PASS; RLS live remains inconclusive without infrastructure",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "EDITORIAL-QUEUE-027"
     requirements:
       [

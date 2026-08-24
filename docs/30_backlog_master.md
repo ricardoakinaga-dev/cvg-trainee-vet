@@ -520,6 +520,25 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps conhecidos: as duas solicitações de crítica read-only independente expiraram sem relatório; prova live/RLS, grants, concorrência, observabilidade/retention/restore e operação remota seguem dependentes de ambiente/autoridade
 - próxima ação: selecionar e abrir uma próxima lacuna local bounded — triagem interna de feedback, fila/lembranças ou hardening operacional — sem ampliar a projeção participante nem declarar o produto 100% concluído
 
+### FEEDBACK-043 — Fila interna bounded de triagem de relatos
+
+- título: permitir que moderador ou administrador consulte relatos autorizados e aplique somente transições de triagem já existentes
+- descrição: materializar a leitura interna ausente do feedback participante, com query estrita por escopo/status/limite, projeção allowlisted e operação web com estados explícitos; reutilizar o comando de transição versionado sem aceitar identidade ou escopo fora da sessão
+- módulo: feedback / triagem interna / contratos / aplicação / persistência / API / operações web
+- dependência: `FEEDBACK-041`; `UC-023`; `PRD-RF-072`; `PRD-RF-073`; `PRD-RF-103`; `PRD-RF-104`; `SPEC-0105`; `SPEC-0106`; `SPEC-0107`; `SPEC-0111`; `SPEC-0114`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / governança operacional
+- risco: alto — IDOR por escopo, vazamento de relato ao participante, transição fora da máquina de estados e falso encerramento de suporte
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para query bounded interna, capability server-side, contexto RLS de escopo, projeção strict, 401/403/422, estados loading/empty/error/retry, transição com versão otimista, E2E sintético, regressão, traceability e release gate
+- escopo desta fatia: `GET /api/v1/internal/feedback?scopeId=<uuid>&status=<status>&limit=<1..100>`; filtro opcional por status; projeção de ticket sem anexos ou dados clínicos; ações UI para eventos permitidos pelo estado, usando `PATCH /api/v1/internal/feedback/:ticketId`
+- fora desta fatia: prioridade, atribuição a responsável, resposta ao participante, histórico dedicado de eventos, notificações, alerta/retirada clínica, SLA, anexos, provider/MFA, PostgreSQL/RLS live, workflow remoto, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0522_feedback_triage_queue_audit.md`; commits técnicos `5f7536259a1a7cfff5d85d6a5292ac6ea5427fac`, `2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b` e `708082a9b62a18350c982d535fb1b4a9b47b7046`; contrato, aplicação, persistência, HTTP, operations web, testes negativos, integração configurada e E2E
+- resultado local: RED observado antes da implementação; GREEN inicial 5 arquivos/80 testes; após crítica independente `FAIL`, hardening e cobertura clínica GET, GREEN final 6 arquivos/87 testes; `pnpm verify` passou com cobertura 84,50%/80,34%/85,91%/85,24%; build 12 workspaces; E2E 23/23; integração 8 arquivos/20 testes PASS e 26 arquivos/28 testes SKIPPED; contratos 26/70; worker 4/25; migrations 26/26; audit sem vulnerabilidades conhecidas; gates de secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- gaps conhecidos: o schema atual possui somente estado/versionamento; prioridade, atribuição, resposta e histórico dedicado exigem contrato/migration separados e não serão simulados
+- gaps de assurance: a segunda crítica read-only retornou `CONDITIONAL PASS`, sem novo defeito de código, mas prova PostgreSQL/RLS live, grants, concorrência real, observabilidade/retention/restore e operação remota seguem dependentes de ambiente/autoridade
+- próxima ação: selecionar uma próxima lacuna local bounded sem declarar o produto 100% concluído
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais

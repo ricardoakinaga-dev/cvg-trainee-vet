@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: APPEAL-042 / AUD-P1-001 — timeline interna de histórico append-only
-- current_task: APPEAL-2026-08-24-H — consultar histórico bounded por apelação e escopo
+- current_sprint: FEEDBACK-043 / AUD-P1-001 — fila interna bounded de triagem
+- current_task: FEEDBACK-2026-08-24-I — consultar relatos escopados e transicionar estados permitidos
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `APPEAL-042` foi implementado em TDD nos commits `ba81a75f13df9bb1af5a753d423270ce452050df` e `e45b4677d651322e49fa1b2416dc0130c8778ee5`; a rota interna read-only consulta histórico append-only bounded por apelação e escopo, aplica `REVIEW_APPEAL`, contexto de revisão e projeção interna sem alcançar o participante. O RED foi observado antes da implementação; no HEAD final `pnpm verify` passou com 120 arquivos/552 testes/26 skips de arquivos e 28 skips de testes, cobertura 84,52%/80,36%/85,96%/85,22%, build 12, E2E 23/23, integração configurada 8/20 com 26 arquivos/28 testes skipped, contratos 25/68, worker 4/25, migrations 26/26, audit sem vulnerabilidades conhecidas, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos. As duas críticas read-only independentes expiraram sem relatório e permanecem como gap de assurance
-- next_action: selecionar e abrir uma próxima lacuna local bounded — triagem interna de feedback, fila/lembranças ou hardening operacional — mantendo o histórico fora da projeção participante, sem alterar decisão/recálculo/nota/estado clínico e sem declarar o produto 100% concluído
+- last_completed_action: `FEEDBACK-043` foi implementado e endurecido em TDD nos commits `5f7536259a1a7cfff5d85d6a5292ac6ea5427fac`, `2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b` e `708082a9b62a18350c982d535fb1b4a9b47b7046`; a fila interna bounded consulta relatos por escopo/status/limite, não projeta `participantId`, e a UI reutiliza a transição versionada existente com resolução server-side do participante por ticket+escopo. O RED foi observado antes da implementação; a primeira crítica encontrou e o hardening fechou identidade client-controlled e encaminhamento clínico incompleto; no HEAD final `pnpm verify` passou com cobertura 84,50%/80,34%/85,91%/85,24%, build 12, E2E 23/23, integração configurada 8/20 com 26 arquivos/28 testes skipped, contratos 26/70, worker 4/25, migrations 26/26 e audit sem vulnerabilidades conhecidas. Secrets, traceability, architecture, documentation, product-definition, exposure e diff-check passaram. A segunda crítica read-only retornou `CONDITIONAL PASS`; RLS live continua inconclusivo sem infraestrutura
+- next_action: selecionar e abrir uma próxima lacuna local bounded; manter FEEDBACK-043 em `COMPLETED_WITH_GAPS`, sem ampliar esta fila para prioridade, atribuição, resposta, histórico dedicado, alerta clínico ou SLA
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; FEEDBACK-041-SCOPE — múltiplos escopos, triagem, comunicação, suporte e prova RLS live permanecem fora da fatia; APPEAL-042-SCOPE — esta fatia somente lê histórico interno existente e não prova grants/RLS live, concorrência ou workflow remoto; essas extensões permanecem dependências futuras
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; FEEDBACK-041-SCOPE — múltiplos escopos, triagem, comunicação, suporte e prova RLS live permanecem fora da fatia; APPEAL-042-SCOPE — esta fatia somente lê histórico interno existente e não prova grants/RLS live, concorrência ou workflow remoto; FEEDBACK-043-SCOPE — prioridade, atribuição, resposta, histórico dedicado, alerta clínico e prova live/RLS continuam fora desta fatia; essas extensões permanecem dependências futuras
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T03:17:11-03:00
+- last_update: 2026-08-24T03:58:13-03:00
 
 ## REGRAS DE USO
 

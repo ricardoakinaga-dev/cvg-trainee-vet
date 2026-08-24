@@ -5891,3 +5891,123 @@ READY_FOR_NEXT_STEP
 Selecionar e abrir uma próxima lacuna local bounded — triagem interna de
 feedback, fila/lembranças ou hardening operacional — mantendo os gaps explícitos
 e sem declarar o produto 100% concluído.
+
+## 2026-08-24 — FEEDBACK-043: abertura da fila interna de triagem
+
+### TIMESTAMP
+
+2026-08-24 03:21:47 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / governança operacional
+
+FEEDBACK-043 / AUD-P1-001 / UC-023
+
+### TASK
+
+FEEDBACK-2026-08-24-I — consultar relatos autorizados e transicionar estados
+de triagem existentes em uma superfície interna bounded.
+
+### ACTION
+
+Após FEEDBACK-041, a leitura participante já existe e o domínio já possui
+transições versionadas, mas faltava uma fila interna para selecionar um ticket.
+O escopo foi congelado em `GET /api/v1/internal/feedback` com `scopeId`,
+`status` opcional e limite máximo de 100, projeção allowlisted e ações somente
+para eventos permitidos pela máquina de estados.
+
+### RESULT
+
+Estado atualizado para `IN_PROGRESS`. O próximo passo obrigatório é RED em
+contrato, aplicação, persistência, HTTP e operations web; prioridade,
+atribuição, resposta, histórico dedicado, alerta clínico e integração live não
+serão inventados nesta fatia.
+
+### DECISIONS
+
+O servidor deve verificar `VIEW_FEEDBACK_QUEUE`/`TRANSITION_FEEDBACK_TICKET`,
+conta ativa e escopo autorizado; o cliente não escolhe identidade de
+participante nem amplia escopo. Nenhum relato pode conter anexo, prontuário,
+tutor, foto, PDF, segredo ou dado clínico real.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED para a rota interna ausente e para os casos de escopo, limite,
+payload strict e participante proibido.
+
+## 2026-08-24 — FEEDBACK-043: fechamento local da fila interna de triagem
+
+### TIMESTAMP
+
+2026-08-24 03:58:13 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / governança operacional
+
+FEEDBACK-043 / AUD-P1-001 / UC-023
+
+### TASK
+
+FEEDBACK-2026-08-24-I — consultar relatos autorizados e transicionar estados
+de triagem existentes em uma superfície interna bounded.
+
+### ACTION
+
+Executado TDD RED → GREEN → REFACTOR para contrato strict, caso de uso,
+capability, leitura persistente com contexto de escopo, rota
+`GET /api/v1/internal/feedback`, integração do runtime e superfície web de
+operações. A UI reutiliza o `PATCH` versionado já existente apenas para
+eventos válidos da máquina de estados.
+
+### RESULT
+
+Commits técnicos `5f7536259a1a7cfff5d85d6a5292ac6ea5427fac`,
+`2f0d5d31f7d2afd78db0e3bda5fc99b7123f4a9b` e
+`708082a9b62a18350c982d535fb1b4a9b47b7046`. Após o hardening encontrado pela
+crítica independente, a regressão final passou: `pnpm verify` com cobertura
+84,50% statements, 80,34% branches, 85,91% functions e 85,24% lines; build de
+12 workspaces; E2E 23/23;
+integração configurada 8 arquivos/20 testes PASS e 26 arquivos/28 testes
+SKIPPED; contratos 26/70; worker 4/25; migrations 26/26; audit sem
+vulnerabilidades conhecidas; gates de secrets, traceability, architecture,
+documentation, product-definition, exposure e diff-check limpos. O audit
+local está em `BRIEFING/04.AUDIT/0522_feedback_triage_queue_audit.md`.
+
+### DECISIONS
+
+FEEDBACK-043 fica `COMPLETED_WITH_GAPS` e pronto para próxima fatia local.
+Prioridade, atribuição, resposta, histórico dedicado, notificações,
+alerta/retirada clínica, SLA, anexos, PostgreSQL/RLS live, workflow remoto,
+provider/MFA, piloto e produção permanecem fora do recorte. A primeira crítica
+read-only encontrou identidade client-controlled e encaminhamento clínico
+incompleto; o hardening os corrigiu. A segunda crítica retornou
+`CONDITIONAL PASS`, sem novo defeito de código, mantendo RLS live inconclusivo
+sem infraestrutura. Nenhum dado real, segredo, prontuário, tutor, foto, PDF ou
+decisão clínica foi usado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Selecionar uma próxima lacuna local bounded e manter os gaps de assurance,
+ambiente live, operação remota e aprovação humana explícitos. A segunda
+crítica read-only retornou `CONDITIONAL PASS`: a fila não projeta
+`participantId`, o PATCH resolve a identidade no servidor e o aprovador
+clínico está coberto em GET/PATCH; RLS live permanece inconclusivo sem
+infraestrutura.
