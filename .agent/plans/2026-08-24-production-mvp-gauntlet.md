@@ -620,3 +620,23 @@ scope; semantic cursor failures map to 422; and the UI checks the request
 version after parsing and when the selected scope disappears. The final local
 slice remains `COMPLETED_WITH_GAPS`: HMAC cursor signing and live PostgreSQL/RLS
 evidence remain separate hardening/evidence work.
+
+Plan revision note, 2026-08-24 (JOURNEY-REMEDIATION-048 boundary correction):
+the independent Hilbert critique found that an arbitrary `itemId` could reach
+answer persistence without proving membership in the participant's published
+activity. Commit `de8d8bccbce13e3e4d10597f4b88245ae42601f` added the same-scope,
+same-participant, same-module/provenance guard in HTTP, application and
+transactional persistence; the web CTA now requires a compatible `nextAction`;
+the E2E restores a new attempt and verifies the old justification is gone.
+The final independent Kuhn critique is PASS local conditioned with no
+functional P0, while production remains unqualified because PostgreSQL/RLS,
+browser→API→PostgreSQL, real persistence-negative tests and external operation
+are not observed.
+
+Final local evidence for this slice: `pnpm verify` passed with 131 files/634
+tests and 27 files/33 tests skipped; coverage 84.90% statements, 81.11%
+branches, 86.41% functions and 85.64% lines; build 12 workspaces; E2E 28/28;
+integration 25 pass/33 skips; high-severity dependency audit clean; release
+traceability remains to be rerun after this control-plane update. The next
+authorized action is the live preflight with a disposable CVG database and
+human clinical/repository approval, not a production declaration.

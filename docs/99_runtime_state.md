@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit técnico `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação; commits documentais `7a24051a85881706e809deb3ac17f450c771c0fd`, `9214ea7` e `e5e3193` fecharam auditoria, backlog, SPEC, log, plano, runtime e manifesto; `pnpm verify`, build, E2E, integração, audit de dependências e traceability release passaram localmente. O preflight `pnpm test:integration:live` confirmou bloqueio com código 2 por ausência de `CVG_TEST_DATABASE_URL`.
+- last_completed_action: o commit técnico `de8d8bccbce13e3e4d10597f4b88245ae42601f` fechou a guarda server-side de `itemId`, a compatibilidade de provenance, a CTA condicionada a `nextAction` e a prova E2E de limpeza da justificativa; auditoria, backlog, manifesto, plano e log foram atualizados com a crítica final Kuhn e a evidência desta rodada. `pnpm verify`, build, E2E, integração, audit de dependências e traceability estrutural passaram localmente. O preflight `pnpm test:integration:live` confirmou bloqueio com código 2 por ausência de `CVG_TEST_DATABASE_URL`.
 - next_action: com aprovação e ambiente CVG descartável, fornecer URLs distintas de app/admin, executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA; manter aprovação clínica/humana como gate de publicação e não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
 
 ## BLOQUEIOS
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T13:58:09-03:00
+- last_update: 2026-08-24T14:33:23-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `e5e3193` — auditoria, control plane e ExecPlan da jornada de remediação fechados; preflight live confirmou ausência de ambiente
+- head: `de8d8bccbce13e3e4d10597f4b88245ae42601f` — correção técnica de item/provenance/CTA/E2E fechada; control plane atualizado nesta rodada; preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: clean após commits técnico e documental; não há push/deploy
+- worktree: clean após o commit técnico e o commit documental desta rodada; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-REMEDIATION-048` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/632 testes e 27 arquivos/33 testes ignorados; cobertura 84,92% statements, 81,13% branches, 86,46% functions e 85,67% lines; build nos 12 workspaces, Playwright sintético 28/28, integração 25 pass/33 skips e audit high sem vulnerabilidades conhecidas. PostgreSQL/RLS live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos continuam não observados
+- verification_state: `JOURNEY-REMEDIATION-048` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/634 testes e 27 arquivos/33 testes ignorados; cobertura 84,90% statements, 81,11% branches, 86,41% functions e 85,64% lines; build nos 12 workspaces, Playwright sintético 28/28, integração 25 pass/33 skips e audit high sem vulnerabilidades conhecidas. Kuhn: PASS local condicionado, sem P0 funcional; produção permanece FAIL sem PostgreSQL/RLS live, browser→API→PostgreSQL, teste SQL negativo real, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos
 
 ## REGRAS DE USO
 

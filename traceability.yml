@@ -3870,8 +3870,10 @@ artifacts:
       [
         "packages/application/src/journey-use-cases.ts",
         "packages/application/src/progress-use-cases.ts",
+        "packages/application/src/answer-use-cases.ts",
         "packages/persistence/src/journey-repository.ts",
         "packages/persistence/src/activity-repository.ts",
+        "packages/persistence/src/answer-repository.ts",
         "packages/persistence/src/attempt-repository.ts",
         "packages/contracts/src/journey.ts",
         "apps/api/src/http.ts",
@@ -3881,14 +3883,16 @@ artifacts:
       [
         "packages/application/src/journey-use-cases.test.ts",
         "packages/application/src/progress-use-cases.test.ts",
+        "packages/application/src/answer-use-cases.test.ts",
         "packages/persistence/src/journey-repository.test.ts",
         "packages/persistence/src/activity-repository.test.ts",
+        "packages/persistence/src/answer-repository.test.ts",
         "packages/persistence/src/attempt-repository.db.test.ts",
         "packages/contracts/src/journey.test.ts",
         "apps/api/src/http.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
-    commit: "c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d"
+    commit: "de8d8bccbce13e3e4d10597f4b88245ae42601f"
     artifacts:
       [
         "BRIEFING/04.AUDIT/0531_journey_remediation_cta_audit.md",
@@ -3899,14 +3903,14 @@ artifacts:
     verification:
       [
         "RED: 4 focal failures for missing remediation target, reinforcement start action, missing module binding and invalid module acceptance",
-        "Independent critics: Einstein found 5 P1/P2 journey gaps; Bacon approved local hardening with 3 P2 test/hygiene gaps; all local findings were closed in c16c52e",
+        "Independent critics: Einstein found 5 P1/P2 journey gaps; Bacon approved the previous local hardening with 3 P2 test/hygiene gaps; Hilbert found the answer-item P1 plus provenance/CTA/E2E P2 gaps; Kuhn reviewed de8d8bc as PASS local conditioned with no functional P0",
         "Node 22.22.0 / pnpm 10.33.0",
-        "pnpm verify: 131 files/632 tests passed, 27 files/33 tests skipped; coverage 84.92% statements, 81.13% branches, 86.46% functions, 85.67% lines",
+        "pnpm verify: 131 files/634 tests passed, 27 files/33 tests skipped; coverage 84.90% statements, 81.11% branches, 86.41% functions, 85.64% lines",
         "pnpm build passed across 12 workspaces",
         "pnpm test:e2e: 28/28 synthetic browser scenarios passed",
         "pnpm test:integration: 25 passed/33 skipped without an authorized CVG database",
         "pnpm audit --audit-level=high: no known vulnerabilities found",
-        "live PostgreSQL/RLS, browser→API→PostgreSQL and remote same-SHA workflow were not executed; no release or production claim is made",
+        "live PostgreSQL/RLS, browser→API→PostgreSQL, persistence-negative SQL evidence and remote same-SHA workflow were not executed; no release or production claim is made",
       ]
     status: "verified-with-gaps"
 notes:

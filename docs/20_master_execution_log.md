@@ -173,6 +173,58 @@ inferir competência prática, publicação clínica ou release.
 
 COMPLETED_WITH_GAPS
 
+## 2026-08-24 — JOURNEY-REMEDIATION-048: fechamento pós-crítica de item e provenance
+
+### TIMESTAMP
+
+2026-08-24T14:33:23-03:00
+
+### ACTION
+
+A crítica independente Hilbert encontrou um P1: `itemId` arbitrário podia
+chegar ao salvamento de resposta sem prova de pertencimento à atividade
+publicada do participante. Também apontou P2 de provenance compatível, CTA
+genérica sem guarda explícita de `nextAction` e evidência E2E insuficiente para
+a limpeza da justificativa. O commit
+`de8d8bccbce13e3e4d10597f4b88245ae42601f` corrigiu HTTP, aplicação,
+persistência transacional, vínculo `participant/module/scope`, CTA e E2E.
+
+### RESULT
+
+O typecheck e os 102 testes focais passaram. `pnpm verify` passou com 131
+arquivos/634 testes e 27 arquivos/33 testes ignorados; cobertura 84,90%
+statements, 81,11% branches, 86,41% functions e 85,64% lines. O build passou
+nos 12 workspaces, o E2E passou 28/28, a integração passou 25/33 sem banco CVG
+autorizado, e `pnpm audit --audit-level=high` não encontrou vulnerabilidades
+conhecidas. O teste live foi tentado antes desta rodada e terminou com código 2
+por ausência de `CVG_TEST_DATABASE_URL`; esse bloqueio continua explícito.
+
+### CRITIC
+
+Kuhn revisou o estado pós-`de8d8bc` independentemente: **PASS local
+condicionado**, sem P0 funcional observado; **FAIL para produção** por ausência
+de PostgreSQL/RLS live, browser→API→PostgreSQL, teste de persistência SQL
+negativo real, grants/owners, observabilidade externa e workflow remoto
+same-SHA. A crítica não autoriza release nem substitui aprovação clínica.
+
+### LIMITES
+
+Os testes de persistência e o fluxo E2E usam fixtures/superfícies locais; não
+há prova de dados reais, concorrência, RLS efetivo, restore/failover, provider/
+MFA, piloto ou revisão clínica. `REVISAR_RETENCAO` permanece sem CTA até existir
+atividade de retenção e transição consumível.
+
+### NEXT
+
+Atualizar o manifesto, auditoria, backlog, plano e runtime state com o SHA e a
+evidência desta rodada; depois executar `verify:traceability:release`. Com
+ambiente descartável/autorizado, executar o preflight live e o workflow remoto
+same-SHA; manter aprovação humana clínica e de repositório como gates.
+
+### STATUS
+
+COMPLETED_WITH_GAPS
+
 ## 2026-08-24 — CVG-TEST-DB-REMOTE-001: preflight da prova live
 
 ### TIMESTAMP
