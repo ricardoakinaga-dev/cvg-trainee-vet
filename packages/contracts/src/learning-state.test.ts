@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   appealCreateRequestSchema,
   appealQuerySchema,
-  appealTransitionRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
   feedbackTicketCreateRequestSchema,
@@ -211,14 +210,6 @@ describe("learning state contracts", () => {
         justification: "A justificativa sintética deve ser revisada.",
       }),
     ).toMatchObject({ attemptId: ids.resultId });
-    expect(
-      appealTransitionRequestSchema.parse({
-        appealId: ids.resultId,
-        version: 1,
-        event: "ATRIBUIR_REVISOR",
-        reviewerId: ids.ticketId,
-      }),
-    ).toMatchObject({ event: "ATRIBUIR_REVISOR" });
     expect(() =>
       appealCreateRequestSchema.parse({
         attemptId: ids.resultId,

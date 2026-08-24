@@ -195,7 +195,6 @@ export {
   createAssessmentWorkflowState,
   createFeedbackTicketState,
   createLearningAssignmentState,
-  transitionAppealState,
   transitionAssessmentWorkflowState,
   transitionFeedbackTicketState,
   transitionLearningAssignmentState,
@@ -203,7 +202,6 @@ export {
 export { getParticipantAppeals } from "./appeal-use-cases.js";
 export type {
   AppealCreateCommand,
-  AppealTransitionCommand,
   AssignmentCreateCommand,
   AssignmentTransitionCommand,
   WorkflowCreateCommand,
@@ -302,6 +300,14 @@ export type {
   AppealReviewQueueUseCaseOptions,
   GetAppealReviewQueueCommand,
 } from "./appeal-review-queue-use-cases.js";
+export { transitionAppealReviewState } from "./appeal-review-transition-use-cases.js";
+export type {
+  AppealReviewTransitionCommand,
+  AppealReviewTransitionContext,
+  AppealReviewTransitionEvent,
+  AppealReviewTransitionRepositoryPort,
+  ScopedAppealReview,
+} from "./appeal-review-transition-use-cases.js";
 export { getContinuingEducationReport } from "./continuing-education-report-use-cases.js";
 export type {
   ContinuingEducationReportParticipant,

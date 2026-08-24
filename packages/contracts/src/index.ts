@@ -90,8 +90,8 @@ export type { RotateSessionRequest } from "./session.js";
 export {
   appealCreateRequestSchema,
   appealQuerySchema,
+  appealReviewTransitionRequestSchema,
   appealScopedTransitionRequestSchema,
-  appealTransitionRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
   assessmentWorkflowTransitionRequestSchema,
@@ -111,8 +111,8 @@ export {
 export type {
   AppealCreateRequest,
   AppealQuery,
+  AppealReviewTransitionRequest,
   AppealScopedTransitionRequest,
-  AppealTransitionRequest,
   AssessmentWorkflowCreateRequest,
   AssessmentWorkflowScopedTransitionRequest,
   AssessmentWorkflowTransitionRequest,

@@ -30,7 +30,7 @@ import {
   saveAnswer,
   startAttempt,
   submitAttempt,
-  transitionAppealState,
+  transitionAppealReviewState,
   transitionAssessmentWorkflowState,
   transitionFeedbackTicketState,
   transitionLearningAssignmentState,
@@ -70,6 +70,7 @@ import {
   createReflectionManagementReadRepository,
   createAppealReadRepository,
   createAppealReviewQueueRepository,
+  createAppealReviewTransitionRepository,
   createContentReviewQueueRepository,
   createSessionRepository,
 } from "@cvg/persistence";
@@ -176,6 +177,8 @@ export function createApiRuntime(
   const appealReviewQueueRepository = createAppealReviewQueueRepository(
     integrations.database.db,
   );
+  const appealReviewTransitionRepository =
+    createAppealReviewTransitionRepository(integrations.database.db);
   const rateLimiter = createPostgresRateLimiter(integrations.database.db);
   const audit = createAuditRepository(integrations.database.db);
   const apiDependencies: ApiHttpDependencies = {
@@ -261,8 +264,8 @@ export function createApiRuntime(
       createAppealState(command, learningStateRepository),
     getParticipantAppeals: (command) =>
       getParticipantAppeals(command, appealReadRepository),
-    transitionAppeal: (command) =>
-      transitionAppealState(command, learningStateRepository),
+    transitionAppealReview: (command) =>
+      transitionAppealReviewState(command, appealReviewTransitionRepository),
     getParticipantActivity: (participantId, activityId) =>
       getParticipantActivity(
         { participantId, activityId },

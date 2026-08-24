@@ -244,38 +244,18 @@ export const appealQuerySchema = z
   })
   .strict();
 
-export const appealTransitionRequestSchema = z
+export const appealReviewTransitionRequestSchema = z
   .object({
     appealId: idSchema,
+    scopeId: idSchema,
     version: versionSchema,
-    event: z.enum([
-      "ATRIBUIR_REVISOR",
-      "DECIDIR",
-      "SOLICITAR_RECALCULO",
-      "CONCLUIR_RECALCULO",
-      "ENCERRAR",
-    ]),
-    reviewerId: idSchema.optional(),
+    event: z.enum(["ATRIBUIR_REVISOR", "DECIDIR", "SOLICITAR_RECALCULO"]),
     decision: z
       .enum(["MANTER_RESULTADO", "ANULAR_ITEM", "ALTERAR_RESULTADO"])
       .optional(),
   })
   .strict()
   .superRefine((value, context) => {
-    if (value.event === "ATRIBUIR_REVISOR" && value.reviewerId === undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["reviewerId"],
-        message: "reviewer assignment requires reviewerId",
-      });
-    }
-    if (value.event !== "ATRIBUIR_REVISOR" && value.reviewerId !== undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["reviewerId"],
-        message: "reviewerId is only valid when assigning a reviewer",
-      });
-    }
     if (value.event === "DECIDIR" && value.decision === undefined) {
       context.addIssue({
         code: "custom",
@@ -307,9 +287,8 @@ export const feedbackTicketScopedTransitionRequestSchema =
     .extend({ participantId: idSchema, scopeId: idSchema })
     .strict();
 
-export const appealScopedTransitionRequestSchema = appealTransitionRequestSchema
-  .extend({ participantId: idSchema, scopeId: idSchema })
-  .strict();
+export const appealScopedTransitionRequestSchema =
+  appealReviewTransitionRequestSchema;
 
 export type LearningAssignmentTransitionRequest = z.infer<
   typeof learningAssignmentTransitionRequestSchema
@@ -334,8 +313,8 @@ export type FeedbackTicketTransitionRequest = z.infer<
 >;
 export type AppealCreateRequest = z.infer<typeof appealCreateRequestSchema>;
 export type AppealQuery = z.infer<typeof appealQuerySchema>;
-export type AppealTransitionRequest = z.infer<
-  typeof appealTransitionRequestSchema
+export type AppealReviewTransitionRequest = z.infer<
+  typeof appealReviewTransitionRequestSchema
 >;
 export type LearningAssignmentScopedTransitionRequest = z.infer<
   typeof learningAssignmentScopedTransitionRequestSchema

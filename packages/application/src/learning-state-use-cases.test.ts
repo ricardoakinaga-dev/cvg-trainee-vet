@@ -11,7 +11,6 @@ import {
   createAssessmentWorkflowState,
   createFeedbackTicketState,
   createLearningAssignmentState,
-  transitionAppealState,
   transitionAssessmentWorkflowState,
   transitionFeedbackTicketState,
   transitionLearningAssignmentState,
@@ -28,7 +27,6 @@ const ids = {
   ticketId: "66666666-6666-4666-8666-666666666666",
   appealId: "77777777-7777-4777-8777-777777777777",
   itemId: "88888888-8888-4888-8888-888888888888",
-  reviewerId: "99999999-9999-4999-8999-999999999999",
 };
 
 type Stored = {
@@ -200,27 +198,12 @@ describe("learning state application use cases", () => {
       },
       port,
     );
-    const reviewed = await transitionAppealState(
-      {
-        appealId: ids.appealId,
-        participantId: ids.participantId,
-        scopeId: ids.scopeId,
-        version: appeal.version,
-        event: { type: "ATRIBUIR_REVISOR", reviewerId: ids.reviewerId },
-      },
-      port,
-    );
-
     expect(available).toMatchObject({
       status: "RESULTADO_DISPONIVEL",
       version: 1,
     });
     expect(triaged).toMatchObject({ status: "TRIADO", version: 1 });
-    expect(reviewed).toMatchObject({
-      status: "EM_REVISAO",
-      reviewerId: ids.reviewerId,
-      version: 1,
-    });
+    expect(appeal).toMatchObject({ status: "ABERTA", version: 0 });
   });
 
   it("rejects missing persisted resources before attempting a transition", async () => {
@@ -347,32 +330,6 @@ describe("learning state application use cases", () => {
           event: { type: "RESOLVER" },
         },
         ticketPort,
-      ),
-    ).rejects.toMatchObject({ code: "state_conflict" });
-
-    const appealPort = repository();
-    await createAppealState(
-      {
-        appealId: ids.appealId,
-        participantId: ids.participantId,
-        scopeId: ids.scopeId,
-        attemptId: ids.attemptId,
-        itemId: ids.itemId,
-        justification: "Justificativa sintética.",
-        createdAt: "2026-08-10T17:00:00.000Z",
-      },
-      appealPort,
-    );
-    await expect(
-      transitionAppealState(
-        {
-          appealId: ids.appealId,
-          participantId: ids.participantId,
-          scopeId: ids.scopeId,
-          version: 0,
-          event: { type: "DECIDIR", decision: "MANTER_RESULTADO" },
-        },
-        appealPort,
       ),
     ).rejects.toMatchObject({ code: "state_conflict" });
 
@@ -530,38 +487,5 @@ describe("learning state application use cases", () => {
         ticketGenericFailure,
       ),
     ).rejects.toThrow("synthetic persistence failure");
-
-    const appealStore = new Map<string, AppealState>();
-    const appealBase = repository({ appeals: appealStore });
-    await createAppealState(
-      {
-        appealId: ids.appealId,
-        participantId: ids.participantId,
-        scopeId: ids.scopeId,
-        attemptId: ids.attemptId,
-        itemId: ids.itemId,
-        justification: "Justificativa sintética.",
-        createdAt: "2026-08-10T17:00:00.000Z",
-      },
-      appealBase,
-    );
-    const appealApplicationFailure: LearningStateRepositoryPort = {
-      ...appealBase,
-      saveAppeal: async () => {
-        throw new ApplicationError("state_conflict", "synthetic");
-      },
-    };
-    await expect(
-      transitionAppealState(
-        {
-          appealId: ids.appealId,
-          participantId: ids.participantId,
-          scopeId: ids.scopeId,
-          version: 0,
-          event: { type: "ATRIBUIR_REVISOR", reviewerId: ids.reviewerId },
-        },
-        appealApplicationFailure,
-      ),
-    ).rejects.toMatchObject({ code: "state_conflict" });
   });
 });

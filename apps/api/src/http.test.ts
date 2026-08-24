@@ -2586,7 +2586,7 @@ describe("API HTTP boundary", () => {
       status: "TRIADO" as const,
       version: 1,
     }));
-    const transitionAppeal = vi.fn(async () => ({
+    const transitionAppealReview = vi.fn(async () => ({
       ...appeal,
       status: "EM_REVISAO" as const,
       reviewerId,
@@ -2662,15 +2662,13 @@ describe("API HTTP boundary", () => {
         path: `/api/v1/internal/appeals/${appealId}/transition`,
         body: {
           appealId,
-          participantId,
           scopeId,
           version: 0,
           event: "ATRIBUIR_REVISOR",
-          reviewerId,
         },
       },
       dependencies({
-        transitionAppeal,
+        transitionAppealReview,
         authenticate: async () => staff,
       }),
     );
@@ -2729,6 +2727,174 @@ describe("API HTTP boundary", () => {
       dependencies({ authenticate: async () => staff }),
     );
     expect(missingDependency.status).toBe(500);
+  });
+
+  it("binds internal appeal transition identity to the authenticated reviewer", async () => {
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const appealId = "66666666-6666-4666-8666-666666666666";
+    const reviewerId = "88888888-8888-4888-8888-888888888888";
+    const transitionAppealReview = vi.fn(async () => ({
+      appealId,
+      participantId: "22222222-2222-4222-8222-222222222222",
+      attemptId: "44444444-4444-4444-8444-444444444444",
+      itemId: "77777777-7777-4777-8777-777777777777",
+      justification: "Justificativa sintética.",
+      createdAt: "2026-08-10T17:00:00.000Z",
+      dueAt: "2026-08-19T17:00:00.000Z",
+      status: "EM_REVISAO" as const,
+      version: 1,
+      reviewerId,
+    }));
+    const staff = {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      scopes: [scopeId] as const,
+    };
+
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 0,
+          event: "ATRIBUIR_REVISOR",
+        },
+      },
+      dependencies({
+        transitionAppealReview,
+        authenticate: async () => staff,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(transitionAppealReview).toHaveBeenCalledWith({
+      appealId,
+      scopeId,
+      version: 0,
+      actorId: reviewerId,
+      event: { type: "ATRIBUIR_REVISOR" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("reviewerId");
+  });
+
+  it("rejects client-controlled identities, direct closure, and transition conflicts", async () => {
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const appealId = "66666666-6666-4666-8666-666666666666";
+    const reviewerId = "88888888-8888-4888-8888-888888888888";
+    const staff = {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      scopes: [scopeId] as const,
+    };
+    const transitionAppealReview = vi.fn(async () => ({
+      appealId,
+      participantId: "22222222-2222-4222-8222-222222222222",
+      attemptId: "44444444-4444-4444-8444-444444444444",
+      itemId: "77777777-7777-4777-8777-777777777777",
+      justification: "Justificativa sintética.",
+      createdAt: "2026-08-10T17:00:00.000Z",
+      dueAt: "2026-08-19T17:00:00.000Z",
+      status: "EM_REVISAO" as const,
+      version: 1,
+      reviewerId,
+    }));
+
+    const identityInjection = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 0,
+          event: "ATRIBUIR_REVISOR",
+          participantId: "22222222-2222-4222-8222-222222222222",
+          reviewerId: "99999999-9999-4999-8999-999999999999",
+        },
+      },
+      dependencies({
+        transitionAppealReview,
+        authenticate: async () => staff,
+      }),
+    );
+    expect(identityInjection.status).toBe(422);
+    expect(transitionAppealReview).not.toHaveBeenCalled();
+
+    const directClosure = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 2,
+          event: "ENCERRAR",
+        },
+      },
+      dependencies({
+        transitionAppealReview,
+        authenticate: async () => staff,
+      }),
+    );
+    expect(directClosure.status).toBe(422);
+    expect(transitionAppealReview).not.toHaveBeenCalled();
+
+    const forbiddenTransition = vi.fn(async () => {
+      throw new ApplicationError(
+        "forbidden",
+        "Appeal transition requires the assigned reviewer",
+      );
+    });
+    const forbidden = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 1,
+          event: "DECIDIR",
+          decision: "MANTER_RESULTADO",
+        },
+      },
+      dependencies({
+        transitionAppealReview: forbiddenTransition,
+        authenticate: async () => staff,
+      }),
+    );
+    expect(forbidden.status).toBe(403);
+    expect(forbiddenTransition).toHaveBeenCalledWith({
+      appealId,
+      scopeId,
+      version: 1,
+      actorId: reviewerId,
+      event: { type: "DECIDIR", decision: "MANTER_RESULTADO" },
+    });
+
+    const staleTransition = vi.fn(async () => {
+      throw new ApplicationError("state_conflict", "Learning state changed");
+    });
+    const stale = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/internal/appeals/${appealId}/transition`,
+        body: {
+          appealId,
+          scopeId,
+          version: 0,
+          event: "ATRIBUIR_REVISOR",
+        },
+      },
+      dependencies({
+        transitionAppealReview: staleTransition,
+        authenticate: async () => staff,
+      }),
+    );
+    expect(stale.status).toBe(409);
   });
 
   it("allows only the configured internal correction route and projects no internal actor data", async () => {

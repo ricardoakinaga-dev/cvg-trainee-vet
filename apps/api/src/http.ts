@@ -36,7 +36,7 @@ import {
   type AuthoringReview,
   type EvaluateCurriculumModuleCommand,
   type AppealCreateCommand,
-  type AppealTransitionCommand,
+  type AppealReviewTransitionCommand,
   type GetParticipantAppealsCommand,
   type AssignmentCreateCommand,
   type AssignmentTransitionCommand,
@@ -113,7 +113,7 @@ import {
   assessmentWorkflowScopedTransitionRequestSchema,
   appealCreateRequestSchema,
   appealQuerySchema,
-  appealScopedTransitionRequestSchema,
+  appealReviewTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
   feedbackTicketScopedTransitionRequestSchema,
   learningAssignmentCreateRequestSchema,
@@ -203,8 +203,8 @@ export interface ApiHttpDependencies {
   readonly getParticipantAppeals?: (
     command: GetParticipantAppealsCommand,
   ) => Promise<readonly AppealState[]>;
-  readonly transitionAppeal?: (
-    command: AppealTransitionCommand,
+  readonly transitionAppealReview?: (
+    command: AppealReviewTransitionCommand,
   ) => Promise<AppealState>;
   readonly authenticate: (
     request: ApiHttpRequest,
@@ -2211,10 +2211,10 @@ async function handleTransitionAppeal(
   principal: ApiPrincipal,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
-  if (dependencies.transitionAppeal === undefined) {
+  if (dependencies.transitionAppealReview === undefined) {
     return errorResponse("internal_error", requestId);
   }
-  const parsed = appealScopedTransitionRequestSchema.safeParse(request.body);
+  const parsed = appealReviewTransitionRequestSchema.safeParse(request.body);
   if (!parsed.success || parsed.data.appealId !== appealId) {
     return validationResponse(requestId);
   }
@@ -2227,18 +2227,15 @@ async function handleTransitionAppeal(
   }
   const event = {
     type: parsed.data.event,
-    ...(parsed.data.reviewerId === undefined
-      ? {}
-      : { reviewerId: parsed.data.reviewerId }),
     ...(parsed.data.decision === undefined
       ? {}
       : { decision: parsed.data.decision }),
-  } as AppealTransitionCommand["event"];
-  const state = await dependencies.transitionAppeal({
+  } as AppealReviewTransitionCommand["event"];
+  const state = await dependencies.transitionAppealReview({
     appealId,
-    participantId: parsed.data.participantId,
     scopeId: parsed.data.scopeId,
     version: parsed.data.version,
+    actorId: principal.principalId,
     event,
   });
   return {

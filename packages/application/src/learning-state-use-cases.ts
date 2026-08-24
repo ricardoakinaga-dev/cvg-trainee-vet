@@ -3,11 +3,9 @@ import {
   createAssessmentWorkflowResult,
   createFeedbackTicket,
   createLearningAssignment,
-  transitionAppeal,
   transitionAssessmentWorkflowResult,
   transitionFeedbackTicket,
   transitionLearningAssignment,
-  type AppealEvent,
   type AppealState,
   type AssessmentWorkflowEvent,
   type AssessmentWorkflowState,
@@ -137,14 +135,6 @@ export type AppealCreateCommand = Readonly<{
   readonly itemId: string;
   readonly justification: string;
   readonly createdAt: string;
-}>;
-
-export type AppealTransitionCommand = Readonly<{
-  readonly appealId: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly version: number;
-  readonly event: AppealEvent;
 }>;
 
 function assertContext(context: LearningStateContext): void {
@@ -343,31 +333,5 @@ export async function createAppealState(
     return (await repository.saveAppeal(context, state)).state;
   } catch (error) {
     mapDomainValidation(error);
-  }
-}
-
-export async function transitionAppealState(
-  command: AppealTransitionCommand,
-  repository: LearningStateRepositoryPort,
-): Promise<AppealState> {
-  const context = {
-    participantId: command.participantId,
-    scopeId: command.scopeId,
-  } as const;
-  assertContext(context);
-  assertVersion(command.version);
-  const persisted = await repository.findAppeal(context, command.appealId);
-  if (persisted === null) {
-    throw new ApplicationError("not_found", "Appeal not found");
-  }
-  assertCurrentVersion(persisted.state.version, command.version);
-  try {
-    const state = transitionAppeal(persisted.state, command.event);
-    return (await repository.saveAppeal(context, state)).state;
-  } catch (error) {
-    if (error instanceof Error && error.name.endsWith("DomainError")) {
-      throw new ApplicationError("state_conflict", "Invalid state transition");
-    }
-    mapStateConflict(error);
   }
 }

@@ -192,6 +192,7 @@ export type {
 } from "./reflection-management-repository.js";
 export { createContentReviewQueueRepository } from "./content-review-queue-repository.js";
 export { createAppealReviewQueueRepository } from "./appeal-review-queue-repository.js";
+export { createAppealReviewTransitionRepository } from "./appeal-review-transition-repository.js";
 export {
   AccountRecoveryConflictError,
   createAccountRecoveryTransaction,

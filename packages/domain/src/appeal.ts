@@ -24,8 +24,7 @@ export type AppealEvent =
   | { readonly type: "ATRIBUIR_REVISOR"; readonly reviewerId: string }
   | { readonly type: "DECIDIR"; readonly decision: AppealDecision }
   | { readonly type: "SOLICITAR_RECALCULO" }
-  | { readonly type: "CONCLUIR_RECALCULO" }
-  | { readonly type: "ENCERRAR" };
+  | { readonly type: "CONCLUIR_RECALCULO" };
 
 export class AppealDomainError extends Error {
   public constructor(message: string) {
@@ -116,10 +115,7 @@ const transitions: Readonly<
 > = {
   ABERTA: { ATRIBUIR_REVISOR: "EM_REVISAO" },
   EM_REVISAO: { DECIDIR: "DECIDIDA" },
-  DECIDIDA: {
-    SOLICITAR_RECALCULO: "RECALCULO_PENDENTE",
-    ENCERRAR: "ENCERRADA",
-  },
+  DECIDIDA: { SOLICITAR_RECALCULO: "RECALCULO_PENDENTE" },
   RECALCULO_PENDENTE: { CONCLUIR_RECALCULO: "ENCERRADA" },
   ENCERRADA: {},
 };

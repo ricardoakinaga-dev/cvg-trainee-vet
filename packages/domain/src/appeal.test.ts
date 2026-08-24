@@ -64,4 +64,19 @@ describe("appeal workflow", () => {
       }),
     ).toThrow();
   });
+
+  it("never closes a decided appeal before recalculation completes", () => {
+    const review = transitionAppeal(createAppeal(input), {
+      type: "ATRIBUIR_REVISOR",
+      reviewerId: "reviewer-1",
+    });
+    const decided = transitionAppeal(review, {
+      type: "DECIDIR",
+      decision: "MANTER_RESULTADO",
+    });
+
+    expect(() =>
+      transitionAppeal(decided, { type: "ENCERRAR" } as never),
+    ).toThrow("not allowed");
+  });
 });
