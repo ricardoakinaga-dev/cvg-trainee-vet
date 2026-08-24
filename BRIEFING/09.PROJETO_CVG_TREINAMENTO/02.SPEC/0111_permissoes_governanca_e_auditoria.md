@@ -176,9 +176,30 @@ como `LOCAL` na transação antes do `SELECT`, limpa identidade de participante 
 limpa os demais contextos sensíveis. Os setters de participante, sessão,
 convite, recuperação e provisionamento também limpam o contexto de revisão;
 assim, um contexto não pode vazar entre operações. Nenhuma policy de escrita é
-adicionada e PostgreSQL continua sendo a autoridade transacional.
+adicionada pela fila de leitura; PostgreSQL continua sendo a autoridade
+transacional.
 
 A projeção interna inclui apenas metadados mínimos para localizar/triá-las: IDs
 operacionais, justificativa, datas, estado, versão e metadados opcionais de
 revisor/decisão. Resposta, pontuação, gabarito, fonte, prompt, rubrica e
 alegação de competência prática permanecem fora do `SELECT`, DTO, web e logs.
+
+## 9.2 Transição segura de contestação — APPEAL-038
+
+`REVIEW_APPEAL` também protege a mutação interna, mas a capability de escopo não
+substitui a vinculação do ator. `ATRIBUIR_REVISOR` grava somente o principal
+autenticado como revisor; `DECIDIR` e `SOLICITAR_RECALCULO` falham com `403` se o
+principal não for o revisor persistido. O corpo não pode fabricar
+`participantId` ou `reviewerId`, e um escopo autorizado não libera protocolos de
+outro escopo.
+
+A migration `0023_appeal_review_transition_rls.sql` adiciona policy `UPDATE`
+para `cvg.appeal_review_scope_id`, em complemento à policy `SELECT` da 0022, e
+restringe o contexto de participante a `SELECT`/`INSERT`. O port de transição
+usa predicado de versão otimista e escreve apenas estado/versionamento e
+metadados de revisão permitidos; não altera participante, tentativa, item ou
+justificativa. `CONCLUIR_RECALCULO` e `ENCERRAR` permanecem fora da rota e o
+evento de encerramento direto foi removido do domínio até haver recálculo real,
+preservação de versões e trilha de auditoria consultável. A marca
+`RECALCULO_PENDENTE` não equivale a nota, aprovação clínica ou competência
+prática.

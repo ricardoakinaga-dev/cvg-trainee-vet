@@ -408,7 +408,26 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - testes: `packages/contracts/src/appeal-review-queue.test.ts`; `packages/application/src/appeal-review-queue-use-cases.test.ts`; `packages/persistence/src/appeal-review-queue-repository.test.ts`; `packages/persistence/src/security-context.test.ts`; `apps/api/src/http.test.ts`; `apps/api/src/server.test.ts`; `tests/integration/postgres-appeal-review-queue.test.ts`; `tests/e2e/operations-dashboard.spec.ts`
 - resultado: query strict e projeção allowlisted passam; `REVIEW_APPEAL` exige staff ativo e escopo; persistência usa contexto RLS dedicado, seleciona apenas metadados de `appeals` e ordena por prazo/criação/id; a rota interna e a UI são somente leitura, sem conteúdo protegido; foco 6 arquivos/78 testes, `pnpm verify` 106/508 com 26 skips, build 12 workspaces, E2E completo 22/22, integração configurada 8 arquivos/20 testes PASS com 24 arquivos/26 skips, audit de dependências sem vulnerabilidades e migration 23/23 passaram
 - gaps explícitos: prova PostgreSQL/RLS live sem `CVG_TEST_DATABASE_URL`, atribuição humana, justificativa da decisão, recálculo versionado, preservação de versões, identificação/notificação, auditoria operacional consultável, entrega externa, provider/MFA, aprovação clínica, piloto e operação de produção
-- próxima ação: repetir `pnpm verify` e gates de segurança/exposição/documentação, registrar a crítica independente, ligar o artefato ao commit e executar o release traceability gate; não simular o live ausente
+- próxima ação: disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para executar a prova PostgreSQL/RLS da fila ou selecionar a próxima lacuna local; não simular o live ausente
+
+### APPEAL-038 — Transição interna segura de contestação
+
+- título: permitir autoatribuição, decisão versionada e marcação controlada de recálculo pendente por revisor autenticado
+- descrição: endurecer a rota interna de contestação para que o cliente não forneça `participantId` nem `reviewerId`; o ator autenticado é o único revisor usado na atribuição, somente o revisor atribuído decide ou solicita recálculo, e a persistência atualiza apenas a allowlist de estado da contestação sob contexto RLS dedicado
+- módulo: contestação / revisão interna / contratos / persistência / API / segurança
+- dependência: `APPEAL-037`; `AppealState`; capability `REVIEW_APPEAL`; migration 0022 e contexto `cvg.appeal_review_scope_id`
+- fase: BUILD — Phase 3–5 / governança de contestação
+- risco: crítico — identidade de participante não pode ser escolhida pelo revisor, decisão não pode ser feita por ator não atribuído e nenhum protocolo pode ser encerrado sem o recálculo real
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-061`; `PRD-RF-064`; `PRD-RF-065`; `PRD-RF-080`; `PRD-RF-102`; UC-018; RN-064; SPEC-0106; SPEC-0107; SPEC-0111
+- critério de pronto: RED/GREEN/REFACTOR para contrato strict sem identidades confiadas do cliente, ator atribuído, versão otimista, update allowlisted, RLS de leitura/escrita dedicada, bloqueio de encerramento sem recálculo, HTTP matrix, persistência/application tests, integração live quando autorizada, full regression, audit, traceability e release gate
+- escopo desta fatia: `ATRIBUIR_REVISOR` usa o `principalId` autenticado; `DECIDIR` e `SOLICITAR_RECALCULO` exigem o revisor atribuído; a última ação somente move para `RECALCULO_PENDENTE` e não altera nota, tentativa ou resultado
+- fora desta fatia: justificativa persistida, motor/worker de recálculo versionado e idempotente, snapshot/versões anteriores, encerramento, notificação/identificação de afetados, trilha de auditoria consultável, provider/MFA, aprovação clínica, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0516_appeal_review_transition_audit.md`; commit `91bd3e0`; `packages/contracts/src/learning-state.ts`; `packages/application/src/appeal-review-transition-use-cases.ts`; `packages/persistence/src/appeal-review-transition-repository.ts`; migration `0023_appeal_review_transition_rls.sql`; `apps/api/src/http.ts`; testes de contrato/application/persistência/HTTP e `tests/integration/postgres-appeal-review-transition.test.ts`; `pnpm verify`, build, E2E, integração configurada, audit e migration gate
+- resultado: contrato strict aceita somente escopo, versão e as três ações allowlisted; o actor vem da sessão, o revisor atribuído é obrigatório para decidir/solicitar recálculo, optimistic locking e allowlist de colunas passam; o domínio não permite `DECIDIDA → ENCERRADA` direto, o use case legado foi removido e a policy do participante não autoriza UPDATE; `pnpm verify` passou com 109/522 e 27 skips, cobertura 84,69%/80,62%/85,81%/85,40%, build 12 workspaces e E2E 22/22
+- gaps remanescentes: prova PostgreSQL/RLS live sem `CVG_TEST_DATABASE_URL`/role autorizada; justificativa da decisão, recálculo versionado/idempotente, snapshots/preservação de versões, `CONCLUIR_RECALCULO`, notificação/identificação de afetados, auditoria operacional consultável, provider/MFA, aprovação clínica, piloto e produção
+- próxima ação: executar o release traceability gate em worktree limpo após o commit documental; depois disponibilizar o ambiente PostgreSQL/RLS para prova live ou selecionar a próxima lacuna local; não simular o live ausente
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 

@@ -4912,6 +4912,51 @@ Executar build/E2E completo e audit de dependências; depois commitar o conjunto
 documental e rodar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com
 worktree limpo.
 
+## 2026-08-24 — APPEAL-038: abertura da transição interna segura
+
+### TIMESTAMP
+
+2026-08-24 00:22:00 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto e governança de contestação
+
+### SPRINT
+
+APPEAL-038 / AUD-P1-001 — transição interna segura da contestação
+
+### TASK
+
+APPEAL-2026-08-24-M — remover identidades confiadas do cliente e limitar a
+transição ao revisor autenticado
+
+### ACTION
+
+APPEAL-037 foi reconciliado como `COMPLETED_WITH_GAPS`; o backlog não aponta
+mais para gates já executados. Foi aberto o APPEAL-038 para substituir o
+contexto de participante usado pela transição interna por um contexto dedicado
+de revisor. O escopo congelado cobre autoatribuição, decisão pelo revisor
+atribuído e `RECALCULO_PENDENTE`; não cobre recálculo de tentativa, encerramento,
+justificativa persistida, notificação ou publicação.
+
+### RESULT
+
+Em andamento; REDs ainda serão escritos antes da implementação.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever os testes strict de contrato, ator, versão, update allowlisted e RLS;
+depois implementar a porta interna e executar GREEN/REFACTOR.
+
 ## 2026-08-24 — APPEAL-037: E2E, integração configurada e audit de dependências
 
 ### TIMESTAMP
@@ -5036,3 +5081,63 @@ READY_FOR_NEXT_STEP
 
 Disponibilizar o ambiente PostgreSQL/RLS autorizado para a prova live ou
 selecionar a próxima lacuna local priorizada pelo backlog.
+
+## 2026-08-24 — APPEAL-038: transição interna segura fechada localmente
+
+### TIMESTAMP
+
+2026-08-24 00:44:00 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — governança e transição interna de contestação
+
+### SPRINT
+
+APPEAL-038 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-N — fechar a auditoria local da transição segura
+
+### ACTION
+
+Após a crítica independente, removidos o encerramento direto `DECIDIDA →
+ENCERRADA` do domínio, o use case legado com contexto de participante e o
+contrato inseguro correspondente. A migration 0023 passou a limitar o contexto
+do participante a `SELECT`/`INSERT`; a transição de revisão permanece com actor
+da sessão, optimistic locking, allowlist de colunas e RLS dedicado. O código foi
+registrado em `91bd3e0`.
+
+### RESULT
+
+`pnpm verify` passou com 109 arquivos/522 testes e 27 skips; cobertura 84,69%
+statements, 80,62% branches, 85,81% functions e 85,40% lines. Build passou nos
+12 workspaces; E2E 22/22; integração configurada 8 arquivos/20 testes, com 25
+arquivos/27 testes skipped sem ambiente live; migration 24/24; audit de
+dependências sem vulnerabilidades; traceability estrutural, documentação,
+product-definition e exposure passaram. A prova PostgreSQL/RLS live do cenário
+novo permanece `SKIPPED` sem `CVG_TEST_DATABASE_URL`/role autorizada.
+
+### DECISIONS
+
+O slice fica `COMPLETED_WITH_GAPS` e o runtime state avança para
+`READY_FOR_NEXT_STEP`. O release traceability será executado após o commit
+documental em worktree limpo. Justificativa persistida, recálculo versionado e
+idempotente, snapshots, encerramento pós-recálculo, notificação, auditoria
+consultável, provider/MFA, aprovação clínica, piloto e produção continuam fora
+do escopo.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Comitar o conjunto documental final e executar
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois disponibilizar
+o ambiente PostgreSQL/RLS autorizado ou selecionar a próxima lacuna local.

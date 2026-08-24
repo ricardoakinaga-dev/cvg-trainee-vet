@@ -149,9 +149,14 @@ A primeira fatia de API do item 7 materializa os estados persistidos do item 6 s
 | `PATCH /api/v1/internal/feedback/:ticketId` | triagem/tratamento/resolução com versão | moderador/admin/identidade clínica aprovada no escopo |
 | `POST /api/v1/appeals` | contestação vinculada a tentativa própria | participante dono da tentativa e do escopo |
 | `GET /api/v1/appeals?attemptId=<uuid>` | protocolos redigidos da tentativa própria; query estrita | participante dono da tentativa e do escopo |
-| `POST /api/v1/internal/appeals/:appealId/transition` | atribuição de revisor, decisão e recálculo com versão | revisor/moderador/admin/identidade clínica aprovada no escopo |
+| `POST /api/v1/internal/appeals/:appealId/transition` | autoatribuição, decisão ou solicitação de recálculo pendente com `appealId`, `scopeId`, `version` e evento strict | revisor/moderador/admin/identidade clínica aprovada no escopo; decisão e solicitação exigem o revisor persistido |
 
-As rotas internas recebem o participante-alvo e o escopo somente como contexto validado pelo servidor; a capacidade e o escopo do principal são verificados antes do caso de uso. A API não confia em ocultação visual e nunca permite que o participante chame uma operação interna por alterar a URL.
+As rotas internas recebem somente o escopo necessário como contexto validado pelo
+servidor; a capacidade e o escopo do principal são verificados antes do caso de
+uso. Na transição de contestação, o `participantId` é resolvido do protocolo
+persistido e o revisor é o `principalId` autenticado; nenhum dos dois é aceito
+como identidade escolhida pelo navegador. A API não confia em ocultação visual e
+nunca permite que o participante chame uma operação interna por alterar a URL.
 
 Na primeira fatia de contestação, `POST /api/v1/appeals` só aceita tentativa
 própria em estado corrigido (`CORRIGIDA_AUTOMATICAMENTE` ou
@@ -169,6 +174,14 @@ retorna justificativa, `reviewerId`, resposta, score, gabarito, fonte ou claim
 de competência. A primeira fatia não simula a atribuição de revisor,
 justificativa da decisão, recálculo versionado, identificação/notificação de
 afetados ou entrega externa.
+
+Após a fila interna, `POST /api/v1/internal/appeals/:appealId/transition`
+materializa apenas o limite seguro de APPEAL-038: o revisor autenticado pode
+assumir o protocolo, decidir e solicitar que o recálculo seja executado. A rota
+não recebe `participantId`/`reviewerId`, não expõe o resultado interno e não
+oferece `CONCLUIR_RECALCULO` ou `ENCERRAR` antes do motor de recálculo
+versionado/idempotente. `RECALCULO_PENDENTE` é um estado de espera, não uma nova
+nota ou aprovação clínica.
 
 ## 9. Jornada agregada materializada no item 9
 

@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
-- current_task: APPEAL-2026-08-24-L — fechar APPEAL-037 e entregar a próxima ação
+- current_sprint: APPEAL-038 / AUD-P1-001 — transição interna segura da contestação
+- current_task: APPEAL-2026-08-24-N — fechar a auditoria local da transição segura e registrar a release traceability
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: APPEAL-037 foi fechado localmente como `COMPLETED_WITH_GAPS`: `pnpm verify` 106/508 com 26 skips, cobertura 84,50%/80,35%/85,64%/85,21%, build 12 workspaces, E2E 22/22, integração configurada 8 arquivos/20 testes PASS com 24 arquivos/26 skips, audit de dependências limpo e release traceability limpo nos commits de código `d9dbf2f09c41a763d5607ef61c315f78f587ccb2` e documentação `b772b66b38e0dab43a6d91bc131219e668b8e912`
-- next_action: disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para executar a prova PostgreSQL/RLS da fila ou selecionar a próxima lacuna local priorizada; manter atribuição, decisão, recálculo, notificação, provider/MFA, auditoria operacional, aprovação clínica, piloto e produção como gaps explícitos
+- last_completed_action: APPEAL-038 foi implementado no commit `91bd3e0`: contrato interno sem identidades escolhidas pelo cliente, actor binding, revisor atribuído, optimistic locking, update allowlisted, policy RLS dedicada, policy de participante limitada a SELECT/INSERT, remoção do encerramento direto no domínio e remoção do use case legado; crítica independente encontrou e confirmou a correção desses dois caminhos; `pnpm verify` passou com 109/522 e 27 skips, cobertura 84,69%/80,62%/85,81%/85,40%, build 12 workspaces, E2E 22/22, integração configurada 8 arquivos/20 testes com 25 arquivos/27 skips, audit sem vulnerabilidades e migration 24/24
+- next_action: executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` após o commit documental em worktree limpo; depois disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para a prova PostgreSQL/RLS live ou selecionar a próxima lacuna local priorizada pelo backlog
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado e da fila; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; APPEAL-037-FOLLOWUP — atribuição, decisão, recálculo, notificação e auditoria operacional completa ainda não fazem parte desta fatia
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado, fila e transição; CI-REMOTE-001 — evidência remota existente não cobre o HEAD local desta rodada; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; APPEAL-038-FOLLOWUP — justificativa persistida, recálculo versionado/idempotente, snapshots/preservação de versões, identificação/notificação, auditoria operacional e encerramento pós-recálculo ainda não fazem parte desta fatia
 
 ## DECISÃO HUMANA
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T00:07:06-03:00
+- last_update: 2026-08-24T00:44:00-03:00
 
 ## REGRAS DE USO
 

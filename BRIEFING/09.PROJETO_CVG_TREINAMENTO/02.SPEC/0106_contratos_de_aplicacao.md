@@ -161,3 +161,30 @@ justificativa, datas, estado, versão e metadados internos opcionais; resposta,
 nota, gabarito, fontes, prompt, rubrica e alegação de competência prática não
 entram no contrato. A query não atribui revisor, decide, recalcula, notifica,
 publica ou altera o estado da contestação.
+
+## 9.3 Transição interna segura de contestação — APPEAL-038
+
+`TransitionAppealReview` é um comando separado da query da fila. A entrada
+contém somente `{ appealId, scopeId, version, event }`; `participantId` e
+`reviewerId` não são aceitos do cliente. O caso de uso recebe o `principalId`
+autenticado fora do corpo, usa-o como revisor na autoatribuição e exige que ele
+seja o revisor persistido para `DECIDIR` ou `SOLICITAR_RECALCULO`. O participante
+é sempre obtido do protocolo persistido no escopo solicitado.
+
+O contrato materializado permite somente `ATRIBUIR_REVISOR`, `DECIDIR` e
+`SOLICITAR_RECALCULO`. A sequência verificável é
+`ABERTA → EM_REVISAO → DECIDIDA → RECALCULO_PENDENTE`; cada escrita exige a
+versão corrente e retorna `state_conflict` em concorrência. Esta fatia não
+calcula nota, altera tentativa/resultado, publica decisão clínica, conclui
+recálculo ou encerra protocolo. A justificativa fundamentada, snapshots de
+versão, idempotência de worker e notificações são contratos posteriores.
+
+O port `AppealReviewTransitionRepositoryPort` é diferente do repositório do
+participante. Ele instala `cvg.appeal_review_scope_id` em transação, lê o
+protocolo por `appealId + scopeId` e atualiza somente `status`, `version`,
+`reviewer_id`, `decision` e `updated_at` com predicado da versão anterior. A
+policy `UPDATE` da migration `0023_appeal_review_transition_rls.sql` exige o
+mesmo contexto de revisor; nenhuma coluna de participante, tentativa, item ou
+justificativa é escrita pelo port. A mesma migration reduz a policy antiga do
+participante a `SELECT`/`INSERT`, sem `UPDATE` ou `DELETE` pelo contexto de
+participante.
