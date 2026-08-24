@@ -1260,6 +1260,45 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "OPERATIONAL-SNAPSHOT-034"
+    requirements:
+      ["AUD-P1-004", "SPEC-0113", "SPEC-0118", "OBSERVABILITY-12-01"]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0511_operational_snapshot_audit.md",
+        "BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md",
+        "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "apps/api/src/http.ts",
+        "apps/api/src/server.ts",
+        "packages/observability/src/operations.ts",
+      ]
+    tests:
+      [
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "packages/observability/src/operations.test.ts",
+      ]
+    verification:
+      [
+        "pnpm typecheck",
+        "pnpm lint",
+        "pnpm test:coverage",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm verify:documentation",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
     requirements:
       ["SPEC-0118", "AUD-ITEM-13", "EXPERIENCE-13-01", "WCAG-2.2-AA"]

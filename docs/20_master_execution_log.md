@@ -4126,3 +4126,45 @@ READY_FOR_NEXT_STEP
 ### NEXT
 
 Obter autorização para executar o workflow remoto no SHA atual com digest de artifacts, ou avançar para `AUD-P1-004` em ambiente operacional autorizado; manter gates clínicos, provider/MFA e publicação fora de qualquer inferência técnica.
+
+## 2026-08-23 — OPS-034: bridge de snapshot operacional local
+
+### TIMESTAMP
+
+2026-08-23 21:07:42 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 6 / operação, observabilidade e restore
+
+### SPRINT
+
+OPS-034 / AUD-P1-004
+
+### TASK
+
+Ligar métricas redigidas e health/dependencies a SLOs e alertas consumíveis sem alegar collector ou operação de produção.
+
+### ACTION
+
+Foi congelada a barra em `BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md`. O teste RED falhou pela ausência de `deriveOperationalSnapshot`; em GREEN, `packages/observability/src/operations.ts` passou a derivar disponibilidade de `api.requests.total`, manter p95 como `NO_DATA` sem buckets/quantis e emitir alertas redigidos. A API ganhou `GET /internal/operations`, protegido por `VIEW_INTERNAL_AUDIT`, com estados `READY`, `DEGRADED` e `NOT_READY`; o último retorna 503 com snapshot seguro. Foram adicionados testes HTTP/server/unitários, atualização da SPEC, auditoria 0511 e entrada `OPERATIONAL-SNAPSHOT-034` no manifesto.
+
+### RESULT
+
+Scouts independentes confirmaram que esta era a maior lacuna local segura e recomendaram reflexão digital como próxima fatia de produto. A crítica independente encontrou inicialmente artefatos ainda não commitados, contagem documental incorreta e matriz HTTP incompleta; todos foram corrigidos. A execução serial de cobertura passou com `97` arquivos/`463` testes, `22` skips de arquivo/`24` skips de teste e cobertura `84,59%` statements, `80,36%` branches, `85,48%` functions e `85,32%` lines. Os testes direcionados API/server/observabilidade passaram `65/65`; typecheck, lint, build dos `12` workspaces, E2E `19/19`, audit de dependências, CI contract, migrações, documentação, traceability, exposure e `git diff --check` passaram.
+
+### DECISIONS
+
+`OPS-034` fica `COMPLETED_WITH_GAPS` no recorte local. `AUD-P1-004` não é fechado: collector/OTel, retenção, dashboards históricos, traces distribuídos, restart/crash, carga, múltiplas réplicas, failover e restore operacional continuam dependentes de ambiente e autoridade. O endpoint não altera estado educacional, nota, gabarito, publicação ou aprovação clínica.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Atualizar estado/backlog após o commit rastreável e, em seguida, abrir a fatia de reflexão digital → próxima ação, mantendo apelações, exportação, gates clínicos, provider/MFA e workflow remoto como dependências separadas.

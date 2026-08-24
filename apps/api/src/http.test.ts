@@ -499,6 +499,156 @@ describe("API HTTP boundary", () => {
     expect(denied.status).toBe(403);
   });
 
+  it("exposes a protected operational snapshot with explicit no-data alerts", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    observability.metrics.increment("api.requests.total", {
+      route: "/api/v1/dashboard",
+      status: "200",
+      outcome: "success",
+    });
+    const dependencyStatus = vi.fn(async () => ({
+      status: "DEGRADED" as const,
+      dependencies: {
+        postgres: "UP" as const,
+        qdrant: "DOWN" as const,
+        ai: "DISABLED" as const,
+      },
+    }));
+
+    const response = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      dependencies({
+        observability,
+        dependencyStatus,
+        authenticate: async () => ({
+          principalId: "auditor-1",
+          accountStatus: "ACTIVE",
+          roles: ["AUDITOR"],
+          scopes: [],
+        }),
+      }),
+    );
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        success: true,
+        data: {
+          status: "DEGRADED",
+          dependencies: { postgres: "UP", qdrant: "DOWN", ai: "DISABLED" },
+          slos: [
+            { id: "core.availability", status: "PASS" },
+            { id: "api.read.p95", status: "NO_DATA" },
+            { id: "api.mutation.p95", status: "NO_DATA" },
+          ],
+          alerts: [
+            { code: "qdrant_degraded", severity: "warning" },
+            { code: "slo_no_data", severity: "warning" },
+            { code: "slo_no_data", severity: "warning" },
+          ],
+        },
+      },
+    });
+    expect(dependencyStatus).toHaveBeenCalledOnce();
+    expect(JSON.stringify(response)).not.toMatch(
+      /participant|email|token|cookie|prompt|source|photo|pdf/iu,
+    );
+  });
+
+  it("fails closed when an operational snapshot cannot authenticate or read dependencies", async () => {
+    const unauthenticated = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      dependencies({ authenticate: async () => null }),
+    );
+    expect(unauthenticated.status).toBe(401);
+
+    const forbidden = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      dependencies(),
+    );
+    expect(forbidden.status).toBe(403);
+
+    const unavailable = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      dependencies({
+        observability: createObservability({
+          service: "api",
+          sink: () => undefined,
+        }),
+        dependencyStatus: async () => {
+          throw new Error("dependency details stay internal");
+        },
+        authenticate: async () => ({
+          principalId: "auditor-1",
+          accountStatus: "ACTIVE",
+          roles: ["AUDITOR"],
+          scopes: [],
+        }),
+      }),
+    );
+    expect(unavailable.status).toBe(503);
+    expect(JSON.stringify(unavailable)).not.toContain(
+      "dependency details stay internal",
+    );
+  });
+
+  it("maps ready and not-ready dependency states to explicit operational statuses", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    const authenticateAuditor = async () => ({
+      principalId: "auditor-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["AUDITOR" as const],
+      scopes: [],
+    });
+    const dependenciesFor = (
+      status: "READY" | "NOT_READY",
+    ): ApiHttpDependencies =>
+      dependencies({
+        observability,
+        authenticate: authenticateAuditor,
+        dependencyStatus: async () => ({
+          status,
+          dependencies: {
+            postgres: status === "READY" ? ("UP" as const) : ("DOWN" as const),
+            qdrant: "DISABLED" as const,
+            ai: "DISABLED" as const,
+          },
+        }),
+      });
+
+    const ready = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      dependenciesFor("READY"),
+    );
+    const notReady = await handleApiRequest(
+      { method: "GET", path: "/internal/operations", body: undefined },
+      dependenciesFor("NOT_READY"),
+    );
+
+    expect(ready).toMatchObject({
+      status: 200,
+      body: { success: true, data: { status: "READY" } },
+    });
+    expect(notReady).toMatchObject({
+      status: 503,
+      body: {
+        success: true,
+        data: {
+          status: "NOT_READY",
+          alerts: expect.arrayContaining([
+            { code: "postgres_not_ready", severity: "critical" },
+          ]),
+        },
+      },
+    });
+  });
+
   it("keeps internal authoring metadata behind staff authorization", async () => {
     const getInternalAuthoringRecord = vi.fn(async () => authoringRecord);
     const staffResponse = await handleApiRequest(

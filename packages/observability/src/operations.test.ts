@@ -1,12 +1,98 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deriveOperationalSnapshot,
   evaluateOperationalAlerts,
   evaluateSlo,
   type SloDefinition,
 } from "./operations.js";
+import type { MetricsSnapshot } from "./observability.js";
 
 describe("operational SLO evaluation", () => {
+  it("derives a redacted operational snapshot from process metrics", () => {
+    const metrics: MetricsSnapshot = {
+      counters: [
+        {
+          name: "api.requests.total",
+          value: 995,
+          labels: {
+            route: "/api/v1/dashboard",
+            status: "200",
+            outcome: "success",
+          },
+        },
+        {
+          name: "api.requests.total",
+          value: 5,
+          labels: {
+            route: "/api/v1/dashboard",
+            status: "500",
+            outcome: "server_error",
+          },
+        },
+      ],
+      histograms: [],
+    };
+
+    const snapshot = deriveOperationalSnapshot("READY", metrics);
+
+    expect(snapshot.status).toBe("READY");
+    expect(snapshot.slos).toEqual([
+      expect.objectContaining({
+        id: "core.availability",
+        status: "PASS",
+        observed: 0.995,
+      }),
+      expect.objectContaining({
+        id: "api.read.p95",
+        status: "NO_DATA",
+        observed: null,
+      }),
+      expect.objectContaining({
+        id: "api.mutation.p95",
+        status: "NO_DATA",
+        observed: null,
+      }),
+    ]);
+    expect(snapshot.alerts).toEqual([
+      { code: "slo_no_data", severity: "warning" },
+      { code: "slo_no_data", severity: "warning" },
+    ]);
+    expect(JSON.stringify(snapshot)).not.toMatch(
+      /participant|email|token|cookie|prompt|source|photo|pdf/iu,
+    );
+  });
+
+  it("keeps dependency failure and availability breach visible", () => {
+    const snapshot = deriveOperationalSnapshot("NOT_READY", {
+      counters: [
+        {
+          name: "api.requests.total",
+          value: 1,
+          labels: { outcome: "success" },
+        },
+        {
+          name: "api.requests.total",
+          value: 1,
+          labels: { outcome: "server_error" },
+        },
+      ],
+      histograms: [],
+    });
+
+    expect(snapshot.slos[0]).toMatchObject({
+      id: "core.availability",
+      status: "BREACHED",
+      observed: 0.5,
+    });
+    expect(snapshot.alerts).toEqual([
+      { code: "postgres_not_ready", severity: "critical" },
+      { code: "slo_breached", severity: "critical" },
+      { code: "slo_no_data", severity: "warning" },
+      { code: "slo_no_data", severity: "warning" },
+    ]);
+  });
+
   it("evaluates availability and latency without accepting incomplete samples", () => {
     const availability: SloDefinition = {
       id: "core.availability",

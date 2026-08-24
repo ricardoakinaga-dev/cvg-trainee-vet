@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 13 identidade e segurança operacional
-- current_sprint: TRACEABILITY-033 / AUD-P1-005 — rastreabilidade e controle de mudança do estado auditado
-- current_task: TRACEABILITY-2026-08-23-E — reauditar o HEAD local e separar evidência local de CI remoto
+- current_sprint: OPS-034 / AUD-P1-004 — snapshot operacional e alertas redigidos
+- current_task: OPS-2026-08-23-A — implementar snapshot operacional local em TDD
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: os 125 paths técnicos foram congelados em `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; o manifesto/auditoria foram fechados em `b4bf8b9946578faf2d1f65053587a382efdc5a6c`; o gate release local passou com worktree limpo; `pnpm verify`, build, E2E 19/19 e audit de dependências passaram novamente
-- next_action: obter workflow remoto e digest de artifacts para `b4bf8b9946578faf2d1f65053587a382efdc5a6c`, se houver autorização, ou iniciar `AUD-P1-004` em ambiente operacional autorizado
+- last_completed_action: `OPS-034` implementou e verificou o bridge `GET /internal/operations` em TDD; cobertura serial, typecheck, lint, build, E2E 19/19, audit, documentação, traceability e exposure passaram; a crítica independente foi atendida e os gates remotos, de ambiente e clínicos continuam separados
+- next_action: criar o commit rastreável do recorte OPS-034, executar o gate release local com worktree limpo e depois abrir a fatia de reflexão digital → próxima ação
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T20:36:00-03:00
+- last_update: 2026-08-23T21:07:42-03:00
 
 ## REGRAS DE USO
 

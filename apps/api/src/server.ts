@@ -154,6 +154,9 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/internal/metrics") {
     return "/internal/metrics";
   }
+  if (method === "GET" && path === "/internal/operations") {
+    return "/internal/operations";
+  }
   if (method === "POST" && path === "/api/v1/invitations/accept") {
     return "/api/v1/invitations/accept";
   }

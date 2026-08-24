@@ -1,3 +1,5 @@
+import type { MetricsSnapshot } from "./observability.js";
+
 export type SloDefinition = Readonly<{
   readonly id: string;
   readonly kind: "availability" | "latency_p95_ms";
@@ -31,6 +33,34 @@ export type OperationalAlertInput = Readonly<{
   readonly dependencyStatus: DependencyOperationalStatus;
   readonly slos: readonly SloEvaluation[];
 }>;
+
+export type OperationalSnapshot = Readonly<{
+  readonly status: DependencyOperationalStatus;
+  readonly slos: readonly SloEvaluation[];
+  readonly alerts: readonly OperationalAlert[];
+}>;
+
+const defaultOperationalSlos = [
+  {
+    id: "core.availability",
+    kind: "availability" as const,
+    target: 0.995,
+  },
+  {
+    id: "api.read.p95",
+    kind: "latency_p95_ms" as const,
+    target: 800,
+  },
+  {
+    id: "api.mutation.p95",
+    kind: "latency_p95_ms" as const,
+    target: 1_500,
+  },
+] satisfies readonly SloDefinition[];
+
+export const DEFAULT_OPERATIONAL_SLOS: readonly SloDefinition[] = Object.freeze(
+  defaultOperationalSlos.map((definition) => Object.freeze(definition)),
+);
 
 function assertFiniteNonNegative(value: number, field: string): void {
   if (!Number.isFinite(value) || value < 0) {
@@ -139,4 +169,59 @@ export function evaluateOperationalAlerts(
     }
   }
   return Object.freeze(alerts.map((alert) => Object.freeze(alert)));
+}
+
+function requestMeasurement(metrics: MetricsSnapshot): SloMeasurement {
+  return metrics.counters.reduce(
+    (measurement, counter) => {
+      if (
+        counter.name !== "api.requests.total" ||
+        !Number.isFinite(counter.value) ||
+        counter.value < 0
+      ) {
+        return measurement;
+      }
+      return {
+        goodEvents:
+          measurement.goodEvents +
+          (counter.labels.outcome === "success" ? counter.value : 0),
+        totalEvents: measurement.totalEvents + counter.value,
+      };
+    },
+    { goodEvents: 0, totalEvents: 0 },
+  );
+}
+
+function requiredDefinition(id: string): SloDefinition {
+  const definition = DEFAULT_OPERATIONAL_SLOS.find((item) => item.id === id);
+  if (definition === undefined) {
+    throw new Error(`missing operational SLO: ${id}`);
+  }
+  return definition;
+}
+
+export function deriveOperationalSnapshot(
+  dependencyStatus: DependencyOperationalStatus,
+  metrics: MetricsSnapshot,
+): OperationalSnapshot {
+  const availability = evaluateSlo(
+    requiredDefinition("core.availability"),
+    requestMeasurement(metrics),
+  );
+  const slos = Object.freeze([
+    availability,
+    evaluateSlo(requiredDefinition("api.read.p95"), {
+      goodEvents: 0,
+      totalEvents: 0,
+    }),
+    evaluateSlo(requiredDefinition("api.mutation.p95"), {
+      goodEvents: 0,
+      totalEvents: 0,
+    }),
+  ]);
+  return Object.freeze({
+    status: dependencyStatus,
+    slos,
+    alerts: evaluateOperationalAlerts({ dependencyStatus, slos }),
+  });
 }

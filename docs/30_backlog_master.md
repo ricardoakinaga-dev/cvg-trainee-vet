@@ -612,8 +612,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 6
 - risco: alto — não há prova suficiente de operação ou recuperação
 - impacto: alto
-- status: PENDENTE
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; 0412–0418 e 0421
+- status: IN_PROGRESS
+- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; 0412–0418 e 0421; `BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md`
+- recorte atual: snapshot operacional local protegido, derivação de SLO/alertas a partir de sinais redigidos e testes negativos; não fecha collector/OTel, retenção, carga, failover, restore agendado ou ambiente produtivo
+- critério desta iteração: endpoint interno com autorização server-side, `NO_DATA` explícito, estados de dependência redigidos, ausência de payload sensível e regressão completa verde
+- resultado atual: `OPS-034` implementou `deriveOperationalSnapshot` e `GET /internal/operations`; `READY`/`DEGRADED` retornam 200, `NOT_READY` retorna 503 com snapshot seguro; p95 sem quantis permanece `NO_DATA`
+- verificação: `pnpm verify`/cobertura serial passaram com 97 arquivos/463 testes e 84,59% statements, 80,36% branches, 85,48% functions e 85,32% lines; build 12 workspaces; E2E 19/19; audit, documentação, traceability e exposure passaram
+- próxima ação: executar o commit rastreável e o gate release local; depois avançar para reflexão digital → próxima ação sem fechar os gates externos
 
 ### AUD-P1-005 — Congelamento e rastreabilidade da construção
 

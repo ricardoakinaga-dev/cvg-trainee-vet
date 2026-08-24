@@ -119,7 +119,10 @@ import {
   type ApiErrorEnvelope,
   type ApiSuccessEnvelope,
 } from "@cvg/contracts";
-import type { Observability } from "@cvg/observability";
+import {
+  deriveOperationalSnapshot,
+  type Observability,
+} from "@cvg/observability";
 import type { DependencyStatus } from "@cvg/integrations";
 
 export type ApiHttpRequest = Readonly<{
@@ -2040,6 +2043,48 @@ async function handleApiRequestCore(
         return {
           status: status.status === "NOT_READY" ? 503 : 200,
           body: apiSuccessResponse(status, requestId),
+        };
+      } catch {
+        return errorResponse("internal_error", requestId, 503);
+      }
+    }
+
+    if (request.method === "GET" && request.path === "/internal/operations") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null) {
+        return errorResponse("unauthenticated", requestId);
+      }
+      const authorized = canAccess({
+        principalId: principal.principalId,
+        accountStatus: principal.accountStatus,
+        roles: principal.roles,
+        capability: "VIEW_INTERNAL_AUDIT",
+        scopes: principal.scopes,
+      });
+      if (!authorized) return errorResponse("forbidden", requestId);
+      if (
+        dependencies.dependencyStatus === undefined ||
+        dependencies.observability === undefined
+      ) {
+        return errorResponse("internal_error", requestId, 503);
+      }
+      try {
+        const dependencyStatus = await dependencies.dependencyStatus();
+        const snapshot = deriveOperationalSnapshot(
+          dependencyStatus.status,
+          dependencies.observability.metrics.snapshot(),
+        );
+        return {
+          status: dependencyStatus.status === "NOT_READY" ? 503 : 200,
+          body: apiSuccessResponse(
+            {
+              status: snapshot.status,
+              dependencies: dependencyStatus.dependencies,
+              slos: snapshot.slos,
+              alerts: snapshot.alerts,
+            },
+            requestId,
+          ),
         };
       } catch {
         return errorResponse("internal_error", requestId, 503);

@@ -74,6 +74,14 @@ O item 12 materializou e verificou /health/dependencies, com estado agregado e r
 
 @cvg/observability agora renderiza contadores/histogramas allowlisted em formato Prometheus e a rota interna exige VIEW_INTERNAL_AUDIT. evaluateSlo e evaluateOperationalAlerts tratam PASS, BREACHED, NO_DATA, falha crítica do PostgreSQL e degradação do Qdrant. Testes confirmam redaction de participant/source/photo/prompt/token e ausência de payload clínico nos labels.
 
+O bridge local `deriveOperationalSnapshot` liga os contadores `api.requests.total` ao
+estado de dependências e expõe `GET /internal/operations` para a mesma capability
+interna. A disponibilidade é calculada somente de eventos `success`; p95 de leitura e
+mutação permanece `NO_DATA` até o runtime ter buckets/quantis, abrindo alerta explícito
+em vez de inferir latência a partir de `min/max`. A resposta contém apenas estado
+redigido, avaliações e códigos de alerta; não é collector, retenção ou tracing
+distribuído.
+
 O runbook BRIEFING/08.RUNTIME/0804_observability_operational_contract.md define collector, retenção, dashboard agregado, alertas, correlação e limites de trace. scripts/verify-postgres-restore.mjs e tests/integration/postgres-restore.test.ts executam pg_dump/pg_restore em destino temporário isolado com marcador sintético; a execução local desta janela recuperou o marcador e mediu RTO de 2.581 ms. Essa prova é local e descartável: collector/OTel externo, retenção efetiva, dashboard, traces distribuídos, crash/failover, carga e múltiplas réplicas continuam pendentes.
 
 ## 11. Interface operacional web verificável

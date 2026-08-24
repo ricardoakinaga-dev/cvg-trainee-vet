@@ -53,6 +53,9 @@ describe("API node server adapter", () => {
       "/health/dependencies",
     );
     expect(routeTemplate("GET", "/internal/metrics")).toBe("/internal/metrics");
+    expect(routeTemplate("GET", "/internal/operations")).toBe(
+      "/internal/operations",
+    );
     expect(routeTemplate("POST", "/api/v1/invitations/accept")).toBe(
       "/api/v1/invitations/accept",
     );
@@ -277,8 +280,14 @@ describe("API node server adapter", () => {
       const exported = await fetch(`${baseUrl}/internal/metrics`, {
         headers: { "x-test-auditor": "true" },
       });
+      const operations = await fetch(`${baseUrl}/internal/operations`, {
+        headers: { "x-test-auditor": "true" },
+      });
       const exportedBody = (await exported.json()) as {
         data: { format: string; text: string };
+      };
+      const operationsBody = (await operations.json()) as {
+        data: { status: string; alerts: readonly unknown[] };
       };
 
       expect(health.status).toBe(200);
@@ -291,6 +300,13 @@ describe("API node server adapter", () => {
       expect(exportedBody.data.format).toBe("prometheus");
       expect(exportedBody.data.text).toContain("api_requests_total");
       expect(exportedBody.data.text).not.toContain("participant");
+      expect(operations.status).toBe(200);
+      expect(operationsBody.data.status).toBe("DEGRADED");
+      expect(operationsBody.data.alerts).toEqual(
+        expect.arrayContaining([
+          { code: "qdrant_degraded", severity: "warning" },
+        ]),
+      );
     } finally {
       await api.close();
     }

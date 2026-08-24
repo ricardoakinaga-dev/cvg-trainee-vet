@@ -6,6 +6,8 @@
 ## Exporter e collector
 
 - A API expõe GET /internal/metrics somente para AUDITOR/ADMIN com a capability VIEW_INTERNAL_AUDIT.
+- A API expõe GET /internal/operations somente para a mesma capability; o snapshot liga
+  dependências redigidas, disponibilidade e alertas sem devolver amostras individuais.
 - A resposta contém um envelope interno com format: prometheus e texto Prometheus produzido por @cvg/observability; nomes e labels são normalizados por allowlist e não aceitam identificadores de participante.
 - O collector de ambiente deve consultar a rota com credencial de serviço somente leitura, extrair data.text, rejeitar resposta sem format: prometheus e enviar os samples ao armazenamento de métricas do ambiente. O collector não deve encaminhar cookies de participante.
 - Logs saem como JSON já redigido pelo sink do processo. O agente de coleta deve transportar stdout/stderr como registro estruturado, sem reidratar campos removidos.
@@ -63,6 +65,9 @@ O teste de restauração usa somente um marcador sintético, pg_dump custom, pg_
 
 ## Gaps que continuam bloqueando release
 
+- O bridge `/internal/operations` é evidência local de derivação e não substitui o
+  collector nem cria histórico; p95 permanece `NO_DATA` enquanto não houver buckets ou
+  quantis.
 - collector/OTel, dashboards e retenção precisam ser configurados e testados no ambiente operacional real;
 - restart/crash de processo, carga, múltiplas réplicas e failover ainda não foram medidos;
 - provider produtivo de embedding/IA, navegador contra API real, conteúdo clínico aprovado e commit rastreável continuam gates independentes;
