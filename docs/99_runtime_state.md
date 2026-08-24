@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: JOURNEY-REL-001 / AUD-P1-004 — vínculo explícito assignment→atividade e provenance
-- current_task: fechar o commit documental e executar traceability release; depois preparar a prova live de assignment→atividade com RLS/rollback/concorrência
+- current_task: preparar a prova live de assignment→atividade com RLS/rollback/concorrência quando o ambiente autorizado estiver disponível
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: `JOURNEY-REL-001` foi implementado no commit de código `9b1b975d62760142238b6b19f03e207181f59a87`; a regressão passou com 125 arquivos/574 testes, 30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, build 12 workspaces, E2E 26/26, integração 8/20 com 27/30 skips, audit high sem vulnerabilidades e gates estáticos/documentais/exposure verdes. O manifesto e os documentos de fechamento estão preparados para o commit documental.
-- next_action: revisar o diff documental, criar o commit de fechamento e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois preparar a prova live de RLS/rollback/concorrência sem declarar release/100% enquanto ambiente, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: `JOURNEY-REL-001` foi fechado no código `9b1b975d62760142238b6b19f03e207181f59a87` e no commit documental `2972fa0b64023551a5aaacd668b3c1ae5176409d`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo. A regressão passou com 125 arquivos/574 testes, 30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, build 12 workspaces, E2E 26/26, integração 8/20 com 27/30 skips e audit high sem vulnerabilidades.
+- next_action: preparar a prova live de RLS/rollback/concorrência com `CVG_TEST_DATABASE_URL` e autoridade de ambiente; não declarar release/100% enquanto RLS live, sincronização posterior, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T06:17:32-03:00
+- last_update: 2026-08-24T06:19:23-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `9b1b975d62760142238b6b19f03e207181f59a87` (commit de código; fechamento documental em andamento)
-- origin: `fbbc692` (`origin/main`), local `main` ahead 48 commits
-- worktree: contém somente a atualização documental de fechamento; não há push/deploy
+- head: `2972fa0b64023551a5aaacd668b3c1ae5176409d` (commit documental final da fatia)
+- origin: `fbbc692` (`origin/main`), local `main` ahead 51 commits
+- worktree: limpo; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-REL-001` PASS LOCAL: `pnpm verify` 125/574/30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, build 12 workspaces, E2E 26/26, integração 8/20 +27/30 skips, audit high, secrets, architecture, documentation, product-definition, exposure, migrations 27/27 e `git diff --check` passaram; release traceability será executada após o commit documental, RLS/rollback/concorrência live, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observados
+- verification_state: `JOURNEY-REL-001` PASS LOCAL: `pnpm verify` 125/574/30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, build 12 workspaces, E2E 26/26, integração 8/20 +27/30 skips, audit high, secrets, architecture, documentation, product-definition, exposure, migrations 27/27, `git diff --check` e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passaram; RLS/rollback/concorrência live, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observados
 
 ## REGRAS DE USO
 

@@ -50,9 +50,10 @@ a aprovação clínica, piloto ou release produtivo.
   E2E e regressão completa passaram; o código está no commit
   `9b1b975d62760142238b6b19f03e207181f59a87`, e a prova live permanece skipped
   sem banco.
-- [ ] (2026-08-24T06:17:32-03:00) Fechar o commit documental de
-  `JOURNEY-REL-001` e executar o gate release de rastreabilidade em worktree
-  limpo; depois preparar a prova live de RLS/rollback/concorrência.
+- [x] (2026-08-24T06:19:23-03:00) Fechar o commit documental de
+  `JOURNEY-REL-001` (`2972fa0b64023551a5aaacd668b3c1ae5176409d`) e executar o
+  gate release de rastreabilidade em worktree limpo; o gate passou. A próxima
+  ação é preparar a prova live de RLS/rollback/concorrência.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
@@ -255,7 +256,7 @@ fonte transacional; Qdrant é índice interno reconstruível; IA é server-side,
 estruturada, opcional e nunca decide estado, nota, gabarito, publicação,
 permissão ou aprovação.
 
-O HEAD atual (`1350452`) já contém, entre outras fatias, dashboard/trilha
+O HEAD atual (`2972fa0`) já contém, entre outras fatias, dashboard/trilha
 digital, perfil diagnóstico formativo, ciclo administrativo, CPD interno
 bounded, fila editorial, recovery controlado, RLS de identidade, auditoria
 negativa, snapshot operacional, reflexão, apelações 036–042, relatório paginado

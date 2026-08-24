@@ -6508,3 +6508,34 @@ Criar o commit documental, executar
 `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` e, se verde, registrar
 `READY_FOR_NEXT_STEP`; em seguida preparar a evidência live de
 RLS/rollback/concorrência quando houver ambiente autorizado.
+
+## 2026-08-24 — JOURNEY-REL-001: fechamento local rastreável
+
+### TIMESTAMP
+
+2026-08-24T06:19:23-03:00
+
+### ACTION
+
+Criado o commit documental `2972fa0b64023551a5aaacd668b3c1ae5176409d` para
+fechar a fatia implementada no código `9b1b975d62760142238b6b19f03e207181f59a87`.
+
+### RESULT
+
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo: os artefatos atuais resolvem para commits alcançáveis e paths rastreados.
+O estado, backlog, ExecPlan e manifesto estão reconciliados. Não houve push,
+deploy, provider, credencial ou mutação externa.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — `JOURNEY-REL-001` concluído localmente com gaps
+explícitos; não é release produtivo nem aprovação clínica.
+
+### NEXT
+
+Quando `CVG_TEST_DATABASE_URL` e a autoridade de ambiente estiverem disponíveis,
+executar os testes live com papel de aplicação sem `SUPERUSER/BYPASSRLS`,
+rollback/concorrência e cleanup administrativo separado. Manter pendentes a
+sincronização posterior de estados, publicação clínica, piloto, provider/MFA e
+assurance operacional.
