@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit técnico `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação e commit documental `7a24051a85881706e809deb3ac17f450c771c0fd` fechou auditoria, backlog, SPEC, log, runtime e manifesto; `pnpm verify`, build, E2E, integração, audit de dependências e traceability release passaram localmente.
+- last_completed_action: commit técnico `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação; commits documentais `7a24051a85881706e809deb3ac17f450c771c0fd` e `9214ea7` fecharam auditoria, backlog, SPEC, log, plano, runtime e manifesto; `pnpm verify`, build, E2E, integração, audit de dependências e traceability release passaram localmente.
 - next_action: executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA somente em ambiente CVG descartável/autorizado, mantendo aprovação clínica/humana como gate de publicação; não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
 
 ## BLOQUEIOS
@@ -32,11 +32,11 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T13:54:48-03:00
+- last_update: 2026-08-24T13:56:22-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `7a24051a85881706e809deb3ac17f450c771c0fd` — auditoria e control plane documental da jornada de remediação fechados sobre o hardening técnico `c16c52e`
+- head: `9214ea7` — auditoria, control plane e ExecPlan da jornada de remediação fechados sobre o hardening técnico `c16c52e`
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após commits técnico e documental; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
