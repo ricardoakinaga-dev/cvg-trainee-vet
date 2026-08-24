@@ -32,11 +32,11 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T15:13:26-03:00
+- last_update: 2026-08-24T15:14:35-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `afdb5a2` — commit documental mais recente; o último commit técnico da autorização curricular e do hardening de privilégios é `6481add`; preflight live continua sem ambiente
+- head: contexto técnico `6481add`; commits documentais desta rodada `396fa23`, `afdb5a2` e `423e751`; o HEAD Git atual deve ser confirmado pelo histórico, e o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após o commit técnico e o commit documental desta rodada; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
