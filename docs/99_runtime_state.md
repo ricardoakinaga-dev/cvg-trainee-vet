@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
 - current_sprint: AUDIT-TRAIL-034 — consulta escopada da trilha de auditoria e governança operacional
-- current_task: implementar TDD a leitura UC-017/RF-080–082 com contrato, capability, cursor bounded, RLS contextual, `GET /api/v1/audit`, painel de operações e testes; depois executar crítica independente e regressão local
+- current_task: manter a fatia local de UC-017/RF-080–082 pronta para prova live autorizada e seguir para os gaps de auditoria, feedback/apelação e conteúdo clínico sem declarar release prematuramente
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: recuperação documental confirmou a ausência de `GetAuditTrail`, rota `/api/v1/audit` e surface de operações apesar de UC-017/RF-080–082 já aprovados; `AUDIT-TRAIL-034` foi aberto com quality bar congelada e SPEC 0106/0107/0111 atualizada. O recorte anterior `ACTIVITY-RLS-047` permanece localmente verificado, sem prova live.
-- next_action: escrever RED de contratos, authorization/use case, repository/contexto e API; não tocar no PostgreSQL local de outro sistema e não simular evidência live
+- last_completed_action: commit `1652991cf78e09ff4d67eb02bc85c8bf5c6bc440` fechou localmente `AUDIT-TRAIL-034`: contratos, capability, caso de uso, cursor bounded, repository/contexto RLS, `GET /api/v1/audit`, painel de operações, writer hardening e testes. A crítica independente foi executada e corrigida; `pnpm verify`, build e Playwright sintético passaram.
+- next_action: com banco CVG descartável autorizado, aplicar migration `0033`, executar PostgreSQL/RLS com role sem `SUPERUSER/BYPASSRLS` e browser→web→API→PostgreSQL; se o ambiente continuar indisponível, avançar `AUD-P1-001` nos fluxos de feedback/apelação e manter HMAC como hardening P2 separado
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T10:18:00-03:00
+- last_update: 2026-08-24T11:41:51-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `106dc42` antes da abertura documental de `AUDIT-TRAIL-034`; código anterior `b85b0595040c315b48a25388681550330cd59e85`
+- head: `1652991cf78e09ff4d67eb02bc85c8bf5c6bc440` — implementação e auditoria local de `AUDIT-TRAIL-034`
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: clean após os commits técnico, documental, runtime e gates finais locais; não há push/deploy
+- worktree: clean após o commit técnico e o fechamento do control plane; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUDIT-TRAIL-034` IN_PROGRESS: quality bar e contrato documental congelados; implementação e RED ainda pendentes. O baseline anterior passou migrations 33/33, unitário 117/572, contrato RLS 2/2, integração 23 pass/33 skips, typecheck, lint, Prettier, documentação, traceability estrutural/release, sintaxe do fixture, descoberta Playwright e diff-check; live PostgreSQL/RLS, E2E autoral browser→API→PostgreSQL, mesmo-SHA remoto, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
+- verification_state: `AUDIT-TRAIL-034` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/623 testes e 27 arquivos/33 testes ignorados; cobertura 84,79% statements, 80,92% branches, 86,29% functions e 85,54% lines; build, integração sem banco 25 pass/33 skips, Playwright sintético 26/26, audit de dependências, secrets, migrations, typecheck, lint, formato e diff-check passaram. PostgreSQL/RLS live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 

@@ -3765,6 +3765,71 @@ artifacts:
         "live PostgreSQL/RLS was not executed because no authorized CVG database URL was present",
       ]
     status: "verified-with-gaps"
+  - id: "AUDIT-TRAIL-034"
+    requirements:
+      [
+        "PRD-RF-080",
+        "PRD-RF-081",
+        "PRD-RF-082",
+        "PRD-UC-017",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/04.AUDIT/0530_audit_trail_read_audit.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/audit-trail.ts",
+        "packages/application/src/audit-trail-use-cases.ts",
+        "packages/application/src/audit.ts",
+        "packages/application/src/attempt-use-cases.ts",
+        "packages/application/src/answer-use-cases.ts",
+        "packages/persistence/src/audit-trail-repository.ts",
+        "packages/persistence/src/audit-repository.ts",
+        "packages/persistence/src/security-context.ts",
+        "packages/persistence/drizzle/0033_audit_read_scope_hardening.sql",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/operations/page.tsx",
+      ]
+    tests:
+      [
+        "packages/contracts/src/audit-trail.test.ts",
+        "packages/application/src/audit-trail-use-cases.test.ts",
+        "packages/application/src/audit.test.ts",
+        "packages/persistence/src/audit-trail-repository.test.ts",
+        "packages/persistence/src/audit-repository.test.ts",
+        "apps/api/src/audit-trail-http.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/audit-trail-governance.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "1652991cf78e09ff4d67eb02bc85c8bf5c6bc440"
+    artifacts: ["BRIEFING/04.AUDIT/0530_audit_trail_read_audit.md"]
+    verification:
+      [
+        "Node 22.22.0 / pnpm 10.33.0",
+        "pnpm verify: 131 files/623 tests passed, 27 files/33 tests skipped; coverage 84.79% statements, 80.92% branches, 86.29% functions, 85.54% lines",
+        "pnpm build passed",
+        "pnpm test:integration: 25 passed/33 skipped without an authorized CVG database",
+        "pnpm exec playwright test: 26/26 passed with synthetic operational fixtures",
+        "pnpm audit --audit-level=high: no known vulnerabilities",
+        "live PostgreSQL/RLS and browser→API→PostgreSQL were not executed; no release or production claim is made",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."
