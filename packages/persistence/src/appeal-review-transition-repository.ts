@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { and, eq } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
@@ -11,9 +13,11 @@ import {
   LearningStatePersistenceConflictError,
   type AppealRowShape,
 } from "./learning-state-repository.js";
-import { appeals } from "./schema.js";
+import { createOutboxInsert } from "./attempt-repository.js";
+import { appeals, outboxEvents } from "./schema.js";
 import type * as schema from "./schema.js";
 import { setDatabaseAppealReviewContext } from "./security-context.js";
+import { appendAppealReviewHistory } from "./appeal-review-history.js";
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
@@ -101,6 +105,17 @@ export function createAppealReviewTransitionRepository(
         throw new TypeError("appeal review transition requires version >= 1");
       }
       return withReviewContext(db, context.scopeId, async (executor) => {
+        const previous = await findScopedAppeal(
+          executor,
+          context.scopeId,
+          row.id,
+        );
+        if (previous === null) {
+          throw new LearningStatePersistenceConflictError(
+            "appeal review was not found before transition",
+          );
+        }
+        const occurredAt = new Date();
         const updated = await executor
           .update(appeals)
           .set({
@@ -130,6 +145,40 @@ export function createAppealReviewTransitionRepository(
         if (saved === null) {
           throw new LearningStatePersistenceConflictError(
             "appeal review was not persisted",
+          );
+        }
+        await appendAppealReviewHistory(executor, {
+          scopeId: context.scopeId,
+          previous: previous.state,
+          next: saved.state,
+          createdAt: occurredAt,
+        });
+        if (saved.state.status === "RECALCULO_PENDENTE") {
+          if (
+            saved.state.decision !== "MANTER_RESULTADO" ||
+            saved.state.decisionCorrelationId === undefined
+          ) {
+            throw new LearningStatePersistenceConflictError(
+              "bounded appeal recalculation metadata is incomplete",
+            );
+          }
+          await executor.insert(outboxEvents).values(
+            createOutboxInsert({
+              eventId: randomUUID(),
+              eventType: "appeal.recalculation.requested.v1",
+              aggregateType: "appeal",
+              aggregateId: saved.state.appealId,
+              occurredAt: occurredAt.toISOString(),
+              schemaVersion: 1,
+              correlationId: saved.state.decisionCorrelationId,
+              payload: {
+                appeal_id: saved.state.appealId,
+                scope_id: context.scopeId,
+                attempt_id: saved.state.attemptId,
+                appeal_version: String(saved.state.version),
+                decision: saved.state.decision,
+              },
+            }),
           );
         }
         return saved;

@@ -38,7 +38,7 @@ describe("appeal workflow", () => {
     });
     const decided = transitionAppeal(review, {
       type: "DECIDIR",
-      decision: "ANULAR_ITEM",
+      decision: "MANTER_RESULTADO",
       rationale: "Decisão sintética baseada na revisão independente.",
       decidedAt: "2026-08-07T17:01:00.000Z",
       correlationId: "correlation-1",
@@ -51,7 +51,7 @@ describe("appeal workflow", () => {
     });
 
     expect(closed.status).toBe("ENCERRADA");
-    expect(closed.decision).toBe("ANULAR_ITEM");
+    expect(closed.decision).toBe("MANTER_RESULTADO");
     expect(closed.version).toBe(4);
     expect(review.status).toBe("EM_REVISAO");
   });
@@ -87,5 +87,23 @@ describe("appeal workflow", () => {
     expect(() =>
       transitionAppeal(decided, { type: "ENCERRAR" } as never),
     ).toThrow("not allowed");
+  });
+
+  it("does not enqueue unsupported result-changing decisions for the bounded recalculation", () => {
+    const review = transitionAppeal(createAppeal(input), {
+      type: "ATRIBUIR_REVISOR",
+      reviewerId: "reviewer-1",
+    });
+    const decided = transitionAppeal(review, {
+      type: "DECIDIR",
+      decision: "ANULAR_ITEM",
+      rationale: "Decisão sintética requer alteração posterior.",
+      decidedAt: "2026-08-07T17:01:00.000Z",
+      correlationId: "correlation-unsupported",
+    });
+
+    expect(() =>
+      transitionAppeal(decided, { type: "SOLICITAR_RECALCULO" }),
+    ).toThrow("MANTER_RESULTADO");
   });
 });

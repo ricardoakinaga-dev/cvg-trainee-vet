@@ -17,6 +17,17 @@ export type WorkerIntegrationDependencies = Readonly<{
   readonly vectorStore: VectorStorePort | null;
   readonly ai?: AiTextPort | null;
   readonly suggestionSink?: AiSuggestionSinkPort;
+  readonly recalculateAppeal?: (
+    command: AppealRecalculationCommand,
+  ) => Promise<unknown>;
+}>;
+
+export type AppealRecalculationCommand = Readonly<{
+  readonly appealId: string;
+  readonly scopeId: string;
+  readonly attemptId: string;
+  readonly appealVersion: number;
+  readonly correlationId: string;
 }>;
 
 export type AiSuggestion = Readonly<{
@@ -45,6 +56,7 @@ export const WORKER_RECOGNIZED_EVENT_TYPES = [
   "answer.saved.v1",
   "assessment.corrected.v1",
   "ai.suggestion.requested.v1",
+  "appeal.recalculation.requested.v1",
 ] as const;
 
 export type WorkerRecognizedEventType =
@@ -58,17 +70,39 @@ function payloadString(event: OutboxEventRecord, field: string): string {
   return value;
 }
 
-function payloadVersion(event: OutboxEventRecord): number {
-  const value = payloadString(event, "version");
+function payloadVersion(event: OutboxEventRecord, field = "version"): number {
+  const value = payloadString(event, field);
   if (!/^\d+$/u.test(value)) {
-    throw new WorkerPayloadError("payload.version is invalid");
+    throw new WorkerPayloadError(`payload.${field} is invalid`);
   }
   const version = Number(value);
   if (!Number.isSafeInteger(version) || version < 1) {
-    throw new WorkerPayloadError("payload.version is invalid");
+    throw new WorkerPayloadError(`payload.${field} is invalid`);
   }
   return version;
 }
+
+const appealRecalculationHandler =
+  (dependencies: WorkerIntegrationDependencies): WorkerEventHandler =>
+  async (event): Promise<void> => {
+    if (dependencies.recalculateAppeal === undefined) {
+      throw new Error("appeal recalculation is not configured");
+    }
+    const decision = payloadString(event, "decision");
+    if (decision !== "MANTER_RESULTADO") {
+      throw new WorkerPayloadError(
+        "bounded appeal recalculation only supports MANTER_RESULTADO",
+      );
+    }
+    const command: AppealRecalculationCommand = {
+      appealId: payloadString(event, "appeal_id"),
+      scopeId: payloadString(event, "scope_id"),
+      attemptId: payloadString(event, "attempt_id"),
+      appealVersion: payloadVersion(event, "appeal_version"),
+      correlationId: event.correlationId,
+    };
+    await dependencies.recalculateAppeal(command);
+  };
 
 const publishHandler =
   (dependencies: WorkerIntegrationDependencies): WorkerEventHandler =>
@@ -197,6 +231,7 @@ export function createIntegrationHandlers(
   readonly "answer.saved.v1": WorkerEventHandler;
   readonly "assessment.corrected.v1": WorkerEventHandler;
   readonly "ai.suggestion.requested.v1": WorkerEventHandler;
+  readonly "appeal.recalculation.requested.v1": WorkerEventHandler;
 } {
   return Object.freeze({
     "content.published.v1": publishHandler(dependencies),
@@ -206,5 +241,7 @@ export function createIntegrationHandlers(
     "answer.saved.v1": learningEventAcknowledgementHandler,
     "assessment.corrected.v1": learningEventAcknowledgementHandler,
     "ai.suggestion.requested.v1": aiSuggestionHandler(dependencies),
+    "appeal.recalculation.requested.v1":
+      appealRecalculationHandler(dependencies),
   });
 }

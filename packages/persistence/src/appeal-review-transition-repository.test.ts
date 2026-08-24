@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createAppeal, transitionAppeal } from "@cvg/domain";
 
-import { appeals } from "./schema.js";
+import { appealReviewHistory, appeals, outboxEvents } from "./schema.js";
 import { createAppealReviewTransitionRepository } from "./appeal-review-transition-repository.js";
 
 const scopeId = "11111111-1111-4111-8111-111111111111";
@@ -89,6 +89,7 @@ describe("appeal review transition persistence", () => {
     let updateValues: Record<string, unknown> | undefined;
     const executor = {
       execute: async () => [],
+      insert: () => ({ values: async () => undefined }),
       update: () => {
         const builder = {
           set(values: Record<string, unknown>) {
@@ -180,6 +181,7 @@ describe("appeal review transition persistence", () => {
     let updateValues: Record<string, unknown> | undefined;
     const executor = {
       execute: async () => [],
+      insert: () => ({ values: async () => undefined }),
       update: () => {
         const builder = {
           set(values: Record<string, unknown>) {
@@ -231,6 +233,81 @@ describe("appeal review transition persistence", () => {
     expect(updateValues).not.toHaveProperty("attemptId");
     expect(updateValues).not.toHaveProperty("itemId");
     expect(updateValues).not.toHaveProperty("justification");
+  });
+
+  it("writes append-only history and a bounded outbox event when recalculation is requested", async () => {
+    const decided = transitionAppeal(
+      transitionAppeal(
+        createAppeal({
+          appealId,
+          participantId,
+          attemptId,
+          itemId,
+          justification: "Justificativa sintética de teste.",
+          createdAt: now,
+        }),
+        { type: "ATRIBUIR_REVISOR", reviewerId },
+      ),
+      {
+        type: "DECIDIR",
+        decision: "MANTER_RESULTADO",
+        rationale: "A decisão sintética mantém o resultado.",
+        decidedAt: now,
+        correlationId: "77777777-7777-4777-8777-777777777777",
+      },
+    );
+    const pending = transitionAppeal(decided, {
+      type: "SOLICITAR_RECALCULO",
+    });
+    const inserted: object[] = [];
+    let selectCount = 0;
+    const executor = {
+      execute: async () => [],
+      insert: (table: object) => ({
+        values: async () => {
+          inserted.push(table);
+        },
+      }),
+      update: () => {
+        const builder = {
+          set: () => builder,
+          where: () => builder,
+          returning: async () => [{ id: appealId }],
+        };
+        return builder;
+      },
+      select: () => {
+        const builder = {
+          from: () => builder,
+          where: () => builder,
+          limit: async () => {
+            selectCount += 1;
+            return [
+              {
+                ...row(
+                  selectCount > 1 ? "RECALCULO_PENDENTE" : "DECIDIDA",
+                  selectCount > 1 ? 3 : 2,
+                  reviewerId,
+                ),
+                decision: "MANTER_RESULTADO",
+                decisionRationale: "A decisão sintética mantém o resultado.",
+                decisionAt: new Date(now),
+                decisionCorrelationId: "77777777-7777-4777-8777-777777777777",
+              },
+            ];
+          },
+        };
+        return builder;
+      },
+      transaction: async (work: (current: unknown) => Promise<unknown>) =>
+        work(executor),
+    };
+
+    await createAppealReviewTransitionRepository(
+      executor as never,
+    ).saveAppealForReview({ scopeId }, pending);
+
+    expect(inserted).toEqual([appealReviewHistory, outboxEvents]);
   });
 
   it("returns null for an invisible row and maps an optimistic update miss", async () => {

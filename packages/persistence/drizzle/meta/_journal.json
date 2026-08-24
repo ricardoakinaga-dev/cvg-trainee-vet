@@ -176,6 +176,13 @@
       "when": 1787542562010,
       "tag": "0024_appeal_decision_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1787543562010,
+      "tag": "0025_appeal_recalculation_history",
+      "breakpoints": true
     }
   ]
 }

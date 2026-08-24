@@ -309,6 +309,14 @@ export type {
   AppealReviewTransitionRepositoryPort,
   ScopedAppealReview,
 } from "./appeal-review-transition-use-cases.js";
+export { recalculateAppealResult } from "./appeal-recalculation-use-cases.js";
+export type {
+  AppealRecalculationCommand,
+  AppealRecalculationResult,
+  AppealRecalculationTransactionContext,
+  AppealRecalculationTransactionalOperations,
+  AppealRecalculationTransactionPort,
+} from "./appeal-recalculation-use-cases.js";
 export { getContinuingEducationReport } from "./continuing-education-report-use-cases.js";
 export type {
   ContinuingEducationReportParticipant,

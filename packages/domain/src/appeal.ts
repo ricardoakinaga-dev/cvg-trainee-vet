@@ -209,6 +209,22 @@ export function transitionAppeal(
     }
     assertNonEmpty(event.correlationId, "decisionCorrelationId");
   }
+  if (
+    event.type === "SOLICITAR_RECALCULO" &&
+    state.decision !== "MANTER_RESULTADO"
+  ) {
+    throw new AppealDomainError(
+      "bounded appeal recalculation requires MANTER_RESULTADO",
+    );
+  }
+  if (
+    event.type === "CONCLUIR_RECALCULO" &&
+    state.decision !== "MANTER_RESULTADO"
+  ) {
+    throw new AppealDomainError(
+      "bounded appeal recalculation requires MANTER_RESULTADO",
+    );
+  }
   const nextStatus = transitions[state.status][event.type];
   if (nextStatus === undefined) {
     throw new AppealDomainError(

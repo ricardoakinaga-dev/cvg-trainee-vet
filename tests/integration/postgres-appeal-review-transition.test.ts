@@ -7,9 +7,11 @@ import { transitionAppealReviewState } from "../../packages/application/src/inde
 import { createAppealReviewTransitionRepository } from "../../packages/persistence/src/index.js";
 import {
   accounts,
+  appealReviewHistory,
   appeals,
   attempts,
   learningActivities,
+  outboxEvents,
 } from "../../packages/persistence/src/schema.js";
 import {
   closeLivePostgresHarness,
@@ -179,6 +181,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           decisionCorrelationId,
         });
       } finally {
+        await admin.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.aggregateId, appealId));
+        await admin.db
+          .delete(appealReviewHistory)
+          .where(eq(appealReviewHistory.appealId, appealId));
         await admin.db.delete(appeals).where(eq(appeals.id, appealId));
         await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
         await admin.db

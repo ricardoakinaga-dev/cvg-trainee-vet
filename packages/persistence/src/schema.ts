@@ -1000,5 +1000,53 @@ export const appeals = pgTable(
   ],
 );
 
+export const appealReviewHistory = pgTable(
+  "appeal_review_history",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    appealId: uuid("appeal_id")
+      .notNull()
+      .references(() => appeals.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    appealVersion: integer("appeal_version").notNull(),
+    eventType: text("event_type").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    reviewerId: uuid("reviewer_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
+    decision: text("decision"),
+    decisionRationale: text("decision_rationale"),
+    decisionAt: timestamp("decision_at", { withTimezone: true }),
+    decisionCorrelationId: uuid("decision_correlation_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("appeal_review_history_version_idx").on(
+      table.appealId,
+      table.appealVersion,
+    ),
+    index("appeal_review_history_scope_created_idx").on(
+      table.scopeId,
+      table.createdAt,
+      table.id,
+    ),
+    check(
+      "appeal_review_history_event_check",
+      sql`${table.eventType} in ('ATRIBUIR_REVISOR', 'DECIDIR', 'SOLICITAR_RECALCULO', 'CONCLUIR_RECALCULO')`,
+    ),
+    check(
+      "appeal_review_history_status_check",
+      sql`${table.fromStatus} in ('ABERTA', 'EM_REVISAO', 'DECIDIDA', 'RECALCULO_PENDENTE') and ${table.toStatus} in ('EM_REVISAO', 'DECIDIDA', 'RECALCULO_PENDENTE', 'ENCERRADA')`,
+    ),
+    check(
+      "appeal_review_history_version_check",
+      sql`${table.appealVersion} >= 1`,
+    ),
+  ],
+);
+
 export type KnowledgeDocument = typeof knowledgeDocuments.$inferSelect;
 export type NewKnowledgeDocument = typeof knowledgeDocuments.$inferInsert;

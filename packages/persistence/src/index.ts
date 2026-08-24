@@ -45,6 +45,7 @@ export {
   answerIdempotency,
   answers,
   appeals,
+  appealReviewHistory,
   auditEntries,
   assessmentWorkflows,
   feedbackTickets,
@@ -193,6 +194,10 @@ export type {
 export { createContentReviewQueueRepository } from "./content-review-queue-repository.js";
 export { createAppealReviewQueueRepository } from "./appeal-review-queue-repository.js";
 export { createAppealReviewTransitionRepository } from "./appeal-review-transition-repository.js";
+export {
+  createAppealRecalculationProcessor,
+  createAppealRecalculationRepository,
+} from "./appeal-recalculation-repository.js";
 export {
   AccountRecoveryConflictError,
   createAccountRecoveryTransaction,

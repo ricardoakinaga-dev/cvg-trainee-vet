@@ -85,15 +85,15 @@ describe("appeal review transition use case", () => {
         correlationId: ids.correlationId,
         event: {
           type: "DECIDIR",
-          decision: "ALTERAR_RESULTADO",
-          decisionRationale: "A decisão sintética altera o resultado.",
+          decision: "MANTER_RESULTADO",
+          decisionRationale: "A decisão sintética mantém o resultado.",
         },
       },
       decisionPort,
     );
     expect(decided).toMatchObject({
       status: "DECIDIDA",
-      decision: "ALTERAR_RESULTADO",
+      decision: "MANTER_RESULTADO",
       version: 2,
     });
 

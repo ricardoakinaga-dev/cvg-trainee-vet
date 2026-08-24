@@ -14,6 +14,7 @@ import {
   createIntegrationHandlers,
   WORKER_RECOGNIZED_EVENT_TYPES,
   type AiSuggestionSinkPort,
+  type AppealRecalculationCommand,
 } from "./handlers.js";
 
 const baseEvent: OutboxEventRecord = {
@@ -103,6 +104,39 @@ describe("worker integration handlers", () => {
     for (const eventType of WORKER_RECOGNIZED_EVENT_TYPES) {
       expect(handlers[eventType]).toEqual(expect.any(Function));
     }
+  });
+
+  it("dispatches bounded appeal recalculation events without exposing payloads to logs", async () => {
+    const dependencies = integrations();
+    const recalculateAppeal = vi.fn<
+      (command: AppealRecalculationCommand) => Promise<void>
+    >(async () => undefined);
+    const handlers = createIntegrationHandlers({
+      ...dependencies,
+      recalculateAppeal,
+    });
+    const event = {
+      ...baseEvent,
+      eventType: "appeal.recalculation.requested.v1",
+      aggregateType: "appeal",
+      payload: {
+        appeal_id: "55555555-5555-4555-8555-555555555555",
+        scope_id: "66666666-6666-4666-8666-666666666666",
+        attempt_id: "77777777-7777-4777-8777-777777777777",
+        appeal_version: "3",
+        decision: "MANTER_RESULTADO",
+      },
+    } satisfies OutboxEventRecord;
+
+    await handlers["appeal.recalculation.requested.v1"](event);
+
+    expect(recalculateAppeal).toHaveBeenCalledWith({
+      appealId: event.payload.appeal_id,
+      scopeId: event.payload.scope_id,
+      attemptId: event.payload.attempt_id,
+      appealVersion: 3,
+      correlationId: event.correlationId,
+    });
   });
 
   it("acknowledges learning events without duplicating educational state", async () => {

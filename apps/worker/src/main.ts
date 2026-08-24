@@ -8,6 +8,7 @@ import {
 import { createObservability } from "@cvg/observability";
 import {
   createAiSuggestionSink,
+  createAppealRecalculationProcessor,
   createContentIndexSourceRepository,
   createOutboxRepository,
 } from "@cvg/persistence";
@@ -37,6 +38,9 @@ export function createWorkerRuntime(
   const integrations = createServerIntegrations(config);
   const observability = createObservability({ service: "worker" });
   const outbox = createOutboxRepository(integrations.database.db);
+  const recalculateAppeal = createAppealRecalculationProcessor(
+    integrations.database.db,
+  );
   const source = createContentIndexSourceRepository(integrations.database.db);
   const workerDependencies = {
     source,
@@ -52,6 +56,7 @@ export function createWorkerRuntime(
       integrations.database.db,
       randomUUID,
     ),
+    recalculateAppeal,
   });
   let stopped = false;
   const initialize = async (): Promise<void> => {
