@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: AUTHORING-ACTIVITY-001 / AUD-P1-004 — materialização authoring→atividade e hardening de projeção
-- current_task: fechar os gates locais e o control plane da materialização por `scopeId/moduleId/sessionId`; depois aguardar workflow remoto e E2E curricular autoral autorizado
+- current_sprint: AUTHORING-E2E-PIPELINE-001 / ACTIVITY-RLS-047 — prova authoring→atividade e hardening do contexto RLS participante
+- current_task: aplicar a migration `0031` em banco CVG descartável autorizado, executar live PostgreSQL/RLS e E2E navegador→web→API→PostgreSQL; depois aguardar workflow remoto e gates humanos
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: o commit `82ea6ab8802a36cf81278c59c25de516a97624ce` implementou `AUTHORING-ACTIVITY-001` e o commit documental `119c8bc` fechou SPEC/AUDIT/backlog/log/plano/manifesto: `session_id`, unicidade por escopo/módulo/sessão, checks `Mxx-S[1-4]`, migrations `0028`–`0030`, `ENABLE/FORCE RLS`, materialização somente de versões `PUBLICADO`, ordinal bounded, replay idempotente e falha fechada para conjunto inesperado. Typecheck de persistence, `verify:migrations` 31/31, unitário 18/18, authoring live 1/1, worker live 4/4, `pnpm verify` 125/592/33 com 84,57%/80,50%/86,08%/85,30%, build 12 workspaces, E2E 26/26, audit high e release traceability passaram; nenhum dado real foi usado.
-- next_action: permanecer aguardando autorização para workflow remoto same-SHA e E2E navegador→API→PostgreSQL com atividade criada pelo pipeline; depois tratar grants/owners produtivos, observabilidade/restore, provider/MFA e revisão clínica sem inferir aprovação
+- last_completed_action: os commits `743b755b4a1143ed77f8e563fd1f79c9861d9b43` e `94ac2e0f96fc773062b4b6e4c257ad2f47b33ac2` fecharam código e control plane de `AUTHORING-E2E-PIPELINE-001`/`ACTIVITY-RLS-047`: fixture editorial autoral, resolver transacional, contextos HTTP server-side, migration `0031`, membership aceito e constraint sessão/módulo. Node 22.22.0 passou 117/572 testes unitários; typecheck, lint, Prettier, sintaxe, `verify:migrations` 32/32, documentação, traceability estrutural e `git diff --check` passaram; nenhum dado real foi usado.
+- next_action: com ambiente autorizado, executar a migration/suíte live PostgreSQL com role sem `SUPERUSER/BYPASSRLS` e `CVG_RUN_REAL_E2E=true` contra o pipeline autoral; registrar PASS/falha e artefatos, sem tocar no schema PostgreSQL de outro sistema
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — a prova local efêmera passou, mas o workflow remoto no mesmo SHA ainda não foi executado; AUTHORING-ACTIVITY-001 — o materializador/RLS/convergência passaram localmente, porém E2E curricular navegador→PostgreSQL usando atividade criada pelo pipeline ainda falta; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão, e `pnpm` não está no `PATH`; ACTIVITY-RLS-047/AUTHORING-E2E-PIPELINE-001 — live PostgreSQL/RLS e E2E autoral ainda não observados; workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T08:58:00-03:00
+- last_update: 2026-08-24T09:43:07-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `82ea6ab8802a36cf81278c59c25de516a97624ce` (último commit técnico de `AUTHORING-ACTIVITY-001`; o fechamento documental é seu sucessor de continuidade)
-- origin: `fbbc692` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: clean após commits técnico `82ea6ab8802a36cf81278c59c25de516a97624ce` e documental `119c8bc`; não há push/deploy
+- head: `94ac2e0f96fc773062b4b6e4c257ad2f47b33ac2` (código `743b755b4a1143ed77f8e563fd1f79c9861d9b43` e documentação/control plane `94ac2e0f96fc773062b4b6e4c257ad2f47b33ac2`)
+- origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente por 68 commits; não há push/deploy
+- worktree: clean após os commits técnico e documental; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUTHORING-ACTIVITY-001` PASS LOCAL + LIVE SINTÉTICO: migrations 31/31, unitário 18/18, `pnpm verify` 125/592/33 com 84,57%/80,50%/86,08%/85,30%, contracts 72/72, worker 27/27, build 12 workspaces, E2E 26/26, live completa 31/50, audit high, secrets, architecture, documentation, product-definition, exposure, diff-check e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo passaram; app live sem `SUPERUSER/BYPASSRLS` e admin separado; mesmo-SHA remoto, E2E curricular criado pelo pipeline, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
+- verification_state: `AUTHORING-E2E-PIPELINE-001` e `ACTIVITY-RLS-047` PASS LOCAL COM GAPS: migrations 32/32, unitário 117/572, typecheck, lint, Prettier, sintaxe, documentação, traceability estrutural e diff-check passaram; resolver e HTTP usam contexto transacional, migration `0031` está no journal e fixtures foram alinhados; live PostgreSQL/RLS, E2E autoral browser→API→PostgreSQL, mesmo-SHA remoto, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 
