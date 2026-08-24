@@ -60,7 +60,11 @@ a aprovação clínica, piloto ou release produtivo.
   de progresso por allowlist de estados predecessores. `pnpm verify` passou com
   125/575/31 skips e cobertura 84,50%/80,35%/85,95%/85,23%; build 12
   workspaces, E2E 26/26, integração 8/20 com 27/31 skips e audit high também
-  passaram; documentação e release traceability continuam no fechamento.
+  passaram.
+- [x] (2026-08-24T06:41:52-03:00) Fechar a documentação de `JOURNEY-REL-002`
+  no commit `e3acb37f6b6998564eb86dba2a6e82cb1486c9ed` e executar
+  `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo;
+  o gate passou. A próxima ação é a prova live de RLS/rollback/concorrência.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a

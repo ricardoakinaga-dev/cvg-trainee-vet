@@ -6638,3 +6638,35 @@ release traceability pendentes.
 Revisar o diff documental, atualizar o manifesto com o SHA de código, criar o
 commit de fechamento e executar `CVG_TRACEABILITY_RELEASE=true
 pnpm verify:traceability` em worktree limpo.
+
+## 2026-08-24 — JOURNEY-REL-002: fechamento local rastreável
+
+### TIMESTAMP
+
+2026-08-24T06:41:52-03:00
+
+### ACTION
+
+Criado o commit documental
+`e3acb37f6b6998564eb86dba2a6e82cb1486c9ed` para ligar a auditoria 0527, SPEC,
+backlog, runtime state, ExecPlan e o manifesto ao código
+`73649cba9da168babb06a87c46cc8bd6bb580408`.
+
+### RESULT
+
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo: os artefatos atuais resolvem para commits alcançáveis e paths rastreados.
+Não houve push, deploy, provider, credencial ou mutação externa.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — `JOURNEY-REL-002` concluído localmente com gaps
+explícitos; não é release produtivo nem aprovação clínica.
+
+### NEXT
+
+Quando `CVG_TEST_DATABASE_URL` e a autoridade estiverem disponíveis, executar o
+cenário live com papel sem `SUPERUSER/BYPASSRLS`, cleanup administrativo
+separado, rollback por falha de policy e concorrência. Manter pendentes o
+pipeline autoral de `moduleId`, E2E navegador→PostgreSQL curricular, gates
+clínicos, piloto, provider/MFA e assurance operacional.
