@@ -391,3 +391,11 @@ persistir o resultado, e o endpoint permite retry operacional seguro.
 As respostas de 401/403/404/409/422 seguem o envelope comum. A rota não publica
 conteúdo, não decide nota, não dispensa núcleo obrigatório e não autoriza IA,
 Qdrant ou frontend a alterar estado.
+
+Quando a atribuição é materializada, o servidor também pode criar os vínculos
+internos em `activity_assignments` para atividades publicadas que carreguem
+`moduleId` curricular explícito. Essa relação não altera a resposta pública da
+rota: `participantId`, `sourceDiagnosticResultId`, `learningAssignmentId`,
+proveniência, conteúdo interno e status de banco continuam fora do envelope.
+Atividades sem mapeamento explícito não são escolhidas por slug e não recebem
+atribuição adaptativa automaticamente.

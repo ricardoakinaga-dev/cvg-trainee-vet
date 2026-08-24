@@ -3392,6 +3392,83 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "JOURNEY-REL-001"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-021",
+        "PRD-RF-022",
+        "PRD-RF-028",
+        "PRD-UC-002",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0118",
+        "JOURNEY-09-01",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0017_programa_curricular_24_meses.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/adaptive-assignment-repository.ts",
+        "packages/curriculum/src/types.ts",
+        "packages/curriculum/src/projection.ts",
+        "packages/curriculum/src/content-seed.ts",
+        "packages/persistence/drizzle/0026_assignment_activity_provenance.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/persistence/src/adaptive-assignment-repository.test.ts",
+        "tests/integration/postgres-adaptive-assignment.test.ts",
+        "tests/integration/curriculum-catalog.test.ts",
+      ]
+    commit: "e718df1cc23f78c0615db6331e0995e45a03026a"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: mapped published activity was absent from activity_assignments before the repository materialization",
+        "pnpm --filter @cvg/persistence typecheck",
+        "pnpm --filter @cvg/curriculum typecheck",
+        "pnpm exec vitest run --project unit packages/persistence/src/adaptive-assignment-repository.test.ts",
+        "pnpm exec vitest run --project integration tests/integration/postgres-adaptive-assignment.test.ts (live conditional; 2 skips without CVG_TEST_DATABASE_URL)",
+        "pnpm verify:migrations",
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

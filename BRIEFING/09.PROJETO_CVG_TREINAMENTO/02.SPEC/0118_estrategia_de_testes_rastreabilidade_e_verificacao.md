@@ -161,6 +161,14 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - rodada: `pnpm verify` passou com 125 arquivos/572 testes, 29 skips; cobertura 84,51% statements, 80,33% branches, 86,03% functions, 85,23% lines; build web e 13/13 E2E participantes passaram;
 - limites: as fixtures são sintéticas e não provam RLS/PostgreSQL live, provenance/atomicidade assignment→atividade, correção clínica, remediação/retensão completas ou release operacional.
 
+### Evidência adicional — JOURNEY-REL-001
+
+- RED/GREEN: `packages/persistence/src/adaptive-assignment-repository.test.ts` falhou antes da materialização da relação e passou com cinco cenários, cobrindo vínculo explícito, replay e reparo de linha legada sem alterar status;
+- persistência: `learning_activities.module_id`, `learning_assignments.source_diagnostic_result_id` e `activity_assignments.learning_assignment_id` são aditivos na migration `0026_assignment_activity_provenance.sql`; o teste live dedicado cobre a cadeia, proveniência e replay quando configurado;
+- currículo: `createM02ContentSeed` e drafts de módulo carregam `moduleId`, enquanto o seed diagnóstico permanece sem módulo;
+- verificação focal: typecheck de persistence/curriculum, `verify:migrations` com 27 migrations, testes unitários focais e `git diff --check` passaram localmente;
+- limite: sem `CVG_TEST_DATABASE_URL`, os dois cenários live permaneceram skipped; RLS sem bypass, rollback transacional sob erro, concorrência real, sincronização de estados posteriores e E2E navegador→PostgreSQL continuam não observados.
+
 ## 14. Evidência executável do item 10
 
 - RED/GREEN: contratos, currículo, aplicação, persistência e API receberam testes antes dos módulos de autoria/revisão;

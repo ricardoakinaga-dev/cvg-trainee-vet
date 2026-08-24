@@ -238,3 +238,11 @@ núcleo obrigatório, não altera nota e não publica conteúdo.
 Auditoria operacional detalhada de cada materialização, métricas distribuídas,
 grants/owners produtivos e prova RLS live continuam gates de ambiente e não são
 simulados por esta implementação local.
+
+Na relação `JOURNEY-REL-001`, o vínculo interno usa FKs e é escrito dentro da
+mesma transação que a atribuição adaptativa. O contexto de participante + escopo
+continua aplicado antes das leituras/escritas; a rota e a projeção não recebem
+nem devolvem `learningAssignmentId` ou `sourceDiagnosticResultId`. O reparo de
+uma linha de atividade legada só preenche uma proveniência nula e preserva seu
+status. A confirmação com papel PostgreSQL sem `SUPERUSER`/`BYPASSRLS`, rollback e
+concorrência real ainda depende do ambiente de teste autorizado.

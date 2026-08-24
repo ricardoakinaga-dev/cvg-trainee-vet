@@ -109,3 +109,26 @@ com predicado de versão/status; qualquer conflito é exposto como erro de estad
 e não como sobrescrita silenciosa. O índice único é a garantia de não duplicar
 progresso, enquanto PostgreSQL continua a autoridade e a jornada agregada
 continua calculando a próxima ação a partir das linhas persistidas.
+
+## 8.2 Relação explícita assignment → atividade — JOURNEY-REL-001
+
+`learning_assignments` e `activity_assignments` são agregados distintos. A
+materialização adaptativa só atravessa essa fronteira quando
+`learning_activities.module_id` está preenchido com um identificador curricular
+válido, a atividade está `PUBLISHED` e o escopo coincide. Slug, título, ordem ou
+qualquer convenção textual não são usados para inferir o módulo; atividades
+legadas com `module_id` nulo continuam fora da atribuição automática.
+
+A migration `0026_assignment_activity_provenance.sql` adiciona, de forma
+compatível, `learning_assignments.source_diagnostic_result_id` e
+`activity_assignments.learning_assignment_id`, ambos com FK. A operação lê o
+diagnóstico, cria/promove a atribuição de módulo e insere ou repara o vínculo da
+atividade na mesma transação, usando `on conflict` bounded: uma linha legada sem
+proveniência pode receber o `learning_assignment_id`, mas seu status de progresso
+não é sobrescrito. Replays preservam os IDs e não duplicam linhas.
+
+O seed curricular transporta `moduleId` somente para atividades derivadas de um
+módulo conhecido; o campo não publica conteúdo nem substitui aprovação clínica.
+A sincronização posterior de estados, a prova live de RLS/concorrência e a
+auditoria append-only detalhada continuam requisitos de operação antes de
+release.

@@ -43,6 +43,11 @@ a aprovação clínica, piloto ou release produtivo.
   O RED dos dois novos cenários foi observado antes do cartão; GREEN focal,
   build web, lint/typecheck, cobertura e 13/13 E2E da superfície participante
   passaram. O endpoint e o contrato público existentes foram preservados.
+- [x] (2026-08-24T06:04:35-03:00) Fechar localmente `JOURNEY-REL-001`: ligar
+  atribuição adaptativa a atividades publicadas apenas por `moduleId` explícito,
+  persistir provenance e reparar vínculo legado sem alterar progresso. RED/GREEN
+  focal, migration 0026, typecheck de persistence/curriculum, seed M02 e testes
+  condicionais live foram preparados; a prova live permanece skipped sem banco.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
@@ -97,6 +102,17 @@ a aprovação clínica, piloto ou release produtivo.
   Impact: `JOURNEY-045` fecha apenas a CTA para um alvo já autorizado na
   projeção; a transição diagnóstico → assignment → atividade real continua
   gap P1 e não pode ser declarada como jornada completa.
+
+- Observation: a relação foi fechada localmente por um mapeamento curricular
+  explícito na atividade, não por slug. A operação grava a origem do diagnóstico
+  na atribuição e o `learningAssignmentId` na atividade na mesma transação; linhas
+  legadas sem módulo continuam inelegíveis.
+  Evidence: migration `0026_assignment_activity_provenance.sql`,
+  `packages/persistence/src/adaptive-assignment-repository.ts`, testes focais e
+  auditoria `BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md`.
+  Impact: assignment→atividade/provenance agora tem implementação local
+  verificável; RLS/rollback/concorrência live, sincronização de estados e
+  pipeline de publicação continuam gaps sem autoridade de ambiente.
 
 - Observation: o endpoint de feedback da tentativa já era owner-scoped e
   redigido, mas a web restaurava somente appeals e terminava a submissão sem
@@ -195,6 +211,19 @@ a aprovação clínica, piloto ou release produtivo.
   quando o contrato público é válido; `not_found` vira espera/retry, enquanto
   debrief completo, remediação, retenção e a relação assignment→atividade
   continuam fora do slice.
+  Date/Author: 2026-08-24 / Codex.
+
+- Decision: fechar `JOURNEY-REL-001` com `moduleId` explícito e provenance
+  relacional, mantendo atividades legadas sem mapping fora da atribuição
+  automática.
+  Context: o slug não é uma autoridade curricular e a jornada só pode apontar
+  para uma atividade que já esteja autorizada no banco.
+  Reason: uma coluna opcional compatível, FKs e uma transação única resolvem a
+  relação sem reescrever dados históricos ou inventar publicação clínica; o
+  reparo só preenche provenance nula e preserva progresso.
+  Consequences: múltiplas atividades publicadas do mesmo módulo podem ser
+  materializadas, mas sincronização posterior de status, prova live e pipeline
+  que grava mapping em conteúdo aprovado permanecem separados.
   Date/Author: 2026-08-24 / Codex.
 
 ## Outcomes & Retrospective
@@ -434,7 +463,8 @@ document recovery, HEAD/remote inspection and official research refresh. Three
 scouts independently confirmed that diagnostic completion does not materialize
 assignments; one also identified that local release assurance remains blocked
 by live grants/RLS, worker fencing, external observability and same-SHA CI.
-`ADAPTIVE-044`, `JOURNEY-045` and `RESULT-FEEDBACK-046` are now closed with
-gaps; no release or clinical approval is inferred. The next local priority is
-the assignment→activity relation/provenance/atomicity proof when live database
-authority is available.
+`ADAPTIVE-044`, `JOURNEY-045`, `RESULT-FEEDBACK-046` and the local implementation
+of `JOURNEY-REL-001` are now closed with gaps; no release or clinical approval
+is inferred. The next priority is the live assignment→activity provenance,
+rollback, RLS and concurrency proof, followed by state synchronization and
+the remaining digital/operational slices.

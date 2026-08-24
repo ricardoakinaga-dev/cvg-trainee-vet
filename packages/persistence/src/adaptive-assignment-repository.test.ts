@@ -6,7 +6,12 @@ import {
   AdaptiveAssignmentPersistenceError,
   createAdaptiveAssignmentRepository,
 } from "./adaptive-assignment-repository.js";
-import { diagnosticResults, learningAssignments } from "./schema.js";
+import {
+  activityAssignments,
+  diagnosticResults,
+  learningActivities,
+  learningAssignments,
+} from "./schema.js";
 
 const participantId = "11111111-1111-4111-8111-111111111111";
 const scopeId = "22222222-2222-4222-8222-222222222222";
@@ -64,8 +69,21 @@ const diagnosticRow = {
 } as typeof diagnosticResults.$inferSelect;
 
 type AssignmentRow = typeof learningAssignments.$inferSelect;
+type ActivityRow = {
+  readonly id: string;
+  readonly moduleId: string | null;
+  readonly status: string;
+  readonly hasPublishedContent: boolean;
+};
+type ActivityAssignmentRow = {
+  readonly participantId: string;
+  readonly activityId: string;
+  readonly status: string;
+  readonly learningAssignmentId: string | null;
+};
 type FakeBuilder = {
   readonly from: (source: object) => FakeBuilder;
+  readonly innerJoin: (table: object, condition: unknown) => FakeBuilder;
   readonly where: (...conditions: readonly unknown[]) => FakeBuilder;
   readonly orderBy: (
     ...columns: readonly unknown[]
@@ -75,6 +93,7 @@ type FakeBuilder = {
   ) => Promise<readonly unknown[]>;
   values: (row: Record<string, unknown>) => FakeBuilder;
   readonly onConflictDoNothing: () => FakeBuilder;
+  readonly onConflictDoUpdate: (config: object) => FakeBuilder;
   readonly set: (values: Record<string, unknown>) => FakeBuilder;
   readonly returning: (
     ...columns: readonly unknown[]
@@ -93,6 +112,7 @@ function assignmentRow(
     participantId,
     scopeId,
     moduleId,
+    sourceDiagnosticResultId: null,
     availableAt,
     status,
     version,
@@ -107,17 +127,23 @@ function createFakeDatabase(
   options: {
     readonly diagnosticRows?: readonly (typeof diagnosticResults.$inferSelect)[];
     readonly assignmentRows?: readonly AssignmentRow[];
+    readonly activityRows?: readonly ActivityRow[];
+    readonly activityAssignmentRows?: readonly ActivityAssignmentRow[];
     readonly updateReturnsEmpty?: boolean;
   } = {},
 ): {
   readonly db: FakeDatabase;
   readonly assignments: () => readonly AssignmentRow[];
+  readonly activityAssignments: () => readonly ActivityAssignmentRow[];
   readonly transactionCount: () => number;
 } {
   const diagnosticRows = [...(options.diagnosticRows ?? [diagnosticRow])];
   const assignments = [...(options.assignmentRows ?? [])];
+  const activities = [...(options.activityRows ?? [])];
+  const activityAssignmentRows = [...(options.activityAssignmentRows ?? [])];
   let transactions = 0;
   let pendingInsert: Record<string, unknown> | undefined;
+  let pendingInsertTable: object | undefined;
   let pendingUpdate: Record<string, unknown> | undefined;
 
   const executor = {
@@ -129,6 +155,9 @@ function createFakeDatabase(
           source = currentSource;
           return builder;
         },
+        innerJoin() {
+          return builder;
+        },
         where() {
           return builder;
         },
@@ -137,13 +166,18 @@ function createFakeDatabase(
             ? [...assignments].sort((left, right) =>
                 left.moduleId.localeCompare(right.moduleId),
               )
-            : [],
+            : source === learningActivities
+              ? activities.filter((activity) => activity.hasPublishedContent)
+              : [],
         limit: async () => (source === diagnosticResults ? diagnosticRows : []),
         values() {
           return builder;
         },
         onConflictDoNothing() {
-          if (pendingInsert !== undefined) {
+          if (
+            pendingInsert !== undefined &&
+            pendingInsertTable === learningAssignments
+          ) {
             const duplicate = assignments.some(
               (row) =>
                 row.participantId === pendingInsert?.participantId &&
@@ -152,6 +186,53 @@ function createFakeDatabase(
             );
             if (!duplicate) assignments.push(pendingInsert as AssignmentRow);
             pendingInsert = undefined;
+            pendingInsertTable = undefined;
+          } else if (
+            pendingInsert !== undefined &&
+            pendingInsertTable === activityAssignments
+          ) {
+            const duplicate = activityAssignmentRows.some(
+              (row) =>
+                row.participantId === pendingInsert?.participantId &&
+                row.activityId === pendingInsert?.activityId,
+            );
+            if (!duplicate) {
+              activityAssignmentRows.push(
+                pendingInsert as ActivityAssignmentRow,
+              );
+            }
+            pendingInsert = undefined;
+            pendingInsertTable = undefined;
+          }
+          return builder;
+        },
+        onConflictDoUpdate() {
+          if (
+            pendingInsert !== undefined &&
+            pendingInsertTable === activityAssignments
+          ) {
+            const existingIndex = activityAssignmentRows.findIndex(
+              (row) =>
+                row.participantId === pendingInsert?.participantId &&
+                row.activityId === pendingInsert?.activityId,
+            );
+            if (existingIndex < 0) {
+              activityAssignmentRows.push(
+                pendingInsert as ActivityAssignmentRow,
+              );
+            } else if (
+              activityAssignmentRows[existingIndex]?.learningAssignmentId ===
+              null
+            ) {
+              activityAssignmentRows[existingIndex] = {
+                ...activityAssignmentRows[existingIndex],
+                learningAssignmentId: String(
+                  pendingInsert.learningAssignmentId,
+                ),
+              };
+            }
+            pendingInsert = undefined;
+            pendingInsertTable = undefined;
           }
           return builder;
         },
@@ -175,11 +256,13 @@ function createFakeDatabase(
       };
       return builder;
     },
-    insert: () => {
+    selectDistinct: () => executor.select(),
+    insert: (table: object) => {
       const builder = executor.select();
       const originalValues = builder.values;
       builder.values = (row: Record<string, unknown>) => {
         pendingInsert = row;
+        pendingInsertTable = table;
         return originalValues(row);
       };
       return builder;
@@ -194,6 +277,7 @@ function createFakeDatabase(
   return {
     db: executor as unknown as FakeDatabase,
     assignments: () => assignments,
+    activityAssignments: () => activityAssignmentRows,
     transactionCount: () => transactions,
   };
 }
@@ -252,7 +336,103 @@ describe("adaptive assignment persistence", () => {
       "ATRIBUIDO",
     ]);
     expect(result.assignments[0]?.state.version).toBe(1);
+    expect(fake.assignments()[0]?.sourceDiagnosticResultId).toBe(
+      diagnosticResultId,
+    );
     expect(fake.assignments()).toHaveLength(2);
+  });
+
+  it("materializes explicitly mapped published activities with assignment provenance", async () => {
+    const fake = createFakeDatabase({
+      activityRows: [
+        {
+          id: "activity-m01",
+          moduleId: "M01",
+          status: "PUBLISHED",
+          hasPublishedContent: true,
+        },
+        {
+          id: "activity-m01-legacy",
+          moduleId: null,
+          status: "PUBLISHED",
+          hasPublishedContent: true,
+        },
+        {
+          id: "activity-m01-empty",
+          moduleId: "M01",
+          status: "PUBLISHED",
+          hasPublishedContent: false,
+        },
+      ],
+    });
+    const repository = createAdaptiveAssignmentRepository(
+      fake.db,
+      () => "77777777-7777-4777-8777-777777777777",
+    );
+
+    const result = await repository.materializeCurriculumAssignments({
+      diagnosticResultId,
+      scopeId,
+      moduleIds: ["M01"],
+    });
+    await repository.materializeCurriculumAssignments({
+      diagnosticResultId,
+      scopeId,
+      moduleIds: ["M01"],
+    });
+
+    expect(fake.activityAssignments()).toEqual([
+      expect.objectContaining({
+        participantId,
+        activityId: "activity-m01",
+        status: "ATRIBUIDO",
+        learningAssignmentId: result.assignments[0]?.state.assignmentId,
+        assignedAt: expect.any(Date),
+      }),
+    ]);
+    expect(fake.assignments()[0]?.sourceDiagnosticResultId).toBe(
+      diagnosticResultId,
+    );
+  });
+
+  it("repairs a legacy activity assignment without changing its progress status", async () => {
+    const fake = createFakeDatabase({
+      activityRows: [
+        {
+          id: "activity-m01",
+          moduleId: "M01",
+          status: "PUBLISHED",
+          hasPublishedContent: true,
+        },
+      ],
+      activityAssignmentRows: [
+        {
+          participantId,
+          activityId: "activity-m01",
+          status: "EM_ANDAMENTO",
+          learningAssignmentId: null,
+        },
+      ],
+    });
+    const repository = createAdaptiveAssignmentRepository(
+      fake.db,
+      () => "88888888-8888-4888-8888-888888888888",
+    );
+
+    const result = await repository.materializeCurriculumAssignments({
+      diagnosticResultId,
+      scopeId,
+      moduleIds: ["M01"],
+    });
+
+    expect(fake.activityAssignments()).toEqual([
+      {
+        participantId,
+        activityId: "activity-m01",
+        status: "EM_ANDAMENTO",
+        learningAssignmentId: result.assignments[0]?.state.assignmentId,
+      },
+    ]);
   });
 
   it("fails closed for missing results, invalid modules, and concurrent promotion", async () => {

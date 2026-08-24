@@ -34,6 +34,7 @@ export type CurriculumActivitySeed = Readonly<{
   readonly activity: Readonly<{
     readonly id: string;
     readonly scopeId: string;
+    readonly moduleId?: string;
     readonly slug: string;
     readonly title: string;
     readonly status: "RASCUNHO" | "PUBLISHED";
@@ -90,6 +91,7 @@ function createSeedFromActivity(
   status: CurriculumContentSeedStatus,
   activityStatus: "RASCUNHO" | "PUBLISHED",
   activity: ParticipantActivity,
+  moduleId?: string,
 ): CurriculumActivitySeed {
   const contentVersions = activity.items.map((item) =>
     toContentVersion(scopeId, status, item),
@@ -105,6 +107,7 @@ function createSeedFromActivity(
     activity: freeze({
       id: activity.activityId,
       scopeId,
+      ...(moduleId === undefined ? {} : { moduleId }),
       slug: activity.slug,
       title: activity.title,
       status: activityStatus,
@@ -124,6 +127,7 @@ export function createM02ContentSeed(
     status,
     "RASCUNHO",
     toParticipantActivity(m02Assessment),
+    "M02",
   );
 }
 
@@ -138,6 +142,7 @@ export function createCurriculumContentSeed(
     status,
     "RASCUNHO",
     toParticipantActivityFromDraft(getModuleDraftPack(moduleId)),
+    moduleId,
   );
 }
 

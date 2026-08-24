@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   createLearningAssignment,
@@ -12,7 +12,14 @@ import type {
   MaterializedCurriculumAssignments,
 } from "@cvg/application";
 
-import { diagnosticResults, learningAssignments } from "./schema.js";
+import {
+  activityAssignments,
+  contentVersions,
+  diagnosticResults,
+  learningActivities,
+  learningActivityItems,
+  learningAssignments,
+} from "./schema.js";
 import type * as schema from "./schema.js";
 import {
   learningAssignmentRowToState,
@@ -130,6 +137,7 @@ async function findAssignmentRows(
 async function promoteUnassigned(
   executor: DatabaseExecutor | DatabaseTransaction,
   row: typeof learningAssignments.$inferSelect,
+  sourceDiagnosticResultId: string,
 ): Promise<void> {
   if (row.status !== "NAO_ATRIBUIDO") return;
   const state = learningAssignmentRowToState(toRow(row)).state;
@@ -145,6 +153,8 @@ async function promoteUnassigned(
       version: mapped.version,
       blockReason: mapped.blockReason,
       pausedFrom: mapped.pausedFrom,
+      sourceDiagnosticResultId:
+        row.sourceDiagnosticResultId ?? sourceDiagnosticResultId,
       updatedAt: new Date(),
     })
     .where(
@@ -159,6 +169,82 @@ async function promoteUnassigned(
     .returning({ id: learningAssignments.id });
   if (updated.length === 0) {
     throw new AdaptiveAssignmentConflictError();
+  }
+}
+
+async function findMappedActivities(
+  executor: DatabaseExecutor | DatabaseTransaction,
+  scopeId: string,
+  moduleIds: readonly string[],
+): Promise<
+  readonly Pick<typeof learningActivities.$inferSelect, "id" | "moduleId">[]
+> {
+  return executor
+    .selectDistinct({
+      id: learningActivities.id,
+      moduleId: learningActivities.moduleId,
+    })
+    .from(learningActivities)
+    .innerJoin(
+      learningActivityItems,
+      eq(learningActivityItems.activityId, learningActivities.id),
+    )
+    .innerJoin(
+      contentVersions,
+      and(
+        eq(contentVersions.id, learningActivityItems.contentVersionId),
+        eq(contentVersions.scopeId, scopeId),
+        eq(contentVersions.status, "PUBLICADO"),
+      ),
+    )
+    .where(
+      and(
+        eq(learningActivities.scopeId, scopeId),
+        eq(learningActivities.status, "PUBLISHED"),
+        inArray(learningActivities.moduleId, moduleIds),
+      ),
+    )
+    .orderBy(asc(learningActivities.moduleId), asc(learningActivities.id));
+}
+
+async function materializeMappedActivities(
+  executor: DatabaseExecutor | DatabaseTransaction,
+  participantId: string,
+  activityRows: readonly Pick<
+    typeof learningActivities.$inferSelect,
+    "id" | "moduleId"
+  >[],
+  assignmentRows: readonly (typeof learningAssignments.$inferSelect)[],
+  now: Date,
+): Promise<void> {
+  const assignmentsByModule = new Map(
+    assignmentRows.map((row) => [row.moduleId, row]),
+  );
+  for (const activity of activityRows) {
+    if (activity.moduleId === null) continue;
+    const assignment = assignmentsByModule.get(activity.moduleId);
+    if (assignment === undefined) {
+      throw new AdaptiveAssignmentPersistenceError(
+        "mapped activity has no persisted curriculum assignment",
+      );
+    }
+    await executor
+      .insert(activityAssignments)
+      .values({
+        participantId,
+        activityId: activity.id,
+        learningAssignmentId: assignment.id,
+        status: assignment.status,
+        assignedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [
+          activityAssignments.participantId,
+          activityAssignments.activityId,
+        ],
+        set: { learningAssignmentId: assignment.id },
+        where: isNull(activityAssignments.learningAssignmentId),
+      });
   }
 }
 
@@ -211,7 +297,11 @@ export function createAdaptiveAssignmentRepository(
         for (const moduleId of moduleIds) {
           const existing = existingByModule.get(moduleId);
           if (existing !== undefined) {
-            await promoteUnassigned(executor, existing);
+            await promoteUnassigned(
+              executor,
+              existing,
+              input.diagnosticResultId,
+            );
             continue;
           }
           const state = assignedState({
@@ -226,7 +316,12 @@ export function createAdaptiveAssignmentRepository(
           });
           await executor
             .insert(learningAssignments)
-            .values({ ...row, createdAt: now, updatedAt: now })
+            .values({
+              ...row,
+              sourceDiagnosticResultId: input.diagnosticResultId,
+              createdAt: now,
+              updatedAt: now,
+            })
             .onConflictDoNothing();
         }
 
@@ -241,6 +336,18 @@ export function createAdaptiveAssignmentRepository(
             "not all curriculum assignments were persisted",
           );
         }
+        const activityRows = await findMappedActivities(
+          executor,
+          input.scopeId,
+          moduleIds,
+        );
+        await materializeMappedActivities(
+          executor,
+          participantId,
+          activityRows,
+          rows,
+          now,
+        );
         return Object.freeze({
           diagnosticResultId: input.diagnosticResultId,
           participantId,

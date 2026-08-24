@@ -346,6 +346,7 @@ export const learningActivities = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     scopeId: uuid("scope_id").notNull(),
     slug: text("slug").notNull().unique(),
+    moduleId: text("module_id"),
     title: text("title").notNull().default("Atividade"),
     status: text("status").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -356,6 +357,15 @@ export const learningActivities = pgTable(
     index("learning_activities_scope_status_idx").on(
       table.scopeId,
       table.status,
+    ),
+    index("learning_activities_scope_module_status_idx").on(
+      table.scopeId,
+      table.moduleId,
+      table.status,
+    ),
+    check(
+      "learning_activities_module_id_check",
+      sql`${table.moduleId} is null or ${table.moduleId} ~ '^M(0[1-9]|1[0-9]|2[0-4])$'`,
     ),
     check(
       "learning_activities_status_check",
@@ -422,6 +432,10 @@ export const activityAssignments = pgTable(
     activityId: uuid("activity_id")
       .notNull()
       .references(() => learningActivities.id, { onDelete: "restrict" }),
+    learningAssignmentId: uuid("learning_assignment_id").references(
+      () => learningAssignments.id,
+      { onDelete: "restrict" },
+    ),
     status: text("status").notNull(),
     assignedAt: timestamp("assigned_at", { withTimezone: true })
       .notNull()
@@ -432,6 +446,9 @@ export const activityAssignments = pgTable(
     index("activity_assignments_participant_status_idx").on(
       table.participantId,
       table.status,
+    ),
+    index("activity_assignments_learning_assignment_idx").on(
+      table.learningAssignmentId,
     ),
     check(
       "activity_assignments_status_check",
@@ -810,6 +827,10 @@ export const learningAssignments = pgTable(
       .references(() => accounts.id, { onDelete: "restrict" }),
     scopeId: uuid("scope_id").notNull(),
     moduleId: text("module_id").notNull(),
+    sourceDiagnosticResultId: uuid("source_diagnostic_result_id").references(
+      () => diagnosticResults.id,
+      { onDelete: "restrict" },
+    ),
     availableAt: timestamp("available_at", { withTimezone: true }).notNull(),
     status: text("status").notNull(),
     version: integer("version").notNull().default(0),
@@ -832,6 +853,9 @@ export const learningAssignments = pgTable(
       table.participantId,
       table.scopeId,
       table.status,
+    ),
+    index("learning_assignments_source_diagnostic_idx").on(
+      table.sourceDiagnosticResultId,
     ),
     check(
       "learning_assignments_module_id_check",

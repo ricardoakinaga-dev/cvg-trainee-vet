@@ -6411,3 +6411,68 @@ Quando `CVG_TEST_DATABASE_URL` e a autoridade de ambiente estiverem
 disponíveis, preparar a prova assignment→atividade com provenance, atomicidade,
 RLS e concorrência. Manter bloqueados publicação clínica, piloto, provider/MFA,
 assurance operacional e qualquer claim de competência prática.
+
+## 2026-08-24 — JOURNEY-REL-001: vínculo explícito assignment → atividade
+
+### TIMESTAMP
+
+2026-08-24T06:04:35-03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada adaptativa — JOURNEY-REL-001 / AUD-P1-004
+
+### TASK
+
+JOURNEY-REL-2026-08-24-C — materializar a atividade publicada correspondente ao
+módulo adaptativo sem inferir relação por slug e preservar provenance.
+
+### ACTION
+
+Foi escrito RED no repositório adaptativo para o caso em que uma atividade
+publicada explicitamente mapeada a `M01` não recebia `activity_assignment`.
+O GREEN adicionou `learning_activities.module_id`,
+`learning_assignments.source_diagnostic_result_id` e
+`activity_assignments.learning_assignment_id` com FKs/índices na migration
+`0026_assignment_activity_provenance.sql`. A materialização ocorre na mesma
+transação da atribuição, replays preservam IDs e um vínculo legado sem
+provenance é reparado sem alterar seu status. O seed de módulo também passou a
+transportar `moduleId`; o seed diagnóstico permanece sem mapeamento.
+
+### RESULT
+
+Os cinco testes unitários focais passaram, e a regressão completa passou com
+125 arquivos/574 testes, 30 skips, cobertura 84,49% statements, 80,34%
+branches, 85,94% functions e 85,22% lines. Contracts 72/72, worker 25/25,
+migrations 27/27, build dos 12 workspaces, E2E 26/26, integração 8/20 com
+27/30 skips, audit high sem vulnerabilidades e gates de secrets,
+architecture, documentation, product-definition, exposure e diff-check
+passaram. Dois testes PostgreSQL live foram adicionados para provenance,
+replay, jornada e atomicidade da cadeia, mas permanecem skipped sem
+`CVG_TEST_DATABASE_URL`; não foram tratados como PASS. O audit
+`BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md`, SPEC, backlog e
+manifesto foram atualizados.
+
+### DECISIONS
+
+`JOURNEY-REL-001` fica `COMPLETED_WITH_GAPS`: atividades sem `moduleId` explícito
+não são atribuídas automaticamente; não há inferência por slug, conteúdo novo,
+nota, publicação clínica ou claim prático. A sincronização de estados
+posteriores, RLS/rollback/concorrência live, pipeline autoral e assurance
+operacional continuam pendentes.
+
+### STATUS
+
+IN_PROGRESS — verificação completa local passou; falta fechar commit, atualizar
+SHA do manifesto e executar traceability release. Release e 100% continuam
+bloqueados.
+
+### NEXT
+
+Revisar o diff, criar o commit intencional, atualizar o SHA do manifesto e
+rodar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois preparar
+a prova live quando o ambiente autorizado existir.

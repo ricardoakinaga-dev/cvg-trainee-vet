@@ -14,6 +14,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
 **Atualização operacional 2026-08-24 (RESULT-FEEDBACK-046):** a web agora consulta o endpoint público de feedback da tentativa corrigida, exibe score/outcome/feedback e reutiliza a próxima ação server-side; `not_found` fica em estado bounded “ainda não disponível”. RED/GREEN focal, build web, lint/typecheck, cobertura, E2E participante 13/13 e gates estáticos passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade/proveniência/atomicidade, live RLS, debrief/remediação/retenção completos, gates clínicos e assurance operacional continuam pendentes.
+**Atualização operacional 2026-08-24 (JOURNEY-REL-001):** a atribuição adaptativa agora materializa `activity_assignments` somente para atividades `PUBLISHED` com `learning_activities.module_id` explícito, grava `source_diagnostic_result_id`/`learning_assignment_id` e repara provenance nula sem alterar progresso. RED/GREEN focal, typecheck de persistence/curriculum, migration 0026 e seed M02 passaram localmente; os dois testes PostgreSQL live permanecem skipped sem `CVG_TEST_DATABASE_URL`. O item segue `COMPLETED_WITH_GAPS`: RLS/rollback/concorrência live, sincronização posterior de estados, pipeline de publicação curricular, gates clínicos e assurance operacional continuam pendentes.
 
 ## P0 — CRÍTICO
 
@@ -638,6 +639,27 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - resultado: RED observado antes do cartão; parser client-side allowlisted e plain-text, consulta após restauração/submissão corrigida, espera bounded para `not_found`, erro/retry e próxima ação server-side implementados; 3/3 E2E focal e 13/13 E2E participante passaram; `pnpm verify` manteve 125/572/29 skips e cobertura 84,51%/80,33%/86,03%/85,23%
 - gaps explícitos: assignment→atividade publicada/proveniência/atomicidade, live RLS e concorrência, debrief/reflexão completa, remediação/retensão/notificações, grants produtivos, observabilidade externa, publicação clínica, piloto e release continuam pendentes
 - próxima ação: priorizar a relação assignment→atividade e sua proveniência/atomicidade quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis; manter o feedback digital limitado à projeção já persistida
+
+### JOURNEY-REL-001 — Relação explícita assignment → atividade
+
+- título: materializar o vínculo entre a trilha adaptativa e as atividades publicadas sem inferência textual
+- descrição: ligar `learning_assignments` a `activity_assignments` por módulo curricular explícito, preservar provenance do diagnóstico e manter a operação idempotente/atômica; atividades legadas sem `moduleId` não são escolhidas automaticamente
+- módulo: jornada participante / currículo / persistência / segurança
+- dependência: `ADAPTIVE-044`; `JOURNEY-045`; `RESULT-FEEDBACK-046`; `SPEC-0109`; `SPEC-0111`; `SPEC-0118`; migration/RLS PostgreSQL autorizados
+- fase: BUILD — Phase 3–5 / jornada adaptativa
+- risco: crítico — uma resolução ambígua pode atribuir conteúdo errado, atravessar escopo ou perder a relação entre diagnóstico, módulo e estudo
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED antes do código; somente atividades publicadas com `module_id` válido e mesmo escopo são elegíveis; FKs e índices de provenance existem; atribuição e vínculo são escritos na mesma transação; replay não duplica; reparo não altera status; contratos públicos não expõem IDs internos; integração live permanece separada e explícita
+- escopo: `learning_activities.module_id`; `learning_assignments.source_diagnostic_result_id`; `activity_assignments.learning_assignment_id`; materialização/reparo bounded; seed curricular; testes unitários e live condicionais
+- fora desta fatia: inferência por slug; publicação clínica; alteração de nota/gabarito; sincronização de estados posteriores; E2E navegador→banco real; provider/MFA; grants produtivos; observabilidade externa; piloto; release
+- controles obrigatórios: `participantId` continua derivado do diagnóstico; escopo é validado na consulta e no contexto RLS; `moduleId` não entra de cliente; `onConflictDoUpdate` só preenche provenance nula; atividade sem mapping explícito permanece não atribuída
+- evidência: `BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md`; `traceability.yml` / `JOURNEY-REL-001`; SPEC 0109/0107/0111/0118; migration `0026_assignment_activity_provenance.sql`
+- código: `packages/persistence/src/schema.ts`; `packages/persistence/src/adaptive-assignment-repository.ts`; `packages/curriculum/src/types.ts`; `packages/curriculum/src/projection.ts`; `packages/curriculum/src/content-seed.ts`
+- testes: `packages/persistence/src/adaptive-assignment-repository.test.ts` (5/5); `tests/integration/postgres-adaptive-assignment.test.ts` (2 live condicionais); `tests/integration/curriculum-catalog.test.ts`
+- resultado: vínculo explícito, provenance do resultado diagnóstico, replay e reparo legado implementados localmente; migration manifest passou 27/27; live RLS/rollback/concorrência não observados sem ambiente
+- gaps explícitos: RLS sem bypass e rollback/concorrência live; sincronização de estado; pipeline autoral que persiste `moduleId` em atividade aprovada; E2E navegador→API→PostgreSQL curricular; conteúdo/revisão clínica, B-07 real, piloto, provider/MFA e assurance operacional
+- próxima ação: executar os dois testes live com role de aplicação sem `SUPERUSER/BYPASSRLS` e cleanup administrativo separado quando `CVG_TEST_DATABASE_URL` e autoridade estiverem disponíveis; não declarar release/100%
 
 ### STAFF-DIAGNOSTIC-PROFILE-024 — Baseline formativa no acompanhamento gerencial
 

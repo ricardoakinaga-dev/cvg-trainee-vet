@@ -119,6 +119,7 @@ it("prepares M02 persistence rows without auto-publishing clinical content", () 
   const seed = createM02ContentSeed("44444444-4444-4444-8444-444444444444");
 
   expect(seed.activity.status).toBe("RASCUNHO");
+  expect(seed.activity.moduleId).toBe("M02");
   expect(seed.contentVersions).toHaveLength(33);
   expect(seed.activityItems).toHaveLength(33);
   expect(

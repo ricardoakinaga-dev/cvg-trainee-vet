@@ -9,21 +9,21 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: RESULT-FEEDBACK-046 / AUD-P1-003 — feedback digital e debrief bounded, encerrado localmente
-- current_task: JOURNEY-REL-001 — preparar prova assignment→atividade com provenance/atomicidade quando o ambiente live estiver disponível
+- current_sprint: JOURNEY-REL-001 / AUD-P1-004 — vínculo explícito assignment→atividade e provenance
+- current_task: fechar o commit intencional, atualizar o SHA do manifesto e executar traceability release; depois preparar a prova live
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `RESULT-FEEDBACK-046` foi implementado em `2565e50f32a01348aa46684ef6d194bf2b6b0d23`, ligado ao manifesto no commit `d6c7d84a1123dbfe06304e72a5c5517b7b814f84`; a verificação passou com 125 arquivos/572 testes, 29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, contratos 72/72, worker 25/25, migrations 26/26, build 12 workspaces, E2E 26/26, integração 20/20 com 29 skips, audit high sem vulnerabilidades, secrets, architecture, documentation, product-definition, exposure e diff-check. `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo
-- next_action: preparar a prova live assignment→atividade com provenance/atomicidade/RLS/concorrência quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis; manter a fatia local pronta para retomada e não declarar release/100% enquanto gaps de relação, live RLS, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: a regressão local passou com 125 arquivos/574 testes, 30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, build 12 workspaces, E2E 26/26, integração 8/20 com 27/30 skips, audit high sem vulnerabilidades e gates estáticos/documentais/exposure verdes. A prova live continua skipped por configuração.
+- next_action: revisar o diff, criar commit intencional, atualizar o SHA do bloco `JOURNEY-REL-001` e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; manter RLS/rollback/concorrência live separadas e não declarar release/100% enquanto ambiente, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para as provas live do agregado, `ADAPTIVE-044` e cadeia assignment→atividade; JOURNEY-REL-001 — `learning_assignments` e `activity_assignments` ainda não têm prova de resolução/provenance/atomicidade end-to-end; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a próxima fatia local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live de assignment→atividade, RLS, rollback e concorrência; JOURNEY-REL-001 — a implementação local existe, mas a evidência end-to-end sob papel sem `SUPERUSER/BYPASSRLS` e a sincronização posterior de estados ainda faltam; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T05:49:55-03:00
+- last_update: 2026-08-24T06:04:35-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `4e82621fd02c43109c004f031110fb0d3acafd68`
+- head: `e718df1cc23f78c0615db6331e0995e45a03026a` (base antes do fechamento desta fatia)
 - origin: `fbbc692` (`origin/main`), local `main` ahead 48 commits
-- worktree: limpo após os commits `2565e50`/`d6c7d84`/`4e82621`; não há push/deploy
+- worktree: contém somente as alterações locais da fatia `JOURNEY-REL-001` e sua documentação; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL nos commits `2565e50`/`d6c7d84`/`4e82621`; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build 12 workspaces, E2E 26/26, integração 20/20 +29 skips, audit high, traceability estrutural/release e gates estáticos passaram; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
+- verification_state: `JOURNEY-REL-001` PASS LOCAL: `pnpm verify` 125/574/30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, build 12 workspaces, E2E 26/26, integração 8/20 +27/30 skips, audit high, secrets, architecture, documentation, product-definition, exposure, migrations 27/27 e `git diff --check` passaram; release traceability após o commit, RLS/rollback/concorrência live, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observados
 
 ## REGRAS DE USO
 
