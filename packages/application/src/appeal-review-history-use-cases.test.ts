@@ -115,5 +115,24 @@ describe("appeal review history", () => {
         },
       ),
     ).rejects.toMatchObject({ code: "internal_error" });
+
+    await expect(
+      getAppealReviewHistory(
+        {
+          principalId: "55555555-5555-4555-8555-555555555555",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+          appealId,
+        },
+        {
+          getAppealReviewHistory: async () => ({
+            appealExists: true,
+            scopeId,
+            events: [{ ...event(1), eventType: "UNSAFE" as never }],
+          }),
+        },
+      ),
+    ).rejects.toMatchObject({ code: "internal_error" });
   });
 });

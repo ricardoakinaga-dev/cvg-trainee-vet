@@ -55,6 +55,26 @@ export interface AppealReviewHistoryReadPort {
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const eventTypes: readonly AppealReviewHistoryEvent["eventType"][] = [
+  "ATRIBUIR_REVISOR",
+  "DECIDIR",
+  "SOLICITAR_RECALCULO",
+  "CONCLUIR_RECALCULO",
+];
+const fromStatuses: readonly AppealReviewHistoryEvent["fromStatus"][] = [
+  "ABERTA",
+  "EM_REVISAO",
+  "DECIDIDA",
+  "RECALCULO_PENDENTE",
+];
+const toStatuses: readonly AppealReviewHistoryEvent["toStatus"][] = [
+  "EM_REVISAO",
+  "DECIDIDA",
+  "RECALCULO_PENDENTE",
+  "ENCERRADA",
+];
+const decisions: readonly NonNullable<AppealReviewHistoryEvent["decision"]>[] =
+  ["MANTER_RESULTADO", "ANULAR_ITEM", "ALTERAR_RESULTADO"];
 
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) {
@@ -114,6 +134,19 @@ function validateHistory(
       !uuidPattern.test(event.historyId) ||
       event.appealVersion < 1 ||
       !Number.isInteger(event.appealVersion) ||
+      !eventTypes.includes(event.eventType) ||
+      !fromStatuses.includes(event.fromStatus) ||
+      !toStatuses.includes(event.toStatus) ||
+      (event.reviewerId !== undefined && !uuidPattern.test(event.reviewerId)) ||
+      (event.decision !== undefined && !decisions.includes(event.decision)) ||
+      (event.decisionRationale !== undefined &&
+        (event.decisionRationale.trim().length === 0 ||
+          event.decisionRationale.length > 10_000 ||
+          /<[^>]*>/u.test(event.decisionRationale))) ||
+      (event.decisionAt !== undefined &&
+        Number.isNaN(new Date(event.decisionAt).getTime())) ||
+      (event.decisionCorrelationId !== undefined &&
+        !uuidPattern.test(event.decisionCorrelationId)) ||
       Number.isNaN(new Date(event.createdAt).getTime())
     ) {
       throw new ApplicationError(
