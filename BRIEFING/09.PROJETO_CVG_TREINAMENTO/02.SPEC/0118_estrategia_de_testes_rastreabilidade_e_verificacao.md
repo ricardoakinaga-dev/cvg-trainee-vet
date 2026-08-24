@@ -214,7 +214,7 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 
 - comandos por camada: `pnpm test:contract` (12 arquivos/36 testes), `pnpm test:worker` (4/24), `pnpm test:integration:live` (18/26 sem skips), `pnpm test:integration:restore` (1/1), `pnpm verify:migrations` e `pnpm verify`;
 - cobertura: 352 testes passaram e 17 testes live ficaram fora do gate unitário por configuração; statements 84,92%, branches 80,34%, functions 85,89% e lines 85,61%; entrypoints de composição e alguns repositórios continuam com cobertura de módulo menor e permanecem visíveis no relatório;
-- fixture real: `scripts/real-e2e-fixture-server.mjs` cria convite/atividade/conta/atribuição sintéticos em PostgreSQL, escreve fixture temporária, é usado por `tests/e2e/real-runtime.spec.ts` e remove os artefatos no shutdown;
+- fixture real: `scripts/real-e2e-fixture-server.mjs` cria convite/conta e conteúdo editorial sintéticos em PostgreSQL, executa a publicação autoral, descobre a atividade materializada, cria a atribuição, escreve fixture temporária, é usado por `tests/e2e/real-runtime.spec.ts` e remove os artefatos no shutdown;
 - E2E: `pnpm test:e2e` passa 12/12; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passa 14/14 com convite, jornada, tentativa, resposta e submissão persistidos; a projeção pública não exibe `participantId`, `participantText` ou `tokenHash`;
 - migrations/CI: `scripts/verify-migrations.mjs` alinha 15 SQLs ao journal 0000–0014; `.github/workflows/quality.yml` declara PostgreSQL, aplica migrations, roda live/restore/E2E padrão/E2E real e audit;
 - limites: execução remota do workflow, carga/failover/restart, múltiplas réplicas, leitor de tela e aprovação clínica continuam pendentes; nenhum teste usa PDF, foto, prontuário, tutor ou dado real.
@@ -313,3 +313,56 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
   fixture e não o pipeline authoring completo; workflow remoto, grants/owners
   produtivos, observabilidade/restore, revisão clínica, B-07 e piloto continuam
   gates separados.
+
+## 27. Evidência adicional — AUTHORING-E2E-PIPELINE-001
+
+- o RED foi convertido em contrato executável: `tests/e2e/real-runtime.spec.ts`
+  exige `source: authoring-publication-v1` e slug `authoring-<hash>` antes da
+  navegação participante;
+- `scripts/real-e2e-fixture-server.mjs` deixou de inserir diretamente
+  `learning_activities`/`learning_activity_items`. O fixture cria apenas uma
+  versão editorial sintética, executa revisão, projeção, autorização e
+  publicação pelos casos de uso existentes, consulta a projeção materializada
+  e só então grava a atribuição participante;
+- o cleanup foi ampliado para revisão, editorial, versão, outbox, projeção e
+  contas sintéticas, inclusive na falha parcial do seed;
+- Node 22.22.0: 117 arquivos/572 testes unitários passaram; Prettier, ESLint,
+  `tsc -b`, sintaxe do fixture, imports compilados e `git diff --check` também
+  passaram; Playwright reconheceu os dois cenários sob
+  `CVG_RUN_REAL_E2E=true`;
+- o E2E browser→API→PostgreSQL permanece sem execução nesta sessão por falta
+  de `CVG_TEST_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` e de um banco CVG
+  descartável autorizado. O PostgreSQL local disponível pertence a outro
+  schema e não foi alterado; `pnpm` ausente no `PATH` também impede declarar
+  o workflow oficial como executado;
+- a ausência de evidência live mantém o item em `COMPLETED_WITH_GAPS` e não
+  altera os gates de workflow remoto, produção, revisão clínica, B-07, piloto,
+  observabilidade, restore, provider ou MFA.
+
+## 28. Evidência adicional — ACTIVITY-RLS-047
+
+- crítica independente: o resolvedor de escopo da atividade consultava
+  `learning_activities` fora de uma transação contextual. Com `FORCE RLS`, isso
+  poderia retornar vazio no preflight de início e quebrar a jornada real; o
+  achado foi tratado como P0 e não como limitação de fixture;
+- RED/GREEN: `packages/persistence/src/attempt-repository.db.test.ts` bloqueia
+  qualquer `select` no executor raiz e exige transação com contexto; o
+  resolvedor passou a aceitar `participantId`/`scopeId`, aplicar
+  `setDatabaseSecurityContext` e consultar somente pelo executor transacional;
+  todas as chamadas HTTP de início, resposta, submissão, feedback e
+  contestação passam contexto derivado server-side;
+- hardening RLS: migration `0031_learning_activity_participant_rls_hardening.sql`
+  limita a projeção participante a assignment ativo, atividade `PUBLISHED`,
+  conta `ACTIVE` e membership `PARTICIPANT` aceito no escopo; a constraint de
+  sessão rejeita `session_id` sem `module_id`, preservando atividades legadas
+  sem sessão;
+- fixtures live sintéticos de atividade, jornada adaptativa e isolamento foram
+  alinhados com membership aceito; nenhuma conta real, token real, prontuário,
+  PDF, foto ou fonte de terceiro foi usado;
+- verificação local: 117 arquivos/572 testes unitários, `tsc -b`, ESLint,
+  Prettier, `node --check`, `verify:migrations` 32/32 e `git diff --check`
+  passaram; execução PostgreSQL live ainda requer URL de banco CVG descartável
+  e role autorizada, portanto não há PASS live nesta rodada;
+- limites: workflow remoto same-SHA, grants/owners produtivos, múltiplas
+  réplicas/carga, observabilidade/restore, provider/MFA e gates clínicos
+  permanecem independentes e não são aprovados por este slice.

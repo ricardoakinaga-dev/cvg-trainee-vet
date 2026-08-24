@@ -3670,6 +3670,96 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "AUTHORING-E2E-PIPELINE-001"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-022",
+        "PRD-UC-002",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0528_authoring_e2e_pipeline_audit.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      ["scripts/real-e2e-fixture-server.mjs", "tests/e2e/real-runtime.spec.ts"]
+    tests:
+      [
+        "tests/e2e/real-runtime.spec.ts",
+        "packages/application/src/authoring-use-cases.test.ts",
+        "packages/persistence/src/content-repository.test.ts",
+      ]
+    commit: "743b755b4a1143ed77f8e563fd1f79c9861d9b43"
+    artifacts: ["BRIEFING/04.AUDIT/0528_authoring_e2e_pipeline_audit.md"]
+    verification:
+      [
+        "RED: the prior real fixture inserted learning_activities and learning_activity_items directly",
+        "GREEN: authoring review, projection, authorization and publication materialize the activity before assignment",
+        "Node 22.22.0 unit: 117 files/572 tests passed",
+        "Prettier, ESLint, tsc -b, node --check and git diff --check passed",
+        "Playwright listed both CVG_RUN_REAL_E2E scenarios",
+        "live browser→web→API→PostgreSQL E2E not executed because no authorized CVG database URL was present",
+      ]
+    status: "verified-with-gaps"
+  - id: "ACTIVITY-RLS-047"
+    requirements:
+      [
+        "PRD-RF-012",
+        "PRD-RF-015",
+        "PRD-RF-022",
+        "PRD-UC-002",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0529_activity_rls_attempt_context_audit.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/attempt-repository.ts",
+        "apps/api/src/http.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/drizzle/0031_learning_activity_participant_rls_hardening.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+      ]
+    tests:
+      [
+        "packages/persistence/src/attempt-repository.db.test.ts",
+        "tests/integration/postgres-security-isolation.test.ts",
+        "tests/integration/postgres-activity-content.test.ts",
+        "tests/integration/postgres-adaptive-assignment.test.ts",
+      ]
+    commit: "743b755b4a1143ed77f8e563fd1f79c9861d9b43"
+    artifacts: ["BRIEFING/04.AUDIT/0529_activity_rls_attempt_context_audit.md"]
+    verification:
+      [
+        "RED: guarded persistence test failed when the resolver used the root database executor",
+        "GREEN: resolver transaction/context test passed and all current unit tests passed 117 files/572 tests",
+        "HTTP calls now pass participant or authorized scope context server-side",
+        "verify:migrations passed 32/32 and session/module schema check is aligned",
+        "live PostgreSQL/RLS was not executed because no authorized CVG database URL was present",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

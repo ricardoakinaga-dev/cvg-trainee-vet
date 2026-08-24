@@ -543,3 +543,12 @@ unexpected persisted items were fixed and live concurrency was re-run. The
 remaining next action is the remote same-SHA workflow plus browser evidence for
 an activity created by the authoring pipeline, with production and clinical
 gates still explicit.
+
+Plan revision note, 2026-08-24 (AUTHORING-E2E-PIPELINE-001 / ACTIVITY-RLS-047):
+the real fixture now materializes its activity through authoring publication;
+the adversarial critique then found a P0 root-context activity lookup and a P1
+participant-policy gap. The bounded fix added contextual resolver transactions,
+server-derived HTTP contexts, accepted-membership checks and the session/module
+constraint, with RED/GREEN and static local evidence. The remaining next action
+is live PostgreSQL/RLS and browser E2E in an authorized disposable environment;
+remote same-SHA, productive operations and clinical gates remain explicit.

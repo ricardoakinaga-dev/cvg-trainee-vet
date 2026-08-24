@@ -331,3 +331,83 @@ entrustment, autonomia clínica, transferência assistencial, acreditação ou
 competência prática a partir desses sinais digitais. B-07, packs clínicos,
 observação de trabalho, simulação presencial, publicação e piloto continuam
 atrás dos gates de revisão de Ricardo e do ambiente autorizado.
+
+## 8. Verificação de plataformas e práticas — consulta primária de 2026-08-24
+
+Esta consulta adicional foi feita nas páginas oficiais dos próprios
+organizadores/fornecedores. Ela atualiza o benchmark de capacidades, mas não
+transforma nenhum produto externo em dependência, fonte bibliográfica ou
+autorização de conteúdo do CVG.
+
+### 8.1 Capacidades observadas nos benchmarks
+
+- **RCVS Academy:** combina cursos modulares, aprendizagem interativa,
+  notas/bookmarks, feedback, retomada e ligação direta com o registro 1CPD.
+  A decisão de produto é manter retomada, reflexão e próxima ação; horas e
+  reconhecimento continuam jurisdicionais e não são copiados para o CVG.
+- **BSAVA LUMOS:** organiza módulos por nível Foundation/Intermediate/Advanced,
+  caminhos por disciplina, badges/certificados e aprendizagem baseada em
+  casos. A decisão é adotar níveis e caminhos explicáveis como padrão de UX,
+  sem transformar badge em competência clínica ou certificação regulatória.
+- **VetFolio/NAVC:** oferece biblioteca multimodal, microlearning, eventos,
+  demonstrações, certificados e ferramentas de administração de equipes. A
+  decisão é manter catálogo, formato e acompanhamento como referências de
+  produto, sem importar conteúdo, certificado, horas RACE ou dependência
+  externa no MVP.
+- **VetBloom:** combina biblioteca, trilhas por papel, grupos, relações
+  coach–aprendiz, gestão de conteúdo, badges e relatórios. A decisão é manter
+  acompanhamento humano, trilhas por função e visão gerencial escopada; não
+  adotar ranking ou badge como prova automática de competência.
+- **VETgirl:** evidencia o valor de acesso ao vivo e sob demanda, quizzes para
+  conclusão/CE, progresso, certificados, coleções e acesso offline. A decisão
+  é tratar conclusão, recuperação e reflexão como eventos distintos; offline,
+  CE e entrega de certificado exigem escopo de produto e operação próprios.
+
+### 8.2 Práticas de treinamento e segurança
+
+- O **TeamSTEPPS 3.0** da AHRQ fornece módulos de comunicação, liderança,
+  monitoramento situacional, apoio mútuo e simulações; a própria orientação
+  ressalta que curso isolado sem implementação e sustentação institucional não
+  garante mudança de segurança. O CVG deve registrar preparação, atividade,
+  debrief/reflexão e próxima ação, além de indicadores de implementação quando
+  houver ambiente autorizado.
+- Os **Healthcare Simulation Standards of Best Practice 2025** da INACSL
+  destacam prebriefing, desenho com objetivos mensuráveis, facilitação,
+  debriefing planejado, avaliação de aprendizagem/desempenho, operações e
+  integridade profissional. Isso reforça que o MVP digital pode preparar e
+  refletir, mas uma habilidade prática precisa de simulação/observação e
+  facilitador apropriados.
+- A literatura veterinária recente apoia simuladores e prática deliberada para
+  conhecimento e habilidades, porém também aponta a necessidade de alinhar
+  objetivo, atividade e resultado e de combinar pontos de evidência ao longo
+  do tempo. Portanto, o CVG não usará um quiz único, score ou IA para declarar
+  competência prática.
+- A orientação atual do **RCVS sobre IA** exige julgamento profissional,
+  transparência, criticidade sobre limitações/bias/hallucinações, proteção de
+  dados e revisão humana de registros gerados. A regra CVG permanece mais
+  restritiva: IA/Qdrant só podem assistir e produzir rascunhos internos; nunca
+  alteram estado, nota, gabarito, publicação, papel ou decisão clínica.
+
+Fontes primárias adicionais: [RCVS Academy](https://www.rcvs.org.uk/veterinary-professionals/learning-and-development/rcvs-academy),
+[RCVS CPD](https://www.rcvs.org.uk/veterinary-professionals/learning-and-development/continuing-professional-development-cpd),
+[RCVS AI advice](https://www.rcvs.org.uk/veterinary-professionals/conduct-and-guidance/resources-and-updates/using-artificial-intelligence-ai-in-practice-advice-for-the-profession),
+[BSAVA LUMOS](https://www.bsava.com/education/lumos/),
+[VetFolio](https://www.vetfolio.com/pages/subscribe),
+[VetBloom](https://vetbloom.com/offerings/),
+[VETgirl vital](https://marketing.vetgirlontherun.com/vetgirl-vital-app),
+[AHRQ TeamSTEPPS 3.0](https://www.ahrq.gov/teamstepps/instructor/essentials/coursemgmtappa.html),
+[INACSL Standards 2025](https://www.inacsl.org/healthcare-simulation-standards),
+[revisão de simuladores em educação veterinária](https://pubmed.ncbi.nlm.nih.gov/33891532/) e
+[revisão de alinhamento em simulação veterinária](https://pubmed.ncbi.nlm.nih.gov/39415949/).
+
+### 8.3 Implicação executável para o CVG
+
+A barra de produto permanece:
+
+`competência → objetivo → comportamento observável → atividade interativa → feedback → reflexão → retenção → próxima ação`
+
+O próximo backlog técnico deve priorizar, nesta ordem, evidência de jornada e
+segurança que o produto consegue provar localmente; depois capacidades de
+catálogo/multimodalidade, grupos/coach, calendário e offline somente se forem
+aprovadas no PRD. Nenhum benchmark autoriza ampliar o escopo, publicar B-07,
+prometer CPD/acreditação ou substituir avaliação prática humana.

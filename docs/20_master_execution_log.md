@@ -6962,3 +6962,93 @@ e E2E navegador→API→PostgreSQL em que o pipeline autoral crie a atividade;
 depois observar grants/owners produtivos, collector/retention/traces,
 carga/failover/restore, provider/MFA e gates clínicos. Sem essa autoridade,
 preservar o estado e não fazer push/deploy por inferência.
+
+## 2026-08-24 — AUTHORING-E2E-PIPELINE-001: fixture editorial no E2E
+
+### TIMESTAMP
+
+2026-08-24T09:39:10-03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–5 / prova authoring→atividade→participante
+
+### TASK
+
+Eliminar o seed direto de atividade do fixture real e provar a origem editorial
+da atividade consumida pelo navegador.
+
+### ACTION
+
+O fixture passou a criar convite, versão editorial e registro autoral
+sintéticos; executa revisão, verificação da projeção, autorização e publicação
+pelos casos de uso existentes; consulta a atividade e o item materializados por
+`scopeId/moduleId/sessionId`; somente então cria a atribuição. O E2E exige
+`source: authoring-publication-v1` e slug `authoring-<hash>`. O cleanup remove
+projeção, revisão, editorial, outbox, contas e artefatos mesmo após falha parcial.
+
+### RESULT
+
+Commit técnico `743b755b4a1143ed77f8e563fd1f79c9861d9b43`. Node 22.22.0 passou
+117 arquivos/572 testes unitários; Prettier, ESLint, `tsc -b`, sintaxe do
+fixture, `verify:migrations` 32/32 e `git diff --check` passaram. Playwright
+reconheceu os dois cenários sob `CVG_RUN_REAL_E2E=true`.
+
+### LIMITES
+
+O E2E navegador→web→API→PostgreSQL não foi executado: não havia
+`CVG_TEST_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL`, o PostgreSQL local era de
+outro schema e `pnpm` não estava no `PATH`. O item permanece
+`COMPLETED_WITH_GAPS`; não há aprovação clínica, release ou workflow remoto.
+
+## 2026-08-24 — ACTIVITY-RLS-047: contexto transacional e membership
+
+### TIMESTAMP
+
+2026-08-24T09:39:10-03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–5 / hardening de segurança da jornada participante
+
+### TASK
+
+Corrigir o P0 encontrado pela crítica independente: leitura do escopo da
+atividade fora do contexto RLS transacional, com endurecimento da policy
+participante.
+
+### ACTION
+
+RED: teste guardado rejeitou o uso do executor raiz no
+`createActivityScopeResolver`. GREEN: o resolver agora abre transação,
+estabelece contexto de participante/escopo e as rotas HTTP fornecem contexto
+server-side. A migration `0031` exige assignment ativo, atividade `PUBLISHED`,
+conta `ACTIVE`, membership `PARTICIPANT` aceito no escopo e sessão somente com
+módulo; fixtures de atividade, jornada adaptativa e isolamento foram alinhados.
+
+### RESULT
+
+Commit `743b755b4a1143ed77f8e563fd1f79c9861d9b43`. Unitário 117/572,
+`tsc -b`, ESLint, Prettier, `node --check`, `verify:migrations` 32/32 e
+`git diff --check` passaram. A revisão independente original foi tratada como
+falha P0; a correção local não é convertida em evidência live sem banco
+autorizado.
+
+### STATUS
+
+COMPLETED_WITH_GAPS — aplicação live da migration, role PostgreSQL sem bypass,
+E2E autoral, workflow same-SHA, operação produtiva e gates clínicos continuam.
+
+### NEXT
+
+Executar a suíte live e o E2E real em banco descartável autorizado; atualizar o
+resultado como PASS ou falha observada, sem usar o schema PostgreSQL de outro
+sistema.

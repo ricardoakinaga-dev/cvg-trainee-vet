@@ -42,6 +42,27 @@ live completa passou 31 arquivos/50 testes. `pnpm test:coverage` passou com
 `COMPLETED_WITH_GAPS`: E2E navegador usando o pipeline autoral, workflow remoto,
 grants/owners produtivos, observabilidade/restore e gates clínicos continuam.
 
+**Atualização operacional 2026-08-24 (AUTHORING-E2E-PIPELINE-001):** o fixture
+real deixou de inserir diretamente a atividade e seus itens. Ele agora cria
+conteúdo editorial sintético, executa revisão, projeção, autorização e
+publicação pelos casos de uso de authoring, consulta a atividade materializada
+por `scopeId/moduleId/sessionId` e só depois cria a atribuição participante. O
+contrato E2E exige `source: authoring-publication-v1` e slug `authoring-*`.
+Node 22.22.0 passou 117 arquivos/572 testes unitários, além de lint, typecheck,
+formatação, sintaxe e descoberta dos dois cenários reais. O E2E browser→API→
+PostgreSQL ainda não foi executado por falta de banco CVG descartável autorizado
+e `pnpm` no ambiente; o item permanece `COMPLETED_WITH_GAPS`.
+
+**Atualização operacional 2026-08-24 (ACTIVITY-RLS-047):** a crítica
+independente encontrou e o TDD corrigiu uma leitura de `learning_activities`
+fora do contexto transacional RLS. O resolver agora exige `participantId` ou
+`scopeId` server-side em transação; a migration `0031` exige assignment ativo,
+atividade publicada, conta ativa e membership participante aceito, e fecha a
+constraint `session_id` sem `module_id`. Fixtures live sintéticos foram
+alinhados com memberships aceitos. Unitário passou 117/572, migrations 32/32,
+typecheck/lint/formatação/sintaxe/diff-check passaram; PostgreSQL live e E2E
+autoral continuam pendentes por falta de banco CVG descartável autorizado.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -742,6 +763,48 @@ grants/owners produtivos, observabilidade/restore e gates clínicos continuam.
 - resultado: commit `82ea6ab` criou a projeção com validação fail-closed e duas transações concorrentes convergindo para uma atividade/dois itens; cobertura e migrations passaram; nenhum dado real, PDF, foto, prontuário, tutor ou segredo foi usado
 - gaps explícitos: E2E curricular navegador→API→PostgreSQL com atividade criada pelo pipeline; workflow remoto no mesmo SHA; grants/owners produtivos; collector/retention/traces; carga/failover/restore; revisão clínica/B-07/piloto; provider/MFA
 - próxima ação: executar workflow remoto e E2E curricular do pipeline somente com autoridade de ambiente; não declarar release/100%
+
+### AUTHORING-E2E-PIPELINE-001 — E2E real com atividade criada pelo authoring
+
+- título: provar que a atividade consumida pelo navegador nasce da publicação editorial materializada
+- descrição: substituir o seed direto do fixture por conteúdo editorial sintético, revisão, projeção, publicação, descoberta da atividade e atribuição antes da navegação participante
+- módulo: E2E / autoria / currículo / persistência / segurança
+- dependência: `AUTHORING-ACTIVITY-001`; SPEC 0109/0110/0111/0118; banco PostgreSQL descartável e workflow autorizados
+- fase: BUILD — Phase 3–5 / prova de jornada
+- risco: crítico — E2E de atividade pré-inserida pode mascarar quebra entre autoria, publicação, atribuição e participante
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED contratual para proveniência; fixture sem insert direto de atividade/item; revisão/projeção/autorização/publicação executadas; assignment após materialização; cleanup completo; E2E real browser→web→API→PostgreSQL; artefato same-SHA — implementação e gates locais estáticos/unitários cumpridos, E2E live pendente
+- escopo: `scripts/real-e2e-fixture-server.mjs`; `tests/e2e/real-runtime.spec.ts`; fixture JSON temporária; auditoria e manifesto de rastreabilidade
+- fora desta fatia: conteúdo clínico real; publicação de B-07/M02; alteração de nota/gabarito; provider/MFA; grants produtivos; observabilidade/restore; carga/failover; workflow remoto; piloto; release
+- controles obrigatórios: apenas dados sintéticos; revisor e autor distintos; capability clínica confinada ao fixture; origem não entra na projeção participante; IA/Qdrant não participam; falha parcial remove artefatos do fixture
+- evidência: `BRIEFING/04.AUDIT/0528_authoring_e2e_pipeline_audit.md`; SPEC 0118 seção 27; `traceability.yml` / `AUTHORING-E2E-PIPELINE-001`
+- código: `scripts/real-e2e-fixture-server.mjs`
+- testes: `tests/e2e/real-runtime.spec.ts`; suíte unitária dos 117 arquivos/572 testes; lint, typecheck, Prettier, Node syntax e Playwright `--list`
+- resultado: o fixture usa `reviewAuthoringContent` e `advanceContent` para materializar `M02-S1`; o contrato exige slug `authoring-<hash>`; todos os gates locais disponíveis passaram
+- gaps explícitos: E2E real ainda não executado sem `CVG_TEST_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL`; `pnpm` ausente no ambiente; workflow remoto same-SHA, grants/owners, collector/retention/traces, carga/failover/restore, revisão clínica/B-07/piloto e provider/MFA
+- próxima ação: executar `CVG_RUN_REAL_E2E=true pnpm test:e2e` em banco descartável autorizado e registrar artefatos; não declarar PASS/release por inferência
+
+### ACTIVITY-RLS-047 — Contexto transacional e membership da atividade
+
+- título: impedir preflight e leitura participante fora do contexto RLS autorizado
+- descrição: corrigir o resolver de escopo para usar transação contextual e restringir a função participante a assignment ativo, atividade publicada, conta ativa e membership aceito no escopo
+- módulo: jornada participante / persistência / API / segurança
+- dependência: `AUTHORING-ACTIVITY-001`; `AUTHORING-E2E-PIPELINE-001`; SPEC 0109/0110/0111/0118; migration e banco PostgreSQL autorizados
+- fase: BUILD — Phase 3–5 / hardening RLS
+- risco: crítico — leitura fora do contexto pode quebrar a jornada ou atravessar isolamento; membership pendente pode abrir projeção indevida
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN focal; resolver contextual; chamadas HTTP com contexto derivado server-side; migration `0031`; constraint de sessão coerente; fixtures live atualizados; live PostgreSQL com role sem bypass e regressão atualizada — parte local cumprida, live pendente
+- escopo: `createActivityScopeResolver`; `apps/api/src/http.ts`; `learning_activities` participant policy; `account_invitations.accepted_at`; `learning_activities_session_module_check`
+- fora desta fatia: autorização clínica, alteração de nota/gabarito, provider/MFA, grants/owners produtivos, carga/failover, observabilidade/restore, workflow remoto, piloto e release
+- controles obrigatórios: contexto não vem de campo participante; PostgreSQL continua autoridade; RLS é defesa adicional; IA/Qdrant não participam; fixtures são sintéticos e limpos
+- evidência: `BRIEFING/04.AUDIT/0529_activity_rls_attempt_context_audit.md`; SPEC 0118 seção 28; `traceability.yml` / `ACTIVITY-RLS-047`
+- código: `packages/persistence/src/attempt-repository.ts`; `apps/api/src/http.ts`; `packages/persistence/drizzle/0031_learning_activity_participant_rls_hardening.sql`; `packages/persistence/src/schema.ts`
+- testes: `packages/persistence/src/attempt-repository.db.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `tests/integration/postgres-activity-content.test.ts`; `tests/integration/postgres-adaptive-assignment.test.ts`
+- resultado: commit `743b755` corrigiu o P0 e endureceu o P1/P2; unitário 117/572, migrations 32/32 e gates estáticos passaram; nenhuma execução live foi inferida
+- gaps explícitos: aplicação da migration e suíte PostgreSQL live em banco descartável, E2E autoral navegador→API→PostgreSQL, workflow same-SHA, operação produtiva e gates clínicos
+- próxima ação: executar `CVG_RUN_LIVE_DB_TESTS=true` e `CVG_RUN_REAL_E2E=true` em ambiente autorizado, registrando resultado PASS ou falha sem mascaramento
 
 ### JOURNEY-REL-002 — Sincronização bounded assignment → atividade
 
