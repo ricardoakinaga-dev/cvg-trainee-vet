@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: REFLECTION-035 / AUD-P1-001 — reflexão digital e próxima ação
-- current_task: REFLECTION-2026-08-23-D — crítica independente e reconciliação do agregado gerencial
+- current_task: REFLECTION-2026-08-23-E — gate de release local e próxima lacuna
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: agregado gerencial local implementado em domínio/contrato/persistência/API/web; `pnpm exec vitest run --coverage --project unit` passou com 94 arquivos/466 testes e 84,20% statements, 80,03% branches, 85,09% functions e 84,91% lines; E2E operacional 5/5 e build dos 12 workspaces passaram
-- next_action: incorporar crítica independente, corrigir achados materiais, executar `pnpm verify`, atualizar manifesto/commit local e rodar o gate de release; preservar como gaps a integração PostgreSQL live sem `CVG_TEST_DATABASE_URL`, collector/OTel, retenção, carga, failover, restore, gates clínicos e workflow remoto
+- last_completed_action: crítica independente focada confirmou PASS na fronteira de persistência/contrato; `9a618e9c6163f0a2e8056191481b8f1c71d1aea1` materializou a fatia; `pnpm verify` passou com 102 arquivos/486 testes, 25 skips e cobertura 84,34% statements, 80,20% branches, 85,48% functions e 85,03% lines
+- next_action: atualizar o commit de documentação com o SHA da fatia e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois manter a prova live como pendência explícita e abrir apelações/filtros-paginação-exportação conforme prioridade
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T22:18:39-03:00
+- last_update: 2026-08-23T22:29:38-03:00
 
 ## REGRAS DE USO
 

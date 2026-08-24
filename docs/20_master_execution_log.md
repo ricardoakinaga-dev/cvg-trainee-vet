@@ -4359,3 +4359,55 @@ completo, atualizar o manifesto com commit/artefatos e fechar somente como
 `COMPLETED_WITH_GAPS` se as provas locais e o release gate passarem. Manter como
 gaps a prova live/RLS, operação externa, gates clínicos, provider/MFA e workflow
 remoto.
+
+## 2026-08-23 — REFLECTION-035: crítica, commit e gate de release
+
+### TIMESTAMP
+
+2026-08-23 22:29:38 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / jornada de produto
+
+### SPRINT
+
+REFLECTION-035 / AUD-P1-001
+
+### TASK
+
+Revisar a fronteira independente, consolidar o agregado e atualizar a evidência
+de commit antes do release gate local.
+
+### ACTION
+
+A crítica independente read-only focada em persistência/contrato confirmou que a
+consulta só seleciona `answers.itemId`, aplica `scopeId` e `{scopeId,
+participantId}` antes das leituras e que os contratos strict rejeitam identidade e
+campos extras. O commit local `9a618e9c6163f0a2e8056191481b8f1c71d1aea1`
+materializou código, testes, auditoria, estado, backlog, SPEC, plano e manifesto;
+o manifesto foi então ligado ao SHA completo.
+
+### RESULT
+
+`pnpm verify` passou com 102 arquivos/486 testes, 25 skips de arquivo/teste,
+84,34% statements, 80,20% branches, 85,48% functions e 85,03% lines. Contratos
+59/59, worker 24/24, build dos 12 workspaces, lint, typecheck, migrations,
+secrets, arquitetura, documentação, product-definition e exposure passaram.
+O E2E operacional focado passou 5/5 e o teste live do agregado ficou skipped pela
+ausência de `CVG_TEST_DATABASE_URL`; isso permanece GAP, não PASS.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar o release traceability gate em worktree limpo. Depois, quando houver
+ambiente PostgreSQL autorizado, executar a prova live/RLS; em paralelo a próxima
+lacuna local é apelação/contestação ou filtros/paginação/exportação. Gaps clínicos,
+provider/MFA, collector/OTel e workflow remoto permanecem independentes.

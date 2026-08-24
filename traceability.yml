@@ -1393,7 +1393,7 @@ artifacts:
         "tests/integration/postgres-reflection-management.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
-    commit: "e53018e8846309e069c4752517f50e9bb368721e"
+    commit: "9a618e9c6163f0a2e8056191481b8f1c71d1aea1"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
