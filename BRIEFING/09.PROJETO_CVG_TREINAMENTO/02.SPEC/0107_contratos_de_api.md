@@ -236,7 +236,9 @@ O PostgreSQL repete a invariável com `FORCE RLS` em
 participante exigem a mesma membership; leitura staff só é elegível quando não
 há `participant_id` no contexto transacional. Essa defesa não substitui a
 autorização da API, e não altera a fronteira pública nem cria competência
-prática.
+prática. A função `SECURITY DEFINER` usada pela policy não tem `EXECUTE` para
+`PUBLIC`; o bootstrap concede o privilégio apenas à role de aplicação
+provisionada, e a migração não assume que a role exista antes do provisionador.
 
 `GET /api/v1/learning-path` exige sessão ativa de participante, posse e pelo menos um escopo autorizado. O servidor passa os escopos da sessão ao caso de uso, consulta PostgreSQL com contexto transacional/RLS e publica somente:
 

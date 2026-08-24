@@ -28,6 +28,8 @@ falha com `200` e chamada do caso de uso, quando o comportamento requerido era
   server-side `cvg_participant_in_scope` e reaplica as policies de leitura,
   inserção e atualização do runtime exigindo conta ativa, membership aceita,
   papel `PARTICIPANT` e o mesmo escopo;
+- a mesma migration revoga `EXECUTE` público da função `SECURITY DEFINER`, e o
+  bootstrap concede execução somente à role de aplicação provisionada;
 - a policy staff de leitura só é elegível sem contexto de participante, para
   não ampliar uma transação que recebeu `participant_id`;
 - o teste live do runtime foi preparado para criar membership sintética e
@@ -40,6 +42,8 @@ falha com `200` e chamada do caso de uso, quando o comportamento requerido era
 - RED focal: `apps/api/src/http.test.ts` falhou com `200` antes da guarda;
 - GREEN focal: 70/70 testes HTTP passaram;
 - persistência/mapeamento focal: 72/72 testes unitários passaram;
+- governança focal: 3/3 testes de migration passaram, incluindo a privacidade
+  da função e a concessão exclusiva à role de aplicação;
 - `pnpm verify:migrations`: 35 migrations, cadeia 0000–0034 alinhada ao
   journal;
 - lint dos arquivos alterados e `tsc -b --pretty false`: passaram;
@@ -61,5 +65,5 @@ equivalente ou janela foi inventada nesta auditoria.
 
 ## Rastreabilidade
 
-`CURRICULUM-RUNTIME-AUTHZ-050` · PRD-RF-070 · SPEC-0106 · SPEC-0107 ·
-SPEC-0109 · SPEC-0111 · SPEC-0118 · AGENTS-TDD.
+`CURRICULUM-RUNTIME-AUTHZ-050` · commits `8edf560`/`6481add` · PRD-RF-070 ·
+SPEC-0106 · SPEC-0107 · SPEC-0109 · SPEC-0111 · SPEC-0118 · AGENTS-TDD.

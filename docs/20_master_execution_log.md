@@ -42,6 +42,62 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-24 — CURRICULUM-RUNTIME-AUTHZ-050: privacidade do oracle de membership
+
+### TIMESTAMP
+
+2026-08-24 15:06:08 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / hardening de autorização e privilégios
+
+### SPRINT
+
+CURRICULUM-RUNTIME-AUTHZ-050
+
+### TASK
+
+Fechar o P2 encontrado pela crítica independente na função `SECURITY DEFINER`
+da migration `0034` e provar a chamada do resolver no caminho autorizado.
+
+### ACTION
+
+A revisão final identificou que `EXECUTE` público seria concedido por padrão à
+função `cvg_participant_in_scope`. O commit `6481add` adicionou
+`REVOKE EXECUTE FROM PUBLIC`, um grant condicional à role de aplicação no
+`provision-ci-postgres.mjs`, a asserção do resolver no teste HTTP positivo e um
+teste de governança que impede a remoção desses controles.
+
+### RESULT
+
+70/70 testes HTTP, 3/3 testes de governança de migration, lint, typecheck,
+`pnpm verify:migrations` 35/35 e diff-check passaram. A crítica não encontrou
+P0 nesta rota; o live PostgreSQL/RLS e browser→API→PostgreSQL continuam não
+executados porque `CVG_TEST_DATABASE_URL` está ausente.
+
+### DECISIONS
+
+O grant da função foi mantido fora da migration porque o workflow cria a role
+de aplicação depois de aplicar migrations; o provisionador é o ponto explícito
+de concessão. A role produtiva deve receber o mesmo grant em sua matriz de
+privilégios. Retenção, publicação clínica, piloto e produção continuam
+bloqueados pelos gates já registrados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar a migration e as verificações de privilégio em banco descartável com
+role `NOSUPERUSER/NOBYPASSRLS`, depois executar o E2E real e atualizar a matriz
+de grants do ambiente produtivo.
+
 ## 2026-08-24 — CURRICULUM-RUNTIME-AUTHZ-050: isolamento da avaliação curricular
 
 ### TIMESTAMP

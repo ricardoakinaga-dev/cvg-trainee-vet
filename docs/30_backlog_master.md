@@ -72,8 +72,11 @@ membership server-side antes de executar o caso de uso; a migration `0034`
 repete a mesma invariável no `curriculum_runtime_states` e restringe a policy
 staff quando há contexto de participante. RED reproduziu `200` antes da guarda;
 GREEN passou 70/70 HTTP, 72/72 unitários focais, lint, typecheck e migrations
-35/35. O teste PostgreSQL negativo foi preparado, mas continua sem execução
-por ausência de `CVG_TEST_DATABASE_URL`; o item fica `COMPLETED_WITH_GAPS`.
+35/35. O hardening `6481add` revogou `EXECUTE` público da função
+`SECURITY DEFINER`, concedeu-o somente à role de aplicação no provisionador e
+adicionou 3/3 testes de governança. O teste PostgreSQL negativo foi preparado,
+mas continua sem execução por ausência de `CVG_TEST_DATABASE_URL`; o item fica
+`COMPLETED_WITH_GAPS`.
 
 ## P0 — CRÍTICO
 
@@ -454,9 +457,9 @@ por ausência de `CVG_TEST_DATABASE_URL`; o item fica `COMPLETED_WITH_GAPS`.
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
 - critério parcial atendido: RED/GREEN HTTP; capability de moderador continua obrigatória; membership ausente/negativa falha fechado; política SQL exige conta ativa, papel participante, convite aceito e escopo exato; leitura staff não se aplica quando há contexto de participante
-- evidência: `BRIEFING/04.AUDIT/0532_curriculum_runtime_authorization_audit.md`; migration `0034_curriculum_runtime_membership_rls.sql`; commit técnico `8edf560`
+- evidência: `BRIEFING/04.AUDIT/0532_curriculum_runtime_authorization_audit.md`; migration `0034_curriculum_runtime_membership_rls.sql`; commits técnicos `8edf560` e `6481add`
 - código: `apps/api/src/http.ts`; `packages/persistence/drizzle/0034_curriculum_runtime_membership_rls.sql`; `packages/persistence/drizzle/meta/_journal.json`
-- testes: `apps/api/src/http.test.ts`; `tests/integration/curriculum-runtime.test.ts`; `tests/integration/migration-governance.test.ts`
+- testes: `apps/api/src/http.test.ts`; `tests/integration/curriculum-runtime.test.ts`; `tests/integration/migration-governance.test.ts`; `scripts/provision-ci-postgres.mjs`
 - resultado: o boundary HTTP retorna `403` sem chamar a avaliação quando a membership não é provada; fixture live cria membership sintética e tenta escopo estrangeiro; nenhum campo interno é projetado
 - gaps explícitos: PostgreSQL/RLS live, browser→API→PostgreSQL, concorrência, grants/owners produtivos, workflow remoto same-SHA, operação externa e publicação clínica ainda aguardam ambiente/autoridade; retenção continua sem CTA enquanto a divergência 30/60/90 versus D+7/D+30/D+90 não for decidida
 - próxima ação: aplicar `0034` em banco CVG descartável/autorizado, executar integração live e então decidir a cadência de retenção antes de construir revisão consumível

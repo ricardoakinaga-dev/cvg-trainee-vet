@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: o commit técnico `8edf560` fechou a autorização da avaliação curricular: a API exige membership `participantId + scopeId`, a migration `0034` repete a invariável no `curriculum_runtime_states`, e o teste live foi preparado para rejeitar escopo estrangeiro; RED/GREEN HTTP, unitários focais, lint, typecheck e migrations passaram.
+- last_completed_action: o commit técnico `6481add` completou o hardening da autorização curricular: além da membership `participantId + scopeId` na API e no `curriculum_runtime_states`, a função `SECURITY DEFINER` não tem execução pública, a role de aplicação recebe o grant no provisionador e o teste positivo afirma a consulta de membership; RED/GREEN HTTP, governança 3/3, lint, typecheck e migrations passaram.
 - next_action: aplicar `0034` e executar a prova PostgreSQL/RLS e browser→API→PostgreSQL em ambiente CVG descartável/autorizado; manter aprovação clínica/humana como gate de publicação e não promover `REVISAR_RETENCAO` a CTA até resolver a cadência 30/60/90 versus D+7/D+30/D+90 e criar atividade/transição consumível
 
 ## BLOQUEIOS
@@ -36,7 +36,7 @@
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `8edf560` — autorização da avaliação curricular e migration RLS fechadas tecnicamente; documentação desta rodada ainda será commitada; preflight live continua sem ambiente
+- head: `6481add` — último commit técnico da autorização curricular e do hardening de privilégios; controle documental correspondente será commitado separadamente; preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após o commit técnico e o commit documental desta rodada; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
