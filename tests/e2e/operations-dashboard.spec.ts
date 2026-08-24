@@ -220,6 +220,30 @@ const appealReviewHistory = {
   ],
 };
 
+const auditTrailProjection = {
+  kind: "audit_trail",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    limit: 25,
+  },
+  items: [
+    {
+      auditId: "88888888-8888-4888-8888-888888888888",
+      occurredAt: "2026-08-23T12:00:00.000Z",
+      actorKind: "AUTHENTICATED",
+      principalId: "99999999-9999-4999-8999-999999999999",
+      action: "account.status.changed",
+      resourceType: "account",
+      resourceId: "synthetic-resource",
+      outcome: "SUCCESS",
+      reasonCode: "account_status_active_to_suspended",
+      requestId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      correlationId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    },
+  ],
+};
+
 const multiScopeStaffDashboard = {
   ...staffDashboard,
   scopes: [
@@ -233,6 +257,22 @@ const multiScopeStaffDashboard = {
 };
 
 test.describe("staff training dashboard", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/api/v1/audit**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...successEnvelope(auditTrailProjection),
+          meta: {
+            request_id: "e2e-audit-request",
+            has_next: false,
+          },
+        }),
+      });
+    });
+  });
+
   test("renders scoped progress indicators and individual follow-up", async ({
     page,
   }) => {
@@ -373,6 +413,18 @@ test.describe("staff training dashboard", () => {
     await expect(
       page.getByRole("heading", { name: "Fila de relatos do produto" }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Trilha de auditoria" }),
+    ).toBeVisible();
+    await expect(page.getByText("account.status.changed")).toBeVisible();
+    await expect(
+      page.getByText("account_status_active_to_suspended"),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByTestId("continuing-education-report")
+        .getByRole("button", { name: "Próxima página" }),
+    ).toBeDisabled();
     await expect(
       page.getByText("Relato sintético precisa de triagem."),
     ).toBeVisible();

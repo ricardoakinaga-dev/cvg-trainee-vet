@@ -25,6 +25,10 @@ export type DatabaseAppealReviewSecurityContext = Readonly<{
   readonly scopeId: string;
 }>;
 
+export type DatabaseAuditReadSecurityContext = Readonly<{
+  readonly scopeId: string;
+}>;
+
 type ContextExecutor = Readonly<{
   readonly execute: (query: SQL) => Promise<unknown>;
 }>;
@@ -66,7 +70,10 @@ export async function setDatabaseSecurityContext(
       set_config('cvg.invitation_token_hash', '', true),
       set_config('cvg.recovery_token_hash', '', true),
       set_config('cvg.session_token_hash', '', true),
-      set_config('cvg.appeal_review_scope_id', '', true)`,
+      set_config('cvg.appeal_review_scope_id', '', true),
+      set_config('cvg.audit_write', '', true),
+      set_config('cvg.audit_read', '', true),
+      set_config('cvg.audit_scope_id', '', true)`,
   );
 }
 
@@ -90,7 +97,10 @@ export async function setDatabaseTokenSecurityContext(
       set_config('cvg.invitation_token_hash', ${invitationHash}, true),
       set_config('cvg.recovery_token_hash', ${recoveryHash}, true),
       set_config('cvg.session_token_hash', '', true),
-      set_config('cvg.appeal_review_scope_id', '', true)`,
+      set_config('cvg.appeal_review_scope_id', '', true),
+      set_config('cvg.audit_write', '', true),
+      set_config('cvg.audit_read', '', true),
+      set_config('cvg.audit_scope_id', '', true)`,
   );
 }
 
@@ -110,7 +120,10 @@ export async function setDatabaseAccountProvisioningContext(
       set_config('cvg.invitation_token_hash', '', true),
       set_config('cvg.recovery_token_hash', '', true),
       set_config('cvg.session_token_hash', '', true),
-      set_config('cvg.appeal_review_scope_id', '', true)`,
+      set_config('cvg.appeal_review_scope_id', '', true),
+      set_config('cvg.audit_write', '', true),
+      set_config('cvg.audit_read', '', true),
+      set_config('cvg.audit_scope_id', '', true)`,
   );
 }
 
@@ -130,7 +143,10 @@ export async function setDatabaseSessionSecurityContext(
       set_config('cvg.invitation_token_hash', '', true),
       set_config('cvg.recovery_token_hash', '', true),
       set_config('cvg.session_token_hash', ${context.tokenHash}, true),
-      set_config('cvg.appeal_review_scope_id', '', true)`,
+      set_config('cvg.appeal_review_scope_id', '', true),
+      set_config('cvg.audit_write', '', true),
+      set_config('cvg.audit_read', '', true),
+      set_config('cvg.audit_scope_id', '', true)`,
   );
 }
 
@@ -147,6 +163,29 @@ export async function setDatabaseAppealReviewContext(
       set_config('cvg.invitation_token_hash', '', true),
       set_config('cvg.recovery_token_hash', '', true),
       set_config('cvg.session_token_hash', '', true),
-      set_config('cvg.appeal_review_scope_id', ${scopeId}, true)`,
+      set_config('cvg.appeal_review_scope_id', ${scopeId}, true),
+      set_config('cvg.audit_write', '', true),
+      set_config('cvg.audit_read', '', true),
+      set_config('cvg.audit_scope_id', '', true)`,
+  );
+}
+
+export async function setDatabaseAuditReadContext(
+  executor: ContextExecutor,
+  context: DatabaseAuditReadSecurityContext,
+): Promise<void> {
+  const scopeId = normalizeValue(context.scopeId, "scopeId");
+  await executor.execute(
+    sql`select
+      set_config('cvg.participant_id', '', true),
+      set_config('cvg.scope_id', '', true),
+      set_config('cvg.account_provisioning_id', '', true),
+      set_config('cvg.invitation_token_hash', '', true),
+      set_config('cvg.recovery_token_hash', '', true),
+      set_config('cvg.session_token_hash', '', true),
+      set_config('cvg.appeal_review_scope_id', '', true),
+      set_config('cvg.audit_write', '', true),
+      set_config('cvg.audit_read', 'on', true),
+      set_config('cvg.audit_scope_id', ${scopeId}, true)`,
   );
 }

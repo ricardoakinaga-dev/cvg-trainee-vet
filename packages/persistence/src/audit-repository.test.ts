@@ -43,6 +43,14 @@ describe("audit PostgreSQL mapping", () => {
     ).toThrow(PersistenceMappingError);
   });
 
+  it("rejects an authenticated entry without a scope", () => {
+    const { scopeId: _scopeId, ...withoutScope } = entry;
+    void _scopeId;
+    expect(() => auditEntryToRow(withoutScope)).toThrow(
+      PersistenceMappingError,
+    );
+  });
+
   it("keeps the append-only audit table explicit", () => {
     expect(auditEntries).toBeDefined();
   });

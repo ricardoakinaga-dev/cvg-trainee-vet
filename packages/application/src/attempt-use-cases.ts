@@ -12,6 +12,7 @@ import type { TransactionSecurityContext } from "./transaction-context.js";
 export type StartAttemptCommand = Readonly<{
   readonly participantId: string;
   readonly activityId: string;
+  readonly scopeId: string;
   readonly idempotencyKey: string;
   readonly correlationId: string;
 }>;
@@ -19,6 +20,7 @@ export type StartAttemptCommand = Readonly<{
 export type SubmitAttemptCommand = Readonly<{
   readonly attemptId: string;
   readonly participantId: string;
+  readonly scopeId: string;
   readonly idempotencyKey: string;
   readonly correlationId: string;
   readonly submittedAt: string;
@@ -125,6 +127,7 @@ export async function startAttempt(
   const expectedFingerprint = fingerprint("start_attempt", {
     participantId: command.participantId,
     activityId: command.activityId,
+    scopeId: command.scopeId,
   });
 
   try {
@@ -175,6 +178,7 @@ export async function startAttempt(
             action: "ATTEMPT_STARTED",
             resourceType: "attempt",
             resourceId: started.attemptId,
+            scopeId: command.scopeId,
             outcome: "SUCCESS",
             reasonCode: "attempt_started",
             requestId: command.correlationId,
@@ -188,7 +192,7 @@ export async function startAttempt(
         });
         return started;
       },
-      { participantId: command.participantId },
+      { participantId: command.participantId, scopeId: command.scopeId },
     );
   } catch (error) {
     throw normalizeAttemptError(error);
@@ -202,6 +206,7 @@ export async function submitAttempt(
   const expectedFingerprint = fingerprint("submit_attempt", {
     attemptId: command.attemptId,
     participantId: command.participantId,
+    scopeId: command.scopeId,
     submittedAt: command.submittedAt,
   });
 
@@ -252,6 +257,7 @@ export async function submitAttempt(
             action: "ATTEMPT_SUBMITTED",
             resourceType: "attempt",
             resourceId: submitted.attemptId,
+            scopeId: command.scopeId,
             outcome: "SUCCESS",
             reasonCode: "attempt_submitted",
             requestId: command.correlationId,
@@ -265,7 +271,7 @@ export async function submitAttempt(
         });
         return submitted;
       },
-      { participantId: command.participantId },
+      { participantId: command.participantId, scopeId: command.scopeId },
     );
   } catch (error) {
     throw normalizeAttemptError(error);

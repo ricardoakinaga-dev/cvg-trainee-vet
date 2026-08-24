@@ -10,6 +10,7 @@ describe("audit entry contract", () => {
       action: "ANSWER_SAVED",
       resourceType: "attempt",
       resourceId: "attempt-1",
+      scopeId: "scope-1",
       requestId: "request-1",
       correlationId: "correlation-1",
       occurredAt: "2026-08-09T17:00:00.000Z",
@@ -35,6 +36,7 @@ describe("audit entry contract", () => {
       action: "ANSWER_SAVED",
       resourceType: "attempt",
       resourceId: "attempt-1",
+      scopeId: "scope-1",
       requestId: "request-1",
       correlationId: "correlation-1",
       occurredAt: "2026-08-09T17:00:00.000Z",
@@ -48,6 +50,7 @@ describe("audit entry contract", () => {
       action: "ANSWER_SAVED",
       resourceType: "attempt",
       resourceId: "attempt-1",
+      scopeId: "scope-1",
       requestId: "request-1",
       correlationId: "correlation-1",
       occurredAt: "2026-08-09T17:00:00.000Z",
@@ -68,6 +71,11 @@ describe("audit entry contract", () => {
     expect(() => createAuditEntry({ ...input, scopeId: " " })).toThrow(
       "scopeId",
     );
+    expect(() => {
+      const { scopeId: _scopeId, ...withoutScope } = input;
+      void _scopeId;
+      createAuditEntry(withoutScope);
+    }).toThrow("scopeId is required");
   });
 
   it("represents an anonymous rejection without inventing a principal", () => {

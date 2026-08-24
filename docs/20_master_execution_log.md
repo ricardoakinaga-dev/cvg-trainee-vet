@@ -126,6 +126,53 @@ autorização e projeção. A ação deve preservar a sessão sem recarregar a p
 
 IN_PROGRESS
 
+## 2026-08-24 — AUDIT-TRAIL-034: fechamento local da fatia
+
+### TIMESTAMP
+
+2026-08-24T11:26:00-03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / RUNTIME CONTROLLER
+
+### ACTION
+
+Implementados e revisados contrato estrito, capability `VIEW_AUDIT_TRAIL`, caso
+de uso, repository cursorizado, contexto RLS, migration 0033, rota
+`GET /api/v1/audit`, projeção redigida e painel de operações. A crítica
+independente encontrou quatro gaps: linhas globais autenticadas, invariantes
+classificadas como `403`, cursor sem vínculo de consulta e resposta web obsoleta;
+os quatro foram corrigidos com testes de regressão.
+
+### RESULT
+
+Passaram `pnpm verify`, `pnpm build`, `pnpm test:integration` (25 pass, 33
+skips), `pnpm test:e2e` (26/26), `pnpm audit --audit-level=high` e
+`git diff --check`. A regressão global passou com 131 arquivos/620 testes e 27
+arquivos/33 testes ignorados; cobertura ficou em 84,78% statements, 80,79%
+branches, 86,28% functions e 85,51% lines. A evidência detalhada está em
+`BRIEFING/04.AUDIT/0530_audit_trail_read_audit.md`.
+
+### LIMITES
+
+Não houve banco CVG descartável autorizado: RLS live com role sem
+`SUPERUSER/BYPASSRLS`, E2E browser→API→PostgreSQL, grants/owners produtivos,
+workflow remoto same-SHA, collector/retention/traces, carga/failover/restore,
+provider/MFA e gates clínicos permanecem não observados. O cursor é vinculado ao
+escopo e fingerprint dos filtros; assinatura criptográfica dedicada e
+exportação auditada permanecem fora desta fatia.
+
+### NEXT
+
+Executar prova live somente em ambiente CVG autorizado e depois continuar
+`AUD-P1-001` (apelações, filtros/paginação/exportação e jornada restante), sem
+inferir competência prática, publicação clínica ou release.
+
+### STATUS
+
+COMPLETED_WITH_GAPS
+
 ### NEXT
 
 Escrever o cenário E2E RED para abrir a atividade a partir da jornada e observar
@@ -7124,3 +7171,81 @@ Playwright `--list` com os dois cenários E2E reais. O worktree está limpo.
 O teste E2E foi apenas descoberto, não executado; live PostgreSQL/RLS continua
 sem evidência porque não há URL de banco CVG descartável nem role autorizada.
 Não houve push, deploy, workflow remoto ou aprovação clínica.
+
+## 2026-08-24 — AUDIT-TRAIL-034: recuperação e congelamento do recorte
+
+### TIMESTAMP
+
+2026-08-24T10:18:00-03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–9 / governança, gestão e auditoria operacional
+
+### TASK
+
+Fechar a lacuna local identificada na recuperação: UC-017/RF-080–082 estava
+especificado, mas não possuía consulta de leitura, contrato, rota ou surface de
+operações.
+
+### QUALITY BAR
+
+`AUDIT-TRAIL-034` foi congelado com capability separada
+`VIEW_AUDIT_TRAIL`, escopo obrigatório derivado da sessão, filtros allowlisted,
+cursor opaco e ordenação `occurred_at DESC, id DESC`, leitura `limit + 1`,
+projeção estrita redigida, RLS com `cvg.audit_read`/`cvg.audit_scope_id`, e
+estados de web loading/empty/error/retry. O recorte é somente leitura; não cria
+exportação, achado, edição, publicação, aprovação clínica ou decisão de IA.
+
+### DECISION
+
+A ausência de ambiente live não bloqueia a implementação local TDD, mas bloqueia
+qualquer claim de RLS real, release ou 100%. Eventos anônimos sem escopo serão
+visíveis somente dentro da leitura autenticada de um escopo autorizado; linhas
+de outro escopo devem ser rejeitadas pela policy e pelo caso de uso.
+
+### NEXT
+
+Escrever RED para contrato, caso de uso, repository/contexto e API; implementar
+GREEN; solicitar crítica independente read-only; então executar regressão local
+e registrar a evidência do item.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — AUDIT-TRAIL-034: correção pós-crítica independente
+
+### TIMESTAMP
+
+2026-08-24T11:36:00-03:00
+
+### ACTION
+
+Aplicada a segunda crítica read-only. O writer e o mapper PostgreSQL passaram a
+recusar eventos `AUTHENTICATED` sem escopo; start/save/submit e auditoria de
+rejeição HTTP passaram a propagar escopo; erros semânticos de cursor foram
+classificados como `validation_error`; e a guarda de versão da UI passou a ser
+verificada após o parse da resposta e na remoção do escopo selecionado.
+
+### RESULT
+
+Focal: 10 arquivos/126 testes passaram. Regressão: 131 arquivos/623 testes
+passaram, 27 arquivos/33 testes foram ignorados; cobertura global 84,79%
+statements, 80,92% branches, 86,29% functions e 85,54% lines. Build e E2E
+browser sintético (26/26) passaram após a correção.
+
+### LIMITES
+
+RLS real, cross-scope com role sem bypass e browser→API→PostgreSQL continuam
+sem execução por ausência de banco CVG descartável autorizado. Cursor HMAC,
+workflow remoto same-SHA, grants/owners produtivos, operação externa e gates
+clínicos seguem fora desta fatia.
+
+### STATUS
+
+COMPLETED_WITH_GAPS

@@ -32,7 +32,11 @@ export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
 export type ApiSuccessEnvelope<Data> = Readonly<{
   readonly success: true;
   readonly data: Data;
-  readonly meta: Readonly<{ readonly request_id: string }>;
+  readonly meta: Readonly<{
+    readonly request_id: string;
+    readonly has_next?: boolean;
+    readonly next_cursor?: string;
+  }>;
 }>;
 
 export type ApiErrorEnvelope = Readonly<{
@@ -65,12 +69,16 @@ function assertRequestId(requestId: string): void {
 export function apiSuccessResponse<Data>(
   data: Data,
   requestId: string,
+  pagination: Readonly<{
+    readonly has_next?: boolean;
+    readonly next_cursor?: string;
+  }> = {},
 ): ApiSuccessEnvelope<Data> {
   assertRequestId(requestId);
   return Object.freeze({
     success: true as const,
     data,
-    meta: Object.freeze({ request_id: requestId }),
+    meta: Object.freeze({ request_id: requestId, ...pagination }),
   });
 }
 

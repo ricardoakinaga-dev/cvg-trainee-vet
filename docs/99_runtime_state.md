@@ -9,17 +9,17 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: AUTHORING-E2E-PIPELINE-001 / ACTIVITY-RLS-047 — prova authoring→atividade e hardening do contexto RLS participante
-- current_task: aplicar as migrations `0031`/`0032` em banco CVG descartável autorizado, executar live PostgreSQL/RLS e E2E navegador→web→API→PostgreSQL; depois aguardar workflow remoto e gates humanos
+- current_sprint: AUDIT-TRAIL-034 — consulta escopada da trilha de auditoria e governança operacional
+- current_task: implementar TDD a leitura UC-017/RF-080–082 com contrato, capability, cursor bounded, RLS contextual, `GET /api/v1/audit`, painel de operações e testes; depois executar crítica independente e regressão local
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: os commits `743b755b4a1143ed77f8e563fd1f79c9861d9b43`, `94ac2e0f96fc773062b4b6e4c257ad2f47b33ac2` e `b85b0595040c315b48a25388681550330cd59e85` fecharam código e control plane de `AUTHORING-E2E-PIPELINE-001`/`ACTIVITY-RLS-047`: fixture editorial autoral, resolver transacional, contextos HTTP server-side, migrations `0031`/`0032`, membership aceito, constraint sessão/módulo e separação entre metadados da jornada e conteúdo iniciável. Node 22.22.0 passou 117/572 testes unitários; contrato RLS 2/2; integração 23 pass/33 skips; typecheck, lint, Prettier, `verify:migrations` 33/33, documentação, traceability estrutural e release, sintaxe do fixture, descoberta dos dois cenários Playwright e `git diff --check` passaram; nenhum dado real foi usado.
-- next_action: com ambiente autorizado, aplicar as migrations/suíte live PostgreSQL com role sem `SUPERUSER/BYPASSRLS` e `CVG_RUN_REAL_E2E=true` contra o pipeline autoral; registrar PASS/falha e artefatos, sem tocar no schema PostgreSQL de outro sistema
+- last_completed_action: recuperação documental confirmou a ausência de `GetAuditTrail`, rota `/api/v1/audit` e surface de operações apesar de UC-017/RF-080–082 já aprovados; `AUDIT-TRAIL-034` foi aberto com quality bar congelada e SPEC 0106/0107/0111 atualizada. O recorte anterior `ACTIVITY-RLS-047` permanece localmente verificado, sem prova live.
+- next_action: escrever RED de contratos, authorization/use case, repository/contexto e API; não tocar no PostgreSQL local de outro sistema e não simular evidência live
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T10:01:16-03:00
+- last_update: 2026-08-24T10:18:00-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `106dc42` (código `b85b0595040c315b48a25388681550330cd59e85` e documentação/control plane `106dc42`)
+- head: `106dc42` antes da abertura documental de `AUDIT-TRAIL-034`; código anterior `b85b0595040c315b48a25388681550330cd59e85`
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após os commits técnico, documental, runtime e gates finais locais; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUTHORING-E2E-PIPELINE-001` e `ACTIVITY-RLS-047` PASS LOCAL COM GAPS: migrations 33/33, unitário 117/572, contrato RLS 2/2, integração 23 pass/33 skips, typecheck, lint, Prettier, documentação, traceability estrutural/release, sintaxe do fixture, descoberta Playwright e diff-check passaram; resolver e HTTP usam contexto transacional, migrations `0031`/`0032` estão no journal e fixtures foram alinhados; live PostgreSQL/RLS, E2E autoral browser→API→PostgreSQL, mesmo-SHA remoto, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
+- verification_state: `AUDIT-TRAIL-034` IN_PROGRESS: quality bar e contrato documental congelados; implementação e RED ainda pendentes. O baseline anterior passou migrations 33/33, unitário 117/572, contrato RLS 2/2, integração 23 pass/33 skips, typecheck, lint, Prettier, documentação, traceability estrutural/release, sintaxe do fixture, descoberta Playwright e diff-check; live PostgreSQL/RLS, E2E autoral browser→API→PostgreSQL, mesmo-SHA remoto, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 

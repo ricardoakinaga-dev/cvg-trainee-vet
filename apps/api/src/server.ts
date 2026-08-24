@@ -196,6 +196,9 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/api/v1/dashboard") {
     return "/api/v1/dashboard";
   }
+  if (method === "GET" && path === "/api/v1/audit") {
+    return "/api/v1/audit";
+  }
   if (
     method === "GET" &&
     path === "/api/v1/internal/reports/continuing-education"

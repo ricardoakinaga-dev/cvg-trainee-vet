@@ -227,6 +227,16 @@ export type {
   FeedbackTriageQueueQuery,
 } from "./feedback-triage-queue.js";
 export {
+  auditTrailProjectionSchema,
+  auditTrailQuerySchema,
+  parseAuditTrailProjection,
+} from "./audit-trail.js";
+export type {
+  AuditTrailItem,
+  AuditTrailProjection,
+  AuditTrailQuery,
+} from "./audit-trail.js";
+export {
   apiErrorCodeSchema,
   apiErrorResponse,
   apiSuccessResponse,

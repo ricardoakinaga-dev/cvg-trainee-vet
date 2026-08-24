@@ -22,6 +22,7 @@ export type Capability =
   | "PUBLISH_CONTENT"
   | "VIEW_INTERNAL_SOURCE"
   | "VIEW_INTERNAL_AUDIT"
+  | "VIEW_AUDIT_TRAIL"
   | "VIEW_STAFF_DASHBOARD"
   | "VIEW_PROGRAM_METRICS"
   | "VIEW_CONTENT_REVIEW_QUEUE"
@@ -130,6 +131,13 @@ export function canAccess(request: AuthorizationRequest): boolean {
       );
     case "VIEW_INTERNAL_AUDIT":
       return hasRole(request, "AUDITOR") || hasRole(request, "ADMIN");
+    case "VIEW_AUDIT_TRAIL":
+      return (
+        (hasRole(request, "AUDITOR") ||
+          hasRole(request, "ADMIN") ||
+          isApprovedClinicalIdentity(request)) &&
+        hasScope(request)
+      );
     case "VIEW_STAFF_DASHBOARD":
       return hasScopedStaffRole(request) && hasScope(request);
     case "VIEW_PROGRAM_METRICS":

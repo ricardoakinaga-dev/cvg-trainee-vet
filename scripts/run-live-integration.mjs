@@ -1,18 +1,24 @@
 import { spawn } from "node:child_process";
 
-const databaseUrl =
-  process.env.CVG_TEST_DATABASE_URL ?? process.env.DATABASE_URL;
-if (databaseUrl === undefined || databaseUrl.trim().length === 0) {
+const databaseUrl = process.env.CVG_TEST_DATABASE_URL?.trim();
+if (databaseUrl === undefined || databaseUrl.length === 0) {
   console.error(
-    "CVG_TEST_DATABASE_URL (or DATABASE_URL) is required for live integration",
+    "CVG_TEST_DATABASE_URL is required for live integration; DATABASE_URL is not accepted",
   );
   process.exit(2);
 }
 const adminDatabaseUrl = process.env.CVG_TEST_ADMIN_DATABASE_URL?.trim();
-if (adminDatabaseUrl === undefined) {
-  console.warn(
-    "CVG_TEST_ADMIN_DATABASE_URL is not configured; live suites requiring RLS fixture cleanup will report an explicit skip",
+if (adminDatabaseUrl === undefined || adminDatabaseUrl.length === 0) {
+  console.error(
+    "CVG_TEST_ADMIN_DATABASE_URL is required for live integration cleanup",
   );
+  process.exit(2);
+}
+if (adminDatabaseUrl === databaseUrl) {
+  console.error(
+    "CVG_TEST_ADMIN_DATABASE_URL must use a distinct connection from CVG_TEST_DATABASE_URL",
+  );
+  process.exit(2);
 }
 
 const qdrantUrl = process.env.CVG_TEST_QDRANT_URL?.trim();
@@ -36,9 +42,7 @@ const environment = {
   CVG_RUN_LIVE_RESTORE_TESTS: includeRestore ? "true" : "false",
   CVG_RUN_LIVE_QDRANT_TESTS: includeQdrant ? "true" : "false",
   ...(qdrantUrl === undefined ? {} : { CVG_TEST_QDRANT_URL: qdrantUrl }),
-  ...(adminDatabaseUrl === undefined
-    ? {}
-    : { CVG_TEST_ADMIN_DATABASE_URL: adminDatabaseUrl }),
+  CVG_TEST_ADMIN_DATABASE_URL: adminDatabaseUrl,
 };
 
 const optionalExcludes = [

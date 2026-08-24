@@ -208,9 +208,7 @@ export async function createInvitation(
           action: "invitation.created",
           resourceType: "account_invitation",
           resourceId: invitationId,
-          ...(command.invitedScopes[0] === undefined
-            ? {}
-            : { scopeId: command.invitedScopes[0] }),
+          scopeId: invitedScopeId,
           outcome: "SUCCESS",
           reasonCode: "internal_admin_invitation",
           requestId: command.correlationId,
@@ -256,6 +254,13 @@ export async function acceptInvitation(
       if (invitation === null) {
         throw new ApplicationError("not_found", "Invitation is not available");
       }
+      const invitationScopeId = invitation.scopes[0];
+      if (invitationScopeId === undefined) {
+        throw new ApplicationError(
+          "internal_error",
+          "Invitation has no governed scope",
+        );
+      }
 
       await operations.account.activate(invitation.accountId);
       await operations.invitation.accept(invitation.invitationId, now);
@@ -284,9 +289,7 @@ export async function acceptInvitation(
           action: "invitation.accepted",
           resourceType: "account_invitation",
           resourceId: invitation.invitationId,
-          ...(invitation.scopes[0] === undefined
-            ? {}
-            : { scopeId: invitation.scopes[0] }),
+          scopeId: invitationScopeId,
           outcome: "SUCCESS",
           reasonCode: "one_time_invitation_accepted",
           requestId: command.correlationId,

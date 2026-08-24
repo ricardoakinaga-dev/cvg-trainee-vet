@@ -544,6 +544,32 @@ describe("API HTTP boundary", () => {
     );
   });
 
+  it("records an authenticated rejection with an authorized session scope", async () => {
+    const audit = { append: vi.fn(async () => undefined) };
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/audit",
+        query: { scopeId: "scope-1" },
+        body: undefined,
+      },
+      dependencies({
+        audit,
+        requestIdFactory: () => "11111111-1111-4111-8111-111111111111",
+      }),
+    );
+
+    expect(response.status).toBe(500);
+    expect(audit.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorKind: "AUTHENTICATED",
+        principalId: attempt.participantId,
+        scopeId: "scope-1",
+        action: "HTTP_REQUEST_REJECTED",
+      }),
+    );
+  });
+
   it("returns redacted dependency health and protects metrics export", async () => {
     const dependencyStatus = vi.fn(async () => ({
       status: "DEGRADED" as const,
@@ -1594,6 +1620,7 @@ describe("API HTTP boundary", () => {
     expect(startAttempt).toHaveBeenCalledWith({
       participantId: attempt.participantId,
       activityId: attempt.activityId,
+      scopeId: "scope-1",
       idempotencyKey: "start-attempt-2026-08-09",
       correlationId: "request-123",
     });

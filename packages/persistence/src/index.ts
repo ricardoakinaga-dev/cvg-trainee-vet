@@ -14,6 +14,7 @@ export {
   normalizeDatabaseSecurityContext,
   setDatabaseAccountProvisioningContext,
   setDatabaseAppealReviewContext,
+  setDatabaseAuditReadContext,
   setDatabaseSecurityContext,
   setDatabaseSessionSecurityContext,
   setDatabaseTokenSecurityContext,
@@ -21,6 +22,7 @@ export {
 export type {
   DatabaseAccountProvisioningContext,
   DatabaseAppealReviewSecurityContext,
+  DatabaseAuditReadSecurityContext,
   DatabaseSecurityContext,
   DatabaseTokenContextKind,
   DatabaseTokenSecurityContext,
@@ -264,3 +266,9 @@ export {
 export type { AssessmentResultRowShape } from "./correction-repository.js";
 export { auditEntryToRow, createAuditRepository } from "./audit-repository.js";
 export type { AuditInsertRow } from "./audit-repository.js";
+export {
+  auditTrailQueryFingerprint,
+  createAuditTrailRepository,
+  decodeAuditTrailCursor,
+  encodeAuditTrailCursor,
+} from "./audit-trail-repository.js";

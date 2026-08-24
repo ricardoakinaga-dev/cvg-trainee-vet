@@ -24,6 +24,7 @@ import {
   getContinuingEducationReport,
   getParticipantAppeals,
   getParticipantFeedback,
+  getAuditTrail,
   getReflectionManagementReport,
   getContentReviewQueue,
   getAppealReviewQueue,
@@ -72,6 +73,7 @@ import {
   createAccountManagementRepository,
   createAccountRecoveryTransaction,
   createAuditRepository,
+  createAuditTrailRepository,
   createContinuingEducationReportRepository,
   createReflectionManagementReadRepository,
   createAppealReadRepository,
@@ -201,6 +203,9 @@ export function createApiRuntime(
     createAppealReviewTransitionRepository(integrations.database.db);
   const rateLimiter = createPostgresRateLimiter(integrations.database.db);
   const audit = createAuditRepository(integrations.database.db);
+  const auditTrailRepository = createAuditTrailRepository(
+    integrations.database.db,
+  );
   const apiDependencies: ApiHttpDependencies = {
     requestIdFactory: randomUUID,
     observability,
@@ -345,6 +350,7 @@ export function createApiRuntime(
       getFeedbackTriageQueue(command, feedbackTriageQueueRepository),
     getAppealReviewHistory: (command) =>
       getAppealReviewHistory(command, appealReviewHistoryRepository),
+    getAuditTrail: (command) => getAuditTrail(command, auditTrailRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>
       getParticipantCurriculumRuntime(
         { participantId, moduleId },

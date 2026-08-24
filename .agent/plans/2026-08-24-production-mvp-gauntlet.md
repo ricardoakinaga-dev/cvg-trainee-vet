@@ -97,6 +97,12 @@ a aprovação clínica, piloto ou release produtivo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
   Ricardo/autoridade competente; não são decisões que o plano possa inferir.
 
+- [ ] (2026-08-24T10:18:00-03:00) Recuperar o control plane e abrir
+  `AUDIT-TRAIL-034`: a SPEC já declarava `GetAuditTrail` e `GET /api/v1/audit`,
+  mas o código não possuía leitura, rota nem painel. A quality bar congelada
+  exige capability escopada, cursor bounded, redaction e RLS contextual; live,
+  produção e gates clínicos permanecem evidência separada.
+
 ## Surprises & Discoveries
 
 - Observation: `docs/99_runtime_state.md` ainda descrevia o bloqueio remoto de
@@ -190,6 +196,14 @@ a aprovação clínica, piloto ou release produtivo.
   Impact: o materializador agora falha fechado no conjunto não exato, sem
   exclusão silenciosa de histórico; a operação de limpeza/retirada continua
   dependente de uma política explícita futura.
+
+- Observation: a recuperação de 2026-08-24 encontrou que UC-017/RF-080–082
+  estava documentado, mas `AuditPort` só permitia append e não havia
+  `GetAuditTrail`, `GET /api/v1/audit` ou leitura na tela de operações.
+  Evidence: PRD 0010/0013, SPEC 0106/0107/0111, `packages/application/src/audit.ts`,
+  `packages/persistence/src/audit-repository.ts` e `apps/api/src/http.ts`.
+  Impact: a próxima fatia é `AUDIT-TRAIL-034`; a capability existente de
+  operações não será reutilizada como autorização de leitura escopada.
 
 ## Decision Log
 
@@ -561,3 +575,26 @@ startable content visibility, with a static RLS contract and the existing live
 adaptive-journey regression retained. The next action remains applying both
 migrations and running PostgreSQL/RLS plus browser E2E in an authorized
 disposable environment.
+
+Plan revision note, 2026-08-24 (AUDIT-TRAIL-034 local closure): the audit read
+slice was implemented with a separate capability, strict query/projection,
+cursor pagination bound to scope and filter fingerprint, contextual RLS,
+redacted API metadata and an operations panel. Independent read-only critique
+found four issues; the global-anonymous predicate, authenticated-scope
+invariant, internal-error classification, cursor binding and stale web
+response guard were corrected. The final local evidence passed `pnpm verify`,
+`pnpm build`, `pnpm test:integration`, `pnpm test:e2e` (26/26) and
+`pnpm audit --audit-level=high`; coverage was 84.78% statements and 80.79%
+branches. The slice is `COMPLETED_WITH_GAPS`; live PostgreSQL/RLS, real browser
+persistence, same-SHA remote workflow, production grants/owners and clinical
+gates remain the next authorized evidence.
+
+Plan revision note, 2026-08-24 (AUDIT-TRAIL-034 invariant correction): the
+second independent critique found that authenticated audit writers could still
+omit scope, cursor parse failures could surface as 500, and the UI checked the
+request version only before response parsing. The writer and PostgreSQL mapper
+now reject authenticated global entries; attempt/answer/rejection paths carry
+scope; semantic cursor failures map to 422; and the UI checks the request
+version after parsing and when the selected scope disappears. The final local
+slice remains `COMPLETED_WITH_GAPS`: HMAC cursor signing and live PostgreSQL/RLS
+evidence remain separate hardening/evidence work.

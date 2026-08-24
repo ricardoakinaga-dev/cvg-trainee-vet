@@ -83,6 +83,22 @@ Rotas internas de autoria podem retornar fonte, localizador, protocolo e decisã
 - toda lista devolve `meta.total` ou `meta.has_next` conforme estratégia;
 - resposta nunca inclui campos de outra organização/escopo.
 
+### 4.1 — `GET /api/v1/audit` / UC-017
+
+Entrada obrigatória: `scopeId` UUID e, opcionalmente, `action`, `resourceType`,
+`resourceId`, `principalId`, `actorKind`, `outcome`, `from`, `to`, `cursor` e
+`limit` (1–100, padrão 50). Chaves desconhecidas, datas inválidas, janela
+invertida, cursor malformado e limite fora da faixa respondem `422`. O servidor
+deriva a identidade da sessão e exige `VIEW_AUDIT_TRAIL` no escopo informado;
+`scopeId` nunca é confiado como autorização só porque veio do navegador.
+
+O `data` é uma projeção interna estrita `audit_trail` com ator, ação, recurso,
+escopo, resultado, motivo, correlação, horário e hashes SHA-256 quando
+existentes. Não contém corpo de requisição, cookie, token, prompt, conteúdo
+clínico ou texto protegido. A resposta usa `meta.has_next` e
+`meta.next_cursor`; o cursor não é interpretado pelo cliente. A rota é somente
+leitura e não habilita edição, exportação ou publicação.
+
 ## 5. Segurança operacional
 
 - endpoints mutáveis exigem cookie de sessão seguro e CSRF;

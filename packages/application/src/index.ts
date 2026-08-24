@@ -27,6 +27,15 @@ export type {
   AuditOutcome,
   AuditPort,
 } from "./audit.js";
+export { getAuditTrail } from "./audit-trail-use-cases.js";
+export type {
+  AuditTrailQuery,
+  AuditTrailReadPage,
+  AuditTrailReadPort,
+  AuditTrailRecord,
+  AuditTrailState,
+  GetAuditTrailCommand,
+} from "./audit-trail-use-cases.js";
 export { startAttempt, submitAttempt } from "./attempt-use-cases.js";
 export type {
   AttemptActivityPort,

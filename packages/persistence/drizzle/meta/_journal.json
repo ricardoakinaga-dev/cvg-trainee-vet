@@ -232,6 +232,13 @@
       "when": 1787550562010,
       "tag": "0032_learning_activity_journey_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1787551562010,
+      "tag": "0033_audit_read_scope_hardening",
+      "breakpoints": true
     }
   ]
 }

@@ -822,6 +822,11 @@ export const auditEntries = pgTable(
       table.principalId,
       table.occurredAt,
     ),
+    index("audit_entries_scope_occurred_idx").on(
+      table.scopeId,
+      table.occurredAt,
+      table.id,
+    ),
     check(
       "audit_entries_outcome_check",
       sql`${table.outcome} in ('SUCCESS', 'DENIED', 'FAILURE')`,

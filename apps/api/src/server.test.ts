@@ -105,6 +105,7 @@ describe("API node server adapter", () => {
     ).toBe("/api/v1/internal/appeals/:appealId/transition");
     expect(routeTemplate("POST", "/api/v1/attempts")).toBe("/api/v1/attempts");
     expect(routeTemplate("GET", "/api/v1/dashboard")).toBe("/api/v1/dashboard");
+    expect(routeTemplate("GET", "/api/v1/audit")).toBe("/api/v1/audit");
     expect(
       routeTemplate("GET", "/api/v1/internal/reports/continuing-education"),
     ).toBe("/api/v1/internal/reports/continuing-education");

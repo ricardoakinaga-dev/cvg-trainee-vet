@@ -20,8 +20,7 @@ export type LivePostgresHarness = Readonly<{
 }>;
 
 export const liveDatabaseUrl = process.env.CVG_TEST_DATABASE_URL?.trim();
-const liveAdminDatabaseUrl =
-  process.env.CVG_TEST_ADMIN_DATABASE_URL?.trim() ?? liveDatabaseUrl;
+const liveAdminDatabaseUrl = process.env.CVG_TEST_ADMIN_DATABASE_URL?.trim();
 
 export const liveAdminCapabilityMessage =
   "live PostgreSQL tests require CVG_TEST_ADMIN_DATABASE_URL with SUPERUSER or BYPASSRLS for isolated fixture cleanup";
@@ -55,6 +54,11 @@ export async function openLivePostgresHarness(): Promise<LivePostgresHarness> {
   }
   if (liveAdminDatabaseUrl === undefined || liveAdminDatabaseUrl.length === 0) {
     throw new Error(liveAdminCapabilityMessage);
+  }
+  if (liveAdminDatabaseUrl === liveDatabaseUrl) {
+    throw new Error(
+      "live PostgreSQL tests require distinct application and admin database URLs",
+    );
   }
 
   const application = createPostgresDatabase(liveDatabaseUrl);

@@ -15,6 +15,7 @@ export type SaveAnswerCommand = Readonly<{
   readonly attemptId: string;
   readonly participantId: string;
   readonly activityId: string;
+  readonly scopeId: string;
   readonly itemId: string;
   readonly response: string;
   readonly idempotencyKey: string;
@@ -102,6 +103,7 @@ function fingerprint(command: SaveAnswerCommand): string {
     attemptId: command.attemptId,
     participantId: command.participantId,
     activityId: command.activityId,
+    scopeId: command.scopeId,
     itemId: command.itemId,
     response: command.response,
     savedAt: command.savedAt,
@@ -211,6 +213,7 @@ export async function saveAnswer(
             action: "ANSWER_SAVED",
             resourceType: "attempt",
             resourceId: savedAttempt.attemptId,
+            scopeId: command.scopeId,
             outcome: "SUCCESS",
             reasonCode: "draft_saved",
             requestId: command.correlationId,
@@ -226,7 +229,7 @@ export async function saveAnswer(
         });
         return result;
       },
-      { participantId: command.participantId },
+      { participantId: command.participantId, scopeId: command.scopeId },
     );
   } catch (error) {
     throw normalizeAnswerError(error);

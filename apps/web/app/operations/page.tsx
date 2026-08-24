@@ -1,6 +1,12 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 type DependencyState = Readonly<{
   readonly status: "READY" | "DEGRADED" | "NOT_READY";
@@ -17,6 +23,7 @@ type DashboardLoadState =
   "loading" | "ready" | "unauthenticated" | "forbidden" | "error";
 type ReportLoadState =
   "idle" | "loading" | "ready" | "unauthenticated" | "forbidden" | "error";
+type AuditTrailLoadState = Exclude<ReportLoadState, "idle"> | "idle";
 type ReportStatusFilter =
   "" | "INVITED" | "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
 type AppealReviewQueueStatus =
@@ -41,6 +48,42 @@ type FeedbackTriageEvent =
   | "MARCAR_NAO_REPRODUZIDO"
   | "MARCAR_NAO_PLANEJADO"
   | "RETOMAR_TRATAMENTO";
+
+type AuditTrail = Readonly<{
+  readonly kind: "audit_trail";
+  readonly scopeId: string;
+  readonly generatedAt?: string;
+  readonly filters: Readonly<{
+    readonly scopeId: string;
+    readonly action?: string;
+    readonly resourceType?: string;
+    readonly resourceId?: string;
+    readonly principalId?: string;
+    readonly actorKind?: "AUTHENTICATED" | "ANONYMOUS";
+    readonly outcome?: "SUCCESS" | "DENIED" | "FAILURE";
+    readonly from?: string;
+    readonly to?: string;
+    readonly limit: number;
+  }>;
+  readonly items: readonly Readonly<{
+    readonly auditId: string;
+    readonly occurredAt: string;
+    readonly actorKind: "AUTHENTICATED" | "ANONYMOUS";
+    readonly principalId?: string;
+    readonly action: string;
+    readonly resourceType: string;
+    readonly resourceId?: string;
+    readonly scopeId?: string;
+    readonly outcome: "SUCCESS" | "DENIED" | "FAILURE";
+    readonly reasonCode?: string;
+    readonly requestId: string;
+    readonly correlationId: string;
+    readonly beforeHash?: string;
+    readonly afterHash?: string;
+  }>[];
+  readonly hasNext: boolean;
+  readonly nextCursor?: string;
+}>;
 
 type AppealReviewHistoryEvent = Readonly<{
   readonly historyId: string;
@@ -440,12 +483,18 @@ function isStaffDashboard(value: unknown): value is StaffDashboard {
 function participantScopeId(
   dashboard: StaffDashboard | null,
   participantId: string,
+  preferredScopeId?: string,
 ): string | undefined {
   const participant = dashboard?.participants.find(
     (candidate) => candidate.participantId === participantId,
   );
-  return participant?.scopeIds.find((scopeId) =>
-    dashboard?.scopes.includes(scopeId),
+  if (participant === undefined) return undefined;
+  return (
+    (preferredScopeId !== undefined &&
+    participant.scopeIds.includes(preferredScopeId)
+      ? preferredScopeId
+      : undefined) ??
+    participant.scopeIds.find((scopeId) => dashboard?.scopes.includes(scopeId))
   );
 }
 
@@ -829,6 +878,119 @@ function isAppealReviewHistory(value: unknown): value is AppealReviewHistory {
   );
 }
 
+function isAuditTrail(
+  value: unknown,
+): value is Omit<AuditTrail, "hasNext" | "nextCursor"> {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, ["kind", "scopeId", "filters", "items"]) ||
+    value.kind !== "audit_trail" ||
+    !isUuid(value.scopeId) ||
+    !isRecord(value.filters) ||
+    !hasOnlyKeys(value.filters, [
+      "scopeId",
+      "action",
+      "resourceType",
+      "resourceId",
+      "principalId",
+      "actorKind",
+      "outcome",
+      "from",
+      "to",
+      "limit",
+    ]) ||
+    !isUuid(value.filters.scopeId) ||
+    value.filters.scopeId !== value.scopeId ||
+    (value.filters.action !== undefined &&
+      (typeof value.filters.action !== "string" ||
+        !/^[A-Za-z][A-Za-z0-9_.-]{1,127}$/u.test(value.filters.action))) ||
+    (value.filters.resourceType !== undefined &&
+      (typeof value.filters.resourceType !== "string" ||
+        !/^[A-Za-z][A-Za-z0-9_.-]{1,127}$/u.test(
+          value.filters.resourceType,
+        ))) ||
+    (value.filters.resourceId !== undefined &&
+      (typeof value.filters.resourceId !== "string" ||
+        value.filters.resourceId.trim().length === 0 ||
+        value.filters.resourceId.length > 256)) ||
+    (value.filters.principalId !== undefined &&
+      !isUuid(value.filters.principalId)) ||
+    (value.filters.actorKind !== undefined &&
+      value.filters.actorKind !== "AUTHENTICATED" &&
+      value.filters.actorKind !== "ANONYMOUS") ||
+    (value.filters.outcome !== undefined &&
+      value.filters.outcome !== "SUCCESS" &&
+      value.filters.outcome !== "DENIED" &&
+      value.filters.outcome !== "FAILURE") ||
+    (value.filters.from !== undefined &&
+      (typeof value.filters.from !== "string" ||
+        Number.isNaN(new Date(value.filters.from).getTime()))) ||
+    (value.filters.to !== undefined &&
+      (typeof value.filters.to !== "string" ||
+        Number.isNaN(new Date(value.filters.to).getTime()))) ||
+    !isCount(value.filters.limit) ||
+    value.filters.limit < 1 ||
+    value.filters.limit > 100 ||
+    !Array.isArray(value.items) ||
+    value.items.length > 100
+  ) {
+    return false;
+  }
+  return value.items.every((item) => {
+    if (
+      !isRecord(item) ||
+      !hasOnlyKeys(item, [
+        "auditId",
+        "occurredAt",
+        "actorKind",
+        "principalId",
+        "action",
+        "resourceType",
+        "resourceId",
+        "scopeId",
+        "outcome",
+        "reasonCode",
+        "requestId",
+        "correlationId",
+        "beforeHash",
+        "afterHash",
+      ]) ||
+      !isUuid(item.auditId) ||
+      typeof item.occurredAt !== "string" ||
+      Number.isNaN(new Date(item.occurredAt).getTime()) ||
+      (item.actorKind !== "AUTHENTICATED" && item.actorKind !== "ANONYMOUS") ||
+      (item.actorKind === "AUTHENTICATED" && !isUuid(item.principalId)) ||
+      (item.actorKind === "ANONYMOUS" && item.principalId !== undefined) ||
+      typeof item.action !== "string" ||
+      !/^[A-Za-z][A-Za-z0-9_.-]{1,127}$/u.test(item.action) ||
+      typeof item.resourceType !== "string" ||
+      !/^[A-Za-z][A-Za-z0-9_.-]{1,127}$/u.test(item.resourceType) ||
+      (item.resourceId !== undefined &&
+        (typeof item.resourceId !== "string" ||
+          item.resourceId.trim().length === 0 ||
+          item.resourceId.length > 256)) ||
+      (item.scopeId !== undefined && item.scopeId !== value.scopeId) ||
+      (item.outcome !== "SUCCESS" &&
+        item.outcome !== "DENIED" &&
+        item.outcome !== "FAILURE") ||
+      (item.reasonCode !== undefined &&
+        (typeof item.reasonCode !== "string" ||
+          !/^[A-Za-z][A-Za-z0-9_.-]{1,127}$/u.test(item.reasonCode))) ||
+      !isUuid(item.requestId) ||
+      !isUuid(item.correlationId) ||
+      (item.beforeHash !== undefined &&
+        (typeof item.beforeHash !== "string" ||
+          !/^[a-f0-9]{64}$/u.test(item.beforeHash))) ||
+      (item.afterHash !== undefined &&
+        (typeof item.afterHash !== "string" ||
+          !/^[a-f0-9]{64}$/u.test(item.afterHash)))
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function isInvitationResult(value: unknown): value is InvitationResult {
   if (!isRecord(value)) return false;
   return (
@@ -1087,6 +1249,7 @@ export default function OperationsPage() {
   const [dashboardState, setDashboardState] =
     useState<DashboardLoadState>("loading");
   const [dashboard, setDashboard] = useState<StaffDashboard | null>(null);
+  const [selectedScopeId, setSelectedScopeId] = useState("");
   const [reportState, setReportState] = useState<ReportLoadState>("idle");
   const [report, setReport] = useState<ContinuingEducationReport | null>(null);
   const [reportPage, setReportPage] = useState(1);
@@ -1121,6 +1284,10 @@ export default function OperationsPage() {
   const [appealHistoryAppealId, setAppealHistoryAppealId] = useState<
     string | null
   >(null);
+  const [auditTrailState, setAuditTrailState] =
+    useState<AuditTrailLoadState>("idle");
+  const [auditTrail, setAuditTrail] = useState<AuditTrail | null>(null);
+  const auditRequestVersion = useRef(0);
   const [reportModuleFilter, setReportModuleFilter] = useState("");
   const [reportStatusFilter, setReportStatusFilter] =
     useState<ReportStatusFilter>("");
@@ -1194,6 +1361,82 @@ export default function OperationsPage() {
     void loadDashboard();
   }, [loadDashboard]);
 
+  const managementScopeId =
+    selectedScopeId.length > 0
+      ? selectedScopeId
+      : (dashboard?.scopes[0] ?? undefined);
+
+  useEffect(() => {
+    setSelectedScopeId((current) => {
+      if (dashboard !== null && dashboard.scopes.includes(current)) {
+        return current;
+      }
+      return dashboard?.scopes[0] ?? "";
+    });
+  }, [dashboard]);
+
+  const loadAuditTrail = useCallback(
+    async (scopeId: string, cursor?: string): Promise<void> => {
+      const requestVersion = ++auditRequestVersion.current;
+      setAuditTrailState("loading");
+      const query = new URLSearchParams({ scopeId, limit: "25" });
+      if (cursor !== undefined) query.set("cursor", cursor);
+      try {
+        const response = await fetch(`/api/v1/audit?${query.toString()}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+        if (requestVersion !== auditRequestVersion.current) return;
+        if (!response.ok) {
+          setAuditTrail(null);
+          setAuditTrailState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (requestVersion !== auditRequestVersion.current) return;
+        if (!isRecord(payload) || payload.success !== true) throw new Error();
+        if (!isAuditTrail(payload.data) || !isRecord(payload.meta)) {
+          throw new Error();
+        }
+        const hasNext = payload.meta.has_next;
+        const nextCursor = payload.meta.next_cursor;
+        const normalizedNextCursor =
+          typeof nextCursor === "string" ? nextCursor : undefined;
+        if (
+          typeof hasNext !== "boolean" ||
+          (hasNext && normalizedNextCursor === undefined) ||
+          (!hasNext && nextCursor !== undefined)
+        ) {
+          throw new Error();
+        }
+        if (requestVersion !== auditRequestVersion.current) return;
+        setAuditTrail({
+          ...payload.data,
+          hasNext,
+          ...(normalizedNextCursor === undefined
+            ? {}
+            : { nextCursor: normalizedNextCursor }),
+        });
+        setAuditTrailState("ready");
+      } catch {
+        if (requestVersion !== auditRequestVersion.current) return;
+        setAuditTrail(null);
+        setAuditTrailState("error");
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (managementScopeId === undefined) {
+      auditRequestVersion.current += 1;
+      setAuditTrail(null);
+      setAuditTrailState("idle");
+      return;
+    }
+    void loadAuditTrail(managementScopeId);
+  }, [loadAuditTrail, managementScopeId]);
+
   const loadContinuingEducationReport = useCallback(
     async (
       scopeId: string,
@@ -1236,7 +1479,7 @@ export default function OperationsPage() {
   );
 
   useEffect(() => {
-    const scopeId = dashboard?.scopes[0];
+    const scopeId = managementScopeId;
     if (scopeId === undefined) {
       setReport(null);
       setReportState("idle");
@@ -1251,6 +1494,7 @@ export default function OperationsPage() {
   }, [
     dashboard,
     loadContinuingEducationReport,
+    managementScopeId,
     reportModuleFilter,
     reportPage,
     reportStatusFilter,
@@ -1289,14 +1533,14 @@ export default function OperationsPage() {
   );
 
   useEffect(() => {
-    const scopeId = dashboard?.scopes[0];
+    const scopeId = managementScopeId;
     if (scopeId === undefined) {
       setReflectionReport(null);
       setReflectionReportState("idle");
       return;
     }
     void loadReflectionManagementReport(scopeId);
-  }, [dashboard, loadReflectionManagementReport]);
+  }, [dashboard, loadReflectionManagementReport, managementScopeId]);
 
   const loadFeedbackTriageQueue = useCallback(
     async (
@@ -1336,14 +1580,19 @@ export default function OperationsPage() {
   );
 
   useEffect(() => {
-    const scopeId = dashboard?.scopes[0];
+    const scopeId = managementScopeId;
     if (scopeId === undefined) {
       setFeedbackQueue(null);
       setFeedbackQueueState("idle");
       return;
     }
     void loadFeedbackTriageQueue(scopeId, feedbackQueueStatusFilter);
-  }, [dashboard, feedbackQueueStatusFilter, loadFeedbackTriageQueue]);
+  }, [
+    dashboard,
+    feedbackQueueStatusFilter,
+    loadFeedbackTriageQueue,
+    managementScopeId,
+  ]);
 
   const transitionFeedbackTicket = useCallback(
     async (
@@ -1453,20 +1702,25 @@ export default function OperationsPage() {
   );
 
   useEffect(() => {
-    const scopeId = dashboard?.scopes[0];
+    const scopeId = managementScopeId;
     if (scopeId === undefined) {
       setAppealQueue(null);
       setAppealQueueState("idle");
       return;
     }
     void loadAppealReviewQueue(scopeId, appealQueueStatusFilter);
-  }, [appealQueueStatusFilter, dashboard, loadAppealReviewQueue]);
+  }, [
+    appealQueueStatusFilter,
+    dashboard,
+    loadAppealReviewQueue,
+    managementScopeId,
+  ]);
 
   async function createParticipantInvitation(
     event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
     event.preventDefault();
-    const scopeId = dashboard?.scopes[0];
+    const scopeId = managementScopeId;
     if (scopeId === undefined) {
       setInvitationState("error");
       setInvitationError("Nenhum escopo de gestão está disponível.");
@@ -1516,7 +1770,11 @@ export default function OperationsPage() {
   async function resendParticipantInvitation(
     participantId: string,
   ): Promise<void> {
-    const scopeId = participantScopeId(dashboard, participantId);
+    const scopeId = participantScopeId(
+      dashboard,
+      participantId,
+      managementScopeId,
+    );
     if (scopeId === undefined) return;
     const actionKey = `${participantId}:resend`;
     setAccountActionState("submitting");
@@ -1560,7 +1818,11 @@ export default function OperationsPage() {
     expectedStatus: ManagedAccountStatus,
     status: ManagedAccountStatus,
   ): Promise<void> {
-    const scopeId = participantScopeId(dashboard, participantId);
+    const scopeId = participantScopeId(
+      dashboard,
+      participantId,
+      managementScopeId,
+    );
     if (scopeId === undefined) return;
     if (
       status === "DEACTIVATED" &&
@@ -1611,7 +1873,11 @@ export default function OperationsPage() {
   async function issueParticipantRecovery(
     participantId: string,
   ): Promise<void> {
-    const scopeId = participantScopeId(dashboard, participantId);
+    const scopeId = participantScopeId(
+      dashboard,
+      participantId,
+      managementScopeId,
+    );
     if (scopeId === undefined) return;
     if (
       typeof window !== "undefined" &&
@@ -1743,9 +2009,26 @@ export default function OperationsPage() {
             </p>
           </div>
           {dashboardState === "ready" && dashboard !== null ? (
-            <p className="dashboard-updated" role="status">
-              Atualizado em {lastSeenLabel(dashboard.generatedAt)}
-            </p>
+            <div className="section-heading compact-heading">
+              {dashboard.scopes.length > 1 ? (
+                <label>
+                  Escopo de gestão
+                  <select
+                    value={managementScopeId ?? ""}
+                    onChange={(event) => setSelectedScopeId(event.target.value)}
+                  >
+                    {dashboard.scopes.map((scopeId) => (
+                      <option key={scopeId} value={scopeId}>
+                        Escopo autorizado {scopeId.slice(0, 8)}…
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <p className="dashboard-updated" role="status">
+                Atualizado em {lastSeenLabel(dashboard.generatedAt)}
+              </p>
+            </div>
           ) : null}
         </div>
 
@@ -1865,7 +2148,7 @@ export default function OperationsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const scopeId = dashboard?.scopes[0];
+                      const scopeId = managementScopeId;
                       if (scopeId !== undefined) {
                         void loadContinuingEducationReport(
                           scopeId,
@@ -2125,7 +2408,7 @@ export default function OperationsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const scopeId = dashboard?.scopes[0];
+                      const scopeId = managementScopeId;
                       if (scopeId !== undefined) {
                         void loadFeedbackTriageQueue(
                           scopeId,
@@ -2297,7 +2580,7 @@ export default function OperationsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const scopeId = dashboard?.scopes[0];
+                      const scopeId = managementScopeId;
                       if (scopeId !== undefined) {
                         void loadReflectionManagementReport(scopeId);
                       }
@@ -2386,7 +2669,7 @@ export default function OperationsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const scopeId = dashboard?.scopes[0];
+                      const scopeId = managementScopeId;
                       if (scopeId !== undefined) {
                         void loadAppealReviewQueue(
                           scopeId,
@@ -2557,6 +2840,128 @@ export default function OperationsPage() {
                       )}
                     </section>
                   ) : null}
+                </>
+              )}
+            </section>
+
+            <section
+              className="dashboard-panel"
+              aria-labelledby="audit-trail-title"
+              data-testid="audit-trail"
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Governança</p>
+                  <h3 id="audit-trail-title">Trilha de auditoria</h3>
+                  <p>
+                    Consulta somente leitura dos eventos do escopo selecionado.
+                    A superfície mostra apenas metadados operacionais redigidos;
+                    não permite editar, exportar ou alterar decisões.
+                  </p>
+                </div>
+                {auditTrailState === "ready" && auditTrail !== null ? (
+                  <span className="status-pill">
+                    {auditTrail.items.length} eventos
+                  </span>
+                ) : null}
+              </div>
+              {auditTrailState === "loading" ? (
+                <div className="experience-panel" role="status">
+                  Consultando a trilha de auditoria…
+                </div>
+              ) : auditTrailState === "forbidden" ||
+                auditTrailState === "unauthenticated" ? (
+                <div className="experience-panel dashboard-message">
+                  <strong>Trilha restrita</strong>
+                  <span>
+                    Esta conta não possui autorização para consultar os eventos
+                    deste escopo.
+                  </span>
+                </div>
+              ) : auditTrailState === "error" || auditTrail === null ? (
+                <div className="experience-panel error-panel" role="alert">
+                  <p>Não foi possível carregar a trilha de auditoria.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (managementScopeId !== undefined) {
+                        void loadAuditTrail(managementScopeId);
+                      }
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
+              ) : auditTrail.items.length === 0 ? (
+                <p className="dashboard-empty">
+                  Nenhum evento no recorte autorizado.
+                </p>
+              ) : (
+                <>
+                  <div
+                    className="dashboard-table-wrap"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="Tabela da trilha de auditoria"
+                  >
+                    <table className="dashboard-table">
+                      <caption className="visually-hidden">
+                        Eventos da trilha de auditoria no escopo selecionado
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Quando</th>
+                          <th scope="col">Ação</th>
+                          <th scope="col">Recurso</th>
+                          <th scope="col">Resultado</th>
+                          <th scope="col">Motivo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {auditTrail.items.map((item) => (
+                          <tr key={item.auditId}>
+                            <th scope="row">
+                              {lastSeenLabel(item.occurredAt)}
+                            </th>
+                            <td>{item.action}</td>
+                            <td>
+                              {item.resourceType}
+                              {item.resourceId === undefined
+                                ? ""
+                                : ` · ${item.resourceId}`}
+                            </td>
+                            <td>{item.outcome}</td>
+                            <td>{item.reasonCode ?? "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="report-filter-row">
+                    <span role="status">
+                      Página atual · {auditTrail.items.length} eventos
+                    </span>
+                    <button
+                      type="button"
+                      disabled={
+                        !auditTrail.hasNext ||
+                        auditTrail.nextCursor === undefined
+                      }
+                      onClick={() => {
+                        if (
+                          managementScopeId !== undefined &&
+                          auditTrail.nextCursor !== undefined
+                        ) {
+                          void loadAuditTrail(
+                            managementScopeId,
+                            auditTrail.nextCursor,
+                          );
+                        }
+                      }}
+                    >
+                      Próxima página
+                    </button>
+                  </div>
                 </>
               )}
             </section>

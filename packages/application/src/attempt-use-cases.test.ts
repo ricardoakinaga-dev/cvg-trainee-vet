@@ -12,6 +12,7 @@ import { ApplicationError } from "./errors.js";
 const ids = {
   participantId: "participant-1",
   activityId: "activity-1",
+  scopeId: "scope-1",
 };
 
 function createDependencies(
@@ -160,6 +161,7 @@ describe("attempt application commands", () => {
         {
           participantId: ids.participantId,
           activityId: "not-available",
+          scopeId: ids.scopeId,
           idempotencyKey: "start-attempt-2026-08-09",
           correlationId: "correlation-start-2026-08-09",
         },
@@ -184,6 +186,7 @@ describe("attempt application commands", () => {
     const command = {
       attemptId: saved.attemptId,
       participantId: ids.participantId,
+      scopeId: ids.scopeId,
       idempotencyKey: "submit-attempt-2026-08-09",
       correlationId: "correlation-2026-08-09",
       submittedAt: "2026-08-09T17:00:00.000Z",
@@ -220,6 +223,7 @@ describe("attempt application commands", () => {
         {
           attemptId: "attempt-1",
           participantId: "participant-2",
+          scopeId: ids.scopeId,
           idempotencyKey: "submit-attempt-2026-08-09",
           correlationId: "correlation-2026-08-09",
           submittedAt: "2026-08-09T17:00:00.000Z",
@@ -255,6 +259,7 @@ describe("attempt application commands", () => {
         {
           attemptId: "attempt-1",
           participantId: ids.participantId,
+          scopeId: ids.scopeId,
           idempotencyKey: "submit-attempt-2026-08-09",
           correlationId: "correlation-2026-08-09",
           submittedAt: "2026-08-09T17:00:00.000Z",

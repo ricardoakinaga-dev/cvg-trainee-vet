@@ -991,6 +991,25 @@ CVG descartável autorizado.
 - gap explícito: o grant matrix, owner de migration, rotação de credenciais e inspeção do ambiente produtivo real ainda exigem execução operacional autorizada; o healthcheck é guard, não provisionamento automático
 - próxima ação: aplicar o runbook de roles em homologação/produção descartável, com owner de migration separado e rotação de credenciais, e anexar evidência sem registrar URL ou segredo
 
+### AUDIT-TRAIL-034 — Consulta escopada da trilha de auditoria
+
+- título: materializar a leitura operacional do UC-017 sem permitir edição ou vazamento entre escopos
+- descrição: criar contrato estrito, caso de uso, repositório PostgreSQL com cursor opaco, RLS contextual, rota `GET /api/v1/audit` e painel interno bounded para auditor/admin/Ricardo
+- módulo: governança / API / aplicação / PostgreSQL / web
+- dependência: `AUDIT-NEGATIVE-031`; `DB-PRIVILEGE-032`; sessão ativa; capability server-side; `SPEC-0106`, `SPEC-0107` e `SPEC-0111`
+- fase: BUILD — Phase 3–9 / gestão e governança
+- risco: crítico — auditoria sem leitura operacional não permite reconstruir decisões; filtro permissivo pode expor outro escopo ou dados protegidos
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-080`; `PRD-RF-081`; `PRD-RF-082`; `PRD-UC-017`; `SPEC-0106`; `SPEC-0107`; `SPEC-0111`; `SPEC-0118`
+- quality bar congelada: capability `VIEW_AUDIT_TRAIL` exige conta ativa, papel autorizado e escopo da sessão; query estrita rejeita chaves/limites/datas/cursor inválidos; repository aplica `limit + 1`, ordenação fixa e filtro de escopo; RLS exige `cvg.audit_read` + `cvg.audit_scope_id`; projeção não expõe corpo/cookie/token/prompt/conteúdo protegido; operações cobre loading/empty/error/retry e acessibilidade
+- arquivos esperados: `packages/contracts/src/audit-trail.ts`; `packages/application/src/audit-trail-use-cases.ts`; `packages/persistence/src/audit-trail-repository.ts`; `packages/persistence/src/security-context.ts`; `packages/persistence/drizzle/0033_audit_read_scope_hardening.sql`; `apps/api/src/http.ts`; `apps/api/src/main.ts`; `apps/api/src/server.ts`; `apps/web/app/operations/page.tsx`
+- testes esperados: contratos e caso de uso; API auth/filters/cursor/redaction; persistence mapping/query; migration governance/RLS static; integração PostgreSQL com role `NOSUPERUSER NOBYPASSRLS` quando autorizada; E2E operations sintético e real quando houver banco CVG
+- evidência inicial: ausência confirmada de `GetAuditTrail`, `/api/v1/audit` e surface de auditoria no HEAD `106dc42`; a implementação local não autoriza release nem substitui prova live
+- gaps explícitos: live PostgreSQL/RLS, workflow same-SHA, grants/owners produtivos, retenção/collector/alertas, exportação auditada, provider/MFA, revisão clínica e piloto continuam separados
+- resultado: contrato, capability, caso de uso, repository cursorizado, contexto RLS, migration 0033, rota, painel de operações, writer escopado, testes focais, regressão global (623 pass / 33 skips; 84,79% statements / 80,92% branches), build, integração (25 pass / 33 skips), E2E sintético (26/26) e auditoria de dependências passaram localmente; a crítica independente encontrou e a implementação corrigiu o vazamento potencial de linhas globais autenticadas, a classificação de invariantes, o vínculo do cursor a escopo/filtros, a resposta web obsoleta e o cursor semântico inválido
+- próxima ação: executar PostgreSQL/RLS live com role `NOSUPERUSER NOBYPASSRLS`, E2E browser→API→PostgreSQL e grants/owners em ambiente CVG descartável/autorizado; não transformar ausência de ambiente em PASS
+
 ### STAFF-ONBOARDING-2026-08-23 — Convite administrativo escopado
 
 - título: permitir entrada controlada de veterinários no programa

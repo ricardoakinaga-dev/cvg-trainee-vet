@@ -24,7 +24,12 @@ type FakeDatabaseState = {
     response: unknown;
   }>;
   readonly activityRows: Array<{ activityId: string; scopeId: string }>;
-  readonly invitationRows: Array<{ accountId: string; scopeId: string }>;
+  readonly invitationRows: Array<{
+    accountId: string;
+    scopeId: string;
+    accountStatus: "INVITED" | "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+    acceptedAt: Date | null;
+  }>;
   readonly assignmentRows: Array<{ activityId: string; available: boolean }>;
   readonly outboxRows: FakeRow[];
   readonly auditRows: FakeRow[];
@@ -56,7 +61,12 @@ function queryParameters(value: unknown): readonly unknown[] {
   return [];
 }
 
-function createFakeDatabase(): {
+function createFakeDatabase(
+  options: {
+    readonly accountStatus?: FakeDatabaseState["invitationRows"][number]["accountStatus"];
+    readonly acceptedAt?: Date | null;
+  } = {},
+): {
   readonly database: PostgresJsDatabase<typeof schema>;
   readonly state: FakeDatabaseState;
 } {
@@ -64,7 +74,17 @@ function createFakeDatabase(): {
     attemptRows: [],
     idempotencyRows: [],
     activityRows: [{ activityId: "activity-1", scopeId: "scope-1" }],
-    invitationRows: [{ accountId: "participant-1", scopeId: "scope-1" }],
+    invitationRows: [
+      {
+        accountId: "participant-1",
+        scopeId: "scope-1",
+        accountStatus: options.accountStatus ?? "ACTIVE",
+        acceptedAt:
+          options.acceptedAt === undefined
+            ? new Date("2026-08-23T12:00:00.000Z")
+            : options.acceptedAt,
+      },
+    ],
     assignmentRows: [{ activityId: "activity-1", available: true }],
     outboxRows: [],
     auditRows: [],
@@ -125,7 +145,13 @@ function createFakeDatabase(): {
           }
           if (selectedTable === schema.accountInvitations) {
             return state.invitationRows
-              .filter((row) => whereValues.includes(row.accountId))
+              .filter(
+                (row) =>
+                  whereValues.includes(row.accountId) &&
+                  whereValues.includes("ACTIVE") &&
+                  row.accountStatus === "ACTIVE" &&
+                  row.acceptedAt !== null,
+              )
               .map((row) => ({ accountId: row.accountId }));
           }
           return [];
@@ -201,6 +227,7 @@ describe("database adapter operations", () => {
       {
         participantId: "participant-1",
         activityId: "activity-1",
+        scopeId: "scope-1",
         idempotencyKey: "start-key-123456",
         correlationId: "correlation-start-1",
       },
@@ -217,6 +244,7 @@ describe("database adapter operations", () => {
     const command = {
       attemptId: started.attemptId,
       participantId: "participant-1",
+      scopeId: "scope-1",
       idempotencyKey: "submit-key-123456",
       correlationId: "correlation-1",
       submittedAt: "2026-08-09T17:00:00.000Z",
@@ -242,6 +270,23 @@ describe("database adapter operations", () => {
       resolveParticipantScope("participant-1", "scope-1"),
     ).resolves.toBe(true);
   });
+
+  it.each([
+    ["INVITED", new Date("2026-08-23T12:00:00.000Z")],
+    ["SUSPENDED", new Date("2026-08-23T12:00:00.000Z")],
+    ["DEACTIVATED", new Date("2026-08-23T12:00:00.000Z")],
+    ["ACTIVE", null],
+  ] as const)(
+    "rejects a participant that is not active with an accepted membership (%s)",
+    async (accountStatus, acceptedAt) => {
+      const { database } = createFakeDatabase({ accountStatus, acceptedAt });
+      const resolveParticipantScope = createParticipantScopeResolver(database);
+
+      await expect(
+        resolveParticipantScope("participant-1", "scope-1"),
+      ).resolves.toBe(false);
+    },
+  );
 
   it("resolves activity scope only through a contextual transaction", async () => {
     const { database } = createFakeDatabase();
@@ -271,6 +316,7 @@ describe("database adapter operations", () => {
         {
           participantId: "participant-1",
           activityId: "activity-1",
+          scopeId: "scope-1",
           idempotencyKey: "start-key-123456",
           correlationId: "correlation-start-1",
         },

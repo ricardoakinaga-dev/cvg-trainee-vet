@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   createLearningAssignment,
@@ -14,6 +14,8 @@ import type {
 
 import {
   activityAssignments,
+  accountInvitations,
+  accounts,
   contentVersions,
   diagnosticResults,
   learningActivities,
@@ -277,6 +279,26 @@ export function createAdaptiveAssignmentRepository(
           throw new AdaptiveAssignmentNotFoundError();
 
         const participantId = diagnostic.participantId;
+        const eligibleParticipantRows = await executor
+          .select({ accountId: accounts.id })
+          .from(accounts)
+          .innerJoin(
+            accountInvitations,
+            eq(accountInvitations.accountId, accounts.id),
+          )
+          .where(
+            and(
+              eq(accounts.id, participantId),
+              eq(accounts.status, "ACTIVE"),
+              isNotNull(accountInvitations.acceptedAt),
+              sql`${accountInvitations.roles} @> ${JSON.stringify(["PARTICIPANT"])}::jsonb`,
+              sql`${accountInvitations.scopes} @> ${JSON.stringify([input.scopeId])}::jsonb`,
+            ),
+          )
+          .limit(1);
+        if (eligibleParticipantRows.length === 0) {
+          throw new AdaptiveAssignmentNotFoundError();
+        }
         const availableAt = diagnostic.completedAt;
         await setDatabaseSecurityContext(executor, {
           participantId,

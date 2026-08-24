@@ -44,6 +44,12 @@ export function auditEntryToRow(entry: AuditEntry): AuditInsertRow {
       );
     }
     assertNonEmpty(entry.principalId, "principalId");
+    if (entry.scopeId === undefined) {
+      throw new PersistenceMappingError(
+        "scopeId is required for authenticated audit entries",
+      );
+    }
+    assertNonEmpty(entry.scopeId, "scopeId");
   } else if (entry.principalId !== undefined) {
     throw new PersistenceMappingError(
       "anonymous audit entries cannot contain a principalId",
@@ -90,7 +96,10 @@ export function createAuditRepository(
     append: async (entry: AuditEntry): Promise<void> => {
       await db.transaction(async (transaction) => {
         await transaction.execute(
-          sql`select set_config('cvg.audit_write', 'on', true)`,
+          sql`select
+            set_config('cvg.audit_write', 'on', true),
+            set_config('cvg.audit_read', '', true),
+            set_config('cvg.audit_scope_id', '', true)`,
         );
         await transaction.insert(auditEntries).values(auditEntryToRow(entry));
       });

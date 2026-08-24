@@ -7,6 +7,7 @@ import {
   createAdaptiveAssignmentRepository,
 } from "./adaptive-assignment-repository.js";
 import {
+  accounts,
   activityAssignments,
   diagnosticResults,
   learningActivities,
@@ -169,7 +170,12 @@ function createFakeDatabase(
             : source === learningActivities
               ? activities.filter((activity) => activity.hasPublishedContent)
               : [],
-        limit: async () => (source === diagnosticResults ? diagnosticRows : []),
+        limit: async () =>
+          source === diagnosticResults
+            ? diagnosticRows
+            : source === accounts
+              ? [{ accountId: participantId }]
+              : [],
         values() {
           return builder;
         },

@@ -60,6 +60,10 @@ export function createAuditEntry(input: AuditEntryInput): AuditEntry {
       );
     }
     assertNonEmpty(input.principalId, "principalId");
+    if (input.scopeId === undefined) {
+      throw new Error("scopeId is required for authenticated audit entries");
+    }
+    assertNonEmpty(input.scopeId, "scopeId");
   } else if (input.principalId !== undefined) {
     throw new Error("anonymous audit entries cannot contain a principalId");
   }

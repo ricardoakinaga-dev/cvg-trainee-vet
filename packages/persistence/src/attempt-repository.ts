@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { AttemptState, AttemptStatus } from "@cvg/domain";
 import type {
@@ -10,6 +10,7 @@ import type {
 
 import {
   accountInvitations,
+  accounts,
   activityAssignments,
   attemptIdempotency,
   attempts,
@@ -516,9 +517,12 @@ export function createParticipantScopeResolver(
       const rows = await executor
         .select({ accountId: accountInvitations.accountId })
         .from(accountInvitations)
+        .innerJoin(accounts, eq(accounts.id, accountInvitations.accountId))
         .where(
           and(
             eq(accountInvitations.accountId, participantId),
+            eq(accounts.status, "ACTIVE"),
+            isNotNull(accountInvitations.acceptedAt),
             sql`${accountInvitations.roles} @> ${participantRoleJson}::jsonb`,
             sql`${accountInvitations.scopes} @> ${JSON.stringify([scopeId])}::jsonb`,
           ),

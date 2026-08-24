@@ -45,6 +45,22 @@
 - `SearchInternalKnowledge(principal_id, query, filters)` — somente autoria/revisão/Ricardo, com filtro de escopo antes da busca vetorial;
 - `GetAiJob(job_id)` — somente solicitante autorizado e auditoria operacional; nunca expõe prompt, segredo ou payload interno a participante.
 
+### 2.1 — Contrato executável de `GetAuditTrail`
+
+`GetAuditTrail` recebe um único `scopeId` derivado da sessão e filtros
+allowlisted (`action`, `resourceType`, `resourceId`, `principalId`, `actorKind`,
+`outcome`, `from`, `to`, `cursor` e `limit`). O caso de uso exige a capability
+`VIEW_AUDIT_TRAIL`, valida novamente identidade ativa, papel e pertencimento ao
+escopo, e devolve somente metadados da entrada append-only. Somente eventos
+globais anônimos sem `scopeId` (por exemplo, uma rejeição anônima de HTTP) podem
+acompanhar o recorte; um evento autenticado sem escopo é inválido e entradas de
+outro escopo são rejeitadas mesmo que o adaptador tente devolvê-las.
+
+O cursor é opaco, bounded e ligado à ordenação determinística
+`occurred_at DESC, id DESC`; o repositório busca `limit + 1` para calcular
+`hasNext`, sem `COUNT(*)` nem ordenação arbitrária. O caso de uso não permite
+edição, exportação ou emissão de achado nessa primeira leitura.
+
 ## 3. Validação
 
 1. toda entrada externa é `unknown` até passar por schema Zod;

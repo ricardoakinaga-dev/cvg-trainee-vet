@@ -76,6 +76,8 @@ import {
   type TransactionSecurityContext,
   type AuditPort,
   type AuditOutcome,
+  type AuditTrailState,
+  type GetAuditTrailCommand,
 } from "@cvg/application";
 import {
   apiErrorResponse,
@@ -104,6 +106,8 @@ import {
   appealReviewHistoryQuerySchema,
   feedbackTriageQueueProjectionSchema,
   feedbackTriageQueueQuerySchema,
+  auditTrailProjectionSchema,
+  auditTrailQuerySchema,
   internalAuthoringRecordQuerySchema,
   internalSessionScopesProjectionSchema,
   parseDiagnosticResultProjection,
@@ -298,6 +302,9 @@ export interface ApiHttpDependencies {
   readonly getAppealReviewHistory?: (
     command: GetAppealReviewHistoryCommand,
   ) => Promise<AppealReviewHistoryState | null>;
+  readonly getAuditTrail?: (
+    command: GetAuditTrailCommand,
+  ) => Promise<AuditTrailState>;
   readonly getParticipantCurriculumRuntime?: (
     participantId: string,
     moduleId: string,
@@ -422,6 +429,7 @@ type ApiRejectionAuditRequest = Readonly<{
   readonly method: string;
   readonly path: string;
   readonly route?: string;
+  readonly scopeId?: string;
   readonly headers?: Readonly<Record<string, string | undefined>>;
 }>;
 
@@ -451,12 +459,21 @@ export async function recordApiRejectionAudit(
     : response.body.error.code;
 
   try {
+    const requestedScopeId = request.scopeId;
+    const scopeId =
+      principal === undefined
+        ? undefined
+        : (principal.scopes.find(
+            (candidate) => candidate === requestedScopeId,
+          ) ?? principal.scopes[0]);
+    if (principal !== undefined && scopeId === undefined) return;
     const auditEntry = createAuditEntry({
       auditId: randomUUID(),
       actorKind: principal === undefined ? "ANONYMOUS" : "AUTHENTICATED",
       ...(principal === undefined
         ? {}
         : { principalId: principal.principalId }),
+      ...(scopeId === undefined ? {} : { scopeId }),
       action: "HTTP_REQUEST_REJECTED",
       resourceType: "http_route",
       resourceId: request.route ?? "unmatched",
@@ -829,6 +846,17 @@ function internalAppealReviewHistoryProjection(
   });
 }
 
+function internalAuditTrailProjection(
+  state: AuditTrailState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return auditTrailProjectionSchema.parse({
+    kind: state.kind,
+    scopeId: state.scopeId,
+    filters: { ...state.filters },
+    items: state.items.map((item) => ({ ...item })),
+  });
+}
+
 function isAllowed(
   principal: ApiPrincipal,
   capability: Capability,
@@ -846,6 +874,7 @@ function isAllowed(
     ...(capability === "APPROVE_CLINICAL_CONTENT" ||
     capability === "PUBLISH_CONTENT" ||
     capability === "VIEW_INTERNAL_SOURCE" ||
+    capability === "VIEW_AUDIT_TRAIL" ||
     capability === "VIEW_CONTENT_REVIEW_QUEUE" ||
     capability === "VIEW_FEEDBACK_QUEUE" ||
     capability === "TRANSITION_FEEDBACK_TICKET" ||
@@ -925,6 +954,7 @@ async function handleStart(
   const state = await dependencies.startAttempt({
     participantId: principal.principalId,
     activityId: parsed.data.activityId,
+    scopeId,
     idempotencyKey: parsed.data.idempotencyKey,
     correlationId: requestId,
   });
@@ -967,6 +997,7 @@ async function handleSaveAnswer(
     attemptId,
     participantId: principal.principalId,
     activityId: parsed.data.activityId,
+    scopeId,
     itemId: parsed.data.itemId,
     response: parsed.data.response,
     idempotencyKey: parsed.data.idempotencyKey,
@@ -1188,6 +1219,111 @@ async function handleContinuingEducationReport(
       publicContinuingEducationReportProjection(state),
       requestId,
     ),
+  };
+}
+
+async function handleAuditTrail(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getAuditTrail === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const rawQuery = request.query ?? {};
+  const allowedKeys = new Set([
+    "scopeId",
+    "action",
+    "resourceType",
+    "resourceId",
+    "principalId",
+    "actorKind",
+    "outcome",
+    "from",
+    "to",
+    "cursor",
+    "limit",
+  ]);
+  if (Object.keys(rawQuery).some((key) => !allowedKeys.has(key))) {
+    return validationResponse(requestId);
+  }
+  const rawLimit = rawQuery.limit;
+  const parsed = auditTrailQuerySchema.safeParse({
+    scopeId: rawQuery.scopeId,
+    ...(rawQuery.action === undefined ? {} : { action: rawQuery.action }),
+    ...(rawQuery.resourceType === undefined
+      ? {}
+      : { resourceType: rawQuery.resourceType }),
+    ...(rawQuery.resourceId === undefined
+      ? {}
+      : { resourceId: rawQuery.resourceId }),
+    ...(rawQuery.principalId === undefined
+      ? {}
+      : { principalId: rawQuery.principalId }),
+    ...(rawQuery.actorKind === undefined
+      ? {}
+      : { actorKind: rawQuery.actorKind }),
+    ...(rawQuery.outcome === undefined ? {} : { outcome: rawQuery.outcome }),
+    ...(rawQuery.from === undefined ? {} : { from: rawQuery.from }),
+    ...(rawQuery.to === undefined ? {} : { to: rawQuery.to }),
+    ...(rawQuery.cursor === undefined ? {} : { cursor: rawQuery.cursor }),
+    ...(rawLimit === undefined ? {} : { limit: Number(rawLimit) }),
+  });
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_AUDIT_TRAIL",
+      { scopeId: parsed.data.scopeId },
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const query: GetAuditTrailCommand["query"] = {
+    scopeId: parsed.data.scopeId,
+    ...(parsed.data.action === undefined ? {} : { action: parsed.data.action }),
+    ...(parsed.data.resourceType === undefined
+      ? {}
+      : { resourceType: parsed.data.resourceType }),
+    ...(parsed.data.resourceId === undefined
+      ? {}
+      : { resourceId: parsed.data.resourceId }),
+    ...(parsed.data.principalId === undefined
+      ? {}
+      : { principalId: parsed.data.principalId }),
+    ...(parsed.data.actorKind === undefined
+      ? {}
+      : { actorKind: parsed.data.actorKind }),
+    ...(parsed.data.outcome === undefined
+      ? {}
+      : { outcome: parsed.data.outcome }),
+    ...(parsed.data.from === undefined ? {} : { from: parsed.data.from }),
+    ...(parsed.data.to === undefined ? {} : { to: parsed.data.to }),
+    ...(parsed.data.cursor === undefined ? {} : { cursor: parsed.data.cursor }),
+    limit: parsed.data.limit,
+  };
+  const state = await dependencies.getAuditTrail({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+    query,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(internalAuditTrailProjection(state), requestId, {
+      has_next: state.hasNext,
+      ...(state.nextCursor === undefined
+        ? {}
+        : { next_cursor: state.nextCursor }),
+    }),
   };
 }
 
@@ -2600,6 +2736,7 @@ async function handleSubmit(
   const state = await dependencies.submitAttempt({
     attemptId: parsed.data.attemptId,
     participantId: principal.principalId,
+    scopeId,
     idempotencyKey: parsed.data.idempotencyKey,
     correlationId: requestId,
     submittedAt: new Date().toISOString(),
@@ -2999,6 +3136,18 @@ async function handleApiRequestCore(
       return await handleDashboard(requestId, principal, dependencies);
     }
 
+    if (request.method === "GET" && request.path === "/api/v1/audit") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAuditTrail(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
     if (
       request.method === "GET" &&
       request.path === "/api/v1/internal/reports/continuing-education"
@@ -3320,6 +3469,16 @@ export async function handleApiRequest(
     },
   };
   const response = await handleApiRequestCore(request, trackedDependencies);
-  await recordApiRejectionAudit(dependencies, request, response, principal);
+  await recordApiRejectionAudit(
+    dependencies,
+    {
+      ...request,
+      ...(request.query?.scopeId === undefined
+        ? {}
+        : { scopeId: request.query.scopeId }),
+    },
+    response,
+    principal,
+  );
   return response;
 }
