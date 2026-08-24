@@ -6476,3 +6476,35 @@ bloqueados.
 Revisar o diff, criar o commit intencional, atualizar o SHA do manifesto e
 rodar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois preparar
 a prova live quando o ambiente autorizado existir.
+
+## 2026-08-24 — JOURNEY-REL-001: fechamento documental preparado
+
+### TIMESTAMP
+
+2026-08-24T06:17:32-03:00
+
+### ACTION
+
+Revisado o diff da fatia `JOURNEY-REL-001`; o manifesto foi ligado ao commit de
+código `9b1b975d62760142238b6b19f03e207181f59a87`, e runtime state, backlog e
+ExecPlan foram reconciliados com a regressão completa. Nenhum push, deploy,
+provider ou mutação externa foi executado.
+
+### RESULT
+
+`pnpm verify` permaneceu verde com 125 arquivos/574 testes, 30 skips,
+84,49% statements/80,34% branches/85,94% functions/85,22% lines, build nos
+12 workspaces, E2E 26/26, integração 8/20 com 27/30 skips, migrations 27/27 e
+audit high sem vulnerabilidades. O gate release ainda depende do commit
+documental e será executado em worktree limpo.
+
+### STATUS
+
+IN_PROGRESS — fechamento documental e gate release pendentes.
+
+### NEXT
+
+Criar o commit documental, executar
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` e, se verde, registrar
+`READY_FOR_NEXT_STEP`; em seguida preparar a evidência live de
+RLS/rollback/concorrência quando houver ambiente autorizado.

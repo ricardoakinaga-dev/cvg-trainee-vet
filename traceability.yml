@@ -3443,7 +3443,7 @@ artifacts:
         "tests/integration/postgres-adaptive-assignment.test.ts",
         "tests/integration/curriculum-catalog.test.ts",
       ]
-    commit: "e718df1cc23f78c0615db6331e0995e45a03026a"
+    commit: "9b1b975d62760142238b6b19f03e207181f59a87"
     artifacts:
       [
         "BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md",

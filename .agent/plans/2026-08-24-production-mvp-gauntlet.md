@@ -17,8 +17,8 @@ a aprovação clínica, piloto ou release produtivo.
 - [x] (2026-08-24T00:00:00-03:00) Recuperar `AGENTS.md`, `apps/web/AGENTS.md`,
   `docs/99_runtime_state.md`, `docs/20_master_execution_log.md`,
   `docs/30_backlog_master.md`, briefing, código, testes, Git e pesquisa.
-- [x] (2026-08-24T00:00:00-03:00) Confirmar que o HEAD local é `9a2e07a`, o
-  worktree está limpo, `origin/main` está 39 commits atrás e a pesquisa oficial
+- [x] (2026-08-24T00:00:00-03:00) Confirmar que o HEAD local era `9a2e07a`, o
+  worktree estava limpo, `origin/main` estava 39 commits atrás e a pesquisa oficial
   foi revalidada em 2026-08-24.
 - [x] (2026-08-24T04:15:00-03:00) Reconciliar `runtime_state`, backlog, log,
   manifesto e este plano com o HEAD real; congelar a Quality Bar `QB-01` a
@@ -46,8 +46,13 @@ a aprovação clínica, piloto ou release produtivo.
 - [x] (2026-08-24T06:04:35-03:00) Fechar localmente `JOURNEY-REL-001`: ligar
   atribuição adaptativa a atividades publicadas apenas por `moduleId` explícito,
   persistir provenance e reparar vínculo legado sem alterar progresso. RED/GREEN
-  focal, migration 0026, typecheck de persistence/curriculum, seed M02 e testes
-  condicionais live foram preparados; a prova live permanece skipped sem banco.
+  focal, migration 0026, typecheck de persistence/curriculum, seed M02, build,
+  E2E e regressão completa passaram; o código está no commit
+  `9b1b975d62760142238b6b19f03e207181f59a87`, e a prova live permanece skipped
+  sem banco.
+- [ ] (2026-08-24T06:17:32-03:00) Fechar o commit documental de
+  `JOURNEY-REL-001` e executar o gate release de rastreabilidade em worktree
+  limpo; depois preparar a prova live de RLS/rollback/concorrência.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
