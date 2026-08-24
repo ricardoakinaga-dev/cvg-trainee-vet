@@ -42,6 +42,67 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-24 — CURRICULUM-RUNTIME-AUTHZ-050: isolamento da avaliação curricular
+
+### TIMESTAMP
+
+2026-08-24 14:52:21 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / hardening de autorização e jornada
+
+### SPRINT
+
+CURRICULUM-RUNTIME-AUTHZ-050
+
+### TASK
+
+Impedir que a avaliação curricular interna aceite `participantId` fora do
+`scopeId` autorizado e preparar a defesa equivalente no PostgreSQL.
+
+### ACTION
+
+Duas críticas read-only independentes foram executadas. Poincaré reproduziu a
+falha P1 no boundary HTTP; Volta confirmou, separadamente, que retenção ainda
+não é consumível e que a cadência aprovada está inconsistente entre RF-049
+(30/60/90) e o desenho complementar (D+7/D+30/D+90). Foi escrito o teste RED,
+que retornou `200` antes da correção. O GREEN adicionou a guarda
+`isParticipantInScope` antes do caso de uso e a migration `0034` com função e
+policies `FORCE RLS` para membership ativa/aceita. O teste live do runtime foi
+alinhado com membership sintética e tentativa em escopo estrangeiro.
+
+### RESULT
+
+O commit técnico `8edf560` passou 70/70 testes HTTP, 72/72 testes unitários
+focais, lint dos arquivos alterados, `tsc -b --pretty false`,
+`pnpm verify:migrations` com 35/35 migrations e `git diff --check`. Nenhum
+conteúdo clínico, gabarito, fonte, PDF, foto ou dado real foi criado. A
+integração PostgreSQL continua configuracionalmente skipped nesta sessão.
+
+### DECISIONS
+
+A autorização de escopo é tratada como P1 e fica fechada na API e preparada no
+banco. Retenção permanece sem CTA e sem itens equivalentes inventados até
+decisão humana sobre a cadência e revisão clínica/autoral. PostgreSQL/RLS live,
+browser→API→PostgreSQL, grants/owners produtivos, workflow remoto same-SHA,
+observabilidade externa, restore/failover, publicação clínica e piloto não são
+inferidos.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aplicar a migration em banco CVG descartável/autorizado, executar integração
+live e E2E real; depois fechar a decisão de cadência e desenhar a revisão de
+retenção consumível.
+
 ## 2026-08-23 — EDITORIAL-QUEUE-027 / hardening e verificação final
 
 ### TIMESTAMP

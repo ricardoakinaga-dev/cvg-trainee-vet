@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: JOURNEY-REMEDIATION-048 — CTA segura para remediação digital
-- current_task: ligar a ação server-side de remediação a uma atividade publicada já autorizada, sem inventar fluxo de retenção nem declarar competência clínica
+- current_sprint: CURRICULUM-RUNTIME-AUTHZ-050 — isolamento da avaliação curricular por escopo
+- current_task: provar membership de participante antes da avaliação curricular e preparar a defesa RLS, sem inventar fluxo de retenção nem declarar competência clínica
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: o commit técnico `de8d8bccbce13e3e4d10597f4b88245ae42601f` fechou a guarda server-side de `itemId`, a compatibilidade de provenance, a CTA condicionada a `nextAction` e a prova E2E de limpeza da justificativa; auditoria, backlog, manifesto, plano e log foram atualizados com a crítica final Kuhn e a evidência desta rodada. O commit documental `20e01e2` e o gate de release traceability passaram; `pnpm verify`, build, E2E, integração e audit de dependências passaram localmente. O preflight final `pnpm test:integration:live` confirmou bloqueio com código 2 por ausência de `CVG_TEST_DATABASE_URL`.
-- next_action: com aprovação e ambiente CVG descartável, fornecer URLs distintas de app/admin, executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA; manter aprovação clínica/humana como gate de publicação e não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
+- last_completed_action: o commit técnico `8edf560` fechou a autorização da avaliação curricular: a API exige membership `participantId + scopeId`, a migration `0034` repete a invariável no `curriculum_runtime_states`, e o teste live foi preparado para rejeitar escopo estrangeiro; RED/GREEN HTTP, unitários focais, lint, typecheck e migrations passaram.
+- next_action: aplicar `0034` e executar a prova PostgreSQL/RLS e browser→API→PostgreSQL em ambiente CVG descartável/autorizado; manter aprovação clínica/humana como gate de publicação e não promover `REVISAR_RETENCAO` a CTA até resolver a cadência 30/60/90 versus D+7/D+30/D+90 e criar atividade/transição consumível
 
 ## BLOQUEIOS
 
@@ -32,11 +32,11 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T14:35:07-03:00
+- last_update: 2026-08-24T14:52:21-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `de8d8bccbce13e3e4d10597f4b88245ae42601f` — correção técnica de item/provenance/CTA/E2E fechada; control plane atualizado nesta rodada; preflight live continua sem ambiente
+- head: `8edf560` — autorização da avaliação curricular e migration RLS fechadas tecnicamente; documentação desta rodada ainda será commitada; preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após o commit técnico e o commit documental desta rodada; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`

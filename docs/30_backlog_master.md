@@ -66,6 +66,15 @@ migrations 33/33, traceability release e typecheck/lint/formatação/diff-check
 passaram; PostgreSQL live e E2E autoral continuam pendentes por falta de banco
 CVG descartável autorizado.
 
+**Atualização operacional 2026-08-24 (CURRICULUM-RUNTIME-AUTHZ-050):** a
+avaliação curricular interna agora prova `participantId + scopeId` com
+membership server-side antes de executar o caso de uso; a migration `0034`
+repete a mesma invariável no `curriculum_runtime_states` e restringe a policy
+staff quando há contexto de participante. RED reproduziu `200` antes da guarda;
+GREEN passou 70/70 HTTP, 72/72 unitários focais, lint, typecheck e migrations
+35/35. O teste PostgreSQL negativo foi preparado, mas continua sem execução
+por ausência de `CVG_TEST_DATABASE_URL`; o item fica `COMPLETED_WITH_GAPS`.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -433,6 +442,24 @@ CVG descartável autorizado.
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; B07-01, B07-02, B07-03, CUR-24-01 e B07-04 neste backlog
 
 ## P1 — ALTA PRIORIDADE
+
+### CURRICULUM-RUNTIME-AUTHZ-050 — Isolamento de avaliação curricular por escopo
+
+- título: impedir que a avaliação curricular interna grave runtime para participante fora do escopo autorizado
+- descrição: validar membership ativa/aceita na API e repetir a defesa no PostgreSQL para leitura, inserção e atualização de `curriculum_runtime_states`
+- módulo: avaliação curricular / autorização / persistência / RLS
+- dependência: `CUR-24-03`; `SPEC-0106`; `SPEC-0107`; `SPEC-0109`; `SPEC-0111`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / hardening de jornada
+- risco: crítico — um `participantId` controlado pelo chamador não pode atravessar escopo, criar estado educacional indevido ou contaminar dashboards
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério parcial atendido: RED/GREEN HTTP; capability de moderador continua obrigatória; membership ausente/negativa falha fechado; política SQL exige conta ativa, papel participante, convite aceito e escopo exato; leitura staff não se aplica quando há contexto de participante
+- evidência: `BRIEFING/04.AUDIT/0532_curriculum_runtime_authorization_audit.md`; migration `0034_curriculum_runtime_membership_rls.sql`; commit técnico `8edf560`
+- código: `apps/api/src/http.ts`; `packages/persistence/drizzle/0034_curriculum_runtime_membership_rls.sql`; `packages/persistence/drizzle/meta/_journal.json`
+- testes: `apps/api/src/http.test.ts`; `tests/integration/curriculum-runtime.test.ts`; `tests/integration/migration-governance.test.ts`
+- resultado: o boundary HTTP retorna `403` sem chamar a avaliação quando a membership não é provada; fixture live cria membership sintética e tenta escopo estrangeiro; nenhum campo interno é projetado
+- gaps explícitos: PostgreSQL/RLS live, browser→API→PostgreSQL, concorrência, grants/owners produtivos, workflow remoto same-SHA, operação externa e publicação clínica ainda aguardam ambiente/autoridade; retenção continua sem CTA enquanto a divergência 30/60/90 versus D+7/D+30/D+90 não for decidida
+- próxima ação: aplicar `0034` em banco CVG descartável/autorizado, executar integração live e então decidir a cadência de retenção antes de construir revisão consumível
 
 ### AUD-P1-001 — Fechamento da jornada de produto
 

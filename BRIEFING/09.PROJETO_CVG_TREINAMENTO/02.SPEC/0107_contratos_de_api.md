@@ -222,6 +222,22 @@ nota ou aprovação clínica.
 
 ## 9. Jornada agregada materializada no item 9
 
+### Avaliação curricular interna e contexto de participante
+
+`POST /api/v1/internal/curriculum/modules/:moduleId/evaluate` é uma operação
+moderada e nunca confia no `participantId` enviado pelo chamador apenas porque
+o chamador possui capability no escopo. Antes de delegar ao caso de uso, a API
+deve provar que a conta está ativa, possui membership aceita com papel
+`PARTICIPANT` e pertence ao `scopeId` solicitado. Ausência do resolver ou
+resposta negativa falha fechado com `403`, sem avaliar nem persistir o runtime.
+
+O PostgreSQL repete a invariável com `FORCE RLS` em
+`curriculum_runtime_states`: leituras, inserções e atualizações do contexto de
+participante exigem a mesma membership; leitura staff só é elegível quando não
+há `participant_id` no contexto transacional. Essa defesa não substitui a
+autorização da API, e não altera a fronteira pública nem cria competência
+prática.
+
 `GET /api/v1/learning-path` exige sessão ativa de participante, posse e pelo menos um escopo autorizado. O servidor passa os escopos da sessão ao caso de uso, consulta PostgreSQL com contexto transacional/RLS e publica somente:
 
 - atribuições sem `participantId`/`scopeId`;

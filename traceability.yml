@@ -3913,6 +3913,54 @@ artifacts:
         "live PostgreSQL/RLS, browser→API→PostgreSQL, persistence-negative SQL evidence and remote same-SHA workflow were not executed; no release or production claim is made",
       ]
     status: "verified-with-gaps"
+  - id: "CURRICULUM-RUNTIME-AUTHZ-050"
+    requirements:
+      [
+        "PRD-RF-070",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0532_curriculum_runtime_authorization_audit.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+      ]
+    code:
+      [
+        "apps/api/src/http.ts",
+        "packages/persistence/drizzle/0034_curriculum_runtime_membership_rls.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+      ]
+    tests:
+      [
+        "apps/api/src/http.test.ts",
+        "tests/integration/curriculum-runtime.test.ts",
+        "tests/integration/migration-governance.test.ts",
+      ]
+    commit: "8edf56014d70edc48e9a294a6cd5c4cab809412a"
+    artifacts:
+      ["BRIEFING/04.AUDIT/0532_curriculum_runtime_authorization_audit.md"]
+    verification:
+      [
+        "RED: outside-scope moderator evaluation returned 200 before the boundary guard",
+        "GREEN: 70/70 API HTTP tests and 72/72 focal unit tests passed",
+        "pnpm verify:migrations: 35/35 migrations aligned through 0034",
+        "lint and tsc -b --pretty false passed",
+        "PostgreSQL/RLS live and browser→API→PostgreSQL were not executed because CVG_TEST_DATABASE_URL is absent",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."
