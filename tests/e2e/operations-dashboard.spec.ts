@@ -138,6 +138,29 @@ const reflectionManagementReport = {
   practicalCompetenceClaim: "PROIBIDO_MVP",
 };
 
+const appealReviewQueue = {
+  kind: "appeal_review_queue",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T12:00:00.000Z",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    limit: 50,
+  },
+  items: [
+    {
+      appealId: "44444444-4444-4444-8444-444444444444",
+      participantId: "22222222-2222-4222-8222-222222222222",
+      attemptId: "55555555-5555-4555-8555-555555555555",
+      itemId: "66666666-6666-4666-8666-666666666666",
+      justification: "A justificativa sintética aguarda revisão interna.",
+      createdAt: "2026-08-23T10:00:00.000Z",
+      dueAt: "2026-08-25T10:00:00.000Z",
+      status: "ABERTA",
+      version: 1,
+    },
+  ],
+};
+
 const multiScopeStaffDashboard = {
   ...staffDashboard,
   scopes: [
@@ -197,6 +220,16 @@ test.describe("staff training dashboard", () => {
         });
       },
     );
+    await page.route(
+      "**/api/v1/internal/appeals/review-queue**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(appealReviewQueue)),
+        });
+      },
+    );
 
     await page.goto("/operations");
 
@@ -210,6 +243,12 @@ test.describe("staff training dashboard", () => {
     await expect(page.getByText("Horas digitais concluídas")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Estado agregado por módulo" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Fila de contestação" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("A justificativa sintética aguarda revisão interna."),
     ).toBeVisible();
     await expect(
       page.getByRole("columnheader", { name: "Não iniciada" }),
@@ -235,6 +274,10 @@ test.describe("staff training dashboard", () => {
       "22222222-2222-4222-8222-222222222222",
     );
     await expect(page.locator("body")).not.toContainText("scopeId");
+    await expect(page.locator("body")).not.toContainText("answerKey");
+    await expect(page.locator("body")).not.toContainText("gabarito");
+    await expect(page.locator("body")).not.toContainText("response");
+    await expect(page.locator("body")).not.toContainText("score");
   });
 
   test("explains that management data requires an internal session", async ({
@@ -274,6 +317,16 @@ test.describe("staff training dashboard", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify(successEnvelope(reflectionManagementReport)),
+        });
+      },
+    );
+    await page.route(
+      "**/api/v1/internal/appeals/review-queue**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(appealReviewQueue)),
         });
       },
     );
@@ -446,6 +499,17 @@ test.describe("staff training dashboard", () => {
           status: 200,
           contentType: "application/json",
           body: JSON.stringify(successEnvelope(reflectionManagementReport)),
+        });
+      },
+    );
+
+    await page.route(
+      "**/api/v1/internal/appeals/review-queue**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(appealReviewQueue)),
         });
       },
     );

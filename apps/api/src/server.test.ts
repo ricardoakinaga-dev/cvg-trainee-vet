@@ -97,6 +97,9 @@ describe("API node server adapter", () => {
       "/api/v1/internal/feedback/:ticketId",
     );
     expect(routeTemplate("POST", "/api/v1/appeals")).toBe("/api/v1/appeals");
+    expect(routeTemplate("GET", "/api/v1/internal/appeals/review-queue")).toBe(
+      "/api/v1/internal/appeals/review-queue",
+    );
     expect(
       routeTemplate("POST", "/api/v1/internal/appeals/appeal/transition"),
     ).toBe("/api/v1/internal/appeals/:appealId/transition");

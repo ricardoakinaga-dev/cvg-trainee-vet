@@ -22,6 +22,7 @@ import {
   type ContinuingEducationReportState,
   type ReflectionManagementState,
   type ContentReviewQueueState,
+  type AppealReviewQueueState,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
 
@@ -262,6 +263,30 @@ const contentReviewQueue: ContentReviewQueueState = {
       updatedAt: "2026-08-23T19:30:00.000Z",
       canOpenAuthoring: true,
       nextAction: "REVISAR_CLINICAMENTE",
+    },
+  ],
+};
+
+const appealReviewQueue: AppealReviewQueueState = {
+  kind: "appeal_review_queue",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  generatedAt: "2026-08-23T20:00:00.000Z",
+  filters: {
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    status: "ABERTA",
+    limit: 25,
+  },
+  items: [
+    {
+      appealId: "22222222-2222-4222-8222-222222222222",
+      participantId: "33333333-3333-4333-8333-333333333333",
+      attemptId: "44444444-4444-4444-8444-444444444444",
+      itemId: "55555555-5555-4555-8555-555555555555",
+      justification: "Solicito revisão do resultado sintético.",
+      createdAt: "2026-08-23T19:00:00.000Z",
+      dueAt: "2026-09-02T19:00:00.000Z",
+      status: "ABERTA",
+      version: 0,
     },
   ],
 };
@@ -2035,6 +2060,108 @@ describe("API HTTP boundary", () => {
           accountStatus: "ACTIVE",
           roles: ["AUTHOR"],
           scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+      }),
+    );
+    expect(response.status).toBe(500);
+  });
+
+  it("returns the scoped appeal review queue without mutation or public fields", async () => {
+    const getAppealReviewQueue = vi.fn(async () => appealReviewQueue);
+    const scopeId = appealReviewQueue.scopeId;
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/appeals/review-queue",
+        query: { scopeId, status: "ABERTA", limit: "25" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "66666666-6666-4666-8666-666666666666",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealReviewQueue,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getAppealReviewQueue).toHaveBeenCalledWith({
+      principalId: "66666666-6666-4666-8666-666666666666",
+      accountStatus: "ACTIVE",
+      roles: ["MODERATOR"],
+      scopes: [scopeId],
+      query: { scopeId, status: "ABERTA", limit: 25 },
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "appeal_review_queue",
+        items: [{ justification: "Solicito revisão do resultado sintético." }],
+      },
+    });
+    const item = (
+      response.body as {
+        readonly data: { readonly items: readonly Record<string, unknown>[] };
+      }
+    ).data.items[0];
+    expect(item).not.toHaveProperty("response");
+    expect(item).not.toHaveProperty("score");
+    expect(item).not.toHaveProperty("answerKey");
+  });
+
+  it("denies participant access and rejects unknown queue filters", async () => {
+    const getAppealReviewQueue = vi.fn(async () => appealReviewQueue);
+    const scopeId = appealReviewQueue.scopeId;
+    const participant = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/appeals/review-queue",
+        query: { scopeId },
+        body: undefined,
+      },
+      dependencies({ getAppealReviewQueue }),
+    );
+    expect(participant.status).toBe(403);
+    expect(getAppealReviewQueue).not.toHaveBeenCalled();
+
+    const invalid = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/appeals/review-queue",
+        query: { scopeId, participantId: attempt.participantId },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "66666666-6666-4666-8666-666666666666",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealReviewQueue,
+      }),
+    );
+    expect(invalid.status).toBe(422);
+    expect(getAppealReviewQueue).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the appeal review queue dependency is unavailable", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/appeals/review-queue",
+        query: { scopeId: appealReviewQueue.scopeId },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "66666666-6666-4666-8666-666666666666",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [appealReviewQueue.scopeId],
         }),
       }),
     );

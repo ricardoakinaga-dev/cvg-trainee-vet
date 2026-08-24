@@ -19,6 +19,9 @@ type ReportLoadState =
   "idle" | "loading" | "ready" | "unauthenticated" | "forbidden" | "error";
 type ReportStatusFilter =
   "" | "INVITED" | "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+type AppealReviewQueueStatus =
+  "ABERTA" | "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE" | "ENCERRADA";
+type AppealReviewQueueStatusFilter = "" | AppealReviewQueueStatus;
 
 type InvitationState = "idle" | "submitting" | "success" | "error";
 type InvitationContext = "created" | "resent";
@@ -155,6 +158,31 @@ type ReflectionManagementReport = Readonly<{
   readonly practicalCompetenceClaim: "PROIBIDO_MVP";
 }>;
 
+type AppealReviewQueue = Readonly<{
+  readonly kind: "appeal_review_queue";
+  readonly scopeId: string;
+  readonly generatedAt: string;
+  readonly filters: Readonly<{
+    readonly scopeId: string;
+    readonly status?: AppealReviewQueueStatus;
+    readonly limit: number;
+  }>;
+  readonly items: readonly Readonly<{
+    readonly appealId: string;
+    readonly participantId: string;
+    readonly attemptId: string;
+    readonly itemId: string;
+    readonly justification: string;
+    readonly createdAt: string;
+    readonly dueAt: string;
+    readonly status: AppealReviewQueueStatus;
+    readonly version: number;
+    readonly reviewerId?: string;
+    readonly decision?:
+      "MANTER_RESULTADO" | "ANULAR_ITEM" | "ALTERAR_RESULTADO";
+  }>[];
+}>;
+
 type ManagedAccountStatus = Exclude<
   StaffDashboard["participants"][number]["accountStatus"],
   "INVITED"
@@ -162,6 +190,22 @@ type ManagedAccountStatus = Exclude<
 
 function isRecord(value: unknown): value is ApiRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+      value,
+    )
+  );
+}
+
+function hasOnlyKeys(
+  value: ApiRecord,
+  allowedKeys: readonly string[],
+): boolean {
+  return Object.keys(value).every((key) => allowedKeys.includes(key));
 }
 
 function isDependencyState(value: unknown): value is DependencyState {
@@ -468,6 +512,89 @@ function isReflectionManagementReport(
   });
 }
 
+function isAppealReviewQueueStatus(
+  value: unknown,
+): value is AppealReviewQueueStatus {
+  return (
+    value === "ABERTA" ||
+    value === "EM_REVISAO" ||
+    value === "DECIDIDA" ||
+    value === "RECALCULO_PENDENTE" ||
+    value === "ENCERRADA"
+  );
+}
+
+function isAppealReviewQueue(value: unknown): value is AppealReviewQueue {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, [
+      "kind",
+      "scopeId",
+      "generatedAt",
+      "filters",
+      "items",
+    ]) ||
+    value.kind !== "appeal_review_queue" ||
+    !isUuid(value.scopeId) ||
+    typeof value.generatedAt !== "string" ||
+    Number.isNaN(new Date(value.generatedAt).getTime()) ||
+    !isRecord(value.filters) ||
+    !hasOnlyKeys(value.filters, ["scopeId", "status", "limit"]) ||
+    !isUuid(value.filters.scopeId) ||
+    value.filters.scopeId !== value.scopeId ||
+    (value.filters.status !== undefined &&
+      !isAppealReviewQueueStatus(value.filters.status)) ||
+    !isCount(value.filters.limit) ||
+    value.filters.limit < 1 ||
+    value.filters.limit > 100 ||
+    !Array.isArray(value.items) ||
+    value.items.length > 100
+  ) {
+    return false;
+  }
+
+  return value.items.every((item) => {
+    if (
+      !isRecord(item) ||
+      !hasOnlyKeys(item, [
+        "appealId",
+        "participantId",
+        "attemptId",
+        "itemId",
+        "justification",
+        "createdAt",
+        "dueAt",
+        "status",
+        "version",
+        "reviewerId",
+        "decision",
+      ]) ||
+      !isUuid(item.appealId) ||
+      !isUuid(item.participantId) ||
+      !isUuid(item.attemptId) ||
+      !isUuid(item.itemId) ||
+      typeof item.justification !== "string" ||
+      item.justification.trim().length === 0 ||
+      item.justification.length > 10_000 ||
+      /<[^>]*>/u.test(item.justification) ||
+      typeof item.createdAt !== "string" ||
+      Number.isNaN(new Date(item.createdAt).getTime()) ||
+      typeof item.dueAt !== "string" ||
+      Number.isNaN(new Date(item.dueAt).getTime()) ||
+      !isAppealReviewQueueStatus(item.status) ||
+      !isCount(item.version) ||
+      (item.reviewerId !== undefined && !isUuid(item.reviewerId)) ||
+      (item.decision !== undefined &&
+        item.decision !== "MANTER_RESULTADO" &&
+        item.decision !== "ANULAR_ITEM" &&
+        item.decision !== "ALTERAR_RESULTADO")
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function isInvitationResult(value: unknown): value is InvitationResult {
   if (!isRecord(value)) return false;
   return (
@@ -525,6 +652,32 @@ function accountStatusLabel(
   return labels[value];
 }
 
+function appealReviewStatusLabel(value: AppealReviewQueueStatus): string {
+  const labels: Readonly<Record<AppealReviewQueueStatus, string>> = {
+    ABERTA: "Aberta",
+    EM_REVISAO: "Em revisão",
+    DECIDIDA: "Decidida",
+    RECALCULO_PENDENTE: "Recálculo pendente",
+    ENCERRADA: "Encerrada",
+  };
+  return labels[value];
+}
+
+function appealReviewDecisionLabel(
+  value:
+    NonNullable<AppealReviewQueue["items"][number]["decision"]> | undefined,
+): string {
+  if (value === undefined) return "Ainda não decidida";
+  const labels: Readonly<
+    Record<NonNullable<AppealReviewQueue["items"][number]["decision"]>, string>
+  > = {
+    MANTER_RESULTADO: "Manter resultado",
+    ANULAR_ITEM: "Anular item",
+    ALTERAR_RESULTADO: "Alterar resultado",
+  };
+  return labels[value];
+}
+
 function lastSeenLabel(value: string | undefined): string {
   if (value === undefined) return "Nunca acessou";
   const date = new Date(value);
@@ -568,6 +721,13 @@ export default function OperationsPage() {
     useState<ReportLoadState>("idle");
   const [reflectionReport, setReflectionReport] =
     useState<ReflectionManagementReport | null>(null);
+  const [appealQueueState, setAppealQueueState] =
+    useState<ReportLoadState>("idle");
+  const [appealQueue, setAppealQueue] = useState<AppealReviewQueue | null>(
+    null,
+  );
+  const [appealQueueStatusFilter, setAppealQueueStatusFilter] =
+    useState<AppealReviewQueueStatusFilter>("");
   const [reportModuleFilter, setReportModuleFilter] = useState("");
   const [reportStatusFilter, setReportStatusFilter] =
     useState<ReportStatusFilter>("");
@@ -739,6 +899,49 @@ export default function OperationsPage() {
     }
     void loadReflectionManagementReport(scopeId);
   }, [dashboard, loadReflectionManagementReport]);
+
+  const loadAppealReviewQueue = useCallback(
+    async (scopeId: string, status: AppealReviewQueueStatusFilter) => {
+      setAppealQueueState("loading");
+      const query = new URLSearchParams({ scopeId });
+      if (status.length > 0) query.set("status", status);
+      try {
+        const response = await fetch(
+          `/api/v1/internal/appeals/review-queue?${query.toString()}`,
+          { cache: "no-store", credentials: "include" },
+        );
+        if (!response.ok) {
+          setAppealQueue(null);
+          setAppealQueueState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isAppealReviewQueue(payload.data)
+        ) {
+          throw new Error();
+        }
+        setAppealQueue(payload.data);
+        setAppealQueueState("ready");
+      } catch {
+        setAppealQueue(null);
+        setAppealQueueState("error");
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const scopeId = dashboard?.scopes[0];
+    if (scopeId === undefined) {
+      setAppealQueue(null);
+      setAppealQueueState("idle");
+      return;
+    }
+    void loadAppealReviewQueue(scopeId, appealQueueStatusFilter);
+  }, [appealQueueStatusFilter, dashboard, loadAppealReviewQueue]);
 
   async function createParticipantInvitation(
     event: FormEvent<HTMLFormElement>,
@@ -1360,6 +1563,133 @@ export default function OperationsPage() {
                     </tbody>
                   </table>
                 </div>
+              )}
+            </section>
+
+            <section
+              className="dashboard-panel"
+              aria-labelledby="appeal-review-queue-title"
+              data-testid="appeal-review-queue"
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Revisão interna</p>
+                  <h3 id="appeal-review-queue-title">Fila de contestação</h3>
+                  <p>
+                    Fila somente leitura para triagem por escopo. Exibe a
+                    justificativa e o estado do fluxo, sem dados de resposta,
+                    pontuação, chave de correção, fonte ou alegação de
+                    competência prática.
+                  </p>
+                </div>
+                {appealQueueState === "ready" && appealQueue !== null ? (
+                  <span className="status-pill">
+                    Atualizado {lastSeenLabel(appealQueue.generatedAt)}
+                  </span>
+                ) : null}
+              </div>
+              {appealQueueState === "loading" ? (
+                <div className="experience-panel" role="status">
+                  Consultando a fila de contestação…
+                </div>
+              ) : appealQueueState === "forbidden" ||
+                appealQueueState === "unauthenticated" ? (
+                <div className="experience-panel dashboard-message">
+                  <strong>Fila restrita</strong>
+                  <span>
+                    Esta conta não possui autorização para revisar contestações.
+                  </span>
+                </div>
+              ) : appealQueueState === "error" || appealQueue === null ? (
+                <div className="experience-panel error-panel" role="alert">
+                  <p>Não foi possível carregar a fila de contestação.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const scopeId = dashboard?.scopes[0];
+                      if (scopeId !== undefined) {
+                        void loadAppealReviewQueue(
+                          scopeId,
+                          appealQueueStatusFilter,
+                        );
+                      }
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="report-filter-row"
+                    aria-label="Filtros da fila de contestação"
+                  >
+                    <label>
+                      Status
+                      <select
+                        value={appealQueueStatusFilter}
+                        onChange={(event) =>
+                          setAppealQueueStatusFilter(
+                            event.target.value as AppealReviewQueueStatusFilter,
+                          )
+                        }
+                      >
+                        <option value="">Ativas e encerradas</option>
+                        <option value="ABERTA">Abertas</option>
+                        <option value="EM_REVISAO">Em revisão</option>
+                        <option value="DECIDIDA">Decididas</option>
+                        <option value="RECALCULO_PENDENTE">
+                          Recálculo pendente
+                        </option>
+                        <option value="ENCERRADA">Encerradas</option>
+                      </select>
+                    </label>
+                  </div>
+                  {appealQueue.items.length === 0 ? (
+                    <p className="dashboard-empty">
+                      Nenhuma contestação no recorte autorizado.
+                    </p>
+                  ) : (
+                    <div
+                      className="dashboard-table-wrap"
+                      tabIndex={0}
+                      role="region"
+                      aria-label="Tabela de contestações para revisão"
+                    >
+                      <table className="dashboard-table">
+                        <caption className="visually-hidden">
+                          Contestações para revisão interna
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Justificativa</th>
+                            <th scope="col">Prazo</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Revisor</th>
+                            <th scope="col">Decisão</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {appealQueue.items.map((item) => (
+                            <tr key={item.appealId}>
+                              <td>{item.justification}</td>
+                              <td>{lastSeenLabel(item.dueAt)}</td>
+                              <td>{appealReviewStatusLabel(item.status)}</td>
+                              <td>
+                                {item.reviewerId === undefined
+                                  ? "Não atribuído"
+                                  : "Revisor atribuído"}
+                              </td>
+                              <td>
+                                {appealReviewDecisionLabel(item.decision)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
               )}
             </section>
 

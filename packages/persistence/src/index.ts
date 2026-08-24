@@ -13,12 +13,14 @@ export type {
 export {
   normalizeDatabaseSecurityContext,
   setDatabaseAccountProvisioningContext,
+  setDatabaseAppealReviewContext,
   setDatabaseSecurityContext,
   setDatabaseSessionSecurityContext,
   setDatabaseTokenSecurityContext,
 } from "./security-context.js";
 export type {
   DatabaseAccountProvisioningContext,
+  DatabaseAppealReviewSecurityContext,
   DatabaseSecurityContext,
   DatabaseTokenContextKind,
   DatabaseTokenSecurityContext,
@@ -189,6 +191,7 @@ export type {
   ReflectionManagementRowShape,
 } from "./reflection-management-repository.js";
 export { createContentReviewQueueRepository } from "./content-review-queue-repository.js";
+export { createAppealReviewQueueRepository } from "./appeal-review-queue-repository.js";
 export {
   AccountRecoveryConflictError,
   createAccountRecoveryTransaction,

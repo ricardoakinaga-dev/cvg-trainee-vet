@@ -969,6 +969,13 @@ export const appeals = pgTable(
       table.scopeId,
       table.status,
     ),
+    index("appeals_scope_status_due_idx").on(
+      table.scopeId,
+      table.status,
+      table.dueAt,
+      table.createdAt,
+      table.id,
+    ),
     check(
       "appeals_status_check",
       sql`${table.status} in ('ABERTA', 'EM_REVISAO', 'DECIDIDA', 'RECALCULO_PENDENTE', 'ENCERRADA')`,

@@ -205,6 +205,9 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/api/v1/internal/content/review-queue") {
     return "/api/v1/internal/content/review-queue";
   }
+  if (method === "GET" && path === "/api/v1/internal/appeals/review-queue") {
+    return "/api/v1/internal/appeals/review-queue";
+  }
   if (method === "GET" && path === "/api/v1/internal/session/scopes") {
     return "/api/v1/internal/session/scopes";
   }

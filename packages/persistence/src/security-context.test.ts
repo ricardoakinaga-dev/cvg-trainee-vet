@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   normalizeDatabaseSecurityContext,
+  setDatabaseAppealReviewContext,
   setDatabaseAccountProvisioningContext,
   setDatabaseSecurityContext,
   setDatabaseSessionSecurityContext,
@@ -34,6 +35,14 @@ describe("database security context", () => {
     const execute = vi.fn(async () => []);
 
     await setDatabaseSecurityContext({ execute }, { participantId, scopeId });
+
+    expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it("sets a dedicated reviewer scope context without participant identity", async () => {
+    const execute = vi.fn(async () => []);
+
+    await setDatabaseAppealReviewContext({ execute }, { scopeId });
 
     expect(execute).toHaveBeenCalledTimes(1);
   });

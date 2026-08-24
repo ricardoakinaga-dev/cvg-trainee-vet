@@ -187,6 +187,15 @@ export type {
   ContentReviewQueueQuery,
 } from "./content-review-queue.js";
 export {
+  appealReviewQueueProjectionSchema,
+  appealReviewQueueQuerySchema,
+  parseAppealReviewQueueProjection,
+} from "./appeal-review-queue.js";
+export type {
+  AppealReviewQueueProjection,
+  AppealReviewQueueQuery,
+} from "./appeal-review-queue.js";
+export {
   apiErrorCodeSchema,
   apiErrorResponse,
   apiSuccessResponse,

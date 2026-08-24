@@ -291,6 +291,17 @@ export type {
   ContentReviewQueueStatus,
   GetContentReviewQueueCommand,
 } from "./content-review-queue-use-cases.js";
+export { getAppealReviewQueue } from "./appeal-review-queue-use-cases.js";
+export type {
+  AppealReviewQueueItem,
+  AppealReviewQueueQuery,
+  AppealReviewQueueReadPort,
+  AppealReviewQueueRecord,
+  AppealReviewQueueState,
+  AppealReviewQueueStatus,
+  AppealReviewQueueUseCaseOptions,
+  GetAppealReviewQueueCommand,
+} from "./appeal-review-queue-use-cases.js";
 export { getContinuingEducationReport } from "./continuing-education-report-use-cases.js";
 export type {
   ContinuingEducationReportParticipant,

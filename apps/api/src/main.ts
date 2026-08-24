@@ -24,6 +24,7 @@ import {
   getParticipantAppeals,
   getReflectionManagementReport,
   getContentReviewQueue,
+  getAppealReviewQueue,
   issueAccountRecovery,
   reviewAuthoringContent,
   saveAnswer,
@@ -68,6 +69,7 @@ import {
   createContinuingEducationReportRepository,
   createReflectionManagementReadRepository,
   createAppealReadRepository,
+  createAppealReviewQueueRepository,
   createContentReviewQueueRepository,
   createSessionRepository,
 } from "@cvg/persistence";
@@ -169,6 +171,9 @@ export function createApiRuntime(
     integrations.database.db,
   );
   const appealReadRepository = createAppealReadRepository(
+    integrations.database.db,
+  );
+  const appealReviewQueueRepository = createAppealReviewQueueRepository(
     integrations.database.db,
   );
   const rateLimiter = createPostgresRateLimiter(integrations.database.db);
@@ -298,6 +303,8 @@ export function createApiRuntime(
       ),
     getContentReviewQueue: (command) =>
       getContentReviewQueue(command, contentReviewQueueRepository),
+    getAppealReviewQueue: (command) =>
+      getAppealReviewQueue(command, appealReviewQueueRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>
       getParticipantCurriculumRuntime(
         { participantId, moduleId },

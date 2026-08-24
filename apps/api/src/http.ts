@@ -57,6 +57,8 @@ import {
   type ReflectionManagementState,
   type ContentReviewQueueState,
   type GetContentReviewQueueCommand,
+  type AppealReviewQueueState,
+  type GetAppealReviewQueueCommand,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
@@ -88,6 +90,8 @@ import {
   reflectionManagementQuerySchema,
   contentReviewQueueProjectionSchema,
   contentReviewQueueQuerySchema,
+  appealReviewQueueProjectionSchema,
+  appealReviewQueueQuerySchema,
   internalAuthoringRecordQuerySchema,
   internalSessionScopesProjectionSchema,
   parseDiagnosticResultProjection,
@@ -257,6 +261,9 @@ export interface ApiHttpDependencies {
   readonly getContentReviewQueue?: (
     command: GetContentReviewQueueCommand,
   ) => Promise<ContentReviewQueueState>;
+  readonly getAppealReviewQueue?: (
+    command: GetAppealReviewQueueCommand,
+  ) => Promise<AppealReviewQueueState>;
   readonly getParticipantCurriculumRuntime?: (
     participantId: string,
     moduleId: string,
@@ -713,6 +720,30 @@ function publicContentReviewQueueProjection(
   });
 }
 
+function internalAppealReviewQueueProjection(
+  state: AppealReviewQueueState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return appealReviewQueueProjectionSchema.parse({
+    kind: state.kind,
+    scopeId: state.scopeId,
+    generatedAt: state.generatedAt,
+    filters: { ...state.filters },
+    items: state.items.map((item) => ({
+      appealId: item.appealId,
+      participantId: item.participantId,
+      attemptId: item.attemptId,
+      itemId: item.itemId,
+      justification: item.justification,
+      createdAt: item.createdAt,
+      dueAt: item.dueAt,
+      status: item.status,
+      version: item.version,
+      ...(item.reviewerId === undefined ? {} : { reviewerId: item.reviewerId }),
+      ...(item.decision === undefined ? {} : { decision: item.decision }),
+    })),
+  });
+}
+
 function isAllowed(
   principal: ApiPrincipal,
   capability: Capability,
@@ -731,6 +762,7 @@ function isAllowed(
     capability === "PUBLISH_CONTENT" ||
     capability === "VIEW_INTERNAL_SOURCE" ||
     capability === "VIEW_CONTENT_REVIEW_QUEUE" ||
+    capability === "REVIEW_APPEAL" ||
     capability === "VIEW_INTERNAL_SCOPES"
       ? {
           ...(configuredClinicalIdentity === undefined
@@ -1146,6 +1178,67 @@ async function handleContentReviewQueue(
     status: 200,
     body: apiSuccessResponse(
       publicContentReviewQueueProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleAppealReviewQueue(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getAppealReviewQueue === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const rawQuery = request.query ?? {};
+  if (
+    Object.keys(rawQuery).some(
+      (key) => key !== "scopeId" && key !== "status" && key !== "limit",
+    )
+  ) {
+    return validationResponse(requestId);
+  }
+  const rawLimit = rawQuery.limit;
+  const parsed = appealReviewQueueQuerySchema.safeParse({
+    scopeId: rawQuery.scopeId,
+    ...(rawQuery.status === undefined ? {} : { status: rawQuery.status }),
+    ...(rawLimit === undefined ? {} : { limit: Number(rawLimit) }),
+  });
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(
+      principal,
+      "REVIEW_APPEAL",
+      { scopeId: parsed.data.scopeId },
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getAppealReviewQueue({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+    query: {
+      scopeId: parsed.data.scopeId,
+      ...(parsed.data.status === undefined
+        ? {}
+        : { status: parsed.data.status }),
+      limit: parsed.data.limit,
+    },
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalAppealReviewQueueProjection(state),
       requestId,
     ),
   };
@@ -2599,6 +2692,21 @@ async function handleApiRequestCore(
       if (principal === null)
         return errorResponse("unauthenticated", requestId);
       return await handleContentReviewQueue(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/internal/appeals/review-queue"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAppealReviewQueue(
         request,
         requestId,
         principal,
