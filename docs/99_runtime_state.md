@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: `cf300fb` fechou estado/log/manifesto; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo e resolveu `REFLECTION-MANAGEMENT-035` para o commit `9a618e9c`
+- last_completed_action: `8bfb645` registrou a evidência final; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo e resolveu `REFLECTION-MANAGEMENT-035` para o commit `9a618e9c`
 - next_action: quando houver ambiente autorizado, executar a prova PostgreSQL/RLS live do agregado; em paralelo abrir a próxima lacuna local de apelação/contestação ou filtros-paginação-exportação, sem alterar os gates clínicos/externos
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T22:30:59-03:00
+- last_update: 2026-08-23T22:32:03-03:00
 
 ## REGRAS DE USO
 
