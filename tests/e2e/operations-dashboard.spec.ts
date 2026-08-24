@@ -180,6 +180,26 @@ const appealReviewQueue = {
   ],
 };
 
+const appealReviewHistory = {
+  appealId: "44444444-4444-4444-8444-444444444444",
+  events: [
+    {
+      historyId: "55555555-5555-4555-8555-555555555555",
+      appealId: "44444444-4444-4444-8444-444444444444",
+      appealVersion: 1,
+      eventType: "DECIDIR",
+      fromStatus: "EM_REVISAO",
+      toStatus: "DECIDIDA",
+      reviewerId: "66666666-6666-4666-8666-666666666666",
+      decision: "MANTER_RESULTADO",
+      decisionRationale: "Rationale interno sintético.",
+      decisionAt: "2026-08-23T12:00:00.000Z",
+      decisionCorrelationId: "77777777-7777-4777-8777-777777777777",
+      createdAt: "2026-08-23T12:00:01.000Z",
+    },
+  ],
+};
+
 const multiScopeStaffDashboard = {
   ...staffDashboard,
   scopes: [
@@ -249,6 +269,14 @@ test.describe("staff training dashboard", () => {
         });
       },
     );
+    await page.route("**/api/v1/internal/appeals/*/history", async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope(appealReviewHistory)),
+      });
+    });
 
     await page.goto("/operations");
 
@@ -274,6 +302,13 @@ test.describe("staff training dashboard", () => {
     ).toBeVisible();
     await expect(
       page.getByText("A justificativa sintética aguarda revisão interna."),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Ver histórico" }).click();
+    await expect(page.getByTestId("appeal-history")).toBeVisible();
+    await expect(page.getByText("Rationale interno sintético.")).toBeVisible();
+    await expect(page.getByText("Decisão registrada")).toBeVisible();
+    await expect(
+      page.getByTestId("appeal-history").getByText("Somente leitura"),
     ).toBeVisible();
     await expect(
       page.getByRole("columnheader", { name: "Não iniciada" }),

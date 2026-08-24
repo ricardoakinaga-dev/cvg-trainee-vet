@@ -23,6 +23,32 @@ type AppealReviewQueueStatus =
   "ABERTA" | "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE" | "ENCERRADA";
 type AppealReviewQueueStatusFilter = "" | AppealReviewQueueStatus;
 
+type AppealReviewHistoryEvent = Readonly<{
+  readonly historyId: string;
+  readonly appealId: string;
+  readonly appealVersion: number;
+  readonly eventType:
+    | "ATRIBUIR_REVISOR"
+    | "DECIDIR"
+    | "SOLICITAR_RECALCULO"
+    | "CONCLUIR_RECALCULO";
+  readonly fromStatus:
+    "ABERTA" | "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE";
+  readonly toStatus:
+    "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE" | "ENCERRADA";
+  readonly reviewerId?: string;
+  readonly decision?: "MANTER_RESULTADO" | "ANULAR_ITEM" | "ALTERAR_RESULTADO";
+  readonly decisionRationale?: string;
+  readonly decisionAt?: string;
+  readonly decisionCorrelationId?: string;
+  readonly createdAt: string;
+}>;
+
+type AppealReviewHistory = Readonly<{
+  readonly appealId: string;
+  readonly events: readonly AppealReviewHistoryEvent[];
+}>;
+
 type InvitationState = "idle" | "submitting" | "success" | "error";
 type InvitationContext = "created" | "resent";
 type AccountActionState = "idle" | "submitting" | "success" | "error";
@@ -615,6 +641,75 @@ function isAppealReviewQueue(value: unknown): value is AppealReviewQueue {
   });
 }
 
+function isAppealReviewHistoryEvent(
+  value: unknown,
+): value is AppealReviewHistoryEvent {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, [
+      "historyId",
+      "appealId",
+      "appealVersion",
+      "eventType",
+      "fromStatus",
+      "toStatus",
+      "reviewerId",
+      "decision",
+      "decisionRationale",
+      "decisionAt",
+      "decisionCorrelationId",
+      "createdAt",
+    ]) ||
+    !isUuid(value.historyId) ||
+    !isUuid(value.appealId) ||
+    !isCount(value.appealVersion) ||
+    value.appealVersion < 1 ||
+    (value.eventType !== "ATRIBUIR_REVISOR" &&
+      value.eventType !== "DECIDIR" &&
+      value.eventType !== "SOLICITAR_RECALCULO" &&
+      value.eventType !== "CONCLUIR_RECALCULO") ||
+    (value.fromStatus !== "ABERTA" &&
+      value.fromStatus !== "EM_REVISAO" &&
+      value.fromStatus !== "DECIDIDA" &&
+      value.fromStatus !== "RECALCULO_PENDENTE") ||
+    (value.toStatus !== "EM_REVISAO" &&
+      value.toStatus !== "DECIDIDA" &&
+      value.toStatus !== "RECALCULO_PENDENTE" &&
+      value.toStatus !== "ENCERRADA") ||
+    (value.reviewerId !== undefined && !isUuid(value.reviewerId)) ||
+    (value.decision !== undefined &&
+      value.decision !== "MANTER_RESULTADO" &&
+      value.decision !== "ANULAR_ITEM" &&
+      value.decision !== "ALTERAR_RESULTADO") ||
+    (value.decisionRationale !== undefined &&
+      (typeof value.decisionRationale !== "string" ||
+        value.decisionRationale.trim().length === 0 ||
+        value.decisionRationale.length > 10_000 ||
+        /<[^>]*>/u.test(value.decisionRationale))) ||
+    (value.decisionAt !== undefined &&
+      (typeof value.decisionAt !== "string" ||
+        Number.isNaN(new Date(value.decisionAt).getTime()))) ||
+    (value.decisionCorrelationId !== undefined &&
+      !isUuid(value.decisionCorrelationId)) ||
+    typeof value.createdAt !== "string" ||
+    Number.isNaN(new Date(value.createdAt).getTime())
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function isAppealReviewHistory(value: unknown): value is AppealReviewHistory {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["appealId", "events"]) &&
+    isUuid(value.appealId) &&
+    Array.isArray(value.events) &&
+    value.events.length <= 100 &&
+    value.events.every(isAppealReviewHistoryEvent)
+  );
+}
+
 function isInvitationResult(value: unknown): value is InvitationResult {
   if (!isRecord(value)) return false;
   return (
@@ -694,6 +789,35 @@ function appealReviewDecisionLabel(
     MANTER_RESULTADO: "Manter resultado",
     ANULAR_ITEM: "Anular item",
     ALTERAR_RESULTADO: "Alterar resultado",
+  };
+  return labels[value];
+}
+
+function appealReviewHistoryEventLabel(
+  value: AppealReviewHistoryEvent["eventType"],
+): string {
+  const labels: Readonly<
+    Record<AppealReviewHistoryEvent["eventType"], string>
+  > = {
+    ATRIBUIR_REVISOR: "Revisor atribuído",
+    DECIDIR: "Decisão registrada",
+    SOLICITAR_RECALCULO: "Recálculo solicitado",
+    CONCLUIR_RECALCULO: "Recálculo concluído",
+  };
+  return labels[value];
+}
+
+function appealReviewHistoryStatusLabel(
+  value:
+    | AppealReviewHistoryEvent["fromStatus"]
+    | AppealReviewHistoryEvent["toStatus"],
+): string {
+  const labels: Readonly<Record<string, string>> = {
+    ABERTA: "Aberta",
+    EM_REVISAO: "Em revisão",
+    DECIDIDA: "Decidida",
+    RECALCULO_PENDENTE: "Recálculo pendente",
+    ENCERRADA: "Encerrada",
   };
   return labels[value];
 }
@@ -793,6 +917,13 @@ export default function OperationsPage() {
   );
   const [appealQueueStatusFilter, setAppealQueueStatusFilter] =
     useState<AppealReviewQueueStatusFilter>("");
+  const [appealHistoryState, setAppealHistoryState] =
+    useState<ReportLoadState>("idle");
+  const [appealHistory, setAppealHistory] =
+    useState<AppealReviewHistory | null>(null);
+  const [appealHistoryAppealId, setAppealHistoryAppealId] = useState<
+    string | null
+  >(null);
   const [reportModuleFilter, setReportModuleFilter] = useState("");
   const [reportStatusFilter, setReportStatusFilter] =
     useState<ReportStatusFilter>("");
@@ -998,6 +1129,38 @@ export default function OperationsPage() {
       } catch {
         setAppealQueue(null);
         setAppealQueueState("error");
+      }
+    },
+    [],
+  );
+
+  const loadAppealReviewHistory = useCallback(
+    async (appealId: string): Promise<void> => {
+      setAppealHistoryAppealId(appealId);
+      setAppealHistoryState("loading");
+      try {
+        const response = await fetch(
+          `/api/v1/internal/appeals/${encodeURIComponent(appealId)}/history`,
+          { cache: "no-store", credentials: "include" },
+        );
+        if (!response.ok) {
+          setAppealHistory(null);
+          setAppealHistoryState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isAppealReviewHistory(payload.data)
+        ) {
+          throw new Error();
+        }
+        setAppealHistory(payload.data);
+        setAppealHistoryState("ready");
+      } catch {
+        setAppealHistory(null);
+        setAppealHistoryState("error");
       }
     },
     [],
@@ -1828,6 +1991,7 @@ export default function OperationsPage() {
                             <th scope="col">Status</th>
                             <th scope="col">Revisor</th>
                             <th scope="col">Decisão</th>
+                            <th scope="col">Histórico</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1844,12 +2008,99 @@ export default function OperationsPage() {
                               <td>
                                 {appealReviewDecisionLabel(item.decision)}
                               </td>
+                              <td>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void loadAppealReviewHistory(item.appealId)
+                                  }
+                                >
+                                  Ver histórico
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   )}
+                  {appealHistoryAppealId !== null ? (
+                    <section
+                      className="experience-panel"
+                      aria-labelledby="appeal-history-title"
+                      data-testid="appeal-history"
+                    >
+                      <div className="section-heading compact-heading">
+                        <div>
+                          <p className="eyebrow">Trilha interna</p>
+                          <h4 id="appeal-history-title">
+                            Linha do tempo da contestação
+                          </h4>
+                        </div>
+                        <span className="status-pill">Somente leitura</span>
+                      </div>
+                      {appealHistoryState === "loading" ? (
+                        <p role="status">Consultando o histórico…</p>
+                      ) : appealHistoryState === "forbidden" ||
+                        appealHistoryState === "unauthenticated" ? (
+                        <p>
+                          Esta conta não possui autorização para consultar este
+                          histórico.
+                        </p>
+                      ) : appealHistoryState === "error" ||
+                        appealHistory === null ? (
+                        <div role="alert">
+                          <p>Não foi possível carregar o histórico.</p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void loadAppealReviewHistory(
+                                appealHistoryAppealId,
+                              )
+                            }
+                          >
+                            Tentar novamente
+                          </button>
+                        </div>
+                      ) : appealHistory.events.length === 0 ? (
+                        <p>Nenhum evento histórico registrado.</p>
+                      ) : (
+                        <ol className="journey-list">
+                          {appealHistory.events.map((event) => (
+                            <li key={event.historyId}>
+                              <strong>
+                                v{event.appealVersion} ·{" "}
+                                {appealReviewHistoryEventLabel(event.eventType)}
+                              </strong>
+                              <br />
+                              {appealReviewHistoryStatusLabel(
+                                event.fromStatus,
+                              )}{" "}
+                              → {appealReviewHistoryStatusLabel(event.toStatus)}
+                              {event.reviewerId === undefined
+                                ? " · Sem revisor identificado"
+                                : " · Revisor identificado"}
+                              {event.decision === undefined ? null : (
+                                <>
+                                  <br />
+                                  Decisão:{" "}
+                                  {appealReviewDecisionLabel(event.decision)}
+                                </>
+                              )}
+                              {event.decisionRationale === undefined ? null : (
+                                <>
+                                  <br />
+                                  Rationale: {event.decisionRationale}
+                                </>
+                              )}
+                              <br />
+                              Registrado {lastSeenLabel(event.createdAt)}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </section>
+                  ) : null}
                 </>
               )}
             </section>

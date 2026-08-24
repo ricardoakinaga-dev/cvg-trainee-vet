@@ -306,6 +306,14 @@ export type {
   AppealReviewQueueUseCaseOptions,
   GetAppealReviewQueueCommand,
 } from "./appeal-review-queue-use-cases.js";
+export { getAppealReviewHistory } from "./appeal-review-history-use-cases.js";
+export type {
+  AppealReviewHistoryEvent,
+  AppealReviewHistoryReadPort,
+  AppealReviewHistoryReadResult,
+  AppealReviewHistoryState,
+  GetAppealReviewHistoryCommand,
+} from "./appeal-review-history-use-cases.js";
 export { transitionAppealReviewState } from "./appeal-review-transition-use-cases.js";
 export type {
   AppealReviewTransitionCommand,

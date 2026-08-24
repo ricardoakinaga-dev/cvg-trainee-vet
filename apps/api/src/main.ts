@@ -26,6 +26,7 @@ import {
   getReflectionManagementReport,
   getContentReviewQueue,
   getAppealReviewQueue,
+  getAppealReviewHistory,
   issueAccountRecovery,
   reviewAuthoringContent,
   saveAnswer,
@@ -72,6 +73,7 @@ import {
   createReflectionManagementReadRepository,
   createAppealReadRepository,
   createAppealReviewQueueRepository,
+  createAppealReviewHistoryRepository,
   createAppealReviewTransitionRepository,
   createContentReviewQueueRepository,
   createSessionRepository,
@@ -180,6 +182,9 @@ export function createApiRuntime(
     integrations.database.db,
   );
   const appealReviewQueueRepository = createAppealReviewQueueRepository(
+    integrations.database.db,
+  );
+  const appealReviewHistoryRepository = createAppealReviewHistoryRepository(
     integrations.database.db,
   );
   const appealReviewTransitionRepository =
@@ -315,6 +320,8 @@ export function createApiRuntime(
       getContentReviewQueue(command, contentReviewQueueRepository),
     getAppealReviewQueue: (command) =>
       getAppealReviewQueue(command, appealReviewQueueRepository),
+    getAppealReviewHistory: (command) =>
+      getAppealReviewHistory(command, appealReviewHistoryRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>
       getParticipantCurriculumRuntime(
         { participantId, moduleId },

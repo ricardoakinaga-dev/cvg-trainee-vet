@@ -23,6 +23,7 @@ import {
   type ReflectionManagementState,
   type ContentReviewQueueState,
   type AppealReviewQueueState,
+  type AppealReviewHistoryState,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
 
@@ -294,6 +295,27 @@ const appealReviewQueue: AppealReviewQueueState = {
       dueAt: "2026-09-02T19:00:00.000Z",
       status: "ABERTA",
       version: 0,
+    },
+  ],
+};
+
+const appealReviewHistory: AppealReviewHistoryState = {
+  appealId: "44444444-4444-4444-8444-444444444444",
+  scopeId: "11111111-1111-4111-8111-111111111111",
+  events: [
+    {
+      historyId: "55555555-5555-4555-8555-555555555555",
+      appealId: "44444444-4444-4444-8444-444444444444",
+      appealVersion: 1,
+      eventType: "DECIDIR",
+      fromStatus: "EM_REVISAO",
+      toStatus: "DECIDIDA",
+      reviewerId: "66666666-6666-4666-8666-666666666666",
+      decision: "MANTER_RESULTADO",
+      decisionRationale: "Rationale interno sintético.",
+      decisionAt: "2026-08-24T12:00:00.000Z",
+      decisionCorrelationId: "77777777-7777-4777-8777-777777777777",
+      createdAt: "2026-08-24T12:00:01.000Z",
     },
   ],
 };
@@ -2190,6 +2212,128 @@ describe("API HTTP boundary", () => {
     );
     expect(invalid.status).toBe(422);
     expect(getAppealReviewQueue).not.toHaveBeenCalled();
+  });
+
+  it("returns an authorized internal appeal history and rejects unsafe variants", async () => {
+    const getAppealReviewHistory = vi.fn(async () => appealReviewHistory);
+    const principalId = "88888888-8888-4888-8888-888888888888";
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealReviewHistory.appealId}/history`,
+        query: { limit: "25" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [appealReviewHistory.scopeId],
+        }),
+        getAppealReviewHistory,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getAppealReviewHistory).toHaveBeenCalledWith({
+      principalId,
+      accountStatus: "ACTIVE",
+      roles: ["MODERATOR"],
+      scopes: [appealReviewHistory.scopeId],
+      appealId: appealReviewHistory.appealId,
+      limit: 25,
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        appealId: appealReviewHistory.appealId,
+        events: [
+          {
+            eventType: "DECIDIR",
+            decisionRationale: "Rationale interno sintético.",
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(response.body)).toContain("decisionCorrelationId");
+
+    const participantResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealReviewHistory.appealId}/history`,
+        query: {},
+        body: undefined,
+      },
+      dependencies({ getAppealReviewHistory }),
+    );
+    expect(participantResponse.status).toBe(403);
+    expect(getAppealReviewHistory).toHaveBeenCalledTimes(1);
+
+    const unauthenticatedResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealReviewHistory.appealId}/history`,
+        query: {},
+        body: undefined,
+      },
+      dependencies({
+        getAppealReviewHistory,
+        authenticate: async () => null,
+      }),
+    );
+    expect(unauthenticatedResponse.status).toBe(401);
+    expect(getAppealReviewHistory).toHaveBeenCalledTimes(1);
+
+    const invalidResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/appeals/not-an-id/history",
+        query: {},
+        body: undefined,
+      },
+      dependencies({ getAppealReviewHistory }),
+    );
+    expect(invalidResponse.status).toBe(422);
+
+    const invalidQueryResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealReviewHistory.appealId}/history`,
+        query: { limit: "101" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [appealReviewHistory.scopeId],
+        }),
+        getAppealReviewHistory,
+      }),
+    );
+    expect(invalidQueryResponse.status).toBe(422);
+    expect(getAppealReviewHistory).toHaveBeenCalledTimes(1);
+
+    const missingResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealReviewHistory.appealId}/history`,
+        query: {},
+        body: undefined,
+      },
+      dependencies({
+        getAppealReviewHistory: async () => null,
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [appealReviewHistory.scopeId],
+        }),
+      }),
+    );
+    expect(missingResponse.status).toBe(404);
   });
 
   it("fails closed when the appeal review queue dependency is unavailable", async () => {

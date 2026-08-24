@@ -60,6 +60,8 @@ import {
   type GetContentReviewQueueCommand,
   type AppealReviewQueueState,
   type GetAppealReviewQueueCommand,
+  type AppealReviewHistoryState,
+  type GetAppealReviewHistoryCommand,
   type SaveAnswerCommand,
   type SaveAnswerResult,
   type Role,
@@ -93,6 +95,9 @@ import {
   contentReviewQueueQuerySchema,
   appealReviewQueueProjectionSchema,
   appealReviewQueueQuerySchema,
+  appealReviewHistoryPathSchema,
+  appealReviewHistoryProjectionSchema,
+  appealReviewHistoryQuerySchema,
   internalAuthoringRecordQuerySchema,
   internalSessionScopesProjectionSchema,
   parseDiagnosticResultProjection,
@@ -269,6 +274,9 @@ export interface ApiHttpDependencies {
   readonly getAppealReviewQueue?: (
     command: GetAppealReviewQueueCommand,
   ) => Promise<AppealReviewQueueState>;
+  readonly getAppealReviewHistory?: (
+    command: GetAppealReviewHistoryCommand,
+  ) => Promise<AppealReviewHistoryState | null>;
   readonly getParticipantCurriculumRuntime?: (
     participantId: string,
     moduleId: string,
@@ -762,6 +770,15 @@ function internalAppealReviewQueueProjection(
         ? {}
         : { decisionCorrelationId: item.decisionCorrelationId }),
     })),
+  });
+}
+
+function internalAppealReviewHistoryProjection(
+  state: AppealReviewHistoryState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return appealReviewHistoryProjectionSchema.parse({
+    appealId: state.appealId,
+    events: state.events.map((event) => ({ ...event })),
   });
 }
 
@@ -1265,6 +1282,63 @@ async function handleAppealReviewQueue(
     status: 200,
     body: apiSuccessResponse(
       internalAppealReviewQueueProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleAppealReviewHistory(
+  request: ApiHttpRequest,
+  appealId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getAppealReviewHistory === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsedPath = appealReviewHistoryPathSchema.safeParse({ appealId });
+  if (!parsedPath.success) return validationResponse(requestId);
+  const rawQuery = request.query ?? {};
+  if (Object.keys(rawQuery).some((key) => key !== "limit")) {
+    return validationResponse(requestId);
+  }
+  const parsedQuery = appealReviewHistoryQuerySchema.safeParse({
+    ...(rawQuery.limit === undefined ? {} : { limit: Number(rawQuery.limit) }),
+  });
+  if (!parsedQuery.success) return validationResponse(requestId);
+  if (
+    !principal.scopes.some((scopeId) =>
+      isAllowed(
+        principal,
+        "REVIEW_APPEAL",
+        { scopeId },
+        dependencies.approvedClinicalApproverId,
+      ),
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.getAppealReviewHistory({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    appealId: parsedPath.data.appealId,
+    ...(parsedQuery.data.limit === undefined
+      ? {}
+      : { limit: parsedQuery.data.limit }),
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+  });
+  if (state === null) return errorResponse("not_found", requestId);
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalAppealReviewHistoryProjection(state),
       requestId,
     ),
   };
@@ -2686,6 +2760,22 @@ async function handleApiRequestCore(
         return errorResponse("unauthenticated", requestId);
       return await handleCreateAppeal(
         request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const appealHistoryMatch = request.path.match(
+      /^\/api\/v1\/internal\/appeals\/([^/]+)\/history$/u,
+    );
+    if (request.method === "GET" && appealHistoryMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAppealReviewHistory(
+        request,
+        appealHistoryMatch[1],
         requestId,
         principal,
         dependencies,

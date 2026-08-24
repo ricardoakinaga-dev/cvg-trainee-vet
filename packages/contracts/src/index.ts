@@ -109,6 +109,18 @@ export {
   participantFeedbackTicketsProjectionSchema,
   participantLearningAssignmentProjectionSchema,
 } from "./learning-state.js";
+export {
+  appealReviewHistoryEventProjectionSchema,
+  appealReviewHistoryPathSchema,
+  appealReviewHistoryProjectionSchema,
+  appealReviewHistoryQuerySchema,
+} from "./appeal-review-history.js";
+export type {
+  AppealReviewHistoryEventProjection,
+  AppealReviewHistoryPath,
+  AppealReviewHistoryProjection,
+  AppealReviewHistoryQuery,
+} from "./appeal-review-history.js";
 export type {
   AppealCreateRequest,
   AppealQuery,
