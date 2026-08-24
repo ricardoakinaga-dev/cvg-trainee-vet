@@ -3684,7 +3684,7 @@ describe("API HTTP boundary", () => {
       event: { type: "TRIAR" },
       actorId: staff.principalId,
       requestId: "request-123",
-      correlationId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      correlationId: "request-123",
     });
 
     const transitionedAppeal = await handleApiRequest(

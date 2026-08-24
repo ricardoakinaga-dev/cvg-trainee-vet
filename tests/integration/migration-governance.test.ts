@@ -272,4 +272,43 @@ describe("migration governance", () => {
       "foreignColumns: [feedbackTickets.id, feedbackTickets.scopeId]",
     );
   });
+
+  it("keeps feedback history event lineage fail-closed for new rows", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0039_feedback_ticket_history_event_lineage.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_validate_feedback_ticket_history_insert()",
+    );
+    expect(migration).toContain("previous_status text");
+    expect(migration).toContain("NEW.to_status <> 'NOVO'");
+    expect(migration).toContain(
+      "NEW.from_status IS DISTINCT FROM previous_status",
+    );
+    expect(migration).toContain(
+      "history.ticket_version = NEW.ticket_version - 1",
+    );
+    expect(migration).toContain("SECURITY INVOKER");
+    expect(migration).toContain("FOR UPDATE");
+  });
+
+  it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {
+    const integrationPath = fileURLToPath(
+      new URL("./postgres-learning-state.test.ts", import.meta.url),
+    );
+    const integration = await readFile(integrationPath, "utf8");
+
+    expect(integration).not.toContain(
+      'truncate table "feedback_ticket_history", "audit_entries"',
+    );
+    expect(integration).toContain("feedbackCreateRequestId");
+    expect(integration).toContain("feedbackCreateCorrelationId");
+    expect(integration).toContain("feedbackTransitionRequestId");
+    expect(integration).toContain("feedbackTransitionCorrelationId");
+  });
 });

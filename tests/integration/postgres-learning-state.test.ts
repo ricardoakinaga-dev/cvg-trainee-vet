@@ -73,6 +73,20 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         requestId: randomUUID(),
         correlationId: randomUUID(),
       } as const;
+      const feedbackCreateRequestId = randomUUID();
+      const feedbackCreateCorrelationId = randomUUID();
+      const feedbackTransitionRequestId = randomUUID();
+      const feedbackTransitionCorrelationId = randomUUID();
+      const feedbackCreateContext = {
+        ...context,
+        requestId: feedbackCreateRequestId,
+        correlationId: feedbackCreateCorrelationId,
+      } as const;
+      const feedbackTransitionContext = {
+        ...context,
+        requestId: feedbackTransitionRequestId,
+        correlationId: feedbackTransitionCorrelationId,
+      } as const;
 
       try {
         await admin.db.insert(accounts).values([
@@ -154,8 +168,11 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         const ticket = transitionFeedbackTicket(initialTicket, {
           type: "TRIAR",
         });
-        await repository.saveFeedbackTicket(context, initialTicket);
-        await repository.saveFeedbackTicket(context, ticket);
+        await repository.saveFeedbackTicket(
+          feedbackCreateContext,
+          initialTicket,
+        );
+        await repository.saveFeedbackTicket(feedbackTransitionContext, ticket);
 
         const history = await admin.db
           .select({
@@ -210,6 +227,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               resourceType: "feedback_ticket",
               resourceId: ticketId,
               scopeId,
+              requestId: feedbackCreateRequestId,
+              correlationId: feedbackCreateCorrelationId,
             }),
             expect.objectContaining({
               principalId: participantId,
@@ -217,6 +236,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               resourceType: "feedback_ticket",
               resourceId: ticketId,
               scopeId,
+              requestId: feedbackTransitionRequestId,
+              correlationId: feedbackTransitionCorrelationId,
             }),
           ]),
         );
@@ -229,7 +250,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             toStatus: feedbackTicketHistory.toStatus,
           })
           .from(feedbackTicketHistory)
-          .where(eq(feedbackTicketHistory.ticketId, ticketId))
+          .where(
+            and(
+              eq(feedbackTicketHistory.ticketId, ticketId),
+              eq(feedbackTicketHistory.scopeId, scopeId),
+            ),
+          )
           .orderBy(asc(feedbackTicketHistory.ticketVersion));
 
         await expect(
@@ -276,7 +302,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               toStatus: feedbackTicketHistory.toStatus,
             })
             .from(feedbackTicketHistory)
-            .where(eq(feedbackTicketHistory.ticketId, ticketId))
+            .where(
+              and(
+                eq(feedbackTicketHistory.ticketId, ticketId),
+                eq(feedbackTicketHistory.scopeId, scopeId),
+              ),
+            )
             .orderBy(asc(feedbackTicketHistory.ticketVersion)),
         ).resolves.toEqual(historyBeforeRollback);
 
@@ -452,12 +483,22 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       } finally {
         await admin.db.transaction(async (tx) => {
           await tx.delete(appeals).where(eq(appeals.id, appealId));
-          // The history/audit triggers are append-only; this disposable suite
-          // has no other fixtures in these tables, so truncate them during
-          // cleanup before removing the ticket/account parents.
-          await tx.execute(
-            sql`truncate table "feedback_ticket_history", "audit_entries"`,
-          );
+          await tx
+            .delete(auditEntries)
+            .where(
+              and(
+                eq(auditEntries.resourceId, ticketId),
+                eq(auditEntries.scopeId, scopeId),
+              ),
+            );
+          await tx
+            .delete(feedbackTicketHistory)
+            .where(
+              and(
+                eq(feedbackTicketHistory.ticketId, ticketId),
+                eq(feedbackTicketHistory.scopeId, scopeId),
+              ),
+            );
           await tx
             .delete(feedbackTickets)
             .where(eq(feedbackTickets.id, ticketId));
