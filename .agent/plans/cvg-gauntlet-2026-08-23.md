@@ -157,12 +157,13 @@ support the boundary.
 
 ## Current next action
 
-Obtain a fresh independent read-only critic for the implemented APPEAL-036
-boundary, then close the code/documentation commit and run the clean release
-traceability gate. The live PostgreSQL boundary for reflection and appeals
-remains an explicit unavailable check when its required environment variables are
-absent; this milestone must not claim production, clinical, pilot, or CPD
-readiness.
+The two bounded independent read-only critic attempts timed out and were closed;
+no independent PASS is inferred. The local diff is implemented and committed as
+`7ac18365998b1bdd5ff1f2600c783b1352c42f03`; update the manifest SHA and run the
+clean release traceability gate. The live PostgreSQL boundary for reflection and
+appeals remains an explicit unavailable check when its required environment
+variables are absent; this milestone must not claim production, clinical, pilot,
+or CPD readiness.
 
 ## Progress history
 

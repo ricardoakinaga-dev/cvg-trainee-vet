@@ -4689,3 +4689,45 @@ IN_PROGRESS
 
 Revisar o diff final, criar o commit de implementação e ajustar o SHA do artefato;
 depois executar o release traceability gate com worktree limpo.
+
+## 2026-08-23 — APPEAL-036: commit de implementação
+
+### TIMESTAMP
+
+2026-08-23 23:21:44 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### TASK
+
+APPEAL-2026-08-23-E — consolidar a fatia e ligar o artefato ao commit
+
+### ACTION
+
+O diff final foi revisado, `git diff --check`, auditoria de dependências,
+documentação e traceability estrutural passaram, e a implementação foi
+consolidada no commit `7ac18365998b1bdd5ff1f2600c783b1352c42f03`. O bloco
+`APPEAL-036` agora referencia esse SHA alcançável.
+
+### RESULT
+
+Código, testes, SPEC, audit 0514, estado, log, backlog, plano e manifesto estão
+ligados. O release gate ainda precisa ser executado após o commit documental que
+contém o SHA; nenhuma evidência remota, live, clínica ou de produção é inferida.
+
+### DECISIONS
+
+As críticas delegadas não produziram relatório após duas janelas de 30 segundos;
+foram encerradas sem registrar PASS. A aprovação desta fatia é somente a revisão
+local evidenciada pelos gates e testes, com `PASS_WITH_GAPS` preservado.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Commitar o ajuste documental do SHA e executar
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo.

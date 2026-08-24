@@ -1466,7 +1466,7 @@ artifacts:
         "tests/integration/postgres-learning-state.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
-    commit: "TBD"
+    commit: "7ac18365998b1bdd5ff1f2600c783b1352c42f03"
     artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:

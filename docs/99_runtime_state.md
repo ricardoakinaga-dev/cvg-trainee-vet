@@ -19,7 +19,7 @@
 ## PROGRESSO
 
 - last_completed_action: APPEAL-036 passou RED/GREEN/REFACTOR local, fechou REDs de reload da tentativa corrigida e de item não avaliável, passou o foco API/persistência 62/62, `pnpm verify` (103 arquivos/495 testes, 25 skips), build e E2E completo 22/22; a integração PostgreSQL específica ficou 1/1 skipped sem `CVG_TEST_DATABASE_URL`
-- next_action: obter crítica independente read-only, revisar o diff, criar commits reversíveis e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; manter a prova PostgreSQL/RLS e os follow-ups de revisor/recálculo/notificação explícitos
+- next_action: ajustar/confirmar o SHA do artefato `APPEAL-036` para `7ac18365998b1bdd5ff1f2600c783b1352c42f03` e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; manter a prova PostgreSQL/RLS e os follow-ups de revisor/recálculo/notificação explícitos
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T23:20:45-03:00
+- last_update: 2026-08-23T23:21:44-03:00
 
 ## REGRAS DE USO
 
