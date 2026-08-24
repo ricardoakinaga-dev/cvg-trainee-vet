@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: JOURNEY-REL-002 / AUD-P1-004 — sincronização bounded assignment→atividade
-- current_task: preparar a prova live de sincronização assignment→atividade com RLS/rollback/concorrência quando o ambiente autorizado estiver disponível
+- current_sprint: JOURNEY-REL-002 / AUD-P1-003 / AUD-P1-004 — prova live e hardening de CI
+- current_task: fechar o commit documental da prova live sintética e preparar a execução remota no mesmo SHA, sem ampliar para release produtivo
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `JOURNEY-REL-002` foi fechado no código `73649cba9da168babb06a87c46cc8bd6bb580408` e na documentação `e3acb37f6b6998564eb86dba2a6e82cb1486c9ed`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo. `pnpm verify` passou com 125 arquivos/575 testes, 31 skips, cobertura 84,50%/80,35%/85,95%/85,23%, contracts 72/72, worker 25/25 e migrations 27/27; build 12 workspaces, E2E 26/26, integração 8/20 com 27/31 skips e audit high também passaram.
-- next_action: preparar a prova live de sincronização assignment→atividade com papel sem `SUPERUSER/BYPASSRLS`, rollback e concorrência quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis; não declarar release/100% enquanto RLS live, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: o commit de código `5bfa530710171cf1299e8e60d4645796b3886465` fechou fail-closed para vínculo `PUBLISHED` com módulo incompatível, rollback transacional e roles distintas no CI. PostgreSQL efêmero passou 31 arquivos/48 testes com app `NOSUPERUSER/NOBYPASSRLS` e fixture admin separada; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via web→API→PostgreSQL. `pnpm verify` passou com 125 arquivos/576 testes, 31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, CI contract 21 checks e gates documentais/segurança verdes.
+- next_action: concluir o commit documental e executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; depois, somente com autoridade, executar o workflow remoto no mesmo SHA e tratar concorrência, grants produtivos, observabilidade e restore; não declarar release/100%
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live de assignment→atividade, RLS, rollback e concorrência; JOURNEY-REL-001 — a implementação local existe, mas a evidência end-to-end sob papel sem `SUPERUSER/BYPASSRLS` e a sincronização posterior de estados ainda faltam; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — a prova local efêmera passou, mas o workflow remoto no mesmo SHA ainda não foi executado; JOURNEY-REL-001 — provenance/RLS/atomicidade passaram localmente, porém pipeline autoral de `moduleId` e E2E curricular navegador→PostgreSQL ainda faltam; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T06:41:52-03:00
+- last_update: 2026-08-24T07:15:00-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `e3acb37f6b6998564eb86dba2a6e82cb1486c9ed` (commit documental da evidência fechada)
-- origin: `fbbc692` (`origin/main`), local `main` ahead 54 commits
-- worktree: limpo; não há push/deploy
+- head: `5bfa530710171cf1299e8e60d4645796b3886465` (commit de código; fechamento documental em andamento)
+- origin: `fbbc692` (`origin/main`), local `main` ahead 56 commits
+- worktree: fechamento documental em andamento; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-REL-002` PASS LOCAL: `pnpm verify` 125/575/31 skips, cobertura 84,50%/80,35%/85,95%/85,23%, contracts 72/72, worker 25/25, migrations 27/27, secrets, architecture, documentation, product-definition, exposure, `git diff --check` e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passaram; build 12 workspaces, E2E 26/26, integração 8/20 +27/31 skips e audit high sem vulnerabilidades também passaram; RLS/rollback/concorrência live, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observados
+- verification_state: `JOURNEY-REL-002` PASS LOCAL + LIVE SINTÉTICO: `pnpm verify` 125/576/31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, CI contract 21 checks, secrets, architecture, documentation, product-definition, exposure e `git diff --check` passaram; build 12 workspaces e E2E real 28/28; PostgreSQL live 31/48 com app sem `SUPERUSER/BYPASSRLS` e admin separado; mesmo-SHA CI, concorrência, grants produtivos, observabilidade, restore e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 

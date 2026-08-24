@@ -17,6 +17,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 **Atualização operacional 2026-08-24 (JOURNEY-REL-001):** a atribuição adaptativa agora materializa `activity_assignments` somente para atividades `PUBLISHED` com `learning_activities.module_id` explícito, grava `source_diagnostic_result_id`/`learning_assignment_id` e repara provenance nula sem alterar progresso. RED/GREEN focal, typecheck de persistence/curriculum, migration 0026 e seed M02 passaram localmente; os dois testes PostgreSQL live permanecem skipped sem `CVG_TEST_DATABASE_URL`. O item segue `COMPLETED_WITH_GAPS`: RLS/rollback/concorrência live, sincronização posterior de estados, pipeline de publicação curricular, gates clínicos e assurance operacional continuam pendentes.
 **Fechamento local operacional 2026-08-24 (JOURNEY-REL-001):** o commit de código `9b1b975d62760142238b6b19f03e207181f59a87` passou `pnpm verify` com 125 arquivos/574 testes, 30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, build nos 12 workspaces, E2E 26/26, integração 8/20 com 27/30 skips, migrations 27/27 e audit high sem vulnerabilidades. O commit documental `2972fa0b64023551a5aaacd668b3c1ae5176409d` também passou `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo; nenhum resultado live é inferido.
 
+**Atualização operacional 2026-08-24 (JOURNEY-REL-002 / AUD-P1-003):** o commit `5bfa530710171cf1299e8e60d4645796b3886465` fechou a prova live sintética de provenance/RLS e hardening de papéis: a suíte PostgreSQL passou 31 arquivos/48 testes com aplicação `NOSUPERUSER/NOBYPASSRLS` e fixture administrativa separada; o vínculo publicado com módulo incompatível falha fechada e sofre rollback transacional. `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via navegador→web→API→PostgreSQL. O CI agora provisiona owner de migração, aplicação e admin distintos. `pnpm verify` passou com 125/576/31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contratos 72/72, worker 25/25 e migrations 27/27. Remanescem workflow remoto no mesmo SHA, concorrência, grants/owners produtivos, observabilidade/restore, pipeline curricular autoral e gates clínicos; não há declaração de release/100%.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -651,16 +653,16 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - risco: crítico — uma resolução ambígua pode atribuir conteúdo errado, atravessar escopo ou perder a relação entre diagnóstico, módulo e estudo
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
-- critério de pronto: RED antes do código; somente atividades publicadas com `module_id` válido e mesmo escopo são elegíveis; FKs e índices de provenance existem; atribuição e vínculo são escritos na mesma transação; replay não duplica; reparo não altera status; contratos públicos não expõem IDs internos; integração live permanece separada e explícita
-- escopo: `learning_activities.module_id`; `learning_assignments.source_diagnostic_result_id`; `activity_assignments.learning_assignment_id`; materialização/reparo bounded; seed curricular; testes unitários e live condicionais
-- fora desta fatia: inferência por slug; publicação clínica; alteração de nota/gabarito; sincronização de estados posteriores; E2E navegador→banco real; provider/MFA; grants produtivos; observabilidade externa; piloto; release
+- critério de pronto: RED antes do código; somente atividades publicadas com `module_id` válido e mesmo escopo são elegíveis; FKs e índices de provenance existem; atribuição e vínculo são escritos na mesma transação; replay não duplica; reparo não altera status; contratos públicos não expõem IDs internos; integração live é separada, explícita e passou no banco sintético autorizado
+- escopo: `learning_activities.module_id`; `learning_assignments.source_diagnostic_result_id`; `activity_assignments.learning_assignment_id`; materialização/reparo bounded; seed curricular; testes unitários e live
+- fora desta fatia: inferência por slug; publicação clínica; alteração de nota/gabarito; sincronização de estados posteriores; concorrência/policy failure live; E2E navegador→banco curricular; provider/MFA; grants produtivos; observabilidade externa; piloto; release
 - controles obrigatórios: `participantId` continua derivado do diagnóstico; escopo é validado na consulta e no contexto RLS; `moduleId` não entra de cliente; `onConflictDoUpdate` só preenche provenance nula; atividade sem mapping explícito permanece não atribuída
 - evidência: `BRIEFING/04.AUDIT/0526_journey_assignment_activity_audit.md`; `traceability.yml` / `JOURNEY-REL-001`; SPEC 0109/0107/0111/0118; migration `0026_assignment_activity_provenance.sql`
 - código: `packages/persistence/src/schema.ts`; `packages/persistence/src/adaptive-assignment-repository.ts`; `packages/curriculum/src/types.ts`; `packages/curriculum/src/projection.ts`; `packages/curriculum/src/content-seed.ts`
-- testes: `packages/persistence/src/adaptive-assignment-repository.test.ts` (5/5); `tests/integration/postgres-adaptive-assignment.test.ts` (2 live condicionais); `tests/integration/curriculum-catalog.test.ts`
-- resultado: vínculo explícito, provenance do resultado diagnóstico, replay e reparo legado implementados localmente; migration manifest passou 27/27; regressão completa passou com 125/574/30 skips; live RLS/rollback/concorrência não observados sem ambiente
-- gaps explícitos: RLS sem bypass e rollback/concorrência live; sincronização de estado; pipeline autoral que persiste `moduleId` em atividade aprovada; E2E navegador→API→PostgreSQL curricular; conteúdo/revisão clínica, B-07 real, piloto, provider/MFA e assurance operacional
-- próxima ação: executar os dois testes live com role de aplicação sem `SUPERUSER/BYPASSRLS` e cleanup administrativo separado quando `CVG_TEST_DATABASE_URL` e autoridade estiverem disponíveis; não declarar release/100%
+- testes: `packages/persistence/src/adaptive-assignment-repository.test.ts` (5/5); `tests/integration/postgres-adaptive-assignment.test.ts` (2 live); `tests/integration/curriculum-catalog.test.ts`
+- resultado: vínculo explícito, provenance do resultado diagnóstico, replay e reparo legado foram confirmados no live sintético; a suíte PostgreSQL passou 31/48 com aplicação sem `SUPERUSER/BYPASSRLS` e admin separado; migration manifest passou 27/27; regressão completa passou com 125/576/31 skips
+- gaps explícitos: concorrência e policy failure live independente; pipeline autoral que persiste `moduleId` em atividade aprovada; E2E navegador→API→PostgreSQL curricular; grants/owners produtivos; conteúdo/revisão clínica, B-07 real, piloto, provider/MFA e assurance operacional
+- próxima ação: executar o workflow remoto no SHA `5bfa530710171cf1299e8e60d4645796b3886465` e, com autoridade de ambiente, provar concorrência e a jornada curricular persistida; não declarar release/100%
 
 ### JOURNEY-REL-002 — Sincronização bounded assignment → atividade
 
@@ -674,12 +676,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - status: COMPLETED_WITH_GAPS
 - critério de pronto: RED antes do código; escrita na mesma transação da transição da atribuição; somente provenance explícita; atividade retirada ignorada; legado sem provenance preservado; conflito otimista mantém rollback atômico; testes unitários/persistência e regressão completa — cumprido localmente
 - escopo: `saveLearningAssignment`, atualização bounded de `activity_assignments.status`, predicado de atividade publicada e testes de isolamento/legado/retirada
-- fora desta fatia: novas relações, inferência por slug, alteração de tentativa/nota, sincronização assíncrona, publicação clínica, prova live/RLS, grants produtivos, piloto e release
+- fora desta fatia: novas relações, inferência por slug, alteração de tentativa/nota, sincronização assíncrona, publicação clínica, concorrência/policy failure live, grants produtivos, piloto e release
 - controles obrigatórios: `participantId` e `scopeId` vêm do contexto transacional; `learning_assignment_id` é a única chave de relação; status `NAO_ATRIBUIDO` não é projetado; falha na sincronização aborta a transação inteira
 - evidência: `BRIEFING/04.AUDIT/0527_journey_assignment_status_sync_audit.md`; SPEC 0109/0111/0118; `packages/persistence/src/learning-state-repository.ts`; testes unitários e integração condicional; manifesto `JOURNEY-REL-002`
-- resultado: transição otimista atualiza somente vínculos explícitos de atividades `PUBLISHED` do mesmo escopo; `NAO_ATRIBUIDO`, legado sem provenance e atividade retirada ficam fora; allowlist de predecessores impede downgrade de progresso; regressão passou com 125/575/31 skips, build 12 workspaces, E2E 26/26 e release traceability passou no fechamento documental `e3acb37f6b6998564eb86dba2a6e82cb1486c9ed`
-- gaps explícitos: RLS sem bypass, rollback provocado por falha de policy, concorrência live, grants/owners, pipeline autoral de `moduleId`, E2E navegador→PostgreSQL curricular, conteúdo/revisão clínica, piloto, provider/MFA e assurance operacional
-- próxima ação: executar o cenário live com papel sem `SUPERUSER/BYPASSRLS` e cleanup administrativo separado quando `CVG_TEST_DATABASE_URL` e autoridade estiverem disponíveis; não declarar release/100%
+- resultado: transição otimista atualiza somente vínculos explícitos de atividades `PUBLISHED` do mesmo escopo; `NAO_ATRIBUIDO`, legado sem provenance e atividade retirada ficam fora; allowlist de predecessores impede downgrade; mismatch de módulo falha fechada com rollback; live passou 31/48 com app sem `SUPERUSER/BYPASSRLS` e admin separado; regressão passou com 125/576/31 skips, build 12 workspaces e E2E real 28/28
+- gaps explícitos: rollback provocado por policy distinta, concorrência live, workflow remoto no mesmo SHA, grants/owners, pipeline autoral de `moduleId`, E2E navegador→PostgreSQL curricular, conteúdo/revisão clínica, piloto, provider/MFA e assurance operacional
+- próxima ação: executar o workflow remoto e, com autoridade, completar concorrência, grants produtivos, observabilidade e restore; não declarar release/100%
 
 ### STAFF-DIAGNOSTIC-PROFILE-024 — Baseline formativa no acompanhamento gerencial
 
@@ -879,10 +881,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - módulo: CI / E2E / integração
 - dependência: AUD-C0-001
 - fase: BUILD — Phase 6
-- risco: alto — os E2E atuais interceptam a API e não provam integração real
+- risco: alto — o smoke real existe localmente, mas o workflow remoto no mesmo SHA e a matriz completa de dependências ainda não foram observados
 - impacto: alto
-- status: PENDENTE
-- evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; `tests/e2e/participant-access.spec.ts`
+- status: COMPLETED_WITH_GAPS
+- evidência: `BRIEFING/04.AUDIT/0527_journey_assignment_status_sync_audit.md`; `tests/e2e/real-runtime.spec.ts`; `scripts/real-e2e-fixture-server.mjs`; `.github/workflows/quality.yml`; `scripts/provision-ci-postgres.mjs`
+- resultado: `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 com navegador→web→API→PostgreSQL; o workflow declara PostgreSQL/Qdrant, migrations, live integration, restore, E2E mock/real e audit; roles de migração, aplicação e fixture são provisionadas separadamente
+- gaps remanescentes: executar o workflow remoto no SHA atual, verificar artifacts/digests e completar Qdrant/restore/observabilidade no ambiente autorizado; a prova local não é release produtivo
 
 ### HARNESS-DB-2026-08-23 — Harness live PostgreSQL/RLS
 
@@ -895,8 +899,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - impacto: médio
 - status: COMPLETED_WITH_GAPS
 - evidência: `tests/integration/live-postgres-harness.ts`; `tests/integration/postgres-activity-content.test.ts`; `tests/integration/postgres-answer-session.test.ts`; `tests/integration/postgres-attempt-repository.test.ts`; `tests/integration/postgres-correction.test.ts`; `tests/integration/curriculum-runtime.test.ts`; `tests/integration/postgres-learning-state.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `scripts/run-live-integration.mjs`; `.github/workflows/quality.yml`
-- resultado: com URL administrativa, live PostgreSQL passou 19 arquivos/30 testes; sem ela, o runner informa a limitação e 23 testes passam com 7 skips explícitos; role e banco locais descartáveis foram removidos após a validação
-- gaps remanescentes: executar o workflow remoto após a integração; provisionamento administrativo de teste continua obrigatório para cleanup completo, e o fallback sem `CREATEROLE` cobre somente a asserção de isolamento com uma conexão de aplicação não privilegiada
+- resultado: o harness e o workflow agora separam aplicação, fixture administrativa e owner de migração; a execução local role-provisioned passou 31 arquivos/48 testes, preservando skips explícitos quando as URLs live não existem; roles e banco foram descartados após a validação
+- gaps remanescentes: executar o workflow remoto no mesmo SHA e validar grants/ownership do ambiente produtivo; o fallback sem capacidade administrativa continua reduzindo a cobertura por skip explícito
 - próxima ação: executar/revisar o workflow CI autorizado e preservar os gates clínicos independentes
 
 ### AUD-P1-004 — Operação, observabilidade e restore

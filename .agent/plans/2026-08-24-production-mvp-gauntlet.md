@@ -65,6 +65,15 @@ a aprovação clínica, piloto ou release produtivo.
   no commit `e3acb37f6b6998564eb86dba2a6e82cb1486c9ed` e executar
   `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo;
   o gate passou. A próxima ação é a prova live de RLS/rollback/concorrência.
+- [x] (2026-08-24T07:10:00-03:00) Fechar o hardening live/CI no commit
+  `5bfa530710171cf1299e8e60d4645796b3886465`: PostgreSQL efêmero passou
+  31 arquivos/48 testes com app `NOSUPERUSER/NOBYPASSRLS` e fixture admin
+  separada; o vínculo publicado com módulo incompatível falha fechada com
+  rollback; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28; `pnpm verify`
+  passou com 125/576/31 skips, cobertura 84,50%/80,34%/85,95%/85,22%,
+  contratos 72/72, worker 25/25 e migrations 27/27. O CI agora provisiona
+  roles distintas de migração, aplicação e fixture; workflow remoto, produção,
+  concorrência, clínica e assurance operacional continuam gaps.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a

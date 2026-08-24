@@ -5,15 +5,15 @@
 **Escopo:** coerência posterior do status entre `learning_assignments` e
 `activity_assignments` explicitamente vinculados
 
-**Classificação:** PASS LOCAL WITH GAPS
+**Classificação:** PASS LOCAL + LIVE SINTÉTICO WITH GAPS
 
-**Não é:** prova live de RLS, aprovação clínica, publicação, aplicação real do
+**Não é:** prova de produção, aprovação clínica, publicação, aplicação real do
 B-07 ou declaração de competência prática
 
 ## 1. Resultado executivo
 
 Depois da materialização adaptativa, uma transição otimista de
-`learning_assignments` agora atualiza `activity_assignments.status` na mesma
+`learning_assignments` atualiza `activity_assignments.status` na mesma
 transação, mas somente quando `learning_assignment_id` identifica a relação,
 o participante e o escopo pertencem ao contexto transacional e a atividade
 continua `PUBLISHED`. `NAO_ATRIBUIDO` não é projetado; vínculos legados sem
@@ -21,8 +21,13 @@ provenance e atividades `WITHDRAWN` ficam intocados.
 
 Uma falha na atualização da relação permanece dentro da transação de
 `saveLearningAssignment`; portanto, a alteração da atribuição não é confirmada
-sem a sincronização correspondente. Essa propriedade ainda precisa de
-confirmação em PostgreSQL com papel sem `SUPERUSER/BYPASSRLS`.
+sem a sincronização correspondente. A propriedade foi confirmada em PostgreSQL
+efêmero com role de aplicação `NOSUPERUSER/NOBYPASSRLS` e role administrativa
+separada `NOSUPERUSER/BYPASSRLS/CREATEROLE`.
+
+O mesmo cenário também encontrou e fechou uma falha de fail-open: uma atividade
+`PUBLISHED` explicitamente vinculada, mas com `module_id` incompatível, agora
+rejeita a transição antes da sincronização e faz rollback da atribuição inteira.
 
 Para não rebaixar progresso concorrente, a escrita aceita somente o próprio
 status ou estados predecessores permitidos pela máquina de atribuição. Uma
@@ -37,34 +42,41 @@ atribuição recebe uma transição atrasada.
 | Transação | `syncBoundActivityAssignmentStatus` é chamado dentro de `withContext` após a escrita/versionamento da atribuição | falha aborta a transação |
 | Legado | `learning_assignment_id` nulo não satisfaz o predicado | status legado preservado |
 | Retirada | o conjunto de IDs elegíveis contém somente `PUBLISHED` | atividade retirada não é reativada nem atualizada |
-| RLS | a migration `0026_assignment_activity_provenance.sql` já exige contexto, participante, escopo, atividade publicada e correspondência módulo–assignment no `UPDATE` | defesa server-side/database |
+| RLS | a migration `0026_assignment_activity_provenance.sql` exige contexto, participante, escopo, atividade publicada e correspondência módulo–assignment no `UPDATE`; a suíte live usou role sem `SUPERUSER/BYPASSRLS` | defesa server-side/database observada |
 
 ## 3. TDD e verificações
 
 - RED focal: o teste de transição não observou atualização do vínculo explícito
   antes da implementação; a crítica independente também reproduziu o risco de
-  downgrade de atividade já avançada.
+  downgrade de atividade já avançada. A prova live encontrou RED adicional para
+  um vínculo publicado com módulo incompatível que era aceito silenciosamente.
 - GREEN focal: `packages/persistence/src/learning-state-repository.test.ts`
-  passou 8/8, incluindo a sincronização de status.
-- Foi adicionado um cenário PostgreSQL condicional que cobre vínculo explícito
-  publicado, atividade retirada e linha legada sem provenance;
-  `CVG_TEST_DATABASE_URL` ausente mantém o cenário skipped, sem PASS inferido.
-- `pnpm verify` passou com 125 arquivos/575 testes, 31 skips, cobertura
-  84,50% statements/80,35% branches/85,95% functions/85,23% lines; contracts
+  passou 8/8, incluindo a sincronização de status; a proteção fail-closed e o
+  rollback do mismatch passaram no PostgreSQL efêmero.
+- A suíte live completa passou com 31 arquivos/48 testes, usando aplicação sem
+  `SUPERUSER/BYPASSRLS` e fixture administrativa separada. Foram cobertos
+  vínculo publicado, progresso avançado, retirada, legado, isolamento RLS,
+  conflito de módulo e rollback transacional.
+- `pnpm verify` passou com 125 arquivos/576 testes, 31 skips, cobertura
+  84,50% statements/80,34% branches/85,95% functions/85,22% lines; contracts
   72/72, worker 25/25, migrations 27/27 e gates estáticos/documentais verdes.
-- `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou 26/26; a
-  integração configurada passou 8/20 testes com 27/31 skips; `git diff --check`
-  passou.
+- `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` real passou 28/28
+  via web→API→PostgreSQL, com fixture administrativa fora da conexão da
+  aplicação; `git diff --check` passou.
+- Os ajustes de fixture preservaram o trigger append-only de histórico de
+  appeal; nenhum dado clínico real, PDF, foto, prontuário, tutor ou segredo foi
+  usado.
 
 ## 4. Limites e próxima ação
 
-Ainda não há evidência live para RLS sem bypass, rollback provocado por falha
-de policy, concorrência de duas transições, grants/owners produtivos,
+Ainda não há evidência para concorrência de duas transições, rollback provocado
+por uma falha de policy distinta do mismatch, grants/owners produtivos,
 observabilidade, carga, failover ou restore. O pipeline autoral que persiste
-`moduleId`, E2E navegador→API→PostgreSQL curricular, revisão clínica, piloto,
-provider/MFA e assurance operacional também permanecem pendentes.
+`moduleId` em atividade aprovada, E2E navegador→API→PostgreSQL curricular,
+revisão clínica, piloto, provider/MFA e assurance operacional também permanecem
+pendentes. O workflow remoto no mesmo SHA ainda não foi executado.
 
-Próxima ação: executar o cenário live com role da aplicação
-`NOSUPERUSER/NOBYPASSRLS`, cleanup administrativo separado e uma falha de
-sincronização observável quando o ambiente autorizado existir. Até lá,
-`JOURNEY-REL-002` permanece `COMPLETED_WITH_GAPS`.
+Próxima ação: executar o workflow remoto no SHA `5bfa530710171cf1299e8e60d4645796b3886465`
+e, com autoridade operacional, completar concorrência, grants produtivos,
+observabilidade e restore. Até lá, `JOURNEY-REL-002` permanece
+`COMPLETED_WITH_GAPS`.

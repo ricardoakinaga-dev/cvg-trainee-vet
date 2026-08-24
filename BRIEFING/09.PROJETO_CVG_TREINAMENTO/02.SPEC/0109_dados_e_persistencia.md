@@ -147,3 +147,10 @@ a transação da atribuição falha junto. A migration `0026` fornece a policy d
 `UPDATE` adicional para exigir contexto, participante, escopo, atividade
 publicada e correspondência de módulo/assignment. A prova live de RLS,
 rollback induzido e concorrência continua gate de ambiente.
+
+Uma relação explícita `PUBLISHED` com `module_id` diferente do assignment é
+inválida e falha fechada antes do commit: a transação reverte tanto a transição
+do assignment quanto qualquer projeção de atividade. O workflow de integração
+mantém owner de migração, role de aplicação e role administrativa de fixture
+separados, sem colocar credenciais no repositório; a matriz produtiva de grants,
+rotação e ownership ainda exige inspeção operacional autorizada.

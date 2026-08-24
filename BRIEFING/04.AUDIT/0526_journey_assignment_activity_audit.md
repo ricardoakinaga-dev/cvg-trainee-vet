@@ -43,15 +43,14 @@ publicação clínica independente da operação adaptativa.
   explícito, atividade legada sem módulo, replay e reparo sem alteração de
   status.
 - `tests/integration/postgres-adaptive-assignment.test.ts` contém dois testes
-  PostgreSQL live para provenance, replay e cadeia assignment→atividade; ambos
-  ficam condicionais a `CVG_TEST_DATABASE_URL` e capacidade administrativa.
+  PostgreSQL live para provenance, replay e cadeia assignment→atividade; os dois
+  passaram no banco efêmero com role de aplicação sem bypass e cleanup admin.
 - `pnpm --filter @cvg/persistence typecheck` e
   `pnpm --filter @cvg/curriculum typecheck` passaram.
 - `pnpm verify:migrations` passou com 27 migrations e índice 0026 como último.
-- `pnpm verify` passou com 125 arquivos/574 testes e 30 skips, cobertura
-  84,49%/80,34%/85,94%/85,22%; build dos 12 workspaces, E2E 26/26,
-  integração configurada 8/20 com 27/30 skips, audit high e gates estáticos
-  passaram.
+- `pnpm verify` passou com 125 arquivos/576 testes e 31 skips, cobertura
+  84,50%/80,34%/85,95%/85,22%; build dos 12 workspaces, E2E real 28/28,
+  integração PostgreSQL live 31/48, audit high e gates estáticos passaram.
 - O conteúdo de seed M02 foi verificado sem publicação automática e sem fontes,
   gabaritos ou dados reais.
 
@@ -72,18 +71,21 @@ publicação clínica independente da operação adaptativa.
 
 ## 5. Gaps e próxima ação
 
-Ainda não há evidência live neste ambiente para RLS sem bypass, rollback sob
-falha, concorrência, grants/owners e observabilidade. Também permanecem:
+A suíte PostgreSQL live efêmera agora confirmou a cadeia de provenance, RLS com
+role de aplicação sem `SUPERUSER/BYPASSRLS`, cleanup administrativo separado e
+atomicidade da materialização. A prova não equivale a ambiente produtivo e
+concorrência, grants/owners produtivos e observabilidade continuam pendentes.
+Também permanecem:
 
 - sincronização posterior entre estados de `learning_assignments` e
-  `activity_assignments` foi tratada localmente em `JOURNEY-REL-002`; a prova
-  live correspondente permanece pendente em `0527`;
+  `activity_assignments` foi tratada e provada no live sintético em
+  `JOURNEY-REL-002`/`0527`;
 - pipeline autoral/publicação que grave o `moduleId` em atividades aprovadas;
 - E2E navegador→API→PostgreSQL usando uma atividade curricular persistida;
-- revisão clínica, aplicação real do B-07, piloto, provider/MFA e assurance
+- rollback provocado por policy distinta, workflow remoto no mesmo SHA,
+  revisão clínica, aplicação real do B-07, piloto, provider/MFA e assurance
   operacional.
 
-Próxima ação: executar os dois cenários live com role de aplicação
-`NOSUPERUSER/NOBYPASSRLS`, cleanup administrativo separado, falha transacional e
-concorrência controlada quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente
-estiverem disponíveis. Até lá, o item permanece `COMPLETED_WITH_GAPS`.
+Próxima ação: executar o workflow remoto no mesmo SHA e, em ambiente autorizado,
+provar a atividade curricular persistida no navegador e a concorrência
+controlada. Até lá, o item permanece `COMPLETED_WITH_GAPS`.

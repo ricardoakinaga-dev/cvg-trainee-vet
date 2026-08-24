@@ -269,3 +269,20 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - os 125 paths da construção atual foram congelados no commit de código `1e4e1792f45bb49e9b8019b0a4b8e1036ead9622`; o fechamento documental ocorreu em `b4bf8b9946578faf2d1f65053587a382efdc5a6c`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou com worktree limpo;
 - a reexecução pós-fechamento passou com `pnpm verify` em 97 arquivos/458 testes, build nos 12 workspaces, E2E 19/19 e audit de dependências sem vulnerabilidades conhecidas; o workflow remoto e digest de artifact do HEAD local ainda não foram executados;
 - a evidência remota anterior (`dd47909`/run `31380183984`) é mantida como histórica e não é usada para aprovar o worktree atual.
+
+## 25. Evidência executável — JOURNEY-REL-001/002 e papéis live
+
+- `tests/integration/postgres-adaptive-assignment.test.ts` e
+  `tests/integration/postgres-learning-state.test.ts` passaram no PostgreSQL
+  efêmero; a suíte live completa passou 31 arquivos/48 testes com role de
+  aplicação `NOSUPERUSER/NOBYPASSRLS` e fixture administrativa separada;
+- `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28, incluindo o caminho
+  navegador→web→API→PostgreSQL com fixture sintética fora da conexão da
+  aplicação; nenhum dado clínico real foi usado;
+- o cenário de vínculo publicado com módulo incompatível falha fechada e
+  confirma rollback do assignment; concorrência, policy failure independente,
+  grants produtivos, observabilidade, restore e o workflow remoto no mesmo SHA
+  continuam gaps de ambiente;
+- após o hardening, `pnpm verify` passou com 125 arquivos/576 testes, 31
+  skips, cobertura 84,50% statements/80,34% branches/85,95% functions/85,22%,
+  contratos 72/72, worker 25/25 e migrações 27/27.

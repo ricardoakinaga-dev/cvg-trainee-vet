@@ -6670,3 +6670,69 @@ cenário live com papel sem `SUPERUSER/BYPASSRLS`, cleanup administrativo
 separado, rollback por falha de policy e concorrência. Manter pendentes o
 pipeline autoral de `moduleId`, E2E navegador→PostgreSQL curricular, gates
 clínicos, piloto, provider/MFA e assurance operacional.
+
+## 2026-08-24 — JOURNEY-REL-002: RED live e correção fail-closed
+
+### TIMESTAMP
+
+2026-08-24T07:02:00-03:00
+
+### ACTION
+
+Foi executado o PostgreSQL efêmero com Node 22.22.0, aplicação sem
+`SUPERUSER/BYPASSRLS` e conexão administrativa sintética separada. O cenário
+live inicial encontrou dois problemas de harness append-only e uma aceitação
+silenciosa de atividade `PUBLISHED` com `module_id` incompatível com o
+assignment.
+
+### RESULT
+
+As fixtures passaram a preservar histórico de appeal append-only e o teste
+genérico de appeal deixou de assumir transição de reviewer fora do contexto
+dedicado. O repositório agora falha fechado no mismatch e a transação reverte o
+assignment. Não houve relaxamento de trigger, RLS ou autorização do produto.
+
+### STATUS
+
+IN_PROGRESS — RED convertido em GREEN; hardening de papéis, regressão completa
+e atualização da rastreabilidade ainda pendentes.
+
+### NEXT
+
+Provisionar no CI roles de migração, aplicação e fixture distintas, repetir a
+suíte live e o E2E real e registrar a evidência sem credenciais.
+
+## 2026-08-24 — JOURNEY-REL-002: prova live e hardening de CI
+
+### TIMESTAMP
+
+2026-08-24T07:10:00-03:00
+
+### ACTION
+
+O commit `5bfa530710171cf1299e8e60d4645796b3886465` adicionou o provisionador
+determinístico de roles PostgreSQL e separou a URL da API da URL administrativa
+da fixture real. O workflow foi atualizado para migrar com owner dedicado,
+provisionar least privilege e executar live integration/E2E real.
+
+### RESULT
+
+A suíte PostgreSQL live passou 31 arquivos/48 testes com aplicação
+`NOSUPERUSER/NOBYPASSRLS` e admin separado; o mismatch de módulo confirmou
+rollback transacional. `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via
+navegador→web→API→PostgreSQL. `pnpm verify` passou com 125 arquivos/576 testes,
+31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contratos 72/72, worker 25/25,
+migrations 27/27 e CI contract com 21 checks. Nenhum segredo ou dado clínico
+real foi usado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — evidência local/live sintética atualizada; não é release
+produtivo nem aprovação clínica.
+
+### NEXT
+
+Executar o workflow remoto no mesmo SHA quando autorizado e fechar, em ambiente
+apropriado, concorrência, grants/owners produtivos, observabilidade, restore,
+pipeline curricular autoral, gates clínicos, provider/MFA e piloto. Não fazer
+push/deploy por inferência.

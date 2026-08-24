@@ -254,5 +254,14 @@ Linhas legadas sem provenance e atividades retiradas não entram na escrita. A
 policy de `UPDATE` da migration `0026_assignment_activity_provenance.sql`
 continua exigindo a correspondência assignment–atividade–módulo e o contexto de
 RLS; uma rejeição deve abortar a transação inteira. O cenário com papel sem
-`SUPERUSER`/`BYPASSRLS`, rollback provocado e concorrência permanece não
-observado sem ambiente autorizado.
+`SUPERUSER`/`BYPASSRLS` foi observado no live sintético; rollback provocado por
+policy independente e concorrência permanecem dependentes de ambiente
+autorizado.
+
+Atualização de evidência: o cenário PostgreSQL efêmero confirmou a policy com
+role de aplicação `NOSUPERUSER/NOBYPASSRLS` e fixture administrativa separada
+`NOSUPERUSER/BYPASSRLS/CREATEROLE`. A tentativa de vínculo publicado com módulo
+incompatível falha fechada e preserva o status anterior do assignment. O script
+`scripts/provision-ci-postgres.mjs` reproduz a separação no CI; isso não substitui
+grants/ownership, rotação de credenciais, observabilidade ou restore do ambiente
+produtivo.

@@ -3503,14 +3503,22 @@ artifacts:
     code:
       [
         "packages/persistence/src/learning-state-repository.ts",
+        "scripts/provision-ci-postgres.mjs",
+        "scripts/real-e2e-fixture-server.mjs",
+        "scripts/verify-ci-contract.mjs",
+        ".github/workflows/quality.yml",
         "scripts/verify-traceability.mjs",
       ]
     tests:
       [
         "packages/persistence/src/learning-state-repository.test.ts",
         "tests/integration/postgres-learning-state.test.ts",
+        "tests/integration/postgres-appeal-review-transition.test.ts",
+        "tests/integration/postgres-appeal-recalculation.test.ts",
+        "tests/integration/ci-governance.test.ts",
+        "tests/e2e/real-runtime.spec.ts",
       ]
-    commit: "73649cba9da168babb06a87c46cc8bd6bb580408"
+    commit: "5bfa530710171cf1299e8e60d4645796b3886465"
     artifacts:
       [
         "BRIEFING/04.AUDIT/0527_journey_assignment_status_sync_audit.md",
@@ -3523,7 +3531,11 @@ artifacts:
         "RED: explicit bound activity status was not synchronized before the repository update",
         "pnpm --filter @cvg/persistence typecheck",
         "pnpm exec vitest run --project unit packages/persistence/src/learning-state-repository.test.ts",
-        "pnpm exec vitest run --project integration tests/integration/postgres-learning-state.test.ts (live conditional; 2 skips without CVG_TEST_DATABASE_URL)",
+        "role-provisioned PostgreSQL live integration: 31 files/48 tests with application NOSUPERUSER/NOBYPASSRLS and separate fixture admin",
+        "mismatched published module binding rejected with transactional rollback",
+        "CVG_RUN_REAL_E2E=true pnpm test:e2e (28/28 via web/API/PostgreSQL; synthetic fixture only)",
+        "pnpm exec vitest run --project integration tests/integration/postgres-learning-state.test.ts",
+        "pnpm exec vitest run --project integration tests/integration/ci-governance.test.ts",
         "pnpm verify:migrations",
         "pnpm verify",
         "pnpm build",
