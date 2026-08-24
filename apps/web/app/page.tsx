@@ -126,6 +126,15 @@ type LearningJourneyProjection = Readonly<{
   }>;
 }>;
 
+type CorrectionProjection = Readonly<{
+  readonly attemptStatus: "CORRIGIDA_AUTOMATICAMENTE" | "CORRIGIDA_HUMANAMENTE";
+  readonly attemptVersion: number;
+  readonly resultVersion: number;
+  readonly score: number;
+  readonly outcome: "APROVADO" | "REFORCO";
+  readonly feedback: string;
+}>;
+
 type ParticipantDashboardProjection = Readonly<{
   readonly kind: "participant";
   readonly nextAction: string;
@@ -175,7 +184,13 @@ const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 
 type ExperienceState = "idle" | "loading" | "ready" | "empty" | "error";
 type RetryAction =
-  "access" | "journey" | "activity" | "appeals" | "feedback" | null;
+  | "access"
+  | "journey"
+  | "activity"
+  | "appeals"
+  | "feedback"
+  | "correction"
+  | null;
 
 class PublicApiError extends Error {
   public constructor(
@@ -309,6 +324,38 @@ function isAttempt(value: unknown): value is AttemptProjection {
         isString(answer.itemId) &&
         isString(answer.response),
     )
+  );
+}
+
+function isCorrection(value: unknown): value is CorrectionProjection {
+  if (!isRecord(value)) return false;
+  const allowedKeys = new Set([
+    "attemptStatus",
+    "attemptVersion",
+    "resultVersion",
+    "score",
+    "outcome",
+    "feedback",
+  ]);
+  return (
+    Object.keys(value).every((key) => allowedKeys.has(key)) &&
+    (value.attemptStatus === "CORRIGIDA_AUTOMATICAMENTE" ||
+      value.attemptStatus === "CORRIGIDA_HUMANAMENTE") &&
+    typeof value.attemptVersion === "number" &&
+    Number.isInteger(value.attemptVersion) &&
+    value.attemptVersion >= 0 &&
+    typeof value.resultVersion === "number" &&
+    Number.isInteger(value.resultVersion) &&
+    value.resultVersion > 0 &&
+    typeof value.score === "number" &&
+    Number.isInteger(value.score) &&
+    value.score >= 0 &&
+    value.score <= 100 &&
+    (value.outcome === "APROVADO" || value.outcome === "REFORCO") &&
+    isString(value.feedback) &&
+    value.feedback.trim().length > 0 &&
+    value.feedback.length <= 10_000 &&
+    !/<[^>]*>/u.test(value.feedback)
   );
 }
 
@@ -777,6 +824,110 @@ function JourneyActivities({
   );
 }
 
+function correctionOutcomeLabel(
+  value: CorrectionProjection["outcome"],
+): string {
+  return value === "APROVADO" ? "Aprovado digitalmente" : "Reforço recomendado";
+}
+
+function CorrectionFeedbackPanel({
+  attemptStatus,
+  correction,
+  correctionState,
+  nextAction,
+  busy,
+  onRetry,
+}: Readonly<{
+  readonly attemptStatus: string | undefined;
+  readonly correction: CorrectionProjection | null;
+  readonly correctionState: ExperienceState;
+  readonly nextAction: string | undefined;
+  readonly busy: boolean;
+  readonly onRetry: () => void;
+}>): ReactNode {
+  const corrected =
+    attemptStatus === "CORRIGIDA_AUTOMATICAMENTE" ||
+    attemptStatus === "CORRIGIDA_HUMANAMENTE";
+  const waiting =
+    attemptStatus === "SUBMETIDA" ||
+    attemptStatus === "AGUARDA_CORRECAO_HUMANA";
+  if (!corrected && !waiting) return null;
+
+  const awaitingResult =
+    correction === null && (waiting || correctionState === "empty");
+  const title =
+    correctionState === "error"
+      ? "Resultado digital indisponível"
+      : awaitingResult
+        ? "Resultado em processamento"
+        : "Resultado digital";
+
+  return (
+    <section
+      className="item-card correction-panel"
+      data-testid="correction-panel"
+      aria-labelledby="correction-title"
+    >
+      <div className="section-heading compact-heading">
+        <div>
+          <p className="eyebrow">Correção digital</p>
+          <h2 id="correction-title">{title}</h2>
+        </div>
+        <span className="status-pill">
+          {awaitingResult
+            ? "Aguardando"
+            : correction === null
+              ? "Consulta"
+              : correctionOutcomeLabel(correction.outcome)}
+        </span>
+      </div>
+      {correctionState === "loading" ? (
+        <p className="feedback pending" role="status">
+          Consultando o resultado da correção…
+        </p>
+      ) : null}
+      {correctionState === "error" ? (
+        <>
+          <p className="feedback warning" role="status">
+            Não foi possível consultar o resultado digital. Tente novamente.
+          </p>
+          <button type="button" onClick={onRetry} disabled={busy}>
+            Tentar consultar resultado
+          </button>
+        </>
+      ) : null}
+      {awaitingResult && correctionState !== "loading" ? (
+        <>
+          <p role="status">A correção digital ainda não está disponível.</p>
+          {attemptStatus === "AGUARDA_CORRECAO_HUMANA" ? (
+            <p className="path-disclaimer">
+              A equipe ainda precisa concluir a revisão desta tentativa.
+            </p>
+          ) : null}
+        </>
+      ) : null}
+      {correction !== null && correctionState === "ready" ? (
+        <>
+          <div className="correction-summary">
+            <strong className="correction-score">{correction.score}%</strong>
+            <span>{correctionOutcomeLabel(correction.outcome)}</span>
+          </div>
+          <p>{correction.feedback}</p>
+          {nextAction !== undefined && nextAction.trim().length > 0 ? (
+            <p className="correction-next-action">
+              Próxima ação: <strong>{nextActionLabel(nextAction)}</strong>
+            </p>
+          ) : null}
+        </>
+      ) : null}
+      <p className="path-disclaimer">
+        Este resultado é uma evidência digital formativa. Não representa
+        competência prática, autonomia clínica ou autorização de procedimentos.
+      </p>
+    </section>
+  );
+}
+
 function nextActionLabel(value: string): string {
   const labels: Readonly<Record<string, string>> = {
     INICIAR_ATIVIDADE: "Iniciar atividade",
@@ -935,6 +1086,11 @@ export default function HomePage() {
     null,
   );
   const [attempt, setAttempt] = useState<AttemptProjection | null>(null);
+  const [correction, setCorrection] = useState<CorrectionProjection | null>(
+    null,
+  );
+  const [correctionState, setCorrectionState] =
+    useState<ExperienceState>("idle");
   const [appeals, setAppeals] = useState<
     readonly ParticipantAppealProjection[]
   >([]);
@@ -1022,6 +1178,8 @@ export default function HomePage() {
       journeyActivity.attemptVersion === undefined
     ) {
       setAttempt(null);
+      setCorrection(null);
+      setCorrectionState("idle");
       setAppeals([]);
       setAppealState("idle");
       return;
@@ -1040,6 +1198,15 @@ export default function HomePage() {
       journeyActivity.attemptStatus === "CORRIGIDA_HUMANAMENTE"
     ) {
       await loadAppeals(restoredAttempt.attemptId);
+      await loadCorrection(restoredAttempt.attemptId);
+    } else if (
+      journeyActivity.attemptStatus === "SUBMETIDA" ||
+      journeyActivity.attemptStatus === "AGUARDA_CORRECAO_HUMANA"
+    ) {
+      await loadCorrection(restoredAttempt.attemptId);
+    } else {
+      setCorrection(null);
+      setCorrectionState("idle");
     }
   }
 
@@ -1103,6 +1270,38 @@ export default function HomePage() {
     } catch (caught) {
       setAppealState("error");
       setRetryAction("appeals");
+      setError(publicErrorMessage(caught));
+    }
+  }
+
+  async function loadCorrection(attemptId: string): Promise<void> {
+    if (attemptId.trim().length === 0) return;
+    setCorrectionState("loading");
+    setRetryAction("correction");
+    try {
+      const data = await requestJson(
+        `/api/v1/attempts/${encodeURIComponent(attemptId)}/feedback`,
+        { method: "GET" },
+      );
+      if (!isCorrection(data)) {
+        throw new PublicApiError(
+          "internal_error",
+          "invalid correction projection",
+        );
+      }
+      setCorrection(data);
+      setCorrectionState("ready");
+      setRetryAction(null);
+    } catch (caught) {
+      if (caught instanceof PublicApiError && caught.code === "not_found") {
+        setCorrection(null);
+        setCorrectionState("empty");
+        setRetryAction(null);
+        return;
+      }
+      setCorrection(null);
+      setCorrectionState("error");
+      setRetryAction("correction");
       setError(publicErrorMessage(caught));
     }
   }
@@ -1248,6 +1447,10 @@ export default function HomePage() {
       void loadAppeals(attempt.attemptId);
     }
     if (retryAction === "feedback") void loadFeedback();
+    if (retryAction === "correction" && attempt !== null) {
+      setError(null);
+      void loadCorrection(attempt.attemptId);
+    }
   }
 
   async function handleStartAttempt(): Promise<void> {
@@ -1269,6 +1472,8 @@ export default function HomePage() {
           "invalid attempt projection",
         );
       setAttempt(data);
+      setCorrection(null);
+      setCorrectionState("idle");
       await loadActivity(activity.activityId);
       setNotice("Tentativa iniciada.");
     } catch (caught) {
@@ -1359,6 +1564,16 @@ export default function HomePage() {
         data.status === "CORRIGIDA_HUMANAMENTE"
       ) {
         await loadAppeals(data.attemptId);
+        await loadCorrection(data.attemptId);
+      } else if (
+        data.status === "SUBMETIDA" ||
+        data.status === "AGUARDA_CORRECAO_HUMANA"
+      ) {
+        setCorrection(null);
+        setCorrectionState("empty");
+      } else {
+        setCorrection(null);
+        setCorrectionState("idle");
       }
       setNotice("Tentativa submetida.");
     } catch (caught) {
@@ -1444,6 +1659,10 @@ export default function HomePage() {
             appeal.itemId === item.itemId && appeal.status !== "ENCERRADA",
         ),
     ) ?? [];
+  const currentJourneyActivity =
+    journey?.activities.find((item) => item.activityId === activityId) ?? null;
+  const correctionNextAction =
+    currentJourneyActivity?.nextAction ?? journey?.nextAction;
 
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
@@ -1693,6 +1912,14 @@ export default function HomePage() {
               Responda no seu ritmo. O sistema salva apenas a sua projeção de
               aprendizagem e permite retomar depois.
             </p>
+            <CorrectionFeedbackPanel
+              attemptStatus={attempt?.status}
+              correction={correction}
+              correctionState={correctionState}
+              nextAction={correctionNextAction}
+              busy={busy}
+              onRetry={handleRetry}
+            />
             {activity.reflection !== undefined ? (
               <section
                 className="item-card"

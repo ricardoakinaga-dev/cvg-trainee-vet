@@ -153,6 +153,14 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - rodada: `pnpm verify` passou com 125 arquivos/572 testes, 29 skips; cobertura 84,51% statements, 80,33% branches, 86,03% functions, 85,23% lines; build 12 workspaces e E2E 24/24;
 - limites: o teste E2E usa projeção sintética, portanto não prova diagnóstico→assignment→activity real, RLS live, provenance/atomicidade ou publicação clínica.
 
+### Evidência adicional — RESULT-FEEDBACK-046
+
+- RED/GREEN: os cenários `shows persisted digital correction feedback without internal fields` e `shows a bounded waiting state when digital correction is unavailable` falharam antes do cartão e passaram após a consulta do endpoint público, parser allowlisted e estados de espera/erro/retry;
+- contrato/API: `packages/contracts/src/correction.test.ts` e `apps/api/src/http.test.ts` preservam o contrato strict, owner-scoped e redigido; o backend não ganhou novo endpoint ou mutação;
+- web: `apps/web/app/page.tsx` restaura a tentativa a partir da jornada, consulta feedback somente para tentativa corrigida/pendente, ignora campos internos, mostra score/outcome/feedback e reutiliza a `nextAction` server-side;
+- rodada: `pnpm verify` passou com 125 arquivos/572 testes, 29 skips; cobertura 84,51% statements, 80,33% branches, 86,03% functions, 85,23% lines; build web e 13/13 E2E participantes passaram;
+- limites: as fixtures são sintéticas e não provam RLS/PostgreSQL live, provenance/atomicidade assignment→atividade, correção clínica, remediação/retensão completas ou release operacional.
+
 ## 14. Evidência executável do item 10
 
 - RED/GREEN: contratos, currículo, aplicação, persistência e API receberam testes antes dos módulos de autoria/revisão;

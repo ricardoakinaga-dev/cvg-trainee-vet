@@ -105,6 +105,16 @@ As rotas abaixo são a implementação mínima verificável do núcleo atual. Ro
 | `POST /api/v1/internal/attempts/:attemptId/correct` | escopo, idempotência, nota, outcome, feedback e versão da rubrica | somente identidade clínica aprovada no escopo; resposta omite ator e IDs internos |
 | `GET /api/v1/attempts/:attemptId/feedback` | nenhum corpo | somente participante dono; devolve feedback educacional, nunca autoria da correção |
 
+Para `GET /api/v1/attempts/:attemptId/feedback`, a API resolve a tentativa no
+contexto do participante autenticado e retorna `404/not_found` quando ainda não
+há resultado de correção disponível. Quando há resultado, `data` é exatamente a
+projeção strict `{ attemptStatus, attemptVersion, resultVersion, score,
+outcome, feedback }`; `feedback` é plain text bounded. `participantId`,
+`scopeId`, `resultId`, `correctedBy`, `ruleVersion`, resposta, gabarito, fonte e
+qualquer metadado editorial ficam fora do envelope. A web trata `not_found` como
+estado público de espera, sem converter a ausência em erro de convite ou
+inventar resultado no cliente.
+
 O endpoint administrativo de convite existe para operação interna e não envia e-mail nem chama fornecedor externo. A entrega do token é uma ação interna controlada; a tabela guarda somente `SHA-256(token)`. Aceite, ativação da conta, consumo do convite e criação da sessão são uma transação PostgreSQL. Falhas de convite usam resposta uniforme `not_found` para não permitir enumeração.
 
 A recuperação controlada segue a mesma fronteira semântica, mas não ativa contas:

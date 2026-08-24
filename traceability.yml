@@ -3332,6 +3332,66 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "RESULT-FEEDBACK-046"
+    requirements:
+      [
+        "PRD-RF-028",
+        "PRD-RF-070",
+        "PRD-UC-002",
+        "SPEC-0107",
+        "SPEC-0114",
+        "SPEC-0118",
+        "JOURNEY-09-01",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0525_result_feedback_participant_audit.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "apps/web/app/page.tsx",
+        "apps/web/app/globals.css",
+        "apps/api/src/http.ts",
+        "packages/application/src/feedback-use-cases.ts",
+        "packages/contracts/src/correction.ts",
+      ]
+    tests:
+      [
+        "tests/e2e/participant-access.spec.ts",
+        "apps/api/src/http.test.ts",
+        "packages/contracts/src/correction.test.ts",
+      ]
+    commit: "d60e48597fea4a3cc6d92cecd6881415091e1884"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0525_result_feedback_participant_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: persisted correction and unavailable-feedback E2E scenarios failed before correction-panel existed",
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:integration",
+        "pnpm test:e2e",
+        "pnpm verify:traceability",
+        "pnpm verify:documentation",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

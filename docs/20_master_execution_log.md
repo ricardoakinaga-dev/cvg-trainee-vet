@@ -6279,3 +6279,100 @@ READY_FOR_NEXT_STEP
 Abrir `RESULT-FEEDBACK-046` pelo RED E2E de tentativa corrigida e feedback
 indisponível, preservando o limite de não publicar gabarito, fonte ou claim
 clínico.
+
+## 2026-08-24 — RESULT-FEEDBACK-046: abertura do slice de feedback digital
+
+### TIMESTAMP
+
+2026-08-24 05:26:51 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / ciclo de aprendizagem — RESULT-FEEDBACK-046 / AUD-P1-003
+
+### TASK
+
+RESULT-FEEDBACK-2026-08-24-A — exibir somente o feedback da correção digital
+persistida e o estado de espera na superfície do participante.
+
+### ACTION
+
+O backend já possui `GET /api/v1/attempts/:attemptId/feedback`, autorização do
+dono, RLS contextual e projeção sem identidade interna. A lacuna está na web:
+`AttemptProjection` não carrega a correção, a restauração consulta apenas
+appeals e a submissão termina sem mostrar resultado ou estado de espera. O
+escopo foi congelado em estado separado de feedback, consulta após tentativa
+corrigida, tratamento bounded de `not_found` e cartão de resultado digital;
+feedback de produto, appeals, remediação e retenção permanecem separados.
+
+### RESULT
+
+RED ainda não executado nesta abertura. Não houve alteração de código de
+produto; runtime, backlog e log mudaram para `IN_PROGRESS`. Nenhum gabarito,
+fonte, corretor, resultId, dado real, segredo, push ou deploy será adicionado.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever o E2E RED com tentativa corrigida, feedback público redigido e uma
+segunda variação sem feedback para provar estado “aguardando correção”; depois
+implementar a leitura/estado na página participante.
+
+## 2026-08-24 — RESULT-FEEDBACK-046: RED/GREEN e fechamento documental
+
+### TIMESTAMP
+
+2026-08-24 05:42:53 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / ciclo de aprendizagem — RESULT-FEEDBACK-046 / AUD-P1-003
+
+### TASK
+
+RESULT-FEEDBACK-2026-08-24-B — apresentar somente o feedback de correção
+digital persistida e o estado de espera na superfície participante.
+
+### ACTION
+
+O RED foi executado com dois cenários Playwright: resultado digital persistido
+sem campos internos e tentativa submetida sem feedback disponível. Ambos
+falharam porque `correction-panel` não existia. A implementação GREEN adicionou
+parser client-side allowlisted/plain-text, estado separado de correção,
+consulta ao endpoint público existente, espera bounded para `not_found`, erro
+com retry, score/outcome/feedback e reutilização de `nextAction` server-side.
+Também foram atualizados auditoria `0525`, SPEC 0107/0114/0118, backlog,
+plano e manifesto.
+
+### RESULT
+
+O foco de correção/restauração passou 3/3; a suíte participante passou 13/13;
+build web, lint e typecheck passaram. A cobertura/verificação local registrada
+permanece em 125 arquivos/572 testes, 29 skips, 84,51% statements/80,33%
+branches/86,03% functions/85,23% lines. O endpoint continua owner-scoped e
+redigido; não foram adicionados gabarito, fonte, identidade interna, novo
+endpoint, migration, push ou deploy.
+
+### STATUS
+
+IN_PROGRESS — falta fechar verificação completa, commit intencional, release
+traceability local e atualização final do runtime state.
+
+### NEXT
+
+Reconstruir e executar build/E2E/integration/audit/traceability release, revisar
+o diff e registrar `READY_FOR_NEXT_STEP`. A próxima fatia candidata é a prova
+assignment→atividade com provenance/atomicidade quando o ambiente live e a
+autoridade correspondente estiverem disponíveis; release/100% continuam
+bloqueados pelos gaps explícitos.

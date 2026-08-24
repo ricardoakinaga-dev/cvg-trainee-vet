@@ -13,6 +13,7 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
+**Atualização operacional 2026-08-24 (RESULT-FEEDBACK-046):** a web agora consulta o endpoint público de feedback da tentativa corrigida, exibe score/outcome/feedback e reutiliza a próxima ação server-side; `not_found` fica em estado bounded “ainda não disponível”. RED/GREEN focal, build web, lint/typecheck, cobertura, E2E participante 13/13 e gates estáticos passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade/proveniência/atomicidade, live RLS, debrief/remediação/retenção completos, gates clínicos e assurance operacional continuam pendentes.
 
 ## P0 — CRÍTICO
 
@@ -626,12 +627,17 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 3–5 / ciclo de aprendizagem
 - risco: alto — resultado, feedback ou próxima ação incorretos podem induzir aprendizagem insegura; a fronteira pública não pode vazar regra, corretor, gabarito ou fonte
 - impacto: alto
-- status: READY_FOR_NEXT_STEP
+- status: COMPLETED_WITH_GAPS
 - critério de pronto: RED E2E; GET de feedback permanece owner-scoped e strict, `not_found` vira estado público “ainda não disponível”, resultado/feedback/next action são renderizados sem identidade interna, tentativa corrigida é restaurada após atualização e `pnpm verify`, E2E, exposição e diff-check passam
 - escopo: somente a projeção de correção digital já persistida, estados de espera/erro/retry e debrief/reflexão já modelados; nenhuma correção nova é inventada no browser
 - fora desta fatia: autocorreção, IA geradora, alteração de nota/gabarito, decisão de appeal, remediação/retensão automáticas, prática clínica, publicação, provider/MFA, live RLS, grants produtivos, piloto e release
 - controles obrigatórios: `attemptId` só vem da tentativa restaurada na jornada; API continua autorizando o dono; não renderizar `participantId`, `scopeId`, `correctedBy`, `ruleVersion`, gabarito, fonte ou claim prático
-- próxima ação: escrever RED para tentativa corrigida e feedback ainda não disponível, depois implementar consulta/estado na superfície participante
+- evidência: `BRIEFING/04.AUDIT/0525_result_feedback_participant_audit.md`; `traceability.yml` / `RESULT-FEEDBACK-046`; SPEC 0107/0114/0118
+- código: `apps/web/app/page.tsx`; `apps/web/app/globals.css`; endpoint existente em `apps/api/src/http.ts`
+- testes: `tests/e2e/participant-access.spec.ts` (feedback corrigido, espera, restauração e submissão); `apps/api/src/http.test.ts` (owner/redaction existente); `packages/contracts/src/correction.test.ts`
+- resultado: RED observado antes do cartão; parser client-side allowlisted e plain-text, consulta após restauração/submissão corrigida, espera bounded para `not_found`, erro/retry e próxima ação server-side implementados; 3/3 E2E focal e 13/13 E2E participante passaram; `pnpm verify` manteve 125/572/29 skips e cobertura 84,51%/80,33%/86,03%/85,23%
+- gaps explícitos: assignment→atividade publicada/proveniência/atomicidade, live RLS e concorrência, debrief/reflexão completa, remediação/retensão/notificações, grants produtivos, observabilidade externa, publicação clínica, piloto e release continuam pendentes
+- próxima ação: priorizar a relação assignment→atividade e sua proveniência/atomicidade quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis; manter o feedback digital limitado à projeção já persistida
 
 ### STAFF-DIAGNOSTIC-PROFILE-024 — Baseline formativa no acompanhamento gerencial
 

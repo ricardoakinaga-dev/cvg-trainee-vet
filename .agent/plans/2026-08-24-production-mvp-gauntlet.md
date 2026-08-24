@@ -37,6 +37,12 @@ a aprovação clínica, piloto ou release produtivo.
   RED E2E, contrato relacional, aplicação/API, cobertura, build, integração
   configurada e 24/24 E2E passaram; live RLS e a relação real
   assignment→atividade continuam gaps.
+- [x] (2026-08-24T05:39:00-03:00) Fechar `RESULT-FEEDBACK-046`: consultar a
+  correção digital persistida na web, exibir score/outcome/feedback e a
+  próxima ação server-side, e representar `not_found` como espera bounded.
+  O RED dos dois novos cenários foi observado antes do cartão; GREEN focal,
+  build web, lint/typecheck, cobertura e 13/13 E2E da superfície participante
+  passaram. O endpoint e o contrato público existentes foram preservados.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
@@ -91,6 +97,15 @@ a aprovação clínica, piloto ou release produtivo.
   Impact: `JOURNEY-045` fecha apenas a CTA para um alvo já autorizado na
   projeção; a transição diagnóstico → assignment → atividade real continua
   gap P1 e não pode ser declarada como jornada completa.
+
+- Observation: o endpoint de feedback da tentativa já era owner-scoped e
+  redigido, mas a web restaurava somente appeals e terminava a submissão sem
+  apresentar correção digital ou espera.
+  Evidence: `apps/api/src/http.ts`, `packages/contracts/src/correction.ts`,
+  `apps/web/app/page.tsx`, RED E2E de `RESULT-FEEDBACK-046`.
+  Impact: o participante podia receber uma tentativa corrigida sem debrief
+  mínimo; a lacuna foi fechada apenas na projeção digital, sem alterar nota,
+  gabarito, decisão humana ou competência prática.
 
 ## Decision Log
 
@@ -169,16 +184,29 @@ a aprovação clínica, piloto ou release produtivo.
   atomicidade e feedback/debrief continuam tarefas separadas.
   Date/Author: 2026-08-24 / Codex, após crítica independente.
 
+- Decision: implementar `RESULT-FEEDBACK-046` como uma projeção web sobre o
+  endpoint público existente, com estados separados de correção e sem novo
+  domínio, migration ou endpoint.
+  Context: o backend já autorizava o dono e removia identidade interna, mas a
+  página não mostrava resultado persistido nem ausência bounded.
+  Reason: reduz o blast radius, preserva PostgreSQL/API como autoridade e
+  materializa o mínimo de feedback/debrief observável sem inventar conteúdo.
+  Consequences: score/outcome/feedback e next action ficam visíveis somente
+  quando o contrato público é válido; `not_found` vira espera/retry, enquanto
+  debrief completo, remediação, retenção e a relação assignment→atividade
+  continuam fora do slice.
+  Date/Author: 2026-08-24 / Codex.
+
 ## Outcomes & Retrospective
 
 O Milestone 2 foi concluído no recorte local: a recomendação diagnóstica agora
 vira estado persistido e acionável sem confiar identidade ou disponibilidade no
-cliente, e a jornada agora recebe um alvo server-side para a próxima atividade
-quando essa atividade já está autorizada e projetada. A cobertura global
-permaneceu acima da barra; a integração live continua uma dependência real, não
-uma simulação. A principal lição foi separar claramente `PASS LOCAL` de
-`RELEASE BLOCKED`, não inferir relações de catálogo pelo slug e deixar
-feedback/debrief como a próxima fatia pedagógica.
+cliente, a jornada recebe um alvo server-side para a próxima atividade já
+autorizada e a tela apresenta o mínimo de feedback digital persistido. A
+cobertura global permaneceu acima da barra; a integração live continua uma
+dependência real, não uma simulação. A principal lição foi separar claramente
+`PASS LOCAL` de `RELEASE BLOCKED`, não inferir relações de catálogo pelo slug e
+tratar feedback digital como projeção assistiva, não como decisão clínica.
 
 ## Context and Orientation
 
@@ -406,5 +434,7 @@ document recovery, HEAD/remote inspection and official research refresh. Three
 scouts independently confirmed that diagnostic completion does not materialize
 assignments; one also identified that local release assurance remains blocked
 by live grants/RLS, worker fencing, external observability and same-SHA CI.
-`ADAPTIVE-044` is now the selected bounded implementation task; no release or
-clinical approval is inferred.
+`ADAPTIVE-044`, `JOURNEY-045` and `RESULT-FEEDBACK-046` are now closed with
+gaps; no release or clinical approval is inferred. The next local priority is
+the assignment→activity relation/provenance/atomicity proof when live database
+authority is available.

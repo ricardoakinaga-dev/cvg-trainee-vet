@@ -21,6 +21,14 @@ Toda rota possui estados explícitos de `loading`, `ready`, `empty`, `error`, `f
 
 O web nunca calcula nota oficial, autorização, transição, próxima ação ou estado clínico. Ele mostra a projeção da API e invalida/refaz query após mutação confirmada. Na jornada participante, uma CTA de atividade só aparece para o `nextActionTarget` server-side já contido na projeção autorizada; a seleção mantém a sessão, codifica `activityId` no query string e não transforma o deep link em autorização.
 
+Na tentativa corrigida, a web consulta o endpoint público existente de feedback
+e mantém um estado separado para `loading`, resultado disponível, ausência
+`not_found`, erro e retry. O cartão renderiza somente score, outcome, feedback
+plain text e a `nextAction` já recebida do servidor. Para tentativa submetida ou
+aguardando revisão humana sem resultado, mostra “A correção digital ainda não
+está disponível.”; não calcula nota, não expõe `resultId`, `correctedBy`,
+`ruleVersion`, gabarito, fonte ou resposta.
+
 ## 4. Acessibilidade e segurança de conteúdo
 
 - WCAG 2.2 AA: teclado, foco visível, labels, contraste, semântica, live regions e mensagens de erro associadas;
@@ -29,6 +37,7 @@ O web nunca calcula nota oficial, autorização, transição, próxima ação ou
 - não renderizar Markdown/HTML produzido por IA sem sanitização e aprovação;
 - telas de participante não contêm fonte, autor, obra, capítulo, página, PDF, foto, tabela, link de terceiro, prompt, gabarito ou metadado interno;
 - erros exibidos são amigáveis; detalhes técnicos aparecem somente em `request_id` e suporte interno autorizado.
+- o resultado digital inclui disclaimer de evidência formativa e não sugere competência prática, autonomia clínica ou autorização de procedimento;
 
 ## 5. Verificações do web
 
@@ -41,7 +50,12 @@ O web nunca calcula nota oficial, autorização, transição, próxima ação ou
 
 ## 6. Implementação verificada no BUILD F3-S4 e item 9
 
-`apps/web` já possui uma superfície inicial de participante para aceite de convite, leitura de atividade atribuída, início de tentativa, salvamento de resposta e submissão. A página consome somente envelopes públicos da API, mantém a sessão em cookie e não modela fonte, foto, PDF, OCR, prompt, gabarito ou identificadores internos proibidos.
+`apps/web` já possui uma superfície inicial de participante para aceite de convite, leitura de atividade atribuída, início de tentativa, salvamento de resposta, submissão e leitura do feedback de correção digital persistido. A página consome somente envelopes públicos da API, mantém a sessão em cookie e não modela fonte, foto, PDF, OCR, prompt, gabarito ou identificadores internos proibidos.
+
+O E2E participante cobre o cartão de resultado corrigido, a restauração da
+tentativa e o estado bounded quando o feedback ainda não existe. O endpoint
+continua sendo a autoridade para o resultado; a UI apenas projeta o contrato e
+reutiliza a próxima ação server-side.
 
 Na superfície interna de operações, a seção de participação digital consome o
 relatório escopado de `UC-016`, permite filtrar módulo e status da conta por

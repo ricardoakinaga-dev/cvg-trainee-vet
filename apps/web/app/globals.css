@@ -998,6 +998,35 @@ textarea {
   margin: 0.7rem 0;
 }
 
+.correction-panel {
+  border-color: rgba(14, 76, 59, 0.28);
+}
+
+.correction-summary {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0 0.25rem;
+}
+
+.correction-score {
+  color: var(--green-dark);
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.correction-summary span {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.correction-next-action {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+
 .item-meta {
   color: var(--green);
   font-size: 0.74rem;

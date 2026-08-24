@@ -764,6 +764,25 @@ test.describe("participant access and learning projection", () => {
         });
       },
     );
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/feedback`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+              attemptVersion: 3,
+              resultVersion: 1,
+              score: 82,
+              outcome: "APROVADO",
+              feedback: "Feedback formativo próprio.",
+            }),
+          ),
+        });
+      },
+    );
 
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
@@ -868,6 +887,26 @@ test.describe("participant access and learning projection", () => {
         ),
       });
     });
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/feedback`,
+      async (route) => {
+        expect(route.request().method()).toBe("GET");
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+              attemptVersion: 3,
+              resultVersion: 1,
+              score: 82,
+              outcome: "APROVADO",
+              feedback: "Feedback formativo próprio.",
+            }),
+          ),
+        });
+      },
+    );
 
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
@@ -875,6 +914,227 @@ test.describe("participant access and learning projection", () => {
 
     await expect(page.getByTestId("appeals-panel")).toBeVisible();
     await expect(page.getByTestId("appeals-panel")).toContainText("Recebida");
+  });
+
+  test("shows persisted digital correction feedback without internal fields", async ({
+    page,
+  }) => {
+    await page.unroute("**/api/v1/learning-path");
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "emergencia-v1",
+                title: "Emergência",
+                status: "CONCLUIDO",
+                attemptId,
+                attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+                attemptVersion: 3,
+                nextAction: "REVISAR_PROXIMO_CONTEUDO",
+              },
+            ],
+            results: [],
+            runtimes: [],
+            nextAction: "REVISAR_PROXIMO_CONTEUDO",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/appeals*", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ appeals: [] })),
+      });
+    });
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/feedback`,
+      async (route) => {
+        expect(route.request().method()).toBe("GET");
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+              attemptVersion: 3,
+              resultVersion: 1,
+              score: 82,
+              outcome: "APROVADO",
+              feedback: "Feedback formativo próprio.",
+            }),
+          ),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(page.getByTestId("correction-panel")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Resultado digital" }),
+    ).toBeVisible();
+    await expect(page.getByText("82%", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Feedback formativo próprio.", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByTestId("correction-panel")
+        .getByText("Revisar próximo conteúdo"),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("participantId");
+    await expect(page.locator("body")).not.toContainText("scopeId");
+    await expect(page.locator("body")).not.toContainText("resultId");
+    await expect(page.locator("body")).not.toContainText("correctedBy");
+    await expect(page.locator("body")).not.toContainText("ruleVersion");
+  });
+
+  test("shows a bounded waiting state when digital correction is unavailable", async ({
+    page,
+  }) => {
+    await page.unroute("**/api/v1/learning-path");
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "emergencia-v1",
+                title: "Emergência",
+                status: "CONCLUIDO",
+                attemptId,
+                attemptStatus: "SUBMETIDA",
+                attemptVersion: 3,
+                nextAction: "AGUARDAR_CORRECAO",
+              },
+            ],
+            results: [],
+            runtimes: [],
+            nextAction: "AGUARDAR_CORRECAO",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/appeals*", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ appeals: [] })),
+      });
+    });
+    let feedbackReads = 0;
+    await page.route(
+      `**/api/v1/attempts/${attemptId}/feedback`,
+      async (route) => {
+        if (feedbackReads === 0) {
+          feedbackReads += 1;
+          await route.fulfill({
+            status: 503,
+            contentType: "application/json",
+            body: JSON.stringify({
+              success: false,
+              error: {
+                code: "internal_error",
+                message: "Falha temporária.",
+                details: [],
+              },
+              meta: { request_id: "e2e-request" },
+            }),
+          });
+          return;
+        }
+        await route.fulfill({
+          status: 404,
+          contentType: "application/json",
+          body: JSON.stringify({
+            success: false,
+            error: {
+              code: "not_found",
+              message: "O recurso solicitado não foi encontrado.",
+              details: [],
+            },
+            meta: { request_id: "e2e-request" },
+          }),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(page.getByTestId("correction-panel")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Resultado digital indisponível" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Tentar consultar resultado" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Resultado em processamento" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("A correção digital ainda não está disponível.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("resultId");
+    await expect(page.locator("body")).not.toContainText("correctedBy");
   });
 
   test("resumes a digital reflection from its persisted participant projection", async ({

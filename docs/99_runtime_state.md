@@ -10,20 +10,20 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: RESULT-FEEDBACK-046 / AUD-P1-003 — feedback digital e debrief bounded
-- current_task: RESULT-FEEDBACK-2026-08-24-A — selecionar e escrever RED para feedback de tentativa corrigida
+- current_task: RESULT-FEEDBACK-2026-08-24-B — fechar auditoria, rastreabilidade e regressão final
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `JOURNEY-045` foi implementado em TDD: o caso de uso calcula `nextActionTarget` server-side somente para `INICIAR_ATIVIDADE`/`RETOMAR_ATIVIDADE`, o contrato strict confirma que o alvo pertence à própria lista de atividades, a API projeta somente o alvo allowlisted e a web mantém a sessão, codifica `?activityId`, carrega a atividade e restaura tentativa/appeal sem aceitar `participantId`/`scopeId`. Auditoria `0524`, SPEC, backlog, log, plano e manifesto foram atualizados; `pnpm verify` passou com 125 arquivos/572 testes, 29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, contratos 26/72, worker 4/25 e migrations 26/26; build 12 workspaces, E2E 24/24, integração configurada 8/20 com 27 arquivos/29 testes skipped, traceability/documentation/product/exposure/architecture/secrets e `git diff --check` passaram
-- next_action: abrir `RESULT-FEEDBACK-046`, escrever RED E2E para tentativa corrigida e feedback ainda não disponível, depois implementar a consulta pública existente com estados de espera/erro/retry. Quando `CVG_TEST_DATABASE_URL` estiver disponível, executar as provas live PostgreSQL/RLS de `ADAPTIVE-044` e da cadeia assignment→atividade; não declarar release/100% enquanto gaps de relação/provenance/atomicidade, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: `RESULT-FEEDBACK-046` passou por RED/GREEN: a web consulta o feedback de correção digital já persistido, exibe score/outcome/feedback plain text e a próxima ação server-side, e mostra espera bounded quando `not_found`; não houve novo endpoint, migration, domínio, gabarito ou claim clínico. Foco 3/3 E2E, superfície participante 13/13, build web, lint e typecheck passaram; `pnpm verify` manteve 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; auditoria `0525`, SPEC, backlog, plano e manifesto estão em fechamento
+- next_action: concluir verificação final após atualizar o manifesto para o commit intencional, executar build/E2E/integration/audit/traceability release, revisar diff e registrar o estado como `READY_FOR_NEXT_STEP`; próxima fatia candidata é provar assignment→atividade com provenance/atomicidade quando `CVG_TEST_DATABASE_URL` e autoridade de ambiente estiverem disponíveis. Não declarar release/100% enquanto gaps de relação, live RLS, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para as provas live do agregado, `ADAPTIVE-044` e cadeia assignment→atividade; JOURNEY-REL-001 — `learning_assignments` e `activity_assignments` ainda não têm prova de resolução/provenance/atomicidade end-to-end; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `RESULT-FEEDBACK-046` e `FEEDBACK-043`/`APPEAL-042` permanecem fora do recorte implementado. Esses bloqueios não impedem a próxima fatia local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para as provas live do agregado, `ADAPTIVE-044` e cadeia assignment→atividade; JOURNEY-REL-001 — `learning_assignments` e `activity_assignments` ainda não têm prova de resolução/provenance/atomicidade end-to-end; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a próxima fatia local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T05:22:30-03:00
+- last_update: 2026-08-24T05:42:53-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `d60e48597fea4a3cc6d92cecd6881415091e1884`
+- head: `b69e588c9773d2f37f2fd50335262b7fe309e979`
 - origin: `fbbc692` (`origin/main`), local `main` ahead 43 commits
-- worktree: limpo após o commit de implementação `d60e485` e a consolidação documental `df84ab2`; não há push/deploy
+- worktree: mudanças locais em andamento para fechar `RESULT-FEEDBACK-046`; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-045` PASS LOCAL; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build, E2E 24/24, integração configurada 8/20 +27/29 skips, traceability/documentation/product/exposure/architecture/secrets e diff-check PASS; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
+- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL focal/participante; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build web, lint, typecheck e E2E participante 13/13 passaram; a rodada final de build completo, integração, audit de dependências, traceability release e diff limpo ainda está pendente; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
 ## REGRAS DE USO
 
