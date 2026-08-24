@@ -196,7 +196,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             payload: { operation: "lease-fencing" },
           }),
           availableAt: now,
-          createdAt: now,
+          createdAt: new Date("1970-01-01T00:00:00.000Z"),
         });
 
         const repository = createOutboxRepository(database.db);
@@ -283,7 +283,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             payload: { operation: "lease-failure-fencing" },
           }),
           availableAt: now,
-          createdAt: now,
+          createdAt: new Date("1970-01-01T00:00:00.000Z"),
         });
 
         const repository = createOutboxRepository(database.db);

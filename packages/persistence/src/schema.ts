@@ -347,6 +347,7 @@ export const learningActivities = pgTable(
     scopeId: uuid("scope_id").notNull(),
     slug: text("slug").notNull().unique(),
     moduleId: text("module_id"),
+    sessionId: text("session_id"),
     title: text("title").notNull().default("Atividade"),
     status: text("status").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -363,9 +364,22 @@ export const learningActivities = pgTable(
       table.moduleId,
       table.status,
     ),
+    uniqueIndex("learning_activities_scope_module_session_idx").on(
+      table.scopeId,
+      table.moduleId,
+      table.sessionId,
+    ),
     check(
       "learning_activities_module_id_check",
       sql`${table.moduleId} is null or ${table.moduleId} ~ '^M(0[1-9]|1[0-9]|2[0-4])$'`,
+    ),
+    check(
+      "learning_activities_session_id_check",
+      sql`${table.sessionId} is null or length(trim(${table.sessionId})) > 0`,
+    ),
+    check(
+      "learning_activities_session_module_check",
+      sql`${table.sessionId} is null or ${table.moduleId} is null or ${table.sessionId} ~ ('^' || ${table.moduleId} || '-S[1-4]$')`,
     ),
     check(
       "learning_activities_status_check",

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -15,7 +15,10 @@ import {
   createAuthoringRepository,
   createContentRepository,
   createContentUseCaseDependencies,
+  learningActivities,
+  learningActivityItems,
   outboxEvents,
+  setDatabaseSecurityContext,
 } from "../../packages/persistence/src/index.js";
 import {
   closeLivePostgresHarness,
@@ -48,7 +51,12 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const contentId = randomUUID();
       const contentVersionId = randomUUID();
       const editorialRecordId = randomUUID();
+      const secondContentId = randomUUID();
+      const secondContentVersionId = randomUUID();
+      const secondEditorialRecordId = randomUUID();
       const scopeId = randomUUID();
+      const foreignScopeId = randomUUID();
+      const foreignActivityId = randomUUID();
       const requestId = randomUUID();
       const bankItem = {
         title: "Prioridade sintética",
@@ -81,6 +89,18 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
             { id: "b", label: "B", text: "Aguardar sem meta." },
           ],
           selectionMode: "SINGLE" as const,
+        },
+      };
+      const secondBankItem = {
+        ...bankItem,
+        title: "Reavaliação sintética",
+        prompt: "Escolha a meta de reavaliação em um caso fictício.",
+        participant: {
+          ...bankItem.participant,
+          id: secondContentId,
+          ordinal: 2,
+          title: "Reavaliação sintética",
+          prompt: "Escolha a meta de reavaliação em um caso fictício.",
         },
       };
       const preflight = {
@@ -199,6 +219,43 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           },
           contentDependencies,
         );
+        await admin.db
+          .update(contentEditorialRecords)
+          .set({ moduleId: "M99" })
+          .where(eq(contentEditorialRecords.id, editorialRecordId));
+        await expect(
+          advanceContent(
+            {
+              principalId: reviewerId,
+              accountStatus: "ACTIVE",
+              roles: ["CLINICAL_APPROVER"],
+              scopes: [scopeId],
+              approvedClinicalApproverId: reviewerId,
+              contentId,
+              version: 1,
+              scopeId,
+              event: "PUBLICAR",
+              correlationId: randomUUID(),
+            },
+            contentDependencies,
+          ),
+        ).rejects.toBeDefined();
+        await expect(
+          admin.db
+            .select({ status: contentVersions.status })
+            .from(contentVersions)
+            .where(eq(contentVersions.id, contentVersionId)),
+        ).resolves.toEqual([{ status: "AUTORIZADO_PARA_PUBLICACAO" }]);
+        await expect(
+          admin.db
+            .select({ id: learningActivities.id })
+            .from(learningActivities)
+            .where(eq(learningActivities.scopeId, scopeId)),
+        ).resolves.toHaveLength(0);
+        await admin.db
+          .update(contentEditorialRecords)
+          .set({ moduleId: "M02" })
+          .where(eq(contentEditorialRecords.id, editorialRecordId));
         const published = await advanceContent(
           {
             principalId: reviewerId,
@@ -215,6 +272,209 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           contentDependencies,
         );
         expect(published.status).toBe("PUBLICADO");
+
+        const publishedActivities = await admin.db
+          .select({
+            id: learningActivities.id,
+            scopeId: learningActivities.scopeId,
+            moduleId: learningActivities.moduleId,
+            sessionId: learningActivities.sessionId,
+            status: learningActivities.status,
+          })
+          .from(learningActivities)
+          .where(
+            and(
+              eq(learningActivities.scopeId, scopeId),
+              eq(learningActivities.moduleId, "M02"),
+              eq(learningActivities.sessionId, "M02-S1"),
+            ),
+          );
+        expect(publishedActivities).toHaveLength(1);
+        const publishedActivity = publishedActivities[0];
+        if (publishedActivity === undefined) {
+          throw new Error("published authoring activity is required");
+        }
+        expect(publishedActivity).toMatchObject({
+          scopeId,
+          moduleId: "M02",
+          sessionId: "M02-S1",
+          status: "PUBLISHED",
+        });
+        await expect(
+          admin.db
+            .select({
+              contentVersionId: learningActivityItems.contentVersionId,
+              ordinal: learningActivityItems.ordinal,
+            })
+            .from(learningActivityItems)
+            .where(eq(learningActivityItems.activityId, publishedActivity.id)),
+        ).resolves.toEqual([{ contentVersionId, ordinal: 1 }]);
+
+        await database.db.transaction(async (transaction) => {
+          await setDatabaseSecurityContext(transaction, { scopeId });
+          const contentRepository = createContentRepository(
+            transaction as unknown as Parameters<
+              typeof createContentRepository
+            >[0],
+          );
+          await contentRepository.save(
+            {
+              contentId,
+              version: 1,
+              scopeId,
+              status: "PUBLICADO",
+            },
+            {
+              contentId,
+              version: 1,
+              scopeId,
+              status: "PUBLICADO",
+            },
+          );
+        });
+        await expect(
+          admin.db
+            .select({ id: learningActivities.id })
+            .from(learningActivities)
+            .where(
+              and(
+                eq(learningActivities.scopeId, scopeId),
+                eq(learningActivities.moduleId, "M02"),
+                eq(learningActivities.sessionId, "M02-S1"),
+              ),
+            ),
+        ).resolves.toHaveLength(1);
+
+        await admin.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.activityId, publishedActivity.id));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, publishedActivity.id));
+
+        await admin.db.insert(contentVersions).values({
+          id: secondContentVersionId,
+          contentId: secondContentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: secondBankItem.title,
+          participantText: secondBankItem.prompt,
+          responseMode: "CHOICE",
+          participantOptions: secondBankItem.participant.choices,
+          participantSelectionMode: "SINGLE",
+        });
+        await admin.db.insert(contentEditorialRecords).values({
+          id: secondEditorialRecordId,
+          contentVersionId: secondContentVersionId,
+          contentId: secondContentId,
+          scopeId,
+          version: 1,
+          moduleId: "M02",
+          sessionId: "M02-S1",
+          objectiveId: "M02-OBJ-01",
+          authorId,
+          item: secondBankItem,
+          preflight,
+        });
+
+        await admin.db.insert(learningActivities).values({
+          id: foreignActivityId,
+          scopeId: foreignScopeId,
+          slug: `foreign-authoring-${foreignActivityId}`,
+          moduleId: "M02",
+          sessionId: "M02-S1",
+          title: "Atividade de outro escopo",
+          status: "PUBLISHED",
+        });
+        await expect(
+          database.db.transaction(async (transaction) => {
+            await setDatabaseSecurityContext(transaction, { scopeId });
+            const visibleForeignActivity = await transaction
+              .select({ id: learningActivities.id })
+              .from(learningActivities)
+              .where(eq(learningActivities.id, foreignActivityId));
+            expect(visibleForeignActivity).toEqual([]);
+          }),
+        ).resolves.toBeUndefined();
+        await expect(
+          database.db.transaction(async (transaction) => {
+            await setDatabaseSecurityContext(transaction, { scopeId });
+            await transaction.insert(learningActivities).values({
+              id: randomUUID(),
+              scopeId: foreignScopeId,
+              slug: `rejected-authoring-${randomUUID()}`,
+              moduleId: "M02",
+              sessionId: "M02-S1",
+              title: "Escrita fora do escopo",
+              status: "PUBLISHED",
+            });
+          }),
+        ).rejects.toBeDefined();
+
+        const savePublishedVersion = (publishedContentId: string) =>
+          database.db.transaction(async (transaction) => {
+            await setDatabaseSecurityContext(transaction, { scopeId });
+            const contentRepository = createContentRepository(
+              transaction as unknown as Parameters<
+                typeof createContentRepository
+              >[0],
+            );
+            await contentRepository.save(
+              {
+                contentId: publishedContentId,
+                version: 1,
+                scopeId,
+                status: "PUBLICADO",
+              },
+              {
+                contentId: publishedContentId,
+                version: 1,
+                scopeId,
+                status: "PUBLICADO",
+              },
+            );
+          });
+        await Promise.all([
+          savePublishedVersion(contentId),
+          savePublishedVersion(secondContentId),
+        ]);
+
+        const concurrentActivities = await admin.db
+          .select({
+            id: learningActivities.id,
+            moduleId: learningActivities.moduleId,
+            sessionId: learningActivities.sessionId,
+            status: learningActivities.status,
+          })
+          .from(learningActivities)
+          .where(
+            and(
+              eq(learningActivities.scopeId, scopeId),
+              eq(learningActivities.moduleId, "M02"),
+              eq(learningActivities.sessionId, "M02-S1"),
+            ),
+          );
+        expect(concurrentActivities).toHaveLength(1);
+        const concurrentActivity = concurrentActivities[0];
+        if (concurrentActivity === undefined) {
+          throw new Error("concurrent authoring activity is required");
+        }
+        expect(concurrentActivity.status).toBe("PUBLISHED");
+        await expect(
+          admin.db
+            .select({
+              contentVersionId: learningActivityItems.contentVersionId,
+              ordinal: learningActivityItems.ordinal,
+            })
+            .from(learningActivityItems)
+            .where(eq(learningActivityItems.activityId, concurrentActivity.id))
+            .orderBy(asc(learningActivityItems.ordinal)),
+        ).resolves.toEqual([
+          { contentVersionId, ordinal: 1 },
+          { contentVersionId: secondContentVersionId, ordinal: 2 },
+        ]);
 
         const reviews = await admin.db
           .select({ decision: contentReviewDecisions.decision })
@@ -233,6 +493,27 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await admin.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
+        const activities = await admin.db
+          .select({ id: learningActivities.id })
+          .from(learningActivities)
+          .where(
+            and(
+              eq(learningActivities.scopeId, scopeId),
+              eq(learningActivities.moduleId, "M02"),
+              eq(learningActivities.sessionId, "M02-S1"),
+            ),
+          );
+        for (const activity of activities) {
+          await admin.db
+            .delete(learningActivityItems)
+            .where(eq(learningActivityItems.activityId, activity.id));
+          await admin.db
+            .delete(learningActivities)
+            .where(eq(learningActivities.id, activity.id));
+        }
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, foreignActivityId));
         await admin.db
           .delete(contentReviewDecisions)
           .where(eq(contentReviewDecisions.contentId, contentId));
@@ -240,11 +521,22 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));
         await admin.db
+          .delete(contentEditorialRecords)
+          .where(eq(contentEditorialRecords.id, secondEditorialRecordId));
+        await admin.db
           .delete(contentVersions)
           .where(
             and(
               eq(contentVersions.id, contentVersionId),
               eq(contentVersions.contentId, contentId),
+            ),
+          );
+        await admin.db
+          .delete(contentVersions)
+          .where(
+            and(
+              eq(contentVersions.id, secondContentVersionId),
+              eq(contentVersions.contentId, secondContentId),
             ),
           );
         await admin.db.delete(accounts).where(eq(accounts.id, authorId));

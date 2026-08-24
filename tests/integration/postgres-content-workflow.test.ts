@@ -13,6 +13,8 @@ import {
   contentEditorialRecords,
   contentReviewDecisions,
   createContentUseCaseDependencies,
+  learningActivities,
+  learningActivityItems,
   outboxEvents,
 } from "../../packages/persistence/src/index.js";
 import {
@@ -174,6 +176,18 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await admin.db
           .delete(contentReviewDecisions)
           .where(eq(contentReviewDecisions.contentId, contentId));
+        const activities = await admin.db
+          .select({ id: learningActivities.id })
+          .from(learningActivities)
+          .where(eq(learningActivities.scopeId, scopeId));
+        for (const activity of activities) {
+          await admin.db
+            .delete(learningActivityItems)
+            .where(eq(learningActivityItems.activityId, activity.id));
+          await admin.db
+            .delete(learningActivities)
+            .where(eq(learningActivities.id, activity.id));
+        }
         await admin.db
           .delete(contentEditorialRecords)
           .where(eq(contentEditorialRecords.id, editorialRecordId));

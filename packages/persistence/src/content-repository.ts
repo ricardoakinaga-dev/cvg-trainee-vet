@@ -1,4 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { createHash } from "node:crypto";
+
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   ContentRecord,
@@ -18,6 +20,8 @@ import {
   contentEditorialRecords,
   contentReviewDecisions,
   contentVersions,
+  learningActivities,
+  learningActivityItems,
   outboxEvents,
 } from "./schema.js";
 import type * as schema from "./schema.js";
@@ -134,6 +138,289 @@ function publicationGate(
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
+const moduleIdPattern = /^M(0[1-9]|1[0-9]|2[0-4])$/u;
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function authoringActivityOrdinal(item: unknown): number {
+  if (!isRecord(item) || !isRecord(item.participant)) {
+    throw new ContentMappingError("published authoring participant is invalid");
+  }
+  const ordinal = item.participant.ordinal;
+  if (
+    typeof ordinal !== "number" ||
+    !Number.isInteger(ordinal) ||
+    ordinal < 1 ||
+    ordinal > 100
+  ) {
+    throw new ContentMappingError(
+      "published authoring participant ordinal is invalid",
+    );
+  }
+  return ordinal;
+}
+
+function authoringActivitySlug(
+  scopeId: string,
+  moduleId: string,
+  sessionId: string,
+): string {
+  const key = createHash("sha256")
+    .update(`${scopeId}:${moduleId}:${sessionId}`)
+    .digest("hex")
+    .slice(0, 32);
+  return `authoring-${key}`;
+}
+
+async function materializePublishedAuthoringActivity(
+  db: DatabaseExecutor,
+  contentVersionId: string,
+  contentId: string,
+  version: number,
+  scopeId: string,
+): Promise<void> {
+  const editorialRows = await db
+    .select({
+      moduleId: contentEditorialRecords.moduleId,
+      sessionId: contentEditorialRecords.sessionId,
+      editorialContentId: contentEditorialRecords.contentId,
+      editorialVersion: contentEditorialRecords.version,
+      versionContentId: contentVersions.contentId,
+      versionNumber: contentVersions.version,
+      versionScopeId: contentVersions.scopeId,
+    })
+    .from(contentEditorialRecords)
+    .innerJoin(
+      contentVersions,
+      eq(contentEditorialRecords.contentVersionId, contentVersions.id),
+    )
+    .where(
+      and(
+        eq(contentEditorialRecords.contentVersionId, contentVersionId),
+        eq(contentEditorialRecords.scopeId, scopeId),
+      ),
+    )
+    .limit(1);
+  const editorial = editorialRows[0];
+  if (editorial === undefined) {
+    throw new ContentMappingError(
+      "published content requires an authoring record",
+    );
+  }
+  if (
+    editorial.editorialContentId !== contentId ||
+    editorial.editorialVersion !== version ||
+    editorial.versionContentId !== contentId ||
+    editorial.versionNumber !== version ||
+    editorial.versionScopeId !== scopeId
+  ) {
+    throw new ContentMappingError(
+      "published authoring identity does not match content version",
+    );
+  }
+  if (!moduleIdPattern.test(editorial.moduleId)) {
+    throw new ContentMappingError("published authoring moduleId is invalid");
+  }
+  assertNonEmpty(editorial.sessionId, "authoring sessionId");
+  if (
+    !new RegExp(`^${editorial.moduleId}-S[1-4]$`, "u").test(editorial.sessionId)
+  ) {
+    throw new ContentMappingError(
+      "published authoring sessionId does not match moduleId",
+    );
+  }
+
+  const publishedRows = await db
+    .select({
+      contentVersionId: contentEditorialRecords.contentVersionId,
+      editorialContentId: contentEditorialRecords.contentId,
+      editorialVersion: contentEditorialRecords.version,
+      versionContentId: contentVersions.contentId,
+      versionNumber: contentVersions.version,
+      title: contentVersions.title,
+      item: contentEditorialRecords.item,
+    })
+    .from(contentEditorialRecords)
+    .innerJoin(
+      contentVersions,
+      eq(contentEditorialRecords.contentVersionId, contentVersions.id),
+    )
+    .where(
+      and(
+        eq(contentEditorialRecords.scopeId, scopeId),
+        eq(contentEditorialRecords.moduleId, editorial.moduleId),
+        eq(contentEditorialRecords.sessionId, editorial.sessionId),
+        eq(contentVersions.scopeId, scopeId),
+        eq(contentVersions.status, "PUBLICADO"),
+      ),
+    )
+    .orderBy(
+      asc(contentEditorialRecords.createdAt),
+      asc(contentEditorialRecords.id),
+    );
+  if (
+    publishedRows.length === 0 ||
+    !publishedRows.some((row) => row.contentVersionId === contentVersionId)
+  ) {
+    throw new ContentMappingError(
+      "published authoring record is outside its content scope",
+    );
+  }
+
+  const activityRows = publishedRows
+    .map((row) => {
+      if (
+        row.editorialContentId !== row.versionContentId ||
+        row.editorialVersion !== row.versionNumber
+      ) {
+        throw new ContentMappingError(
+          "published authoring row does not match content version",
+        );
+      }
+      return {
+        contentVersionId: row.contentVersionId,
+        title: row.title,
+        ordinal: authoringActivityOrdinal(row.item),
+      };
+    })
+    .sort(
+      (left, right) =>
+        left.ordinal - right.ordinal ||
+        left.contentVersionId.localeCompare(right.contentVersionId),
+    );
+  for (let index = 1; index < activityRows.length; index += 1) {
+    if (activityRows[index - 1]?.ordinal === activityRows[index]?.ordinal) {
+      throw new ContentMappingError(
+        "published authoring session has duplicate ordinals",
+      );
+    }
+  }
+  const title = activityRows[0]?.title;
+  if (title === undefined) {
+    throw new ContentMappingError(
+      "published authoring activity title is missing",
+    );
+  }
+  assertNonEmpty(title, "content title");
+
+  const slug = authoringActivitySlug(
+    scopeId,
+    editorial.moduleId,
+    editorial.sessionId,
+  );
+  await db
+    .insert(learningActivities)
+    .values({
+      scopeId,
+      slug,
+      moduleId: editorial.moduleId,
+      sessionId: editorial.sessionId,
+      title,
+      status: "PUBLISHED",
+    })
+    .onConflictDoNothing({
+      target: [
+        learningActivities.scopeId,
+        learningActivities.moduleId,
+        learningActivities.sessionId,
+      ],
+    });
+
+  const activities = await db
+    .select({
+      id: learningActivities.id,
+      scopeId: learningActivities.scopeId,
+      moduleId: learningActivities.moduleId,
+      sessionId: learningActivities.sessionId,
+      status: learningActivities.status,
+    })
+    .from(learningActivities)
+    .where(
+      and(
+        eq(learningActivities.scopeId, scopeId),
+        eq(learningActivities.moduleId, editorial.moduleId),
+        eq(learningActivities.sessionId, editorial.sessionId),
+      ),
+    )
+    .limit(1);
+  const activity = activities[0];
+  if (
+    activity === undefined ||
+    activity.scopeId !== scopeId ||
+    activity.moduleId !== editorial.moduleId ||
+    activity.sessionId !== editorial.sessionId ||
+    activity.status !== "PUBLISHED"
+  ) {
+    throw new ContentMappingError(
+      "published authoring activity identity is inconsistent",
+    );
+  }
+
+  const existingItems = await db
+    .select({
+      activityId: learningActivityItems.activityId,
+      contentVersionId: learningActivityItems.contentVersionId,
+    })
+    .from(learningActivityItems)
+    .where(
+      inArray(
+        learningActivityItems.contentVersionId,
+        activityRows.map((row) => row.contentVersionId),
+      ),
+    );
+  if (existingItems.some((item) => item.activityId !== activity.id)) {
+    throw new ContentMappingError(
+      "published content is already mapped to another activity",
+    );
+  }
+
+  await db
+    .insert(learningActivityItems)
+    .values(
+      activityRows.map((row) => ({
+        activityId: activity.id,
+        contentVersionId: row.contentVersionId,
+        ordinal: row.ordinal,
+      })),
+    )
+    .onConflictDoNothing({
+      target: [
+        learningActivityItems.activityId,
+        learningActivityItems.contentVersionId,
+      ],
+    });
+
+  const persistedItems = await db
+    .select({
+      contentVersionId: learningActivityItems.contentVersionId,
+      ordinal: learningActivityItems.ordinal,
+    })
+    .from(learningActivityItems)
+    .where(eq(learningActivityItems.activityId, activity.id));
+  const persistedByContentVersion = new Map(
+    persistedItems.map((item) => [item.contentVersionId, item.ordinal]),
+  );
+  if (
+    persistedItems.length !== activityRows.length ||
+    persistedItems.some(
+      (item) =>
+        !activityRows.some(
+          (row) => row.contentVersionId === item.contentVersionId,
+        ),
+    ) ||
+    activityRows.some(
+      (row) =>
+        persistedByContentVersion.get(row.contentVersionId) !== row.ordinal,
+    )
+  ) {
+    throw new ContentMappingError(
+      "published authoring activity items are incomplete or unexpected",
+    );
+  }
+}
+
 export function createContentRepository(
   db: DatabaseExecutor,
 ): ContentRepositoryPort {
@@ -233,6 +520,21 @@ export function createContentRepository(
       if (rows.length === 0) {
         throw new PersistenceConflictError(
           "content version changed concurrently",
+        );
+      }
+      if (next.status === "PUBLICADO") {
+        const contentVersionId = rows[0]?.id;
+        if (contentVersionId === undefined) {
+          throw new ContentMappingError(
+            "published content version identity is missing",
+          );
+        }
+        await materializePublishedAuthoringActivity(
+          db,
+          contentVersionId,
+          next.contentId,
+          next.version,
+          next.scopeId,
         );
       }
     },
