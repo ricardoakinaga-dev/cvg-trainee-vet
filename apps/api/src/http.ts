@@ -1679,6 +1679,15 @@ async function handleCurriculumRuntimeEvaluation(
   ) {
     return errorResponse("forbidden", requestId);
   }
+  if (
+    dependencies.isParticipantInScope === undefined ||
+    !(await dependencies.isParticipantInScope(
+      parsed.data.participantId,
+      parsed.data.scopeId,
+    ))
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
   const command = {
     participantId: parsed.data.participantId,
     scopeId: parsed.data.scopeId,

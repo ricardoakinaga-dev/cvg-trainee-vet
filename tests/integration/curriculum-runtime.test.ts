@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -12,7 +12,10 @@ import {
   createCurriculumRuntimeRepository,
   curriculumRuntimeStates,
 } from "../../packages/persistence/src/index.js";
-import { accounts } from "../../packages/persistence/src/schema.js";
+import {
+  accountInvitations,
+  accounts,
+} from "../../packages/persistence/src/schema.js";
 import {
   closeLivePostgresHarness,
   hasAdministrativeCleanupCapability,
@@ -38,7 +41,10 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const { application: database, admin } = harness;
 
       const participantId = randomUUID();
+      const creatorId = randomUUID();
       const scopeId = randomUUID();
+      const foreignScopeId = randomUUID();
+      const invitationId = randomUUID();
       const repository = createCurriculumRuntimeRepository(database.db);
       const pack = getModuleDraftPack("M03");
       const answers = pack.items
@@ -53,6 +59,21 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           id: participantId,
           professionalEmail: `synthetic-runtime-${participantId}@example.invalid`,
           status: "ACTIVE",
+        });
+        await admin.db.insert(accounts).values({
+          id: creatorId,
+          professionalEmail: `synthetic-runtime-creator-${creatorId}@example.invalid`,
+          status: "ACTIVE",
+        });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: `${randomUUID().replaceAll("-", "")}${randomUUID().replaceAll("-", "")}`,
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-10T05:00:00.000Z"),
+          acceptedAt: new Date("2026-08-10T04:00:00.000Z"),
+          createdBy: creatorId,
         });
 
         const first = await evaluateAndPersistCurriculumModule(
@@ -102,11 +123,29 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         expect(JSON.stringify(read)).not.toMatch(
           /source|chapter|page|pdf|answer_key|rubric_internal/iu,
         );
+        await expect(
+          evaluateAndPersistCurriculumModule(
+            {
+              participantId,
+              scopeId: foreignScopeId,
+              moduleId: "M03",
+              answers,
+              completedAt: "2026-08-12T01:00:00.000Z",
+              mode: "FORMATIVE_CHOICE",
+            },
+            repository,
+          ),
+        ).rejects.toBeDefined();
       } finally {
         await admin.db
           .delete(curriculumRuntimeStates)
           .where(eq(curriculumRuntimeStates.participantId, participantId));
-        await admin.db.delete(accounts).where(eq(accounts.id, participantId));
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
+        await admin.db
+          .delete(accounts)
+          .where(inArray(accounts.id, [participantId, creatorId]));
         await closeLivePostgresHarness(harness);
       }
     });

@@ -2946,6 +2946,36 @@ describe("API HTTP boundary", () => {
     expect(forbidden.status).toBe(403);
   });
 
+  it("rejects curriculum evaluation for a participant outside the requested scope", async () => {
+    const evaluateCurriculumRuntime = vi.fn(async () => curriculumRuntime);
+    const runtimeScope = "22222222-2222-4222-8222-222222222222";
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/internal/curriculum/modules/M03/evaluate",
+        body: {
+          participantId: attempt.participantId,
+          scopeId: runtimeScope,
+          answers: [{ itemId: "M03-S1-Q01", selectedChoiceIds: ["a"] }],
+          completedAt: "2026-08-10T01:00:00.000Z",
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: "99999999-9999-4999-8999-999999999999",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [runtimeScope],
+        }),
+        isParticipantInScope: async () => false,
+        evaluateCurriculumRuntime,
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(evaluateCurriculumRuntime).not.toHaveBeenCalled();
+  });
+
   it("protects learning-state routes by capability, scope, version and public projection", async () => {
     const scopeId = "11111111-1111-4111-8111-111111111111";
     const participantId = "22222222-2222-4222-8222-222222222222";

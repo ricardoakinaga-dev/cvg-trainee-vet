@@ -239,6 +239,13 @@
       "when": 1787551562010,
       "tag": "0033_audit_read_scope_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1787552562010,
+      "tag": "0034_curriculum_runtime_membership_rls",
+      "breakpoints": true
     }
   ]
 }
