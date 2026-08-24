@@ -7278,3 +7278,130 @@ descartável autorizado.
 ### STATUS
 
 COMPLETED_WITH_GAPS
+
+## 2026-08-24 — JOURNEY-REMEDIATION-048: abertura da fatia de CTA de remediação
+
+### TIMESTAMP
+
+2026-08-24T12:18:00-03:00
+
+### ACTION
+
+Aberta a próxima fatia local bounded após `AUDIT-TRAIL-034`. A revisão do
+fluxo confirmou que o runtime server-side já calcula `EXECUTAR_REMEDIACAO`,
+mas a jornada não carregava o `moduleId` curricular interno da atividade para
+resolver um alvo autorizado. Atividades em `EM_REFORCO` também eram exibidas
+como `CONSULTAR_PROXIMO_PASSO`. O escopo foi limitado a remediação digital;
+`REVISAR_RETENCAO` permanece sem CTA até existir atividade de retenção
+equivalente e uma transição que consuma a revisão.
+
+### RESULT
+
+Em execução; backlog e runtime state atualizados antes do TDD. Nenhum código
+foi alterado nesta abertura e nenhuma evidência live foi inferida.
+
+### NEXT
+
+Escrever RED para vínculo explícito de módulo→atividade, estados iniciáveis,
+atividade legada sem módulo e ausência de CTA para retenção; implementar GREEN,
+solicitar crítica independente read-only e executar regressão.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — JOURNEY-REMEDIATION-048: correção pós-crítica independente
+
+### TIMESTAMP
+
+2026-08-24T12:43:00-03:00
+
+### ACTION
+
+A crítica read-only encontrou um P1: uma atividade `EM_REFORCO` com tentativa
+`CORRIGIDA_AUTOMATICAMENTE`, `CORRIGIDA_HUMANAMENTE` ou `ANULADA` poderia ser
+aberta e a web ainda ofereceria `Enviar tentativa`, embora o domínio não
+permita submeter uma tentativa terminal. Também foram apontadas duas defesas
+P2: compatibilidade entre `nextAction` e `nextActionTarget` na fronteira e
+atividade publicada sem item `PUBLICADO`.
+
+### RESULT
+
+Corrigido no código: a web oferece `Iniciar nova tentativa` somente quando a
+atividade atual está em `EM_REFORCO` e a tentativa é terminal; nos demais casos
+terminais não oferece submissão. O contrato rejeita alvo associado a retenção,
+o repositório exige item de conteúdo `PUBLICADO` para materializar a atividade
+na jornada e os testes cobrem módulo nulo, escopo cruzado, retenção, runtime
+redigido e restauração de tentativa terminal. Focal passou 5 arquivos/89
+testes; build e E2E focal após rebuild passaram 2/2.
+
+### LIMITES
+
+A revisão não observou PostgreSQL/RLS live, concorrência, dados reais,
+browser→API→PostgreSQL ou produção. A remediação continua digital e não
+consome retenção D+7/D+30/D+90 nem comprova competência clínica.
+
+### NEXT
+
+Rodar `pnpm verify` e a suíte E2E completa após o rebuild; solicitar uma nova
+crítica read-only da versão corrigida; atualizar auditoria, backlog,
+rastreabilidade, runtime state e commit se todos os gates passarem.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-08-24 — JOURNEY-REMEDIATION-048: fechamento técnico local pós-crítica
+
+### TIMESTAMP
+
+2026-08-24T13:51:24-03:00
+
+### ACTION
+
+Executado o hardening final no commit
+`c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` após duas críticas independentes.
+Einstein havia encontrado cinco P1/P2: CTA de retenção sem alvo server-side,
+respostas antigas na nova tentativa, conteúdo parcialmente publicado,
+edição durante correção humana e provenance implícita. Bacon aprovou o estado
+local e apontou três P2 remanescentes: rederivação defensiva na API, E2E que
+clicasse a nova tentativa e limpeza da justificativa. Todos foram corrigidos:
+o boundary HTTP agora rederiva ação/alvo; a persistência exige
+`learningAssignmentId` e todos os itens/versões `PUBLICADO`; a web mantém
+`AGUARDA_CORRECAO_HUMANA` e estados terminais em modo somente leitura; e a
+nova tentativa limpa respostas, apelos e justificativa mesmo quando a leitura
+da atividade contém reflexão anterior.
+
+### RESULT
+
+`pnpm verify` passou com 131 arquivos/632 testes, 27 arquivos/33 testes
+ignorados; cobertura 84,92% statements, 81,13% branches, 86,46% functions e
+85,67% lines. Build final dos 12 workspaces passou. Playwright sintético passou
+28/28, incluindo nova tentativa com estado limpo e retenção sem CTA. Integração
+passou 25/33, com 33 cenários explicitamente ignorados por ausência de banco e
+serviços CVG autorizados. `pnpm audit --audit-level=high` não encontrou
+vulnerabilidades conhecidas; `git diff --check` e gates estáticos/documentais
+passaram.
+
+### CRITIC
+
+Final Critic: APPROVE local com confiança média-alta; nenhum P0/P1 funcional
+restou após `c16c52e`. A crítica não prova ambiente live.
+
+### LIMITES
+
+PostgreSQL/RLS real com role sem bypass, browser→API→PostgreSQL, concorrência,
+grants/owners produtivos, migrations aplicadas em ambiente autorizado,
+workflow remoto same-SHA, observabilidade externa, carga/failover/restore,
+provider/MFA, publicação clínica, piloto e fluxo completo de retenção continuam
+sem evidência. Nenhuma declaração de release ou competência prática é feita.
+
+### NEXT
+
+Executar a prova live em ambiente CVG descartável/autorizado e submeter M02,
+B-07 e protocolos à revisão clínica/humana; manter `REVISAR_RETENCAO` sem CTA
+até existir atividade de retenção e transição consumível.
+
+### STATUS
+
+COMPLETED_WITH_GAPS

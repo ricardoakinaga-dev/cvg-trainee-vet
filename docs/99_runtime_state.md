@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: AUDIT-TRAIL-034 — consulta escopada da trilha de auditoria e governança operacional
-- current_task: manter a fatia local de UC-017/RF-080–082 pronta para prova live autorizada e seguir para os gaps de auditoria, feedback/apelação e conteúdo clínico sem declarar release prematuramente
+- current_sprint: JOURNEY-REMEDIATION-048 — CTA segura para remediação digital
+- current_task: ligar a ação server-side de remediação a uma atividade publicada já autorizada, sem inventar fluxo de retenção nem declarar competência clínica
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit `28749dd2f239cbcb5345e903f8bac8ce2765c6a7` fechou o hardening HMAC de `AUDIT-TRAIL-034`: cursor assinado, `AUDIT_CURSOR_SECRET` obrigatório em produção, configuração documentada e regressão final verde; build e Playwright sintético também passaram.
-- next_action: com banco CVG descartável autorizado, aplicar migration `0033`, executar PostgreSQL/RLS com role sem `SUPERUSER/BYPASSRLS` e browser→web→API→PostgreSQL; se continuar indisponível, avançar `AUD-P1-001` sem simular evidência live
+- last_completed_action: commit `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação: rederivação do alvo no boundary HTTP, assignment/proveniência explícitos, todos os itens/versões `PUBLICADO`, tentativa humana/terminal somente leitura, limpeza de respostas/apelos/justificativa na nova tentativa e regressão E2E; `pnpm verify`, build, E2E, integração e audit de dependências passaram localmente.
+- next_action: executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA somente em ambiente CVG descartável/autorizado, mantendo aprovação clínica/humana como gate de publicação; não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T12:07:29-03:00
+- last_update: 2026-08-24T13:49:16-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `28749dd2f239cbcb5345e903f8bac8ce2765c6a7` — implementação e hardening HMAC de `AUDIT-TRAIL-034`
+- head: `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` — hardening final da jornada de remediação digital e guardas da projeção/tentativa; control plane documental em fechamento
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: clean após o commit técnico e o fechamento do control plane; não há push/deploy
+- worktree: código técnico commitado; documentação, estado, backlog, auditoria e manifesto de fechamento aguardam commit de control plane; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUDIT-TRAIL-034` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/625 testes e 27 arquivos/33 testes ignorados; cobertura 84,82% statements, 80,97% branches, 86,32% functions e 85,56% lines; build, integração sem banco 25 pass/33 skips, Playwright sintético 26/26, audit de dependências, secrets, migrations, typecheck, lint, formato e diff-check passaram. PostgreSQL/RLS live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos continuam não observados
+- verification_state: `JOURNEY-REMEDIATION-048` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/632 testes e 27 arquivos/33 testes ignorados; cobertura 84,92% statements, 81,13% branches, 86,46% functions e 85,67% lines; build nos 12 workspaces, Playwright sintético 28/28, integração 25 pass/33 skips e audit high sem vulnerabilidades conhecidas. PostgreSQL/RLS live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 

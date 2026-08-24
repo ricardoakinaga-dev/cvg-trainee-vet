@@ -229,16 +229,21 @@ nota ou aprovação clínica.
 - workflows de resultado sem tentativa, participante, escopo ou regra interna;
 - runtimes redigidos, sem objetivos internos, gabarito ou competência prática;
 - uma `nextAction` agregada;
-- opcionalmente, `nextActionTarget: { kind: "ACTIVITY", activityId }` somente
-  quando a ação agregada é `INICIAR_ATIVIDADE` ou `RETOMAR_ATIVIDADE` e o alvo
-  pertence à própria lista de atividades autorizadas.
+- opcionalmente, `nextActionTarget: { kind: "ACTIVITY", activityId }` quando a
+  ação agregada é `INICIAR_ATIVIDADE`, `RETOMAR_ATIVIDADE` ou
+  `EXECUTAR_REMEDIACAO`, desde que o alvo pertença à própria lista de
+  atividades autorizadas; para remediação, o servidor exige o vínculo interno
+  explícito do mesmo módulo e atividade em estado iniciável.
 
 O contrato é estrito, rejeita campos internos, rejeita tentativa publicada
-parcialmente e rejeita alvo que não esteja na projeção de atividades. A web não
-calcula a próxima ação nem escolhe um módulo por `moduleId`: usa o alvo
-server-side, mantém a sessão client-side e atualiza `?activityId` apenas como
-ponteiro codificado. Deep links continuam compatíveis com a atividade
-solicitada; autorização e leitura da atividade permanecem server-side.
+parcialmente e rejeita alvo que não esteja na projeção de atividades. A API
+rederiva `nextAction` e `nextActionTarget` no próprio boundary público, exigindo
+para remediação o assignment/proveniência e módulo compatíveis já validados pelo
+caso de uso. A web não calcula a próxima ação nem escolhe um módulo por
+`moduleId`: usa o alvo server-side, mantém a sessão client-side e atualiza
+`?activityId` apenas como ponteiro codificado. Deep links continuam compatíveis
+com a atividade solicitada; autorização e leitura da atividade permanecem
+server-side.
 
 Na projeção interna de staff, cada participante também carrega `scopeIds` como
 metadado de roteamento de ações administrativas. O servidor deriva esses

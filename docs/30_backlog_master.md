@@ -704,6 +704,27 @@ CVG descartável autorizado.
 - gaps explícitos: assignments ainda não resolvem automaticamente para `activity_assignments`/atividade publicada; live RLS, provenance/atomicidade do diagnóstico→assignment, feedback/debrief/remediação/retensão completos, grants produtivos, observabilidade externa, publicação clínica, piloto e release continuam pendentes
 - próxima ação: abrir `RESULT-FEEDBACK-046` para exibir feedback digital persistido e sua próxima ação, sem inventar gabarito ou claim clínico
 
+### JOURNEY-REMEDIATION-048 — CTA segura para remediação digital
+
+- título: tornar a remediação digital acionável a partir da jornada do participante
+- descrição: ligar `EXECUTAR_REMEDIACAO` a uma atividade publicada do mesmo módulo somente quando `learningAssignmentId`, escopo e estado iniciável forem explícitos; exigir que todos os itens/versões estejam `PUBLICADO`, corrigir a próxima ação da atividade `EM_REFORCO` sem expor vínculos internos ou transformar a CTA em autorização
+- módulo: jornada participante / progresso / remediação / persistência / web
+- dependência: `JOURNEY-045`; `JOURNEY-REL-001`; `ACTIVITY-RLS-047`; runtime curricular digital existente
+- fase: BUILD — Phase 3–5 / ciclo de aprendizagem
+- risco: alto — um alvo errado pode permitir acesso fora do escopo, confundir revisão com retenção ou afirmar uma competência não demonstrada
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para módulo correspondente, estados `DISPONIVEL`/`EM_ANDAMENTO`/`EM_REFORCO`, atividade legada sem módulo/proveniência, conteúdo parcialmente não publicado, runtime de retenção sem CTA indevida, tentativa terminal/humana somente leitura, nova tentativa sem estado antigo, contrato público sem vínculos internos, regressão global, documentação e rastreabilidade
+- escopo: somente `EXECUTAR_REMEDIACAO`; o alvo é escolhido server-side entre atividades já presentes na jornada e publicadas/autorizadas; retenção permanece sem CTA até existir atividade equivalente própria e consumo de revisão
+- fora desta fatia: nova avaliação clínica, prova prática, consumo de `D+7/D+30/D+90`, seleção de itens equivalentes, publicação B-07/M02, aprovação clínica, provider/MFA, operação externa, live RLS e release
+- requisitos: `PRD-RF-015`; `PRD-RF-055`; `PRD-RF-070`; `PRD-UC-007`; `SPEC-0106`; `SPEC-0107`; `SPEC-0109`; `SPEC-0114`; `SPEC-0118`; `JOURNEY-09-01`; `AGENTS-TDD`
+- evidência: `BRIEFING/04.AUDIT/0531_journey_remediation_cta_audit.md`; `traceability.yml` / `JOURNEY-REMEDIATION-048`; feature inicial `b950825`; hardening final `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d`
+- código: `packages/application/src/journey-use-cases.ts`; `packages/application/src/progress-use-cases.ts`; `packages/persistence/src/journey-repository.ts`; `packages/persistence/src/activity-repository.ts`; `packages/persistence/src/attempt-repository.ts`; `packages/contracts/src/journey.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`
+- testes: `packages/application/src/journey-use-cases.test.ts`; `packages/application/src/progress-use-cases.test.ts`; `packages/persistence/src/journey-repository.test.ts`; `packages/persistence/src/activity-repository.test.ts`; `packages/persistence/src/attempt-repository.db.test.ts`; `packages/contracts/src/journey.test.ts`; `apps/api/src/http.test.ts`; `tests/e2e/participant-access.spec.ts`
+- resultado: RED inicial 4 falhas; crítica Einstein encontrou 5 P1/P2 e foi corrigida; crítica Bacon aprovou localmente com 3 P2, todos fechados em `c16c52e`; `pnpm verify` passou com 131 arquivos/632 testes e 27 arquivos/33 testes ignorados; cobertura 84,92%/81,13%/86,46%/85,67%; build 12 workspaces; E2E 28/28; integração 25/33 sem banco CVG; audit high sem vulnerabilidades conhecidas; gates estáticos e documentais passaram
+- gaps explícitos: PostgreSQL/RLS live, browser→API→PostgreSQL, concorrência, grants/owners, workflow remoto same-SHA, observabilidade/retention/traces externos, publicação/revisão clínica, piloto, fluxo completo de retenção e release continuam pendentes
+- próxima ação: executar a prova live em ambiente CVG descartável/autorizado e submeter M02/B-07/protocolos à revisão clínica/humana; manter `REVISAR_RETENCAO` sem CTA até existir atividade própria e transição consumível
+
 ### RESULT-FEEDBACK-046 — Feedback digital e debrief bounded na atividade
 
 - título: exibir o resultado de correção digital persistido e orientar a próxima ação do participante

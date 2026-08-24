@@ -110,7 +110,7 @@ As operações entregues são `CreateLearningAssignment`, `TransitionLearningAss
 
 ## 8. Jornada agregada materializada no item 9
 
-`GetParticipantLearningJourney` recebe somente `participantId` e os `scopeIds` autorizados pela sessão. O port de leitura retorna atribuições, atividades com a tentativa mais recente, workflows de resultado e estados de runtime; o caso de uso valida identidade/escopo, clona sem mutar e calcula a `nextAction` com precedência para remediação, retenção e correção pendente. A composição PostgreSQL permanece fora da aplicação.
+`GetParticipantLearningJourney` recebe somente `participantId` e os `scopeIds` autorizados pela sessão. O port de leitura retorna atribuições, atividades com a tentativa mais recente, workflows de resultado e estados de runtime; a atividade pode carregar internamente `moduleId` curricular e `learningAssignmentId` explícitos para resolver a ação de remediação, mas esses vínculos nunca são publicados ao participante. O caso de uso valida identidade/escopo, clona sem mutar e calcula a `nextAction` com precedência para remediação, retenção e correção pendente. Quando `EXECUTAR_REMEDIACAO` é a ação prioritária, o alvo só existe se houver atividade do mesmo módulo, com assignment explícito, em estado publicável/iniciável (`DISPONIVEL`, `EM_ANDAMENTO` ou `EM_REFORCO`); a persistência falha fechado se qualquer item/versão vinculada não estiver `PUBLICADO`; retenção não recebe CTA por inferência. A composição PostgreSQL permanece fora da aplicação e o boundary HTTP rederiva ação/alvo antes da projeção pública.
 
 ## 9.1 Protocolo de contestação do participante — APPEAL-036
 
