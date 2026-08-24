@@ -25,6 +25,8 @@ AS $$
   );
 $$;--> statement-breakpoint
 
+REVOKE EXECUTE ON FUNCTION cvg_participant_in_scope(uuid, uuid) FROM PUBLIC;--> statement-breakpoint
+
 DROP POLICY "curriculum_runtime_participant_select_policy"
   ON "curriculum_runtime_states";--> statement-breakpoint
 CREATE POLICY "curriculum_runtime_participant_select_policy"

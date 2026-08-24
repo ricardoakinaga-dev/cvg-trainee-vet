@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -27,5 +30,28 @@ describe("migration governance", () => {
         },
       }),
     ).toThrow("contiguous");
+  });
+
+  it("keeps the curriculum membership oracle private to the application role", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0034_curriculum_runtime_membership_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, provisioning] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(provisioningPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      "REVOKE EXECUTE ON FUNCTION cvg_participant_in_scope(uuid, uuid) FROM PUBLIC",
+    );
+    expect(provisioning).toContain(
+      "GRANT EXECUTE ON FUNCTION public.cvg_participant_in_scope(uuid, uuid) TO %I",
+    );
   });
 });

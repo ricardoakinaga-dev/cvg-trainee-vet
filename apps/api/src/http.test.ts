@@ -2887,6 +2887,7 @@ describe("API HTTP boundary", () => {
 
   it("allows only a scoped moderator to evaluate and persist a curriculum module", async () => {
     const evaluateCurriculumRuntime = vi.fn(async () => curriculumRuntime);
+    const isParticipantInScope = vi.fn(async () => true);
     const runtimeScope = "22222222-2222-4222-8222-222222222222";
     const response = await handleApiRequest(
       {
@@ -2907,11 +2908,16 @@ describe("API HTTP boundary", () => {
           roles: ["MODERATOR"],
           scopes: [runtimeScope],
         }),
+        isParticipantInScope,
         evaluateCurriculumRuntime,
       }),
     );
 
     expect(response.status).toBe(200);
+    expect(isParticipantInScope).toHaveBeenCalledWith(
+      attempt.participantId,
+      runtimeScope,
+    );
     expect(evaluateCurriculumRuntime).toHaveBeenCalledWith({
       participantId: attempt.participantId,
       scopeId: runtimeScope,

@@ -69,6 +69,13 @@ $cvg_provision$;`;
     `GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${appIdentifier}, ${adminIdentifier};`,
     `GRANT USAGE ON SCHEMA public TO ${appIdentifier};`,
     `GRANT USAGE ON SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,
+    `DO $cvg_runtime_grant$
+BEGIN
+  IF to_regprocedure('public.cvg_participant_in_scope(uuid,uuid)') IS NOT NULL THEN
+    EXECUTE format('GRANT EXECUTE ON FUNCTION public.cvg_participant_in_scope(uuid, uuid) TO %I', ${quoteLiteral(application.role)});
+  END IF;
+END
+$cvg_runtime_grant$;`,
     `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${appIdentifier};`,
     `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,
     `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${appIdentifier};`,
