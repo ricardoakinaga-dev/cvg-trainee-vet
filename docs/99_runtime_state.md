@@ -14,12 +14,12 @@
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: WAITING_HUMAN_APPROVAL
 
 ## PROGRESSO
 
-- last_completed_action: commit técnico `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação; commits documentais `7a24051a85881706e809deb3ac17f450c771c0fd` e `9214ea7` fecharam auditoria, backlog, SPEC, log, plano, runtime e manifesto; `pnpm verify`, build, E2E, integração, audit de dependências e traceability release passaram localmente.
-- next_action: executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA somente em ambiente CVG descartável/autorizado, mantendo aprovação clínica/humana como gate de publicação; não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
+- last_completed_action: commit técnico `c16c52ea9e80e1ac0a7740c404fe21ff923fdc6d` fechou o hardening da CTA de remediação; commits documentais `7a24051a85881706e809deb3ac17f450c771c0fd`, `9214ea7` e `e5e3193` fecharam auditoria, backlog, SPEC, log, plano, runtime e manifesto; `pnpm verify`, build, E2E, integração, audit de dependências e traceability release passaram localmente. O preflight `pnpm test:integration:live` confirmou bloqueio com código 2 por ausência de `CVG_TEST_DATABASE_URL`.
+- next_action: com aprovação e ambiente CVG descartável, fornecer URLs distintas de app/admin, executar PostgreSQL/RLS live, browser→API→PostgreSQL e workflow remoto same-SHA; manter aprovação clínica/humana como gate de publicação e não promover `REVISAR_RETENCAO` a CTA sem atividade/transição própria
 
 ## BLOQUEIOS
 
@@ -32,11 +32,11 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T13:56:22-03:00
+- last_update: 2026-08-24T13:58:09-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `9214ea7` — auditoria, control plane e ExecPlan da jornada de remediação fechados sobre o hardening técnico `c16c52e`
+- head: `e5e3193` — auditoria, control plane e ExecPlan da jornada de remediação fechados; preflight live confirmou ausência de ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após commits técnico e documental; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`

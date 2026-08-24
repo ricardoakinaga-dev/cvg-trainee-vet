@@ -173,6 +173,39 @@ inferir competência prática, publicação clínica ou release.
 
 COMPLETED_WITH_GAPS
 
+## 2026-08-24 — CVG-TEST-DB-REMOTE-001: preflight da prova live
+
+### TIMESTAMP
+
+2026-08-24T13:58:09-03:00
+
+### ACTION
+
+Executado `pnpm test:integration:live` pelo harness oficial, sem fornecer,
+imprimir ou inferir credenciais. O script recusou iniciar quando
+`CVG_TEST_DATABASE_URL` não está configurada; ele também exige uma conexão
+administrativa distinta para cleanup seguro e variáveis explícitas para
+Qdrant/restore.
+
+### RESULT
+
+Preflight encerrou com código 2 e a mensagem `CVG_TEST_DATABASE_URL is required
+for live integration; DATABASE_URL is not accepted`. Nenhuma conexão, migration,
+role, dado ou infraestrutura externa foi alterada. A suíte sintética continua
+verde, mas a evidência PostgreSQL/RLS live permanece ausente.
+
+### NEXT
+
+Disponibilizar ambiente CVG descartável/autorizado com URLs distintas de app e
+admin, role sem `SUPERUSER/BYPASSRLS`, Qdrant/restore quando aplicável e
+workflow same-SHA; então repetir integração live, RLS negativo, browser→API→DB
+e registrar artefatos. Até lá, manter `READY_FOR_NEXT_STEP`/`COMPLETED_WITH_GAPS`
+e não declarar release.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
 ## 2026-08-09 — SPEC COMPLETA E HANDOFF PARA BUILD DOCUMENTAL
 
 ### TIMESTAMP
