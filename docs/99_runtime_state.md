@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
 - current_sprint: REFLECTION-035 / AUD-P1-001 — reflexão digital e próxima ação
-- current_task: REFLECTION-2026-08-23-B — fechar projeção participante e hardening operacional
+- current_task: REFLECTION-2026-08-23-C — preservar gaps e preparar agregado gerencial
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: reflexão digital vertical implementada sem migration/nota/competência prática; OPS-034 endurecido com 422 para entrada inesperada e allowlist runtime; verify 99/474, cobertura acima de 80%, build e E2E 20/20 passaram
-- next_action: incorporar crítica independente, congelar commit/artefatos no manifesto e executar o gate de release com worktree limpo; manter agregado gerencial e provas live/operacionais como gaps
+- last_completed_action: `affd640` materializou reflexão participante e hardening OPS; `8343fac` fechou o manifesto com `OPERATIONAL-SNAPSHOT-034`/`REFLECTION-DIGITAL-035`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou com worktree limpo
+- next_action: abrir o agregado gerencial protegido por escopo/módulo, somente com contagens sem texto bruto; preservar os gaps de PostgreSQL live, collector/OTel, retenção, carga, failover, restore, gates clínicos e workflow remoto
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T21:35:42-03:00
+- last_update: 2026-08-23T21:40:59-03:00
 
 ## REGRAS DE USO
 
