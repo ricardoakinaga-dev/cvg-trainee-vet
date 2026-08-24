@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T15:06:08-03:00
+- last_update: 2026-08-24T15:13:26-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `6481add` — último commit técnico da autorização curricular e do hardening de privilégios; controle documental correspondente será commitado separadamente; preflight live continua sem ambiente
+- head: `afdb5a2` — commit documental mais recente; o último commit técnico da autorização curricular e do hardening de privilégios é `6481add`; preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: clean após o commit técnico e o commit documental desta rodada; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-REMEDIATION-048` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/634 testes e 27 arquivos/33 testes ignorados; cobertura 84,90% statements, 81,11% branches, 86,41% functions e 85,64% lines; build nos 12 workspaces, Playwright sintético 28/28, integração 25 pass/33 skips e audit high sem vulnerabilidades conhecidas. Kuhn: PASS local condicionado, sem P0 funcional; produção permanece FAIL sem PostgreSQL/RLS live, browser→API→PostgreSQL, teste SQL negativo real, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos
+- verification_state: `JOURNEY-REMEDIATION-048` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/636 testes e 27 arquivos/33 testes ignorados; cobertura 84,90% statements, 81,13% branches, 86,41% functions e 85,65% lines; build final nos 12 workspaces, Playwright sintético 28/28, integração 25 pass/33 skips e audit high sem vulnerabilidades conhecidas. Kuhn: PASS local condicionado, sem P0 funcional; produção permanece FAIL sem PostgreSQL/RLS live, browser→API→PostgreSQL, teste SQL negativo real, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos
 
 ## REGRAS DE USO
 
