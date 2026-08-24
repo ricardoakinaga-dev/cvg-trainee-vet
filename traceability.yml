@@ -1286,13 +1286,16 @@ artifacts:
         "apps/api/src/server.test.ts",
         "packages/observability/src/operations.test.ts",
       ]
+    commit: "affd64067dd785260020648f9127cfd152c444d1"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
       [
-        "pnpm typecheck",
-        "pnpm lint",
-        "pnpm test:coverage",
+        "pnpm verify",
         "pnpm build",
         "pnpm test:e2e",
+        "pnpm exec vitest run apps/api/src/http.test.ts apps/api/src/server.test.ts packages/observability/src --project unit",
+        "pnpm audit --audit-level=high",
         "pnpm verify:documentation",
         "pnpm verify:traceability",
         "pnpm verify:exposure",
@@ -1332,6 +1335,20 @@ artifacts:
         "packages/persistence/src/activity-repository.test.ts",
         "apps/api/src/http.test.ts",
         "tests/e2e/participant-access.spec.ts",
+      ]
+    commit: "affd64067dd785260020648f9127cfd152c444d1"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm verify",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:documentation",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
       ]
     status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
