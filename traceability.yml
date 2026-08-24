@@ -3963,6 +3963,56 @@ artifacts:
         "PostgreSQL/RLS live and browser→API→PostgreSQL were not executed because CVG_TEST_DATABASE_URL is absent",
       ]
     status: "verified-with-gaps"
+  - id: "RLS-FUNCTION-EXECUTE-051"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "SPEC-0111",
+        "SPEC-0112",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0112_deploy_observabilidade_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "BRIEFING/04.AUDIT/0533_rls_helper_execute_hardening_audit.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/persistence/drizzle/0030_learning_activity_projection_rls_functions.sql",
+        "packages/persistence/drizzle/0031_learning_activity_participant_rls_hardening.sql",
+        "packages/persistence/drizzle/0032_learning_activity_journey_visibility.sql",
+        "packages/persistence/drizzle/0034_curriculum_runtime_membership_rls.sql",
+        "packages/persistence/drizzle/0035_rls_helper_execute_hardening.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "scripts/provision-ci-postgres.mjs",
+      ]
+    tests:
+      [
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-rls-function-privileges.test.ts",
+      ]
+    commit: "425e8d657c2ab4b55af2e8512b54ac24a8ea2c04"
+    artifacts: ["BRIEFING/04.AUDIT/0533_rls_helper_execute_hardening_audit.md"]
+    verification:
+      [
+        "RED: governance failed before migration 0035 existed",
+        "GREEN: migration governance 4/4 passed; live privilege test is configured and skipped without CVG_TEST_DATABASE_URL",
+        "pnpm verify: 131 files/637 tests passed, 28 files/34 tests skipped; coverage 84.90% statements, 81.13% branches, 86.41% functions, 85.65% lines",
+        "pnpm verify:migrations: 36 migrations aligned through 0035",
+        "application role ACL is asserted directly in the live test; PUBLIC execution is asserted absent; role without grant is expected to receive permission denied",
+        "pnpm test:integration:live exited 2 because CVG_TEST_DATABASE_URL is absent; no live PostgreSQL evidence is inferred",
+        "pnpm audit --audit-level=high, same-SHA remote workflow, productive grants/owners and clinical gates remain unobserved",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

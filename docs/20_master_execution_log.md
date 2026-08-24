@@ -7638,3 +7638,61 @@ até existir atividade de retenção e transição consumível.
 ### STATUS
 
 COMPLETED_WITH_GAPS
+
+## 2026-08-24 — RLS-FUNCTION-EXECUTE-051: hardening de privilégio dos helpers RLS
+
+### TIMESTAMP
+
+2026-08-24T15:42:48-03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER / GAUNTLET LOOP
+
+### PHASE
+
+Phase 13 — hardening de segurança PostgreSQL e evidência de release
+
+### SPRINT
+
+RLS-FUNCTION-EXECUTE-051
+
+### TASK
+
+Revogar `PUBLIC EXECUTE` dos cinco helpers `SECURITY DEFINER`, conceder o
+privilégio somente à role de aplicação e criar a prova negativa live sem
+confundir execução local com evidência PostgreSQL.
+
+### ACTION
+
+A crítica independente identificou que `0030`–`0032` ainda deixavam helpers RLS
+executáveis por `PUBLIC`. Foi escrito o RED da governança, criada a migration
+`0035_rls_helper_execute_hardening.sql`, ampliado o provisionador para revoke +
+grant idempotentes e adicionada a suíte live com role sintética sem grant.
+
+### RESULT
+
+O commit `425e8d657c2ab4b55af2e8512b54ac24a8ea2c04` passou `pnpm verify` com
+131 arquivos/637 testes e 34 skips; cobertura 84,90%/81,13%/86,41%/85,65%.
+Também passaram typecheck, lint, migrations 36/36, secrets, arquitetura,
+documentação, product-definition, exposure e diff-check. A crítica final
+apontou risco de falso positivo no teste live, cleanup parcial e perda de
+parâmetros de URL; os três itens foram corrigidos antes do commit.
+
+### LIMITES
+
+`pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL`.
+Não há evidência nesta sessão da ACL/RLS live, da execução browser→API→
+PostgreSQL, de grants/owners produtivos, do workflow remoto same-SHA, da
+operação externa ou dos gates clínicos. Nenhum release ou PASS de produção é
+declarado.
+
+### NEXT
+
+Executar a suíte live em banco CVG descartável/autorizado; em paralelo,
+manter a decisão de produto pendente para as próximas fatias de apelação,
+debrief e authoring, sem inventar regra clínica ou publicar conteúdo.
+
+### STATUS
+
+COMPLETED_WITH_GAPS

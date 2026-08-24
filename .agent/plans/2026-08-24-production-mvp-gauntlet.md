@@ -124,6 +124,13 @@ a aprovação clínica, piloto ou release produtivo.
   em worktree limpo. A próxima ação continua sendo a prova live autorizada,
   gates clínicos/humanos e os gaps de retenção completa; nenhum release/100%
   foi declarado.
+- [x] (2026-08-24T15:42:48-03:00) Fechar `RLS-FUNCTION-EXECUTE-051` no commit
+  `425e8d657c2ab4b55af2e8512b54ac24a8ea2c04`: migration `0035` revoga
+  `PUBLIC EXECUTE` dos cinco helpers RLS, o provisionador aplica revoke + grant
+  direto à role de aplicação e o teste live negativo afirma ACL/owner/role sem
+  bypass e cleanup resiliente. `pnpm verify` passou com 131/637/34 skips e
+  cobertura 84,90%/81,13%/86,41%/85,65%; a prova PostgreSQL continua
+  dependente de ambiente autorizado.
 
 ## Surprises & Discoveries
 
@@ -641,3 +648,14 @@ traceability passed after the control-plane update. The final live preflight
 still exits 2 because `CVG_TEST_DATABASE_URL` is absent. The next authorized
 action is the live preflight with a disposable CVG database and
 human clinical/repository approval, not a production declaration.
+
+Plan revision note, 2026-08-24 (RLS-FUNCTION-EXECUTE-051): independent
+security scouting found that the boolean `SECURITY DEFINER` RLS helpers from
+migrations 0030–0032 remained callable through `PUBLIC EXECUTE`. The bounded
+fix added migration 0035, explicit application-role provisioning, complete
+static governance and a live negative test. A second independent critique
+rejected the first live-test draft for possible owner/bypass false positive,
+incomplete cleanup and dropped URL parameters; all three were corrected before
+commit `425e8d6`. The local release bar is green, but ACL/RLS live,
+browser→API→PostgreSQL, productive grants/owners, external operations,
+clinical approval and same-SHA remote evidence remain unavailable.

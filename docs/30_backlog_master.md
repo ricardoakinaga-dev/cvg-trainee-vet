@@ -78,6 +78,18 @@ adicionou 3/3 testes de governança. O teste PostgreSQL negativo foi preparado,
 mas continua sem execução por ausência de `CVG_TEST_DATABASE_URL`; o item fica
 `COMPLETED_WITH_GAPS`.
 
+**Atualização operacional 2026-08-24 (RLS-FUNCTION-EXECUTE-051):** a crítica
+independente encontrou que os helpers `SECURITY DEFINER` das migrations
+`0030`–`0032` ainda tinham `PUBLIC EXECUTE`. A migration `0035` agora revoga o
+privilégio dos cinco helpers atuais; o provisionador reaplica revoke + grant
+idempotentes somente para a role de aplicação; a governança cobre todas as
+assinaturas e o teste live negativo verifica ACL direta, role sem
+`SUPERUSER/BYPASSRLS`, owner distinto e `permission denied`. RED/GREEN focal,
+`pnpm verify` (131/637/34 skips), cobertura 84,90%/81,13%/86,41%/85,65%,
+typecheck, lint, migrations 36/36 e gates estáticos passaram. O preflight live
+saiu 2 sem `CVG_TEST_DATABASE_URL`; a fatia fica `COMPLETED_WITH_GAPS`, sem
+release ou claim de produção.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -463,6 +475,25 @@ mas continua sem execução por ausência de `CVG_TEST_DATABASE_URL`; o item fic
 - resultado: o boundary HTTP retorna `403` sem chamar a avaliação quando a membership não é provada; fixture live cria membership sintética e tenta escopo estrangeiro; nenhum campo interno é projetado
 - gaps explícitos: PostgreSQL/RLS live, browser→API→PostgreSQL, concorrência, grants/owners produtivos, workflow remoto same-SHA, operação externa e publicação clínica ainda aguardam ambiente/autoridade; retenção continua sem CTA enquanto a divergência 30/60/90 versus D+7/D+30/D+90 não for decidida
 - próxima ação: aplicar `0034` em banco CVG descartável/autorizado, executar integração live e então decidir a cadência de retenção antes de construir revisão consumível
+
+### RLS-FUNCTION-EXECUTE-051 — Privacidade dos helpers RLS `SECURITY DEFINER`
+
+- título: impedir chamada direta dos oráculos booleanos RLS por `PUBLIC`
+- descrição: revogar `EXECUTE` público de todos os helpers `SECURITY DEFINER` usados pelas policies, conceder execução explicitamente à role de aplicação e provar a negação com uma role sintética sem grant
+- módulo: PostgreSQL / segurança / RLS / provisionamento / CI
+- dependência: `ACTIVITY-RLS-047`; `CURRICULUM-RUNTIME-AUTHZ-050`; `DB-PRIVILEGE-032`; migrations `0030`–`0034`
+- fase: BUILD/AUDIT — Phase 13 / hardening de privilégio
+- risco: crítico — um role com conexão ao banco poderia consultar oráculos de escopo e inferir dados fora da fronteira HTTP
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-001`; `PRD-RF-006`; `PRD-RF-009`; `SPEC-0111`; `SPEC-0112`; `SPEC-0118`; `AGENTS-TDD`
+- critério de pronto: os cinco helpers atuais não têm `PUBLIC EXECUTE`; a aplicação possui grant direto sem ser superusuária, bypass ou owner; role sem grant recebe negação; provisionamento é reexecutável; governança e journal permanecem alinhados
+- evidência: `BRIEFING/04.AUDIT/0533_rls_helper_execute_hardening_audit.md`; `traceability.yml` / `RLS-FUNCTION-EXECUTE-051`; commit `425e8d657c2ab4b55af2e8512b54ac24a8ea2c04`
+- código: `packages/persistence/drizzle/0035_rls_helper_execute_hardening.sql`; `packages/persistence/drizzle/meta/_journal.json`; `scripts/provision-ci-postgres.mjs`
+- testes: `tests/integration/migration-governance.test.ts`; `tests/integration/postgres-rls-function-privileges.test.ts`
+- resultado: RED por migration ausente; GREEN focal e regressão completa local passaram; cinco assinaturas cobertas; o teste PostgreSQL negativo está pronto, mas não executado sem `CVG_TEST_DATABASE_URL`
+- gaps explícitos: aplicação das migrations em banco autorizado, ACL/RLS live, browser→API→PostgreSQL, grants/owners produtivos, workflow remoto same-SHA, operação externa e gates clínicos continuam pendentes
+- próxima ação: executar `pnpm test:integration:live` em ambiente CVG descartável/autorizado e anexar os resultados redigidos; depois selecionar a próxima lacuna P1 sem inventar regra clínica
 
 ### AUD-P1-001 — Fechamento da jornada de produto
 
