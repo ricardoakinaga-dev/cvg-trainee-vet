@@ -96,8 +96,9 @@ O `data` é uma projeção interna estrita `audit_trail` com ator, ação, recur
 escopo, resultado, motivo, correlação, horário e hashes SHA-256 quando
 existentes. Não contém corpo de requisição, cookie, token, prompt, conteúdo
 clínico ou texto protegido. A resposta usa `meta.has_next` e
-`meta.next_cursor`; o cursor não é interpretado pelo cliente. A rota é somente
-leitura e não habilita edição, exportação ou publicação.
+`meta.next_cursor`; o cursor é assinado com HMAC-SHA-256 por segredo
+server-side e não é interpretado pelo cliente. A rota é somente leitura e não
+habilita edição, exportação ou publicação.
 
 ## 5. Segurança operacional
 

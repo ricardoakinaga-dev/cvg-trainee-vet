@@ -10,6 +10,7 @@ const requiredEnvironmentKeys = Object.freeze([
   "API_HOST",
   "API_PORT",
   "DATABASE_URL",
+  "AUDIT_CURSOR_SECRET",
   "CVG_TEST_DATABASE_URL",
   "WEB_ORIGINS",
   "QDRANT_ENABLED",

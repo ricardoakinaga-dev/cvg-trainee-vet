@@ -11,6 +11,7 @@ import { auditEntries } from "./schema.js";
 const scopeId = "11111111-1111-4111-8111-111111111111";
 const auditId = "33333333-3333-4333-8333-333333333333";
 const occurredAt = new Date("2026-08-24T12:00:00.000Z");
+const cursorKey = "test-audit-cursor-key-with-32-bytes-minimum";
 
 const row = {
   id: auditId,
@@ -67,15 +68,18 @@ describe("audit trail repository cursor", () => {
   it("round-trips an opaque deterministic cursor", () => {
     const query = { scopeId, action: "CONTENT_PUBLISHED", limit: 1 } as const;
     const queryHash = auditTrailQueryFingerprint(query);
-    const cursor = encodeAuditTrailCursor({
-      version: 1,
-      auditId,
-      occurredAt,
-      scopeId,
-      queryHash,
-    });
+    const cursor = encodeAuditTrailCursor(
+      {
+        version: 1,
+        auditId,
+        occurredAt,
+        scopeId,
+        queryHash,
+      },
+      cursorKey,
+    );
     expect(cursor).toMatch(/^[A-Za-z0-9_-]+$/u);
-    expect(decodeAuditTrailCursor(cursor)).toEqual({
+    expect(decodeAuditTrailCursor(cursor, cursorKey)).toEqual({
       version: 1,
       auditId,
       occurredAt,
@@ -85,16 +89,39 @@ describe("audit trail repository cursor", () => {
   });
 
   it("rejects malformed or unsafe cursors", () => {
-    expect(() => decodeAuditTrailCursor("not-valid!")).toThrow();
-    expect(() => decodeAuditTrailCursor("")).toThrow();
+    expect(() => decodeAuditTrailCursor("not-valid!", cursorKey)).toThrow();
+    expect(() => decodeAuditTrailCursor("", cursorKey)).toThrow();
     expect(() =>
-      encodeAuditTrailCursor({
-        version: 1,
-        auditId,
-        occurredAt,
-        scopeId,
-        queryHash: "unsafe",
-      }),
+      encodeAuditTrailCursor(
+        {
+          version: 1,
+          auditId,
+          occurredAt,
+          scopeId,
+          queryHash: "unsafe",
+        },
+        cursorKey,
+      ),
+    ).toThrow();
+  });
+
+  it("rejects cursor tampering and the wrong server secret", () => {
+    const queryHash = auditTrailQueryFingerprint({ scopeId, limit: 1 });
+    const cursor = encodeAuditTrailCursor(
+      { version: 1, auditId, occurredAt, scopeId, queryHash },
+      cursorKey,
+    );
+    const payload = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8"),
+    ) as Record<string, unknown>;
+    payload.auditId = "77777777-7777-4777-8777-777777777777";
+    const tampered = Buffer.from(JSON.stringify(payload), "utf8").toString(
+      "base64url",
+    );
+
+    expect(() => decodeAuditTrailCursor(tampered, cursorKey)).toThrow();
+    expect(() =>
+      decodeAuditTrailCursor(cursor, `${cursorKey}-wrong`),
     ).toThrow();
   });
 
@@ -104,7 +131,9 @@ describe("audit trail repository cursor", () => {
       row,
       { ...row, id: "77777777-7777-4777-8777-777777777777" },
     ]);
-    const repository = createAuditTrailRepository(fake.database);
+    const repository = createAuditTrailRepository(fake.database, {
+      cursorSecret: cursorKey,
+    });
     const first = await repository.listAuditTrail(query);
 
     expect(first.items).toHaveLength(1);
@@ -129,7 +158,9 @@ describe("audit trail repository cursor", () => {
 
   it("validates scope, filters, windows, limits and empty pages before opening a transaction", async () => {
     const fake = database([]);
-    const repository = createAuditTrailRepository(fake.database);
+    const repository = createAuditTrailRepository(fake.database, {
+      cursorSecret: cursorKey,
+    });
     const invalidQueries = [
       { scopeId: "not-a-uuid", limit: 1 },
       { scopeId, action: "unsafe action", limit: 1 },

@@ -173,12 +173,6 @@ inferir competência prática, publicação clínica ou release.
 
 COMPLETED_WITH_GAPS
 
-### NEXT
-
-Escrever o cenário E2E RED para abrir a atividade a partir da jornada e observar
-o request de atividade; depois implementar o menor handler/CTA e executar a
-regressão focal.
-
 ## 2026-08-09 — SPEC COMPLETA E HANDOFF PARA BUILD DOCUMENTAL
 
 ### TIMESTAMP
@@ -7245,6 +7239,41 @@ RLS real, cross-scope com role sem bypass e browser→API→PostgreSQL continuam
 sem execução por ausência de banco CVG descartável autorizado. Cursor HMAC,
 workflow remoto same-SHA, grants/owners produtivos, operação externa e gates
 clínicos seguem fora desta fatia.
+
+### STATUS
+
+COMPLETED_WITH_GAPS
+
+## 2026-08-24 — AUDIT-TRAIL-034: assinatura do cursor e segredo de runtime
+
+### TIMESTAMP
+
+2026-08-24T11:52:16-03:00
+
+### ACTION
+
+Aberto o hardening P2 identificado pela crítica independente: o cursor bounded
+da consulta operacional passou a carregar assinatura HMAC-SHA-256 sobre o
+payload canônico de ordenação, escopo e fingerprint. O segredo é mantido
+server-side; `AUDIT_CURSOR_SECRET` é validado pelo contrato de ambiente e é
+obrigatório em produção, enquanto desenvolvimento/teste usam apenas um valor
+determinístico não produtivo.
+
+### RESULT
+
+RED focal foi observado para adulteração e segredo incorreto. GREEN passou nos
+testes de configuração e repository; a regressão passou com 131 arquivos/625
+testes e 27 arquivos/33 testes ignorados; cobertura 84,82% statements, 80,97%
+branches, 86,32% functions e 85,56% lines. Build, integração 25/33, E2E
+sintético 26/26, audit high, secrets, traceability e gates documentais passaram.
+A alteração não muda a autorização, a projeção redigida, a policy RLS ou a
+decisão clínica.
+
+### LIMITES
+
+PostgreSQL/RLS live, browser→API→PostgreSQL, grants/owners produtivos e
+workflow remoto same-SHA continuam sem execução por ausência de ambiente CVG
+descartável autorizado.
 
 ### STATUS
 

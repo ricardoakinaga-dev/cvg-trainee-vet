@@ -89,7 +89,9 @@ dedicado (`cvg.audit_read=on`, `cvg.audit_scope_id=<escopo>`). A policy de
 leitura admite somente o contexto dedicado, o escopo informado e eventos sem
 escopo cujo ator seja explicitamente `ANONYMOUS`, preservando rejeições anônimas
 sem liberar eventos autenticados legados para outro escopo. O contexto é limpo
-pelos demais repositórios; sem ele, a leitura continua negada por RLS.
+pelos demais repositórios; sem ele, a leitura continua negada por RLS. O cursor
+é assinado por HMAC-SHA-256 com `AUDIT_CURSOR_SECRET`, mantido apenas no
+ambiente server-side; produção rejeita a inicialização sem esse segredo.
 
 ## 6. Identidade interna por convite
 

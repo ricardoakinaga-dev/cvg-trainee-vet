@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 import { and, desc, eq, gte, isNull, lt, lte, or } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
@@ -30,6 +30,7 @@ const uuidPattern =
 const tokenPattern = /^[A-Za-z][A-Za-z0-9_.-]{1,127}$/u;
 const cursorPattern = /^[A-Za-z0-9_-]{1,512}$/u;
 const hashPattern = /^[a-f0-9]{64}$/u;
+const minimumCursorSecretBytes = 32;
 
 function assertUuid(value: string, field: string): void {
   if (!uuidPattern.test(value)) throw new TypeError(`${field} is invalid`);
@@ -50,6 +51,32 @@ function assertText(value: string | undefined, field: string): void {
   }
 }
 
+function assertCursorSecret(value: string): void {
+  if (
+    typeof value !== "string" ||
+    Buffer.byteLength(value, "utf8") < minimumCursorSecretBytes
+  ) {
+    throw new TypeError("cursor secret is invalid");
+  }
+}
+
+function cursorPayload(cursor: AuditTrailCursor): string {
+  return JSON.stringify({
+    version: cursor.version,
+    auditId: cursor.auditId,
+    occurredAt: cursor.occurredAt.toISOString(),
+    scopeId: cursor.scopeId,
+    queryHash: cursor.queryHash,
+  });
+}
+
+function cursorSignature(payload: string, cursorSecret: string): string {
+  assertCursorSecret(cursorSecret);
+  return createHmac("sha256", cursorSecret)
+    .update(payload, "utf8")
+    .digest("hex");
+}
+
 export function auditTrailQueryFingerprint(query: AuditTrailReadQuery): string {
   const canonical: readonly (string | number | null)[] = [
     query.scopeId,
@@ -68,7 +95,10 @@ export function auditTrailQueryFingerprint(query: AuditTrailReadQuery): string {
     .digest("hex");
 }
 
-export function encodeAuditTrailCursor(cursor: AuditTrailCursor): string {
+export function encodeAuditTrailCursor(
+  cursor: AuditTrailCursor,
+  cursorSecret: string,
+): string {
   assertUuid(cursor.auditId, "auditId");
   assertUuid(cursor.scopeId, "scopeId");
   if (cursor.version !== 1) throw new TypeError("cursor version is invalid");
@@ -78,19 +108,21 @@ export function encodeAuditTrailCursor(cursor: AuditTrailCursor): string {
   if (Number.isNaN(cursor.occurredAt.getTime())) {
     throw new TypeError("occurredAt is invalid");
   }
+  const payload = cursorPayload(cursor);
   return Buffer.from(
     JSON.stringify({
-      version: cursor.version,
-      auditId: cursor.auditId,
-      occurredAt: cursor.occurredAt.toISOString(),
-      scopeId: cursor.scopeId,
-      queryHash: cursor.queryHash,
+      ...JSON.parse(payload),
+      signature: cursorSignature(payload, cursorSecret),
     }),
     "utf8",
   ).toString("base64url");
 }
 
-export function decodeAuditTrailCursor(value: string): AuditTrailCursor {
+export function decodeAuditTrailCursor(
+  value: string,
+  cursorSecret: string,
+): AuditTrailCursor {
+  assertCursorSecret(cursorSecret);
   if (!cursorPattern.test(value)) throw new TypeError("cursor is invalid");
   try {
     const parsed: unknown = JSON.parse(
@@ -104,7 +136,8 @@ export function decodeAuditTrailCursor(value: string): AuditTrailCursor {
       !Object.hasOwn(parsed, "occurredAt") ||
       !Object.hasOwn(parsed, "version") ||
       !Object.hasOwn(parsed, "scopeId") ||
-      !Object.hasOwn(parsed, "queryHash")
+      !Object.hasOwn(parsed, "queryHash") ||
+      !Object.hasOwn(parsed, "signature")
     ) {
       throw new TypeError("cursor payload is invalid");
     }
@@ -113,6 +146,7 @@ export function decodeAuditTrailCursor(value: string): AuditTrailCursor {
       "auditId",
       "occurredAt",
       "queryHash",
+      "signature",
       "scopeId",
       "version",
     ].sort();
@@ -127,7 +161,8 @@ export function decodeAuditTrailCursor(value: string): AuditTrailCursor {
       typeof candidate.occurredAt !== "string" ||
       candidate.version !== 1 ||
       typeof candidate.scopeId !== "string" ||
-      typeof candidate.queryHash !== "string"
+      typeof candidate.queryHash !== "string" ||
+      typeof candidate.signature !== "string"
     ) {
       throw new TypeError("cursor payload is invalid");
     }
@@ -139,6 +174,27 @@ export function decodeAuditTrailCursor(value: string): AuditTrailCursor {
     }
     if (Number.isNaN(occurredAt.getTime())) {
       throw new TypeError("occurredAt is invalid");
+    }
+    if (!hashPattern.test(candidate.signature)) {
+      throw new TypeError("cursor signature is invalid");
+    }
+    const unsignedPayload = JSON.stringify({
+      version: candidate.version,
+      auditId: candidate.auditId,
+      occurredAt: occurredAt.toISOString(),
+      scopeId: candidate.scopeId,
+      queryHash: candidate.queryHash,
+    });
+    const expectedSignature = Buffer.from(
+      cursorSignature(unsignedPayload, cursorSecret),
+      "hex",
+    );
+    const actualSignature = Buffer.from(candidate.signature, "hex");
+    if (
+      expectedSignature.length !== actualSignature.length ||
+      !timingSafeEqual(expectedSignature, actualSignature)
+    ) {
+      throw new TypeError("cursor signature is invalid");
     }
     return Object.freeze({
       version: 1,
@@ -198,7 +254,9 @@ function assertQuery(query: AuditTrailReadQuery): void {
 
 export function createAuditTrailRepository(
   db: DatabaseExecutor,
+  options: Readonly<{ readonly cursorSecret: string }>,
 ): AuditTrailReadPort {
+  assertCursorSecret(options.cursorSecret);
   return Object.freeze({
     listAuditTrail: async (
       query: Parameters<AuditTrailReadPort["listAuditTrail"]>[0],
@@ -207,7 +265,7 @@ export function createAuditTrailRepository(
       const cursor =
         query.cursor === undefined
           ? undefined
-          : decodeAuditTrailCursor(query.cursor);
+          : decodeAuditTrailCursor(query.cursor, options.cursorSecret);
       if (
         cursor !== undefined &&
         (cursor.scopeId !== query.scopeId ||
@@ -277,13 +335,16 @@ export function createAuditTrailRepository(
           hasNext,
           ...(hasNext && last !== undefined
             ? {
-                nextCursor: encodeAuditTrailCursor({
-                  version: 1,
-                  auditId: last.auditId,
-                  occurredAt: new Date(last.occurredAt),
-                  scopeId: query.scopeId,
-                  queryHash: auditTrailQueryFingerprint(query),
-                }),
+                nextCursor: encodeAuditTrailCursor(
+                  {
+                    version: 1,
+                    auditId: last.auditId,
+                    occurredAt: new Date(last.occurredAt),
+                    scopeId: query.scopeId,
+                    queryHash: auditTrailQueryFingerprint(query),
+                  },
+                  options.cursorSecret,
+                ),
               }
             : {}),
         });

@@ -205,6 +205,7 @@ export function createApiRuntime(
   const audit = createAuditRepository(integrations.database.db);
   const auditTrailRepository = createAuditTrailRepository(
     integrations.database.db,
+    { cursorSecret: config.auditCursorSecret },
   );
   const apiDependencies: ApiHttpDependencies = {
     requestIdFactory: randomUUID,

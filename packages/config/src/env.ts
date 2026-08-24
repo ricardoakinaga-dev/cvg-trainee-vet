@@ -3,6 +3,7 @@ import { z } from "zod";
 const booleanString = z
   .enum(["true", "false"])
   .transform((value) => value === "true");
+const developmentAuditCursorKey = "cvg-development-only-audit-cursor-key-v1";
 
 const rawEnvironmentSchema = z.object({
   NODE_ENV: z
@@ -16,6 +17,7 @@ const rawEnvironmentSchema = z.object({
         value.startsWith("postgresql://") || value.startsWith("postgres://"),
       "DATABASE_URL must use PostgreSQL",
     ),
+  AUDIT_CURSOR_SECRET: z.string().min(32).optional(),
   CLINICAL_APPROVER_ID: z.string().min(1).optional(),
   QDRANT_ENABLED: booleanString.default(false),
   QDRANT_URL: z
@@ -51,6 +53,7 @@ export type RuntimeConfig = {
   nodeEnv: "development" | "test" | "production";
   databaseUrl: string;
   requireDatabaseLeastPrivilege: boolean;
+  auditCursorSecret: string;
   approvedClinicalApproverId?: string;
   qdrant:
     | {
@@ -104,6 +107,10 @@ export function loadRuntimeConfig(
 
   const value = parsed.data;
   const missing: string[] = [];
+  const auditCursorSecret =
+    value.AUDIT_CURSOR_SECRET ??
+    (value.NODE_ENV === "production" ? undefined : developmentAuditCursorKey);
+  if (auditCursorSecret === undefined) missing.push("AUDIT_CURSOR_SECRET");
 
   if (value.QDRANT_ENABLED) {
     if (!value.QDRANT_URL) missing.push("QDRANT_URL");
@@ -141,6 +148,7 @@ export function loadRuntimeConfig(
     nodeEnv: value.NODE_ENV,
     databaseUrl: value.DATABASE_URL,
     requireDatabaseLeastPrivilege: value.NODE_ENV === "production",
+    auditCursorSecret: auditCursorSecret as string,
     ...(value.CLINICAL_APPROVER_ID === undefined
       ? {}
       : { approvedClinicalApproverId: value.CLINICAL_APPROVER_ID }),

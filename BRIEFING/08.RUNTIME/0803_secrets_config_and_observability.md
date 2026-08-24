@@ -18,6 +18,7 @@ AI_PROVIDER
 AI_API_KEY
 AI_MODEL
 AI_ENABLED
+AUDIT_CURSOR_SECRET
 OTEL_EXPORTER_OTLP_ENDPOINT
 ```
 
@@ -28,6 +29,11 @@ OTEL_EXPORTER_OTLP_ENDPOINT
 Logs JSON com `request_id`, `trace_id`, `correlation_id`, serviço, evento, status e duração. Métricas: disponibilidade, erro, p95/p99, PostgreSQL pool, outbox lag, retry, Qdrant index lag, IA latency/refusal e smoke. Traces atravessam web→API→worker→dependência.
 
 Redaction bloqueia senha, token, cookie, API key, prompt, resposta IA, texto clínico, fonte, obra, PDF, foto, gabarito e dado real. Auditoria registra hashes/IDs técnicos e decisão, sem conteúdo bruto por padrão.
+
+O cursor bounded da leitura operacional de auditoria é assinado com HMAC-SHA-256;
+`AUDIT_CURSOR_SECRET` é obrigatório em produção, nunca entra em resposta, log ou
+telemetria, e o valor determinístico de desenvolvimento/teste não é permitido
+como configuração produtiva.
 
 ## Implementação atual
 

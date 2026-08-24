@@ -15,7 +15,7 @@ calcula nota, emite achado clínico ou delega decisão à IA.
 | Capability | `VIEW_AUDIT_TRAIL` separada de `VIEW_INTERNAL_AUDIT` | `packages/application/src/authorization.ts`, caso de uso e API |
 | Escopo | `scopeId` obrigatório, comparado à sessão e aplicado no repositório | autorização, filtro SQL, RLS e testes negativos |
 | Filtros | allowlist strict para ação, recurso, ator, resultado, janela, cursor e limite 1–100 | `packages/contracts/src/audit-trail.ts` |
-| Ordenação | `occurred_at DESC, id DESC`, cursor opaco, consulta `limit + 1` | `packages/persistence/src/audit-trail-repository.ts` |
+| Ordenação | `occurred_at DESC, id DESC`, cursor opaco assinado por HMAC-SHA-256, consulta `limit + 1` | `packages/persistence/src/audit-trail-repository.ts` |
 | Projeção | metadados redigidos; sem corpo, cookie, token, prompt ou conteúdo clínico | contrato strict, serializer HTTP e E2E de operações |
 | Governança | `cvg.audit_read=on` + `cvg.audit_scope_id`, leitura append-only | migration `0033_audit_read_scope_hardening.sql` |
 | Experiência | loading, vazio, erro, retry, escopo selecionável e próxima página | `apps/web/app/operations/page.tsx`, Playwright |
@@ -37,18 +37,23 @@ A crítica também encontrou uma janela de corrida depois do parse da resposta
 web e cursores estruturalmente válidos, mas semanticamente inválidos. A UI agora
 revalida a versão da requisição antes de publicar estado, inclusive quando o
 escopo desaparece; `TypeError` de cursor/query do repository é convertido em
-`validation_error`/422 no caso de uso.
+`validation_error`/422 no caso de uso. O hardening posterior passou a assinar
+o payload do cursor com HMAC-SHA-256 usando `AUDIT_CURSOR_SECRET`, obrigatório
+na inicialização produtiva e ausente da superfície pública.
 
 ## 3. Evidência local
 
 - RED/GREEN focal: contratos, caso de uso, cursor, API, writer e governança RLS —
-  **126 testes passaram em 10 arquivos** na rodada de correção.
-- Regressão global: **131 arquivos passaram, 27 foram ignorados; 623 testes
-  passaram e 33 foram ignorados**; cobertura global ficou em 84,79% statements,
-  80,92% branches, 86,29% functions e 85,54% lines.
-- `pnpm verify`, `pnpm build`, `pnpm test:integration`, `pnpm test:e2e`,
-  `pnpm audit --audit-level=high`, typecheck, lint, format, migrations e scan de
-  secrets passaram localmente nesta rodada.
+  **126 testes passaram em 10 arquivos** na rodada de correção; o hardening HMAC
+  adicionou **12 testes em 2 arquivos**, incluindo adulteração, segredo incorreto
+  e ausência de segredo produtivo.
+- Regressão global: **131 arquivos passaram, 27 foram ignorados; 625 testes
+  passaram e 33 foram ignorados**; cobertura global ficou em 84,82% statements,
+  80,97% branches, 86,32% functions e 85,56% lines.
+- `pnpm verify`, `pnpm build`, `pnpm test:integration` (25/33),
+  `pnpm exec playwright test` (26/26), `pnpm audit --audit-level=high`,
+  typecheck, lint, format, migrations e scan de secrets passaram localmente
+  nesta rodada.
 - O E2E sintético do painel reconhece a consulta, a projeção redigida e o
   estado de próxima página desabilitada; o browser não recebe payload interno.
 - A rota responde por envelope API estável, autentica antes de ler e repete a
@@ -62,13 +67,13 @@ contratual, não prova live com a role de aplicação sem `SUPERUSER/BYPASSRLS`.
 Também não foram observados E2E browser→API→PostgreSQL deste recorte, workflow
 remoto no mesmo SHA, grants/owners de produção, collector/retention/traces,
 carga, failover, restore, provider/MFA, revisão clínica ou publicação de B-07.
+Em produção, `AUDIT_CURSOR_SECRET` é obrigatório; nenhum valor de teste foi
+usado como credencial produtiva.
 
 A trilha atual lista metadados existentes; cobertura completa de eventos de
 feedback, apelação, reflexão, atribuição e operações futuras depende de cada
-caso de uso emitir `scopeId` consistente. O cursor está vinculado ao escopo e ao
-fingerprint dos filtros, mas ainda não possui assinatura HMAC dedicada; isso é
-um hardening P2 separado. O MVP continua sem claim de competência prática,
-autonomia clínica, acreditação ou CPD jurisdicional.
+caso de uso emitir `scopeId` consistente. O MVP continua sem claim de
+competência prática, autonomia clínica, acreditação ou CPD jurisdicional.
 
 ## 5. Próxima ação
 

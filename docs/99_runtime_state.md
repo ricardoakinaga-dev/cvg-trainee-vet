@@ -14,12 +14,12 @@
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: commit `1652991cf78e09ff4d67eb02bc85c8bf5c6bc440` fechou localmente `AUDIT-TRAIL-034`: contratos, capability, caso de uso, cursor bounded, repository/contexto RLS, `GET /api/v1/audit`, painel de operações, writer hardening e testes. A crítica independente foi executada e corrigida; `pnpm verify`, build e Playwright sintético passaram.
-- next_action: com banco CVG descartável autorizado, aplicar migration `0033`, executar PostgreSQL/RLS com role sem `SUPERUSER/BYPASSRLS` e browser→web→API→PostgreSQL; se o ambiente continuar indisponível, avançar `AUD-P1-001` nos fluxos de feedback/apelação e manter HMAC como hardening P2 separado
+- last_completed_action: commit `12df00b4e900ac171e044bfa52a9f10e2043759f` fechou o control plane de `AUDIT-TRAIL-034`; a crítica e a regressão local estavam verdes. A nova ação de hardening P2 abriu RED para assinar o cursor e exigir segredo server-side em produção.
+- next_action: concluir GREEN do cursor HMAC, atualizar a evidência e reexecutar a regressão; depois, com banco CVG descartável autorizado, aplicar migration `0033` e provar PostgreSQL/RLS e browser→web→API→PostgreSQL
 
 ## BLOQUEIOS
 
@@ -32,13 +32,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T11:41:51-03:00
+- last_update: 2026-08-24T11:52:16-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
 - head: `1652991cf78e09ff4d67eb02bc85c8bf5c6bc440` — implementação e auditoria local de `AUDIT-TRAIL-034`
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: clean após o commit técnico e o fechamento do control plane; não há push/deploy
+- worktree: IN_PROGRESS durante o hardening HMAC; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `AUDIT-TRAIL-034` COMPLETED_WITH_GAPS local: `pnpm verify` passou com 131 arquivos/623 testes e 27 arquivos/33 testes ignorados; cobertura 84,79% statements, 80,92% branches, 86,29% functions e 85,54% lines; build, integração sem banco 25 pass/33 skips, Playwright sintético 26/26, audit de dependências, secrets, migrations, typecheck, lint, formato e diff-check passaram. PostgreSQL/RLS live, browser→API→PostgreSQL, workflow remoto same-SHA, grants/owners produtivos, operação externa, restore/failover e gates clínicos continuam não observados
 

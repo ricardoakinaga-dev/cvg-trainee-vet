@@ -102,6 +102,13 @@ a aprovação clínica, piloto ou release produtivo.
   mas o código não possuía leitura, rota nem painel. A quality bar congelada
   exige capability escopada, cursor bounded, redaction e RLS contextual; live,
   produção e gates clínicos permanecem evidência separada.
+- [x] (2026-08-24T12:05:26-03:00) Fechar o hardening HMAC de
+  `AUDIT-TRAIL-034`: o cursor agora é assinado com HMAC-SHA-256, o segredo é
+  server-side e obrigatório em produção, e desenvolvimento/teste usam somente
+  um valor determinístico não produtivo. GREEN focal, `pnpm verify` (625/33,
+  84,82%/80,97%/86,32%/85,56%), build, integração 25/33, E2E 26/26,
+  audit high e secrets passaram; live PostgreSQL/RLS e browser→API→PostgreSQL
+  continuam não observados.
 
 ## Surprises & Discoveries
 

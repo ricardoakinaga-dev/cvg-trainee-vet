@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { ConfigError, loadRuntimeConfig } from "./env.js";
 
+const developmentAuditCursorKey = "cvg-development-only-audit-cursor-key-v1";
+const productionAuditCursorKey = "production-audit-cursor-key-with-32-bytes";
+
 describe("loadRuntimeConfig", () => {
   it("loads the deterministic core with assistive integrations disabled", () => {
     const config = loadRuntimeConfig({
@@ -16,6 +19,7 @@ describe("loadRuntimeConfig", () => {
       nodeEnv: "test",
       databaseUrl: "postgresql://cvg:cvg@localhost:5432/cvg",
       requireDatabaseLeastPrivilege: false,
+      auditCursorSecret: developmentAuditCursorKey,
       approvedClinicalApproverId: "ricardo-account",
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
@@ -72,6 +76,7 @@ describe("loadRuntimeConfig", () => {
       AI_PROVIDER: "openai",
       AI_API_KEY: "fake-key",
       AI_MODEL: "model-test",
+      AUDIT_CURSOR_SECRET: productionAuditCursorKey,
     });
 
     expect(config.qdrant).toEqual({
@@ -91,6 +96,18 @@ describe("loadRuntimeConfig", () => {
       apiKey: "fake-key",
       model: "model-test",
     });
+    expect(config.auditCursorSecret).toBe(productionAuditCursorKey);
+  });
+
+  it("requires a dedicated cursor secret in production", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+      }),
+    ).toThrow("AUDIT_CURSOR_SECRET");
   });
 
   it("allows the deterministic embedding only outside production", () => {
