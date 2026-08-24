@@ -353,3 +353,89 @@ test("author can retry when internal scopes fail to load", async ({ page }) => {
   await expect(page.locator("#draft-scope-id")).toHaveValue(scopeId);
   expect(scopeRequests).toBe(2);
 });
+
+test("author can start a new attempt after an idempotency conflict", async ({
+  page,
+}) => {
+  await page.route("**/api/v1/internal/session/scopes", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          kind: "internal_session_scopes",
+          scopes: [scopeId],
+        }),
+      ),
+    });
+  });
+  await page.route(
+    "**/api/v1/internal/content/review-queue**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            kind: "content_review_queue",
+            scopeId,
+            generatedAt: "2026-08-23T20:00:00.000Z",
+            filters: { scopeId, limit: 50 },
+            items: [],
+          }),
+        ),
+      });
+    },
+  );
+  let draftRequests = 0;
+  await page.route("**/api/v1/content/drafts", async (route) => {
+    draftRequests += 1;
+    if (draftRequests === 1) {
+      await route.fulfill({
+        status: 409,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          error: { code: "idempotency_conflict" },
+          meta: { request_id: "draft-conflict-1" },
+        }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          ...authoringRecord,
+          contentStatus: "RASCUNHO",
+          item: {
+            ...authoringRecord.item,
+            title: "Nova tentativa sintética",
+            participant: {
+              ...authoringRecord.item.participant,
+              title: "Nova tentativa sintética",
+            },
+          },
+          availableActions: {
+            requestAdjustments: false,
+            approveClinically: false,
+          },
+        }),
+      ),
+    });
+  });
+
+  await page.goto("/authoring");
+  await page.getByLabel("Título do item").fill("Nova tentativa sintética");
+  await page.getByRole("button", { name: "Salvar rascunho" }).click();
+  await expect(
+    page.getByRole("button", { name: "Iniciar nova tentativa" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Iniciar nova tentativa" }).click();
+  await page.getByRole("button", { name: "Salvar rascunho" }).click();
+  await expect(page.locator("#review-title")).toHaveText(
+    "Nova tentativa sintética",
+  );
+  expect(draftRequests).toBe(2);
+});

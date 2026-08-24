@@ -440,6 +440,7 @@ export default function AuthoringPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [draftConflict, setDraftConflict] = useState(false);
   const [draftIdempotencyKey, setDraftIdempotencyKey] = useState("");
   const [draftModuleId, setDraftModuleId] = useState("M02");
   const [draftSessionSuffix, setDraftSessionSuffix] = useState("S1");
@@ -687,6 +688,7 @@ export default function AuthoringPage() {
     setBusy(true);
     setError(null);
     setNotice(null);
+    setDraftConflict(false);
     try {
       const data = await requestJson("/api/v1/content/drafts", {
         method: "POST",
@@ -726,6 +728,12 @@ export default function AuthoringPage() {
       clearDraftRecovery();
       setDraftIdempotencyKey("");
     } catch (caught) {
+      if (
+        caught instanceof Error &&
+        caught.message.includes("chave de idempotência")
+      ) {
+        setDraftConflict(true);
+      }
       setError(
         caught instanceof Error
           ? caught.message
@@ -1087,6 +1095,20 @@ export default function AuthoringPage() {
                 recarga, os dados da tentativa permanecem nesta aba para o
                 reenvio seguro da mesma operação.
               </p>
+              {draftConflict ? (
+                <button
+                  type="button"
+                  className="button-link"
+                  onClick={() => {
+                    clearDraftRecovery();
+                    setDraftIdempotencyKey("");
+                    setDraftConflict(false);
+                    setError(null);
+                  }}
+                >
+                  Iniciar nova tentativa
+                </button>
+              ) : null}
               <button type="submit" disabled={busy || scopeId.length === 0}>
                 {busy ? "Salvando rascunho…" : "Salvar rascunho"}
               </button>
