@@ -148,6 +148,8 @@ type FeedbackTriageQueue = Readonly<{
     readonly status: FeedbackTriageQueueStatus;
     readonly version: number;
   }>[];
+  readonly hasNext: boolean;
+  readonly nextCursor?: string;
 }>;
 
 type InvitationState = "idle" | "submitting" | "success" | "error";
@@ -763,7 +765,9 @@ function isFeedbackTriageQueueStatus(
   );
 }
 
-function isFeedbackTriageQueue(value: unknown): value is FeedbackTriageQueue {
+function isFeedbackTriageQueue(
+  value: unknown,
+): value is Omit<FeedbackTriageQueue, "hasNext" | "nextCursor"> {
   if (
     !isRecord(value) ||
     !hasOnlyKeys(value, [
@@ -1241,6 +1245,20 @@ function feedbackTriageEvents(
   }
 }
 
+function feedbackQueueViewKey(
+  scopeId: string | undefined,
+  status: FeedbackTriageQueueStatusFilter,
+  cursor: string | undefined,
+  cursorStack: readonly (string | undefined)[],
+): string {
+  return JSON.stringify({
+    scopeId: scopeId ?? null,
+    status,
+    cursor: cursor ?? null,
+    cursorStack: cursorStack.map((value) => value ?? null),
+  });
+}
+
 function lastSeenLabel(value: string | undefined): string {
   if (value === undefined) return "Nunca acessou";
   const date = new Date(value);
@@ -1334,6 +1352,13 @@ export default function OperationsPage() {
     useState<ReportLoadState>("idle");
   const [feedbackQueue, setFeedbackQueue] =
     useState<FeedbackTriageQueue | null>(null);
+  const feedbackQueueRequestVersion = useRef(0);
+  const [feedbackQueueCursor, setFeedbackQueueCursor] = useState<
+    string | undefined
+  >();
+  const [feedbackQueueCursorStack, setFeedbackQueueCursorStack] = useState<
+    readonly (string | undefined)[]
+  >([]);
   const [feedbackQueueStatusFilter, setFeedbackQueueStatusFilter] =
     useState<FeedbackTriageQueueStatusFilter>("");
   const [feedbackActionKey, setFeedbackActionKey] = useState<string | null>(
@@ -1444,6 +1469,21 @@ export default function OperationsPage() {
     selectedScopeId.length > 0
       ? selectedScopeId
       : (dashboard?.scopes[0] ?? undefined);
+
+  const feedbackQueueViewKeyRef = useRef(
+    feedbackQueueViewKey(
+      managementScopeId,
+      feedbackQueueStatusFilter,
+      feedbackQueueCursor,
+      feedbackQueueCursorStack,
+    ),
+  );
+  feedbackQueueViewKeyRef.current = feedbackQueueViewKey(
+    managementScopeId,
+    feedbackQueueStatusFilter,
+    feedbackQueueCursor,
+    feedbackQueueCursorStack,
+  );
 
   useEffect(() => {
     setSelectedScopeId((current) => {
@@ -1625,32 +1665,69 @@ export default function OperationsPage() {
     async (
       scopeId: string,
       status: FeedbackTriageQueueStatusFilter,
+      cursor?: string,
+      cursorStack: readonly (string | undefined)[] = [],
     ): Promise<void> => {
+      const requestVersion = ++feedbackQueueRequestVersion.current;
+      const requestedViewKey = feedbackQueueViewKey(
+        scopeId,
+        status,
+        cursor,
+        cursorStack,
+      );
+      feedbackQueueViewKeyRef.current = requestedViewKey;
+      setFeedbackQueueCursor(cursor);
+      setFeedbackQueueCursorStack(cursorStack);
       setFeedbackQueueState("loading");
       setFeedbackActionError(null);
       const query = new URLSearchParams({ scopeId });
       if (status.length > 0) query.set("status", status);
+      if (cursor !== undefined) query.set("cursor", cursor);
       try {
         const response = await fetch(
           `/api/v1/internal/feedback?${query.toString()}`,
           { cache: "no-store", credentials: "include" },
         );
+        if (requestVersion !== feedbackQueueRequestVersion.current) return;
         if (!response.ok) {
           setFeedbackQueue(null);
           setFeedbackQueueState(dashboardErrorState(response.status));
           return;
         }
         const payload: unknown = await response.json().catch(() => null);
+        if (requestVersion !== feedbackQueueRequestVersion.current) return;
         if (
           !isRecord(payload) ||
           payload.success !== true ||
-          !isFeedbackTriageQueue(payload.data)
+          !isFeedbackTriageQueue(payload.data) ||
+          !isRecord(payload.meta)
         ) {
           throw new Error();
         }
-        setFeedbackQueue(payload.data);
+        const hasNext = payload.meta.has_next;
+        const nextCursor = payload.meta.next_cursor;
+        const normalizedNextCursor =
+          typeof nextCursor === "string" ? nextCursor : undefined;
+        if (
+          typeof hasNext !== "boolean" ||
+          (hasNext && normalizedNextCursor === undefined) ||
+          (!hasNext && nextCursor !== undefined)
+        ) {
+          throw new Error();
+        }
+        if (requestVersion !== feedbackQueueRequestVersion.current) return;
+        setFeedbackQueue({
+          ...payload.data,
+          hasNext,
+          ...(normalizedNextCursor === undefined
+            ? {}
+            : { nextCursor: normalizedNextCursor }),
+        });
+        setFeedbackQueueCursor(cursor);
+        setFeedbackQueueCursorStack(cursorStack);
         setFeedbackQueueState("ready");
       } catch {
+        if (requestVersion !== feedbackQueueRequestVersion.current) return;
         setFeedbackQueue(null);
         setFeedbackQueueState("error");
       }
@@ -1693,7 +1770,10 @@ export default function OperationsPage() {
   useEffect(() => {
     const scopeId = managementScopeId;
     if (scopeId === undefined) {
+      feedbackQueueRequestVersion.current += 1;
       setFeedbackQueue(null);
+      setFeedbackQueueCursor(undefined);
+      setFeedbackQueueCursorStack([]);
       setFeedbackQueueState("idle");
       return;
     }
@@ -1711,6 +1791,12 @@ export default function OperationsPage() {
       event: FeedbackTriageEvent,
     ) => {
       if (feedbackQueue === null) return;
+      const transitionViewKey = feedbackQueueViewKey(
+        feedbackQueue.scopeId,
+        feedbackQueueStatusFilter,
+        feedbackQueueCursor,
+        feedbackQueueCursorStack,
+      );
       const actionKey = `${item.ticketId}:${event}`;
       setFeedbackActionKey(actionKey);
       setFeedbackActionError(null);
@@ -1732,9 +1818,12 @@ export default function OperationsPage() {
         if (!response.ok) throw new Error();
         const payload: unknown = await response.json().catch(() => null);
         if (!isRecord(payload) || payload.success !== true) throw new Error();
+        if (feedbackQueueViewKeyRef.current !== transitionViewKey) return;
         await loadFeedbackTriageQueue(
           feedbackQueue.scopeId,
           feedbackQueueStatusFilter,
+          feedbackQueueCursor,
+          feedbackQueueCursorStack,
         );
       } catch {
         setFeedbackActionError(
@@ -1744,7 +1833,13 @@ export default function OperationsPage() {
         setFeedbackActionKey(null);
       }
     },
-    [feedbackQueue, feedbackQueueStatusFilter, loadFeedbackTriageQueue],
+    [
+      feedbackQueue,
+      feedbackQueueCursor,
+      feedbackQueueCursorStack,
+      feedbackQueueStatusFilter,
+      loadFeedbackTriageQueue,
+    ],
   );
 
   const loadAppealReviewQueue = useCallback(
@@ -2524,6 +2619,8 @@ export default function OperationsPage() {
                         void loadFeedbackTriageQueue(
                           scopeId,
                           feedbackQueueStatusFilter,
+                          feedbackQueueCursor,
+                          feedbackQueueCursorStack,
                         );
                       }
                     }}
@@ -2652,6 +2749,62 @@ export default function OperationsPage() {
                       </table>
                     </div>
                   )}
+                  <div className="report-filter-row">
+                    <span role="status">
+                      Página atual · {feedbackQueue.items.length} relatos
+                    </span>
+                    <div className="account-actions">
+                      <button
+                        type="button"
+                        disabled={feedbackQueueCursorStack.length === 0}
+                        onClick={() => {
+                          const scopeId = managementScopeId;
+                          if (
+                            scopeId === undefined ||
+                            feedbackQueueCursorStack.length === 0
+                          ) {
+                            return;
+                          }
+                          const previousCursor =
+                            feedbackQueueCursorStack[
+                              feedbackQueueCursorStack.length - 1
+                            ];
+                          void loadFeedbackTriageQueue(
+                            scopeId,
+                            feedbackQueueStatusFilter,
+                            previousCursor,
+                            feedbackQueueCursorStack.slice(0, -1),
+                          );
+                        }}
+                      >
+                        Página anterior
+                      </button>
+                      <button
+                        type="button"
+                        disabled={
+                          !feedbackQueue.hasNext ||
+                          feedbackQueue.nextCursor === undefined
+                        }
+                        onClick={() => {
+                          const scopeId = managementScopeId;
+                          if (
+                            scopeId === undefined ||
+                            feedbackQueue.nextCursor === undefined
+                          ) {
+                            return;
+                          }
+                          void loadFeedbackTriageQueue(
+                            scopeId,
+                            feedbackQueueStatusFilter,
+                            feedbackQueue.nextCursor,
+                            [...feedbackQueueCursorStack, feedbackQueueCursor],
+                          );
+                        }}
+                      >
+                        Próxima página
+                      </button>
+                    </div>
+                  </div>
                   {feedbackActionError !== null ? (
                     <p className="feedback error" role="alert">
                       {feedbackActionError}

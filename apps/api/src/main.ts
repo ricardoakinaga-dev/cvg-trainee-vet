@@ -171,6 +171,7 @@ export function createApiRuntime(
   );
   const feedbackTriageQueueRepository = createFeedbackTriageQueueRepository(
     integrations.database.db,
+    { cursorSecret: config.auditCursorSecret },
   );
   const feedbackTicketHistoryRepository = createFeedbackTicketHistoryRepository(
     integrations.database.db,

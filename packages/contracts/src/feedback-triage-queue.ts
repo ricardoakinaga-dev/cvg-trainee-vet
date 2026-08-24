@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const idSchema = z.string().uuid();
+const cursorSchema = z.string().regex(/^[A-Za-z0-9_-]{1,512}$/u);
 const statusSchema = z.enum([
   "NOVO",
   "TRIADO",
@@ -29,6 +30,7 @@ export const feedbackTriageQueueQuerySchema = z
   .object({
     scopeId: idSchema,
     status: statusSchema.optional(),
+    cursor: cursorSchema.optional(),
     limit: z.number().int().min(1).max(100).default(50),
   })
   .strict();

@@ -1580,7 +1580,11 @@ async function handleFeedbackTriageQueue(
   const rawQuery = request.query ?? {};
   if (
     Object.keys(rawQuery).some(
-      (key) => key !== "scopeId" && key !== "status" && key !== "limit",
+      (key) =>
+        key !== "scopeId" &&
+        key !== "status" &&
+        key !== "cursor" &&
+        key !== "limit",
     )
   ) {
     return validationResponse(requestId);
@@ -1589,6 +1593,7 @@ async function handleFeedbackTriageQueue(
   const parsed = feedbackTriageQueueQuerySchema.safeParse({
     scopeId: rawQuery.scopeId,
     ...(rawQuery.status === undefined ? {} : { status: rawQuery.status }),
+    ...(rawQuery.cursor === undefined ? {} : { cursor: rawQuery.cursor }),
     ...(rawLimit === undefined ? {} : { limit: Number(rawLimit) }),
   });
   if (!parsed.success) return validationResponse(requestId);
@@ -1617,6 +1622,9 @@ async function handleFeedbackTriageQueue(
       ...(parsed.data.status === undefined
         ? {}
         : { status: parsed.data.status }),
+      ...(parsed.data.cursor === undefined
+        ? {}
+        : { cursor: parsed.data.cursor }),
       limit: parsed.data.limit,
     },
   });
@@ -1625,6 +1633,12 @@ async function handleFeedbackTriageQueue(
     body: apiSuccessResponse(
       internalFeedbackTriageQueueProjection(state),
       requestId,
+      {
+        has_next: state.hasNext,
+        ...(state.nextCursor === undefined
+          ? {}
+          : { next_cursor: state.nextCursor }),
+      },
     ),
   };
 }

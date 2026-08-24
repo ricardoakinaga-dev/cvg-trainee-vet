@@ -200,6 +200,32 @@ const feedbackTriageQueue = {
   ],
 };
 
+const feedbackTriageQueueSecondPage = {
+  ...feedbackTriageQueue,
+  items: [
+    {
+      ticketId: "66666666-6666-4666-8666-666666666666",
+      type: "MELHORIA",
+      description: "Segundo relato sintético precisa de triagem.",
+      createdAt: "2026-08-22T10:00:00.000Z",
+      status: "NOVO",
+      version: 0,
+    },
+  ],
+};
+
+const feedbackTriageQueueTriagedFilter = {
+  ...feedbackTriageQueue,
+  items: [
+    {
+      ...feedbackTriageQueue.items[0],
+      description: "Relato filtrado por status.",
+      status: "TRIADO",
+      version: 1,
+    },
+  ],
+};
+
 const feedbackTicketHistory = {
   ticketId: "77777777-7777-4777-8777-777777777777",
   events: [
@@ -353,6 +379,10 @@ test.describe("staff training dashboard", () => {
       },
     );
     let currentFeedbackQueue = feedbackTriageQueue;
+    let delayFeedbackPatch = false;
+    let feedbackPatchPending = false;
+    let releaseFeedbackPatch: (() => void) | null = null;
+    let failNextTriagedFeedbackQueue = false;
     await page.route(
       /\/api\/v1\/internal\/feedback(?:\/[^?]+)?(?:\?.*)?$/u,
       async (route) => {
@@ -388,6 +418,12 @@ test.describe("staff training dashboard", () => {
               },
             ],
           };
+          feedbackPatchPending = true;
+          if (delayFeedbackPatch) {
+            await new Promise<void>((resolve) => {
+              releaseFeedbackPatch = resolve;
+            });
+          }
           await route.fulfill({
             status: 200,
             contentType: "application/json",
@@ -402,12 +438,49 @@ test.describe("staff training dashboard", () => {
               }),
             ),
           });
+          feedbackPatchPending = false;
+          releaseFeedbackPatch = null;
           return;
         }
+        const requestUrl = new URL(route.request().url());
+        const cursor = requestUrl.searchParams.get("cursor");
+        const status = requestUrl.searchParams.get("status");
+        if (status === "TRIADO" && failNextTriagedFeedbackQueue) {
+          failNextTriagedFeedbackQueue = false;
+          await route.fulfill({
+            status: 503,
+            contentType: "application/json",
+            body: JSON.stringify({ success: false }),
+          });
+          return;
+        }
+        if (status === "TRIADO" && cursor !== null) {
+          await route.fulfill({
+            status: 422,
+            contentType: "application/json",
+            body: JSON.stringify({ success: false }),
+          });
+          return;
+        }
+        const queue =
+          cursor === "feedback-cursor-page-2"
+            ? feedbackTriageQueueSecondPage
+            : status === "TRIADO"
+              ? feedbackTriageQueueTriagedFilter
+              : currentFeedbackQueue;
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify(successEnvelope(currentFeedbackQueue)),
+          body: JSON.stringify({
+            ...successEnvelope(queue),
+            meta: {
+              request_id: "e2e-feedback-request",
+              has_next: cursor === null && status !== "TRIADO",
+              ...(cursor === null && status !== "TRIADO"
+                ? { next_cursor: "feedback-cursor-page-2" }
+                : {}),
+            },
+          }),
         });
       },
     );
@@ -484,8 +557,70 @@ test.describe("staff training dashboard", () => {
     await expect(page.getByTestId("feedback-history")).not.toContainText(
       "scopeId",
     );
+    const feedbackQueuePanel = page.getByTestId("feedback-triage-queue");
+    delayFeedbackPatch = true;
     await page.getByRole("button", { name: "Triar" }).click();
+    await expect.poll(() => feedbackPatchPending).toBe(true);
+    await feedbackQueuePanel.locator("select").selectOption("TRIADO");
+    await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
+    expect(releaseFeedbackPatch).not.toBeNull();
+    releaseFeedbackPatch?.();
+    delayFeedbackPatch = false;
+    await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
+    await feedbackQueuePanel.locator("select").selectOption("");
+    await expect(
+      page.getByText("Relato sintético precisa de triagem."),
+    ).toBeVisible();
     await expect(page.getByRole("cell", { name: "Triado" })).toBeVisible();
+    await expect(
+      feedbackQueuePanel.getByRole("button", { name: "Página anterior" }),
+    ).toBeDisabled();
+    await expect(
+      feedbackQueuePanel.getByRole("button", { name: "Próxima página" }),
+    ).toBeEnabled();
+    await feedbackQueuePanel
+      .getByRole("button", { name: "Próxima página" })
+      .click();
+    await expect(
+      page.getByText("Segundo relato sintético precisa de triagem."),
+    ).toBeVisible();
+    failNextTriagedFeedbackQueue = true;
+    await feedbackQueuePanel.locator("select").selectOption("TRIADO");
+    await expect(feedbackQueuePanel.getByRole("alert")).toContainText(
+      "Não foi possível carregar a fila de relatos.",
+    );
+    await feedbackQueuePanel
+      .getByRole("button", { name: "Tentar novamente" })
+      .click();
+    await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
+    await feedbackQueuePanel.locator("select").selectOption("");
+    await expect(
+      page.getByText("Relato sintético precisa de triagem."),
+    ).toBeVisible();
+    await expect(
+      feedbackQueuePanel.getByRole("button", { name: "Página anterior" }),
+    ).toBeDisabled();
+    await expect(
+      feedbackQueuePanel.getByRole("button", { name: "Próxima página" }),
+    ).toBeEnabled();
+    await feedbackQueuePanel
+      .getByRole("button", { name: "Próxima página" })
+      .click();
+    await expect(
+      page.getByText("Segundo relato sintético precisa de triagem."),
+    ).toBeVisible();
+    await expect(
+      feedbackQueuePanel.getByRole("button", { name: "Página anterior" }),
+    ).toBeEnabled();
+    await expect(
+      feedbackQueuePanel.getByRole("button", { name: "Próxima página" }),
+    ).toBeDisabled();
+    await feedbackQueuePanel
+      .getByRole("button", { name: "Página anterior" })
+      .click();
+    await expect(
+      page.getByText("Relato sintético precisa de triagem."),
+    ).toBeVisible();
     await expect(
       page.getByText("A justificativa sintética aguarda revisão interna."),
     ).toBeVisible();

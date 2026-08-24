@@ -1055,6 +1055,17 @@ export const feedbackTickets = pgTable(
       table.scopeId,
       table.status,
     ),
+    index("feedback_tickets_scope_created_id_idx").on(
+      table.scopeId,
+      table.createdAt,
+      table.id,
+    ),
+    index("feedback_tickets_scope_status_created_id_idx").on(
+      table.scopeId,
+      table.status,
+      table.createdAt,
+      table.id,
+    ),
     check(
       "feedback_tickets_type_check",
       sql`${table.type} in ('BUG_TECNICO', 'USABILIDADE', 'ERRO_CONTEUDO', 'MELHORIA', 'CONTESTACAO')`,

@@ -10,8 +10,14 @@ const ticketId = "33333333-3333-4333-8333-333333333333";
 
 describe("feedback triage queue contract", () => {
   it("defaults to a bounded scoped query and parses an allowlisted item", () => {
-    expect(feedbackTriageQueueQuerySchema.parse({ scopeId })).toEqual({
+    expect(
+      feedbackTriageQueueQuerySchema.parse({
+        scopeId,
+        cursor: "cursor-page-2",
+      }),
+    ).toEqual({
       scopeId,
+      cursor: "cursor-page-2",
       limit: 50,
     });
     expect(
@@ -42,6 +48,12 @@ describe("feedback triage queue contract", () => {
       feedbackTriageQueueQuerySchema.parse({
         scopeId,
         participantId: "22222222-2222-4222-8222-222222222222",
+      }),
+    ).toThrow();
+    expect(() =>
+      feedbackTriageQueueQuerySchema.parse({
+        scopeId,
+        cursor: "cursor with spaces",
       }),
     ).toThrow();
     expect(() =>

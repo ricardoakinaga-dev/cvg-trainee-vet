@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  FeedbackTriageQueueQueryError,
   getFeedbackTriageQueue,
   type FeedbackTriageQueueReadPort,
   type FeedbackTriageQueueState,
@@ -16,6 +17,7 @@ const state: FeedbackTriageQueueState = {
   generatedAt: "2026-08-24T12:00:00.000Z",
   filters: { scopeId, limit: 50 },
   items: [],
+  hasNext: false,
 };
 
 const item: FeedbackTriageQueueState["items"][number] = {
@@ -29,9 +31,13 @@ const item: FeedbackTriageQueueState["items"][number] = {
 
 function repository(
   value: FeedbackTriageQueueState,
+  capturedQueries: Array<unknown> = [],
 ): FeedbackTriageQueueReadPort {
   return {
-    listFeedbackTickets: async () => value,
+    listFeedbackTickets: async (query) => {
+      capturedQueries.push(query);
+      return value;
+    },
   };
 }
 
@@ -104,5 +110,82 @@ describe("feedback triage queue use case", () => {
         }),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
+
+    await expect(
+      getFeedbackTriageQueue(
+        {
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+          query: { scopeId, cursor: "cursor with spaces" },
+        },
+        repository(state),
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+  });
+
+  it("forwards a validated cursor and preserves page metadata", async () => {
+    const capturedQueries: unknown[] = [];
+    const nextCursor = "cursor-page-3";
+    const result = await getFeedbackTriageQueue(
+      {
+        principalId,
+        accountStatus: "ACTIVE",
+        roles: ["MODERATOR"],
+        scopes: [scopeId],
+        query: { scopeId, status: "NOVO", limit: 25, cursor: "cursor-page-2" },
+      },
+      repository(
+        {
+          ...state,
+          filters: { scopeId, status: "NOVO", limit: 25 },
+          hasNext: true,
+          nextCursor,
+        },
+        capturedQueries,
+      ),
+    );
+
+    expect(capturedQueries).toEqual([
+      { scopeId, status: "NOVO", limit: 25, cursor: "cursor-page-2" },
+    ]);
+    expect(result).toMatchObject({ hasNext: true, nextCursor });
+  });
+
+  it("maps repository cursor failures to a bounded validation error", async () => {
+    await expect(
+      getFeedbackTriageQueue(
+        {
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+          query: { scopeId, cursor: "cursor-page-2" },
+        },
+        {
+          listFeedbackTickets: async () => {
+            throw new FeedbackTriageQueueQueryError("cursor is invalid");
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+
+    await expect(
+      getFeedbackTriageQueue(
+        {
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+          query: { scopeId },
+        },
+        {
+          listFeedbackTickets: async () => {
+            throw new TypeError("database driver failure");
+          },
+        },
+      ),
+    ).rejects.toThrow("database driver failure");
   });
 });

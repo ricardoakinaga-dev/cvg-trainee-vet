@@ -297,6 +297,8 @@ const feedbackTriageQueue: FeedbackTriageQueueState = {
       version: 0,
     },
   ],
+  hasNext: true,
+  nextCursor: "cursor-page-2",
 };
 
 const feedbackTicketHistory: FeedbackTicketHistoryState = {
@@ -2677,7 +2679,12 @@ describe("API HTTP boundary", () => {
       {
         method: "GET",
         path: "/api/v1/internal/feedback",
-        query: { scopeId, status: "NOVO", limit: "25" },
+        query: {
+          scopeId,
+          status: "NOVO",
+          limit: "25",
+          cursor: "cursor-page-2",
+        },
         body: undefined,
       },
       dependencies({
@@ -2697,13 +2704,22 @@ describe("API HTTP boundary", () => {
       accountStatus: "ACTIVE",
       roles: ["MODERATOR"],
       scopes: [scopeId],
-      query: { scopeId, status: "NOVO", limit: 25 },
+      query: {
+        scopeId,
+        status: "NOVO",
+        limit: 25,
+        cursor: "cursor-page-2",
+      },
     });
     expect(response.body).toMatchObject({
       success: true,
       data: {
         kind: "feedback_triage_queue",
         items: [{ type: "ERRO_CONTEUDO", status: "NOVO" }],
+      },
+      meta: {
+        has_next: true,
+        next_cursor: "cursor-page-2",
       },
     });
     expect(JSON.stringify(response.body)).not.toContain("participantId");

@@ -11,9 +11,17 @@ export type FeedbackTriageQueueStatus =
   | "NAO_REPRODUZIDO"
   | "NAO_PLANEJADO";
 
+export class FeedbackTriageQueueQueryError extends TypeError {
+  constructor(message: string) {
+    super(message);
+    this.name = "FeedbackTriageQueueQueryError";
+  }
+}
+
 export type FeedbackTriageQueueQuery = Readonly<{
   readonly scopeId: string;
   readonly status?: FeedbackTriageQueueStatus;
+  readonly cursor?: string;
   readonly limit?: number;
 }>;
 
@@ -41,6 +49,8 @@ export type FeedbackTriageQueueState = Readonly<{
     readonly limit: number;
   }>;
   readonly items: readonly FeedbackTriageQueueItem[];
+  readonly hasNext: boolean;
+  readonly nextCursor?: string;
 }>;
 
 export type GetFeedbackTriageQueueCommand = Readonly<{
@@ -57,6 +67,7 @@ export interface FeedbackTriageQueueReadPort {
     query: Readonly<{
       readonly scopeId: string;
       readonly status?: FeedbackTriageQueueStatus;
+      readonly cursor?: string;
       readonly limit: number;
     }>,
   ) => Promise<FeedbackTriageQueueState>;
@@ -64,6 +75,7 @@ export interface FeedbackTriageQueueReadPort {
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const cursorPattern = /^[A-Za-z0-9_-]{1,512}$/u;
 const queueStatuses: readonly FeedbackTriageQueueStatus[] = [
   "NOVO",
   "TRIADO",
@@ -90,12 +102,16 @@ function assertUuid(value: string, field: string): void {
 function normalizeQuery(query: FeedbackTriageQueueQuery): Readonly<{
   readonly scopeId: string;
   readonly status?: FeedbackTriageQueueStatus;
+  readonly cursor?: string;
   readonly limit: number;
 }> {
   assertNonEmpty(query.scopeId, "scopeId");
   assertUuid(query.scopeId, "scopeId");
   if (query.status !== undefined && !queueStatuses.includes(query.status)) {
     throw new ApplicationError("validation_error", "status is invalid");
+  }
+  if (query.cursor !== undefined && !cursorPattern.test(query.cursor)) {
+    throw new ApplicationError("validation_error", "cursor is invalid");
   }
   const limit = query.limit ?? 50;
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
@@ -104,6 +120,7 @@ function normalizeQuery(query: FeedbackTriageQueueQuery): Readonly<{
   return Object.freeze({
     scopeId: query.scopeId,
     ...(query.status === undefined ? {} : { status: query.status }),
+    ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
     limit,
   });
 }
@@ -117,6 +134,7 @@ function assertQueueState(
   query: Readonly<{
     readonly scopeId: string;
     readonly status?: FeedbackTriageQueueStatus;
+    readonly cursor?: string;
     readonly limit: number;
   }>,
 ): void {
@@ -131,6 +149,18 @@ function assertQueueState(
     throw new ApplicationError(
       "forbidden",
       "Feedback queue returned data outside the requested scope",
+    );
+  }
+  if (
+    typeof state.hasNext !== "boolean" ||
+    (state.hasNext &&
+      (state.nextCursor === undefined ||
+        !cursorPattern.test(state.nextCursor))) ||
+    (!state.hasNext && state.nextCursor !== undefined)
+  ) {
+    throw new ApplicationError(
+      "internal_error",
+      "Feedback queue returned invalid pagination metadata",
     );
   }
   const seen = new Set<string>();
@@ -178,7 +208,18 @@ export async function getFeedbackTriageQueue(
     throw new ApplicationError("forbidden", "Feedback queue is not authorized");
   }
 
-  const state = await repository.listFeedbackTickets(query);
+  let state: FeedbackTriageQueueState;
+  try {
+    state = await repository.listFeedbackTickets(query);
+  } catch (error) {
+    if (error instanceof FeedbackTriageQueueQueryError) {
+      throw new ApplicationError(
+        "validation_error",
+        "Feedback queue cursor or query is invalid",
+      );
+    }
+    throw error;
+  }
   assertQueueState(state, query);
   return Object.freeze({
     ...state,

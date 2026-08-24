@@ -89,7 +89,10 @@ export type {
   ParticipantFeedbackReadPort,
   ParticipantFeedbackReadRecord,
 } from "./feedback-ticket-read-use-cases.js";
-export { getFeedbackTriageQueue } from "./feedback-triage-queue-use-cases.js";
+export {
+  FeedbackTriageQueueQueryError,
+  getFeedbackTriageQueue,
+} from "./feedback-triage-queue-use-cases.js";
 export type {
   FeedbackTriageQueueItem,
   FeedbackTriageQueueQuery,
