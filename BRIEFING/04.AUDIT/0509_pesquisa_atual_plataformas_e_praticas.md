@@ -1,6 +1,6 @@
 # Pesquisa atual — plataformas e práticas de treinamento veterinário
 
-**Data da pesquisa:** 2026-08-23
+**Data da pesquisa:** 2026-08-24
 **Escopo:** treinamento veterinário digital, educação baseada em competências,
 gestão de trilhas e evidências recentes de aprendizagem em saúde.
 **Uso:** decisão de produto, requisitos de engenharia e auditoria; não é
@@ -280,3 +280,54 @@ atribuição adaptativa persistida; B-07 e packs continuam sem publicação clí
 avaliação/contestação não têm recálculo versionado, snapshots, encerramento e
 notificação; e a operação live ainda precisa provar RLS, menor privilégio,
 telemetria, carga, failover e restore em ambiente autorizado.
+
+## 7. Atualização de fontes primárias — 2026-08-24
+
+Esta rodada revisou fontes primárias e literatura recente para verificar se a
+barra anterior continuava adequada:
+
+- A [AAVMC mantém o CBVE Education 2.0](https://www.aavmc.org/resources/competency-based-veterinary-education/cbve-education-2-0-model/)
+  como modelo de competências, milestones, EPAs, avaliação e implementação.
+  A biblioteca atual também registra materiais de 2026 sobre mapeamento
+  curricular, EPAs e competências de trabalho em equipe. Isso sustenta a
+  decisão de mapear objetivo → comportamento observável → evidência, sem
+  transformar o catálogo em um selo de competência prática.
+- O [toolkit de avaliação CBVE 2025](https://www.aavmc.org/resource/cbve-assessment-toolkit-2025/)
+  reúne instrumentos distintos para domínios e finalidades diferentes. O CVG
+  deve continuar combinando itens objetivos, resposta aberta, caso, reflexão e
+  revisão humana; um único quiz não pode representar todos os domínios.
+- O [RCVS descreve o ciclo de CPD plan/do/record/reflect](https://www.rcvs.org.uk/veterinary-professionals/learning-and-development/continuing-professional-development-cpd)
+  e informa que horas e reconhecimento são regras jurisdicionais. A atualização
+  de 2026 sobre a [RCVS Academy](https://www.rcvs.org.uk/about-us/news-and-views/news/rcvs-academy-celebrates-fourth-anniversary)
+  confirma módulos curtos, sessões interativas, feedback e ligação com o
+  registro 1CPD. O CVG pode adotar a mecânica de reflexão e retomada, mas não
+  deve chamar seu relatório interno de CPD acreditado.
+- O [VetFolio/NAVC](https://www.vetfolio.com/pages/subscribe) continua sendo
+  benchmark de biblioteca multimodal, microlearning, eventos, certificados e
+  gestão de equipes. Esses recursos não entram como dependência de runtime e
+  não autorizam importar conteúdo, fontes ou certificados.
+- O [TeamSTEPPS 3.0 da AHRQ](https://www.ahrq.gov/teamstepps-program/curriculum/index.html)
+  organiza comunicação, liderança, monitoramento de situação e apoio mútuo; a
+  orientação de ensino admite formatos curtos de 15–30 minutos e aprendizagem
+  ativa. Isso reforça casos digitais curtos, prebrief/debrief e reflexão, sem
+  afirmar execução observada.
+- Estudos veterinários recentes apoiam a coleta longitudinal de múltiplos
+  pontos de evidência, mas também mostram limites de confiabilidade de escalas
+  isoladas: [desenvolvimento longitudinal com CBVE](https://www.frontiersin.org/journals/veterinary-science/articles/10.3389/fvets.2022.1019305/full)
+  e [prática deliberada em habilidades clínicas](https://pubmed.ncbi.nlm.nih.gov/41442529/).
+  A implicação é medir progresso digital com várias evidências e encaminhar
+  habilidades psicomotoras para observação/simulação supervisionada.
+- Uma revisão de 2026 sobre [modelos físicos e simuladores na educação
+  veterinária](https://www.frontiersin.org/journals/veterinary-science/articles/10.3389/fvets.2026.1774849/full)
+  reforça que simuladores podem apoiar conhecimento, psicomotor e feedback,
+  mas não substituem critérios de segurança, facilitação e avaliação humana.
+
+### Decisão de produto após a atualização
+
+Manter como barra do MVP: diagnóstico server-side → trilha por competência →
+atividade curta/interativa → feedback redigido → reflexão → retenção agendada →
+próxima ação autorizada. A plataforma continua proibida de inferir EPA,
+entrustment, autonomia clínica, transferência assistencial, acreditação ou
+competência prática a partir desses sinais digitais. B-07, packs clínicos,
+observação de trabalho, simulação presencial, publicação e piloto continuam
+atrás dos gates de revisão de Ricardo e do ambiente autorizado.

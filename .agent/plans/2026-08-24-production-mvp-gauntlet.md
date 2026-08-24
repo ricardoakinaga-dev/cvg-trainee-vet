@@ -74,6 +74,17 @@ a aprovação clínica, piloto ou release produtivo.
   contratos 72/72, worker 25/25 e migrations 27/27. O CI agora provisiona
   roles distintas de migração, aplicação e fixture; workflow remoto, produção,
   concorrência, clínica e assurance operacional continuam gaps.
+- [x] (2026-08-24T08:01:41-03:00) Fechar `OUTBOX-FENCE-001` nos commits
+  `e3cfb6f4255928c50de3c67718195a0063cce3c9` e
+  `8d03882cc2538f48b5f6c77d861fbaec90b65a75`: claim/reclaim agora usam
+  token opaco, finalização/falha condicionais ao token e ao relógio do
+  PostgreSQL, com trigger de rollout contra worker legado. O primeiro critic
+  independente reprovou fake permissivo, ausência de `markFailed` live e
+  relógio do processo; os pontos foram corrigidos. GREEN focal 32/32,
+  PostgreSQL live 31/50, regressão `pnpm verify` 125/579/33 skips e
+  cobertura 84,48%/80,37%/85,97%/85,22% passaram. Fencing não equivale a
+  exatamente-once; a prova live ainda inclui a disputa de finalização por duas
+  conexões; efeitos externos continuam exigindo idempotência.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a

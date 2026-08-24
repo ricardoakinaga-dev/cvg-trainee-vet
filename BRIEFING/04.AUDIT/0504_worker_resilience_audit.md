@@ -1,6 +1,6 @@
 # 0504 — Auditoria do worker, Qdrant, IA e resiliência
 
-**Data:** 2026-08-10  
+**Data:** 2026-08-24
 **Escopo:** item 11 da matriz 0491_full_construction_audit.md  
 **Task:** RESILIENCE-11-01  
 **Resultado:** **95/100 — concluído com gaps operacionais**
@@ -9,7 +9,7 @@
 
 O item 11 foi reavaliado em **95/100**. O worker agora reconhece todos os eventos emitidos pelos casos de uso atuais (content.*, attempt.submitted.v1, answer.saved.v1 e assessment.corrected.v1) e o evento interno de solicitação de IA. Eventos educacionais cuja fonte de verdade é o PostgreSQL são reconhecidos por handlers no-op; eventos de publicação/retirada continuam com efeitos explícitos no índice derivado.
 
-O cenário live conjunto PostgreSQL + Qdrant provou um conjunto não vazio, divergência de hash, ponto órfão, upsert, remoção, reconciliação repetida sem novo upsert, alteração de conteúdo, replay de publicação com ID determinístico e retirada. Outro cenário live provou lease expirado, reclaim, retry com backoff zero para teste e dead-letter após o limite de tentativas.
+O cenário live conjunto PostgreSQL + Qdrant provou um conjunto não vazio, divergência de hash, ponto órfão, upsert, remoção, reconciliação repetida sem novo upsert, alteração de conteúdo, replay de publicação com ID determinístico e retirada. Outro cenário live provou lease expirado, reclaim, fencing de finalização e falha stale, retry com backoff zero para teste e dead-letter após o limite de tentativas.
 
 A nota é técnica e de construção. Não autoriza publicação clínica, piloto, uso de IA externa ou release: provider produtivo, collector externo, reinício de processo observável, E2E navegador→API real, restore e operação de produção continuam nos itens próprios.
 
@@ -43,7 +43,12 @@ O teste cria conteúdo sintético publicado e uma coleção Qdrant descartável.
 
 Arquivo: tests/integration/postgres-worker.test.ts.
 
-O teste abandona um evento em PROCESSING, avança o relógio além do lease, confirma novo claim com attempts:2, marca dead-letter e executa outro evento com falha transitória até a segunda tentativa terminal. O resultado persistido confirma locked_until:null, status:FAILED e códigos técnicos de erro.
+O teste abandona um evento em PROCESSING, expira o lease no banco, confirma novo
+claim com attempts:2 e executa a finalização concorrente através de duas
+conexões PostgreSQL: somente o token atual vence. Também marca dead-letter e
+executa outro evento com falha transitória até a segunda tentativa terminal. O
+resultado persistido confirma locked_until:null, status:FAILED e códigos
+técnicos de erro.
 
 ### 3.4 Testes direcionados
 
@@ -51,13 +56,46 @@ O teste abandona um evento em PROCESSING, avança o relógio além do lease, con
 - apps/worker/src/loop.test.ts: 5 testes passaram.
 - apps/worker/src/reconcile.test.ts: 2 testes passaram.
 - live worker/Qdrant: 1 teste passou.
-- live PostgreSQL worker: 2 testes passaram.
+- live PostgreSQL worker: 4 testes passaram no recorte de outbox/lease.
 
 Os testes usam apenas UUIDs, textos sintéticos e coleção descartável. Não foram usados PDFs, fotos, fontes, prontuários, tutores, pacientes ou casos identificáveis.
 
+### 3.5 OUTBOX-FENCE-001 — fencing contra worker stale
+
+O slice bounded adicionou `lease_token` por claim, atualização condicional de
+`markProcessed`/`markFailed`, relógio `statement_timestamp()` do PostgreSQL
+e trigger de rollout que rejeita a transição terminal de uma versão antiga sem
+token. O worker trata `0 rows` como `lease_lost`, sem contar processamento
+sucesso e sem executar `markFailed` com a posse perdida; a telemetria registra
+somente código técnico redigido.
+
+Evidência fresca em 2026-08-24:
+
+- RED: a suíte focal falhou antes do token/retorno booleano, com 9 testes
+  vermelhos; o scanner de segredos também detectou fixtures que pareciam
+  credenciais e foi corrigido com marcadores sintéticos não ambíguos;
+- GREEN: `apps/worker/src/loop.test.ts`,
+  `packages/persistence/src/outbox-repository.test.ts` e handlers passaram
+  32/32;
+- live PostgreSQL: `tests/integration/postgres-worker.test.ts` passou 4/4,
+  dentro de 31 arquivos/50 testes, usando aplicação sem
+  `SUPERUSER/BYPASSRLS` e fixture administrativa separada;
+- o cenário de finalização stale usa duas conexões PostgreSQL independentes
+  concorrendo pelo mesmo registro; o token atual retorna `true` e o antigo
+  retorna `false`;
+- regressão: `pnpm verify` passou com 125 arquivos/579 testes, 33 skips,
+  cobertura 84,48% statements, 80,37% branches, 85,97% functions e 85,22%
+  lines; migrações 28/28, contrato CI 21 checks e gates de segurança/
+  documentação passaram.
+
+O fencing não declara exactly-once: um handler que inicia efeito externo antes
+de perder o lease continua exigindo idempotência determinística e reconciliação.
+
 ## 4. Decisão e próximos limites
 
-RESILIENCE-11-01 está concluída no escopo técnico do item 11. O item 12 pode ser aberto pela ordem controlada, mantendo como gaps explícitos:
+RESILIENCE-11-01 e OUTBOX-FENCE-001 estão concluídos no escopo técnico local
+do item 11, com gaps operacionais mantidos explicitamente. O item 12 pode ser
+aberto pela ordem controlada, mantendo:
 
 - collector/exporter, alertas, SLO, traces e dashboards;
 - restart de processo com telemetria e runbook de produção;

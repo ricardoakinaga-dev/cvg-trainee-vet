@@ -19,6 +19,17 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Atualização operacional 2026-08-24 (JOURNEY-REL-002 / AUD-P1-003):** o commit `5bfa530710171cf1299e8e60d4645796b3886465` fechou a prova live sintética de provenance/RLS e hardening de papéis: a suíte PostgreSQL passou 31 arquivos/48 testes com aplicação `NOSUPERUSER/NOBYPASSRLS` e fixture administrativa separada; o vínculo publicado com módulo incompatível falha fechada e sofre rollback transacional. `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via navegador→web→API→PostgreSQL. O CI agora provisiona owner de migração, aplicação e admin distintos. `pnpm verify` passou com 125/576/31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contratos 72/72, worker 25/25 e migrations 27/27. Remanescem workflow remoto no mesmo SHA, concorrência, grants/owners produtivos, observabilidade/restore, pipeline curricular autoral e gates clínicos; não há declaração de release/100%.
 
+**Atualização operacional 2026-08-24 (OUTBOX-FENCE-001):** o outbox agora grava
+`lease_token` por claim, finaliza/falha somente com token correspondente e
+lease válido no relógio do PostgreSQL, e rejeita no banco transições terminais de
+worker antigo sem fencing. RED/GREEN focal passou 32/32; PostgreSQL live passou
+31 arquivos/50 testes com aplicação `NOSUPERUSER/NOBYPASSRLS` e fixture admin
+separada; `pnpm verify` passou com 125/579/33 skips, cobertura
+84,48%/80,37%/85,97%/85,22%, migrações 28/28 e contrato CI 21 checks. O item
+fica `COMPLETED_WITH_GAPS`: efeitos externos continuam at-least-once e
+idempotentes; remote same-SHA, múltiplas réplicas/carga, collector/traces/
+retention/restore produtivos, autoria curricular e gates clínicos permanecem.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -248,6 +259,41 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - resultado: matriz de eventos completa, conteúdo não vazio, divergência/órfão/replay/retirada, lease expirado, retry e dead-letter passaram; item 11 reavaliado em **95/100**
 - gaps: restart observável, provider produtivo, telemetria externa, carga, restore e CI com dependências live permanecem nos itens próprios
 - próxima ação concluída: abrir `OBSERVABILITY-12-01`
+
+### OUTBOX-FENCE-001 — Fencing de lease do outbox
+
+- título: impedir que worker stale finalize ou falhe evento após reclaim
+- descrição: atribuir token opaco por claim, guardar o token no PostgreSQL,
+  exigir token e lease válido em sucesso/falha, usar relógio server-side e
+  bloquear transição terminal de worker legado durante rollout
+- módulo: worker / persistência / resiliência / operação
+- dependência: `RESILIENCE-11-01`; SPEC 0108, 0113 e 0118
+- fase: BUILD — Phase 9 / hardening local de resiliência
+- risco: alto — corrida stale pode duplicar efeito, perder retry ou mascarar
+  ownership do evento
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- evidência: `BRIEFING/04.AUDIT/0504_worker_resilience_audit.md`;
+  migração `0027_outbox_lease_fencing.sql`; `docs/99_runtime_state.md`
+- código: `packages/persistence/src/outbox-repository.ts`,
+  `packages/persistence/src/schema.ts`, `apps/worker/src/loop.ts`
+- testes: `packages/persistence/src/outbox-repository.test.ts`,
+  `apps/worker/src/loop.test.ts`,
+  `tests/integration/postgres-worker.test.ts`
+- verificação: RED focal com 9 falhas antes do slice; GREEN focal 32/32;
+  PostgreSQL live 31 arquivos/50 testes; `pnpm verify` 125/579/33 skips,
+  cobertura global acima de 80%, migrações 28/28, secrets, CI contract,
+  documentação, exposição, typecheck, lint e build/E2E a repetir após o commit
+- resultado: claim/reclaim renovam token; token antigo não finaliza nem falha;
+  relógio do PostgreSQL evita clock skew do processo; worker registra
+  `lease_lost` sem retry cego
+- gaps: efeito externo iniciado antes da perda ainda exige idempotência;
+  múltiplas réplicas/carga, workflow remoto, collector/traces/retention/restore
+  produtivos, grants produtivos, autoria curricular e gates clínicos continuam
+  nos itens próprios
+- próxima ação: fechar commit/rastreabilidade local e então tratar pipeline
+  autoral `moduleId` com E2E navegador→PostgreSQL quando o escopo clínico
+  continuar bloqueado
 
 ### OBSERVABILITY-12-01 — Observabilidade e recuperação operacional
 

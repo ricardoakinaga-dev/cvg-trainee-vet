@@ -45,13 +45,18 @@ Payloads de operação não carregam senha, token, resposta livre desnecessária
 1. `event_id` único;
 2. outbox grava na mesma transação do agregado;
 3. worker reserva por lease e pode retomar após crash;
-4. consumidor verifica `event_id` processado antes do efeito;
-5. retry exponencial limitado, com estado `FAILED` e reprocessamento manual;
-6. evento não dispara alteração irreversível sem comando idempotente;
-7. nenhuma decisão clínica, de nota, papel ou publicação é delegada ao worker sem comando já autorizado.
-8. indexação no Qdrant é reconstruível a partir do PostgreSQL e não bloqueia publicação, avaliação ou progresso;
-9. chamadas de IA têm timeout, limite, retry limitado, circuit breaker operacional e saída validada; falha deixa o estado principal intacto;
-10. Qdrant e IA nunca são chamados pelo navegador e nunca recebem segredo de sessão ou payload público ampliado.
+4. cada claim grava um `lease_token` opaco novo; a finalização ou falha só pode
+   ocorrer com o token correspondente e enquanto o lease ainda estiver válido
+   no relógio do PostgreSQL;
+5. uma atualização sem linha afetada significa `lease_lost`: o worker não
+   contabiliza sucesso nem tenta alterar o evento com o token antigo;
+6. consumidor verifica `event_id` processado antes do efeito;
+7. retry exponencial limitado, com estado `FAILED` e reprocessamento manual;
+8. evento não dispara alteração irreversível sem comando idempotente;
+9. nenhuma decisão clínica, de nota, papel ou publicação é delegada ao worker sem comando já autorizado.
+10. indexação no Qdrant é reconstruível a partir do PostgreSQL e não bloqueia publicação, avaliação ou progresso;
+11. chamadas de IA têm timeout, limite, retry limitado, circuit breaker operacional e saída validada; falha deixa o estado principal intacto;
+12. Qdrant e IA nunca são chamados pelo navegador e nunca recebem segredo de sessão ou payload público ampliado.
 
 ## 5. Jobs do worker
 
@@ -82,4 +87,10 @@ O worker reconhece os eventos atualmente emitidos pelos casos de uso e o evento 
 
 `WORKER_RECOGNIZED_EVENT_TYPES` é a allowlist do consumidor. Um evento não mapeado continua falhando fechado e entra no retry/dead-letter; a adição de qualquer novo publisher exige atualizar a matriz e o teste correspondente.
 
-O contrato de entrega é at-least-once. IDs e hashes determinísticos tornam upsert, delete, replay e reconciliação repetíveis sem declarar exactly-once. PostgreSQL continua a fonte transacional; Qdrant é reconstruível e IA não possui autoridade editorial ou educacional.
+O contrato de entrega é at-least-once. O fencing impede que um worker antigo
+finalize o evento depois do reclaim, mas não desfaz um efeito externo iniciado
+antes da perda do lease; cada consumidor deve continuar determinístico e
+idempotente. IDs e hashes determinísticos tornam upsert, delete, replay e
+reconciliação repetíveis sem declarar exactly-once. PostgreSQL continua a fonte
+transacional; Qdrant é reconstruível e IA não possui autoridade editorial ou
+educacional.

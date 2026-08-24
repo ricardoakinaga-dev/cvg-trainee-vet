@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: JOURNEY-REL-002 / AUD-P1-003 / AUD-P1-004 — prova live e hardening de CI
-- current_task: acompanhar a execução remota no mesmo SHA quando autorizada, sem ampliar para release produtivo
+- current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
+- current_sprint: OUTBOX-FENCE-001 / AUD-P1-004 — fencing live e hardening do worker
+- current_task: selecionar e executar a próxima fatia local do pipeline authoring→atividade por `moduleId` explícito, mantendo gates clínicos/operacionais separados
 
 ## STATUS
 
@@ -18,29 +18,29 @@
 
 ## PROGRESSO
 
-- last_completed_action: o commit de código `5bfa530710171cf1299e8e60d4645796b3886465` fechou fail-closed para vínculo `PUBLISHED` com módulo incompatível, rollback transacional e roles distintas no CI. PostgreSQL efêmero passou 31 arquivos/48 testes com app `NOSUPERUSER/NOBYPASSRLS` e fixture admin separada; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passou 28/28 via web→API→PostgreSQL. A documentação, SPEC, backlog, plano e manifesto foram fechados no commit `21b11adb049f4718adcc9ee65ff266f10cd18c1e`; `pnpm verify` passou com 125 arquivos/576 testes, 31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, CI contract 21 checks e gates documentais/segurança verdes. Em seguida, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`, `pnpm verify:documentation` e `pnpm audit --audit-level=high` passaram em worktree limpo. A inspeção read-only confirmou que APPEAL-042 já está implementado, sem alteração redundante.
-- next_action: somente com autoridade, rodar o workflow remoto no SHA `5bfa530710171cf1299e8e60d4645796b3886465`; depois tratar concorrência, grants produtivos, observabilidade e restore; não declarar release/100%
+- last_completed_action: os commits `e3cfb6f4255928c50de3c67718195a0063cce3c9` e `8d03882cc2538f48b5f6c77d861fbaec90b65a75` fecharam `OUTBOX-FENCE-001`: claim/reclaim geram token novo; `markProcessed`/`markFailed` exigem token e lease válido no relógio `statement_timestamp()` do PostgreSQL; trigger bloqueia worker legado; disputa de finalização usa duas conexões. RED focal ocorreu antes da implementação; GREEN focal passou 32/32; PostgreSQL 16 efêmero recém-migrado passou 31 arquivos/50 testes com app `NOSUPERUSER/NOBYPASSRLS` e fixture admin separada; `pnpm verify` passou com 125/579/33 skips, cobertura 84,48%/80,37%/85,97%/85,22%, contracts 72/72, worker 27/27, migrations 28/28 e gates estáticos; build 12 workspaces, E2E 26/26 e audit high passaram. SPEC, auditoria, backlog, log, plano e traceability foram atualizados; nenhum push/deploy ou dado real foi usado.
+- next_action: implementar a próxima fatia local bounded do pipeline authoring→atividade, começando pelo contrato SPEC/0526 e mantendo `moduleId` explícito; workflow remoto, grants/owners produtivos, collector/traces/retention/restore, provider/MFA, autoria clínica, B-07/M02 e piloto só avançam com autoridade compatível
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — a prova local efêmera passou, mas o workflow remoto no mesmo SHA ainda não foi executado; JOURNEY-REL-001 — provenance/RLS/atomicidade passaram localmente, porém pipeline autoral de `moduleId` e E2E curricular navegador→PostgreSQL ainda faltam; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — a prova local efêmera passou, mas o workflow remoto no mesmo SHA ainda não foi executado; JOURNEY-REL-001 — provenance/RLS/atomicidade e fencing passaram localmente, porém pipeline autoral de `moduleId` e E2E curricular navegador→PostgreSQL ainda faltam; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; `FEEDBACK-043`/`APPEAL-042` e debrief/reflexão completa permanecem fora do recorte implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: o commit local é reversível e foi criado com a identidade já usada no histórico; workflow remoto/push no SHA atual exigem autoridade de repositório, e revisão/autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico não equivale a aprovação clínica ou competência prática
+- decision_description: os commits locais são reversíveis e foram criados com a identidade já usada no histórico; workflow remoto/push no SHA atual exigem autoridade de repositório, e revisão/autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico não equivale a aprovação clínica ou competência prática
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T07:19:46-03:00
+- last_update: 2026-08-24T08:06:20-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `a4048a64451eb2c5ba6aaaca3107650c8d59d474` (último commit de continuidade; este estado é seu sucessor de continuidade)
+- head: `8d03882cc2538f48b5f6c77d861fbaec90b65a75` (último commit técnico/teste de continuidade; este estado é seu sucessor de continuidade)
 - origin: `fbbc692` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o fechamento desta atualização de continuidade; não há push/deploy
+- worktree: alterações documentais desta atualização serão fechadas em commit separado; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-REL-002` PASS LOCAL + LIVE SINTÉTICO: `pnpm verify` 125/576/31 skips, cobertura 84,50%/80,34%/85,95%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, CI contract 21 checks, secrets, architecture, documentation, product-definition, exposure e `git diff --check` passaram; build 12 workspaces e E2E real 28/28; PostgreSQL live 31/48 com app sem `SUPERUSER/BYPASSRLS` e admin separado; mesmo-SHA CI, concorrência, grants produtivos, observabilidade, restore e gates clínicos continuam não observados
+- verification_state: `OUTBOX-FENCE-001` PASS LOCAL + LIVE SINTÉTICO: `pnpm verify` 125/579/33 skips, cobertura 84,48%/80,37%/85,97%/85,22%, contracts 72/72, worker 27/27, migrations 28/28, CI contract 21 checks, secrets, architecture, documentation, product-definition, exposure e `git diff --check` passaram; build 12 workspaces, E2E 26/26 e audit high passaram; PostgreSQL live 31/50 com app sem `SUPERUSER/BYPASSRLS`, admin separado e duas conexões na disputa stale; mesmo-SHA CI, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 

@@ -88,3 +88,21 @@ O runbook BRIEFING/08.RUNTIME/0804_observability_operational_contract.md define 
 ## 11. Interface operacional web verificável
 
 O item 13 adicionou `apps/web/app/operations/page.tsx`, que consome somente o estado agregado de `/health/dependencies` e mantém URLs, segredos, payloads e identificadores fora da tela. O proxy em `apps/web/next.config.ts` é habilitado por `CVG_API_INTERNAL_URL` server-side; `tests/e2e/real-runtime.spec.ts` comprovou o caminho navegador→web→API→PostgreSQL. A tela é complementar ao contrato de observabilidade, não substitui autenticação/autorização da API nem inventa estado operacional no cliente.
+
+## 12. Evidência e operação de fencing de lease
+
+O claim do outbox usa `statement_timestamp()` no PostgreSQL para selecionar
+eventos disponíveis, expirar leases e calcular o novo `locked_until`. As
+atualizações de sucesso/falha exigem `status = PROCESSING`, `lease_token`
+correspondente e lease ainda válido; uma atualização sem linha afetada é
+telemetria `outcome=lease_lost`, sem retry cego do worker antigo.
+
+A migração instala uma barreira de rollout: transições terminais de um registro
+em `PROCESSING` sem lease válido são rejeitadas no banco. Portanto, a troca de
+worker deve ser coordenada; uma versão antiga não pode finalizar silenciosamente
+um evento reclamado. O token não entra em log, métrica pública, DTO ou payload.
+
+O teste live PostgreSQL cobre claim, reclaim, token antigo em
+`markProcessed`, token antigo em `markFailed`, retry/dead-letter e a barreira
+de transição legada com role de aplicação `NOSUPERUSER/NOBYPASSRLS`; o efeito de
+consumidores externos continua at-least-once e depende de idempotência.

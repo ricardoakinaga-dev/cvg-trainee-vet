@@ -3548,6 +3548,59 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "OUTBOX-FENCE-001"
+    requirements:
+      ["SPEC-0108", "SPEC-0113", "SPEC-0118", "RESILIENCE-11-01", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0108_contratos_de_eventos_e_assincronismo.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+        "BRIEFING/04.AUDIT/0504_worker_resilience_audit.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/outbox-repository.ts",
+        "packages/persistence/drizzle/0027_outbox_lease_fencing.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/worker/src/loop.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/outbox-repository.test.ts",
+        "apps/worker/src/loop.test.ts",
+        "apps/worker/src/handlers.test.ts",
+        "tests/integration/postgres-worker.test.ts",
+        "tests/integration/worker-qdrant-live.test.ts",
+      ]
+    commit: "8d03882cc2538f48b5f6c77d861fbaec90b65a75"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0504_worker_resilience_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: focal outbox/worker suite failed before lease token and guarded boolean updates",
+        "GREEN: focal outbox repository, worker loop and handlers 32/32",
+        "PostgreSQL live: 31 files/50 tests with application NOSUPERUSER/NOBYPASSRLS and separate fixture admin",
+        "Two independent PostgreSQL connections race markProcessed; stale token returns false and current token returns true",
+        "stale markProcessed and markFailed return false after reclaim",
+        "legacy terminal update rejected by the database lease-fence trigger",
+        "pnpm verify",
+        "pnpm verify:migrations",
+        "pnpm build",
+        "pnpm test:e2e",
+        "pnpm audit --audit-level=high",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

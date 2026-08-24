@@ -6797,3 +6797,70 @@ READY_FOR_NEXT_STEP
 
 Executar o workflow remoto no mesmo SHA quando houver autorização; não fazer
 push/deploy ou declarar 100% por inferência.
+
+## 2026-08-24 — OUTBOX-FENCE-001: fencing de lease e relógio server-side
+
+### TIMESTAMP
+
+2026-08-24T08:01:41-03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / ORCHESTRATE
+
+### PHASE
+
+BUILD — Phase 9 / hardening de resiliência
+
+### SPRINT
+
+OUTBOX-FENCE-001 / AUD-P1-004
+
+### TASK
+
+Impedir que um worker stale finalize ou falhe um evento após reclaim,
+preservando o contrato at-least-once e a idempotência dos consumidores.
+
+### ACTION
+
+Foi executado RED focal antes da implementação. O slice adicionou
+`lease_token` por claim, updates condicionais de
+`markProcessed` e `markFailed`, `statement_timestamp()` no PostgreSQL e trigger de migração para
+bloquear transições terminais de worker legado sem fencing. O worker trata
+`0 rows` como `lease_lost`, sem contabilizar sucesso nem aplicar alteração
+stale. A implementação foi revisada por agente independente; o primeiro
+parecer reprovou o fake permissivo, a ausência de `markFailed` live e o relógio
+do processo. Esses pontos foram corrigidos e reavaliados.
+
+### RESULT
+
+Os commits `e3cfb6f4255928c50de3c67718195a0063cce3c9` (código) e
+`8d03882cc2538f48b5f6c77d861fbaec90b65a75` (prova concorrente) foram
+criados. GREEN focal passou 32/32. PostgreSQL 16 efêmero recém-migrado passou
+31 arquivos/50 testes com aplicação `NOSUPERUSER/NOBYPASSRLS` e fixture admin
+separada, incluindo `markProcessed` stale, `markFailed` stale, reclaim,
+retry/dead-letter, rejeição do update terminal legado e disputa de
+`markProcessed` por duas conexões. `pnpm verify` passou
+com 125 arquivos/579 testes, 33 skips, cobertura 84,48% statements/80,37%
+branches/85,97% functions/85,22% lines, contratos 72/72, worker 27/27,
+migrações 28/28, CI contract 21 checks, secrets, arquitetura, documentação,
+product-definition e exposição. Não houve push, deploy ou uso de dados reais.
+
+### REVIEW
+
+O efeito externo iniciado antes da perda do lease não é desfeito: o contrato
+continua at-least-once e requer idempotência/reconciliação determinística.
+Remote same-SHA, grants/owners produtivos, múltiplas réplicas/carga,
+collector/traces/retention/restore produtivos, provider/MFA, autoria curricular
+e gates clínicos continuam fora da evidência local.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — fencing local implementado, live e regressão estática
+verificados; ainda não é release produtivo nem aprovação clínica.
+
+### NEXT
+
+Executar build/E2E/audit high após o commit, fechar a documentação/traceability
+do slice em worktree limpo e então selecionar o pipeline authoring→atividade por
+`moduleId` explícito; workflow remoto e gates humanos somente com autoridade.
