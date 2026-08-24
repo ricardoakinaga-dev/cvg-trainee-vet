@@ -36,9 +36,9 @@
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `1350452e7401a788adf02de2c6767147d38b0dc6`
+- head: `13504527fe6dae95ab189e2a8b217b828a4ab39b`
 - origin: `fbbc692` (`origin/main`), local `main` ahead 39 commits
-- worktree: contém somente a atualização do SHA no manifesto e o estado/log desta continuidade; a implementação da fatia está no commit local `1350452e7401a788adf02de2c6767147d38b0dc6`; ainda não há push/deploy
+- worktree: contém somente a atualização do SHA no manifesto e o estado desta continuidade; a implementação da fatia está no commit local `13504527fe6dae95ab189e2a8b217b828a4ab39b`; ainda não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: slice local PASS; `pnpm verify`, build, E2E 23/23, audit de dependências, traceability/documentation/product/exposure e diff-check PASS; prova live PostgreSQL/RLS do novo slice, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 

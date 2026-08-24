@@ -3247,7 +3247,7 @@ artifacts:
         "tests/integration/postgres-adaptive-assignment.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
-    commit: "1350452e7401a788adf02de2c6767147d38b0dc6"
+    commit: "13504527fe6dae95ab189e2a8b217b828a4ab39b"
     artifacts:
       [
         "BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md",
