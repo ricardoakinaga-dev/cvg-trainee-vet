@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AppealDecision,
@@ -17,9 +17,11 @@ import type {
 } from "@cvg/domain";
 
 import {
+  activityAssignments,
   appeals,
   assessmentWorkflows,
   feedbackTickets,
+  learningActivities,
   learningAssignments,
 } from "./schema.js";
 import type * as schema from "./schema.js";
@@ -28,6 +30,46 @@ type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 type DatabaseTransaction = Parameters<
   Parameters<DatabaseExecutor["transaction"]>[0]
 >[0];
+
+type PersistedAssignmentStatus = Exclude<
+  LearningAssignmentStatus,
+  "NAO_ATRIBUIDO"
+>;
+
+const syncableActivityStatuses: Readonly<
+  Record<PersistedAssignmentStatus, readonly PersistedAssignmentStatus[]>
+> = {
+  ATRIBUIDO: ["ATRIBUIDO", "BLOQUEADO"],
+  DISPONIVEL: ["DISPONIVEL", "ATRIBUIDO", "BLOQUEADO"],
+  EM_ANDAMENTO: ["EM_ANDAMENTO", "DISPONIVEL", "PAUSADO"],
+  CONCLUIDO: [
+    "CONCLUIDO",
+    "EM_ANDAMENTO",
+    "EM_REFORCO",
+    "CONCLUIDO_COM_RETENCAO_PENDENTE",
+  ],
+  EM_REFORCO: ["EM_REFORCO", "EM_ANDAMENTO", "CONCLUIDO_COM_RETENCAO_PENDENTE"],
+  CONCLUIDO_COM_RETENCAO_PENDENTE: [
+    "CONCLUIDO_COM_RETENCAO_PENDENTE",
+    "CONCLUIDO",
+  ],
+  PAUSADO: [
+    "PAUSADO",
+    "ATRIBUIDO",
+    "DISPONIVEL",
+    "EM_ANDAMENTO",
+    "EM_REFORCO",
+    "CONCLUIDO_COM_RETENCAO_PENDENTE",
+  ],
+  BLOQUEADO: [
+    "BLOQUEADO",
+    "ATRIBUIDO",
+    "DISPONIVEL",
+    "EM_ANDAMENTO",
+    "EM_REFORCO",
+    "CONCLUIDO_COM_RETENCAO_PENDENTE",
+  ],
+};
 
 export class LearningStateMappingError extends Error {
   public constructor(message: string) {
@@ -717,6 +759,35 @@ async function withContext<T>(
   });
 }
 
+async function syncBoundActivityAssignmentStatus(
+  tx: DatabaseTransaction,
+  context: PersistenceContext,
+  assignmentId: string,
+  status: PersistedAssignmentStatus,
+): Promise<void> {
+  const publishedActivityIds = tx
+    .select({ id: learningActivities.id })
+    .from(learningActivities)
+    .where(
+      and(
+        eq(learningActivities.scopeId, context.scopeId),
+        eq(learningActivities.status, "PUBLISHED"),
+      ),
+    );
+
+  await tx
+    .update(activityAssignments)
+    .set({ status })
+    .where(
+      and(
+        eq(activityAssignments.participantId, context.participantId),
+        eq(activityAssignments.learningAssignmentId, assignmentId),
+        inArray(activityAssignments.status, syncableActivityStatuses[status]),
+        inArray(activityAssignments.activityId, publishedActivityIds),
+      ),
+    );
+}
+
 export type LearningStateRepository = Readonly<{
   saveLearningAssignment: (
     context: PersistenceContext,
@@ -818,6 +889,14 @@ export function createLearningStateRepository(
       const saved = rows[0];
       if (saved === undefined)
         conflict("learning assignment was not persisted");
+      if (row.status !== "NAO_ATRIBUIDO") {
+        await syncBoundActivityAssignmentStatus(
+          tx,
+          context,
+          row.id,
+          row.status,
+        );
+      }
       return learningAssignmentRowToState(saved);
     });
 

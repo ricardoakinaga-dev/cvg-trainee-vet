@@ -32,6 +32,7 @@ export const CURRENT_TRACEABILITY_ARTIFACT_IDS = Object.freeze([
   "JOURNEY-045",
   "RESULT-FEEDBACK-046",
   "JOURNEY-REL-001",
+  "JOURNEY-REL-002",
 ]);
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;

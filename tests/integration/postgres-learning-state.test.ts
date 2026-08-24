@@ -19,6 +19,7 @@ import {
   LearningStatePersistenceConflictError,
 } from "../../packages/persistence/src/learning-state-repository.js";
 import {
+  activityAssignments,
   accounts,
   appeals,
   assessmentWorkflows,
@@ -368,6 +369,239 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             ),
           );
         }
+        await closeLivePostgresHarness(harness);
+      }
+    });
+
+    it("synchronizes only explicit published activity bindings", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
+      if (
+        harness.applicationRole.isSuperuser ||
+        harness.applicationRole.bypassesRls
+      ) {
+        await closeLivePostgresHarness(harness);
+        skip(
+          "CVG_TEST_DATABASE_URL is privileged; JOURNEY-REL-002 RLS behavior cannot be evaluated safely",
+        );
+        return;
+      }
+      const participantId = randomUUID();
+      const scopeId = randomUUID();
+      const assignmentId = randomUUID();
+      const publishedActivityId = randomUUID();
+      const progressedActivityId = randomUUID();
+      const withdrawnActivityId = randomUUID();
+      const legacyActivityId = randomUUID();
+      const mismatchedActivityId = randomUUID();
+      const context = { participantId, scopeId } as const;
+
+      try {
+        await admin.db.insert(accounts).values({
+          id: participantId,
+          professionalEmail: `state-sync-${participantId}@example.invalid`,
+          status: "ACTIVE",
+        });
+        await admin.db.insert(learningActivities).values([
+          {
+            id: publishedActivityId,
+            scopeId,
+            slug: `state-sync-published-${publishedActivityId}`,
+            title: "Atividade publicada sintética",
+            moduleId: "M03",
+            status: "PUBLISHED",
+          },
+          {
+            id: withdrawnActivityId,
+            scopeId,
+            slug: `state-sync-withdrawn-${withdrawnActivityId}`,
+            title: "Atividade retirada sintética",
+            moduleId: "M03",
+            status: "WITHDRAWN",
+          },
+          {
+            id: progressedActivityId,
+            scopeId,
+            slug: `state-sync-progressed-${progressedActivityId}`,
+            title: "Atividade em andamento sintética",
+            moduleId: "M03",
+            status: "PUBLISHED",
+          },
+          {
+            id: legacyActivityId,
+            scopeId,
+            slug: `state-sync-legacy-${legacyActivityId}`,
+            title: "Atividade legada sintética",
+            moduleId: null,
+            status: "PUBLISHED",
+          },
+        ]);
+
+        const repository = createLearningStateRepository(database.db);
+        const initial = createLearningAssignment({
+          assignmentId,
+          participantId,
+          moduleId: "M03",
+          availableAt: "2026-08-10T10:00:00.000Z",
+        });
+        const assigned = transitionLearningAssignment(initial, {
+          type: "ATRIBUIR",
+        });
+        await repository.saveLearningAssignment(context, initial);
+        await repository.saveLearningAssignment(context, assigned);
+
+        await admin.db.insert(activityAssignments).values([
+          {
+            participantId,
+            activityId: publishedActivityId,
+            learningAssignmentId: assignmentId,
+            status: "ATRIBUIDO",
+          },
+          {
+            participantId,
+            activityId: withdrawnActivityId,
+            learningAssignmentId: assignmentId,
+            status: "ATRIBUIDO",
+          },
+          {
+            participantId,
+            activityId: progressedActivityId,
+            learningAssignmentId: assignmentId,
+            status: "EM_ANDAMENTO",
+          },
+          {
+            participantId,
+            activityId: legacyActivityId,
+            learningAssignmentId: null,
+            status: "ATRIBUIDO",
+          },
+        ]);
+
+        const available = transitionLearningAssignment(assigned, {
+          type: "DISPONIBILIZAR",
+          now: "2026-08-10T12:00:00.000Z",
+        });
+        await repository.saveLearningAssignment(context, available);
+
+        const activityRows = await admin.db
+          .select({
+            activityId: activityAssignments.activityId,
+            learningAssignmentId: activityAssignments.learningAssignmentId,
+            status: activityAssignments.status,
+          })
+          .from(activityAssignments)
+          .where(eq(activityAssignments.participantId, participantId));
+        expect(activityRows).toEqual(
+          expect.arrayContaining([
+            {
+              activityId: publishedActivityId,
+              learningAssignmentId: assignmentId,
+              status: "DISPONIVEL",
+            },
+            {
+              activityId: withdrawnActivityId,
+              learningAssignmentId: assignmentId,
+              status: "ATRIBUIDO",
+            },
+            {
+              activityId: progressedActivityId,
+              learningAssignmentId: assignmentId,
+              status: "EM_ANDAMENTO",
+            },
+            {
+              activityId: legacyActivityId,
+              learningAssignmentId: null,
+              status: "ATRIBUIDO",
+            },
+          ]),
+        );
+
+        await admin.db.insert(learningActivities).values({
+          id: mismatchedActivityId,
+          scopeId,
+          slug: `state-sync-mismatch-${mismatchedActivityId}`,
+          title: "Atividade com vínculo inconsistente sintética",
+          moduleId: "M04",
+          status: "PUBLISHED",
+        });
+        await admin.db.insert(activityAssignments).values({
+          participantId,
+          activityId: mismatchedActivityId,
+          learningAssignmentId: assignmentId,
+          status: "ATRIBUIDO",
+        });
+
+        const started = transitionLearningAssignment(available, {
+          type: "INICIAR",
+        });
+        await expect(
+          repository.saveLearningAssignment(context, started),
+        ).rejects.toThrow();
+        await expect(
+          admin.db
+            .select({ status: learningAssignments.status })
+            .from(learningAssignments)
+            .where(eq(learningAssignments.id, assignmentId)),
+        ).resolves.toEqual([{ status: "DISPONIVEL" }]);
+        await expect(
+          admin.db
+            .select({
+              activityId: activityAssignments.activityId,
+              status: activityAssignments.status,
+            })
+            .from(activityAssignments)
+            .where(eq(activityAssignments.participantId, participantId)),
+        ).resolves.toEqual(
+          expect.arrayContaining([
+            { activityId: publishedActivityId, status: "DISPONIVEL" },
+            { activityId: mismatchedActivityId, status: "ATRIBUIDO" },
+          ]),
+        );
+      } finally {
+        await admin.db
+          .delete(activityAssignments)
+          .where(eq(activityAssignments.participantId, participantId));
+        await admin.db
+          .delete(learningAssignments)
+          .where(eq(learningAssignments.id, assignmentId));
+        await admin.db
+          .delete(learningActivities)
+          .where(
+            and(
+              eq(learningActivities.scopeId, scopeId),
+              eq(learningActivities.id, publishedActivityId),
+            ),
+          );
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, withdrawnActivityId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, progressedActivityId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, legacyActivityId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, mismatchedActivityId));
+        await admin.db
+          .delete(accounts)
+          .where(
+            and(
+              eq(accounts.id, participantId),
+              eq(
+                accounts.professionalEmail,
+                `state-sync-${participantId}@example.invalid`,
+              ),
+            ),
+          );
         await closeLivePostgresHarness(harness);
       }
     });

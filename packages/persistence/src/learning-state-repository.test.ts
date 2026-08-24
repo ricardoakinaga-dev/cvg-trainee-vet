@@ -23,6 +23,7 @@ import {
   learningAssignmentRowToState,
   learningAssignmentStateToRow,
 } from "./learning-state-repository.js";
+import { activityAssignments } from "./schema.js";
 
 const participantId = "11111111-1111-4111-8111-111111111111";
 const reviewerId = "22222222-2222-4222-8222-222222222222";
@@ -32,7 +33,7 @@ const now = "2026-08-10T12:00:00.000Z";
 type FakeBuilder = {
   values: () => FakeBuilder;
   onConflictDoNothing: () => FakeBuilder;
-  set: () => FakeBuilder;
+  set: (values?: unknown) => FakeBuilder;
   where: () => FakeBuilder;
   returning: () => Promise<readonly unknown[]>;
 };
@@ -47,21 +48,29 @@ type FakeSelectBuilder = {
 type FakeTransaction = {
   execute: () => Promise<readonly []>;
   insert: () => FakeBuilder;
-  update: () => FakeBuilder;
+  update: (table?: unknown) => FakeBuilder;
   select: () => FakeSelectBuilder;
 };
+
+type FakeDatabaseOptions = Readonly<{
+  readonly onUpdate?: (table: unknown, values: unknown) => void;
+}>;
 
 function createFakeDatabase(
   selectRows: readonly (readonly unknown[])[],
   returningRows: readonly (readonly unknown[])[],
+  options: FakeDatabaseOptions = {},
 ) {
   const selectQueue = [...selectRows];
   const returningQueue = [...returningRows];
-  const createBuilder = (): FakeBuilder => {
+  const createBuilder = (table?: unknown): FakeBuilder => {
     const builder: FakeBuilder = {
       values: () => builder,
       onConflictDoNothing: () => builder,
-      set: () => builder,
+      set: (values) => {
+        options.onUpdate?.(table, values);
+        return builder;
+      },
       where: () => builder,
       returning: async () => returningQueue.shift() ?? [],
     };
@@ -79,7 +88,7 @@ function createFakeDatabase(
   const tx: FakeTransaction = {
     execute: async () => [] as const,
     insert: () => createBuilder(),
-    update: () => createBuilder(),
+    update: (table) => createBuilder(table),
     select: () => createSelectBuilder(),
   };
   const transaction = (action: (tx: FakeTransaction) => Promise<unknown>) =>
@@ -450,6 +459,40 @@ describe("learning state persistence mappings", () => {
     await expect(
       repository.saveLearningAssignment(context, assigned),
     ).rejects.toBeInstanceOf(LearningStatePersistenceConflictError);
+  });
+
+  it("synchronizes the status of an explicitly bound published activity", async () => {
+    const assignmentId = "44444444-4444-4444-8444-444444444444";
+    const context = { participantId, scopeId };
+    const initial = createLearningAssignment({
+      assignmentId,
+      participantId,
+      moduleId: "M03",
+      availableAt: now,
+    });
+    const assigned = transitionLearningAssignment(initial, {
+      type: "ATRIBUIR",
+    });
+    const activityUpdates: unknown[] = [];
+    const repository = createLearningStateRepository(
+      createFakeDatabase(
+        [
+          [assignmentRow(assignmentId, "NAO_ATRIBUIDO", 0)],
+          [assignmentRow(assignmentId, "ATRIBUIDO", 1)],
+        ],
+        [[{ id: assignmentId }], [{ id: assignmentId }]],
+        {
+          onUpdate: (table, values) => {
+            if (table === activityAssignments) activityUpdates.push(values);
+          },
+        },
+      ),
+    );
+
+    await repository.saveLearningAssignment(context, initial);
+    await repository.saveLearningAssignment(context, assigned);
+
+    expect(activityUpdates).toEqual([{ status: "ATRIBUIDO" }]);
   });
 
   it("surfaces insert, optimistic-update and read persistence conflicts", async () => {
