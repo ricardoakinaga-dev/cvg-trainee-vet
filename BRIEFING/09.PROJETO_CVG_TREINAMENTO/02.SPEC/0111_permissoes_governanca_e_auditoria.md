@@ -246,3 +246,13 @@ nem devolvem `learningAssignmentId` ou `sourceDiagnosticResultId`. O reparo de
 uma linha de atividade legada só preenche uma proveniência nula e preserva seu
 status. A confirmação com papel PostgreSQL sem `SUPERUSER`/`BYPASSRLS`, rollback e
 concorrência real ainda depende do ambiente de teste autorizado.
+
+Na extensão `JOURNEY-REL-002`, a transição posterior do assignment sincroniza
+`activity_assignments.status` somente por `learning_assignment_id`, identidade
+do participante e conjunto de atividades `PUBLISHED` no escopo transacional.
+Linhas legadas sem provenance e atividades retiradas não entram na escrita. A
+policy de `UPDATE` da migration `0026_assignment_activity_provenance.sql`
+continua exigindo a correspondência assignment–atividade–módulo e o contexto de
+RLS; uma rejeição deve abortar a transação inteira. O cenário com papel sem
+`SUPERUSER`/`BYPASSRLS`, rollback provocado e concorrência permanece não
+observado sem ambiente autorizado.

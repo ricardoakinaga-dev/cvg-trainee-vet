@@ -169,6 +169,13 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - verificação focal: typecheck de persistence/curriculum, `verify:migrations` com 27 migrations, testes unitários focais e `git diff --check` passaram localmente;
 - limite: sem `CVG_TEST_DATABASE_URL`, os dois cenários live permaneceram skipped; RLS sem bypass, rollback transacional sob erro, concorrência real, sincronização de estados posteriores e E2E navegador→PostgreSQL continuam não observados.
 
+## Evidência adicional — JOURNEY-REL-002
+
+- RED/GREEN: `packages/persistence/src/learning-state-repository.test.ts` cobre a transição de assignment e a atualização bounded do vínculo explícito; `tests/integration/postgres-learning-state.test.ts` adiciona cenário condicional para publicação, retirada e legado;
+- persistência: a sincronização usa `learning_assignment_id`, participante, escopo e atividade `PUBLISHED` dentro da transação de `saveLearningAssignment`; `NAO_ATRIBUIDO` e provenance nula permanecem fora;
+- verificação: `pnpm verify` passou com 125 arquivos/575 testes/31 skips e cobertura 84,50%/80,35%/85,95%/85,23%; build dos 12 workspaces, E2E 26/26, integração 20/20 com 31 skips, migration 27/27, contracts 72/72, worker 25/25 e gates estáticos passaram;
+- limite: `CVG_TEST_DATABASE_URL` não estava disponível; RLS sem bypass, rollback por falha de policy e concorrência live continuam gates não observados.
+
 ## 14. Evidência executável do item 10
 
 - RED/GREEN: contratos, currículo, aplicação, persistência e API receberam testes antes dos módulos de autoria/revisão;

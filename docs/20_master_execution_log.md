@@ -6539,3 +6539,102 @@ executar os testes live com papel de aplicação sem `SUPERUSER/BYPASSRLS`,
 rollback/concorrência e cleanup administrativo separado. Manter pendentes a
 sincronização posterior de estados, publicação clínica, piloto, provider/MFA e
 assurance operacional.
+
+## 2026-08-24 — JOURNEY-REL-002: abertura da sincronização bounded
+
+### TIMESTAMP
+
+2026-08-24T06:23:38-03:00
+
+### ACTION
+
+Após fechar `JOURNEY-REL-001`, foi aberta a fatia `JOURNEY-REL-002` para tratar
+a divergência possível entre `learning_assignments.status` e
+`activity_assignments.status` quando existe provenance explícita. O escopo foi
+registrado no backlog, ExecPlan e runtime state antes da implementação.
+
+### RESULT
+
+Nenhum código foi alterado nesta abertura. O alvo bounded é uma escrita na
+mesma transação da transição otimista: somente vínculos com
+`learning_assignment_id`, participante/escopo do contexto e atividade
+`PUBLISHED`; legado sem provenance e atividade retirada devem permanecer
+intocados. Não haverá inferência por slug, nota, publicação clínica ou
+simulação da prova live.
+
+### STATUS
+
+IN_PROGRESS — RED pendente.
+
+### NEXT
+
+Escrever o teste RED, implementar a sincronização allowlisted e validar rollback,
+legado e atividade retirada antes da regressão completa.
+
+## 2026-08-24 — JOURNEY-REL-002: GREEN local e hardening de concorrência
+
+### TIMESTAMP
+
+2026-08-24T06:38:13-03:00
+
+### ACTION
+
+O RED focal reproduziu a ausência de atualização de `activity_assignments`.
+O GREEN foi fechado no commit de código
+`73649cba9da168babb06a87c46cc8bd6bb580408`: a transição de
+`learning_assignments` sincroniza somente vínculos com provenance explícita,
+atividade `PUBLISHED`, participante/escopo contextual e estados predecessores
+permitidos. Uma atividade já avançada não é rebaixada; `NAO_ATRIBUIDO`, legado,
+retirada e mismatch de módulo permanecem fora ou falham fechado pela policy.
+
+### RESULT
+
+`pnpm verify` passou com 125 arquivos/575 testes, 31 skips e cobertura 84,50%
+statements, 80,35% branches, 85,95% functions e 85,23% lines. Contracts 72/72,
+worker 25/25, migrations 27/27, typecheck de persistence, testes focais,
+integração condicionada e gates documentais/segurança passaram. O cenário
+PostgreSQL novo exige role da aplicação sem `SUPERUSER/BYPASSRLS`, cobre vínculo
+publicado, progresso avançado, retirada, legado e rollback por mismatch; ficou
+skipped sem `CVG_TEST_DATABASE_URL`.
+
+### STATUS
+
+IN_PROGRESS — código GREEN; fechamento documental, build/E2E final e release
+traceability pendentes.
+
+### NEXT
+
+Atualizar o manifesto/SPEC/auditoria, executar build/E2E final, revisar diff,
+commitar a documentação e rodar `CVG_TRACEABILITY_RELEASE=true
+pnpm verify:traceability` em worktree limpo.
+
+## 2026-08-24 — JOURNEY-REL-002: regressão final local
+
+### TIMESTAMP
+
+2026-08-24T06:40:57-03:00
+
+### ACTION
+
+Após o commit de código, foram reconstruídos os 12 workspaces e executados os
+cenários E2E e de integração da matriz atual. O audit de dependências foi
+executado sem alterar lockfile ou dependências.
+
+### RESULT
+
+`pnpm build` passou nos 12 workspaces, `pnpm test:e2e` passou 26/26,
+`pnpm test:integration` passou 8 arquivos/20 testes com 27 arquivos/31 testes
+skipped por configuração, e `pnpm audit --audit-level=high` reportou
+`No known vulnerabilities found`. O gate release ainda aguarda o commit
+documental; a prova live continua honestamente separada.
+
+### STATUS
+
+IN_PROGRESS — implementação e regressão local verdes; fechamento documental e
+release traceability pendentes.
+
+### NEXT
+
+Revisar o diff documental, atualizar o manifesto com o SHA de código, criar o
+commit de fechamento e executar `CVG_TRACEABILITY_RELEASE=true
+pnpm verify:traceability` em worktree limpo.

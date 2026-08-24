@@ -76,10 +76,10 @@ Ainda não há evidência live neste ambiente para RLS sem bypass, rollback sob
 falha, concorrência, grants/owners e observabilidade. Também permanecem:
 
 - sincronização posterior entre estados de `learning_assignments` e
-  `activity_assignments`;
+  `activity_assignments` foi tratada localmente em `JOURNEY-REL-002`; a prova
+  live correspondente permanece pendente em `0527`;
 - pipeline autoral/publicação que grave o `moduleId` em atividades aprovadas;
 - E2E navegador→API→PostgreSQL usando uma atividade curricular persistida;
-- sincronização de status após a atribuição inicial;
 - revisão clínica, aplicação real do B-07, piloto, provider/MFA e assurance
   operacional.
 

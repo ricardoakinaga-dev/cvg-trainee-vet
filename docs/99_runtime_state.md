@@ -9,17 +9,17 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: JOURNEY-REL-001 / AUD-P1-004 — vínculo explícito assignment→atividade e provenance
-- current_task: preparar a prova live de assignment→atividade com RLS/rollback/concorrência quando o ambiente autorizado estiver disponível
+- current_sprint: JOURNEY-REL-002 / AUD-P1-004 — sincronização bounded assignment→atividade
+- current_task: fechar a documentação, o manifesto e a verificação final de `JOURNEY-REL-002`
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `JOURNEY-REL-001` foi fechado no código `9b1b975d62760142238b6b19f03e207181f59a87` e no commit documental `2972fa0b64023551a5aaacd668b3c1ae5176409d`; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree limpo. A regressão passou com 125 arquivos/574 testes, 30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, contracts 72/72, worker 25/25, migrations 27/27, build 12 workspaces, E2E 26/26, integração 8/20 com 27/30 skips e audit high sem vulnerabilidades.
-- next_action: preparar a prova live de RLS/rollback/concorrência com `CVG_TEST_DATABASE_URL` e autoridade de ambiente; não declarar release/100% enquanto RLS live, sincronização posterior, gates clínicos e assurance operacional permanecerem ausentes
+- last_completed_action: `JOURNEY-REL-002` passou por RED/GREEN no commit de código `73649cba9da168babb06a87c46cc8bd6bb580408`. A sincronização usa provenance explícita, atividade `PUBLISHED` e allowlist de estados predecessores para não rebaixar progresso; legado, retirada e mismatch sob RLS têm cenários condicionais preparados. `pnpm verify` passou com 125 arquivos/575 testes, 31 skips, cobertura 84,50%/80,35%/85,95%/85,23%, contracts 72/72, worker 25/25 e migrations 27/27; build 12 workspaces, E2E 26/26, integração 8/20 com 27/31 skips e audit high também passaram.
+- next_action: revisar e commitar a documentação/manifesto de `JOURNEY-REL-002` e executar o gate release em worktree limpo; depois preparar a prova live sem declarar release/100% enquanto ambiente, RLS live, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T06:19:23-03:00
+- last_update: 2026-08-24T06:40:57-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `2972fa0b64023551a5aaacd668b3c1ae5176409d` (commit documental final da fatia)
-- origin: `fbbc692` (`origin/main`), local `main` ahead 51 commits
-- worktree: limpo; não há push/deploy
+- head: `73649cba9da168babb06a87c46cc8bd6bb580408` (commit de código; fechamento documental em andamento)
+- origin: `fbbc692` (`origin/main`), local `main` ahead 53 commits
+- worktree: contém somente documentação/manifesto da fatia; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `JOURNEY-REL-001` PASS LOCAL: `pnpm verify` 125/574/30 skips, cobertura 84,49%/80,34%/85,94%/85,22%, build 12 workspaces, E2E 26/26, integração 8/20 +27/30 skips, audit high, secrets, architecture, documentation, product-definition, exposure, migrations 27/27, `git diff --check` e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passaram; RLS/rollback/concorrência live, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observados
+- verification_state: `JOURNEY-REL-002` PASS LOCAL: `pnpm verify` 125/575/31 skips, cobertura 84,50%/80,35%/85,95%/85,23%, contracts 72/72, worker 25/25, migrations 27/27, secrets, architecture, documentation, product-definition, exposure e `git diff --check` passaram; build 12 workspaces, E2E 26/26, integração 8/20 +27/31 skips e audit high sem vulnerabilidades também passaram; release traceability documental será executada após o commit, RLS/rollback/concorrência live, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observados
 
 ## REGRAS DE USO
 

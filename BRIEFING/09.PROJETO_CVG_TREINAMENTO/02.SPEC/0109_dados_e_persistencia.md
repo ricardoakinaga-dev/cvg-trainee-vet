@@ -129,6 +129,21 @@ não é sobrescrito. Replays preservam os IDs e não duplicam linhas.
 
 O seed curricular transporta `moduleId` somente para atividades derivadas de um
 módulo conhecido; o campo não publica conteúdo nem substitui aprovação clínica.
-A sincronização posterior de estados, a prova live de RLS/concorrência e a
-auditoria append-only detalhada continuam requisitos de operação antes de
-release.
+A prova live de RLS/concorrência e a auditoria append-only detalhada continuam
+requisitos de operação antes de release.
+
+## 8.3 Sincronização posterior bounded — JOURNEY-REL-002
+
+Quando uma atribuição curricular já persistida muda de estado por transição
+otimista, `saveLearningAssignment` atualiza, na mesma transação e sob o mesmo
+contexto `{ participantId, scopeId }`, apenas as linhas de
+`activity_assignments` cujo `learning_assignment_id` é igual ao assignment e
+cuja atividade permanece `PUBLISHED` no escopo. A consulta não usa slug, não
+aceita identidade do cliente e não toca linhas legadas com provenance nula.
+
+`NAO_ATRIBUIDO` não é um status válido de atividade e não é projetado. Uma
+atividade retirada fica fora do conjunto elegível; se a sincronização falhar,
+a transação da atribuição falha junto. A migration `0026` fornece a policy de
+`UPDATE` adicional para exigir contexto, participante, escopo, atividade
+publicada e correspondência de módulo/assignment. A prova live de RLS,
+rollback induzido e concorrência continua gate de ambiente.

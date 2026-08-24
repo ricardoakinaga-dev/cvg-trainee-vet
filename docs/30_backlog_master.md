@@ -662,6 +662,25 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps explícitos: RLS sem bypass e rollback/concorrência live; sincronização de estado; pipeline autoral que persiste `moduleId` em atividade aprovada; E2E navegador→API→PostgreSQL curricular; conteúdo/revisão clínica, B-07 real, piloto, provider/MFA e assurance operacional
 - próxima ação: executar os dois testes live com role de aplicação sem `SUPERUSER/BYPASSRLS` e cleanup administrativo separado quando `CVG_TEST_DATABASE_URL` e autoridade estiverem disponíveis; não declarar release/100%
 
+### JOURNEY-REL-002 — Sincronização bounded assignment → atividade
+
+- título: manter o status da atividade explicitamente vinculada coerente com a atribuição curricular
+- descrição: após uma transição otimista de `learning_assignments`, atualizar somente `activity_assignments` com `learning_assignment_id` correspondente, participante/escopo autorizados e atividade `PUBLISHED`; não inferir vínculos legados nem escrever em atividade retirada
+- módulo: jornada participante / currículo / persistência / segurança
+- dependência: `JOURNEY-REL-001`; `SPEC-0109`; `SPEC-0111`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / jornada adaptativa
+- risco: alto — status divergente pode exibir próxima ação errada; uma sincronização ampla poderia atravessar escopo ou reativar vínculo legado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED antes do código; escrita na mesma transação da transição da atribuição; somente provenance explícita; atividade retirada ignorada; legado sem provenance preservado; conflito otimista mantém rollback atômico; testes unitários/persistência e regressão completa — cumprido localmente
+- escopo: `saveLearningAssignment`, atualização bounded de `activity_assignments.status`, predicado de atividade publicada e testes de isolamento/legado/retirada
+- fora desta fatia: novas relações, inferência por slug, alteração de tentativa/nota, sincronização assíncrona, publicação clínica, prova live/RLS, grants produtivos, piloto e release
+- controles obrigatórios: `participantId` e `scopeId` vêm do contexto transacional; `learning_assignment_id` é a única chave de relação; status `NAO_ATRIBUIDO` não é projetado; falha na sincronização aborta a transação inteira
+- evidência: `BRIEFING/04.AUDIT/0527_journey_assignment_status_sync_audit.md`; SPEC 0109/0111/0118; `packages/persistence/src/learning-state-repository.ts`; testes unitários e integração condicional; manifesto `JOURNEY-REL-002`
+- resultado: transição otimista atualiza somente vínculos explícitos de atividades `PUBLISHED` do mesmo escopo; `NAO_ATRIBUIDO`, legado sem provenance e atividade retirada ficam fora; regressão passou com 125/575/31 skips, build 12 workspaces e E2E 26/26
+- gaps explícitos: RLS sem bypass, rollback provocado por falha de policy, concorrência live, grants/owners, pipeline autoral de `moduleId`, E2E navegador→PostgreSQL curricular, conteúdo/revisão clínica, piloto, provider/MFA e assurance operacional
+- próxima ação: executar o cenário live com papel sem `SUPERUSER/BYPASSRLS` e cleanup administrativo separado quando `CVG_TEST_DATABASE_URL` e autoridade estiverem disponíveis; não declarar release/100%
+
 ### STAFF-DIAGNOSTIC-PROFILE-024 — Baseline formativa no acompanhamento gerencial
 
 - título: permitir que a gestão acompanhe a baseline digital por tema sem transformar sinal educacional em decisão clínica

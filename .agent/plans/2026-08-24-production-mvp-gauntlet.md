@@ -54,6 +54,13 @@ a aprovação clínica, piloto ou release produtivo.
   `JOURNEY-REL-001` (`2972fa0b64023551a5aaacd668b3c1ae5176409d`) e executar o
   gate release de rastreabilidade em worktree limpo; o gate passou. A próxima
   ação é preparar a prova live de RLS/rollback/concorrência.
+- [x] (2026-08-24T06:38:13-03:00) Fechar o código de `JOURNEY-REL-002` no
+  commit `73649cba9da168babb06a87c46cc8bd6bb580408`: sincronizar somente
+  provenance explícita publicada, preservar legado/retirada e impedir downgrade
+  de progresso por allowlist de estados predecessores. `pnpm verify` passou com
+  125/575/31 skips e cobertura 84,50%/80,35%/85,95%/85,23%; build 12
+  workspaces, E2E 26/26, integração 8/20 com 27/31 skips e audit high também
+  passaram; documentação e release traceability continuam no fechamento.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
