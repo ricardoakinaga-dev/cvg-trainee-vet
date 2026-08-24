@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: concluir `AUTHORING-DRAFT-052` em TDD, corrigir os achados P1/P2 da crítica independente, confirmar E2E autoral 5/5 e E2E completa 31/31, registrar `0534_authoring_draft_audit.md` e reconciliar backlog/traceability após os commits técnicos `6630d8c` e `f6a1234`.
+- last_completed_action: concluir `AUTHORING-DRAFT-052` em TDD, corrigir os achados P1/P2 da crítica independente, confirmar E2E autoral 5/5 e E2E completa 31/31, registrar `0534_authoring_draft_audit.md`, reconciliar backlog/traceability e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo após os commits `6630d8c`, `f6a1234` e `19f314b`.
 - next_action: executar `pnpm test:integration:live` em banco CVG descartável/autorizado; se houver ambiente, provar RLS/grants/atomicidade e browser→API→PostgreSQL; sem esse ambiente, selecionar a próxima fatia P1 sem declarar release
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T17:15:40-03:00
+- last_update: 2026-08-24T17:21:43-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 

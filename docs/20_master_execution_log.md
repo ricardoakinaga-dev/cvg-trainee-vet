@@ -7844,3 +7844,30 @@ live e qualquer transição clínica.
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-08-24 — AUTHORING-DRAFT-052: traceability release gate
+
+### TIMESTAMP
+
+2026-08-24T17:21:43-03:00
+
+### ACTION
+
+Executar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` após o
+commit documental `19f314b`, com o worktree limpo.
+
+### RESULT
+
+O gate passou: os artefatos atuais resolvem para commits alcançáveis e caminhos
+rastreados. O repositório permanece sem push/deploy; o resultado não substitui
+a prova PostgreSQL/RLS/grants live nem aprovação clínica.
+
+### NEXT ACTION
+
+Manter `AUTHORING-DRAFT-052` como `READY_FOR_NEXT_STEP` e aguardar banco CVG
+descartável/autorizado para o preflight live; depois selecionar a próxima fatia
+P1 sem declarar release ou competência prática.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
