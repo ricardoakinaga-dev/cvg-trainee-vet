@@ -5431,3 +5431,43 @@ READY_FOR_NEXT_STEP
 Obter ambiente/autoridade para provar PostgreSQL/RLS live e backfill/validação
 legados, ou selecionar a próxima lacuna local priorizada no backlog; não
 promover este gate técnico a prontidão clínica, piloto ou produção.
+
+## 2026-08-24 — APPEAL-039: reconciliação final do estado
+
+### TIMESTAMP
+
+2026-08-24 01:32:00 -03:00
+
+### ENGINE
+
+RUNTIME CONTROLLER / RELEASE TRACEABILITY
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-P — confirmar o estado final depois do fechamento documental
+
+### ACTION
+
+As referências do estado e do plano foram reconciliadas com a sequência final
+de commits documentais. O gate `CVG_TRACEABILITY_RELEASE=true
+pnpm verify:traceability` foi executado novamente sem alterações de código.
+
+### RESULT
+
+O gate passou em worktree limpo, com os artefatos atuais resolvendo para
+commits alcançáveis e paths rastreados. A fatia permanece localmente
+`COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`; nenhuma prontidão clínica, de
+piloto ou produção é inferida.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Obter ambiente/autoridade para PostgreSQL/RLS live e backfill/validação de
+registros legados, ou selecionar a próxima lacuna local do backlog.

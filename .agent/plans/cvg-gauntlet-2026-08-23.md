@@ -242,7 +242,7 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 | A39-REFACTOR | Lead         | Tighten projection, schema, migration and traceability           | A39-GREEN    | format, lint, typecheck, exposure/migration     | completed   |
 | A39-VERIFY   | Lead         | Run full regression, build, integration and E2E                  | A39-REFACTOR | 113/532 verify; 12 build; 22/22 E2E; live skip   | completed   |
 | A39-CRITIC   | fresh critics | Review rationale exposure, authorization and persistence boundary | A39-VERIFY   | two read-only attempts timed out; no PASS inferred | completed-with-gap |
-| A39-RELEASE  | Lead         | Consolidate docs and pass the clean release gate                 | A39-CRITIC   | `db9a2c9`; clean traceability release gate passed | completed   |
+| A39-RELEASE  | Lead         | Consolidate docs and pass the clean release gate                 | A39-CRITIC   | final documentation reconciliation; clean traceability gate passed | completed   |
 
 ## Progress history
 
@@ -263,3 +263,4 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 - 2026-08-24 01:26: two fresh read-only critic attempts were closed after timeout without a report; no independent PASS is inferred. The audit is `PASS_WITH_GAPS` on local evidence, with the absence of the critic report, live PostgreSQL/RLS, legacy backfill and append-only history recorded as gaps. Documentation and clean release traceability remain in progress.
 - 2026-08-24 01:29: final verification was repeated after the documentation update: `pnpm verify` 113/532, build 12, E2E 22/22, migrations 25/25, integration 20 PASS plus 27 SKIP, dependency audit clean and `git diff --check` clean. Only the documentation commit and clean release traceability gate remain.
 - 2026-08-24 01:30: documentation commit `db9a2c9` was created and `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed with a clean worktree. APPEAL-039 is `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`; live PostgreSQL/RLS, legacy backfill, absent independent report and follow-up appeal flows remain open.
+- 2026-08-24 01:32: after reconciling the final state/log references, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed again on a clean worktree. No code changed; APPEAL-039 remains `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`.

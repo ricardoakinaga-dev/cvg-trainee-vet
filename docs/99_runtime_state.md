@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: APPEAL-039 foi fechado no recorte local com auditoria `PASS_WITH_GAPS`, commit técnico `3d11112`, commit documental `db9a2c9` e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` aprovado em worktree limpo; regressão 113/532, cobertura 84,64%/80,71%/85,85%/85,33%, build 12, E2E 22/22, migration 25/25, integração 20 PASS/27 SKIP e audit limpo
+- last_completed_action: APPEAL-039 foi fechado no recorte local com auditoria `PASS_WITH_GAPS`; os commits técnico/documentais foram criados, o estado final foi reconciliado e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou novamente em worktree limpo; regressão 113/532, cobertura 84,64%/80,71%/85,85%/85,33%, build 12, E2E 22/22, migration 25/25, integração 20 PASS/27 SKIP e audit limpo
 - next_action: obter ambiente/autoridade para PostgreSQL/RLS live e backfill/validação de registros legados, ou selecionar a próxima lacuna local; manter ausência de parecer independente, histórico append-only, recálculo, notificação e encerramento como gaps
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T01:30:00-03:00
+- last_update: 2026-08-24T01:32:00-03:00
 
 ## REGRAS DE USO
 
