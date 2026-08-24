@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: os commits `743b755b4a1143ed77f8e563fd1f79c9861d9b43`, `94ac2e0f96fc773062b4b6e4c257ad2f47b33ac2` e `b85b0595040c315b48a25388681550330cd59e85` fecharam código e control plane de `AUTHORING-E2E-PIPELINE-001`/`ACTIVITY-RLS-047`: fixture editorial autoral, resolver transacional, contextos HTTP server-side, migrations `0031`/`0032`, membership aceito, constraint sessão/módulo e separação entre metadados da jornada e conteúdo iniciável. Node 22.22.0 passou 117/572 testes unitários; contrato RLS 2/2; integração 23 pass/33 skips; typecheck, lint, Prettier, `verify:migrations` 33/33, documentação, traceability estrutural e `git diff --check` passaram; nenhum dado real foi usado.
+- last_completed_action: os commits `743b755b4a1143ed77f8e563fd1f79c9861d9b43`, `94ac2e0f96fc773062b4b6e4c257ad2f47b33ac2` e `b85b0595040c315b48a25388681550330cd59e85` fecharam código e control plane de `AUTHORING-E2E-PIPELINE-001`/`ACTIVITY-RLS-047`: fixture editorial autoral, resolver transacional, contextos HTTP server-side, migrations `0031`/`0032`, membership aceito, constraint sessão/módulo e separação entre metadados da jornada e conteúdo iniciável. Node 22.22.0 passou 117/572 testes unitários; contrato RLS 2/2; integração 23 pass/33 skips; typecheck, lint, Prettier, `verify:migrations` 33/33, documentação, traceability estrutural e release, sintaxe do fixture, descoberta dos dois cenários Playwright e `git diff --check` passaram; nenhum dado real foi usado.
 - next_action: com ambiente autorizado, aplicar as migrations/suíte live PostgreSQL com role sem `SUPERUSER/BYPASSRLS` e `CVG_RUN_REAL_E2E=true` contra o pipeline autoral; registrar PASS/falha e artefatos, sem tocar no schema PostgreSQL de outro sistema
 
 ## BLOQUEIOS
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T09:58:30-03:00
+- last_update: 2026-08-24T10:01:16-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `8181d8c` (código `b85b0595040c315b48a25388681550330cd59e85` e documentação/control plane `8181d8c`)
+- head: `106dc42` (código `b85b0595040c315b48a25388681550330cd59e85` e documentação/control plane `106dc42`)
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: runtime state sendo registrado após os commits técnico e documental; não há push/deploy
+- worktree: clean após os commits técnico, documental, runtime e gates finais locais; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUTHORING-E2E-PIPELINE-001` e `ACTIVITY-RLS-047` PASS LOCAL COM GAPS: migrations 33/33, unitário 117/572, contrato RLS 2/2, integração 23 pass/33 skips, typecheck, lint, Prettier, documentação, traceability estrutural e diff-check passaram; resolver e HTTP usam contexto transacional, migrations `0031`/`0032` estão no journal e fixtures foram alinhados; live PostgreSQL/RLS, E2E autoral browser→API→PostgreSQL, mesmo-SHA remoto, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
+- verification_state: `AUTHORING-E2E-PIPELINE-001` e `ACTIVITY-RLS-047` PASS LOCAL COM GAPS: migrations 33/33, unitário 117/572, contrato RLS 2/2, integração 23 pass/33 skips, typecheck, lint, Prettier, documentação, traceability estrutural/release, sintaxe do fixture, descoberta Playwright e diff-check passaram; resolver e HTTP usam contexto transacional, migrations `0031`/`0032` estão no journal e fixtures foram alinhados; live PostgreSQL/RLS, E2E autoral browser→API→PostgreSQL, mesmo-SHA remoto, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 
