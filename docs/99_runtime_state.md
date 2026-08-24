@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T05:49:06-03:00
+- last_update: 2026-08-24T05:49:55-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `d6c7d84a1123dbfe06304e72a5c5517b7b814f84`
-- origin: `fbbc692` (`origin/main`), local `main` ahead 47 commits
-- worktree: limpo após os commits `2565e50`/`d6c7d84`; não há push/deploy
+- head: `4e82621fd02c43109c004f031110fb0d3acafd68`
+- origin: `fbbc692` (`origin/main`), local `main` ahead 48 commits
+- worktree: limpo após os commits `2565e50`/`d6c7d84`/`4e82621`; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL nos commits `2565e50`/`d6c7d84`; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build 12 workspaces, E2E 26/26, integração 20/20 +29 skips, audit high, traceability estrutural/release e gates estáticos passaram; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
+- verification_state: `RESULT-FEEDBACK-046` PASS LOCAL nos commits `2565e50`/`d6c7d84`/`4e82621`; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build 12 workspaces, E2E 26/26, integração 20/20 +29 skips, audit high, traceability estrutural/release e gates estáticos passaram; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
 ## REGRAS DE USO
 
