@@ -35,6 +35,34 @@ function quoteIdentifier(value) {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
+const rlsHelperProcedures = Object.freeze([
+  "public.cvg_learning_activity_in_scope(uuid,text)",
+  "public.cvg_learning_activity_for_participant(uuid,text)",
+  "public.cvg_learning_activity_item_insert_allowed(uuid,uuid,text)",
+  "public.cvg_learning_activity_content_for_participant(uuid,text)",
+  "public.cvg_participant_in_scope(uuid,uuid)",
+]);
+
+function rlsHelperGrantSql(applicationRole) {
+  const procedures = rlsHelperProcedures.map(quoteLiteral).join(", ");
+  return `DO $cvg_runtime_grants$
+DECLARE
+  helper_procedure text;
+BEGIN
+  FOREACH helper_procedure IN ARRAY ARRAY[${procedures}] LOOP
+    IF to_regprocedure(helper_procedure) IS NOT NULL THEN
+      EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC', helper_procedure);
+      EXECUTE format(
+        'GRANT EXECUTE ON FUNCTION %s TO %I',
+        helper_procedure,
+        ${quoteLiteral(applicationRole)}
+      );
+    END IF;
+  END LOOP;
+END
+$cvg_runtime_grants$;`;
+}
+
 function roleProvisionSql({ migration, application, admin }) {
   const provisionRole = (role, password, attributes) => `
 DO $cvg_provision$
@@ -69,13 +97,7 @@ $cvg_provision$;`;
     `GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${appIdentifier}, ${adminIdentifier};`,
     `GRANT USAGE ON SCHEMA public TO ${appIdentifier};`,
     `GRANT USAGE ON SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,
-    `DO $cvg_runtime_grant$
-BEGIN
-  IF to_regprocedure('public.cvg_participant_in_scope(uuid,uuid)') IS NOT NULL THEN
-    EXECUTE format('GRANT EXECUTE ON FUNCTION public.cvg_participant_in_scope(uuid, uuid) TO %I', ${quoteLiteral(application.role)});
-  END IF;
-END
-$cvg_runtime_grant$;`,
+    rlsHelperGrantSql(application.role),
     `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${appIdentifier};`,
     `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,
     `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${appIdentifier};`,

@@ -51,7 +51,54 @@ describe("migration governance", () => {
       "REVOKE EXECUTE ON FUNCTION cvg_participant_in_scope(uuid, uuid) FROM PUBLIC",
     );
     expect(provisioning).toContain(
-      "GRANT EXECUTE ON FUNCTION public.cvg_participant_in_scope(uuid, uuid) TO %I",
+      "public.cvg_participant_in_scope(uuid,uuid)",
     );
+  });
+
+  it("keeps every SECURITY DEFINER RLS helper private and explicitly granted", async () => {
+    const hardeningPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0035_rls_helper_execute_hardening.sql",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [hardening, provisioning] = await Promise.all([
+      readFile(hardeningPath, "utf8"),
+      readFile(provisioningPath, "utf8"),
+    ]);
+    const helpers = [
+      [
+        "cvg_learning_activity_in_scope(uuid, text)",
+        "public.cvg_learning_activity_in_scope(uuid,text)",
+      ],
+      [
+        "cvg_learning_activity_for_participant(uuid, text)",
+        "public.cvg_learning_activity_for_participant(uuid,text)",
+      ],
+      [
+        "cvg_learning_activity_item_insert_allowed(uuid, uuid, text)",
+        "public.cvg_learning_activity_item_insert_allowed(uuid,uuid,text)",
+      ],
+      [
+        "cvg_learning_activity_content_for_participant(uuid, text)",
+        "public.cvg_learning_activity_content_for_participant(uuid,text)",
+      ],
+      [
+        "cvg_participant_in_scope(uuid, uuid)",
+        "public.cvg_participant_in_scope(uuid,uuid)",
+      ],
+    ] as const;
+
+    for (const [migrationSignature, provisioningSignature] of helpers) {
+      expect(hardening).toContain(
+        `REVOKE EXECUTE ON FUNCTION ${migrationSignature} FROM PUBLIC`,
+      );
+      expect(provisioning).toContain(provisioningSignature);
+    }
+    expect(provisioning).toContain("REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC");
+    expect(provisioning).toContain("GRANT EXECUTE ON FUNCTION %s TO %I");
   });
 });
