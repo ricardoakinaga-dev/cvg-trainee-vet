@@ -234,7 +234,10 @@ export interface ApiHttpDependencies {
   readonly authenticate: (
     request: ApiHttpRequest,
   ) => Promise<ApiPrincipal | null>;
-  readonly resolveActivityScope: (activityId: string) => Promise<string | null>;
+  readonly resolveActivityScope: (
+    activityId: string,
+    context: TransactionSecurityContext,
+  ) => Promise<string | null>;
   readonly hasParticipantActivityItem?: (
     participantId: string,
     activityId: string,
@@ -907,6 +910,7 @@ async function handleStart(
 
   const scopeId = await dependencies.resolveActivityScope(
     parsed.data.activityId,
+    { participantId: principal.principalId },
   );
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
@@ -946,7 +950,9 @@ async function handleSaveAnswer(
     participantId: principal.principalId,
   });
   if (current === null) return errorResponse("not_found", requestId);
-  const scopeId = await dependencies.resolveActivityScope(current.activityId);
+  const scopeId = await dependencies.resolveActivityScope(current.activityId, {
+    participantId: principal.principalId,
+  });
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
     !isAllowed(principal, "SAVE_OWN_ANSWER", {
@@ -1818,7 +1824,9 @@ async function handleCorrection(
     scopeId: parsed.data.scopeId,
   });
   if (attempt === null) return errorResponse("not_found", requestId);
-  const scopeId = await dependencies.resolveActivityScope(attempt.activityId);
+  const scopeId = await dependencies.resolveActivityScope(attempt.activityId, {
+    scopeId: parsed.data.scopeId,
+  });
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (scopeId !== parsed.data.scopeId)
     return errorResponse("forbidden", requestId);
@@ -2118,7 +2126,9 @@ async function handleFeedback(
     participantId: principal.principalId,
   });
   if (attempt === null) return errorResponse("not_found", requestId);
-  const scopeId = await dependencies.resolveActivityScope(attempt.activityId);
+  const scopeId = await dependencies.resolveActivityScope(attempt.activityId, {
+    participantId: principal.principalId,
+  });
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
     !isAllowed(principal, "VIEW_OWN_FEEDBACK", {
@@ -2417,7 +2427,9 @@ async function handleGetParticipantAppeals(
     participantId: principal.principalId,
   });
   if (attempt === null) return errorResponse("not_found", requestId);
-  const scopeId = await dependencies.resolveActivityScope(attempt.activityId);
+  const scopeId = await dependencies.resolveActivityScope(attempt.activityId, {
+    participantId: principal.principalId,
+  });
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
     !isAllowed(principal, "VIEW_OWN_APPEALS", {
@@ -2460,7 +2472,9 @@ async function handleCreateAppeal(
   ) {
     return errorResponse("state_conflict", requestId);
   }
-  const scopeId = await dependencies.resolveActivityScope(attempt.activityId);
+  const scopeId = await dependencies.resolveActivityScope(attempt.activityId, {
+    participantId: principal.principalId,
+  });
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
     !isAllowed(principal, "CREATE_APPEAL", {
@@ -2570,7 +2584,9 @@ async function handleSubmit(
     participantId: principal.principalId,
   });
   if (current === null) return errorResponse("not_found", requestId);
-  const scopeId = await dependencies.resolveActivityScope(current.activityId);
+  const scopeId = await dependencies.resolveActivityScope(current.activityId, {
+    participantId: principal.principalId,
+  });
   if (scopeId === null) return errorResponse("not_found", requestId);
   if (
     !isAllowed(principal, "SUBMIT_OWN_ATTEMPT", {

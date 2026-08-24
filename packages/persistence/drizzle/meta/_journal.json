@@ -218,6 +218,13 @@
       "when": 1787548562010,
       "tag": "0030_learning_activity_projection_rls_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1787549562010,
+      "tag": "0031_learning_activity_participant_rls_hardening",
+      "breakpoints": true
     }
   ]
 }

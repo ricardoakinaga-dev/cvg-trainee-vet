@@ -2,11 +2,19 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { unlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
-import { createInvitation } from "../packages/application/dist/invitation-use-cases.js";
-import { createPostgresDatabase } from "../packages/persistence/dist/database.js";
-import { createInvitationUseCaseDependencies } from "../packages/persistence/dist/invitation-repository.js";
+import {
+  advanceContent,
+  createInvitation,
+  reviewAuthoringContent,
+} from "../packages/application/dist/index.js";
+import {
+  createAuthoringRepository,
+  createContentUseCaseDependencies,
+  createInvitationUseCaseDependencies,
+  createPostgresDatabase,
+} from "../packages/persistence/dist/index.js";
 import {
   accountInvitations,
   accounts,
@@ -16,6 +24,8 @@ import {
   attemptIdempotency,
   attempts,
   auditEntries,
+  contentEditorialRecords,
+  contentReviewDecisions,
   contentVersions,
   learningActivities,
   learningActivityItems,
@@ -42,20 +52,29 @@ if (!Number.isInteger(port) || port < 1 || port > 65_535) {
 
 const database = createPostgresDatabase(fixtureDatabaseUrl);
 const adminId = randomUUID();
+const reviewerId = randomUUID();
 const scopeId = randomUUID();
-const activityId = randomUUID();
 const contentId = randomUUID();
 const contentVersionId = randomUUID();
+const editorialRecordId = randomUUID();
 const token = randomBytes(32).toString("base64url");
 let participantId;
+let activityId;
 let closed = false;
 
 async function seed() {
-  await database.db.insert(accounts).values({
-    id: adminId,
-    professionalEmail: `real-e2e-admin-${adminId}@cvg.example`,
-    status: "ACTIVE",
-  });
+  await database.db.insert(accounts).values([
+    {
+      id: adminId,
+      professionalEmail: `real-e2e-admin-${adminId}@cvg.example`,
+      status: "ACTIVE",
+    },
+    {
+      id: reviewerId,
+      professionalEmail: `real-e2e-reviewer-${reviewerId}@cvg.example`,
+      status: "ACTIVE",
+    },
+  ]);
 
   const invitation = await createInvitation(
     {
@@ -63,7 +82,7 @@ async function seed() {
       accountStatus: "ACTIVE",
       roles: ["ADMIN"],
       scopes: [scopeId],
-      professionalEmail: `real-e2e-participant-${activityId}@cvg.example`,
+      professionalEmail: `real-e2e-participant-${contentId}@cvg.example`,
       invitedRoles: ["PARTICIPANT"],
       invitedScopes: [scopeId],
       expiresInSeconds: 3600,
@@ -74,29 +93,188 @@ async function seed() {
   );
   participantId = invitation.accountId;
 
+  const bankItem = {
+    title: "Resposta sintética",
+    prompt: "Descreva a próxima ação segura.",
+    responseMode: "TEXT",
+    rubric: {
+      dimensions: [
+        {
+          id: "safe-next-step",
+          label: "Próxima ação segura",
+          description: "Explicita uma ação verificável e uma reavaliação.",
+          maxPoints: 1,
+        },
+      ],
+      passScore: 1,
+      criticalErrors: ["Não definir uma ação ou reavaliação."],
+    },
+    feedback: "Defina uma ação segura, uma meta e o momento de reavaliar.",
+    critical: false,
+    remediationTargetObjectiveId: "M02-OBJ-01",
+    sourceRefs: [
+      {
+        code: "CVG-E2E-SYNTHETIC",
+        locator: "fixture-internal://authoring/publication",
+        updateRequired: false,
+      },
+    ],
+    participant: {
+      id: contentId,
+      ordinal: 1,
+      kind: "QUESTAO",
+      title: "Resposta sintética",
+      prompt: "Descreva a próxima ação segura.",
+      responseMode: "TEXT",
+    },
+  };
+  const preflight = {
+    ruleVersion: "authoring-preflight-v1",
+    technicalChecksPassed: true,
+    readyForClinicalReview: true,
+    readyForPublication: false,
+    checks: {
+      requiredFields: true,
+      correctionMetadata: true,
+      publicBoundary: true,
+      sourceTraceability: true,
+      publicationBlocked: true,
+    },
+    checkedAt: new Date().toISOString(),
+  };
+
   await database.db.insert(contentVersions).values({
     id: contentVersionId,
     contentId,
     scopeId,
     version: 1,
-    status: "PUBLICADO",
+    status: "EM_REVISAO_CLINICA",
     kind: "QUESTAO",
-    title: "Resposta sintética",
-    participantText: "Descreva a próxima ação segura.",
+    title: "Atividade real sintética",
+    participantText: bankItem.prompt,
     responseMode: "TEXT",
   });
-  await database.db.insert(learningActivities).values({
-    id: activityId,
-    scopeId,
-    slug: `real-e2e-${activityId}`,
-    title: "Atividade real sintética",
-    status: "PUBLISHED",
-  });
-  await database.db.insert(learningActivityItems).values({
-    activityId,
+  await database.db.insert(contentEditorialRecords).values({
+    id: editorialRecordId,
     contentVersionId,
-    ordinal: 1,
+    contentId,
+    scopeId,
+    version: 1,
+    moduleId: "M02",
+    sessionId: "M02-S1",
+    objectiveId: "M02-OBJ-01",
+    authorId: adminId,
+    item: bankItem,
+    preflight,
   });
+
+  const authoringRepository = createAuthoringRepository(database.db);
+  const contentDependencies = createContentUseCaseDependencies(
+    database.db,
+    randomUUID,
+  );
+  await reviewAuthoringContent(
+    {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE",
+      roles: ["AUTHOR", "CLINICAL_APPROVER"],
+      scopes: [scopeId],
+      approvedClinicalApproverId: reviewerId,
+      contentId,
+      version: 1,
+      scopeId,
+      decision: "APROVAR_CLINICAMENTE",
+      rationale: "Revisão sintética do fixture concluída.",
+      correlationId: randomUUID(),
+    },
+    {
+      repository: authoringRepository,
+      transition: (command) => advanceContent(command, contentDependencies),
+    },
+  );
+  await advanceContent(
+    {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE",
+      roles: ["AUTHOR", "CLINICAL_APPROVER"],
+      scopes: [scopeId],
+      approvedClinicalApproverId: reviewerId,
+      contentId,
+      version: 1,
+      scopeId,
+      event: "VERIFICAR_PROJECAO",
+      correlationId: randomUUID(),
+    },
+    contentDependencies,
+  );
+  await advanceContent(
+    {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE",
+      roles: ["CLINICAL_APPROVER"],
+      scopes: [scopeId],
+      approvedClinicalApproverId: reviewerId,
+      contentId,
+      version: 1,
+      scopeId,
+      event: "AUTORIZAR_PUBLICACAO",
+      correlationId: randomUUID(),
+    },
+    contentDependencies,
+  );
+  await advanceContent(
+    {
+      principalId: reviewerId,
+      accountStatus: "ACTIVE",
+      roles: ["CLINICAL_APPROVER"],
+      scopes: [scopeId],
+      approvedClinicalApproverId: reviewerId,
+      contentId,
+      version: 1,
+      scopeId,
+      event: "PUBLICAR",
+      correlationId: randomUUID(),
+    },
+    contentDependencies,
+  );
+
+  const materializedActivities = await database.db
+    .select({
+      id: learningActivities.id,
+      slug: learningActivities.slug,
+      status: learningActivities.status,
+    })
+    .from(learningActivities)
+    .where(
+      and(
+        eq(learningActivities.scopeId, scopeId),
+        eq(learningActivities.moduleId, "M02"),
+        eq(learningActivities.sessionId, "M02-S1"),
+      ),
+    )
+    .limit(1);
+  const materializedActivity = materializedActivities[0];
+  if (
+    materializedActivity === undefined ||
+    materializedActivity.status !== "PUBLISHED"
+  ) {
+    throw new Error("authoring publication did not materialize an activity");
+  }
+  activityId = materializedActivity.id;
+
+  const materializedItems = await database.db
+    .select({ contentVersionId: learningActivityItems.contentVersionId })
+    .from(learningActivityItems)
+    .where(eq(learningActivityItems.activityId, activityId));
+  if (
+    materializedItems.length !== 1 ||
+    materializedItems[0]?.contentVersionId !== contentVersionId
+  ) {
+    throw new Error(
+      "authoring publication did not materialize the fixture item",
+    );
+  }
+
   await database.db.insert(activityAssignments).values({
     participantId,
     activityId,
@@ -105,7 +283,13 @@ async function seed() {
 
   await writeFile(
     fixtureFile,
-    JSON.stringify({ token, activityId, itemId: contentVersionId }),
+    JSON.stringify({
+      token,
+      activityId,
+      itemId: contentVersionId,
+      activitySlug: materializedActivity.slug,
+      source: "authoring-publication-v1",
+    }),
     "utf8",
   );
 }
@@ -150,21 +334,56 @@ async function cleanup() {
         .delete(auditEntries)
         .where(eq(auditEntries.principalId, participantId));
     }
+
+    const materializedActivities = await database.db
+      .select({ id: learningActivities.id })
+      .from(learningActivities)
+      .where(
+        and(
+          eq(learningActivities.scopeId, scopeId),
+          eq(learningActivities.moduleId, "M02"),
+          eq(learningActivities.sessionId, "M02-S1"),
+        ),
+      );
+    const materializedActivityIds = materializedActivities.map((row) => row.id);
+    if (materializedActivityIds.length > 0) {
+      await database.db
+        .delete(activityAssignments)
+        .where(
+          inArray(activityAssignments.activityId, materializedActivityIds),
+        );
+      await database.db
+        .delete(learningActivityItems)
+        .where(
+          inArray(learningActivityItems.activityId, materializedActivityIds),
+        );
+      await database.db
+        .delete(learningActivities)
+        .where(inArray(learningActivities.id, materializedActivityIds));
+    }
+
+    await database.db
+      .delete(outboxEvents)
+      .where(eq(outboxEvents.aggregateId, contentId));
     await database.db
       .delete(auditEntries)
       .where(eq(auditEntries.principalId, adminId));
     await database.db
-      .delete(learningActivityItems)
-      .where(eq(learningActivityItems.activityId, activityId));
+      .delete(auditEntries)
+      .where(eq(auditEntries.principalId, reviewerId));
     await database.db
-      .delete(learningActivities)
-      .where(eq(learningActivities.id, activityId));
+      .delete(contentReviewDecisions)
+      .where(eq(contentReviewDecisions.contentVersionId, contentVersionId));
+    await database.db
+      .delete(contentEditorialRecords)
+      .where(eq(contentEditorialRecords.contentVersionId, contentVersionId));
     await database.db
       .delete(contentVersions)
       .where(eq(contentVersions.id, contentVersionId));
     if (participantId !== undefined) {
       await database.db.delete(accounts).where(eq(accounts.id, participantId));
     }
+    await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
     await database.db.delete(accounts).where(eq(accounts.id, adminId));
   } finally {
     await database.close();
@@ -172,7 +391,13 @@ async function cleanup() {
   }
 }
 
-await seed();
+try {
+  await seed();
+} catch (error) {
+  await cleanup();
+  throw error;
+}
+
 const server = createServer((request, response) => {
   if (request.method === "GET" && request.url === "/ready") {
     response.statusCode = 200;

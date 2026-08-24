@@ -484,15 +484,24 @@ export function createAttemptUseCaseDependencies(
 
 export function createActivityScopeResolver(
   db: PostgresJsDatabase<typeof schema>,
-): (activityId: string) => Promise<string | null> {
-  return async (activityId: string): Promise<string | null> => {
-    const rows = await db
-      .select({ scopeId: learningActivities.scopeId })
-      .from(learningActivities)
-      .where(eq(learningActivities.id, activityId))
-      .limit(1);
-    return rows[0]?.scopeId ?? null;
-  };
+): (
+  activityId: string,
+  context: TransactionSecurityContext,
+) => Promise<string | null> {
+  return async (
+    activityId: string,
+    context: TransactionSecurityContext,
+  ): Promise<string | null> =>
+    db.transaction(async (transaction) => {
+      const executor = transaction as unknown as DatabaseExecutor;
+      await setDatabaseSecurityContext(executor, context);
+      const rows = await executor
+        .select({ scopeId: learningActivities.scopeId })
+        .from(learningActivities)
+        .where(eq(learningActivities.id, activityId))
+        .limit(1);
+      return rows[0]?.scopeId ?? null;
+    });
 }
 
 const participantRoleJson = JSON.stringify(["PARTICIPANT"]);

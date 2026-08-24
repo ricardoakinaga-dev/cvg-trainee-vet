@@ -6,6 +6,8 @@ type RealFixture = Readonly<{
   readonly token: string;
   readonly activityId: string;
   readonly itemId: string;
+  readonly activitySlug: string;
+  readonly source: "authoring-publication-v1";
 }>;
 
 const fixtureFile =
@@ -37,6 +39,9 @@ test("participant completes a persisted synthetic activity through the real API"
   const fixture = JSON.parse(
     await readFile(fixtureFile, "utf8"),
   ) as RealFixture;
+
+  expect(fixture.source).toBe("authoring-publication-v1");
+  expect(fixture.activitySlug).toMatch(/^authoring-[a-f0-9]{32}$/u);
 
   await page.goto(`/?activityId=${fixture.activityId}`);
   await page.getByLabel("Token de convite").fill(fixture.token);

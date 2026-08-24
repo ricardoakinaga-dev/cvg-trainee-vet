@@ -223,7 +223,9 @@ describe("database adapter operations", () => {
     } as const;
     const submitted = await submitAttempt(command, dependencies);
     const replay = await submitAttempt(command, dependencies);
-    const scope = await createActivityScopeResolver(database)("activity-1");
+    const scope = await createActivityScopeResolver(database)("activity-1", {
+      scopeId: "scope-1",
+    });
 
     expect(submitted.status).toBe("SUBMETIDA");
     expect(replay).toEqual(submitted);
@@ -239,6 +241,21 @@ describe("database adapter operations", () => {
     await expect(
       resolveParticipantScope("participant-1", "scope-1"),
     ).resolves.toBe(true);
+  });
+
+  it("resolves activity scope only through a contextual transaction", async () => {
+    const { database } = createFakeDatabase();
+    const guardedDatabase = {
+      ...database,
+      select: () => {
+        throw new Error("activity scope resolver bypassed transaction");
+      },
+    } as unknown as typeof database;
+    const resolveActivityScope = createActivityScopeResolver(guardedDatabase);
+
+    await expect(
+      resolveActivityScope("activity-1", { scopeId: "scope-1" }),
+    ).resolves.toBe("scope-1");
   });
 
   it("handles unavailable activity, empty reads, and optimistic update conflicts", async () => {

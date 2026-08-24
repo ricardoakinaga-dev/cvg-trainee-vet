@@ -13,6 +13,8 @@ import {
   createProgressReadRepository,
 } from "../../packages/persistence/src/index.js";
 import {
+  accountInvitations,
+  accounts,
   activityAssignments,
   attempts,
   contentVersions,
@@ -46,6 +48,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const participantId = randomUUID();
       const activityId = randomUUID();
       const scopeId = randomUUID();
+      const invitationId = randomUUID();
       const attemptId = randomUUID();
       const firstContentId = randomUUID();
       const secondContentId = randomUUID();
@@ -55,6 +58,21 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const thirdVersionId = randomUUID();
 
       try {
+        await admin.db.insert(accounts).values({
+          id: participantId,
+          professionalEmail: `activity-content-${participantId}@example.invalid`,
+          status: "ACTIVE",
+        });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: "a".repeat(64),
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-10T05:00:00.000Z"),
+          acceptedAt: new Date("2026-08-10T04:00:00.000Z"),
+          createdBy: participantId,
+        });
         await admin.db.insert(contentVersions).values([
           {
             id: firstVersionId,
@@ -205,6 +223,10 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               ]),
             ),
           );
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
+        await admin.db.delete(accounts).where(eq(accounts.id, participantId));
         await closeLivePostgresHarness(harness);
       }
     });

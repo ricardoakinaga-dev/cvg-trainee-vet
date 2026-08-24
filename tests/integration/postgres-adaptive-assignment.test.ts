@@ -10,6 +10,7 @@ import {
   createParticipantJourneyRepository,
 } from "../../packages/persistence/src/index.js";
 import {
+  accountInvitations,
   accounts,
   activityAssignments,
   contentVersions,
@@ -172,6 +173,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const activityId = randomUUID();
       const contentVersionId = randomUUID();
       const contentId = randomUUID();
+      const invitationId = randomUUID();
       const completedAt = "2026-08-24T12:00:00.000Z";
 
       try {
@@ -179,6 +181,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           id: participantId,
           professionalEmail: `adaptive-activity-${participantId}@example.invalid`,
           status: "ACTIVE",
+        });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: "b".repeat(64),
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-24T12:00:00.000Z"),
+          acceptedAt: new Date("2026-08-24T11:00:00.000Z"),
+          createdBy: participantId,
         });
         await admin.db.insert(learningActivities).values({
           id: activityId,
@@ -284,6 +296,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db
           .delete(contentVersions)
           .where(eq(contentVersions.id, contentVersionId));
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
         await admin.db.delete(accounts).where(eq(accounts.id, participantId));
         await closeLivePostgresHarness(harness);
       }

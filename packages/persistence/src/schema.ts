@@ -379,7 +379,7 @@ export const learningActivities = pgTable(
     ),
     check(
       "learning_activities_session_module_check",
-      sql`${table.sessionId} is null or ${table.moduleId} is null or ${table.sessionId} ~ ('^' || ${table.moduleId} || '-S[1-4]$')`,
+      sql`${table.sessionId} is null or (${table.moduleId} is not null and ${table.sessionId} ~ ('^' || ${table.moduleId} || '-S[1-4]$'))`,
     ),
     check(
       "learning_activities_status_check",

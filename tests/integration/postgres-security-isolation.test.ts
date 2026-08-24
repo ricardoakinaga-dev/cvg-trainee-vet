@@ -22,6 +22,7 @@ import {
 import type { DatabaseHandle } from "../../packages/persistence/src/database.js";
 import {
   accounts,
+  accountInvitations,
   answerIdempotency,
   answers,
   assessmentIdempotency,
@@ -78,6 +79,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const otherScopeId = randomUUID();
       const activityId = randomUUID();
       const otherActivityId = randomUUID();
+      const invitationId = randomUUID();
+      const otherInvitationId = randomUUID();
       const runtimeId = randomUUID();
       const assignmentId = randomUUID();
       const workflowId = randomUUID();
@@ -161,6 +164,28 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             id: staffId,
             professionalEmail: `synthetic-${staffId}@internal.invalid`,
             status: "ACTIVE",
+          },
+        ]);
+        await admin.db.insert(accountInvitations).values([
+          {
+            id: invitationId,
+            accountId: participantId,
+            tokenHash: `${randomUUID().replaceAll("-", "")}${randomUUID().replaceAll("-", "")}`,
+            roles: ["PARTICIPANT"],
+            scopes: [scopeId],
+            expiresAt: new Date("2027-08-10T05:00:00.000Z"),
+            acceptedAt: new Date("2026-08-10T04:00:00.000Z"),
+            createdBy: staffId,
+          },
+          {
+            id: otherInvitationId,
+            accountId: otherParticipantId,
+            tokenHash: `${randomUUID().replaceAll("-", "")}${randomUUID().replaceAll("-", "")}`,
+            roles: ["PARTICIPANT"],
+            scopes: [otherScopeId],
+            expiresAt: new Date("2027-08-10T05:00:00.000Z"),
+            acceptedAt: new Date("2026-08-10T04:00:00.000Z"),
+            createdBy: staffId,
           },
         ]);
         await admin.db.insert(learningActivities).values([
@@ -309,6 +334,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           const withoutContext = await restricted.db.transaction(
             async (transaction) => ({
               assignments: await transaction.select().from(activityAssignments),
+              activities: await transaction.select().from(learningActivities),
               runtimes: await transaction
                 .select()
                 .from(curriculumRuntimeStates),
@@ -317,6 +343,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             }),
           );
           expect(withoutContext.assignments).toHaveLength(0);
+          expect(withoutContext.activities).toHaveLength(0);
           expect(withoutContext.runtimes).toHaveLength(0);
           expect(withoutContext.diagnostics).toHaveLength(0);
           expect(withoutContext.attempts).toHaveLength(0);
@@ -328,6 +355,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
                 assignments: await transaction
                   .select()
                   .from(activityAssignments),
+                activities: await transaction.select().from(learningActivities),
                 runtimes: await transaction
                   .select()
                   .from(curriculumRuntimeStates),
@@ -337,6 +365,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           );
           expect(contextRows.assignments).toHaveLength(1);
           expect(contextRows.assignments[0]?.participantId).toBe(participantId);
+          expect(contextRows.activities).toHaveLength(1);
+          expect(contextRows.activities[0]?.id).toBe(activityId);
           expect(contextRows.runtimes).toHaveLength(1);
           expect(contextRows.diagnostics).toHaveLength(1);
           expect(contextRows.diagnostics[0]?.participantId).toBe(participantId);
@@ -581,6 +611,22 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             and(
               eq(activityAssignments.activityId, otherActivityId),
               eq(activityAssignments.participantId, otherParticipantId),
+            ),
+          );
+        await admin.db
+          .delete(accountInvitations)
+          .where(
+            and(
+              eq(accountInvitations.id, invitationId),
+              eq(accountInvitations.accountId, participantId),
+            ),
+          );
+        await admin.db
+          .delete(accountInvitations)
+          .where(
+            and(
+              eq(accountInvitations.id, otherInvitationId),
+              eq(accountInvitations.accountId, otherParticipantId),
             ),
           );
         await admin.db
