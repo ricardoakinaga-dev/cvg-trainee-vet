@@ -353,7 +353,21 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - status: PENDENTE
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; gaps 0420/0421
 - resultado parcial: jornada mínima, dashboard staff/participante, trilha digital de 24 meses, próximo passo, reforço, retenção, convite administrativo escopado, persistência técnica do agregado B-07 e perfil formativo por tema estão materializados com contratos, persistência, RLS, autorização server-side, E2E e integração PostgreSQL; o dashboard staff agora exibe a baseline por tema somente para participantes pertencentes ao escopo autorizado e mantém explícito que ela não representa competência prática; filas editoriais completas, avaliação/contestação completas e relatórios CPD ainda não fecham o requisito integral
-- próxima ação: executar o workflow remoto autorizado após a migration `0016` e abrir a próxima fatia de gestão/CPD (filas, CPD e recuperação controlada), mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
+- próxima ação: abrir `REFLECTION-035` para fechar reflexão digital → próxima ação; depois tratar apelações e filtros/paginação/exportação, mantendo os gates de B-07, revisão clínica, prática supervisionada e operação externa independentes
+
+### REFLECTION-035 — Reflexão digital e próxima ação
+
+- título: fechar o ciclo digital de feedback, reflexão e próxima revisão
+- descrição: materializar item `REFLEXAO` com salvar/retomar/submeter idempotente, status de próxima ação e agregado gerencial sem texto bruto
+- módulo: aprendizagem / contratos / persistência / web / gestão
+- dependência: atividade publicada sintética/autorizada, tentativa/resposta existentes e `AUD-P1-001`; nenhuma aprovação clínica é inferida
+- fase: BUILD — Phase 3–5 / jornada de produto
+- risco: alto — reflexão não pode virar nota, competência prática, decisão clínica, exposição de texto livre ou relatório individual indevido
+- impacto: alto
+- status: PENDENTE
+- critério: RED/GREEN/REFACTOR; refresh/interrupção preservam o estado; replay não duplica resposta; participante vê próxima ação; gestão vê somente contagem por escopo/módulo; RLS, boundary público, acessibilidade e E2E cobrem os casos negativos
+- evidência de direção: `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`; `packages/contracts/src/learning.ts`; `packages/application/src/answer-use-cases.ts`; `apps/web/app/page.tsx`
+- próxima ação: escrever contrato/teste RED e confirmar o desenho de persistência antes de editar schema ou UI
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 

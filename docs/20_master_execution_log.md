@@ -4151,7 +4151,7 @@ Ligar métricas redigidas e health/dependencies a SLOs e alertas consumíveis se
 
 ### ACTION
 
-Foi congelada a barra em `BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md`. O teste RED falhou pela ausência de `deriveOperationalSnapshot`; em GREEN, `packages/observability/src/operations.ts` passou a derivar disponibilidade de `api.requests.total`, manter p95 como `NO_DATA` sem buckets/quantis e emitir alertas redigidos. A API ganhou `GET /internal/operations`, protegido por `VIEW_INTERNAL_AUDIT`, com estados `READY`, `DEGRADED` e `NOT_READY`; o último retorna 503 com snapshot seguro. Foram adicionados testes HTTP/server/unitários, atualização da SPEC, auditoria 0511 e entrada `OPERATIONAL-SNAPSHOT-034` no manifesto.
+Foi congelada a barra em `BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md`. O teste RED falhou pela ausência de `deriveOperationalSnapshot`; em GREEN, `packages/observability/src/operations.ts` passou a derivar disponibilidade de `api.requests.total`, manter p95 como `NO_DATA` sem buckets/quantis e emitir alertas redigidos. A API ganhou `GET /internal/operations`, protegido por `VIEW_INTERNAL_AUDIT`, com estados `READY`, `DEGRADED` e `NOT_READY`; o último retorna 503 com snapshot seguro. Foram adicionados testes HTTP/server/unitários, atualização da SPEC, auditoria 0511 e entrada `OPERATIONAL-SNAPSHOT-034` no manifesto. O recorte foi commitado em `1d6a268`.
 
 ### RESULT
 
@@ -4159,7 +4159,7 @@ Scouts independentes confirmaram que esta era a maior lacuna local segura e reco
 
 ### DECISIONS
 
-`OPS-034` fica `COMPLETED_WITH_GAPS` no recorte local. `AUD-P1-004` não é fechado: collector/OTel, retenção, dashboards históricos, traces distribuídos, restart/crash, carga, múltiplas réplicas, failover e restore operacional continuam dependentes de ambiente e autoridade. O endpoint não altera estado educacional, nota, gabarito, publicação ou aprovação clínica.
+`OPS-034` fica `COMPLETED_WITH_GAPS` no recorte local; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou após o commit, com worktree limpo. `AUD-P1-004` não é fechado: collector/OTel, retenção, dashboards históricos, traces distribuídos, restart/crash, carga, múltiplas réplicas, failover e restore operacional continuam dependentes de ambiente e autoridade. O endpoint não altera estado educacional, nota, gabarito, publicação ou aprovação clínica.
 
 ### STATUS
 
@@ -4167,4 +4167,4 @@ READY_FOR_NEXT_STEP
 
 ### NEXT
 
-Atualizar estado/backlog após o commit rastreável e, em seguida, abrir a fatia de reflexão digital → próxima ação, mantendo apelações, exportação, gates clínicos, provider/MFA e workflow remoto como dependências separadas.
+Abrir a fatia de reflexão digital → próxima ação, mantendo apelações, exportação, gates clínicos, provider/MFA e workflow remoto como dependências separadas.

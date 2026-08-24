@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 13 identidade e segurança operacional
-- current_sprint: OPS-034 / AUD-P1-004 — snapshot operacional e alertas redigidos
-- current_task: OPS-2026-08-23-A — implementar snapshot operacional local em TDD
+- current_phase: BUILD — Phase 3–5 jornada de produto
+- current_sprint: REFLECTION-035 / AUD-P1-001 — reflexão digital e próxima ação
+- current_task: REFLECTION-2026-08-23-A — definir contrato da reflexão digital
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: `OPS-034` implementou e verificou o bridge `GET /internal/operations` em TDD; cobertura serial, typecheck, lint, build, E2E 19/19, audit, documentação, traceability e exposure passaram; a crítica independente foi atendida e os gates remotos, de ambiente e clínicos continuam separados
-- next_action: criar o commit rastreável do recorte OPS-034, executar o gate release local com worktree limpo e depois abrir a fatia de reflexão digital → próxima ação
+- last_completed_action: `OPS-034` foi commitado em `1d6a268` e o `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou com worktree limpo; o bridge `GET /internal/operations` permanece `COMPLETED_WITH_GAPS` por depender de collector/ambiente externo
+- next_action: abrir o RED e o contrato da fatia de reflexão digital → próxima ação, sem alterar nota, competência prática, publicação clínica ou agregados com texto bruto
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-23T21:07:42-03:00
+- last_update: 2026-08-23T21:11:15-03:00
 
 ## REGRAS DE USO
 
