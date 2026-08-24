@@ -552,3 +552,12 @@ server-derived HTTP contexts, accepted-membership checks and the session/module
 constraint, with RED/GREEN and static local evidence. The remaining next action
 is live PostgreSQL/RLS and browser E2E in an authorized disposable environment;
 remote same-SHA, productive operations and clinical gates remain explicit.
+
+Plan revision note, 2026-08-24 (ACTIVITY-RLS-047 compatibility correction):
+the final inspection found that the active-only list in migration 0031 would hide
+`ATRIBUIDO` and historical assignment states from the existing participant
+journey contract. Migration 0032 now separates journey metadata visibility from
+startable content visibility, with a static RLS contract and the existing live
+adaptive-journey regression retained. The next action remains applying both
+migrations and running PostgreSQL/RLS plus browser E2E in an authorized
+disposable environment.

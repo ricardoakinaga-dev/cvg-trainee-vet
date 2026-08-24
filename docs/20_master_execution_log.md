@@ -7052,3 +7052,51 @@ E2E autoral, workflow same-SHA, operação produtiva e gates clínicos continuam
 Executar a suíte live e o E2E real em banco descartável autorizado; atualizar o
 resultado como PASS ou falha observada, sem usar o schema PostgreSQL de outro
 sistema.
+
+## 2026-08-24 — ACTIVITY-RLS-047: compatibilidade de estados da jornada
+
+### TIMESTAMP
+
+2026-08-24T09:58:30-03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+BUILD — Phase 3–5 / regressão de visibilidade RLS da jornada participante
+
+### TASK
+
+Corrigir a regressão detectada na crítica final: a policy participante não podia
+ocultar `ATRIBUIDO` e estados históricos que a jornada já expõe, sem liberar
+conteúdo de uma atividade não iniciável.
+
+### ACTION
+
+Foi criada a migration incremental `0032_learning_activity_journey_visibility.sql`.
+A função de atividade mantém estados persistidos da jornada (`ATRIBUIDO`,
+`DISPONIVEL`, `EM_ANDAMENTO`, `CONCLUIDO`, `EM_REFORCO`,
+`CONCLUIDO_COM_RETENCAO_PENDENTE`, `PAUSADO` e `BLOQUEADO`), enquanto a nova
+função de conteúdo e a policy de `learning_activity_items` aceitam somente os
+três estados iniciáveis. O contrato estático foi criado antes da correção e
+passou após a migration.
+
+### RESULT
+
+Commit `b85b059`. Migration governance 33/33, contrato RLS 2/2, integração sem
+banco 23 pass/33 skips, unitário 117/572, `tsc -b`, ESLint, Prettier e
+`git diff --check` passaram. O warning de assertion não aguardada em
+`apps/api/src/http.test.ts:3044` é preexistente.
+
+### STATUS
+
+COMPLETED_WITH_GAPS — a aplicação das migrations e o teste PostgreSQL com role
+sem bypass continuam pendentes por falta de banco CVG descartável autorizado.
+
+### NEXT
+
+Aplicar `0031`/`0032` e executar a suíte live com `CVG_RUN_LIVE_DB_TESTS=true`,
+seguida do E2E `CVG_RUN_REAL_E2E=true`, somente em ambiente autorizado; não
+usar o schema PostgreSQL de outro sistema.

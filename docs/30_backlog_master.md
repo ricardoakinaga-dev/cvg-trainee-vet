@@ -56,12 +56,15 @@ e `pnpm` no ambiente; o item permanece `COMPLETED_WITH_GAPS`.
 **Atualização operacional 2026-08-24 (ACTIVITY-RLS-047):** a crítica
 independente encontrou e o TDD corrigiu uma leitura de `learning_activities`
 fora do contexto transacional RLS. O resolver agora exige `participantId` ou
-`scopeId` server-side em transação; a migration `0031` exige assignment ativo,
-atividade publicada, conta ativa e membership participante aceito, e fecha a
-constraint `session_id` sem `module_id`. Fixtures live sintéticos foram
-alinhados com memberships aceitos. Unitário passou 117/572, migrations 32/32,
-typecheck/lint/formatação/sintaxe/diff-check passaram; PostgreSQL live e E2E
-autoral continuam pendentes por falta de banco CVG descartável autorizado.
+`scopeId` server-side em transação; as migrations `0031`/`0032` exigem
+atividade publicada, conta ativa e membership participante aceito, preservam a
+visibilidade de todos os estados persistidos da jornada e restringem itens a
+assignments iniciáveis. A constraint `session_id` sem `module_id` também foi
+fechada. Fixtures live sintéticos foram alinhados com memberships aceitos.
+Unitário passou 117/572, contrato RLS 2/2, integração 23 pass/33 skips,
+migrations 33/33 e typecheck/lint/formatação/diff-check passaram; PostgreSQL
+live e E2E autoral continuam pendentes por falta de banco CVG descartável
+autorizado.
 
 ## P0 — CRÍTICO
 
@@ -788,21 +791,21 @@ autoral continuam pendentes por falta de banco CVG descartável autorizado.
 ### ACTIVITY-RLS-047 — Contexto transacional e membership da atividade
 
 - título: impedir preflight e leitura participante fora do contexto RLS autorizado
-- descrição: corrigir o resolver de escopo para usar transação contextual e restringir a função participante a assignment ativo, atividade publicada, conta ativa e membership aceito no escopo
+- descrição: corrigir o resolver de escopo para usar transação contextual e restringir a função participante a atividade publicada, conta ativa e membership aceito no escopo, preservando metadados da jornada e limitando itens a assignment iniciável
 - módulo: jornada participante / persistência / API / segurança
 - dependência: `AUTHORING-ACTIVITY-001`; `AUTHORING-E2E-PIPELINE-001`; SPEC 0109/0110/0111/0118; migration e banco PostgreSQL autorizados
 - fase: BUILD — Phase 3–5 / hardening RLS
 - risco: crítico — leitura fora do contexto pode quebrar a jornada ou atravessar isolamento; membership pendente pode abrir projeção indevida
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
-- critério de pronto: RED/GREEN focal; resolver contextual; chamadas HTTP com contexto derivado server-side; migration `0031`; constraint de sessão coerente; fixtures live atualizados; live PostgreSQL com role sem bypass e regressão atualizada — parte local cumprida, live pendente
-- escopo: `createActivityScopeResolver`; `apps/api/src/http.ts`; `learning_activities` participant policy; `account_invitations.accepted_at`; `learning_activities_session_module_check`
+- critério de pronto: RED/GREEN focal; resolver contextual; chamadas HTTP com contexto derivado server-side; migrations `0031`/`0032`; constraint de sessão coerente; estados da jornada preservados; itens bounded a assignment iniciável; fixtures live atualizados; live PostgreSQL com role sem bypass e regressão atualizada — parte local cumprida, live pendente
+- escopo: `createActivityScopeResolver`; `apps/api/src/http.ts`; policies participant de `learning_activities`/`learning_activity_items`; `account_invitations.accepted_at`; `learning_activities_session_module_check`
 - fora desta fatia: autorização clínica, alteração de nota/gabarito, provider/MFA, grants/owners produtivos, carga/failover, observabilidade/restore, workflow remoto, piloto e release
 - controles obrigatórios: contexto não vem de campo participante; PostgreSQL continua autoridade; RLS é defesa adicional; IA/Qdrant não participam; fixtures são sintéticos e limpos
 - evidência: `BRIEFING/04.AUDIT/0529_activity_rls_attempt_context_audit.md`; SPEC 0118 seção 28; `traceability.yml` / `ACTIVITY-RLS-047`
-- código: `packages/persistence/src/attempt-repository.ts`; `apps/api/src/http.ts`; `packages/persistence/drizzle/0031_learning_activity_participant_rls_hardening.sql`; `packages/persistence/src/schema.ts`
-- testes: `packages/persistence/src/attempt-repository.db.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `tests/integration/postgres-activity-content.test.ts`; `tests/integration/postgres-adaptive-assignment.test.ts`
-- resultado: commit `743b755` corrigiu o P0 e endureceu o P1/P2; unitário 117/572, migrations 32/32 e gates estáticos passaram; nenhuma execução live foi inferida
+- código: `packages/persistence/src/attempt-repository.ts`; `apps/api/src/http.ts`; `packages/persistence/drizzle/0031_learning_activity_participant_rls_hardening.sql`; `packages/persistence/drizzle/0032_learning_activity_journey_visibility.sql`; `packages/persistence/src/schema.ts`
+- testes: `packages/persistence/src/attempt-repository.db.test.ts`; `tests/integration/activity-rls-governance.test.ts`; `tests/integration/postgres-security-isolation.test.ts`; `tests/integration/postgres-activity-content.test.ts`; `tests/integration/postgres-adaptive-assignment.test.ts`
+- resultado: commits `743b755` e `b85b059` corrigiram o P0, endureceram o P1/P2 e preservaram o contrato de jornada; unitário 117/572, contrato RLS 2/2, integração 23/56 e migrations 33/33 passaram; nenhuma execução live foi inferida
 - gaps explícitos: aplicação da migration e suíte PostgreSQL live em banco descartável, E2E autoral navegador→API→PostgreSQL, workflow same-SHA, operação produtiva e gates clínicos
 - próxima ação: executar `CVG_RUN_LIVE_DB_TESTS=true` e `CVG_RUN_REAL_E2E=true` em ambiente autorizado, registrando resultado PASS ou falha sem mascaramento
 

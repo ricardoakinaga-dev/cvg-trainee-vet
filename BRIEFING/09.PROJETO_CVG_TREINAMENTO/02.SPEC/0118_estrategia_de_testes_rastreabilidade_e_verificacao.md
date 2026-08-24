@@ -352,17 +352,24 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
   todas as chamadas HTTP de início, resposta, submissão, feedback e
   contestação passam contexto derivado server-side;
 - hardening RLS: migration `0031_learning_activity_participant_rls_hardening.sql`
-  limita a projeção participante a assignment ativo, atividade `PUBLISHED`,
+  limita a projeção participante a assignment elegível, atividade `PUBLISHED`,
   conta `ACTIVE` e membership `PARTICIPANT` aceito no escopo; a constraint de
   sessão rejeita `session_id` sem `module_id`, preservando atividades legadas
   sem sessão;
+- a crítica de compatibilidade encontrou que o contrato de jornada já preserva
+  `ATRIBUIDO`, `CONCLUIDO`, `PAUSADO` e `BLOQUEADO`. A migration incremental
+  `0032_learning_activity_journey_visibility.sql` mantém os estados persistidos
+  na policy de metadados da jornada e separa a policy de itens para aceitar
+  somente `DISPONIVEL`, `EM_ANDAMENTO` e `EM_REFORCO`; o contrato estático está
+  em `tests/integration/activity-rls-governance.test.ts`;
 - fixtures live sintéticos de atividade, jornada adaptativa e isolamento foram
   alinhados com membership aceito; nenhuma conta real, token real, prontuário,
   PDF, foto ou fonte de terceiro foi usado;
-- verificação local: 117 arquivos/572 testes unitários, `tsc -b`, ESLint,
-  Prettier, `node --check`, `verify:migrations` 32/32 e `git diff --check`
-  passaram; execução PostgreSQL live ainda requer URL de banco CVG descartável
-  e role autorizada, portanto não há PASS live nesta rodada;
+- verificação local: 117 arquivos/572 testes unitários, contrato RLS 2/2,
+  integração 23 pass/33 skips, `tsc -b`, ESLint, Prettier, `verify:migrations`
+  33/33 e `git diff --check` passaram; execução PostgreSQL live ainda requer
+  URL de banco CVG descartável e role autorizada, portanto não há PASS live
+  nesta rodada;
 - limites: workflow remoto same-SHA, grants/owners produtivos, múltiplas
   réplicas/carga, observabilidade/restore, provider/MFA e gates clínicos
   permanecem independentes e não são aprovados por este slice.
