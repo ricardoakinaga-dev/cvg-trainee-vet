@@ -29,6 +29,7 @@ export const CURRENT_TRACEABILITY_ARTIFACT_IDS = Object.freeze([
   "APPEAL-042",
   "FEEDBACK-043",
   "ADAPTIVE-044",
+  "JOURNEY-045",
 ]);
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;

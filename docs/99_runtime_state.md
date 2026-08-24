@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 jornada de produto
-- current_sprint: ADAPTIVE-044 / AUD-P1-001 — atribuição adaptativa derivada do diagnóstico
-- current_task: ADAPTIVE-2026-08-24-A — consolidar evidência, rastreabilidade e handoff da atribuição adaptativa
+- current_sprint: RESULT-FEEDBACK-046 / AUD-P1-003 — feedback digital e debrief bounded
+- current_task: RESULT-FEEDBACK-2026-08-24-A — selecionar e escrever RED para feedback de tentativa corrigida
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: `ADAPTIVE-044` foi implementado em TDD: RED inicial, caso de uso de reidratação/allowlist, adapter PostgreSQL com identidade e disponibilidade derivadas da linha diagnóstica, contrato/API strict sem `participantId`, capability server-side, replay/estado/CAS e projeção redigida. Auditoria `0523`, SPEC, backlog, log e manifesto foram atualizados; `pnpm verify` passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%, contratos 70/70, worker 25/25 e migrations 26/26; build 12 workspaces, E2E 23/23, integração configurada 8/20 com 27 arquivos/29 testes skipped e `pnpm audit --audit-level=high` limpo
-- next_action: selecionar a próxima fatia local bounded para ligar assignments a CTA/deep link e feedback/debrief; quando `CVG_TEST_DATABASE_URL` estiver disponível, executar a prova live PostgreSQL/RLS de `ADAPTIVE-044`. Não declarar release/100% enquanto live, gates clínicos, CTA/jornada completa e assurance operacional permanecerem ausentes
+- last_completed_action: `JOURNEY-045` foi implementado em TDD: o caso de uso calcula `nextActionTarget` server-side somente para `INICIAR_ATIVIDADE`/`RETOMAR_ATIVIDADE`, o contrato strict confirma que o alvo pertence à própria lista de atividades, a API projeta somente o alvo allowlisted e a web mantém a sessão, codifica `?activityId`, carrega a atividade e restaura tentativa/appeal sem aceitar `participantId`/`scopeId`. Auditoria `0524`, SPEC, backlog, log, plano e manifesto foram atualizados; `pnpm verify` passou com 125 arquivos/572 testes, 29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, contratos 26/72, worker 4/25 e migrations 26/26; build 12 workspaces, E2E 24/24, integração configurada 8/20 com 27 arquivos/29 testes skipped, traceability/documentation/product/exposure/architecture/secrets e `git diff --check` passaram
+- next_action: abrir `RESULT-FEEDBACK-046`, escrever RED E2E para tentativa corrigida e feedback ainda não disponível, depois implementar a consulta pública existente com estados de espera/erro/retry. Quando `CVG_TEST_DATABASE_URL` estiver disponível, executar as provas live PostgreSQL/RLS de `ADAPTIVE-044` e da cadeia assignment→atividade; não declarar release/100% enquanto gaps de relação/provenance/atomicidade, gates clínicos e assurance operacional permanecerem ausentes
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado e de `ADAPTIVE-044`; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local `1350452`; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; as extensões FEEDBACK-043/APPEAL-042 permanecem fora do recorte. Esses bloqueios não impedem o slice local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para as provas live do agregado, `ADAPTIVE-044` e cadeia assignment→atividade; JOURNEY-REL-001 — `learning_assignments` e `activity_assignments` ainda não têm prova de resolução/provenance/atomicidade end-to-end; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; `RESULT-FEEDBACK-046` e `FEEDBACK-043`/`APPEAL-042` permanecem fora do recorte implementado. Esses bloqueios não impedem a próxima fatia local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T04:49:39-03:00
+- last_update: 2026-08-24T05:17:52-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `13504527fe6dae95ab189e2a8b217b828a4ab39b`
-- origin: `fbbc692` (`origin/main`), local `main` ahead 39 commits
-- worktree: contém somente a atualização do SHA no manifesto e o estado desta continuidade; a implementação da fatia está no commit local `13504527fe6dae95ab189e2a8b217b828a4ab39b`; ainda não há push/deploy
+- head: `aeea5f41513ad23570f704695e10c4f41e1204c5`
+- origin: `fbbc692` (`origin/main`), local `main` ahead 42 commits
+- worktree: mudança local de `JOURNEY-045`, audit e control plane aguardando commit local; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: slice local PASS; `pnpm verify`, build, E2E 23/23, audit de dependências, traceability/documentation/product/exposure e diff-check PASS; prova live PostgreSQL/RLS do novo slice, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
+- verification_state: `JOURNEY-045` PASS LOCAL; `pnpm verify` (125/572/29 skips; 84,51%/80,33%/86,03%/85,23%), build, E2E 24/24, integração configurada 8/20 +27/29 skips, traceability/documentation/product/exposure/architecture/secrets e diff-check PASS; prova live PostgreSQL/RLS assignment→atividade, provenance/atomicidade, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
 ## REGRAS DE USO
 

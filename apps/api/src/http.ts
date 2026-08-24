@@ -664,6 +664,9 @@ function publicLearningJourneyProjection(
       publicCurriculumRuntimeProjection(runtime),
     ),
     nextAction: state.nextAction ?? "CONSULTAR_PROXIMO_PASSO",
+    ...(state.nextActionTarget === undefined
+      ? {}
+      : { nextActionTarget: { ...state.nextActionTarget } }),
   });
 }
 

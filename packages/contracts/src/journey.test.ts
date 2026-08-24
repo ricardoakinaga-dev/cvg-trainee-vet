@@ -32,6 +32,10 @@ const journey = {
     },
   ],
   runtimes: [],
+  nextActionTarget: {
+    kind: "ACTIVITY",
+    activityId: "22222222-2222-4222-8222-222222222222",
+  },
   nextAction: "RETOMAR_ATIVIDADE",
 } as const;
 
@@ -65,6 +69,31 @@ describe("participant learning journey projection", () => {
             attemptId: undefined,
           },
         ],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects a next-action target that is not one of the published activities", () => {
+    expect(() =>
+      parseParticipantLearningJourney({
+        ...journey,
+        nextActionTarget: {
+          kind: "ACTIVITY",
+          activityId: "55555555-5555-4555-8555-555555555555",
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("rejects internal fields on the next-action target", () => {
+    expect(() =>
+      parseParticipantLearningJourney({
+        ...journey,
+        nextActionTarget: {
+          kind: "ACTIVITY",
+          activityId: journey.activities[0].activityId,
+          scopeId: "55555555-5555-4555-8555-555555555555",
+        },
       }),
     ).toThrow();
   });

@@ -201,9 +201,17 @@ nota ou aprovação clínica.
 - atividades, status, tentativa mais recente e `nextAction`;
 - workflows de resultado sem tentativa, participante, escopo ou regra interna;
 - runtimes redigidos, sem objetivos internos, gabarito ou competência prática;
-- uma `nextAction` agregada.
+- uma `nextAction` agregada;
+- opcionalmente, `nextActionTarget: { kind: "ACTIVITY", activityId }` somente
+  quando a ação agregada é `INICIAR_ATIVIDADE` ou `RETOMAR_ATIVIDADE` e o alvo
+  pertence à própria lista de atividades autorizadas.
 
-O contrato é estrito, rejeita campos internos e rejeita tentativa publicada parcialmente. A rota é consumida pela web após o aceite de convite; deep links continuam compatíveis com a atividade solicitada.
+O contrato é estrito, rejeita campos internos, rejeita tentativa publicada
+parcialmente e rejeita alvo que não esteja na projeção de atividades. A web não
+calcula a próxima ação nem escolhe um módulo por `moduleId`: usa o alvo
+server-side, mantém a sessão client-side e atualiza `?activityId` apenas como
+ponteiro codificado. Deep links continuam compatíveis com a atividade
+solicitada; autorização e leitura da atividade permanecem server-side.
 
 Na projeção interna de staff, cada participante também carrega `scopeIds` como
 metadado de roteamento de ações administrativas. O servidor deriva esses

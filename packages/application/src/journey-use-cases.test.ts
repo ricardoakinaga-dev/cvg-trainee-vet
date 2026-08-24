@@ -143,9 +143,14 @@ describe("participant learning journey use case", () => {
     );
 
     expect(result.nextAction).toBe("RETOMAR_ATIVIDADE");
+    expect(result.nextActionTarget).toEqual({
+      kind: "ACTIVITY",
+      activityId,
+    });
     expect(result).toMatchObject(state);
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.activities)).toBe(true);
+    expect(Object.isFrozen(result.nextActionTarget)).toBe(true);
   });
 
   it("prioritizes remediation and rejects a repository identity mismatch", async () => {

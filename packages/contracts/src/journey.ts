@@ -28,6 +28,12 @@ const journeyNextActionSchema = z.enum([
   "REVISAR_RETENCAO",
   "AGUARDAR_CORRECAO_HUMANA",
 ]);
+const journeyNextActionTargetSchema = z
+  .object({
+    kind: z.literal("ACTIVITY"),
+    activityId: idSchema,
+  })
+  .strict();
 
 const activitySchema = z
   .object({
@@ -86,8 +92,24 @@ export const participantLearningJourneyProjectionSchema = z
     results: z.array(participantAssessmentWorkflowProjectionSchema).max(100),
     runtimes: z.array(participantCurriculumRuntimeProjectionSchema).max(100),
     nextAction: journeyNextActionSchema,
+    nextActionTarget: journeyNextActionTargetSchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      value.nextActionTarget !== undefined &&
+      !value.activities.some(
+        (activity) =>
+          activity.activityId === value.nextActionTarget?.activityId,
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["nextActionTarget", "activityId"],
+        message: "next action target must be a published journey activity",
+      });
+    }
+  });
 
 export type ParticipantLearningJourneyProjection = z.infer<
   typeof participantLearningJourneyProjectionSchema

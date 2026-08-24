@@ -249,11 +249,13 @@ export type {
 } from "./appeal-use-cases.js";
 export {
   deriveJourneyNextAction,
+  deriveJourneyNextActionTarget,
   getParticipantLearningJourney,
 } from "./journey-use-cases.js";
 export type {
   GetParticipantLearningJourneyCommand,
   JourneyNextAction,
+  JourneyNextActionTarget,
   ParticipantJourneyActivity,
   ParticipantJourneyReadPort,
   ParticipantLearningJourneyState,

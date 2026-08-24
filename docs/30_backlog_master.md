@@ -12,6 +12,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
+**Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
+
 ## P0 — CRÍTICO
 
 ### PRE-SPEC-01 — Alinhamento de produto e arquitetura
@@ -593,6 +595,43 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - resultado: a conclusão B-07 persistida materializa `M01`/`M02`/`M11` obrigatórios mais recomendações válidas em `ATRIBUIDO`; identidade e disponibilidade vêm do PostgreSQL; replay sequencial não duplica; promoção de `NAO_ATRIBUIDO` usa domínio + CAS; a rota interna rejeita identidade do cliente e a projeção remove `participantId` e campos editoriais; RED/GREEN, cobertura global, build, E2E 23/23, contratos, worker, migrations, exposure e documentação passaram localmente
 - gaps explícitos: o teste PostgreSQL/RLS live foi skipped por ausência de `CVG_TEST_DATABASE_URL`; CTA/deep link de módulo, feedback/debrief/remediação/retensão completos, concorrência live, grants produtivos, observabilidade externa, publicação clínica, aplicação real do B-07, piloto e release continuam pendentes
 - próxima ação: ligar a atribuição persistida a uma ação de módulo na jornada participante e fechar feedback/debrief; manter live RLS, gates clínicos e hardening operacional como dependências explícitas
+
+### JOURNEY-045 — CTA e deep link da atividade na jornada participante
+
+- título: tornar a atividade atribuída acionável sem perder a sessão do participante
+- descrição: projetar uma única ação explícita para a próxima atividade já autorizada na jornada, com alvo escolhido no servidor; selecionar a atividade client-side usando o fluxo existente, atualizar `?activityId` como ponteiro deep link e manter a superfície sem `participantId`, `scopeId`, gabarito, fontes ou dados editoriais
+- módulo: jornada participante / web / acessibilidade / contratos de exposição
+- dependência: `ADAPTIVE-044`; `LEARNING-PROFILE-2026-08-23`; `UC-001`; `UC-002`; `PRD-RF-012`; `PRD-RF-015`; `PRD-RF-021`; `PRD-RF-022`; `SPEC-0107`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / jornada de produto
+- risco: médio — ação incorreta ou perda de sessão pode impedir retomada; exposição indevida de identidade interna é bloqueador de segurança
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED E2E antes do código; `nextActionTarget` opcional e strict só aponta para uma atividade da projeção e só é emitido para iniciar/retomar; a atividade pode ser aberta a partir da jornada sem novo convite, o query string é atualizado com valor codificado, request permanece server-side e bounded, busy/erro são visíveis, a UI não exibe IDs internos além do ponteiro autorizado, e `pnpm verify`, build, E2E, exposição, documentação, traceability e diff-check passam
+- escopo: CTA para atividades presentes em `learning-path`, seleção local, atualização de URL e regressão do fluxo de convite/atividade
+- fora desta fatia: novo endpoint, alteração de assignments, feedback/debrief, remediação/retensão completas, conteúdo clínico, prática presencial, provider/MFA, live RLS, grants produtivos, CI remoto, piloto e release
+- controles obrigatórios: o servidor é a fonte de `nextAction` e `activityId`; nenhum `participantId`/`scopeId` entra no handler; o identificador é codificado ao atualizar o histórico; atividade fora do alvo autorizado é rejeitada; não usar o cliente para autorizar a leitura
+- evidência: `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`; `traceability.yml` / `JOURNEY-045`; SPEC 0107/0114/0118
+- código: `packages/application/src/journey-use-cases.ts`; `packages/application/src/index.ts`; `packages/contracts/src/journey.ts`; `apps/api/src/http.ts`; `apps/web/app/page.tsx`; `apps/web/app/globals.css`; `scripts/verify-traceability.mjs`
+- testes: `packages/application/src/journey-use-cases.test.ts`; `packages/contracts/src/journey.test.ts`; `apps/api/src/http.test.ts`; `tests/e2e/participant-access.spec.ts`
+- resultado: RED observado antes da CTA; alvo server-side, contrato relacional, handler client-side, deep link codificado e restauração de atividade implementados; `pnpm verify` 125/572/29 skips, cobertura 84,51%/80,33%/86,03%/85,23%, build 12 workspaces, integração 8/20 +27/29 skips e E2E 24/24 passaram localmente
+- gaps explícitos: assignments ainda não resolvem automaticamente para `activity_assignments`/atividade publicada; live RLS, provenance/atomicidade do diagnóstico→assignment, feedback/debrief/remediação/retensão completos, grants produtivos, observabilidade externa, publicação clínica, piloto e release continuam pendentes
+- próxima ação: abrir `RESULT-FEEDBACK-046` para exibir feedback digital persistido e sua próxima ação, sem inventar gabarito ou claim clínico
+
+### RESULT-FEEDBACK-046 — Feedback digital e debrief bounded na atividade
+
+- título: exibir o resultado de correção digital persistido e orientar a próxima ação do participante
+- descrição: após restauração ou submissão de uma tentativa já corrigida, consultar o endpoint público existente de feedback, exibir resultado/feedback e o estado “aguardando correção” em uma projeção redigida, sem criar gabarito, decisão clínica ou competência prática
+- módulo: avaliação digital / feedback / debrief / jornada participante / web
+- dependência: `JOURNEY-045`; `FEEDBACK-041`; `APPEAL-042`; `PRD-RF-028`; `PRD-RF-070`; `SPEC-0107`; `SPEC-0114`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / ciclo de aprendizagem
+- risco: alto — resultado, feedback ou próxima ação incorretos podem induzir aprendizagem insegura; a fronteira pública não pode vazar regra, corretor, gabarito ou fonte
+- impacto: alto
+- status: READY_FOR_NEXT_STEP
+- critério de pronto: RED E2E; GET de feedback permanece owner-scoped e strict, `not_found` vira estado público “ainda não disponível”, resultado/feedback/next action são renderizados sem identidade interna, tentativa corrigida é restaurada após atualização e `pnpm verify`, E2E, exposição e diff-check passam
+- escopo: somente a projeção de correção digital já persistida, estados de espera/erro/retry e debrief/reflexão já modelados; nenhuma correção nova é inventada no browser
+- fora desta fatia: autocorreção, IA geradora, alteração de nota/gabarito, decisão de appeal, remediação/retensão automáticas, prática clínica, publicação, provider/MFA, live RLS, grants produtivos, piloto e release
+- controles obrigatórios: `attemptId` só vem da tentativa restaurada na jornada; API continua autorizando o dono; não renderizar `participantId`, `scopeId`, `correctedBy`, `ruleVersion`, gabarito, fonte ou claim prático
+- próxima ação: escrever RED para tentativa corrigida e feedback ainda não disponível, depois implementar consulta/estado na superfície participante
 
 ### STAFF-DIAGNOSTIC-PROFILE-024 — Baseline formativa no acompanhamento gerencial
 

@@ -33,6 +33,7 @@ test.describe("participant access and learning projection", () => {
             ],
             results: [],
             runtimes: [],
+            nextActionTarget: { kind: "ACTIVITY", activityId },
             nextAction: "RETOMAR_ATIVIDADE",
           }),
         ),
@@ -181,6 +182,7 @@ test.describe("participant access and learning projection", () => {
             ],
             results: [],
             runtimes: [],
+            nextActionTarget: { kind: "ACTIVITY", activityId },
             nextAction: "RETOMAR_ATIVIDADE",
           }),
         ),
@@ -226,6 +228,105 @@ test.describe("participant access and learning projection", () => {
     ).toBeVisible();
     await expect(page.getByText("Baseline digital registrada")).toBeVisible();
     await expect(page.getByText("Sem nota global")).toBeVisible();
+  });
+
+  test("opens another assigned activity without losing the participant session", async ({
+    page,
+  }) => {
+    const secondActivityId = "55555555-5555-4555-8555-555555555555";
+    await page.unroute("**/api/v1/learning-path");
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [
+              {
+                activityId,
+                slug: "emergencia-v1",
+                title: "Emergência",
+                status: "CONCLUIDO",
+                nextAction: "CONSULTAR_PROXIMO_PASSO",
+              },
+              {
+                activityId: secondActivityId,
+                slug: "internacao-v1",
+                title: "Internação",
+                status: "DISPONIVEL",
+                nextAction: "INICIAR_ATIVIDADE",
+              },
+            ],
+            results: [],
+            runtimes: [],
+            nextActionTarget: {
+              kind: "ACTIVITY",
+              activityId: secondActivityId,
+            },
+            nextAction: "INICIAR_ATIVIDADE",
+          }),
+        ),
+      });
+    });
+    await page.route(`**/api/v1/activities/${activityId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+    await page.route(
+      `**/api/v1/activities/${secondActivityId}`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            successEnvelope({
+              activityId: secondActivityId,
+              slug: "internacao-v1",
+              title: "Internação",
+              items: [],
+            }),
+          ),
+        });
+      },
+    );
+
+    await page.goto(`/?activityId=${activityId}`);
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Emergência" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Abrir atividade: Emergência" }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Abrir atividade: Internação" })
+      .click();
+
+    await expect(
+      page.getByRole("heading", { name: "Internação" }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`activityId=${secondActivityId}`));
+    await expect(page.getByLabel("Token de convite")).toHaveCount(0);
   });
 
   test("reports feedback and shows only the participant ticket projection", async ({

@@ -80,6 +80,58 @@ O slice editorial fica `COMPLETED_WITH_GAPS`/pronto para próxima fatia técnica
 
 READY_FOR_NEXT_STEP
 
+## 2026-08-24 — JOURNEY-045: abertura da fatia CTA/deep link
+
+### TIMESTAMP
+
+2026-08-24 04:58:36 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada de produto — JOURNEY-045 / AUD-P1-002
+
+### TASK
+
+JOURNEY-2026-08-24-A — tornar a atividade atribuída acionável na jornada
+participante sem perder sessão ou expor identidade interna.
+
+### ACTION
+
+Após a verificação de `ADAPTIVE-044`, foi selecionada a menor lacuna de produto
+observável: a API já retorna `activityId` na jornada e a página já suporta
+`?activityId`, mas a lista não oferece uma ação quando o participante está na
+visão de atividade. O escopo foi congelado em CTA client-side, atualização
+codificada do query string, reutilização de `loadActivity`/restauração de
+tentativa e estados de busy/erro; feedback/debrief fica separado.
+
+### RESULT
+
+RED ainda não executado nesta abertura. Não houve mudança de código de produto;
+estado, backlog e plano foram atualizados para `IN_PROGRESS`. Nenhum endpoint,
+identidade, autorização, conteúdo clínico, dado real, segredo, push ou deploy foi
+adicionado.
+
+### DECISIONS
+
+A atividade só pode ser selecionada a partir da projeção de jornada já autorizada.
+O browser não recebe nem envia `participantId` ou `scopeId`; o deep link é apenas
+um ponteiro para a atividade e a API continua responsável por sessão,
+autorização e projeção. A ação deve preservar a sessão sem recarregar a página.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever o cenário E2E RED para abrir a atividade a partir da jornada e observar
+o request de atividade; depois implementar o menor handler/CTA e executar a
+regressão focal.
+
 ## 2026-08-09 — SPEC COMPLETA E HANDOFF PARA BUILD DOCUMENTAL
 
 ### TIMESTAMP
@@ -6137,3 +6189,64 @@ READY_FOR_NEXT_STEP
 Selecionar a próxima lacuna local bounded; executar a prova live de
 `ADAPTIVE-044` somente quando o ambiente autorizado existir e manter o
 manifesto/estado sincronizados após o commit local.
+
+## 2026-08-24 — JOURNEY-045: CTA server-side verificada e handoff
+
+### TIMESTAMP
+
+2026-08-24 05:17:52 -03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / jornada de produto — JOURNEY-045 / AUD-P1-002
+
+### TASK
+
+JOURNEY-2026-08-24-A — tornar a próxima atividade já autorizada acionável sem
+perder a sessão e sem permitir que o cliente calcule a prioridade.
+
+### ACTION
+
+Após o RED E2E, foi adicionado `nextActionTarget` à projeção da jornada. O caso
+de uso escolhe o alvo no servidor somente para `INICIAR_ATIVIDADE` ou
+`RETOMAR_ATIVIDADE`; o contrato confirma UUID, `kind` e pertencimento à lista
+de atividades; a API projeta somente o campo allowlisted. A web renderiza uma
+única CTA para esse alvo, confere o alvo carregado, usa `loadActivity` e
+restauração de tentativa/appeal, codifica `?activityId` com `URLSearchParams` e
+atualiza o histórico sem recarregar.
+
+### RESULT
+
+O RED falhou antes do código ao não encontrar a CTA. Depois do GREEN,
+`pnpm verify` passou com 125 arquivos/572 testes e 29 skips; cobertura
+84,51% statements, 80,33% branches, 86,03% functions e 85,23% lines. Build
+dos 12 workspaces, contracts 26/72, worker 4/25, migrations 26/26,
+`pnpm test:integration` 8/20 com 27/29 skips, E2E completo 24/24, gates de
+traceability/documentation/product-definition/exposure/architecture/secrets e
+`git diff --check` passaram. O teste live assignment→atividade continua
+skipped por ausência de `CVG_TEST_DATABASE_URL`.
+
+### DECISIONS
+
+`JOURNEY-045` fica `COMPLETED_WITH_GAPS`. A CTA não resolve `moduleId` por slug,
+não cria endpoint novo, não abre atividade fora do alvo da jornada e não
+substitui autorização server-side. A crítica independente registrou que
+`learning_assignments` e `activity_assignments` ainda não têm prova de
+resolução/provenance/atomicidade; isso permanece gap P1 explícito. Não houve
+conteúdo clínico, dado real, segredo, push, deploy ou claim de competência.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir `RESULT-FEEDBACK-046`: escrever RED para tentativa corrigida e feedback
+ainda não disponível, depois exibir a projeção pública existente com estados
+de espera, erro e retry. Manter live RLS, relação assignment→atividade,
+provenance, gates clínicos e assurance operacional fora de qualquer claim de
+release/100%.

@@ -145,6 +145,14 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - cobertura da rodada: 323 testes passaram, 11 foram ignorados; statements 85,01%, branches 80,19%, functions 86,53%, lines 85,72%;
 - o E2E permanece com API interceptada; a prova navegador→API/PostgreSQL/Qdrant real continua requisito de operação/CI posterior.
 
+### Evidência adicional — JOURNEY-045
+
+- RED/GREEN: o cenário `opens another assigned activity without losing the participant session` falhou antes da CTA e passou após `nextActionTarget`, handler client-side e deep link codificado serem implementados;
+- contrato/aplicação/API: `packages/contracts/src/journey.test.ts`, `packages/application/src/journey-use-cases.test.ts` e `apps/api/src/http.test.ts` cobrem alvo allowlisted, relação com a atividade, ausência de campos internos e prioridade sem CTA quando runtime/correção prevalece;
+- web: `apps/web/app/page.tsx` usa somente o alvo server-side, preserva a sessão, restaura tentativa/appeal e atualiza `?activityId` sem recarregar; `tests/e2e/participant-access.spec.ts` cobre seleção e ausência de CTA em atividade fora da próxima ação;
+- rodada: `pnpm verify` passou com 125 arquivos/572 testes, 29 skips; cobertura 84,51% statements, 80,33% branches, 86,03% functions, 85,23% lines; build 12 workspaces e E2E 24/24;
+- limites: o teste E2E usa projeção sintética, portanto não prova diagnóstico→assignment→activity real, RLS live, provenance/atomicidade ou publicação clínica.
+
 ## 14. Evidência executável do item 10
 
 - RED/GREEN: contratos, currículo, aplicação, persistência e API receberam testes antes dos módulos de autoria/revisão;

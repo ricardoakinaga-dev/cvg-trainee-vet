@@ -1825,6 +1825,10 @@ describe("API HTTP boundary", () => {
         ],
         results: [],
         runtimes: [],
+        nextActionTarget: {
+          kind: "ACTIVITY",
+          activityId: activity.activityId,
+        },
         nextAction: "RETOMAR_ATIVIDADE",
       }),
     );
@@ -1847,6 +1851,10 @@ describe("API HTTP boundary", () => {
             nextAction: "RETOMAR_ATIVIDADE",
           },
         ],
+        nextActionTarget: {
+          kind: "ACTIVITY",
+          activityId: activity.activityId,
+        },
         nextAction: "RETOMAR_ATIVIDADE",
       },
     });

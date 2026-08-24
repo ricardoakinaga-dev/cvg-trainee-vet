@@ -731,6 +731,39 @@ textarea {
   padding: 0.7rem 0 0;
 }
 
+.journey-activity-list {
+  display: grid;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.journey-activity-item {
+  align-items: center;
+  border-top: 1px solid rgba(14, 76, 59, 0.16);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding-top: 0.7rem;
+}
+
+.journey-activity-item strong,
+.journey-activity-item span {
+  display: block;
+}
+
+.journey-activity-item span {
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+
+.journey-activity-item .button-link {
+  border: 0;
+  font-size: 0.8rem;
+  padding: 0.6rem 0.8rem;
+}
+
 .path-card {
   border-top: 1px solid rgba(14, 76, 59, 0.16);
   margin-top: 1.25rem;
@@ -1138,5 +1171,14 @@ main:focus {
 
   .path-action {
     flex-basis: 6.5rem;
+  }
+
+  .journey-activity-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .journey-activity-item .button-link {
+    align-self: flex-start;
   }
 }

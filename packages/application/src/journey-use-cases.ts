@@ -27,6 +27,11 @@ export type JourneyNextAction =
   | "REVISAR_RETENCAO"
   | "AGUARDAR_CORRECAO_HUMANA";
 
+export type JourneyNextActionTarget = Readonly<{
+  readonly kind: "ACTIVITY";
+  readonly activityId: string;
+}>;
+
 export type ParticipantLearningJourneyState = Readonly<{
   readonly participantId: string;
   readonly assignments: readonly ScopedLearningAssignment[];
@@ -35,6 +40,7 @@ export type ParticipantLearningJourneyState = Readonly<{
   readonly runtimes: readonly CurriculumRuntimeState[];
   readonly diagnosticResults?: readonly DiagnosticResultState[];
   readonly nextAction?: JourneyNextAction;
+  readonly nextActionTarget?: JourneyNextActionTarget;
 }>;
 
 export type GetParticipantLearningJourneyCommand = Readonly<{
@@ -151,6 +157,31 @@ export function deriveJourneyNextAction(
   return "CONSULTAR_PROXIMO_PASSO";
 }
 
+export function deriveJourneyNextActionTarget(
+  state: ParticipantLearningJourneyState,
+): JourneyNextActionTarget | undefined {
+  const runtimeAction = state.runtimes.find(
+    (runtime) => runtime.evaluation.nextAction !== undefined,
+  )?.evaluation.nextAction;
+  if (runtimeAction !== undefined) return undefined;
+
+  const activity = state.activities.find(
+    (candidate) => candidate.nextAction !== "CONSULTAR_PROXIMO_PASSO",
+  );
+  if (
+    activity === undefined ||
+    (activity.nextAction !== "INICIAR_ATIVIDADE" &&
+      activity.nextAction !== "RETOMAR_ATIVIDADE")
+  ) {
+    return undefined;
+  }
+
+  return Object.freeze({
+    kind: "ACTIVITY",
+    activityId: activity.activityId,
+  });
+}
+
 export async function getParticipantLearningJourney(
   command: GetParticipantLearningJourneyCommand,
   repository: ParticipantJourneyReadPort,
@@ -238,8 +269,10 @@ export async function getParticipantLearningJourney(
         }),
   } satisfies Omit<ParticipantLearningJourneyState, "nextAction">;
 
+  const nextActionTarget = deriveJourneyNextActionTarget(cloned);
   return Object.freeze({
     ...cloned,
     nextAction: deriveJourneyNextAction(cloned),
+    ...(nextActionTarget === undefined ? {} : { nextActionTarget }),
   });
 }

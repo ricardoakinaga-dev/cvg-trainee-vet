@@ -120,6 +120,10 @@ type LearningJourneyProjection = Readonly<{
   readonly results: readonly ApiRecord[];
   readonly runtimes: readonly CurriculumRuntimeProjection[];
   readonly nextAction: string;
+  readonly nextActionTarget?: Readonly<{
+    readonly kind: "ACTIVITY";
+    readonly activityId: string;
+  }>;
 }>;
 
 type ParticipantDashboardProjection = Readonly<{
@@ -436,6 +440,17 @@ function isJourneyActivity(value: unknown): value is JourneyActivityProjection {
 
 function isJourney(value: unknown): value is LearningJourneyProjection {
   if (!isRecord(value)) return false;
+  const target = value.nextActionTarget;
+  const validTarget =
+    target === undefined ||
+    (isRecord(target) &&
+      target.kind === "ACTIVITY" &&
+      isString(target.activityId) &&
+      Array.isArray(value.activities) &&
+      value.activities.some(
+        (activity) =>
+          isRecord(activity) && activity.activityId === target.activityId,
+      ));
   return (
     Array.isArray(value.assignments) &&
     value.assignments.every(isRecord) &&
@@ -445,7 +460,8 @@ function isJourney(value: unknown): value is LearningJourneyProjection {
     value.results.every(isRecord) &&
     Array.isArray(value.runtimes) &&
     value.runtimes.every(isRuntime) &&
-    isString(value.nextAction)
+    isString(value.nextAction) &&
+    validTarget
   );
 }
 
@@ -721,6 +737,46 @@ function ParticipantPath({
   );
 }
 
+function JourneyActivities({
+  activities,
+  nextActionTarget,
+  busy,
+  onSelect,
+}: Readonly<{
+  readonly activities: readonly JourneyActivityProjection[];
+  readonly nextActionTarget: LearningJourneyProjection["nextActionTarget"];
+  readonly busy: boolean;
+  readonly onSelect: (activityId: string) => Promise<void>;
+}>): ReactNode {
+  if (activities.length === 0) {
+    return <p className="journey-item">Nenhuma atividade atribuída.</p>;
+  }
+
+  return (
+    <ul className="journey-activity-list" aria-label="Atividades da jornada">
+      {activities.slice(0, 3).map((item) => (
+        <li className="journey-activity-item" key={item.activityId}>
+          <div>
+            <strong>{item.title}</strong>
+            <span>{nextActionLabel(item.nextAction)}</span>
+          </div>
+          {nextActionTarget?.activityId === item.activityId ? (
+            <button
+              type="button"
+              className="button-link"
+              aria-label={`Abrir atividade: ${item.title}`}
+              onClick={() => void onSelect(item.activityId)}
+              disabled={busy}
+            >
+              Abrir atividade
+            </button>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function nextActionLabel(value: string): string {
   const labels: Readonly<Record<string, string>> = {
     INICIAR_ATIVIDADE: "Iniciar atividade",
@@ -855,6 +911,17 @@ function initialActivityId(): string {
   return new URLSearchParams(window.location.search).get("activityId") ?? "";
 }
 
+function updateActivityDeepLink(nextActivityId: string): void {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("activityId", nextActivityId);
+  window.history.replaceState(
+    window.history.state,
+    "",
+    `${url.pathname}${url.search}${url.hash}`,
+  );
+}
+
 export default function HomePage() {
   const [activityId, setActivityId] = useState("");
   const [token, setToken] = useState("");
@@ -898,9 +965,10 @@ export default function HomePage() {
     setActivityState("loading");
     setRetryAction("activity");
     try {
-      const data = await requestJson(`/api/v1/activities/${nextActivityId}`, {
-        method: "GET",
-      });
+      const data = await requestJson(
+        `/api/v1/activities/${encodeURIComponent(nextActivityId)}`,
+        { method: "GET" },
+      );
       if (!isActivity(data))
         throw new PublicApiError("internal_error", "invalid projection");
       setActivity(data);
@@ -1085,9 +1153,7 @@ export default function HomePage() {
       const nextActivityId =
         activityId.trim().length > 0
           ? activityId
-          : loadedJourney.activities.find(
-              (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-            )?.activityId;
+          : loadedJourney.nextActionTarget?.activityId;
       if (nextActivityId !== undefined && nextActivityId.length > 0) {
         setActivityId(nextActivityId);
         await loadActivity(nextActivityId);
@@ -1115,15 +1181,43 @@ export default function HomePage() {
       const nextActivityId =
         activityId.trim().length > 0
           ? activityId
-          : loadedJourney.activities.find(
-              (item) => item.nextAction !== "CONSULTAR_PROXIMO_PASSO",
-            )?.activityId;
+          : loadedJourney.nextActionTarget?.activityId;
       if (nextActivityId !== undefined && nextActivityId.length > 0) {
         setActivityId(nextActivityId);
         await loadActivity(nextActivityId);
         await restoreAttemptFromJourney(loadedJourney, nextActivityId);
       }
       setNotice("Jornada atualizada.");
+    } catch (caught) {
+      setError(publicErrorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSelectJourneyActivity(
+    nextActivityId: string,
+  ): Promise<void> {
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    setRetryAction(null);
+    try {
+      const loadedJourney = journey ?? (await loadJourney());
+      if (
+        loadedJourney.nextActionTarget?.kind !== "ACTIVITY" ||
+        loadedJourney.nextActionTarget.activityId !== nextActivityId
+      ) {
+        throw new PublicApiError(
+          "internal_error",
+          "activity is not present in the authorized journey",
+        );
+      }
+      setActivityId(nextActivityId);
+      updateActivityDeepLink(nextActivityId);
+      await loadActivity(nextActivityId);
+      await restoreAttemptFromJourney(loadedJourney, nextActivityId);
+      setNotice("Atividade aberta.");
     } catch (caught) {
       setError(publicErrorMessage(caught));
     } finally {
@@ -1545,15 +1639,12 @@ export default function HomePage() {
               <div className="journey-summary" aria-label="Minha jornada">
                 <p className="eyebrow">Minha jornada</p>
                 <h2>{nextActionLabel(journey.nextAction)}</h2>
-                {journey.activities.length === 0 ? (
-                  <p className="journey-item">Nenhuma atividade atribuída.</p>
-                ) : (
-                  journey.activities.slice(0, 3).map((item) => (
-                    <p className="journey-item" key={item.activityId}>
-                      {item.title} · {nextActionLabel(item.nextAction)}
-                    </p>
-                  ))
-                )}
+                <JourneyActivities
+                  activities={journey.activities}
+                  nextActionTarget={journey.nextActionTarget}
+                  busy={busy}
+                  onSelect={handleSelectJourneyActivity}
+                />
                 {participantDashboard !== null ? (
                   <p className="journey-item">
                     Progresso digital:{" "}
@@ -1857,6 +1948,12 @@ export default function HomePage() {
                   {journey.activities.length} atividade
                   {journey.activities.length === 1 ? "" : "s"} no caminho atual.
                 </p>
+                <JourneyActivities
+                  activities={journey.activities}
+                  nextActionTarget={journey.nextActionTarget}
+                  busy={busy}
+                  onSelect={handleSelectJourneyActivity}
+                />
                 {participantDashboard !== null ? (
                   <p className="journey-item">
                     Progresso digital:{" "}

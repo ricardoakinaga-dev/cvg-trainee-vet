@@ -19,7 +19,7 @@
 
 Toda rota possui estados explícitos de `loading`, `ready`, `empty`, `error`, `forbidden`, `stale` e `retry`. Mutação usa feedback de envio, bloqueio contra duplo clique, idempotência e recuperação de timeout sem apagar rascunho.
 
-O web nunca calcula nota oficial, autorização, transição, próxima ação ou estado clínico. Ele mostra a projeção da API e invalida/refaz query após mutação confirmada.
+O web nunca calcula nota oficial, autorização, transição, próxima ação ou estado clínico. Ele mostra a projeção da API e invalida/refaz query após mutação confirmada. Na jornada participante, uma CTA de atividade só aparece para o `nextActionTarget` server-side já contido na projeção autorizada; a seleção mantém a sessão, codifica `activityId` no query string e não transforma o deep link em autorização.
 
 ## 4. Acessibilidade e segurança de conteúdo
 

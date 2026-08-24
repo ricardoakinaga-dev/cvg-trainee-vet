@@ -31,6 +31,12 @@ a aprovação clínica, piloto ou release produtivo.
   RED/GREEN, testes de aplicação/contrato/persistência/API, cobertura, build,
   E2E, gates estáticos e auditoria; o live PostgreSQL/RLS ficou explicitamente
   skipped sem ambiente.
+- [x] (2026-08-24T05:17:52-03:00) Fechar `JOURNEY-045`: adicionar uma CTA
+  client-side somente para o `nextActionTarget` calculado pelo servidor,
+  atualizar o deep link codificado e preservar sessão/estado de tentativa.
+  RED E2E, contrato relacional, aplicação/API, cobertura, build, integração
+  configurada e 24/24 E2E passaram; live RLS e a relação real
+  assignment→atividade continuam gaps.
 - [ ] (futuro) Completar as fatias digitais restantes e a assurance de
   segurança/operação conforme os marcos e gates abaixo.
 - [ ] (futuro) Submeter conteúdo, piloto, credenciais, fornecedor e release a
@@ -76,6 +82,15 @@ a aprovação clínica, piloto ou release produtivo.
   pesquisa.
   Impact: manter a barra de produto digital, reflexão e próxima ação, mas
   bloquear publicação/autonomia clínica e autoridade de IA.
+
+- Observation: `learning_assignments.moduleId` e atividades publicadas são
+  agregados relacionados por leituras distintas; a atribuição adaptativa não
+  cria automaticamente `activity_assignments` nem provenance do diagnóstico.
+  Evidence: crítica independente do repositório de jornada e auditoria
+  `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`.
+  Impact: `JOURNEY-045` fecha apenas a CTA para um alvo já autorizado na
+  projeção; a transição diagnóstico → assignment → atividade real continua
+  gap P1 e não pode ser declarada como jornada completa.
 
 ## Decision Log
 
@@ -131,15 +146,39 @@ a aprovação clínica, piloto ou release produtivo.
   `RELEASE BLOCKED` por ambiente/autoridade.
   Date/Author: 2026-08-24 / Codex.
 
+- Decision: abrir `JOURNEY-045` como a menor continuação observável de
+  `ADAPTIVE-044`, sem criar endpoint ou mudar o contrato de identidade.
+  Context: a jornada já fornece `activityId` e a página já entende o query
+  string, porém não há ação explícita no estado em que uma atividade está
+  carregada.
+  Reason: uma CTA client-side fecha a transição assignment → estudo com baixo
+  blast radius, permite prova E2E e mantém autorização/session/API existentes.
+  Consequences: o deep link será um ponteiro codificado e não um mecanismo de
+  autorização; feedback/debrief, live RLS e assurance de release continuam
+  fora desta fatia.
+  Date/Author: 2026-08-24 / Codex.
+
+- Decision: limitar `JOURNEY-045` a uma única CTA cujo alvo é escolhido pelo
+  servidor, em vez de transformar cada atividade listada em próxima ação.
+  Context: `RF-028` pede uma única próxima ação e o scout independente apontou
+  que a web não deve inferir prioridade nem resolver `moduleId` por slug.
+  Reason: o contrato pode provar que o alvo pertence à jornada autorizada,
+  preservando a sessão e evitando um novo mecanismo de autorização.
+  Consequences: a fatia não materializa `activity_assignments` a partir de
+  `learning_assignments`; a prova diagnóstico→atividade real, provenance,
+  atomicidade e feedback/debrief continuam tarefas separadas.
+  Date/Author: 2026-08-24 / Codex, após crítica independente.
+
 ## Outcomes & Retrospective
 
 O Milestone 2 foi concluído no recorte local: a recomendação diagnóstica agora
 vira estado persistido e acionável sem confiar identidade ou disponibilidade no
-cliente. A cobertura global permaneceu acima da barra depois que a persistência
-ganhou testes determinísticos; a integração live continua uma dependência real,
-não uma simulação. A principal lição foi separar claramente `PASS LOCAL` de
-`RELEASE BLOCKED` e derivar todos os campos sensíveis da linha transacional.
-As fatias seguintes ainda são necessárias para a jornada pedagógica completa.
+cliente, e a jornada agora recebe um alvo server-side para a próxima atividade
+quando essa atividade já está autorizada e projetada. A cobertura global
+permaneceu acima da barra; a integração live continua uma dependência real, não
+uma simulação. A principal lição foi separar claramente `PASS LOCAL` de
+`RELEASE BLOCKED`, não inferir relações de catálogo pelo slug e deixar
+feedback/debrief como a próxima fatia pedagógica.
 
 ## Context and Orientation
 
