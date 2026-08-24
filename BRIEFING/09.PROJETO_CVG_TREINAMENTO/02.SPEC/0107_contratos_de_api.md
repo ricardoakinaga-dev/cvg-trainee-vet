@@ -328,3 +328,18 @@ opcional. A rota é somente leitura e não retorna `answer`, `response`, `score`
 `answerKey`, `sourceRefs`, `prompt`, rubrica, fonte ou claim de competência
 prática. A superfície de operações usa somente o necessário para triagem e não
 renderiza UUIDs internos; não há botão ou comando de mutação nesta fatia.
+
+## 15.1 Transição de decisão com rationale — APPEAL-039
+
+`POST /api/v1/internal/appeals/:appealId/transition` mantém o corpo strict com
+`appealId`, `scopeId`, `version`, `event`, `decision` quando aplicável e
+`decisionRationale` somente para `DECIDIR`. `participantId`, `reviewerId`,
+`decisionAt` e `decisionCorrelationId` são rejeitados como entrada. O servidor
+usa o principal autenticado como ator, encaminha o `request_id` como correlação
+interna e gera a data no caso de uso.
+
+O retorno segue a projeção pública allowlisted e não inclui rationale, data,
+correlação ou revisor, mesmo quando a transição ocorre numa rota interna. A
+fila interna é o único contrato desta fatia que pode ler os metadados de decisão
+com autorização e escopo; a rota não recalcula nota, altera tentativa, publica
+aprovação ou encerra protocolo.

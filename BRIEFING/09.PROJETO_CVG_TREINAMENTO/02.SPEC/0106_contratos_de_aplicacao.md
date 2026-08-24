@@ -188,3 +188,19 @@ mesmo contexto de revisor; nenhuma coluna de participante, tentativa, item ou
 justificativa é escrita pelo port. A mesma migration reduz a policy antiga do
 participante a `SELECT`/`INSERT`, sem `UPDATE` ou `DELETE` pelo contexto de
 participante.
+
+## 9.4 Rationale e metadados da decisão — APPEAL-039
+
+`TransitionAppealReview` exige `decisionRationale` bounded e plain text quando
+o evento é `DECIDIR`; o campo é proibido nos demais eventos. O comando recebe
+`correlationId` somente do servidor e o caso de uso gera `decisionAt` no
+instante da transição. O domínio persiste `decisionRationale`, `decisionAt` e
+`decisionCorrelationId` junto com a decisão, preservando-os nas transições
+posteriores.
+
+O port de transição atualiza esses três campos somente no mesmo update
+allowlisted de `status`/`version`/`reviewerId`/`decision`, sob o contexto RLS
+dedicado. A fila interna pode projetá-los para revisão escopada; a projeção
+participante continua explicitamente sem rationale, data/correlação de decisão
+ou identidade interna. Histórico append-only separado, snapshot, recálculo,
+notificação e encerramento são contratos posteriores.

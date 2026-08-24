@@ -192,6 +192,12 @@ without `CVG_TEST_DATABASE_URL`. The documentary release traceability gate
 passed in clean worktree after commit `4b564adc`; the milestone must not claim
 production, clinical, pilot, or CPD readiness.
 
+The next local BUILD slice is APPEAL-039: require bounded internal rationale
+and server-generated decision date/correlation for `DECIDIR`, expose those
+fields only through the allowlisted internal queue, and keep the participant
+projection unchanged. Append-only audit history, recalculation, notification,
+closure, clinical approval and production operation remain out of scope.
+
 ## Next milestone — APPEAL-038 secure internal appeal transition
 
 The queue read path is locally complete with the live PostgreSQL proof still
@@ -227,6 +233,17 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 | A38-CRITIC   | fresh critic | Review security/data/API boundary read-only                           | A38-VERIFY   | report found direct-close/legacy-path gaps; fixes applied  | completed-with-fixes |
 | A38-RELEASE  | Lead         | Fix confirmed gaps, update artifacts and commit                       | A38-CRITIC   | code `91bd3e0`, docs `4b564adc`; clean release gate passed | completed            |
 
+## APPEAL-039 execution ledger
+
+| ID           | Role         | Objective                                                        | Dependencies | Validation                                      | Status      |
+| ------------ | ------------ | ---------------------------------------------------------------- | ------------ | ------------------------------------------------ | ----------- |
+| A39-RED      | Lead         | Add failing tests for rationale and server decision metadata     | APPEAL-038   | 7 files/10 tests failed; 63 existing tests passed | completed   |
+| A39-GREEN    | Lead         | Implement the minimum strict decision metadata path              | A39-RED      | focused tests and allowlisted persistence       | completed   |
+| A39-REFACTOR | Lead         | Tighten projection, schema, migration and traceability           | A39-GREEN    | format, lint, typecheck, exposure/migration     | completed   |
+| A39-VERIFY   | Lead         | Run full regression, build, integration and E2E                  | A39-REFACTOR | 113/532 verify; 12 build; 22/22 E2E; live skip   | completed   |
+| A39-CRITIC   | fresh critics | Review rationale exposure, authorization and persistence boundary | A39-VERIFY   | two read-only attempts timed out; no PASS inferred | completed-with-gap |
+| A39-RELEASE  | Lead         | Consolidate docs and pass the clean release gate                 | A39-CRITIC   | traceability release gate on clean worktree     | in_progress |
+
 ## Progress history
 
 - 2026-08-23 recovery: read all files under `docs/` (state, log, backlog), applicable root/nested instructions, lifecycle gates, BUILD records, current reflection/OPS audits, and required Gauntlet/Orchestrate/Engineering references.
@@ -240,3 +257,8 @@ release traceability gate. Missing live PostgreSQL remains a recorded GAP.
 - 2026-08-23 23:54: APPEAL-037 GREEN local materialized the strict queue contract, `REVIEW_APPEAL` case, dedicated RLS context, migration 0022, HTTP route, operations panel and synthetic live-test fixture. Focused 78/78, build 12 workspaces, operations E2E 5/5 and migrations 23/23 passed; live PostgreSQL remains a GAP.
 - 2026-08-24 00:37–00:42: APPEAL-038 completed local RED/GREEN/REFACTOR and verification. The independent critic found direct `DECIDIDA → ENCERRADA` and the legacy participant-context mutator; domain event/contract and legacy use case were removed, participant RLS was narrowed to `SELECT`/`INSERT`, and HTTP negatives were added. Commit `91bd3e0`; `pnpm verify` passed 109/522 with 27 skips, coverage 84,69%/80,62%/85,81%/85,40%, build 12 workspaces, E2E 22/22, integration configured 8/20 with 25 files/27 skips, and dependency audit was clean. The live PostgreSQL proof remains a GAP.
 - 2026-08-24 00:45: documentation commit `4b564adc` consolidated audit, SPEC, state, log, backlog and manifest; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed in a clean worktree. APPEAL-038 is locally `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`; the next action is authorized PostgreSQL/RLS live evidence or the next local backlog gap.
+- 2026-08-24 00:53: APPEAL-039 was opened from the explicit PRD/SPEC gap for decision justification. The first task is RED for bounded internal rationale plus server-generated decision date/correlation; recalc, notification, closure, append-only history, clinical approval and live PostgreSQL remain gaps.
+- 2026-08-24 01:01: APPEAL-039 RED passed through the focused harness with 7 failing files/10 failing tests and 63 existing tests green; the observed failures are recorded in audit `0517` before GREEN implementation.
+- 2026-08-24 01:22: APPEAL-039 GREEN/REFACTOR/VERIFY was recorded in code commit `3d11112`; final local verify passed 113/532 with 27 skips and coverage 84.64%/80.71%/85.85%/85.33%, build 12, E2E 22/22, migration 25/25 and integration 8/20 with 27 skips. Independent criticism remains pending; live PostgreSQL/RLS and legacy backfill remain explicit gaps.
+- 2026-08-24 01:26: two fresh read-only critic attempts were closed after timeout without a report; no independent PASS is inferred. The audit is `PASS_WITH_GAPS` on local evidence, with the absence of the critic report, live PostgreSQL/RLS, legacy backfill and append-only history recorded as gaps. Documentation and clean release traceability remain in progress.
+- 2026-08-24 01:29: final verification was repeated after the documentation update: `pnpm verify` 113/532, build 12, E2E 22/22, migrations 25/25, integration 20 PASS plus 27 SKIP, dependency audit clean and `git diff --check` clean. Only the documentation commit and clean release traceability gate remain.

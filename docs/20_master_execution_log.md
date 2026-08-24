@@ -5181,3 +5181,211 @@ READY_FOR_NEXT_STEP
 Disponibilizar `CVG_TEST_DATABASE_URL`/role autorizada para provar PostgreSQL/RLS
 da fila e da transição ou selecionar a próxima lacuna local priorizada pelo
 backlog.
+
+## 2026-08-24 — APPEAL-039: abertura do rationale auditável da decisão
+
+### TIMESTAMP
+
+2026-08-24 00:53:00 -03:00
+
+### ENGINE
+
+BUILD ENGINE / RUNTIME CONTROLLER
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001 — justificativa interna versionada da decisão
+
+### TASK
+
+APPEAL-2026-08-24-P — tornar rationale, data e correlação obrigatórios em `DECIDIR`
+
+### ACTION
+
+Após o fechamento local de APPEAL-038, foi selecionada a lacuna explicitamente
+prevista no PRD, UC-018 e SPEC: uma decisão de contestação não pode ser
+persistida sem justificativa interna bounded e metadados server-side de data e
+correlação. O escopo foi congelado antes do código: não inclui recálculo,
+alteração de nota/tentativa, notificação, encerramento ou aprovação clínica.
+
+### RESULT
+
+APPEAL-039 está `IN_PROGRESS`. A documentação inicial foi alinhada e a próxima
+ação é escrever os testes RED para contrato, domínio, aplicação, HTTP,
+persistência e projeção interna. O histórico append-only separado permanece um
+gap explícito, não será simulado nesta fatia.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar os REDs focados, preservar a falha observável e só então implementar o
+GREEN mínimo sob os gates do BUILD ENGINE.
+
+## 2026-08-24 — APPEAL-039: RED observado para rationale e metadados
+
+### TIMESTAMP
+
+2026-08-24 01:01:10 -03:00
+
+### ENGINE
+
+BUILD ENGINE / TDD
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-P — observar as falhas antes do GREEN
+
+### ACTION
+
+Foram adicionados REDs focados para contrato, domínio, aplicação, persistência,
+fila interna e HTTP. O teste HTTP exige que a API aceite rationale interno,
+encaminhe a correlação do request e continue removendo esses campos da
+projeção participante.
+
+### RESULT
+
+O comando `PATH=/tmp:$PATH pnpm exec vitest run packages/contracts/src/appeal-decision-rationale.test.ts packages/domain/src/appeal-decision-rationale.test.ts packages/application/src/appeal-decision-rationale.test.ts packages/persistence/src/appeal-decision-rationale.test.ts packages/contracts/src/appeal-review-queue.test.ts packages/application/src/appeal-review-queue-use-cases.test.ts apps/api/src/http.test.ts` produziu 7 arquivos falhos, 10 testes falhos e 63 testes verdes. As falhas são as esperadas: contrato strict rejeita rationale, domínio descarta metadados, aplicação não os gera, fila não os projeta, mapeamento não os persiste e HTTP retorna 422.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Implementar o GREEN mínimo, atualizar fixtures existentes para a nova invariante
+de `DECIDIR` e repetir os testes focados.
+
+## 2026-08-24 — APPEAL-039: GREEN/VERIFY local concluído
+
+### TIMESTAMP
+
+2026-08-24 01:22:00 -03:00
+
+### ENGINE
+
+BUILD ENGINE / AUDIT
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-P — implementar rationale e metadados server-side
+
+### ACTION
+
+O domínio passou a exigir rationale, data e correlação em `DECIDIR`; a API
+aceita somente `decisionRationale`, deriva `correlationId` do request e mantém a
+projeção participante allowlisted. A fila interna, mapeamentos, update
+allowlisted, migration `0024_appeal_decision_metadata` e fixtures PostgreSQL
+foram ligados ao mesmo estado versionado. O código foi comitado em
+`3d11112d84d4f9d79fcf0703f30d2ab33b61b016`.
+
+### RESULT
+
+O focused GREEN passou em 13 arquivos/97 testes. A regressão final passou em
+113 arquivos/532 testes, com 27 skips; cobertura foi 84,64% statements, 80,71%
+branches, 85,85% functions e 85,33% lines. Build, E2E 22/22, integração
+configurada 8/20 com 25 arquivos/27 skips, migration 25/25, secrets,
+documentation, product-definition, exposure, architecture e audit de
+dependências passaram. PostgreSQL/RLS live permanece não executado sem ambiente
+autorizado.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Registrar que as duas tentativas de crítica independente terminaram sem
+relatório, fechar o manifesto/documentação e executar release traceability em
+worktree limpo; manter os gaps live, backfill e append-only explícitos.
+
+## 2026-08-24 — APPEAL-039: crítica independente sem relatório
+
+### TIMESTAMP
+
+2026-08-24 01:26:00 -03:00
+
+### ENGINE
+
+GAUNTLET LOOP / ORCHESTRATE / AUDIT
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-P — revisão adversarial read-only da fronteira de decisão
+
+### ACTION
+
+Duas tentativas foram delegadas a agentes novos com escopo read-only para
+examinar exposição, autorização e persistência. Ambas excederam a janela de
+espera sem entregar relatório; a segunda foi interrompida e encerrada de forma
+controlada.
+
+### RESULT
+
+Nenhum PASS independente é atribuído. A auditoria local foi atualizada para
+`PASS_WITH_GAPS`, preservando como gaps a ausência do parecer, PostgreSQL/RLS
+live, backfill/validação de registros legados, histórico append-only e os
+fluxos posteriores de recálculo/notificação/encerramento.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Fechar auditoria, manifesto e documentação; executar `CVG_TRACEABILITY_RELEASE=true
+pnpm verify:traceability` em worktree limpo e registrar o gate.
+
+## 2026-08-24 — APPEAL-039: regressão final repetida
+
+### TIMESTAMP
+
+2026-08-24 01:29:00 -03:00
+
+### ENGINE
+
+BUILD ENGINE / AUDIT
+
+### SPRINT
+
+APPEAL-039 / AUD-P1-001
+
+### TASK
+
+APPEAL-2026-08-24-P — confirmar o artefato após a auditoria documental
+
+### ACTION
+
+Reexecutados `pnpm verify`, `pnpm build`, `pnpm test:e2e`,
+`pnpm test:integration`, `pnpm audit --audit-level=high` e `git diff --check`.
+
+### RESULT
+
+`pnpm verify` passou com 113 arquivos/532 testes e 27 skips, cobertura
+84,64%/80,71%/85,85%/85,33%; build passou nos 12 workspaces; E2E passou
+22/22; migrations passaram 25/25; integração passou 20 testes em 8 arquivos
+e manteve 27 skips em 25 arquivos sem dependências live; audit de dependências
+não encontrou vulnerabilidades conhecidas de nível alto.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Commitar os artefatos documentais e executar o gate
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo.

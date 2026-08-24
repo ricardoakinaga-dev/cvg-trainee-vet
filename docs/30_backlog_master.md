@@ -427,7 +427,24 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - evidência: `BRIEFING/04.AUDIT/0516_appeal_review_transition_audit.md`; commit `91bd3e0`; `packages/contracts/src/learning-state.ts`; `packages/application/src/appeal-review-transition-use-cases.ts`; `packages/persistence/src/appeal-review-transition-repository.ts`; migration `0023_appeal_review_transition_rls.sql`; `apps/api/src/http.ts`; testes de contrato/application/persistência/HTTP e `tests/integration/postgres-appeal-review-transition.test.ts`; `pnpm verify`, build, E2E, integração configurada, audit e migration gate
 - resultado: contrato strict aceita somente escopo, versão e as três ações allowlisted; o actor vem da sessão, o revisor atribuído é obrigatório para decidir/solicitar recálculo, optimistic locking e allowlist de colunas passam; o domínio não permite `DECIDIDA → ENCERRADA` direto, o use case legado foi removido e a policy do participante não autoriza UPDATE; `pnpm verify` passou com 109/522 e 27 skips, cobertura 84,69%/80,62%/85,81%/85,40%, build 12 workspaces e E2E 22/22
 - gaps remanescentes: prova PostgreSQL/RLS live sem `CVG_TEST_DATABASE_URL`/role autorizada; justificativa da decisão, recálculo versionado/idempotente, snapshots/preservação de versões, `CONCLUIR_RECALCULO`, notificação/identificação de afetados, auditoria operacional consultável, provider/MFA, aprovação clínica, piloto e produção
-- próxima ação: disponibilizar o ambiente PostgreSQL/RLS para prova live ou selecionar a próxima lacuna local; o release traceability local já passou e o live ausente não deve ser simulado
+- próxima ação: executar APPEAL-039 para exigir rationale e metadados server-side da decisão; manter a prova PostgreSQL/RLS live como gap sem simulação
+
+### APPEAL-039 — Rationale e metadados auditáveis da decisão de contestação
+
+- título: exigir justificativa interna bounded e persistir correlação/data da decisão do revisor
+- descrição: completar o núcleo formal de `DECIDIR` sem recalcular nota, alterar tentativa, publicar aprovação ou encerrar; o rationale é validado server-side, interno e nunca exposto ao participante
+- módulo: contestação / governança / contratos / persistência / API / segurança
+- dependência: `APPEAL-038`; `PRD-RF-064`; `UC-018`; `RN-052`; `RN-067`; SPEC-0104/0106/0107/0111
+- fase: BUILD — Phase 3–5 / governança de contestação
+- risco: crítico — decisão sem justificativa bounded ou metadados de correlação enfraquece a revisão independente e a rastreabilidade
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED/GREEN/REFACTOR para rationale strict obrigatório em `DECIDIR`, data/correlação geradas pelo servidor, persistência allowlisted/versionada, fila interna allowlisted, projeção participante inalterada, HTTP/persistência/application tests, regressão, auditoria, traceability e release gate
+- escopo desta fatia: `DECIDIR` exige texto simples bounded; o servidor registra `decisionAt` e `decisionCorrelationId`; a fila interna pode ler apenas esses metadados allowlisted; nenhuma identidade, rationale ou correlação entra na projeção participante
+- fora desta fatia: histórico append-only separado, snapshots, recálculo versionado/idempotente, alteração de nota/tentativa/resultado, notificação, `CONCLUIR_RECALCULO`, encerramento, provider/MFA, aprovação clínica, piloto e produção
+- evidência local: `BRIEFING/04.AUDIT/0517_appeal_decision_rationale_audit.md`; commit técnico `3d11112`; `pnpm verify` 113/532 com 27 skips, cobertura 84,64%/80,71%/85,85%/85,33%, build 12 workspaces, E2E 22/22, migration 25/25 e integração configurada 8/20 com 25 arquivos/27 skips
+- gaps remanescentes: duas tentativas de crítica independente read-only terminaram sem relatório; PostgreSQL/RLS live sem `CVG_TEST_DATABASE_URL`, backfill/validação de decisões legadas por migration `NOT VALID`, histórico append-only, snapshots, recálculo versionado/idempotente, nota/tentativa/resultado, notificação, `CONCLUIR_RECALCULO`, encerramento, provider/MFA, aprovação clínica, piloto e produção
+- próxima ação: fechar manifesto e executar release traceability; não promover ausência de crítica, gap live, backfill ou histórico append-only a PASS
 
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
@@ -686,13 +703,13 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - fase: BUILD — Phase 6
 - risco: alto — não há prova suficiente de operação ou recuperação
 - impacto: alto
-- status: IN_PROGRESS
+- status: COMPLETED_WITH_GAPS
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; 0412–0418 e 0421; `BRIEFING/08.RUNTIME/0805_operational_snapshot_contract.md`
 - recorte atual: snapshot operacional local protegido, derivação de SLO/alertas a partir de sinais redigidos e testes negativos; não fecha collector/OTel, retenção, carga, failover, restore agendado ou ambiente produtivo
 - critério desta iteração: endpoint interno com autorização server-side, `NO_DATA` explícito, estados de dependência redigidos, ausência de payload sensível e regressão completa verde
 - resultado atual: `OPS-034` implementou `deriveOperationalSnapshot` e `GET /internal/operations`; `READY`/`DEGRADED` retornam 200, `NOT_READY` retorna 503 com snapshot seguro; p95 sem quantis permanece `NO_DATA`; query/body inesperados retornam 422 e a resposta aplica allowlist runtime das dependências
 - verificação: `pnpm verify` passou com 99 arquivos/474 testes, 22 skips de arquivo/24 skips de teste e cobertura 84,49% statements, 80,22% branches, 85,64% functions e 85,18% lines; build 12 workspaces; E2E 20/20; testes OPS direcionados 67/67; documentação, exposure, migrations, secrets, architecture e audit de dependências passaram
-- próxima ação: fechar a atualização do artefato rastreável no SHA desta rodada; collector/OTel, retenção, carga, failover, restore e workflow remoto continuam gaps externos
+- próxima ação: manter o recorte local `OPS-034` em `COMPLETED_WITH_GAPS`; executar collector/OTel, retenção, carga, failover, restore e workflow remoto somente em ambiente operacional autorizado
 
 ### AUD-P1-005 — Congelamento e rastreabilidade da construção
 

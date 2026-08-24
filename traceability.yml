@@ -1637,6 +1637,98 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "APPEAL-039"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-064",
+        "UC-018",
+        "RN-052",
+        "RN-067",
+        "SPEC-0104",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0517_appeal_decision_rationale_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/cvg-gauntlet-2026-08-23.md",
+      ]
+    code:
+      [
+        "packages/domain/src/appeal.ts",
+        "packages/domain/src/appeal-decision-rationale.test.ts",
+        "packages/contracts/src/learning-state.ts",
+        "packages/contracts/src/appeal-review-queue.ts",
+        "packages/contracts/src/appeal-decision-rationale.test.ts",
+        "packages/contracts/src/appeal-review-transition.test.ts",
+        "packages/application/src/appeal-review-transition-use-cases.ts",
+        "packages/application/src/appeal-review-transition-use-cases.test.ts",
+        "packages/application/src/appeal-review-queue-use-cases.ts",
+        "packages/application/src/appeal-review-queue-use-cases.test.ts",
+        "packages/application/src/appeal-decision-rationale.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/learning-state-repository.ts",
+        "packages/persistence/src/appeal-review-transition-repository.ts",
+        "packages/persistence/src/appeal-review-queue-repository.ts",
+        "packages/persistence/src/appeal-decision-rationale.test.ts",
+        "packages/persistence/src/learning-state-repository.test.ts",
+        "packages/persistence/src/appeal-review-transition-repository.test.ts",
+        "packages/persistence/src/appeal-review-queue-repository.test.ts",
+        "packages/persistence/drizzle/0024_appeal_decision_metadata.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/postgres-appeal-review-transition.test.ts",
+        "tests/integration/postgres-appeal-review-queue.test.ts",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/contracts/src/appeal-decision-rationale.test.ts",
+        "packages/contracts/src/appeal-review-transition.test.ts",
+        "packages/contracts/src/appeal-review-queue.test.ts",
+        "packages/domain/src/appeal-decision-rationale.test.ts",
+        "packages/domain/src/appeal.test.ts",
+        "packages/application/src/appeal-decision-rationale.test.ts",
+        "packages/application/src/appeal-review-transition-use-cases.test.ts",
+        "packages/application/src/appeal-review-queue-use-cases.test.ts",
+        "packages/persistence/src/appeal-decision-rationale.test.ts",
+        "packages/persistence/src/learning-state-repository.test.ts",
+        "packages/persistence/src/appeal-review-transition-repository.test.ts",
+        "packages/persistence/src/appeal-review-queue-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/postgres-appeal-review-transition.test.ts",
+        "tests/integration/postgres-appeal-review-queue.test.ts",
+      ]
+    commit: "3d11112d84d4f9d79fcf0703f30d2ab33b61b016"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: focused APPEAL-039 harness failed 7 files/10 tests before implementation",
+        "GREEN: focused APPEAL-039 harness passed 13 files/97 tests",
+        "pnpm typecheck",
+        "pnpm verify:migrations (25 migrations; latest 0024_appeal_decision_metadata)",
+        "pnpm verify (113 files/532 tests; 25 file skips/27 test skips; coverage 84.64% statements, 80.71% branches, 85.85% functions, 85.33% lines)",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e (22/22)",
+        "pnpm test:integration (8 files/20 tests PASS; 25 files/27 tests SKIPPED without live dependencies)",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm verify:documentation",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
     requirements:
       ["SPEC-0118", "AUD-ITEM-13", "EXPERIENCE-13-01", "WCAG-2.2-AA"]

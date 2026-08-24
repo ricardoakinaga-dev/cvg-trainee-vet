@@ -203,3 +203,18 @@ evento de encerramento direto foi removido do domínio até haver recálculo rea
 preservação de versões e trilha de auditoria consultável. A marca
 `RECALCULO_PENDENTE` não equivale a nota, aprovação clínica ou competência
 prática.
+
+## 9.3 Metadados protegidos de decisão — APPEAL-039
+
+`DECIDIR` exige rationale plain text bounded. `decisionAt` e
+`decisionCorrelationId` são gerados pelo servidor e persistidos no PostgreSQL
+com a decisão, sob a allowlist do port de revisão e o contexto
+`cvg.appeal_review_scope_id`. O cliente não escolhe esses valores nem pode
+alterar `participantId`, tentativa, item ou justificativa do protocolo.
+
+Os três campos podem aparecer somente na projeção interna da fila, após
+`REVIEW_APPEAL` e escopo autorizado. A projeção participante e os logs públicos
+não os recebem. Esses metadados não são apresentados como histórico append-only:
+backfill/validação de registros legados, trilha imutável, snapshots, recálculo,
+notificação e encerramento permanecem gaps posteriores e exigem ambiente ou
+decisão autorizada.
