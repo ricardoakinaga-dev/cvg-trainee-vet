@@ -5646,3 +5646,29 @@ READY_FOR_NEXT_STEP / APPEAL-040 `COMPLETED_WITH_GAPS`
 Selecionar diagnóstico→trilha adaptada, contestação completa, filas/lembranças
 internas ou hardening operacional. Executar live/remoto somente quando houver
 ambiente e autoridade explícitos.
+
+## 2026-08-24 — APPEAL-040: release gate final em worktree limpo
+
+### TIMESTAMP
+
+2026-08-24 02:25:45 -03:00
+
+### ACTION
+
+Após os commits técnico `c57c8ca` e documental `5ec5be5`, o release
+traceability confirmou que o artefato APPEAL-040 resolve para commit alcançável
+e paths rastreados. A verificação final foi executada novamente sem alterações
+pendentes no worktree.
+
+### RESULT
+
+`pnpm verify` passou com 115 arquivos/541 testes/28 skips e cobertura
+84,53%/80,49%/85,83%/85,22%; `pnpm verify:traceability` em modo release,
+`git diff --check` e o estado do worktree passaram. APPEAL-040 permanece
+`COMPLETED_WITH_GAPS` e o runtime `READY_FOR_NEXT_STEP`.
+
+### NEXT
+
+Selecionar a próxima lacuna local — diagnóstico→trilha adaptada,
+contestação completa, filas/lembranças internas ou hardening operacional — e
+manter provas live/remotas condicionadas a ambiente e autoridade explícitos.

@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: `APPEAL-040` foi implementado em TDD e commitado em `c57c8ca095019fb0715a75b5c595b50df25fd8eb`; o ciclo bounded de `MANTER_RESULTADO` agora preserva a versão anterior, grava histórico append-only, publica outbox transacional, cria uma versão imutável sem alterar score/outcome/feedback e encerra somente após sucesso; `pnpm verify` passou com 115 arquivos/541 testes/28 skips, cobertura 84,53%/80,49%/85,83%/85,22%, build 12, E2E 22/22, integration 8/20 com 28 skips, migrations 26/26, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
+- last_completed_action: `APPEAL-040` foi implementado em TDD e commitado em `c57c8ca095019fb0715a75b5c595b50df25fd8eb`; o ciclo bounded de `MANTER_RESULTADO` agora preserva a versão anterior, grava histórico append-only, publica outbox transacional, cria uma versão imutável sem alterar score/outcome/feedback e encerra somente após sucesso; a verificação final em worktree limpo passou com 115 arquivos/541 testes/28 skips, cobertura 84,53%/80,49%/85,83%/85,22%, build 12, E2E 22/22, integration 8/20 com 28 skips, migrations 26/26, secrets, traceability, architecture, documentation, product-definition, exposure e diff-check limpos
 - next_action: selecionar diagnóstico→trilha adaptada, contestação completa, filas/lembranças internas ou hardening operacional; executar PostgreSQL/RLS live e workflow remoto somente com ambiente/autoridade, mantendo `ANULAR_ITEM`/`ALTERAR_RESULTADO`, notificação, provider/MFA, gates clínicos e produção como gaps explícitos
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T02:23:00-03:00
+- last_update: 2026-08-24T02:25:45-03:00
 
 ## REGRAS DE USO
 
