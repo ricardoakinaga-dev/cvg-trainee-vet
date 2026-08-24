@@ -154,7 +154,7 @@ fonte transacional; Qdrant é índice interno reconstruível; IA é server-side,
 estruturada, opcional e nunca decide estado, nota, gabarito, publicação,
 permissão ou aprovação.
 
-O HEAD atual (`9a2e07a`) já contém, entre outras fatias, dashboard/trilha
+O HEAD atual (`1350452`) já contém, entre outras fatias, dashboard/trilha
 digital, perfil diagnóstico formativo, ciclo administrativo, CPD interno
 bounded, fila editorial, recovery controlado, RLS de identidade, auditoria
 negativa, snapshot operacional, reflexão, apelações 036–042, relatório paginado

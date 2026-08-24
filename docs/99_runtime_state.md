@@ -23,7 +23,7 @@
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado e de `ADAPTIVE-044`; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local `9a2e07a`; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; as extensões FEEDBACK-043/APPEAL-042 permanecem fora do recorte. Esses bloqueios não impedem o slice local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-001 — `CVG_TEST_DATABASE_URL`/role administrativa não estão disponíveis para a prova live do agregado e de `ADAPTIVE-044`; CI-HEAD-001 — workflow remoto existente termina em `fbbc692`/SHA `dd47909`, não cobre o HEAD local `1350452`; AUD-P1-002/004 — grant matrix/owner de migration produtivo, collector/retention/traces/carga/failover e restore operacional exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; provider de senha/MFA e entrega externa exigem contratação operacional e não serão simulados; OUTBOX-FENCE-001 — fencing de lease do worker ainda não foi provado; as extensões FEEDBACK-043/APPEAL-042 permanecem fora do recorte. Esses bloqueios não impedem o slice local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -36,9 +36,9 @@
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `9a2e07a2ce06f57534ba64ad4b6c5bfb9c83d511`
+- head: `1350452e7401a788adf02de2c6767147d38b0dc6`
 - origin: `fbbc692` (`origin/main`), local `main` ahead 39 commits
-- worktree: contém as alterações locais da fatia `ADAPTIVE-044`, a auditoria `0523`, SPEC/backlog/log/state/manifesto atualizados e o plano `.agent/plans/2026-08-24-production-mvp-gauntlet.md`; ainda não há push/deploy
+- worktree: contém somente a atualização do SHA no manifesto e o estado/log desta continuidade; a implementação da fatia está no commit local `1350452e7401a788adf02de2c6767147d38b0dc6`; ainda não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: slice local PASS; `pnpm verify`, build, E2E 23/23, audit de dependências, traceability/documentation/product/exposure e diff-check PASS; prova live PostgreSQL/RLS do novo slice, mesmo-SHA CI, grants produtivos e assurance operacional continuam não observadas
 
