@@ -1,5 +1,6 @@
 import {
   check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -233,6 +234,12 @@ export const contentVersions = pgTable(
       table.contentId,
       table.version,
     ),
+    uniqueIndex("content_versions_identity_idx").on(
+      table.id,
+      table.contentId,
+      table.version,
+      table.scopeId,
+    ),
     index("content_versions_scope_status_idx").on(table.scopeId, table.status),
     check(
       "content_versions_status_check",
@@ -287,6 +294,12 @@ export const contentEditorialRecords = pgTable(
     uniqueIndex("content_editorial_records_version_row_idx").on(
       table.contentVersionId,
     ),
+    uniqueIndex("content_editorial_records_identity_idx").on(
+      table.id,
+      table.contentId,
+      table.version,
+      table.scopeId,
+    ),
     index("content_editorial_records_scope_idx").on(
       table.scopeId,
       table.moduleId,
@@ -337,6 +350,80 @@ export const contentReviewDecisions = pgTable(
       sql`${table.decision} in ('APROVAR_CLINICAMENTE', 'SOLICITAR_AJUSTES')`,
     ),
     check("content_review_decisions_version_check", sql`${table.version} >= 1`),
+  ],
+);
+
+export const authoringDraftIdempotency = pgTable(
+  "authoring_draft_idempotency",
+  {
+    key: text("key").primaryKey(),
+    operation: text("operation").notNull(),
+    fingerprint: text("fingerprint").notNull(),
+    contentEditorialRecordId: uuid("content_editorial_record_id")
+      .notNull()
+      .references(() => contentEditorialRecords.id, { onDelete: "restrict" }),
+    contentVersionId: uuid("content_version_id")
+      .notNull()
+      .references(() => contentVersions.id, { onDelete: "restrict" }),
+    contentId: uuid("content_id").notNull(),
+    version: integer("version").notNull(),
+    scopeId: uuid("scope_id").notNull(),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("authoring_draft_idempotency_expires_at_idx").on(table.expiresAt),
+    index("authoring_draft_idempotency_scope_idx").on(
+      table.scopeId,
+      table.createdAt,
+    ),
+    check(
+      "authoring_draft_idempotency_operation_check",
+      sql`${table.operation} = 'create_authoring_draft'`,
+    ),
+    check(
+      "authoring_draft_idempotency_key_check",
+      sql`${table.key} ~ '^[A-Za-z0-9][A-Za-z0-9_.:-]{7,127}$'`,
+    ),
+    check(
+      "authoring_draft_idempotency_version_check",
+      sql`${table.version} >= 1`,
+    ),
+    foreignKey({
+      columns: [
+        table.contentEditorialRecordId,
+        table.contentId,
+        table.version,
+        table.scopeId,
+      ],
+      foreignColumns: [
+        contentEditorialRecords.id,
+        contentEditorialRecords.contentId,
+        contentEditorialRecords.version,
+        contentEditorialRecords.scopeId,
+      ],
+      name: "authoring_draft_idempotency_editorial_identity_fk",
+    }),
+    foreignKey({
+      columns: [
+        table.contentVersionId,
+        table.contentId,
+        table.version,
+        table.scopeId,
+      ],
+      foreignColumns: [
+        contentVersions.id,
+        contentVersions.contentId,
+        contentVersions.version,
+        contentVersions.scopeId,
+      ],
+      name: "authoring_draft_idempotency_version_identity_fk",
+    }),
   ],
 );
 

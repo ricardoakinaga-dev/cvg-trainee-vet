@@ -56,12 +56,14 @@ export type {
 export { contentTransitionRequestSchema } from "./content.js";
 export type { ContentTransitionRequest } from "./content.js";
 export {
+  authoringDraftCreateRequestSchema,
   authoringReviewRequestSchema,
   internalAuthoringRecordQuerySchema,
   internalAuthoringRecordProjectionSchema,
   parseInternalAuthoringRecordProjection,
 } from "./authoring.js";
 export type {
+  AuthoringDraftCreateRequest,
   AuthoringReviewRequest,
   InternalAuthoringRecordProjection,
 } from "./authoring.js";

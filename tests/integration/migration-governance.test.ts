@@ -101,4 +101,57 @@ describe("migration governance", () => {
     expect(provisioning).toContain("REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC");
     expect(provisioning).toContain("GRANT EXECUTE ON FUNCTION %s TO %I");
   });
+
+  it("keeps authoring draft idempotency scoped and protected by the repository transaction", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0036_authoring_draft_idempotency.sql",
+        import.meta.url,
+      ),
+    );
+    const repositoryPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/authoring-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const provisionerPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, repository, provisioner] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(repositoryPath, "utf8"),
+      readFile(provisionerPath, "utf8"),
+    ]);
+
+    expect(migration).toContain('CREATE TABLE "authoring_draft_idempotency"');
+    expect(migration).toContain(
+      'ALTER TABLE "authoring_draft_idempotency" FORCE ROW LEVEL SECURITY',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "authoring_draft_idempotency_scope_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "authoring_draft_idempotency_insert_policy"',
+    );
+    expect(migration).toContain(
+      'REVOKE UPDATE, DELETE ON "authoring_draft_idempotency" FROM PUBLIC',
+    );
+    expect(migration).toContain(
+      "authoring_draft_idempotency_editorial_identity_fk",
+    );
+    expect(migration).toContain(
+      "authoring_draft_idempotency_version_identity_fk",
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "audit_entries_insert_with_scoped_context"',
+    );
+    expect(provisioner).toContain(
+      'REVOKE UPDATE, DELETE ON TABLE "authoring_draft_idempotency"',
+    );
+    expect(repository).toContain("idempotency record identity mismatch");
+    expect(repository).toContain("db.transaction(async (transaction)");
+    expect(repository).toContain("pg_advisory_xact_lock");
+    expect(repository).toContain("PersistenceConflictError");
+  });
 });

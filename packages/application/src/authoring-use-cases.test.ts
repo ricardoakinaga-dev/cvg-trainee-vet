@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ContentRecord } from "./content-use-cases.js";
 import {
+  createAuthoringDraft,
   reviewAuthoringContent,
   runAuthoringPreflight,
+  type CreateAuthoringDraftCommand,
   type AuthoringRecord,
   type AuthoringRepositoryPort,
   type AuthoringReview,
@@ -74,6 +76,7 @@ function repository(
   let savedReview: AuthoringReview | undefined;
   return {
     find: vi.fn(async () => value),
+    createDraft: vi.fn(async (draft) => draft),
     savePreflight: vi.fn(async (_record, preflight) => ({
       ...value,
       preflight,
@@ -94,6 +97,207 @@ function workflow(status: ContentRecord["status"]): ContentRecord {
 }
 
 describe("authoring and clinical review use cases", () => {
+  it("derives authoring identity and participant projection server-side in RASCUNHO", async () => {
+    const repositoryPort = repository();
+    const generatedIds = [
+      "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+    ];
+    const command: CreateAuthoringDraftCommand = {
+      principalId: authorId,
+      accountStatus: "ACTIVE",
+      roles: ["AUTHOR"],
+      scopes: [scopeId],
+      scopeId,
+      moduleId: "M02",
+      sessionId: "M02-S1",
+      objectiveId: "M02-OBJ-01",
+      ordinal: 1,
+      title: "Novo item sintético",
+      prompt: "Escolha a próxima ação segura.",
+      responseMode: "CHOICE",
+      choices: [
+        { id: "a", label: "A", text: "Priorizar e reavaliar." },
+        { id: "b", label: "B", text: "Aguardar sem meta." },
+      ],
+      correctChoiceIds: ["a"],
+      feedback: "Defina uma meta.",
+      critical: true,
+      remediationTargetObjectiveId: "M02-OBJ-01",
+      sourceRefs: [
+        { code: "F-02", locator: "localizador interno", updateRequired: true },
+      ],
+      idempotencyKey: "authoring-draft-2026-08-24-01",
+      correlationId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    };
+
+    const created = await createAuthoringDraft(command, {
+      repository: repositoryPort,
+      idFactory: () => {
+        const next = generatedIds.shift();
+        if (next === undefined) throw new Error("test id factory exhausted");
+        return next;
+      },
+      now: () => "2026-08-24T19:00:00.000Z",
+    });
+
+    expect(created.authorId).toBe(authorId);
+    expect(created.contentId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+    expect(created.contentVersionId).toBe(
+      "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    );
+    expect(created.editorialRecordId).toBe(
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    );
+    expect(created.version).toBe(1);
+    expect(created.contentStatus).toBe("RASCUNHO");
+    expect(created.participant.id).toBe(created.contentId);
+    expect(created.participant.kind).toBe("QUESTAO");
+    expect(created.preflight.readyForPublication).toBe(false);
+    expect(created.preflight.technicalChecksPassed).toBe(true);
+    expect(repositoryPort.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        authorId,
+        contentStatus: "RASCUNHO",
+        contentId: created.contentId,
+      }),
+      expect.objectContaining({
+        idempotencyKey: command.idempotencyKey,
+        fingerprint: expect.stringContaining(command.scopeId),
+        audit: expect.objectContaining({
+          action: "CONTENT_DRAFT_CREATED",
+          resourceId: created.contentId,
+        }),
+      }),
+    );
+
+    vi.mocked(repositoryPort.createDraft).mockRejectedValueOnce(
+      Object.assign(new Error("same key"), {
+        name: "PersistenceConflictError",
+      }),
+    );
+    await expect(
+      createAuthoringDraft(command, {
+        repository: repositoryPort,
+        idFactory: (() => {
+          const values = [
+            "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            "ffffffff-ffff-4fff-8fff-ffffffffffff",
+            "66666666-6666-4666-8666-666666666666",
+            "55555555-5555-4555-8555-555555555555",
+          ];
+          return () => values.shift() ?? "44444444-4444-4444-8444-444444444444";
+        })(),
+      }),
+    ).rejects.toMatchObject({ code: "idempotency_conflict", status: 409 });
+
+    await expect(
+      createAuthoringDraft(
+        { ...command, correlationId: "not-a-uuid" },
+        {
+          repository: repositoryPort,
+          idFactory: () => "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        },
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+  });
+
+  it("keeps an incomplete correction preflight blocked while allowing a real draft", async () => {
+    const repositoryPort = repository();
+    const command: CreateAuthoringDraftCommand = {
+      principalId: authorId,
+      accountStatus: "ACTIVE",
+      roles: ["AUTHOR"],
+      scopes: [scopeId],
+      scopeId,
+      moduleId: "M02",
+      sessionId: "M02-S1",
+      objectiveId: "M02-OBJ-01",
+      ordinal: 2,
+      title: "Rascunho incompleto",
+      prompt: "Ainda falta a chave.",
+      responseMode: "CHOICE",
+      choices: [
+        { id: "a", label: "A", text: "Uma ação." },
+        { id: "b", label: "B", text: "Outra ação." },
+      ],
+      feedback: "Completar antes da revisão.",
+      critical: false,
+      remediationTargetObjectiveId: "M02-OBJ-01",
+      sourceRefs: [{ code: "F-02", locator: "interno", updateRequired: true }],
+      idempotencyKey: "authoring-draft-2026-08-24-02",
+      correlationId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+    };
+    const created = await createAuthoringDraft(command, {
+      repository: repositoryPort,
+      idFactory: (() => {
+        const values = [
+          "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          "99999999-9999-4999-8999-999999999999",
+          "88888888-8888-4888-8888-888888888888",
+          "77777777-7777-4777-8777-777777777777",
+        ];
+        return () => values.shift() ?? "66666666-6666-4666-8666-666666666666";
+      })(),
+      now: () => "2026-08-24T19:00:00.000Z",
+    });
+
+    expect(created.contentStatus).toBe("RASCUNHO");
+    expect(created.preflight.technicalChecksPassed).toBe(false);
+    expect(created.preflight.readyForClinicalReview).toBe(false);
+    expect(created.preflight.checks.correctionMetadata).toBe(false);
+    expect(created.preflight.readyForPublication).toBe(false);
+  });
+
+  it("rejects inactive, out-of-scope, and invalid curriculum authoring commands before persistence", async () => {
+    const repositoryPort = repository();
+    const invalid: CreateAuthoringDraftCommand = {
+      principalId: authorId,
+      accountStatus: "SUSPENDED",
+      roles: ["AUTHOR"],
+      scopes: [],
+      scopeId,
+      moduleId: "M99",
+      sessionId: "M99-S1",
+      objectiveId: "M99-OBJ-01",
+      ordinal: 1,
+      title: "Não deve persistir",
+      prompt: "Prompt.",
+      responseMode: "CHOICE",
+      feedback: "Feedback.",
+      critical: false,
+      remediationTargetObjectiveId: "M99-OBJ-01",
+      sourceRefs: [{ code: "F-02", locator: "interno", updateRequired: true }],
+      idempotencyKey: "authoring-draft-2026-08-24-03",
+      correlationId: "11111111-1111-4111-8111-111111111111",
+    };
+
+    await expect(
+      createAuthoringDraft(invalid, {
+        repository: repositoryPort,
+        idFactory: () => "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      }),
+    ).rejects.toMatchObject({ code: "forbidden" });
+    expect(repositoryPort.createDraft).not.toHaveBeenCalled();
+
+    await expect(
+      createAuthoringDraft(
+        {
+          ...invalid,
+          accountStatus: "ACTIVE",
+          scopes: [scopeId],
+          moduleId: "M99",
+        },
+        {
+          repository: repository(),
+          idFactory: () => "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        },
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+  });
+
   it("runs a deterministic preflight and keeps publication blocked", () => {
     const result = runAuthoringPreflight(record);
 

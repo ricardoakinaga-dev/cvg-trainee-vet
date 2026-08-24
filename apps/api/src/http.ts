@@ -32,6 +32,7 @@ import {
   type AccountRecoveryIssueResult,
   type Capability,
   type ContentRecord,
+  type CreateAuthoringDraftCommand,
   type CurriculumRuntimeState,
   type AuthoringReview,
   type EvaluateCurriculumModuleCommand,
@@ -85,6 +86,7 @@ import {
   apiErrorResponse,
   apiSuccessResponse,
   authoringReviewRequestSchema,
+  authoringDraftCreateRequestSchema,
   createAttemptRequestSchema,
   contentTransitionRequestSchema,
   parseParticipantActivity,
@@ -263,6 +265,9 @@ export interface ApiHttpDependencies {
   readonly advanceContent: (
     command: AdvanceContentCommand,
   ) => Promise<ContentRecord>;
+  readonly createAuthoringDraft?: (
+    command: CreateAuthoringDraftCommand,
+  ) => Promise<AuthoringRecord>;
   readonly getInternalAuthoringRecord?: (
     contentId: string,
     version: number,
@@ -435,6 +440,7 @@ type ApiRejectionAuditRequest = Readonly<{
   readonly path: string;
   readonly route?: string;
   readonly scopeId?: string;
+  readonly body?: unknown;
   readonly headers?: Readonly<Record<string, string | undefined>>;
 }>;
 
@@ -464,13 +470,15 @@ export async function recordApiRejectionAudit(
     : response.body.error.code;
 
   try {
-    const requestedScopeId = request.scopeId;
+    const requestedScopeId =
+      request.scopeId ??
+      (isPlainRecord(request.body) && typeof request.body.scopeId === "string"
+        ? request.body.scopeId
+        : undefined);
     const scopeId =
       principal === undefined
         ? undefined
-        : (principal.scopes.find(
-            (candidate) => candidate === requestedScopeId,
-          ) ?? principal.scopes[0]);
+        : principal.scopes.find((candidate) => candidate === requestedScopeId);
     if (principal !== undefined && scopeId === undefined) return;
     const auditEntry = createAuditEntry({
       auditId: randomUUID(),
@@ -936,6 +944,35 @@ function internalAuthoringProjection(
       : { latestReview: record.latestReview }),
     availableActions,
   });
+}
+
+function internalAuthoringAvailableActions(
+  record: AuthoringRecord,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Readonly<{
+  readonly requestAdjustments: boolean;
+  readonly approveClinically: boolean;
+}> {
+  const reviewable = record.contentStatus === "EM_REVISAO_CLINICA";
+  return {
+    requestAdjustments:
+      reviewable &&
+      isAllowed(
+        principal,
+        "MODERATE_CONTENT",
+        { scopeId: record.scopeId },
+        dependencies.approvedClinicalApproverId,
+      ),
+    approveClinically:
+      reviewable &&
+      isAllowed(
+        principal,
+        "APPROVE_CLINICAL_CONTENT",
+        { scopeId: record.scopeId },
+        dependencies.approvedClinicalApproverId,
+      ),
+  };
 }
 
 async function handleStart(
@@ -1859,6 +1896,58 @@ async function handleContentTransition(
   };
 }
 
+async function handleCreateAuthoringDraft(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.createAuthoringDraft === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsed = authoringDraftCreateRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  if (
+    !isAllowed(principal, "AUTHOR_CONTENT", {
+      scopeId: parsed.data.scopeId,
+    })
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const { choices, correctChoiceIds, rubric, ...requiredDraftFields } =
+    parsed.data;
+  const command: CreateAuthoringDraftCommand = {
+    ...requiredDraftFields,
+    ...(choices === undefined ? {} : { choices }),
+    ...(correctChoiceIds === undefined ? {} : { correctChoiceIds }),
+    ...(rubric === undefined ? {} : { rubric }),
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    correlationId: requestId,
+  };
+  const record = await dependencies.createAuthoringDraft(command);
+  if (
+    record.authorId !== principal.principalId ||
+    record.scopeId !== parsed.data.scopeId ||
+    record.contentStatus !== "RASCUNHO" ||
+    record.preflight.readyForPublication === true
+  ) {
+    return errorResponse("internal_error", requestId);
+  }
+  return {
+    status: 201,
+    body: apiSuccessResponse(
+      internalAuthoringProjection(
+        record,
+        internalAuthoringAvailableActions(record, principal, dependencies),
+      ),
+      requestId,
+    ),
+  };
+}
+
 async function handleInternalAuthoringRecord(
   request: ApiHttpRequest,
   contentId: string,
@@ -1906,18 +1995,7 @@ async function handleInternalAuthoringRecord(
     return errorResponse("forbidden", requestId);
   }
   const availableActions = {
-    requestAdjustments: isAllowed(
-      principal,
-      "MODERATE_CONTENT",
-      { scopeId: record.scopeId },
-      dependencies.approvedClinicalApproverId,
-    ),
-    approveClinically: isAllowed(
-      principal,
-      "APPROVE_CLINICAL_CONTENT",
-      { scopeId: record.scopeId },
-      dependencies.approvedClinicalApproverId,
-    ),
+    ...internalAuthoringAvailableActions(record, principal, dependencies),
   } as const;
   return {
     status: 200,
@@ -1976,17 +2054,10 @@ async function handleAuthoringReview(
     status: 200,
     body: apiSuccessResponse(
       internalAuthoringProjection(result.record, {
-        requestAdjustments: isAllowed(
+        ...internalAuthoringAvailableActions(
+          result.record,
           principal,
-          "MODERATE_CONTENT",
-          { scopeId: result.record.scopeId },
-          dependencies.approvedClinicalApproverId,
-        ),
-        approveClinically: isAllowed(
-          principal,
-          "APPROVE_CLINICAL_CONTENT",
-          { scopeId: result.record.scopeId },
-          dependencies.approvedClinicalApproverId,
+          dependencies,
         ),
       }),
       requestId,
@@ -3242,6 +3313,21 @@ async function handleApiRequestCore(
     }
 
     if (
+      request.method === "POST" &&
+      request.path === "/api/v1/content/drafts"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleCreateAuthoringDraft(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
       request.method === "GET" &&
       request.path === "/api/v1/internal/appeals/review-queue"
     ) {
@@ -3524,6 +3610,11 @@ export async function handleApiRequest(
       ...(request.query?.scopeId === undefined
         ? {}
         : { scopeId: request.query.scopeId }),
+      ...(request.query?.scopeId === undefined &&
+      isPlainRecord(request.body) &&
+      typeof request.body.scopeId === "string"
+        ? { scopeId: request.body.scopeId }
+        : {}),
     },
     response,
     principal,

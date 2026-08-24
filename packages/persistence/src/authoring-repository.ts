@@ -1,14 +1,21 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AuthoringRecord,
+  AuthoringDraftCreateOptions,
   AuthoringRepositoryPort,
   AuthoringReview,
 } from "@cvg/application";
 import type { ContentStatus } from "@cvg/domain";
 
-import { PersistenceMappingError } from "./attempt-repository.js";
 import {
+  PersistenceConflictError,
+  PersistenceMappingError,
+} from "./attempt-repository.js";
+import { auditEntryToRow } from "./audit-repository.js";
+import {
+  auditEntries,
+  authoringDraftIdempotency,
   contentEditorialRecords,
   contentReviewDecisions,
   contentVersions,
@@ -342,75 +349,269 @@ export function reviewRowToState(row: ReviewRowShape): AuthoringReview {
   });
 }
 
+async function findAuthoringRecord(
+  executor: DatabaseExecutor,
+  contentId: string,
+  version: number,
+  scopeId: string,
+): Promise<AuthoringRecord | null> {
+  const rows = await executor
+    .select({
+      editorialRecordId: contentEditorialRecords.id,
+      contentVersionId: contentEditorialRecords.contentVersionId,
+      contentId: contentEditorialRecords.contentId,
+      scopeId: contentEditorialRecords.scopeId,
+      version: contentEditorialRecords.version,
+      moduleId: contentEditorialRecords.moduleId,
+      sessionId: contentEditorialRecords.sessionId,
+      objectiveId: contentEditorialRecords.objectiveId,
+      authorId: contentEditorialRecords.authorId,
+      item: contentEditorialRecords.item,
+      preflight: contentEditorialRecords.preflight,
+      contentStatus: contentVersions.status,
+    })
+    .from(contentEditorialRecords)
+    .innerJoin(
+      contentVersions,
+      eq(contentEditorialRecords.contentVersionId, contentVersions.id),
+    )
+    .where(
+      and(
+        eq(contentEditorialRecords.contentId, contentId),
+        eq(contentEditorialRecords.version, version),
+        eq(contentEditorialRecords.scopeId, scopeId),
+        eq(contentVersions.scopeId, scopeId),
+      ),
+    )
+    .limit(1);
+  const row = rows[0];
+  if (row === undefined) return null;
+
+  const reviews = await executor
+    .select({
+      reviewerId: contentReviewDecisions.reviewerId,
+      decision: contentReviewDecisions.decision,
+      rationale: contentReviewDecisions.rationale,
+      reviewedAt: contentReviewDecisions.reviewedAt,
+      correlationId: contentReviewDecisions.correlationId,
+    })
+    .from(contentReviewDecisions)
+    .where(
+      and(
+        eq(
+          contentReviewDecisions.contentEditorialRecordId,
+          row.editorialRecordId,
+        ),
+        eq(contentReviewDecisions.scopeId, scopeId),
+      ),
+    )
+    .orderBy(
+      desc(contentReviewDecisions.reviewedAt),
+      desc(contentReviewDecisions.createdAt),
+      desc(contentReviewDecisions.id),
+    )
+    .limit(1);
+  const reviewRow = reviews[0];
+  return authoringRowToRecord(
+    row,
+    reviewRow === undefined ? undefined : reviewRowToState(reviewRow),
+  );
+}
+
+function persistedItem(record: AuthoringRecord): schema.PersistedAuthoringItem {
+  return {
+    title: record.title,
+    prompt: record.prompt,
+    responseMode: record.responseMode,
+    ...(record.choices === undefined ? {} : { choices: record.choices }),
+    ...(record.correctChoiceIds === undefined
+      ? {}
+      : { correctChoiceIds: record.correctChoiceIds }),
+    ...(record.rubric === undefined ? {} : { rubric: record.rubric }),
+    feedback: record.feedback,
+    critical: record.critical,
+    remediationTargetObjectiveId: record.remediationTargetObjectiveId,
+    sourceRefs: record.sourceRefs,
+    participant: record.participant,
+  };
+}
+
+function assertDraftPersistenceInput(
+  record: AuthoringRecord,
+  options: AuthoringDraftCreateOptions,
+): void {
+  if (record.contentStatus !== "RASCUNHO" || record.version !== 1) {
+    throw new PersistenceMappingError(
+      "authoring draft persistence accepts only version-one RASCUNHO records",
+    );
+  }
+  if (
+    record.contentId.trim().length === 0 ||
+    record.contentVersionId.trim().length === 0 ||
+    record.editorialRecordId.trim().length === 0 ||
+    record.scopeId.trim().length === 0 ||
+    record.authorId.trim().length === 0
+  ) {
+    throw new PersistenceMappingError("authoring draft identity is incomplete");
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.:-]{7,127}$/u.test(options.idempotencyKey)) {
+    throw new PersistenceMappingError(
+      "authoring draft idempotency key is invalid",
+    );
+  }
+  if (
+    options.audit.actorKind !== "AUTHENTICATED" ||
+    options.audit.principalId !== record.authorId ||
+    options.audit.scopeId !== record.scopeId ||
+    options.audit.action !== "CONTENT_DRAFT_CREATED" ||
+    options.audit.resourceType !== "content_version" ||
+    options.audit.resourceId !== record.contentId
+  ) {
+    throw new PersistenceMappingError(
+      "authoring draft audit context does not match the draft",
+    );
+  }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505"
+  );
+}
+
 export function createAuthoringRepository(
   db: DatabaseExecutor,
 ): AuthoringRepositoryPort {
   const repository: AuthoringRepositoryPort = {
+    createDraft: async (record, options) => {
+      try {
+        return await db.transaction(async (transaction) => {
+          const executor = transaction as unknown as DatabaseExecutor;
+          assertDraftPersistenceInput(record, options);
+          await setDatabaseSecurityContext(executor, {
+            scopeId: record.scopeId,
+          });
+          await executor.execute(
+            sql`select pg_advisory_xact_lock(hashtextextended(${options.idempotencyKey}, 0))`,
+          );
+
+          const existing = await executor
+            .select({
+              fingerprint: authoringDraftIdempotency.fingerprint,
+              contentEditorialRecordId:
+                authoringDraftIdempotency.contentEditorialRecordId,
+              contentVersionId: authoringDraftIdempotency.contentVersionId,
+              contentId: authoringDraftIdempotency.contentId,
+              version: authoringDraftIdempotency.version,
+              scopeId: authoringDraftIdempotency.scopeId,
+            })
+            .from(authoringDraftIdempotency)
+            .where(eq(authoringDraftIdempotency.key, options.idempotencyKey))
+            .limit(1);
+          const existingRow = existing[0];
+          if (existingRow !== undefined) {
+            if (existingRow.fingerprint !== options.fingerprint) {
+              throw new PersistenceConflictError(
+                "authoring draft idempotency key has another fingerprint",
+              );
+            }
+            const replay = await findAuthoringRecord(
+              executor,
+              existingRow.contentId,
+              existingRow.version,
+              existingRow.scopeId,
+            );
+            if (replay === null) {
+              throw new PersistenceMappingError(
+                "authoring draft idempotency record has no content",
+              );
+            }
+            if (
+              replay.editorialRecordId !==
+                existingRow.contentEditorialRecordId ||
+              replay.contentVersionId !== existingRow.contentVersionId ||
+              replay.contentId !== existingRow.contentId ||
+              replay.version !== existingRow.version ||
+              replay.scopeId !== existingRow.scopeId
+            ) {
+              throw new PersistenceMappingError(
+                "authoring draft idempotency record identity mismatch",
+              );
+            }
+            return replay;
+          }
+
+          const item = persistedItem(record);
+          await executor.insert(contentVersions).values({
+            id: record.contentVersionId,
+            contentId: record.contentId,
+            scopeId: record.scopeId,
+            version: record.version,
+            status: record.contentStatus,
+            kind: record.participant.kind,
+            title: record.title,
+            participantText: record.participant.prompt,
+            responseMode: record.participant.responseMode,
+            ...(record.participant.choices === undefined
+              ? {}
+              : { participantOptions: record.participant.choices }),
+            ...(record.participant.selectionMode === undefined
+              ? {}
+              : { participantSelectionMode: record.participant.selectionMode }),
+          });
+          await executor.insert(contentEditorialRecords).values({
+            id: record.editorialRecordId,
+            contentVersionId: record.contentVersionId,
+            contentId: record.contentId,
+            scopeId: record.scopeId,
+            version: record.version,
+            moduleId: record.moduleId,
+            sessionId: record.sessionId,
+            objectiveId: record.objectiveId,
+            authorId: record.authorId,
+            item,
+            preflight: record.preflight,
+          });
+          await executor.execute(
+            sql`select
+            set_config('cvg.audit_write', 'on', true),
+            set_config('cvg.audit_read', '', true),
+            set_config('cvg.audit_scope_id', ${record.scopeId}, true)`,
+          );
+          await executor
+            .insert(auditEntries)
+            .values(auditEntryToRow(options.audit));
+          await executor.insert(authoringDraftIdempotency).values({
+            key: options.idempotencyKey,
+            operation: "create_authoring_draft",
+            fingerprint: options.fingerprint,
+            contentEditorialRecordId: record.editorialRecordId,
+            contentVersionId: record.contentVersionId,
+            contentId: record.contentId,
+            version: record.version,
+            scopeId: record.scopeId,
+            authorId: record.authorId,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1_000),
+          });
+          return record;
+        });
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          throw new PersistenceConflictError(
+            "authoring draft idempotency key is already in use",
+          );
+        }
+        throw error;
+      }
+    },
     find: async (contentId, version, scopeId) =>
       db.transaction(async (transaction) => {
         const executor = transaction as unknown as DatabaseExecutor;
         await setDatabaseSecurityContext(executor, { scopeId });
-        const rows = await executor
-          .select({
-            editorialRecordId: contentEditorialRecords.id,
-            contentVersionId: contentEditorialRecords.contentVersionId,
-            contentId: contentEditorialRecords.contentId,
-            scopeId: contentEditorialRecords.scopeId,
-            version: contentEditorialRecords.version,
-            moduleId: contentEditorialRecords.moduleId,
-            sessionId: contentEditorialRecords.sessionId,
-            objectiveId: contentEditorialRecords.objectiveId,
-            authorId: contentEditorialRecords.authorId,
-            item: contentEditorialRecords.item,
-            preflight: contentEditorialRecords.preflight,
-            contentStatus: contentVersions.status,
-          })
-          .from(contentEditorialRecords)
-          .innerJoin(
-            contentVersions,
-            eq(contentEditorialRecords.contentVersionId, contentVersions.id),
-          )
-          .where(
-            and(
-              eq(contentEditorialRecords.contentId, contentId),
-              eq(contentEditorialRecords.version, version),
-              eq(contentEditorialRecords.scopeId, scopeId),
-              eq(contentVersions.scopeId, scopeId),
-            ),
-          )
-          .limit(1);
-        const row = rows[0];
-        if (row === undefined) return null;
-
-        const reviews = await executor
-          .select({
-            reviewerId: contentReviewDecisions.reviewerId,
-            decision: contentReviewDecisions.decision,
-            rationale: contentReviewDecisions.rationale,
-            reviewedAt: contentReviewDecisions.reviewedAt,
-            correlationId: contentReviewDecisions.correlationId,
-          })
-          .from(contentReviewDecisions)
-          .where(
-            and(
-              eq(
-                contentReviewDecisions.contentEditorialRecordId,
-                row.editorialRecordId,
-              ),
-              eq(contentReviewDecisions.scopeId, scopeId),
-            ),
-          )
-          .orderBy(
-            desc(contentReviewDecisions.reviewedAt),
-            desc(contentReviewDecisions.createdAt),
-            desc(contentReviewDecisions.id),
-          )
-          .limit(1);
-        const reviewRow = reviews[0];
-        return authoringRowToRecord(
-          row,
-          reviewRow === undefined ? undefined : reviewRowToState(reviewRow),
-        );
+        return findAuthoringRecord(executor, contentId, version, scopeId);
       }),
     savePreflight: async (record, preflight) => {
       await db.transaction(async (transaction) => {

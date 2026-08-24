@@ -212,3 +212,144 @@ test("scoped reviewer can load the redacted queue and open an item", async ({
     "Prioridade sintética",
   );
 });
+
+test("author can create a synthetic RASCUNHO without client-owned identity", async ({
+  page,
+}) => {
+  await page.route("**/api/v1/internal/session/scopes", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          kind: "internal_session_scopes",
+          scopes: [scopeId],
+        }),
+      ),
+    });
+  });
+  await page.route(
+    "**/api/v1/internal/content/review-queue**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            kind: "content_review_queue",
+            scopeId,
+            generatedAt: "2026-08-23T20:00:00.000Z",
+            filters: { scopeId, limit: 50 },
+            items: [],
+          }),
+        ),
+      });
+    },
+  );
+  await page.route("**/api/v1/content/drafts", async (route) => {
+    const payload = route.request().postDataJSON();
+    expect(payload).toMatchObject({
+      scopeId,
+      moduleId: "M02",
+      sessionId: "M02-S1",
+      objectiveId: "M02-OBJ-01",
+      responseMode: "CHOICE",
+    });
+    expect(payload).not.toHaveProperty("contentId");
+    expect(payload).not.toHaveProperty("authorId");
+    expect(payload).not.toHaveProperty("version");
+    expect(payload).not.toHaveProperty("status");
+    expect(payload).not.toHaveProperty("participant");
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          ...authoringRecord,
+          contentStatus: "RASCUNHO",
+          item: {
+            ...authoringRecord.item,
+            title: "Novo rascunho sintético",
+            participant: {
+              ...authoringRecord.item.participant,
+              title: "Novo rascunho sintético",
+            },
+          },
+          availableActions: {
+            requestAdjustments: false,
+            approveClinically: false,
+          },
+        }),
+      ),
+    });
+  });
+
+  await page.goto(`/authoring?scopeId=${scopeId}`);
+  await page.getByLabel("Título do item").fill("Novo rascunho sintético");
+  await page.getByRole("button", { name: "Salvar rascunho" }).click();
+  await expect(page.locator("#review-title")).toHaveText(
+    "Novo rascunho sintético",
+  );
+  await expect(page.getByText("RASCUNHO").first()).toBeVisible();
+  await expect(
+    page.getByText(
+      "Esta sessão pode consultar a autoria, mas não registrar decisões.",
+    ),
+  ).toBeVisible();
+});
+
+test("author can retry when internal scopes fail to load", async ({ page }) => {
+  let scopeRequests = 0;
+  await page.route("**/api/v1/internal/session/scopes", async (route) => {
+    scopeRequests += 1;
+    if (scopeRequests === 1) {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: false,
+          error: { code: "internal_error" },
+          meta: { request_id: "scope-retry-1" },
+        }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        successEnvelope({
+          kind: "internal_session_scopes",
+          scopes: [scopeId],
+        }),
+      ),
+    });
+  });
+  await page.route(
+    "**/api/v1/internal/content/review-queue**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            kind: "content_review_queue",
+            scopeId,
+            generatedAt: "2026-08-23T20:00:00.000Z",
+            filters: { scopeId, limit: 50 },
+            items: [],
+          }),
+        ),
+      });
+    },
+  );
+
+  await page.goto("/authoring");
+  await expect(
+    page.getByRole("button", { name: "Tentar carregar novamente" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Tentar carregar novamente" }).click();
+  await expect(page.locator("#draft-scope-id")).toBeEnabled();
+  await expect(page.locator("#draft-scope-id")).toHaveValue(scopeId);
+  expect(scopeRequests).toBe(2);
+});

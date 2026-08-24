@@ -189,11 +189,15 @@ export type {
   ContentWorkflowEvent,
 } from "./content-use-cases.js";
 export {
+  createAuthoringDraft,
   reviewAuthoringContent,
   runAuthoringPreflight,
 } from "./authoring-use-cases.js";
 export type {
   AuthoringChoice,
+  AuthoringDraftContentInput,
+  AuthoringDraftCreateOptions,
+  AuthoringDraftWorkflowDependencies,
   AuthoringParticipantItem,
   AuthoringPreflight,
   AuthoringPreflightResult,
@@ -204,6 +208,7 @@ export type {
   AuthoringRubric,
   AuthoringSourceRef,
   AuthoringWorkflowDependencies,
+  CreateAuthoringDraftCommand,
   ReviewAuthoringCommand,
 } from "./authoring-use-cases.js";
 export type {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 type InternalAuthoringRecord = Readonly<{
   readonly contentId: string;
@@ -96,8 +96,41 @@ type InternalSessionScopes = Readonly<{
   readonly scopes: readonly string[];
 }>;
 
+const authoringModuleOptions = Array.from(
+  { length: 24 },
+  (_, index) => `M${String(index + 1).padStart(2, "0")}`,
+);
+const authoringSessionOptions = ["S1", "S2", "S3", "S4"] as const;
+const authoringSourceOptions = [
+  "F-01",
+  "F-02",
+  "F-03",
+  "AAHA-2024",
+  "RECOVER-2024",
+  "WSAVA-2022",
+  "AVHTM-TRACS-2021",
+] as const;
+
 type ApiRecord = Readonly<Record<string, unknown>>;
 const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
+const draftRecoveryStorageKey = "cvg-authoring-draft-recovery-v1";
+
+type DraftRecovery = Readonly<{
+  readonly idempotencyKey: string;
+  readonly scopeId: string;
+  readonly moduleId: string;
+  readonly draftSessionSuffix: string;
+  readonly draftObjectiveId: string;
+  readonly draftTitle: string;
+  readonly draftPrompt: string;
+  readonly draftChoiceA: string;
+  readonly draftChoiceB: string;
+  readonly draftCorrectChoiceId: string;
+  readonly draftFeedback: string;
+  readonly draftSourceCode: string;
+  readonly draftSourceLocator: string;
+  readonly draftCritical: boolean;
+}>;
 
 function isRecord(value: unknown): value is ApiRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -105,6 +138,78 @@ function isRecord(value: unknown): value is ApiRecord {
 
 function isString(value: unknown): value is string {
   return typeof value === "string";
+}
+
+function readDraftRecovery(): DraftRecovery | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const parsed: unknown = JSON.parse(
+      window.sessionStorage.getItem(draftRecoveryStorageKey) ?? "null",
+    );
+    if (!isRecord(parsed) || parsed.draftCritical === undefined) return null;
+    const stringFields = [
+      "idempotencyKey",
+      "scopeId",
+      "moduleId",
+      "draftSessionSuffix",
+      "draftObjectiveId",
+      "draftTitle",
+      "draftPrompt",
+      "draftChoiceA",
+      "draftChoiceB",
+      "draftCorrectChoiceId",
+      "draftFeedback",
+      "draftSourceCode",
+      "draftSourceLocator",
+    ] as const;
+    if (
+      !stringFields.every((field) => isString(parsed[field])) ||
+      typeof parsed.draftCritical !== "boolean"
+    ) {
+      return null;
+    }
+    const stringValue = (field: (typeof stringFields)[number]): string =>
+      parsed[field] as string;
+    return Object.freeze({
+      idempotencyKey: stringValue("idempotencyKey"),
+      scopeId: stringValue("scopeId"),
+      moduleId: stringValue("moduleId"),
+      draftSessionSuffix: stringValue("draftSessionSuffix"),
+      draftObjectiveId: stringValue("draftObjectiveId"),
+      draftTitle: stringValue("draftTitle"),
+      draftPrompt: stringValue("draftPrompt"),
+      draftChoiceA: stringValue("draftChoiceA"),
+      draftChoiceB: stringValue("draftChoiceB"),
+      draftCorrectChoiceId: stringValue("draftCorrectChoiceId"),
+      draftFeedback: stringValue("draftFeedback"),
+      draftSourceCode: stringValue("draftSourceCode"),
+      draftSourceLocator: stringValue("draftSourceLocator"),
+      draftCritical: parsed.draftCritical,
+    });
+  } catch {
+    return null;
+  }
+}
+
+function writeDraftRecovery(recovery: DraftRecovery): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(
+      draftRecoveryStorageKey,
+      JSON.stringify(recovery),
+    );
+  } catch {
+    // Session storage is an optional recovery aid; the server remains the authority.
+  }
+}
+
+function clearDraftRecovery(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(draftRecoveryStorageKey);
+  } catch {
+    // Ignore storage restrictions; the in-memory retry remains available.
+  }
 }
 
 function isUuid(value: unknown): value is string {
@@ -264,17 +369,48 @@ async function requestJson(
   path: string,
   init: Readonly<{ method: "GET" | "POST"; body?: unknown }>,
 ): Promise<unknown> {
-  const response = await fetch(`${apiBase}${path}`, {
-    method: init.method,
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+  let response: Response;
+  try {
+    response = await fetch(`${apiBase}${path}`, {
+      method: init.method,
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      signal: controller.signal,
+      ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+    });
+  } catch (caught) {
+    if (caught instanceof Error && caught.name === "AbortError") {
+      throw new Error(
+        "A requisição demorou mais que o esperado. Tente novamente com a mesma chave.",
+      );
+    }
+    throw caught;
+  } finally {
+    clearTimeout(timeout);
+  }
   const payload: unknown = await response.json().catch(() => null);
   if (!isRecord(payload) || payload.success !== true) {
+    if (response.status === 409) {
+      throw new Error(
+        "A chave de idempotência já foi usada com outro conteúdo.",
+      );
+    }
+    if (response.status === 403) {
+      throw new Error("A sessão não possui autorização para este escopo.");
+    }
     throw new Error("A operação editorial não foi concluída.");
   }
   return payload.data;
+}
+
+function newDraftIdempotencyKey(): string {
+  const randomId =
+    typeof globalThis.crypto?.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `authoring-ui-${randomId}`;
 }
 
 function queryInput(): Readonly<{
@@ -299,16 +435,91 @@ export default function AuthoringPage() {
   const [contentId, setContentId] = useState("");
   const [version, setVersion] = useState("1");
   const [scopeId, setScopeId] = useState("");
+  const [scopeLoading, setScopeLoading] = useState(true);
+  const [scopeLoadError, setScopeLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [draftIdempotencyKey, setDraftIdempotencyKey] = useState("");
+  const [draftModuleId, setDraftModuleId] = useState("M02");
+  const [draftSessionSuffix, setDraftSessionSuffix] = useState("S1");
+  const [draftObjectiveId, setDraftObjectiveId] = useState("M02-OBJ-01");
+  const [draftTitle, setDraftTitle] = useState("Prioridade clínica sintética");
+  const [draftPrompt, setDraftPrompt] = useState(
+    "Escolha a próxima ação segura em um caso fictício.",
+  );
+  const [draftChoiceA, setDraftChoiceA] = useState("Priorizar e reavaliar.");
+  const [draftChoiceB, setDraftChoiceB] = useState("Aguardar sem meta.");
+  const [draftCorrectChoiceId, setDraftCorrectChoiceId] = useState("a");
+  const [draftFeedback, setDraftFeedback] = useState(
+    "Defina uma meta e reavalie.",
+  );
+  const [draftSourceCode, setDraftSourceCode] = useState("F-02");
+  const [draftSourceLocator, setDraftSourceLocator] = useState(
+    "localizador interno a revisar",
+  );
+  const [draftCritical, setDraftCritical] = useState(false);
 
   useEffect(() => {
+    const recovery = readDraftRecovery();
+    if (recovery !== null) {
+      setDraftIdempotencyKey(recovery.idempotencyKey);
+      setScopeId(recovery.scopeId);
+      setDraftModuleId(recovery.moduleId);
+      setDraftSessionSuffix(recovery.draftSessionSuffix);
+      setDraftObjectiveId(recovery.draftObjectiveId);
+      setDraftTitle(recovery.draftTitle);
+      setDraftPrompt(recovery.draftPrompt);
+      setDraftChoiceA(recovery.draftChoiceA);
+      setDraftChoiceB(recovery.draftChoiceB);
+      setDraftCorrectChoiceId(recovery.draftCorrectChoiceId);
+      setDraftFeedback(recovery.draftFeedback);
+      setDraftSourceCode(recovery.draftSourceCode);
+      setDraftSourceLocator(recovery.draftSourceLocator);
+      setDraftCritical(recovery.draftCritical);
+    }
     const input = queryInput();
     setContentId(input.contentId);
     setVersion(input.version);
-    void initialize(input);
+    const initialScopeId =
+      input.scopeId.length > 0 ? input.scopeId : (recovery?.scopeId ?? "");
+    setScopeId(initialScopeId);
+    void initialize({ ...input, scopeId: initialScopeId });
   }, []);
+
+  useEffect(() => {
+    if (draftIdempotencyKey.length === 0) return;
+    writeDraftRecovery({
+      idempotencyKey: draftIdempotencyKey,
+      scopeId,
+      moduleId: draftModuleId,
+      draftSessionSuffix,
+      draftObjectiveId,
+      draftTitle,
+      draftPrompt,
+      draftChoiceA,
+      draftChoiceB,
+      draftCorrectChoiceId,
+      draftFeedback,
+      draftSourceCode,
+      draftSourceLocator,
+      draftCritical,
+    });
+  }, [
+    draftChoiceA,
+    draftChoiceB,
+    draftCritical,
+    draftFeedback,
+    draftIdempotencyKey,
+    draftModuleId,
+    draftObjectiveId,
+    draftPrompt,
+    draftSessionSuffix,
+    draftSourceCode,
+    draftSourceLocator,
+    draftTitle,
+    scopeId,
+  ]);
 
   async function initialize(
     input: Readonly<{
@@ -331,6 +542,9 @@ export default function AuthoringPage() {
   }
 
   async function loadSessionScopes(): Promise<readonly string[]> {
+    setScopeLoading(true);
+    setScopeLoadError(null);
+    setError(null);
     try {
       const data = await requestJson("/api/v1/internal/session/scopes", {
         method: "GET",
@@ -341,9 +555,24 @@ export default function AuthoringPage() {
     } catch {
       setSessionScopes([]);
       setQueue(null);
-      setError("Não foi possível carregar os escopos da sessão interna.");
+      const message = "Não foi possível carregar os escopos da sessão interna.";
+      setScopeLoadError(message);
+      setError(message);
       return [];
+    } finally {
+      setScopeLoading(false);
     }
+  }
+
+  async function retrySessionScopes(): Promise<void> {
+    const input = queryInput();
+    const preferredScopeId = input.scopeId.length > 0 ? input.scopeId : scopeId;
+    const scopes = await loadSessionScopes();
+    const selectedScopeId = scopes.includes(preferredScopeId)
+      ? preferredScopeId
+      : (scopes[0] ?? "");
+    setScopeId(selectedScopeId);
+    if (selectedScopeId.length > 0) await loadQueue(selectedScopeId);
   }
 
   async function loadQueue(selectedScopeId: string): Promise<void> {
@@ -428,6 +657,85 @@ export default function AuthoringPage() {
     }
   }
 
+  async function createDraft(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    if (scopeId.trim().length === 0) {
+      setError("Selecione um escopo autorizado antes de criar o rascunho.");
+      return;
+    }
+    const requestIdempotencyKey =
+      draftIdempotencyKey.length > 0
+        ? draftIdempotencyKey
+        : newDraftIdempotencyKey();
+    setDraftIdempotencyKey(requestIdempotencyKey);
+    writeDraftRecovery({
+      idempotencyKey: requestIdempotencyKey,
+      scopeId,
+      moduleId: draftModuleId,
+      draftSessionSuffix,
+      draftObjectiveId,
+      draftTitle,
+      draftPrompt,
+      draftChoiceA,
+      draftChoiceB,
+      draftCorrectChoiceId,
+      draftFeedback,
+      draftSourceCode,
+      draftSourceLocator,
+      draftCritical,
+    });
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const data = await requestJson("/api/v1/content/drafts", {
+        method: "POST",
+        body: {
+          idempotencyKey: requestIdempotencyKey,
+          scopeId,
+          moduleId: draftModuleId,
+          sessionId: `${draftModuleId}-${draftSessionSuffix}`,
+          objectiveId: draftObjectiveId,
+          ordinal: 1,
+          title: draftTitle,
+          prompt: draftPrompt,
+          responseMode: "CHOICE",
+          choices: [
+            { id: "a", label: "A", text: draftChoiceA },
+            { id: "b", label: "B", text: draftChoiceB },
+          ],
+          correctChoiceIds: [draftCorrectChoiceId],
+          feedback: draftFeedback,
+          critical: draftCritical,
+          remediationTargetObjectiveId: draftObjectiveId,
+          sourceRefs: [
+            {
+              code: draftSourceCode,
+              locator: draftSourceLocator,
+              updateRequired: true,
+            },
+          ],
+        },
+      });
+      if (!isInternalAuthoringRecord(data))
+        throw new Error("Projeção inválida.");
+      setRecord(data);
+      setNotice(
+        "Rascunho criado. O pré-voo técnico não publica nem aprova o conteúdo.",
+      );
+      clearDraftRecovery();
+      setDraftIdempotencyKey("");
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Não foi possível criar o rascunho.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
       <header
@@ -453,6 +761,30 @@ export default function AuthoringPage() {
           Consulte somente metadados do escopo autorizado. O item completo abre
           em uma rota interna separada e a decisão continua humana.
         </p>
+        {scopeLoading ? (
+          <p className="dashboard-empty" role="status">
+            Carregando escopos autorizados…
+          </p>
+        ) : null}
+        {scopeLoadError !== null ? (
+          <div className="feedback error" role="alert">
+            <p>{scopeLoadError}</p>
+            <button
+              type="button"
+              onClick={() => void retrySessionScopes()}
+              disabled={scopeLoading}
+            >
+              Tentar carregar novamente
+            </button>
+          </div>
+        ) : null}
+        {!scopeLoading &&
+        scopeLoadError === null &&
+        sessionScopes.length === 0 ? (
+          <p className="dashboard-empty" role="status">
+            Nenhum escopo autorizado foi disponibilizado para esta sessão.
+          </p>
+        ) : null}
         <div className="queue-filter-row">
           <label htmlFor="queue-scope-id">Escopo autorizado</label>
           <select
@@ -525,6 +857,243 @@ export default function AuthoringPage() {
           </ul>
         )}
       </section>
+
+      {record === null ? (
+        <section className="draft-panel" aria-labelledby="draft-title">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Autoria assistida</p>
+              <h1 id="draft-title">Criar rascunho sintético</h1>
+            </div>
+            <span className="status-pill">RASCUNHO · sem publicação</span>
+          </div>
+          <p className="intro">
+            Preencha um item de trabalho com caso fictício. O servidor deriva a
+            identidade, cria a projeção pública e mantém o conteúdo bloqueado
+            até revisão clínica humana.
+          </p>
+          <form
+            className="draft-form"
+            onSubmit={(event) => void createDraft(event)}
+          >
+            <div className="draft-grid">
+              <label htmlFor="draft-scope-id">
+                Escopo autorizado
+                <select
+                  id="draft-scope-id"
+                  value={scopeId}
+                  onChange={(event) => setScopeId(event.target.value)}
+                  required
+                  disabled={busy || sessionScopes.length === 0}
+                >
+                  <option value="">Selecione um escopo</option>
+                  {sessionScopes.map((sessionScopeId) => (
+                    <option key={sessionScopeId} value={sessionScopeId}>
+                      {sessionScopeId}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="draft-module-id">
+                Módulo
+                <select
+                  id="draft-module-id"
+                  value={draftModuleId}
+                  onChange={(event) => {
+                    const nextModuleId = event.target.value;
+                    setDraftModuleId(nextModuleId);
+                    if (/^M\d{2}-OBJ-\d{2}$/u.test(draftObjectiveId)) {
+                      setDraftObjectiveId(`${nextModuleId}-OBJ-01`);
+                    }
+                  }}
+                  required
+                  disabled={busy}
+                >
+                  {authoringModuleOptions.map((moduleId) => (
+                    <option key={moduleId} value={moduleId}>
+                      {moduleId}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="draft-session-id">
+                Sessão
+                <select
+                  id="draft-session-id"
+                  value={draftSessionSuffix}
+                  onChange={(event) =>
+                    setDraftSessionSuffix(event.target.value)
+                  }
+                  required
+                  disabled={busy}
+                >
+                  {authoringSessionOptions.map((sessionSuffix) => (
+                    <option key={sessionSuffix} value={sessionSuffix}>
+                      {draftModuleId}-{sessionSuffix}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="draft-objective-id">
+                Objetivo curricular
+                <input
+                  id="draft-objective-id"
+                  value={draftObjectiveId}
+                  onChange={(event) => setDraftObjectiveId(event.target.value)}
+                  required
+                  maxLength={128}
+                  disabled={busy}
+                />
+              </label>
+            </div>
+            <label htmlFor="draft-item-title">
+              Título do item
+              <input
+                id="draft-item-title"
+                value={draftTitle}
+                onChange={(event) => setDraftTitle(event.target.value)}
+                required
+                maxLength={1000}
+                disabled={busy}
+              />
+            </label>
+            <label htmlFor="draft-item-prompt">
+              Enunciado
+              <textarea
+                id="draft-item-prompt"
+                value={draftPrompt}
+                onChange={(event) => setDraftPrompt(event.target.value)}
+                required
+                maxLength={10000}
+                rows={4}
+                disabled={busy}
+              />
+            </label>
+            <fieldset className="draft-fieldset">
+              <legend>Alternativas sintéticas</legend>
+              <div className="draft-choice-grid">
+                <label htmlFor="draft-choice-a">
+                  A
+                  <input
+                    id="draft-choice-a"
+                    value={draftChoiceA}
+                    onChange={(event) => setDraftChoiceA(event.target.value)}
+                    required
+                    maxLength={2000}
+                    disabled={busy}
+                  />
+                </label>
+                <label htmlFor="draft-choice-b">
+                  B
+                  <input
+                    id="draft-choice-b"
+                    value={draftChoiceB}
+                    onChange={(event) => setDraftChoiceB(event.target.value)}
+                    required
+                    maxLength={2000}
+                    disabled={busy}
+                  />
+                </label>
+              </div>
+              <div className="draft-radio-row" aria-label="Alternativa correta">
+                <span className="field-label">Chave técnica</span>
+                <label className="draft-radio-label" htmlFor="draft-correct-a">
+                  <input
+                    id="draft-correct-a"
+                    type="radio"
+                    name="draft-correct-choice"
+                    value="a"
+                    checked={draftCorrectChoiceId === "a"}
+                    onChange={(event) =>
+                      setDraftCorrectChoiceId(event.target.value)
+                    }
+                    disabled={busy}
+                  />
+                  A
+                </label>
+                <label className="draft-radio-label" htmlFor="draft-correct-b">
+                  <input
+                    id="draft-correct-b"
+                    type="radio"
+                    name="draft-correct-choice"
+                    value="b"
+                    checked={draftCorrectChoiceId === "b"}
+                    onChange={(event) =>
+                      setDraftCorrectChoiceId(event.target.value)
+                    }
+                    disabled={busy}
+                  />
+                  B
+                </label>
+              </div>
+            </fieldset>
+            <label htmlFor="draft-feedback">
+              Feedback formativo interno
+              <textarea
+                id="draft-feedback"
+                value={draftFeedback}
+                onChange={(event) => setDraftFeedback(event.target.value)}
+                required
+                maxLength={10000}
+                rows={3}
+                disabled={busy}
+              />
+            </label>
+            <div className="draft-grid">
+              <label htmlFor="draft-source-code">
+                Código de fonte interna
+                <select
+                  id="draft-source-code"
+                  value={draftSourceCode}
+                  onChange={(event) => setDraftSourceCode(event.target.value)}
+                  required
+                  disabled={busy}
+                >
+                  {authoringSourceOptions.map((sourceCode) => (
+                    <option key={sourceCode} value={sourceCode}>
+                      {sourceCode}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="draft-source-locator">
+                Localizador interno
+                <input
+                  id="draft-source-locator"
+                  value={draftSourceLocator}
+                  onChange={(event) =>
+                    setDraftSourceLocator(event.target.value)
+                  }
+                  required
+                  maxLength={512}
+                  disabled={busy}
+                />
+              </label>
+            </div>
+            <label className="draft-checkbox-label" htmlFor="draft-critical">
+              <input
+                id="draft-critical"
+                type="checkbox"
+                checked={draftCritical}
+                onChange={(event) => setDraftCritical(event.target.checked)}
+                disabled={busy}
+              />
+              Marcar como objetivo crítico para revisão humana
+            </label>
+            <div className="draft-form-footer">
+              <p className="field-help">
+                A chave de idempotência fica no cliente apenas para repetir com
+                segurança uma tentativa interrompida. Em caso de timeout ou
+                recarga, os dados da tentativa permanecem nesta aba para o
+                reenvio seguro da mesma operação.
+              </p>
+              <button type="submit" disabled={busy || scopeId.length === 0}>
+                {busy ? "Salvando rascunho…" : "Salvar rascunho"}
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
       {record === null ? (
         <section className="hero-card" aria-labelledby="authoring-title">

@@ -97,9 +97,9 @@ export function createAuditRepository(
       await db.transaction(async (transaction) => {
         await transaction.execute(
           sql`select
-            set_config('cvg.audit_write', 'on', true),
-            set_config('cvg.audit_read', '', true),
-            set_config('cvg.audit_scope_id', '', true)`,
+          set_config('cvg.audit_write', 'on', true),
+          set_config('cvg.audit_read', '', true),
+            set_config('cvg.audit_scope_id', ${entry.scopeId ?? ""}, true)`,
         );
         await transaction.insert(auditEntries).values(auditEntryToRow(entry));
       });

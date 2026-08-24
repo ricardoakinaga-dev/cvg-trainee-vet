@@ -57,6 +57,7 @@ export {
   contentVersions,
   contentEditorialRecords,
   contentReviewDecisions,
+  authoringDraftIdempotency,
   diagnosticResults,
   learningActivityItems,
   rateLimitBuckets,

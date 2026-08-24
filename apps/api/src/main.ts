@@ -7,6 +7,7 @@ import {
   changeAccountStatus,
   acceptInvitation,
   advanceContent,
+  createAuthoringDraft,
   createAppealState,
   createAssessmentWorkflowState,
   createFeedbackTicketState,
@@ -311,6 +312,11 @@ export function createApiRuntime(
         activityReadRepository,
       ),
     advanceContent: (command) => advanceContent(command, contentDependencies),
+    createAuthoringDraft: (command) =>
+      createAuthoringDraft(command, {
+        repository: authoringRepository,
+        idFactory: randomUUID,
+      }),
     getInternalAuthoringRecord: (contentId, version, scopeId) =>
       authoringRepository.find(contentId, version, scopeId),
     reviewAuthoringContent: (command) =>

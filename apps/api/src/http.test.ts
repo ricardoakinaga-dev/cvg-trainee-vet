@@ -25,6 +25,7 @@ import {
   type AppealReviewQueueState,
   type AppealReviewHistoryState,
   type FeedbackTriageQueueState,
+  type CreateAuthoringDraftCommand,
 } from "@cvg/application";
 import { createObservability } from "@cvg/observability";
 
@@ -417,6 +418,24 @@ const authoringRecord: AuthoringRecord = {
   },
 };
 
+const authoringDraftRequest = {
+  idempotencyKey: "authoring-draft-http-2026-08-24",
+  scopeId: authoringRecord.scopeId,
+  moduleId: authoringRecord.moduleId,
+  sessionId: authoringRecord.sessionId,
+  objectiveId: authoringRecord.objectiveId,
+  ordinal: authoringRecord.participant.ordinal,
+  title: authoringRecord.title,
+  prompt: authoringRecord.prompt,
+  responseMode: "CHOICE" as const,
+  choices: authoringRecord.choices,
+  correctChoiceIds: authoringRecord.correctChoiceIds,
+  feedback: authoringRecord.feedback,
+  critical: authoringRecord.critical,
+  remediationTargetObjectiveId: authoringRecord.remediationTargetObjectiveId,
+  sourceRefs: authoringRecord.sourceRefs,
+};
+
 function dependencies(
   overrides: Partial<ApiHttpDependencies> = {},
 ): ApiHttpDependencies {
@@ -568,6 +587,26 @@ describe("API HTTP boundary", () => {
         action: "HTTP_REQUEST_REJECTED",
       }),
     );
+  });
+
+  it("does not attach a body scope outside the session to a rejection audit", async () => {
+    const audit = { append: vi.fn(async () => undefined) };
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/content/drafts",
+        body: {
+          scopeId: "99999999-9999-4999-8999-999999999999",
+        },
+      },
+      dependencies({
+        audit,
+        requestIdFactory: () => "11111111-1111-4111-8111-111111111111",
+      }),
+    );
+
+    expect(response.status).toBe(500);
+    expect(audit.append).not.toHaveBeenCalled();
   });
 
   it("returns redacted dependency health and protects metrics export", async () => {
@@ -890,6 +929,122 @@ describe("API HTTP boundary", () => {
     );
     expect(participantResponse.status).toBe(403);
     expect(getInternalAuthoringRecord).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates a scoped authoring draft with server-derived identity and blocked actions", async () => {
+    const createdDraft: AuthoringRecord = {
+      ...authoringRecord,
+      contentStatus: "RASCUNHO",
+    };
+    const createAuthoringDraft = vi.fn(
+      async (command: CreateAuthoringDraftCommand) => {
+        expect(command.principalId).toBe(authoringRecord.authorId);
+        expect(command.scopeId).toBe(authoringRecord.scopeId);
+        return createdDraft;
+      },
+    );
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/content/drafts",
+        body: authoringDraftRequest,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: authoringRecord.authorId,
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [authoringRecord.scopeId],
+        }),
+        createAuthoringDraft,
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        contentStatus: "RASCUNHO",
+        item: {
+          correctChoiceIds: ["a"],
+          participant: { kind: "QUESTAO" },
+        },
+        availableActions: {
+          requestAdjustments: false,
+          approveClinically: false,
+        },
+      },
+    });
+    expect(createAuthoringDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        principalId: authoringRecord.authorId,
+        accountStatus: "ACTIVE",
+        roles: ["AUTHOR"],
+        scopes: [authoringRecord.scopeId],
+        idempotencyKey: authoringDraftRequest.idempotencyKey,
+      }),
+    );
+    expect(createAuthoringDraft.mock.calls[0]?.[0]).not.toHaveProperty(
+      "contentId",
+    );
+  });
+
+  it("rejects unauthenticated, out-of-scope, and client-owned authoring draft requests", async () => {
+    const createAuthoringDraft = vi.fn(async () => authoringRecord);
+    const unauthenticated = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/content/drafts",
+        body: authoringDraftRequest,
+      },
+      dependencies({
+        authenticate: async () => null,
+        createAuthoringDraft,
+      }),
+    );
+    expect(unauthenticated.status).toBe(401);
+
+    const outOfScope = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/content/drafts",
+        body: authoringDraftRequest,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: authoringRecord.authorId,
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: ["33333333-3333-4333-8333-333333333333"],
+        }),
+        createAuthoringDraft,
+      }),
+    );
+    expect(outOfScope.status).toBe(403);
+
+    const clientOwnedField = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/content/drafts",
+        body: {
+          ...authoringDraftRequest,
+          contentId: authoringRecord.contentId,
+          status: "PUBLICADO",
+          participant: authoringRecord.participant,
+        },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId: authoringRecord.authorId,
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [authoringRecord.scopeId],
+        }),
+        createAuthoringDraft,
+      }),
+    );
+    expect(clientOwnedField.status).toBe(422);
+    expect(createAuthoringDraft).not.toHaveBeenCalled();
   });
 
   it("persists the B-07 draft evaluation only behind scoped moderation and returns theme aggregates", async () => {
