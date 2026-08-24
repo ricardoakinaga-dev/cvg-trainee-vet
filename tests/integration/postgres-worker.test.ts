@@ -178,6 +178,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         throw new Error("test database URL is required");
 
       const database = createPostgresDatabase(databaseUrl);
+      const reclaimedDatabase = createPostgresDatabase(databaseUrl);
       const eventId = randomUUID();
       const aggregateId = randomUUID();
       const now = new Date();
@@ -199,6 +200,9 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         });
 
         const repository = createOutboxRepository(database.db);
+        const reclaimedRepository = createOutboxRepository(
+          reclaimedDatabase.db,
+        );
         const firstClaim = await repository.claim(1, now, 60);
         const first = firstClaim[0];
         if (first === undefined || first.leaseToken === null) {
@@ -220,19 +224,23 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           where id = ${eventId}
         `);
 
-        const secondClaim = await repository.claim(1, new Date(), 60);
+        const secondClaim = await reclaimedRepository.claim(1, new Date(), 60);
         const second = secondClaim[0];
         if (second === undefined || second.leaseToken === null) {
           throw new Error("reclaimed claim must carry a lease token");
         }
         expect(second.leaseToken).not.toBe(first.leaseToken);
 
-        await expect(
+        const [staleResult, currentResult] = await Promise.all([
           repository.markProcessed(eventId, first.leaseToken, new Date()),
-        ).resolves.toBe(false);
-        await expect(
-          repository.markProcessed(eventId, second.leaseToken, new Date()),
-        ).resolves.toBe(true);
+          reclaimedRepository.markProcessed(
+            eventId,
+            second.leaseToken,
+            new Date(),
+          ),
+        ]);
+        expect(staleResult).toBe(false);
+        expect(currentResult).toBe(true);
 
         const stored = await database.db
           .select({
@@ -249,6 +257,7 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
         await database.db
           .delete(outboxEvents)
           .where(eq(outboxEvents.id, eventId));
+        await reclaimedDatabase.close();
         await database.close();
       }
     });
