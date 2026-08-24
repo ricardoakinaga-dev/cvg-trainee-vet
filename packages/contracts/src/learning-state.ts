@@ -86,7 +86,7 @@ export const assessmentWorkflowCreateRequestSchema = z
 
 export const feedbackTicketParticipantCreateRequestSchema = z
   .object({
-    scopeId: idSchema,
+    scopeId: idSchema.optional(),
     type: feedbackTicketTypeSchema,
     description: plainTextSchema,
   })
@@ -119,6 +119,12 @@ export const participantFeedbackTicketProjectionSchema = z
     createdAt: timestampSchema,
     status: feedbackTicketStatusSchema,
     version: versionSchema,
+  })
+  .strict();
+
+export const participantFeedbackTicketsProjectionSchema = z
+  .object({
+    tickets: z.array(participantFeedbackTicketProjectionSchema).max(100),
   })
   .strict();
 
@@ -351,6 +357,9 @@ export type ParticipantAssessmentWorkflowProjection = z.infer<
 >;
 export type ParticipantFeedbackTicketProjection = z.infer<
   typeof participantFeedbackTicketProjectionSchema
+>;
+export type ParticipantFeedbackTicketsProjection = z.infer<
+  typeof participantFeedbackTicketsProjectionSchema
 >;
 export type ParticipantAppealProjection = z.infer<
   typeof participantAppealProjectionSchema

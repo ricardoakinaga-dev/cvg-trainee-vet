@@ -106,6 +106,7 @@ export {
   participantAppealsProjectionSchema,
   participantAssessmentWorkflowProjectionSchema,
   participantFeedbackTicketProjectionSchema,
+  participantFeedbackTicketsProjectionSchema,
   participantLearningAssignmentProjectionSchema,
 } from "./learning-state.js";
 export type {
@@ -127,6 +128,7 @@ export type {
   ParticipantAppealsProjection,
   ParticipantAssessmentWorkflowProjection,
   ParticipantFeedbackTicketProjection,
+  ParticipantFeedbackTicketsProjection,
   ParticipantLearningAssignmentProjection,
 } from "./learning-state.js";
 export {

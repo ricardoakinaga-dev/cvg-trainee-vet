@@ -14,6 +14,7 @@ import {
   participantAppealsProjectionSchema,
   participantAssessmentWorkflowProjectionSchema,
   participantFeedbackTicketProjectionSchema,
+  participantFeedbackTicketsProjectionSchema,
   participantLearningAssignmentProjectionSchema,
 } from "./learning-state.js";
 
@@ -96,6 +97,26 @@ describe("learning state contracts", () => {
         version: 0,
       }),
     ).toMatchObject({ ticketId: ids.ticketId });
+    expect(
+      feedbackTicketParticipantCreateRequestSchema.parse({
+        type: "MELHORIA",
+        description: "Relato sem escopo confiado ao cliente.",
+      }),
+    ).toMatchObject({ type: "MELHORIA" });
+    expect(
+      participantFeedbackTicketsProjectionSchema.parse({
+        tickets: [
+          {
+            ticketId: ids.ticketId,
+            type: "ERRO_CONTEUDO",
+            description: "Relato sintético.",
+            createdAt: "2026-08-10T17:00:00.000Z",
+            status: "NOVO",
+            version: 0,
+          },
+        ],
+      }),
+    ).toMatchObject({ tickets: [{ ticketId: ids.ticketId }] });
     expect(
       participantAppealProjectionSchema.parse({
         appealId: ids.resultId,

@@ -127,6 +127,30 @@ test.describe("participant access and learning projection", () => {
         ),
       });
     });
+    await page.route("**/api/v1/feedback", async (route) => {
+      if (route.request().method() === "GET") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope({ tickets: [] })),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            ticketId: "44444444-4444-4444-8444-444444444444",
+            type: "USABILIDADE",
+            description: "Relato de usabilidade sintético.",
+            createdAt: "2026-08-24T12:00:00.000Z",
+            status: "NOVO",
+            version: 0,
+          }),
+        ),
+      });
+    });
   });
 
   test("loads the learning path and starts with its next action", async ({
@@ -202,6 +226,55 @@ test.describe("participant access and learning projection", () => {
     ).toBeVisible();
     await expect(page.getByText("Baseline digital registrada")).toBeVisible();
     await expect(page.getByText("Sem nota global")).toBeVisible();
+  });
+
+  test("reports feedback and shows only the participant ticket projection", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/activities/" + activityId, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            activityId,
+            slug: "emergencia-v1",
+            title: "Emergência",
+            items: [],
+          }),
+        ),
+      });
+    });
+
+    await page.goto("/");
+    await page.getByLabel("Token de convite").fill(invitationToken);
+    await page.getByRole("button", { name: "Ativar acesso" }).click();
+
+    await expect(page.getByTestId("feedback-panel")).toBeVisible();
+    await page.getByLabel("Tipo de relato").selectOption("USABILIDADE");
+    await page.getByLabel("Descrição").fill("Relato de usabilidade sintético.");
+    await page.getByRole("button", { name: "Enviar feedback" }).click();
+
+    await expect(
+      page.getByText("Feedback enviado. Acompanhe o status nesta tela.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("list", { name: "Meus relatos" }).getByRole("listitem"),
+    ).toContainText("Usabilidade");
+    await expect(
+      page.getByText("Relato de usabilidade sintético."),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("participantId");
+    await expect(page.locator("body")).not.toContainText("scopeId");
   });
 
   test("accepts an internal invitation and renders only the participant activity", async ({

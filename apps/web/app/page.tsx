@@ -70,6 +70,22 @@ type ParticipantAppealsProjection = Readonly<{
   readonly appeals: readonly ParticipantAppealProjection[];
 }>;
 
+type FeedbackTicketType =
+  "BUG_TECNICO" | "USABILIDADE" | "ERRO_CONTEUDO" | "MELHORIA" | "CONTESTACAO";
+
+type ParticipantFeedbackTicketProjection = Readonly<{
+  readonly ticketId: string;
+  readonly type: FeedbackTicketType;
+  readonly description: string;
+  readonly createdAt: string;
+  readonly status: string;
+  readonly version: number;
+}>;
+
+type ParticipantFeedbackTicketsProjection = Readonly<{
+  readonly tickets: readonly ParticipantFeedbackTicketProjection[];
+}>;
+
 type CurriculumRuntimeProjection = Readonly<{
   readonly moduleId: string;
   readonly version: number;
@@ -154,7 +170,8 @@ type ApiRecord = Readonly<Record<string, unknown>>;
 const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 
 type ExperienceState = "idle" | "loading" | "ready" | "empty" | "error";
-type RetryAction = "access" | "journey" | "activity" | "appeals" | null;
+type RetryAction =
+  "access" | "journey" | "activity" | "appeals" | "feedback" | null;
 
 class PublicApiError extends Error {
   public constructor(
@@ -328,6 +345,37 @@ function isParticipantAppeals(
     Array.isArray(value.appeals) &&
     value.appeals.length <= 100 &&
     value.appeals.every(isParticipantAppeal)
+  );
+}
+
+function isParticipantFeedbackTicket(
+  value: unknown,
+): value is ParticipantFeedbackTicketProjection {
+  if (!isRecord(value)) return false;
+  return (
+    isString(value.ticketId) &&
+    (value.type === "BUG_TECNICO" ||
+      value.type === "USABILIDADE" ||
+      value.type === "ERRO_CONTEUDO" ||
+      value.type === "MELHORIA" ||
+      value.type === "CONTESTACAO") &&
+    isString(value.description) &&
+    isString(value.createdAt) &&
+    isString(value.status) &&
+    typeof value.version === "number" &&
+    Number.isInteger(value.version) &&
+    value.version >= 0
+  );
+}
+
+function isParticipantFeedback(
+  value: unknown,
+): value is ParticipantFeedbackTicketsProjection {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.tickets) &&
+    value.tickets.length <= 100 &&
+    value.tickets.every(isParticipantFeedbackTicket)
   );
 }
 
@@ -715,6 +763,31 @@ function appealStatusLabel(
   return labels[value];
 }
 
+function feedbackTypeLabel(value: FeedbackTicketType): string {
+  const labels: Readonly<Record<FeedbackTicketType, string>> = {
+    BUG_TECNICO: "Bug técnico",
+    USABILIDADE: "Usabilidade",
+    ERRO_CONTEUDO: "Erro de conteúdo",
+    MELHORIA: "Melhoria",
+    CONTESTACAO: "Contestação",
+  };
+  return labels[value];
+}
+
+function feedbackStatusLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    NOVO: "Recebido",
+    TRIADO: "Triado",
+    EM_TRATAMENTO: "Em tratamento",
+    AGUARDA_USUARIO: "Aguardando você",
+    RESOLVIDO: "Resolvido",
+    DUPLICADO: "Duplicado",
+    NAO_REPRODUZIDO: "Não reproduzido",
+    NAO_PLANEJADO: "Não planejado",
+  };
+  return labels[value] ?? "Em acompanhamento";
+}
+
 function moduleIdFromActivity(activity: ActivityProjection): string | null {
   const match = /(?:^|-)m(0[1-9]|1[0-9]|2[0-4])(?:-|$)/iu.exec(activity.slug);
   return match?.[1] === undefined ? null : `M${match[1]}`;
@@ -801,6 +874,13 @@ export default function HomePage() {
   const [appealState, setAppealState] = useState<ExperienceState>("idle");
   const [appealItemId, setAppealItemId] = useState("");
   const [appealJustification, setAppealJustification] = useState("");
+  const [feedbackTickets, setFeedbackTickets] = useState<
+    readonly ParticipantFeedbackTicketProjection[]
+  >([]);
+  const [feedbackState, setFeedbackState] = useState<ExperienceState>("idle");
+  const [feedbackType, setFeedbackType] =
+    useState<FeedbackTicketType>("MELHORIA");
+  const [feedbackDescription, setFeedbackDescription] = useState("");
   const [answers, setAnswers] = useState<Readonly<Record<string, string>>>({});
   const [authenticated, setAuthenticated] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -959,6 +1039,27 @@ export default function HomePage() {
     }
   }
 
+  async function loadFeedback(): Promise<void> {
+    setFeedbackState("loading");
+    setRetryAction("feedback");
+    try {
+      const data = await requestJson("/api/v1/feedback", { method: "GET" });
+      if (!isParticipantFeedback(data)) {
+        throw new PublicApiError(
+          "internal_error",
+          "invalid feedback projection",
+        );
+      }
+      setFeedbackTickets(data.tickets);
+      setFeedbackState(data.tickets.length === 0 ? "empty" : "ready");
+      setRetryAction(null);
+    } catch (caught) {
+      setFeedbackState("error");
+      setRetryAction("feedback");
+      setError(publicErrorMessage(caught));
+    }
+  }
+
   async function activateAccess(): Promise<void> {
     setBusy(true);
     setError(null);
@@ -979,6 +1080,7 @@ export default function HomePage() {
     setAuthenticated(true);
     setNotice("Acesso ativado.");
     try {
+      await loadFeedback();
       const loadedJourney = await loadJourney();
       const nextActivityId =
         activityId.trim().length > 0
@@ -1008,6 +1110,7 @@ export default function HomePage() {
     setError(null);
     setNotice(null);
     try {
+      await loadFeedback();
       const loadedJourney = await loadJourney();
       const nextActivityId =
         activityId.trim().length > 0
@@ -1050,6 +1153,7 @@ export default function HomePage() {
     if (retryAction === "appeals" && attempt !== null) {
       void loadAppeals(attempt.attemptId);
     }
+    if (retryAction === "feedback") void loadFeedback();
   }
 
   async function handleStartAttempt(): Promise<void> {
@@ -1204,6 +1308,36 @@ export default function HomePage() {
     }
   }
 
+  async function handleCreateFeedback(): Promise<void> {
+    if (feedbackDescription.trim().length === 0) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const data = await requestJson("/api/v1/feedback", {
+        method: "POST",
+        body: {
+          type: feedbackType,
+          description: feedbackDescription,
+        },
+      });
+      if (!isParticipantFeedbackTicket(data)) {
+        throw new PublicApiError(
+          "internal_error",
+          "invalid feedback ticket projection",
+        );
+      }
+      setFeedbackTickets((previous) => [data, ...previous].slice(0, 100));
+      setFeedbackState("ready");
+      setFeedbackDescription("");
+      setNotice("Feedback enviado. Acompanhe o status nesta tela.");
+    } catch (caught) {
+      setError(publicErrorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const appealEligibleAttempt =
     attempt?.status === "CORRIGIDA_AUTOMATICAMENTE" ||
     attempt?.status === "CORRIGIDA_HUMANAMENTE";
@@ -1236,6 +1370,95 @@ export default function HomePage() {
         >
           Atualizando seu treinamento…
         </div>
+      ) : null}
+
+      {authenticated ? (
+        <section
+          className="item-card feedback-panel"
+          data-testid="feedback-panel"
+          aria-labelledby="feedback-title"
+        >
+          <div className="section-heading compact-heading">
+            <div>
+              <p className="eyebrow">Ajude a melhorar</p>
+              <h2 id="feedback-title">Relatar problema ou melhoria</h2>
+            </div>
+            <span className="status-pill">Canal interno</span>
+          </div>
+          <p>
+            Envie um relato sobre a atividade, a experiência ou o conteúdo. A
+            equipe acompanha o ticket no ambiente interno.
+          </p>
+          <p className="path-disclaimer">
+            Não inclua dados de pacientes, tutores, prontuários, fotos ou
+            qualquer informação clínica real.
+          </p>
+          {feedbackState === "loading" ? (
+            <p className="feedback pending" role="status">
+              Consultando seus relatos…
+            </p>
+          ) : null}
+          {feedbackState === "error" ? (
+            <p className="feedback warning" role="status">
+              Não foi possível consultar seus relatos. Você ainda pode tentar
+              enviar um novo relato.
+            </p>
+          ) : null}
+          <form
+            className="answer-area"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleCreateFeedback();
+            }}
+          >
+            <label htmlFor="feedback-type">Tipo de relato</label>
+            <select
+              id="feedback-type"
+              value={feedbackType}
+              onChange={(event) =>
+                setFeedbackType(event.target.value as FeedbackTicketType)
+              }
+            >
+              <option value="MELHORIA">Sugestão de melhoria</option>
+              <option value="BUG_TECNICO">Bug técnico</option>
+              <option value="USABILIDADE">Usabilidade</option>
+              <option value="ERRO_CONTEUDO">Erro de conteúdo</option>
+              <option value="CONTESTACAO">Contestação</option>
+            </select>
+            <label htmlFor="feedback-description">Descrição</label>
+            <textarea
+              id="feedback-description"
+              value={feedbackDescription}
+              onChange={(event) => setFeedbackDescription(event.target.value)}
+              maxLength={10_000}
+              rows={4}
+              required
+            />
+            <button
+              type="submit"
+              disabled={busy || feedbackDescription.trim().length === 0}
+            >
+              Enviar feedback
+            </button>
+          </form>
+          {feedbackTickets.length > 0 ? (
+            <ul className="journey-list" aria-label="Meus relatos">
+              {feedbackTickets.map((ticket) => (
+                <li key={ticket.ticketId}>
+                  {feedbackTypeLabel(ticket.type)}
+                  {" · "}
+                  {feedbackStatusLabel(ticket.status)}
+                  {" · "}
+                  {ticket.createdAt.slice(0, 10)}
+                  <br />
+                  <span>{ticket.description}</span>
+                </li>
+              ))}
+            </ul>
+          ) : feedbackState === "empty" ? (
+            <p role="status">Você ainda não enviou um relato.</p>
+          ) : null}
+        </section>
       ) : null}
 
       {!authenticated ? (

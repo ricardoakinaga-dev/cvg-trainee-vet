@@ -63,6 +63,12 @@ export type {
   FeedbackReadPort,
   GetAttemptFeedbackCommand,
 } from "./feedback-use-cases.js";
+export { getParticipantFeedback } from "./feedback-ticket-read-use-cases.js";
+export type {
+  ParticipantFeedbackReadCommand,
+  ParticipantFeedbackReadPort,
+  ParticipantFeedbackReadRecord,
+} from "./feedback-ticket-read-use-cases.js";
 export { acceptInvitation, createInvitation } from "./invitation-use-cases.js";
 export type {
   AcceptInvitationCommand,

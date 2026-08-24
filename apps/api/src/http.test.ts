@@ -2393,6 +2393,7 @@ describe("API HTTP boundary", () => {
       version: 2,
     }));
     const createFeedbackTicket = vi.fn(async () => ticket);
+    const getParticipantFeedback = vi.fn(async () => [ticket]);
     const createAppeal = vi.fn(async () => appeal);
 
     const participantResponse = await handleApiRequest(
@@ -2488,7 +2489,7 @@ describe("API HTTP boundary", () => {
         method: "POST",
         path: "/api/v1/feedback",
         body: {
-          scopeId,
+          scopeId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
           type: "ERRO_CONTEUDO",
           description: "Relato sintético.",
         },
@@ -2510,6 +2511,46 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(feedbackResponse.body)).not.toContain(
       "participantId",
     );
+
+    const feedbackListResponse = await handleApiRequest(
+      { method: "GET", path: "/api/v1/feedback", body: {} },
+      dependencies({
+        getParticipantFeedback,
+        authenticate: async () => ({
+          principalId: participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(feedbackListResponse.status).toBe(200);
+    expect(feedbackListResponse.body).toMatchObject({
+      success: true,
+      data: { tickets: [{ ticketId: ticket.ticketId, status: "NOVO" }] },
+    });
+    expect(getParticipantFeedback).toHaveBeenCalledWith({
+      participantId,
+      scopeIds: [scopeId],
+    });
+    expect(JSON.stringify(feedbackListResponse.body)).not.toContain(
+      "participantId",
+    );
+
+    const staffFeedbackListResponse = await handleApiRequest(
+      { method: "GET", path: "/api/v1/feedback", body: {} },
+      dependencies({
+        getParticipantFeedback,
+        authenticate: async () => ({
+          principalId: "99999999-9999-4999-8999-999999999999",
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(staffFeedbackListResponse.status).toBe(403);
+    expect(getParticipantFeedback).toHaveBeenCalledTimes(1);
 
     const appealResponse = await handleApiRequest(
       {

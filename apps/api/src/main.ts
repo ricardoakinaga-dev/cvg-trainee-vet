@@ -22,6 +22,7 @@ import {
   getStaffDashboard,
   getContinuingEducationReport,
   getParticipantAppeals,
+  getParticipantFeedback,
   getReflectionManagementReport,
   getContentReviewQueue,
   getAppealReviewQueue,
@@ -56,6 +57,7 @@ import {
   createCurriculumRuntimeRepository,
   createInvitationUseCaseDependencies,
   createLearningStateRepository,
+  createFeedbackTicketReadRepository,
   createPostgresRateLimiter,
   createProgressReadRepository,
   createParticipantJourneyRepository,
@@ -171,6 +173,9 @@ export function createApiRuntime(
   const learningStateRepository = createLearningStateRepository(
     integrations.database.db,
   );
+  const feedbackTicketReadRepository = createFeedbackTicketReadRepository(
+    integrations.database.db,
+  );
   const appealReadRepository = createAppealReadRepository(
     integrations.database.db,
   );
@@ -258,6 +263,8 @@ export function createApiRuntime(
       transitionAssessmentWorkflowState(command, learningStateRepository),
     createFeedbackTicket: (command) =>
       createFeedbackTicketState(command, learningStateRepository),
+    getParticipantFeedback: (command) =>
+      getParticipantFeedback(command, feedbackTicketReadRepository),
     transitionFeedbackTicket: (command) =>
       transitionFeedbackTicketState(command, learningStateRepository),
     createAppeal: (command) =>

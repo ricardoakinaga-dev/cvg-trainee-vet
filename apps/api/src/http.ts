@@ -44,6 +44,7 @@ import {
   type WorkflowTransitionCommand,
   type TicketCreateCommand,
   type TicketTransitionCommand,
+  type ParticipantFeedbackReadCommand,
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
   type ParticipantProgressState,
@@ -116,6 +117,7 @@ import {
   appealReviewTransitionRequestSchema,
   feedbackTicketParticipantCreateRequestSchema,
   feedbackTicketScopedTransitionRequestSchema,
+  participantFeedbackTicketsProjectionSchema,
   learningAssignmentCreateRequestSchema,
   learningAssignmentScopedTransitionRequestSchema,
   participantAppealProjectionSchema,
@@ -194,6 +196,9 @@ export interface ApiHttpDependencies {
   readonly createFeedbackTicket?: (
     command: TicketCreateCommand,
   ) => Promise<FeedbackTicketState>;
+  readonly getParticipantFeedback?: (
+    command: ParticipantFeedbackReadCommand,
+  ) => Promise<readonly FeedbackTicketState[]>;
   readonly transitionFeedbackTicket?: (
     command: TicketTransitionCommand,
   ) => Promise<FeedbackTicketState>;
@@ -558,6 +563,14 @@ function publicFeedbackTicketProjection(
     createdAt: state.createdAt,
     status: state.status,
     version: state.version,
+  });
+}
+
+function publicFeedbackTicketsProjection(
+  states: readonly FeedbackTicketState[],
+): ApiSuccessEnvelope<unknown>["data"] {
+  return participantFeedbackTicketsProjectionSchema.parse({
+    tickets: states.map((state) => publicFeedbackTicketProjection(state)),
   });
 }
 
@@ -2055,10 +2068,15 @@ async function handleCreateFeedbackTicket(
     request.body,
   );
   if (!parsed.success) return validationResponse(requestId);
+  const scopeId =
+    principal.roles.includes("PARTICIPANT") && principal.scopes.length === 1
+      ? principal.scopes[0]
+      : undefined;
+  if (scopeId === undefined) return validationResponse(requestId, "scopeId");
   if (
     !isAllowed(principal, "CREATE_FEEDBACK_TICKET", {
       ownerId: principal.principalId,
-      scopeId: parsed.data.scopeId,
+      scopeId,
     })
   ) {
     return errorResponse("forbidden", requestId);
@@ -2066,7 +2084,7 @@ async function handleCreateFeedbackTicket(
   const state = await dependencies.createFeedbackTicket({
     ticketId: randomUUID(),
     participantId: principal.principalId,
-    scopeId: parsed.data.scopeId,
+    scopeId,
     type: parsed.data.type,
     description: parsed.data.description,
     createdAt: new Date().toISOString(),
@@ -2074,6 +2092,38 @@ async function handleCreateFeedbackTicket(
   return {
     status: 201,
     body: apiSuccessResponse(publicFeedbackTicketProjection(state), requestId),
+  };
+}
+
+async function handleGetParticipantFeedback(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getParticipantFeedback === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  if (
+    principal.scopes.length === 0 ||
+    !principal.scopes.every((scopeId) =>
+      isAllowed(principal, "VIEW_OWN_FEEDBACK", {
+        ownerId: principal.principalId,
+        scopeId,
+      }),
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const states = await dependencies.getParticipantFeedback({
+    participantId: principal.principalId,
+    scopeIds: principal.scopes,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicFeedbackTicketsProjection(states),
+      requestId,
+    ),
   };
 }
 
@@ -2585,6 +2635,17 @@ async function handleApiRequestCore(
         return errorResponse("unauthenticated", requestId);
       return await handleCreateFeedbackTicket(
         request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (request.method === "GET" && request.path === "/api/v1/feedback") {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleGetParticipantFeedback(
         requestId,
         principal,
         dependencies,
