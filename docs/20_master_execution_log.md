@@ -6924,3 +6924,41 @@ clínica, B-07 e piloto continuam gates separados. O slice fica
 Atualizar SPEC/AUDIT/backlog/manifesto/estado, rodar os gates finais locais e
 executar o workflow remoto e o E2E curricular autoral somente com autoridade
 de ambiente e repositório.
+
+## 2026-08-24 — AUTHORING-ACTIVITY-001: fechamento local rastreável
+
+### TIMESTAMP
+
+2026-08-24T08:58:00-03:00
+
+### ACTION
+
+Após o commit técnico `82ea6ab8802a36cf81278c59c25de516a97624ce`, foram
+atualizados SPEC 0109/0110/0118, auditoria 0526, backlog, plano, runtime state
+e `traceability.yml`; o commit documental `119c8bc` congelou os paths e ligou o
+artefato `AUTHORING-ACTIVITY-001` ao código. O complemento registra a correção
+da recursão RLS e a rejeição fail-closed de itens inesperados.
+
+### RESULT
+
+`pnpm verify` passou com 125 arquivos/592 testes/33 skips; cobertura 84,57%
+statements, 80,50% branches, 86,08% functions e 85,30% lines; contracts 72/72,
+worker 27/27, migrations 31/31, CI contract 21 checks e gates estáticos
+passaram. `pnpm build` passou nos 12 workspaces, `pnpm test:e2e` passou 26/26,
+`pnpm audit --audit-level=high` não encontrou vulnerabilidades e
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo. Nenhum push, deploy, workflow remoto, credencial, dado real ou decisão
+clínica foi inferido.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — MVP técnico local/live sintético rastreável com gaps
+explícitos; não é release produtivo, piloto ou aprovação clínica.
+
+### NEXT
+
+Com autoridade de repositório e ambiente, executar workflow remoto no mesmo SHA
+e E2E navegador→API→PostgreSQL em que o pipeline autoral crie a atividade;
+depois observar grants/owners produtivos, collector/retention/traces,
+carga/failover/restore, provider/MFA e gates clínicos. Sem essa autoridade,
+preservar o estado e não fazer push/deploy por inferência.

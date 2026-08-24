@@ -14,12 +14,12 @@
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: o commit `82ea6ab8802a36cf81278c59c25de516a97624ce` implementou `AUTHORING-ACTIVITY-001`: `session_id`, unicidade por escopo/módulo/sessão, checks `Mxx-S[1-4]`, migrations `0028`–`0030`, `ENABLE/FORCE RLS`, materialização somente de versões `PUBLICADO`, ordinal bounded, replay idempotente e falha fechada para conjunto inesperado. Typecheck de persistence, `verify:migrations` 31/31, unitário 18/18, authoring live 1/1, worker live 4/4, cobertura 125/592/33 com 84,57%/80,50%/86,08%/85,30% e live completa 31/50 passaram; nenhum dado real foi usado.
-- next_action: concluir `pnpm verify`, build, E2E, audit high, documentação, traceability release e diff-check após a atualização documental; então permanecer aguardando workflow remoto same-SHA e E2E navegador→API→PostgreSQL com atividade criada pelo pipeline, além de grants/owners produtivos, observabilidade/restore, provider/MFA e revisão clínica
+- last_completed_action: o commit `82ea6ab8802a36cf81278c59c25de516a97624ce` implementou `AUTHORING-ACTIVITY-001` e o commit documental `119c8bc` fechou SPEC/AUDIT/backlog/log/plano/manifesto: `session_id`, unicidade por escopo/módulo/sessão, checks `Mxx-S[1-4]`, migrations `0028`–`0030`, `ENABLE/FORCE RLS`, materialização somente de versões `PUBLICADO`, ordinal bounded, replay idempotente e falha fechada para conjunto inesperado. Typecheck de persistence, `verify:migrations` 31/31, unitário 18/18, authoring live 1/1, worker live 4/4, `pnpm verify` 125/592/33 com 84,57%/80,50%/86,08%/85,30%, build 12 workspaces, E2E 26/26, audit high e release traceability passaram; nenhum dado real foi usado.
+- next_action: permanecer aguardando autorização para workflow remoto same-SHA e E2E navegador→API→PostgreSQL com atividade criada pelo pipeline; depois tratar grants/owners produtivos, observabilidade/restore, provider/MFA e revisão clínica sem inferir aprovação
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T08:53:00-03:00
+- last_update: 2026-08-24T08:58:00-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
 - head: `82ea6ab8802a36cf81278c59c25de516a97624ce` (último commit técnico de `AUTHORING-ACTIVITY-001`; o fechamento documental é seu sucessor de continuidade)
 - origin: `fbbc692` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: alterações documentais desta atualização ainda serão fechadas em commit separado; não há push/deploy
+- worktree: clean após commits técnico `82ea6ab8802a36cf81278c59c25de516a97624ce` e documental `119c8bc`; não há push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `AUTHORING-ACTIVITY-001` PASS LOCAL + LIVE SINTÉTICO: migrations 31/31, unitário 18/18, `pnpm verify` 125/592/33 com 84,57%/80,50%/86,08%/85,30%, contracts 72/72, worker 27/27, build 12 workspaces, E2E 26/26, live completa 31/50, audit high, secrets, architecture, documentation, product-definition, exposure, traceability estrutural e diff-check passaram; app live sem `SUPERUSER/BYPASSRLS` e admin separado; mesmo-SHA remoto, E2E curricular criado pelo pipeline, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
+- verification_state: `AUTHORING-ACTIVITY-001` PASS LOCAL + LIVE SINTÉTICO: migrations 31/31, unitário 18/18, `pnpm verify` 125/592/33 com 84,57%/80,50%/86,08%/85,30%, contracts 72/72, worker 27/27, build 12 workspaces, E2E 26/26, live completa 31/50, audit high, secrets, architecture, documentation, product-definition, exposure, diff-check e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo passaram; app live sem `SUPERUSER/BYPASSRLS` e admin separado; mesmo-SHA remoto, E2E curricular criado pelo pipeline, múltiplas réplicas/carga, grants produtivos, collector/retention/traces, restore e gates clínicos continuam não observados
 
 ## REGRAS DE USO
 
