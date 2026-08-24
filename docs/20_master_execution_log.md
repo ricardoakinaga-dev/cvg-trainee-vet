@@ -4411,3 +4411,41 @@ Executar o release traceability gate em worktree limpo. Depois, quando houver
 ambiente PostgreSQL autorizado, executar a prova live/RLS; em paralelo a próxima
 lacuna local é apelação/contestação ou filtros/paginação/exportação. Gaps clínicos,
 provider/MFA, collector/OTel e workflow remoto permanecem independentes.
+
+## 2026-08-23 — REFLECTION-035: release traceability local
+
+### TIMESTAMP
+
+2026-08-23 22:30:59 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / RUNTIME CONTROLLER
+
+### TASK
+
+Fechar o gate de rastreabilidade da fatia sem alegar evidência externa.
+
+### ACTION
+
+Após o commit de código `9a618e9c6163f0a2e8056191481b8f1c71d1aea1` e o commit
+documental `cf300fb`, foi executado
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com worktree limpo.
+
+### RESULT
+
+O gate passou: os artefatos atuais resolvem para commits alcançáveis e caminhos
+rastreáveis. `REFLECTION-035` permanece `COMPLETED_WITH_GAPS`: a integração live
+PostgreSQL/RLS não foi executada por falta de `CVG_TEST_DATABASE_URL`, e
+collector/OTel, retenção, carga, failover, restore, workflow remoto, provider/MFA,
+revisão clínica e piloto continuam sem autorização/evidência.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar a prova live quando o ambiente for disponibilizado e abrir a próxima
+lacuna local priorizada, mantendo a fronteira digital sem score, competência
+prática ou publicação clínica.

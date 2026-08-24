@@ -60,9 +60,12 @@ contrato, HTTP e E2E receberam testes focados.
 - `pnpm exec vitest run tests/integration/postgres-reflection-management.test.ts --project integration` — 1 teste skipped por ausência de banco live; não é evidência de PASS.
 
 O gate completo (`pnpm verify`), audit de dependências, secrets, documentação,
-exposição, migrations, traceability release e o critic independente devem ser
-executados depois da reconciliação documental e do commit local. Nenhum workflow
-remoto, push, publicação clínica ou piloto é inferido nesta auditoria.
+exposição, migrations e traceability estrutural passaram após a implementação.
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` também passou em
+worktree limpo, com `REFLECTION-MANAGEMENT-035` ligado ao commit de código
+`9a618e9c6163f0a2e8056191481b8f1c71d1aea1`; o fechamento documental está em
+`cf300fb`. Nenhum workflow remoto, push, publicação clínica ou piloto é inferido
+nesta auditoria.
 
 ## Gaps e próxima ação
 

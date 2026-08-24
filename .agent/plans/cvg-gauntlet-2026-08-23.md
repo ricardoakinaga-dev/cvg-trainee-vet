@@ -99,17 +99,17 @@ The manager aggregate lane owns only the reflection aggregate contract/use case/
 
 ### Task ledger
 
-| ID  | Role                    | Objective                                                                                                        | Dependencies       | Validation                                 | Status  |
-| --- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------ | ------- |
-| S0  | product scout           | Rank requirements/gaps and confirm next slice                                                                    | discovery evidence | read-only report                           | completed |
-| S1  | architecture/data scout | Map current symbols/data and minimal safe aggregate boundary                                                     | current code/docs  | read-only report                           | completed |
-| B0  | Lead                    | Freeze aggregate contract, invariants, and ownership                                                             | S0/S1              | reviewed plan + RED tests                  | completed |
-| B1  | Lead                    | Implement separate aggregate domain/application/persistence/API with existing tables and participant-context RLS | B0                 | focused unit/contract/repository/API tests | completed |
-| B2  | Lead                    | Integrate operations UI states and E2E/axe                                                                       | B1                 | Playwright state matrix                    | completed |
-| V0  | Lead                    | Run live boundary and full regression checks                                                                     | B2                 | exact command evidence                     | completed |
+| ID  | Role                    | Objective                                                                                                        | Dependencies       | Validation                                              | Status    |
+| --- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------- | --------- |
+| S0  | product scout           | Rank requirements/gaps and confirm next slice                                                                    | discovery evidence | read-only report                                        | completed |
+| S1  | architecture/data scout | Map current symbols/data and minimal safe aggregate boundary                                                     | current code/docs  | read-only report                                        | completed |
+| B0  | Lead                    | Freeze aggregate contract, invariants, and ownership                                                             | S0/S1              | reviewed plan + RED tests                               | completed |
+| B1  | Lead                    | Implement separate aggregate domain/application/persistence/API with existing tables and participant-context RLS | B0                 | focused unit/contract/repository/API tests              | completed |
+| B2  | Lead                    | Integrate operations UI states and E2E/axe                                                                       | B1                 | Playwright state matrix                                 | completed |
+| V0  | Lead                    | Run live boundary and full regression checks                                                                     | B2                 | exact command evidence                                  | completed |
 | C0  | fresh critic            | Inspect artifact against relevant bar IDs without editing                                                        | V0                 | focused read-only PASS on persistence/contract boundary | completed |
-| F0  | Lead                    | Fix largest confirmed gap and retest                                                                             | C0                 | focused + regression evidence              | completed |
-| I0  | Lead                    | Reconcile docs/state/log/backlog/manifest and commit                                                             | V0/C0/F0           | release traceability                       | in_progress |
+| F0  | Lead                    | Fix largest confirmed gap and retest                                                                             | C0                 | focused + regression evidence                           | completed |
+| I0  | Lead                    | Reconcile docs/state/log/backlog/manifest and commit                                                             | V0/C0/F0           | release traceability                                    | completed |
 
 ## Implementation strategy for the current milestone
 
@@ -131,10 +131,11 @@ The manager aggregate lane owns only the reflection aggregate contract/use case/
 
 ## Current next action
 
-Reconcile the focused independent C0 PASS with the full verification evidence,
-commit the reviewed files locally, update the artifact SHA, and run the clean
-release traceability gate. The live PostgreSQL boundary remains an explicit
-unavailable check when its required environment variables are absent.
+The focused independent C0 PASS, full verification, local commits, artifact SHA,
+and clean release traceability gate are complete for this slice. The live
+PostgreSQL boundary remains an explicit unavailable check when its required
+environment variables are absent; next work must follow the backlog without
+claiming production or clinical readiness.
 
 ## Progress history
 
