@@ -1483,6 +1483,80 @@ artifacts:
         "git diff --check",
       ]
     status: "verified-with-gaps"
+  - id: "APPEAL-037"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-061",
+        "PRD-RF-064",
+        "PRD-RF-065",
+        "PRD-RF-080",
+        "PRD-RF-102",
+        "UC-018",
+        "RN-064",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0515_appeal_review_queue_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/cvg-gauntlet-2026-08-23.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/appeal-review-queue.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/appeal-review-queue-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/appeal-review-queue-repository.ts",
+        "packages/persistence/src/security-context.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0022_appeal_review_queue_rls.sql",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/operations/page.tsx",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/contracts/src/appeal-review-queue.test.ts",
+        "packages/application/src/appeal-review-queue-use-cases.test.ts",
+        "packages/persistence/src/appeal-review-queue-repository.test.ts",
+        "packages/persistence/src/security-context.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-appeal-review-queue.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "d9dbf2f09c41a763d5607ef61c315f78f587ccb2"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "pnpm exec vitest run packages/contracts/src/appeal-review-queue.test.ts packages/application/src/appeal-review-queue-use-cases.test.ts packages/persistence/src/appeal-review-queue-repository.test.ts packages/persistence/src/security-context.test.ts apps/api/src/http.test.ts apps/api/src/server.test.ts --project unit",
+        "pnpm exec vitest run tests/integration/postgres-appeal-review-queue.test.ts --project integration",
+        "pnpm test:coverage",
+        "pnpm build",
+        "pnpm test:e2e -- tests/e2e/operations-dashboard.spec.ts",
+        "pnpm test:e2e",
+        "pnpm test:integration",
+        "pnpm verify",
+        "pnpm audit --audit-level=high",
+        "pnpm verify:documentation",
+        "pnpm verify:traceability",
+        "pnpm verify:exposure",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "WEB-UX-ACCESSIBILITY-015"
     requirements:
       ["SPEC-0118", "AUD-ITEM-13", "EXPERIENCE-13-01", "WCAG-2.2-AA"]

@@ -155,14 +155,39 @@ clinical/practical claim, RED/GREEN/REFACTOR, full regression, and a fresh
 read-only critic. No migration is preferred unless the existing schema cannot
 support the boundary.
 
+## Next milestone — APPEAL-037 internal review queue
+
+APPEAL-036 is complete only for the participant-owned protocol boundary. The
+next bounded slice is the missing internal read path for an authorized reviewer
+or scoped staff member. It will query appeals by one explicit scope, accept an
+optional allowlisted status and bounded limit, and order by due date, creation
+time, and appeal identifier. It will not assign, decide, recalculate, notify,
+publish, or alter an appeal.
+
+The internal projection may contain only the minimum review metadata needed to
+locate and triage a protocol: appeal/participant/attempt/item identifiers,
+participant justification, dates, status, version, and optional reviewer and
+decision metadata. Answer text, response, score, answer key, source references,
+prompts, and practical/clinical claims remain prohibited. PostgreSQL RLS will
+use a dedicated transactional reviewer-scope context, separate from the
+participant context, and server authorization will remain the decision source.
+
+Frozen slice bar: strict query and response contracts, `REVIEW_APPEAL`
+authorization, scope isolation, deterministic ordering, bounded reads, explicit
+RLS context, no mutation, RED/GREEN/REFACTOR, focused tests, full regression,
+read-only critic attempt, updated traceability, and a clean local release gate.
+Live PostgreSQL is required when the authorized test URL exists; its absence is
+recorded as a gap rather than converted into PASS.
+
 ## Current next action
 
-The two bounded independent read-only critic attempts timed out and were closed;
-no independent PASS is inferred. The local diff is implemented in
-`7ac18365998b1bdd5ff1f2600c783b1352c42f03`, the manifest is bound, and the clean
-release traceability gate passed. The next action is to choose the next local
-slice while retaining the live PostgreSQL boundary and external governance gaps;
-this milestone must not claim production, clinical, pilot, or CPD readiness.
+APPEAL-037 now has RED/GREEN/REFACTOR evidence for strict contracts,
+authorization, application projection, persistence query/context, HTTP, the
+operations surface and E2E/axe. The live PostgreSQL boundary remains skipped
+without `CVG_TEST_DATABASE_URL`; the fresh read-only critic attempt timed out
+without a report and is not a PASS. Next: run the full regression, review the
+diff, bind code/docs to commits and run the clean release traceability gate.
+The milestone must not claim production, clinical, pilot, or CPD readiness.
 
 ## Progress history
 
@@ -173,3 +198,5 @@ this milestone must not claim production, clinical, pilot, or CPD readiness.
 - 2026-08-23: a RED E2E exposed that a corrected attempt/protocol disappeared after reload; the web now restores the own attempt from the journey projection and the participant E2E file passes 9/9. The independent critic was attempted twice after implementation but timed out without a report, so no independent PASS is inferred.
 - 2026-08-23: a review RED exposed that the fallback/API boundary accepted a non-answerable item; `QUESTAO`/`CASO` filtering was added to HTTP, PostgreSQL resolver and web, targeted 62/62 passed, full verification reached 495 tests and E2E 22/22.
 - 2026-08-23: implementation commit `7ac18365998b1bdd5ff1f2600c783b1352c42f03` and documentation commit `d62e513` were created; `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passed with a clean worktree. APPEAL-036 remains `PASS_WITH_GAPS`.
+- 2026-08-23 23:32: APPEAL-037 was selected from the explicit APPEAL-036 follow-up gap. Its first step is RED for an internal, read-only, scope-bound reviewer queue; decision, recalc, notification, provider, clinical, and pilot work remain separate.
+- 2026-08-23 23:54: APPEAL-037 GREEN local materialized the strict queue contract, `REVIEW_APPEAL` case, dedicated RLS context, migration 0022, HTTP route, operations panel and synthetic live-test fixture. Focused 78/78, build 12 workspaces, operations E2E 5/5 and migrations 23/23 passed; live PostgreSQL remains a GAP.

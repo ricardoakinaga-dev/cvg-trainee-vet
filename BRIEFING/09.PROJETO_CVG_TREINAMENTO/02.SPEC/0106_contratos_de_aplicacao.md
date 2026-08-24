@@ -141,3 +141,23 @@ há `hasMore` sem cursor implementado. Prompt, gabarito, rubrica, fontes,
 conteúdo autoral completo e dados de participante não atravessam o contrato da
 fila; eles continuam protegidos pela query interna de autoria. A fila não
 decide por IA/Qdrant nem executa transição de estado.
+
+## 9.2 Fila interna de revisão de contestação — APPEAL-037
+
+`GetAppealReviewQueue` é uma query imutável que recebe a identidade completa da
+sessão e `{ scopeId, status?, limit? }`. O caso de uso exige a capability
+`REVIEW_APPEAL`, conta `ACTIVE` e o escopo solicitado presente na sessão. O
+limite padrão é 50 e o máximo é 100; o status, quando informado, pertence à
+máquina de estados de `AppealState`. O resultado do port retorna registros
+escopados e o caso de uso falha fechado para escopo, status ou identificador
+duplicado inesperado.
+
+O port `AppealReviewQueueReadPort` é separado dos comandos de transição e não
+expõe método de escrita. O adapter PostgreSQL estabelece, dentro da mesma
+transação, o contexto dedicado `cvg.appeal_review_scope_id`, seleciona somente
+metadados da tabela `appeals`, filtra o escopo/status e ordena por
+`dueAt`/`createdAt`/`appealId`. O caso de uso congela a projeção allowlisted com
+justificativa, datas, estado, versão e metadados internos opcionais; resposta,
+nota, gabarito, fontes, prompt, rubrica e alegação de competência prática não
+entram no contrato. A query não atribui revisor, decide, recalcula, notifica,
+publica ou altera o estado da contestação.

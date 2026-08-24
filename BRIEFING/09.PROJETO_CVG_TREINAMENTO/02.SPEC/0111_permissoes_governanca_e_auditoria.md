@@ -159,3 +159,26 @@ O resultado é uma projeção operacional redigida; possuir essa capability não
 concede `MODERATE_CONTENT`, `APPROVE_CLINICAL_CONTENT` ou `PUBLISH_CONTENT`.
 Reenvio, decisão clínica e publicação continuam casos de uso distintos e
 autorizados no servidor.
+
+## 9.1 Contexto de revisão de contestação — APPEAL-037
+
+`REVIEW_APPEAL` é uma capability interna separada de `CREATE_APPEAL` e
+`VIEW_OWN_APPEALS`. Exige conta `ACTIVE`, `MODERATOR`/`ADMIN` ou identidade
+clínica aprovada e `scopeId` presente nos escopos da sessão; `PARTICIPANT` e
+`AUTHOR` não obtêm acesso por URL. A capability somente autoriza a query de
+triagem: atribuição, decisão, recálculo, publicação e notificação continuam
+comandos independentes.
+
+Como `appeals` já possui policy de participante/escopo, a migration
+`0022_appeal_review_queue_rls.sql` adiciona uma policy `SELECT` separada que
+exige `cvg.appeal_review_scope_id = scope_id`. O repositório define esse GUC
+como `LOCAL` na transação antes do `SELECT`, limpa identidade de participante e
+limpa os demais contextos sensíveis. Os setters de participante, sessão,
+convite, recuperação e provisionamento também limpam o contexto de revisão;
+assim, um contexto não pode vazar entre operações. Nenhuma policy de escrita é
+adicionada e PostgreSQL continua sendo a autoridade transacional.
+
+A projeção interna inclui apenas metadados mínimos para localizar/triá-las: IDs
+operacionais, justificativa, datas, estado, versão e metadados opcionais de
+revisor/decisão. Resposta, pontuação, gabarito, fonte, prompt, rubrica e
+alegação de competência prática permanecem fora do `SELECT`, DTO, web e logs.

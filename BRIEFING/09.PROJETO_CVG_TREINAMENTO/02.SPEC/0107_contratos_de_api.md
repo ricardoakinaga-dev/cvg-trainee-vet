@@ -296,3 +296,22 @@ mesma questão da mesma tentativa. Conflito de versão/duplicata permanece
 `state_conflict` (409). A web participante oferece estados de carregamento,
 vazio, erro/retry, terminal e formulário sem transportar identificadores
 internos para o texto visual.
+
+## 15. Fila interna de revisão de contestação — APPEAL-037
+
+`GET /api/v1/internal/appeals/review-queue` exige sessão autenticada e query
+strict `{ scopeId: uuid, status?: AppealStatus, limit?: 1..100 }`, com limite
+padrão 50. O servidor valida `REVIEW_APPEAL` e o pertencimento do escopo antes
+de chamar a aplicação. Chaves de query desconhecidas, status não allowlisted,
+UUID inválido e limite fora da faixa retornam `422`; participante, autor,
+conta inativa ou equipe fora do escopo retornam `403`; ausência da dependência
+retorna `500` sem detalhes internos.
+
+O envelope `kind: appeal_review_queue` contém `scopeId`, `generatedAt`, filtros
+normalizados e itens ordenados por prazo, criação e identificador. Cada item
+limita-se a `appealId`, `participantId`, `attemptId`, `itemId`, `justification`,
+`createdAt`, `dueAt`, `status`, `version`, `reviewerId` opcional e `decision`
+opcional. A rota é somente leitura e não retorna `answer`, `response`, `score`,
+`answerKey`, `sourceRefs`, `prompt`, rubrica, fonte ou claim de competência
+prática. A superfície de operações usa somente o necessário para triagem e não
+renderiza UUIDs internos; não há botão ou comando de mutação nesta fatia.

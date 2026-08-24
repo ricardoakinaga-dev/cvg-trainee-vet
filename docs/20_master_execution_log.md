@@ -4770,3 +4770,226 @@ READY_FOR_NEXT_STEP
 
 Executar a prova live quando o ambiente for disponibilizado e escolher a próxima
 fatia local pelo backlog, mantendo o boundary participante redigido.
+
+## 2026-08-23 — APPEAL-037: abertura da fila interna de revisão
+
+### TIMESTAMP
+
+2026-08-23 23:32:04 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto e governança de contestação
+
+### SPRINT
+
+APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
+
+### TASK
+
+APPEAL-2026-08-23-G — abrir uma leitura interna, redigida e somente leitura dos protocolos de contestação
+
+### ACTION
+
+O backlog e o audit 0514 foram relidos. A próxima lacuna local é a consulta de protocolos para `REVIEW_APPEAL`, por escopo explícito, com status e limite allowlisted, sem atribuição, decisão, recálculo, notificação ou publicação. A necessidade de um contexto RLS dedicado foi registrada porque a policy atual de `appeals` é participant/scope-only.
+
+### RESULT
+
+APPEAL-037 foi aberto como `IN_PROGRESS`; nenhum código de produto foi alterado nesta abertura. A projeção interna poderá conter justificativa e metadados mínimos de revisão, mas não resposta, score, gabarito, fonte, prompt ou claim clínico/prático.
+
+### DECISIONS
+
+O primeiro passo obrigatório é RED de contrato, autorização, aplicação, persistência/RLS e HTTP. PostgreSQL live, provider/MFA, auditoria operacional, decisão humana, recálculo, notificações, publicação clínica e piloto continuam dependências separadas; ausência de ambiente live não será mascarada.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever os testes RED e materializar o contrato mínimo antes de implementar o caso de uso ou a rota.
+
+## 2026-08-23 — APPEAL-037: GREEN local da fila interna
+
+### TIMESTAMP
+
+2026-08-23 23:54:17 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 — jornada de produto e governança de contestação
+
+### SPRINT
+
+APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
+
+### TASK
+
+APPEAL-2026-08-23-H — implementar e verificar a leitura interna redigida
+
+### ACTION
+
+Depois do RED, foi materializado o contrato strict, o caso de uso com
+`REVIEW_APPEAL`, o port PostgreSQL somente leitura, o contexto transacional
+`cvg.appeal_review_scope_id`, a migration `0022_appeal_review_queue_rls.sql`,
+a rota `GET /api/v1/internal/appeals/review-queue` e o painel interno de
+operações. A UI não renderiza UUIDs brutos nem conteúdo protegido; nenhuma
+decisão, recálculo, notificação ou publicação foi adicionada.
+
+### RESULT
+
+O foco passou em 6 arquivos/78 testes; `pnpm build` passou nos 12 workspaces;
+`pnpm test:e2e -- tests/e2e/operations-dashboard.spec.ts` passou em 5/5,
+incluindo axe; `pnpm verify:migrations` passou em 23/23. O teste
+`tests/integration/postgres-appeal-review-queue.test.ts` foi preparado e ficou
+1/1 skipped por ausência de `CVG_TEST_DATABASE_URL`; isso permanece GAP e não
+é contado como evidência live.
+
+### DECISIONS
+
+O backlog, SPEC 0106/0107/0111 e audit 0515 foram atualizados com o boundary e
+os gaps. A crítica independente foi solicitada separadamente e só será
+registrada como PASS se produzir relatório; full verify, commit e release
+traceability ainda estão pendentes.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar a regressão completa, revisar o relatório crítico e o diff, ligar o
+artefato a commits reversíveis e rodar o release gate em worktree limpo.
+
+## 2026-08-24 — APPEAL-037: regressão local completa
+
+### TIMESTAMP
+
+2026-08-24 00:02:14 -03:00
+
+### ENGINE
+
+BUILD / TDD / GAUNTLET LOOP / RUNTIME CONTROLLER
+
+### SPRINT
+
+APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
+
+### TASK
+
+APPEAL-2026-08-23-I — executar o gate completo após GREEN e documentação
+
+### ACTION
+
+Foi executado `pnpm verify` após corrigir a formatação apontada no primeiro
+gate. O formatter foi aplicado somente aos quatro arquivos da implementação
+que faltavam no check dirigido; o commit de código foi atualizado para
+`d9dbf2f09c41a763d5607ef61c315f78f587ccb2`.
+
+### RESULT
+
+`pnpm verify` passou: 106 arquivos/508 testes, 26 skips; cobertura 84,50%
+statements, 80,35% branches, 85,64% functions e 85,21% lines; contratos 62/62,
+worker 24/24, migrations 23/23, secrets, arquitetura, documentação,
+product-definition e exposure passaram. O E2E completo, build final,
+`pnpm audit` e o release traceability gate ainda serão executados.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar build/E2E completo e audit de dependências; depois commitar o conjunto
+documental e rodar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com
+worktree limpo.
+
+## 2026-08-24 — APPEAL-037: E2E, integração configurada e audit de dependências
+
+### TIMESTAMP
+
+2026-08-24 00:04:17 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET LOOP / RUNTIME CONTROLLER
+
+### SPRINT
+
+APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
+
+### TASK
+
+APPEAL-2026-08-23-J — fechar regressão e segurança local
+
+### ACTION
+
+Executados `pnpm build`, `pnpm test:e2e`, `pnpm test:integration` e
+`pnpm audit --audit-level=high` após o gate completo.
+
+### RESULT
+
+Build passou nos 12 workspaces; E2E completo passou 22/22; integração passou em
+8 arquivos/20 testes, com 24 arquivos/26 testes skipped pela ausência de
+ambiente live; o cenário novo da fila ficou 1/1 skipped sem
+`CVG_TEST_DATABASE_URL`; audit de dependências informou `No known
+vulnerabilities found`. Nenhum skip foi contado como PASS live.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Revisar o diff documental, commitar audit/SPEC/estado/log/backlog/manifesto e
+executar o release traceability gate em worktree limpo.
+
+## 2026-08-24 — APPEAL-037: gate completo após documentação final
+
+### TIMESTAMP
+
+2026-08-24 00:06:11 -03:00
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### SPRINT
+
+APPEAL-037 / AUD-P1-001 — fila interna de contestação por escopo
+
+### TASK
+
+APPEAL-2026-08-23-K — confirmar o estado final antes do commit documental
+
+### ACTION
+
+Reexecutado `pnpm verify` depois de atualizar audit 0515, SPEC 0106/0107/0111,
+estado, log, backlog, plano e manifesto.
+
+### RESULT
+
+O gate final passou com 106 arquivos/508 testes e 26 skips; cobertura 84,50%
+statements, 80,35% branches, 85,64% functions e 85,21% lines. Formatação,
+CI contract, lint, typecheck, contratos 62/62, worker 24/24, migrations 23/23,
+secrets, traceability estrutural, arquitetura, documentação,
+product-definition e exposure passaram. O build, E2E 22/22, integração
+configurada 8/20 com 26 skips e audit de dependências já estão registrados;
+live PostgreSQL/RLS segue GAP explícito.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Revisar e commitar o conjunto documental; depois rodar o release traceability
+gate com worktree limpo e registrar o SHA documental.

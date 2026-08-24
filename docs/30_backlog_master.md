@@ -390,6 +390,26 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 - gaps explícitos: atribuição/queue de revisor, justificativa da decisão, recálculo versionado de tentativas afetadas, preservação e projeção de versões anteriores, identificação/notificação de afetados, auditoria operacional consultável, entrega externa, clinical review e piloto continuam fora da primeira fatia
 - próxima ação: release traceability passou em worktree limpo no commit de implementação `7ac18365998b1bdd5ff1f2600c783b1352c42f03` + documentação `d62e513`; quando houver ambiente autorizado executar live PostgreSQL e, localmente, escolher fila interna de decisão/recálculo ou filtros/paginação/exportação
 
+### APPEAL-037 — Fila interna de revisão de contestação
+
+- título: permitir a consulta interna, redigida e escopada dos protocolos de contestação
+- descrição: materializar a leitura de protocolos por um escopo explícito, com filtro opcional de status, limite máximo 100 e ordenação determinística; a rota não atribui revisor, decide, recalcula, notifica, publica ou altera qualquer estado
+- módulo: contestação / revisão interna / contratos / persistência / API / web
+- dependência: `APPEAL-036`; estado `AppealState`; capability `REVIEW_APPEAL`; contexto RLS transacional separado do contexto de participante
+- fase: BUILD — Phase 3–5 / governança de contestação
+- risco: crítico — justificativa e identidade interna são dados sensíveis; leitura cruzada de escopo ou exposição de resposta/gabarito pode comprometer a revisão independente
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- requisitos: `PRD-RF-061`; `PRD-RF-064`; `PRD-RF-065`; `PRD-RF-080`; `PRD-RF-102`; UC-018; RN-064; SPEC-0106; SPEC-0107; SPEC-0111
+- critério de pronto: RED/GREEN/REFACTOR para query strict, status/limite, capability, isolamento por escopo, ordenação dueAt/createdAt/id, projeção allowlisted, contexto RLS dedicado, ausência de mutação, testes HTTP/persistência/aplicação, E2E/axe se houver superfície, full regression, traceability e release gate limpo
+- projeção interna permitida: `appealId`, `participantId`, `attemptId`, `itemId`, `justification`, `createdAt`, `dueAt`, `status`, `version`, `reviewerId` opcional e `decision` opcional
+- projeção proibida: `answer`, `response`, `score`, `answerKey`, `sourceRefs`, `prompt`, rubrica interna, claim de competência prática ou qualquer payload de conteúdo autoral; decisão e recálculo continuam fora desta fatia
+- evidência: `BRIEFING/04.AUDIT/0515_appeal_review_queue_audit.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md`; `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md`; `packages/contracts/src/appeal-review-queue.ts`; `packages/application/src/appeal-review-queue-use-cases.ts`; `packages/persistence/src/appeal-review-queue-repository.ts`; `packages/persistence/drizzle/0022_appeal_review_queue_rls.sql`; `apps/api/src/http.ts`; `apps/web/app/operations/page.tsx`
+- testes: `packages/contracts/src/appeal-review-queue.test.ts`; `packages/application/src/appeal-review-queue-use-cases.test.ts`; `packages/persistence/src/appeal-review-queue-repository.test.ts`; `packages/persistence/src/security-context.test.ts`; `apps/api/src/http.test.ts`; `apps/api/src/server.test.ts`; `tests/integration/postgres-appeal-review-queue.test.ts`; `tests/e2e/operations-dashboard.spec.ts`
+- resultado: query strict e projeção allowlisted passam; `REVIEW_APPEAL` exige staff ativo e escopo; persistência usa contexto RLS dedicado, seleciona apenas metadados de `appeals` e ordena por prazo/criação/id; a rota interna e a UI são somente leitura, sem conteúdo protegido; foco 6 arquivos/78 testes, `pnpm verify` 106/508 com 26 skips, build 12 workspaces, E2E completo 22/22, integração configurada 8 arquivos/20 testes PASS com 24 arquivos/26 skips, audit de dependências sem vulnerabilidades e migration 23/23 passaram
+- gaps explícitos: prova PostgreSQL/RLS live sem `CVG_TEST_DATABASE_URL`, atribuição humana, justificativa da decisão, recálculo versionado, preservação de versões, identificação/notificação, auditoria operacional consultável, entrega externa, provider/MFA, aprovação clínica, piloto e operação de produção
+- próxima ação: repetir `pnpm verify` e gates de segurança/exposição/documentação, registrar a crítica independente, ligar o artefato ao commit e executar o release traceability gate; não simular o live ausente
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais
