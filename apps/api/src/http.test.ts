@@ -2192,6 +2192,31 @@ describe("API HTTP boundary", () => {
     });
     expect(JSON.stringify(response.body)).not.toContain("participantId");
 
+    const clinicalResponse = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/feedback",
+        query: { scopeId, status: "NOVO", limit: "25" },
+        body: undefined,
+      },
+      dependencies({
+        approvedClinicalApproverId: "44444444-4444-4444-8444-444444444444",
+        authenticate: async () => ({
+          principalId: "44444444-4444-4444-8444-444444444444",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [scopeId],
+        }),
+        getFeedbackTriageQueue,
+      }),
+    );
+    expect(clinicalResponse.status).toBe(200);
+    expect(getFeedbackTriageQueue).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        approvedClinicalApproverId: "44444444-4444-4444-8444-444444444444",
+      }),
+    );
+
     const participant = await handleApiRequest(
       {
         method: "GET",
@@ -2202,7 +2227,7 @@ describe("API HTTP boundary", () => {
       dependencies({ getFeedbackTriageQueue }),
     );
     expect(participant.status).toBe(403);
-    expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(1);
+    expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(2);
 
     const invalid = await handleApiRequest(
       {
@@ -2222,7 +2247,7 @@ describe("API HTTP boundary", () => {
       }),
     );
     expect(invalid.status).toBe(422);
-    expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(1);
+    expect(getFeedbackTriageQueue).toHaveBeenCalledTimes(2);
   });
 
   it("returns the scoped appeal review queue without mutation or public fields", async () => {
