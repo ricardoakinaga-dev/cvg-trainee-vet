@@ -513,7 +513,7 @@ backfill inventado.
 - evidência: `BRIEFING/04.AUDIT/0538_feedback_triage_metadata_audit.md`, manifesto `FEEDBACK-054`, commits `ea81eed1b42f6807938c2c83520833f86b30a3f7` e `9eedb2518f7b777330fe1787825df64416827dac`; focal 13/140, coverage 141/695, 32/32 E2E, migrations 42/42 e gates estáticos finais registrados no fechamento documental
 - resultado: prioridade e autoatribuição/liberação estão implementadas localmente com preservação de status, CAS, histórico `METADATA_ALTERADO`, auditoria metadata-only e projeção interna allowlisted; a prova live não foi executada sem `CVG_TEST_DATABASE_URL`
 - gaps remanescentes: PostgreSQL/RLS/grants/trigger/concurrency live, browser→API→PostgreSQL, produção, workflow remoto same-SHA, observabilidade operacional, provider/MFA, resposta/SLA/notificação, atribuição a terceiro e aprovação clínica
-- próxima ação: executar release gate em worktree limpo e então preparar prova live autorizada ou selecionar a próxima fatia bounded; não declarar release
+- próxima ação: release gate `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou no commit `d460ba04bb459f502ef59875242a091a3c1a5beb`; preparar prova live autorizada ou selecionar a próxima fatia bounded; não declarar release
 
 ### CURRICULUM-RUNTIME-AUTHZ-050 — Isolamento de avaliação curricular por escopo
 

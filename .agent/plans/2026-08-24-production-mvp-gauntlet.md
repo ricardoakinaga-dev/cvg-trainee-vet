@@ -181,10 +181,14 @@ a aprovação clínica, piloto ou release produtivo.
   141/695, build 12 workspaces, migrations 42/42 e E2E 32/32 passaram.
   PostgreSQL/RLS live, produção, resposta/SLA/notificação, atribuição a
   terceiro e gates humanos continuam gaps explícitos.
-- [ ] Executar os gates estáticos finais, fechar auditoria/manifesto em commit
-  documental limpo e repetir `CVG_TRACEABILITY_RELEASE=true
-  pnpm verify:traceability`; em seguida preparar prova live autorizada ou a
-  próxima fatia bounded sem declarar release.
+- [x] (2026-08-24T22:30:46-03:00) Executar os gates estáticos finais, fechar
+  auditoria/manifesto no commit documental `d460ba04bb459f502ef59875242a091a3c1a5beb`
+  e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree
+  limpo. O próximo passo é prova live autorizada ou outra fatia bounded, sem
+  declarar release.
+- [ ] Preparar a prova live de PostgreSQL/RLS/grants/trigger/CAS com ambiente
+  autorizado ou selecionar a próxima lacuna bounded; manter gates humanos,
+  produção e piloto explicitamente fora.
 
 ## Surprises & Discoveries
 

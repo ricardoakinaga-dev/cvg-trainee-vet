@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
 - current_sprint: FEEDBACK-054 — prioridade e atribuição escopadas de relatos
-- current_task: fechar a auditoria, rastreabilidade e gates documentais de FEEDBACK-054 após implementação local bounded
+- current_task: preparar a prova live autorizada ou selecionar a próxima fatia bounded após FEEDBACK-054
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: implementar FEEDBACK-054 no commit `ea81eed1b42f6807938c2c83520833f86b30a3f7`, endurecer o E2E no commit `9eedb2518f7b777330fe1787825df64416827dac` e registrar auditoria/manifesto em fechamento documental ainda em execução.
-- next_action: executar gates estáticos finais, commit documental limpo e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois preparar prova live autorizada sem declarar release.
+- last_completed_action: fechar FEEDBACK-054 no commit documental `d460ba04bb459f502ef59875242a091a3c1a5beb` e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo.
+- next_action: preparar a prova live autorizada de PostgreSQL/RLS/grants/trigger/CAS ou selecionar a próxima fatia bounded; manter sem release, piloto ou publicação clínica.
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T22:20:59-0300
+- last_update: 2026-08-24T22:30:46-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `9eedb2518f7b777330fe1787825df64416827dac`; código funcional `FEEDBACK-054` em `ea81eed1b42f6807938c2c83520833f86b30a3f7`, hardening E2E em `9eedb2518f7b777330fe1787825df64416827dac`, auditoria 0538 e documentação de controle em fechamento; o preflight live saiu 2 sem ambiente
+- head: `d460ba04bb459f502ef59875242a091a3c1a5beb`; código funcional `FEEDBACK-054` em `ea81eed1b42f6807938c2c83520833f86b30a3f7`, hardening E2E em `9eedb2518f7b777330fe1787825df64416827dac`, auditoria 0538 e manifesto fechados; o preflight live saiu 2 sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: alterações documentais e de manifesto ainda não commitadas; sem push/deploy
+- worktree: limpo após o commit documental e release traceability; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-054` está GREEN/REFACTOR com contrato strict, capability `MANAGE_FEEDBACK_METADATA`, identidade server-side, autoatribuição bounded, CAS, histórico `METADATA_ALTERADO`, auditoria metadata-only, trigger/policy SQL e projeção interna sem UUID na web; focal 13 arquivos/140 testes; coverage 141/695/35 skips com 84,36% statements, 80,36% branches, 86,39% functions e 85,05% lines; build 12 workspaces; typecheck/lint/format; migrations 42/42; operations E2E 6/6; E2E 32/32; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; gates estáticos finais e traceability release ainda serão fechados; não há claim live de ACL/RLS/grants/trigger efetivo, concorrência, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `FEEDBACK-054` está GREEN/REFACTOR com contrato strict, capability `MANAGE_FEEDBACK_METADATA`, identidade server-side, autoatribuição bounded, CAS, histórico `METADATA_ALTERADO`, auditoria metadata-only, trigger/policy SQL e projeção interna sem UUID na web; focal 13 arquivos/140 testes; coverage 141/695/35 skips com 84,36% statements, 80,36% branches, 86,39% functions e 85,05% lines; build 12 workspaces; typecheck/lint/format; migrations 42/42; contracts 86/86; worker 27/27; operations E2E 6/6; E2E 32/32; `pnpm verify`, audit high e gates estáticos passaram; release traceability passou no commit `d460ba04bb459f502ef59875242a091a3c1a5beb`; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, concorrência, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 

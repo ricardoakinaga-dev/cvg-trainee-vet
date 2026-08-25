@@ -149,8 +149,10 @@ skipped, coverage 84,36% statements, 80,36% branches, 86,39% functions e
 contract, architecture, documentation, product-definition, exposure e
 traceability estrutural passaram. `pnpm audit --audit-level=high` não encontrou
 vulnerabilidades conhecidas. O build final dos 12 workspaces e
-`git diff --check` também passaram. O release mode do traceability será
-repetido após o commit documental em worktree limpo.
+`git diff --check` também passaram. Após o commit documental `d460ba0`,
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo e confirmou que os artefatos atuais resolvem para commits alcançáveis e
+paths rastreados.
 
 ## 9. Gaps e remediação
 
