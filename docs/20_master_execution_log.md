@@ -250,7 +250,9 @@ restore/failover, provider/MFA, aprovação clínica ou piloto.
 
 ### NEXT ACTION
 
-Executar os gates documentais em worktree limpo e, depois, selecionar a
+`pnpm verify:documentation`, `CVG_TRACEABILITY_RELEASE=true
+pnpm verify:traceability`, `git diff --check` e worktree limpo passaram após o
+commit documental `ec62ded44e6f3e55c2ed1f310ee237a6d987e605`. Selecionar a
 próxima lacuna local bounded sem declarar o produto 100% concluído.
 
 ### STATUS

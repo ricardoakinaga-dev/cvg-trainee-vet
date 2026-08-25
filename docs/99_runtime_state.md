@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: consolidar `APPEAL-043` no commit funcional `2277a32cb2a88345903d7fd5a54b13f1da629601`, com contrato/aplicação/persistência/API/web, hardening independente e evidência local de 678 testes, 32 E2E, build, lint, typecheck, coverage e gates estáticos; auditoria 0537 e manifesto estão preparados para o gate documental.
-- next_action: executar `pnpm verify:documentation`, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`, `git diff --check` e revisar o worktree; depois selecionar a próxima lacuna local bounded, mantendo os bloqueios live/humanos explícitos.
+- last_completed_action: consolidar a documentação de `APPEAL-043` no commit `ec62ded44e6f3e55c2ed1f310ee237a6d987e605` após o commit funcional `2277a32cb2a88345903d7fd5a54b13f1da629601`; `verify:documentation`, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`, `git diff --check` e worktree limpo confirmados.
+- next_action: selecionar a próxima lacuna local bounded, mantendo os bloqueios live/humanos explícitos e sem declarar release ou produto 100% concluído.
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T21:12:00-03:00
+- last_update: 2026-08-24T21:15:04-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `2277a32cb2a88345903d7fd5a54b13f1da629601` no código funcional de `APPEAL-043`; auditoria 0537, SPEC, backlog, log, runtime state, plano e manifesto estão em consolidação documental; o preflight live continua sem ambiente
+- head: `ec62ded44e6f3e55c2ed1f310ee237a6d987e605`; código funcional `APPEAL-043` em `2277a32cb2a88345903d7fd5a54b13f1da629601`, auditoria 0537, SPEC, backlog, log, runtime state, plano e manifesto commitados; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: commit funcional presente; documentação desta fatia aguardando o commit de fechamento; sem push/deploy
+- worktree: limpo após o commit funcional e documental; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `APPEAL-043` está GREEN/REFACTOR com contrato strict, capability `REVIEW_APPEAL`, `REPEATABLE READ`, join explícito de escopo, template de rota, query duplicate rejection, conflito pós-decisão e race web cobertos; coverage 137/678/35 skips com 84,44% statements, 80,40% branches, 86,39% functions e 85,15% lines; build 12 workspaces; typecheck/lint/Prettier; contratos 83/83; worker 27/27; operations E2E 6/6; E2E 32/32; migrations 41/41; secrets, CI contract, architecture, product-definition, exposure e audit high passaram; preflight `pnpm test:integration:live` continua saindo 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `APPEAL-043` está GREEN/REFACTOR com contrato strict, capability `REVIEW_APPEAL`, `REPEATABLE READ`, join explícito de escopo, template de rota, query duplicate rejection, conflito pós-decisão e race web cobertos; coverage 137/678/35 skips com 84,44% statements, 80,40% branches, 86,39% functions e 85,15% lines; build 12 workspaces; typecheck/lint/Prettier; contratos 83/83; worker 27/27; operations E2E 6/6; E2E 32/32; migrations 41/41; secrets, CI contract, architecture, product-definition, exposure e audit high passaram; documentação e rastreabilidade release passaram no worktree limpo do commit `ec62ded44e6f3e55c2ed1f310ee237a6d987e605`; preflight `pnpm test:integration:live` continua saindo 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 
