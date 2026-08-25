@@ -2769,6 +2769,91 @@ artifacts:
         "pnpm test:integration:live (exit 2 before connection: CVG_TEST_DATABASE_URL is absent)",
       ]
     status: "verified-with-gaps"
+  - id: "APPEAL-043"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-064",
+        "PRD-RF-065",
+        "PRD-RF-080",
+        "UC-018",
+        "SPEC-0104",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0537_appeal_decision_impact_preview_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0104_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/appeal-decision-impact.ts",
+        "packages/contracts/src/appeal-decision-impact.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/appeal-decision-impact-use-cases.ts",
+        "packages/application/src/appeal-decision-impact-use-cases.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/appeal-decision-impact-repository.ts",
+        "packages/persistence/src/appeal-decision-impact-repository.test.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/api/src/server.test.ts",
+        "apps/web/app/operations/page.tsx",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    tests:
+      [
+        "packages/contracts/src/appeal-decision-impact.test.ts",
+        "packages/application/src/appeal-decision-impact-use-cases.test.ts",
+        "packages/persistence/src/appeal-decision-impact-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    commit: "2277a32cb2a88345903d7fd5a54b13f1da629601"
+    artifacts:
+      ["coverage/", "playwright-report/", "test-results/playwright.xml"]
+    verification:
+      [
+        "RED: contrato/aplicação/persistência/API sem módulo/rota antes da implementação",
+        "GREEN focal final: 5 arquivos/94 testes",
+        "crítica independente Carver: P1/P2 de acoplamento web, race, linhagem, snapshot, estados, rota e query tratados",
+        "pnpm test:coverage (137 arquivos PASS/29 SKIPPED; 678 testes PASS/35 SKIPPED; 84.44% statements, 80.40% branches, 86.39% functions, 85.15% lines)",
+        "pnpm test:contract (29 arquivos/83 testes)",
+        "pnpm test:worker (4 arquivos/27 testes)",
+        "pnpm typecheck",
+        "pnpm lint",
+        "pnpm format:check",
+        "pnpm build (12 workspaces)",
+        "pnpm test:e2e -- tests/e2e/operations-dashboard.spec.ts (6/6)",
+        "pnpm test:e2e (32/32)",
+        "pnpm verify:migrations (41 migrations; latest 0040_feedback_queue_keyset_indexes)",
+        "pnpm verify:secrets",
+        "pnpm verify:ci-contract",
+        "pnpm verify:architecture",
+        "pnpm verify:product-definition",
+        "pnpm verify:exposure",
+        "pnpm audit --audit-level=high (no known vulnerabilities)",
+        "pnpm test:integration:live (exit 2 before connection: CVG_TEST_DATABASE_URL is absent)",
+        "git diff --check",
+      ]
+    status: "verified-with-gaps"
   - id: "EDITORIAL-QUEUE-027"
     requirements:
       [

@@ -197,6 +197,102 @@ O slice editorial fica `COMPLETED_WITH_GAPS`/pronto para próxima fatia técnica
 
 READY_FOR_NEXT_STEP
 
+## 2026-08-24 — APPEAL-043: fechamento local do preview read-only
+
+### TIMESTAMP
+
+2026-08-24T21:12:00-03:00
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / governança de contestação
+
+APPEAL-043 / AUD-P1-001 / UC-018
+
+### ACTION
+
+Executado TDD RED → GREEN → REFACTOR para contrato, aplicação, persistência,
+HTTP e operations web. O preview candidato de `ANULAR_ITEM` foi consolidado no
+commit `2277a32cb2a88345903d7fd5a54b13f1da629601`, com leitura strict,
+autorização `REVIEW_APPEAL`, escopo derivado server-side, `REPEATABLE READ`,
+linhagem explícita pela atividade, bloqueio pós-decisão, template de rota,
+rejeição de query duplicada e invalidação de respostas web obsoletas.
+
+### RESULT
+
+O recorte não escreve estado, resultado, outbox, histórico ou auditoria e não
+projeta score, resposta, gabarito, fonte, rationale, competência ou contagem de
+afetados. A crítica independente Carver encontrou P1/P2 de acoplamento web,
+race, linhagem, snapshot, estado terminal, telemetria e parser; as correções
+foram implementadas e a interleaving de escopo foi adicionada ao E2E.
+Auditoria `0537_appeal_decision_impact_preview_audit.md` e entrada
+`APPEAL-043` do manifesto foram criadas.
+
+### EVIDÊNCIA
+
+`pnpm test:coverage`: 137 arquivos PASS/29 SKIPPED, 678 testes PASS/35
+SKIPPED, 84,44% statements, 80,40% branches, 86,39% functions e 85,15%
+lines. `pnpm test:contract` 29/83; `pnpm test:worker` 4/27; build 12
+workspaces; operations E2E 6/6; E2E completa 32/32; migrations 41/41;
+typecheck, lint, format, secrets, CI contract, architecture,
+product-definition, exposure e audit high passaram.
+
+### LIMITES
+
+`pnpm test:integration:live` continua bloqueado antes da conexão pela ausência
+de `CVG_TEST_DATABASE_URL`; não há evidência PostgreSQL/RLS/grants/owner,
+concorrência live, browser→API→PostgreSQL, workflow remoto same-SHA, produção,
+restore/failover, provider/MFA, aprovação clínica ou piloto.
+
+### NEXT ACTION
+
+Executar os gates documentais em worktree limpo e, depois, selecionar a
+próxima lacuna local bounded sem declarar o produto 100% concluído.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-24 — APPEAL-043: abertura do enquadramento read-only
+
+### TIMESTAMP
+
+2026-08-24T20:20:00-03:00
+
+### ACTION
+
+Abrir a próxima fatia local bounded após o gate de release de `FEEDBACK-043`.
+Inspecionar `Appeal`, `Attempt` e `AssessmentResult` e derivar somente dos
+contratos aprovados um preview interno de impacto candidato a `ANULAR_ITEM`.
+
+### RESULT
+
+O PRD/SPEC autoriza revisão interna escopada, mas a fatia existente não cria
+recálculo para `ANULAR_ITEM`, não altera tentativa/resultado, não publica decisão
+clínica e não notifica afetados. O enquadramento inicial será uma leitura
+strict, server-side e sem mutação, com fatos persistidos e limites explícitos;
+score, resposta, gabarito, fonte e competência prática não entram no preview.
+
+### LIMITES
+
+`CVG_TEST_DATABASE_URL` e demais ambientes live continuam ausentes; não há
+claim de PostgreSQL/RLS/grants/concorrência live, workflow remoto, produção,
+aprovação clínica ou piloto.
+
+### NEXT ACTION
+
+Fixar o contrato e escrever testes RED para autorização, escopo derivado,
+ausência de mutação e resposta fechada antes de implementar aplicação,
+persistência e HTTP.
+
+### STATUS
+
+IN_PROGRESS
+
 ## 2026-08-24 — JOURNEY-045: abertura da fatia CTA/deep link
 
 ### TIMESTAMP

@@ -155,9 +155,20 @@ a aprovação clínica, piloto ou release produtivo.
   em E2E e corrigidos. Coverage 84,24%/80,14%/86,20%/84,95%, 667 testes
   passaram/35 skipped, build 12 workspaces, E2E 31/31 e gates estáticos passaram;
   live PostgreSQL/RLS/grants e produção continuam gaps.
-- [ ] (próxima ação) Abrir `APPEAL-043`: preview de impacto read-only para
-  `ANULAR_ITEM`, sem executar decisão clínica, publicação ou mutação antes de
-  contrato e autoridade explícitos.
+- [x] (2026-08-24T20:20:00-03:00) Abrir `APPEAL-043` e registrar o enquadramento
+  local: preview interno strict/read-only por `appealId`, escopo derivado do
+  protocolo persistido, sem score/resposta/gabarito/fonte, sem decisão,
+  recálculo, publicação ou mutação.
+- [x] (2026-08-24T21:12:00-03:00) Fechar `APPEAL-043` no commit
+  `2277a32cb2a88345903d7fd5a54b13f1da629601`: preview strict/read-only,
+  `REVIEW_APPEAL`, escopo derivado, `REPEATABLE READ`, linhagem por atividade,
+  conflito pós-decisão, template de rota, query duplicate rejection e race web.
+  RED/GREEN/REFACTOR, critic independente, coverage 137/678/35 skips, build,
+  32/32 E2E e gates estáticos passaram; auditoria 0537 e traceability foram
+  atualizadas. PostgreSQL/RLS live, produção, remoto same-SHA e clínica seguem
+  gaps explícitos.
+- [ ] Selecionar a próxima lacuna local bounded após o gate documental de
+  `APPEAL-043`, sem declarar release ou produto 100% concluído.
 
 ## Surprises & Discoveries
 

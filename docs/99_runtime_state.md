@@ -9,8 +9,8 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: FEEDBACK-043 — encerramento documental da paginação por cursor
-- current_task: abrir a próxima lacuna local bounded `APPEAL-043` após o gate de release documental
+- current_sprint: APPEAL-043 — fechamento do preview de impacto de `ANULAR_ITEM`
+- current_task: consolidar auditoria, rastreabilidade e gates locais; então selecionar a próxima lacuna bounded
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: implementar `FEEDBACK-043` em `ea9ee122676be620652f08019919ca59ed05fa02`, consolidar auditoria/SPEC/backlog/log/plano/runtime/traceability em `d8e1ba1`, e fechar o runtime em `d6e4630ee92ebebd2b3257a157769774e18d156d`; corrigir, após crítica Goodall, cursor obsoleto no retry e reload tardio de transição; verificar coverage 134/667/35 skips com 84,24% statements, 80,14% branches, 86,20% functions e 84,95% lines, build 12 workspaces, E2E 31/31, migrations 41/41 e gates estáticos.
-- next_action: abrir `APPEAL-043` como próxima lacuna local bounded; manter o live preflight pendente por ambiente/autoridade e sem declarar release
+- last_completed_action: consolidar `APPEAL-043` no commit funcional `2277a32cb2a88345903d7fd5a54b13f1da629601`, com contrato/aplicação/persistência/API/web, hardening independente e evidência local de 678 testes, 32 E2E, build, lint, typecheck, coverage e gates estáticos; auditoria 0537 e manifesto estão preparados para o gate documental.
+- next_action: executar `pnpm verify:documentation`, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`, `git diff --check` e revisar o worktree; depois selecionar a próxima lacuna local bounded, mantendo os bloqueios live/humanos explícitos.
 
 ## BLOQUEIOS
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T20:13:18-03:00
+- last_update: 2026-08-24T21:12:00-03:00
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `d8e1ba1`; `FEEDBACK-HISTORY-053` tem hardening SQL, contexto de auditoria e remediações P1 consolidados; `FEEDBACK-043` tem cursor HMAC, keyset, índices 0040, meta HTTP, navegação e hardening de concorrência web; auditoria e rastreabilidade estão consolidadas; o preflight live continua sem ambiente
+- head: `2277a32cb2a88345903d7fd5a54b13f1da629601` no código funcional de `APPEAL-043`; auditoria 0537, SPEC, backlog, log, runtime state, plano e manifesto estão em consolidação documental; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: código e documentação commitados; sem push/deploy
+- worktree: commit funcional presente; documentação desta fatia aguardando o commit de fechamento; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-HISTORY-053` base e hardening estão GREEN/REFACTOR; actor/request/correlation server-owned, `audit_entries` atômico, migrations 0038/0039, linhagem e rollback estão cobertos localmente; `FEEDBACK-043` está GREEN/REFACTOR com cursor HMAC bound, keyset `limit + 1`, índices 0040, meta HTTP, retry/race web cobertos por E2E; coverage 134/667/35 skips com 84,24% statements, 80,14% branches, 86,20% functions e 84,95% lines; build 12 workspaces; typecheck/lint, Prettier, migration 41/41, contratos 81/81, worker 27/27, operations E2E 5/5, E2E 31/31 e gates estáticos/documentais passaram; `verify:documentation` e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passaram em worktree limpo no commit `d6e4630ee92ebebd2b3257a157769774e18d156d`; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `APPEAL-043` está GREEN/REFACTOR com contrato strict, capability `REVIEW_APPEAL`, `REPEATABLE READ`, join explícito de escopo, template de rota, query duplicate rejection, conflito pós-decisão e race web cobertos; coverage 137/678/35 skips com 84,44% statements, 80,40% branches, 86,39% functions e 85,15% lines; build 12 workspaces; typecheck/lint/Prettier; contratos 83/83; worker 27/27; operations E2E 6/6; E2E 32/32; migrations 41/41; secrets, CI contract, architecture, product-definition, exposure e audit high passaram; preflight `pnpm test:integration:live` continua saindo 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 

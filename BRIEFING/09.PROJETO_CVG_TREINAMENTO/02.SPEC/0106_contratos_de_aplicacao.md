@@ -297,6 +297,42 @@ participante continua explicitamente sem rationale, data/correlação de decisã
 ou identidade interna. Histórico append-only separado, snapshot, recálculo,
 notificação e encerramento são contratos posteriores.
 
+## 9.4.1 Preview interno de impacto candidato — APPEAL-043
+
+`GetAppealDecisionImpactPreview` é uma query interna e imutável para o cenário
+candidato `ANULAR_ITEM`. O comando recebe a identidade completa da sessão e
+somente `appealId` + a decisão literal; não aceita `scopeId`, participante,
+tentativa, item, ator ou versão do cliente. O caso de uso exige
+`REVIEW_APPEAL`, deriva o conjunto de escopos autorizados da sessão e falha
+fechado quando o adapter devolve protocolo, tentativa ou resultado fora desses
+escopos.
+
+O port lê, na mesma transação `REPEATABLE READ` e sob
+`cvg.appeal_review_scope_id`, o protocolo persistido, a tentativa referenciada
+e somente a presença/versão do resultado mais recente. A tentativa e o
+resultado são unidos explicitamente à atividade para confirmar o mesmo
+`scopeId`; RLS permanece uma defesa adicional. A relação
+`appeal.attemptId = attempt.attemptId` e a identidade do participante da
+tentativa são invariantes de leitura; inconsistência não produz preview
+parcial. Resultado ausente é ausência explícita, nunca score zero.
+
+O cenário candidato só é servido para protocolos `ABERTA` ou `EM_REVISAO`.
+Depois de decisão, recálculo pendente ou encerramento, o caso de uso retorna
+`state_conflict` e a superfície web desabilita a ação.
+
+A projeção retorna status/versão da contestação, referências operacionais do
+alvo, status/versão da tentativa, presença/versão do resultado e os limites
+`NOT_COMPUTED`, `NOT_AVAILABLE_IN_THIS_SLICE`, `NONE` e `NOT_PERFORMED`.
+`ANULAR_ITEM` é apenas o cenário consultado, não uma decisão persistida. O
+contrato não calcula delta, peso, denominador, outcome, aprovação, afetados ou
+competência prática e não contém score, feedback, resposta, gabarito, fonte,
+rationale, `participantId` ou `scopeId`.
+
+A query não escreve estado, tentativa, resultado, resposta, outbox, histórico,
+auditoria, notificação ou publicação; `DECIDIR`, `SOLICITAR_RECALCULO`,
+`AttemptStatus.ANULADA` e qualquer recálculo de `ANULAR_ITEM` continuam sendo
+operações posteriores e autorizadas separadamente.
+
 ## 9.5 Atribuição adaptativa derivada do diagnóstico — ADAPTIVE-044
 
 `AssignCurriculumFromDiagnostic` recebe somente `{ diagnosticResultId, scopeId }`.

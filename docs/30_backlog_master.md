@@ -825,6 +825,25 @@ dois P1 web; ambos foram cobertos por E2E sintético e corrigidos antes do
 fechamento. A fatia está `COMPLETED_WITH_GAPS`: a evidência local está verde,
 mas não há claim live/produtivo.
 
+### APPEAL-043 — Preview interno de impacto para `ANULAR_ITEM`
+
+- título: permitir que o revisor veja o impacto técnico mínimo de uma decisão candidata sem executar a decisão
+- descrição: consultar, por `appealId`, o protocolo e os agregados já persistidos da tentativa para informar referências bounded do alvo e a disponibilidade/versionamento do resultado; declarar explicitamente que `ANULAR_ITEM` não possui recálculo automático nesta fatia
+- módulo: apelação / revisão interna / avaliação versionada / contratos / API / persistência
+- dependência: `APPEAL-040`; `APPEAL-042`; `UC-018`; `PRD-RF-064`; `PRD-RF-065`; `PRD-RF-080`; `SPEC-0104`; `SPEC-0106`; `SPEC-0107`; `SPEC-0111`
+- fase: BUILD — Phase 3–5 / governança de contestação
+- risco: crítico — um preview não pode ser confundido com decisão, alterar nota/tentativa, prometer recálculo ou vazar resposta, gabarito, fonte ou competência prática
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: contrato GET interno strict e read-only; `REVIEW_APPEAL` server-side; escopo derivado da linha persistida e conferido contra os escopos autorizados; fatos bounded da contestação/tentativa/resultado; `ANULAR_ITEM` como candidato explícito; `automaticMutation=NONE`, `scoreImpact=NOT_COMPUTED`, `recalculation=NOT_AVAILABLE_IN_THIS_SLICE`; 401/403/404/409/422/500; nenhum write de estado, resultado, outbox, histórico ou auditoria; query `REPEATABLE READ` com linhagem explícita pela atividade; testes focalizados, regressão e gates — cumprido localmente
+- escopo desta fatia: preview de um único `appealId`, sem `scopeId` fornecido pelo cliente; referências internas necessárias para a revisão, status/version da apelação e da tentativa, presença/version do resultado mais recente e limites operacionais; resultado não contém score, outcome, feedback, resposta, gabarito, fonte, rationale ou competência prática
+- fora desta fatia: `DECIDIR`, `SOLICITAR_RECALCULO`, execução de `ANULAR_ITEM`, alteração de resposta/tentativa/resultado, fórmula ou score projetado, criação de remediação/notificação, publicação, decisão clínica, snapshot/impacto acadêmico persistido, workflow remoto, PostgreSQL/RLS live, provider/MFA, piloto e produção
+- evidência: `BRIEFING/04.AUDIT/0537_appeal_decision_impact_preview_audit.md`; commit funcional `2277a32cb2a88345903d7fd5a54b13f1da629601`; contrato, aplicação, persistência, HTTP, template de telemetria, operations web, testes negativos e E2E concorrente
+- resultado local: RED observado antes da implementação; GREEN focal final 5 arquivos/94 testes; coverage 137 arquivos PASS/29 SKIPPED, 678 testes PASS/35 SKIPPED, 84,44%/80,40%/86,39%/85,15%; build 12 workspaces; operations E2E 6/6; E2E completa 32/32; contratos 29/83; worker 4/27; migrations 41/41; lint, typecheck, formato, secrets, CI contract, architecture, product-definition, exposure e audit high limpos
+- crítica independente Carver: P1/P2 de acoplamento feedback, race de escopo/filtro, linhagem dependente de RLS, snapshot, estado terminal, template de rota e query duplicada foram corrigidos; a prova E2E da resposta antiga atrasada passou
+- gaps conhecidos: não há PostgreSQL/RLS/grants/owner live, concorrência real, browser→API→PostgreSQL, workflow remoto same-SHA, produção, restore/failover, provider/MFA ou aprovação clínica/piloto; nenhuma migration foi necessária
+- próxima ação: executar os gates documentais finais e selecionar a próxima lacuna local bounded sem declarar o produto 100% concluído
+
 ### TRAINING-MANAGEMENT-2026-08-23 — Dashboard de gestão e pesquisa atual
 
 - título: materializar o primeiro ciclo de acompanhamento da evolução dos profissionais

@@ -228,7 +228,25 @@ backfill/validação de registros legados, trilha imutável, snapshots, recálcu
 notificação e encerramento permanecem gaps posteriores e exigem ambiente ou
 decisão autorizada.
 
-## 9.4 Atribuição adaptativa e identidade server-side — ADAPTIVE-044
+## 9.4 Autorização do preview candidato — APPEAL-043
+
+O preview de impacto de `ANULAR_ITEM` reutiliza `REVIEW_APPEAL`, conta ativa e
+escopo da sessão, mas não aceita escopo ou identidade de recurso do navegador.
+O adapter procura o `appealId` somente nos escopos autorizados, instala
+`cvg.appeal_review_scope_id` na transação `REPEATABLE READ`, une tentativa e
+resultado à atividade do mesmo escopo e lê `appeals`, `attempts` e somente
+metadados de versão/presença de `assessment_results`. A consulta não abre
+policy de escrita nem cria auditoria por mutação.
+
+O resultado é um cenário candidato e não uma decisão, `AttemptStatus.ANULADA`,
+recálculo, publicação ou competência clínica. Score, resposta, gabarito,
+feedback, fontes, `participantId`, `scopeId`, listas/contagens de afetados e
+qualquer delta são proibidos na projeção. Relação de tentativa ou resultado
+inconsistente falha fechado; resultado ausente permanece ausente e não é
+convertido em zero. O cenário candidato só é autorizado para `ABERTA` ou
+`EM_REVISAO`; estados posteriores não podem ser tratados como novo candidato.
+
+## 9.5 Atribuição adaptativa e identidade server-side — ADAPTIVE-044
 
 `MANAGE_LEARNING_ASSIGNMENTS` protege a rota interna de materialização e exige
 conta ativa, papel interno permitido e `scopeId` presente na sessão. O corpo

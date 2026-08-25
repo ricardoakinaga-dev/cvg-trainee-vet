@@ -61,6 +61,7 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `PATCH /api/v1/internal/feedback/:ticketId` | UC-023 | `TRANSITION_FEEDBACK_TICKET` + escopo autorizado |
 | `GET /api/v1/internal/feedback/:ticketId/history` | UC-023 / FEEDBACK-HISTORY-053 | `VIEW_FEEDBACK_QUEUE` + identidade interna ativa + escopo autorizado; leitura state-only bounded |
 | `GET /api/v1/internal/appeals/:appealId/history` | UC-018 | `REVIEW_APPEAL` + escopo autorizado; somente leitura bounded |
+| `GET /api/v1/internal/appeals/:appealId/impact-preview?decision=ANULAR_ITEM` | APPEAL-043 / UC-018 | `REVIEW_APPEAL` + escopo autorizado; preview candidato, somente leitura |
 | `GET /api/v1/content/review-queue` | UC-013/014 | autor/revisor/admin |
 | `POST /api/v1/content/drafts` | UC-012 | autor autorizado |
 | `POST /api/v1/content/:contentId/review` | UC-013 | revisor/Ricardo |
@@ -474,7 +475,31 @@ fila interna é o único contrato desta fatia que pode ler os metadados de decis
 com autorização e escopo; a rota não recalcula nota, altera tentativa, publica
 aprovação ou encerra protocolo.
 
-## 15.2 Atribuição inicial a partir do diagnóstico — ADAPTIVE-044
+## 15.2 Preview candidato de `ANULAR_ITEM` — APPEAL-043
+
+`GET /api/v1/internal/appeals/:appealId/impact-preview` aceita somente o path
+UUID, query strict `{ decision: "ANULAR_ITEM" }` e corpo vazio. O servidor não
+aceita `scopeId`, `participantId`, `attemptId`, `itemId`, ator ou versão no
+request. A autenticação exige conta interna ativa, `REVIEW_APPEAL` e algum
+escopo autorizado; o escopo efetivo é resolvido pelo protocolo persistido.
+Parâmetro scalar repetido é rejeitado, inclusive quando um dos valores é
+válido.
+
+O sucesso usa o envelope comum e retorna uma projeção bounded com o cenário
+candidato, status/versão da contestação, referências do alvo, status/versão da
+tentativa, presença/versão do resultado mais recente e limites operacionais.
+Não há score, delta, outcome, regra, peso, denominador, lista/contagem de
+afetados, resposta, feedback, gabarito, fonte, rationale, participante ou
+escopo. O valor `decision` não significa que `DECIDIR` foi executado.
+
+`401` representa ausência de sessão; `403`, falta de capability/escopo; `404`,
+protocolo não visível; `409`, protocolo já decidido, em recálculo ou encerrado;
+`422`, path/query/body inválido; e `500`, inconsistência referencial ou falha
+interna. A operação não grava estado, resultado, outbox, histórico, auditoria,
+notificação ou publicação. Não existe, nesta fatia, recálculo ou consequência
+acadêmica para `ANULAR_ITEM`.
+
+## 15.3 Atribuição inicial a partir do diagnóstico — ADAPTIVE-044
 
 `POST /api/v1/internal/diagnostics/:diagnosticResultId/assign` é uma rota
 interna para materializar a trilha inicial de um resultado B-07 já persistido.
