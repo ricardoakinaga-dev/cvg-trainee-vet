@@ -131,6 +131,16 @@ export type {
   AppealReviewHistoryProjection,
   AppealReviewHistoryQuery,
 } from "./appeal-review-history.js";
+export {
+  appealDecisionImpactPathSchema,
+  appealDecisionImpactProjectionSchema,
+  appealDecisionImpactQuerySchema,
+} from "./appeal-decision-impact.js";
+export type {
+  AppealDecisionImpactPath,
+  AppealDecisionImpactProjection,
+  AppealDecisionImpactQuery,
+} from "./appeal-decision-impact.js";
 export type {
   AppealCreateRequest,
   AppealQuery,

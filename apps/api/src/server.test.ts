@@ -107,6 +107,9 @@ describe("API node server adapter", () => {
       "/api/v1/internal/appeals/review-queue",
     );
     expect(
+      routeTemplate("GET", "/api/v1/internal/appeals/appeal/impact-preview"),
+    ).toBe("/api/v1/internal/appeals/:appealId/impact-preview");
+    expect(
       routeTemplate("POST", "/api/v1/internal/appeals/appeal/transition"),
     ).toBe("/api/v1/internal/appeals/:appealId/transition");
     expect(routeTemplate("POST", "/api/v1/attempts")).toBe("/api/v1/attempts");
@@ -190,6 +193,11 @@ describe("API node server adapter", () => {
         data: { status: "live" },
         meta: { request_id: "request-server-test" },
       });
+
+      const duplicateQueryResponse = await fetch(
+        `http://127.0.0.1:${address.port}/health/live?probe=one&probe=two`,
+      );
+      expect(duplicateQueryResponse.status).toBe(422);
     } finally {
       await api.close();
     }

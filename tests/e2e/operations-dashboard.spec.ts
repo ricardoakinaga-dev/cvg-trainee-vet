@@ -269,6 +269,26 @@ const appealReviewHistory = {
   ],
 };
 
+const appealDecisionImpactPreview = {
+  kind: "appeal_decision_impact_preview",
+  appealId: appealReviewHistory.appealId,
+  decision: "ANULAR_ITEM",
+  appeal: { status: "ABERTA", version: 1 },
+  target: {
+    attemptId: "55555555-5555-4555-8555-555555555555",
+    itemId: "66666666-6666-4666-8666-666666666666",
+    attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+    attemptVersion: 3,
+  },
+  latestResult: { availability: "AVAILABLE", version: 2 },
+  impact: {
+    scoreImpact: "NOT_COMPUTED",
+    recalculation: "NOT_AVAILABLE_IN_THIS_SLICE",
+    automaticMutation: "NONE",
+    publication: "NOT_PERFORMED",
+  },
+};
+
 const auditTrailProjection = {
   kind: "audit_trail",
   scopeId: "11111111-1111-4111-8111-111111111111",
@@ -303,6 +323,21 @@ const multiScopeStaffDashboard = {
     ...participant,
     scopeIds: ["99999999-9999-4999-8999-999999999999"],
   })),
+};
+
+const secondScopeAppealReviewQueue = {
+  ...appealReviewQueue,
+  scopeId: "99999999-9999-4999-8999-999999999999",
+  filters: {
+    ...appealReviewQueue.filters,
+    scopeId: "99999999-9999-4999-8999-999999999999",
+  },
+  items: [
+    {
+      ...appealReviewQueue.items[0],
+      justification: "Contestação sintética do segundo escopo.",
+    },
+  ],
 };
 
 test.describe("staff training dashboard", () => {
@@ -492,6 +527,18 @@ test.describe("staff training dashboard", () => {
         body: JSON.stringify(successEnvelope(appealReviewHistory)),
       });
     });
+    await page.route(
+      "**/api/v1/internal/appeals/*/impact-preview**",
+      async (route) => {
+        const requestUrl = new URL(route.request().url());
+        expect(requestUrl.searchParams.get("decision")).toBe("ANULAR_ITEM");
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(appealDecisionImpactPreview)),
+        });
+      },
+    );
 
     await page.goto("/operations");
 
@@ -515,6 +562,16 @@ test.describe("staff training dashboard", () => {
     await expect(
       page.getByRole("heading", { name: "Fila de contestação" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Prévia de anulação" }).click();
+    await expect(page.getByTestId("appeal-impact-preview")).toContainText(
+      "Cenário candidato",
+    );
+    await expect(page.getByTestId("appeal-impact-preview")).toContainText(
+      "não calculado",
+    );
+    await expect(page.getByTestId("appeal-impact-preview")).toContainText(
+      "publicação: não executada",
+    );
     await expect(
       page.getByRole("heading", { name: "Fila de relatos do produto" }),
     ).toBeVisible();
@@ -724,6 +781,80 @@ test.describe("staff training dashboard", () => {
     await page.goto("/operations");
 
     await expect(page.getByText("Sessão de gestão necessária")).toBeVisible();
+  });
+
+  test("keeps the newest appeal scope when an older queue response is delayed", async ({
+    page,
+  }) => {
+    await page.route("**/health/dependencies", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            status: "READY",
+            dependencies: {
+              postgres: "UP",
+              qdrant: "DISABLED",
+              ai: "DISABLED",
+            },
+          }),
+        ),
+      });
+    });
+    await page.route("**/api/v1/dashboard", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope(multiScopeStaffDashboard)),
+      });
+    });
+    let firstScopeQueuePending = false;
+    let releaseFirstScopeQueue: (() => void) | null = null;
+    await page.route(
+      "**/api/v1/internal/appeals/review-queue**",
+      async (route) => {
+        const scopeId = new URL(route.request().url()).searchParams.get(
+          "scopeId",
+        );
+        if (scopeId === multiScopeStaffDashboard.scopes[0]) {
+          firstScopeQueuePending = true;
+          await new Promise<void>((resolve) => {
+            releaseFirstScopeQueue = resolve;
+          });
+          firstScopeQueuePending = false;
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(successEnvelope(appealReviewQueue)),
+          });
+          return;
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(successEnvelope(secondScopeAppealReviewQueue)),
+        });
+      },
+    );
+
+    await page.goto("/operations");
+    await expect.poll(() => firstScopeQueuePending).toBe(true);
+    await page
+      .getByLabel("Escopo de gestão")
+      .selectOption(multiScopeStaffDashboard.scopes[1]);
+    await expect(
+      page.getByText("Contestação sintética do segundo escopo."),
+    ).toBeVisible();
+
+    expect(releaseFirstScopeQueue).not.toBeNull();
+    releaseFirstScopeQueue?.();
+    await expect(
+      page.getByText("Contestação sintética do segundo escopo."),
+    ).toBeVisible();
+    await expect(
+      page.getByText(appealReviewQueue.items[0].justification),
+    ).not.toBeVisible();
   });
 
   test("lets an administrator create a scoped participant invitation", async ({

@@ -353,6 +353,14 @@ export type {
   AppealReviewHistoryState,
   GetAppealReviewHistoryCommand,
 } from "./appeal-review-history-use-cases.js";
+export { getAppealDecisionImpactPreview } from "./appeal-decision-impact-use-cases.js";
+export type {
+  AppealDecisionImpactDecision,
+  AppealDecisionImpactPreviewState,
+  AppealDecisionImpactReadPort,
+  AppealDecisionImpactReadResult,
+  GetAppealDecisionImpactPreviewCommand,
+} from "./appeal-decision-impact-use-cases.js";
 export { getFeedbackTicketHistory } from "./feedback-ticket-history-use-cases.js";
 export type {
   FeedbackTicketHistoryEvent,

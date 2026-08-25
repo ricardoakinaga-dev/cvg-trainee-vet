@@ -30,6 +30,7 @@ import {
   getContentReviewQueue,
   getAppealReviewQueue,
   getAppealReviewHistory,
+  getAppealDecisionImpactPreview,
   getFeedbackTriageQueue,
   getFeedbackTicketHistory,
   issueAccountRecovery,
@@ -81,6 +82,7 @@ import {
   createAppealReadRepository,
   createAppealReviewQueueRepository,
   createAppealReviewHistoryRepository,
+  createAppealDecisionImpactRepository,
   createAppealReviewTransitionRepository,
   createContentReviewQueueRepository,
   createFeedbackTriageQueueRepository,
@@ -204,6 +206,9 @@ export function createApiRuntime(
     integrations.database.db,
   );
   const appealReviewHistoryRepository = createAppealReviewHistoryRepository(
+    integrations.database.db,
+  );
+  const appealDecisionImpactRepository = createAppealDecisionImpactRepository(
     integrations.database.db,
   );
   const appealReviewTransitionRepository =
@@ -365,6 +370,8 @@ export function createApiRuntime(
       getFeedbackTicketHistory(command, feedbackTicketHistoryRepository),
     getAppealReviewHistory: (command) =>
       getAppealReviewHistory(command, appealReviewHistoryRepository),
+    getAppealDecisionImpactPreview: (command) =>
+      getAppealDecisionImpactPreview(command, appealDecisionImpactRepository),
     getAuditTrail: (command) => getAuditTrail(command, auditTrailRepository),
     getParticipantCurriculumRuntime: (participantId, moduleId) =>
       getParticipantCurriculumRuntime(

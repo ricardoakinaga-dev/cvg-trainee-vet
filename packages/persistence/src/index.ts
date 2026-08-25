@@ -206,6 +206,7 @@ export type {
 export { createContentReviewQueueRepository } from "./content-review-queue-repository.js";
 export { createAppealReviewQueueRepository } from "./appeal-review-queue-repository.js";
 export { createAppealReviewHistoryRepository } from "./appeal-review-history-repository.js";
+export { createAppealDecisionImpactRepository } from "./appeal-decision-impact-repository.js";
 export { createFeedbackTriageQueueRepository } from "./feedback-triage-queue-repository.js";
 export { createAppealReviewTransitionRepository } from "./appeal-review-transition-repository.js";
 export {

@@ -24,6 +24,7 @@ import {
   type ContentReviewQueueState,
   type AppealReviewQueueState,
   type AppealReviewHistoryState,
+  type AppealDecisionImpactPreviewState,
   type FeedbackTriageQueueState,
   type FeedbackTicketHistoryState,
   type CreateAuthoringDraftCommand,
@@ -368,6 +369,26 @@ const appealReviewHistory: AppealReviewHistoryState = {
       createdAt: "2026-08-24T12:00:01.000Z",
     },
   ],
+};
+
+const appealDecisionImpact: AppealDecisionImpactPreviewState = {
+  kind: "appeal_decision_impact_preview",
+  appealId: appealReviewHistory.appealId,
+  decision: "ANULAR_ITEM",
+  appeal: { status: "EM_REVISAO", version: 1 },
+  target: {
+    attemptId: "88888888-8888-4888-8888-888888888888",
+    itemId: "99999999-9999-4999-8999-999999999999",
+    attemptStatus: "CORRIGIDA_AUTOMATICAMENTE",
+    attemptVersion: 3,
+  },
+  latestResult: { availability: "AVAILABLE", version: 2 },
+  impact: {
+    scoreImpact: "NOT_COMPUTED",
+    recalculation: "NOT_AVAILABLE_IN_THIS_SLICE",
+    automaticMutation: "NONE",
+    publication: "NOT_PERFORMED",
+  },
 };
 
 const curriculumRuntime: CurriculumRuntimeState = {
@@ -3117,6 +3138,146 @@ describe("API HTTP boundary", () => {
       }),
     );
     expect(response.status).toBe(500);
+  });
+
+  it("returns a scoped, non-mutating ANULAR_ITEM impact preview", async () => {
+    const getAppealDecisionImpactPreview = vi.fn(
+      async () => appealDecisionImpact,
+    );
+    const principalId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const scopeId = appealReviewHistory.scopeId;
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealDecisionImpact.appealId}/impact-preview`,
+        query: { decision: "ANULAR_ITEM" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealDecisionImpactPreview,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(getAppealDecisionImpactPreview).toHaveBeenCalledWith({
+      principalId,
+      accountStatus: "ACTIVE",
+      roles: ["MODERATOR"],
+      scopes: [scopeId],
+      appealId: appealDecisionImpact.appealId,
+      decision: "ANULAR_ITEM",
+    });
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        decision: "ANULAR_ITEM",
+        impact: {
+          scoreImpact: "NOT_COMPUTED",
+          automaticMutation: "NONE",
+          publication: "NOT_PERFORMED",
+        },
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('"participantId":');
+    expect(JSON.stringify(response.body)).not.toContain('"score":');
+
+    const invalidDecision = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealDecisionImpact.appealId}/impact-preview`,
+        query: { decision: "MANTER_RESULTADO" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealDecisionImpactPreview,
+      }),
+    );
+    expect(invalidDecision.status).toBe(422);
+    expect(getAppealDecisionImpactPreview).toHaveBeenCalledTimes(1);
+
+    const duplicateDecision = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealDecisionImpact.appealId}/impact-preview`,
+        query: { decision: "ANULAR_ITEM" },
+        queryDuplicateKeys: ["decision"],
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealDecisionImpactPreview,
+      }),
+    );
+    expect(duplicateDecision.status).toBe(422);
+    expect(getAppealDecisionImpactPreview).toHaveBeenCalledTimes(1);
+
+    const participant = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealDecisionImpact.appealId}/impact-preview`,
+        query: { decision: "ANULAR_ITEM" },
+        body: undefined,
+      },
+      dependencies({ getAppealDecisionImpactPreview }),
+    );
+    expect(participant.status).toBe(403);
+    expect(getAppealDecisionImpactPreview).toHaveBeenCalledTimes(1);
+
+    const malformedBody = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealDecisionImpact.appealId}/impact-preview`,
+        query: { decision: "ANULAR_ITEM" },
+        body: { scopeId },
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealDecisionImpactPreview,
+      }),
+    );
+    expect(malformedBody.status).toBe(422);
+    expect(getAppealDecisionImpactPreview).toHaveBeenCalledTimes(1);
+
+    const missing = await handleApiRequest(
+      {
+        method: "GET",
+        path: `/api/v1/internal/appeals/${appealDecisionImpact.appealId}/impact-preview`,
+        query: { decision: "ANULAR_ITEM" },
+        body: undefined,
+      },
+      dependencies({
+        authenticate: async () => ({
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["MODERATOR"],
+          scopes: [scopeId],
+        }),
+        getAppealDecisionImpactPreview: async () => null,
+      }),
+    );
+    expect(missing.status).toBe(404);
   });
 
   it("returns only the authenticated internal session scopes", async () => {

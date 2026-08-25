@@ -67,6 +67,8 @@ import {
   type GetAppealReviewQueueCommand,
   type AppealReviewHistoryState,
   type GetAppealReviewHistoryCommand,
+  type AppealDecisionImpactPreviewState,
+  type GetAppealDecisionImpactPreviewCommand,
   type FeedbackTriageQueueState,
   type GetFeedbackTriageQueueCommand,
   type FeedbackTicketHistoryState,
@@ -110,6 +112,9 @@ import {
   appealReviewHistoryPathSchema,
   appealReviewHistoryProjectionSchema,
   appealReviewHistoryQuerySchema,
+  appealDecisionImpactPathSchema,
+  appealDecisionImpactProjectionSchema,
+  appealDecisionImpactQuerySchema,
   feedbackTriageQueueProjectionSchema,
   feedbackTriageQueueQuerySchema,
   feedbackTicketHistoryPathSchema,
@@ -169,6 +174,7 @@ export type ApiHttpRequest = Readonly<{
   readonly route?: string;
   readonly body: unknown;
   readonly query?: Readonly<Record<string, string | undefined>>;
+  readonly queryDuplicateKeys?: readonly string[];
   readonly headers?: Readonly<Record<string, string | undefined>>;
 }>;
 
@@ -320,6 +326,9 @@ export interface ApiHttpDependencies {
   readonly getAppealReviewHistory?: (
     command: GetAppealReviewHistoryCommand,
   ) => Promise<AppealReviewHistoryState | null>;
+  readonly getAppealDecisionImpactPreview?: (
+    command: GetAppealDecisionImpactPreviewCommand,
+  ) => Promise<AppealDecisionImpactPreviewState | null>;
   readonly getAuditTrail?: (
     command: GetAuditTrailCommand,
   ) => Promise<AuditTrailState>;
@@ -878,6 +887,20 @@ function internalAppealReviewHistoryProjection(
   return appealReviewHistoryProjectionSchema.parse({
     appealId: state.appealId,
     events: state.events.map((event) => ({ ...event })),
+  });
+}
+
+function internalAppealDecisionImpactProjection(
+  state: AppealDecisionImpactPreviewState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return appealDecisionImpactProjectionSchema.parse({
+    kind: state.kind,
+    appealId: state.appealId,
+    decision: state.decision,
+    appeal: { ...state.appeal },
+    target: { ...state.target },
+    latestResult: { ...state.latestResult },
+    impact: { ...state.impact },
   });
 }
 
@@ -1695,6 +1718,61 @@ async function handleAppealReviewHistory(
     status: 200,
     body: apiSuccessResponse(
       internalAppealReviewHistoryProjection(state),
+      requestId,
+    ),
+  };
+}
+
+async function handleAppealDecisionImpact(
+  request: ApiHttpRequest,
+  appealId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.getAppealDecisionImpactPreview === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsedPath = appealDecisionImpactPathSchema.safeParse({ appealId });
+  if (!parsedPath.success) return validationResponse(requestId);
+  if (request.body !== undefined) return validationResponse(requestId);
+  const rawQuery = request.query ?? {};
+  if (Object.keys(rawQuery).some((key) => key !== "decision")) {
+    return validationResponse(requestId);
+  }
+  const parsedQuery = appealDecisionImpactQuerySchema.safeParse(rawQuery);
+  if (!parsedQuery.success) return validationResponse(requestId);
+  if (
+    !principal.scopes.some((scopeId) =>
+      isAllowed(
+        principal,
+        "REVIEW_APPEAL",
+        { scopeId },
+        dependencies.approvedClinicalApproverId,
+      ),
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+
+  const state = await dependencies.getAppealDecisionImpactPreview({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    appealId: parsedPath.data.appealId,
+    decision: parsedQuery.data.decision,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+  });
+  if (state === null) return errorResponse("not_found", requestId);
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalAppealDecisionImpactProjection(state),
       requestId,
     ),
   };
@@ -2970,6 +3048,9 @@ async function handleApiRequestCore(
   const requestId = dependencies.requestIdFactory();
 
   try {
+    if ((request.queryDuplicateKeys?.length ?? 0) > 0) {
+      return validationResponse(requestId);
+    }
     if (request.method === "GET" && request.path === "/health/live") {
       return {
         status: 200,
@@ -3325,6 +3406,22 @@ async function handleApiRequestCore(
       return await handleAppealReviewHistory(
         request,
         appealHistoryMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const appealDecisionImpactMatch = request.path.match(
+      /^\/api\/v1\/internal\/appeals\/([^/]+)\/impact-preview$/u,
+    );
+    if (request.method === "GET" && appealDecisionImpactMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleAppealDecisionImpact(
+        request,
+        appealDecisionImpactMatch[1],
         requestId,
         principal,
         dependencies,

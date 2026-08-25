@@ -225,6 +225,40 @@ type StaffDashboard = Readonly<{
   }>[];
 }>;
 
+type AppealDecisionImpactPreview = Readonly<{
+  readonly kind: "appeal_decision_impact_preview";
+  readonly appealId: string;
+  readonly decision: "ANULAR_ITEM";
+  readonly appeal: Readonly<{
+    readonly status: AppealReviewQueueStatus;
+    readonly version: number;
+  }>;
+  readonly target: Readonly<{
+    readonly attemptId: string;
+    readonly itemId: string;
+    readonly attemptStatus:
+      | "CRIADA"
+      | "EM_ANDAMENTO"
+      | "SALVA"
+      | "SUBMETIDA"
+      | "CORRIGIDA_AUTOMATICAMENTE"
+      | "AGUARDA_CORRECAO_HUMANA"
+      | "CORRIGIDA_HUMANAMENTE"
+      | "ANULADA";
+    readonly attemptVersion: number;
+  }>;
+  readonly latestResult: Readonly<{
+    readonly availability: "AVAILABLE" | "NOT_AVAILABLE";
+    readonly version?: number;
+  }>;
+  readonly impact: Readonly<{
+    readonly scoreImpact: "NOT_COMPUTED";
+    readonly recalculation: "NOT_AVAILABLE_IN_THIS_SLICE";
+    readonly automaticMutation: "NONE";
+    readonly publication: "NOT_PERFORMED";
+  }>;
+}>;
+
 type ContinuingEducationReport = Readonly<{
   readonly kind: "continuing_education_report";
   readonly scopeId: string;
@@ -954,6 +988,74 @@ function isAppealReviewHistory(value: unknown): value is AppealReviewHistory {
   );
 }
 
+function isAppealDecisionImpactPreview(
+  value: unknown,
+): value is AppealDecisionImpactPreview {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, [
+      "kind",
+      "appealId",
+      "decision",
+      "appeal",
+      "target",
+      "latestResult",
+      "impact",
+    ]) ||
+    value.kind !== "appeal_decision_impact_preview" ||
+    !isUuid(value.appealId) ||
+    value.decision !== "ANULAR_ITEM" ||
+    !isRecord(value.appeal) ||
+    !hasOnlyKeys(value.appeal, ["status", "version"]) ||
+    !isAppealReviewQueueStatus(value.appeal.status) ||
+    !isCount(value.appeal.version) ||
+    !isRecord(value.target) ||
+    !hasOnlyKeys(value.target, [
+      "attemptId",
+      "itemId",
+      "attemptStatus",
+      "attemptVersion",
+    ]) ||
+    !isUuid(value.target.attemptId) ||
+    !isUuid(value.target.itemId) ||
+    typeof value.target.attemptStatus !== "string" ||
+    ![
+      "CRIADA",
+      "EM_ANDAMENTO",
+      "SALVA",
+      "SUBMETIDA",
+      "CORRIGIDA_AUTOMATICAMENTE",
+      "AGUARDA_CORRECAO_HUMANA",
+      "CORRIGIDA_HUMANAMENTE",
+      "ANULADA",
+    ].includes(value.target.attemptStatus) ||
+    !isCount(value.target.attemptVersion) ||
+    !isRecord(value.latestResult) ||
+    !hasOnlyKeys(value.latestResult, ["availability", "version"]) ||
+    (value.latestResult.availability !== "AVAILABLE" &&
+      value.latestResult.availability !== "NOT_AVAILABLE") ||
+    (value.latestResult.availability === "AVAILABLE" &&
+      (!isCount(value.latestResult.version) ||
+        value.latestResult.version < 1)) ||
+    (value.latestResult.availability === "NOT_AVAILABLE" &&
+      value.latestResult.version !== undefined) ||
+    !isRecord(value.impact) ||
+    !hasOnlyKeys(value.impact, [
+      "scoreImpact",
+      "recalculation",
+      "automaticMutation",
+      "publication",
+    ]) ||
+    value.impact.scoreImpact !== "NOT_COMPUTED" ||
+    value.impact.recalculation !== "NOT_AVAILABLE_IN_THIS_SLICE" ||
+    value.impact.automaticMutation !== "NONE" ||
+    value.impact.publication !== "NOT_PERFORMED"
+  ) {
+    return false;
+  }
+  return true;
+}
+
 function isAuditTrail(
   value: unknown,
 ): value is Omit<AuditTrail, "hasNext" | "nextCursor"> {
@@ -1379,6 +1481,7 @@ export default function OperationsPage() {
   const [appealQueue, setAppealQueue] = useState<AppealReviewQueue | null>(
     null,
   );
+  const appealQueueRequestVersion = useRef(0);
   const [appealQueueStatusFilter, setAppealQueueStatusFilter] =
     useState<AppealReviewQueueStatusFilter>("");
   const [appealHistoryState, setAppealHistoryState] =
@@ -1388,6 +1491,14 @@ export default function OperationsPage() {
   const [appealHistoryAppealId, setAppealHistoryAppealId] = useState<
     string | null
   >(null);
+  const [appealImpactState, setAppealImpactState] =
+    useState<ReportLoadState>("idle");
+  const [appealImpact, setAppealImpact] =
+    useState<AppealDecisionImpactPreview | null>(null);
+  const [appealImpactAppealId, setAppealImpactAppealId] = useState<
+    string | null
+  >(null);
+  const appealImpactRequestVersion = useRef(0);
   const [auditTrailState, setAuditTrailState] =
     useState<AuditTrailLoadState>("idle");
   const [auditTrail, setAuditTrail] = useState<AuditTrail | null>(null);
@@ -1844,7 +1955,9 @@ export default function OperationsPage() {
 
   const loadAppealReviewQueue = useCallback(
     async (scopeId: string, status: AppealReviewQueueStatusFilter) => {
+      const requestVersion = ++appealQueueRequestVersion.current;
       setAppealQueueState("loading");
+      setAppealQueue(null);
       const query = new URLSearchParams({ scopeId });
       if (status.length > 0) query.set("status", status);
       try {
@@ -1852,12 +1965,14 @@ export default function OperationsPage() {
           `/api/v1/internal/appeals/review-queue?${query.toString()}`,
           { cache: "no-store", credentials: "include" },
         );
+        if (requestVersion !== appealQueueRequestVersion.current) return;
         if (!response.ok) {
           setAppealQueue(null);
           setAppealQueueState(dashboardErrorState(response.status));
           return;
         }
         const payload: unknown = await response.json().catch(() => null);
+        if (requestVersion !== appealQueueRequestVersion.current) return;
         if (
           !isRecord(payload) ||
           payload.success !== true ||
@@ -1868,6 +1983,7 @@ export default function OperationsPage() {
         setAppealQueue(payload.data);
         setAppealQueueState("ready");
       } catch {
+        if (requestVersion !== appealQueueRequestVersion.current) return;
         setAppealQueue(null);
         setAppealQueueState("error");
       }
@@ -1907,20 +2023,61 @@ export default function OperationsPage() {
     [],
   );
 
+  const loadAppealDecisionImpact = useCallback(
+    async (appealId: string): Promise<void> => {
+      appealImpactRequestVersion.current += 1;
+      const requestVersion = appealImpactRequestVersion.current;
+      setAppealImpactAppealId(appealId);
+      setAppealImpact(null);
+      setAppealImpactState("loading");
+      try {
+        const response = await fetch(
+          `/api/v1/internal/appeals/${encodeURIComponent(appealId)}/impact-preview?decision=ANULAR_ITEM`,
+          { cache: "no-store", credentials: "include" },
+        );
+        if (!response.ok) {
+          if (appealImpactRequestVersion.current !== requestVersion) return;
+          setAppealImpact(null);
+          setAppealImpactState(dashboardErrorState(response.status));
+          return;
+        }
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isAppealDecisionImpactPreview(payload.data)
+        ) {
+          throw new Error();
+        }
+        if (appealImpactRequestVersion.current !== requestVersion) return;
+        setAppealImpact(payload.data);
+        setAppealImpactState("ready");
+      } catch {
+        if (appealImpactRequestVersion.current !== requestVersion) return;
+        setAppealImpact(null);
+        setAppealImpactState("error");
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     const scopeId = managementScopeId;
+    appealQueueRequestVersion.current += 1;
+    appealImpactRequestVersion.current += 1;
+    setAppealImpact(null);
+    setAppealImpactAppealId(null);
+    setAppealImpactState("idle");
+    setAppealHistory(null);
+    setAppealHistoryAppealId(null);
+    setAppealHistoryState("idle");
     if (scopeId === undefined) {
       setAppealQueue(null);
       setAppealQueueState("idle");
       return;
     }
     void loadAppealReviewQueue(scopeId, appealQueueStatusFilter);
-  }, [
-    appealQueueStatusFilter,
-    dashboard,
-    loadAppealReviewQueue,
-    managementScopeId,
-  ]);
+  }, [appealQueueStatusFilter, loadAppealReviewQueue, managementScopeId]);
 
   async function createParticipantInvitation(
     event: FormEvent<HTMLFormElement>,
@@ -3074,6 +3231,7 @@ export default function OperationsPage() {
                             <th scope="col">Revisor</th>
                             <th scope="col">Decisão</th>
                             <th scope="col">Histórico</th>
+                            <th scope="col">Prévia</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -3098,6 +3256,23 @@ export default function OperationsPage() {
                                   }
                                 >
                                   Ver histórico
+                                </button>
+                              </td>
+                              <td>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    item.status !== "ABERTA" &&
+                                    item.status !== "EM_REVISAO"
+                                  }
+                                  onClick={() =>
+                                    void loadAppealDecisionImpact(item.appealId)
+                                  }
+                                >
+                                  {item.status === "ABERTA" ||
+                                  item.status === "EM_REVISAO"
+                                    ? "Prévia de anulação"
+                                    : "Prévia indisponível neste estado"}
                                 </button>
                               </td>
                             </tr>
@@ -3180,6 +3355,92 @@ export default function OperationsPage() {
                             </li>
                           ))}
                         </ol>
+                      )}
+                    </section>
+                  ) : null}
+                  {appealImpactAppealId !== null ? (
+                    <section
+                      className="experience-panel"
+                      aria-labelledby="appeal-impact-title"
+                      data-testid="appeal-impact-preview"
+                    >
+                      <div className="section-heading compact-heading">
+                        <div>
+                          <p className="eyebrow">Prévia operacional</p>
+                          <h4 id="appeal-impact-title">
+                            Impacto técnico de `ANULAR_ITEM`
+                          </h4>
+                        </div>
+                        <span className="status-pill">Somente leitura</span>
+                      </div>
+                      {appealImpactState === "loading" ? (
+                        <p role="status">Consultando o impacto persistido…</p>
+                      ) : appealImpactState === "forbidden" ||
+                        appealImpactState === "unauthenticated" ? (
+                        <p>
+                          Esta conta não possui autorização para consultar esta
+                          prévia.
+                        </p>
+                      ) : appealImpactState === "error" ||
+                        appealImpact === null ? (
+                        <div role="alert">
+                          <p>Não foi possível carregar a prévia.</p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void loadAppealDecisionImpact(
+                                appealImpactAppealId,
+                              )
+                            }
+                          >
+                            Tentar novamente
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <p>
+                            Cenário candidato; nenhuma decisão foi registrada e
+                            nenhuma mutação foi executada.
+                          </p>
+                          <dl className="summary-list">
+                            <div>
+                              <dt>Contestação</dt>
+                              <dd>
+                                {appealReviewStatusLabel(
+                                  appealImpact.appeal.status,
+                                )}
+                                {" · "}versão {appealImpact.appeal.version}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Tentativa alvo</dt>
+                              <dd>
+                                {appealImpact.target.attemptId}
+                                {" · "}
+                                {appealImpact.target.attemptStatus}
+                                {" · "}versão{" "}
+                                {appealImpact.target.attemptVersion}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Item alvo</dt>
+                              <dd>{appealImpact.target.itemId}</dd>
+                            </div>
+                            <div>
+                              <dt>Resultado atual</dt>
+                              <dd>
+                                {appealImpact.latestResult.availability ===
+                                "AVAILABLE"
+                                  ? `Disponível · versão ${appealImpact.latestResult.version}`
+                                  : "Não disponível"}
+                              </dd>
+                            </div>
+                          </dl>
+                          <p>
+                            Score: não calculado · recálculo: indisponível nesta
+                            fatia · publicação: não executada.
+                          </p>
+                        </>
                       )}
                     </section>
                   ) : null}

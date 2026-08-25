@@ -131,17 +131,29 @@ function toPath(request: IncomingMessage): string {
   }
 }
 
-function toQuery(
-  request: IncomingMessage,
-): Readonly<Record<string, string | undefined>> {
+type ParsedQuery = Readonly<{
+  readonly values: Readonly<Record<string, string | undefined>>;
+  readonly duplicateKeys: readonly string[];
+}>;
+
+function toQuery(request: IncomingMessage): ParsedQuery {
   try {
-    return Object.fromEntries(
-      new URLSearchParams(
-        new URL(request.url ?? "/", "http://127.0.0.1").search,
-      ).entries(),
+    const searchParams = new URLSearchParams(
+      new URL(request.url ?? "/", "http://127.0.0.1").search,
     );
+    const duplicateKeys = [
+      ...new Set(
+        [...searchParams.keys()].filter(
+          (key) => searchParams.getAll(key).length > 1,
+        ),
+      ),
+    ];
+    return {
+      values: Object.fromEntries(searchParams.entries()),
+      duplicateKeys,
+    };
   } catch {
-    return {};
+    return { values: {}, duplicateKeys: [] };
   }
 }
 
@@ -288,6 +300,12 @@ export function routeTemplate(method: string, path: string): string {
   ) {
     return "/api/v1/internal/feedback/:ticketId/history";
   }
+  if (
+    method === "GET" &&
+    /^\/api\/v1\/internal\/appeals\/[^/]+\/impact-preview$/u.test(path)
+  ) {
+    return "/api/v1/internal/appeals/:appealId/impact-preview";
+  }
   if (/^\/api\/v1\/internal\/feedback\/[^/]+$/u.test(path)) {
     return "/api/v1/internal/feedback/:ticketId";
   }
@@ -432,12 +450,14 @@ export function createApiServer(
       return;
     }
 
+    const parsedQuery = toQuery(request);
     const apiRequest: ApiHttpRequest = {
       method,
       path,
       route,
       body,
-      query: toQuery(request),
+      query: parsedQuery.values,
+      queryDuplicateKeys: parsedQuery.duplicateKeys,
       headers,
     };
     const payload = await handleApiRequest(apiRequest, dependencies);
