@@ -22,6 +22,9 @@ const statuses: readonly string[] = [
   "NAO_REPRODUZIDO",
   "NAO_PLANEJADO",
 ];
+const priorities: readonly string[] = ["BAIXA", "NORMAL", "ALTA", "URGENTE"];
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 export type FeedbackTicketHistoryRowShape = Readonly<{
   readonly id: string;
@@ -31,6 +34,10 @@ export type FeedbackTicketHistoryRowShape = Readonly<{
   readonly eventType: string;
   readonly fromStatus: string | null;
   readonly toStatus: string;
+  readonly fromPriority?: string | null;
+  readonly toPriority?: string | null;
+  readonly fromAssigneeId?: string | null;
+  readonly toAssigneeId?: string | null;
   readonly createdAt: Date;
 }>;
 
@@ -57,7 +64,11 @@ export function feedbackTicketHistoryRowToEvent(
   if (!Number.isInteger(row.ticketVersion) || row.ticketVersion < 0) {
     throw new TypeError("ticketVersion is invalid");
   }
-  if (row.eventType !== "CRIADO" && row.eventType !== "STATUS_ALTERADO") {
+  if (
+    row.eventType !== "CRIADO" &&
+    row.eventType !== "STATUS_ALTERADO" &&
+    row.eventType !== "METADATA_ALTERADO"
+  ) {
     throw new TypeError("eventType is invalid");
   }
   assertStatus(row.toStatus, "toStatus");
@@ -67,7 +78,29 @@ export function feedbackTicketHistoryRowToEvent(
   if (row.eventType === "STATUS_ALTERADO" && row.fromStatus === null) {
     throw new TypeError("status history requires fromStatus");
   }
+  if (row.eventType === "METADATA_ALTERADO") {
+    if (
+      row.fromStatus === null ||
+      row.fromStatus !== row.toStatus ||
+      row.fromPriority === null ||
+      row.fromPriority === undefined ||
+      row.toPriority === null ||
+      row.toPriority === undefined ||
+      !priorities.includes(row.fromPriority) ||
+      !priorities.includes(row.toPriority)
+    ) {
+      throw new TypeError("metadata history lineage is invalid");
+    }
+  }
   if (row.fromStatus !== null) assertStatus(row.fromStatus, "fromStatus");
+  for (const [field, value] of [
+    ["fromAssigneeId", row.fromAssigneeId],
+    ["toAssigneeId", row.toAssigneeId],
+  ] as const) {
+    if (value !== undefined && value !== null && !uuidPattern.test(value)) {
+      throw new TypeError(`${field} is invalid`);
+    }
+  }
   if (Number.isNaN(row.createdAt.getTime())) {
     throw new TypeError("createdAt is invalid");
   }
@@ -78,6 +111,14 @@ export function feedbackTicketHistoryRowToEvent(
     eventType: row.eventType,
     ...(row.fromStatus === null ? {} : { fromStatus: row.fromStatus }),
     toStatus: row.toStatus,
+    ...(row.eventType === "METADATA_ALTERADO"
+      ? {
+          fromPriority: row.fromPriority,
+          toPriority: row.toPriority,
+          fromAssigneeId: row.fromAssigneeId ?? null,
+          toAssigneeId: row.toAssigneeId ?? null,
+        }
+      : {}),
     createdAt: row.createdAt.toISOString(),
   }) as FeedbackTicketHistoryEvent;
 }

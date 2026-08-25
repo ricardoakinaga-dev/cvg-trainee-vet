@@ -71,6 +71,8 @@ import {
   type GetAppealDecisionImpactPreviewCommand,
   type FeedbackTriageQueueState,
   type GetFeedbackTriageQueueCommand,
+  type FeedbackTriageMetadataState,
+  type UpdateFeedbackTriageMetadataCommand,
   type FeedbackTicketHistoryState,
   type GetFeedbackTicketHistoryCommand,
   type SaveAnswerCommand,
@@ -117,6 +119,9 @@ import {
   appealDecisionImpactQuerySchema,
   feedbackTriageQueueProjectionSchema,
   feedbackTriageQueueQuerySchema,
+  feedbackTriageMetadataPathSchema,
+  feedbackTriageMetadataProjectionSchema,
+  feedbackTriageMetadataRequestSchema,
   feedbackTicketHistoryPathSchema,
   feedbackTicketHistoryProjectionSchema,
   feedbackTicketHistoryQuerySchema,
@@ -239,6 +244,9 @@ export interface ApiHttpDependencies {
   readonly transitionFeedbackTicket?: (
     command: TicketTransitionCommand,
   ) => Promise<FeedbackTicketState>;
+  readonly updateFeedbackTriageMetadata?: (
+    command: UpdateFeedbackTriageMetadataCommand,
+  ) => Promise<FeedbackTriageMetadataState>;
   readonly resolveFeedbackTicketParticipant?: (
     ticketId: string,
     scopeId: string,
@@ -841,6 +849,19 @@ function internalFeedbackTriageQueueProjection(
   });
 }
 
+function internalFeedbackTriageMetadataProjection(
+  state: FeedbackTriageMetadataState,
+): ApiSuccessEnvelope<unknown>["data"] {
+  return feedbackTriageMetadataProjectionSchema.parse({
+    ticketId: state.ticketId,
+    scopeId: state.scopeId,
+    status: state.status,
+    version: state.version,
+    priority: state.priority,
+    ...(state.assigneeId === undefined ? {} : { assigneeId: state.assigneeId }),
+  });
+}
+
 function internalFeedbackTicketHistoryProjection(
   state: FeedbackTicketHistoryState,
 ): ApiSuccessEnvelope<unknown>["data"] {
@@ -936,6 +957,7 @@ function isAllowed(
     capability === "VIEW_CONTENT_REVIEW_QUEUE" ||
     capability === "VIEW_FEEDBACK_QUEUE" ||
     capability === "TRANSITION_FEEDBACK_TICKET" ||
+    capability === "MANAGE_FEEDBACK_METADATA" ||
     capability === "REVIEW_APPEAL" ||
     capability === "VIEW_INTERNAL_SCOPES"
       ? {
@@ -2841,6 +2863,61 @@ async function handleTransitionFeedbackTicket(
   };
 }
 
+async function handleUpdateFeedbackTriageMetadata(
+  request: ApiHttpRequest,
+  ticketId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (dependencies.updateFeedbackTriageMetadata === undefined) {
+    return errorResponse("internal_error", requestId);
+  }
+  const parsedPath = feedbackTriageMetadataPathSchema.safeParse({ ticketId });
+  const parsedBody = feedbackTriageMetadataRequestSchema.safeParse(
+    request.body,
+  );
+  if (!parsedPath.success || !parsedBody.success) {
+    return validationResponse(requestId);
+  }
+  if (
+    !principal.scopes.some((scopeId) =>
+      isAllowed(
+        principal,
+        "MANAGE_FEEDBACK_METADATA",
+        { scopeId },
+        dependencies.approvedClinicalApproverId,
+      ),
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const state = await dependencies.updateFeedbackTriageMetadata({
+    principalId: principal.principalId,
+    accountStatus: principal.accountStatus,
+    roles: principal.roles,
+    scopes: principal.scopes,
+    ...(dependencies.approvedClinicalApproverId === undefined
+      ? {}
+      : {
+          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
+        }),
+    ticketId: parsedPath.data.ticketId,
+    expectedVersion: parsedBody.data.expectedVersion,
+    priority: parsedBody.data.priority,
+    assignment: parsedBody.data.assignment,
+    requestId,
+    correlationId: requestId,
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      internalFeedbackTriageMetadataProjection(state),
+      requestId,
+    ),
+  };
+}
+
 async function handleGetParticipantAppeals(
   request: ApiHttpRequest,
   requestId: string,
@@ -3350,6 +3427,22 @@ async function handleApiRequestCore(
       return await handleTransitionFeedbackTicket(
         request,
         feedbackTransitionMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const feedbackTriageMetadataMatch = request.path.match(
+      /^\/api\/v1\/internal\/feedback\/([^/]+)\/triage-metadata$/u,
+    );
+    if (request.method === "PATCH" && feedbackTriageMetadataMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleUpdateFeedbackTriageMetadata(
+        request,
+        feedbackTriageMetadataMatch[1],
         requestId,
         principal,
         dependencies,

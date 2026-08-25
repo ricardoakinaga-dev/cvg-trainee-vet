@@ -301,6 +301,12 @@ export function routeTemplate(method: string, path: string): string {
     return "/api/v1/internal/feedback/:ticketId/history";
   }
   if (
+    method === "PATCH" &&
+    /^\/api\/v1\/internal\/feedback\/[^/]+\/triage-metadata$/u.test(path)
+  ) {
+    return "/api/v1/internal/feedback/:ticketId/triage-metadata";
+  }
+  if (
     method === "GET" &&
     /^\/api\/v1\/internal\/appeals\/[^/]+\/impact-preview$/u.test(path)
   ) {

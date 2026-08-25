@@ -196,6 +196,7 @@ const feedbackTriageQueue = {
       createdAt: "2026-08-23T10:00:00.000Z",
       status: "NOVO",
       version: 0,
+      priority: "NORMAL",
     },
   ],
 };
@@ -210,6 +211,7 @@ const feedbackTriageQueueSecondPage = {
       createdAt: "2026-08-22T10:00:00.000Z",
       status: "NOVO",
       version: 0,
+      priority: "NORMAL",
     },
   ],
 };
@@ -431,6 +433,44 @@ test.describe("staff training dashboard", () => {
           return;
         }
         if (route.request().method() === "PATCH") {
+          if (route.request().url().includes("/triage-metadata")) {
+            const request = route.request().postDataJSON() as Readonly<{
+              readonly expectedVersion?: number;
+              readonly priority?: string;
+              readonly assignment?: string;
+            }>;
+            expect(request).toEqual({
+              expectedVersion: 1,
+              priority: "NORMAL",
+              assignment: "ASSUMIR",
+            });
+            currentFeedbackQueue = {
+              ...currentFeedbackQueue,
+              items: [
+                {
+                  ...currentFeedbackQueue.items[0],
+                  priority: "ALTA",
+                  assigneeId: "88888888-8888-4888-8888-888888888888",
+                  version: 2,
+                },
+              ],
+            };
+            await route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify(
+                successEnvelope({
+                  ticketId: currentFeedbackQueue.items[0].ticketId,
+                  scopeId: currentFeedbackQueue.scopeId,
+                  status: currentFeedbackQueue.items[0].status,
+                  version: 2,
+                  priority: "ALTA",
+                  assigneeId: "88888888-8888-4888-8888-888888888888",
+                }),
+              ),
+            });
+            return;
+          }
           const request = route.request().postDataJSON() as Readonly<{
             readonly ticketId?: string;
             readonly scopeId?: string;
@@ -497,11 +537,24 @@ test.describe("staff training dashboard", () => {
           });
           return;
         }
+        const triagedQueue = {
+          ...feedbackTriageQueueTriagedFilter,
+          items: [
+            {
+              ...feedbackTriageQueueTriagedFilter.items[0],
+              priority: currentFeedbackQueue.items[0].priority,
+              ...(currentFeedbackQueue.items[0].assigneeId === undefined
+                ? {}
+                : { assigneeId: currentFeedbackQueue.items[0].assigneeId }),
+              version: currentFeedbackQueue.items[0].version,
+            },
+          ],
+        };
         const queue =
           cursor === "feedback-cursor-page-2"
             ? feedbackTriageQueueSecondPage
             : status === "TRIADO"
-              ? feedbackTriageQueueTriagedFilter
+              ? triagedQueue
               : currentFeedbackQueue;
         await route.fulfill({
           status: 200,
@@ -618,13 +671,24 @@ test.describe("staff training dashboard", () => {
     delayFeedbackPatch = true;
     await page.getByRole("button", { name: "Triar" }).click();
     await expect.poll(() => feedbackPatchPending).toBe(true);
-    await feedbackQueuePanel.locator("select").selectOption("TRIADO");
+    await feedbackQueuePanel
+      .getByRole("combobox")
+      .first()
+      .selectOption("TRIADO");
     await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
     expect(releaseFeedbackPatch).not.toBeNull();
     releaseFeedbackPatch?.();
     delayFeedbackPatch = false;
     await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
-    await feedbackQueuePanel.locator("select").selectOption("");
+    await feedbackQueuePanel
+      .getByRole("button", { name: "Assumir para mim" })
+      .click();
+    await expect(
+      feedbackQueuePanel.getByRole("button", {
+        name: "Liberar responsável",
+      }),
+    ).toBeVisible();
+    await feedbackQueuePanel.getByRole("combobox").first().selectOption("");
     await expect(
       page.getByText("Relato sintético precisa de triagem."),
     ).toBeVisible();
@@ -642,7 +706,10 @@ test.describe("staff training dashboard", () => {
       page.getByText("Segundo relato sintético precisa de triagem."),
     ).toBeVisible();
     failNextTriagedFeedbackQueue = true;
-    await feedbackQueuePanel.locator("select").selectOption("TRIADO");
+    await feedbackQueuePanel
+      .getByRole("combobox")
+      .first()
+      .selectOption("TRIADO");
     await expect(feedbackQueuePanel.getByRole("alert")).toContainText(
       "Não foi possível carregar a fila de relatos.",
     );
@@ -650,7 +717,7 @@ test.describe("staff training dashboard", () => {
       .getByRole("button", { name: "Tentar novamente" })
       .click();
     await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
-    await feedbackQueuePanel.locator("select").selectOption("");
+    await feedbackQueuePanel.getByRole("combobox").first().selectOption("");
     await expect(
       page.getByText("Relato sintético precisa de triagem."),
     ).toBeVisible();

@@ -306,6 +306,10 @@ export function createFeedbackTriageQueueRepository(
             createdAt: scoped.state.createdAt,
             status: scoped.state.status,
             version: scoped.state.version,
+            priority: scoped.state.priority,
+            ...(scoped.state.assigneeId === undefined
+              ? {}
+              : { assigneeId: scoped.state.assigneeId }),
           });
         });
         const generatedAt = now();

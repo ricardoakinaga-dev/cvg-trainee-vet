@@ -220,6 +220,23 @@ describe("authorization policy", () => {
     expect(canAccess({ ...moderator, accountStatus: "SUSPENDED" })).toBe(false);
   });
 
+  it("limits feedback metadata changes to moderator and administrator roles", () => {
+    const moderator = {
+      principalId: "moderator-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      capability: "MANAGE_FEEDBACK_METADATA" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(moderator)).toBe(true);
+    expect(canAccess({ ...moderator, roles: ["CLINICAL_APPROVER"] })).toBe(
+      false,
+    );
+    expect(canAccess({ ...moderator, roles: ["PARTICIPANT"] })).toBe(false);
+    expect(canAccess({ ...moderator, scopes: ["other-scope"] })).toBe(false);
+  });
+
   it("requires the configured identity for a clinical queue reader", () => {
     const request = {
       principalId: "ricardo-account",

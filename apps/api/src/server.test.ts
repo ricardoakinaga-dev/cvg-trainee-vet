@@ -97,6 +97,12 @@ describe("API node server adapter", () => {
       "/api/v1/internal/feedback/:ticketId",
     );
     expect(
+      routeTemplate(
+        "PATCH",
+        "/api/v1/internal/feedback/ticket/triage-metadata",
+      ),
+    ).toBe("/api/v1/internal/feedback/:ticketId/triage-metadata");
+    expect(
       routeTemplate("GET", "/api/v1/internal/feedback/ticket/history"),
     ).toBe("/api/v1/internal/feedback/:ticketId/history");
     expect(routeTemplate("POST", "/api/v1/appeals")).toBe("/api/v1/appeals");

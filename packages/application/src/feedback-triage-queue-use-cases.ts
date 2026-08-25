@@ -10,6 +10,8 @@ export type FeedbackTriageQueueStatus =
   | "DUPLICADO"
   | "NAO_REPRODUZIDO"
   | "NAO_PLANEJADO";
+export type FeedbackTriageQueuePriority =
+  "BAIXA" | "NORMAL" | "ALTA" | "URGENTE";
 
 export class FeedbackTriageQueueQueryError extends TypeError {
   constructor(message: string) {
@@ -37,6 +39,8 @@ export type FeedbackTriageQueueItem = Readonly<{
   readonly createdAt: string;
   readonly status: FeedbackTriageQueueStatus;
   readonly version: number;
+  readonly priority: FeedbackTriageQueuePriority;
+  readonly assigneeId?: string;
 }>;
 
 export type FeedbackTriageQueueState = Readonly<{
@@ -85,6 +89,12 @@ const queueStatuses: readonly FeedbackTriageQueueStatus[] = [
   "DUPLICADO",
   "NAO_REPRODUZIDO",
   "NAO_PLANEJADO",
+];
+const queuePriorities: readonly FeedbackTriageQueuePriority[] = [
+  "BAIXA",
+  "NORMAL",
+  "ALTA",
+  "URGENTE",
 ];
 
 function assertNonEmpty(value: string, field: string): void {
@@ -169,6 +179,8 @@ function assertQueueState(
       !uuidPattern.test(item.ticketId) ||
       seen.has(item.ticketId) ||
       !queueStatuses.includes(item.status) ||
+      !queuePriorities.includes(item.priority) ||
+      (item.assigneeId !== undefined && !uuidPattern.test(item.assigneeId)) ||
       typeof item.description !== "string" ||
       item.description.trim().length === 0 ||
       item.description.length > 10_000 ||

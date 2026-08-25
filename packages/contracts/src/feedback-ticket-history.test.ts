@@ -38,6 +38,19 @@ describe("feedback ticket history contracts", () => {
           toStatus: "TRIADO",
           createdAt,
         },
+        {
+          historyId: "44444444-4444-4444-8444-444444444444",
+          ticketId,
+          ticketVersion: 2,
+          eventType: "METADATA_ALTERADO",
+          fromStatus: "TRIADO",
+          toStatus: "TRIADO",
+          fromPriority: "NORMAL",
+          toPriority: "ALTA",
+          fromAssigneeId: null,
+          toAssigneeId: "55555555-5555-4555-8555-555555555555",
+          createdAt,
+        },
       ],
     });
     expect(result.ticketId).toBe(ticketId);

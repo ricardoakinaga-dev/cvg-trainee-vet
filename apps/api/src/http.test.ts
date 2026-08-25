@@ -296,6 +296,7 @@ const feedbackTriageQueue: FeedbackTriageQueueState = {
       createdAt: "2026-08-24T11:00:00.000Z",
       status: "NOVO",
       version: 0,
+      priority: "NORMAL",
     },
   ],
   hasNext: true,
@@ -3478,6 +3479,7 @@ describe("API HTTP boundary", () => {
       createdAt: "2026-08-10T17:00:00.000Z",
       status: "NOVO",
       version: 0,
+      priority: "NORMAL",
     };
     const appeal: AppealState = {
       appealId: "77777777-7777-4777-8777-777777777777",
@@ -3752,6 +3754,7 @@ describe("API HTTP boundary", () => {
       createdAt: "2026-08-10T17:00:00.000Z",
       status: "NOVO",
       version: 0,
+      priority: "NORMAL",
     };
     const appeal: AppealState = {
       appealId,
@@ -3989,6 +3992,109 @@ describe("API HTTP boundary", () => {
     expect(JSON.stringify(response.body)).not.toContain("reviewerId");
   });
 
+  it("keeps feedback triage metadata scoped, strict and server-assigned", async () => {
+    const ticketId = "55555555-5555-4555-8555-555555555555";
+    const scopeId = "11111111-1111-4111-8111-111111111111";
+    const moderatorId = "88888888-8888-4888-8888-888888888888";
+    const updateFeedbackTriageMetadata = vi.fn(async (command) => ({
+      ticketId: command.ticketId,
+      scopeId,
+      status: "NOVO" as const,
+      version: command.expectedVersion + 1,
+      priority: command.priority,
+      assigneeId:
+        command.assignment === "ASSUMIR" ? command.principalId : undefined,
+    }));
+    const staff = {
+      principalId: moderatorId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      scopes: [scopeId] as const,
+    };
+
+    const response = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/feedback/${ticketId}/triage-metadata`,
+        body: {
+          expectedVersion: 0,
+          priority: "ALTA",
+          assignment: "ASSUMIR",
+        },
+      },
+      dependencies({
+        authenticate: async () => staff,
+        updateFeedbackTriageMetadata,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        ticketId,
+        scopeId,
+        priority: "ALTA",
+        assigneeId: moderatorId,
+      },
+    });
+    expect(updateFeedbackTriageMetadata).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ticketId,
+        expectedVersion: 0,
+        priority: "ALTA",
+        assignment: "ASSUMIR",
+        scopes: [scopeId],
+      }),
+    );
+    expect(updateFeedbackTriageMetadata.mock.calls[0]?.[0]).not.toHaveProperty(
+      "scopeId",
+    );
+    expect(JSON.stringify(response.body)).not.toContain("participantId");
+
+    const extraField = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/feedback/${ticketId}/triage-metadata`,
+        body: {
+          expectedVersion: 0,
+          priority: "ALTA",
+          assignment: "ASSUMIR",
+          scopeId,
+        },
+      },
+      dependencies({
+        authenticate: async () => staff,
+        updateFeedbackTriageMetadata,
+      }),
+    );
+    expect(extraField.status).toBe(422);
+    expect(updateFeedbackTriageMetadata).toHaveBeenCalledOnce();
+
+    const participant = await handleApiRequest(
+      {
+        method: "PATCH",
+        path: `/api/v1/internal/feedback/${ticketId}/triage-metadata`,
+        body: {
+          expectedVersion: 0,
+          priority: "ALTA",
+          assignment: "ASSUMIR",
+        },
+      },
+      dependencies({
+        updateFeedbackTriageMetadata,
+        authenticate: async () => ({
+          principalId: "22222222-2222-4222-8222-222222222222",
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+        }),
+      }),
+    );
+    expect(participant.status).toBe(403);
+    expect(updateFeedbackTriageMetadata).toHaveBeenCalledOnce();
+  });
+
   it("derives feedback transition identity server-side and allows only approved clinical staff", async () => {
     const scopeId = "11111111-1111-4111-8111-111111111111";
     const ticketId = "55555555-5555-4555-8555-555555555555";
@@ -4002,6 +4108,7 @@ describe("API HTTP boundary", () => {
       createdAt: "2026-08-10T17:00:00.000Z",
       status: "TRIADO",
       version: 1,
+      priority: "NORMAL",
     };
     const transitionFeedbackTicket = vi.fn(async () => ticket);
     const resolveFeedbackTicketParticipant = vi.fn(async () => participantId);

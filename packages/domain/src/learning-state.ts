@@ -355,6 +355,8 @@ export function transitionAssessmentWorkflowResult(
 export type FeedbackTicketType =
   "BUG_TECNICO" | "USABILIDADE" | "ERRO_CONTEUDO" | "MELHORIA" | "CONTESTACAO";
 
+export type FeedbackTicketPriority = "BAIXA" | "NORMAL" | "ALTA" | "URGENTE";
+
 export type FeedbackTicketStatus =
   | "NOVO"
   | "TRIADO"
@@ -373,6 +375,8 @@ export interface FeedbackTicketState {
   readonly createdAt: string;
   readonly version: number;
   readonly status: FeedbackTicketStatus;
+  readonly priority: FeedbackTicketPriority;
+  readonly assigneeId?: string;
 }
 
 const feedbackTicketTypes: readonly FeedbackTicketType[] = [
@@ -381,6 +385,12 @@ const feedbackTicketTypes: readonly FeedbackTicketType[] = [
   "ERRO_CONTEUDO",
   "MELHORIA",
   "CONTESTACAO",
+];
+const feedbackTicketPriorities: readonly FeedbackTicketPriority[] = [
+  "BAIXA",
+  "NORMAL",
+  "ALTA",
+  "URGENTE",
 ];
 
 export type FeedbackTicketEvent =
@@ -425,6 +435,27 @@ function assertPlainText(
   }
 }
 
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+function assertFeedbackTicketPriority(
+  value: unknown,
+): asserts value is FeedbackTicketPriority {
+  if (!feedbackTicketPriorities.includes(value as FeedbackTicketPriority)) {
+    throw new LearningAssignmentDomainError(
+      "feedback ticket priority is not supported",
+    );
+  }
+}
+
+function assertFeedbackTicketAssignee(value: string | null): void {
+  if (value !== null && !uuidPattern.test(value)) {
+    throw new LearningAssignmentDomainError(
+      "feedback ticket assignee is invalid",
+    );
+  }
+}
+
 export function createFeedbackTicket(
   input: Readonly<{
     readonly ticketId: string;
@@ -449,6 +480,55 @@ export function createFeedbackTicket(
     ...input,
     status: "NOVO" as const,
     version: 0,
+    priority: "NORMAL" as const,
+  });
+}
+
+export function setFeedbackTicketTriage(
+  state: FeedbackTicketState,
+  input: Readonly<{
+    readonly priority: FeedbackTicketPriority;
+    readonly assigneeId: string | null;
+  }>,
+): FeedbackTicketState {
+  if (state === null || typeof state !== "object") {
+    throw new LearningAssignmentDomainError("ticket state must be an object");
+  }
+  assertNonEmpty(state.ticketId, "ticketId");
+  assertNonEmpty(state.participantId, "participantId");
+  assertPlainText(state.description, "description");
+  if (!isValidIsoTimestamp(state.createdAt)) {
+    throw new LearningAssignmentDomainError(
+      "createdAt must be a valid timestamp",
+    );
+  }
+  if (!Number.isInteger(state.version) || state.version < 0) {
+    throw new LearningAssignmentDomainError(
+      "ticket version must be non-negative",
+    );
+  }
+  if (!feedbackTransitions[state.status]) {
+    throw new LearningAssignmentDomainError("ticket status is not supported");
+  }
+  if (!feedbackTicketTypes.includes(state.type)) {
+    throw new LearningAssignmentDomainError("ticket type is not supported");
+  }
+  assertFeedbackTicketPriority(state.priority);
+  if (state.assigneeId !== undefined) {
+    assertFeedbackTicketAssignee(state.assigneeId);
+  }
+  assertFeedbackTicketPriority(input.priority);
+  assertFeedbackTicketAssignee(input.assigneeId);
+  return freeze({
+    ticketId: state.ticketId,
+    participantId: state.participantId,
+    type: state.type,
+    description: state.description,
+    createdAt: state.createdAt,
+    status: state.status,
+    priority: input.priority,
+    version: state.version + 1,
+    ...(input.assigneeId === null ? {} : { assigneeId: input.assigneeId }),
   });
 }
 
@@ -471,6 +551,10 @@ export function transitionFeedbackTicket(
     throw new LearningAssignmentDomainError(
       "ticket version must be non-negative",
     );
+  }
+  assertFeedbackTicketPriority(state.priority);
+  if (state.assigneeId !== undefined) {
+    assertFeedbackTicketAssignee(state.assigneeId);
   }
   if (
     !Object.prototype.hasOwnProperty.call(feedbackTransitions, state.status)

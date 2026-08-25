@@ -242,6 +242,21 @@ export {
   transitionFeedbackTicketState,
   transitionLearningAssignmentState,
 } from "./learning-state-use-cases.js";
+export { updateFeedbackTriageMetadata } from "./feedback-triage-metadata-use-cases.js";
+export type {
+  FeedbackTriageMetadataAssignment,
+  FeedbackTriageMetadataPriority,
+  FeedbackTriageMetadataReadPort,
+  FeedbackTriageMetadataState,
+  FeedbackTriageMetadataStatus,
+  FeedbackTriageMetadataUpdateInput,
+  UpdateFeedbackTriageMetadataCommand,
+} from "./feedback-triage-metadata-use-cases.js";
+export {
+  FeedbackTriageMetadataConflictError,
+  FeedbackTriageMetadataEligibilityError,
+} from "./feedback-triage-metadata-use-cases.js";
+export type { FeedbackTriageQueuePriority } from "./feedback-triage-queue-use-cases.js";
 export { getParticipantAppeals } from "./appeal-use-cases.js";
 export type {
   AppealCreateCommand,

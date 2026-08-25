@@ -61,6 +61,28 @@ describe("getFeedbackTicketHistory", () => {
     expect(Object.isFrozen(result.events)).toBe(true);
   });
 
+  it("accepts metadata lineage without exposing participant content", async () => {
+    const metadataEvent = {
+      historyId: "55555555-5555-4555-8555-555555555555",
+      ticketId,
+      ticketVersion: 1,
+      eventType: "METADATA_ALTERADO" as const,
+      fromStatus: "NOVO" as const,
+      toStatus: "NOVO" as const,
+      fromPriority: "NORMAL" as const,
+      toPriority: "ALTA" as const,
+      fromAssigneeId: null,
+      toAssigneeId: principalId,
+      createdAt,
+    };
+    await expect(
+      getFeedbackTicketHistory(
+        command(),
+        port({ ticketExists: true, scopeId, events: [metadataEvent] }),
+      ),
+    ).resolves.toMatchObject({ events: [metadataEvent] });
+  });
+
   it("returns null for a ticket outside every authorized scope", async () => {
     await expect(
       getFeedbackTicketHistory(

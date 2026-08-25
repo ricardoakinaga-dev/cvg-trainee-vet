@@ -5,7 +5,7 @@ export type FeedbackTicketHistoryEvent = Readonly<{
   readonly historyId: string;
   readonly ticketId: string;
   readonly ticketVersion: number;
-  readonly eventType: "CRIADO" | "STATUS_ALTERADO";
+  readonly eventType: "CRIADO" | "STATUS_ALTERADO" | "METADATA_ALTERADO";
   readonly fromStatus?:
     | "NOVO"
     | "TRIADO"
@@ -24,6 +24,10 @@ export type FeedbackTicketHistoryEvent = Readonly<{
     | "DUPLICADO"
     | "NAO_REPRODUZIDO"
     | "NAO_PLANEJADO";
+  readonly fromPriority?: "BAIXA" | "NORMAL" | "ALTA" | "URGENTE";
+  readonly toPriority?: "BAIXA" | "NORMAL" | "ALTA" | "URGENTE";
+  readonly fromAssigneeId?: string | null;
+  readonly toAssigneeId?: string | null;
   readonly createdAt: string;
 }>;
 
@@ -70,6 +74,9 @@ const statuses: readonly NonNullable<FeedbackTicketHistoryEvent["toStatus"]>[] =
     "NAO_REPRODUZIDO",
     "NAO_PLANEJADO",
   ];
+const priorities: readonly NonNullable<
+  FeedbackTicketHistoryEvent["toPriority"]
+>[] = ["BAIXA", "NORMAL", "ALTA", "URGENTE"];
 
 function assertNonEmpty(value: string, field: string): void {
   if (value.trim().length === 0) {
@@ -129,13 +136,32 @@ function validateEvents(
       !uuidPattern.test(event.historyId) ||
       !Number.isInteger(event.ticketVersion) ||
       event.ticketVersion < 0 ||
-      (event.eventType !== "CRIADO" && event.eventType !== "STATUS_ALTERADO") ||
+      !["CRIADO", "STATUS_ALTERADO", "METADATA_ALTERADO"].includes(
+        event.eventType,
+      ) ||
       (event.fromStatus !== undefined &&
         !statuses.includes(event.fromStatus)) ||
       !statuses.includes(event.toStatus) ||
       (event.eventType === "CRIADO" && event.fromStatus !== undefined) ||
       (event.eventType === "STATUS_ALTERADO" &&
         event.fromStatus === undefined) ||
+      (event.eventType === "METADATA_ALTERADO" &&
+        (event.fromStatus === undefined ||
+          event.fromStatus !== event.toStatus ||
+          event.fromPriority === undefined ||
+          event.toPriority === undefined ||
+          !priorities.includes(event.fromPriority) ||
+          !priorities.includes(event.toPriority))) ||
+      (event.fromPriority !== undefined &&
+        !priorities.includes(event.fromPriority)) ||
+      (event.toPriority !== undefined &&
+        !priorities.includes(event.toPriority)) ||
+      (event.fromAssigneeId !== undefined &&
+        event.fromAssigneeId !== null &&
+        !uuidPattern.test(event.fromAssigneeId)) ||
+      (event.toAssigneeId !== undefined &&
+        event.toAssigneeId !== null &&
+        !uuidPattern.test(event.toAssigneeId)) ||
       Number.isNaN(new Date(event.createdAt).getTime())
     ) {
       throw new ApplicationError(

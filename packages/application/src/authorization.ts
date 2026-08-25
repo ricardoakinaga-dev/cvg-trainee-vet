@@ -35,6 +35,7 @@ export type Capability =
   | "MANAGE_ASSESSMENT_WORKFLOWS"
   | "CREATE_FEEDBACK_TICKET"
   | "TRANSITION_FEEDBACK_TICKET"
+  | "MANAGE_FEEDBACK_METADATA"
   | "CREATE_APPEAL"
   | "REVIEW_APPEAL";
 
@@ -110,6 +111,11 @@ export function canAccess(request: AuthorizationRequest): boolean {
     case "VIEW_FEEDBACK_QUEUE":
     case "TRANSITION_FEEDBACK_TICKET":
       return hasScopedStaffRole(request) && hasScope(request);
+    case "MANAGE_FEEDBACK_METADATA":
+      return (
+        (hasRole(request, "MODERATOR") || hasRole(request, "ADMIN")) &&
+        hasScope(request)
+      );
     case "REVIEW_APPEAL":
       return hasScopedStaffRole(request) && hasScope(request);
     case "CORRECT_ATTEMPT":

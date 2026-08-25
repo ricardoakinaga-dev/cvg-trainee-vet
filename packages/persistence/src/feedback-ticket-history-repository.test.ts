@@ -51,6 +51,28 @@ describe("feedback ticket history repository mapping", () => {
     ).toBeUndefined();
   });
 
+  it("maps priority and self-assignment lineage for metadata events", () => {
+    expect(
+      feedbackTicketHistoryRowToEvent(
+        row({
+          eventType: "METADATA_ALTERADO",
+          fromStatus: "TRIADO",
+          toStatus: "TRIADO",
+          fromPriority: "NORMAL",
+          toPriority: "ALTA",
+          fromAssigneeId: null,
+          toAssigneeId: "44444444-4444-4444-8444-444444444444",
+        }),
+      ),
+    ).toMatchObject({
+      eventType: "METADATA_ALTERADO",
+      fromPriority: "NORMAL",
+      toPriority: "ALTA",
+      fromAssigneeId: null,
+      toAssigneeId: "44444444-4444-4444-8444-444444444444",
+    });
+  });
+
   it("rejects malformed rows", () => {
     expect(() =>
       feedbackTicketHistoryRowToEvent(row({ ticketVersion: -1 })),

@@ -19,6 +19,7 @@ const typeSchema = z.enum([
   "MELHORIA",
   "CONTESTACAO",
 ]);
+const prioritySchema = z.enum(["BAIXA", "NORMAL", "ALTA", "URGENTE"]);
 const plainTextSchema = z
   .string()
   .trim()
@@ -43,6 +44,8 @@ const queueItemSchema = z
     createdAt: z.iso.datetime(),
     status: statusSchema,
     version: z.number().int().nonnegative(),
+    priority: prioritySchema,
+    assigneeId: idSchema.optional(),
   })
   .strict();
 

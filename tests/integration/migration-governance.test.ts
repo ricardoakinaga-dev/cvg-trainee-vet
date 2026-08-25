@@ -297,6 +297,45 @@ describe("migration governance", () => {
     expect(migration).toContain("FOR UPDATE");
   });
 
+  it("keeps feedback metadata updates scoped, versioned and append-only", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0041_feedback_triage_metadata.sql",
+        import.meta.url,
+      ),
+    );
+    const repositoryPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/feedback-triage-metadata-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const [migration, repository] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(repositoryPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      "ADD COLUMN \"priority\" text DEFAULT 'NORMAL' NOT NULL",
+    );
+    expect(migration).toContain('ADD COLUMN "assignee_id" uuid');
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_tickets_staff_scope_update_policy"',
+    );
+    expect(migration).toContain(
+      "staff feedback updates are limited to triage metadata",
+    );
+    expect(migration).toContain("NEW.version IS DISTINCT FROM OLD.version + 1");
+    expect(migration).toContain("METADATA_ALTERADO");
+    expect(migration).toContain(
+      "NEW.to_priority IS DISTINCT FROM parent_priority",
+    );
+    expect(repository).toContain("scopeIds");
+    expect(repository).toContain("FeedbackTriageMetadataConflictError");
+    expect(repository).toContain("feedbackTicketHistory");
+    expect(repository).not.toContain("participantId: input");
+  });
+
   it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {
     const integrationPath = fileURLToPath(
       new URL("./postgres-learning-state.test.ts", import.meta.url),

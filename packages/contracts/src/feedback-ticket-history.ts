@@ -13,7 +13,12 @@ const statusSchema = z.enum([
   "NAO_PLANEJADO",
 ]);
 
-const eventTypeSchema = z.enum(["CRIADO", "STATUS_ALTERADO"]);
+const eventTypeSchema = z.enum([
+  "CRIADO",
+  "STATUS_ALTERADO",
+  "METADATA_ALTERADO",
+]);
+const prioritySchema = z.enum(["BAIXA", "NORMAL", "ALTA", "URGENTE"]);
 
 export const feedbackTicketHistoryPathSchema = z
   .object({ ticketId: idSchema })
@@ -31,6 +36,10 @@ const eventProjectionSchema = z
     eventType: eventTypeSchema,
     fromStatus: statusSchema.optional(),
     toStatus: statusSchema,
+    fromPriority: prioritySchema.optional(),
+    toPriority: prioritySchema.optional(),
+    fromAssigneeId: z.union([idSchema, z.null()]).optional(),
+    toAssigneeId: z.union([idSchema, z.null()]).optional(),
     createdAt: timestampSchema,
   })
   .strict()
@@ -50,6 +59,19 @@ const eventProjectionSchema = z
         code: "custom",
         path: ["fromStatus"],
         message: "status changes require a previous status",
+      });
+    }
+    if (
+      value.eventType === "METADATA_ALTERADO" &&
+      (value.fromStatus === undefined ||
+        value.fromStatus !== value.toStatus ||
+        value.fromPriority === undefined ||
+        value.toPriority === undefined)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["eventType"],
+        message: "metadata changes require same status and priority lineage",
       });
     }
   });

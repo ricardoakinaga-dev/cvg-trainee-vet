@@ -239,6 +239,16 @@ export type {
   FeedbackTriageQueueQuery,
 } from "./feedback-triage-queue.js";
 export {
+  feedbackTriageMetadataPathSchema,
+  feedbackTriageMetadataProjectionSchema,
+  feedbackTriageMetadataRequestSchema,
+} from "./feedback-triage-metadata.js";
+export type {
+  FeedbackTriageMetadataPath,
+  FeedbackTriageMetadataProjection,
+  FeedbackTriageMetadataRequest,
+} from "./feedback-triage-metadata.js";
+export {
   feedbackTicketHistoryPathSchema,
   feedbackTicketHistoryProjectionSchema,
   feedbackTicketHistoryQuerySchema,

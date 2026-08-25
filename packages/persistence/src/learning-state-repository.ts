@@ -8,6 +8,7 @@ import type {
   AppealStatus,
   AssessmentWorkflowState,
   AssessmentWorkflowStatus,
+  FeedbackTicketPriority,
   FeedbackTicketState,
   FeedbackTicketStatus,
   FeedbackTicketType,
@@ -173,6 +174,8 @@ export type FeedbackTicketRowShape = Readonly<{
   readonly createdAt: Date;
   readonly version: number;
   readonly status: string;
+  readonly priority?: string;
+  readonly assigneeId?: string | null;
   readonly updatedAt: Date;
 }>;
 
@@ -185,6 +188,8 @@ export type FeedbackTicketInsertRow = Readonly<{
   readonly createdAt: Date;
   readonly version: number;
   readonly status: FeedbackTicketStatus;
+  readonly priority: FeedbackTicketPriority;
+  readonly assigneeId: string | null;
 }>;
 
 export type AppealRowShape = Readonly<{
@@ -276,6 +281,12 @@ const ticketStatuses: readonly FeedbackTicketStatus[] = [
   "DUPLICADO",
   "NAO_REPRODUZIDO",
   "NAO_PLANEJADO",
+];
+const ticketPriorities: readonly FeedbackTicketPriority[] = [
+  "BAIXA",
+  "NORMAL",
+  "ALTA",
+  "URGENTE",
 ];
 const appealStatuses: readonly AppealStatus[] = [
   "ABERTA",
@@ -560,6 +571,10 @@ export function feedbackTicketStateToRow(
   assertTimestamp(input.state.createdAt, "createdAt");
   assertVersion(input.state.version, "ticket version");
   assertOneOf(input.state.status, ticketStatuses, "status");
+  assertOneOf(input.state.priority, ticketPriorities, "priority");
+  if (input.state.assigneeId !== undefined) {
+    assertNonEmpty(input.state.assigneeId, "assigneeId");
+  }
   return Object.freeze({
     id: input.state.ticketId,
     participantId: input.state.participantId,
@@ -569,6 +584,8 @@ export function feedbackTicketStateToRow(
     createdAt: new Date(input.state.createdAt),
     version: input.state.version,
     status: input.state.status,
+    priority: input.state.priority,
+    assigneeId: input.state.assigneeId ?? null,
   });
 }
 
@@ -583,6 +600,11 @@ export function feedbackTicketRowToState(
   assertTimestamp(dateToIso(row.createdAt, "createdAt"), "createdAt");
   assertVersion(row.version, "ticket version");
   assertOneOf(row.status, ticketStatuses, "status");
+  const priority = row.priority ?? "NORMAL";
+  assertOneOf(priority, ticketPriorities, "priority");
+  if (row.assigneeId !== undefined && row.assigneeId !== null) {
+    assertNonEmpty(row.assigneeId, "assigneeId");
+  }
   dateToIso(row.updatedAt, "updatedAt");
   return Object.freeze({
     scopeId: row.scopeId,
@@ -594,6 +616,10 @@ export function feedbackTicketRowToState(
       createdAt: row.createdAt.toISOString(),
       version: row.version,
       status: row.status,
+      priority,
+      ...(row.assigneeId === undefined || row.assigneeId === null
+        ? {}
+        : { assigneeId: row.assigneeId }),
     }),
   });
 }
@@ -1059,9 +1085,15 @@ export function createLearningStateRepository(
       const row = feedbackTicketStateToRow({ scopeId: context.scopeId, state });
       const now = new Date();
       let fromStatus: string | null = null;
+      let fromPriority: string | null = null;
+      let fromAssigneeId: string | null = null;
       if (row.version > 0) {
         const previousRows = await tx
-          .select({ status: feedbackTickets.status })
+          .select({
+            status: feedbackTickets.status,
+            priority: feedbackTickets.priority,
+            assigneeId: feedbackTickets.assigneeId,
+          })
           .from(feedbackTickets)
           .where(
             and(
@@ -1077,6 +1109,8 @@ export function createLearningStateRepository(
           conflict("feedback ticket previous version was not found");
         }
         fromStatus = previous.status;
+        fromPriority = previous.priority;
+        fromAssigneeId = previous.assigneeId;
       }
       if (row.version === 0) {
         const inserted = await tx
@@ -1094,6 +1128,8 @@ export function createLearningStateRepository(
             type: row.type,
             description: row.description,
             status: row.status,
+            priority: row.priority,
+            assigneeId: row.assigneeId,
             version: row.version,
             updatedAt: now,
           })
@@ -1122,6 +1158,10 @@ export function createLearningStateRepository(
         eventType: row.version === 0 ? "CRIADO" : "STATUS_ALTERADO",
         fromStatus,
         toStatus: row.status,
+        fromPriority,
+        toPriority: row.priority,
+        fromAssigneeId,
+        toAssigneeId: row.assigneeId,
         createdAt: now,
       });
       await tx.execute(

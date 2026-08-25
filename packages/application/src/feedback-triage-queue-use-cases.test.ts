@@ -27,6 +27,7 @@ const item: FeedbackTriageQueueState["items"][number] = {
   createdAt: "2026-08-24T11:00:00.000Z",
   status: "NOVO",
   version: 0,
+  priority: "NORMAL",
 };
 
 function repository(

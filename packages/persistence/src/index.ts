@@ -117,6 +117,7 @@ export {
 } from "./learning-state-repository.js";
 export { createFeedbackTicketReadRepository } from "./feedback-ticket-read-repository.js";
 export type { FeedbackTicketReadRepository } from "./feedback-ticket-read-repository.js";
+export { createFeedbackTriageMetadataRepository } from "./feedback-triage-metadata-repository.js";
 export type {
   AppealReadRepository,
   AppealInsertRow,

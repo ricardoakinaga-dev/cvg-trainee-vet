@@ -1042,6 +1042,10 @@ export const feedbackTickets = pgTable(
     type: text("type").notNull(),
     description: text("description").notNull(),
     status: text("status").notNull(),
+    priority: text("priority").notNull().default("NORMAL"),
+    assigneeId: uuid("assignee_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
     version: integer("version").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
@@ -1075,6 +1079,10 @@ export const feedbackTickets = pgTable(
       sql`${table.status} in ('NOVO', 'TRIADO', 'EM_TRATAMENTO', 'AGUARDA_USUARIO', 'RESOLVIDO', 'DUPLICADO', 'NAO_REPRODUZIDO', 'NAO_PLANEJADO')`,
     ),
     check(
+      "feedback_tickets_priority_check",
+      sql`${table.priority} in ('BAIXA', 'NORMAL', 'ALTA', 'URGENTE')`,
+    ),
+    check(
       "feedback_tickets_description_check",
       sql`length(trim(${table.description})) between 1 and 10000 and ${table.description} not like '%<%>'`,
     ),
@@ -1092,6 +1100,10 @@ export const feedbackTicketHistory = pgTable(
     eventType: text("event_type").notNull(),
     fromStatus: text("from_status"),
     toStatus: text("to_status").notNull(),
+    fromPriority: text("from_priority"),
+    toPriority: text("to_priority"),
+    fromAssigneeId: uuid("from_assignee_id"),
+    toAssigneeId: uuid("to_assignee_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -1113,7 +1125,7 @@ export const feedbackTicketHistory = pgTable(
     ),
     check(
       "feedback_ticket_history_event_check",
-      sql`${table.eventType} in ('CRIADO', 'STATUS_ALTERADO')`,
+      sql`${table.eventType} in ('CRIADO', 'STATUS_ALTERADO', 'METADATA_ALTERADO')`,
     ),
     check(
       "feedback_ticket_history_from_status_check",
@@ -1124,12 +1136,20 @@ export const feedbackTicketHistory = pgTable(
       sql`${table.toStatus} in ('NOVO', 'TRIADO', 'EM_TRATAMENTO', 'AGUARDA_USUARIO', 'RESOLVIDO', 'DUPLICADO', 'NAO_REPRODUZIDO', 'NAO_PLANEJADO')`,
     ),
     check(
+      "feedback_ticket_history_from_priority_check",
+      sql`${table.fromPriority} is null or ${table.fromPriority} in ('BAIXA', 'NORMAL', 'ALTA', 'URGENTE')`,
+    ),
+    check(
+      "feedback_ticket_history_to_priority_check",
+      sql`${table.toPriority} is null or ${table.toPriority} in ('BAIXA', 'NORMAL', 'ALTA', 'URGENTE')`,
+    ),
+    check(
       "feedback_ticket_history_version_check",
       sql`${table.ticketVersion} >= 0`,
     ),
     check(
       "feedback_ticket_history_creation_shape_check",
-      sql`((${table.eventType} = 'CRIADO' and ${table.ticketVersion} = 0 and ${table.fromStatus} is null) or (${table.eventType} = 'STATUS_ALTERADO' and ${table.ticketVersion} >= 1 and ${table.fromStatus} is not null))`,
+      sql`((${table.eventType} = 'CRIADO' and ${table.ticketVersion} = 0 and ${table.fromStatus} is null) or (${table.eventType} = 'STATUS_ALTERADO' and ${table.ticketVersion} >= 1 and ${table.fromStatus} is not null) or (${table.eventType} = 'METADATA_ALTERADO' and ${table.ticketVersion} >= 1 and ${table.fromStatus} is not null and ${table.fromPriority} is not null and ${table.toPriority} is not null))`,
     ),
   ],
 );

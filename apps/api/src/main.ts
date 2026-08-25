@@ -33,6 +33,7 @@ import {
   getAppealDecisionImpactPreview,
   getFeedbackTriageQueue,
   getFeedbackTicketHistory,
+  updateFeedbackTriageMetadata,
   issueAccountRecovery,
   reviewAuthoringContent,
   saveAnswer,
@@ -86,6 +87,7 @@ import {
   createAppealReviewTransitionRepository,
   createContentReviewQueueRepository,
   createFeedbackTriageQueueRepository,
+  createFeedbackTriageMetadataRepository,
   createFeedbackTicketHistoryRepository,
   createSessionRepository,
 } from "@cvg/persistence";
@@ -175,6 +177,8 @@ export function createApiRuntime(
     integrations.database.db,
     { cursorSecret: config.auditCursorSecret },
   );
+  const feedbackTriageMetadataRepository =
+    createFeedbackTriageMetadataRepository(integrations.database.db);
   const feedbackTicketHistoryRepository = createFeedbackTicketHistoryRepository(
     integrations.database.db,
   );
@@ -366,6 +370,8 @@ export function createApiRuntime(
       getAppealReviewQueue(command, appealReviewQueueRepository),
     getFeedbackTriageQueue: (command) =>
       getFeedbackTriageQueue(command, feedbackTriageQueueRepository),
+    updateFeedbackTriageMetadata: (command) =>
+      updateFeedbackTriageMetadata(command, feedbackTriageMetadataRepository),
     getFeedbackTicketHistory: (command) =>
       getFeedbackTicketHistory(command, feedbackTicketHistoryRepository),
     getAppealReviewHistory: (command) =>

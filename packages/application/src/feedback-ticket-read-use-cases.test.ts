@@ -18,6 +18,7 @@ describe("participant feedback read", () => {
           createdAt: "2026-08-24T12:00:00.000Z",
           version: 0,
           status: "NOVO" as const,
+          priority: "NORMAL" as const,
         },
       },
     ]);
@@ -48,6 +49,7 @@ describe("participant feedback read", () => {
                 createdAt: "2026-08-24T12:00:00.000Z",
                 version: 0,
                 status: "NOVO",
+                priority: "NORMAL",
               },
             },
           ],

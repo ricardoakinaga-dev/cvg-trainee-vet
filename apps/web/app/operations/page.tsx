@@ -39,6 +39,8 @@ type FeedbackTriageQueueStatus =
   | "NAO_REPRODUZIDO"
   | "NAO_PLANEJADO";
 type FeedbackTriageQueueStatusFilter = "" | FeedbackTriageQueueStatus;
+type FeedbackTriageQueuePriority = "BAIXA" | "NORMAL" | "ALTA" | "URGENTE";
+type FeedbackTriageMetadataAssignment = "MANTER" | "ASSUMIR" | "LIBERAR";
 type FeedbackTriageEvent =
   | "TRIAR"
   | "INICIAR_TRATAMENTO"
@@ -115,9 +117,13 @@ type FeedbackTicketHistoryEvent = Readonly<{
   readonly historyId: string;
   readonly ticketId: string;
   readonly ticketVersion: number;
-  readonly eventType: "CRIADO" | "STATUS_ALTERADO";
+  readonly eventType: "CRIADO" | "STATUS_ALTERADO" | "METADATA_ALTERADO";
   readonly fromStatus?: FeedbackTriageQueueStatus;
   readonly toStatus: FeedbackTriageQueueStatus;
+  readonly fromPriority?: FeedbackTriageQueuePriority;
+  readonly toPriority?: FeedbackTriageQueuePriority;
+  readonly fromAssigneeId?: string | null;
+  readonly toAssigneeId?: string | null;
   readonly createdAt: string;
 }>;
 
@@ -147,9 +153,20 @@ type FeedbackTriageQueue = Readonly<{
     readonly createdAt: string;
     readonly status: FeedbackTriageQueueStatus;
     readonly version: number;
+    readonly priority: FeedbackTriageQueuePriority;
+    readonly assigneeId?: string;
   }>[];
   readonly hasNext: boolean;
   readonly nextCursor?: string;
+}>;
+
+type FeedbackTriageMetadata = Readonly<{
+  readonly ticketId: string;
+  readonly scopeId: string;
+  readonly status: FeedbackTriageQueueStatus;
+  readonly version: number;
+  readonly priority: FeedbackTriageQueuePriority;
+  readonly assigneeId?: string;
 }>;
 
 type InvitationState = "idle" | "submitting" | "success" | "error";
@@ -799,6 +816,17 @@ function isFeedbackTriageQueueStatus(
   );
 }
 
+function isFeedbackTriageQueuePriority(
+  value: unknown,
+): value is FeedbackTriageQueuePriority {
+  return (
+    value === "BAIXA" ||
+    value === "NORMAL" ||
+    value === "ALTA" ||
+    value === "URGENTE"
+  );
+}
+
 function isFeedbackTriageQueue(
   value: unknown,
 ): value is Omit<FeedbackTriageQueue, "hasNext" | "nextCursor"> {
@@ -840,6 +868,8 @@ function isFeedbackTriageQueue(
         "createdAt",
         "status",
         "version",
+        "priority",
+        "assigneeId",
       ]) ||
       !isUuid(item.ticketId) ||
       (item.type !== "BUG_TECNICO" &&
@@ -854,12 +884,36 @@ function isFeedbackTriageQueue(
       typeof item.createdAt !== "string" ||
       Number.isNaN(new Date(item.createdAt).getTime()) ||
       !isFeedbackTriageQueueStatus(item.status) ||
-      !isCount(item.version)
+      !isCount(item.version) ||
+      !isFeedbackTriageQueuePriority(item.priority) ||
+      (item.assigneeId !== undefined && !isUuid(item.assigneeId))
     ) {
       return false;
     }
     return true;
   });
+}
+
+function isFeedbackTriageMetadata(
+  value: unknown,
+): value is FeedbackTriageMetadata {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, [
+      "ticketId",
+      "scopeId",
+      "status",
+      "version",
+      "priority",
+      "assigneeId",
+    ]) &&
+    isUuid(value.ticketId) &&
+    isUuid(value.scopeId) &&
+    isFeedbackTriageQueueStatus(value.status) &&
+    isCount(value.version) &&
+    isFeedbackTriageQueuePriority(value.priority) &&
+    (value.assigneeId === undefined || isUuid(value.assigneeId))
+  );
 }
 
 function isFeedbackTicketHistoryEvent(
@@ -874,19 +928,36 @@ function isFeedbackTicketHistoryEvent(
       "eventType",
       "fromStatus",
       "toStatus",
+      "fromPriority",
+      "toPriority",
+      "fromAssigneeId",
+      "toAssigneeId",
       "createdAt",
     ]) ||
     !isUuid(value.historyId) ||
     !isUuid(value.ticketId) ||
     !isCount(value.ticketVersion) ||
-    (value.eventType !== "CRIADO" && value.eventType !== "STATUS_ALTERADO") ||
+    (value.eventType !== "CRIADO" &&
+      value.eventType !== "STATUS_ALTERADO" &&
+      value.eventType !== "METADATA_ALTERADO") ||
     (value.fromStatus !== undefined &&
       !isFeedbackTriageQueueStatus(value.fromStatus)) ||
     !isFeedbackTriageQueueStatus(value.toStatus) ||
     typeof value.createdAt !== "string" ||
     Number.isNaN(new Date(value.createdAt).getTime()) ||
     (value.eventType === "CRIADO" && value.fromStatus !== undefined) ||
-    (value.eventType === "STATUS_ALTERADO" && value.fromStatus === undefined)
+    (value.eventType === "STATUS_ALTERADO" && value.fromStatus === undefined) ||
+    (value.eventType === "METADATA_ALTERADO" &&
+      (value.fromStatus === undefined ||
+        value.fromStatus !== value.toStatus ||
+        !isFeedbackTriageQueuePriority(value.fromPriority) ||
+        !isFeedbackTriageQueuePriority(value.toPriority) ||
+        (value.fromAssigneeId !== null &&
+          value.fromAssigneeId !== undefined &&
+          !isUuid(value.fromAssigneeId)) ||
+        (value.toAssigneeId !== null &&
+          value.toAssigneeId !== undefined &&
+          !isUuid(value.toAssigneeId))))
   ) {
     return false;
   }
@@ -1293,6 +1364,26 @@ function feedbackTriageStatusLabel(value: FeedbackTriageQueueStatus): string {
     NAO_PLANEJADO: "Não planejado",
   };
   return labels[value];
+}
+
+function feedbackTriagePriorityLabel(
+  value: FeedbackTriageQueuePriority,
+): string {
+  const labels: Readonly<Record<FeedbackTriageQueuePriority, string>> = {
+    BAIXA: "Baixa",
+    NORMAL: "Normal",
+    ALTA: "Alta",
+    URGENTE: "Urgente",
+  };
+  return labels[value];
+}
+
+function feedbackTriageAssigneeLabel(
+  assigneeId: string | null | undefined,
+): string {
+  return assigneeId === null || assigneeId === undefined
+    ? "Sem responsável"
+    : "Responsável definido";
 }
 
 function feedbackTriageTypeLabel(
@@ -1939,6 +2030,69 @@ export default function OperationsPage() {
       } catch {
         setFeedbackActionError(
           "Não foi possível atualizar o relato. O estado pode ter mudado; tente novamente.",
+        );
+      } finally {
+        setFeedbackActionKey(null);
+      }
+    },
+    [
+      feedbackQueue,
+      feedbackQueueCursor,
+      feedbackQueueCursorStack,
+      feedbackQueueStatusFilter,
+      loadFeedbackTriageQueue,
+    ],
+  );
+
+  const updateFeedbackTriageMetadata = useCallback(
+    async (
+      item: FeedbackTriageQueue["items"][number],
+      priority: FeedbackTriageQueuePriority,
+      assignment: FeedbackTriageMetadataAssignment,
+    ) => {
+      if (feedbackQueue === null) return;
+      const metadataViewKey = feedbackQueueViewKey(
+        feedbackQueue.scopeId,
+        feedbackQueueStatusFilter,
+        feedbackQueueCursor,
+        feedbackQueueCursorStack,
+      );
+      const actionKey = `${item.ticketId}:metadata:${priority}:${assignment}`;
+      setFeedbackActionKey(actionKey);
+      setFeedbackActionError(null);
+      try {
+        const response = await fetch(
+          `/api/v1/internal/feedback/${encodeURIComponent(item.ticketId)}/triage-metadata`,
+          {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              expectedVersion: item.version,
+              priority,
+              assignment,
+            }),
+          },
+        );
+        if (!response.ok) throw new Error();
+        const payload: unknown = await response.json().catch(() => null);
+        if (
+          !isRecord(payload) ||
+          payload.success !== true ||
+          !isFeedbackTriageMetadata(payload.data)
+        ) {
+          throw new Error();
+        }
+        if (feedbackQueueViewKeyRef.current !== metadataViewKey) return;
+        await loadFeedbackTriageQueue(
+          feedbackQueue.scopeId,
+          feedbackQueueStatusFilter,
+          feedbackQueueCursor,
+          feedbackQueueCursorStack,
+        );
+      } catch {
+        setFeedbackActionError(
+          "Não foi possível atualizar a prioridade ou a atribuição. O estado pode ter mudado; tente novamente.",
         );
       } finally {
         setFeedbackActionKey(null);
@@ -2742,9 +2896,9 @@ export default function OperationsPage() {
                   </h3>
                   <p>
                     Consulta escopada de relatos sem anexos ou dados clínicos.
-                    Esta tela só aplica transições previstas; prioridade,
-                    atribuição, resposta e SLA ainda não fazem parte deste
-                    recorte.
+                    Esta tela aplica transições previstas e permite ajustar
+                    prioridade ou assumir/liberar a responsabilidade. Resposta
+                    ao participante e SLA continuam fora deste recorte.
                   </p>
                 </div>
                 {feedbackQueueState === "ready" && feedbackQueue !== null ? (
@@ -2839,6 +2993,8 @@ export default function OperationsPage() {
                             <th scope="col">Relato</th>
                             <th scope="col">Criado</th>
                             <th scope="col">Status</th>
+                            <th scope="col">Prioridade</th>
+                            <th scope="col">Responsável</th>
                             <th scope="col">Ações</th>
                           </tr>
                         </thead>
@@ -2854,6 +3010,39 @@ export default function OperationsPage() {
                                 <td>{lastSeenLabel(item.createdAt)}</td>
                                 <td>
                                   {feedbackTriageStatusLabel(item.status)}
+                                </td>
+                                <td>
+                                  <label
+                                    className="visually-hidden"
+                                    htmlFor={`feedback-priority-${item.ticketId}`}
+                                  >
+                                    Prioridade do relato {item.ticketId}
+                                  </label>
+                                  <select
+                                    id={`feedback-priority-${item.ticketId}`}
+                                    value={item.priority}
+                                    disabled={feedbackActionKey !== null}
+                                    onChange={(event) =>
+                                      void updateFeedbackTriageMetadata(
+                                        item,
+                                        event.target
+                                          .value as FeedbackTriageQueuePriority,
+                                        "MANTER",
+                                      )
+                                    }
+                                  >
+                                    <option value="BAIXA">Baixa</option>
+                                    <option value="NORMAL">Normal</option>
+                                    <option value="ALTA">Alta</option>
+                                    <option value="URGENTE">Urgente</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <span>
+                                    {item.assigneeId === undefined
+                                      ? "Sem responsável"
+                                      : "Responsável definido"}
+                                  </span>
                                 </td>
                                 <td>
                                   <div className="account-actions">
@@ -2897,6 +3086,27 @@ export default function OperationsPage() {
                                         })}
                                       </div>
                                     )}
+                                    <button
+                                      type="button"
+                                      disabled={feedbackActionKey !== null}
+                                      onClick={() =>
+                                        void updateFeedbackTriageMetadata(
+                                          item,
+                                          item.priority,
+                                          item.assigneeId === undefined
+                                            ? "ASSUMIR"
+                                            : "LIBERAR",
+                                        )
+                                      }
+                                    >
+                                      {feedbackActionKey?.startsWith(
+                                        `${item.ticketId}:metadata:`,
+                                      )
+                                        ? "Atualizando…"
+                                        : item.assigneeId === undefined
+                                          ? "Assumir para mim"
+                                          : "Liberar responsável"}
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
@@ -3015,15 +3225,41 @@ export default function OperationsPage() {
                                 v{event.ticketVersion} ·{" "}
                                 {event.eventType === "CRIADO"
                                   ? "Relato criado"
-                                  : "Status alterado"}
+                                  : event.eventType === "METADATA_ALTERADO"
+                                    ? "Metadata de triagem alterada"
+                                    : "Status alterado"}
                               </strong>
                               <br />
-                              {event.fromStatus === undefined
-                                ? "Sem status anterior"
-                                : feedbackTriageStatusLabel(
-                                    event.fromStatus,
+                              {event.eventType === "METADATA_ALTERADO" ? (
+                                <>
+                                  Prioridade{" "}
+                                  {feedbackTriagePriorityLabel(
+                                    event.fromPriority as FeedbackTriageQueuePriority,
                                   )}{" "}
-                              → {feedbackTriageStatusLabel(event.toStatus)}
+                                  →{" "}
+                                  {feedbackTriagePriorityLabel(
+                                    event.toPriority as FeedbackTriageQueuePriority,
+                                  )}
+                                  <br />
+                                  Responsabilidade{" "}
+                                  {feedbackTriageAssigneeLabel(
+                                    event.fromAssigneeId,
+                                  )}{" "}
+                                  →{" "}
+                                  {feedbackTriageAssigneeLabel(
+                                    event.toAssigneeId,
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  {event.fromStatus === undefined
+                                    ? "Sem status anterior"
+                                    : feedbackTriageStatusLabel(
+                                        event.fromStatus,
+                                      )}{" "}
+                                  → {feedbackTriageStatusLabel(event.toStatus)}
+                                </>
+                              )}
                               <br />
                               Registrado {lastSeenLabel(event.createdAt)}
                             </li>
