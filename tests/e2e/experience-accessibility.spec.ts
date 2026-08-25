@@ -45,10 +45,14 @@ test.describe("web experience and accessibility contract", () => {
     page,
   }) => {
     let invitationAttempts = 0;
+    let releaseFirstInvitation: (() => void) | undefined;
+    const firstInvitationResponse = new Promise<void>((resolve) => {
+      releaseFirstInvitation = resolve;
+    });
     await page.route("**/api/v1/invitations/accept", async (route) => {
       invitationAttempts += 1;
       if (invitationAttempts === 1) {
-        await new Promise((resolve) => setTimeout(resolve, 150));
+        await firstInvitationResponse;
         await route.fulfill({
           status: 503,
           contentType: "application/json",
@@ -89,6 +93,7 @@ test.describe("web experience and accessibility contract", () => {
     await expect(page.getByTestId("loading-state")).toHaveText(
       "Atualizando seu treinamento…",
     );
+    releaseFirstInvitation?.();
     await activationRequest;
 
     await expect(page.locator("p[role=alert]")).toContainText(
