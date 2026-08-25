@@ -9,21 +9,21 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: APPEAL-043 — fechamento do preview de impacto de `ANULAR_ITEM`
-- current_task: consolidar auditoria, rastreabilidade e gates locais; então selecionar a próxima lacuna bounded
+- current_sprint: FEEDBACK-054 — prioridade e atribuição escopadas de relatos
+- current_task: fechar a auditoria, rastreabilidade e gates documentais de FEEDBACK-054 após implementação local bounded
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: consolidar a documentação de `APPEAL-043` no commit `ec62ded44e6f3e55c2ed1f310ee237a6d987e605` após o commit funcional `2277a32cb2a88345903d7fd5a54b13f1da629601`; `verify:documentation`, `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`, `git diff --check` e worktree limpo confirmados.
-- next_action: selecionar a próxima lacuna local bounded, mantendo os bloqueios live/humanos explícitos e sem declarar release ou produto 100% concluído.
+- last_completed_action: implementar FEEDBACK-054 no commit `ea81eed1b42f6807938c2c83520833f86b30a3f7`, endurecer o E2E no commit `9eedb2518f7b777330fe1787825df64416827dac` e registrar auditoria/manifesto em fechamento documental ainda em execução.
+- next_action: executar gates estáticos finais, commit documental limpo e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; depois preparar prova live autorizada sem declarar release.
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `RLS-FUNCTION-EXECUTE-051`, `ACTIVITY-RLS-047` e `FEEDBACK-HISTORY-053` ainda não têm ACL/RLS live; workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/prioridade/SLA/assignment de feedback e debrief/reflexão completa permanecem fora do produto implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `RLS-FUNCTION-EXECUTE-051`, `ACTIVITY-RLS-047`, `FEEDBACK-HISTORY-053` e `FEEDBACK-054` ainda não têm ACL/RLS/trigger/CAS live; workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/SLA/notificação, atribuição a terceiro e debrief/reflexão completa permanecem fora do produto implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T21:15:04-03:00
+- last_update: 2026-08-24T22:20:59-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `ec62ded44e6f3e55c2ed1f310ee237a6d987e605`; código funcional `APPEAL-043` em `2277a32cb2a88345903d7fd5a54b13f1da629601`, auditoria 0537, SPEC, backlog, log, runtime state, plano e manifesto commitados; o preflight live continua sem ambiente
+- head: `9eedb2518f7b777330fe1787825df64416827dac`; código funcional `FEEDBACK-054` em `ea81eed1b42f6807938c2c83520833f86b30a3f7`, hardening E2E em `9eedb2518f7b777330fe1787825df64416827dac`, auditoria 0538 e documentação de controle em fechamento; o preflight live saiu 2 sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o commit funcional e documental; sem push/deploy
+- worktree: alterações documentais e de manifesto ainda não commitadas; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `APPEAL-043` está GREEN/REFACTOR com contrato strict, capability `REVIEW_APPEAL`, `REPEATABLE READ`, join explícito de escopo, template de rota, query duplicate rejection, conflito pós-decisão e race web cobertos; coverage 137/678/35 skips com 84,44% statements, 80,40% branches, 86,39% functions e 85,15% lines; build 12 workspaces; typecheck/lint/Prettier; contratos 83/83; worker 27/27; operations E2E 6/6; E2E 32/32; migrations 41/41; secrets, CI contract, architecture, product-definition, exposure e audit high passaram; documentação e rastreabilidade release passaram no worktree limpo do commit `ec62ded44e6f3e55c2ed1f310ee237a6d987e605`; preflight `pnpm test:integration:live` continua saindo 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, plano real, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `FEEDBACK-054` está GREEN/REFACTOR com contrato strict, capability `MANAGE_FEEDBACK_METADATA`, identidade server-side, autoatribuição bounded, CAS, histórico `METADATA_ALTERADO`, auditoria metadata-only, trigger/policy SQL e projeção interna sem UUID na web; focal 13 arquivos/140 testes; coverage 141/695/35 skips com 84,36% statements, 80,36% branches, 86,39% functions e 85,05% lines; build 12 workspaces; typecheck/lint/format; migrations 42/42; operations E2E 6/6; E2E 32/32; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; gates estáticos finais e traceability release ainda serão fechados; não há claim live de ACL/RLS/grants/trigger efetivo, concorrência, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
 
 ## REGRAS DE USO
 

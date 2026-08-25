@@ -42,6 +42,132 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-24 — FEEDBACK-054: abertura de prioridade e atribuição escopadas
+
+### TIMESTAMP
+
+2026-08-24 21:19:55 -03:00
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / governança operacional de feedback
+
+### SPRINT
+
+FEEDBACK-054
+
+### TASK
+
+Fechar a lacuna bounded entre a fila de relatos e o requisito aprovado de
+priorização/atribuição, sem inventar resposta, SLA, notificação ou retirada
+clínica.
+
+### ACTION
+
+Após o gate documental limpo de `APPEAL-043` no commit
+`4b79b695ad7ecf50d4468d484c11faa262c37777`, foi aberta a fatia
+`FEEDBACK-054`. O recorte proposto é uma atualização interna strict de
+prioridade (`BAIXA`, `NORMAL`, `ALTA`, `URGENTE`) e responsável opcional,
+validado server-side como conta ativa com papel de moderador/administrador no
+mesmo escopo. O estado do ticket continua separado da metadata, mas a versão
+otimista e a timeline append-only devem permanecer coerentes.
+
+### RESULT
+
+O control plane passou a apontar para `FEEDBACK-054` em `IN_PROGRESS`. Uma
+leitura independente foi solicitada para revisar contrato, migração, contexto
+RLS, identidade do responsável e concorrência antes do RED. Não há alteração
+de código nem claim live nesta abertura.
+
+### DECISIONS
+
+O participante não envia nem recebe prioridade/responsável; `participantId`,
+ator, request/correlation e escopo são server-side. A fatia não cria resposta
+ao participante, SLA, notificação, anexos, retirada clínica, decisão de
+contestação ou integração externa. Se a regra de elegibilidade do responsável
+exigir uma decisão de negócio além do PRD/SPEC, a implementação será reduzida
+ou marcada para aprovação humana, não inferida silenciosamente.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Receber a crítica independente, registrar a abertura no plano/backlog e
+escrever testes RED de contrato, aplicação, persistência, HTTP e E2E antes de
+implementar.
+
+---
+
+## 2026-08-24 — FEEDBACK-054: fechamento local bounded e auditoria
+
+### TIMESTAMP
+
+2026-08-24T22:20:59-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT
+
+BUILD — Phase 3–5 / FEEDBACK-054
+
+### TASK
+
+Implementar e verificar metadata interna de triagem de feedback, mantendo o
+participante fora da superfície operacional e sem inventar resposta, SLA,
+notificação, retirada clínica ou atribuição arbitrária.
+
+### ACTION
+
+O scout independente Banach recomendou capability dedicada
+`MANAGE_FEEDBACK_METADATA`, escopo e identidade derivados server-side,
+membership ativa/aceita, `UPDATE` staff protegido por RLS/trigger e CAS exato.
+O RED focal falhou antes da implementação porque os módulos e invariantes de
+`FEEDBACK-054` ainda não existiam. O GREEN/REFACTOR foi implementado no commit
+`ea81eed1b42f6807938c2c83520833f86b30a3f7`; o hardening do cenário E2E de
+loading/retry ficou em `9eedb2518f7b777330fe1787825df64416827dac`.
+
+### RESULT
+
+O contrato strict aceita somente `expectedVersion`, prioridade e ação
+`MANTER`/`ASSUMIR`/`LIBERAR`; o principal autenticado é a única identidade que
+pode ser assumida. A mudança preserva o estado, incrementa a versão, grava
+`METADATA_ALTERADO` e auditoria metadata-only na mesma unidade transacional; a
+fila interna exibe somente metadata allowlisted e a projeção participante não
+recebe campos novos. Focal: 13 arquivos/140 testes. Coverage: 141 arquivos,
+695 testes PASS e 29 arquivos/35 testes skipped, com 84,36% statements,
+80,36% branches, 86,39% functions e 85,05% lines. Format, lint, typecheck,
+build dos 12 workspaces, migrations 42/42, operations E2E 6/6 e E2E completa
+32/32 passaram. O preflight `pnpm test:integration:live` saiu 2 antes de
+conectar porque `CVG_TEST_DATABASE_URL` não está definido.
+
+### DECISIONS
+
+`FEEDBACK-054` fica `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP` para a
+implementação local bounded. Não há claim live de PostgreSQL, RLS, grants,
+trigger, concorrência, browser→API→PostgreSQL ou produção. Atribuição a
+terceiro, resposta, SLA, notificação, provider/MFA, workflow remoto,
+observabilidade operacional e aprovação clínica permanecem fora desta fatia.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar os gates estáticos finais e o release gate de rastreabilidade após
+commit documental limpo; depois preparar a prova live autorizada ou selecionar
+outra fatia bounded, sem declarar release/piloto.
+
+---
+
 ## 2026-08-24 — CURRICULUM-RUNTIME-AUTHZ-050: privacidade do oracle de membership
 
 ### TIMESTAMP

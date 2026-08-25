@@ -118,6 +118,24 @@ confirmada recarrega a página corrente e não decide status no cliente.
 
 Os controles são botões nativos, focáveis e `disabled` quando não há página
 anterior/próxima. O E2E usa duas páginas sintéticas, avança e retorna, e valida
-que a tela não mostra `participantId`, `scopeId` ou o token bruto. Prioridade,
-assignment, SLA, resposta, notificação e conteúdo clínico continuam fora da
-superfície.
+que a tela não mostra `participantId`, `scopeId` ou o token bruto. A fila
+interna agora mostra prioridade allowlisted e apenas o rótulo de responsabilidade
+(`Sem responsável`/`Responsável definido`), sem renderizar UUID. SLA, resposta,
+notificação e conteúdo clínico continuam fora da superfície.
+
+## 17. Metadata de triagem na operação — FEEDBACK-054
+
+Em `/operations`, o moderador/administrador autorizado pode alterar a
+prioridade por um `select` nativo e usar `Assumir para mim` ou `Liberar
+responsável`. A web envia somente `expectedVersion`, prioridade e ação; não
+envia escopo, participante ou identidade de terceiro. Após confirmação, a fila
+é recarregada na mesma página/cursor. A resposta é validada como `unknown` e
+allowlisted antes de qualquer renderização.
+
+O controle usa a chave da consulta (escopo, status, cursor e pilha) para ignorar
+respostas antigas quando o usuário troca filtro/escopo. O estado de envio
+desabilita controles concorrentes, exibe erro bounded e permite retry/releitura;
+um conflito otimista não é transformado em alteração local silenciosa. A
+timeline interna renderiza somente rótulos de prioridade/responsabilidade e
+status; IDs internos não são apresentados. A superfície participante continua
+sem todos esses campos.

@@ -18,7 +18,7 @@
 | `AssessmentResult` | `result_id` | tentativa, cálculo, estado, componentes | nota oficial só por transação e regra versionada |
 | `RemediationPlan` | `plan_id` | objetivo, motivo, conteúdo equivalente, estado | erro crítico bloqueia somente o objetivo afetado |
 | `RetentionReview` | `review_id` | janela 30/60/90, forma equivalente, resultado | não revoga conclusão anterior |
-| `FeedbackTicket` | `ticket_id` | tipo, descrição redigida, prioridade, estado | sem anexos e sem dados proibidos |
+| `FeedbackTicket` | `ticket_id` | tipo, descrição redigida, prioridade, responsável opcional, estado, versão | sem anexos e sem dados proibidos; metadata de triagem não altera o estado |
 | `Appeal` | `appeal_id` | alvo, justificativa, decisão, versão | não altera passado sem recálculo auditado |
 | `InternalSourceRecord` | `source_record_id` | fonte/localizador/conflito/corte | interno; nunca entra em contrato participante |
 | `AuditEntry` | `audit_id` | ator, ação, alvo, antes/depois, correlação | append-only; sem segredo ou texto protegido |
@@ -31,7 +31,7 @@
 - **Conteúdo:** `ContentItem` + `ContentVersion` + revisão/projeção; fontes internas ficam em agregado separado e relação protegida.
 - **Tentativa:** `Attempt`, `Answer` e `AssessmentResult`; submissão/correção são transacionais.
 - **Remediação:** `RemediationPlan` e `RetentionReview`; evolução lê seus resultados.
-- **Relato:** `FeedbackTicket` e histórico; `Appeal` possui fluxo independente e referência ao alvo.
+- **Relato:** `FeedbackTicket` e histórico; prioridade/responsabilidade operacional são metadata interna versionada; `Appeal` possui fluxo independente e referência ao alvo.
 - **Auditoria:** `AuditEntry` não aceita update/delete de aplicação.
 
 ## 3. Regras de domínio críticas
@@ -47,3 +47,14 @@
 9. Toda concessão/revogação de papel, aprovação, publicação, retirada, alteração de gabarito ou nota gera auditoria.
 10. Nenhuma entidade guarda PDF, OCR, foto, figura, tabela, trecho ou embedding da obra.
 
+### 3.1 Metadata bounded de triagem — FEEDBACK-054
+
+`FeedbackTicket` nasce com prioridade `NORMAL` e sem responsável. O comando de
+triagem pode alterar somente a prioridade (`BAIXA`, `NORMAL`, `ALTA` ou
+`URGENTE`) e a responsabilidade operacional por ações `MANTER`, `ASSUMIR` ou
+`LIBERAR`. `ASSUMIR` deriva o responsável do principal autenticado; o cliente
+nunca envia `participantId`, `scopeId` de autoridade ou um `assigneeId` de
+terceiro. A operação incrementa a mesma versão otimista do ticket, preserva
+tipo, descrição, participante e estado, e produz `METADATA_ALTERADO` na
+timeline. Resposta ao participante, SLA, notificação, duplicidade e decisão
+clínica permanecem fora deste agregado bounded.

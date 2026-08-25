@@ -292,3 +292,26 @@ incompatível falha fechada e preserva o status anterior do assignment. O script
 `scripts/provision-ci-postgres.mjs` reproduz a separação no CI; isso não substitui
 grants/ownership, rotação de credenciais, observabilidade ou restore do ambiente
 produtivo.
+
+## 9.6 Metadata de triagem de feedback — FEEDBACK-054
+
+`MANAGE_FEEDBACK_METADATA` é uma capability distinta de
+`TRANSITION_FEEDBACK_TICKET`: somente conta `ACTIVE` com papel `MODERATOR` ou
+`ADMIN` e escopo presente na sessão a recebe. A identidade clínica aprovada não
+ganha essa capacidade por herança. A API obtém `principalId`, papéis e escopos
+da sessão; o corpo não pode fabricar `scopeId`, `participantId` ou
+`assigneeId`.
+
+O servidor e o repositório repetem a defesa: o ticket é localizado apenas nos
+escopos autorizados; a conta que executa a ação deve estar ativa e ter
+membership/invitation aceita com papel interno no escopo; `ASSUMIR` deriva o
+próprio principal e `LIBERAR` grava nulo. A policy RLS de `UPDATE` limita o
+contexto ao escopo, e o trigger de banco permite somente metadata/versão/data,
+preservando participante, tipo, descrição e estado. O CAS exato evita que um
+replay de versão obsoleta sobrescreva trabalho concorrente.
+
+Cada mutação grava `FEEDBACK_TICKET_TRIAGE_METADATA_UPDATED` com ator, escopo,
+request/correlation e resultado, além de `METADATA_ALTERADO` sem texto clínico.
+Prioridade e responsabilidade ficam em projeções internas autorizadas; nunca
+entram na projeção do participante. A validação live da policy, trigger,
+grants/owners e concorrência permanece obrigatória antes de release.

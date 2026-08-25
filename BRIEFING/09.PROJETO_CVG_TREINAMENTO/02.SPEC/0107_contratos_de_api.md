@@ -59,6 +59,7 @@ Detalhes internos, stack trace, SQL, token, senha, fonte, obra, PDF, foto, figur
 | `POST /api/v1/feedback` | UC-022 | sessão autenticada |
 | `GET /api/v1/internal/feedback` | UC-023 | `VIEW_FEEDBACK_QUEUE` + escopo autorizado; leitura bounded |
 | `PATCH /api/v1/internal/feedback/:ticketId` | UC-023 | `TRANSITION_FEEDBACK_TICKET` + escopo autorizado |
+| `PATCH /api/v1/internal/feedback/:ticketId/triage-metadata` | FEEDBACK-054 / UC-023 | `MANAGE_FEEDBACK_METADATA` + principal interno ativo no escopo; metadata bounded |
 | `GET /api/v1/internal/feedback/:ticketId/history` | UC-023 / FEEDBACK-HISTORY-053 | `VIEW_FEEDBACK_QUEUE` + identidade interna ativa + escopo autorizado; leitura state-only bounded |
 | `GET /api/v1/internal/appeals/:appealId/history` | UC-018 | `REVIEW_APPEAL` + escopo autorizado; somente leitura bounded |
 | `GET /api/v1/internal/appeals/:appealId/impact-preview?decision=ANULAR_ITEM` | APPEAL-043 / UC-018 | `REVIEW_APPEAL` + escopo autorizado; preview candidato, somente leitura |
@@ -193,8 +194,30 @@ metadado do envelope. O `PATCH /api/v1/internal/feedback/:ticketId` aceita somen
 `ticketId`, `scopeId`, `version` e evento. O participante do ticket é resolvido
 no servidor por `ticketId + scopeId` sob contexto de escopo antes de reutilizar
 o comando versionado; identidade enviada pelo navegador é rejeitada pelo
-schema strict. A fila continua sem prioridade, assignment, SLA, resposta,
-notificação ou decisão clínica.
+schema strict. A fila interna também lê `priority` e `assigneeId` allowlisted.
+Esse último não é renderizado como UUID na web.
+
+### 8.2 Metadata interna de triagem — FEEDBACK-054
+
+`PATCH /api/v1/internal/feedback/:ticketId/triage-metadata` aceita path strict
+com `ticketId` UUID e corpo strict exatamente
+`{ expectedVersion, priority, assignment }`, onde `priority` é
+`BAIXA|NORMAL|ALTA|URGENTE` e `assignment` é `MANTER|ASSUMIR|LIBERAR`.
+`scopeId`, `participantId`, `assigneeId`, status, descrição, resposta, SLA e
+qualquer chave desconhecida respondem `422`. A sessão fornece o principal e os
+escopos; o servidor nunca confia em identidade ou escopo de triagem enviados no
+corpo.
+
+A rota exige conta interna ativa, `MANAGE_FEEDBACK_METADATA` e escopo presente
+na sessão. `ASSUMIR` atribui o próprio principal autenticado e `LIBERAR` remove
+a atribuição; não existe atribuição arbitrária a terceiro nesta fatia. O
+servidor mantém o status, tipo, descrição e participante, incrementa a versão e
+retorna somente `{ ticketId, scopeId, status, version, priority, assigneeId? }`.
+`409` representa versão obsoleta, `404` ausência do ticket em escopos
+autorizados, `403` falta de capacidade/membership e `500` falha interna sem
+detalhes. A mudança é registrada como `METADATA_ALTERADO` e em auditoria
+metadata-only; não responde, notifica, calcula SLA, altera estado ou publica
+decisão clínica.
 
 ### 8.1 Histórico state-only do ticket — FEEDBACK-HISTORY-053
 

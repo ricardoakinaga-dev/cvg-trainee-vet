@@ -393,3 +393,25 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - limites: o E2E usa fixtures sintéticas; sem `CVG_TEST_DATABASE_URL` não há
   prova de PostgreSQL/RLS/grants/concorrência live, browser→API→PostgreSQL,
   produção, workflow remoto ou aprovação clínica.
+
+## 30. Evidência adicional — FEEDBACK-054
+
+- RED: contratos, domínio e aplicação começaram com o módulo de metadata
+  ausente; o focal falhou por módulos não encontrados antes da implementação.
+- GREEN/REFACTOR: contratos strict, invariantes de prioridade/status,
+  capability dedicada, CAS, membership persistida, histórico append-only,
+  auditoria metadata-only, rota HTTP, fila web e proteção contra resposta fora
+  de ordem passaram nos testes focais; a crítica independente também exigiu
+  remover `scopeId`/`participantId`/`assigneeId` do comando externo e limitar a
+  atribuição a `ASSUMIR`/`LIBERAR`.
+- unidade focal: domínio, contratos, autorização, aplicação, histórico,
+  repositório, HTTP, server e migration governance devem permanecer no artefato
+  `0538_feedback_triage_metadata_audit.md`; o E2E de operações cobre prioridade,
+  assumir/recarregar e filtros concorrentes.
+- verificação: repetir coverage global, build, `pnpm test:e2e`, migrações,
+  exposição, secrets, arquitetura, documentação, traceability e
+  `git diff --check` no commit de fechamento.
+- limite: sem `CVG_TEST_DATABASE_URL` não há evidência PostgreSQL/RLS/grants/
+  trigger/concorrência live ou browser→API→PostgreSQL; não há claim de produção,
+  resposta ao participante, SLA, notificação ou atribuição arbitrária nesta
+  fatia.

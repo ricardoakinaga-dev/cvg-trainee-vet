@@ -4296,6 +4296,127 @@ artifacts:
         "produção, grants/owners produtivos, browser→API→PostgreSQL, workflow remoto same-SHA e aprovação clínica continuam sem evidência",
       ]
     status: "verified-with-gaps"
+  - id: "FEEDBACK-054"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "PRD-RF-103",
+        "PRD-RF-104",
+        "PRD-RF-107",
+        "UC-023",
+        "SPEC-0104",
+        "SPEC-0105",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0114",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/04.AUDIT/0538_feedback_triage_metadata_audit.md",
+        "BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0104_modelo_de_dominio.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/domain/src/learning-state.ts",
+        "packages/domain/src/feedback-triage.test.ts",
+        "packages/domain/src/index.ts",
+        "packages/contracts/src/feedback-triage-metadata.ts",
+        "packages/contracts/src/feedback-triage-metadata.test.ts",
+        "packages/contracts/src/feedback-ticket-history.ts",
+        "packages/contracts/src/feedback-ticket-history.test.ts",
+        "packages/contracts/src/feedback-triage-queue.ts",
+        "packages/contracts/src/feedback-triage-queue.test.ts",
+        "packages/contracts/src/index.ts",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/application/src/feedback-triage-metadata-use-cases.ts",
+        "packages/application/src/feedback-triage-metadata-use-cases.test.ts",
+        "packages/application/src/feedback-ticket-history-use-cases.ts",
+        "packages/application/src/feedback-ticket-history-use-cases.test.ts",
+        "packages/application/src/feedback-ticket-read-use-cases.test.ts",
+        "packages/application/src/feedback-triage-queue-use-cases.ts",
+        "packages/application/src/feedback-triage-queue-use-cases.test.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/learning-state-repository.ts",
+        "packages/persistence/src/feedback-triage-metadata-repository.ts",
+        "packages/persistence/src/feedback-triage-metadata-repository.test.ts",
+        "packages/persistence/src/feedback-ticket-history-repository.ts",
+        "packages/persistence/src/feedback-ticket-history-repository.test.ts",
+        "packages/persistence/src/feedback-triage-queue-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0041_feedback_triage_metadata.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "apps/api/src/http.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/server.ts",
+        "apps/api/src/server.test.ts",
+        "apps/web/app/operations/page.tsx",
+        "scripts/verify-traceability.mjs",
+        "tests/integration/migration-governance.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/e2e/experience-accessibility.spec.ts",
+      ]
+    tests:
+      [
+        "packages/domain/src/feedback-triage.test.ts",
+        "packages/contracts/src/feedback-triage-metadata.test.ts",
+        "packages/contracts/src/feedback-ticket-history.test.ts",
+        "packages/contracts/src/feedback-triage-queue.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/application/src/feedback-triage-metadata-use-cases.test.ts",
+        "packages/application/src/feedback-ticket-history-use-cases.test.ts",
+        "packages/application/src/feedback-triage-queue-use-cases.test.ts",
+        "packages/persistence/src/feedback-triage-metadata-repository.test.ts",
+        "packages/persistence/src/feedback-ticket-history-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/e2e/experience-accessibility.spec.ts",
+      ]
+    commit: "9eedb2518f7b777330fe1787825df64416827dac"
+    artifacts:
+      [
+        "BRIEFING/04.AUDIT/0538_feedback_triage_metadata_audit.md",
+        "coverage/",
+        "playwright-report/",
+        "test-results/playwright.xml",
+      ]
+    verification:
+      [
+        "RED: focal contracts/domain/application run failed before implementation because the FEEDBACK-054 modules and invariant were absent",
+        "Independent scout Banach: remove client-trusted scope/participant/assignee; use dedicated MANAGE_FEEDBACK_METADATA; require active accepted membership; keep self-assignment bounded; add staff UPDATE RLS/trigger and exact-version CAS",
+        "GREEN focal: 13 files/140 tests passed; migration governance and API/server boundary assertions passed",
+        "pnpm test:coverage: 141 files/695 tests passed, 29 files/35 tests skipped; 84.36% statements, 80.36% branches, 86.39% functions, 85.05% lines",
+        "pnpm format:check, pnpm lint, pnpm typecheck, pnpm build (12 workspaces) and pnpm verify:migrations (42 migrations through 0041_feedback_triage_metadata) passed",
+        "pnpm test:e2e: operations focused 6/6 and full suite 32/32 passed; loading/retry hardening in 9eedb25 removed a transient 31/32 failure",
+        "pnpm test:integration:live exited 2 before connection because CVG_TEST_DATABASE_URL is absent; no live PostgreSQL/RLS/grants/trigger/concurrency evidence is inferred",
+        "static security, CI, architecture, documentation, product-definition, exposure, dependency-audit and release-traceability gates are recorded only after their final execution",
+        "response/SLA/notification, arbitrary third-party assignment, production, workflow remote same-SHA, provider/MFA, operational assurance and clinical approval remain outside this slice",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

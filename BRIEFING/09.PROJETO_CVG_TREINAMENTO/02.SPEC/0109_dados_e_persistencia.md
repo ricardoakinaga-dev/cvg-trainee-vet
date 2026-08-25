@@ -200,9 +200,11 @@ pretende registrar ator, request ou correlação.
 | `ticket_id` | UUID, obrigatório, FK para `feedback_tickets.id`, `ON DELETE RESTRICT` | vínculo ao ticket |
 | `scope_id` | UUID, obrigatório | contexto de escopo para autorização/RLS |
 | `ticket_version` | inteiro, obrigatório, `>= 0`, único por ticket | ordenação e concorrência do estado |
-| `event_type` | `CRIADO` ou `STATUS_ALTERADO` | natureza da mudança |
+| `event_type` | `CRIADO`, `STATUS_ALTERADO` ou `METADATA_ALTERADO` | natureza da mudança |
 | `from_status` | nulo para criação; obrigatório para mudança | estado anterior, quando aplicável |
 | `to_status` | status allowlisted, obrigatório | estado resultante |
+| `from_priority` / `to_priority` | prioridade allowlisted; obrigatória nos eventos de metadata | linhagem da prioridade interna |
+| `from_assignee_id` / `to_assignee_id` | UUID ou nulo; usados nos eventos de metadata | linhagem da responsabilidade interna |
 | `created_at` | timestamp com timezone, obrigatório, default `now()` | momento do evento |
 
 As invariantes são: `(ticket_id, ticket_version)` único; `CRIADO` somente na
@@ -216,7 +218,8 @@ e limite máximo de 100 eventos. O vocabulário de status é
 
 Ao criar ou alterar um ticket, o evento correspondente é inserido na mesma
 transação PostgreSQL: a criação gera `CRIADO` na versão 0; uma transição gera
-`STATUS_ALTERADO` com o status anterior e a nova versão. Falha na inserção do
+`STATUS_ALTERADO`; e a triagem interna gera `METADATA_ALTERADO` com o mesmo
+status, prioridade e responsabilidade anterior/nova. Falha na inserção do
 evento, do ticket ou da auditoria reverte a unidade inteira. Nas gravações feitas
 pela API, a mesma unidade insere também uma entrada metadata-only em
 `audit_entries` com ator, request, correlação, recurso, escopo e resultado. O trigger
@@ -237,8 +240,9 @@ um escritor SQL direto ainda exigem o preflight live; as declarações estática
 não são convertidas em evidência de produção.
 
 O modelo da timeline deliberadamente não possui `principal_id`, ator, papel,
-request ID, correlation ID, descrição, resposta, prioridade, responsável, SLA
-ou conteúdo clínico. Essas informações não podem ser inferidas da timeline. A
+request ID, correlation ID, descrição, resposta, SLA ou conteúdo clínico. Os
+eventos `METADATA_ALTERADO` possuem apenas a linhagem allowlisted de prioridade
+e responsabilidade, não o ator nem um texto do relato. A
 trilha de auditoria completa e actor-aware permanece separada, conforme 0111 e
 o contrato `GetAuditTrail`; para gravações da API ela é vinculada ao ticket e
 persistida atomicamente em `audit_entries`, enquanto o endpoint state-only
@@ -254,6 +258,25 @@ efetivamente RLS, grants/owners, isolamento entre escopos, trigger append-only,
 unicidade/concorrência, rollback transacional e o percurso browser→API→banco.
 Sem essa evidência, a tabela permanece uma implementação local verificada, não
 uma garantia de produção ou de auditoria completa.
+
+### 8.5.1 Persistência bounded da metadata de triagem — FEEDBACK-054
+
+A migration `0041_feedback_triage_metadata.sql` adiciona `priority` com default
+`NORMAL` a `feedback_tickets` e `assignee_id` com FK restritiva para
+`accounts`; não faz backfill sintético de histórico. A tabela de histórico
+recebe os quatro campos de linhagem e aceita `METADATA_ALTERADO` mantendo
+`(ticket_id, ticket_version)` único. As constraints e o trigger de linhagem
+exigem que o ticket pai esteja na mesma versão/status e que a metadata anterior
+seja coerente com o evento anterior quando essa evidência existir.
+
+Para o contexto staff, a migration cria policy de `UPDATE` limitada ao escopo
+transacional e trigger que rejeita alterações de participante, escopo, tipo,
+descrição, estado, criação ou incremento de versão diferente de exatamente um;
+transições existentes que usam contexto de participante continuam separadas.
+O repositório executa CAS por `ticket_id + scope_id + version`, valida no
+PostgreSQL a conta ativa/membership aceita/papel `MODERATOR` ou `ADMIN`, e grava
+ticket, histórico e auditoria na mesma transação. A efetividade de RLS, grants,
+ownership, trigger e concorrência continua dependente do gate PostgreSQL live.
 
 ## 8.6 Paginação keyset da fila de feedback — FEEDBACK-043
 

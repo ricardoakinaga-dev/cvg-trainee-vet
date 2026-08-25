@@ -167,8 +167,24 @@ a aprovação clínica, piloto ou release produtivo.
   32/32 E2E e gates estáticos passaram; auditoria 0537 e traceability foram
   atualizadas. PostgreSQL/RLS live, produção, remoto same-SHA e clínica seguem
   gaps explícitos.
-- [ ] Selecionar a próxima lacuna local bounded após o gate documental de
-  `APPEAL-043`, sem declarar release ou produto 100% concluído.
+- [x] (2026-08-24T21:19:55-03:00) Fechar o gate documental/release de
+  `APPEAL-043` no commit `4b79b695ad7ecf50d4468d484c11faa262c37777` e abrir
+  `FEEDBACK-054` como próxima lacuna local bounded: prioridade e responsável
+  escopados, sem resposta, SLA, notificação ou retirada clínica.
+- [x] (2026-08-24T22:20:59-03:00) Fechar localmente `FEEDBACK-054` após crítica
+  independente Banach e RED focal: prioridade `BAIXA|NORMAL|ALTA|URGENTE`,
+  autoatribuição/liberação bounded, capability dedicada, escopo/identidade
+  server-side, membership ativa/aceita, CAS, histórico `METADATA_ALTERADO`,
+  auditoria metadata-only, policy/trigger SQL, fila interna e E2E sem UUID.
+  O código está em `ea81eed1b42f6807938c2c83520833f86b30a3f7` e o hardening E2E
+  em `9eedb2518f7b777330fe1787825df64416827dac`; focal 13/140, coverage
+  141/695, build 12 workspaces, migrations 42/42 e E2E 32/32 passaram.
+  PostgreSQL/RLS live, produção, resposta/SLA/notificação, atribuição a
+  terceiro e gates humanos continuam gaps explícitos.
+- [ ] Executar os gates estáticos finais, fechar auditoria/manifesto em commit
+  documental limpo e repetir `CVG_TRACEABILITY_RELEASE=true
+  pnpm verify:traceability`; em seguida preparar prova live autorizada ou a
+  próxima fatia bounded sem declarar release.
 
 ## Surprises & Discoveries
 

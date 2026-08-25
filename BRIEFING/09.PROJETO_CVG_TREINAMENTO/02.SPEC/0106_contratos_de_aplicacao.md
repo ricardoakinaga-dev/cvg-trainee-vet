@@ -28,6 +28,7 @@
 | `ReconcileKnowledgeIndex` | operação | compara PostgreSQL e Qdrant e reprocessa itens ausentes de forma idempotente |
 | `CreateAppeal` / `DecideAppeal` | UC-010/018 | contestação e recálculo controlados |
 | `CreateFeedbackTicket` / `TransitionTicket` | UC-022/023 | relato validado e histórico |
+| `UpdateFeedbackTriageMetadata` | FEEDBACK-054 / UC-023 | prioridade e autoatribuição/liberação internas com versão otimista |
 
 ## 2. Queries principais
 
@@ -77,17 +78,22 @@ O resultado de aplicação é uma cópia imutável contendo o `ticketId`, o esco
 validado apenas para a checagem de boundary e uma lista ordenada por
 `ticketVersion`, `createdAt` e `historyId`. Cada evento contém somente:
 `historyId`, `ticketId`, `ticketVersion`, `eventType`, `fromStatus` opcional,
-`toStatus` e `createdAt`. Os tipos permitidos são `CRIADO` (versão 0, sem
-`fromStatus`) e `STATUS_ALTERADO` (versão a partir de 1, com `fromStatus`);
-versões duplicadas, estados desconhecidos, escopos não autorizados e payloads
-acima do limite falham fechado. O vocabulário de estado é
+`toStatus` e `createdAt`. Para `METADATA_ALTERADO`, o evento também contém
+somente prioridade anterior/nova e responsabilidade anterior/nova, sem texto do
+relato ou ator. Os tipos permitidos são `CRIADO` (versão 0, sem `fromStatus`),
+`STATUS_ALTERADO` (versão a partir de 1, com `fromStatus`) e
+`METADATA_ALTERADO` (mesmo status, prioridades presentes e versão a partir de
+1); versões duplicadas, estados desconhecidos, escopos não autorizados e
+payloads acima do limite falham fechado. O vocabulário de estado é
 `NOVO`, `TRIADO`, `EM_TRATAMENTO`, `AGUARDA_USUARIO`, `RESOLVIDO`, `DUPLICADO`,
 `NAO_REPRODUZIDO` e `NAO_PLANEJADO`.
 
 Esta query não é a trilha de auditoria completa nem registra o ator responsável.
-Não aceita nem devolve `participantId`, descrição, resposta, prioridade,
-responsável, SLA, correlação, request, fonte, conteúdo clínico ou qualquer
-texto do relato. `GetAuditTrail`, definido em 0106/0111, permanece o contrato
+Não aceita nem devolve `participantId`, descrição, resposta, SLA, correlação,
+request, fonte, conteúdo clínico ou qualquer texto do relato. Prioridade e
+responsabilidade aparecem apenas no evento interno `METADATA_ALTERADO`, quando
+o principal já possui autorização de fila; isso não torna a timeline uma lista
+de contas nem expõe esses campos ao participante. `GetAuditTrail`, definido em 0106/0111, permanece o contrato
 separado para ações sensíveis, ator, recurso, escopo, resultado, versão e
 correlação; o histórico state-only não satisfaz sozinho RF-004 nem substitui a
 auditoria append-only. Nas gravações da API de criação/transição, o repositório
@@ -132,10 +138,31 @@ de filtros diferentes falha como `validation_error`. O caso de uso valida
 novamente o shape da página e exige que `hasNext` e `nextCursor` sejam
 consistentes.
 
-A query não cria prioridade, atribuição, SLA, resposta, notificação, histórico,
-decisão clínica ou estado educacional. PostgreSQL continua sendo a fonte
+A query não altera prioridade, atribuição, SLA, resposta, notificação, histórico,
+decisão clínica ou estado educacional. A fila apenas lê prioridade e eventual
+responsável como metadata interna allowlisted; PostgreSQL continua sendo a fonte
 transacional; a assinatura e os testes locais não constituem evidência de RLS,
 grants, concorrência live ou produção.
+
+### 2.4 — Comando de metadata de triagem — FEEDBACK-054
+
+`UpdateFeedbackTriageMetadata` recebe o contexto completo da sessão fora do
+corpo (`principalId`, estado da conta, papéis e escopos), `ticketId`,
+`expectedVersion`, prioridade e uma ação de atribuição. O corpo não contém
+`scopeId`, `participantId`, `assigneeId`, status, descrição, resposta, SLA,
+ator, request ou correlação. O caso de uso exige a capability
+`MANAGE_FEEDBACK_METADATA`, concedida somente a `MODERATOR`/`ADMIN` ativos em
+escopo autorizado, e deriva a lista de escopos do contexto autenticado.
+
+O port de persistência resolve o ticket por `ticketId` em cada escopo autorizado
+sem revelar escopos não autorizados; valida novamente que o principal é uma
+conta ativa, com membership/invitation aceita e papel interno no escopo; aplica
+compare-and-set exato da versão; e, na mesma transação, atualiza somente
+prioridade/responsável/versão/data, insere `METADATA_ALTERADO` e grava auditoria
+metadata-only. Falha de versão é `state_conflict`; ausência no escopo autorizado
+é `not_found`; o retorno é uma projeção interna allowlisted. Não há comando de
+resposta, SLA, notificação, retirada clínica ou atribuição arbitrária a terceiro
+nesta fatia.
 
 ## 3. Validação
 

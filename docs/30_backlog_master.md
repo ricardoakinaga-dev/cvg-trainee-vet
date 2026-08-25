@@ -10,6 +10,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Atualização operacional 2026-08-24:** a verificação local fresca no HEAD `9a2e07a` passou com Node `22.22.0`/pnpm `10.33.0`, 123 arquivos/560 testes, 28 testes skipped, cobertura 84,50% statements/80,34% branches/85,91% functions/85,24% lines, contratos 70/70, worker 25/25, migrações 26/26 e gates estáticos limpos. `origin/main` está em `fbbc692`, 39 commits atrás; a evidência remota não cobre o SHA local. Três leituras independentes confirmaram a lacuna diagnóstico→atribuição; `ADAPTIVE-044` foi aberto para uma fatia bounded, sem liberar publicação, piloto ou produção.
 
+**Abertura operacional 2026-08-24 (FEEDBACK-054):** após o fechamento documental de `APPEAL-043` no commit `4b79b695ad7ecf50d4468d484c11faa262c37777`, foi selecionada a próxima lacuna P1 local bounded: permitir que a fila interna registre prioridade e responsável opcional dentro do mesmo escopo, com versão otimista e histórico coerente. A fatia não cria resposta ao participante, SLA, notificação, anexos, retirada clínica, contestação, provider/MFA ou operação externa; PostgreSQL/RLS live, grants, workflow remoto, produção e aprovação clínica continuam gates separados.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -493,6 +495,25 @@ backfill inventado.
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; B07-01, B07-02, B07-03, CUR-24-01 e B07-04 neste backlog
 
 ## P1 — ALTA PRIORIDADE
+
+### FEEDBACK-054 — Priorização e atribuição escopadas de relatos
+
+- título: permitir que moderador/administrador organize e assuma responsabilidade por um relato autorizado sem alterar seu estado
+- descrição: adicionar metadata operacional bounded à fila de feedback: prioridade explícita e responsável opcional, com atualização strict, contexto de escopo, versão otimista, histórico append-only e auditoria metadata-only
+- módulo: feedback / triagem interna / contratos / aplicação / persistência / API / operações web
+- dependência: `FEEDBACK-043`; `FEEDBACK-HISTORY-053`; `PRD-RF-103`; `PRD-RF-104`; `PRD-RF-105`; `PRD-RF-107`; `UC-023`; `SPEC-0104`; `SPEC-0106`; `SPEC-0107`; `SPEC-0109`; `SPEC-0111`; `SPEC-0114`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / governança operacional
+- risco: alto — prioridade ou responsável controlados pelo cliente podem atravessar escopo, mascarar o dono do trabalho ou perder a ordem histórica sob concorrência
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: contrato interno strict para atualização de prioridade `BAIXA|NORMAL|ALTA|URGENTE` e ação `MANTER|ASSUMIR|LIBERAR`; capability `MANAGE_FEEDBACK_METADATA` server-side; principal ativo com membership aceita e papel `MODERATOR`/`ADMIN` no escopo; `participantId`, `scopeId` e `assigneeId` nunca entram no comando; versão otimista e atualização de metadata não alteram o status; fila interna exibe metadata allowlisted; histórico append-only e auditoria registram a mudança sem texto clínico/resposta; 401/403/404/409/422/500; testes RED/GREEN/REFACTOR, regressão, E2E e gates documentais
+- escopo: `feedback_tickets.priority`, `feedback_tickets.assignee_id`; rota interna bounded dedicada para metadata; eventos de histórico versionados; leitura na fila interna e timeline somente para identidade autorizada; atribuição limitada ao próprio principal autenticado
+- fora desta fatia: resposta ao participante, SLA/calendário, notificação, anexos, detecção automática de risco, retirada clínica, vinculação de duplicados, alteração de estado, contestação, provider/MFA, PostgreSQL/RLS live, grants/owners produtivos, workflow remoto, piloto e produção
+- controles obrigatórios: escopo vem da sessão e da linha persistida; `ASSUMIR` deriva o principal autenticado e `LIBERAR` usa nulo; não há atribuição arbitrária a terceiro; a conta executora deve estar ativa, ter convite/membership aceita no escopo e papel de moderador ou administrador; replays com versão obsoleta falham com `state_conflict`; a web ignora respostas antigas ao trocar escopo/filtro; participante não recebe nenhum campo novo
+- evidência: `BRIEFING/04.AUDIT/0538_feedback_triage_metadata_audit.md`, manifesto `FEEDBACK-054`, commits `ea81eed1b42f6807938c2c83520833f86b30a3f7` e `9eedb2518f7b777330fe1787825df64416827dac`; focal 13/140, coverage 141/695, 32/32 E2E, migrations 42/42 e gates estáticos finais registrados no fechamento documental
+- resultado: prioridade e autoatribuição/liberação estão implementadas localmente com preservação de status, CAS, histórico `METADATA_ALTERADO`, auditoria metadata-only e projeção interna allowlisted; a prova live não foi executada sem `CVG_TEST_DATABASE_URL`
+- gaps remanescentes: PostgreSQL/RLS/grants/trigger/concurrency live, browser→API→PostgreSQL, produção, workflow remoto same-SHA, observabilidade operacional, provider/MFA, resposta/SLA/notificação, atribuição a terceiro e aprovação clínica
+- próxima ação: executar release gate em worktree limpo e então preparar prova live autorizada ou selecionar a próxima fatia bounded; não declarar release
 
 ### CURRICULUM-RUNTIME-AUTHZ-050 — Isolamento de avaliação curricular por escopo
 

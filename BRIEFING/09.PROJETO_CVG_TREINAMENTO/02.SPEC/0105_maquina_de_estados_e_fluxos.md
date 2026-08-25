@@ -64,6 +64,13 @@ NOVO → TRIADO → EM_TRATAMENTO → AGUARDA_USUARIO → RESOLVIDO
 
 `ERRO_CONTEUDO` crítico pode emitir comando de retirada, mas não publica nem altera gabarito automaticamente.
 
+Prioridade e responsabilidade são metadata ortogonal ao autômato de estados.
+Uma alteração interna de triagem não abre uma transição de ticket: conserva o
+estado, incrementa a versão e registra `METADATA_ALTERADO` com prioridade e
+responsabilidade anterior/nova. A ação `ASSUMIR` usa o principal autenticado;
+`LIBERAR` remove o responsável; nenhuma dessas ações responde ao participante,
+cria SLA, envia notificação ou decide risco clínico.
+
 ## 6. Estados de autorização
 
 ```text
@@ -80,4 +87,3 @@ Concessão e revogação são auditadas. `CLINICAL_APPROVER` não pode ser conce
 - falha de job: retry limitado com backoff, registro de tentativa e estado de erro para reprocessamento seguro;
 - conteúdo vencido/retirado: impedir início, preservar histórico e mostrar próxima ação neutra;
 - escopo ausente: negar por padrão e registrar código de autorização, sem revelar dados de outro usuário.
-
