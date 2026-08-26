@@ -615,4 +615,137 @@ describe("migration governance", () => {
     expect(migration).toContain("'ATRIBUIDO'");
     expect(migration).not.toContain("'NAO_ATRIBUIDO'");
   });
+
+  it("keeps application table privileges explicit and default-deny", async () => {
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const schemaPath = fileURLToPath(
+      new URL("../../packages/persistence/src/schema.ts", import.meta.url),
+    );
+    const [provisioning, schema] = await Promise.all([
+      readFile(provisioningPath, "utf8"),
+      readFile(schemaPath, "utf8"),
+    ]);
+    const applicationPrivileges = {
+      accounts: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      account_invitations: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      account_recovery_requests: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      content_versions: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      content_editorial_records: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      content_review_decisions: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      authoring_draft_idempotency: ["SELECT", "INSERT"],
+      learning_activities: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      learning_activity_items: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      ai_suggestions: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      activity_assignments: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      curriculum_runtime_states: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      diagnostic_results: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      attempts: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      assessment_results: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      answers: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      attempt_idempotency: ["SELECT", "INSERT"],
+      answer_idempotency: ["SELECT", "INSERT"],
+      assessment_idempotency: ["SELECT", "INSERT"],
+      sessions: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      rate_limit_buckets: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      outbox_events: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      audit_entries: ["SELECT", "INSERT"],
+      learning_assignments: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      assessment_workflows: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      feedback_tickets: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      feedback_ticket_history: ["SELECT", "INSERT"],
+      appeals: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      appeal_review_history: ["SELECT", "INSERT"],
+    } as const;
+
+    expect(provisioning).toContain(
+      "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM ${appIdentifier};",
+    );
+    expect(provisioning).toContain(
+      "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM ${appIdentifier};",
+    );
+    expect(provisioning).toContain(
+      "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM PUBLIC;",
+    );
+    expect(provisioning).toContain(
+      "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC;",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} IN SCHEMA public REVOKE ALL PRIVILEGES ON TABLES FROM PUBLIC;",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} IN SCHEMA public REVOKE ALL PRIVILEGES ON SEQUENCES FROM PUBLIC;",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} REVOKE ALL PRIVILEGES ON TABLES FROM PUBLIC;",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} REVOKE ALL PRIVILEGES ON SEQUENCES FROM PUBLIC;",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} REVOKE ALL PRIVILEGES ON TABLES FROM ${appIdentifier};",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} REVOKE ALL PRIVILEGES ON SEQUENCES FROM ${appIdentifier};",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} IN SCHEMA public REVOKE ALL PRIVILEGES ON TABLES FROM ${appIdentifier};",
+    );
+    expect(provisioning).toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} IN SCHEMA public REVOKE ALL PRIVILEGES ON SEQUENCES FROM ${appIdentifier};",
+    );
+    expect(provisioning).not.toContain(
+      "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${appIdentifier};",
+    );
+    expect(provisioning).not.toContain(
+      "ALTER DEFAULT PRIVILEGES FOR ROLE ${migrationIdentifier} IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${appIdentifier};",
+    );
+    expect(provisioning).not.toContain(
+      "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${appIdentifier};",
+    );
+
+    const {
+      applicationExcludedTables,
+      applicationTablePrivileges,
+      roleProvisionSql,
+    } = await import("../../scripts/provision-ci-postgres.mjs");
+    expect(applicationTablePrivileges).toEqual(applicationPrivileges);
+    expect(applicationExcludedTables).toEqual(["knowledge_documents"]);
+    expect(applicationTablePrivileges).not.toHaveProperty(
+      "knowledge_documents",
+    );
+    const schemaTableNames = [
+      ...schema.matchAll(/pgTable\(\s*["']([^"']+)["']/gu),
+    ]
+      .map((match) => match[1])
+      .filter((table): table is string => table !== undefined)
+      .sort();
+    expect(
+      [
+        ...Object.keys(applicationTablePrivileges),
+        ...applicationExcludedTables,
+      ].sort(),
+    ).toEqual(schemaTableNames);
+
+    const provisionedSql = roleProvisionSql({
+      migration: { role: "cvg", password: "synthetic", database: "cvg" },
+      application: {
+        role: "cvg_app",
+        password: "synthetic",
+        database: "cvg",
+      },
+      admin: {
+        role: "cvg_test_admin",
+        password: "synthetic",
+        database: "cvg",
+      },
+    });
+    for (const [table, privileges] of Object.entries(applicationPrivileges)) {
+      expect(provisionedSql).toContain(
+        `GRANT ${privileges.join(", ")} ON TABLE "${table}" TO "cvg_app";`,
+      );
+    }
+    expect(provisionedSql).not.toContain('"knowledge_documents"');
+  });
 });
