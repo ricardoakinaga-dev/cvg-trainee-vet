@@ -332,6 +332,11 @@ a aprovação clínica, piloto ou release produtivo.
   inicialização lenta e retry concorrente foram registrados na auditoria e
   tratados como nova fatia bounded, sem reabrir o código atual nem alterar o
   gate humano de `JOURNEY-056`.
+- [x] (2026-08-26T11:13:17-03:00) Registrar o parecer Linnaeus no commit
+  documental `5405eb7` e repetir `verify:traceability:release` em worktree
+  limpo; o gate passou novamente. O ciclo desta fatia termina em
+  `COMPLETED_WITH_GAPS`, sem P0/P1 novos, com os P2 explicitamente adiados a
+  uma task bounded e `JOURNEY-056` preservado em `WAITING_HUMAN_APPROVAL`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

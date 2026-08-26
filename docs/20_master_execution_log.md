@@ -42,6 +42,61 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Fechamento final após crítica independente de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T11:13:17-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Consolidar o parecer independente final e verificar o estado limpo dos
+artefatos correntes.
+
+### ACTION
+
+O parecer Linnaeus foi registrado no commit documental
+`5405eb72e884f85c3bf629052d984670489cb6f7`. Em seguida,
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability:release` foi repetido
+no worktree limpo.
+
+### RESULT
+
+O gate passou novamente: os artefatos correntes resolveram para commits
+alcançáveis e paths rastreados; `git diff --check` passou e o worktree ficou
+limpo. O veredicto independente permanece `CONDITIONAL PASS`, sem P0/P1 novos,
+com P2 de cenário integrado/close lento/retry bounded registrados em `0547`.
+
+### DECISIONS
+
+Manter `OPS-061-READINESS-006` como `COMPLETED_WITH_GAPS` e o runtime global
+como `WAITING_HUMAN_APPROVAL`. Não iniciar `JOURNEY-056` sem a escolha A/B de
+Ricardo; não há autorização de release, produção ou competência prática.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria, recomendada)
+ou B (atividade especial) para `JOURNEY-056`. Tratar os P2 como nova task
+bounded somente após essa decisão.
+
+---
+
 ## 2026-08-26 — Crítica independente final de `OPS-061-READINESS-006`
 
 ### TIMESTAMP
