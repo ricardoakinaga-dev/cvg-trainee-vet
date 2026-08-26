@@ -42,6 +42,61 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Verificação global após triagem de `JOURNEY-056`
+
+### TIMESTAMP
+
+2026-08-26T13:49:51-0300
+
+### ENGINE
+
+RUNTIME CONTROLLER / BUILD / AUDIT
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — encerrado; aguardando próxima autorização
+
+### TASK
+
+Obter evidência fresca da regressão global no HEAD atual antes de manter a
+fronteira de aprovação humana.
+
+### ACTION
+
+Após confirmar o anexo com 4392 linhas e SHA-256
+`7c08c275a10e22c1fe9f646f90cf7554d82c454c81e8cbb50662a45a0b484b94`, o
+worktree limpo e `HEAD=ac516e4`, foi executado `pnpm verify` com Node
+22.22.0/pnpm 10.33.0 efêmeros.
+
+### RESULT
+
+PASS: 143 arquivos/743 testes, 29 arquivos/38 testes skipped, cobertura
+84,47%/80,35%/86,62%/85,24%; contratos 86/86; worker 37/37; migrations
+51/51; format, CI contract, lint, typecheck, secrets, traceability,
+architecture, documentation, product-definition e exposure também passaram.
+Não houve alteração de código. O anexo e a triagem anterior permanecem
+inalterados.
+
+### DECISIONS
+
+Manter `WAITING_HUMAN_APPROVAL`. A próxima ação continua sendo Ricardo
+escolher A ou B para `JOURNEY-056`; não iniciar código, migration, UX,
+publicação, push ou deploy antes da escolha.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar a decisão A/B de `JOURNEY-056`.
+
+---
+
 ## 2026-08-26 — Triagem final antes da decisão de `JOURNEY-056`
 
 ### TIMESTAMP
