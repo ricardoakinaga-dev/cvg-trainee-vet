@@ -375,6 +375,11 @@ a aprovação clínica, piloto ou release produtivo.
   `c272f1f` e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`
   em worktree limpo. O runtime retorna `WAITING_HUMAN_APPROVAL` e
   `JOURNEY-056` continua aguardando a escolha A/B.
+- [x] (2026-08-26T13:49:51-03:00) Reexecutar `pnpm verify` no HEAD documental
+  `ac516e4`: 143 arquivos/743 testes, 29 arquivos/38 testes skipped,
+  cobertura 84,47%/80,35%/86,62%/85,24%, contratos 86/86, worker 37/37,
+  migrations 51/51 e todos os gates estáticos PASS. Registrar a evidência
+  fresca no runtime state/log; não houve alteração de código.
 - [ ] (aguardando Ricardo após a task autônoma) Aprovar a forma contratual de
   `JOURNEY-056` e abrir o BUILD bounded correspondente; não iniciar código,
   migration ou UX de jornada antes da decisão. Production owners/grants,
