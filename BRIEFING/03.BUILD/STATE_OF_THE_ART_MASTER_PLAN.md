@@ -55,6 +55,14 @@ em evidência de runtime produtivo.
   inclui as cinco URLs, exige a role de aplicação e o mesmo banco; o focal
   passou `9/9` e os gates locais passaram. A revisão independente não retornou
   parecer final e não há claim de produção.
+- A crítica independente seguinte encontrou uma lacuna no workflow efetivo e
+  na rejeição de URLs vazias; `OPS-061-GRANTS-004` foi aberto para validar as
+  cinco URLs do job/override e falhar fechado sem valor, sem alterar produto ou
+  `JOURNEY-056`.
+- `OPS-061-GRANTS-004` foi fechado no commit `489a336` e auditado em
+  `BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md`: workflow
+  job-level, override de migration e valores vazios são verificados; o focal e
+  os gates locais passaram. Não há claim de produção.
 - Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
   separadas e o provisionador atual, `pnpm test:integration:live` passou 35
   arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,

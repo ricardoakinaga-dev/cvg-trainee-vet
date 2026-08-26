@@ -4750,6 +4750,54 @@ artifacts:
         "the independent partial review found the issue but did not return a final acceptance verdict; no production, remote same-SHA, live rerun or clinical evidence is inferred",
       ]
     status: "verified-with-gaps"
+  - id: "OPS-061-GRANTS-004"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "DB-PRIVILEGE-032",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        ".github/workflows/quality.yml",
+        "scripts/verify-ci-contract.mjs",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests: ["tests/integration/ci-governance.test.ts"]
+    commit: "489a336edc39260978349b9a7328df17d8fb065d"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md",
+      ]
+    verification:
+      [
+        "RED: workflow database identity drift and empty documented URLs were accepted before effective URL validation",
+        "GREEN focal: CI governance 13/13 PASS, including job-level runtime, migration override and empty-value rejection",
+        "pnpm verify: 141 test files PASS, 29 skipped; 720 tests PASS, 38 skipped; coverage 84.36% statements, 80.30% branches, 86.35% functions, 85.05% lines",
+        "pnpm build: 12 workspaces PASS; pnpm test:e2e --workers=1: 32/32 PASS; pnpm audit --audit-level=high: no known advisories",
+        "workflow job-level URLs use distinct migration/application/admin identities in one database, and the migration step override matches the migration identity",
+        "the independent partial review found the residual issue but did not return a post-fix acceptance verdict; no live, production, remote same-SHA or clinical evidence is inferred",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

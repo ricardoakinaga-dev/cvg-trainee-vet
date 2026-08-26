@@ -274,6 +274,16 @@ a aprovação clínica, piloto ou release produtivo.
   `pnpm verify` (`141/716`, `38` skips), build `12/12`, E2E `32/32`, audit high,
   diff-check e registrar `0544`/manifesto. O resultado é conditional pass;
   a revisão independente parcial não retornou aceite final.
+- [x] (2026-08-26T08:53:38-03:00) Reabrir `OPS-061-GRANTS-004` após a crítica
+  independente final: adicionar RED para URLs efetivas do workflow e valores
+  vazios; o focal falhou `3/12`. O perímetro continua limitado a
+  `verify-ci-contract`, workflow e governança, sem tocar na jornada.
+- [x] (2026-08-26T09:00:24-03:00) Fechar `OPS-061-GRANTS-004` no commit
+  `489a336`: comparar URLs job-level e override de migration, rejeitar vazios,
+  executar RED → GREEN → REFACTOR, regressão `141/720` com `38` skips, build
+  `12/12`, E2E `32/32`, audit high, diff-check e registrar `0545`/manifesto.
+  O resultado é conditional pass; não houve parecer independente final
+  pós-correção.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

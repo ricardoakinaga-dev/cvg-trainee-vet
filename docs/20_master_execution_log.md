@@ -100,6 +100,118 @@ backlog, plano e runtime state, e só então retornar ao aguardo da decisão A/B
 
 ---
 
+## 2026-08-26 — OPS-061-GRANTS-004: URLs efetivas do workflow e entradas vazias
+
+### TIMESTAMP
+
+2026-08-26T08:53:38-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-004 — contrato efetivo do workflow PostgreSQL
+
+### TASK
+
+Impedir que o workflow CI use uma `DATABASE_URL` de migração ou aceite URLs
+PostgreSQL vazias, sem avançar o contrato de `JOURNEY-056`.
+
+### ACTION
+
+A crítica independente final do slice `OPS-061-GRANTS-003` confirmou que o
+validador examinava apenas padrões textuais do workflow e não comparava as URLs
+efetivas, além de retornar sucesso quando uma URL documentada estava vazia. Os
+cenários RED foram adicionados para runtime de workflow com role de migração,
+URL de aplicação vazia e URL documentada vazia; a suíte focal falhou `3/12`.
+
+### RESULT
+
+O control plane reabriu o perímetro como `OPS-061-GRANTS-004`, bounded ao
+validador, workflow e testes de governança. Nenhum código de produto, migration,
+ambiente externo ou jornada foi alterado nesta abertura.
+
+### DECISIONS
+
+A correção deve comparar identidades parseadas das URLs job-level do workflow,
+validar o override de migration separadamente e rejeitar valores vazios. A
+ausência de produção, remote same-SHA, operação externa e aprovação clínica
+continua sendo gap separado.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Implementar o validador GREEN, executar focal/regressão/gates e atualizar o
+audit/manifests antes de retornar ao aguardo A/B.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-004: fechamento das URLs efetivas do workflow
+
+### TIMESTAMP
+
+2026-08-26T09:00:24-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-004 — contrato efetivo do workflow PostgreSQL
+
+### TASK
+
+Fechar a divergência que permitia ao contrato CI aceitar role incorreta no
+workflow ou URL vazia, sem avançar `JOURNEY-056`.
+
+### ACTION
+
+Após a crítica independente, foram adicionados testes RED para URLs efetivas do
+job-level, override de migration e valores vazios. O foco inicial falhou `3/12`.
+O código foi fechado em `489a336edc39260978349b9a7328df17d8fb065d`.
+
+### RESULT
+
+O validador compara cinco URLs do job, verifica separadamente o override de
+migrations e falha fechado para ausência/vazio. O foco passou `13/13`;
+`pnpm verify` passou com `141` arquivos, `720` testes PASS e `38` skips,
+cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E `32/32`, audit high e
+diff-check passaram.
+
+### DECISIONS
+
+`OPS-061-GRANTS-004` fica `CONDITIONAL PASS / COMPLETED_WITH_GAPS`. A crítica
+independente não retornou parecer final pós-correção e não é tratada como
+aceite. Não houve migration, prova live nova, produção, deploy ou mudança de
+produto; não há autorização de release, piloto ou publicação clínica.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria) ou B
+(atividade especial) para `JOURNEY-056`; owners/grants produtivos, workflow
+remoto same-SHA, operação externa e gates clínicos continuam exigindo
+autoridade separada.
+
+---
+
 ## 2026-08-26 — OPS-061-GRANTS-003: fechamento da coerência da role de runtime
 
 ### TIMESTAMP

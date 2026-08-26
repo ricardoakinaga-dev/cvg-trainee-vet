@@ -34,6 +34,10 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Fechamento controlado 2026-08-26 (`OPS-061-GRANTS-003`):** `DATABASE_URL` passou a ser validada com a role de aplicação de `CVG_TEST_DATABASE_URL` e o mesmo banco das cinco URLs; `.env.example` agora usa `cvg_app`. O focal passou `9/9`; `pnpm verify` passou com 141 arquivos/716 testes PASS, 29 skipped/38 testes, cobertura 84,36%/80,30%/86,35%/85,05%, build 12/12, E2E 32/32, audit high e diff-check. O resultado é `COMPLETED_WITH_GAPS`: não há prova produtiva, live nova, remote same-SHA, deploy ou aceitação independente final; auditoria `0544`.
 
+**Reabertura controlada 2026-08-26 (`OPS-061-GRANTS-004`):** a crítica independente final confirmou dois gaps no perímetro do contrato: as URLs PostgreSQL efetivas do workflow não eram comparadas entre si, e valores vazios no `.env.example` podiam passar. Foram escritos três testes RED; a suíte focal falhou `3/12`. A correção continua limitada ao validador/workflow/testes e não altera produto, migrations aplicadas ou `JOURNEY-056`.
+
+**Fechamento controlado 2026-08-26 (`OPS-061-GRANTS-004`):** o validador passou a comparar as cinco URLs job-level e o override de migration, rejeitar valores vazios e manter a role least-privilege. O focal passou `13/13`; `pnpm verify` passou com 141 arquivos/720 testes PASS, 29 skipped/38 testes, cobertura 84,36%/80,30%/86,35%/85,05%, build 12/12, E2E 32/32, audit high e diff-check. O item fica `COMPLETED_WITH_GAPS`; não há prova live nova, produtiva, remote same-SHA ou parecer independente final. Auditoria `0545`.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -604,6 +608,24 @@ backfill inventado.
 - controles obrigatórios: não expor credenciais em saída; comparar somente identificadores parseados; manter role migration separada; não aceitar URL runtime divergente da role de aplicação; preservar a decisão A/B pendente
 - evidência: crítica independente parcial; RED `1/8` antes da correção; GREEN focal `9/9`; commits técnicos `703fe7c`/`0bd71f2`; auditoria `BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md`; `pnpm verify` `141/716` com `38` skips, build `12/12`, E2E `32/32`, audit high e diff-check PASS
 - gaps remanescentes: owners/ACLs/deployment produtivos, workflow remoto same-SHA e operação externa não foram provados; a revisão independente parcial não retornou parecer final; não há nova evidência live ou clínica
+- próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; não iniciar código, migration ou UX de jornada antes da decisão contratual
+
+### OPS-061-GRANTS-004 — URLs efetivas do workflow e valores não vazios
+
+- título: fazer o contrato CI validar as URLs PostgreSQL efetivamente usadas pelo workflow e rejeitar entradas vazias
+- descrição: conferir a role/banco do `DATABASE_URL` job-level contra `CVG_TEST_DATABASE_URL`, `CVG_MIGRATION_DATABASE_URL`, admin e real E2E; conferir o override de migration e falhar para qualquer URL vazia
+- módulo: operação / configuração / PostgreSQL / CI / segurança / governança
+- dependência: `OPS-061-GRANTS-003`; SPEC 0109/0111/0118
+- fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
+- risco: alto — uma divergência no workflow pode usar role privilegiada ou um valor vazio pode mascarar um job não reprodutível
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: testes RED reproduzem runtime de workflow com role incorreta, URL de aplicação vazia e URL documentada vazia; validador compara identidades parseadas do job-level, exige override de migration coerente, rejeita vazios, foco/regressão/gates e audit passam sem claim externo
+- escopo: `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, workflow efetivo e control plane
+- fora desta fatia: produto, migrations aplicadas, ACL/owners produtivos, deploy, workflow remoto same-SHA, `JOURNEY-056`, fornecedor, publicação clínica e dados reais
+- controles obrigatórios: não expor credenciais em saída; não confiar só em regex de role; separar runtime app do override de migration; falhar fechado para valor ausente/vazio; preservar a decisão A/B pendente
+- evidência: crítica independente final parcial; RED `3/12` antes da implementação; GREEN focal `13/13`; commit técnico `489a336`; auditoria `BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md`; `pnpm verify` `141/720` com `38` skips, build `12/12`, E2E `32/32`, audit high e diff-check PASS
+- gaps remanescentes: configuração/owners/ACLs/deployment produtivos, workflow remoto same-SHA e operação externa não foram provados; a revisão independente não retornou parecer final pós-correção; não há nova evidência live ou clínica
 - próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; não iniciar código, migration ou UX de jornada antes da decisão contratual
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — Phase 7 / hardening de assurance local
 - current_sprint: `JOURNEY-056` — decisão contratual da sessão diagnóstica
-- current_task: encerramento documental de `OPS-061-GRANTS-003`; `JOURNEY-056` continua aguardando decisão humana
+- current_task: encerramento documental de `OPS-061-GRANTS-004`; `JOURNEY-056` continua aguardando decisão humana
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechar `OPS-061-GRANTS-003` nos commits técnicos `703fe7c25740f97fec3d930f6118dd72cef2b4aa` e `0bd71f2b4fc92f22e91856a8ee7ed3dc2e581e8d`: `DATABASE_URL` passou a ser validada com a role de aplicação e o mesmo banco, `.env.example` foi corrigido, e o audit/manifesto foram registrados. Focal `9/9`, `pnpm verify` `141/716` com `38` skips, cobertura `84,36/80,30/86,35/85,05`, build `12/12`, E2E `32/32`, audit high e diff-check passaram.
-- next_action: aguardar a decisão humana de `JOURNEY-056` entre sessão diagnóstica pública própria (A) e atividade especial (B); não iniciar código, migration ou UX dessa jornada enquanto a decisão contratual estiver pendente. Qualquer ACL/owner produtivo, workflow remoto same-SHA, operação externa ou gate clínico requer autoridade separada.
+- last_completed_action: fechar `OPS-061-GRANTS-004` no commit técnico `489a336edc39260978349b9a7328df17d8fb065d` e registrar o audit/manifesto/control plane: o contrato compara URLs job-level e override de migration, rejeita valores vazios e preserva a role least-privilege. Focal `13/13`, `pnpm verify` `141/720` com `38` skips, cobertura `84,36/80,30/86,35/85,05`, build `12/12`, E2E `32/32`, audit high e diff-check passaram.
+- next_action: aguardar a decisão humana de `JOURNEY-056` entre sessão diagnóstica pública própria (A) e atividade especial (B); não iniciar código, migration ou UX dessa jornada enquanto a decisão contratual estiver pendente.
 
 ## BLOQUEIOS
 
-- blockers: a prova live local de `OPS-061-GRANTS-002` passou em banco descartável, mas não substitui ACL/owners/grants de produção, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `OPS-061-GRANTS-003` foi fechado localmente, mas não prova configuração produtiva, deployment ou workflow remoto. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. A task não altera migrations aplicadas nem grants/owners produtivos. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
+- blockers: as provas live locais de `OPS-061-GRANTS-002` passaram em banco descartável, mas não substituem ACL/owners/grants de produção, configuração/deployment do ambiente produtivo, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. As tasks não alteram migrations aplicadas nem grants/owners produtivos. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T08:49:51-0300
+- last_update: 2026-08-26T09:01:58-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
 - head: consultar `git rev-parse HEAD` para o checkout corrente; últimos commits técnicos de `OPS-061-GRANTS-003` são `703fe7c` e `0bd71f2`, e o fechamento documental permanece sem push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o fechamento documental de `OPS-061-GRANTS-003` em `d0d9e36`; sem migration aplicada, push ou deploy
+- worktree: limpo após o commit documental corrente de `OPS-061-GRANTS-004`; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff` e `OPS-061-GRANTS-003` foi fechado nos commits `703fe7c`/`0bd71f2`: o contrato inclui `DATABASE_URL`, exige a role de aplicação no runtime e o mesmo banco para as URLs documentadas; `.env.example` usa `cvg_app`. Focal `9/9`, `pnpm verify` `141/716` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E `32/32`, audit high e diff-check passaram. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`.
+- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2` e `OPS-061-GRANTS-004` no commit `489a336`: o contrato compara URLs job-level e override de migration, rejeita valores vazios e mantém a role de aplicação no runtime; `.env.example` usa `cvg_app`. Focal `13/13`, `pnpm verify` `141/720` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E `32/32`, audit high e diff-check passaram. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`.
 
 ## REGRAS DE USO
 
