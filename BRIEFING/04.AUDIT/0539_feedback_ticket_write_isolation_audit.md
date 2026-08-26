@@ -36,10 +36,15 @@ live sem ambiente explicitamente autorizado.
 - `pnpm typecheck`, `pnpm format:check`, `pnpm lint` e
   `pnpm verify:migrations` foram executados com Node `22.22.0`/pnpm `10.33.0`;
   a cadeia local passou com 43 migrations até `0042`.
-- A tentativa de `pnpm test:coverage` desta rodada foi interrompida (exit 130)
-  por contenção de processos externos de cobertura já ativos no ambiente; a
-  cobertura anterior do baseline permanece registrada no runtime state, mas
-  não é apresentada como uma nova medição desta rodada.
+- `pnpm verify` passou no fechamento da rodada com 141 arquivos de teste PASS,
+  29 arquivos skipped, 698 testes PASS e 35 testes skipped; cobertura de
+  84,31% statements, 80,33% branches, 86,34% functions e 85,00% lines.
+  Contratos 86/86, worker 27/27, migrations 43/43, format, lint, typecheck,
+  secrets, arquitetura, documentação, product-definition, exposure e
+  traceability estrutural também passaram.
+- `pnpm test:integration:live` foi executado novamente e encerrou com exit 2
+  no preflight porque `CVG_TEST_DATABASE_URL` é obrigatório e não está
+  disponível; a ausência de conexão não é tratada como evidência live.
 
 ## Controles implementados
 

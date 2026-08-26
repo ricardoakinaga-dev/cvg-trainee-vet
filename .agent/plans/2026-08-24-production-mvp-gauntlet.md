@@ -191,16 +191,18 @@ a aprovação clínica, piloto ou release produtivo.
   receber três leituras independentes. A maior lacuna de segurança confirmada
   foi a policy participante `FOR ALL` de `feedback_tickets`; a próxima task
   bounded é `FEEDBACK-055`, sem alterar a API participante.
-- [x] (2026-08-26T00:14:32-03:00) Fechar localmente `FEEDBACK-055` com RED/GREEN/REFACTOR:
+- [x] (2026-08-26T00:35:16-03:00) Fechar localmente `FEEDBACK-055` com RED/GREEN/REFACTOR:
   migration 0042 substitui a policy participante `FOR ALL` por SELECT/INSERT,
   restringe a leitura staff a contexto sem `participant_id`, separa o contexto
   staff somente de escopo no caso de uso/repository e atualiza o guard para
   status-only ou metadata-only. Focal 28/28, migrations 43/43, format, lint,
   typecheck, documentação e traceability estrutural passaram; a fixture live
   agora cobre own INSERT/SELECT, same-scope cross-participant SELECT e
-  participant UPDATE/DELETE, mas permanece skipped sem banco autorizado. A
-  cobertura global desta rodada foi interrompida por contenção externa; não há
-  claim live, produção, piloto ou gate clínico.
+  participant UPDATE/DELETE, mas permanece sem evidência por ausência de banco
+  autorizado. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29
+  skipped, 698 testes PASS, 35 skipped, cobertura 84,31%/80,33%/86,34%/85,00%,
+  contratos 86/86 e worker 27/27. O preflight live encerrou com exit 2 sem
+  `CVG_TEST_DATABASE_URL`; não há claim live, produção, piloto ou gate clínico.
 - [ ] (próximo) Executar a prova PostgreSQL live autorizada de `FEEDBACK-055` ou
   selecionar `FEEDBACK-057`, sem ampliar escopo para resposta/SLA/notificação.
 

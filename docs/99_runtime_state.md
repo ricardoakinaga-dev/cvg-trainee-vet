@@ -23,7 +23,7 @@
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `FEEDBACK-055` ainda não tem ACL/RLS/trigger/CAS live, concorrência ou browser→API→PostgreSQL. A tentativa de cobertura global desta rodada foi interrompida com exit 130 por contenção de processos externos de cobertura; baseline anterior permanece registrado, e o focal 28/28, lint, typecheck, format e migrations 43/43 passaram. Workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/SLA/notificação, atribuição a terceiro e debrief/reflexão completa permanecem fora do produto implementado. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações locais usam runtime efêmero Node `22.22.0`/pnpm `10.33.0`. Esses bloqueios não impedem verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `FEEDBACK-055` ainda não tem ACL/RLS/trigger/CAS live, concorrência ou browser→API→PostgreSQL. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29 skipped, 698 testes PASS, 35 skipped e cobertura 84,31% statements/80,33% branches/86,34% functions/85,00% lines; contratos 86/86, worker 27/27 e migrations 43/43 também passaram. O preflight `pnpm test:integration:live` encerrou com exit 2 por ausência de `CVG_TEST_DATABASE_URL`. Workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/SLA/notificação, atribuição a terceiro e debrief/reflexão completa permanecem fora do produto implementado. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações locais usam runtime efêmero Node `22.22.0`/pnpm `10.33.0`. Esses bloqueios não impedem verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T00:14:32-0300
+- last_update: 2026-08-26T00:35:16-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `54b28f6c75a44408fe91b0d0f54689d86fd4a62f`; commit local de FEEDBACK-055 com migration 0042, auditoria 0539, manifesto e `STATE_OF_THE_ART_MASTER_PLAN.md`; o preflight live continua sem ambiente
+- head: `ba9f01892878670948ad31669ee2b9708ab24f79`; último commit local de controle verificado antes deste registro, contendo o fechamento de traceability de FEEDBACK-055; o preflight live confirmou ausência de ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: alteração documental posterior para alinhar o SHA de traceability; sem push/deploy
+- worktree: atualização documental de evidência local; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055` está GREEN/REFACTOR localmente: RED inicial por migration ausente, 3 arquivos/28 testes focais PASS, policy 0042 explícita, contexto staff sem participantId, guard de status-only/metadata-only, typecheck/lint/format PASS e migrations 43/43. A prova live preparada em `postgres-learning-state.test.ts` permanece skipped sem `CVG_TEST_DATABASE_URL`; a cobertura global desta rodada foi interrompida por contenção externa e não substitui a cobertura baseline registrada. Não há claim live de ACL/RLS/grants/trigger/concurrency, produção, workflow remoto same-SHA, operação externa ou gate clínico
+- verification_state: `FEEDBACK-055` está GREEN/REFACTOR localmente: RED inicial por migration ausente, 3 arquivos/28 testes focais PASS, policy 0042 explícita, contexto staff sem participantId, guard de status-only/metadata-only, typecheck/lint/format PASS e migrations 43/43. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29 skipped, 698 testes PASS, 35 skipped e cobertura 84,31% statements/80,33% branches/86,34% functions/85,00% lines; contratos 86/86 e worker 27/27 passaram. O preflight live encerrou com exit 2 sem `CVG_TEST_DATABASE_URL`; a prova preparada em `postgres-learning-state.test.ts` permanece sem evidência live. Não há claim live de ACL/RLS/grants/trigger/concurrency, produção, workflow remoto same-SHA, operação externa ou gate clínico
 
 ## REGRAS DE USO
 

@@ -4481,10 +4481,10 @@ artifacts:
     verification:
       [
         "RED: governance test failed because migration 0042 was absent",
-        "GREEN focal: 3 test files, 28 tests PASS; live PostgreSQL file skipped without configured database",
-        "pnpm format:check, pnpm lint, pnpm typecheck",
-        "pnpm verify:migrations: 43 migrations aligned through 0042_feedback_ticket_participant_write_rls",
-        "pnpm test:integration:live: preflight exit 2 because CVG_TEST_DATABASE_URL and CVG_TEST_ADMIN_DATABASE_URL are absent",
+        "GREEN focal: 3 test files, 28 tests PASS; live PostgreSQL file has no evidence without configured database",
+        "pnpm verify: 141 test files PASS, 29 skipped; 698 tests PASS, 35 skipped; coverage 84.31% statements, 80.33% branches, 86.34% functions, 85.00% lines",
+        "pnpm format:check, pnpm lint, pnpm typecheck, contracts 86/86, worker 27/27, migrations 43/43 and structural gates",
+        "pnpm test:integration:live: preflight exit 2 because CVG_TEST_DATABASE_URL is absent",
         "no live RLS/grants/trigger/CAS, production, remote same-SHA or clinical claim",
       ]
     status: "verified-with-gaps"
