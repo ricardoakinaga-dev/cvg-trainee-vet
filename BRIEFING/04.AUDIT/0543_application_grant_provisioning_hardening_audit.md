@@ -55,6 +55,11 @@ reproduziu a falha do teste de cleanup assíncrono e observou herança de
 grantability do `admin` foi identificado como incompatível com as roles
 efêmeras usadas pelo próprio harness.
 
+O parecer independente disponível foi `BLOCKED` no estado pré-correção, sem
+P0. Não houve um novo parecer final do agente após os fixes; portanto, este
+audit não o trata como aprovação independente e baseia o resultado nas
+verificações e na prova live reproduzível descritas abaixo.
+
 ### GREEN/REFACTOR
 
 As correções foram implementadas e o foco passou a verificar o comportamento

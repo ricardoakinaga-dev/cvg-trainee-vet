@@ -96,7 +96,9 @@ determinística e o processo filho recebe allowlist de ambiente. O resultado é
 `CONDITIONAL PASS / COMPLETED_WITH_GAPS`; evidência local não é produção,
 release, piloto, competência prática ou aprovação clínica. O artifact está em
 `BRIEFING/04.AUDIT/0543_application_grant_provisioning_hardening_audit.md` e o
-vínculo em `traceability.yml`.
+vínculo em `traceability.yml`. A rechecagem independente posterior não retornou
+antes do timeout e não foi tratada como aprovação; a limitação está registrada
+no audit.
 
 ### STATUS
 
