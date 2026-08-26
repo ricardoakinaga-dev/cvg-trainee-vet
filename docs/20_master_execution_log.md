@@ -42,6 +42,67 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Coordenação final da inicialização de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T10:55:57-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Eliminar a falsa segurança do teste de ordem e coordenar a inicialização
+opcional do worker entre o boot e `reconcile:qdrant`.
+
+### ACTION
+
+Foi aplicado o commit técnico `d90393f468c02a30a55927aa6a7f34823efec19a`.
+O teste do runner agora mantém a inicialização deferred até uma liberação
+explícita; o runtime compartilha a promessa em voo, o comando aguarda essa
+promessa e `close()` continua drenando a tentativa. O audit `0547`, o estado,
+backlog, plano e manifesto estão sendo atualizados para refletir a evidência
+final.
+
+### RESULT
+
+O `pnpm verify` passou com `142` arquivos/`730` testes PASS, `29` arquivos/`38`
+testes skipped e cobertura `84,42%` statements, `80,33%` branches, `86,46%`
+functions e `85,15%` lines. O focal ampliado passou `18/18`, o worker `31/31`,
+build `12/12`, E2E `32/32`, audit high e diff-check passaram. A evidência é
+local/sintética; não houve novo parecer independente após `d90393f`, outage
+live, push, deploy, migration aplicada ou aprovação clínica.
+
+### DECISIONS
+
+Manter `OPS-061-READINESS-006` em `COMPLETED_WITH_GAPS` e o runtime global em
+`WAITING_HUMAN_APPROVAL`. Os gaps de retry limitado/backoff, migration/schema
+readiness e operação live permanecem explícitos. `JOURNEY-056` continua sem
+implementação até a escolha A/B de Ricardo.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar os gates documentais finais e, em worktree limpo, o
+`verify:traceability:release`; depois aguardar Ricardo escolher A (sessão
+diagnóstica pública própria, recomendada) ou B (atividade especial). Não
+declarar release, publicação clínica ou competência prática.
+
+---
+
 ## 2026-08-26 — Fechamento documental e release traceability de `OPS-061-READINESS-006`
 
 ### TIMESTAMP

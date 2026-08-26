@@ -36,7 +36,9 @@ A correção bounded materializa duas responsabilidades:
 - o worker mantém `initialize()` não bloqueante para o loop normal, mas expõe
   o modo `waitForOptionalDependencies`; `reconcile-qdrant` usa esse modo para
   aguardar `ensureCollection()` antes de chamar `runtime.reconcile()`, evitando
-  a corrida entre criação da coleção e leitura de pontos.
+  a corrida entre criação da coleção e leitura de pontos. A inicialização em
+  voo é compartilhada entre o boot e o modo aguardável, e o runner espera a
+  mesma promessa antes de reconciliar.
 
 O worker aplica o mesmo ciclo não bloqueante para que a falha do índice não
 encerre o processo nem impeça o loop de outbox. Falhas são registradas apenas
@@ -50,7 +52,8 @@ entram em logs ou respostas.
   revelou a ausência da porta `createCoreReadinessHealthcheck`; a crítica final
   reproduziu a corrida do comando de reconciliação, e o teste do modo aguardável
   falhava porque `initialize({ waitForOptionalDependencies: true })` ainda
-  resolvia imediatamente.
+  resolvia imediatamente. A primeira prova do runner também era insuficiente:
+  seu stub resolvia sem manter a inicialização pendente.
 - GREEN focal: `packages/integrations/src/composition.test.ts`,
   `apps/api/src/main.test.ts` e `apps/worker/src/main.test.ts` passaram com
   `15` testes; `apps/worker/src/reconcile.test.ts` e
@@ -60,16 +63,18 @@ entram em logs ou respostas.
   adicional passou `88/88`. O
   servidor Qdrant sintético confirma que a inicialização foi tentada e que a API já estava
   bindada; a regressão também conecta explicitamente a falha à saúde agregada
-  e confirma o estado `DEGRADED`. O comando operacional agora aguarda a
-  preparação opcional por contrato explícito; não há alegação de execução live
-  do comando neste audit.
+  e confirma o estado `DEGRADED`. O runner agora mantém a inicialização
+  diferida, prova que `reconcile()` não é chamado antes da liberação e aguarda
+  a preparação opcional por contrato explícito; não há alegação de execução
+  live do comando neste audit.
 - refactor: a API e o worker usam tentativa em background com retry
-  cancelável; o retry usa timer `unref`, não expõe erro externo e é limpo no
-  fechamento. O teste live de health espera o estado Qdrant `UP` dentro de uma
-  janela bounded, pois a inicialização passou a ser eventual.
+  cancelável; o worker compartilha a promessa da tentativa em voo entre o
+  boot e o modo aguardável; o retry usa timer `unref`, não expõe erro externo e
+  é limpo no fechamento. O teste live de health espera o estado Qdrant `UP`
+  dentro de uma janela bounded, pois a inicialização passou a ser eventual.
 - `pnpm verify`: `142` arquivos PASS, `29` skipped; `730` testes PASS,
-  `38` skipped; cobertura `84,37%` statements, `80,31%` branches, `86,45%`
-  functions e `85,08%` lines; migrations `51/51`; gates de CI, lint,
+  `38` skipped; cobertura `84,42%` statements, `80,33%` branches, `86,46%`
+  functions e `85,15%` lines; migrations `51/51`; gates de CI, lint,
   typecheck, secrets, arquitetura, documentação, definição de produto e
   exposição passaram.
 - `pnpm build`: os `12` workspaces passaram.
@@ -97,16 +102,22 @@ staff escolha um participante válido dentro do escopo autorizado; isso é P2
 condicionado à eventual aplicação do contrato server-side mais estrito do
 fluxo adaptativo e não foi alterado.
 
+A verificação local seguinte substituiu o stub imediato do runner por uma
+barreira deferred e coordenou chamadas concorrentes pela mesma promessa em
+`d90393f`. Não foi emitido novo parecer independente depois desse último
+commit; por isso a decisão permanece condicional e não promove o resultado a
+aceite externo.
+
 ## 5. Resultado e gaps
 
 `OPS-061-READINESS-006` fica `CONDITIONAL PASS / COMPLETED_WITH_GAPS` para o
 recorte local. A mudança corrige a remoção indevida do núcleo por falha de
-Qdrant e conserva a saúde detalhada degradada. Permanecem sem evidência nesta
-auditoria: outage Qdrant em ambiente live, restart/carga/failover, duração de
-retry em operação, limite/backoff/jitter e classificação de falhas de retry no
-boot, validação literal de migration/schema pelo readiness, collector/
-retention/traces, ACL/owners produtivos, workflow remoto same-SHA e gates
-clínicos.
+Qdrant, conserva a saúde detalhada degradada e coordena localmente o boot com
+o comando aguardável. Permanecem sem evidência nesta auditoria: outage Qdrant
+em ambiente live, restart/carga/failover, duração de retry em operação,
+limite/backoff/jitter e classificação de falhas de retry no boot, validação
+literal de migration/schema pelo readiness, collector/retention/traces,
+ACL/owners produtivos, workflow remoto same-SHA e gates clínicos.
 
 `JOURNEY-056` continua `WAITING_HUMAN_APPROVAL`: Ricardo deve escolher A,
 sessão diagnóstica pública própria com checkpoint/retomada, ou B, atividade

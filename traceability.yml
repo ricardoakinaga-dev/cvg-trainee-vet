@@ -4894,7 +4894,7 @@ artifacts:
         "apps/api/src/http.test.ts",
         "tests/integration/api-health.test.ts",
       ]
-    commit: "c79cb7a353126af3494bb5dc28fb6b608c18d364"
+    commit: "d90393f468c02a30a55927aa6a7f34823efec19a"
     artifacts:
       [
         "coverage/",
@@ -4905,10 +4905,10 @@ artifacts:
       [
         "RED: Qdrant indisponível bloqueava o cold start antes do bind; o modo aguardável de initialize para reconcile também falhava ao resolver imediatamente antes da correção",
         "GREEN focal: readiness/composition, API, worker, reconcile e runner passaram 18/18; a prova sintética de preparação da coleção confirmou a sequência antes do reconcile; o focal HTTP adicional passou 88/88",
-        "pnpm verify: 142 test files PASS, 29 skipped; 730 tests PASS, 38 skipped; coverage 84.37% statements, 80.31% branches, 86.45% functions, 85.08% lines",
+        "pnpm verify: 142 test files PASS, 29 skipped; 730 tests PASS, 38 skipped; coverage 84.42% statements, 80.33% branches, 86.46% functions, 85.15% lines",
         "pnpm build: 12 workspaces PASS; pnpm test:e2e: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
         "readiness is PostgreSQL-only; aggregate health and dependency status preserve Qdrant DOWN/DEGRADED; synthetic Qdrant startup request observed after API bind; reconcile:qdrant now awaits optional collection preparation",
-        "independent reviews Franklin and Lagrange identified and the implementation corrected the cold-start/close-test gaps; Euler identified the reconcile command race and the explicit await mode corrected it; remaining P2 gaps are recorded in audit 0547",
+        "independent reviews Franklin and Lagrange identified and the implementation corrected the cold-start/close-test gaps; Euler identified the reconcile command race and the explicit await mode corrected it; the subsequent local deferred-barrier proof exposed an insufficient test and d90393f coordinated the shared in-flight initialization promise; remaining P2 gaps are recorded in audit 0547",
         "local/synthetic evidence only; no outage live, production, remote same-SHA, clinical approval, release or competence claim",
       ]
     status: "verified-with-gaps"

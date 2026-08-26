@@ -29,8 +29,8 @@ em evidência de runtime produtivo.
   frente de `origin/main`; não houve push ou deploy.
 - `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify` passou
   no estado final dos hardenings: 142 arquivos, 730 testes PASS, 29
-  arquivos/38 testes SKIPPED, cobertura de 84,37% statements, 80,31% branches,
-  86,45% functions e 85,08% lines; contratos 86/86, worker 31/31, migrations
+  arquivos/38 testes SKIPPED, cobertura de 84,42% statements, 80,33% branches,
+  86,46% functions e 85,15% lines; contratos 86/86, worker 31/31, migrations
   51/51 e gates estáticos PASS.
 - `OPS-061-GRANTS-001` agora mantém uma allowlist imutável de 29 tabelas para
   `app`, exclui `knowledge_documents`, revoga ACL atual/default de `app` e
@@ -78,9 +78,10 @@ em evidência de runtime produtivo.
   antes da inicialização assistiva e agenda retry cancelável para API e worker;
   o teste novo também foi corrigido para exercitar `DEGRADED` real. A crítica
   final encontrou e o item corrigiu a corrida do `reconcile:qdrant` com um modo
-  explícito que aguarda `ensureCollection()`. A evidência está em
+  explícito que aguarda `ensureCollection()` e compartilha a inicialização em
+  voo entre o boot e o comando. A evidência está em
   `BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md` e nos commits
-  `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`/`4e46daff955836c62bf99b90128c5d38d28ec222`/`c79cb7a353126af3494bb5dc28fb6b608c18d364`.
+  `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`/`4e46daff955836c62bf99b90128c5d38d28ec222`/`c79cb7a353126af3494bb5dc28fb6b608c18d364`/`d90393f468c02a30a55927aa6a7f34823efec19a`.
 - Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
   separadas e o provisionador atual, `pnpm test:integration:live` passou 35
   arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,

@@ -311,6 +311,15 @@ a aprovação clínica, piloto ou release produtivo.
   `initialize → reconcile`; os gaps P2 estão em `0547`.
   O resultado é `COMPLETED_WITH_GAPS`, sem evidência live de outage ou claim
   externo.
+- [x] (2026-08-26T10:55:57-03:00) Consolidar a correção final no commit
+  técnico `d90393f`: a prova do runner passou a manter a inicialização
+  deferred e a implementação do worker compartilha a promessa em voo entre o
+  boot e o modo aguardável. O focal ampliado permaneceu `18/18`; o `pnpm
+  verify` final passou `142` arquivos/`730` testes, `29` arquivos/`38` testes
+  skipped, cobertura `84,42%/80,33%/86,46%/85,15%`, build `12/12`, E2E
+  `32/32`, audit high e diff-check. A documentação corrente e o manifesto
+  serão fechados com `verify:traceability:release`; não há novo parecer
+  independente após esse commit e o item permanece `COMPLETED_WITH_GAPS`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,
