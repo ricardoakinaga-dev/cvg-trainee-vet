@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createWorkerRuntime } from "./main.js";
 
@@ -130,6 +130,279 @@ describe("worker runtime", () => {
       ).toHaveLength(4);
       await runtime.close();
     } finally {
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("waits for slow optional initialization before closing", async () => {
+    let releaseResponse: (() => void) | undefined;
+    const responseGate = new Promise<void>((resolve) => {
+      releaseResponse = resolve;
+    });
+    let resolveRequestStarted: (() => void) | undefined;
+    const requestStarted = new Promise<void>((resolve) => {
+      resolveRequestStarted = resolve;
+    });
+    const qdrant = createServer((request, response) => {
+      if (!request.url?.endsWith("/exists")) {
+        response.statusCode = 404;
+        response.end(JSON.stringify({ status: "not found" }));
+        return;
+      }
+      resolveRequestStarted?.();
+      void responseGate.then(() => {
+        response.statusCode = 503;
+        response.setHeader("content-type", "application/json");
+        response.end(JSON.stringify({ status: "unavailable" }));
+      });
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    let runtime: ReturnType<typeof createWorkerRuntime> | undefined;
+    let closing: Promise<void> | undefined;
+    try {
+      runtime = createWorkerRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: "cvg_test_worker_close_slow_v1",
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.initialize()).resolves.toBeUndefined();
+      await requestStarted;
+      let closeSettled = false;
+      closing = runtime.close().then(() => {
+        closeSettled = true;
+      });
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(closeSettled).toBe(false);
+
+      releaseResponse?.();
+      await expect(closing).resolves.toBeUndefined();
+      expect(closeSettled).toBe(true);
+    } finally {
+      releaseResponse?.();
+      if (runtime !== undefined && closing === undefined) {
+        await runtime.close();
+      }
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("shares one in-flight initialization between boot and explicit mode", async () => {
+    let releaseResponse: (() => void) | undefined;
+    const responseGate = new Promise<void>((resolve) => {
+      releaseResponse = resolve;
+    });
+    let resolveRequestStarted: (() => void) | undefined;
+    const requestStarted = new Promise<void>((resolve) => {
+      resolveRequestStarted = resolve;
+    });
+    let existsRequests = 0;
+    const qdrant = createServer((request, response) => {
+      response.statusCode = 200;
+      response.setHeader("content-type", "application/json");
+      if (request.url?.endsWith("/exists")) {
+        existsRequests += 1;
+        if (existsRequests === 1) {
+          resolveRequestStarted?.();
+          void responseGate.then(() => {
+            response.end(JSON.stringify({ result: { exists: false } }));
+          });
+          return;
+        }
+        response.end(JSON.stringify({ result: { exists: false } }));
+        return;
+      }
+      if (request.method === "GET") {
+        response.end(
+          JSON.stringify({
+            result: {
+              config: { params: { vectors: { size: 8, distance: "Cosine" } } },
+              payload_schema: {},
+            },
+          }),
+        );
+        return;
+      }
+      response.end(JSON.stringify({ result: true }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    let runtime: ReturnType<typeof createWorkerRuntime> | undefined;
+    let closed = false;
+    try {
+      runtime = createWorkerRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: "cvg_test_worker_shared_init_v1",
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.initialize()).resolves.toBeUndefined();
+      await requestStarted;
+      const awaitedInitialization = runtime.initialize({
+        waitForOptionalDependencies: true,
+      });
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(existsRequests).toBe(1);
+
+      releaseResponse?.();
+      await expect(awaitedInitialization).resolves.toBeUndefined();
+      expect(existsRequests).toBe(1);
+      await runtime.close();
+      closed = true;
+    } finally {
+      releaseResponse?.();
+      if (runtime !== undefined && !closed) await runtime.close();
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("cancels a stale retry after explicit initialization recovers", async () => {
+    type RetryTimer = {
+      cleared: boolean;
+      handle: ReturnType<typeof setTimeout>;
+      fire: () => void;
+    };
+    const retryTimers: RetryTimer[] = [];
+    const originalSetTimeout = globalThis.setTimeout;
+    const originalClearTimeout = globalThis.clearTimeout;
+    const setTimeoutSpy = vi
+      .spyOn(globalThis, "setTimeout")
+      .mockImplementation((handler, timeout, ...args) => {
+        if (timeout === 5_000) {
+          const timer = { cleared: false } as RetryTimer;
+          timer.handle = timer as unknown as ReturnType<typeof setTimeout>;
+          timer.fire = () => {
+            if (typeof handler === "function") {
+              handler(...args);
+            }
+          };
+          retryTimers.push(timer);
+          return timer.handle;
+        }
+        return originalSetTimeout(handler, timeout, ...args);
+      });
+    const clearTimeoutSpy = vi
+      .spyOn(globalThis, "clearTimeout")
+      .mockImplementation((timeout) => {
+        const timer = retryTimers.find((candidate) =>
+          Object.is(candidate.handle, timeout),
+        );
+        if (timer !== undefined) {
+          timer.cleared = true;
+          return;
+        }
+        originalClearTimeout(timeout);
+      });
+    const collection = "cvg_test_worker_retry_recovery_v1";
+    let existsRequests = 0;
+    let resolveFirstFailure: (() => void) | undefined;
+    const firstFailure = new Promise<void>((resolve) => {
+      resolveFirstFailure = resolve;
+    });
+    const qdrant = createServer((request, response) => {
+      response.statusCode = 200;
+      response.setHeader("content-type", "application/json");
+      if (request.url?.endsWith("/exists")) {
+        existsRequests += 1;
+        if (existsRequests === 1) {
+          response.statusCode = 503;
+          response.end(JSON.stringify({ status: "unavailable" }));
+          resolveFirstFailure?.();
+          return;
+        }
+        response.end(JSON.stringify({ result: { exists: false } }));
+        return;
+      }
+      if (request.method === "GET") {
+        response.end(
+          JSON.stringify({
+            result: {
+              config: { params: { vectors: { size: 8, distance: "Cosine" } } },
+              payload_schema: {},
+            },
+          }),
+        );
+        return;
+      }
+      response.end(JSON.stringify({ result: true }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    let runtime: ReturnType<typeof createWorkerRuntime> | undefined;
+    let closed = false;
+    try {
+      runtime = createWorkerRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: collection,
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.initialize()).resolves.toBeUndefined();
+      await firstFailure;
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(retryTimers).toHaveLength(1);
+
+      await expect(
+        runtime.initialize({ waitForOptionalDependencies: true }),
+      ).resolves.toBeUndefined();
+      expect(retryTimers[0]?.cleared).toBe(true);
+      const existsRequestsAfterRecovery = existsRequests;
+      retryTimers[0]?.fire();
+      await new Promise<void>((resolve) => setTimeout(resolve, 20));
+      expect(existsRequests).toBe(existsRequestsAfterRecovery);
+      await runtime.close();
+      closed = true;
+    } finally {
+      if (runtime !== undefined && !closed) await runtime.close();
+      setTimeoutSpy.mockRestore();
+      clearTimeoutSpy.mockRestore();
       await new Promise<void>((resolve) => qdrant.close(() => resolve()));
     }
   });

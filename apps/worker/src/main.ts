@@ -65,20 +65,31 @@ export function createWorkerRuntime(
   let stopped = false;
   let initializationRetryTimer: ReturnType<typeof setTimeout> | undefined;
   let initializationInFlight: Promise<void> | undefined;
+  const cancelIntegrationInitializationRetry = (): void => {
+    if (initializationRetryTimer === undefined) return;
+    clearTimeout(initializationRetryTimer);
+    initializationRetryTimer = undefined;
+  };
   const scheduleIntegrationInitializationRetry = (): void => {
     if (stopped || initializationRetryTimer !== undefined) return;
-    initializationRetryTimer = setTimeout(() => {
+    const retryTimer = setTimeout(() => {
+      if (initializationRetryTimer !== retryTimer) return;
       initializationRetryTimer = undefined;
       startIntegrationInitialization();
     }, 5_000);
-    initializationRetryTimer.unref?.();
+    initializationRetryTimer = retryTimer;
+    retryTimer.unref?.();
   };
   const startIntegrationInitialization = (): Promise<void> => {
     if (stopped) return Promise.resolve();
     if (initializationInFlight !== undefined) return initializationInFlight;
+    cancelIntegrationInitializationRetry();
     const attempt = integrations.initialize();
     initializationInFlight = attempt;
     void attempt
+      .then(() => {
+        cancelIntegrationInitializationRetry();
+      })
       .catch(() => {
         observability.logger.warn("integration.initialization.failed", {
           fields: { dependency: "qdrant", retryable: true },
@@ -130,10 +141,7 @@ export function createWorkerRuntime(
     run,
     close: async () => {
       stopped = true;
-      if (initializationRetryTimer !== undefined) {
-        clearTimeout(initializationRetryTimer);
-        initializationRetryTimer = undefined;
-      }
+      cancelIntegrationInitializationRetry();
       if (initializationInFlight !== undefined) {
         await initializationInFlight.catch(() => undefined);
       }
