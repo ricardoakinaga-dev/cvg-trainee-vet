@@ -326,6 +326,12 @@ a aprovação clínica, piloto ou release produtivo.
   `verify:traceability:release` passou com artefatos alcançáveis e paths
   rastreados. O runtime permanece `WAITING_HUMAN_APPROVAL` e
   `JOURNEY-056` continua aguardando a escolha A/B.
+- [x] (2026-08-26T11:09:05-03:00) Obter a crítica independente final de
+  Linnaeus no SHA `d90393f`/estado documental corrente: `CONDITIONAL PASS`, sem
+  P0/P1 novos. Os P2 de cenário integrado boot+reconcile, `close()` durante
+  inicialização lenta e retry concorrente foram registrados na auditoria e
+  tratados como nova fatia bounded, sem reabrir o código atual nem alterar o
+  gate humano de `JOURNEY-056`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

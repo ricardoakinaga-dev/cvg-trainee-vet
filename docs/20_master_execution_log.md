@@ -42,6 +42,62 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Crítica independente final de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T11:09:05-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Revisar independentemente o SHA final e decidir se a fatia exige nova
+intervenção.
+
+### ACTION
+
+Linnaeus inspecionou o worktree limpo e o código/testes do readiness em modo
+somente leitura. Não executou testes, não editou arquivos e não criou commits.
+
+### RESULT
+
+O parecer foi `CONDITIONAL PASS`, sem P0/P1 novos. A revisão confirmou a
+separação PostgreSQL/Qdrant, o bind degradável, a promessa compartilhada do
+worker e o teste deferred da ordem `initialize → reconcile`. Apontou P2 para
+um cenário integrado boot+reconcile com banco real, teste de `close()` com
+inicialização lenta e uma tentativa redundante possível quando retry pendente
+coincide com inicialização explícita.
+
+### DECISIONS
+
+Não reabrir o código nesta rodada: os achados não bloqueiam o contrato atual,
+já estão dentro dos gaps de operação bounded e não justificam iniciar
+`JOURNEY-056` sem decisão humana. Registrar os P2 em `0547`/backlog e manter
+`COMPLETED_WITH_GAPS`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria, recomendada)
+ou B (atividade especial) para `JOURNEY-056`. Uma nova task pode tratar retry
+bounded e cenários integrados depois da decisão, sem claim de release.
+
+---
+
 ## 2026-08-26 — Fechamento dos gates de `OPS-061-READINESS-006`
 
 ### TIMESTAMP

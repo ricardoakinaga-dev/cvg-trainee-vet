@@ -102,11 +102,16 @@ staff escolha um participante válido dentro do escopo autorizado; isso é P2
 condicionado à eventual aplicação do contrato server-side mais estrito do
 fluxo adaptativo e não foi alterado.
 
-A verificação local seguinte substituiu o stub imediato do runner por uma
+Uma verificação local seguinte substituiu o stub imediato do runner por uma
 barreira deferred e coordenou chamadas concorrentes pela mesma promessa em
-`d90393f`. Não foi emitido novo parecer independente depois desse último
-commit; por isso a decisão permanece condicional e não promove o resultado a
-aceite externo.
+`d90393f`. Linnaeus revisou o SHA final somente em leitura, confirmou que não
+há P0/P1 novos e manteve `CONDITIONAL PASS`. Registrou três limitações P2:
+falta de cenário integrado boot+reconcile concorrente com banco real, falta de
+teste de `close()` durante inicialização lenta e uma possível tentativa
+redundante quando um retry pendente coincide com uma inicialização explícita.
+As duas primeiras são limitações de cobertura; a última permanece no escopo
+da nova fatia de retry limitado/backoff. Não há aceite externo ou evidência de
+produção.
 
 ## 5. Resultado e gaps
 
@@ -117,7 +122,9 @@ o comando aguardável. Permanecem sem evidência nesta auditoria: outage Qdrant
 em ambiente live, restart/carga/failover, duração de retry em operação,
 limite/backoff/jitter e classificação de falhas de retry no boot, validação
 literal de migration/schema pelo readiness, collector/retention/traces,
-ACL/owners produtivos, workflow remoto same-SHA e gates clínicos.
+ACL/owners produtivos, workflow remoto same-SHA e gates clínicos. A revisão
+Linnaeus também não transforma a prova unitária deferred nem a preparação
+sintética da coleção em um cenário integrado live.
 
 `JOURNEY-056` continua `WAITING_HUMAN_APPROVAL`: Ricardo deve escolher A,
 sessão diagnóstica pública própria com checkpoint/retomada, ou B, atividade
