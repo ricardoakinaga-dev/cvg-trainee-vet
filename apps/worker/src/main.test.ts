@@ -39,4 +39,24 @@ describe("worker runtime", () => {
     await expect(runtime.initialize()).resolves.toBeUndefined();
     await runtime.close();
   });
+
+  it("can await optional Qdrant initialization for explicit reconciliation", async () => {
+    const runtime = createWorkerRuntime({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "true",
+      QDRANT_URL: "http://127.0.0.1:1",
+      QDRANT_COLLECTION: "cvg_test_worker_reconcile_v1",
+      QDRANT_INDEX_VERSION: "v1",
+      EMBEDDING_PROVIDER: "fake",
+      EMBEDDING_MODEL: "cvg-local-embedding-v1",
+      EMBEDDING_DIMENSION: "8",
+      AI_ENABLED: "false",
+    });
+
+    await expect(
+      runtime.initialize({ waitForOptionalDependencies: true }),
+    ).rejects.toThrow();
+    await runtime.close();
+  });
 });

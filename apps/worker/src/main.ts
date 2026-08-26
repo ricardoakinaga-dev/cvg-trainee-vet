@@ -20,13 +20,17 @@ import {
   type VectorReconciliationResult,
 } from "./reconcile.js";
 
+export type WorkerInitializationOptions = Readonly<{
+  waitForOptionalDependencies?: boolean;
+}>;
+
 export function createWorkerRuntime(
   environment: Record<string, string | undefined>,
 ): Readonly<{
   service: "worker";
   config: ReturnType<typeof loadRuntimeConfig>;
   integrations: ServerIntegrationSet;
-  initialize: () => Promise<void>;
+  initialize: (options?: WorkerInitializationOptions) => Promise<void>;
   reconcile: () => Promise<VectorReconciliationResult>;
   processOnce: (
     options?: WorkerLoopOptions,
@@ -83,7 +87,13 @@ export function createWorkerRuntime(
         initializationInFlight = undefined;
       });
   };
-  const initialize = async (): Promise<void> => {
+  const initialize = async (
+    options: WorkerInitializationOptions = {},
+  ): Promise<void> => {
+    if (options.waitForOptionalDependencies === true) {
+      await integrations.initialize();
+      return;
+    }
     startIntegrationInitialization();
   };
   const processOnce = (options: WorkerLoopOptions = {}) =>
