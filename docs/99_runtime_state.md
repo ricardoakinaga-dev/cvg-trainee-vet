@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechar `OPS-061-READINESS-007` no commit técnico `3cf093e907f7653cac11647a4a604525fee4303c`, com guarda contra callback de retry obsoleto, promessa de inicialização compartilhada e `close()` aguardável; registrar a auditoria `0548`, o backlog, o plano, o log e o manifesto. Focal `34/34`, regressão `142/733`, build `12/12`, E2E `32/32`, audit high e gates estáticos passaram; Gauss retornou `CONDITIONAL PASS` sem P0/P1.
-- next_action: concluir o commit do control plane e repetir `verify:traceability:release` em worktree limpo; depois aguardar Ricardo escolher A ou B para `JOURNEY-056`. Não iniciar código, migration, contrato ou UX antes da decisão.
+- last_completed_action: fechar `OPS-061-READINESS-007` no commit técnico `3cf093e907f7653cac11647a4a604525fee4303c`, registrar auditoria/backlog/plano/log/manifesto no commit documental `41370df82e11b8ec77dc32fb2b9624f3077efa1f` e passar `verify:traceability:release` em worktree limpo. Focal `34/34`, regressão `142/733`, build `12/12`, E2E `32/32`, audit high e gates estáticos passaram; Gauss retornou `CONDITIONAL PASS` sem P0/P1.
+- next_action: Ricardo escolher A ou B para `JOURNEY-056`; não iniciar código, migration, contrato ou UX antes da decisão. Manter `OPS-061-READINESS-007` como `COMPLETED_WITH_GAPS` e não declarar release.
 
 ## BLOQUEIOS
 
@@ -32,17 +32,17 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T12:00:56-0300
+- last_update: 2026-08-26T12:04:19-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
 - head: consultar `git rev-parse HEAD`; os commits técnicos de `OPS-061-READINESS-006` estão fechados localmente, o fechamento documental foi registrado e não houve push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: fechamento documental de `OPS-061-READINESS-007` em validação antes do commit; sem migration aplicada, push ou deploy
+- worktree: limpo após o commit documental `41370df82e11b8ec77dc32fb2b9624f3077efa1f` e o gate `verify:traceability:release`; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2`, `OPS-061-GRANTS-004` no commit `489a336` e `OPS-061-GRANTS-005` no commit `400e228`: o contrato exige runtime na role de aplicação, fixture real E2E na role admin, compara as URLs job-level e lê o override somente do step `Apply migrations`. O reconhecimento atual confirmou, contra `0802`/`0113`, que readiness deve ignorar falha do Qdrant e que a saúde detalhada já representa `DEGRADED`; há um achado separado de identidade client-supplied em learning-state ainda não confirmado no contrato/persistência. Focal anterior `16/16`, `pnpm verify` `141/723` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E sintético `32/32`, audit high e diff-check passaram. A crítica independente pré-fix confirmou os dois P2 de CI sem P0/P1; a tentativa pós-fix não retornou veredito e não é tratada como aceite. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`/`0546`.
 
-- current_readiness_evidence: `OPS-061-READINESS-006` está fechado nos commits técnicos `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`, `4e46daff955836c62bf99b90128c5d38d28ec222`, `c79cb7a353126af3494bb5dc28fb6b608c18d364` e `d90393f468c02a30a55927aa6a7f34823efec19a`; `OPS-061-READINESS-007` está implementado no commit técnico `3cf093e907f7653cac11647a4a604525fee4303c`. Readiness é PostgreSQL-only, a saúde agregada mantém `DEGRADED`, API/worker não bloqueiam o cold start, retry é cancelável inclusive contra callback obsoleto, `close()` aguarda inicialização em voo e `reconcile:qdrant` aguarda a preparação da coleção usando a mesma barreira de inicialização. `pnpm verify` passou com `142` arquivos/`733` testes PASS, `29` arquivos/`38` testes skipped e cobertura `84,45%` statements, `80,34%` branches, `86,54%` functions e `85,16%` lines; build `12/12`, E2E `32/32`, audit high e gates estáticos também passaram. Gauss revisou o SHA técnico final, não encontrou P0/P1 e manteve `CONDITIONAL PASS`; integração real boot+reconcile, retry policy completa, migration/schema readiness e operação live continuam gaps explícitos. Não há claim de produção, release ou competência.
+- current_readiness_evidence: `OPS-061-READINESS-006` está fechado nos commits técnicos `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`, `4e46daff955836c62bf99b90128c5d38d28ec222`, `c79cb7a353126af3494bb5dc28fb6b608c18d364` e `d90393f468c02a30a55927aa6a7f34823efec19a`; `OPS-061-READINESS-007` está implementado no commit técnico `3cf093e907f7653cac11647a4a604525fee4303c` e documentado em `0548`/`41370df`. Readiness é PostgreSQL-only, a saúde agregada mantém `DEGRADED`, API/worker não bloqueiam o cold start, retry é cancelável inclusive contra callback obsoleto, `close()` aguarda inicialização em voo e `reconcile:qdrant` aguarda a preparação da coleção usando a mesma barreira de inicialização. `pnpm verify` passou com `142` arquivos/`733` testes PASS, `29` arquivos/`38` testes skipped e cobertura `84,45%` statements, `80,34%` branches, `86,54%` functions e `85,16%` lines; build `12/12`, E2E `32/32`, audit high, gates estáticos e `verify:traceability:release` também passaram. Gauss revisou o SHA técnico final, não encontrou P0/P1 e manteve `CONDITIONAL PASS`; integração real boot+reconcile, retry policy completa, migration/schema readiness e operação live continuam gaps explícitos. Não há claim de produção, release ou competência.
 
 ## REGRAS DE USO
 

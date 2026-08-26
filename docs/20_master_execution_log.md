@@ -42,6 +42,58 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Validação final do control plane de `OPS-061-READINESS-007`
+
+### TIMESTAMP
+
+2026-08-26T12:04:19-0300
+
+### ENGINE
+
+AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-007` — retry/close do índice opcional
+
+### TASK
+
+Confirmar o fechamento rastreável e o retorno seguro ao gate humano.
+
+### ACTION
+
+O control plane foi versionado no commit documental
+`41370df82e11b8ec77dc32fb2b9624f3077efa1f`. Em seguida,
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability:release` foi executado
+em worktree limpo.
+
+### RESULT
+
+O gate passou: os artefatos correntes resolvem para commits alcançáveis e paths
+rastreados. O estado, backlog, log, plano, auditoria `0548` e manifesto estão
+sincronizados. Não houve migration, push, deploy ou execução produtiva.
+
+### DECISIONS
+
+Manter `OPS-061-READINESS-007` como `COMPLETED_WITH_GAPS` e o runtime em
+`WAITING_HUMAN_APPROVAL`. `JOURNEY-056` continua aguardando a escolha A/B de
+Ricardo; não iniciar código, migration ou UX de jornada e não declarar release.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar a decisão contratual de Ricardo para `JOURNEY-056`; manter os gaps
+integrados, de retry policy e de operação live explícitos.
+
+---
+
 ## 2026-08-26 — Fechamento de `OPS-061-READINESS-007`
 
 ### TIMESTAMP
