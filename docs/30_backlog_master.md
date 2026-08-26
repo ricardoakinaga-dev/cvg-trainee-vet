@@ -32,6 +32,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Abertura controlada 2026-08-26 (`OPS-061-GRANTS-003`):** uma revisão independente parcial confirmou que o contrato não verificava `DATABASE_URL`, embora essa variável inicialize o runtime, e que `.env.example` a apontava para a role de migração. Foi aberta uma correção bounded para exigir a role de aplicação em `DATABASE_URL`, conferir o mesmo banco nas cinco URLs documentadas e corrigir o ponteiro `head` do runtime state. A task não altera produto, migrations aplicadas, `JOURNEY-056`, produção ou deploy.
 
+**Fechamento controlado 2026-08-26 (`OPS-061-GRANTS-003`):** `DATABASE_URL` passou a ser validada com a role de aplicação de `CVG_TEST_DATABASE_URL` e o mesmo banco das cinco URLs; `.env.example` agora usa `cvg_app`. O focal passou `9/9`; `pnpm verify` passou com 141 arquivos/716 testes PASS, 29 skipped/38 testes, cobertura 84,36%/80,30%/86,35%/85,05%, build 12/12, E2E 32/32, audit high e diff-check. O resultado é `COMPLETED_WITH_GAPS`: não há prova produtiva, live nova, remote same-SHA, deploy ou aceitação independente final; auditoria `0544`.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -595,13 +597,14 @@ backfill inventado.
 - fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
 - risco: alto — uma configuração copiada do exemplo poderia iniciar a aplicação com privilégios de migração e o contrato CI não detectaria a divergência
 - impacto: alto
-- status: IN_PROGRESS
+- status: COMPLETED_WITH_GAPS
 - critério de pronto: teste RED reproduz runtime com role de migração; validador parseia as cinco URLs, exige `DATABASE_URL` na role de aplicação e mesmo banco, `.env.example` usa `cvg_app`, foco/regressão/gates documentais/security passam e nenhuma evidência externa é inferida
 - escopo: `scripts/verify-ci-contract.mjs`, `.env.example`, `tests/integration/ci-governance.test.ts`, audit e control plane
 - fora desta fatia: produto, migrations aplicadas, ACL/owners produtivos, deploy, workflow remoto same-SHA, `JOURNEY-056`, fornecedor, publicação clínica e dados reais
 - controles obrigatórios: não expor credenciais em saída; comparar somente identificadores parseados; manter role migration separada; não aceitar URL runtime divergente da role de aplicação; preservar a decisão A/B pendente
-- evidência inicial: crítica independente parcial; RED `1/8` antes da correção; GREEN focal `8/8` após a correção local
-- próxima ação: commitar o código, executar regressão e gates proporcionais, criar `BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md` e então retornar a `WAITING_HUMAN_APPROVAL` para `JOURNEY-056`
+- evidência: crítica independente parcial; RED `1/8` antes da correção; GREEN focal `9/9`; commits técnicos `703fe7c`/`0bd71f2`; auditoria `BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md`; `pnpm verify` `141/716` com `38` skips, build `12/12`, E2E `32/32`, audit high e diff-check PASS
+- gaps remanescentes: owners/ACLs/deployment produtivos, workflow remoto same-SHA e operação externa não foram provados; a revisão independente parcial não retornou parecer final; não há nova evidência live ou clínica
+- próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; não iniciar código, migration ou UX de jornada antes da decisão contratual
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial
 

@@ -42,6 +42,7 @@ export const CURRENT_TRACEABILITY_ARTIFACT_IDS = Object.freeze([
   "LIVE-056",
   "OPS-061-GRANTS-001",
   "OPS-061-GRANTS-002",
+  "OPS-061-GRANTS-003",
 ]);
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;

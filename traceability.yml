@@ -4702,6 +4702,54 @@ artifacts:
         "database and three synthetic roles were removed after runtime evidence; no production ACL/owner, remote same-SHA, scale/failover/restore/collector or clinical evidence inferred",
       ]
     status: "verified-with-gaps"
+  - id: "OPS-061-GRANTS-003"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "DB-PRIVILEGE-032",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        ".env.example",
+        "scripts/verify-ci-contract.mjs",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests: ["tests/integration/ci-governance.test.ts"]
+    commit: "0bd71f24dc19256a64433cc9b60ea354b58636b2"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md",
+      ]
+    verification:
+      [
+        "RED: runtime DATABASE_URL using the migration role was not rejected before the validator included DATABASE_URL",
+        "GREEN focal: CI governance 9/9 PASS, including runtime role and database mismatch rejection",
+        "pnpm verify: 141 test files PASS, 29 skipped; 716 tests PASS, 38 skipped; coverage 84.36% statements, 80.30% branches, 86.35% functions, 85.05% lines",
+        "pnpm build: 12 workspaces PASS; pnpm test:e2e --workers=1: 32/32 PASS; pnpm audit --audit-level=high: no known advisories",
+        "runtime DATABASE_URL in .env.example now uses the synthetic application role cvg_app; the validator checks the same database across all five documented URLs",
+        "the independent partial review found the issue but did not return a final acceptance verdict; no production, remote same-SHA, live rerun or clinical evidence is inferred",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

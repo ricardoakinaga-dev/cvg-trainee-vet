@@ -50,6 +50,11 @@ em evidência de runtime produtivo.
   `DATABASE_URL` não era validada pelo contrato CI e `.env.example` apontava o
   runtime para a role de migração. `OPS-061-GRANTS-003` corrige essa coerência
   e o ponteiro `head` do runtime state, sem alterar produto ou `JOURNEY-056`.
+- `OPS-061-GRANTS-003` foi fechado nos commits `703fe7c`/`0bd71f2` e auditado em
+  `BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md`: o contrato
+  inclui as cinco URLs, exige a role de aplicação e o mesmo banco; o focal
+  passou `9/9` e os gates locais passaram. A revisão independente não retornou
+  parecer final e não há claim de produção.
 - Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
   separadas e o provisionador atual, `pnpm test:integration:live` passou 35
   arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,

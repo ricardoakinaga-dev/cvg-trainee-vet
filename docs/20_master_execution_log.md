@@ -100,6 +100,65 @@ backlog, plano e runtime state, e só então retornar ao aguardo da decisão A/B
 
 ---
 
+## 2026-08-26 — OPS-061-GRANTS-003: fechamento da coerência da role de runtime
+
+### TIMESTAMP
+
+2026-08-26T08:45:00-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-003 — coerência de `DATABASE_URL` e rastreabilidade do estado
+
+### TASK
+
+Fechar a divergência que permitia documentar o runtime com a role de migração,
+sem avançar o contrato de `JOURNEY-056`.
+
+### ACTION
+
+A crítica independente parcial foi confrontada com o runtime, workflow,
+`.env.example` e validador. O teste RED falhou `1/8`; a correção foi consolidada
+em `703fe7c25740f97fec3d930f6118dd72cef2b4aa` e o teste de cobertura adicional
+em `0bd71f24dc19256a64433cc9b60ea354b58636b2`.
+
+### RESULT
+
+`DATABASE_URL` agora é parte do contrato de cinco URLs, usa a mesma role de
+aplicação de `CVG_TEST_DATABASE_URL` e aponta para o mesmo banco. `.env.example`
+usa `cvg_app`. O focal passou `9/9`; `pnpm verify` passou com `141` arquivos,
+`716` testes PASS e `38` skips, cobertura `84,36/80,30/86,35/85,05`; build
+`12/12`, E2E `32/32`, audit high e diff-check também passaram.
+
+### DECISIONS
+
+`OPS-061-GRANTS-003` fica `CONDITIONAL PASS / COMPLETED_WITH_GAPS`. A revisão
+independente parcial não retornou parecer final e não é tratada como aceite.
+Não houve prova live nova, produção, deploy, migration ou mudança de produto.
+O resultado não autoriza release, piloto, publicação clínica ou claim de
+competência prática.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria) ou B
+(atividade especial) para `JOURNEY-056`; owners/grants produtivos, workflow
+remoto same-SHA, operação externa e gates clínicos continuam exigindo
+autoridade separada.
+
+---
+
 ## 2026-08-26 — OPS-061-GRANTS-002: hardening e prova live do provisionador
 
 ### TIMESTAMP

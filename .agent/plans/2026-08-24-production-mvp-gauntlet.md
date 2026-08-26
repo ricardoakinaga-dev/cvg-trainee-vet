@@ -269,8 +269,11 @@ a aprovação clínica, piloto ou release produtivo.
   role de aplicação, `.env.example` não pode iniciar o runtime com a role de
   migração e o runtime state deve apontar para o HEAD real. O RED reproduziu a
   falha `1/8`; o GREEN focal passou `8/8`. Alterações ainda não estão commitadas.
-- [ ] (em execução) Commitar `OPS-061-GRANTS-003`, executar regressão/gates,
-  registrar `0544`/manifesto e retornar ao aguardo de A/B em `JOURNEY-056`.
+- [x] (2026-08-26T08:45:00-03:00) Fechar `OPS-061-GRANTS-003` nos commits
+  `703fe7c`/`0bd71f2`: adicionar cobertura de role/banco do runtime, executar
+  `pnpm verify` (`141/716`, `38` skips), build `12/12`, E2E `32/32`, audit high,
+  diff-check e registrar `0544`/manifesto. O resultado é conditional pass;
+  a revisão independente parcial não retornou aceite final.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,
