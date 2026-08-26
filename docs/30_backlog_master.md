@@ -30,6 +30,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Reabertura controlada 2026-08-26 (`OPS-061-GRANTS-002`):** crítica independente pós-build encontrou URL com senha em `argv`, ACL de database/schema/functions e defaults incompletos, SQL de grants dependente de `search_path`, provisionamento sem transação e contrato CI sem todas as variáveis exigidas pelo próprio fluxo. A correção fica limitada ao harness/provisionador e sua governança; a matriz live permanece dependente de banco descartável autorizado e nenhuma evidência produtiva será inferida.
 
+**Abertura controlada 2026-08-26 (`OPS-061-GRANTS-003`):** uma revisão independente parcial confirmou que o contrato não verificava `DATABASE_URL`, embora essa variável inicialize o runtime, e que `.env.example` a apontava para a role de migração. Foi aberta uma correção bounded para exigir a role de aplicação em `DATABASE_URL`, conferir o mesmo banco nas cinco URLs documentadas e corrigir o ponteiro `head` do runtime state. A task não altera produto, migrations aplicadas, `JOURNEY-056`, produção ou deploy.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -583,6 +585,23 @@ backfill inventado.
 - controles obrigatórios: pgpass temporário com limpeza; roles migration/application/admin distintas; nenhuma credencial em Git/log/argv; SQL parametrizado/identifiers validados; admin somente para fixture/cleanup; sem `SUPERUSER`/`BYPASSRLS` na aplicação; rollback transacional
 - evidência: crítica independente Galileo; auditoria `0543`; `traceability.yml` / `OPS-061-GRANTS-002`; commit `36088ff`; migration governance `23/23`, CI governance `7/7`, banco sintético PostgreSQL 16.15 com live `35/35` arquivos e `82/82` testes; `pnpm verify`, build, E2E, audit high, diff-check e `verify:traceability:release` PASS
 - próxima ação: manter a evidência local/sintética como conditional pass, aguardar decisão humana para `JOURNEY-056` e tratar ACL/owners produtivos, workflow remoto same-SHA e operação externa somente com autoridade própria
+
+### OPS-061-GRANTS-003 — Coerência da role de runtime no contrato CI
+
+- título: impedir que o runtime documentado use a role de migração e deixar o contrato CI coerente com a matriz least-privilege
+- descrição: validar `DATABASE_URL` junto das URLs `CVG_*`, exigir que o runtime use a role de aplicação e o mesmo banco das fixtures documentadas, e corrigir o exemplo de ambiente
+- módulo: operação / configuração / PostgreSQL / CI / segurança / governança
+- dependência: `OPS-061-GRANTS-002`; SPEC 0109/0111/0118
+- fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
+- risco: alto — uma configuração copiada do exemplo poderia iniciar a aplicação com privilégios de migração e o contrato CI não detectaria a divergência
+- impacto: alto
+- status: IN_PROGRESS
+- critério de pronto: teste RED reproduz runtime com role de migração; validador parseia as cinco URLs, exige `DATABASE_URL` na role de aplicação e mesmo banco, `.env.example` usa `cvg_app`, foco/regressão/gates documentais/security passam e nenhuma evidência externa é inferida
+- escopo: `scripts/verify-ci-contract.mjs`, `.env.example`, `tests/integration/ci-governance.test.ts`, audit e control plane
+- fora desta fatia: produto, migrations aplicadas, ACL/owners produtivos, deploy, workflow remoto same-SHA, `JOURNEY-056`, fornecedor, publicação clínica e dados reais
+- controles obrigatórios: não expor credenciais em saída; comparar somente identificadores parseados; manter role migration separada; não aceitar URL runtime divergente da role de aplicação; preservar a decisão A/B pendente
+- evidência inicial: crítica independente parcial; RED `1/8` antes da correção; GREEN focal `8/8` após a correção local
+- próxima ação: commitar o código, executar regressão e gates proporcionais, criar `BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md` e então retornar a `WAITING_HUMAN_APPROVAL` para `JOURNEY-056`
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial
 

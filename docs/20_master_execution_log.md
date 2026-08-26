@@ -42,6 +42,64 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — OPS-061-GRANTS-003: coerência da role de runtime no contrato CI
+
+### TIMESTAMP
+
+2026-08-26T08:35:54-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-003 — coerência de `DATABASE_URL` e rastreabilidade do estado
+
+### TASK
+
+Impedir que o exemplo de ambiente ou o contrato CI inicializem o runtime com a
+role de migração, sem avançar o contrato de `JOURNEY-056`.
+
+### ACTION
+
+A revisão independente parcial posterior ao fechamento de `OPS-061-GRANTS-002`
+confirmou que `scripts/verify-ci-contract.mjs` validava somente as quatro URLs
+`CVG_*`, enquanto `DATABASE_URL` era usada pelo runtime e permanecia com a role
+de migração em `.env.example`. Também confirmou que o campo `head` do runtime
+state não apontava para o HEAD documental atual. Foi escrito um teste RED para
+uma `DATABASE_URL` com role de migração; ele falhou `1/8` antes da correção.
+
+### RESULT
+
+O validador agora inclui `DATABASE_URL`, exige que ela use a mesma role de
+aplicação de `CVG_TEST_DATABASE_URL` e verifica o mesmo banco nas cinco URLs
+documentadas. `.env.example` usa `cvg_app` no runtime, e o teste focal passou
+`8/8`. A alteração ainda aguarda commit técnico, regressão completa e fechamento
+documental.
+
+### DECISIONS
+
+Esta é uma correção bounded de configuração/assurance, sem migration, produto,
+produção, deploy ou jornada. A decisão A/B de `JOURNEY-056` permanece pendente;
+o resultado não autoriza release nem infere segurança de qualquer ambiente
+externo.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar o foco final e os gates proporcionais, atualizar `0544`, manifesto,
+backlog, plano e runtime state, e só então retornar ao aguardo da decisão A/B.
+
+---
+
 ## 2026-08-26 — OPS-061-GRANTS-002: hardening e prova live do provisionador
 
 ### TIMESTAMP

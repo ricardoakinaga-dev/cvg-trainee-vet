@@ -46,6 +46,10 @@ em evidência de runtime produtivo.
   `BRIEFING/04.AUDIT/0543_application_grant_provisioning_hardening_audit.md`:
   `psql` não recebe URL/senha em `argv`, o ambiente é allowlist, arquivos são
   temporários `0600`, o SQL é transacional e o contrato CI valida roles/banco.
+- A revisão independente parcial posterior encontrou uma divergência bounded:
+  `DATABASE_URL` não era validada pelo contrato CI e `.env.example` apontava o
+  runtime para a role de migração. `OPS-061-GRANTS-003` corrige essa coerência
+  e o ponteiro `head` do runtime state, sem alterar produto ou `JOURNEY-056`.
 - Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
   separadas e o provisionador atual, `pnpm test:integration:live` passou 35
   arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,
@@ -200,7 +204,8 @@ humanas apropriadas. IA e Qdrant nunca assumem essas decisões.
 - `OPS-061`: logs JSON redigidos, métricas, traces, alerts, SLOs, runbooks,
   health e graceful shutdown; `OPS-061-GRANTS-001` fecha a matriz local de
   privilégios do harness; `OPS-061-GRANTS-002` fecha o provisionamento e o
-  contrato local, sem encerrar a revisão produtiva.
+  contrato local, e `OPS-061-GRANTS-003` fecha a coerência da role de runtime,
+  sem encerrar a revisão produtiva.
 - `RECOVERY-069`: backup, restore, RPO/RTO, failover e rollback em ambiente
   descartável.
 - `CI-070`: workflow same-SHA, artefatos, SBOM, dependency/security gates e

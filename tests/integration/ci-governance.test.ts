@@ -82,14 +82,34 @@ describe("CI reproducibility contract", () => {
     const contract = await readCiContract();
     const inconsistent = {
       ...contract,
-      envExample: contract.envExample.replace(
-        "CVG_TEST_DATABASE_URL=postgresql://cvg_app:cvg_app@localhost:5432/cvg",
-        "CVG_TEST_DATABASE_URL=postgresql://cvg:cvg@localhost:5432/cvg",
-      ),
+      envExample: contract.envExample
+        .replace(
+          "DATABASE_URL=postgresql://cvg_app:cvg_app@localhost:5432/cvg",
+          "DATABASE_URL=postgresql://cvg:cvg@localhost:5432/cvg",
+        )
+        .replace(
+          "CVG_TEST_DATABASE_URL=postgresql://cvg_app:cvg_app@localhost:5432/cvg",
+          "CVG_TEST_DATABASE_URL=postgresql://cvg:cvg@localhost:5432/cvg",
+        ),
     };
 
     expect(() => validateCiContract(inconsistent)).toThrow(
       /distinct .* roles/i,
+    );
+  });
+
+  it("rejects a runtime DATABASE_URL that uses the migration role", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      envExample: contract.envExample.replace(
+        /DATABASE_URL=postgresql:\/\/[^\r\n]+/u,
+        "DATABASE_URL=postgresql://cvg_migration:cvg_migration@localhost:5432/cvg",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /DATABASE_URL.*application role/i,
     );
   });
 });

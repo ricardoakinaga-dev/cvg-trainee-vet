@@ -24,6 +24,7 @@ const requiredEnvironmentKeys = Object.freeze([
   "AI_ENABLED",
 ]);
 const requiredDatabaseEnvironmentKeys = Object.freeze([
+  "DATABASE_URL",
   "CVG_MIGRATION_DATABASE_URL",
   "CVG_TEST_DATABASE_URL",
   "CVG_TEST_ADMIN_DATABASE_URL",
@@ -100,8 +101,9 @@ function databaseContractFailures(text) {
       }
       return { key, role, database };
     });
-    const [migration, application, admin, realE2e] = connections;
+    const [runtime, migration, application, admin, realE2e] = connections;
     if (
+      runtime === undefined ||
       migration === undefined ||
       application === undefined ||
       admin === undefined ||
@@ -109,21 +111,26 @@ function databaseContractFailures(text) {
     ) {
       return ["database URL contract is incomplete"];
     }
+    if (runtime.role !== application.role) {
+      return [
+        "DATABASE_URL must use the application role used by CVG_TEST_DATABASE_URL",
+      ];
+    }
     if (new Set([migration.role, application.role, admin.role]).size !== 3) {
       return [
         "database URLs must use distinct migration/application/admin roles",
       ];
     }
     if (
-      new Set([migration.database, application.database, admin.database])
-        .size !== 1
+      new Set([
+        runtime.database,
+        migration.database,
+        application.database,
+        admin.database,
+        realE2e.database,
+      ]).size !== 1
     ) {
       return ["database URLs must target the same database"];
-    }
-    if (realE2e.database !== admin.database) {
-      return [
-        "CVG_REAL_E2E_DATABASE_URL must target the same database as the admin URL",
-      ];
     }
     return [];
   } catch {

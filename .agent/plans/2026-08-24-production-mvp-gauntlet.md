@@ -264,6 +264,13 @@ a aprovação clínica, piloto ou release produtivo.
   em `0543`/`traceability.yml` e validar o release traceability em worktree
   limpo; `pnpm verify:traceability:release` passou. O estado global permanece
   aguardando a decisão A/B de `JOURNEY-056`.
+- [x] (2026-08-26T08:35:54-03:00) Abrir `OPS-061-GRANTS-003` após crítica
+  independente parcial: o contrato agora precisa validar `DATABASE_URL` com a
+  role de aplicação, `.env.example` não pode iniciar o runtime com a role de
+  migração e o runtime state deve apontar para o HEAD real. O RED reproduziu a
+  falha `1/8`; o GREEN focal passou `8/8`. Alterações ainda não estão commitadas.
+- [ ] (em execução) Commitar `OPS-061-GRANTS-003`, executar regressão/gates,
+  registrar `0544`/manifesto e retornar ao aguardo de A/B em `JOURNEY-056`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,
