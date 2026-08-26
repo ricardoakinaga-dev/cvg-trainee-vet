@@ -32,13 +32,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T08:45:00-0300
+- last_update: 2026-08-26T08:49:51-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
 - head: consultar `git rev-parse HEAD` para o checkout corrente; últimos commits técnicos de `OPS-061-GRANTS-003` são `703fe7c` e `0bd71f2`, e o fechamento documental permanece sem push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: fechamento documental de `OPS-061-GRANTS-003` pendente de commit; sem migration aplicada, push ou deploy
+- worktree: limpo após o fechamento documental de `OPS-061-GRANTS-003` em `d0d9e36`; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff` e `OPS-061-GRANTS-003` foi fechado nos commits `703fe7c`/`0bd71f2`: o contrato inclui `DATABASE_URL`, exige a role de aplicação no runtime e o mesmo banco para as URLs documentadas; `.env.example` usa `cvg_app`. Focal `9/9`, `pnpm verify` `141/716` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E `32/32`, audit high e diff-check passaram. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`.
 
