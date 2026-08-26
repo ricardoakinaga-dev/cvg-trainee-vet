@@ -1,6 +1,6 @@
 # CVG Trainee Vet — State of the Art Master Plan
 
-**Data da revisão:** 2026-08-25
+**Data da revisão:** 2026-08-26
 **Estado:** plano vivo de evolução incremental
 **Fonte de verdade do produto:** `BRIEFING/09.PROJETO_CVG_TREINAMENTO`
 **Control plane:** `docs/99_runtime_state.md`, `docs/20_master_execution_log.md`, `docs/30_backlog_master.md` e `traceability.yml`
@@ -22,17 +22,20 @@ em evidência de runtime produtivo.
 
 ## 2. Estado atual observado
 
-### Evidência de 2026-08-25
+### Evidência de 2026-08-26
 
-- HEAD local: `29e990b0df33daf6fc3dfc24413f13cb2aaf9610`; worktree limpo; branch
+- HEAD local: `b66acc125fac0e022ce5837c4eb14d1eca862401`; worktree limpo antes da
+  atualização documental; branch
   `main` está à frente de `origin/main`; não houve push ou deploy.
 - `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify` passou:
-  141 arquivos, 695 testes PASS, 35 SKIPPED, cobertura de 84,36% statements,
-  80,36% branches, 86,39% functions e 85,05% lines; contratos 86/86,
-  worker 27/27, migrations 42/42 e gates estáticos PASS.
-- `pnpm test:integration:live` não pôde iniciar sem
-  `CVG_TEST_DATABASE_URL`; não há claim live de PostgreSQL, RLS, grants,
-  trigger, concorrência ou browser→API→PostgreSQL.
+  141 arquivos, 708 testes PASS, 29 arquivos/37 testes SKIPPED, cobertura de
+  84,36% statements, 80,35% branches, 86,35% functions e 85,05% lines;
+  contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos PASS.
+- Em banco PostgreSQL 16.15 descartável recriado, com migrations 51/51 e roles
+  separadas, `pnpm test:integration:live` passou 35 arquivos/75 testes. Isso
+  prova o recorte live local de RLS, ACL, trigger/CAS, rollback, isolamento
+  contextual e concorrência adaptativa; não prova produção ou browser→API→
+  PostgreSQL completo.
 - Conteúdo clínico e B-07/M02 continuam sujeitos a revisão e aprovação humana;
   nenhum código, seed, teste ou interface usa dado clínico real, prontuário,
   tutor, foto, PDF de terceiro ou segredo.
@@ -53,14 +56,14 @@ em evidência de runtime produtivo.
 
 | Prioridade | Gap | Evidência atual | Tratamento |
 | --- | --- | --- | --- |
-| P0 | Contexto de participante ainda herda `FOR ALL` em `feedback_tickets`; update/delete direto pode escapar da trilha/auditoria da aplicação | `0010_classy_kronos.sql`, `0041_feedback_triage_metadata.sql`, `learning-state-repository.ts` | `FEEDBACK-055`, correção imediata com RED, migration nova e prova live quando autorizada |
-| P0 | RLS, grants, owners, trigger, CAS e rollback das migrations recentes sem prova no banco descartável | `CVG-TEST-DB-REMOTE-001` | preparar harness; executar somente com URLs/autoridade explícitas |
+| P1 | Least privilege, owners e grants do ambiente produtivo ainda não foram provados; o provisionador live usa DML amplo para o harness | `scripts/provision-ci-postgres.mjs`, auditoria 0540 | `OPS-061`, matriz produtiva e revisão operacional |
 | P1 | Diagnóstico → assignment → atividade → próxima ação ainda não possui jornada completa de participante diagnosticando no browser | auditoria independente; fixtures reais ainda bypassam diagnóstico | `JOURNEY-056`, depois de segurança e contratos estabilizados |
 | P1 | Feedback pode chegar a `AGUARDA_USUARIO`, mas não existe conversa/reply bounded | PRD RF-103/RF-104, UC-022/023, domínio e web atuais | `FEEDBACK-057`, após `FEEDBACK-055`; sem SLA/notificação nesta fase |
 | P1 | Retenção possui sinal/CTA incompleto e cadência ainda precisa decisão de equivalência | backlog e resolver de jornada | `RETENTION-058`, após decisão de produto/PRD |
 | P1 | Facilitador/preceptor e coordenação ainda não formam experiência completa | superfícies internas parciais | `STAFF-059`, analytics agregados e privacy-by-design |
 | P1 | Autoria após `AJUSTES_SOLICITADOS` carece de edição/resubmissão consumível | state machine existe; UI/contrato incompletos | `AUTHORING-060`, mantendo four-eyes e gate clínico |
 | P1 | Assurance operacional externa, same-SHA CI, carga, failover, restore e collector não têm evidência atual | auditorias 0505/0508 e estado canônico | `OPS-061`, dependente de ambiente/autoridade |
+| P2 | Matriz negativa individual por tabela/contexto e revisão completa do caminho UPDATE ainda não foi exaurida no live | `tests/integration/postgres-security-isolation.test.ts`, auditoria 0540 | ampliar `LIVE-056`/`OPS-061` com ambiente e risco justificados |
 | P2 | Tutor/RAG/evals, notificações e busca podem evoluir sobre contratos aprovados | adapters existem; experiência completa não existe | `AI-062`, somente depois da fundação educacional |
 
 ## 4. Arquitetura alvo incremental
@@ -107,11 +110,9 @@ humanas apropriadas. IA e Qdrant nunca assumem essas decisões.
 
 ### Phase 1 — Segurança e integridade do núcleo
 
-- `FEEDBACK-055`: separar leitura/criação do participante de escritas staff em
-  feedback; impedir update/delete de participante; manter transação, CAS,
-  histórico e auditoria de status/metadata.
-- `LIVE-056`: aplicar migrations em banco descartável autorizado; provar role
-  `NOSUPERUSER/NOBYPASSRLS`, ACL, RLS, trigger, rollback e disputa CAS.
+- `FEEDBACK-055` + `LIVE-056`: separar leitura/criação do participante de
+  escritas staff, provar isolamento contextual em PostgreSQL descartável e
+  preservar transação, CAS, histórico, auditoria e bindings adaptativos.
 - `IDENTITY-057`: continuar hardening de sessões, capability e escopo apenas
   com regressão da matriz de autorização.
 - Aceite: nenhum write de participante contorna governança; staff autorizado
@@ -218,7 +219,8 @@ resultado independentemente da cobertura ou de qualquer score médio.
 2. Corrigir a fronteira de escrita `FEEDBACK-055` com RED → GREEN → REFACTOR.
 3. Rodar regressão estática/local e registrar o gap live sem mascará-lo.
 4. Obter crítica independente e corrigir o maior gap restante.
-5. Executar `LIVE-056` somente quando o ambiente autorizado existir.
+5. `LIVE-056` foi executado em banco local descartável; repetir somente para
+   ambiente produtivo/remote quando houver autoridade e critérios explícitos.
 6. Fechar jornada de participante, depois feedback/retenção, autoria, staff,
    learning intelligence, IA/RAG e hardening operacional.
 
@@ -227,10 +229,16 @@ reversão da fatia bounded autorizada ou correção forward. Dados de produção
 nunca são resetados. Uma task só vira DONE com evidência atual, auditoria,
 traceability, backlog, log, runtime state e diff coerentes.
 
-## 9. Primeiro incremento autorizado
+## 9. Primeiro incremento autorizado — encerrado com gaps
 
-`FEEDBACK-055` será implementado agora porque a crítica independente encontrou
-uma possibilidade de escrita direta do participante em `feedback_tickets`, com
-risco de contornar histórico/auditoria. O incremento não adicionará resposta,
+`FEEDBACK-055` foi implementado e ampliado com `LIVE-056` porque a crítica
+independente encontrou uma possibilidade de escrita direta do participante em
+`feedback_tickets`, além de lacunas de contexto nas projeções participant-only
+e de integridade em bindings adaptativos. As migrations 0048–0050 e o runner
+live fecharam o recorte técnico local. O incremento não adicionou resposta,
 SLA, notificação, anexos, publicação clínica, provider, MFA, produção ou
-atribuição arbitrária a terceiro.
+atribuição arbitrária a terceiro. A próxima fatia autorizada é `JOURNEY-056` ou
+`FEEDBACK-057`, com os gates humanos e operacionais mantidos. Antes do BUILD,
+`JOURNEY-056` exige decisão entre sessão diagnóstica pública própria
+(recomendada) e atividade especial; `FEEDBACK-057` ainda exige contrato próprio
+para resposta/resolução. Nenhuma dessas fatias foi iniciada nesta rodada.

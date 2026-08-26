@@ -191,20 +191,39 @@ a aprovação clínica, piloto ou release produtivo.
   receber três leituras independentes. A maior lacuna de segurança confirmada
   foi a policy participante `FOR ALL` de `feedback_tickets`; a próxima task
   bounded é `FEEDBACK-055`, sem alterar a API participante.
-- [x] (2026-08-26T00:35:16-03:00) Fechar localmente `FEEDBACK-055` com RED/GREEN/REFACTOR:
-  migration 0042 substitui a policy participante `FOR ALL` por SELECT/INSERT,
-  restringe a leitura staff a contexto sem `participant_id`, separa o contexto
-  staff somente de escopo no caso de uso/repository e atualiza o guard para
-  status-only ou metadata-only. Focal 28/28, migrations 43/43, format, lint,
-  typecheck, documentação e traceability estrutural passaram; a fixture live
-  agora cobre own INSERT/SELECT, same-scope cross-participant SELECT e
-  participant UPDATE/DELETE, mas permanece sem evidência por ausência de banco
-  autorizado. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29
-  skipped, 698 testes PASS, 35 skipped, cobertura 84,31%/80,33%/86,34%/85,00%,
-  contratos 86/86 e worker 27/27. O preflight live encerrou com exit 2 sem
-  `CVG_TEST_DATABASE_URL`; não há claim live, produção, piloto ou gate clínico.
-- [ ] (próximo) Executar a prova PostgreSQL live autorizada de `FEEDBACK-055` ou
-  selecionar `FEEDBACK-057`, sem ampliar escopo para resposta/SLA/notificação.
+- [x] (2026-08-26T02:58:32-03:00) Fechar `FEEDBACK-055`/`LIVE-056` com RED/GREEN/REFACTOR:
+  migrations 0048–0050 vinculam leituras participant-only ao scope resolvido por
+  oracle privado, restringem feedback history ao ticket/participante, e a
+  policy de `activity_assignments` valida assignment curricular ativo,
+  membership aceita, status permitido e conjunto completo de conteúdo publicado.
+  O adaptive repository exclui conteúdo misto e duas materializações concorrentes
+  foram exercitadas com único assignment/vínculo. O commit final é
+  `b66acc125fac0e022ce5837c4eb14d1eca862401`.
+- [x] (2026-08-26T02:57:10-03:00) Recriar o banco descartável PostgreSQL 16.15,
+  aplicar 51/51 migrations, provisionar app/admin/migration com roles distintas
+  e executar o runner oficial: 35 arquivos/75 testes PASS. A role app foi
+  observada sem `SUPERUSER`/`BYPASSRLS`/`CREATEROLE`; tabelas sensíveis têm
+  `ENABLE/FORCE RLS` e o helper novo tem `PUBLIC EXECUTE = false`.
+- [x] (2026-08-26T02:56:05-03:00) Executar `pnpm verify` no SHA final: 141
+  arquivos, 708 testes PASS, 29 arquivos/37 testes skipped, cobertura
+  84,36%/80,35%/86,35%/85,05%, contratos 86/86, worker 27/27, migrations 51/51
+  e gates estáticos PASS.
+- [x] (2026-08-26T03:06:11-03:00) Reexecutar `pnpm verify` após o fechamento
+  documental e do manifesto: os mesmos 141/708 PASS, cobertura mínima,
+  `LIVE-056` estruturalmente válido e documentation gate passaram.
+- [x] (2026-08-26T03:12:56-03:00) Comparar `JOURNEY-056` e `FEEDBACK-057` com
+  duas análises independentes read-only; ambas confirmaram que `FEEDBACK-057`
+  carece de contrato/schema próprio e que `JOURNEY-056` exige escolher sessão
+  diagnóstica pública própria (recomendado) ou atividade especial.
+- [x] (2026-08-26T03:15:57-03:00) Versionar auditoria, estado, log, backlog,
+  plano e manifesto no commit documental; o release gate
+  `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+  limpo.
+- [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
+  o BUILD bounded; até lá, não iniciar código, migration ou UX da próxima
+  fatia. Production least privilege/owners, workflow remoto same-SHA,
+  browser→API→PostgreSQL completo, escala/failover/restore/collector e gates
+  clínicos permanecem fora da evidência atual.
 
 ## Surprises & Discoveries
 

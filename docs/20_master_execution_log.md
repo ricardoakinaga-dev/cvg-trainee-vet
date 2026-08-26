@@ -42,6 +42,140 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — GAUNTLET: decisão de contrato para a próxima fatia
+
+### TIMESTAMP
+
+2026-08-26T03:12:56-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 2 / jornada do participante e contratos executáveis
+
+### SPRINT
+
+Seleção da próxima fatia bounded
+
+### TASK
+
+Verificar se `JOURNEY-056` ou `FEEDBACK-057` pode iniciar BUILD sem inventar
+produto, depois do fechamento técnico de `FEEDBACK-055`/`LIVE-056`.
+
+### ACTION
+
+Foi reexecutado `pnpm verify` pelo wrapper Node `22.22.0`/pnpm `10.33.0`:
+141 arquivos/708 testes PASS, 29 arquivos/37 testes skipped, cobertura
+84,36%/80,35%/86,35%/85,05%, contratos 86/86, worker 27/27, migrations 51/51
+e gates estáticos PASS. Duas análises independentes read-only compararam as
+fatias seguintes.
+
+### RESULT
+
+`FEEDBACK-057` não possui item próprio nem contrato executável; o schema atual
+não possui resposta/resolução e o histórico não modela esse evento. `JOURNEY-056`
+tem caminho técnico provável, mas precisa decidir se o diagnóstico será uma
+sessão pública própria ou uma atividade especial; também exige checkpoint para
+atender retomada e transação/idempotência entre resultado e assignment.
+O audit 0540, o backlog, o estado, o plano e o manifesto foram versionados no
+commit documental de fechamento; `CVG_TRACEABILITY_RELEASE=true pnpm
+verify:traceability` passou em worktree limpo.
+
+### DECISIONS
+
+Nenhum código novo foi iniciado. O control plane entra em
+`WAITING_HUMAN_APPROVAL` para não inventar contrato, persistência ou UX. A
+opção recomendada é sessão diagnóstica pública própria; depois da decisão deve
+ser aberta uma entrada bounded com RED/GREEN e fora de escopo explícito.
+Produção, least privilege produtivo, browser→API→PostgreSQL completo, operação
+externa e aprovação clínica continuam gates independentes.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve escolher a forma de `JOURNEY-056`; só então iniciar o contrato e
+BUILD correspondentes. `FEEDBACK-057` permanece pendente de definição própria.
+
+---
+
+## 2026-08-26 — LIVE-056/FEEDBACK-055: fechamento live do isolamento contextual
+
+### TIMESTAMP
+
+2026-08-26T02:58:32-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 3–5 / segurança, RLS, integridade adaptativa e evidência runtime
+
+### SPRINT
+
+FEEDBACK-055 + LIVE-056
+
+### TASK
+
+Fechar a prova executável de isolamento por participante/escopo e impedir que
+vínculos adaptativos atravessem assignment curricular inválido ou conteúdo não
+publicado.
+
+### ACTION
+
+Após a correção de FEEDBACK-055, foram consolidadas as migrations 0048–0050.
+O contexto participante agora resolve o escopo por oracle privado antes das
+leituras de atividade, item, progresso, tentativa e jornada; o histórico de
+feedback permanece owner-scoped e append-only. A policy de
+`activity_assignments` passou a validar participante, escopo, atividade
+publicada, assignment curricular ativo, módulo, membership aceita, status
+permitido e conjunto completo de conteúdo publicado. A descoberta adaptativa
+também exclui conteúdo misto e o teste live exercita duas materializações
+concorrentes com advisory lock.
+
+### RESULT
+
+Os commits técnicos `16af141becf96616676fffcfdab6f31c1835b7a2` e
+`b66acc125fac0e022ce5837c4eb14d1eca862401` foram verificados. Em banco
+PostgreSQL 16.15 descartável recriado, migrations 51/51 foram aplicadas e a
+prova final `pnpm test:integration:live` passou com 35 arquivos/75 testes. As
+roles observadas foram app `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`, admin
+`NOSUPERUSER/BYPASSRLS/CREATEROLE` para o harness e migration owner; tabelas
+sensíveis estavam `ENABLE/FORCE RLS`, o helper novo tinha `PUBLIC EXECUTE =
+false` e execução para app = `true`. O `pnpm verify` passou com 141 arquivos,
+708 testes PASS, 29 arquivos/37 testes skipped e cobertura 84,36% statements,
+80,35% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker
+27/27 e gates estáticos também passaram.
+
+### DECISIONS
+
+`FEEDBACK-055` e `LIVE-056` ficam `COMPLETED_WITH_GAPS`: a efetividade foi
+demonstrada em ambiente local sintético limpo, mas isso não equivale a
+produção. O provisionamento amplo de DML é específico do harness de teste e
+permanece gap de least privilege/owners produtivos. Workflow remoto same-SHA,
+browser→API→PostgreSQL completo, carga em escala, failover/restore,
+collector/retention/traces, resposta/SLA/notificação, atribuição a terceiro e
+aprovação clínica continuam fora da evidência. Nenhuma publicação, piloto,
+release ou claim de competência prática foi autorizado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Abrir `JOURNEY-056` ou `FEEDBACK-057` como próxima fatia bounded, preservando
+os gates de produção, operação e aprovação clínica.
+
+---
+
 ## 2026-08-26 — FEEDBACK-055: fechamento local do isolamento de escrita
 
 ### TIMESTAMP

@@ -9,38 +9,38 @@
 ## POSIÇÃO ATUAL
 
 - current_phase: BUILD — Phase 3–5 / hardening de segurança e integridade
-- current_sprint: FEEDBACK-055 — isolamento de escrita de feedback
-- current_task: fechar RED/GREEN/REFACTOR e registrar a auditoria local de isolamento de escrita em feedback_tickets
+- current_sprint: FEEDBACK-055 + LIVE-056 — isolamento contextual e integridade adaptativa
+- current_task: aguardar decisão do contrato de `JOURNEY-056` antes de iniciar novo BUILD
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: WAITING_HUMAN_APPROVAL
 
 ## PROGRESSO
 
-- last_completed_action: implementar e testar localmente `FEEDBACK-055`: migration 0042, policies explícitas participante, contexto staff somente de escopo, guard de status/metadata, fixture live preparada e auditoria 0539.
-- next_action: executar a prova PostgreSQL live em ambiente descartável autorizado; sem esse ambiente, selecionar a próxima fatia bounded (`FEEDBACK-057`) sem declarar efetividade RLS ou release.
+- last_completed_action: consolidar `FEEDBACK-055`/`LIVE-056` nos commits `16af141` e `b66acc1`, provar o runtime PostgreSQL descartável, reexecutar os gates completos, registrar a decisão de contrato pendente e versionar o control plane com release traceability verde.
+- next_action: após decisão humana, registrar e abrir somente uma fatia bounded: `JOURNEY-056` como sessão diagnóstica pública própria (recomendado) ou como atividade especial; `FEEDBACK-057` permanece sem contrato executável.
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `FEEDBACK-055` ainda não tem ACL/RLS/trigger/CAS live, concorrência ou browser→API→PostgreSQL. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29 skipped, 698 testes PASS, 35 skipped e cobertura 84,31% statements/80,33% branches/86,34% functions/85,00% lines; contratos 86/86, worker 27/27 e migrations 43/43 também passaram. O preflight `pnpm test:integration:live` encerrou com exit 2 por ausência de `CVG_TEST_DATABASE_URL`. Workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/SLA/notificação, atribuição a terceiro e debrief/reflexão completa permanecem fora do produto implementado. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações locais usam runtime efêmero Node `22.22.0`/pnpm `10.33.0`. Esses bloqueios não impedem verificação local, mas impedem declarar release/100%
+- blockers: a prova PostgreSQL descartável local está concluída, mas não substitui ACL/owners/grants de produção, workflow remoto same-SHA, browser→API→PostgreSQL completo, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. O provisionamento usado na prova é específico de CI/teste: a role app é `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`, mas recebe DML amplo para exercitar o harness; least privilege/owners produtivos continuam gap. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
 
 ## DECISÃO HUMANA
 
 - human_decision_required: yes
-- decision_description: os commits locais são reversíveis e foram criados com a identidade já usada no histórico; workflow remoto/push no SHA atual exigem autoridade de repositório, e revisão/autorização clínica continuam necessárias para M02/B-07 e qualquer transição para `PUBLICADO`; o score técnico não equivale a aprovação clínica ou competência prática
+- decision_description: escolher para `JOURNEY-056` entre (A) sessão diagnóstica pública própria, recomendada, com checkpoint/retomada e finalização server-side, ou (B) atividade especial; a escolha define contrato, persistência, API e UX. `FEEDBACK-057` só deve ser aberto após definir resposta única/thread, visibilidade, autoria, edição e efeito no estado. Workflow remoto/push e revisão/autorização clínica continuam exigindo autoridade separada; score técnico não equivale a aprovação clínica ou competência prática
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T00:35:16-0300
+- last_update: 2026-08-26T03:15:57-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `ba9f01892878670948ad31669ee2b9708ab24f79`; último commit local de controle verificado antes deste registro, contendo o fechamento de traceability de FEEDBACK-055; o preflight live confirmou ausência de ambiente
+- head: implementação `b66acc125fac0e022ce5837c4eb14d1eca862401`; o commit documental de fechamento é o HEAD local atual e a evidência live foi executada após esse SHA técnico
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: atualização documental de evidência local; sem push/deploy
+- worktree: limpo após o commit documental; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055` está GREEN/REFACTOR localmente: RED inicial por migration ausente, 3 arquivos/28 testes focais PASS, policy 0042 explícita, contexto staff sem participantId, guard de status-only/metadata-only, typecheck/lint/format PASS e migrations 43/43. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29 skipped, 698 testes PASS, 35 skipped e cobertura 84,31% statements/80,33% branches/86,34% functions/85,00% lines; contratos 86/86 e worker 27/27 passaram. O preflight live encerrou com exit 2 sem `CVG_TEST_DATABASE_URL`; a prova preparada em `postgres-learning-state.test.ts` permanece sem evidência live. Não há claim live de ACL/RLS/grants/trigger/concurrency, produção, workflow remoto same-SHA, operação externa ou gate clínico
+- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `pnpm verify` no SHA `b66acc1` passou com 141 arquivos/708 testes PASS, 29 arquivos/37 testes skipped; cobertura 84,36% statements, 80,35% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos passaram. Em banco recriado limpo, `pnpm test:integration:live` passou 35 arquivos/75 testes; roles observadas: app sem `SUPERUSER/BYPASSRLS`, admin com `BYPASSRLS` somente para o harness e migration owner. A evidência é local/sintética e não prova produção, browser→API→PostgreSQL, operação externa ou gate clínico.
 
 ## REGRAS DE USO
 

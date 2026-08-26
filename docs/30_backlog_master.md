@@ -16,6 +16,10 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Fechamento local operacional 2026-08-26 (FEEDBACK-055):** RED/GREEN/REFACTOR passou no focal com 3 arquivos/28 testes; a migration 0042 substitui a policy participante por SELECT/INSERT explícitos, nega UPDATE/DELETE por ausência de policy, separa `LearningStateStaffContext` e atualiza o guard staff para status-only ou metadata-only. O commit local é `54b28f6c75a44408fe91b0d0f54689d86fd4a62f`; `pnpm verify:migrations` passou com 43/43; format, lint e typecheck passaram. O `pnpm verify` final passou com 141 arquivos de teste PASS, 29 skipped, 698 testes PASS, 35 skipped, cobertura 84,31%/80,33%/86,34%/85,00%, contratos 86/86 e worker 27/27. O preflight live encerrou com exit 2 por ausência de `CVG_TEST_DATABASE_URL`; não há evidência live. Item segue `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`, sem claim live, release, produção ou aprovação clínica. Auditoria: `BRIEFING/04.AUDIT/0539_feedback_ticket_write_isolation_audit.md`.
 
+**Fechamento live operacional 2026-08-26 (FEEDBACK-055/LIVE-056):** os commits `16af141becf96616676fffcfdab6f31c1835b7a2` e `b66acc125fac0e022ce5837c4eb14d1eca862401` consolidaram as migrations 0048–0050, o oracle contextual participante+escopo, o histórico de feedback owner-scoped, a integridade de `activity_assignments`, a exclusão de conteúdo misto e a serialização adaptativa. Em banco PostgreSQL 16.15 descartável recriado, `pnpm test:integration:live` passou com 35 arquivos/75 testes; `pnpm verify` passou com 141 arquivos/708 testes PASS, 29 arquivos/37 testes skipped e cobertura 84,36%/80,35%/86,35%/85,05%, contratos 86/86, worker 27/27 e migrations 51/51. O item fica `COMPLETED_WITH_GAPS`: o teste usa grants DML amplos próprios do harness, portanto least privilege/owners produtivos, workflow remoto same-SHA, browser→API→PostgreSQL completo, escala/failover/restore/collector, resposta/SLA/notificação e aprovação clínica continuam pendentes. Auditoria: `BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md`.
+
+**Decisão de próxima fatia 2026-08-26 (aguarda Ricardo):** a análise independente confirmou que `FEEDBACK-057` ainda não possui item próprio, contrato executável ou schema de resposta; `JOURNEY-056` requer uma escolha de produto que altera contrato, persistência, API e UX: (A) sessão diagnóstica pública própria, recomendada, com checkpoint/retomada, ou (B) atividade especial. Nenhum código foi iniciado nessa próxima fatia. O item aguarda aprovação antes de novo BUILD; produção, operação externa e aprovação clínica permanecem gates separados.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -510,12 +514,48 @@ backfill inventado.
 - risco: crítico — update/delete direto pode mudar metadata/status/campos protegidos sem evento append-only ou auditoria
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
-- critério de pronto: participante lê e cria apenas seus relatos; UPDATE/DELETE do participante falham na policy; transições staff autorizadas continuam usando contexto somente de escopo e produzem exatamente um histórico/auditoria; metadata `FEEDBACK-054` continua allowlisted e CAS; migration nova, governança estática, testes RED/GREEN/REFACTOR, regressão e prova live preparada
+- critério de pronto: participante lê e cria apenas seus relatos; UPDATE/DELETE do participante falham na policy; transições staff autorizadas continuam usando contexto somente de escopo e produzem exatamente um histórico/auditoria; metadata `FEEDBACK-054` continua allowlisted e CAS; migrations 0042/0043/0048, governança estática, testes RED/GREEN/REFACTOR, regressão e prova live sintética passaram
 - escopo: policy/RLS de `feedback_tickets`, contexto de escrita staff, repositório de estado, testes de migration/governança e fixture live sintética
-- fora desta fatia: resposta ao participante, SLA, notificação, anexos, atribuição a terceiro, publicação clínica, provider/MFA, produção e execução live sem ambiente autorizado
-- controles obrigatórios: não editar migration aplicada; não confiar em identidade do cliente; manter participant projection e contrato público; staff continua capability/role/scope/CAS; não afirmar efetividade RLS sem PostgreSQL live
-- evidência: `BRIEFING/04.AUDIT/0539_feedback_ticket_write_isolation_audit.md`; migration `0042_feedback_ticket_participant_write_rls.sql`; `packages/application/src/learning-state-use-cases.ts`; `packages/persistence/src/learning-state-repository.ts`; governança 43/43; focal 28/28; fixture live em `tests/integration/postgres-learning-state.test.ts`
-- próxima ação: executar prova PostgreSQL live em banco descartável autorizado; se não houver ambiente, selecionar `FEEDBACK-057` sem declarar efetividade RLS
+- fora desta fatia: resposta ao participante, SLA, notificação, anexos, atribuição a terceiro, publicação clínica, provider/MFA, produção, least privilege produtivo e workflow remoto
+- controles obrigatórios: não editar migration aplicada; correções posteriores são forward-only; não confiar em identidade do cliente; manter participant projection e contrato público; staff continua capability/role/scope/CAS; evidência live local não é evidência de produção
+- evidência: `BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md`; migrations `0042_feedback_ticket_participant_write_rls.sql`, `0043_feedback_history_participant_insert_rls.sql` e `0048_learning_participant_context_hardening.sql`; `packages/application/src/learning-state-use-cases.ts`; `packages/persistence/src/learning-state-repository.ts`; `tests/integration/postgres-learning-state.test.ts`; clean live 35/75; verify 141/708
+- resultado: isolamento de escrita, histórico append-only, contexto staff e CAS continuam preservados; prova live confirmou own/cross-participant feedback, participant UPDATE/DELETE negados, rollback/trigger/CAS e ausência de execução pública dos helpers
+- próxima ação: manter `FEEDBACK-057` separado e avançar para `JOURNEY-056` somente com escopo e gates explícitos; não declarar release
+
+### LIVE-056 — Prova live de isolamento contextual e integridade adaptativa
+
+- título: transformar a correção de isolamento em evidência runtime PostgreSQL reproduzível em banco descartável
+- descrição: aplicar migrations 0043–0050, provisionar roles distintas, executar a matriz live de feedback, journey/activity/progress/attempt, adaptive assignment e privilégios dos helpers
+- módulo: PostgreSQL / RLS / integridade adaptativa / segurança / CI
+- dependência: `FEEDBACK-055`; `ACTIVITY-RLS-047`; `RLS-FUNCTION-EXECUTE-051`; `DB-PRIVILEGE-032`; SPEC 0109/0111/0118
+- fase: BUILD/AUDIT — Phase 3–5 / hardening de segurança
+- risco: crítico — uma policy não exercitada pode parecer correta enquanto deixa atravessar participante, escopo, assignment, conteúdo ou helper privilegiado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: banco PostgreSQL 16.15 recriado sem resíduos antes da execução; 51/51 migrations; app `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`; admin separado para cleanup; RLS/FORCE RLS nas tabelas sensíveis; helper `SECURITY DEFINER` privado; feedback próprio/cross-participant, writes proibidos, journey oracle, conteúdo misto/status inválido, replay e corrida concorrente cobertos
+- escopo: ambiente local descartável `cvg_gauntlet_20260826`, roles sintéticas sem dados clínicos reais e runner oficial `pnpm test:integration:live`
+- fora desta fatia: produção, owners/grants least privilege produtivos, deployment, workflow remoto same-SHA, browser→API→PostgreSQL completo, carga/failover/restore/collector e aprovação clínica
+- controles obrigatórios: credenciais não entram no Git; admin não representa role de aplicação; migrations são forward-only; Qdrant/IA não participam da decisão; nenhum dado real é utilizado
+- evidência: `BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md`; commit `b66acc125fac0e022ce5837c4eb14d1eca862401`; migrations 51/51; live 35/75; `traceability.yml` / `LIVE-056`
+- resultado: prova live concluída com gaps de produção explicitamente mantidos; não é autorização de release/piloto
+- próxima ação: avançar para `JOURNEY-056` ou `FEEDBACK-057` apenas como nova fatia bounded
+
+### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial
+
+- título: fechar a jornada participante de diagnóstico formativo sintético até assignment e atividade publicada
+- descrição: iniciar, responder, retomar e finalizar o diagnóstico B-07 técnico; derivar identidade/escopo no servidor; persistir resultado de forma idempotente; chamar a atribuição existente e permitir seguir a atividade publicada já vinculada
+- módulo: jornada do participante / diagnóstico / assignment / API / web / PostgreSQL
+- dependência: `ADAPTIVE-044`; `JOURNEY-045`; `JOURNEY-REL-001`; `JOURNEY-REL-002`; `FEEDBACK-055`; `LIVE-056`; decisão de contrato desta entrada
+- fase: BUILD — Phase 2 / jornada do participante
+- risco: alto — expor o endpoint interno atual ou persistir resultado sem checkpoint pode vazar identidade/escopo ou deixar diagnóstico e assignment divergentes
+- impacto: alto
+- status: WAITING_HUMAN_APPROVAL
+- decisão requerida: escolher entre (A) sessão diagnóstica pública própria, recomendada, com checkpoint e retomada, ou (B) atividade especial; a escolha altera contrato, persistência, API, web e E2E
+- escopo candidato: diagnóstico formativo sintético, sem pass/fail global, sem nota punitiva, sem publicação clínica, sem currículo completo e sem claim de competência prática; identidade, escopo, módulos e assignment são server-side
+- fora desta fatia: conteúdo B-07 clinicamente aprovado, produção/piloto, retenção, notificações, IA/Qdrant, debriefing completo, prática presencial e qualquer autorização clínica
+- controles obrigatórios: contrato strict; participante não envia `participantId`/`scopeId`/módulos; checkpoint e finalização idempotentes; PostgreSQL/RLS/CAS; assignment existente preserva provenance; projeção não expõe gabarito, fonte ou campos internos; RED/GREEN/REFACTOR, E2E e gates antes de `COMPLETED_WITH_GAPS`
+- evidência de decisão: `docs/20_master_execution_log.md`; `docs/99_runtime_state.md`; análise independente do loop; `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
+- próxima ação: Ricardo escolher A ou B; depois criar/validar o contrato correspondente e só então iniciar RED
 
 ### FEEDBACK-054 — Priorização e atribuição escopadas de relatos
 
