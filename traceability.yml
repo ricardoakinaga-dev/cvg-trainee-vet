@@ -5078,7 +5078,7 @@ artifacts:
         "tests/integration/migration-governance.test.ts",
         "tests/e2e/diagnostic-session.spec.ts",
       ]
-    commit: "WORKTREE"
+    commit: "f247bd578abcd50ce7ecd85109fb567462c3c2f9"
     artifacts:
       [
         "coverage/",

@@ -94,6 +94,40 @@ rascunho, não publicado e desligado por padrão.
 
 READY_FOR_NEXT_STEP
 
+## 2026-08-26 — Commit técnico local de `JOURNEY-056`
+
+### TIMESTAMP
+
+2026-08-26T16:37:00-0300
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 2 — jornada do participante
+
+### SPRINT / TASK
+
+`JOURNEY-056` — commit e publicação do fechamento técnico
+
+### ACTION
+
+Criado o commit técnico `f247bd578abcd50ce7ecd85109fb567462c3c2f9` com a
+implementação da Opção A, migration, testes, auditoria e integração documental.
+O manifesto `traceability.yml` foi ancorado nesse SHA.
+
+### RESULT
+
+O commit local foi criado com sucesso; o push para `origin/main` é a próxima
+ação imediata desta rodada. Nenhuma migration foi aplicada e nenhum deploy foi
+executado.
+
+### STATUS
+
+IN_PROGRESS
+
 ## 2026-08-26 — Decisão A e abertura do BUILD de `JOURNEY-056`
 
 ### TIMESTAMP

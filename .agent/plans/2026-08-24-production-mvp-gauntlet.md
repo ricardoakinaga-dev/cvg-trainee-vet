@@ -399,6 +399,9 @@ recuperação explícita → 401`. O commit técnico complementar é `2a95f5c` e
       147 arquivos/770 testes, build 12/12, E2E sintético 33/33 e todos os
       gates estáticos/documentais; auditoria 0550 registra
       `CONDITIONAL PASS / COMPLETED_WITH_GAPS`.
+- [x] (2026-08-26T16:37:00-03:00) Criar o commit técnico local
+      `f247bd578abcd50ce7ecd85109fb567462c3c2f9` e ancorar o manifesto de
+      rastreabilidade no SHA; o push para `origin/main` permanece em andamento.
 - [ ] (2026-08-26T16:00:31-03:00) Após autorização operacional, executar
       PostgreSQL/RLS live e E2E browser→web→API→PostgreSQL em banco descartável;
       manter publicação clínica, produção, push/deploy e release bloqueados.
