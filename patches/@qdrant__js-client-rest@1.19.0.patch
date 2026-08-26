@@ -1,0 +1,13 @@
+diff --git a/dist/esm/api-client.js b/dist/esm/api-client.js
+index 76c01a861b808edab9d2e9fafc60ac13bf1ea4a7..7565f7709e2c85e4772c61a74bbc46b1c03fc3bd 100644
+--- a/dist/esm/api-client.js
++++ b/dist/esm/api-client.js
+@@ -47,7 +47,7 @@ export function createClient(baseUrl, { headers, timeout, connections }) {
+         }
+         catch (error) {
+             if (error instanceof ApiError && error.status === 429) {
+-                const retryAfterHeader = error.headers.get('retry-after')?.[0];
++                const retryAfterHeader = error.headers.get('retry-after');
+                 if (retryAfterHeader) {
+                     throw new QdrantClientResourceExhaustedError(error.message, retryAfterHeader);
+                 }

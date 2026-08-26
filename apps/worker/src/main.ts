@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 
 import { loadRuntimeConfig } from "@cvg/config";
 import {
+  calculateQdrantInitializationRetryDelay,
+  classifyQdrantInitializationError,
   createServerIntegrations,
+  DEFAULT_QDRANT_INITIALIZATION_RETRY_POLICY,
   type ServerIntegrationSet,
 } from "@cvg/integrations";
 import { createObservability } from "@cvg/observability";
@@ -65,36 +68,114 @@ export function createWorkerRuntime(
   let stopped = false;
   let initializationRetryTimer: ReturnType<typeof setTimeout> | undefined;
   let initializationInFlight: Promise<void> | undefined;
+  let initializationAttempts = 0;
+  const retryPolicy = DEFAULT_QDRANT_INITIALIZATION_RETRY_POLICY;
   const cancelIntegrationInitializationRetry = (): void => {
     if (initializationRetryTimer === undefined) return;
     clearTimeout(initializationRetryTimer);
     initializationRetryTimer = undefined;
   };
-  const scheduleIntegrationInitializationRetry = (): void => {
+  const scheduleIntegrationInitializationRetry = (delay: number): void => {
     if (stopped || initializationRetryTimer !== undefined) return;
     const retryTimer = setTimeout(() => {
       if (initializationRetryTimer !== retryTimer) return;
       initializationRetryTimer = undefined;
       startIntegrationInitialization();
-    }, 5_000);
+    }, delay);
     initializationRetryTimer = retryTimer;
     retryTimer.unref?.();
   };
-  const startIntegrationInitialization = (): Promise<void> => {
+  const startIntegrationInitialization = (
+    forceNewBudget = false,
+  ): Promise<void> => {
     if (stopped) return Promise.resolve();
-    if (initializationInFlight !== undefined) return initializationInFlight;
-    cancelIntegrationInitializationRetry();
+    const currentAttempt = initializationInFlight;
+    if (currentAttempt !== undefined) {
+      if (!forceNewBudget) return currentAttempt;
+      return currentAttempt.then(
+        () => undefined,
+        () => {
+          if (initializationInFlight === currentAttempt) {
+            initializationInFlight = undefined;
+          }
+          return startIntegrationInitialization(true);
+        },
+      );
+    }
+    if (forceNewBudget) {
+      cancelIntegrationInitializationRetry();
+      initializationAttempts = 0;
+    }
+    initializationAttempts += 1;
     const attempt = integrations.initialize();
     initializationInFlight = attempt;
     void attempt
       .then(() => {
+        const completedAttempts = initializationAttempts;
+        initializationAttempts = 0;
         cancelIntegrationInitializationRetry();
-      })
-      .catch(() => {
-        observability.logger.warn("integration.initialization.failed", {
-          fields: { dependency: "qdrant", retryable: true },
+        observability.logger.info("integration.initialization.succeeded", {
+          fields: { dependency: "qdrant", attempts: completedAttempts },
         });
-        scheduleIntegrationInitializationRetry();
+        observability.metrics.increment(
+          "integration.initialization.succeeded",
+          {
+            dependency: "qdrant",
+            outcome: "success",
+          },
+        );
+      })
+      .catch((error: unknown) => {
+        const failure = classifyQdrantInitializationError(error);
+        const exhausted =
+          failure.retryable &&
+          initializationAttempts >= retryPolicy.maxAttempts;
+        const delay = exhausted
+          ? 0
+          : failure.retryable
+            ? calculateQdrantInitializationRetryDelay(
+                retryPolicy,
+                initializationAttempts,
+                Math.random,
+                failure.retryAfterMilliseconds,
+              )
+            : 0;
+        observability.logger.warn("integration.initialization.failed", {
+          fields: {
+            dependency: "qdrant",
+            classification: failure.classification,
+            retryable: failure.retryable,
+            attempts: initializationAttempts,
+            max_attempts: retryPolicy.maxAttempts,
+            ...(failure.statusCode === undefined
+              ? {}
+              : { status: failure.statusCode }),
+            ...(delay === 0 ? {} : { delay_ms: delay }),
+          },
+        });
+        observability.metrics.increment("integration.initialization.failed", {
+          dependency: "qdrant",
+          classification: failure.classification,
+          outcome: failure.retryable ? "retryable" : "terminal",
+        });
+        if (exhausted) {
+          observability.logger.warn("integration.initialization.exhausted", {
+            fields: {
+              dependency: "qdrant",
+              classification: failure.classification,
+              retryable: true,
+              attempts: initializationAttempts,
+              max_attempts: retryPolicy.maxAttempts,
+              outcome: "exhausted",
+            },
+          });
+          observability.metrics.increment(
+            "integration.initialization.exhausted",
+            { dependency: "qdrant", outcome: "exhausted" },
+          );
+        } else if (failure.retryable) {
+          scheduleIntegrationInitializationRetry(delay);
+        }
       })
       .finally(() => {
         if (initializationInFlight === attempt) {
@@ -107,7 +188,7 @@ export function createWorkerRuntime(
     options: WorkerInitializationOptions = {},
   ): Promise<void> => {
     if (options.waitForOptionalDependencies === true) {
-      await startIntegrationInitialization();
+      await startIntegrationInitialization(true);
       return;
     }
     void startIntegrationInitialization();

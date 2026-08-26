@@ -24,6 +24,9 @@ describe("observability", () => {
         method: "GET",
         route: "/api/v1/activities/:activityId",
         status: 200,
+        classification: "server",
+        delay_ms: 5_000,
+        max_attempts: 5,
         participantId: "participant-secret",
         response: "clinical response must never be logged",
         source: "protected-source",
@@ -42,7 +45,13 @@ describe("observability", () => {
       requestId: "request-123",
       correlationId: "corr-123",
       durationMs: 12.5,
-      fields: { method: "GET", status: 200 },
+      fields: {
+        method: "GET",
+        status: 200,
+        classification: "server",
+        delay_ms: 5_000,
+        max_attempts: 5,
+      },
     });
     expect(records[0]?.fields).not.toHaveProperty("participantId");
     expect(records[0]?.fields).not.toHaveProperty("response");

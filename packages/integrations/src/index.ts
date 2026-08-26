@@ -31,3 +31,14 @@ export type {
   VectorSearchMatch,
   VectorStorePort,
 } from "./qdrant.js";
+
+export {
+  calculateQdrantInitializationRetryDelay,
+  classifyQdrantInitializationError,
+  DEFAULT_QDRANT_INITIALIZATION_RETRY_POLICY,
+} from "./retry.js";
+export type {
+  QdrantInitializationFailure,
+  QdrantInitializationFailureClassification,
+  QdrantInitializationRetryPolicy,
+} from "./retry.js";

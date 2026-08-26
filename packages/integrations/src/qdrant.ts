@@ -1,5 +1,7 @@
 import { QdrantClient, type Schemas } from "@qdrant/js-client-rest";
 
+import { classifyQdrantInitializationError } from "./retry.js";
+
 export type QdrantIntegrationConfig = Readonly<{
   url: string;
   apiKey?: string;
@@ -122,7 +124,7 @@ export function createQdrantVectorStore(
     validateCollectionVectorConfig(collection, config.embeddingDimension);
     const indexedFields = new Set(Object.keys(collection.payload_schema));
     const fields = ["index_version", "visibility", "status", "scope_id"];
-    await Promise.all(
+    const indexResults = await Promise.allSettled(
       fields
         .filter((field) => !indexedFields.has(field))
         .map((field) =>
@@ -133,6 +135,16 @@ export function createQdrantVectorStore(
           }),
         ),
     );
+    const failedIndexes = indexResults.filter(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    );
+    const firstFailedIndex = failedIndexes[0];
+    if (firstFailedIndex !== undefined) {
+      const terminalFailure = failedIndexes.find(
+        (result) => !classifyQdrantInitializationError(result.reason).retryable,
+      );
+      throw (terminalFailure ?? firstFailedIndex).reason;
+    }
   };
 
   const healthcheck = async (): Promise<void> => {

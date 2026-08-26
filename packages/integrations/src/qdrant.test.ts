@@ -1,6 +1,10 @@
+import { createServer } from "node:http";
+
+import { QdrantClientUnexpectedResponseError } from "@qdrant/js-client-rest";
 import { describe, expect, it, vi } from "vitest";
 
 import { createQdrantVectorStore, validateVectorDimension } from "./qdrant.js";
+import { classifyQdrantInitializationError } from "./retry.js";
 
 describe("Qdrant integration boundary", () => {
   it("rejects invalid vector dimensions and non-finite values", () => {
@@ -299,5 +303,162 @@ describe("Qdrant integration boundary", () => {
     );
 
     await expect(store.ensureCollection()).rejects.toThrow("incompatible");
+  });
+
+  it("waits for sibling index operations before propagating an index failure", async () => {
+    let releaseSibling: (() => void) | undefined;
+    const siblingGate = new Promise<void>((resolve) => {
+      releaseSibling = resolve;
+    });
+    let resolveSiblingStarted: (() => void) | undefined;
+    const siblingStarted = new Promise<void>((resolve) => {
+      resolveSiblingStarted = resolve;
+    });
+    const createPayloadIndex = vi.fn(
+      async (
+        _collection: string,
+        input: { field_name: string },
+      ): Promise<{ status: "completed" }> => {
+        if (input.field_name === "index_version") {
+          throw new Error("synthetic index failure");
+        }
+        if (input.field_name === "visibility") {
+          resolveSiblingStarted?.();
+          await siblingGate;
+        }
+        return { status: "completed" };
+      },
+    );
+    const store = createQdrantVectorStore(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_sibling_failure",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      },
+      {
+        collectionExists: vi.fn().mockResolvedValue({ exists: true }),
+        createCollection: vi.fn(),
+        getCollection: vi.fn().mockResolvedValue({
+          config: { params: { vectors: { size: 2, distance: "Cosine" } } },
+          payload_schema: {},
+        }),
+        createPayloadIndex,
+        scroll: vi.fn(),
+        upsert: vi.fn(),
+        delete: vi.fn(),
+        query: vi.fn(),
+      },
+    );
+
+    const initialization = store.ensureCollection();
+    let settled = false;
+    void initialization.then(
+      () => {
+        settled = true;
+      },
+      () => {
+        settled = true;
+      },
+    );
+
+    await siblingStarted;
+    for (let index = 0; index < 3; index += 1) await Promise.resolve();
+    expect(settled).toBe(false);
+    releaseSibling?.();
+    await expect(initialization).rejects.toThrow("synthetic index failure");
+    expect(settled).toBe(true);
+    expect(createPayloadIndex).toHaveBeenCalledTimes(4);
+  });
+
+  it("preserves a delta-seconds Retry-After header through the SDK boundary", async () => {
+    const qdrant = createServer((_request, response) => {
+      response.statusCode = 429;
+      response.setHeader("content-type", "application/json");
+      response.setHeader("retry-after", "120");
+      response.end(JSON.stringify({ status: "busy" }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    try {
+      const store = createQdrantVectorStore({
+        url: `http://127.0.0.1:${address.port}`,
+        collection: "cvg_retry_after",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      });
+      let error: unknown;
+      try {
+        await store.ensureCollection();
+      } catch (caught) {
+        error = caught;
+      }
+
+      expect(error).toBeDefined();
+      expect(classifyQdrantInitializationError(error)).toEqual({
+        classification: "rate_limited",
+        retryable: true,
+        statusCode: 429,
+        retryAfterMilliseconds: 120_000,
+      });
+    } finally {
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("does not hide a permanent sibling failure behind a retryable one", async () => {
+    const createPayloadIndex = vi.fn(
+      async (
+        _collection: string,
+        input: { field_name: string },
+      ): Promise<{ status: "completed" }> => {
+        if (input.field_name === "index_version") {
+          throw new QdrantClientUnexpectedResponseError(
+            "Unexpected Response: 503 (Service Unavailable)",
+          );
+        }
+        if (input.field_name === "visibility") {
+          throw new QdrantClientUnexpectedResponseError(
+            "Unexpected Response: 401 (Unauthorized)",
+          );
+        }
+        return { status: "completed" };
+      },
+    );
+    const store = createQdrantVectorStore(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_mixed_index_failure",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      },
+      {
+        collectionExists: vi.fn().mockResolvedValue({ exists: true }),
+        createCollection: vi.fn(),
+        getCollection: vi.fn().mockResolvedValue({
+          config: { params: { vectors: { size: 2, distance: "Cosine" } } },
+          payload_schema: {},
+        }),
+        createPayloadIndex,
+        scroll: vi.fn(),
+        upsert: vi.fn(),
+        delete: vi.fn(),
+        query: vi.fn(),
+      },
+    );
+
+    await expect(store.ensureCollection()).rejects.toThrow("401");
+    expect(createPayloadIndex).toHaveBeenCalledTimes(4);
   });
 });

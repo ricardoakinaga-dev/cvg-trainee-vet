@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createApiRuntime } from "./main.js";
 
@@ -77,6 +77,92 @@ describe("API runtime", () => {
       }
     } finally {
       if (runtime !== undefined) await runtime.close();
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("bounds transient optional initialization retries and stops after exhaustion", async () => {
+    const waiters: Array<{ expected: number; resolve: () => void }> = [];
+    let requestCount = 0;
+    const notifyRequest = (): void => {
+      for (let index = waiters.length - 1; index >= 0; index -= 1) {
+        const waiter = waiters[index];
+        if (waiter !== undefined && requestCount >= waiter.expected) {
+          waiters.splice(index, 1);
+          waiter.resolve();
+        }
+      }
+    };
+    const waitForRequests = (expected: number): Promise<void> => {
+      if (requestCount >= expected) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        waiters.push({ expected, resolve });
+      });
+    };
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+    let runtime: ReturnType<typeof createApiRuntime> | undefined;
+    const qdrant = createServer((request, response) => {
+      if (!request.url?.endsWith("/exists")) {
+        response.statusCode = 404;
+        response.end(JSON.stringify({ status: "not found" }));
+        return;
+      }
+      requestCount += 1;
+      notifyRequest();
+      response.statusCode = 503;
+      response.setHeader("content-type", "application/json");
+      response.end(JSON.stringify({ status: "unavailable" }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    try {
+      runtime = createApiRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        API_HOST: "127.0.0.1",
+        API_PORT: "0",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: "cvg_test_api_bounded_retry_v1",
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.listen()).resolves.toBeUndefined();
+      await waitForRequests(1);
+      await new Promise<void>((resolve) => setImmediate(resolve));
+
+      for (const [expectedRequestCount, delay] of [
+        [2, 5_000],
+        [3, 10_000],
+        [4, 20_000],
+        [5, 40_000],
+      ] as const) {
+        await vi.advanceTimersByTimeAsync(delay);
+        await waitForRequests(expectedRequestCount);
+        await new Promise<void>((resolve) => setImmediate(resolve));
+      }
+
+      expect(requestCount).toBe(5);
+      await vi.advanceTimersByTimeAsync(60_000);
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(requestCount).toBe(5);
+    } finally {
+      if (runtime !== undefined) await runtime.close();
+      randomSpy.mockRestore();
+      vi.useRealTimers();
       await new Promise<void>((resolve) => qdrant.close(() => resolve()));
     }
   });

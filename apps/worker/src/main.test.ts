@@ -324,6 +324,7 @@ describe("worker runtime", () => {
         }
         originalClearTimeout(timeout);
       });
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
     const collection = "cvg_test_worker_retry_recovery_v1";
     let existsRequests = 0;
     let resolveFirstFailure: (() => void) | undefined;
@@ -403,6 +404,204 @@ describe("worker runtime", () => {
       if (runtime !== undefined && !closed) await runtime.close();
       setTimeoutSpy.mockRestore();
       clearTimeoutSpy.mockRestore();
+      randomSpy.mockRestore();
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("bounds transient retries and permits a fresh explicit budget after exhaustion", async () => {
+    type RetryTimer = {
+      cleared: boolean;
+      handle: ReturnType<typeof setTimeout>;
+      fire: () => void;
+    };
+    const retryTimers: RetryTimer[] = [];
+    const originalSetTimeout = globalThis.setTimeout;
+    const originalClearTimeout = globalThis.clearTimeout;
+    const setTimeoutSpy = vi
+      .spyOn(globalThis, "setTimeout")
+      .mockImplementation((handler, timeout, ...args) => {
+        if (
+          typeof timeout === "number" &&
+          [4_000, 8_000, 16_000, 32_000].includes(timeout)
+        ) {
+          const timer = { cleared: false } as RetryTimer;
+          timer.handle = timer as unknown as ReturnType<typeof setTimeout>;
+          timer.fire = () => {
+            if (typeof handler === "function") handler(...args);
+          };
+          retryTimers.push(timer);
+          return timer.handle;
+        }
+        return originalSetTimeout(handler, timeout, ...args);
+      });
+    const clearTimeoutSpy = vi
+      .spyOn(globalThis, "clearTimeout")
+      .mockImplementation((timeout) => {
+        const timer = retryTimers.find((candidate) =>
+          Object.is(candidate.handle, timeout),
+        );
+        if (timer !== undefined) {
+          timer.cleared = true;
+          return;
+        }
+        originalClearTimeout(timeout);
+      });
+    const waiters: Array<{ expected: number; resolve: () => void }> = [];
+    let existsRequests = 0;
+    const notifyRequest = (): void => {
+      for (let index = waiters.length - 1; index >= 0; index -= 1) {
+        const waiter = waiters[index];
+        if (waiter !== undefined && existsRequests >= waiter.expected) {
+          waiters.splice(index, 1);
+          waiter.resolve();
+        }
+      }
+    };
+    const waitForRequests = (expected: number): Promise<void> => {
+      if (existsRequests >= expected) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        waiters.push({ expected, resolve });
+      });
+    };
+    const waitForRetryTimer = async (index: number): Promise<void> => {
+      while (retryTimers.length <= index) {
+        await new Promise<void>((resolve) => setImmediate(resolve));
+      }
+    };
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+    const collection = "cvg_test_worker_bounded_retry_v1";
+    const qdrant = createServer((request, response) => {
+      response.setHeader("content-type", "application/json");
+      if (request.url?.endsWith("/exists")) {
+        existsRequests += 1;
+        notifyRequest();
+        if (existsRequests <= 5) {
+          response.statusCode = 503;
+          response.end(JSON.stringify({ status: "unavailable" }));
+          return;
+        }
+        response.statusCode = 200;
+        response.end(JSON.stringify({ result: { exists: false } }));
+        return;
+      }
+      response.statusCode = 200;
+      if (request.method === "GET") {
+        response.end(
+          JSON.stringify({
+            result: {
+              config: { params: { vectors: { size: 8, distance: "Cosine" } } },
+              payload_schema: {},
+            },
+          }),
+        );
+        return;
+      }
+      response.end(JSON.stringify({ result: true }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    let runtime: ReturnType<typeof createWorkerRuntime> | undefined;
+    try {
+      runtime = createWorkerRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: collection,
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.initialize()).resolves.toBeUndefined();
+      await waitForRequests(1);
+      await waitForRetryTimer(0);
+      for (const expectedRequestCount of [2, 3, 4, 5]) {
+        await waitForRetryTimer(expectedRequestCount - 2);
+        retryTimers[expectedRequestCount - 2]?.fire();
+        await waitForRequests(expectedRequestCount);
+      }
+
+      expect(existsRequests).toBe(5);
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(existsRequests).toBe(5);
+
+      await expect(
+        runtime.initialize({ waitForOptionalDependencies: true }),
+      ).resolves.toBeUndefined();
+      expect(existsRequests).toBe(6);
+    } finally {
+      if (runtime !== undefined) await runtime.close();
+      randomSpy.mockRestore();
+      setTimeoutSpy.mockRestore();
+      clearTimeoutSpy.mockRestore();
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+
+  it("does not retry a permanent Qdrant client failure", async () => {
+    let requestCount = 0;
+    let resolveRequest: (() => void) | undefined;
+    const requestReceived = new Promise<void>((resolve) => {
+      resolveRequest = resolve;
+    });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const qdrant = createServer((request, response) => {
+      if (!request.url?.endsWith("/exists")) {
+        response.statusCode = 404;
+        response.end(JSON.stringify({ status: "not found" }));
+        return;
+      }
+      requestCount += 1;
+      resolveRequest?.();
+      response.statusCode = 401;
+      response.setHeader("content-type", "application/json");
+      response.end(JSON.stringify({ status: "unauthorized" }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    let runtime: ReturnType<typeof createWorkerRuntime> | undefined;
+    try {
+      runtime = createWorkerRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: "cvg_test_worker_permanent_retry_v1",
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.initialize()).resolves.toBeUndefined();
+      await requestReceived;
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(requestCount).toBe(1);
+    } finally {
+      if (runtime !== undefined) await runtime.close();
+      vi.useRealTimers();
       await new Promise<void>((resolve) => qdrant.close(() => resolve()));
     }
   });
