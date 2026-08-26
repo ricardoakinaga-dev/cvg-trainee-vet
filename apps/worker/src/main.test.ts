@@ -605,4 +605,79 @@ describe("worker runtime", () => {
       await new Promise<void>((resolve) => qdrant.close(() => resolve()));
     }
   });
+
+  it("does not leave a stale retry when explicit recovery meets a permanent failure", async () => {
+    let releaseFirstResponse: (() => void) | undefined;
+    const firstResponseGate = new Promise<void>((resolve) => {
+      releaseFirstResponse = resolve;
+    });
+    let resolveFirstRequest: (() => void) | undefined;
+    const firstRequest = new Promise<void>((resolve) => {
+      resolveFirstRequest = resolve;
+    });
+    let requestCount = 0;
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const qdrant = createServer((request, response) => {
+      if (!request.url?.endsWith("/exists")) {
+        response.statusCode = 404;
+        response.end(JSON.stringify({ status: "not found" }));
+        return;
+      }
+      requestCount += 1;
+      if (requestCount === 1) {
+        resolveFirstRequest?.();
+        void firstResponseGate.then(() => {
+          response.statusCode = 503;
+          response.setHeader("content-type", "application/json");
+          response.end(JSON.stringify({ status: "unavailable" }));
+        });
+        return;
+      }
+      response.statusCode = 401;
+      response.setHeader("content-type", "application/json");
+      response.end(JSON.stringify({ status: "unauthorized" }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      qdrant.once("error", reject);
+      qdrant.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = qdrant.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("synthetic Qdrant server did not bind");
+    }
+
+    let runtime: ReturnType<typeof createWorkerRuntime> | undefined;
+    try {
+      runtime = createWorkerRuntime({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "true",
+        QDRANT_URL: `http://127.0.0.1:${address.port}`,
+        QDRANT_COLLECTION: "cvg_test_worker_racing_recovery_v1",
+        QDRANT_INDEX_VERSION: "v1",
+        EMBEDDING_PROVIDER: "fake",
+        EMBEDDING_MODEL: "cvg-local-embedding-v1",
+        EMBEDDING_DIMENSION: "8",
+        AI_ENABLED: "false",
+      });
+
+      await expect(runtime.initialize()).resolves.toBeUndefined();
+      await firstRequest;
+      const explicitInitialization = runtime.initialize({
+        waitForOptionalDependencies: true,
+      });
+      releaseFirstResponse?.();
+
+      await expect(explicitInitialization).rejects.toThrow("Unauthorized");
+      expect(requestCount).toBe(2);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(requestCount).toBe(2);
+    } finally {
+      releaseFirstResponse?.();
+      if (runtime !== undefined) await runtime.close();
+      vi.useRealTimers();
+      await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
 });

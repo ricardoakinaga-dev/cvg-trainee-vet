@@ -97,8 +97,9 @@ export function createWorkerRuntime(
         () => {
           if (initializationInFlight === currentAttempt) {
             initializationInFlight = undefined;
+            return startIntegrationInitialization(true);
           }
-          return startIntegrationInitialization(true);
+          return initializationInFlight ?? startIntegrationInitialization(true);
         },
       );
     }
@@ -106,16 +107,16 @@ export function createWorkerRuntime(
       cancelIntegrationInitializationRetry();
       initializationAttempts = 0;
     }
-    initializationAttempts += 1;
+    const attemptNumber = initializationAttempts + 1;
+    initializationAttempts = attemptNumber;
     const attempt = integrations.initialize();
     initializationInFlight = attempt;
     void attempt
       .then(() => {
-        const completedAttempts = initializationAttempts;
         initializationAttempts = 0;
         cancelIntegrationInitializationRetry();
         observability.logger.info("integration.initialization.succeeded", {
-          fields: { dependency: "qdrant", attempts: completedAttempts },
+          fields: { dependency: "qdrant", attempts: attemptNumber },
         });
         observability.metrics.increment(
           "integration.initialization.succeeded",
@@ -128,14 +129,13 @@ export function createWorkerRuntime(
       .catch((error: unknown) => {
         const failure = classifyQdrantInitializationError(error);
         const exhausted =
-          failure.retryable &&
-          initializationAttempts >= retryPolicy.maxAttempts;
+          failure.retryable && attemptNumber >= retryPolicy.maxAttempts;
         const delay = exhausted
           ? 0
           : failure.retryable
             ? calculateQdrantInitializationRetryDelay(
                 retryPolicy,
-                initializationAttempts,
+                attemptNumber,
                 Math.random,
                 failure.retryAfterMilliseconds,
               )
@@ -145,7 +145,7 @@ export function createWorkerRuntime(
             dependency: "qdrant",
             classification: failure.classification,
             retryable: failure.retryable,
-            attempts: initializationAttempts,
+            attempts: attemptNumber,
             max_attempts: retryPolicy.maxAttempts,
             ...(failure.statusCode === undefined
               ? {}
@@ -164,7 +164,7 @@ export function createWorkerRuntime(
               dependency: "qdrant",
               classification: failure.classification,
               retryable: true,
-              attempts: initializationAttempts,
+              attempts: attemptNumber,
               max_attempts: retryPolicy.maxAttempts,
               outcome: "exhausted",
             },
@@ -173,7 +173,7 @@ export function createWorkerRuntime(
             "integration.initialization.exhausted",
             { dependency: "qdrant", outcome: "exhausted" },
           );
-        } else if (failure.retryable) {
+        } else if (failure.retryable && initializationInFlight === attempt) {
           scheduleIntegrationInitializationRetry(delay);
         }
       })
