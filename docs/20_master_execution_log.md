@@ -42,6 +42,171 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — OPS-061-GRANTS-005: fechamento condicional
+
+### TIMESTAMP
+
+2026-08-26T09:24:28-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-005 — identidade da fixture real E2E e ancoragem de migration
+
+### TASK
+
+Fechar os dois gaps P2 encontrados no contrato de URLs PostgreSQL, sem iniciar
+`JOURNEY-056`.
+
+### ACTION
+
+O validador passou a exigir a identidade da role admin para
+`CVG_REAL_E2E_DATABASE_URL` em `.env.example` e no job-level, e passou a
+extrair o override `DATABASE_URL` somente do step `Apply migrations`. O commit
+técnico é `400e22885ae22c1f03ed6c58c61a59d65719158d`.
+
+### RESULT
+
+O RED inicial falhou `3/16`; o focal GREEN passou `16/16`. A regressão passou
+141 arquivos/723 testes, com 29 arquivos/38 testes skipped e cobertura
+84,36%/80,30%/86,35%/85,05%; build `12/12`, E2E sintético `32/32`, audit high
+e `git diff --check` passaram. Auditoria `0546` registra a evidência completa.
+
+### DECISIONS
+
+`OPS-061-GRANTS-005` fica `CONDITIONAL PASS / COMPLETED_WITH_GAPS`: o crítico
+independente pré-fix confirmou os dois P2 sem P0/P1, mas a tentativa
+independente pós-commit expirou/interrompeu sem veredito final e não é tratada
+como aceite. Não houve prova live nova, produção, deploy ou mudança de produto.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria) ou B
+(atividade especial) para `JOURNEY-056`; não iniciar código, migration ou UX de
+jornada antes da decisão contratual.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-005: GREEN focal
+
+### TIMESTAMP
+
+2026-08-26T09:14:28-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-005 — identidade da fixture real E2E e ancoragem de migration
+
+### TASK
+
+Validar as duas correções bounded do contrato efetivo de URLs PostgreSQL.
+
+### ACTION
+
+Foram adicionados três cenários RED: URL documentada e URL job-level da fixture
+real E2E usando a role de aplicação, e override de `DATABASE_URL` colocado em
+outro step. O validador foi ajustado para exigir a role de
+`CVG_TEST_ADMIN_DATABASE_URL` na fixture e para extrair o override pelo nome do
+step `Apply migrations`.
+
+### RESULT
+
+O RED inicial falhou `3/16`. Após GREEN/REFACTOR, o focal passou `16/16`,
+`pnpm verify:ci-contract` passou com `status=PASS` e Prettier passou nos dois
+arquivos. Nenhuma migration, superfície de produto ou ambiente externo foi
+alterado.
+
+### DECISIONS
+
+Manter a fixture real E2E no papel administrativo separado e o runtime no papel
+de aplicação. Executar regressão completa, build, E2E sintético e crítica
+independente antes de fechar o item; `JOURNEY-056` continua sem código até A/B.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Rodar os gates completos sob Node `22.22.0`/pnpm `10.33.0` efêmeros e atualizar
+audit, manifesto, backlog e runtime state com a evidência corrente.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-005: reabertura após crítica independente pós-fix
+
+### TIMESTAMP
+
+2026-08-26T09:10:04-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-005 — identidade da fixture real E2E e ancoragem de migration
+
+### TASK
+
+Fechar dois gaps P2 do contrato efetivo de URLs PostgreSQL sem avançar o
+produto ou o contrato de `JOURNEY-056`.
+
+### ACTION
+
+A crítica independente final pós-`OPS-061-GRANTS-004` confirmou que
+`CVG_REAL_E2E_DATABASE_URL` podia usar a role de migração/aplicação sem falhar
+e que o scanner de indentação aceitava um override de `DATABASE_URL` em outro
+step que não fosse `Apply migrations`. O achado foi reproduzido por inspeção do
+workflow e do validador; nenhum arquivo de produto foi envolvido.
+
+### RESULT
+
+Os gaps foram aceitos como P2 bounded de governança do harness. A correção
+deve exigir a identidade da role administrativa usada pela fixture real E2E e
+ler o override somente dentro do step `Apply migrations`.
+
+### DECISIONS
+
+Executar RED → GREEN → REFACTOR apenas em `scripts/verify-ci-contract.mjs` e
+`tests/integration/ci-governance.test.ts`, com documentação e rastreabilidade
+atualizadas. Não alterar migrations aplicadas, produto, produção, deploy ou
+`JOURNEY-056`; a decisão humana A/B permanece pendente.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever e executar os testes RED dos dois achados; depois implementar o
+validador, rodar os gates proporcionais e obter crítica independente final.
+
+---
+
 ## 2026-08-26 — OPS-061-GRANTS-003: coerência da role de runtime no contrato CI
 
 ### TIMESTAMP

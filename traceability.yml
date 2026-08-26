@@ -4798,6 +4798,56 @@ artifacts:
         "the independent partial review found the residual issue but did not return a post-fix acceptance verdict; no live, production, remote same-SHA or clinical evidence is inferred",
       ]
     status: "verified-with-gaps"
+  - id: "OPS-061-GRANTS-005"
+    requirements:
+      [
+        "PRD-RF-001",
+        "PRD-RF-006",
+        "PRD-RF-009",
+        "DB-PRIVILEGE-032",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0546_ci_fixture_role_and_migration_step_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        ".env.example",
+        ".github/workflows/quality.yml",
+        "scripts/verify-ci-contract.mjs",
+      ]
+    tests: ["tests/integration/ci-governance.test.ts"]
+    commit: "400e22885ae22c1f03ed6c58c61a59d65719158d"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0546_ci_fixture_role_and_migration_step_audit.md",
+      ]
+    verification:
+      [
+        "RED: documented and job-level real E2E fixture URLs using the application role, plus a migration override outside Apply migrations, were accepted before the bounded fix",
+        "GREEN focal: CI governance 16/16 PASS; the validator requires the fixture/admin role and scopes the override to the named migration step",
+        "pnpm verify:ci-contract: PASS with status=PASS, 16 required environment keys, 21 workflow checks and 1 runtime check",
+        "pnpm verify: 141 test files PASS, 29 skipped; 723 tests PASS, 38 skipped; coverage 84.36% statements, 80.30% branches, 86.35% functions, 85.05% lines",
+        "pnpm build: 12 workspaces PASS; pnpm test:e2e: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "local and workflow fixture URLs use the admin identity, runtime DATABASE_URL uses the application identity, and the migration override is read only from Apply migrations",
+        "the independent pre-fix critique found two P2 issues and no P0/P1; the post-fix critique attempt returned no final verdict and is not treated as acceptance",
+        "no new live, production, remote same-SHA or clinical evidence is inferred; release remains unauthorized",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

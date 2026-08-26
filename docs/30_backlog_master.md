@@ -38,6 +38,12 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Fechamento controlado 2026-08-26 (`OPS-061-GRANTS-004`):** o validador passou a comparar as cinco URLs job-level e o override de migration, rejeitar valores vazios e manter a role least-privilege. O focal passou `13/13`; `pnpm verify` passou com 141 arquivos/720 testes PASS, 29 skipped/38 testes, cobertura 84,36%/80,30%/86,35%/85,05%, build 12/12, E2E 32/32, audit high e diff-check. O item fica `COMPLETED_WITH_GAPS`; não há prova live nova, produtiva, remote same-SHA ou parecer independente final. Auditoria `0545`.
 
+**Reabertura controlada 2026-08-26 (`OPS-061-GRANTS-005`):** a crítica independente pós-fix encontrou dois gaps P2 no mesmo perímetro: a URL da fixture real E2E não exigia a role administrativa separada e o override de `DATABASE_URL` podia ser capturado em outro step por mera indentação. A correção é bounded ao validador e aos testes de governança; não altera produto, migrations aplicadas, produção, deploy ou `JOURNEY-056`.
+
+**GREEN focal 2026-08-26 (`OPS-061-GRANTS-005`):** os três cenários RED falharam `3/16` antes da correção; depois, o validador passou a exigir a role admin da fixture real E2E e a ancorar o override ao step `Apply migrations`. O focal passou `16/16`, `verify:ci-contract` e formatação passaram; regressão completa e auditoria final ainda estão pendentes.
+
+**Fechamento controlado 2026-08-26 (`OPS-061-GRANTS-005`):** o commit técnico `400e22885ae22c1f03ed6c58c61a59d65719158d` fechou os dois gaps P2. `pnpm verify` passou com 141 arquivos/723 testes PASS, 29 arquivos/38 testes skipped, cobertura 84,36%/80,30%/86,35%/85,05%; build 12/12, E2E sintético 32/32, audit high e diff-check passaram. O parecer independente pós-fix não retornou veredito dentro da janela; o item fica `COMPLETED_WITH_GAPS`, sem evidência live nova ou claim externo. Auditoria `0546`.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -626,6 +632,24 @@ backfill inventado.
 - controles obrigatórios: não expor credenciais em saída; não confiar só em regex de role; separar runtime app do override de migration; falhar fechado para valor ausente/vazio; preservar a decisão A/B pendente
 - evidência: crítica independente final parcial; RED `3/12` antes da implementação; GREEN focal `13/13`; commit técnico `489a336`; auditoria `BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md`; `pnpm verify` `141/720` com `38` skips, build `12/12`, E2E `32/32`, audit high e diff-check PASS
 - gaps remanescentes: configuração/owners/ACLs/deployment produtivos, workflow remoto same-SHA e operação externa não foram provados; a revisão independente não retornou parecer final pós-correção; não há nova evidência live ou clínica
+- próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; não iniciar código, migration ou UX de jornada antes da decisão contratual
+
+### OPS-061-GRANTS-005 — Identidade da fixture real E2E e ancoragem do override
+
+- título: impedir que a fixture de E2E real use a role de aplicação/migração e que o contrato aceite um override de migration fora do step correto
+- descrição: exigir que `CVG_REAL_E2E_DATABASE_URL` use a identidade da role administrativa de fixture, preservar o mesmo banco e ler `DATABASE_URL` do escopo do step `Apply migrations`, com falha fechada para override ausente ou deslocado
+- módulo: operação / configuração / PostgreSQL / CI / segurança / governança
+- dependência: `OPS-061-GRANTS-004`; SPEC 0109/0111/0118
+- fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
+- risco: médio — fixture com privilégios inadequados pode mascarar o comportamento do runtime e um scanner textual pode validar uma variável em step errado
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: testes RED reproduzem role de fixture incorreta e override fora de `Apply migrations`; validador exige a role admin para as URLs local/workflow e ancora o override no step nomeado; focal/regressão/gates documentais/security passam sem claim externo
+- escopo: `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, audit e control plane
+- fora desta fatia: produto, migrations aplicadas, ACL/owners produtivos, deploy, workflow remoto same-SHA, `JOURNEY-056`, fornecedor, publicação clínica e dados reais
+- controles obrigatórios: não expor credenciais em saída; comparar somente identificadores parseados; manter runtime na role app, migrations na role owner e fixture real na role admin; preservar a decisão A/B pendente
+- evidência: crítica independente pós-fix `Confucius`; findings P2 em `scripts/verify-ci-contract.mjs`; RED `3/16`; GREEN focal `16/16`; `verify:ci-contract`, `pnpm verify`, build, E2E sintético, audit high e diff-check PASS; auditoria `BRIEFING/04.AUDIT/0546_ci_fixture_role_and_migration_step_audit.md`; commit `400e22885ae22c1f03ed6c58c61a59d65719158d`
+- gaps remanescentes: a tentativa de crítica independente pós-commit não retornou veredito final; não há nova prova live, configuração/owners/ACLs produtivos, workflow remoto same-SHA ou evidência clínica
 - próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; não iniciar código, migration ou UX de jornada antes da decisão contratual
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial

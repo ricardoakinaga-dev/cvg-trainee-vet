@@ -28,7 +28,7 @@ em evidência de runtime produtivo.
   privilégios foi fechado no commit técnico `36088ff`; branch `main` está à
   frente de `origin/main`; não houve push ou deploy.
 - `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify` passou:
-  141 arquivos, 714 testes PASS, 29 arquivos/38 testes SKIPPED, cobertura de
+  141 arquivos, 723 testes PASS, 29 arquivos/38 testes SKIPPED, cobertura de
   84,36% statements, 80,30% branches, 86,35% functions e 85,05% lines;
   contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos PASS.
 - `OPS-061-GRANTS-001` agora mantém uma allowlist imutável de 29 tabelas para
@@ -63,6 +63,13 @@ em evidência de runtime produtivo.
   `BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md`: workflow
   job-level, override de migration e valores vazios são verificados; o focal e
   os gates locais passaram. Não há claim de produção.
+- A crítica independente pós-`OPS-061-GRANTS-004` encontrou dois gaps P2
+  residuais: a fixture real E2E não estava vinculada à role administrativa e o
+  override de migration era capturado por indentação global. `OPS-061-GRANTS-005`
+  fechou ambos no commit `400e228`; o focal passou `16/16`, a regressão passou
+  `141/723` com `38` skips, build `12/12` e E2E sintético `32/32`. O parecer
+  independente pós-fix não retornou veredito dentro da janela; o resultado é
+  condicional e não há claim de produção.
 - Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
   separadas e o provisionador atual, `pnpm test:integration:live` passou 35
   arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,
@@ -218,6 +225,7 @@ humanas apropriadas. IA e Qdrant nunca assumem essas decisões.
   health e graceful shutdown; `OPS-061-GRANTS-001` fecha a matriz local de
   privilégios do harness; `OPS-061-GRANTS-002` fecha o provisionamento e o
   contrato local, e `OPS-061-GRANTS-003` fecha a coerência da role de runtime,
+  e `OPS-061-GRANTS-005` fecha a identidade da fixture e o escopo do override,
   sem encerrar a revisão produtiva.
 - `RECOVERY-069`: backup, restore, RPO/RTO, failover e rollback em ambiente
   descartável.
