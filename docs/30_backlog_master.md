@@ -581,7 +581,7 @@ backfill inventado.
 - escopo: `scripts/provision-ci-postgres.mjs`, `scripts/verify-ci-contract.mjs`, `.env.example`, governança estática/live e documentação de rastreabilidade
 - fora desta fatia: migrations aplicadas, produto, `JOURNEY-056`, produção, deploy, workflow remoto same-SHA, fornecedor, publicação clínica e dados reais
 - controles obrigatórios: pgpass temporário com limpeza; roles migration/application/admin distintas; nenhuma credencial em Git/log/argv; SQL parametrizado/identifiers validados; admin somente para fixture/cleanup; sem `SUPERUSER`/`BYPASSRLS` na aplicação; rollback transacional
-- evidência: crítica independente Galileo; auditoria `0543`; `traceability.yml` / `OPS-061-GRANTS-002`; commit `36088ff`; migration governance `23/23`, CI governance `7/7`, banco sintético PostgreSQL 16.15 com live `35/35` arquivos e `82/82` testes; `pnpm verify`, build, E2E, audit high e diff-check PASS
+- evidência: crítica independente Galileo; auditoria `0543`; `traceability.yml` / `OPS-061-GRANTS-002`; commit `36088ff`; migration governance `23/23`, CI governance `7/7`, banco sintético PostgreSQL 16.15 com live `35/35` arquivos e `82/82` testes; `pnpm verify`, build, E2E, audit high, diff-check e `verify:traceability:release` PASS
 - próxima ação: manter a evidência local/sintética como conditional pass, aguardar decisão humana para `JOURNEY-056` e tratar ACL/owners produtivos, workflow remoto same-SHA e operação externa somente com autoridade própria
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial

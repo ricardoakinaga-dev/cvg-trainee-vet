@@ -4698,6 +4698,7 @@ artifacts:
         "app direct grants: 102 table ACL rows and 9 function ACL rows with zero grantable entries; owned relations zero; admin delegation retained only for harness fixtures",
         "pnpm verify: 141 files PASS, 29 skipped; 714 tests PASS, 38 skipped; coverage 84.36% statements, 80.30% branches, 86.35% functions, 85.05% lines",
         "pnpm build: 12 workspaces PASS; pnpm test:e2e: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "pnpm verify:traceability:release: current artifacts resolved to reachable commits and tracked paths in a clean worktree",
         "database and three synthetic roles were removed after runtime evidence; no production ACL/owner, remote same-SHA, scale/failover/restore/collector or clinical evidence inferred",
       ]
     status: "verified-with-gaps"

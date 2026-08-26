@@ -14,12 +14,12 @@
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: WAITING_HUMAN_APPROVAL
 
 ## PROGRESSO
 
-- last_completed_action: implementar e commitar `OPS-061-GRANTS-002` em `36088ffe99f96b63bb50c63f1f2088db2ad48227`; a crítica independente foi reavaliada e os achados de grantability do admin, cleanup assíncrono, ambiente herdado e URLs colapsadas foram tratados. Migrations 51/51, provisionamento e matriz live em banco sintético passaram 35/35 arquivos e 82/82 testes; gates estáticos, build 12 workspaces, E2E 32/32, audit high e diff-check passaram.
-- next_action: finalizar `0543`, reconciliar `traceability.yml`, executar o release traceability em worktree limpo e então aguardar a decisão humana de `JOURNEY-056`. Não iniciar código de jornada enquanto a decisão contratual estiver pendente.
+- last_completed_action: implementar e commitar `OPS-061-GRANTS-002` em `36088ffe99f96b63bb50c63f1f2088db2ad48227`, registrar `0543`/manifesto/control plane em `922d858` e executar `pnpm verify:traceability:release` em worktree limpo com PASS. A crítica independente foi reavaliada e os achados de grantability do admin, cleanup assíncrono, ambiente herdado e URLs colapsadas foram tratados. Migrations 51/51, provisionamento e matriz live em banco sintético passaram 35/35 arquivos e 82/82 testes; gates estáticos, build 12 workspaces, E2E 32/32, audit high e diff-check passaram.
+- next_action: aguardar a decisão humana de `JOURNEY-056` entre sessão diagnóstica pública própria (A) e atividade especial (B); não iniciar código, migration ou UX de jornada enquanto a decisão contratual estiver pendente. Qualquer ACL/owner produtivo, workflow remoto same-SHA, operação externa ou gate clínico requer autoridade separada.
 
 ## BLOQUEIOS
 
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T08:21:12-0300
+- last_update: 2026-08-26T08:24:37-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 

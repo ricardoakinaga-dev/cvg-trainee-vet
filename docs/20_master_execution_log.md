@@ -85,7 +85,8 @@ CREATE/TEMPORARY, `PUBLIC` sem ACL, zero grants delegáveis da app, zero
 ownership e healthcheck least privilege PASS. `pnpm verify` passou com
 141/714 PASS, 29 arquivos/38 testes skipped e cobertura
 84,36%/80,30%/86,35%/85,05%; build 12 workspaces, E2E `32/32`, audit high e
-diff-check passaram.
+diff-check passaram. Após o fechamento documental,
+`pnpm verify:traceability:release` passou em worktree limpo.
 
 ### DECISIONS
 
@@ -103,11 +104,10 @@ WAITING_HUMAN_APPROVAL
 
 ### NEXT
 
-Executar `verify:traceability:release` após o fechamento documental e aguardar
-Ricardo escolher A (sessão diagnóstica pública própria) ou B (atividade
-especial) para `JOURNEY-056`. Owners/grants produtivos, workflow remoto
-same-SHA, carga/failover/restore/collector e gates clínicos exigem autoridade
-separada.
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria) ou B
+(atividade especial) para `JOURNEY-056`. Owners/grants produtivos, workflow
+remoto same-SHA, carga/failover/restore/collector e gates clínicos exigem
+autoridade separada.
 
 ---
 

@@ -53,6 +53,9 @@ em evidência de runtime produtivo.
   live local de RLS, ACL, trigger/CAS, rollback, isolamento contextual e
   concorrência adaptativa; não prova produção ou o fluxo
   diagnóstico→assignment.
+- `pnpm verify:traceability:release` passou após o fechamento documental:
+  todos os artefatos correntes apontam para commits alcançáveis e paths
+  rastreados em worktree limpo.
 - No mesmo SHA `16caccc82ffc519b60a68e1a02850d40909737e1`, o E2E real serial
   passou `34/34` (`32` cenários sintéticos + `2` reais), incluindo build dos
   12 workspaces. O slice real observou browser→web/proxy→API→PostgreSQL,

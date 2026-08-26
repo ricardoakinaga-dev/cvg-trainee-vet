@@ -260,6 +260,10 @@ a aprovação clínica, piloto ou release produtivo.
   descartável e remover os recursos sintéticos. Focal `30/30`, live `35/35`
   arquivos e `82/82` testes; `pnpm verify`, build, E2E, audit high e
   diff-check passaram. Auditoria `0543`; resultado local `CONDITIONAL PASS`.
+- [x] (2026-08-26T08:24:37-03:00) Fechar a documentação de `OPS-061-GRANTS-002`
+  em `0543`/`traceability.yml` e validar o release traceability em worktree
+  limpo; `pnpm verify:traceability:release` passou. O estado global permanece
+  aguardando a decisão A/B de `JOURNEY-056`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

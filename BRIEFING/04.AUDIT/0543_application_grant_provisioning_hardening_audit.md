@@ -102,6 +102,8 @@ Uma consulta administrativa independente, antes da limpeza, confirmou:
 - `pnpm test:e2e`: `32/32` cenários sintéticos PASS.
 - `pnpm audit --audit-level=high`: nenhum advisory conhecido.
 - `git diff --check`: PASS.
+- `pnpm verify:traceability:release`: PASS em worktree limpo; todos os
+  artefatos correntes resolvem para commits alcançáveis e paths rastreados.
 
 ## 6. Resultado, gaps e próxima ação
 
