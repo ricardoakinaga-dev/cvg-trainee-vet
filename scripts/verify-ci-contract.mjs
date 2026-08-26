@@ -123,6 +123,11 @@ function databaseContractFailures(text) {
         "DATABASE_URL must use the application role used by CVG_TEST_DATABASE_URL",
       ];
     }
+    if (realE2e.role !== admin.role) {
+      return [
+        "CVG_REAL_E2E_DATABASE_URL must use the fixture/admin role used by CVG_TEST_ADMIN_DATABASE_URL",
+      ];
+    }
     if (new Set([migration.role, application.role, admin.role]).size !== 3) {
       return [
         "database URLs must use distinct migration/application/admin roles",
@@ -149,6 +154,16 @@ function workflowEnvironmentValue(text, key, indentation) {
   return new RegExp(`^${" ".repeat(indentation)}${key}:\\s*(\\S*)\\s*$`, "mu")
     .exec(text)?.[1]
     ?.trim();
+}
+
+function workflowStepEnvironmentValue(text, stepName, key, indentation) {
+  const escapedStepName = stepName.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const step = new RegExp(
+    `^      - name: ${escapedStepName}\\r?\\n([\\s\\S]*?)(?=^      - name: |(?![\\s\\S]))`,
+    "mu",
+  ).exec(text)?.[1];
+  if (step === undefined) return undefined;
+  return workflowEnvironmentValue(step, key, indentation);
 }
 
 function workflowDatabaseContractFailures(text) {
@@ -179,7 +194,12 @@ function workflowDatabaseContractFailures(text) {
     return failures.map((failure) => `workflow ${failure}`);
   }
 
-  const migrationOverride = workflowEnvironmentValue(text, "DATABASE_URL", 10);
+  const migrationOverride = workflowStepEnvironmentValue(
+    text,
+    "Apply migrations",
+    "DATABASE_URL",
+    10,
+  );
   if (migrationOverride === undefined || migrationOverride.length === 0) {
     return ["workflow migration DATABASE_URL override is incomplete"];
   }

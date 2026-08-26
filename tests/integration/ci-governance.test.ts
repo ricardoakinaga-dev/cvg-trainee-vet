@@ -143,6 +143,19 @@ describe("CI reproducibility contract", () => {
     );
   });
 
+  it("rejects a documented real E2E fixture URL that uses the application role", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      envExample: contract.envExample.replace(
+        /CVG_REAL_E2E_DATABASE_URL=postgresql:\/\/[^\r\n]+/u,
+        "CVG_REAL_E2E_DATABASE_URL=postgresql://cvg_app:cvg_app@localhost:5432/cvg",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(/REAL_E2E.*admin/i);
+  });
+
   it("rejects a workflow runtime DATABASE_URL that uses the migration role", async () => {
     const contract = await readCiContract();
     const inconsistent = {
@@ -173,6 +186,21 @@ describe("CI reproducibility contract", () => {
     );
   });
 
+  it("rejects a workflow real E2E fixture URL that uses the application role", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /^ {6}CVG_REAL_E2E_DATABASE_URL: [^\r\n]+/mu,
+        "      CVG_REAL_E2E_DATABASE_URL: postgresql://cvg_app:cvg_app_test_password@127.0.0.1:5432/cvg",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /workflow.*REAL_E2E.*admin/i,
+    );
+  });
+
   it("rejects a workflow migration override that uses the application role", async () => {
     const contract = await readCiContract();
     const inconsistent = {
@@ -185,6 +213,23 @@ describe("CI reproducibility contract", () => {
 
     expect(() => validateCiContract(inconsistent)).toThrow(
       /workflow migration DATABASE_URL override.*CVG_MIGRATION_DATABASE_URL/i,
+    );
+  });
+
+  it("requires the migration DATABASE_URL override inside Apply migrations", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      workflow: contract.workflow
+        .replace(/^ {10}DATABASE_URL: [^\r\n]+\r?\n/mu, "")
+        .replace(
+          "      - name: Provision least-privilege test roles",
+          "      - name: Provision least-privilege test roles\n        env:\n          DATABASE_URL: postgresql://cvg:cvg_test_password@127.0.0.1:5432/cvg",
+        ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /workflow migration DATABASE_URL override.*incomplete/i,
     );
   });
 });
