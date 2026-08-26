@@ -26,6 +26,6 @@
 - Qdrant: apagar/recriar coleção versionada e reindexar desde PostgreSQL;
 - IA: desligar feature flag e seguir fluxo manual;
 - outbox: lease/retry/replay idempotente;
-- Qdrant: executar `pnpm reconcile:qdrant` quando houver divergência/index lag; a origem é PostgreSQL e a saída contém somente contadores técnicos (`expected`, `upserted`, `removed`);
+- Qdrant: executar `pnpm reconcile:qdrant` quando houver divergência/index lag; o comando aguarda a preparação/validação da coleção, a origem é PostgreSQL e a saída contém somente contadores técnicos (`expected`, `upserted`, `removed`);
 - conteúdo: retirar versão e preservar histórico;
 - exposição: bloquear projeção, registrar incidente, redigir evidência e revisar segurança.

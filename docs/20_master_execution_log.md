@@ -42,6 +42,347 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Fechamento documental e release traceability de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T10:48:00-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Registrar a auditoria, o manifesto e o fechamento do control plane depois da
+verificação final.
+
+### ACTION
+
+O audit `0547`, o manifesto `traceability.yml`, backlog, plano, runtime state,
+log e contratos runtime foram sincronizados no fechamento documental local.
+Em seguida, `verify:traceability:release` foi executado no worktree limpo.
+
+### RESULT
+
+O gate passou: os artefatos correntes resolveram para commits alcançáveis e
+paths rastreados. `git diff --check` também passou; não houve push, deploy,
+migration aplicada, execução live de outage ou evidência clínica.
+
+### DECISIONS
+
+Manter `OPS-061-READINESS-006` em `COMPLETED_WITH_GAPS` e o runtime global em
+`WAITING_HUMAN_APPROVAL`. Os gaps P2 e os gates externos continuam fora desta
+fatia. `JOURNEY-056` não será iniciado sem a escolha A/B de Ricardo.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria, recomendada)
+ou B (atividade especial) para abrir o próximo contrato. Não declarar release,
+publicação clínica ou competência prática.
+
+---
+
+## 2026-08-26 — Fechamento de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T10:43:50-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Fechar a separação entre readiness essencial, saúde agregada e inicialização
+operacional do índice derivado.
+
+### ACTION
+
+Foram aplicados os fixes bounded nos commits técnicos
+`2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`,
+`4e46daff955836c62bf99b90128c5d38d28ec222` e
+`c79cb7a353126af3494bb5dc28fb6b608c18d364`. O último teste independente
+confirmou o desenho e, após a correção da corrida de `reconcile:qdrant`,
+ficou `CONDITIONAL PASS`; a cobertura do runner operacional foi adicionada.
+
+### RESULT
+
+`/health/ready` consulta somente PostgreSQL; Qdrant continua na saúde agregada
+e pode produzir `DEGRADED`; API e worker iniciam sem aguardar o Qdrant; o close
+é ordenado; e `pnpm reconcile:qdrant` aguarda a preparação da coleção antes de
+reconciliar. RED/GREEN focal passou `18/18`; `pnpm verify` passou `142` arquivos
+e `730` testes, com `38` skips e cobertura `84,37%` statements, `80,31%`
+branches, `86,45%` functions e `85,08%` lines. Build `12/12`, E2E `32/32`,
+audit high e `git diff --check` passaram.
+
+### DECISIONS
+
+`OPS-061-READINESS-006` fica `COMPLETED_WITH_GAPS`. O manifesto inclui a
+rastreabilidade do item e a auditoria `0547`; retry limitado/backoff,
+migration/schema readiness, chamadas concorrentes não suportadas, outage live,
+restart/carga/failover, operação externa, produção e gates clínicos continuam
+fora desta evidência. `JOURNEY-056` não foi iniciado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve escolher A ou B para `JOURNEY-056`; só então o contrato, RED e
+BUILD da jornada podem ser abertos. Não há autorização de release, push,
+deploy, publicação clínica ou claim de competência prática.
+
+---
+
+## 2026-08-26 — Crítica final de `OPS-061-READINESS-006` e novo P1 operacional
+
+### TIMESTAMP
+
+2026-08-26T10:21:42-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Revisar o estado exato após os fixes de readiness, cold start e fechamento de
+API/worker.
+
+### ACTION
+
+Euler fez uma crítica independente somente leitura depois do build, E2E,
+audit high e `pnpm verify`. A revisão também conferiu os contratos de
+reconciliação e o comando operacional.
+
+### RESULT
+
+Não foi encontrado P0. Readiness PostgreSQL-only, saúde agregada `DEGRADED`,
+cold start sem bloquear o bind, retry cancelável, fechamento aguardando
+inicialização em voo e redaction foram confirmados. Foi encontrado P1: o
+comando `pnpm reconcile:qdrant` chama `runtime.initialize()` não bloqueante e
+logo depois `runtime.reconcile()`, podendo consultar uma coleção antes de
+`ensureCollection()` terminar.
+
+### DECISIONS
+
+Ampliar somente o perímetro operacional da task para permitir que a
+reconciliação aguarde explicitamente a preparação do índice, mantendo o boot
+da API/worker não bloqueante. Adicionar teste RED/GREEN do contrato aguardável;
+os gaps P2 de retry limitado/backoff e migration/schema readiness permanecem
+registrados sem inventar uma nova fase.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Corrigir `reconcile:qdrant`, repetir focal/regressão/build/E2E/audit/diff-check,
+fechar manifesto e control plane, e manter `JOURNEY-056` aguardando decisão A/B.
+
+---
+
+## 2026-08-26 — Crítica pós-fix de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T09:49:44-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Revisar independentemente a separação entre readiness PostgreSQL e saúde
+agregada, incluindo o comportamento de cold start.
+
+### ACTION
+
+O reviewer Franklin inspecionou o diff, o wiring da API, a inicialização
+Qdrant, os contratos runtime e os testes, sem editar ou commitar. Kuhn revisou
+separadamente o achado de identidade em learning-state.
+
+### RESULT
+
+Franklin confirmou que a readiness pós-start usa somente PostgreSQL e que a
+saúde detalhada preserva `DEGRADED`, mas encontrou P1: `runtime.listen()` ainda
+aguarda `integrations.initialize()` antes do bind, logo uma indisponibilidade
+Qdrant no cold start impede qualquer health endpoint. Também classificou o
+teste novo como falso-positivo porque o mock Qdrant não era conectado à
+checagem agregada. Kuhn descartou P1 cross-scope/cross-membership e classificou
+como P2 condicionado o contrato genérico que permite staff escolher um
+participante válido no escopo autorizado.
+
+### DECISIONS
+
+Ampliar o item bounded para corrigir o cold start: bindar a API antes da
+inicialização assistiva, iniciar tentativa Qdrant em background com retry
+cancelável e manter a recuperação operacional explícita. Corrigir o teste para
+provar tanto `DEGRADED` agregado quanto readiness independente. Não alterar o
+endpoint genérico de learning-assignment sem requisito aprovado.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED para cold start Qdrant indisponível e para a saúde agregada,
+implementar o ciclo de inicialização opcional e executar os gates.
+
+---
+
+## 2026-08-26 — Abertura `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T09:38:09-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Corrigir a divergência entre o contrato runtime e a rota `/health/ready`:
+PostgreSQL/configuração essencial devem decidir readiness; Qdrant deve ser
+observado separadamente como dependência derivada degradável.
+
+### ACTION
+
+Após o fechamento de `OPS-061-GRANTS-005`, três scouts read-only inspecionaram
+segurança, resiliência/operação e domínio/persistência. O perímetro de
+resiliência reproduziu estaticamente o caminho `createIntegrationHealthcheck`
+→ `/health/ready`; a checagem agregada inclui Qdrant, embora `0802` e `0113`
+definam Qdrant/IA como `DEGRADED` sem retirar o núcleo PostgreSQL do tráfego.
+
+### RESULT
+
+Item bounded aberto para RED → GREEN → REFACTOR, sem migration, produto,
+`JOURNEY-056`, push ou deploy. O achado separado de identidade fornecida pelo
+cliente em learning-state permanece registrado como risco em análise, sem
+alterar contrato aprovado.
+
+### DECISIONS
+
+Manter a checagem agregada para diagnóstico/estado de dependências e expor à
+readiness somente a checagem essencial PostgreSQL. A configuração de Qdrant e
+o `initialize` existentes permanecem fora desta primeira correção bounded;
+qualquer mudança adicional exigirá evidência e contrato próprios.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Adicionar o teste RED que prova readiness essencial com Qdrant indisponível,
+implementar a separação mínima e executar focal/regressão.
+
+---
+
+## 2026-08-26 — Reconhecimento bounded após OPS-061-GRANTS-005
+
+### TIMESTAMP
+
+2026-08-26T09:30:49-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+Reconhecimento independente de próxima lacuna
+
+### TASK
+
+Identificar a maior lacuna local já autorizada fora da decisão contratual A/B
+de `JOURNEY-056`.
+
+### ACTION
+
+O ciclo `OPS-061-GRANTS-005` foi encerrado com os gates locais verdes, mas o
+objetivo global permanece incompleto. Foi registrada uma varredura read-only,
+dividida em três perímetros sem sobreposição: segurança/autorização e boundary
+público; worker/resiliência/operação; contratos de domínio, authoring e
+persistência. Os scouts não podem editar ou propor produto novo.
+
+### RESULT
+
+Nenhum novo item foi aberto antes de evidência independente. A decisão A/B e os
+gates de produção, operação externa e clínica permanecem intactos.
+
+### DECISIONS
+
+Se houver achado P0/P1/P2 reproduzível em código existente e independente de
+ambiente externo, abrir uma correção bounded com RED/GREEN/REFACTOR. Se não
+houver, registrar o stop justificado e retornar ao aguardo humano.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Receber os três pareceres independentes e escolher, com base em evidência, a
+próxima ação de maior impacto autorizada.
+
+---
+
 ## 2026-08-26 — OPS-061-GRANTS-005: fechamento documental e rastreabilidade
 
 ### TIMESTAMP

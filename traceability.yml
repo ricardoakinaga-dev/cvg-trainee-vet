@@ -4849,6 +4849,69 @@ artifacts:
         "no new live, production, remote same-SHA or clinical evidence is inferred; release remains unauthorized",
       ]
     status: "verified-with-gaps"
+  - id: "OPS-061-READINESS-006"
+    requirements:
+      [
+        "SPEC-0110",
+        "SPEC-0112",
+        "SPEC-0113",
+        "SPEC-0118",
+        "OBSERVABILITY-12-01",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md",
+        "BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md",
+        "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0110_consistencia_integridade_e_migracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0112_integracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/integrations/src/composition.ts",
+        "packages/integrations/src/index.ts",
+        "apps/api/src/main.ts",
+        "apps/worker/src/main.ts",
+        "apps/worker/src/reconcile-command.ts",
+        "apps/worker/src/reconcile-command-runner.ts",
+        "tests/integration/api-health.test.ts",
+      ]
+    tests:
+      [
+        "packages/integrations/src/composition.test.ts",
+        "apps/api/src/main.test.ts",
+        "apps/worker/src/main.test.ts",
+        "apps/worker/src/reconcile.test.ts",
+        "apps/worker/src/reconcile-command-runner.test.ts",
+        "apps/api/src/http.test.ts",
+        "tests/integration/api-health.test.ts",
+      ]
+    commit: "c79cb7a353126af3494bb5dc28fb6b608c18d364"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md",
+      ]
+    verification:
+      [
+        "RED: Qdrant indisponível bloqueava o cold start antes do bind; o modo aguardável de initialize para reconcile também falhava ao resolver imediatamente antes da correção",
+        "GREEN focal: readiness/composition, API, worker, reconcile e runner passaram 18/18; a prova sintética de preparação da coleção confirmou a sequência antes do reconcile; o focal HTTP adicional passou 88/88",
+        "pnpm verify: 142 test files PASS, 29 skipped; 730 tests PASS, 38 skipped; coverage 84.37% statements, 80.31% branches, 86.45% functions, 85.08% lines",
+        "pnpm build: 12 workspaces PASS; pnpm test:e2e: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "readiness is PostgreSQL-only; aggregate health and dependency status preserve Qdrant DOWN/DEGRADED; synthetic Qdrant startup request observed after API bind; reconcile:qdrant now awaits optional collection preparation",
+        "independent reviews Franklin and Lagrange identified and the implementation corrected the cold-start/close-test gaps; Euler identified the reconcile command race and the explicit await mode corrected it; remaining P2 gaps are recorded in audit 0547",
+        "local/synthetic evidence only; no outage live, production, remote same-SHA, clinical approval, release or competence claim",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

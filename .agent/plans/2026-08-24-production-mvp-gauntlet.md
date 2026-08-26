@@ -284,6 +284,33 @@ a aprovação clínica, piloto ou release produtivo.
   `12/12`, E2E `32/32`, audit high, diff-check e registrar `0545`/manifesto.
   O resultado é conditional pass; não houve parecer independente final
   pós-correção.
+- [x] (2026-08-26T09:27:30-03:00) Fechar `OPS-061-GRANTS-005` nos commits
+  técnicos `400e228` e documentais `d4fa8af`/`2a4dc46`: role admin da fixture
+  real E2E e ancoragem do override de migration foram endurecidas. O focal
+  passou `16/16`, a regressão `141/723` com `38` skips, build `12/12`, E2E
+  `32/32`, audit high, documentação, diff-check e release traceability passaram.
+  A crítica independente pré-fix confirmou os dois P2; a tentativa pós-fix não
+  retornou aceite final, então o resultado permanece condicional.
+- [x] (2026-08-26T09:38:09-03:00) Concluir o reconhecimento independente
+  bounded fora de `JOURNEY-056`: segurança não confirmou P0/P1/P2; a leitura
+  de resiliência reproduziu a divergência de readiness com Qdrant; o achado de
+  identidade de learning-state ficou separado para confirmação contratual.
+- [x] (2026-08-26T09:49:44-03:00) Executar a crítica independente pós-fix:
+  readiness pós-start e `DEGRADED` foram confirmados, mas o reviewer encontrou
+  P1 no cold start Qdrant e um teste falso-positivo; o achado de
+  learning-state foi rebaixado para P2 condicionado ao endpoint genérico.
+- [x] (2026-08-26T10:40:30-03:00) Fechar `OPS-061-READINESS-006` nos commits
+  técnicos `2b8bcae`/`4e46daf`/`8e8fb86`: readiness PostgreSQL-only, cold start
+  sem bloqueio por Qdrant, retry cancelável, close aguardando inicialização em
+  voo e `reconcile:qdrant` aguardando explicitamente a preparação da coleção.
+  O focal ampliado passou `18/18`, `pnpm verify` passou `142/730` com `38`
+  skips, cobertura `84,37/80,31/86,45/85,08`, build `12/12`, E2E `32/32`,
+  audit high, diff-check e `verify:traceability:release` passaram. A crítica
+  Euler encontrou o P1 operacional, o fix foi aplicado, o follow-up ficou
+  `CONDITIONAL PASS` e a prova direta do runner cobriu a ordem
+  `initialize → reconcile`; os gaps P2 estão em `0547`.
+  O resultado é `COMPLETED_WITH_GAPS`, sem evidência live de outage ou claim
+  externo.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

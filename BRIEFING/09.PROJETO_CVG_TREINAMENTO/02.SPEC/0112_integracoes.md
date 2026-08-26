@@ -119,7 +119,7 @@ AI_ENABLED=false
 ## 7. Implementação verificada no BUILD F2-S2/F3-S2/F3-S3
 
 - `createServerIntegrations` monta PostgreSQL, Qdrant, embeddings e IA somente no servidor;
-- `initialize` cria/valida a coleção Qdrant habilitada antes de API/worker ficarem disponíveis; `healthcheck` consulta PostgreSQL e Qdrant sem enviar conteúdo clínico;
+- `initialize` inicia a preparação da coleção Qdrant habilitada de forma não bloqueante para API/worker; falha ou atraso mantém o núcleo disponível e agenda retry cancelável, enquanto `healthcheck` agregado consulta PostgreSQL e Qdrant sem enviar conteúdo clínico;
 - a API usa sessão server-side por cookie `__Host-cvg_session`, armazena somente hash do token e consulta a conta ativa no PostgreSQL;
 - salvar resposta executa tentativa, resposta, idempotência, outbox e auditoria na mesma transação PostgreSQL; o evento/auditoria carregam apenas IDs, estado, hash/metadados técnicos e correlação;
 - a projeção participante pode devolver somente a própria resposta autorizada; campos de autoria, fonte, foto, PDF, OCR, prompt, gabarito e resposta de IA são bloqueados por contratos/mapper/redaction;
@@ -153,7 +153,7 @@ Rotação e revogação de sessão são PostgreSQL-only. O token é lido somente
 - Qdrant oferece `list` por `scroll` somente com metadados internos, sem vetor retornado ao domínio e sem texto;
 - pontos ausentes ou com hash/metadado divergente são atualizados; pontos órfãos, inclusive versões antigas presentes na coleção, são removidos;
 - PostgreSQL continua a autoridade: falha de Qdrant/embedding não altera estado educacional e a operação pode ser repetida;
-- a reconciliação não é chamada automaticamente no boot para evitar custo externo inesperado; deve ser executada pelo runbook `pnpm reconcile:qdrant` quando houver alerta de `INDEX_PENDING`/divergência.
+- a reconciliação não é chamada automaticamente no boot para evitar custo externo inesperado; deve ser executada pelo runbook `pnpm reconcile:qdrant` quando houver alerta de `INDEX_PENDING`/divergência, e esse comando aguarda explicitamente a preparação/validação da coleção antes de comparar ou alterar pontos;
 
 Evidência: testes unitários do worker/Qdrant/persistência e teste live Qdrant de `scroll/list`; o fluxo completo contra PostgreSQL + Qdrant no mesmo comando operacional continua como complemento de runtime.
 

@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — Phase 7 / hardening de assurance local
 - current_sprint: `JOURNEY-056` — decisão contratual da sessão diagnóstica
-- current_task: encerramento documental de `OPS-061-GRANTS-005`; `JOURNEY-056` continua aguardando decisão humana
+- current_task: `JOURNEY-056` — decisão contratual da sessão diagnóstica
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechar `OPS-061-GRANTS-005` no commit técnico `400e22885ae22c1f03ed6c58c61a59d65719158d` e no documental `d4fa8af1f6dd3f282b1e27eb81f5f3c44335000b`: role admin da fixture real E2E e escopo do override de migration agora são verificadas. Focal `16/16`, `pnpm verify` `141/723` com `38` skips, cobertura `84,36/80,30/86,35/85,05`, build `12/12`, E2E `32/32`, audit high, diff-check, documentação e `verify:traceability:release` passaram; audit `0546` registra a crítica independente sem veredito pós-fix.
-- next_action: aguardar a decisão humana de `JOURNEY-056` entre sessão diagnóstica pública própria (A) e atividade especial (B); não iniciar código, migration ou UX dessa jornada enquanto a decisão contratual estiver pendente.
+- last_completed_action: fechar a correção bounded de `OPS-061-READINESS-006` nos commits `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`, `4e46daff955836c62bf99b90128c5d38d28ec222` e `c79cb7a353126af3494bb5dc28fb6b608c18d364`, consolidar auditoria/manifesto/control plane no commit documental local e executar `verify:traceability:release`, que passou com artefatos alcançáveis e paths rastreados. Readiness PostgreSQL-only, cold start não bloqueante, retry cancelável, close aguardável e `reconcile:qdrant` com preparação explícita foram verificados; a crítica Euler ficou `CONDITIONAL PASS` após o follow-up e a prova do runner foi adicionada.
+- next_action: Ricardo escolher A ou B para `JOURNEY-056`; até a decisão, não iniciar código, migration ou UX de jornada. Manter `OPS-061-READINESS-006` como `COMPLETED_WITH_GAPS` e abrir nova task bounded somente para os gaps P2 se necessário.
 
 ## BLOQUEIOS
 
@@ -32,15 +32,17 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T09:27:30-0300
+- last_update: 2026-08-26T10:48:00-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: consultar `git rev-parse HEAD` para o checkout corrente; o último commit técnico de `OPS-061-GRANTS-005` é `400e22885ae22c1f03ed6c58c61a59d65719158d`, e o fechamento documental permanece sem push/deploy
+- head: consultar `git rev-parse HEAD`; os commits técnicos de `OPS-061-READINESS-006` estão fechados localmente, o fechamento documental foi registrado e não houve push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o commit documental de `OPS-061-GRANTS-005`; sem migration aplicada, push ou deploy
+- worktree: limpo após o fechamento documental e o release-traceability gate; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2`, `OPS-061-GRANTS-004` no commit `489a336` e `OPS-061-GRANTS-005` no commit `400e228`: o contrato exige runtime na role de aplicação, fixture real E2E na role admin, compara as URLs job-level e lê o override somente do step `Apply migrations`. Focal `16/16`, `pnpm verify` `141/723` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E sintético `32/32`, audit high e diff-check passaram. A crítica independente pré-fix confirmou os dois P2 sem P0/P1; a tentativa pós-fix não retornou veredito e não é tratada como aceite. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`/`0546`.
+- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2`, `OPS-061-GRANTS-004` no commit `489a336` e `OPS-061-GRANTS-005` no commit `400e228`: o contrato exige runtime na role de aplicação, fixture real E2E na role admin, compara as URLs job-level e lê o override somente do step `Apply migrations`. O reconhecimento atual confirmou, contra `0802`/`0113`, que readiness deve ignorar falha do Qdrant e que a saúde detalhada já representa `DEGRADED`; há um achado separado de identidade client-supplied em learning-state ainda não confirmado no contrato/persistência. Focal anterior `16/16`, `pnpm verify` `141/723` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E sintético `32/32`, audit high e diff-check passaram. A crítica independente pré-fix confirmou os dois P2 de CI sem P0/P1; a tentativa pós-fix não retornou veredito e não é tratada como aceite. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`/`0546`.
+
+- current_readiness_evidence: `OPS-061-READINESS-006` está fechado nos commits técnicos `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`, `4e46daff955836c62bf99b90128c5d38d28ec222` e `c79cb7a353126af3494bb5dc28fb6b608c18d364`. Readiness é PostgreSQL-only, a saúde agregada mantém `DEGRADED`, API/worker não bloqueiam o cold start, o retry é cancelável, `close()` aguarda inicialização em voo e `reconcile:qdrant` aguarda a preparação da coleção. `pnpm verify` passou com `142` arquivos/`730` testes PASS, `29` arquivos/`38` testes skipped e cobertura `84,37%` statements, `80,31%` branches, `86,45%` functions e `85,08%` lines; build `12/12`, E2E `32/32`, audit high, diff-check e `verify:traceability:release` também passaram. O follow-up Euler ficou `CONDITIONAL PASS`, sem P0/P1 novos; os gaps de retry limitado/backoff, migration/schema readiness, chamadas concorrentes não suportadas e evidência live de outage/restart/carga/failover continuam explícitos.
 
 ## REGRAS DE USO
 

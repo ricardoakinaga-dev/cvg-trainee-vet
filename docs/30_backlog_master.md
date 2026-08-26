@@ -652,6 +652,24 @@ backfill inventado.
 - gaps remanescentes: a tentativa de crítica independente pós-commit não retornou veredito final; não há nova prova live, configuração/owners/ACLs produtivos, workflow remoto same-SHA ou evidência clínica
 - próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; não iniciar código, migration ou UX de jornada antes da decisão contratual
 
+### OPS-061-READINESS-006 — Readiness essencial e dependências degradáveis
+
+- título: impedir que a falha do índice Qdrant retire do tráfego o núcleo PostgreSQL
+- descrição: separar a checagem de readiness essencial da saúde agregada de PostgreSQL/Qdrant; `/health/ready` deve falhar para PostgreSQL/configuração essencial e permanecer disponível quando Qdrant estiver degradado, enquanto `/health/dependencies` continua expondo somente `DEGRADED` redigido
+- módulo: integrações / API / runtime / observabilidade / operações
+- dependência: `OPS-061-GRANTS-005`; SPEC 0110/0112/0113; Runtime 0802
+- fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
+- risco: crítico — uma dependência derivada pode causar remoção indevida do núcleo autoritativo PostgreSQL do tráfego e ocultar o estado degradado já previsto pelo contrato
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: testes RED reproduzem Qdrant indisponível com PostgreSQL disponível tanto após o bind quanto no cold start; a API binda sem aguardar a dependência opcional, tenta inicialização em background com retry cancelável; readiness essencial passa sem Qdrant; falha PostgreSQL continua 503; saúde detalhada mantém `DEGRADED`; `pnpm reconcile:qdrant` aguarda explicitamente `ensureCollection()` antes de reconciliar; focal/regressão, build, E2E, audit high, diff-check e rastreabilidade passam sem claim externo
+- escopo: `packages/integrations/src/composition.ts`, `packages/integrations/src/composition.test.ts`, `apps/api/src/main.ts`, `apps/worker/src/main.ts`, `apps/worker/src/reconcile-command.ts`, `apps/worker/src/reconcile-command-runner.ts`, testes e documentação de auditoria/rastreabilidade
+- fora desta fatia: `JOURNEY-056`, `FEEDBACK-057`, migrations aplicadas, alterações de contrato de domínio, produção, deploy, workflow remoto same-SHA, fornecedor, aprovação clínica e dados reais
+- controles obrigatórios: PostgreSQL permanece fonte autoritativa; Qdrant/IA não decidem estado; respostas de health não expõem causa/URL/segredo; preservar a checagem agregada para diagnóstico; retry deve ser cancelável no close e não deixar timer/erro não tratado; o comando explícito de reconciliação deve aguardar a preparação do índice; RED/GREEN/REFACTOR e revisão independente
+- evidência de abertura: crítica independente de resiliência `Beauvoir`; contrato `BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md` e `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md`; críticas finais `Euler`/follow-up; log/state de 2026-08-26; auditoria `BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md`
+- gaps remanescentes: verificação live com Qdrant indisponível, startup/restart/carga/failover e operação externa ainda não observados; retry de boot ainda não tem limite/backoff/jitter; readiness ainda não valida literalmente migration/schema; chamadas concorrentes entre o modo aguardável e o boot não são uma API suportada; o achado separado de identidade em learning-state continua em análise
+- próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; manter a operação de reconciliação sob o comando explícito e tratar retry limitado/backoff, migration/schema readiness e outage live como novas fatias bounded, sem declarar release
+
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial
 
 - título: fechar a jornada participante de diagnóstico formativo sintético até assignment e atividade publicada
