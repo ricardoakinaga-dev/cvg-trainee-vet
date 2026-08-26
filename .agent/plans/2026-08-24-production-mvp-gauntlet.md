@@ -405,6 +405,9 @@ recuperação explícita → 401`. O commit técnico complementar é `2a95f5c` e
 - [x] (2026-08-26T16:45:00-03:00) Publicar os commits técnico
       `f247bd578abcd50ce7ecd85109fb567462c3c2f9` e documental `ca2bb58` em
       `origin/main`; o remoto confirmou `fbbc692..ca2bb58 main -> main`.
+- [x] (2026-08-26T18:06:16-03:00) Conferir o push final: worktree limpo,
+      `HEAD`/`origin/main` em `b77269ec8c45d1565524ff400ad74e11cc5acaa8` e
+      `git ls-remote` confirmado; rastreabilidade release permaneceu verde.
 - [ ] (2026-08-26T16:00:31-03:00) Após autorização operacional, executar
       PostgreSQL/RLS live e E2E browser→web→API→PostgreSQL em banco descartável;
       manter publicação clínica, produção, push/deploy e release bloqueados.
