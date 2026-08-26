@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { unlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
+import { URL } from "node:url";
 
 import { and, eq, inArray } from "drizzle-orm";
 
@@ -29,6 +30,7 @@ import {
   contentVersions,
   learningActivities,
   learningActivityItems,
+  learningAssignments,
   outboxEvents,
   sessions,
 } from "../packages/persistence/dist/schema.js";
@@ -57,9 +59,12 @@ const scopeId = randomUUID();
 const contentId = randomUUID();
 const contentVersionId = randomUUID();
 const editorialRecordId = randomUUID();
+const learningAssignmentId = randomUUID();
 const token = randomBytes(32).toString("base64url");
+const expectedAnswer = "Resposta sintética persistida.";
 let participantId;
 let activityId;
+let attemptIds = [];
 let closed = false;
 
 async function seed() {
@@ -275,9 +280,19 @@ async function seed() {
     );
   }
 
+  await database.db.insert(learningAssignments).values({
+    id: learningAssignmentId,
+    participantId,
+    scopeId,
+    moduleId: "M02",
+    availableAt: new Date(),
+    status: "DISPONIVEL",
+    version: 0,
+  });
   await database.db.insert(activityAssignments).values({
     participantId,
     activityId,
+    learningAssignmentId,
     status: "DISPONIVEL",
   });
 
@@ -288,10 +303,253 @@ async function seed() {
       activityId,
       itemId: contentVersionId,
       activitySlug: materializedActivity.slug,
+      expectedAnswer,
       source: "authoring-publication-v1",
+      assignmentSource: "pre-provisioned-learning-assignment-v1",
     }),
     "utf8",
   );
+}
+
+async function readPersistenceEvidence(attemptId) {
+  if (participantId === undefined || activityId === undefined) {
+    return { verified: false };
+  }
+
+  const attemptRows = await database.db
+    .select({
+      status: attempts.status,
+      version: attempts.version,
+      submittedAt: attempts.submittedAt,
+    })
+    .from(attempts)
+    .where(
+      and(
+        eq(attempts.id, attemptId),
+        eq(attempts.participantId, participantId),
+        eq(attempts.activityId, activityId),
+      ),
+    )
+    .limit(1);
+  const answerRows = await database.db
+    .select({ itemId: answers.itemId, response: answers.response })
+    .from(answers)
+    .where(eq(answers.attemptId, attemptId));
+  const attemptIdempotencyRows = await database.db
+    .select({ key: attemptIdempotency.key })
+    .from(attemptIdempotency)
+    .where(eq(attemptIdempotency.attemptId, attemptId));
+  const answerIdempotencyRows = await database.db
+    .select({ key: answerIdempotency.key })
+    .from(answerIdempotency)
+    .where(eq(answerIdempotency.attemptId, attemptId));
+  const outboxRows = await database.db
+    .select({ eventType: outboxEvents.eventType })
+    .from(outboxEvents)
+    .where(eq(outboxEvents.aggregateId, attemptId));
+  const auditRows = await database.db
+    .select({ action: auditEntries.action })
+    .from(auditEntries)
+    .where(
+      and(
+        eq(auditEntries.principalId, participantId),
+        eq(auditEntries.resourceId, attemptId),
+      ),
+    );
+  const attempt = attemptRows[0];
+  const answer = answerRows[0];
+  const requiredAuditActions = [
+    "ATTEMPT_STARTED",
+    "ANSWER_SAVED",
+    "ATTEMPT_SUBMITTED",
+  ];
+  const auditActions = [...new Set(auditRows.map((row) => row.action))].sort();
+  const verified =
+    attempt?.status === "SUBMETIDA" &&
+    attempt.version >= 3 &&
+    attempt.submittedAt !== null &&
+    answerRows.length === 1 &&
+    answer?.itemId === contentVersionId &&
+    answer.response === expectedAnswer &&
+    attemptIdempotencyRows.length === 2 &&
+    answerIdempotencyRows.length === 1 &&
+    outboxRows.some((row) => row.eventType === "answer.saved.v1") &&
+    outboxRows.some((row) => row.eventType === "attempt.submitted.v1") &&
+    requiredAuditActions.every((action) => auditActions.includes(action));
+
+  return {
+    verified,
+    attempt:
+      attempt === undefined
+        ? null
+        : {
+            status: attempt.status,
+            version: attempt.version,
+            hasSubmittedAt: attempt.submittedAt !== null,
+          },
+    answer:
+      answer === undefined
+        ? null
+        : { itemId: answer.itemId, response: answer.response },
+    idempotency: {
+      attempt: attemptIdempotencyRows.length,
+      answer: answerIdempotencyRows.length,
+    },
+    outbox: {
+      count: outboxRows.length,
+      eventTypes: [...new Set(outboxRows.map((row) => row.eventType))].sort(),
+    },
+    audit: { actions: auditActions },
+  };
+}
+
+async function assertCleanupComplete() {
+  const fixtureAccountIds = [
+    adminId,
+    reviewerId,
+    ...(participantId === undefined ? [] : [participantId]),
+  ];
+  const checks = [
+    [
+      "accounts",
+      await database.db
+        .select({ id: accounts.id })
+        .from(accounts)
+        .where(inArray(accounts.id, fixtureAccountIds)),
+    ],
+    [
+      "invitations",
+      participantId === undefined
+        ? []
+        : await database.db
+            .select({ id: accountInvitations.id })
+            .from(accountInvitations)
+            .where(eq(accountInvitations.accountId, participantId)),
+    ],
+    [
+      "sessions",
+      participantId === undefined
+        ? []
+        : await database.db
+            .select({ id: sessions.id })
+            .from(sessions)
+            .where(eq(sessions.accountId, participantId)),
+    ],
+    [
+      "learning_assignments",
+      await database.db
+        .select({ id: learningAssignments.id })
+        .from(learningAssignments)
+        .where(eq(learningAssignments.id, learningAssignmentId)),
+    ],
+    [
+      "activity_assignments",
+      activityId === undefined
+        ? []
+        : await database.db
+            .select({ activityId: activityAssignments.activityId })
+            .from(activityAssignments)
+            .where(eq(activityAssignments.activityId, activityId)),
+    ],
+    [
+      "attempts",
+      participantId === undefined
+        ? []
+        : await database.db
+            .select({ id: attempts.id })
+            .from(attempts)
+            .where(eq(attempts.participantId, participantId)),
+    ],
+    [
+      "answers",
+      await database.db
+        .select({ id: answers.id })
+        .from(answers)
+        .where(eq(answers.itemId, contentVersionId)),
+    ],
+    [
+      "attempt_idempotency",
+      attemptIds.length === 0
+        ? []
+        : await database.db
+            .select({ key: attemptIdempotency.key })
+            .from(attemptIdempotency)
+            .where(inArray(attemptIdempotency.attemptId, attemptIds)),
+    ],
+    [
+      "answer_idempotency",
+      attemptIds.length === 0
+        ? []
+        : await database.db
+            .select({ key: answerIdempotency.key })
+            .from(answerIdempotency)
+            .where(inArray(answerIdempotency.attemptId, attemptIds)),
+    ],
+    [
+      "activity_items",
+      activityId === undefined
+        ? []
+        : await database.db
+            .select({
+              activityId: learningActivityItems.activityId,
+              contentVersionId: learningActivityItems.contentVersionId,
+            })
+            .from(learningActivityItems)
+            .where(eq(learningActivityItems.activityId, activityId)),
+    ],
+    [
+      "activities",
+      activityId === undefined
+        ? []
+        : await database.db
+            .select({ id: learningActivities.id })
+            .from(learningActivities)
+            .where(eq(learningActivities.id, activityId)),
+    ],
+    [
+      "review_decisions",
+      await database.db
+        .select({ id: contentReviewDecisions.id })
+        .from(contentReviewDecisions)
+        .where(eq(contentReviewDecisions.contentVersionId, contentVersionId)),
+    ],
+    [
+      "editorial_records",
+      await database.db
+        .select({ id: contentEditorialRecords.id })
+        .from(contentEditorialRecords)
+        .where(eq(contentEditorialRecords.id, editorialRecordId)),
+    ],
+    [
+      "content_versions",
+      await database.db
+        .select({ id: contentVersions.id })
+        .from(contentVersions)
+        .where(eq(contentVersions.id, contentVersionId)),
+    ],
+    [
+      "content_outbox",
+      await database.db
+        .select({ id: outboxEvents.id })
+        .from(outboxEvents)
+        .where(eq(outboxEvents.aggregateId, contentId)),
+    ],
+    [
+      "attempt_outbox",
+      attemptIds.length === 0
+        ? []
+        : await database.db
+            .select({ id: outboxEvents.id })
+            .from(outboxEvents)
+            .where(inArray(outboxEvents.aggregateId, attemptIds)),
+    ],
+  ];
+  const residual = checks
+    .filter(([, rows]) => rows.length > 0)
+    .map(([name, rows]) => `${name}=${rows.length}`);
+  if (residual.length > 0) {
+    throw new Error(`fixture cleanup left rows: ${residual.join(", ")}`);
+  }
 }
 
 async function cleanup() {
@@ -303,7 +561,7 @@ async function cleanup() {
         .select({ id: attempts.id })
         .from(attempts)
         .where(eq(attempts.participantId, participantId));
-      const attemptIds = participantAttempts.map((row) => row.id);
+      attemptIds = participantAttempts.map((row) => row.id);
       if (attemptIds.length > 0) {
         await database.db
           .delete(answerIdempotency)
@@ -331,8 +589,8 @@ async function cleanup() {
         .delete(activityAssignments)
         .where(eq(activityAssignments.participantId, participantId));
       await database.db
-        .delete(auditEntries)
-        .where(eq(auditEntries.principalId, participantId));
+        .delete(learningAssignments)
+        .where(eq(learningAssignments.id, learningAssignmentId));
     }
 
     const materializedActivities = await database.db
@@ -366,12 +624,6 @@ async function cleanup() {
       .delete(outboxEvents)
       .where(eq(outboxEvents.aggregateId, contentId));
     await database.db
-      .delete(auditEntries)
-      .where(eq(auditEntries.principalId, adminId));
-    await database.db
-      .delete(auditEntries)
-      .where(eq(auditEntries.principalId, reviewerId));
-    await database.db
       .delete(contentReviewDecisions)
       .where(eq(contentReviewDecisions.contentVersionId, contentVersionId));
     await database.db
@@ -385,6 +637,7 @@ async function cleanup() {
     }
     await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
     await database.db.delete(accounts).where(eq(accounts.id, adminId));
+    await assertCleanupComplete();
   } finally {
     await database.close();
     await unlink(fixtureFile).catch(() => undefined);
@@ -405,13 +658,77 @@ const server = createServer((request, response) => {
     response.end(JSON.stringify({ ready: true }));
     return;
   }
+  if (
+    request.method === "GET" &&
+    new URL(request.url ?? "/", "http://127.0.0.1").pathname === "/evidence"
+  ) {
+    void (async () => {
+      const requestedAttemptId = new URL(
+        request.url ?? "/evidence",
+        "http://127.0.0.1",
+      ).searchParams.get("attemptId");
+      if (
+        requestedAttemptId === null ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+          requestedAttemptId,
+        )
+      ) {
+        response.statusCode = 400;
+        response.setHeader("content-type", "application/json; charset=utf-8");
+        response.end(JSON.stringify({ verified: false }));
+        return;
+      }
+      try {
+        const evidence = await readPersistenceEvidence(requestedAttemptId);
+        response.statusCode = evidence.verified ? 200 : 500;
+        response.setHeader("content-type", "application/json; charset=utf-8");
+        response.end(JSON.stringify(evidence));
+      } catch {
+        response.statusCode = 500;
+        response.setHeader("content-type", "application/json; charset=utf-8");
+        response.end(JSON.stringify({ verified: false }));
+      }
+    })();
+    return;
+  }
+  if (request.method === "GET" && request.url === "/shutdown") {
+    void (async () => {
+      let cleaned = true;
+      try {
+        await runCleanup();
+      } catch (error) {
+        console.error("real E2E fixture cleanup failed", error);
+        cleaned = false;
+      }
+      response.statusCode = cleaned ? 200 : 500;
+      response.setHeader("content-type", "application/json; charset=utf-8");
+      response.end(JSON.stringify({ cleaned }));
+      await closeServer().catch(() => undefined);
+    })();
+    return;
+  }
   response.statusCode = 404;
   response.end();
 });
 
+let cleanupPromise;
+let closeServerPromise;
+
+function runCleanup() {
+  cleanupPromise ??= cleanup();
+  return cleanupPromise;
+}
+
+function closeServer() {
+  if (closeServerPromise !== undefined) return closeServerPromise;
+  if (!server.listening) return Promise.resolve();
+  closeServerPromise = new Promise((resolve) => server.close(() => resolve()));
+  return closeServerPromise;
+}
+
 const shutdown = async () => {
-  await new Promise((resolve) => server.close(() => resolve()));
-  await cleanup();
+  await closeServer();
+  await runCleanup();
 };
 process.once("SIGTERM", () => void shutdown());
 process.once("SIGINT", () => void shutdown());
