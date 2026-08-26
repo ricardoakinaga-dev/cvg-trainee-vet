@@ -4843,6 +4843,7 @@ artifacts:
         "pnpm verify:ci-contract: PASS with status=PASS, 16 required environment keys, 21 workflow checks and 1 runtime check",
         "pnpm verify: 141 test files PASS, 29 skipped; 723 tests PASS, 38 skipped; coverage 84.36% statements, 80.30% branches, 86.35% functions, 85.05% lines",
         "pnpm build: 12 workspaces PASS; pnpm test:e2e: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "pnpm verify:traceability:release: current artifacts resolved to reachable commits and tracked paths in a clean worktree",
         "local and workflow fixture URLs use the admin identity, runtime DATABASE_URL uses the application identity, and the migration override is read only from Apply migrations",
         "the independent pre-fix critique found two P2 issues and no P0/P1; the post-fix critique attempt returned no final verdict and is not treated as acceptance",
         "no new live, production, remote same-SHA or clinical evidence is inferred; release remains unauthorized",

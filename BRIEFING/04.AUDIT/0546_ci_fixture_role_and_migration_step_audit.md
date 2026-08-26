@@ -50,6 +50,8 @@ checks de workflow e 1 check de runtime. A alteração foi commitada em
 - `pnpm test:e2e`: `32/32` cenários sintéticos PASS.
 - `pnpm audit --audit-level=high`: nenhum advisory conhecido.
 - `git diff --check`: PASS.
+- `pnpm verify:traceability:release`: PASS em worktree limpo; os artefatos
+  correntes resolvem para commits alcançáveis e paths rastreados.
 - Não houve nova prova live. As evidências PostgreSQL descartáveis anteriores
   continuam separadas e não são reatribuídas a este ciclo; não há evidência de
   produção, workflow remoto same-SHA, operação externa ou aprovação clínica.

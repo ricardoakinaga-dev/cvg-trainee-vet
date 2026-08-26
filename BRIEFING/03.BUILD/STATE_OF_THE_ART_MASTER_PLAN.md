@@ -69,7 +69,8 @@ em evidência de runtime produtivo.
   fechou ambos no commit `400e228`; o focal passou `16/16`, a regressão passou
   `141/723` com `38` skips, build `12/12` e E2E sintético `32/32`. O parecer
   independente pós-fix não retornou veredito dentro da janela; o resultado é
-  condicional e não há claim de produção.
+  condicional; `verify:traceability:release` passou após o fechamento
+  documental e não há claim de produção.
 - Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
   separadas e o provisionador atual, `pnpm test:integration:live` passou 35
   arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,

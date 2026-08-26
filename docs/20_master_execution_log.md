@@ -42,6 +42,58 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — OPS-061-GRANTS-005: fechamento documental e rastreabilidade
+
+### TIMESTAMP
+
+2026-08-26T09:27:30-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-005 — identidade da fixture real E2E e ancoragem de migration
+
+### TASK
+
+Consolidar a evidência do hardening do contrato e fechar o item com gaps
+explicitamente registrados.
+
+### ACTION
+
+O audit `0546`, o State of the Art, o backlog, o runtime state e o manifesto
+foram atualizados. O commit documental `d4fa8af1f6dd3f282b1e27eb81f5f3c44335000b`
+foi criado após o commit técnico `400e22885ae22c1f03ed6c58c61a59d65719158d`.
+
+### RESULT
+
+`pnpm verify:traceability:release` passou em worktree limpo; `git diff --check`
+permaneceu PASS. O manifesto liga requisitos, SPEC, módulos, teste, commits e
+artefatos do ciclo. Não houve push, deploy, migration aplicada ou prova externa.
+
+### DECISIONS
+
+O item permanece `CONDITIONAL PASS / COMPLETED_WITH_GAPS`, pois a crítica
+independente pós-fix não retornou veredito final dentro da janela. O próximo
+passo não é código: aguardar a decisão humana A/B de `JOURNEY-056`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve escolher A (sessão diagnóstica pública própria) ou B (atividade
+especial); até lá, não iniciar código, migration ou UX da jornada.
+
+---
+
 ## 2026-08-26 — OPS-061-GRANTS-005: fechamento condicional
 
 ### TIMESTAMP
