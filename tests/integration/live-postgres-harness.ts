@@ -10,6 +10,8 @@ export type LivePostgresRoleCapabilities = Readonly<{
   readonly isSuperuser: boolean;
   readonly bypassesRls: boolean;
   readonly canCreateRoles: boolean;
+  readonly canCreateDatabases: boolean;
+  readonly canReplicate: boolean;
 }>;
 
 export type LivePostgresHarness = Readonly<{
@@ -32,12 +34,16 @@ async function readRoleCapabilities(
     readonly isSuperuser: boolean;
     readonly bypassesRls: boolean;
     readonly canCreateRoles: boolean;
+    readonly canCreateDatabases: boolean;
+    readonly canReplicate: boolean;
   }>(sql`
     select
       current_user as "roleName",
       rolsuper as "isSuperuser",
       rolbypassrls as "bypassesRls",
-      rolcreaterole as "canCreateRoles"
+      rolcreaterole as "canCreateRoles",
+      rolcreatedb as "canCreateDatabases",
+      rolreplication as "canReplicate"
     from pg_roles
     where rolname = current_user
   `);

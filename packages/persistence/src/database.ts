@@ -74,6 +74,10 @@ export function createPostgresDatabase(
         readonly bypassesRls: boolean;
         readonly canCreateRoles: boolean;
         readonly canCreateDatabases: boolean;
+        readonly canReplicate: boolean;
+        readonly canCreateInDatabase: boolean;
+        readonly canUseTemporaryTables: boolean;
+        readonly canUsePublicSchema: boolean;
         readonly canCreateInPublicSchema: boolean;
         readonly ownedRelationCount: number;
       }>(sql`
@@ -82,6 +86,10 @@ export function createPostgresDatabase(
           rolbypassrls as "bypassesRls",
           rolcreaterole as "canCreateRoles",
           rolcreatedb as "canCreateDatabases",
+          rolreplication as "canReplicate",
+          has_database_privilege(current_user, current_database(), 'CREATE') as "canCreateInDatabase",
+          has_database_privilege(current_user, current_database(), 'TEMPORARY') as "canUseTemporaryTables",
+          has_schema_privilege(current_user, 'public', 'USAGE') as "canUsePublicSchema",
           has_schema_privilege(current_user, 'public', 'CREATE') as "canCreateInPublicSchema",
           (
             select count(*)::int
@@ -101,11 +109,15 @@ export function createPostgresDatabase(
         role.bypassesRls ||
         role.canCreateRoles ||
         role.canCreateDatabases ||
+        role.canReplicate ||
+        role.canCreateInDatabase ||
+        role.canUseTemporaryTables ||
+        !role.canUsePublicSchema ||
         role.canCreateInPublicSchema ||
         role.ownedRelationCount > 0
       ) {
         throw new Error(
-          "database connection must use a non-superuser role without BYPASSRLS, table ownership, role/database creation, or schema CREATE privilege",
+          "database connection must use a non-superuser role without BYPASSRLS, replication, table ownership, database/schema creation, temporary-table, or role/database creation privileges",
         );
       }
     }

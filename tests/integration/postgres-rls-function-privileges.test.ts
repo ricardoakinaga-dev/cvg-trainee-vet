@@ -65,6 +65,13 @@ function quoteRoleIdentifier(value: string): string {
   return `"${value}"`;
 }
 
+function quoteDatabaseIdentifier(value: string): string {
+  if (!/^[a-z_][a-z0-9_]*$/iu.test(value)) {
+    throw new Error("unsafe live database identifier");
+  }
+  return `"${value}"`;
+}
+
 function assertCleanupSucceeded(errors: readonly unknown[]): void {
   if (errors.length > 0) {
     throw new AggregateError(
@@ -127,6 +134,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         const privilegeRows = await harness.application.db.execute<{
           readonly owner: string;
           readonly directExecute: boolean;
+          readonly directExecuteGrantable: boolean;
           readonly publicExecute: boolean;
         }>(
           sql.raw(`
@@ -138,6 +146,13 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
                 )
                 and privilege.privilege_type = 'EXECUTE'
               ), false) as "directExecute",
+              coalesce(bool_or(
+                privilege.grantee = (
+                  select oid from pg_roles where rolname = current_user
+                )
+                and privilege.privilege_type = 'EXECUTE'
+                and privilege.is_grantable
+              ), false) as "directExecuteGrantable",
               coalesce(bool_or(
                 privilege.grantee = 0
                 and privilege.privilege_type = 'EXECUTE'
@@ -156,6 +171,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         expect(privilegeRows[0]).toBeDefined();
         expect(privilegeRows[0]?.owner).not.toBe(applicationRoleName);
         expect(privilegeRows[0]?.directExecute).toBe(true);
+        expect(privilegeRows[0]?.directExecuteGrantable).toBe(false);
         expect(privilegeRows[0]?.publicExecute).toBe(false);
       }
 
@@ -163,6 +179,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const rolePassword = randomUUID().replaceAll("-", "");
       const role = quoteRoleIdentifier(roleName);
       const source = new URL(liveDatabaseUrl);
+      const database = quoteDatabaseIdentifier(
+        decodeURIComponent(source.pathname.slice(1)),
+      );
       let restricted: ReturnType<typeof createPostgresDatabase> | null = null;
       let roleCreated = false;
 
@@ -173,6 +192,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           ),
         );
         roleCreated = true;
+        await harness.admin.db.execute(
+          sql.raw(`grant connect on database ${database} to ${role}`),
+        );
         await harness.admin.db.execute(
           sql.raw(`grant usage on schema public to ${role}`),
         );
@@ -218,6 +240,11 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         if (roleCreated) {
           await attemptCleanup(() =>
             harness.admin.db.execute(
+              sql.raw(`revoke connect on database ${database} from ${role}`),
+            ),
+          );
+          await attemptCleanup(() =>
+            harness.admin.db.execute(
               sql.raw(`revoke usage on schema public from ${role}`),
             ),
           );
@@ -244,6 +271,69 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         expect(harness.applicationRole.isSuperuser).toBe(false);
         expect(harness.applicationRole.bypassesRls).toBe(false);
         expect(harness.applicationRole.canCreateRoles).toBe(false);
+        expect(harness.applicationRole.canCreateDatabases).toBe(false);
+        expect(harness.applicationRole.canReplicate).toBe(false);
+
+        const databasePrivilegeRows = await harness.admin.db.execute<{
+          readonly canConnect: boolean;
+          readonly canCreate: boolean;
+          readonly canTemporary: boolean;
+        }>(sql`
+          select
+            has_database_privilege(${harness.applicationRole.roleName}, current_database(), 'CONNECT') as "canConnect",
+            has_database_privilege(${harness.applicationRole.roleName}, current_database(), 'CREATE') as "canCreate",
+            has_database_privilege(${harness.applicationRole.roleName}, current_database(), 'TEMPORARY') as "canTemporary"
+        `);
+        expect(databasePrivilegeRows[0]).toEqual({
+          canConnect: true,
+          canCreate: false,
+          canTemporary: false,
+        });
+
+        const schemaPrivilegeRows = await harness.admin.db.execute<{
+          readonly canUsage: boolean;
+          readonly canCreate: boolean;
+        }>(sql`
+          select
+            has_schema_privilege(${harness.applicationRole.roleName}, 'public', 'USAGE') as "canUsage",
+            has_schema_privilege(${harness.applicationRole.roleName}, 'public', 'CREATE') as "canCreate"
+        `);
+        expect(schemaPrivilegeRows[0]).toEqual({
+          canUsage: true,
+          canCreate: false,
+        });
+
+        const publicDatabaseAclRows = await harness.admin.db.execute<{
+          readonly privileges: readonly string[];
+        }>(sql`
+          select coalesce(
+            array_agg(privilege.privilege_type order by privilege.privilege_type)
+              filter (where privilege.privilege_type is not null),
+            ARRAY[]::text[]
+          ) as "privileges"
+          from pg_database as database_row
+          left join lateral aclexplode(
+            coalesce(database_row.datacl, acldefault('d', database_row.datdba))
+          ) as privilege on privilege.grantee = 0
+          where database_row.datname = current_database()
+        `);
+        expect(publicDatabaseAclRows[0]?.privileges).toEqual([]);
+
+        const publicSchemaAclRows = await harness.admin.db.execute<{
+          readonly privileges: readonly string[];
+        }>(sql`
+          select coalesce(
+            array_agg(privilege.privilege_type order by privilege.privilege_type)
+              filter (where privilege.privilege_type is not null),
+            ARRAY[]::text[]
+          ) as "privileges"
+          from pg_namespace as namespace_row
+          left join lateral aclexplode(
+            coalesce(namespace_row.nspacl, acldefault('n', namespace_row.nspowner))
+          ) as privilege on privilege.grantee = 0
+          where namespace_row.nspname = 'public'
+        `);
+        expect(publicSchemaAclRows[0]?.privileges).toEqual([]);
 
         const { applicationExcludedTables, applicationTablePrivileges } =
           await import("../../scripts/provision-ci-postgres.mjs");
@@ -299,10 +389,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         const directPrivilegeRows = await harness.admin.db.execute<{
           readonly tableName: string;
           readonly privilegeType: string;
+          readonly isGrantable: boolean;
         }>(sql`
           select
             relation.relname as "tableName",
-            privilege.privilege_type as "privilegeType"
+            privilege.privilege_type as "privilegeType",
+            privilege.is_grantable as "isGrantable"
           from pg_class as relation
           join pg_namespace as namespace on namespace.oid = relation.relnamespace
           cross join lateral aclexplode(
@@ -320,6 +412,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         const directPrivilegesByTable = new Map<string, string[]>();
         for (const row of directPrivilegeRows) {
           const privileges = directPrivilegesByTable.get(row.tableName) ?? [];
+          expect(row.isGrantable).toBe(false);
           privileges.push(row.privilegeType);
           directPrivilegesByTable.set(row.tableName, privileges);
         }
@@ -396,7 +489,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             )
             and privilege.privilege_type in (
               'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE',
-              'REFERENCES', 'TRIGGER', 'USAGE'
+              'REFERENCES', 'TRIGGER', 'USAGE', 'EXECUTE'
             )
           order by default_acl.defaclobjtype, privilege.privilege_type
         `);

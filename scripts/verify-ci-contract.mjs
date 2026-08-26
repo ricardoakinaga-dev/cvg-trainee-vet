@@ -11,7 +11,10 @@ const requiredEnvironmentKeys = Object.freeze([
   "API_PORT",
   "DATABASE_URL",
   "AUDIT_CURSOR_SECRET",
+  "CVG_MIGRATION_DATABASE_URL",
   "CVG_TEST_DATABASE_URL",
+  "CVG_TEST_ADMIN_DATABASE_URL",
+  "CVG_REAL_E2E_DATABASE_URL",
   "WEB_ORIGINS",
   "QDRANT_ENABLED",
   "QDRANT_URL",
@@ -19,6 +22,12 @@ const requiredEnvironmentKeys = Object.freeze([
   "CVG_TEST_QDRANT_URL",
   "CVG_TEST_QDRANT_API_KEY",
   "AI_ENABLED",
+]);
+const requiredDatabaseEnvironmentKeys = Object.freeze([
+  "CVG_MIGRATION_DATABASE_URL",
+  "CVG_TEST_DATABASE_URL",
+  "CVG_TEST_ADMIN_DATABASE_URL",
+  "CVG_REAL_E2E_DATABASE_URL",
 ]);
 const requiredWorkflowChecks = Object.freeze([
   ["PostgreSQL service", /image:\s*postgres:16/u],
@@ -62,6 +71,66 @@ function envKeys(text) {
   );
 }
 
+function envValue(text, key) {
+  return new RegExp(`^${key}=([^\\r\\n]*)$`, "mu").exec(text)?.[1]?.trim();
+}
+
+function databaseContractFailures(text) {
+  const values = requiredDatabaseEnvironmentKeys.map((key) => [
+    key,
+    envValue(text, key),
+  ]);
+  if (values.some(([, value]) => value === undefined || value.length === 0)) {
+    return [];
+  }
+
+  try {
+    const connections = values.map(([key, value]) => {
+      const connection = new URL(value);
+      if (
+        connection.protocol !== "postgresql:" &&
+        connection.protocol !== "postgres:"
+      ) {
+        throw new Error(`${key} is not PostgreSQL`);
+      }
+      const role = decodeURIComponent(connection.username);
+      const database = decodeURIComponent(connection.pathname.slice(1));
+      if (role.length === 0 || database.length === 0) {
+        throw new Error(`${key} has no role or database`);
+      }
+      return { key, role, database };
+    });
+    const [migration, application, admin, realE2e] = connections;
+    if (
+      migration === undefined ||
+      application === undefined ||
+      admin === undefined ||
+      realE2e === undefined
+    ) {
+      return ["database URL contract is incomplete"];
+    }
+    if (new Set([migration.role, application.role, admin.role]).size !== 3) {
+      return [
+        "database URLs must use distinct migration/application/admin roles",
+      ];
+    }
+    if (
+      new Set([migration.database, application.database, admin.database])
+        .size !== 1
+    ) {
+      return ["database URLs must target the same database"];
+    }
+    if (realE2e.database !== admin.database) {
+      return [
+        "CVG_REAL_E2E_DATABASE_URL must target the same database as the admin URL",
+      ];
+    }
+    return [];
+  } catch {
+    return ["database URLs must use valid PostgreSQL connection URLs"];
+  }
+}
+
 function invalid(message) {
   return new Error(`CI contract is invalid: ${message}`);
 }
@@ -102,6 +171,7 @@ export function validateCiContract(contract) {
     ...requiredEnvironmentKeys
       .filter((key) => !envKeys(contract.envExample).has(key))
       .map((key) => `.env.example is missing ${key}`),
+    ...databaseContractFailures(contract.envExample),
     ...requiredWorkflowChecks
       .filter(([, pattern]) => !pattern.test(contract.workflow))
       .map(([name]) => `workflow is missing ${name}`),

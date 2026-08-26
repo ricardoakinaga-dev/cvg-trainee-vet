@@ -57,6 +57,13 @@ function quoteIdentifier(value: string): string {
   return `"${value}"`;
 }
 
+function quoteDatabaseIdentifier(value: string): string {
+  if (!/^[a-z_][a-z0-9_]*$/iu.test(value)) {
+    throw new Error("unsafe live database identifier");
+  }
+  return `"${value}"`;
+}
+
 describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL participant security isolation",
   () => {
@@ -74,6 +81,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const roleName = `cvg_rls_${randomUUID().replaceAll("-", "")}`;
       const rolePassword = randomUUID().replaceAll("-", "");
       const role = quoteIdentifier(roleName);
+      const database = quoteDatabaseIdentifier(
+        decodeURIComponent(new URL(liveDatabaseUrl).pathname.slice(1)),
+      );
       const participantId = randomUUID();
       const otherParticipantId = randomUUID();
       const staffId = randomUUID();
@@ -127,6 +137,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             ),
           );
           roleCreated = true;
+          await admin.db.execute(
+            sql.raw(`grant connect on database ${database} to ${role}`),
+          );
           await admin.db.execute(
             sql.raw(`grant usage on schema public to ${role}`),
           );
@@ -375,7 +388,17 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               await privilegedGuard.close();
             }
           } else {
-            await expect(application.healthcheck()).resolves.toBeUndefined();
+            const leastPrivilegeApplication = createPostgresDatabase(
+              liveDatabaseUrl,
+              { requireLeastPrivilege: true },
+            );
+            try {
+              await expect(
+                leastPrivilegeApplication.healthcheck(),
+              ).resolves.toBeUndefined();
+            } finally {
+              await leastPrivilegeApplication.close();
+            }
           }
 
           const withoutContext = await restricted.db.transaction(
@@ -709,6 +732,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               sql.raw(`revoke execute on function ${procedure} from ${role}`),
             );
           }
+          await admin.db.execute(
+            sql.raw(`revoke connect on database ${database} from ${role}`),
+          );
           await admin.db.execute(
             sql.raw(`revoke usage on schema public from ${role}`),
           );

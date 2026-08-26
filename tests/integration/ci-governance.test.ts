@@ -68,4 +68,28 @@ describe("CI reproducibility contract", () => {
     );
     expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
   });
+
+  it("declares every database URL used by the CI provision and live flows", async () => {
+    const contract = await readCiContract();
+
+    expect(contract.envExample).toContain("CVG_MIGRATION_DATABASE_URL=");
+    expect(contract.envExample).toContain("CVG_TEST_ADMIN_DATABASE_URL=");
+    expect(contract.envExample).toContain("CVG_REAL_E2E_DATABASE_URL=");
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
+
+  it("rejects documented database URLs that collapse migration and application roles", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      envExample: contract.envExample.replace(
+        "CVG_TEST_DATABASE_URL=postgresql://cvg_app:cvg_app@localhost:5432/cvg",
+        "CVG_TEST_DATABASE_URL=postgresql://cvg:cvg@localhost:5432/cvg",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /distinct .* roles/i,
+    );
+  });
 });

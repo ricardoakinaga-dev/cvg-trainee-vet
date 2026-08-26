@@ -1,4 +1,5 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile, stat } from "node:fs/promises";
+import { EventEmitter } from "node:events";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
@@ -209,7 +210,7 @@ describe("migration governance", () => {
       'CREATE POLICY "audit_entries_insert_with_scoped_context"',
     );
     expect(provisioner).toContain(
-      'REVOKE UPDATE, DELETE ON TABLE "authoring_draft_idempotency"',
+      'REVOKE UPDATE, DELETE ON TABLE public."authoring_draft_idempotency"',
     );
     expect(repository).toContain("idempotency record identity mismatch");
     expect(repository).toContain("db.transaction(async (transaction)");
@@ -272,7 +273,7 @@ describe("migration governance", () => {
     expect(repository).not.toContain("participantId");
     expect(learningState).toContain("tx.insert(feedbackTicketHistory)");
     expect(provisioning).toContain(
-      'REVOKE UPDATE, DELETE ON TABLE "feedback_ticket_history"',
+      'REVOKE UPDATE, DELETE ON TABLE public."feedback_ticket_history"',
     );
   });
 
@@ -660,10 +661,10 @@ describe("migration governance", () => {
     } as const;
 
     expect(provisioning).toContain(
-      "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM ${appIdentifier};",
+      "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM ${appIdentifier}, ${adminIdentifier};",
     );
     expect(provisioning).toContain(
-      "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM ${appIdentifier};",
+      "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM ${appIdentifier}, ${adminIdentifier};",
     );
     expect(provisioning).toContain(
       "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM PUBLIC;",
@@ -743,9 +744,192 @@ describe("migration governance", () => {
     });
     for (const [table, privileges] of Object.entries(applicationPrivileges)) {
       expect(provisionedSql).toContain(
-        `GRANT ${privileges.join(", ")} ON TABLE "${table}" TO "cvg_app";`,
+        `GRANT ${privileges.join(", ")} ON TABLE public."${table}" TO "cvg_app";`,
       );
     }
     expect(provisionedSql).not.toContain('"knowledge_documents"');
+  });
+
+  it("hardens provisioner connection handling and privilege transaction boundaries", async () => {
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const provisioning = await readFile(provisioningPath, "utf8");
+    const {
+      connectionParts,
+      pgpassEntry,
+      postgresProcessEnvironment,
+      postgresProvisionArgs,
+      roleProvisionSql,
+    } = await import("../../scripts/provision-ci-postgres.mjs");
+    const migration = connectionParts(
+      "CVG_MIGRATION_DATABASE_URL",
+      "postgresql://cvg:synthetic%3Asecret@db.example:6543/cvg?sslmode=require",
+    );
+    const args = postgresProvisionArgs(migration, "/tmp/cvg-provision.sql");
+    expect(args).not.toContain(
+      "postgresql://cvg:synthetic%3Asecret@db.example:6543/cvg?sslmode=require",
+    );
+    expect(args).not.toContain("synthetic:secret");
+    expect(args).not.toContain("select 1");
+    expect(pgpassEntry(migration)).toBe(
+      "db.example:6543:cvg:cvg:synthetic\\:secret",
+    );
+    expect(args).toContain("cvg");
+    expect(args).toContain("db.example");
+    expect(args).toContain("6543");
+
+    const childEnvironment = postgresProcessEnvironment(
+      {
+        PATH: "/usr/bin",
+        DATABASE_URL: "postgresql://runtime:secret@db.example/cvg",
+        CVG_MIGRATION_DATABASE_URL:
+          "postgresql://cvg:synthetic%3Asecret@db.example/cvg",
+        PGPASSWORD: "old",
+        PGHOSTADDR: "192.0.2.10",
+        PGSSLKEY: "/tmp/sensitive-client-key",
+        PGSERVICE: "unsafe-service",
+        AWS_SECRET_ACCESS_KEY: "synthetic-secret",
+      },
+      migration,
+      "/tmp/cvg-pgpass-test",
+    );
+    expect(childEnvironment).toMatchObject({
+      PATH: "/usr/bin",
+      PGPASSFILE: "/tmp/cvg-pgpass-test",
+      PGSSLMODE: "require",
+    });
+    expect(childEnvironment).not.toHaveProperty("DATABASE_URL");
+    expect(childEnvironment).not.toHaveProperty("CVG_MIGRATION_DATABASE_URL");
+    expect(childEnvironment).not.toHaveProperty("PGPASSWORD");
+    expect(childEnvironment).not.toHaveProperty("PGHOSTADDR");
+    expect(childEnvironment).not.toHaveProperty("PGSSLKEY");
+    expect(childEnvironment).not.toHaveProperty("PGSERVICE");
+    expect(childEnvironment).not.toHaveProperty("AWS_SECRET_ACCESS_KEY");
+
+    const sql = roleProvisionSql({
+      migration: { role: "cvg", password: "synthetic", database: "cvg" },
+      application: {
+        role: "cvg_app",
+        password: "synthetic",
+        database: "cvg",
+      },
+      admin: {
+        role: "cvg_test_admin",
+        password: "synthetic",
+        database: "cvg",
+      },
+    });
+    expect(sql).toMatch(/^BEGIN;/u);
+    expect(sql).toMatch(/COMMIT;\s*$/u);
+    expect(sql).toContain(
+      'REVOKE ALL PRIVILEGES ON DATABASE "cvg" FROM PUBLIC;',
+    );
+    expect(sql).toContain(
+      "REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;",
+    );
+    expect(sql).toContain(
+      'ALTER DEFAULT PRIVILEGES FOR ROLE "cvg" IN SCHEMA public REVOKE ALL PRIVILEGES ON FUNCTIONS FROM PUBLIC;',
+    );
+    expect(sql).toContain("NOREPLICATION");
+    expect(sql).toContain(
+      'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public."accounts" TO "cvg_app";',
+    );
+    expect(sql).toContain(
+      'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "cvg_test_admin" WITH GRANT OPTION;',
+    );
+    expect(sql).toContain(
+      'GRANT CONNECT ON DATABASE "cvg" TO "cvg_test_admin" WITH GRANT OPTION;',
+    );
+    expect(sql).not.toContain('ON TABLE "accounts" TO "cvg_app"');
+    expect(sql).not.toMatch(/TO "cvg_app" WITH GRANT OPTION/u);
+    expect(provisioning).toContain("mkdtemp");
+    expect(provisioning).toContain("PGPASSFILE");
+    expect(provisioning).toContain('"--file"');
+    expect(provisioning).not.toContain('"--command"');
+  });
+
+  it("keeps the actual psql invocation secret-free and cleans temporary files", async () => {
+    const { provisionCiPostgres } =
+      await import("../../scripts/provision-ci-postgres.mjs");
+    const child = new EventEmitter();
+    const calls: unknown[][] = [];
+    const environment = {
+      PATH: "/usr/bin",
+      CVG_MIGRATION_DATABASE_URL: "postgresql://cvg:move@db.example:6543/cvg",
+      CVG_TEST_DATABASE_URL: "postgresql://cvg_app:app@db.example:6543/cvg",
+      CVG_TEST_ADMIN_DATABASE_URL:
+        "postgresql://cvg_test_admin:admin@db.example:6543/cvg",
+      DATABASE_URL: "postgresql://runtime:run@db.example:6543/cvg",
+    };
+
+    const returnedChild = await provisionCiPostgres(environment, (...args) => {
+      calls.push(args);
+      return child;
+    });
+    expect(returnedChild).toBe(child);
+    expect(calls).toHaveLength(1);
+    const [command, rawArgs, rawOptions] = calls[0] ?? [];
+    const args = rawArgs as string[];
+    const options = rawOptions as {
+      readonly env: Record<string, string>;
+    };
+    expect(command).toBe("psql");
+    expect(args).not.toContain(environment.CVG_MIGRATION_DATABASE_URL);
+    expect(args).not.toContain("move");
+    expect(args).not.toContain("app");
+    expect(args).not.toContain("admin");
+    expect(args).toContain("--file");
+    expect(options.env).toMatchObject({
+      PATH: "/usr/bin",
+      PGPASSFILE: expect.any(String),
+    });
+    expect(options.env).not.toHaveProperty("CVG_MIGRATION_DATABASE_URL");
+    expect(options.env).not.toHaveProperty("CVG_TEST_DATABASE_URL");
+    expect(options.env).not.toHaveProperty("CVG_TEST_ADMIN_DATABASE_URL");
+    expect(options.env).not.toHaveProperty("DATABASE_URL");
+    expect(options.env).not.toHaveProperty("PGPASSWORD");
+
+    const pgpassFile = options.env.PGPASSFILE;
+    const fileIndex = args.indexOf("--file");
+    const sqlFile = args[fileIndex + 1];
+    expect(sqlFile).toBeDefined();
+    expect((await stat(pgpassFile)).mode & 0o777).toBe(0o600);
+    expect((await stat(sqlFile!)).mode & 0o777).toBe(0o600);
+    expect(await readFile(pgpassFile, "utf8")).toContain(
+      "db.example:6543:cvg:cvg:move",
+    );
+    expect(await readFile(sqlFile!, "utf8")).toContain("cvg_app");
+
+    child.emit("close", 0, null);
+    await expect
+      .poll(async () => {
+        const results = await Promise.allSettled([
+          access(pgpassFile),
+          access(sqlFile!),
+        ]);
+        return results.every(({ status }) => status === "rejected");
+      })
+      .toBe(true);
+  });
+
+  it("keeps the runtime least-privilege health guard aligned with the matrix", async () => {
+    const databasePath = fileURLToPath(
+      new URL("../../packages/persistence/src/database.ts", import.meta.url),
+    );
+    const databaseSource = await readFile(databasePath, "utf8");
+
+    expect(databaseSource).toContain('rolreplication as "canReplicate"');
+    expect(databaseSource).toContain(
+      "has_database_privilege(current_user, current_database(), 'CREATE') as \"canCreateInDatabase\"",
+    );
+    expect(databaseSource).toContain(
+      "has_database_privilege(current_user, current_database(), 'TEMPORARY') as \"canUseTemporaryTables\"",
+    );
+    expect(databaseSource).toContain(
+      "has_schema_privilege(current_user, 'public', 'USAGE') as \"canUsePublicSchema\"",
+    );
+    expect(databaseSource).toContain("role.canReplicate");
+    expect(databaseSource).toContain("role.canUseTemporaryTables");
   });
 });
