@@ -371,6 +371,10 @@ a aprovação clínica, piloto ou release produtivo.
   51/51, build 12/12, E2E 32/32, audit high e diff-check passaram. Euclid
   retornou `CONDITIONAL PASS`, sem P0/P1; o P2 documental foi reconciliado em
   `0549`, backlog, runtime state e traceability.
+- [x] (2026-08-26T13:31:40-03:00) Fechar o control plane no commit documental
+  `c272f1f` e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`
+  em worktree limpo. O runtime retorna `WAITING_HUMAN_APPROVAL` e
+  `JOURNEY-056` continua aguardando a escolha A/B.
 - [ ] (aguardando Ricardo após a task autônoma) Aprovar a forma contratual de
   `JOURNEY-056` e abrir o BUILD bounded correspondente; não iniciar código,
   migration ou UX de jornada antes da decisão. Production owners/grants,

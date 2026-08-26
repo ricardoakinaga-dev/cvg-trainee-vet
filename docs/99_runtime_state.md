@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechar `OPS-061-RETRY-008` nos commits técnicos `df91513`/`2a95f5c`: corrigir `Retry-After`, aplicar precedência fail-closed entre falhas irmãs, limitar o bootstrap a cinco tentativas, proteger a geração concorrente do worker e comprovar RED → GREEN → REFACTOR. A evidência final passou focal `5/30`, regressão `143/743` com `38` testes skipped, cobertura `84,47%/80,35%/86,62%/85,24%`, build `12/12`, E2E `32/32`, audit high e gates estáticos; Euclid retornou `CONDITIONAL PASS`, sem P0/P1. Auditoria `0549` e manifesto foram reconciliados. `JOURNEY-056` permanece sem alteração.
+- last_completed_action: fechar `OPS-061-RETRY-008` nos commits técnicos `df91513`/`2a95f5c` e no control plane documental `c272f1f`: corrigir `Retry-After`, aplicar precedência fail-closed entre falhas irmãs, limitar o bootstrap a cinco tentativas, proteger a geração concorrente do worker e comprovar RED → GREEN → REFACTOR. A evidência final passou focal `5/30`, regressão `143/743` com `38` testes skipped, cobertura `84,47%/80,35%/86,62%/85,24%`, build `12/12`, E2E `32/32`, audit high e gates estáticos; Euclid retornou `CONDITIONAL PASS`, sem P0/P1. Auditoria `0549`, manifesto e release traceability foram reconciliados; o gate limpo passou. `JOURNEY-056` permanece sem alteração.
 - next_action: aguardar a decisão humana A/B de `JOURNEY-056`; depois criar/validar somente o contrato escolhido. Não iniciar código, migration ou UX de jornada antes da decisão.
 
 ## BLOQUEIOS
@@ -32,13 +32,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T13:25:32-0300
+- last_update: 2026-08-26T13:31:40-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: consultar `git rev-parse HEAD`; os commits técnicos de `OPS-061-READINESS-006` estão fechados localmente, o fechamento documental foi registrado e não houve push/deploy
+- head: `c272f1f` (`docs: close bounded qdrant retry audit`); os commits técnicos e o fechamento documental de `OPS-061-RETRY-008` estão fechados localmente e não houve push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: documentação final de `OPS-061-RETRY-008` em fechamento após os commits técnicos `df91513`/`2a95f5c`; sem migration aplicada, push ou deploy
+- worktree: limpo após o commit documental `c272f1f` e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2`, `OPS-061-GRANTS-004` no commit `489a336` e `OPS-061-GRANTS-005` no commit `400e228`: o contrato exige runtime na role de aplicação, fixture real E2E na role admin, compara as URLs job-level e lê o override somente do step `Apply migrations`. O reconhecimento atual confirmou, contra `0802`/`0113`, que readiness deve ignorar falha do Qdrant e que a saúde detalhada já representa `DEGRADED`; há um achado separado de identidade client-supplied em learning-state ainda não confirmado no contrato/persistência. Focal anterior `16/16`, `pnpm verify` `141/723` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E sintético `32/32`, audit high e diff-check passaram. A crítica independente pré-fix confirmou os dois P2 de CI sem P0/P1; a tentativa pós-fix não retornou veredito e não é tratada como aceite. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`/`0546`.
 

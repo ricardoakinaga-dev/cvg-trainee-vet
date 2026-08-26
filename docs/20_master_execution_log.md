@@ -42,6 +42,52 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Gate documental final de `OPS-061-RETRY-008`
+
+### TIMESTAMP
+
+2026-08-26T13:31:40-0300
+
+### ENGINE
+
+RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — retry bounded e classificação do índice opcional
+
+### TASK
+
+Registrar o fechamento do control plane após o commit documental.
+
+### ACTION
+
+O commit documental `c272f1f` consolidou a auditoria `0549`, o backlog, o
+runtime state, o plano e o manifesto com os dois commits técnicos
+`df91513`/`2a95f5c`, a revisão Euclid e os gaps sem claim externo.
+
+### RESULT
+
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
+limpo, validando commits alcançáveis e paths rastreados.
+
+### DECISIONS
+
+O runtime retorna a `WAITING_HUMAN_APPROVAL`. O próximo passo depende da
+escolha A/B de `JOURNEY-056`; não há push, deploy, migration ou release.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A ou B e então validar o contrato correspondente.
+
 ## 2026-08-26 — Fechamento local de `OPS-061-RETRY-008`
 
 ### TIMESTAMP
