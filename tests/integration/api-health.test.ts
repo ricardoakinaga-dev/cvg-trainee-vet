@@ -6,6 +6,32 @@ const runLiveHealthTest = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 const qdrantUrl = process.env.CVG_TEST_QDRANT_URL;
 
+type DependencyHealthBody = {
+  data: {
+    status: string;
+    dependencies: Record<string, string>;
+  };
+};
+
+async function waitForQdrantHealth(
+  baseUrl: string,
+): Promise<{ response: Response; body: DependencyHealthBody }> {
+  let response: Response | undefined;
+  let body: DependencyHealthBody | undefined;
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    response = await fetch(`${baseUrl}/health/dependencies`);
+    body = (await response.json()) as DependencyHealthBody;
+    if (body.data.dependencies.qdrant === "UP") {
+      return { response, body };
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, 100));
+  }
+  if (response === undefined || body === undefined) {
+    throw new Error("dependency health did not produce a response");
+  }
+  return { response, body };
+}
+
 describe.skipIf(
   !runLiveHealthTest || databaseUrl === undefined || qdrantUrl === undefined,
 )("API live health endpoints", () => {
@@ -39,13 +65,8 @@ describe.skipIf(
       if (address === null || typeof address === "string") return;
       const baseUrl = `http://127.0.0.1:${address.port}`;
       const ready = await fetch(`${baseUrl}/health/ready`);
-      const dependencies = await fetch(`${baseUrl}/health/dependencies`);
-      const body = (await dependencies.json()) as {
-        data: {
-          status: string;
-          dependencies: Record<string, string>;
-        };
-      };
+      const { response: dependencies, body } =
+        await waitForQdrantHealth(baseUrl);
 
       expect(ready.status).toBe(200);
       expect(dependencies.status).toBe(200);

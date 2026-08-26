@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { loadRuntimeConfig } from "@cvg/config";
 
 import {
+  createCoreReadinessHealthcheck,
   createDependencyStatus,
   createIntegrationHealthcheck,
   createIntegrationInitializer,
@@ -65,7 +66,7 @@ describe("server integration health composition", () => {
     await expect(healthcheck()).resolves.toBeUndefined();
   });
 
-  it("fails readiness when a dependency healthcheck fails", async () => {
+  it("fails aggregate dependency health when Qdrant healthcheck fails", async () => {
     const healthcheck = createIntegrationHealthcheck(async () => undefined, {
       healthcheck: vi.fn(async () => {
         throw new Error("qdrant down");
@@ -73,6 +74,44 @@ describe("server integration health composition", () => {
     });
 
     await expect(healthcheck()).rejects.toThrow("qdrant down");
+  });
+
+  it("keeps core readiness independent from a degraded Qdrant dependency", async () => {
+    const databaseHealthcheck = vi.fn(async () => undefined);
+    const vectorHealthcheck = vi.fn(async () => {
+      throw new Error("qdrant down");
+    });
+    const healthcheck = createIntegrationHealthcheck(databaseHealthcheck, {
+      healthcheck: vectorHealthcheck,
+    });
+    const readiness = createCoreReadinessHealthcheck(databaseHealthcheck);
+
+    await expect(readiness()).resolves.toBeUndefined();
+    expect(vectorHealthcheck).not.toHaveBeenCalled();
+    await expect(healthcheck()).rejects.toThrow("qdrant down");
+    expect(databaseHealthcheck).toHaveBeenCalledTimes(2);
+    expect(vectorHealthcheck).toHaveBeenCalledOnce();
+  });
+
+  it("reports Qdrant failure as degraded without making PostgreSQL not ready", async () => {
+    const status = await createDependencyStatus(
+      async () => undefined,
+      {
+        healthcheck: async () => {
+          throw new Error("qdrant down");
+        },
+      },
+      false,
+    )();
+
+    expect(status).toEqual({
+      status: "DEGRADED",
+      dependencies: {
+        postgres: "UP",
+        qdrant: "DOWN",
+        ai: "DISABLED",
+      },
+    });
   });
 
   it("initializes an enabled Qdrant collection exactly through its adapter", async () => {

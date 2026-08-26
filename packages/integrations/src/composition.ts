@@ -16,6 +16,7 @@ export type ServerIntegrationSet = Readonly<{
   embedding: EmbeddingPort | null;
   ai: AiTextPort | null;
   initialize: () => Promise<void>;
+  readiness: () => Promise<void>;
   healthcheck: () => Promise<void>;
   dependencyStatus: () => Promise<DependencyStatus>;
   close: () => Promise<void>;
@@ -45,6 +46,14 @@ export function createIntegrationHealthcheck(
   return async (): Promise<void> => {
     await databaseHealthcheck();
     if (vectorStore !== null) await vectorStore.healthcheck();
+  };
+}
+
+export function createCoreReadinessHealthcheck(
+  databaseHealthcheck: () => Promise<void>,
+): () => Promise<void> {
+  return async (): Promise<void> => {
+    await databaseHealthcheck();
   };
 }
 
@@ -128,6 +137,7 @@ export function createServerIntegrations(
       database.healthcheck,
       vectorStore,
     );
+    const readiness = createCoreReadinessHealthcheck(database.healthcheck);
     const dependencyStatus = createDependencyStatus(
       database.healthcheck,
       vectorStore,
@@ -141,6 +151,7 @@ export function createServerIntegrations(
       embedding,
       ai,
       initialize,
+      readiness,
       healthcheck,
       dependencyStatus,
       close: () => database.close(),

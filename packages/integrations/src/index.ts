@@ -14,6 +14,7 @@ export type {
 } from "./ai.js";
 
 export {
+  createCoreReadinessHealthcheck,
   createDependencyStatus,
   createIntegrationHealthcheck,
   createIntegrationInitializer,

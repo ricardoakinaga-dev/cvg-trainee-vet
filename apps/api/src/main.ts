@@ -396,7 +396,7 @@ export function createApiRuntime(
     startAttempt: (command) => startAttempt(command, attemptDependencies),
     saveAnswer: (command) => saveAnswer(command, answerDependencies),
     submitAttempt: (command) => submitAttempt(command, attemptDependencies),
-    healthcheck: integrations.healthcheck,
+    healthcheck: integrations.readiness,
     dependencyStatus: integrations.dependencyStatus,
   };
   const server = createNodeApiServer(apiDependencies, {
@@ -405,6 +405,31 @@ export function createApiRuntime(
     ...(webOrigins === undefined ? {} : { allowedOrigins: webOrigins }),
     rateLimiter,
   });
+  let closed = false;
+  let initializationRetryTimer: ReturnType<typeof setTimeout> | undefined;
+  let initializationInFlight: Promise<void> | undefined;
+  const scheduleIntegrationInitializationRetry = (): void => {
+    if (closed || initializationRetryTimer !== undefined) return;
+    initializationRetryTimer = setTimeout(() => {
+      initializationRetryTimer = undefined;
+      startAssistiveIntegrationInitialization();
+    }, 5_000);
+    initializationRetryTimer.unref?.();
+  };
+  const startAssistiveIntegrationInitialization = (): void => {
+    if (closed || initializationInFlight !== undefined) return;
+    initializationInFlight = integrations
+      .initialize()
+      .catch(() => {
+        observability.logger.warn("integration.initialization.failed", {
+          fields: { dependency: "qdrant", retryable: true },
+        });
+        scheduleIntegrationInitializationRetry();
+      })
+      .finally(() => {
+        initializationInFlight = undefined;
+      });
+  };
 
   return Object.freeze({
     service: "api" as const,
@@ -412,11 +437,19 @@ export function createApiRuntime(
     integrations,
     server,
     listen: async () => {
-      await integrations.initialize();
       await server.listen();
+      startAssistiveIntegrationInitialization();
     },
     close: async () => {
+      closed = true;
+      if (initializationRetryTimer !== undefined) {
+        clearTimeout(initializationRetryTimer);
+        initializationRetryTimer = undefined;
+      }
       await server.close();
+      if (initializationInFlight !== undefined) {
+        await initializationInFlight;
+      }
       await integrations.close();
     },
   });
