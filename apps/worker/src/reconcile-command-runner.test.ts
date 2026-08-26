@@ -6,10 +6,16 @@ describe("reconcile command runner", () => {
   it("waits for optional initialization before reconciling", async () => {
     const events: string[] = [];
     const result = { expected: 1, upserted: 1, removed: 0 } as const;
+    let releaseInitialization: (() => void) | undefined;
+    const initialization = new Promise<void>((resolve) => {
+      releaseInitialization = resolve;
+    });
     const initialize = vi.fn(
       async (options?: { waitForOptionalDependencies?: boolean }) => {
         events.push("initialize");
         expect(options).toEqual({ waitForOptionalDependencies: true });
+        await initialization;
+        events.push("initialized");
       },
     );
     const reconcile = vi.fn(async () => {
@@ -17,9 +23,12 @@ describe("reconcile command runner", () => {
       return result;
     });
 
-    await expect(
-      runReconcileCommand({ initialize, reconcile }),
-    ).resolves.toEqual(result);
-    expect(events).toEqual(["initialize", "reconcile"]);
+    const command = runReconcileCommand({ initialize, reconcile });
+    await Promise.resolve();
+    expect(reconcile).not.toHaveBeenCalled();
+    releaseInitialization?.();
+
+    await expect(command).resolves.toEqual(result);
+    expect(events).toEqual(["initialize", "initialized", "reconcile"]);
   });
 });

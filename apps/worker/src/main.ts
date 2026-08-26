@@ -73,10 +73,12 @@ export function createWorkerRuntime(
     }, 5_000);
     initializationRetryTimer.unref?.();
   };
-  const startIntegrationInitialization = (): void => {
-    if (stopped || initializationInFlight !== undefined) return;
-    initializationInFlight = integrations
-      .initialize()
+  const startIntegrationInitialization = (): Promise<void> => {
+    if (stopped) return Promise.resolve();
+    if (initializationInFlight !== undefined) return initializationInFlight;
+    const attempt = integrations.initialize();
+    initializationInFlight = attempt;
+    void attempt
       .catch(() => {
         observability.logger.warn("integration.initialization.failed", {
           fields: { dependency: "qdrant", retryable: true },
@@ -84,17 +86,20 @@ export function createWorkerRuntime(
         scheduleIntegrationInitializationRetry();
       })
       .finally(() => {
-        initializationInFlight = undefined;
+        if (initializationInFlight === attempt) {
+          initializationInFlight = undefined;
+        }
       });
+    return attempt;
   };
   const initialize = async (
     options: WorkerInitializationOptions = {},
   ): Promise<void> => {
     if (options.waitForOptionalDependencies === true) {
-      await integrations.initialize();
+      await startIntegrationInitialization();
       return;
     }
-    startIntegrationInitialization();
+    void startIntegrationInitialization();
   };
   const processOnce = (options: WorkerLoopOptions = {}) =>
     processOutboxOnce(outbox, handlers, {
@@ -130,7 +135,7 @@ export function createWorkerRuntime(
         initializationRetryTimer = undefined;
       }
       if (initializationInFlight !== undefined) {
-        await initializationInFlight;
+        await initializationInFlight.catch(() => undefined);
       }
       await integrations.close();
     },
