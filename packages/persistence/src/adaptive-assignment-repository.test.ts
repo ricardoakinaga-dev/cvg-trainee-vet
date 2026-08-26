@@ -75,6 +75,7 @@ type ActivityRow = {
   readonly moduleId: string | null;
   readonly status: string;
   readonly hasPublishedContent: boolean;
+  readonly hasMixedContent?: boolean;
 };
 type ActivityAssignmentRow = {
   readonly participantId: string;
@@ -212,7 +213,11 @@ function createFakeDatabase(
                 left.moduleId.localeCompare(right.moduleId),
               )
             : source === learningActivities
-              ? activities.filter((activity) => activity.hasPublishedContent)
+              ? activities.filter(
+                  (activity) =>
+                    activity.hasPublishedContent &&
+                    activity.hasMixedContent !== true,
+                )
               : [],
         limit: async () =>
           source === diagnosticResults
@@ -434,6 +439,13 @@ describe("adaptive assignment persistence", () => {
           moduleId: "M01",
           status: "PUBLISHED",
           hasPublishedContent: false,
+        },
+        {
+          id: "activity-m01-mixed",
+          moduleId: "M01",
+          status: "PUBLISHED",
+          hasPublishedContent: true,
+          hasMixedContent: true,
         },
       ],
     });

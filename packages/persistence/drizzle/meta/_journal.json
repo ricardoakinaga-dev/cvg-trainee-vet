@@ -351,6 +351,13 @@
       "when": 1787722000000,
       "tag": "0049_learning_activity_assignment_integrity_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1787722600000,
+      "tag": "0050_learning_assignment_status_integrity_rls",
+      "breakpoints": true
     }
   ]
 }

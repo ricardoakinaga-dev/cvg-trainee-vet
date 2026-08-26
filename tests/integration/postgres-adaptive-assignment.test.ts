@@ -192,6 +192,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const unpublishedActivityId = randomUUID();
       const unpublishedContentVersionId = randomUUID();
       const unpublishedContentId = randomUUID();
+      const mixedPublishedContentVersionId = randomUUID();
+      const mixedPublishedContentId = randomUUID();
       const invitationId = randomUUID();
       const completedAt = "2026-08-24T12:00:00.000Z";
 
@@ -308,11 +310,34 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           participantText: "Não deve ser atribuído.",
           responseMode: "TEXT",
         });
+        await admin.db.insert(contentVersions).values({
+          id: mixedPublishedContentVersionId,
+          contentId: mixedPublishedContentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: "Item publicado em atividade mista",
+          participantText: "Não deve liberar atividade mista.",
+          responseMode: "TEXT",
+        });
         await admin.db.insert(learningActivityItems).values({
           activityId: unpublishedActivityId,
           contentVersionId: unpublishedContentVersionId,
           ordinal: 1,
         });
+        await admin.db.insert(learningActivityItems).values({
+          activityId: unpublishedActivityId,
+          contentVersionId: mixedPublishedContentVersionId,
+          ordinal: 2,
+        });
+        await expect(
+          repository.materializeCurriculumAssignments({
+            diagnosticResultId: resultId,
+            scopeId,
+            moduleIds: ["M01"],
+          }),
+        ).resolves.toBeDefined();
         await expect(
           database.db.transaction(async (tx) => {
             await setDatabaseSecurityContext(tx, { participantId, scopeId });
@@ -347,6 +372,27 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         expect(integrityRows).toEqual([
           { valid: true, mismatchedStatus: false },
         ]);
+        await admin.db
+          .update(learningAssignments)
+          .set({ status: "NAO_ATRIBUIDO" })
+          .where(eq(learningAssignments.id, learningAssignmentId));
+        const unassignedRows = await database.db.transaction(async (tx) => {
+          await setDatabaseSecurityContext(tx, { participantId, scopeId });
+          return tx.execute(sql`
+            select cvg_learning_activity_assignment_write_allowed(
+              ${activityId}::uuid,
+              ${learningAssignmentId}::uuid,
+              ${participantId}::uuid,
+              ${scopeId}::text,
+              'ATRIBUIDO'::text
+            ) as "valid"
+          `);
+        });
+        expect(unassignedRows).toEqual([{ valid: false }]);
+        await admin.db
+          .update(learningAssignments)
+          .set({ status: "ATRIBUIDO" })
+          .where(eq(learningAssignments.id, learningAssignmentId));
         expect(persistedAssignments[0]?.sourceDiagnosticResultId).toBe(
           resultId,
         );
@@ -389,11 +435,163 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             ),
           );
         await admin.db
+          .delete(learningActivityItems)
+          .where(
+            eq(
+              learningActivityItems.contentVersionId,
+              mixedPublishedContentVersionId,
+            ),
+          );
+        await admin.db
           .delete(contentVersions)
           .where(eq(contentVersions.id, unpublishedContentVersionId));
         await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, mixedPublishedContentVersionId));
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, unpublishedActivityId));
+        await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, contentVersionId));
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
+        await admin.db.delete(accounts).where(eq(accounts.id, participantId));
+        await closeLivePostgresHarness(harness);
+      }
+    });
+
+    it("serializes concurrent materialization without duplicate bindings", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
+      const participantId = randomUUID();
+      const scopeId = randomUUID();
+      const resultId = randomUUID();
+      const activityId = randomUUID();
+      const contentVersionId = randomUUID();
+      const contentId = randomUUID();
+      const invitationId = randomUUID();
+
+      try {
+        await admin.db.insert(accounts).values({
+          id: participantId,
+          professionalEmail: `adaptive-concurrent-${participantId}@example.invalid`,
+          status: "ACTIVE",
+        });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: "c".repeat(64),
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-24T12:00:00.000Z"),
+          acceptedAt: new Date("2026-08-24T11:00:00.000Z"),
+          createdBy: participantId,
+        });
+        await admin.db.insert(learningActivities).values({
+          id: activityId,
+          scopeId,
+          moduleId: "M01",
+          slug: `adaptive-concurrent-${activityId}`,
+          title: "Atividade concorrente sintética",
+          status: "PUBLISHED",
+        });
+        await admin.db.insert(contentVersions).values({
+          id: contentVersionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: "Item concorrente sintético",
+          participantText: "Escolha a próxima ação segura.",
+          responseMode: "TEXT",
+        });
+        await admin.db.insert(learningActivityItems).values({
+          activityId,
+          contentVersionId,
+          ordinal: 1,
+        });
+        const diagnosticRepository = createDiagnosticResultRepository(
+          database.db,
+          () => resultId,
+        );
+        await diagnosticRepository.saveDiagnosticResult({
+          participantId,
+          scopeId,
+          completedAt: "2026-08-24T12:00:00.000Z",
+          result: diagnosticResult,
+        });
+        const firstRepository = createAdaptiveAssignmentRepository(
+          database.db,
+          () => randomUUID(),
+        );
+        const secondRepository = createAdaptiveAssignmentRepository(
+          database.db,
+          () => randomUUID(),
+        );
+        const [first, second] = await Promise.all([
+          firstRepository.materializeCurriculumAssignments({
+            diagnosticResultId: resultId,
+            scopeId,
+            moduleIds: ["M01"],
+          }),
+          secondRepository.materializeCurriculumAssignments({
+            diagnosticResultId: resultId,
+            scopeId,
+            moduleIds: ["M01"],
+          }),
+        ]);
+        const persistedAssignments = await admin.db
+          .select()
+          .from(learningAssignments)
+          .where(eq(learningAssignments.participantId, participantId));
+        const persistedActivityAssignments = await admin.db
+          .select()
+          .from(activityAssignments)
+          .where(eq(activityAssignments.participantId, participantId));
+
+        expect(first.assignments[0]?.state.assignmentId).toBe(
+          second.assignments[0]?.state.assignmentId,
+        );
+        expect(persistedAssignments).toHaveLength(1);
+        expect(persistedActivityAssignments).toEqual([
+          expect.objectContaining({
+            activityId,
+            participantId,
+            learningAssignmentId: first.assignments[0]?.state.assignmentId,
+            status: "ATRIBUIDO",
+          }),
+        ]);
+      } finally {
+        await admin.db
+          .delete(activityAssignments)
+          .where(eq(activityAssignments.participantId, participantId));
+        await admin.db
+          .delete(learningAssignments)
+          .where(eq(learningAssignments.participantId, participantId));
+        await admin.db
+          .delete(diagnosticResults)
+          .where(
+            and(
+              eq(diagnosticResults.id, resultId),
+              eq(diagnosticResults.participantId, participantId),
+            ),
+          );
+        await admin.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.activityId, activityId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, activityId));
         await admin.db
           .delete(contentVersions)
           .where(eq(contentVersions.id, contentVersionId));

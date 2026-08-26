@@ -204,6 +204,17 @@ async function findMappedActivities(
         eq(learningActivities.scopeId, scopeId),
         eq(learningActivities.status, "PUBLISHED"),
         inArray(learningActivities.moduleId, moduleIds),
+        sql`not exists (
+          select 1
+          from "learning_activity_items" as "mapped_item"
+          inner join "content_versions" as "mapped_version"
+            on "mapped_version"."id" = "mapped_item"."content_version_id"
+          where "mapped_item"."activity_id" = ${learningActivities.id}
+            and (
+              "mapped_version"."scope_id" is distinct from "learning_activities"."scope_id"
+              or "mapped_version"."status" is distinct from 'PUBLICADO'
+            )
+        )`,
       ),
     )
     .orderBy(asc(learningActivities.moduleId), asc(learningActivities.id));

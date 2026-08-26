@@ -598,4 +598,21 @@ describe("migration governance", () => {
       "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
     );
   });
+
+  it("keeps unassigned curriculum states out of adaptive activity bindings", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0050_learning_assignment_status_integrity_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_learning_activity_assignment_write_allowed",
+    );
+    expect(migration).toContain("assignment.status IN (");
+    expect(migration).toContain("'ATRIBUIDO'");
+    expect(migration).not.toContain("'NAO_ATRIBUIDO'");
+  });
 });
