@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: consolidar `FEEDBACK-055`/`LIVE-056` nos commits `16af141` e `b66acc1`, provar o runtime PostgreSQL descartável, reexecutar os gates completos, registrar a decisão de contrato pendente e versionar o control plane com release traceability verde.
+- last_completed_action: consolidar `FEEDBACK-055`/`LIVE-056`, provar o runtime PostgreSQL descartável, fechar no commit `16caccc82ffc519b60a68e1a02850d40909737e1` o E2E real browser→web→API→PostgreSQL com oracle de persistência e cleanup verificável, reexecutar a suíte completa e registrar a evidência `0541` com traceability.
 - next_action: após decisão humana, registrar e abrir somente uma fatia bounded: `JOURNEY-056` como sessão diagnóstica pública própria (recomendado) ou como atividade especial; `FEEDBACK-057` permanece sem contrato executável.
 
 ## BLOQUEIOS
 
-- blockers: a prova PostgreSQL descartável local está concluída, mas não substitui ACL/owners/grants de produção, workflow remoto same-SHA, browser→API→PostgreSQL completo, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. O provisionamento usado na prova é específico de CI/teste: a role app é `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`, mas recebe DML amplo para exercitar o harness; least privilege/owners produtivos continuam gap. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
+- blockers: a prova PostgreSQL descartável e o caminho local browser→web→API→PostgreSQL estão concluídos em ambiente sintético, mas não substituem ACL/owners/grants de produção, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. O provisionamento usado na prova é específico de CI/teste: a role app é `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`, mas recebe DML amplo para exercitar o harness; least privilege/owners produtivos continuam gap. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T03:15:57-0300
+- last_update: 2026-08-26T04:17:00-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: implementação `b66acc125fac0e022ce5837c4eb14d1eca862401`; o commit documental de fechamento é o HEAD local atual e a evidência live foi executada após esse SHA técnico
+- head: implementação e E2E real verificados no commit `16caccc82ffc519b60a68e1a02850d40909737e1`; o commit documental desta rodada fecha o control plane após esse SHA técnico
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
 - worktree: limpo após o commit documental; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `pnpm verify` no SHA `b66acc1` passou com 141 arquivos/708 testes PASS, 29 arquivos/37 testes skipped; cobertura 84,36% statements, 80,35% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos passaram. Em banco recriado limpo, `pnpm test:integration:live` passou 35 arquivos/75 testes; roles observadas: app sem `SUPERUSER/BYPASSRLS`, admin com `BYPASSRLS` somente para o harness e migration owner. A evidência é local/sintética e não prova produção, browser→API→PostgreSQL, operação externa ou gate clínico.
+- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `pnpm verify` no baseline `b66acc1` passou com 141 arquivos/708 testes PASS, 29 arquivos/37 testes skipped; cobertura 84,36% statements, 80,35% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos passaram. No commit `16caccc82ffc519b60a68e1a02850d40909737e1`, `node --check`, Prettier, ESLint, `tsc -b` e o `pnpm verify` completo passaram com os mesmos 141/708 PASS, 29 arquivos/37 testes skipped, cobertura mínima, contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos/documentais. `CVG_RUN_REAL_E2E=true ... pnpm test:e2e --workers=1` passou 34/34 (32 cenários sintéticos + 2 cenários reais), incluindo build dos 12 workspaces. O cenário real observou health `READY`/PostgreSQL `UP`, convite, journey, atividade, start/save/submit, request IDs, nova sessão com tentativa versão 3 e oracle administrativo de tentativa/resposta/idempotência/outbox/auditoria. Cleanup independente confirmou zero dos artefatos mutáveis do fixture, arquivo temporário ausente e nenhum processo residual; auditoria append-only foi preservada. A evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico.
 
 ## REGRAS DE USO
 

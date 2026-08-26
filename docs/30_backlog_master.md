@@ -20,6 +20,8 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Decisão de próxima fatia 2026-08-26 (aguarda Ricardo):** a análise independente confirmou que `FEEDBACK-057` ainda não possui item próprio, contrato executável ou schema de resposta; `JOURNEY-056` requer uma escolha de produto que altera contrato, persistência, API e UX: (A) sessão diagnóstica pública própria, recomendada, com checkpoint/retomada, ou (B) atividade especial. Nenhum código foi iniciado nessa próxima fatia. O item aguarda aprovação antes de novo BUILD; produção, operação externa e aprovação clínica permanecem gates separados.
 
+**Evidência browser operacional 2026-08-26 (`LIVE-056`):** no commit `16caccc82ffc519b60a68e1a02850d40909737e1`, o comando real com Node `22.22.0`/pnpm `10.33.0` executou o build dos 12 workspaces e passou `34/34` E2E serial (`32` sintéticos + `2` reais). O cenário real observou browser→web/proxy `3100`→API `3101`→PostgreSQL `16.15`, health `READY`/`UP`, convite, atividade publicada, start/save/submit, request IDs, nova sessão com versão 3 e oracle administrativo de persistência. Cleanup verificável deixou zero artefatos mutáveis da fixture, preservou auditoria append-only, removeu o arquivo temporário e não deixou processos. Isso fecha a evidência local do caminho, não o fluxo diagnóstico→assignment nem produção; auditoria `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -525,19 +527,19 @@ backfill inventado.
 ### LIVE-056 — Prova live de isolamento contextual e integridade adaptativa
 
 - título: transformar a correção de isolamento em evidência runtime PostgreSQL reproduzível em banco descartável
-- descrição: aplicar migrations 0043–0050, provisionar roles distintas, executar a matriz live de feedback, journey/activity/progress/attempt, adaptive assignment e privilégios dos helpers
+- descrição: aplicar migrations 0043–0050, provisionar roles distintas, executar a matriz live de feedback, journey/activity/progress/attempt, adaptive assignment, privilégios dos helpers e o caminho browser→web→API→PostgreSQL em banco sintético
 - módulo: PostgreSQL / RLS / integridade adaptativa / segurança / CI
 - dependência: `FEEDBACK-055`; `ACTIVITY-RLS-047`; `RLS-FUNCTION-EXECUTE-051`; `DB-PRIVILEGE-032`; SPEC 0109/0111/0118
 - fase: BUILD/AUDIT — Phase 3–5 / hardening de segurança
 - risco: crítico — uma policy não exercitada pode parecer correta enquanto deixa atravessar participante, escopo, assignment, conteúdo ou helper privilegiado
 - impacto: alto
 - status: COMPLETED_WITH_GAPS
-- critério de pronto: banco PostgreSQL 16.15 recriado sem resíduos antes da execução; 51/51 migrations; app `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`; admin separado para cleanup; RLS/FORCE RLS nas tabelas sensíveis; helper `SECURITY DEFINER` privado; feedback próprio/cross-participant, writes proibidos, journey oracle, conteúdo misto/status inválido, replay e corrida concorrente cobertos
+- critério de pronto: banco PostgreSQL 16.15 recriado sem resíduos antes da execução; 51/51 migrations; app `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`; admin separado para cleanup; RLS/FORCE RLS nas tabelas sensíveis; helper `SECURITY DEFINER` privado; feedback próprio/cross-participant, writes proibidos, journey oracle, conteúdo misto/status inválido, replay e corrida concorrente cobertos; E2E real serial `34/34` no mesmo SHA, com health, request IDs, persistência independente, nova sessão e cleanup verificado
 - escopo: ambiente local descartável `cvg_gauntlet_20260826`, roles sintéticas sem dados clínicos reais e runner oficial `pnpm test:integration:live`
-- fora desta fatia: produção, owners/grants least privilege produtivos, deployment, workflow remoto same-SHA, browser→API→PostgreSQL completo, carga/failover/restore/collector e aprovação clínica
+- fora desta fatia: assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, produção, owners/grants least privilege produtivos, deployment, workflow remoto same-SHA, carga/failover/restore/collector e aprovação clínica
 - controles obrigatórios: credenciais não entram no Git; admin não representa role de aplicação; migrations são forward-only; Qdrant/IA não participam da decisão; nenhum dado real é utilizado
-- evidência: `BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md`; commit `b66acc125fac0e022ce5837c4eb14d1eca862401`; migrations 51/51; live 35/75; `traceability.yml` / `LIVE-056`
-- resultado: prova live concluída com gaps de produção explicitamente mantidos; não é autorização de release/piloto
+- evidência: `BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md`; `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`; commits `b66acc125fac0e022ce5837c4eb14d1eca862401` e `16caccc82ffc519b60a68e1a02850d40909737e1`; migrations 51/51; live 35/75; E2E 34/34; `traceability.yml` / `LIVE-056`
+- resultado: prova live PostgreSQL e browser vertical local concluídas com gaps de produto/produção explicitamente mantidos; o fixture pré-provisiona assignment e não prova diagnóstico→assignment; não é autorização de release/piloto
 - próxima ação: avançar para `JOURNEY-056` ou `FEEDBACK-057` apenas como nova fatia bounded
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial

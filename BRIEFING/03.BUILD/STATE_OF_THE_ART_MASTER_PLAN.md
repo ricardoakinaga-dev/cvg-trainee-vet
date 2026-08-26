@@ -24,7 +24,7 @@ em evidência de runtime produtivo.
 
 ### Evidência de 2026-08-26
 
-- HEAD local: `b66acc125fac0e022ce5837c4eb14d1eca862401`; worktree limpo antes da
+- Código e E2E real verificados no commit `16caccc82ffc519b60a68e1a02850d40909737e1`; worktree limpo antes da
   atualização documental; branch
   `main` está à frente de `origin/main`; não houve push ou deploy.
 - `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify` passou:
@@ -34,8 +34,14 @@ em evidência de runtime produtivo.
 - Em banco PostgreSQL 16.15 descartável recriado, com migrations 51/51 e roles
   separadas, `pnpm test:integration:live` passou 35 arquivos/75 testes. Isso
   prova o recorte live local de RLS, ACL, trigger/CAS, rollback, isolamento
-  contextual e concorrência adaptativa; não prova produção ou browser→API→
-  PostgreSQL completo.
+  contextual e concorrência adaptativa; não prova produção ou o fluxo
+  diagnóstico→assignment.
+- No mesmo SHA `16caccc82ffc519b60a68e1a02850d40909737e1`, o E2E real serial
+  passou `34/34` (`32` cenários sintéticos + `2` reais), incluindo build dos
+  12 workspaces. O slice real observou browser→web/proxy→API→PostgreSQL,
+  health `READY`/PostgreSQL `UP`, request IDs, nova sessão com tentativa v3,
+  oracle administrativo de persistência e cleanup com zero artefatos mutáveis;
+  a evidência está em `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`.
 - Conteúdo clínico e B-07/M02 continuam sujeitos a revisão e aprovação humana;
   nenhum código, seed, teste ou interface usa dado clínico real, prontuário,
   tutor, foto, PDF de terceiro ou segredo.
@@ -221,7 +227,10 @@ resultado independentemente da cobertura ou de qualquer score médio.
 4. Obter crítica independente e corrigir o maior gap restante.
 5. `LIVE-056` foi executado em banco local descartável; repetir somente para
    ambiente produtivo/remote quando houver autoridade e critérios explícitos.
-6. Fechar jornada de participante, depois feedback/retenção, autoria, staff,
+6. A extensão browser→web→API→PostgreSQL de `LIVE-056` foi executada no mesmo
+   SHA, com oracle de persistência e cleanup verificável; ainda não cobre
+   diagnóstico→assignment nem cenário browser cross-scope.
+7. Fechar jornada de participante, depois feedback/retenção, autoria, staff,
    learning intelligence, IA/RAG e hardening operacional.
 
 Cada migration é nova, revisável e forward-only; rollback de código prefere
@@ -242,3 +251,10 @@ atribuição arbitrária a terceiro. A próxima fatia autorizada é `JOURNEY-056
 `JOURNEY-056` exige decisão entre sessão diagnóstica pública própria
 (recomendada) e atividade especial; `FEEDBACK-057` ainda exige contrato próprio
 para resposta/resolução. Nenhuma dessas fatias foi iniciada nesta rodada.
+
+Como extensão de `LIVE-056`, o commit `16caccc82ffc519b60a68e1a02850d40909737e1`
+agora tem evidência local do participante atravessando browser, web/proxy, API
+e PostgreSQL real, com request IDs, nova sessão, oracle de persistência e
+cleanup verificável. A fixture pré-provisiona o assignment; por isso o gap
+diagnóstico→assignment e os gates de produção/operacional/clínico permanecem
+abertos.

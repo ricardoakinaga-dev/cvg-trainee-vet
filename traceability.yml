@@ -4531,6 +4531,7 @@ artifacts:
       [
         "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
         "BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md",
+        "BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md",
         "docs/99_runtime_state.md",
         "docs/20_master_execution_log.md",
         "docs/30_backlog_master.md",
@@ -4553,6 +4554,11 @@ artifacts:
         "packages/persistence/src/attempt-repository.ts",
         "packages/persistence/src/adaptive-assignment-repository.ts",
         "scripts/provision-ci-postgres.mjs",
+        "scripts/real-e2e-fixture-server.mjs",
+        "apps/api/src/http.ts",
+        "apps/web/next.config.ts",
+        "playwright.config.ts",
+        "tests/e2e/real-runtime.spec.ts",
       ]
     tests:
       [
@@ -4562,13 +4568,15 @@ artifacts:
         "tests/integration/postgres-rls-function-privileges.test.ts",
         "tests/integration/postgres-activity-content.test.ts",
         "tests/integration/migration-governance.test.ts",
+        "tests/e2e/real-runtime.spec.ts",
       ]
-    commit: "b66acc125fac0e022ce5837c4eb14d1eca862401"
+    commit: "16caccc82ffc519b60a68e1a02850d40909737e1"
     artifacts:
       [
         "coverage/",
         "test-results/",
         "BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md",
+        "BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md",
       ]
     verification:
       [
@@ -4576,7 +4584,10 @@ artifacts:
         "PostgreSQL 16.15 roles: app NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE; admin NOSUPERUSER/BYPASSRLS/CREATEROLE; migration owner",
         "RLS/FORCE RLS, helper ACL, feedback history isolation, journey oracle, adaptive integrity, replay and concurrent materialization were exercised",
         "pnpm test:integration:live: 35 test files and 75 tests PASS",
-        "result is conditional/local synthetic evidence; production ACL/owners, remote same-SHA and clinical/operational gates are not inferred",
+        "CVG_RUN_REAL_E2E=true ... pnpm test:e2e --workers=1: 34 tests PASS (32 synthetic + 2 real); build covered 12 workspaces",
+        "real browser path observed web/proxy 3100 → API 3101 → PostgreSQL 16.15 with READY/UP health, request IDs, exact item, attempt v1→v2→v3, new-session read, separate persistence oracle and verified cleanup",
+        "assignment was pre-provisioned after authoring publication; diagnosis→assignment and browser cross-scope remain unproved",
+        "result is conditional/local synthetic evidence; production ACL/owners, remote same-SHA, scale/restore/collector and clinical/operational gates are not inferred",
       ]
     status: "verified-with-gaps"
 notes:
@@ -4585,7 +4596,7 @@ notes:
   - "F2-S2 and F3-S1 evidence use only synthetic PostgreSQL/Qdrant records and redacted metadata; participant response remains confined to the transactional answer/idempotency path."
   - "F3-S2 evidence uses synthetic PostgreSQL/Qdrant records and a deterministic fake AI; the worker stores only DRAFT_AI metadata/text for internal review and never exposes source, photo, PDF, OCR, prompt, or participant projection fields."
   - "F3-S3 evidence uses synthetic PostgreSQL records; invitation tokens are hash-only at rest, correction events omit feedback/actor data, and participant feedback is owner-scoped. Recovery beyond the administrative invitation, shared rate limit across replicas, observability, reconciliation operations, backup/restore and real AI remain gaps; CSRF and local rate limit are covered by F3-S6 and session rotation/revocation by F3-S8."
-  - "F3-S4 evidence uses synthetic browser/API fixtures plus a real health browser path: participant invitation, bounded error, activity projection, start/save/submit, forbidden-field checks, authoring/operations entry surfaces, axe, keyboard/focus, retry/empty/stale and narrow viewport pass. The full participant fixture against real persistence, user testing and full learning flows remain gaps."
+  - "F3-S4 evidence uses synthetic browser/API fixtures plus real browser checks: participant invitation, bounded error, activity projection, start/save/submit, forbidden-field checks, authoring/operations entry surfaces, axe, keyboard/focus, retry/empty/stale and narrow viewport pass. The current LIVE-056 extension adds the persisted participant path; diagnosis→assignment, user testing and full learning flows remain gaps."
   - "F3-S5 evidence uses a typed allowlist logger, validated correlation IDs, in-memory counters/histograms, API route telemetry and worker outcome telemetry. It never logs payloads; external collector/OTel, retention, alerting, distributed traces and production dashboards remain gaps."
   - "F3-S6 evidence uses synthetic HTTP requests: session mutations require permitted origin/referer or same-site Fetch metadata, anonymous invitation acceptance remains allowed, local rate limiting is bounded with Retry-After, health is exempt, and rejected bodies never reach application handlers. Distributed rate limiting and real-browser/API wiring remain gaps; session rotation/revocation is covered by F3-S8."
   - "F3-S7 evidence uses synthetic published PostgreSQL records and Qdrant metadata: reconciliation embeds only server-side text, upserts deterministic ID/hash changes, removes orphan/old-version points, and returns technical counts. The non-empty PostgreSQL+Qdrant scenario is closed by WORKER-RESILIENCE-013; external observability, restore and production operation remain gaps."
@@ -4607,3 +4618,4 @@ notes:
   - "WEB-UX-ACCESSIBILITY-015 closes item 13 at 96/100 in the implemented web scope: participant, authoring and operations surfaces expose bounded experience states; axe, keyboard/focus, unique IDs, reduced motion and narrow viewport checks pass; 12 mock E2E and 14 real-mode E2E scenarios pass, with the real mode reaching API/PostgreSQL through the web proxy and persisted participant fixture. Screen-reader/user review and complete PRD surfaces remain gaps."
   - "QUALITY-TEST-EVIDENCE-016 closes item 14 at 96/100: named contract/worker/live/restore/migration/E2E gates pass; PostgreSQL live passed 18/26 without skips, Qdrant extended 21/29 without skips, restore 1/1, standard E2E 12/12 and real persisted participant E2E 14/14. Coverage is 84.92% statements, 80.34% branches, 85.89% functions and 85.61% lines; module-level entrypoints remain explicit gaps and the remote CI execution is the next item."
   - "CI-REPRODUCIBILITY-017 closes item 15 at 95/100 with gaps: pinned Node/pnpm/lockfile and environment contract, PostgreSQL 16 and Qdrant 1.15.5 disposable services, readiness, migrations, live, restore, build, audit, standard E2E 12/12, real E2E 14/14 and conditional coverage/JUnit/Playwright artifact upload passed locally and remotely. The private repository is origin/main at commit dd4790973e31e1c3799c58cf99701128367b055b; Actions run 31380183984/job 93428409312 passed in 4m20s and artifact 9059654877 contains 99 files with SHA256 fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee. Runs 31378647864 and 31379006703 preserve the pnpm bootstrap and NODE_ENV API failures; the pnpm cache miss was observed, while deployment rollback, cache hit, load, failover and restart remain gaps. Item 16 is released by order."
+  - "LIVE-056-REAL-2026-08-26 supersedes earlier real-mode counts for the current local evidence: commit 16caccc82ffc519b60a68e1a02850d40909737e1 ran the 12-workspace build and 34/34 full E2E (32 synthetic + 2 real). The 2 real scenarios observed web/proxy→API→PostgreSQL, exact HTTP/request IDs, persistence after a new session, a separate PostgreSQL oracle, and verified cleanup; the assignment was pre-provisioned, so diagnosis→assignment, productive ACL/owners, remote same-SHA, scale/restore/collector and clinical gates remain gaps."

@@ -42,6 +42,78 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — LIVE-056: evidência E2E real browser → web → API → PostgreSQL
+
+### TIMESTAMP
+
+2026-08-26T04:11:41-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 3–5 / segurança, integridade e evidência runtime
+
+### SPRINT
+
+LIVE-056 — browser vertical slice
+
+### TASK
+
+Fechar a lacuna observacional do caminho browser→web/proxy→API→PostgreSQL sem
+confundir os 2 cenários reais com os 32 cenários sintéticos da suíte completa.
+
+### ACTION
+
+Após a crítica independente, o fixture foi corrigido e endurecido: atividade
+publicada continua materializada pelos casos de uso de authoring; o assignment
+curricular pré-provisionado ficou declarado como pré-condição; o teste captura
+método/rota/status/request ID, usa o `itemId` exato, valida health, reabre em
+novo contexto, consulta um oracle PostgreSQL por conexão administrativa separada
+e exige cleanup verificável sem apagar auditoria append-only. O incremento foi
+congelado no commit `16caccc82ffc519b60a68e1a02850d40909737e1`.
+
+### RESULT
+
+`CVG_RUN_REAL_E2E=true npm exec --yes --package=node@22.22.0
+--package=pnpm@10.33.0 -- pnpm test:e2e --workers=1` executou o build dos 12
+workspaces e passou `34/34` testes (`32` sintéticos + `2` reais). O health
+retornou `READY`/PostgreSQL `UP`; o participante atravessou convite, journey,
+atividade, tentativa `EM_ANDAMENTO` v1, resposta `SALVA` v2 e submissão
+`SUBMETIDA` v3; nova sessão retornou v3. O oracle confirmou resposta única,
+idempotência 2/1, outbox de resposta/submissão e auditoria de início/salva/
+submissão. Consulta posterior confirmou zero artefatos mutáveis do fixture,
+fixture temporária ausente e nenhum processo residual; auditoria imutável foi
+preservada. O `pnpm verify` subsequente passou com 141 arquivos/708 testes
+PASS, 29 arquivos/37 testes skipped, cobertura 84,36%/80,35%/86,35%/85,05%,
+contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos/documentais
+PASS. Artefato: `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`.
+
+### DECISIONS
+
+O gap local browser→web→API→PostgreSQL fica observado, mas `LIVE-056` continua
+`COMPLETED_WITH_GAPS`: o teste não cobre diagnóstico→assignment pelo fluxo de
+produto, browser cross-scope, ACL/owners/grants produtivos, workflow remoto
+same-SHA, escala/failover/restore/collector, provider/MFA, operação externa ou
+aprovação clínica. Qdrant/IA permaneceram desligados por decisão explícita do
+ambiente. Nenhuma publicação, piloto, release ou claim de competência prática
+foi autorizado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve escolher a forma contratual de `JOURNEY-056`: (A) sessão
+diagnóstica pública própria com checkpoint/retomada, recomendada, ou (B)
+atividade especial. Até essa decisão, não iniciar novo contrato, migration ou
+UX; `FEEDBACK-057` permanece sem schema executável.
+
+---
+
 ## 2026-08-26 — GAUNTLET: decisão de contrato para a próxima fatia
 
 ### TIMESTAMP

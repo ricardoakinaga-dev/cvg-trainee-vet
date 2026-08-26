@@ -219,11 +219,20 @@ a aprovação clínica, piloto ou release produtivo.
   plano e manifesto no commit documental; o release gate
   `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` passou em worktree
   limpo.
+- [x] (2026-08-26T04:11:41-03:00) Fechar a extensão E2E real de `LIVE-056` no
+  commit `16caccc82ffc519b60a68e1a02850d40909737e1`: health estrito, método/
+  rota/status/request ID, item exato, tentativa v1→v2→v3, nova sessão, oracle
+  PostgreSQL separado, outbox/auditoria e cleanup verificável. A execução final
+  passou `34/34` (`32` sintéticos + `2` reais); os gates estáticos também
+  passaram. O `pnpm verify` passou com 141/708 PASS, 29 arquivos/37 testes
+  skipped e cobertura 84,36%/80,35%/86,35%/85,05%. O resultado é
+  local/sintético e mantém gaps de diagnóstico→assignment, produção e operação
+  externa.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded; até lá, não iniciar código, migration ou UX da próxima
   fatia. Production least privilege/owners, workflow remoto same-SHA,
-  browser→API→PostgreSQL completo, escala/failover/restore/collector e gates
-  clínicos permanecem fora da evidência atual.
+  diagnóstico→assignment, cenário browser cross-scope, escala/failover/restore/
+  collector e gates clínicos permanecem fora da evidência atual.
 
 ## Surprises & Discoveries
 
