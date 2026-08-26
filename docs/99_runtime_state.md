@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechar `OPS-061-RETRY-008` nos commits técnicos `df91513`/`2a95f5c` e no control plane documental `c272f1f`: corrigir `Retry-After`, aplicar precedência fail-closed entre falhas irmãs, limitar o bootstrap a cinco tentativas, proteger a geração concorrente do worker e comprovar RED → GREEN → REFACTOR. A evidência final passou focal `5/30`, regressão `143/743` com `38` testes skipped, cobertura `84,47%/80,35%/86,62%/85,24%`, build `12/12`, E2E `32/32`, audit high e gates estáticos; Euclid retornou `CONDITIONAL PASS`, sem P0/P1. Auditoria `0549`, manifesto e release traceability foram reconciliados; o gate limpo passou. `JOURNEY-056` permanece sem alteração.
+- last_completed_action: revalidar o anexo de trabalho (4392 linhas; SHA-256 `7c08c275a10e22c1fe9f646f90cf7554d82c454c81e8cbb50662a45a0b484b94`), confirmar `HEAD=3274e5b` e worktree limpo, executar nova triagem independente de backlog/gaps e repetir `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` com PASS. A triagem confirmou que não existe tarefa autônoma segura fora da decisão de `JOURNEY-056`: `FEEDBACK-057` não tem contrato executável, `AUD-P1-002` exige ambiente/ACL autorizado e os itens clínicos exigem revisão humana. `OPS-061-RETRY-008` permanece fechado, sem novo defeito nem alteração de produto.
 - next_action: aguardar a decisão humana A/B de `JOURNEY-056`; depois criar/validar somente o contrato escolhido. Não iniciar código, migration ou UX de jornada antes da decisão.
 
 ## BLOQUEIOS
@@ -32,7 +32,7 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T13:31:40-0300
+- last_update: 2026-08-26T13:39:59-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 

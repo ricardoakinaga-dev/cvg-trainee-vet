@@ -42,6 +42,63 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Triagem final antes da decisão de `JOURNEY-056`
+
+### TIMESTAMP
+
+2026-08-26T13:39:59-0300
+
+### ENGINE
+
+RUNTIME CONTROLLER / AUDIT / ORCHESTRATE
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — encerrado; aguardando próxima autorização
+
+### TASK
+
+Revalidar o estado do anexo, a rastreabilidade do HEAD e a existência de
+alguma tarefa autônoma segura fora da decisão de jornada.
+
+### ACTION
+
+O anexo foi confirmado com 4392 linhas e SHA-256
+`7c08c275a10e22c1fe9f646f90cf7554d82c454c81e8cbb50662a45a0b484b94`. O
+worktree permaneceu limpo em `3274e5b`. A triagem independente de backlog,
+plano, runtime e gaps técnicos não editou arquivos. O gate
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` foi executado
+novamente.
+
+### RESULT
+
+O gate passou: `current artifacts resolve to reachable commits and tracked
+paths`. Nenhum candidato seguro foi encontrado: `JOURNEY-056` requer decisão
+A/B; `FEEDBACK-057` não tem contrato/schema executável; `AUD-P1-002` depende
+de PostgreSQL/ACL/ambiente autorizado; e os itens B-07/T2 requerem aprovação
+clínica. A segunda inspeção técnica foi encerrada por timeout sem alterações,
+portanto não há novo defeito atribuído ao HEAD.
+
+### DECISIONS
+
+Manter `WAITING_HUMAN_APPROVAL`. Não iniciar código, migration, UX, publicação,
+push ou deploy. A próxima ação é Ricardo escolher A ou B para
+`JOURNEY-056`; após isso será criado e validado somente o contrato escolhido.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar a decisão A/B de `JOURNEY-056`.
+
+---
+
 ## 2026-08-26 — Gate documental final de `OPS-061-RETRY-008`
 
 ### TIMESTAMP
