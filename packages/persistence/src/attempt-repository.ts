@@ -22,7 +22,10 @@ import {
 import type { PersistedAttemptSnapshot } from "./schema.js";
 import type * as schema from "./schema.js";
 import { createAuditRepository } from "./audit-repository.js";
-import { setDatabaseSecurityContext } from "./security-context.js";
+import {
+  resolveParticipantActivityScope,
+  setDatabaseSecurityContext,
+} from "./security-context.js";
 
 export class PersistenceMappingError extends Error {
   public constructor(message: string) {
@@ -514,6 +517,16 @@ export function createActivityScopeResolver(
     db.transaction(async (transaction) => {
       const executor = transaction as unknown as DatabaseExecutor;
       await setDatabaseSecurityContext(executor, context);
+      if (
+        context.participantId !== undefined &&
+        context.scopeId === undefined
+      ) {
+        return resolveParticipantActivityScope(
+          executor,
+          activityId,
+          context.participantId,
+        );
+      }
       const rows = await executor
         .select({ scopeId: learningActivities.scopeId })
         .from(learningActivities)

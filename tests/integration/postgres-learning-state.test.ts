@@ -25,9 +25,11 @@ import {
   assessmentWorkflows,
   auditEntries,
   attempts,
+  contentVersions,
   feedbackTickets,
   feedbackTicketHistory,
   learningActivities,
+  learningActivityItems,
   learningAssignments,
 } from "../../packages/persistence/src/schema.js";
 import {
@@ -458,11 +460,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           await tx.execute(
             sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
           );
-          return tx.execute(
+          const ticketRows = await tx.execute(
             sql`select id from feedback_tickets where id = ${participantInsertTicketId}`,
           );
+          const historyRows = await tx.execute(
+            sql`select id from feedback_ticket_history where ticket_id = ${participantInsertTicketId}`,
+          );
+          return { ticketRows, historyRows };
         });
-        expect(ownParticipantRows).toHaveLength(1);
+        expect(ownParticipantRows.ticketRows).toHaveLength(1);
+        expect(ownParticipantRows.historyRows).toHaveLength(1);
         const sameScopeOtherParticipantRows = await database.db.transaction(
           async (tx) => {
             if (rlsRoleCreated) {
@@ -471,12 +478,17 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             await tx.execute(
               sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
             );
-            return tx.execute(
+            const ticketRows = await tx.execute(
               sql`select id from feedback_tickets where id = ${ticketId}`,
             );
+            const historyRows = await tx.execute(
+              sql`select id from feedback_ticket_history where ticket_id = ${ticketId}`,
+            );
+            return { ticketRows, historyRows };
           },
         );
-        expect(sameScopeOtherParticipantRows).toHaveLength(0);
+        expect(sameScopeOtherParticipantRows.ticketRows).toHaveLength(0);
+        expect(sameScopeOtherParticipantRows.historyRows).toHaveLength(0);
 
         let forgedInsertRows = 0;
         let forgedInsertDenied = false;
@@ -832,6 +844,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const withdrawnActivityId = randomUUID();
       const legacyActivityId = randomUUID();
       const mismatchedActivityId = randomUUID();
+      const contentVersionId = randomUUID();
+      const contentId = randomUUID();
       const context = { participantId, scopeId } as const;
 
       try {
@@ -884,6 +898,22 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "PUBLISHED",
           },
         ]);
+        await admin.db.insert(contentVersions).values({
+          id: contentVersionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: "Item de sincronização sintético",
+          participantText: "Selecione a próxima ação segura.",
+          responseMode: "TEXT",
+        });
+        await admin.db.insert(learningActivityItems).values({
+          activityId: publishedActivityId,
+          contentVersionId,
+          ordinal: 1,
+        });
 
         const repository = createLearningStateRepository(database.db);
         const initial = createLearningAssignment({
@@ -1012,6 +1042,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db
           .delete(learningAssignments)
           .where(eq(learningAssignments.id, assignmentId));
+        await admin.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.contentVersionId, contentVersionId));
+        await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, contentVersionId));
         await admin.db
           .delete(learningActivities)
           .where(

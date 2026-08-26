@@ -131,6 +131,39 @@ describe("migration governance", () => {
     );
   });
 
+  it("keeps participant activity scope resolution and history RLS hardening private", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0048_learning_participant_context_hardening.sql",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, provisioning] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(provisioningPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_learning_activity_scope_for_participant",
+    );
+    expect(migration).toContain(
+      "REVOKE EXECUTE ON FUNCTION cvg_learning_activity_scope_for_participant(uuid, text) FROM PUBLIC",
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_ticket_history_participant_select_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_ticket_history_participant_insert_policy"',
+    );
+    expect(migration).toContain("current_setting('cvg.scope_id', true) <> ''");
+    expect(provisioning).toContain(
+      "public.cvg_learning_activity_scope_for_participant(uuid,text)",
+    );
+  });
+
   it("keeps authoring draft idempotency scoped and protected by the repository transaction", async () => {
     const migrationPath = fileURLToPath(
       new URL(
@@ -533,5 +566,36 @@ describe("migration governance", () => {
     expect(integration).toContain("feedbackCreateCorrelationId");
     expect(integration).toContain("feedbackTransitionRequestId");
     expect(integration).toContain("feedbackTransitionCorrelationId");
+  });
+
+  it("keeps adaptive activity assignment integrity enforced by private RLS", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0049_learning_activity_assignment_integrity_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, provisioning] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(provisioningPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_learning_activity_assignment_write_allowed",
+    );
+    expect(migration).toContain("p_activity_assignment_status IN (");
+    expect(migration).toContain("version.status = 'PUBLICADO'");
+    expect(migration).toContain(
+      "version.scope_id IS DISTINCT FROM activity.scope_id",
+    );
+    expect(migration).toContain(
+      "REVOKE EXECUTE ON FUNCTION cvg_learning_activity_assignment_write_allowed(uuid, uuid, uuid, text, text) FROM PUBLIC",
+    );
+    expect(provisioning).toContain(
+      "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
+    );
   });
 });

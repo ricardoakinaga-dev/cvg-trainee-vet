@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   normalizeDatabaseSecurityContext,
+  resolveParticipantActivityScope,
   setDatabaseAppealReviewContext,
   setDatabaseAccountProvisioningContext,
   setDatabaseSecurityContext,
@@ -37,6 +38,36 @@ describe("database security context", () => {
     await setDatabaseSecurityContext({ execute }, { participantId, scopeId });
 
     expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it("maps the participant activity scope oracle and fails closed on malformed results", async () => {
+    const execute = vi
+      .fn<() => Promise<unknown>>()
+      .mockResolvedValueOnce([{ scopeId }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ scopeId });
+
+    await expect(
+      resolveParticipantActivityScope(
+        { execute },
+        "33333333-3333-4333-8333-333333333333",
+        participantId,
+      ),
+    ).resolves.toBe(scopeId);
+    await expect(
+      resolveParticipantActivityScope(
+        { execute },
+        "33333333-3333-4333-8333-333333333333",
+        participantId,
+      ),
+    ).resolves.toBeNull();
+    await expect(
+      resolveParticipantActivityScope(
+        { execute },
+        "33333333-3333-4333-8333-333333333333",
+        participantId,
+      ),
+    ).resolves.toBeNull();
   });
 
   it("sets a dedicated reviewer scope context without participant identity", async () => {

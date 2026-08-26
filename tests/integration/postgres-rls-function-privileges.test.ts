@@ -44,8 +44,17 @@ const rlsHelpers = [
     call: `public.cvg_learning_activity_assignment_insert_allowed('${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid, ''::text)`,
   },
   {
+    procedure:
+      "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
+    call: `public.cvg_learning_activity_assignment_write_allowed('${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid, ''::text, 'ATRIBUIDO'::text)`,
+  },
+  {
     procedure: "public.cvg_learning_activity_journey_visible(uuid,text)",
     call: `public.cvg_learning_activity_journey_visible('${syntheticUuid}'::uuid, ''::text)`,
+  },
+  {
+    procedure: "public.cvg_learning_activity_scope_for_participant(uuid,text)",
+    call: `public.cvg_learning_activity_scope_for_participant('${syntheticUuid}'::uuid, ''::text)`,
   },
 ] as const;
 

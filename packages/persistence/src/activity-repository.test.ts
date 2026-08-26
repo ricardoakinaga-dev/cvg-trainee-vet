@@ -56,6 +56,7 @@ type FakeQuery = {
 function fakeDatabase(
   result: readonly ActivityRowShape[],
   reflectionResult: readonly ReflectionRowShape[] = [],
+  resolvedScopeId: string | undefined = result[0]?.scopeId,
 ): PostgresJsDatabase<typeof schema> {
   const results: readonly (readonly unknown[])[] = [result, reflectionResult];
   let selectIndex = 0;
@@ -68,7 +69,8 @@ function fakeDatabase(
     limit: async () => results[selectIndex++] ?? [],
   };
   const transaction = {
-    execute: async () => undefined,
+    execute: async () =>
+      resolvedScopeId === undefined ? [] : [{ scopeId: resolvedScopeId }],
     select: () => query,
   };
   return {
@@ -89,7 +91,8 @@ function fakeItemResolverDatabase(
     limit: async () => result,
   };
   const transaction = {
-    execute: async () => undefined,
+    execute: async () =>
+      result.length === 0 ? [] : [{ scopeId: rows[0]?.scopeId }],
     select: () => query,
   };
   return {
@@ -299,7 +302,9 @@ describe("published activity persistence mapping", () => {
   });
 
   it("maps an empty joined result to an unavailable activity", async () => {
-    const repository = createActivityReadRepository(fakeDatabase([]));
+    const repository = createActivityReadRepository(
+      fakeDatabase([], [], rows[0].scopeId),
+    );
 
     await expect(
       repository.findParticipantActivity(

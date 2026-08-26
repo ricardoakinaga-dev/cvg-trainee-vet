@@ -27,7 +27,7 @@ function fakeDatabase(rows: readonly (typeof row)[]) {
     limit: async () => rows,
   };
   const transaction = {
-    execute: async () => undefined,
+    execute: async () => [{ scopeId: rows[0]?.scopeId }],
     select: () => query,
   };
   return {

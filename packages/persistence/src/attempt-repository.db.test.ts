@@ -70,6 +70,7 @@ function createFakeDatabase(
     readonly accountStatus?: FakeDatabaseState["invitationRows"][number]["accountStatus"];
     readonly acceptedAt?: Date | null;
     readonly contentStatus?: "PUBLICADO" | "EM_REVISAO_CLINICA";
+    readonly resolvedActivityScope?: string;
   } = {},
 ): {
   readonly database: PostgresJsDatabase<typeof schema>;
@@ -189,7 +190,10 @@ function createFakeDatabase(
         }
       },
     }),
-    execute: async () => [],
+    execute: async () =>
+      options.resolvedActivityScope === undefined
+        ? []
+        : [{ scopeId: options.resolvedActivityScope }],
     update: (table: unknown) => ({
       set: (value: unknown) => ({
         where: () => ({
@@ -314,6 +318,18 @@ describe("database adapter operations", () => {
 
     await expect(
       resolveActivityScope("activity-1", { scopeId: "scope-1" }),
+    ).resolves.toBe("scope-1");
+  });
+
+  it("resolves a participant activity scope through the bound oracle", async () => {
+    const { database } = createFakeDatabase({
+      resolvedActivityScope: "scope-1",
+    });
+
+    await expect(
+      createActivityScopeResolver(database)("activity-1", {
+        participantId: "participant-1",
+      }),
     ).resolves.toBe("scope-1");
   });
 

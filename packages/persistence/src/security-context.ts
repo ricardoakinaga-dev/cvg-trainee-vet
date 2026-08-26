@@ -33,6 +33,10 @@ type ContextExecutor = Readonly<{
   readonly execute: (query: SQL) => Promise<unknown>;
 }>;
 
+type ActivityScopeRow = Readonly<{
+  readonly scopeId?: unknown;
+}>;
+
 function normalizeValue(value: string | undefined, field: string): string {
   if (value === undefined) return "";
   if (value.trim().length === 0) {
@@ -75,6 +79,22 @@ export async function setDatabaseSecurityContext(
       set_config('cvg.audit_read', '', true),
       set_config('cvg.audit_scope_id', '', true)`,
   );
+}
+
+export async function resolveParticipantActivityScope(
+  executor: ContextExecutor,
+  activityId: string,
+  participantId: string,
+): Promise<string | null> {
+  const result = await executor.execute(
+    sql`select cvg_learning_activity_scope_for_participant(
+      ${activityId}::uuid,
+      ${participantId}::text
+    ) as "scopeId"`,
+  );
+  if (!Array.isArray(result)) return null;
+  const row = result[0] as ActivityScopeRow | undefined;
+  return typeof row?.scopeId === "string" ? row.scopeId : null;
 }
 
 export async function setDatabaseTokenSecurityContext(

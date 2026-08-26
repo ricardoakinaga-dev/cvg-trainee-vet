@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { getParticipantLearningJourney } from "../../packages/application/src/index.js";
 
@@ -9,6 +9,7 @@ import {
   createAdaptiveAssignmentRepository,
   createDiagnosticResultRepository,
   createParticipantJourneyRepository,
+  setDatabaseSecurityContext,
 } from "../../packages/persistence/src/index.js";
 import {
   accountInvitations,
@@ -188,6 +189,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const activityId = randomUUID();
       const contentVersionId = randomUUID();
       const contentId = randomUUID();
+      const unpublishedActivityId = randomUUID();
+      const unpublishedContentVersionId = randomUUID();
+      const unpublishedContentId = randomUUID();
       const invitationId = randomUUID();
       const completedAt = "2026-08-24T12:00:00.000Z";
 
@@ -281,6 +285,68 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           status: "ATRIBUIDO",
           learningAssignmentId: first.assignments[0]?.state.assignmentId,
         });
+        const learningAssignmentId = first.assignments[0]?.state.assignmentId;
+        if (learningAssignmentId === undefined) {
+          throw new Error("adaptive assignment was not materialized");
+        }
+        await admin.db.insert(learningActivities).values({
+          id: unpublishedActivityId,
+          scopeId,
+          moduleId: "M01",
+          slug: `adaptive-unpublished-${unpublishedActivityId}`,
+          title: "Atividade sem conteúdo publicado",
+          status: "PUBLISHED",
+        });
+        await admin.db.insert(contentVersions).values({
+          id: unpublishedContentVersionId,
+          contentId: unpublishedContentId,
+          scopeId,
+          version: 1,
+          status: "RASCUNHO",
+          kind: "QUESTAO",
+          title: "Item ainda em rascunho",
+          participantText: "Não deve ser atribuído.",
+          responseMode: "TEXT",
+        });
+        await admin.db.insert(learningActivityItems).values({
+          activityId: unpublishedActivityId,
+          contentVersionId: unpublishedContentVersionId,
+          ordinal: 1,
+        });
+        await expect(
+          database.db.transaction(async (tx) => {
+            await setDatabaseSecurityContext(tx, { participantId, scopeId });
+            await tx.insert(activityAssignments).values({
+              participantId,
+              activityId: unpublishedActivityId,
+              learningAssignmentId,
+              status: "ATRIBUIDO",
+            });
+          }),
+        ).rejects.toThrow();
+        const integrityRows = await database.db.transaction(async (tx) => {
+          await setDatabaseSecurityContext(tx, { participantId, scopeId });
+          return tx.execute(sql`
+            select
+              cvg_learning_activity_assignment_write_allowed(
+                ${activityId}::uuid,
+                ${learningAssignmentId}::uuid,
+                ${participantId}::uuid,
+                ${scopeId}::text,
+                'ATRIBUIDO'::text
+              ) as "valid",
+              cvg_learning_activity_assignment_write_allowed(
+                ${activityId}::uuid,
+                ${learningAssignmentId}::uuid,
+                ${participantId}::uuid,
+                ${scopeId}::text,
+                'INVALIDO'::text
+              ) as "mismatchedStatus"
+          `);
+        });
+        expect(integrityRows).toEqual([
+          { valid: true, mismatchedStatus: false },
+        ]);
         expect(persistedAssignments[0]?.sourceDiagnosticResultId).toBe(
           resultId,
         );
@@ -314,6 +380,20 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
+        await admin.db
+          .delete(learningActivityItems)
+          .where(
+            eq(
+              learningActivityItems.contentVersionId,
+              unpublishedContentVersionId,
+            ),
+          );
+        await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, unpublishedContentVersionId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, unpublishedActivityId));
         await admin.db
           .delete(contentVersions)
           .where(eq(contentVersions.id, contentVersionId));

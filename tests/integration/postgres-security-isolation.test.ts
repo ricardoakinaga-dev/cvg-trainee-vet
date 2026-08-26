@@ -114,7 +114,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         "public.cvg_learning_activity_content_for_participant(uuid,text)",
         "public.cvg_participant_in_scope(uuid,uuid)",
         "public.cvg_learning_activity_assignment_insert_allowed(uuid,uuid,uuid,text)",
+        "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
         "public.cvg_learning_activity_journey_visible(uuid,text)",
+        "public.cvg_learning_activity_scope_for_participant(uuid,text)",
       ] as const;
 
       try {
@@ -395,7 +397,10 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
 
           const contextRows = await restricted.db.transaction(
             async (transaction) => {
-              await setDatabaseSecurityContext(transaction, { participantId });
+              await setDatabaseSecurityContext(transaction, {
+                participantId,
+                scopeId,
+              });
               return {
                 assignments: await transaction
                   .select()
@@ -959,6 +964,31 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             .map((assignment) => assignment.scopeId)
             .sort(),
         ).toEqual([scopeA, scopeB].sort());
+
+        const oracleRows = await application.db.transaction(async (tx) => {
+          await setDatabaseSecurityContext(tx, {
+            participantId,
+            scopeId: scopeA,
+          });
+          return tx.execute(
+            sql`select
+              cvg_learning_activity_journey_visible(${activityA}::uuid, ${participantId}::text) as "matching",
+              cvg_learning_activity_journey_visible(${activityB}::uuid, ${participantId}::text) as "crossScope",
+              cvg_learning_activity_journey_visible(${activityA}::uuid, ${staffId}::text) as "crossParticipant"`,
+          );
+        });
+        expect(oracleRows).toEqual([
+          { matching: true, crossScope: false, crossParticipant: false },
+        ]);
+        const withoutParticipantOracleRows = await application.db.transaction(
+          async (tx) => {
+            await setDatabaseSecurityContext(tx, { scopeId: scopeA });
+            return tx.execute(
+              sql`select cvg_learning_activity_journey_visible(${activityA}::uuid, ${participantId}::text) as "visible"`,
+            );
+          },
+        );
+        expect(withoutParticipantOracleRows).toEqual([{ visible: false }]);
       } finally {
         try {
           for (const activityId of [

@@ -42,7 +42,9 @@ const rlsHelperProcedures = Object.freeze([
   "public.cvg_learning_activity_content_for_participant(uuid,text)",
   "public.cvg_participant_in_scope(uuid,uuid)",
   "public.cvg_learning_activity_assignment_insert_allowed(uuid,uuid,uuid,text)",
+  "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
   "public.cvg_learning_activity_journey_visible(uuid,text)",
+  "public.cvg_learning_activity_scope_for_participant(uuid,text)",
 ]);
 
 function rlsHelperGrantSql(applicationRole, adminRole) {

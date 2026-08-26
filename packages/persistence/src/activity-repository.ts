@@ -21,7 +21,10 @@ import {
   learningActivityItems,
 } from "./schema.js";
 import type * as schema from "./schema.js";
-import { setDatabaseSecurityContext } from "./security-context.js";
+import {
+  resolveParticipantActivityScope,
+  setDatabaseSecurityContext,
+} from "./security-context.js";
 
 export { PersistenceMappingError } from "./attempt-repository.js";
 
@@ -367,6 +370,13 @@ export function createActivityReadRepository(
       return db.transaction(async (transaction) => {
         const executor = transaction as unknown as DatabaseExecutor;
         await setDatabaseSecurityContext(executor, { participantId });
+        const scopeId = await resolveParticipantActivityScope(
+          executor,
+          activityId,
+          participantId,
+        );
+        if (scopeId === null) return null;
+        await setDatabaseSecurityContext(executor, { participantId, scopeId });
         const rows = await executor
           .select({
             activityId: learningActivities.id,
@@ -508,6 +518,13 @@ export function createParticipantActivityItemResolver(
     db.transaction(async (transaction) => {
       const executor = transaction as unknown as DatabaseExecutor;
       await setDatabaseSecurityContext(executor, { participantId });
+      const scopeId = await resolveParticipantActivityScope(
+        executor,
+        activityId,
+        participantId,
+      );
+      if (scopeId === null) return false;
+      await setDatabaseSecurityContext(executor, { participantId, scopeId });
       const rows = await executor
         .select({ itemId: learningActivityItems.contentVersionId })
         .from(activityAssignments)
