@@ -19,6 +19,7 @@ import {
 } from "../../packages/persistence/src/learning-state-repository.js";
 import {
   activityAssignments,
+  accountInvitations,
   accounts,
   appeals,
   assessmentWorkflows,
@@ -71,6 +72,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const activityId = randomUUID();
       const attemptId = randomUUID();
       const assignmentId = randomUUID();
+      const invitationId = randomUUID();
       const resultId = randomUUID();
       const ticketId = randomUUID();
       const participantInsertTicketId = randomUUID();
@@ -125,6 +127,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "ACTIVE",
           },
         ]);
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: `${randomUUID().replaceAll("-", "")}${randomUUID().replaceAll("-", "")}`,
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-10T05:00:00.000Z"),
+          acceptedAt: new Date("2026-08-10T04:00:00.000Z"),
+          createdBy: staffId,
+        });
         await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId,
@@ -404,7 +416,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           rlsRoleCreated = true;
           await admin.db.execute(
             sql.raw(
-              `grant usage on schema public to "${rlsRole}"; grant select, insert, update, delete on table learning_assignments, assessment_workflows, feedback_tickets, appeals to "${rlsRole}"`,
+              `grant usage on schema public to "${rlsRole}"; grant select, insert, update, delete on table learning_assignments, assessment_workflows, feedback_tickets, feedback_ticket_history, appeals to "${rlsRole}"`,
+            ),
+          );
+          await admin.db.execute(
+            sql.raw(
+              `grant execute on function public.cvg_participant_in_scope(uuid,uuid) to "${rlsRole}"`,
             ),
           );
           await admin.db.execute(
@@ -573,13 +590,103 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               eq(feedbackTicketHistory.ticketId, ticketId),
               eq(feedbackTicketHistory.scopeId, scopeId),
             ),
-          );
+          )
+          .orderBy(asc(feedbackTicketHistory.ticketVersion));
         const auditAfterParticipantDenied = await admin.db
           .select({ id: auditEntries.id })
           .from(auditEntries)
           .where(eq(auditEntries.resourceId, ticketId));
         expect(historyAfterParticipantDenied).toHaveLength(2);
         expect(auditAfterParticipantDenied).toHaveLength(2);
+
+        const forgedHistoryId = randomUUID();
+        let forgedHistoryDenied = false;
+        try {
+          await database.db.transaction(async (tx) => {
+            if (rlsRoleCreated) {
+              await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+            }
+            await tx.execute(
+              sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+            );
+            await tx.insert(feedbackTicketHistory).values({
+              id: forgedHistoryId,
+              ticketId,
+              scopeId,
+              ticketVersion: 1,
+              eventType: "STATUS_ALTERADO",
+              fromStatus: "NOVO",
+              toStatus: "TRIADO",
+            });
+          });
+        } catch {
+          forgedHistoryDenied = true;
+        }
+        expect(forgedHistoryDenied).toBe(true);
+        await expect(
+          admin.db
+            .select({ id: feedbackTicketHistory.id })
+            .from(feedbackTicketHistory)
+            .where(eq(feedbackTicketHistory.id, forgedHistoryId)),
+        ).resolves.toEqual([]);
+
+        const historyId = historyAfterParticipantDenied[0]?.id;
+        if (historyId === undefined) {
+          throw new Error("feedback history row was not created");
+        }
+        let historyUpdateRows = 0;
+        let historyUpdateDenied = false;
+        try {
+          historyUpdateRows = (
+            await database.db.transaction(async (tx) => {
+              if (rlsRoleCreated) {
+                await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+              }
+              await tx.execute(
+                sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+              );
+              return tx
+                .update(feedbackTicketHistory)
+                .set({ toStatus: "EM_TRATAMENTO" })
+                .where(eq(feedbackTicketHistory.id, historyId))
+                .returning({ id: feedbackTicketHistory.id });
+            })
+          ).length;
+        } catch {
+          historyUpdateDenied = true;
+        }
+        expect(historyUpdateDenied || historyUpdateRows === 0).toBe(true);
+
+        let historyDeleteRows = 0;
+        let historyDeleteDenied = false;
+        try {
+          historyDeleteRows = (
+            await database.db.transaction(async (tx) => {
+              if (rlsRoleCreated) {
+                await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+              }
+              await tx.execute(
+                sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+              );
+              return tx
+                .delete(feedbackTicketHistory)
+                .where(eq(feedbackTicketHistory.id, historyId))
+                .returning({ id: feedbackTicketHistory.id });
+            })
+          ).length;
+        } catch {
+          historyDeleteDenied = true;
+        }
+        expect(historyDeleteDenied || historyDeleteRows === 0).toBe(true);
+        await expect(
+          admin.db
+            .select({
+              eventType: feedbackTicketHistory.eventType,
+              toStatus: feedbackTicketHistory.toStatus,
+            })
+            .from(feedbackTicketHistory)
+            .where(eq(feedbackTicketHistory.id, historyId)),
+        ).resolves.toEqual([{ eventType: "CRIADO", toStatus: "NOVO" }]);
         await expect(
           repository.saveFeedbackTicketAsStaff(feedbackStaffContext, ticket),
         ).rejects.toBeInstanceOf(LearningStatePersistenceConflictError);
@@ -669,47 +776,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db.transaction(async (tx) => {
           await tx.delete(appeals).where(eq(appeals.id, appealId));
           await tx
-            .delete(auditEntries)
-            .where(
-              and(
-                eq(auditEntries.resourceId, ticketId),
-                eq(auditEntries.scopeId, scopeId),
-              ),
-            );
-          await tx
-            .delete(feedbackTicketHistory)
-            .where(
-              and(
-                eq(feedbackTicketHistory.ticketId, ticketId),
-                eq(feedbackTicketHistory.scopeId, scopeId),
-              ),
-            );
-          await tx
-            .delete(feedbackTickets)
-            .where(eq(feedbackTickets.id, ticketId));
-          await tx
-            .delete(auditEntries)
-            .where(
-              and(
-                eq(auditEntries.resourceId, participantInsertTicketId),
-                eq(auditEntries.scopeId, scopeId),
-              ),
-            );
-          await tx
-            .delete(feedbackTicketHistory)
-            .where(
-              and(
-                eq(feedbackTicketHistory.ticketId, participantInsertTicketId),
-                eq(feedbackTicketHistory.scopeId, scopeId),
-              ),
-            );
-          await tx
-            .delete(feedbackTickets)
-            .where(eq(feedbackTickets.id, participantInsertTicketId));
-          await tx
-            .delete(feedbackTickets)
-            .where(eq(feedbackTickets.id, forgedInsertTicketId));
-          await tx
             .delete(assessmentWorkflows)
             .where(eq(assessmentWorkflows.resultId, resultId));
           await tx
@@ -721,24 +787,15 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
         await admin.db
-          .delete(accounts)
-          .where(
-            and(
-              eq(accounts.id, participantId),
-              eq(
-                accounts.professionalEmail,
-                `state-${participantId}@example.invalid`,
-              ),
-            ),
-          );
-        await admin.db
-          .delete(accounts)
-          .where(eq(accounts.id, otherParticipantId));
-        await admin.db.delete(accounts).where(eq(accounts.id, staffId));
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
+        // Feedback tickets and their history are intentionally retained: both
+        // projections are append-only and the parent FK forbids deleting a
+        // ticket after its immutable history exists.
         if (rlsRoleCreated) {
           await admin.db.execute(
             sql.raw(
-              `revoke all privileges on schema public from "${rlsRole}"; revoke all privileges on table learning_assignments, assessment_workflows, feedback_tickets, appeals from "${rlsRole}"; drop role if exists "${rlsRole}"`,
+              `revoke all privileges on schema public from "${rlsRole}"; revoke all privileges on table learning_assignments, assessment_workflows, feedback_tickets, feedback_ticket_history, appeals from "${rlsRole}"; revoke execute on function public.cvg_participant_in_scope(uuid,uuid) from "${rlsRole}"; drop role if exists "${rlsRole}"`,
             ),
           );
         }
@@ -769,6 +826,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const participantId = randomUUID();
       const scopeId = randomUUID();
       const assignmentId = randomUUID();
+      const invitationId = randomUUID();
       const publishedActivityId = randomUUID();
       const progressedActivityId = randomUUID();
       const withdrawnActivityId = randomUUID();
@@ -781,6 +839,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           id: participantId,
           professionalEmail: `state-sync-${participantId}@example.invalid`,
           status: "ACTIVE",
+        });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: `${randomUUID().replaceAll("-", "")}${randomUUID().replaceAll("-", "")}`,
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-10T05:00:00.000Z"),
+          acceptedAt: new Date("2026-08-10T04:00:00.000Z"),
+          createdBy: participantId,
         });
         await admin.db.insert(learningActivities).values([
           {
@@ -964,6 +1032,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, mismatchedActivityId));
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
         await admin.db
           .delete(accounts)
           .where(

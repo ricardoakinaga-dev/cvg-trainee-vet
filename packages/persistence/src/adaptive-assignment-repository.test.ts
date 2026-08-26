@@ -99,6 +99,10 @@ type FakeBuilder = {
   readonly returning: (
     ...columns: readonly unknown[]
   ) => Promise<readonly unknown[]>;
+  readonly then: (
+    resolve: (value: readonly unknown[]) => unknown,
+    reject?: (error: unknown) => unknown,
+  ) => Promise<void>;
 };
 
 type FakeDatabase = Parameters<typeof createAdaptiveAssignmentRepository>[0];
@@ -149,9 +153,49 @@ function createFakeDatabase(
 
   const executor = {
     execute: async () => [],
-    select: () => {
-      let source: object | undefined;
+    select: (
+      initialSource?: object,
+      initialOperation: "select" | "update" = "select",
+    ) => {
+      let source: object | undefined = initialSource;
+      const operation = initialOperation;
+      const executePending = (): readonly unknown[] => {
+        if (operation === "update" && source === activityAssignments) {
+          if (pendingUpdate === undefined) return [];
+          let updated = 0;
+          for (
+            let index = 0;
+            index < activityAssignmentRows.length;
+            index += 1
+          ) {
+            const row = activityAssignmentRows[index];
+            if (
+              row?.participantId === participantId &&
+              row.learningAssignmentId === null
+            ) {
+              activityAssignmentRows[index] = {
+                ...row,
+                ...pendingUpdate,
+              } as ActivityAssignmentRow;
+              updated += 1;
+            }
+          }
+          pendingUpdate = undefined;
+          return Array.from({ length: updated }, () => ({}));
+        }
+        if (source === activityAssignments) return [...activityAssignmentRows];
+        return [];
+      };
       const builder: FakeBuilder = {
+        then(resolve, reject) {
+          try {
+            resolve(executePending());
+          } catch (error) {
+            reject?.(error);
+          }
+          return Promise.resolve();
+        },
+
         from(currentSource) {
           source = currentSource;
           return builder;
@@ -269,11 +313,33 @@ function createFakeDatabase(
       builder.values = (row: Record<string, unknown>) => {
         pendingInsert = row;
         pendingInsertTable = table;
+        if (table === learningAssignments) {
+          const duplicate = assignments.some(
+            (candidate) =>
+              candidate.participantId === pendingInsert?.participantId &&
+              candidate.scopeId === pendingInsert?.scopeId &&
+              candidate.moduleId === pendingInsert?.moduleId,
+          );
+          if (!duplicate) assignments.push(pendingInsert as AssignmentRow);
+          pendingInsert = undefined;
+          pendingInsertTable = undefined;
+        } else if (table === activityAssignments) {
+          const duplicate = activityAssignmentRows.some(
+            (candidate) =>
+              candidate.participantId === pendingInsert?.participantId &&
+              candidate.activityId === pendingInsert?.activityId,
+          );
+          if (!duplicate) {
+            activityAssignmentRows.push(pendingInsert as ActivityAssignmentRow);
+          }
+          pendingInsert = undefined;
+          pendingInsertTable = undefined;
+        }
         return originalValues(row);
       };
       return builder;
     },
-    update: () => executor.select(),
+    update: (table: object) => executor.select(table, "update"),
     transaction: async (work: (current: unknown) => Promise<unknown>) => {
       transactions += 1;
       return work(executor);

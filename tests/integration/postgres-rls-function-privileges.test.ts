@@ -38,6 +38,15 @@ const rlsHelpers = [
     procedure: "public.cvg_participant_in_scope(uuid,uuid)",
     call: `public.cvg_participant_in_scope('${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid)`,
   },
+  {
+    procedure:
+      "public.cvg_learning_activity_assignment_insert_allowed(uuid,uuid,uuid,text)",
+    call: `public.cvg_learning_activity_assignment_insert_allowed('${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid, '${syntheticUuid}'::uuid, ''::text)`,
+  },
+  {
+    procedure: "public.cvg_learning_activity_journey_visible(uuid,text)",
+    call: `public.cvg_learning_activity_journey_visible('${syntheticUuid}'::uuid, ''::text)`,
+  },
 ] as const;
 
 function quoteRoleIdentifier(value: string): string {
@@ -54,6 +63,19 @@ function assertCleanupSucceeded(errors: readonly unknown[]): void {
       "live RLS helper privilege cleanup failed",
     );
   }
+}
+
+function containsPermissionDenied(error: unknown): boolean {
+  if (
+    error instanceof Error &&
+    /permission denied for function/u.test(error.message)
+  ) {
+    return true;
+  }
+  if (typeof error === "object" && error !== null && "cause" in error) {
+    return containsPermissionDenied(error.cause);
+  }
+  return false;
 }
 
 describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
@@ -147,9 +169,14 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           await expect(
             harness.application.db.execute(sql.raw(`select ${helper.call}`)),
           ).resolves.toBeDefined();
-          await expect(
-            restricted.db.execute(sql.raw(`select ${helper.call}`)),
-          ).rejects.toThrow(/permission denied for function/u);
+          const rejection = await restricted.db
+            .execute(sql.raw(`select ${helper.call}`))
+            .then(
+              () => null,
+              (error: unknown) => error,
+            );
+          expect(rejection).not.toBeNull();
+          expect(containsPermissionDenied(rejection)).toBe(true);
         }
       } finally {
         const cleanupErrors: unknown[] = [];

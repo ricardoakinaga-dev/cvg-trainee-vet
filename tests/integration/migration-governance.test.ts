@@ -100,6 +100,35 @@ describe("migration governance", () => {
     }
     expect(provisioning).toContain("REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC");
     expect(provisioning).toContain("GRANT EXECUTE ON FUNCTION %s TO %I");
+    expect(provisioning).toContain(
+      "GRANT EXECUTE ON FUNCTION %s TO %I WITH GRANT OPTION",
+    );
+  });
+
+  it("keeps the journey visibility oracle private and explicitly provisioned", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0047_learning_journey_visibility_oracle.sql",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, provisioning] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(provisioningPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_learning_activity_journey_visible",
+    );
+    expect(migration).toContain(
+      "REVOKE EXECUTE ON FUNCTION cvg_learning_activity_journey_visible(uuid, text) FROM PUBLIC",
+    );
+    expect(provisioning).toContain(
+      "public.cvg_learning_activity_journey_visible(uuid,text)",
+    );
   });
 
   it("keeps authoring draft idempotency scoped and protected by the repository transaction", async () => {
@@ -395,6 +424,100 @@ describe("migration governance", () => {
     expect(useCases).toContain("LearningStateStaffContext");
     expect(useCases).toContain("saveFeedbackTicketAsStaff");
     expect(useCases).toContain("findFeedbackTicketAsStaff");
+  });
+
+  it("keeps participant feedback history compatible with insert-only RLS", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0043_feedback_history_participant_insert_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_validate_feedback_ticket_history_insert()",
+    );
+    expect(migration).toContain("current_setting('cvg.participant_id', true)");
+    expect(migration).toContain("FOR UPDATE");
+    expect(migration).toContain(
+      "feedback history parent ticket scope does not match",
+    );
+  });
+
+  it("keeps participant journey scope iteration bound to accepted membership", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0044_learning_journey_participant_scope_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      'CREATE POLICY "learning_assignments_participant_scope_policy"',
+    );
+    expect(migration).toContain(
+      'cvg_participant_in_scope("participant_id", "scope_id")',
+    );
+    expect(migration).toContain(
+      "current_setting('cvg.participant_id', true) = ''",
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "activity_assignments_participant_select_policy"',
+    );
+  });
+
+  it("keeps staff scope policies inactive during participant journey reads", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0045_learning_journey_staff_scope_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      'CREATE POLICY "learning_assignments_staff_scope_select_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "activity_assignments_staff_scope_select_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "assessment_workflows_staff_scope_select_policy"',
+    );
+    expect(migration).toContain(
+      "current_setting('cvg.participant_id', true) = ''",
+    );
+  });
+
+  it("keeps adaptive activity binding checks server-side and private", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0046_learning_activity_assignment_insert_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const [migration, provisioning] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(provisioningPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_learning_activity_assignment_insert_allowed",
+    );
+    expect(migration).toContain(
+      "REVOKE EXECUTE ON FUNCTION cvg_learning_activity_assignment_insert_allowed(uuid, uuid, uuid, text) FROM PUBLIC",
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "activity_assignments_adaptive_insert_policy"',
+    );
+    expect(provisioning).toContain(
+      "public.cvg_learning_activity_assignment_insert_allowed(uuid,uuid,uuid,text)",
+    );
   });
 
   it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {

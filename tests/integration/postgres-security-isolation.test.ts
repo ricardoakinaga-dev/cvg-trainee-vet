@@ -31,9 +31,11 @@ import {
   attemptIdempotency,
   attempts,
   activityAssignments,
+  contentVersions,
   curriculumRuntimeStates,
   diagnosticResults,
   learningActivities,
+  learningActivityItems,
   learningAssignments,
   outboxEvents,
   rateLimitBuckets,
@@ -79,6 +81,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const otherScopeId = randomUUID();
       const activityId = randomUUID();
       const otherActivityId = randomUUID();
+      const contentVersionId = randomUUID();
+      const contentId = randomUUID();
       const invitationId = randomUUID();
       const otherInvitationId = randomUUID();
       const runtimeId = randomUUID();
@@ -103,6 +107,15 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         "assessment_workflows",
         "rate_limit_buckets",
       ] as const;
+      const rlsHelperFunctions = [
+        "public.cvg_learning_activity_in_scope(uuid,text)",
+        "public.cvg_learning_activity_for_participant(uuid,text)",
+        "public.cvg_learning_activity_item_insert_allowed(uuid,uuid,text)",
+        "public.cvg_learning_activity_content_for_participant(uuid,text)",
+        "public.cvg_participant_in_scope(uuid,uuid)",
+        "public.cvg_learning_activity_assignment_insert_allowed(uuid,uuid,uuid,text)",
+        "public.cvg_learning_activity_journey_visible(uuid,text)",
+      ] as const;
 
       try {
         if (harness.adminRole.canCreateRoles) {
@@ -124,6 +137,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           for (const table of protectedTables) {
             await admin.db.execute(
               sql.raw(`grant select, insert, update on ${table} to ${role}`),
+            );
+          }
+          for (const table of ["content_versions", "learning_activity_items"]) {
+            await admin.db.execute(
+              sql.raw(`grant select on ${table} to ${role}`),
+            );
+          }
+          for (const procedure of rlsHelperFunctions) {
+            await admin.db.execute(
+              sql.raw(`grant execute on function ${procedure} to ${role}`),
             );
           }
           await admin.db.execute(
@@ -193,6 +216,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             id: activityId,
             scopeId,
             slug: `synthetic-security-${activityId}`,
+            moduleId: "M01",
             status: "PUBLISHED",
           },
           {
@@ -202,8 +226,38 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "PUBLISHED",
           },
         ]);
+        await admin.db.insert(contentVersions).values({
+          id: contentVersionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: "Questão sintética de segurança",
+          participantText: "Responda em texto.",
+          responseMode: "TEXT",
+        });
+        await admin.db.insert(learningActivityItems).values({
+          activityId,
+          contentVersionId,
+          ordinal: 1,
+        });
+        await admin.db.insert(learningAssignments).values({
+          id: assignmentId,
+          participantId,
+          scopeId,
+          moduleId: "M01",
+          availableAt: new Date("2026-08-10T05:00:00.000Z"),
+          status: "DISPONIVEL",
+          version: 0,
+        });
         await admin.db.insert(activityAssignments).values([
-          { participantId, activityId, status: "DISPONIVEL" },
+          {
+            participantId,
+            activityId,
+            learningAssignmentId: assignmentId,
+            status: "DISPONIVEL",
+          },
           {
             participantId: otherParticipantId,
             activityId: otherActivityId,
@@ -230,15 +284,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             practicalCompetenceClaim: "PROIBIDO_MVP",
             synthetic: true,
           },
-        });
-        await admin.db.insert(learningAssignments).values({
-          id: assignmentId,
-          participantId,
-          scopeId,
-          moduleId: "M01",
-          availableAt: new Date("2026-08-10T05:00:00.000Z"),
-          status: "DISPONIVEL",
-          version: 0,
         });
         await admin.db.insert(diagnosticResults).values({
           id: randomUUID(),
@@ -395,6 +440,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             {
               participantId,
               activityId,
+              scopeId,
               idempotencyKey: `security-start-${activityId}`,
               correlationId,
             },
@@ -407,6 +453,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               {
                 participantId: otherParticipantId,
                 activityId: activityId,
+                scopeId,
                 idempotencyKey: `security-cross-${activityId}`,
                 correlationId: randomUUID(),
               },
@@ -419,7 +466,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               attemptId,
               participantId,
               activityId,
-              itemId: randomUUID(),
+              scopeId,
+              itemId: contentVersionId,
               response: "resposta sintética",
               idempotencyKey: `security-answer-${activityId}`,
               correlationId,
@@ -433,6 +481,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             {
               attemptId,
               participantId,
+              scopeId,
               idempotencyKey: `security-submit-${activityId}`,
               correlationId,
               submittedAt: "2026-08-10T05:01:00.000Z",
@@ -592,9 +641,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .delete(curriculumRuntimeStates)
           .where(eq(curriculumRuntimeStates.id, runtimeId));
         await admin.db
-          .delete(learningAssignments)
-          .where(eq(learningAssignments.id, assignmentId));
-        await admin.db
           .delete(rateLimitBuckets)
           .where(eq(rateLimitBuckets.key, rateLimitKey));
         await admin.db
@@ -613,6 +659,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               eq(activityAssignments.participantId, otherParticipantId),
             ),
           );
+        await admin.db
+          .delete(learningAssignments)
+          .where(eq(learningAssignments.id, assignmentId));
+        await admin.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.activityId, activityId));
         await admin.db
           .delete(accountInvitations)
           .where(
@@ -636,6 +688,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .delete(learningActivities)
           .where(eq(learningActivities.id, otherActivityId));
         await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, contentVersionId));
+        await admin.db
           .delete(diagnosticResults)
           .where(eq(diagnosticResults.participantId, participantId));
         await admin.db.delete(accounts).where(eq(accounts.id, participantId));
@@ -644,11 +699,18 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .where(eq(accounts.id, otherParticipantId));
         await admin.db.delete(accounts).where(eq(accounts.id, staffId));
         if (roleCreated) {
+          for (const procedure of rlsHelperFunctions) {
+            await admin.db.execute(
+              sql.raw(`revoke execute on function ${procedure} from ${role}`),
+            );
+          }
           await admin.db.execute(
             sql.raw(`revoke usage on schema public from ${role}`),
           );
           for (const table of [
             "learning_activities",
+            "content_versions",
+            "learning_activity_items",
             "activity_assignments",
             "curriculum_runtime_states",
             "diagnostic_results",
@@ -671,6 +733,292 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           await admin.db.execute(sql.raw(`drop role if exists ${role}`));
         }
         await closeLivePostgresHarness(harness);
+      }
+    });
+
+    it("returns all authorized scopes without leaking an unauthorized scope", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      if (
+        harness.applicationRole.isSuperuser ||
+        harness.applicationRole.bypassesRls
+      ) {
+        await closeLivePostgresHarness(harness);
+        skip(
+          "CVG_TEST_DATABASE_URL is privileged; multi-scope participant isolation cannot be evaluated safely",
+        );
+        return;
+      }
+
+      const { application, admin } = harness;
+      const participantId = randomUUID();
+      const staffId = randomUUID();
+      const scopeA = randomUUID();
+      const scopeB = randomUUID();
+      const unauthorizedScope = randomUUID();
+      const invitationId = randomUUID();
+      const activityA = randomUUID();
+      const activityB = randomUUID();
+      const unauthorizedActivity = randomUUID();
+      const contentVersionA = randomUUID();
+      const contentVersionB = randomUUID();
+      const unauthorizedContentVersion = randomUUID();
+      const contentA = randomUUID();
+      const contentB = randomUUID();
+      const unauthorizedContent = randomUUID();
+      const assignmentA = randomUUID();
+      const assignmentB = randomUUID();
+      const unauthorizedAssignment = randomUUID();
+
+      try {
+        await admin.db.insert(accounts).values([
+          {
+            id: participantId,
+            professionalEmail: `multi-scope-${participantId}@internal.invalid`,
+            status: "ACTIVE",
+          },
+          {
+            id: staffId,
+            professionalEmail: `multi-scope-staff-${staffId}@internal.invalid`,
+            status: "ACTIVE",
+          },
+        ]);
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: `${randomUUID().replaceAll("-", "")}${randomUUID().replaceAll("-", "")}`,
+          roles: ["PARTICIPANT"],
+          scopes: [scopeA, scopeB],
+          expiresAt: new Date("2027-08-26T05:00:00.000Z"),
+          acceptedAt: new Date("2026-08-26T04:00:00.000Z"),
+          createdBy: staffId,
+        });
+        await admin.db.insert(learningActivities).values([
+          {
+            id: activityA,
+            scopeId: scopeA,
+            slug: `multi-scope-a-${activityA}`,
+            moduleId: "M01",
+            title: "Atividade autorizada A",
+            status: "PUBLISHED",
+          },
+          {
+            id: activityB,
+            scopeId: scopeB,
+            slug: `multi-scope-b-${activityB}`,
+            moduleId: "M02",
+            title: "Atividade autorizada B",
+            status: "PUBLISHED",
+          },
+          {
+            id: unauthorizedActivity,
+            scopeId: unauthorizedScope,
+            slug: `multi-scope-unauthorized-${unauthorizedActivity}`,
+            moduleId: "M03",
+            title: "Atividade fora do escopo",
+            status: "PUBLISHED",
+          },
+        ]);
+        await admin.db.insert(contentVersions).values([
+          {
+            id: contentVersionA,
+            contentId: contentA,
+            scopeId: scopeA,
+            version: 1,
+            status: "PUBLICADO",
+            kind: "QUESTAO",
+            title: "Questão autorizada A",
+            participantText: "Resposta sintética A.",
+            responseMode: "TEXT",
+          },
+          {
+            id: contentVersionB,
+            contentId: contentB,
+            scopeId: scopeB,
+            version: 1,
+            status: "PUBLICADO",
+            kind: "QUESTAO",
+            title: "Questão autorizada B",
+            participantText: "Resposta sintética B.",
+            responseMode: "TEXT",
+          },
+          {
+            id: unauthorizedContentVersion,
+            contentId: unauthorizedContent,
+            scopeId: unauthorizedScope,
+            version: 1,
+            status: "PUBLICADO",
+            kind: "QUESTAO",
+            title: "Questão fora do escopo",
+            participantText: "Resposta sintética fora do escopo.",
+            responseMode: "TEXT",
+          },
+        ]);
+        await admin.db.insert(learningActivityItems).values([
+          {
+            activityId: activityA,
+            contentVersionId: contentVersionA,
+            ordinal: 1,
+          },
+          {
+            activityId: activityB,
+            contentVersionId: contentVersionB,
+            ordinal: 1,
+          },
+          {
+            activityId: unauthorizedActivity,
+            contentVersionId: unauthorizedContentVersion,
+            ordinal: 1,
+          },
+        ]);
+        await admin.db.insert(learningAssignments).values([
+          {
+            id: assignmentA,
+            participantId,
+            scopeId: scopeA,
+            moduleId: "M01",
+            availableAt: new Date("2026-08-26T05:00:00.000Z"),
+            status: "DISPONIVEL",
+            version: 0,
+          },
+          {
+            id: assignmentB,
+            participantId,
+            scopeId: scopeB,
+            moduleId: "M02",
+            availableAt: new Date("2026-08-26T05:00:00.000Z"),
+            status: "DISPONIVEL",
+            version: 0,
+          },
+          {
+            id: unauthorizedAssignment,
+            participantId,
+            scopeId: unauthorizedScope,
+            moduleId: "M03",
+            availableAt: new Date("2026-08-26T05:00:00.000Z"),
+            status: "DISPONIVEL",
+            version: 0,
+          },
+        ]);
+        await admin.db.insert(activityAssignments).values([
+          {
+            participantId,
+            activityId: activityA,
+            learningAssignmentId: assignmentA,
+            status: "DISPONIVEL",
+          },
+          {
+            participantId,
+            activityId: activityB,
+            learningAssignmentId: assignmentB,
+            status: "DISPONIVEL",
+          },
+          {
+            participantId,
+            activityId: unauthorizedActivity,
+            learningAssignmentId: unauthorizedAssignment,
+            status: "DISPONIVEL",
+          },
+        ]);
+
+        const journeyRepository = createParticipantJourneyRepository(
+          application.db,
+        );
+        const journey = await journeyRepository.findParticipantLearningJourney(
+          participantId,
+          [scopeA, scopeB, unauthorizedScope],
+        );
+        expect(journey.activities).toHaveLength(2);
+        expect(
+          journey.activities.map((activity) => activity.scopeId).sort(),
+        ).toEqual([scopeA, scopeB].sort());
+        expect(journey.assignments).toHaveLength(2);
+        expect(
+          journey.assignments.map((assignment) => assignment.scopeId).sort(),
+        ).toEqual([scopeA, scopeB].sort());
+
+        const reorderedJourney =
+          await journeyRepository.findParticipantLearningJourney(
+            participantId,
+            [scopeB, unauthorizedScope, scopeA],
+          );
+        expect(reorderedJourney.activities).toHaveLength(2);
+        expect(
+          reorderedJourney.activities
+            .map((activity) => activity.scopeId)
+            .sort(),
+        ).toEqual([scopeA, scopeB].sort());
+        expect(
+          reorderedJourney.assignments
+            .map((assignment) => assignment.scopeId)
+            .sort(),
+        ).toEqual([scopeA, scopeB].sort());
+      } finally {
+        try {
+          for (const activityId of [
+            activityA,
+            activityB,
+            unauthorizedActivity,
+          ]) {
+            await admin.db
+              .delete(activityAssignments)
+              .where(
+                and(
+                  eq(activityAssignments.participantId, participantId),
+                  eq(activityAssignments.activityId, activityId),
+                ),
+              );
+          }
+          for (const activityId of [
+            activityA,
+            activityB,
+            unauthorizedActivity,
+          ]) {
+            await admin.db
+              .delete(learningActivityItems)
+              .where(eq(learningActivityItems.activityId, activityId));
+          }
+          for (const assignmentId of [
+            assignmentA,
+            assignmentB,
+            unauthorizedAssignment,
+          ]) {
+            await admin.db
+              .delete(learningAssignments)
+              .where(eq(learningAssignments.id, assignmentId));
+          }
+          for (const activityId of [
+            activityA,
+            activityB,
+            unauthorizedActivity,
+          ]) {
+            await admin.db
+              .delete(learningActivities)
+              .where(eq(learningActivities.id, activityId));
+          }
+          for (const contentVersionId of [
+            contentVersionA,
+            contentVersionB,
+            unauthorizedContentVersion,
+          ]) {
+            await admin.db
+              .delete(contentVersions)
+              .where(eq(contentVersions.id, contentVersionId));
+          }
+          await admin.db
+            .delete(accountInvitations)
+            .where(eq(accountInvitations.id, invitationId));
+          await admin.db.delete(accounts).where(eq(accounts.id, participantId));
+          await admin.db.delete(accounts).where(eq(accounts.id, staffId));
+        } finally {
+          await closeLivePostgresHarness(harness);
+        }
       }
     });
   },

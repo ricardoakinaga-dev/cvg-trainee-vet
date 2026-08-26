@@ -236,9 +236,6 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       } finally {
         if (created !== undefined) {
           await admin.db
-            .delete(auditEntries)
-            .where(eq(auditEntries.resourceId, created.contentId));
-          await admin.db
             .delete(authoringDraftIdempotency)
             .where(eq(authoringDraftIdempotency.key, idempotencyKey));
           await admin.db

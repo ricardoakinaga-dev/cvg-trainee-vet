@@ -17,6 +17,7 @@ import {
   createSessionRepository,
 } from "../../packages/persistence/src/index.js";
 import {
+  accountInvitations,
   accounts,
   answerIdempotency,
   answers,
@@ -24,6 +25,9 @@ import {
   auditEntries,
   activityAssignments,
   attempts,
+  contentVersions,
+  learningAssignments,
+  learningActivityItems,
   learningActivities,
   outboxEvents,
   sessions,
@@ -56,6 +60,10 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const participantId = accountId;
       const scopeId = randomUUID();
       const itemId = randomUUID();
+      const contentVersionId = itemId;
+      const contentId = randomUUID();
+      const invitationId = randomUUID();
+      const assignmentId = randomUUID();
       let attemptId: string | null = null;
       const now = new Date("2026-08-09T17:00:00.000Z");
 
@@ -65,15 +73,52 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           professionalEmail: `synthetic-${accountId}@internal.invalid`,
           status: "ACTIVE",
         });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId,
+          tokenHash: "a".repeat(64),
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-09T17:00:00.000Z"),
+          acceptedAt: new Date("2026-08-09T16:00:00.000Z"),
+          createdBy: accountId,
+        });
         await admin.db.insert(learningActivities).values({
           id: activityId,
           scopeId,
           slug: `synthetic-answer-${activityId}`,
+          moduleId: "M01",
           status: "PUBLISHED",
+        });
+        await admin.db.insert(contentVersions).values({
+          id: contentVersionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: "Questão sintética",
+          participantText: "Responda em texto.",
+          responseMode: "TEXT",
+        });
+        await admin.db.insert(learningActivityItems).values({
+          activityId,
+          contentVersionId,
+          ordinal: 1,
+        });
+        await admin.db.insert(learningAssignments).values({
+          id: assignmentId,
+          participantId,
+          scopeId,
+          moduleId: "M01",
+          availableAt: now,
+          status: "DISPONIVEL",
+          version: 0,
         });
         await admin.db.insert(activityAssignments).values({
           participantId,
           activityId,
+          learningAssignmentId: assignmentId,
           status: "DISPONIVEL",
         });
 
@@ -89,6 +134,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           {
             participantId,
             activityId,
+            scopeId,
             idempotencyKey: `start-${activityId}`,
             correlationId: randomUUID(),
           },
@@ -99,6 +145,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           attemptId,
           participantId,
           activityId,
+          scopeId,
           itemId,
           response: "resposta interna de teste",
           idempotencyKey: `answer-${activityId}`,
@@ -219,8 +266,20 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .delete(activityAssignments)
           .where(eq(activityAssignments.activityId, activityId));
         await admin.db
+          .delete(learningAssignments)
+          .where(eq(learningAssignments.id, assignmentId));
+        await admin.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.activityId, activityId));
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
+        await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, contentVersionId));
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
         await admin.db.delete(accounts).where(eq(accounts.id, accountId));
         await closeLivePostgresHarness(harness);
       }

@@ -41,9 +41,11 @@ const rlsHelperProcedures = Object.freeze([
   "public.cvg_learning_activity_item_insert_allowed(uuid,uuid,text)",
   "public.cvg_learning_activity_content_for_participant(uuid,text)",
   "public.cvg_participant_in_scope(uuid,uuid)",
+  "public.cvg_learning_activity_assignment_insert_allowed(uuid,uuid,uuid,text)",
+  "public.cvg_learning_activity_journey_visible(uuid,text)",
 ]);
 
-function rlsHelperGrantSql(applicationRole) {
+function rlsHelperGrantSql(applicationRole, adminRole) {
   const procedures = rlsHelperProcedures.map(quoteLiteral).join(", ");
   return `DO $cvg_runtime_grants$
 DECLARE
@@ -56,6 +58,11 @@ BEGIN
         'GRANT EXECUTE ON FUNCTION %s TO %I',
         helper_procedure,
         ${quoteLiteral(applicationRole)}
+      );
+      EXECUTE format(
+        'GRANT EXECUTE ON FUNCTION %s TO %I WITH GRANT OPTION',
+        helper_procedure,
+        ${quoteLiteral(adminRole)}
       );
     END IF;
   END LOOP;
@@ -97,7 +104,7 @@ $cvg_provision$;`;
     `GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${appIdentifier}, ${adminIdentifier};`,
     `GRANT USAGE ON SCHEMA public TO ${appIdentifier};`,
     `GRANT USAGE ON SCHEMA public TO ${adminIdentifier} WITH GRANT OPTION;`,
-    rlsHelperGrantSql(application.role),
+    rlsHelperGrantSql(application.role, admin.role),
     `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${appIdentifier};`,
     `REVOKE UPDATE, DELETE ON TABLE "authoring_draft_idempotency" FROM ${appIdentifier}, PUBLIC;`,
     `REVOKE UPDATE, DELETE ON TABLE "feedback_ticket_history" FROM ${appIdentifier}, PUBLIC;`,

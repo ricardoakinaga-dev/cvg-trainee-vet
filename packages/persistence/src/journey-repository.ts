@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   deriveProgressNextAction,
@@ -22,11 +22,9 @@ import {
   activityAssignments,
   attempts,
   assessmentWorkflows,
-  contentVersions,
   curriculumRuntimeStates,
   diagnosticResults,
   learningActivities,
-  learningActivityItems,
   learningAssignments,
 } from "./schema.js";
 import type * as schema from "./schema.js";
@@ -229,66 +227,69 @@ export function createParticipantJourneyRepository(
           });
         }
 
-        await setDatabaseSecurityContext(executor, { participantId });
-        const activityRows: readonly JourneyActivityRow[] = await executor
-          .select({
-            activityId: activityAssignments.activityId,
-            scopeId: learningActivities.scopeId,
-            moduleId: learningActivities.moduleId,
-            learningAssignmentId: activityAssignments.learningAssignmentId,
-            slug: learningActivities.slug,
-            title: learningActivities.title,
-            status: activityAssignments.status,
-            contentStatus: contentVersions.status,
-            attemptId: attempts.id,
-            attemptStatus: attempts.status,
-            attemptVersion: attempts.version,
-            attemptUpdatedAt: attempts.updatedAt,
-          })
-          .from(activityAssignments)
-          .innerJoin(
-            learningActivities,
-            eq(activityAssignments.activityId, learningActivities.id),
-          )
-          .innerJoin(
-            learningAssignments,
-            and(
-              eq(
-                learningAssignments.id,
-                activityAssignments.learningAssignmentId,
+        const activityRows: JourneyActivityRow[] = [];
+        for (const scopeId of normalizedScopeIds) {
+          // learning_assignments is protected by participant+scope RLS. Keep
+          // the scope context aligned with each activity query instead of
+          // widening that policy for a multi-scope dashboard read.
+          await setDatabaseSecurityContext(executor, {
+            participantId,
+            scopeId,
+          });
+          const rows: readonly JourneyActivityRow[] = await executor
+            .select({
+              activityId: activityAssignments.activityId,
+              scopeId: learningActivities.scopeId,
+              moduleId: learningActivities.moduleId,
+              learningAssignmentId: activityAssignments.learningAssignmentId,
+              slug: learningActivities.slug,
+              title: learningActivities.title,
+              status: activityAssignments.status,
+              contentStatus: sql<string>`'PUBLICADO'`,
+              attemptId: attempts.id,
+              attemptStatus: attempts.status,
+              attemptVersion: attempts.version,
+              attemptUpdatedAt: attempts.updatedAt,
+            })
+            .from(activityAssignments)
+            .innerJoin(
+              learningActivities,
+              eq(activityAssignments.activityId, learningActivities.id),
+            )
+            .innerJoin(
+              learningAssignments,
+              and(
+                eq(
+                  learningAssignments.id,
+                  activityAssignments.learningAssignmentId,
+                ),
+                eq(learningAssignments.participantId, participantId),
+                eq(learningAssignments.scopeId, learningActivities.scopeId),
+                eq(learningAssignments.moduleId, learningActivities.moduleId),
               ),
-              eq(learningAssignments.participantId, participantId),
-              eq(learningAssignments.scopeId, learningActivities.scopeId),
-              eq(learningAssignments.moduleId, learningActivities.moduleId),
-            ),
-          )
-          .innerJoin(
-            learningActivityItems,
-            eq(learningActivityItems.activityId, learningActivities.id),
-          )
-          .innerJoin(
-            contentVersions,
-            and(
-              eq(contentVersions.id, learningActivityItems.contentVersionId),
-              eq(contentVersions.scopeId, learningActivities.scopeId),
-            ),
-          )
-          .leftJoin(
-            attempts,
-            and(
-              eq(attempts.participantId, participantId),
-              eq(attempts.activityId, activityAssignments.activityId),
-            ),
-          )
-          .where(
-            and(
-              eq(activityAssignments.participantId, participantId),
-              eq(learningActivities.status, "PUBLISHED"),
-              inArray(learningActivities.scopeId, normalizedScopeIds),
-              inArray(activityAssignments.status, assignmentStatuses),
-            ),
-          )
-          .orderBy(asc(learningActivities.slug), desc(attempts.updatedAt));
+            )
+            .leftJoin(
+              attempts,
+              and(
+                eq(attempts.participantId, participantId),
+                eq(attempts.activityId, activityAssignments.activityId),
+              ),
+            )
+            .where(
+              and(
+                eq(activityAssignments.participantId, participantId),
+                eq(learningActivities.scopeId, scopeId),
+                eq(learningActivities.status, "PUBLISHED"),
+                inArray(activityAssignments.status, assignmentStatuses),
+                sql`cvg_learning_activity_journey_visible(
+                  ${activityAssignments.activityId},
+                  ${participantId}
+                )`,
+              ),
+            )
+            .orderBy(asc(learningActivities.slug), desc(attempts.updatedAt));
+          activityRows.push(...rows);
+        }
         const activities = activityRowsToJourney(activityRows);
 
         const runtimeRows = await executor

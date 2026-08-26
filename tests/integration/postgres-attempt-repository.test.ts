@@ -9,9 +9,13 @@ import {
 } from "../../packages/application/src/attempt-use-cases.js";
 import { createAttemptUseCaseDependencies } from "../../packages/persistence/src/attempt-repository.js";
 import {
+  accountInvitations,
+  accounts,
   activityAssignments,
   attemptIdempotency,
   attempts,
+  contentVersions,
+  learningActivityItems,
   learningActivities,
   outboxEvents,
 } from "../../packages/persistence/src/schema.js";
@@ -40,15 +44,50 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const { application: database, admin } = harness;
       const activityId = randomUUID();
       const participantId = randomUUID();
+      const scopeId = randomUUID();
+      const invitationId = randomUUID();
+      const contentVersionId = randomUUID();
+      const contentId = randomUUID();
       const correlationId = randomUUID();
       let attemptId: string | null = null;
 
       try {
+        await admin.db.insert(accounts).values({
+          id: participantId,
+          professionalEmail: `attempt-${participantId}@example.invalid`,
+          status: "ACTIVE",
+        });
+        await admin.db.insert(accountInvitations).values({
+          id: invitationId,
+          accountId: participantId,
+          tokenHash: "b".repeat(64),
+          roles: ["PARTICIPANT"],
+          scopes: [scopeId],
+          expiresAt: new Date("2027-08-09T17:00:00.000Z"),
+          acceptedAt: new Date("2026-08-09T16:00:00.000Z"),
+          createdBy: participantId,
+        });
         await admin.db.insert(learningActivities).values({
           id: activityId,
-          scopeId: randomUUID(),
+          scopeId,
           slug: `synthetic-${activityId}`,
           status: "PUBLISHED",
+        });
+        await admin.db.insert(contentVersions).values({
+          id: contentVersionId,
+          contentId,
+          scopeId,
+          version: 1,
+          status: "PUBLICADO",
+          kind: "QUESTAO",
+          title: "Questão sintética de tentativa",
+          participantText: "Responda em texto.",
+          responseMode: "TEXT",
+        });
+        await admin.db.insert(learningActivityItems).values({
+          activityId,
+          contentVersionId,
+          ordinal: 1,
         });
         await admin.db.insert(activityAssignments).values({
           participantId,
@@ -64,6 +103,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           {
             participantId,
             activityId,
+            scopeId,
             idempotencyKey: `start-${activityId}`,
             correlationId,
           },
@@ -79,6 +119,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         const command = {
           attemptId: started.attemptId,
           participantId,
+          scopeId,
           idempotencyKey: `submit-${activityId}`,
           correlationId,
           submittedAt: "2026-08-09T17:00:00.000Z",
@@ -113,8 +154,18 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .delete(activityAssignments)
           .where(eq(activityAssignments.activityId, activityId));
         await admin.db
+          .delete(learningActivityItems)
+          .where(eq(learningActivityItems.activityId, activityId));
+        await admin.db
           .delete(learningActivities)
           .where(eq(learningActivities.id, activityId));
+        await admin.db
+          .delete(contentVersions)
+          .where(eq(contentVersions.id, contentVersionId));
+        await admin.db
+          .delete(accountInvitations)
+          .where(eq(accountInvitations.id, invitationId));
+        await admin.db.delete(accounts).where(eq(accounts.id, participantId));
         await closeLivePostgresHarness(harness);
       }
     });

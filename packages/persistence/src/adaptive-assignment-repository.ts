@@ -230,23 +230,49 @@ async function materializeMappedActivities(
         "mapped activity has no persisted curriculum assignment",
       );
     }
-    await executor
-      .insert(activityAssignments)
-      .values({
-        participantId,
-        activityId: activity.id,
-        learningAssignmentId: assignment.id,
-        status: assignment.status,
-        assignedAt: now,
+    // Serialize this repository's replay path so RLS-safe existence checks do
+    // not race a concurrent materialization for the same participant/activity.
+    await executor.execute(
+      sql`select pg_advisory_xact_lock(
+        hashtextextended(${`${participantId}:${activity.id}`}, 0)
+      )`,
+    );
+    const existingActivityRows = await executor
+      .select({
+        participantId: activityAssignments.participantId,
+        activityId: activityAssignments.activityId,
+        learningAssignmentId: activityAssignments.learningAssignmentId,
       })
-      .onConflictDoUpdate({
-        target: [
-          activityAssignments.participantId,
-          activityAssignments.activityId,
-        ],
-        set: { learningAssignmentId: assignment.id },
-        where: isNull(activityAssignments.learningAssignmentId),
-      });
+      .from(activityAssignments)
+      .where(
+        and(
+          eq(activityAssignments.participantId, participantId),
+          eq(activityAssignments.activityId, activity.id),
+        ),
+      );
+    const existingActivity = existingActivityRows[0];
+    if (existingActivity !== undefined) {
+      if (existingActivity.learningAssignmentId === null) {
+        await executor
+          .update(activityAssignments)
+          .set({ learningAssignmentId: assignment.id })
+          .where(
+            and(
+              eq(activityAssignments.participantId, participantId),
+              eq(activityAssignments.activityId, activity.id),
+              isNull(activityAssignments.learningAssignmentId),
+            ),
+          );
+      }
+      continue;
+    }
+    await executor.insert(activityAssignments).values({
+      participantId,
+      activityId: activity.id,
+      learningAssignmentId: assignment.id,
+      status: assignment.status,
+      assignedAt: now,
+    });
   }
 }
 
@@ -300,6 +326,11 @@ export function createAdaptiveAssignmentRepository(
           throw new AdaptiveAssignmentNotFoundError();
         }
         const availableAt = diagnostic.completedAt;
+        const activityRows = await findMappedActivities(
+          executor,
+          input.scopeId,
+          moduleIds,
+        );
         await setDatabaseSecurityContext(executor, {
           participantId,
           scopeId: input.scopeId,
@@ -358,11 +389,6 @@ export function createAdaptiveAssignmentRepository(
             "not all curriculum assignments were persisted",
           );
         }
-        const activityRows = await findMappedActivities(
-          executor,
-          input.scopeId,
-          moduleIds,
-        );
         await materializeMappedActivities(
           executor,
           participantId,
