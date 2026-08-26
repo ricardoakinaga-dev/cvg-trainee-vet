@@ -1,10 +1,10 @@
 import { createWorkerRuntime } from "./main.js";
+import { runReconcileCommand } from "./reconcile-command-runner.js";
 
 const runtime = createWorkerRuntime(process.env);
 
 try {
-  await runtime.initialize({ waitForOptionalDependencies: true });
-  const result = await runtime.reconcile();
+  const result = await runReconcileCommand(runtime);
   process.stdout.write(
     `${JSON.stringify({ service: "worker", operation: "qdrant.reconcile", ...result })}\n`,
   );
