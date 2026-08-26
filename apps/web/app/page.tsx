@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 
 type ActivityItem = Readonly<{
@@ -2223,6 +2224,11 @@ export default function HomePage() {
               Fontes, fotos, PDFs, OCR, prompts e decisões internas ficam fora
               desta tela. A atividade chega como uma projeção autorizada.
             </p>
+            {authenticated ? (
+              <Link className="button-link" href="/diagnostic">
+                Abrir diagnóstico formativo
+              </Link>
+            ) : null}
             {journey !== null ? (
               <div className="journey-card" aria-label="Minha jornada">
                 <p className="eyebrow">Minha jornada</p>

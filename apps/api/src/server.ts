@@ -229,6 +229,30 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "GET" && path === "/api/v1/internal/session/scopes") {
     return "/api/v1/internal/session/scopes";
   }
+  if (method === "POST" && path === "/api/v1/diagnostics/b07/sessions") {
+    return "/api/v1/diagnostics/b07/sessions";
+  }
+  if (method === "GET" && path === "/api/v1/diagnostics/b07/sessions/current") {
+    return "/api/v1/diagnostics/b07/sessions/current";
+  }
+  if (
+    method === "PUT" &&
+    /^\/api\/v1\/diagnostics\/b07\/sessions\/[^/]+\/answers\/[^/]+$/u.test(path)
+  ) {
+    return "/api/v1/diagnostics/b07/sessions/:sessionId/answers/:itemId";
+  }
+  if (
+    method === "POST" &&
+    /^\/api\/v1\/diagnostics\/b07\/sessions\/[^/]+\/finalize$/u.test(path)
+  ) {
+    return "/api/v1/diagnostics/b07/sessions/:sessionId/finalize";
+  }
+  if (
+    method === "GET" &&
+    /^\/api\/v1\/diagnostics\/b07\/sessions\/[^/]+$/u.test(path)
+  ) {
+    return "/api/v1/diagnostics/b07/sessions/:sessionId";
+  }
   if (/^\/api\/v1\/activities\/[^/]+$/u.test(path)) {
     return "/api/v1/activities/:activityId";
   }

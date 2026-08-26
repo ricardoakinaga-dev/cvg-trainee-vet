@@ -26,6 +26,40 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
+  it("allows diagnostic session capabilities only for the active participant owner and scope", () => {
+    for (const capability of [
+      "VIEW_OWN_DIAGNOSTIC_SESSION",
+      "START_OWN_DIAGNOSTIC_SESSION",
+      "SAVE_OWN_DIAGNOSTIC_ANSWER",
+      "FINALIZE_OWN_DIAGNOSTIC_SESSION",
+    ] as const) {
+      expect(
+        canAccess(
+          participant({
+            capability,
+            resource: { ownerId: "participant-1", scopeId: "curriculum-1" },
+          }),
+        ),
+      ).toBe(true);
+      expect(
+        canAccess(
+          participant({
+            capability,
+            resource: { ownerId: "participant-2", scopeId: "curriculum-1" },
+          }),
+        ),
+      ).toBe(false);
+      expect(
+        canAccess(
+          participant({
+            capability,
+            resource: { ownerId: "participant-1", scopeId: "other-scope" },
+          }),
+        ),
+      ).toBe(false);
+    }
+  });
+
   it("allows a participant to read only their own scoped appeal protocols", () => {
     expect(
       canAccess(

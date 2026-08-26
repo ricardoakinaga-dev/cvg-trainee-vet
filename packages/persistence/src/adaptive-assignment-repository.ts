@@ -30,8 +30,8 @@ import {
 } from "./learning-state-repository.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
 
-type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
-type DatabaseTransaction = Parameters<
+export type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
+export type DatabaseTransaction = Parameters<
   Parameters<DatabaseExecutor["transaction"]>[0]
 >[0];
 
@@ -295,128 +295,153 @@ export function createAdaptiveAssignmentRepository(
     materializeCurriculumAssignments: async (
       input,
     ): Promise<MaterializedCurriculumAssignments> => {
-      assertMaterializationContext(input);
-      const moduleIds = normalizeModuleIds(input.moduleIds);
-
       return db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, { scopeId: input.scopeId });
-        const diagnosticRows = await executor
-          .select()
-          .from(diagnosticResults)
-          .where(
-            and(
-              eq(diagnosticResults.id, input.diagnosticResultId),
-              eq(diagnosticResults.scopeId, input.scopeId),
-            ),
-          )
-          .limit(1);
-        const diagnostic = diagnosticRows[0];
-        if (diagnostic === undefined)
-          throw new AdaptiveAssignmentNotFoundError();
-
-        const participantId = diagnostic.participantId;
-        const eligibleParticipantRows = await executor
-          .select({ accountId: accounts.id })
-          .from(accounts)
-          .innerJoin(
-            accountInvitations,
-            eq(accountInvitations.accountId, accounts.id),
-          )
-          .where(
-            and(
-              eq(accounts.id, participantId),
-              eq(accounts.status, "ACTIVE"),
-              isNotNull(accountInvitations.acceptedAt),
-              sql`${accountInvitations.roles} @> ${JSON.stringify(["PARTICIPANT"])}::jsonb`,
-              sql`${accountInvitations.scopes} @> ${JSON.stringify([input.scopeId])}::jsonb`,
-            ),
-          )
-          .limit(1);
-        if (eligibleParticipantRows.length === 0) {
-          throw new AdaptiveAssignmentNotFoundError();
-        }
-        const availableAt = diagnostic.completedAt;
-        const activityRows = await findMappedActivities(
-          executor,
-          input.scopeId,
-          moduleIds,
+        return materializeCurriculumAssignmentsInTransaction(
+          transaction as unknown as DatabaseExecutor,
+          input,
+          idFactory,
         );
-        await setDatabaseSecurityContext(executor, {
-          participantId,
-          scopeId: input.scopeId,
-        });
-
-        const existingRows = await findAssignmentRows(
-          executor,
-          participantId,
-          input.scopeId,
-          moduleIds,
-        );
-        const existingByModule = new Map(
-          existingRows.map((row) => [row.moduleId, row]),
-        );
-        const now = new Date();
-
-        for (const moduleId of moduleIds) {
-          const existing = existingByModule.get(moduleId);
-          if (existing !== undefined) {
-            await promoteUnassigned(
-              executor,
-              existing,
-              input.diagnosticResultId,
-            );
-            continue;
-          }
-          const state = assignedState({
-            assignmentId: idFactory(),
-            participantId,
-            moduleId,
-            availableAt: availableAt.toISOString(),
-          });
-          const row = learningAssignmentStateToRow({
-            scopeId: input.scopeId,
-            state,
-          });
-          await executor
-            .insert(learningAssignments)
-            .values({
-              ...row,
-              sourceDiagnosticResultId: input.diagnosticResultId,
-              createdAt: now,
-              updatedAt: now,
-            })
-            .onConflictDoNothing();
-        }
-
-        const rows = await findAssignmentRows(
-          executor,
-          participantId,
-          input.scopeId,
-          moduleIds,
-        );
-        if (rows.length !== moduleIds.length) {
-          throw new AdaptiveAssignmentPersistenceError(
-            "not all curriculum assignments were persisted",
-          );
-        }
-        await materializeMappedActivities(
-          executor,
-          participantId,
-          activityRows,
-          rows,
-          now,
-        );
-        return Object.freeze({
-          diagnosticResultId: input.diagnosticResultId,
-          participantId,
-          scopeId: input.scopeId,
-          assignments: Object.freeze(
-            rows.map((row) => learningAssignmentRowToState(toRow(row))),
-          ),
-        });
       });
     },
   };
   return Object.freeze(repository);
+}
+
+/**
+ * Materializes the diagnostic-derived curriculum inside a caller-owned
+ * transaction. Diagnostic finalization uses this seam so the result, the
+ * assignments, and the session transition commit or roll back together.
+ */
+export async function materializeCurriculumAssignmentsInTransaction(
+  executor: DatabaseExecutor | DatabaseTransaction,
+  input: MaterializeCurriculumAssignmentsInput,
+  idFactory: () => string = randomUUID,
+): Promise<MaterializedCurriculumAssignments> {
+  assertMaterializationContext(input);
+  const moduleIds = normalizeModuleIds(input.moduleIds);
+  const scopedExecutor = executor as DatabaseExecutor;
+  await setDatabaseSecurityContext(
+    scopedExecutor,
+    input.participantId === undefined
+      ? { scopeId: input.scopeId }
+      : { participantId: input.participantId, scopeId: input.scopeId },
+  );
+  const diagnosticRows = await executor
+    .select()
+    .from(diagnosticResults)
+    .where(
+      and(
+        eq(diagnosticResults.id, input.diagnosticResultId),
+        eq(diagnosticResults.scopeId, input.scopeId),
+      ),
+    )
+    .limit(1);
+  const diagnostic = diagnosticRows[0];
+  if (diagnostic === undefined) throw new AdaptiveAssignmentNotFoundError();
+
+  const participantId = diagnostic.participantId;
+  if (
+    input.participantId !== undefined &&
+    input.participantId !== participantId
+  ) {
+    throw new AdaptiveAssignmentNotFoundError();
+  }
+  const eligibleParticipantRows = await executor
+    .select({ accountId: accounts.id })
+    .from(accounts)
+    .innerJoin(
+      accountInvitations,
+      eq(accountInvitations.accountId, accounts.id),
+    )
+    .where(
+      and(
+        eq(accounts.id, participantId),
+        eq(accounts.status, "ACTIVE"),
+        isNotNull(accountInvitations.acceptedAt),
+        sql`${accountInvitations.roles} @> ${JSON.stringify(["PARTICIPANT"])}::jsonb`,
+        sql`${accountInvitations.scopes} @> ${JSON.stringify([input.scopeId])}::jsonb`,
+      ),
+    )
+    .limit(1);
+  if (eligibleParticipantRows.length === 0) {
+    throw new AdaptiveAssignmentNotFoundError();
+  }
+  const availableAt = diagnostic.completedAt;
+  // Published activity discovery is a staff/scope read. Parent participant
+  // finalization restores the dual context before any participant-owned write.
+  await setDatabaseSecurityContext(scopedExecutor, { scopeId: input.scopeId });
+  const activityRows = await findMappedActivities(
+    executor,
+    input.scopeId,
+    moduleIds,
+  );
+  await setDatabaseSecurityContext(scopedExecutor, {
+    participantId,
+    scopeId: input.scopeId,
+  });
+
+  const existingRows = await findAssignmentRows(
+    executor,
+    participantId,
+    input.scopeId,
+    moduleIds,
+  );
+  const existingByModule = new Map(
+    existingRows.map((row) => [row.moduleId, row]),
+  );
+  const now = new Date();
+
+  for (const moduleId of moduleIds) {
+    const existing = existingByModule.get(moduleId);
+    if (existing !== undefined) {
+      await promoteUnassigned(executor, existing, input.diagnosticResultId);
+      continue;
+    }
+    const state = assignedState({
+      assignmentId: idFactory(),
+      participantId,
+      moduleId,
+      availableAt: availableAt.toISOString(),
+    });
+    const row = learningAssignmentStateToRow({
+      scopeId: input.scopeId,
+      state,
+    });
+    await executor
+      .insert(learningAssignments)
+      .values({
+        ...row,
+        sourceDiagnosticResultId: input.diagnosticResultId,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoNothing();
+  }
+
+  const rows = await findAssignmentRows(
+    executor,
+    participantId,
+    input.scopeId,
+    moduleIds,
+  );
+  if (rows.length !== moduleIds.length) {
+    throw new AdaptiveAssignmentPersistenceError(
+      "not all curriculum assignments were persisted",
+    );
+  }
+  await materializeMappedActivities(
+    executor,
+    participantId,
+    activityRows,
+    rows,
+    now,
+  );
+  return Object.freeze({
+    diagnosticResultId: input.diagnosticResultId,
+    participantId,
+    scopeId: input.scopeId,
+    assignments: Object.freeze(
+      rows.map((row) => learningAssignmentRowToState(toRow(row))),
+    ),
+  });
 }

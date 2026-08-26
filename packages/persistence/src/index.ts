@@ -60,6 +60,9 @@ export {
   contentReviewDecisions,
   authoringDraftIdempotency,
   diagnosticResults,
+  diagnosticSessions,
+  diagnosticSessionAnswers,
+  diagnosticSessionIdempotency,
   learningActivityItems,
   rateLimitBuckets,
 } from "./schema.js";
@@ -229,6 +232,11 @@ export {
   AdaptiveAssignmentConflictError,
   AdaptiveAssignmentNotFoundError,
   AdaptiveAssignmentPersistenceError,
+  materializeCurriculumAssignmentsInTransaction,
+} from "./adaptive-assignment-repository.js";
+export type {
+  DatabaseExecutor,
+  DatabaseTransaction,
 } from "./adaptive-assignment-repository.js";
 export {
   createDiagnosticResultRepository,
@@ -240,6 +248,18 @@ export type {
   DiagnosticResultInsertRow,
   DiagnosticResultRowShape,
 } from "./diagnostic-result-repository.js";
+export {
+  createDiagnosticSessionRepository,
+  DiagnosticSessionConflictError,
+  DiagnosticSessionIdempotencyConflictError,
+  DiagnosticSessionNotFoundError,
+  DiagnosticSessionPersistenceError,
+} from "./diagnostic-session-repository.js";
+export type {
+  PersistedDiagnosticSessionCatalogItem,
+  PersistedDiagnosticSessionCatalogSnapshot,
+  PersistedDiagnosticSessionChoice,
+} from "./schema.js";
 export {
   authoringRowToRecord,
   createAuthoringRepository,

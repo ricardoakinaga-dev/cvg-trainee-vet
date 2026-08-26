@@ -554,6 +554,29 @@ describe("migration governance", () => {
     );
   });
 
+  it("keeps diagnostic answers closed after finalization and binds result identity", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0051_diagnostic_sessions.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(
+      migration.match(/session_record\.status = 'EM_ANDAMENTO'/gu),
+    ).toHaveLength(4);
+    expect(migration).toContain(
+      'CREATE UNIQUE INDEX "diagnostic_results_identity_idx"',
+    );
+    expect(migration).toContain(
+      'ADD CONSTRAINT "diagnostic_sessions_result_identity_fk"',
+    );
+    expect(migration).toContain(
+      "diagnostic result identity does not match session",
+    );
+  });
+
   it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {
     const integrationPath = fileURLToPath(
       new URL("./postgres-learning-state.test.ts", import.meta.url),
@@ -642,6 +665,9 @@ describe("migration governance", () => {
       activity_assignments: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       curriculum_runtime_states: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       diagnostic_results: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      diagnostic_sessions: ["SELECT", "INSERT", "UPDATE"],
+      diagnostic_session_answers: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      diagnostic_session_idempotency: ["SELECT", "INSERT", "DELETE"],
       attempts: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       assessment_results: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       answers: ["SELECT", "INSERT", "UPDATE", "DELETE"],

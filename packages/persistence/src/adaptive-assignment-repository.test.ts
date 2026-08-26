@@ -66,6 +66,7 @@ const diagnosticRow = {
     remediationObjectiveIds: [],
   },
   completedAt: availableAt,
+  sessionId: null,
   createdAt: availableAt,
 } as typeof diagnosticResults.$inferSelect;
 

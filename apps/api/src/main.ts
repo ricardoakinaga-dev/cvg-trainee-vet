@@ -4,6 +4,7 @@ import {
   authenticateSessionCookie,
   acceptAccountRecovery,
   assignCurriculumFromDiagnostic,
+  createB07DiagnosticSessionCatalog,
   changeAccountStatus,
   acceptInvitation,
   advanceContent,
@@ -77,6 +78,7 @@ import {
   createParticipantActivityItemResolver,
   createDashboardReadRepository,
   createDiagnosticResultRepository,
+  createDiagnosticSessionRepository,
   createAccountManagementRepository,
   createAccountRecoveryTransaction,
   createAuditRepository,
@@ -188,6 +190,13 @@ export function createApiRuntime(
   const diagnosticResultRepository = createDiagnosticResultRepository(
     integrations.database.db,
   );
+  const diagnosticSessionRepository = createDiagnosticSessionRepository(
+    integrations.database.db,
+  );
+  const diagnosticSessionCatalog =
+    config.nodeEnv !== "production" && config.diagnosticSessionDraftEnabled
+      ? createB07DiagnosticSessionCatalog()
+      : undefined;
   const adaptiveAssignmentRepository = createAdaptiveAssignmentRepository(
     integrations.database.db,
   );
@@ -301,6 +310,10 @@ export function createApiRuntime(
         diagnosticResultRepository,
         adaptiveAssignmentRepository,
       ),
+    diagnosticSessionRepository,
+    ...(diagnosticSessionCatalog === undefined
+      ? {}
+      : { diagnosticSessionCatalog }),
     transitionLearningAssignment: (command) =>
       transitionLearningAssignmentState(command, learningStateRepository),
     createAssessmentWorkflow: (command) =>

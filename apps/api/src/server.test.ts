@@ -130,6 +130,27 @@ describe("API node server adapter", () => {
     expect(routeTemplate("GET", "/api/v1/internal/session/scopes")).toBe(
       "/api/v1/internal/session/scopes",
     );
+    expect(routeTemplate("POST", "/api/v1/diagnostics/b07/sessions")).toBe(
+      "/api/v1/diagnostics/b07/sessions",
+    );
+    expect(
+      routeTemplate("GET", "/api/v1/diagnostics/b07/sessions/current"),
+    ).toBe("/api/v1/diagnostics/b07/sessions/current");
+    expect(
+      routeTemplate(
+        "PUT",
+        "/api/v1/diagnostics/b07/sessions/session/answers/item",
+      ),
+    ).toBe("/api/v1/diagnostics/b07/sessions/:sessionId/answers/:itemId");
+    expect(
+      routeTemplate(
+        "POST",
+        "/api/v1/diagnostics/b07/sessions/session/finalize",
+      ),
+    ).toBe("/api/v1/diagnostics/b07/sessions/:sessionId/finalize");
+    expect(
+      routeTemplate("GET", "/api/v1/diagnostics/b07/sessions/session"),
+    ).toBe("/api/v1/diagnostics/b07/sessions/:sessionId");
     expect(routeTemplate("GET", "/api/v1/activities/activity/progress")).toBe(
       "/api/v1/activities/:activityId/progress",
     );

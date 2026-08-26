@@ -19,6 +19,7 @@ const rawEnvironmentSchema = z.object({
     ),
   AUDIT_CURSOR_SECRET: z.string().min(32).optional(),
   CLINICAL_APPROVER_ID: z.string().min(1).optional(),
+  DIAGNOSTIC_SESSION_DRAFT_ENABLED: booleanString.default(false),
   QDRANT_ENABLED: booleanString.default(false),
   QDRANT_URL: z
     .string()
@@ -53,6 +54,7 @@ export type RuntimeConfig = {
   nodeEnv: "development" | "test" | "production";
   databaseUrl: string;
   requireDatabaseLeastPrivilege: boolean;
+  diagnosticSessionDraftEnabled: boolean;
   auditCursorSecret: string;
   approvedClinicalApproverId?: string;
   qdrant:
@@ -148,6 +150,8 @@ export function loadRuntimeConfig(
     nodeEnv: value.NODE_ENV,
     databaseUrl: value.DATABASE_URL,
     requireDatabaseLeastPrivilege: value.NODE_ENV === "production",
+    diagnosticSessionDraftEnabled:
+      value.NODE_ENV !== "production" && value.DIAGNOSTIC_SESSION_DRAFT_ENABLED,
     auditCursorSecret: auditCursorSecret as string,
     ...(value.CLINICAL_APPROVER_ID === undefined
       ? {}

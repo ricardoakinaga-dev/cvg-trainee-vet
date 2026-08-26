@@ -5027,6 +5027,74 @@ artifacts:
         "local/synthetic evidence only; external Qdrant/PostgreSQL, outage/restart/load/failover/restore, distributed coordination and production release remain unverified",
       ]
     status: "verified-with-gaps"
+  - id: "JOURNEY-056"
+    requirements:
+      [
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "UC-023",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0112",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0560_jornada_sessao_diagnostica_contract.md",
+        "BRIEFING/04.AUDIT/0550_diagnostic_session_audit.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/config/src/env.ts",
+        "packages/contracts/src/diagnostic-session.ts",
+        "packages/domain/src/diagnostic-session.ts",
+        "packages/application/src/diagnostic-session-use-cases.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/persistence/src/diagnostic-session-repository.ts",
+        "packages/persistence/drizzle/0051_diagnostic_sessions.sql",
+        "apps/api/src/http.ts",
+        "apps/api/src/main.ts",
+        "apps/web/app/diagnostic/page.tsx",
+        "scripts/provision-ci-postgres.mjs",
+      ]
+    tests:
+      [
+        "packages/config/src/env.test.ts",
+        "packages/contracts/src/diagnostic-session.test.ts",
+        "packages/domain/src/diagnostic-session.test.ts",
+        "packages/application/src/diagnostic-session-use-cases.test.ts",
+        "packages/persistence/src/diagnostic-session-repository.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/postgres-diagnostic-session.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/e2e/diagnostic-session.spec.ts",
+      ]
+    commit: "WORKTREE"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0550_diagnostic_session_audit.md",
+      ]
+    verification:
+      [
+        "RED: dedicated session contract/application/persistence/API tests initially had no implementation seam; the bounded path was then implemented through contracts, domain, application, PostgreSQL persistence, API and web",
+        "GREEN focal: contracts/domain/application/persistence/config 28/28 PASS; API 89/89 PASS; migration/governance 24/24 PASS; one PostgreSQL live file is conditionally skipped without an authorized database",
+        "REFACTOR: concurrent START replay now locks and rereads the existing session; the synthetic draft catalog is explicit opt-in and fail-closed in production; event types, replay-after-finalization semantics, post-finalization answer RLS and composite session-result identity are aligned",
+        "pnpm verify: 147 files PASS, 30 skipped; 770 tests PASS, 39 skipped; coverage 84.31% statements, 80.13% branches, 87.08% functions, 85.07% lines",
+        "pnpm verify:migrations: 52/52 PASS; pnpm build: 12 workspaces PASS; pnpm test:e2e: 33/33 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "local/synthetic evidence only; live PostgreSQL/RLS, real browser-to-API-to-PostgreSQL diagnostic assignment, production ACL/owners, scale/failover/restore/collector, clinical review/publication and release remain unverified",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

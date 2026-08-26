@@ -10,6 +10,7 @@ export { ApplicationError, toApplicationError } from "./errors.js";
 export type { ApplicationErrorCode, ApplicationErrorDetail } from "./errors.js";
 export {
   assignCurriculumFromDiagnostic,
+  assignedModuleIdsForDiagnosticResult,
   pilotMandatoryModuleIds,
 } from "./adaptive-assignment-use-cases.js";
 export type {
@@ -180,6 +181,29 @@ export type {
   EvaluateDiagnosticDraftCommand,
   ParticipantDiagnosticProfileItem,
 } from "./diagnostic-use-cases.js";
+export {
+  createB07DiagnosticSessionCatalog,
+  finalizeDiagnosticSession,
+  getDiagnosticSession,
+  saveDiagnosticSessionAnswer,
+  startDiagnosticSession,
+  toDiagnosticSessionProjection,
+} from "./diagnostic-session-use-cases.js";
+export type {
+  DiagnosticSessionAggregate,
+  DiagnosticSessionAnswerState,
+  DiagnosticSessionCatalog,
+  DiagnosticSessionCatalogSnapshot,
+  DiagnosticSessionCatalogSnapshotItem,
+  DiagnosticSessionEvaluation,
+  DiagnosticSessionFinalizationState,
+  DiagnosticSessionPublicChoice,
+  DiagnosticSessionPublicItem,
+  DiagnosticSessionRepositoryPort,
+  FinalizeDiagnosticSessionInput,
+  SaveDiagnosticSessionAnswerInput,
+  StartDiagnosticSessionInput,
+} from "./diagnostic-session-use-cases.js";
 export { advanceContent } from "./content-use-cases.js";
 export type {
   AdvanceContentCommand,

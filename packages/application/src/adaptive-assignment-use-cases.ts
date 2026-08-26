@@ -24,6 +24,12 @@ export type MaterializeCurriculumAssignmentsInput = Readonly<{
   readonly diagnosticResultId: string;
   readonly scopeId: string;
   readonly moduleIds: readonly string[];
+  /**
+   * Optional only for a parent participant transaction. The staff-facing
+   * attribution flow intentionally remains scope-only until it has resolved
+   * the participant from the diagnostic result.
+   */
+  readonly participantId?: string;
 }>;
 
 export type MaterializedCurriculumAssignments = Readonly<{
@@ -70,7 +76,7 @@ function assertDiagnosticResultSafety(result: DiagnosticResultState): void {
   }
 }
 
-function orderedAssignedModuleIds(
+export function assignedModuleIdsForDiagnosticResult(
   result: CurriculumDiagnosticResult,
 ): readonly string[] {
   const requested = new Set([
@@ -123,7 +129,7 @@ export async function assignCurriculumFromDiagnostic(
     return await assignments.materializeCurriculumAssignments({
       diagnosticResultId: result.resultId,
       scopeId: result.scopeId,
-      moduleIds: orderedAssignedModuleIds(result.result),
+      moduleIds: assignedModuleIdsForDiagnosticResult(result.result),
     });
   } catch (error) {
     if (

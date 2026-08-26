@@ -42,6 +42,111 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Fechamento técnico local de `JOURNEY-056` — Opção A
+
+### TIMESTAMP
+
+2026-08-26T16:30:14-0300
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 2 — jornada do participante
+
+### SPRINT / TASK
+
+`JOURNEY-056` — sessão diagnóstica pública própria, checkpoint, retomada,
+finalização e atribuição inicial
+
+### ACTION
+
+Após a decisão A de Ricardo, foram implementados contratos strict, domínio,
+casos de uso, migration `0051_diagnostic_sessions`, persistência PostgreSQL/RLS,
+API pública, página web, idempotência/CAS, snapshot imutável e atribuição
+transacional server-side. A revisão independente reproduziu e levou à correção
+de uma corrida de START concorrente, do opt-in inseguro do catálogo draft, da
+semântica de replay de resposta atrasada após finalização e das defesas de
+identidade composta/RLS para respostas já finalizadas.
+
+### RESULT
+
+`pnpm verify` passou com 147 arquivos/770 testes PASS, 30 arquivos/39 testes
+skipped; cobertura 84,31% statements, 80,13% branches, 87,08% functions e
+85,07% lines. `pnpm build` passou nos 12 workspaces; `pnpm test:e2e` passou
+33/33; migrations 52/52, contrato CI, lint, typecheck, secrets, arquitetura,
+documentação, product-definition e public-boundary passaram. A auditoria
+`BRIEFING/04.AUDIT/0550_diagnostic_session_audit.md` classificou a fatia como
+`CONDITIONAL PASS / COMPLETED_WITH_GAPS`.
+
+### GAPS / DECISION
+
+O live PostgreSQL/RLS foi mantido como skip condicional por ausência de banco
+autorizado; o E2E diagnóstico é fixture sintética e ainda não prova
+browser→web→API→PostgreSQL. Produção, grants/owners produtivos, escala,
+failover/restore, operação externa, revisão/publicação clínica, piloto, push,
+deploy, release e claim de competência permanecem fora. O catálogo continua
+rascunho, não publicado e desligado por padrão.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+## 2026-08-26 — Decisão A e abertura do BUILD de `JOURNEY-056`
+
+### TIMESTAMP
+
+2026-08-26T14:19:11-0300
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER / ORCHESTRATE
+
+### PHASE
+
+Phase 2 — jornada do participante
+
+### SPRINT
+
+`JOURNEY-056` — sessão diagnóstica própria
+
+### TASK
+
+Congelar o contrato da fatia escolhida e preparar o RED técnico.
+
+### ACTION
+
+Ricardo aprovou a Opção A: sessão diagnóstica pública própria com
+checkpoint/retomada e finalização server-side. Foi criado
+`BRIEFING/03.BUILD/0560_jornada_sessao_diagnostica_contract.md` com rotas,
+projeções redigidas, escopo server-side, CAS, idempotência, RLS e finalização
+transacional incluindo a atribuição inicial existente.
+
+### RESULT
+
+`JOURNEY-056` saiu de `WAITING_HUMAN_APPROVAL` para `IN_PROGRESS`. Nenhum
+código, migration, publicação, push ou deploy foi executado. O contrato mantém
+B-07 sintético/formativo, `publicationAuthorized=false`, revisão clínica
+pendente e ausência de claim de competência.
+
+### DECISIONS
+
+A decisão de produto está resolvida. A próxima validação é independente e o
+RED de contracts/application/persistence/API; `FEEDBACK-057`, live autorizado,
+produção, operação externa e gates clínicos continuam fora da fatia.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Revisar o contrato 0560 e escrever testes RED antes da implementação GREEN.
+
+---
+
 ## 2026-08-26 — Verificação global após triagem de `JOURNEY-056`
 
 ### TIMESTAMP

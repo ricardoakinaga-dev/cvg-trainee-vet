@@ -74,3 +74,14 @@ export type {
   SummativeAttemptHistory,
   SummativeAssessmentStatus,
 } from "./assessment-policy.js";
+export {
+  DiagnosticSessionDomainError,
+  createDiagnosticSession,
+  transitionDiagnosticSession,
+} from "./diagnostic-session.js";
+export type {
+  DiagnosticSessionEvent,
+  DiagnosticSessionIdentity,
+  DiagnosticSessionState,
+  DiagnosticSessionStatus,
+} from "./diagnostic-session.js";

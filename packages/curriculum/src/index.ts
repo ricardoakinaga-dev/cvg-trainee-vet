@@ -45,6 +45,7 @@ export type {
   CurriculumDraftItem,
   CurriculumDraftPack,
   CurriculumDiagnosticResult,
+  DiagnosticEvaluationCatalog,
   DiagnosticDraftItem,
   DiagnosticDraftPack,
   DiagnosticSessionId,

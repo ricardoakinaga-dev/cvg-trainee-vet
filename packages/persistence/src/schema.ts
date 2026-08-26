@@ -76,6 +76,35 @@ export type PersistedCurriculumRuntimeState = ModuleEvaluationResult;
 
 export type PersistedDiagnosticResult = CurriculumDiagnosticResult;
 
+export type PersistedDiagnosticSessionChoice = Readonly<{
+  readonly id: string;
+  readonly label: string;
+  readonly text: string;
+}>;
+
+export type PersistedDiagnosticSessionCatalogItem = Readonly<{
+  readonly canonicalItemId: string;
+  readonly publicItemId: string;
+  readonly diagnosticSessionId: string;
+  readonly objectiveId: string;
+  readonly ordinal: number;
+  readonly title: string;
+  readonly text: string;
+  readonly responseMode: "CHOICE";
+  readonly choices: readonly PersistedDiagnosticSessionChoice[];
+  readonly correctChoiceIds: readonly string[];
+  readonly selectionMode: "SINGLE" | "MULTIPLE";
+}>;
+
+export type PersistedDiagnosticSessionCatalogSnapshot = Readonly<{
+  readonly diagnosticId: "B07-DIAGNOSTIC-V1";
+  readonly diagnosticVersion: "0.1.0";
+  readonly status: "RASCUNHO";
+  readonly publicationAuthorized: false;
+  readonly clinicalReview: "PENDENTE";
+  readonly items: readonly PersistedDiagnosticSessionCatalogItem[];
+}>;
+
 export type PersistedAuthoringItem = Readonly<{
   readonly title: string;
   readonly prompt: string;
@@ -606,6 +635,7 @@ export const diagnosticResults = pgTable(
     diagnosticVersion: text("diagnostic_version").notNull(),
     result: jsonb("result").$type<PersistedDiagnosticResult>().notNull(),
     completedAt: timestamp("completed_at", { withTimezone: true }).notNull(),
+    sessionId: uuid("session_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -621,6 +651,14 @@ export const diagnosticResults = pgTable(
       table.scopeId,
       table.completedAt,
     ),
+    uniqueIndex("diagnostic_results_session_idx")
+      .on(table.sessionId)
+      .where(sql`${table.sessionId} is not null`),
+    uniqueIndex("diagnostic_results_identity_idx").on(
+      table.id,
+      table.participantId,
+      table.scopeId,
+    ),
     check(
       "diagnostic_results_diagnostic_id_check",
       sql`${table.diagnosticId} = 'B07-DIAGNOSTIC-V1'`,
@@ -628,6 +666,178 @@ export const diagnosticResults = pgTable(
     check(
       "diagnostic_results_diagnostic_version_check",
       sql`${table.diagnosticVersion} = '0.1.0'`,
+    ),
+  ],
+);
+
+export const diagnosticSessions = pgTable(
+  "diagnostic_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    participantId: uuid("participant_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    diagnosticId: text("diagnostic_id").notNull(),
+    diagnosticVersion: text("diagnostic_version").notNull(),
+    status: text("status").notNull().default("EM_ANDAMENTO"),
+    version: integer("version").notNull().default(0),
+    catalogSnapshot: jsonb("catalog_snapshot")
+      .$type<PersistedDiagnosticSessionCatalogSnapshot>()
+      .notNull(),
+    diagnosticResultId: uuid("diagnostic_result_id").references(
+      () => diagnosticResults.id,
+      { onDelete: "restrict" },
+    ),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    lastCheckpointAt: timestamp("last_checkpoint_at", {
+      withTimezone: true,
+    }),
+    finalizedAt: timestamp("finalized_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("diagnostic_sessions_participant_scope_idx").on(
+      table.participantId,
+      table.scopeId,
+      table.updatedAt,
+    ),
+    index("diagnostic_sessions_scope_status_idx").on(
+      table.scopeId,
+      table.status,
+    ),
+    uniqueIndex("diagnostic_sessions_open_participant_scope_idx")
+      .on(
+        table.participantId,
+        table.scopeId,
+        table.diagnosticId,
+        table.diagnosticVersion,
+      )
+      .where(sql`${table.status} = 'EM_ANDAMENTO'`),
+    uniqueIndex("diagnostic_sessions_result_idx")
+      .on(table.diagnosticResultId)
+      .where(sql`${table.diagnosticResultId} is not null`),
+    foreignKey({
+      columns: [table.diagnosticResultId, table.participantId, table.scopeId],
+      foreignColumns: [
+        diagnosticResults.id,
+        diagnosticResults.participantId,
+        diagnosticResults.scopeId,
+      ],
+      name: "diagnostic_sessions_result_identity_fk",
+    }).onDelete("restrict"),
+    check(
+      "diagnostic_sessions_diagnostic_id_check",
+      sql`${table.diagnosticId} = 'B07-DIAGNOSTIC-V1'`,
+    ),
+    check(
+      "diagnostic_sessions_diagnostic_version_check",
+      sql`${table.diagnosticVersion} = '0.1.0'`,
+    ),
+    check(
+      "diagnostic_sessions_status_check",
+      sql`${table.status} in ('EM_ANDAMENTO', 'FINALIZADA')`,
+    ),
+    check("diagnostic_sessions_version_check", sql`${table.version} >= 0`),
+    check(
+      "diagnostic_sessions_catalog_snapshot_check",
+      sql`jsonb_typeof(${table.catalogSnapshot}) = 'object' and ${table.catalogSnapshot}->>'diagnosticId' = 'B07-DIAGNOSTIC-V1' and ${table.catalogSnapshot}->>'diagnosticVersion' = '0.1.0' and ${table.catalogSnapshot}->>'status' = 'RASCUNHO' and ${table.catalogSnapshot}->>'publicationAuthorized' = 'false' and ${table.catalogSnapshot}->>'clinicalReview' = 'PENDENTE' and jsonb_typeof(${table.catalogSnapshot}->'items') = 'array' and jsonb_array_length(${table.catalogSnapshot}->'items') = 120`,
+    ),
+    check(
+      "diagnostic_sessions_finalization_check",
+      sql`(
+        (${table.status} = 'EM_ANDAMENTO' and ${table.finalizedAt} is null and ${table.diagnosticResultId} is null)
+        or
+        (${table.status} = 'FINALIZADA' and ${table.finalizedAt} is not null and ${table.diagnosticResultId} is not null)
+      )`,
+    ),
+  ],
+);
+
+export const diagnosticSessionAnswers = pgTable(
+  "diagnostic_session_answers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => diagnosticSessions.id, { onDelete: "cascade" }),
+    canonicalItemId: text("canonical_item_id").notNull(),
+    selectedChoiceIds: jsonb("selected_choice_ids")
+      .$type<readonly string[]>()
+      .notNull(),
+    savedAt: timestamp("saved_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("diagnostic_session_answers_session_item_idx").on(
+      table.sessionId,
+      table.canonicalItemId,
+    ),
+    index("diagnostic_session_answers_session_idx").on(table.sessionId),
+    check(
+      "diagnostic_session_answers_item_check",
+      sql`length(trim(${table.canonicalItemId})) > 0`,
+    ),
+    check(
+      "diagnostic_session_answers_selection_check",
+      sql`jsonb_typeof(${table.selectedChoiceIds}) = 'array' and jsonb_array_length(${table.selectedChoiceIds}) between 1 and 8`,
+    ),
+  ],
+);
+
+export const diagnosticSessionIdempotency = pgTable(
+  "diagnostic_session_idempotency",
+  {
+    participantId: uuid("participant_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    scopeId: uuid("scope_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    operation: text("operation").notNull(),
+    fingerprint: text("fingerprint").notNull(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => diagnosticSessions.id, { onDelete: "restrict" }),
+    response: jsonb("response")
+      .$type<Readonly<Record<string, unknown>>>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [
+        table.participantId,
+        table.scopeId,
+        table.operation,
+        table.idempotencyKey,
+      ],
+    }),
+    index("diagnostic_session_idempotency_expiry_idx").on(table.expiresAt),
+    index("diagnostic_session_idempotency_session_idx").on(table.sessionId),
+    check(
+      "diagnostic_session_idempotency_key_check",
+      sql`length(trim(${table.idempotencyKey})) between 16 and 128 and ${table.idempotencyKey} ~ '^[A-Za-z0-9][A-Za-z0-9._:-]*$'`,
+    ),
+    check(
+      "diagnostic_session_idempotency_operation_check",
+      sql`${table.operation} in ('START', 'SAVE_ANSWER', 'FINALIZE')`,
+    ),
+    check(
+      "diagnostic_session_idempotency_expiry_check",
+      sql`${table.expiresAt} > ${table.createdAt}`,
     ),
   ],
 );

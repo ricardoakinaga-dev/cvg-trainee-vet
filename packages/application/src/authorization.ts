@@ -10,6 +10,10 @@ export type Role =
 
 export type Capability =
   | "VIEW_OWN_ACTIVITY"
+  | "VIEW_OWN_DIAGNOSTIC_SESSION"
+  | "START_OWN_DIAGNOSTIC_SESSION"
+  | "SAVE_OWN_DIAGNOSTIC_ANSWER"
+  | "FINALIZE_OWN_DIAGNOSTIC_SESSION"
   | "START_OWN_ATTEMPT"
   | "SAVE_OWN_ANSWER"
   | "SUBMIT_OWN_ATTEMPT"
@@ -89,6 +93,10 @@ export function canAccess(request: AuthorizationRequest): boolean {
 
   switch (request.capability) {
     case "VIEW_OWN_ACTIVITY":
+    case "VIEW_OWN_DIAGNOSTIC_SESSION":
+    case "START_OWN_DIAGNOSTIC_SESSION":
+    case "SAVE_OWN_DIAGNOSTIC_ANSWER":
+    case "FINALIZE_OWN_DIAGNOSTIC_SESSION":
     case "START_OWN_ATTEMPT":
     case "SAVE_OWN_ANSWER":
     case "SUBMIT_OWN_ATTEMPT":

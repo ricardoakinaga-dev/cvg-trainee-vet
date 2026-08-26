@@ -39,6 +39,7 @@ jobs:
       CVG_TEST_DATABASE_URL: postgresql://cvg_app:cvg_app_test_password@127.0.0.1:5432/cvg
       CVG_TEST_ADMIN_DATABASE_URL: postgresql://cvg_test_admin:cvg_admin_test_password@127.0.0.1:5432/cvg
       CVG_REAL_E2E_DATABASE_URL: postgresql://cvg_test_admin:cvg_admin_test_password@127.0.0.1:5432/cvg
+      DIAGNOSTIC_SESSION_DRAFT_ENABLED: "false"
       QDRANT_ENABLED: "false"
       QDRANT_URL: http://127.0.0.1:6333
       CVG_TEST_QDRANT_URL: http://127.0.0.1:6333

@@ -29,6 +29,12 @@ import {
   type FeedbackTicketHistoryState,
   type CreateAuthoringDraftCommand,
 } from "@cvg/application";
+import {
+  createB07DiagnosticSessionCatalog,
+  type DiagnosticSessionAggregate,
+  type DiagnosticSessionFinalizationState,
+  type DiagnosticSessionRepositoryPort,
+} from "@cvg/application";
 import { createObservability } from "@cvg/observability";
 
 import { handleApiRequest, type ApiHttpDependencies } from "./http.js";
@@ -561,6 +567,108 @@ function dependencies(
     healthcheck: async () => undefined,
     ...overrides,
   };
+}
+
+const diagnosticCatalog = createB07DiagnosticSessionCatalog();
+const diagnosticSessionId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const diagnosticAggregate: DiagnosticSessionAggregate = {
+  session: {
+    sessionId: diagnosticSessionId,
+    participantId: attempt.participantId,
+    scopeId: "scope-1",
+    diagnosticId: "B07-DIAGNOSTIC-V1",
+    diagnosticVersion: "0.1.0",
+    startedAt: "2026-08-26T14:00:00.000Z",
+    status: "EM_ANDAMENTO",
+    version: 0,
+  },
+  catalog: diagnosticCatalog.snapshot,
+  answers: [],
+};
+const finalizedDiagnosticAggregate: DiagnosticSessionAggregate = {
+  ...diagnosticAggregate,
+  session: {
+    ...diagnosticAggregate.session,
+    status: "FINALIZADA",
+    version: 1,
+    finalizedAt: "2026-08-26T14:05:00.000Z",
+  },
+  result: {
+    resultId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    participantId: attempt.participantId,
+    scopeId: "scope-1",
+    diagnosticId: "B07-DIAGNOSTIC-V1",
+    version: "0.1.0",
+    completedAt: "2026-08-26T14:05:00.000Z",
+    result: {
+      diagnosticId: "B07-DIAGNOSTIC-V1",
+      version: "0.1.0",
+      notPunitive: true,
+      noGlobalPassFail: true,
+      totalItemCount: 120,
+      answeredItemCount: 0,
+      themeResults: [
+        {
+          themeId: "B07-S1",
+          itemCount: 40,
+          answeredItemCount: 0,
+          earnedPoints: 0,
+          possiblePoints: 0,
+          percent: 0,
+          recommendedModuleIds: ["M01"],
+        },
+        {
+          themeId: "B07-S2",
+          itemCount: 40,
+          answeredItemCount: 0,
+          earnedPoints: 0,
+          possiblePoints: 0,
+          percent: 0,
+          recommendedModuleIds: ["M02"],
+        },
+        {
+          themeId: "B07-S3",
+          itemCount: 40,
+          answeredItemCount: 0,
+          earnedPoints: 0,
+          possiblePoints: 0,
+          percent: 0,
+          recommendedModuleIds: ["M11"],
+        },
+      ],
+      recommendedModuleIds: ["M01", "M02", "M11"],
+      remediationObjectiveIds: [],
+    },
+  },
+};
+
+function diagnosticDependencies(
+  overrides: Partial<ApiHttpDependencies> = {},
+): ApiHttpDependencies {
+  const repository: DiagnosticSessionRepositoryPort = {
+    start: vi.fn(async () => diagnosticAggregate),
+    findCurrent: vi.fn(async () => diagnosticAggregate),
+    findById: vi.fn(async () => diagnosticAggregate),
+    saveAnswer: vi.fn(async () => diagnosticAggregate),
+    finalize: vi.fn(
+      async () =>
+        ({
+          aggregate: finalizedDiagnosticAggregate,
+          assignments: {
+            diagnosticResultId:
+              finalizedDiagnosticAggregate.result?.resultId ?? "",
+            participantId: attempt.participantId,
+            scopeId: "scope-1",
+            assignments: [],
+          },
+        }) satisfies DiagnosticSessionFinalizationState,
+    ),
+  };
+  return dependencies({
+    diagnosticSessionRepository: repository,
+    diagnosticSessionCatalog: diagnosticCatalog,
+    ...overrides,
+  });
 }
 
 describe("API HTTP boundary", () => {
@@ -4724,5 +4832,185 @@ describe("API HTTP boundary", () => {
 
     expect(response.status).toBe(422);
     expect(getParticipantAppeals).not.toHaveBeenCalled();
+  });
+
+  it("runs the participant diagnostic journey through the safe public projection", async () => {
+    const start = vi.fn(async () => diagnosticAggregate);
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/diagnostics/b07/sessions",
+        body: { idempotencyKey: "diagnostic-start-http-2026" },
+      },
+      diagnosticDependencies({
+        diagnosticSessionRepository: {
+          start,
+          findCurrent: vi.fn(async () => diagnosticAggregate),
+          findById: vi.fn(async () => diagnosticAggregate),
+          saveAnswer: vi.fn(async () => diagnosticAggregate),
+          finalize: vi.fn(async () => {
+            throw new Error("not used");
+          }),
+        },
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(start).toHaveBeenCalledWith(
+      expect.objectContaining({
+        participantId: attempt.participantId,
+        scopeId: "scope-1",
+      }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        diagnosticId: "B07-DIAGNOSTIC-V1",
+        diagnosticVersion: "0.1.0",
+        status: "EM_ANDAMENTO",
+        itemCount: 120,
+        items: expect.any(Array),
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("participantId");
+    expect(JSON.stringify(response.body)).not.toContain("correctChoiceIds");
+    expect(JSON.stringify(response.body)).not.toContain("recommendedModuleIds");
+  });
+
+  it("maps public diagnostic item ids to the canonical evaluator id and checkpoints with CAS version", async () => {
+    const saveAnswer = vi.fn(async () => ({
+      ...diagnosticAggregate,
+      session: { ...diagnosticAggregate.session, version: 1 },
+      answers: [
+        {
+          canonicalItemId: "B07-S1-I001",
+          selectedChoiceIds: ["a"],
+          savedAt: "2026-08-26T14:01:00.000Z",
+        },
+      ],
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "PUT",
+        path: `/api/v1/diagnostics/b07/sessions/${diagnosticSessionId}/answers/${diagnosticCatalog.items[0]?.publicItemId}`,
+        body: {
+          version: 0,
+          selectedChoiceIds: ["a"],
+          idempotencyKey: "diagnostic-answer-http-2026",
+        },
+      },
+      diagnosticDependencies({
+        diagnosticSessionRepository: {
+          start: vi.fn(async () => diagnosticAggregate),
+          findCurrent: vi.fn(async () => diagnosticAggregate),
+          findById: vi.fn(async () => diagnosticAggregate),
+          saveAnswer,
+          finalize: vi.fn(async () => {
+            throw new Error("not used");
+          }),
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(saveAnswer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        canonicalItemId: "B07-S1-I001",
+        expectedVersion: 0,
+        selectedChoiceIds: ["a"],
+      }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { version: 1, answeredItemCount: 1 },
+    });
+  });
+
+  it("finalizes once and never exposes assignment or evaluator-only recommendation fields", async () => {
+    const finalize = vi.fn(
+      async () =>
+        ({
+          aggregate: finalizedDiagnosticAggregate,
+          assignments: {
+            diagnosticResultId:
+              finalizedDiagnosticAggregate.result?.resultId ?? "",
+            participantId: attempt.participantId,
+            scopeId: "scope-1",
+            assignments: [{ internal: "must-not-leak" }],
+          },
+        }) as unknown as DiagnosticSessionFinalizationState,
+    );
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: `/api/v1/diagnostics/b07/sessions/${diagnosticSessionId}/finalize`,
+        body: {
+          version: 0,
+          idempotencyKey: "diagnostic-finalize-http-2026",
+        },
+      },
+      diagnosticDependencies({
+        diagnosticSessionRepository: {
+          start: vi.fn(async () => diagnosticAggregate),
+          findCurrent: vi.fn(async () => diagnosticAggregate),
+          findById: vi.fn(async () => diagnosticAggregate),
+          saveAnswer: vi.fn(async () => diagnosticAggregate),
+          finalize,
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(finalize).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedVersion: 0 }),
+    );
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        status: "FINALIZADA",
+        currentOrdinal: null,
+        nextAction: "CONTINUAR_TRILHA",
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("assignment");
+    expect(JSON.stringify(response.body)).not.toContain("recommendedModuleIds");
+  });
+
+  it("does not guess a scope when the participant has more than one active scope", async () => {
+    const start = vi.fn(async () => diagnosticAggregate);
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/diagnostics/b07/sessions",
+        body: { idempotencyKey: "diagnostic-start-ambiguous-2026" },
+      },
+      diagnosticDependencies({
+        authenticate: async () => ({
+          principalId: attempt.participantId,
+          accountStatus: "ACTIVE",
+          roles: ["PARTICIPANT"],
+          scopes: ["scope-1", "scope-2"],
+        }),
+        diagnosticSessionRepository: {
+          start,
+          findCurrent: vi.fn(async () => diagnosticAggregate),
+          findById: vi.fn(async () => diagnosticAggregate),
+          saveAnswer: vi.fn(async () => diagnosticAggregate),
+          finalize: vi.fn(async () => {
+            throw new Error("not used");
+          }),
+        },
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: {
+        code: "state_conflict",
+        details: [{ code: "diagnostic_scope_ambiguous" }],
+      },
+    });
+    expect(start).not.toHaveBeenCalled();
   });
 });

@@ -53,6 +53,21 @@ export type {
   DiagnosticResultProjection,
   ParticipantDiagnosticProfileItem,
 } from "./diagnostic.js";
+export {
+  diagnosticSessionAnswerRequestSchema,
+  diagnosticSessionFinalizeRequestSchema,
+  diagnosticSessionProjectionSchema,
+  diagnosticSessionResultProjectionSchema,
+  diagnosticSessionStartRequestSchema,
+  parseDiagnosticSessionProjection,
+} from "./diagnostic-session.js";
+export type {
+  DiagnosticSessionAnswerRequest,
+  DiagnosticSessionFinalizeRequest,
+  DiagnosticSessionProjection,
+  DiagnosticSessionResultProjection,
+  DiagnosticSessionStartRequest,
+} from "./diagnostic-session.js";
 export { contentTransitionRequestSchema } from "./content.js";
 export type { ContentTransitionRequest } from "./content.js";
 export {

@@ -19,11 +19,41 @@ describe("loadRuntimeConfig", () => {
       nodeEnv: "test",
       databaseUrl: "postgresql://cvg:cvg@localhost:5432/cvg",
       requireDatabaseLeastPrivilege: false,
+      diagnosticSessionDraftEnabled: false,
       auditCursorSecret: developmentAuditCursorKey,
       approvedClinicalApproverId: "ricardo-account",
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
     });
+  });
+
+  it("keeps the diagnostic draft disabled without an explicit non-production opt-in", () => {
+    const defaults = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+    });
+    expect(defaults.diagnosticSessionDraftEnabled).toBe(false);
+
+    const optedIn = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      DIAGNOSTIC_SESSION_DRAFT_ENABLED: "true",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+    });
+    expect(optedIn.diagnosticSessionDraftEnabled).toBe(true);
+
+    const production = loadRuntimeConfig({
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      DIAGNOSTIC_SESSION_DRAFT_ENABLED: "true",
+      AUDIT_CURSOR_SECRET: productionAuditCursorKey,
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+    });
+    expect(production.diagnosticSessionDraftEnabled).toBe(false);
   });
 
   it("requires a valid database URL", () => {

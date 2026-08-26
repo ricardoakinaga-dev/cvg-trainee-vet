@@ -117,6 +117,17 @@ export type DiagnosticDraftItem = Readonly<
   }
 >;
 
+export type DiagnosticEvaluationCatalog = Readonly<{
+  readonly items: readonly Pick<
+    DiagnosticDraftItem,
+    | "id"
+    | "diagnosticSessionId"
+    | "choices"
+    | "correctChoiceIds"
+    | "objectiveId"
+  >[];
+}>;
+
 export type DiagnosticDraftPack = Readonly<{
   readonly diagnosticId: "B07-DIAGNOSTIC-V1";
   readonly blueprintId: "B07-BLUEPRINT-V1";
@@ -700,12 +711,14 @@ export function getModuleDraftPack(moduleId: string): CurriculumDraftPack {
 }
 
 export function evaluateDiagnosticAttempt(
-  input: Readonly<{ readonly answers: readonly ModuleAnswer[] }>,
+  input: Readonly<{
+    readonly answers: readonly ModuleAnswer[];
+    readonly catalog?: DiagnosticEvaluationCatalog;
+  }>,
 ): CurriculumDiagnosticResult {
   assertUniqueAnswers(input.answers);
-  const itemById = new Map(
-    b07DiagnosticDraftPack.items.map((item) => [item.id, item]),
-  );
+  const catalogItems = input.catalog?.items ?? b07DiagnosticDraftPack.items;
+  const itemById = new Map(catalogItems.map((item) => [item.id, item]));
   for (const answer of input.answers) {
     const item = itemById.get(answer.itemId);
     if (item === undefined) {
@@ -736,7 +749,7 @@ export function evaluateDiagnosticAttempt(
   );
   const themeResults = (["B07-S1", "B07-S2", "B07-S3"] as const).map(
     (themeId) => {
-      const themeItems = b07DiagnosticDraftPack.items.filter(
+      const themeItems = catalogItems.filter(
         (item) => item.diagnosticSessionId === themeId,
       );
       const answeredItems = themeItems.filter((item) =>
@@ -772,7 +785,7 @@ export function evaluateDiagnosticAttempt(
   const remediationObjectiveIds = unique(
     themeResults.flatMap((theme) =>
       theme.percent < 70 || theme.answeredItemCount < theme.itemCount
-        ? b07DiagnosticDraftPack.items
+        ? catalogItems
             .filter((item) => item.diagnosticSessionId === theme.themeId)
             .map((item) => item.objectiveId)
         : [],
@@ -783,7 +796,7 @@ export function evaluateDiagnosticAttempt(
     version: "0.1.0",
     notPunitive: true,
     noGlobalPassFail: true,
-    totalItemCount: b07DiagnosticDraftPack.items.length,
+    totalItemCount: catalogItems.length,
     answeredItemCount: input.answers.length,
     themeResults: freeze(themeResults),
     recommendedModuleIds: unique(

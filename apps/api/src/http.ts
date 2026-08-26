@@ -55,7 +55,14 @@ import {
   deriveJourneyNextActionTarget,
   deriveParticipantDashboard,
   deriveParticipantDiagnosticProfile,
+  finalizeDiagnosticSession,
+  getDiagnosticSession,
+  saveDiagnosticSessionAnswer,
+  startDiagnosticSession,
+  toDiagnosticSessionProjection,
   type DiagnosticResultState,
+  type DiagnosticSessionCatalog,
+  type DiagnosticSessionRepositoryPort,
   type EvaluateDiagnosticDraftCommand,
   type ParticipantDashboardState,
   type StaffDashboardState,
@@ -98,6 +105,10 @@ import {
   parseParticipantActivity,
   curriculumRuntimeEvaluationRequestSchema,
   diagnosticEvaluationRequestSchema,
+  diagnosticSessionAnswerRequestSchema,
+  diagnosticSessionFinalizeRequestSchema,
+  diagnosticSessionStartRequestSchema,
+  parseDiagnosticSessionProjection,
   parseParticipantCurriculumRuntime,
   parseParticipantAttempt,
   parseParticipantProgress,
@@ -226,6 +237,8 @@ export interface ApiHttpDependencies {
   readonly assignCurriculumFromDiagnostic?: (
     command: AssignCurriculumFromDiagnosticCommand,
   ) => Promise<MaterializedCurriculumAssignments>;
+  readonly diagnosticSessionRepository?: DiagnosticSessionRepositoryPort;
+  readonly diagnosticSessionCatalog?: DiagnosticSessionCatalog;
   readonly transitionLearningAssignment?: (
     command: AssignmentTransitionCommand,
   ) => Promise<LearningAssignmentState>;
@@ -2006,6 +2019,221 @@ async function handleDiagnosticDraftEvaluation(
   };
 }
 
+type DiagnosticScopeAuthorization = string | ApiHttpResponse;
+
+async function authorizeParticipantDiagnosticScope(
+  requestId: string,
+  principal: ApiPrincipal,
+  capability:
+    | "VIEW_OWN_DIAGNOSTIC_SESSION"
+    | "START_OWN_DIAGNOSTIC_SESSION"
+    | "SAVE_OWN_DIAGNOSTIC_ANSWER"
+    | "FINALIZE_OWN_DIAGNOSTIC_SESSION",
+  dependencies: ApiHttpDependencies,
+): Promise<DiagnosticScopeAuthorization> {
+  const candidateScopes = [
+    ...new Set(principal.scopes.filter((scopeId) => scopeId.trim().length > 0)),
+  ].filter((scopeId) =>
+    isAllowed(principal, capability, {
+      ownerId: principal.principalId,
+      scopeId,
+    }),
+  );
+  if (candidateScopes.length === 0) {
+    return errorResponse("forbidden", requestId);
+  }
+  if (candidateScopes.length !== 1) {
+    return {
+      status: 409,
+      body: apiErrorResponse("state_conflict", requestId, [
+        { code: "diagnostic_scope_ambiguous" },
+      ]),
+    };
+  }
+  const scopeId = candidateScopes[0];
+  if (
+    scopeId === undefined ||
+    dependencies.isParticipantInScope === undefined ||
+    !(await dependencies.isParticipantInScope(principal.principalId, scopeId))
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  return scopeId;
+}
+
+function diagnosticSessionProjection(
+  aggregate: Parameters<typeof toDiagnosticSessionProjection>[0],
+): ApiSuccessEnvelope<unknown>["data"] {
+  return parseDiagnosticSessionProjection(
+    toDiagnosticSessionProjection(aggregate),
+  );
+}
+
+function hasDiagnosticSessionDependencies(
+  dependencies: ApiHttpDependencies,
+): dependencies is ApiHttpDependencies & {
+  readonly diagnosticSessionRepository: DiagnosticSessionRepositoryPort;
+  readonly diagnosticSessionCatalog: DiagnosticSessionCatalog;
+} {
+  return (
+    dependencies.diagnosticSessionRepository !== undefined &&
+    dependencies.diagnosticSessionCatalog !== undefined
+  );
+}
+
+async function handleStartDiagnosticSession(
+  request: ApiHttpRequest,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!hasDiagnosticSessionDependencies(dependencies)) {
+    return errorResponse("not_found", requestId);
+  }
+  const parsed = diagnosticSessionStartRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const scope = await authorizeParticipantDiagnosticScope(
+    requestId,
+    principal,
+    "START_OWN_DIAGNOSTIC_SESSION",
+    dependencies,
+  );
+  if (typeof scope !== "string") return scope;
+  const aggregate = await startDiagnosticSession(
+    {
+      participantId: principal.principalId,
+      scopeId: scope,
+      startedAt: new Date().toISOString(),
+      idempotencyKey: parsed.data.idempotencyKey,
+      correlationId: requestId,
+    },
+    dependencies.diagnosticSessionRepository,
+    dependencies.diagnosticSessionCatalog,
+  );
+  return {
+    status: 201,
+    body: apiSuccessResponse(diagnosticSessionProjection(aggregate), requestId),
+  };
+}
+
+async function handleGetDiagnosticSession(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+  sessionId?: string,
+): Promise<ApiHttpResponse> {
+  if (!hasDiagnosticSessionDependencies(dependencies)) {
+    return errorResponse("not_found", requestId);
+  }
+  if (sessionId !== undefined && !isUuid(sessionId)) {
+    return validationResponse(requestId);
+  }
+  const scope = await authorizeParticipantDiagnosticScope(
+    requestId,
+    principal,
+    "VIEW_OWN_DIAGNOSTIC_SESSION",
+    dependencies,
+  );
+  if (typeof scope !== "string") return scope;
+  const aggregate = await getDiagnosticSession(
+    {
+      participantId: principal.principalId,
+      scopeId: scope,
+      ...(sessionId === undefined ? {} : { sessionId }),
+    },
+    dependencies.diagnosticSessionRepository,
+  );
+  if (aggregate === null) return errorResponse("not_found", requestId);
+  return {
+    status: 200,
+    body: apiSuccessResponse(diagnosticSessionProjection(aggregate), requestId),
+  };
+}
+
+async function handleSaveDiagnosticSessionAnswer(
+  request: ApiHttpRequest,
+  sessionId: string,
+  itemId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!hasDiagnosticSessionDependencies(dependencies)) {
+    return errorResponse("not_found", requestId);
+  }
+  if (!isUuid(sessionId) || !isUuid(itemId)) {
+    return validationResponse(requestId);
+  }
+  const parsed = diagnosticSessionAnswerRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const scope = await authorizeParticipantDiagnosticScope(
+    requestId,
+    principal,
+    "SAVE_OWN_DIAGNOSTIC_ANSWER",
+    dependencies,
+  );
+  if (typeof scope !== "string") return scope;
+  const aggregate = await saveDiagnosticSessionAnswer(
+    {
+      participantId: principal.principalId,
+      scopeId: scope,
+      sessionId,
+      itemId,
+      version: parsed.data.version,
+      selectedChoiceIds: [...parsed.data.selectedChoiceIds],
+      idempotencyKey: parsed.data.idempotencyKey,
+      correlationId: requestId,
+      occurredAt: new Date().toISOString(),
+    },
+    dependencies.diagnosticSessionRepository,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(diagnosticSessionProjection(aggregate), requestId),
+  };
+}
+
+async function handleFinalizeDiagnosticSession(
+  request: ApiHttpRequest,
+  sessionId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!hasDiagnosticSessionDependencies(dependencies)) {
+    return errorResponse("not_found", requestId);
+  }
+  if (!isUuid(sessionId)) return validationResponse(requestId);
+  const parsed = diagnosticSessionFinalizeRequestSchema.safeParse(request.body);
+  if (!parsed.success) return validationResponse(requestId);
+  const scope = await authorizeParticipantDiagnosticScope(
+    requestId,
+    principal,
+    "FINALIZE_OWN_DIAGNOSTIC_SESSION",
+    dependencies,
+  );
+  if (typeof scope !== "string") return scope;
+  const finalization = await finalizeDiagnosticSession(
+    {
+      participantId: principal.principalId,
+      scopeId: scope,
+      sessionId,
+      version: parsed.data.version,
+      idempotencyKey: parsed.data.idempotencyKey,
+      correlationId: requestId,
+      completedAt: new Date().toISOString(),
+    },
+    dependencies.diagnosticSessionRepository,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      diagnosticSessionProjection(finalization.aggregate),
+      requestId,
+    ),
+  };
+}
+
 async function handleAssignCurriculumFromDiagnostic(
   request: ApiHttpRequest,
   diagnosticResultId: string,
@@ -3671,6 +3899,90 @@ async function handleApiRequestCore(
         requestId,
         principal,
         dependencies,
+      );
+    }
+
+    if (
+      request.method === "POST" &&
+      request.path === "/api/v1/diagnostics/b07/sessions"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleStartDiagnosticSession(
+        request,
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/diagnostics/b07/sessions/current"
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleGetDiagnosticSession(
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const diagnosticSessionAnswerMatch = request.path.match(
+      /^\/api\/v1\/diagnostics\/b07\/sessions\/([^/]+)\/answers\/([^/]+)$/u,
+    );
+    if (
+      request.method === "PUT" &&
+      diagnosticSessionAnswerMatch?.[1] !== undefined &&
+      diagnosticSessionAnswerMatch[2] !== undefined
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleSaveDiagnosticSessionAnswer(
+        request,
+        diagnosticSessionAnswerMatch[1],
+        diagnosticSessionAnswerMatch[2],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const diagnosticSessionFinalizeMatch = request.path.match(
+      /^\/api\/v1\/diagnostics\/b07\/sessions\/([^/]+)\/finalize$/u,
+    );
+    if (
+      request.method === "POST" &&
+      diagnosticSessionFinalizeMatch?.[1] !== undefined
+    ) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleFinalizeDiagnosticSession(
+        request,
+        diagnosticSessionFinalizeMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const diagnosticSessionMatch = request.path.match(
+      /^\/api\/v1\/diagnostics\/b07\/sessions\/([^/]+)$/u,
+    );
+    if (request.method === "GET" && diagnosticSessionMatch?.[1] !== undefined) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleGetDiagnosticSession(
+        requestId,
+        principal,
+        dependencies,
+        diagnosticSessionMatch[1],
       );
     }
 

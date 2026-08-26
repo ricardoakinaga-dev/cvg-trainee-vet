@@ -8,41 +8,43 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 7 / hardening de assurance local
-- current_sprint: `OPS-061-RETRY-008` — retry bounded do índice opcional
-- current_task: `OPS-061-RETRY-008` — classificação, backoff, jitter e exaustão
+- current_phase: BUILD — Phase 2 / jornada do participante
+- current_sprint: `JOURNEY-056` — contrato e sessão diagnóstica própria
+- current_task: `JOURNEY-056` — fechar implementação bounded, auditoria e gates
 
 ## STATUS
 
-- status: WAITING_HUMAN_APPROVAL
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: reexecutar a verificação global no HEAD documental `ac516e4` após confirmar o anexo (4392 linhas; SHA-256 `7c08c275a10e22c1fe9f646f90cf7554d82c454c81e8cbb50662a45a0b484b94`) e worktree limpo. `pnpm verify` passou com 143 arquivos/743 testes, 29 arquivos/38 testes skipped, cobertura `84,47%/80,35%/86,62%/85,24%`, contratos 86/86, worker 37/37, migrations 51/51, format, CI contract, lint, typecheck, secrets, traceability, architecture, documentation, product-definition e exposure. A triagem confirmou que não existe tarefa autônoma segura fora da decisão de `JOURNEY-056`: `FEEDBACK-057` não tem contrato executável, `AUD-P1-002` exige ambiente/ACL autorizado e os itens clínicos exigem revisão humana. `OPS-061-RETRY-008` permanece fechado, sem novo defeito nem alteração de produto.
-- next_action: aguardar a decisão humana A/B de `JOURNEY-056`; depois criar/validar somente o contrato escolhido. Não iniciar código, migration ou UX de jornada antes da decisão.
+- last_completed_action: a implementação bounded da Opção A foi concluída, revisada e revalidada: contratos strict, máquina de estados, snapshot imutável, CAS/idempotência, persistência/migration 0051 com RLS, API, web, atribuição transacional, E2E sintético e auditoria `BRIEFING/04.AUDIT/0550_diagnostic_session_audit.md`. A corrida de START, o opt-in do catálogo draft, o replay atrasado e as defesas de identidade composta/RLS após finalização foram corrigidos. `pnpm verify`, build, E2E 33/33, migration governance, secrets, traceability, documentação, product-definition, public-boundary, audit high e diff-check passaram. O gate clínico continua pendente; não houve publicação, push ou deploy.
+- next_action: Ricardo revisar o contrato/auditoria 0560/0550; se autorizar, executar a prova PostgreSQL/RLS e o E2E real em banco descartável. Manter produção, publicação clínica, piloto, push/deploy e claim de competência bloqueados.
 
 ## BLOQUEIOS
 
-- blockers: as provas live locais de `OPS-061-GRANTS-002` passaram em banco descartável, mas não substituem ACL/owners/grants de produção, configuração/deployment do ambiente produtivo, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. As tasks não alteram migrations aplicadas nem grants/owners produtivos. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
+- blockers: as provas live locais de `OPS-061-GRANTS-002` passaram em banco descartável, mas não substituem ACL/owners/grants de produção, configuração/deployment do ambiente produtivo, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. A decisão A removeu o bloqueio de produto de `JOURNEY-056`; seguem como gates separados a disponibilidade de banco live autorizado, a validação independente, a publicação clínica/aplicação real (`AUD-C0-002`/`CUR-24-01`/`CUR-24-03`) e a ausência de claim de release, 100% ou competência prática. `FEEDBACK-057` continua sem contrato executável e fora desta fatia. As tasks não alteram migrations aplicadas nem grants/owners produtivos. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
 
 ## DECISÃO HUMANA
 
-- human_decision_required: yes
-- decision_description: escolher para `JOURNEY-056` entre (A) sessão diagnóstica pública própria, recomendada, com checkpoint/retomada e finalização server-side, ou (B) atividade especial; a escolha define contrato, persistência, API e UX. `FEEDBACK-057` só deve ser aberto após definir resposta única/thread, visibilidade, autoria, edição e efeito no estado. Workflow remoto/push e revisão/autorização clínica continuam exigindo autoridade separada; score técnico não equivale a aprovação clínica ou competência prática
+- human_decision_required: no
+- decision_description: Ricardo aprovou a Opção A em 2026-08-26 para `JOURNEY-056`: sessão diagnóstica pública própria com checkpoint/retomada e finalização server-side. A decisão libera o BUILD técnico bounded descrito no contrato 0560; não libera publicação clínica, piloto, produção, workflow remoto/push ou claim de competência prática. `FEEDBACK-057` continua separado e sem contrato executável.
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T13:49:51-0300
+- last_update: 2026-08-26T16:30:14-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
 - head: consultar `git rev-parse HEAD`; o último fechamento documental de `OPS-061-RETRY-008` está versionado localmente e não houve push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o fechamento documental e `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability`; sem migration aplicada, push ou deploy
+- worktree: alterações locais não commitadas da implementação/auditoria de `JOURNEY-056`; `verify:traceability` estrutural passou; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2`, `OPS-061-GRANTS-004` no commit `489a336` e `OPS-061-GRANTS-005` no commit `400e228`: o contrato exige runtime na role de aplicação, fixture real E2E na role admin, compara as URLs job-level e lê o override somente do step `Apply migrations`. O reconhecimento atual confirmou, contra `0802`/`0113`, que readiness deve ignorar falha do Qdrant e que a saúde detalhada já representa `DEGRADED`; há um achado separado de identidade client-supplied em learning-state ainda não confirmado no contrato/persistência. Focal anterior `16/16`, `pnpm verify` `141/723` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E sintético `32/32`, audit high e diff-check passaram. A crítica independente pré-fix confirmou os dois P2 de CI sem P0/P1; a tentativa pós-fix não retornou veredito e não é tratada como aceite. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`/`0546`.
 
-- current_readiness_evidence: `OPS-061-READINESS-006` está fechado nos commits técnicos `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`, `4e46daff955836c62bf99b90128c5d38d28ec222`, `c79cb7a353126af3494bb5dc28fb6b608c18d364` e `d90393f468c02a30a55927aa6a7f34823efec19a`; `OPS-061-READINESS-007` está implementado no commit técnico `3cf093e907f7653cac11647a4a604525fee4303c` e documentado em `0548`/`41370df`. Readiness é PostgreSQL-only, a saúde agregada mantém `DEGRADED`, API/worker não bloqueiam o cold start, retry é cancelável inclusive contra callback obsoleto, `close()` aguarda inicialização em voo e `reconcile:qdrant` aguarda a preparação da coleção usando a mesma barreira de inicialização. `OPS-061-RETRY-008` foi fechado nos commits técnicos `df91513`/`2a95f5c`: a fronteira SDK preserva `Retry-After` delta-seconds, falhas terminais/desconhecidas prevalecem no conjunto de índices, o retry é bounded, o worker prova novo orçamento explícito após exaustão e o cenário de geração concorrente não deixa timer residual; focal `5/30`, regressão `143/743` com `38` skips, cobertura `84,47%/80,35%/86,62%/85,24%`, build `12/12`, E2E `32/32`, audit high e gates estáticos passaram. Euclid retornou `CONDITIONAL PASS` sem P0/P1; auditoria `0549`. A evidência é local/sintética e não prova produção, release ou competência. `JOURNEY-056` continua aguardando decisão humana A/B.
+- current_readiness_evidence: `OPS-061-READINESS-006`, `OPS-061-READINESS-007` e `OPS-061-RETRY-008` permanecem fechados conforme as auditorias `0547`–`0549`; readiness é PostgreSQL-only, a saúde agregada mantém `DEGRADED`, API/worker não bloqueiam o cold start, retry é bounded/cancelável, `close()` aguarda inicialização em voo e `reconcile:qdrant` aguarda a preparação da coleção. A evidência anterior é local/sintética e não prova produção, release ou competência. A decisão A de `JOURNEY-056` está registrada acima; a evidência específica da jornada está em `journey_056_evidence`.
+
+- journey_056_evidence: `JOURNEY-056` tem implementação GREEN/REFACTOR em worktree, migration `0051_diagnostic_sessions`, contrato 0560 e auditoria 0550. `pnpm verify` passou com 147 arquivos/770 testes PASS, 30 arquivos/39 testes skipped e cobertura 84,31%/80,13%/87,08%/85,07%; build 12/12 e E2E sintético 33/33 passaram. O teste live PostgreSQL/RLS continua condicional e foi skipped por ausência de `CVG_RUN_LIVE_DB_TESTS=true`/`CVG_TEST_DATABASE_URL`; não há prova browser→API→PostgreSQL, grants/owners produtivos, operação externa, publicação clínica, release ou competência prática.
 
 ## REGRAS DE USO
 
