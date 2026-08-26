@@ -4912,6 +4912,59 @@ artifacts:
         "local/synthetic evidence only; no outage live, production, remote same-SHA, clinical approval, release or competence claim",
       ]
     status: "verified-with-gaps"
+  - id: "OPS-061-READINESS-007"
+    requirements:
+      [
+        "SPEC-0112",
+        "SPEC-0113",
+        "SPEC-0118",
+        "OBSERVABILITY-12-01",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md",
+        "BRIEFING/04.AUDIT/0548_readiness_retry_close_audit.md",
+        "BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md",
+        "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0112_integracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "apps/worker/src/main.ts",
+        "apps/worker/src/reconcile-command.ts",
+        "apps/worker/src/reconcile-command-runner.ts",
+      ]
+    tests:
+      [
+        "apps/worker/src/main.test.ts",
+        "apps/worker/src/reconcile.test.ts",
+        "apps/worker/src/reconcile-command-runner.test.ts",
+      ]
+    commit: "3cf093e907f7653cac11647a4a604525fee4303c"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0548_readiness_retry_close_audit.md",
+      ]
+    verification:
+      [
+        "RED: a pending retry plus an explicitly recovered Qdrant produced a third /exists request before the stale-callback identity guard",
+        "GREEN focal: worker 5 files / 34 tests PASS, including slow close, shared in-flight initialization and no third request from an obsolete callback",
+        "pnpm verify: 142 test files PASS, 29 skipped; 733 tests PASS, 38 skipped; coverage 84.45% statements, 80.34% branches, 86.54% functions, 85.16% lines",
+        "pnpm build: 12 workspaces PASS; pnpm test:e2e --workers=1: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "boot and explicit optional initialization share one in-flight promise; close cancels retry, drains the in-flight attempt and handles its optional rejection",
+        "the final independent Gauss review returned CONDITIONAL PASS without P0/P1; local/synthetic evidence only, with integrated boot+reconcile, retry policy and live outage gaps retained",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

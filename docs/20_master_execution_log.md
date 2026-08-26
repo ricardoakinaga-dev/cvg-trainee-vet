@@ -42,6 +42,118 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Fechamento de `OPS-061-READINESS-007`
+
+### TIMESTAMP
+
+2026-08-26T12:00:56-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-007` — retry/close do índice opcional
+
+### TASK
+
+Eliminar retry obsoleto após recuperação explícita e provar encerramento
+aguardável durante inicialização opcional lenta.
+
+### ACTION
+
+A fatia foi executada em RED → GREEN → REFACTOR no worker. O teste RED
+reproduziu a terceira chamada `/exists` quando um callback de retry já
+enfileirado sobrevivia à recuperação explícita. A implementação adicionou
+guarda de identidade do timer, cancelamento centralizado, promessa de
+inicialização compartilhada e drenagem no `close()`.
+
+### RESULT
+
+O focal passou `5` arquivos/`34` testes. A regressão passou `142` arquivos/
+`733` testes, com `29` arquivos/`38` testes skipped e cobertura
+`84,45%` statements, `80,34%` branches, `86,54%` functions e `85,16%` lines;
+build `12/12`, E2E `32/32`, audit high, diff-check e gates estáticos passaram.
+Auditoria `0548` e manifesto foram atualizados.
+
+### DECISIONS
+
+`OPS-061-READINESS-007` fica `COMPLETED_WITH_GAPS`. Gauss revisou o SHA
+técnico final em modo somente leitura e retornou `CONDITIONAL PASS`, sem
+P0/P1. Integração real boot+reconcile, close lento combinado com retry
+enfileirado, retry bounded completo e operação live permanecem gaps explícitos.
+`JOURNEY-056` não é alterado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Após a validação de rastreabilidade em worktree limpo, aguardar Ricardo
+escolher A ou B para `JOURNEY-056`; não iniciar código, migration ou UX de
+jornada, nem declarar release.
+
+---
+
+## 2026-08-26 — Abertura de `OPS-061-READINESS-007`
+
+### TIMESTAMP
+
+2026-08-26T11:15:55-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-007` — retry/close do índice opcional
+
+### TASK
+
+Eliminar a tentativa redundante causada por retry pendente após recuperação
+explícita e fortalecer a prova de encerramento ordenado.
+
+### ACTION
+
+Foi aberta uma task bounded a partir dos P2 registrados no parecer independente
+Linnaeus para `OPS-061-READINESS-006`. O escopo fica limitado ao worker,
+Qdrant opcional e testes; o contrato, migration e UX de `JOURNEY-056` continuam
+aguardando decisão humana.
+
+### RESULT
+
+O estado foi movido para `IN_PROGRESS`. O RED será escrito antes de qualquer
+alteração de runtime e deve reproduzir retry obsoleto e `close()` durante uma
+inicialização Qdrant deferred. Não houve execução produtiva ou migration.
+
+### DECISIONS
+
+Prosseguir com a correção técnica sem tocar na jornada participante. Retry
+bounded completo/backoff/jitter, integração boot+reconcile com banco e operação
+live permanecem fora desta task.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever e executar o teste RED focal em `apps/worker/src/main.test.ts`; manter
+o gate A/B de `JOURNEY-056` intacto.
+
+---
+
 ## 2026-08-26 — Fechamento final após crítica independente de `OPS-061-READINESS-006`
 
 ### TIMESTAMP

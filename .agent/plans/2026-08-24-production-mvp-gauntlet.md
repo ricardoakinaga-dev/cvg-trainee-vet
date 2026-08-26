@@ -337,6 +337,18 @@ a aprovação clínica, piloto ou release produtivo.
   limpo; o gate passou novamente. O ciclo desta fatia termina em
   `COMPLETED_WITH_GAPS`, sem P0/P1 novos, com os P2 explicitamente adiados a
   uma task bounded e `JOURNEY-056` preservado em `WAITING_HUMAN_APPROVAL`.
+- [x] (2026-08-26T11:15:55-03:00) Abrir `OPS-061-READINESS-007` e executar a
+  fatia bounded: o RED reproduziu o retry obsoleto com terceira chamada,
+  `close()` lento e promessa compartilhada; a guarda de identidade e a
+  coordenação de encerramento foram implementadas no worker, com focal `34/34`
+  e auditoria `0548`. O escopo não alterou `JOURNEY-056`, migrations ou UX.
+- [x] (2026-08-26T12:00:56-03:00) Fechar `OPS-061-READINESS-007` no commit
+  técnico `3cf093e`: regressão `pnpm verify` passou com `142/733`, `38` skips
+  e cobertura `84,45%/80,34%/86,54%/85,16%`; build `12/12`, E2E `32/32`, audit
+  high, gates documentais e traceability foram registrados. Gauss retornou
+  `CONDITIONAL PASS`, sem P0/P1; os gaps integrados, retry policy e live
+  permanecem explícitos. O runtime retorna a `WAITING_HUMAN_APPROVAL` para
+  `JOURNEY-056`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

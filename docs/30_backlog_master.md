@@ -671,6 +671,25 @@ backfill inventado.
 - gaps remanescentes: verificação live com Qdrant indisponível, startup/restart/carga/failover e operação externa ainda não observados; retry de boot ainda não tem limite/backoff/jitter; readiness ainda não valida literalmente migration/schema; o achado separado de identidade em learning-state continua em análise
 - próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; manter a operação de reconciliação sob o comando explícito e tratar retry limitado/backoff, migration/schema readiness e outage live como novas fatias bounded, sem declarar release
 
+### OPS-061-READINESS-007 — Retry sem duplicação e encerramento do índice opcional
+
+- título: impedir retry obsoleto após recuperação explícita e provar encerramento ordenado durante inicialização lenta
+- descrição: coordenar o timer de retry do worker com o modo aguardável usado por `reconcile:qdrant`; uma recuperação explícita bem-sucedida deve cancelar retry pendente, enquanto `close()` deve aguardar a tentativa em voo e não deixar timer ou rejeição não tratada
+- módulo: worker / integrações / operações / testes
+- dependência: `OPS-061-READINESS-006`; auditoria `BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md`; SPEC 0112/0113/0118
+- fase: BUILD — Phase 7 / hardening de assurance local
+- risco: médio — tentativas redundantes podem pressionar o índice opcional e um encerramento sem drenagem pode deixar requisições ou rejeições em voo
+- impacto: médio
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: RED reproduz retry pendente e `close()` durante Qdrant deferred; GREEN cancela retry obsoleto após recuperação explícita, `close()` aguarda e o worker mantém falha opcional isolada; regressão, build, audit high, diff-check e rastreabilidade passam sem claim externo
+- escopo: `apps/worker/src/main.ts`, `apps/worker/src/main.test.ts`, auditoria, backlog, runtime state, log, plano e manifesto
+- fora desta fatia: API de jornada, `JOURNEY-056`, `FEEDBACK-057`, migrations, produto, produção, workflow remoto same-SHA, retry bounded completo/backoff/jitter, banco live e dados reais
+- controles obrigatórios: PostgreSQL continua fonte autoritativa; Qdrant/IA não decidem estado; testes não usam dados reais; retry é cancelável; `close()` drena inicialização; RED/GREEN/REFACTOR, revisão independente e rastreabilidade
+- evidência de abertura: parecer independente Linnaeus em `0547`; P2 de retry/close; commit de abertura documental e log/state de 2026-08-26
+- evidência de fechamento: RED reproduziu a terceira chamada causada por callback obsoleto; a guarda de identidade foi implementada no commit técnico `3cf093e907f7653cac11647a4a604525fee4303c`; worker `5` arquivos/`34` testes PASS, `pnpm verify` `142` arquivos/`733` testes PASS com `29` arquivos/`38` testes skipped e cobertura `84,45%`/`80,34%`/`86,54%`/`85,16%`; build `12/12`, E2E `32/32`, audit high, diff-check e gates documentais PASS; Gauss retornou `CONDITIONAL PASS` sem P0/P1
+- gaps remanescentes: integração completa boot+reconcile com PostgreSQL/Qdrant reais, combinação close lento + retry já enfileirado, política bounded de retry/backoff/jitter/classificação, migration/schema readiness e operação live continuam fora desta task
+- próxima ação: aguardar a decisão humana A/B de `JOURNEY-056`; manter retry/reconcile sob o comando explícito e abrir nova fatia somente com escopo autorizado, sem declarar release
+
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial
 
 - título: fechar a jornada participante de diagnóstico formativo sintético até assignment e atividade publicada
