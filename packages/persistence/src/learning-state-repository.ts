@@ -28,6 +28,7 @@ import {
   learningAssignments,
 } from "./schema.js";
 import type * as schema from "./schema.js";
+import { setDatabaseSecurityContext } from "./security-context.js";
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 type DatabaseTransaction = Parameters<
@@ -90,6 +91,13 @@ export class LearningStatePersistenceConflictError extends Error {
 
 export type PersistenceContext = Readonly<{
   readonly participantId: string;
+  readonly scopeId: string;
+  readonly actorId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
+}>;
+
+export type StaffPersistenceContext = Readonly<{
   readonly scopeId: string;
   readonly actorId?: string;
   readonly requestId?: string;
@@ -364,8 +372,8 @@ function assertContext(context: PersistenceContext): void {
 }
 
 function assertFeedbackAuditContext(
-  context: PersistenceContext,
-): asserts context is PersistenceContext & {
+  context: PersistenceContext | StaffPersistenceContext,
+): asserts context is (PersistenceContext | StaffPersistenceContext) & {
   readonly actorId: string;
   readonly requestId: string;
   readonly correlationId: string;
@@ -382,6 +390,10 @@ function assertFeedbackAuditContext(
       );
     }
   }
+}
+
+function assertStaffPersistenceContext(context: StaffPersistenceContext): void {
+  assertNonEmpty(context.scopeId, "scopeId");
 }
 
 function assertContextMatches(
@@ -811,6 +823,18 @@ async function withContext<T>(
   });
 }
 
+async function withStaffContext<T>(
+  db: DatabaseExecutor,
+  context: StaffPersistenceContext,
+  action: (tx: DatabaseTransaction) => Promise<T>,
+): Promise<T> {
+  assertStaffPersistenceContext(context);
+  return db.transaction(async (tx) => {
+    await setDatabaseSecurityContext(tx, { scopeId: context.scopeId });
+    return action(tx);
+  });
+}
+
 async function syncBoundActivityAssignmentStatus(
   tx: DatabaseTransaction,
   context: PersistenceContext,
@@ -892,6 +916,14 @@ export type LearningStateRepository = Readonly<{
   ) => Promise<ScopedFeedbackTicket>;
   findFeedbackTicket: (
     context: PersistenceContext,
+    ticketId: string,
+  ) => Promise<ScopedFeedbackTicket | null>;
+  saveFeedbackTicketAsStaff: (
+    context: StaffPersistenceContext,
+    state: FeedbackTicketState,
+  ) => Promise<ScopedFeedbackTicket>;
+  findFeedbackTicketAsStaff: (
+    context: StaffPersistenceContext,
     ticketId: string,
   ) => Promise<ScopedFeedbackTicket | null>;
   saveAppeal: (
@@ -1076,17 +1108,24 @@ export function createLearningStateRepository(
       return row === undefined ? null : assessmentWorkflowRowToState(row);
     });
 
-  const saveTicket = async (
-    context: PersistenceContext,
+  const persistFeedbackTicket = async (
+    context: PersistenceContext | StaffPersistenceContext,
     state: FeedbackTicketState,
-  ): Promise<ScopedFeedbackTicket> =>
-    withContext(db, context, async (tx) => {
+    allowCreate: boolean,
+  ): Promise<ScopedFeedbackTicket> => {
+    const action = async (tx: DatabaseTransaction) => {
       assertFeedbackAuditContext(context);
       const row = feedbackTicketStateToRow({ scopeId: context.scopeId, state });
       const now = new Date();
       let fromStatus: string | null = null;
       let fromPriority: string | null = null;
       let fromAssigneeId: string | null = null;
+      if ("participantId" in context && row.version > 0) {
+        conflict("participant feedback updates require staff context");
+      }
+      if (!allowCreate && row.version === 0) {
+        conflict("staff feedback transition requires an existing ticket");
+      }
       if (row.version > 0) {
         const previousRows = await tx
           .select({
@@ -1193,7 +1232,25 @@ export function createLearningStateRepository(
         occurredAt: now,
       });
       return feedbackTicketRowToState(saved);
-    });
+    };
+
+    if ("participantId" in context) {
+      return withContext(db, context, action);
+    }
+    return withStaffContext(db, context, action);
+  };
+
+  const saveTicket = async (
+    context: PersistenceContext,
+    state: FeedbackTicketState,
+  ): Promise<ScopedFeedbackTicket> =>
+    persistFeedbackTicket(context, state, true);
+
+  const saveTicketAsStaff = async (
+    context: StaffPersistenceContext,
+    state: FeedbackTicketState,
+  ): Promise<ScopedFeedbackTicket> =>
+    persistFeedbackTicket(context, state, false);
 
   const findTicket = async (
     context: PersistenceContext,
@@ -1207,6 +1264,25 @@ export function createLearningStateRepository(
           and(
             eq(feedbackTickets.id, ticketId),
             eq(feedbackTickets.participantId, context.participantId),
+            eq(feedbackTickets.scopeId, context.scopeId),
+          ),
+        )
+        .limit(1);
+      const row = rows[0];
+      return row === undefined ? null : feedbackTicketRowToState(row);
+    });
+
+  const findTicketAsStaff = async (
+    context: StaffPersistenceContext,
+    ticketId: string,
+  ): Promise<ScopedFeedbackTicket | null> =>
+    withStaffContext(db, context, async (tx) => {
+      const rows = await tx
+        .select()
+        .from(feedbackTickets)
+        .where(
+          and(
+            eq(feedbackTickets.id, ticketId),
             eq(feedbackTickets.scopeId, context.scopeId),
           ),
         )
@@ -1297,6 +1373,8 @@ export function createLearningStateRepository(
     findAssessmentWorkflow: findWorkflow,
     saveFeedbackTicket: saveTicket,
     findFeedbackTicket: findTicket,
+    saveFeedbackTicketAsStaff: saveTicketAsStaff,
+    findFeedbackTicketAsStaff: findTicketAsStaff,
     saveAppeal: saveAppealState,
     findAppeal: findAppealState,
   });

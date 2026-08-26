@@ -336,6 +336,67 @@ describe("migration governance", () => {
     expect(repository).not.toContain("participantId: input");
   });
 
+  it("keeps participant feedback writes limited to create while staff writes use scope context", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0042_feedback_ticket_participant_write_rls.sql",
+        import.meta.url,
+      ),
+    );
+    const repositoryPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/learning-state-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const useCasesPath = fileURLToPath(
+      new URL(
+        "../../packages/application/src/learning-state-use-cases.ts",
+        import.meta.url,
+      ),
+    );
+    const [migration, repository, useCases] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(repositoryPath, "utf8"),
+      readFile(useCasesPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      'DROP POLICY "feedback_tickets_participant_scope_policy" ON "feedback_tickets"',
+    );
+    expect(migration).toContain(
+      'DROP POLICY "feedback_tickets_staff_scope_select_policy" ON "feedback_tickets"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_tickets_staff_scope_select_policy"',
+    );
+    expect(migration).toContain(
+      "current_setting('cvg.participant_id', true) = ''",
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_tickets_participant_scope_select_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "feedback_tickets_participant_scope_insert_policy"',
+    );
+    expect(migration).not.toContain('ON "feedback_tickets" FOR ALL USING');
+    expect(migration).not.toContain(
+      'CREATE POLICY "feedback_tickets_participant_scope_delete_policy"',
+    );
+    expect(migration).toContain(
+      "CREATE OR REPLACE FUNCTION cvg_guard_feedback_ticket_staff_metadata_update()",
+    );
+    expect(migration).toContain("NEW.status IS DISTINCT FROM OLD.status");
+    expect(migration).toContain("NEW.priority IS DISTINCT FROM OLD.priority");
+    expect(migration).toContain("triage metadata or a status transition");
+    expect(repository).toContain("StaffPersistenceContext");
+    expect(repository).toContain("saveFeedbackTicketAsStaff");
+    expect(repository).toContain("findFeedbackTicketAsStaff");
+    expect(useCases).toContain("LearningStateStaffContext");
+    expect(useCases).toContain("saveFeedbackTicketAsStaff");
+    expect(useCases).toContain("findFeedbackTicketAsStaff");
+  });
+
   it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {
     const integrationPath = fileURLToPath(
       new URL("./postgres-learning-state.test.ts", import.meta.url),

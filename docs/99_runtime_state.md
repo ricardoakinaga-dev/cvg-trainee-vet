@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 3–9 jornada de produto e resiliência
-- current_sprint: FEEDBACK-054 — prioridade e atribuição escopadas de relatos
-- current_task: preparar a prova live autorizada ou selecionar a próxima fatia bounded após FEEDBACK-054
+- current_phase: BUILD — Phase 3–5 / hardening de segurança e integridade
+- current_sprint: FEEDBACK-055 — isolamento de escrita de feedback
+- current_task: fechar RED/GREEN/REFACTOR e registrar a auditoria local de isolamento de escrita em feedback_tickets
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: fechar FEEDBACK-054 no commit documental `d460ba04bb459f502ef59875242a091a3c1a5beb` e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree limpo.
-- next_action: preparar a prova live autorizada de PostgreSQL/RLS/grants/trigger/CAS ou selecionar a próxima fatia bounded; manter sem release, piloto ou publicação clínica.
+- last_completed_action: implementar e testar localmente `FEEDBACK-055`: migration 0042, policies explícitas participante, contexto staff somente de escopo, guard de status/metadata, fixture live preparada e auditoria 0539.
+- next_action: executar a prova PostgreSQL live em ambiente descartável autorizado; sem esse ambiente, selecionar a próxima fatia bounded (`FEEDBACK-057`) sem declarar efetividade RLS ou release.
 
 ## BLOQUEIOS
 
-- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `RLS-FUNCTION-EXECUTE-051`, `ACTIVITY-RLS-047`, `FEEDBACK-HISTORY-053` e `FEEDBACK-054` ainda não têm ACL/RLS/trigger/CAS live; workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/SLA/notificação, atribuição a terceiro e debrief/reflexão completa permanecem fora do produto implementado. Esses bloqueios não impedem a verificação local, mas impedem declarar release/100%
+- blockers: CVG-TEST-DB-REMOTE-001 — não há `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`/`CVG_REAL_E2E_DATABASE_URL` nem banco CVG descartável autorizado nesta sessão; `FEEDBACK-055` ainda não tem ACL/RLS/trigger/CAS live, concorrência ou browser→API→PostgreSQL. A tentativa de cobertura global desta rodada foi interrompida com exit 130 por contenção de processos externos de cobertura; baseline anterior permanece registrado, e o focal 28/28, lint, typecheck, format e migrations 43/43 passaram. Workflow remoto same-SHA, grants/owners produtivos, collector/retention/traces/carga/failover/restore e provider/MFA exigem ambiente/autoridade; AUD-C0-002/CUR-24-01/CUR-24-03 — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; resposta/SLA/notificação, atribuição a terceiro e debrief/reflexão completa permanecem fora do produto implementado. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações locais usam runtime efêmero Node `22.22.0`/pnpm `10.33.0`. Esses bloqueios não impedem verificação local, mas impedem declarar release/100%
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-24T22:30:46-0300
+- last_update: 2026-08-26T00:14:32-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `d460ba04bb459f502ef59875242a091a3c1a5beb`; código funcional `FEEDBACK-054` em `ea81eed1b42f6807938c2c83520833f86b30a3f7`, hardening E2E em `9eedb2518f7b777330fe1787825df64416827dac`, auditoria 0538 e manifesto fechados; o preflight live saiu 2 sem ambiente
+- head: `29e990b0df33daf6fc3dfc24413f13cb2aaf9610` antes do commit desta fatia; migration 0042, auditoria 0539, manifesto e `STATE_OF_THE_ART_MASTER_PLAN.md` presentes; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o commit documental e release traceability; sem push/deploy
+- worktree: alterações locais de FEEDBACK-055 aguardando commit reversível; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-054` está GREEN/REFACTOR com contrato strict, capability `MANAGE_FEEDBACK_METADATA`, identidade server-side, autoatribuição bounded, CAS, histórico `METADATA_ALTERADO`, auditoria metadata-only, trigger/policy SQL e projeção interna sem UUID na web; focal 13 arquivos/140 testes; coverage 141/695/35 skips com 84,36% statements, 80,36% branches, 86,39% functions e 85,05% lines; build 12 workspaces; typecheck/lint/format; migrations 42/42; contracts 86/86; worker 27/27; operations E2E 6/6; E2E 32/32; `pnpm verify`, audit high e gates estáticos passaram; release traceability passou no commit `d460ba04bb459f502ef59875242a091a3c1a5beb`; preflight `pnpm test:integration:live` saiu 2 por ausência de `CVG_TEST_DATABASE_URL` antes de conectar; não há claim live de ACL/RLS/grants/trigger efetivo, concorrência, browser→API→PostgreSQL, produção, workflow remoto same-SHA, operação externa, restore/failover ou gates clínicos
+- verification_state: `FEEDBACK-055` está GREEN/REFACTOR localmente: RED inicial por migration ausente, 3 arquivos/28 testes focais PASS, policy 0042 explícita, contexto staff sem participantId, guard de status-only/metadata-only, typecheck/lint/format PASS e migrations 43/43. A prova live preparada em `postgres-learning-state.test.ts` permanece skipped sem `CVG_TEST_DATABASE_URL`; a cobertura global desta rodada foi interrompida por contenção externa e não substitui a cobertura baseline registrada. Não há claim live de ACL/RLS/grants/trigger/concurrency, produção, workflow remoto same-SHA, operação externa ou gate clínico
 
 ## REGRAS DE USO
 

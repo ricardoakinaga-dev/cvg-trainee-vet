@@ -267,6 +267,7 @@ export type {
   TicketCreateCommand,
   TicketTransitionCommand,
   LearningStateContext,
+  LearningStateStaffContext,
   LearningStateRepositoryPort,
   ScopedAppeal,
   ScopedAssessmentWorkflow,

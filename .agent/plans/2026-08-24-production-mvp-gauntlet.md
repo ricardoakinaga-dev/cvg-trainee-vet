@@ -186,9 +186,23 @@ a aprovação clínica, piloto ou release produtivo.
   e passar `CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability` em worktree
   limpo. O próximo passo é prova live autorizada ou outra fatia bounded, sem
   declarar release.
-- [ ] Preparar a prova live de PostgreSQL/RLS/grants/trigger/CAS com ambiente
-  autorizado ou selecionar a próxima lacuna bounded; manter gates humanos,
-  produção e piloto explicitamente fora.
+- [x] (2026-08-25T23:46:19-03:00) Reconciliar o control plane no HEAD
+  `29e990b`, executar o baseline com Node `22.22.0`/pnpm `10.33.0` efêmeros e
+  receber três leituras independentes. A maior lacuna de segurança confirmada
+  foi a policy participante `FOR ALL` de `feedback_tickets`; a próxima task
+  bounded é `FEEDBACK-055`, sem alterar a API participante.
+- [x] (2026-08-26T00:14:32-03:00) Fechar localmente `FEEDBACK-055` com RED/GREEN/REFACTOR:
+  migration 0042 substitui a policy participante `FOR ALL` por SELECT/INSERT,
+  restringe a leitura staff a contexto sem `participant_id`, separa o contexto
+  staff somente de escopo no caso de uso/repository e atualiza o guard para
+  status-only ou metadata-only. Focal 28/28, migrations 43/43, format, lint,
+  typecheck, documentação e traceability estrutural passaram; a fixture live
+  agora cobre own INSERT/SELECT, same-scope cross-participant SELECT e
+  participant UPDATE/DELETE, mas permanece skipped sem banco autorizado. A
+  cobertura global desta rodada foi interrompida por contenção externa; não há
+  claim live, produção, piloto ou gate clínico.
+- [ ] (próximo) Executar a prova PostgreSQL live autorizada de `FEEDBACK-055` ou
+  selecionar `FEEDBACK-057`, sem ampliar escopo para resposta/SLA/notificação.
 
 ## Surprises & Discoveries
 
@@ -419,7 +433,7 @@ fonte transacional; Qdrant é índice interno reconstruível; IA é server-side,
 estruturada, opcional e nunca decide estado, nota, gabarito, publicação,
 permissão ou aprovação.
 
-O HEAD atual (`2972fa0`) já contém, entre outras fatias, dashboard/trilha
+O HEAD atual (`29e990b`) já contém, entre outras fatias, dashboard/trilha
 digital, perfil diagnóstico formativo, ciclo administrativo, CPD interno
 bounded, fila editorial, recovery controlado, RLS de identidade, auditoria
 negativa, snapshot operacional, reflexão, apelações 036–042, relatório paginado
@@ -765,6 +779,14 @@ rollback when configured. The local bar passed with 134/663/35 skips,
 productive ACL/RLS, browser-to-API-to-PostgreSQL, remote same-SHA workflow,
 operations and clinical approval remain unobserved; the final independent
 critic is still pending.
+
+Plan revision note, 2026-08-25 (FEEDBACK-055 opening): a fresh security scout
+found that the legacy participant `FOR ALL` policy on `feedback_tickets` can
+permit direct UPDATE/DELETE in participant context, while the FEEDBACK-054
+metadata guard only constrains scope-only staff updates. This is a static
+security finding, not live PostgreSQL evidence. The bounded next step is a new
+migration plus a distinct staff persistence context, with participant create/
+read preserved and response/SLA/notification deliberately out of scope.
 
 Plan revision note, 2026-08-24 (FEEDBACK-HISTORY-053 final critique/remediation):
 Wegener returned `CONDITIONAL PASS` without P0 and identified P1 in

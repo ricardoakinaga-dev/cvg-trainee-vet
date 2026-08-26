@@ -78,6 +78,14 @@ function repository(seed: Partial<Stored> = {}): LearningStateRepositoryPort {
       const state = stored.tickets.get(ticketId);
       return state === undefined ? null : { scopeId: ids.scopeId, state };
     },
+    async saveFeedbackTicketAsStaff(_context, state) {
+      stored.tickets.set(state.ticketId, state);
+      return { scopeId: ids.scopeId, state };
+    },
+    async findFeedbackTicketAsStaff(_context, ticketId) {
+      const state = stored.tickets.get(ticketId);
+      return state === undefined ? null : { scopeId: ids.scopeId, state };
+    },
     async saveAppeal(_context, state) {
       stored.appeals.set(state.appealId, state);
       return { scopeId: ids.scopeId, state };
@@ -215,6 +223,12 @@ describe("learning state application use cases", () => {
         contexts.push(context);
         return base.saveFeedbackTicket(context, state);
       },
+      findFeedbackTicketAsStaff: async (context, ticketId) =>
+        base.findFeedbackTicketAsStaff(context, ticketId),
+      saveFeedbackTicketAsStaff: async (context, state) => {
+        contexts.push(context);
+        return base.saveFeedbackTicketAsStaff(context, state);
+      },
     };
     const actorId = "99999999-9999-4999-8999-999999999999";
     const requestId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -257,7 +271,6 @@ describe("learning state application use cases", () => {
         correlationId,
       },
       {
-        participantId: ids.participantId,
         scopeId: ids.scopeId,
         actorId,
         requestId,
@@ -275,6 +288,34 @@ describe("learning state application use cases", () => {
           participantId: ids.participantId,
           scopeId: ids.scopeId,
           version: 0,
+          event: { type: "TRIAR" },
+        },
+        port,
+      ),
+    ).rejects.toMatchObject({ code: "not_found", status: 404 });
+  });
+
+  it("does not transition a staff-scoped ticket for a different participant", async () => {
+    const port = repository();
+    const ticket = await createFeedbackTicketState(
+      {
+        ticketId: ids.ticketId,
+        participantId: ids.participantId,
+        scopeId: ids.scopeId,
+        type: "CONTESTACAO",
+        description: "Relato sintético de isolamento.",
+        createdAt: "2026-08-10T17:00:00.000Z",
+      },
+      port,
+    );
+
+    await expect(
+      transitionFeedbackTicketState(
+        {
+          ticketId: ids.ticketId,
+          participantId: "99999999-9999-4999-8999-999999999999",
+          scopeId: ids.scopeId,
+          version: ticket.version,
           event: { type: "TRIAR" },
         },
         port,
@@ -531,7 +572,7 @@ describe("learning state application use cases", () => {
     );
     const ticketGenericFailure: LearningStateRepositoryPort = {
       ...ticketBase,
-      saveFeedbackTicket: async () => {
+      saveFeedbackTicketAsStaff: async () => {
         throw new Error("synthetic persistence failure");
       },
     };

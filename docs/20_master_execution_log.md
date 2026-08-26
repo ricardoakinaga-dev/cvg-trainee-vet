@@ -42,6 +42,131 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — FEEDBACK-055: fechamento local do isolamento de escrita
+
+### TIMESTAMP
+
+2026-08-26T00:14:32-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 3–5 / segurança, RLS e integridade de feedback
+
+### SPRINT
+
+FEEDBACK-055
+
+### TASK
+
+Impedir que o contexto de participante atualize ou apague
+`feedback_tickets`, preservando o fluxo de criação/leitura e separando a
+transição staff em contexto somente de escopo.
+
+### ACTION
+
+Foi executado RED/GREEN/REFACTOR. A migration
+`0042_feedback_ticket_participant_write_rls.sql` substitui a policy
+participante `FOR ALL` por `SELECT` e `INSERT`, mantém sem policy participante
+de `UPDATE`/`DELETE` e atualiza o guard staff para permitir exatamente status
+ou metadata por transação. A aplicação ganhou `LearningStateStaffContext`; a
+transição resolve o ticket por escopo, confere o participante server-side e o
+repository usa `setDatabaseSecurityContext({ scopeId })`. A fixture PostgreSQL
+live foi ampliada com tentativas sintéticas de UPDATE/DELETE do participante.
+
+### RESULT
+
+RED falhou com `ENOENT` antes da migration existir. GREEN focal passou com 3
+arquivos/28 testes; `pnpm verify:migrations` passou com 43 migrations;
+format, lint e typecheck passaram. O teste live não conectou sem
+`CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`; a tentativa de cobertura
+global desta rodada foi interrompida com exit 130 por contenção de processos
+externos, sem substituir a medição baseline já registrada.
+
+### DECISIONS
+
+O slice fica `READY_FOR_NEXT_STEP`/`COMPLETED_WITH_GAPS`: efetividade RLS,
+grants, trigger, concorrência, rollback, browser→API→PostgreSQL, produção,
+workflow remoto e gates clínicos continuam sem evidência. FEEDBACK-057
+continua separado para resposta ao participante; nenhuma resposta, SLA,
+notificação ou publicação clínica foi criada nesta task.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Executar o harness PostgreSQL live em ambiente descartável autorizado ou
+selecionar a próxima fatia bounded sem declarar release/100%.
+
+---
+
+## 2026-08-25 — FEEDBACK-055: abertura do hardening de escrita em feedback
+
+### TIMESTAMP
+
+2026-08-25T23:46:19-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 3–5 / segurança, RLS e integridade de feedback
+
+### SPRINT
+
+FEEDBACK-055
+
+### TASK
+
+Impedir que o contexto de participante atualize ou apague `feedback_tickets`
+sem histórico/auditoria e separar a mutação staff do contexto de ownership.
+
+### ACTION
+
+O control plane foi reconciliado com o HEAD real `29e990b`. O baseline foi
+executado com `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm
+verify` e passou com 141 arquivos/695 testes PASS, 35 SKIPPED e cobertura
+84,36% statements, 80,36% branches, 86,39% functions e 85,05% lines. O
+preflight `pnpm test:integration:live` não iniciou sem
+`CVG_TEST_DATABASE_URL`. A crítica independente encontrou policy participante
+`FOR ALL` em `feedback_tickets`, e a revisão confirmou que o guard da migration
+0041 só protege o contexto staff.
+
+### RESULT
+
+Nenhum código foi alterado nesta abertura. `FEEDBACK-055` foi adicionada ao
+backlog, a barra de segurança foi priorizada sobre novas features e o plano
+`BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md` foi criado com fases,
+epics, dependências, critérios e limites. A hipótese de exploração é estática;
+nenhum resultado PostgreSQL/RLS live é inferido.
+
+### DECISIONS
+
+O participante continuará podendo criar e consultar o próprio relato, mas não
+poderá alterar/apagar diretamente a linha. Transições staff devem usar contexto
+somente de escopo, capability/role/scope e CAS, preservando exatamente um
+evento de histórico e uma auditoria. Resposta, SLA, notificação, anexos,
+atribuição a terceiro, publicação clínica, produção e piloto ficam fora desta
+task.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever os testes RED de governança/policy/contexto e do repositório staff;
+depois implementar a migration nova e a menor mudança de composição necessária.
+
+---
+
 ## 2026-08-24 — FEEDBACK-054: abertura de prioridade e atribuição escopadas
 
 ### TIMESTAMP

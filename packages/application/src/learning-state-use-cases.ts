@@ -25,6 +25,13 @@ export type LearningStateContext = Readonly<{
   readonly correlationId?: string;
 }>;
 
+export type LearningStateStaffContext = Readonly<{
+  readonly scopeId: string;
+  readonly actorId?: string;
+  readonly requestId?: string;
+  readonly correlationId?: string;
+}>;
+
 export type ScopedLearningAssignment = Readonly<{
   readonly scopeId: string;
   readonly state: LearningAssignmentState;
@@ -69,6 +76,14 @@ export interface LearningStateRepositoryPort {
   ) => Promise<ScopedFeedbackTicket>;
   readonly findFeedbackTicket: (
     context: LearningStateContext,
+    ticketId: string,
+  ) => Promise<ScopedFeedbackTicket | null>;
+  readonly saveFeedbackTicketAsStaff: (
+    context: LearningStateStaffContext,
+    state: FeedbackTicketState,
+  ) => Promise<ScopedFeedbackTicket>;
+  readonly findFeedbackTicketAsStaff: (
+    context: LearningStateStaffContext,
     ticketId: string,
   ) => Promise<ScopedFeedbackTicket | null>;
   readonly saveAppeal: (
@@ -153,6 +168,21 @@ function assertContext(context: LearningStateContext): void {
     context.scopeId.trim().length === 0
   ) {
     throw new TypeError("participantId and scopeId are required");
+  }
+  for (const [field, value] of [
+    ["actorId", context.actorId],
+    ["requestId", context.requestId],
+    ["correlationId", context.correlationId],
+  ] as const) {
+    if (value !== undefined && value.trim().length === 0) {
+      throw new TypeError(`${field} must not be empty when provided`);
+    }
+  }
+}
+
+function assertStaffContext(context: LearningStateStaffContext): void {
+  if (context === null || context.scopeId.trim().length === 0) {
+    throw new TypeError("scopeId is required");
   }
   for (const [field, value] of [
     ["actorId", context.actorId],
@@ -320,7 +350,6 @@ export async function transitionFeedbackTicketState(
   repository: LearningStateRepositoryPort,
 ): Promise<FeedbackTicketState> {
   const context = {
-    participantId: command.participantId,
     scopeId: command.scopeId,
     ...(command.actorId === undefined ? {} : { actorId: command.actorId }),
     ...(command.requestId === undefined
@@ -330,19 +359,22 @@ export async function transitionFeedbackTicketState(
       ? {}
       : { correlationId: command.correlationId }),
   } as const;
-  assertContext(context);
+  assertStaffContext(context);
   assertVersion(command.version);
-  const persisted = await repository.findFeedbackTicket(
+  const persisted = await repository.findFeedbackTicketAsStaff(
     context,
     command.ticketId,
   );
   if (persisted === null) {
     throw new ApplicationError("not_found", "Feedback ticket not found");
   }
+  if (persisted.state.participantId !== command.participantId) {
+    throw new ApplicationError("not_found", "Feedback ticket not found");
+  }
   assertCurrentVersion(persisted.state.version, command.version);
   try {
     const state = transitionFeedbackTicket(persisted.state, command.event);
-    return (await repository.saveFeedbackTicket(context, state)).state;
+    return (await repository.saveFeedbackTicketAsStaff(context, state)).state;
   } catch (error) {
     if (error instanceof Error && error.name.endsWith("DomainError")) {
       throw new ApplicationError("state_conflict", "Invalid state transition");

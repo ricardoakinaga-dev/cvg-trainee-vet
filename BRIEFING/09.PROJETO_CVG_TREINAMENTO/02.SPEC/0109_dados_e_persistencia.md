@@ -270,13 +270,16 @@ exigem que o ticket pai esteja na mesma versão/status e que a metadata anterior
 seja coerente com o evento anterior quando essa evidência existir.
 
 Para o contexto staff, a migration cria policy de `UPDATE` limitada ao escopo
-transacional e trigger que rejeita alterações de participante, escopo, tipo,
-descrição, estado, criação ou incremento de versão diferente de exatamente um;
-transições existentes que usam contexto de participante continuam separadas.
-O repositório executa CAS por `ticket_id + scope_id + version`, valida no
-PostgreSQL a conta ativa/membership aceita/papel `MODERATOR` ou `ADMIN`, e grava
-ticket, histórico e auditoria na mesma transação. A efetividade de RLS, grants,
-ownership, trigger e concorrência continua dependente do gate PostgreSQL live.
+transacional e um trigger que rejeita alterações de participante, escopo, tipo,
+descrição, criação ou incremento de versão diferente de exatamente um. O
+mesmo contexto permite exatamente uma mudança de estado ou de metadata de
+triagem por operação; não permite combinar as duas. O contexto de participante
+fica restrito a leitura/criação, sem `UPDATE` ou `DELETE` de ticket. O repositório
+executa CAS por `ticket_id + scope_id + version`, valida no PostgreSQL a conta
+ativa/membership aceita/papel `MODERATOR` ou `ADMIN` nas operações de metadata,
+e grava ticket, histórico e auditoria na mesma transação. A efetividade de RLS,
+grants, ownership, trigger e concorrência continua dependente do gate
+PostgreSQL live.
 
 ## 8.6 Paginação keyset da fila de feedback — FEEDBACK-043
 

@@ -12,6 +12,10 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Abertura operacional 2026-08-24 (FEEDBACK-054):** após o fechamento documental de `APPEAL-043` no commit `4b79b695ad7ecf50d4468d484c11faa262c37777`, foi selecionada a próxima lacuna P1 local bounded: permitir que a fila interna registre prioridade e responsável opcional dentro do mesmo escopo, com versão otimista e histórico coerente. A fatia não cria resposta ao participante, SLA, notificação, anexos, retirada clínica, contestação, provider/MFA ou operação externa; PostgreSQL/RLS live, grants, workflow remoto, produção e aprovação clínica continuam gates separados.
 
+**Abertura operacional 2026-08-25 (FEEDBACK-055):** baseline atual no HEAD `29e990b` passou `pnpm verify` sob Node `22.22.0`/pnpm `10.33.0` efêmeros; o preflight live continua sem banco autorizado. Crítica independente encontrou uma lacuna de integridade: a policy legada de `feedback_tickets` é `FOR ALL` para contexto de participante, enquanto o guard de metadata só protege o ramo staff. Foi aberta a correção bounded para negar UPDATE/DELETE do participante e separar o contexto de mutação staff, sem alterar a API pública ou inventar resposta/SLA/notificação.
+
+**Fechamento local operacional 2026-08-26 (FEEDBACK-055):** RED/GREEN/REFACTOR passou no focal com 3 arquivos/28 testes; a migration 0042 substitui a policy participante por SELECT/INSERT explícitos, nega UPDATE/DELETE por ausência de policy, separa `LearningStateStaffContext` e atualiza o guard staff para status-only ou metadata-only. `pnpm verify:migrations` passou com 43/43; format, lint e typecheck passaram. O teste live foi preparado, mas permanece sem conexão por ausência de `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`; a cobertura global da rodada foi interrompida por contenção externa. Item segue `COMPLETED_WITH_GAPS`/`READY_FOR_NEXT_STEP`, sem claim live, release, produção ou aprovação clínica. Auditoria: `BRIEFING/04.AUDIT/0539_feedback_ticket_write_isolation_audit.md`.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -495,6 +499,23 @@ backfill inventado.
 - evidência: `BRIEFING/04.AUDIT/0491_full_construction_audit.md`; B07-01, B07-02, B07-03, CUR-24-01 e B07-04 neste backlog
 
 ## P1 — ALTA PRIORIDADE
+
+### FEEDBACK-055 — Isolamento de escrita do participante em feedback
+
+- título: impedir que contexto de participante altere ou apague feedback diretamente, contornando histórico e auditoria
+- descrição: substituir a policy participante `FOR ALL` de `feedback_tickets` por políticas explícitas de leitura/criação; separar a persistência de transições staff do contexto que identifica o participante
+- módulo: feedback / PostgreSQL / RLS / persistência / segurança
+- dependência: `FEEDBACK-054`; migrations `0010` e `0041`; `SPEC-0109`; `SPEC-0111`; `SPEC-0118`
+- fase: BUILD — Phase 3–5 / hardening de segurança
+- risco: crítico — update/delete direto pode mudar metadata/status/campos protegidos sem evento append-only ou auditoria
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: participante lê e cria apenas seus relatos; UPDATE/DELETE do participante falham na policy; transições staff autorizadas continuam usando contexto somente de escopo e produzem exatamente um histórico/auditoria; metadata `FEEDBACK-054` continua allowlisted e CAS; migration nova, governança estática, testes RED/GREEN/REFACTOR, regressão e prova live preparada
+- escopo: policy/RLS de `feedback_tickets`, contexto de escrita staff, repositório de estado, testes de migration/governança e fixture live sintética
+- fora desta fatia: resposta ao participante, SLA, notificação, anexos, atribuição a terceiro, publicação clínica, provider/MFA, produção e execução live sem ambiente autorizado
+- controles obrigatórios: não editar migration aplicada; não confiar em identidade do cliente; manter participant projection e contrato público; staff continua capability/role/scope/CAS; não afirmar efetividade RLS sem PostgreSQL live
+- evidência: `BRIEFING/04.AUDIT/0539_feedback_ticket_write_isolation_audit.md`; migration `0042_feedback_ticket_participant_write_rls.sql`; `packages/application/src/learning-state-use-cases.ts`; `packages/persistence/src/learning-state-repository.ts`; governança 43/43; focal 28/28; fixture live em `tests/integration/postgres-learning-state.test.ts`
+- próxima ação: executar prova PostgreSQL live em banco descartável autorizado; se não houver ambiente, selecionar `FEEDBACK-057` sem declarar efetividade RLS
 
 ### FEEDBACK-054 — Priorização e atribuição escopadas de relatos
 

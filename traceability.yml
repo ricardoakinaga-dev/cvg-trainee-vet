@@ -4417,6 +4417,77 @@ artifacts:
         "response/SLA/notification, arbitrary third-party assignment, production, workflow remote same-SHA, provider/MFA, operational assurance and clinical approval remain outside this slice",
       ]
     status: "verified-with-gaps"
+  - id: "FEEDBACK-055"
+    requirements:
+      [
+        "AUD-P1-001",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "PRD-RF-103",
+        "PRD-RF-104",
+        "PRD-RF-107",
+        "UC-023",
+        "SPEC-0104",
+        "SPEC-0105",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0539_feedback_ticket_write_isolation_audit.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0010_casos_de_uso.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0013_requisitos_funcionais.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0104_modelo_de_dominio.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/application/src/learning-state-use-cases.ts",
+        "packages/application/src/index.ts",
+        "packages/persistence/src/learning-state-repository.ts",
+        "packages/persistence/src/index.ts",
+        "packages/persistence/drizzle/0042_feedback_ticket_participant_write_rls.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests:
+      [
+        "packages/application/src/learning-state-use-cases.test.ts",
+        "packages/persistence/src/learning-state-repository.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-learning-state.test.ts",
+      ]
+    commit: "29e990b0df33daf6fc3dfc24413f13cb2aaf9610"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0539_feedback_ticket_write_isolation_audit.md",
+      ]
+    verification:
+      [
+        "RED: governance test failed because migration 0042 was absent",
+        "GREEN focal: 3 test files, 28 tests PASS; live PostgreSQL file skipped without configured database",
+        "pnpm format:check, pnpm lint, pnpm typecheck",
+        "pnpm verify:migrations: 43 migrations aligned through 0042_feedback_ticket_participant_write_rls",
+        "pnpm test:integration:live: preflight exit 2 because CVG_TEST_DATABASE_URL and CVG_TEST_ADMIN_DATABASE_URL are absent",
+        "no live RLS/grants/trigger/CAS, production, remote same-SHA or clinical claim",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

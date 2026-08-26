@@ -51,10 +51,21 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         skip(liveAdminCapabilityMessage);
         return;
       }
+      if (
+        harness.applicationRole.isSuperuser ||
+        harness.applicationRole.bypassesRls
+      ) {
+        await closeLivePostgresHarness(harness);
+        skip(
+          "CVG_TEST_DATABASE_URL is privileged; feedback RLS behavior cannot be evaluated safely",
+        );
+        return;
+      }
       const { application: database, admin } = harness;
 
       const participantId = randomUUID();
       const otherParticipantId = randomUUID();
+      const staffId = randomUUID();
       const scopeId = randomUUID();
       const otherScopeId = randomUUID();
       const activityId = randomUUID();
@@ -62,6 +73,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const assignmentId = randomUUID();
       const resultId = randomUUID();
       const ticketId = randomUUID();
+      const participantInsertTicketId = randomUUID();
+      const forgedInsertTicketId = randomUUID();
       const appealId = randomUUID();
       const itemId = randomUUID();
       const rlsRole = `cvg_rls_${randomUUID().replaceAll("-", "")}`;
@@ -87,6 +100,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         requestId: feedbackTransitionRequestId,
         correlationId: feedbackTransitionCorrelationId,
       } as const;
+      const feedbackStaffContext = {
+        scopeId,
+        actorId: staffId,
+        requestId: feedbackTransitionContext.requestId,
+        correlationId: feedbackTransitionContext.correlationId,
+      } as const;
 
       try {
         await admin.db.insert(accounts).values([
@@ -98,6 +117,11 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           {
             id: otherParticipantId,
             professionalEmail: `state-other-${otherParticipantId}@example.invalid`,
+            status: "ACTIVE",
+          },
+          {
+            id: staffId,
+            professionalEmail: `state-staff-${staffId}@example.invalid`,
             status: "ACTIVE",
           },
         ]);
@@ -172,7 +196,10 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           feedbackCreateContext,
           initialTicket,
         );
-        await repository.saveFeedbackTicket(feedbackTransitionContext, ticket);
+        await repository.saveFeedbackTicketAsStaff(
+          feedbackStaffContext,
+          ticket,
+        );
 
         const history = await admin.db
           .select({
@@ -231,7 +258,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
               correlationId: feedbackCreateCorrelationId,
             }),
             expect.objectContaining({
-              principalId: participantId,
+              principalId: staffId,
               action: "FEEDBACK_TICKET_STATUS_CHANGED",
               resourceType: "feedback_ticket",
               resourceId: ticketId,
@@ -389,16 +416,174 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           console.warn(
             "PostgreSQL role-admin capability is absent; learning-state RLS probe uses the configured non-privileged application role",
           );
-          if (
-            harness.applicationRole.isSuperuser ||
-            harness.applicationRole.bypassesRls
-          ) {
-            skip(
-              "CREATE ROLE is unavailable and CVG_TEST_DATABASE_URL is privileged; the RLS probe cannot be evaluated safely",
-            );
-            return;
-          }
         }
+        const participantInsertTicket = createFeedbackTicket({
+          ticketId: participantInsertTicketId,
+          participantId: otherParticipantId,
+          type: "BUG_TECNICO",
+          description: "Relato sintético de inserção no próprio escopo.",
+          createdAt: "2026-08-10T12:02:00.000Z",
+        });
+        await repository.saveFeedbackTicket(
+          {
+            participantId: otherParticipantId,
+            scopeId,
+            actorId: otherParticipantId,
+            requestId: randomUUID(),
+            correlationId: randomUUID(),
+          },
+          participantInsertTicket,
+        );
+        const ownParticipantRows = await database.db.transaction(async (tx) => {
+          if (rlsRoleCreated) {
+            await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+          }
+          await tx.execute(
+            sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+          );
+          return tx.execute(
+            sql`select id from feedback_tickets where id = ${participantInsertTicketId}`,
+          );
+        });
+        expect(ownParticipantRows).toHaveLength(1);
+        const sameScopeOtherParticipantRows = await database.db.transaction(
+          async (tx) => {
+            if (rlsRoleCreated) {
+              await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+            }
+            await tx.execute(
+              sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+            );
+            return tx.execute(
+              sql`select id from feedback_tickets where id = ${ticketId}`,
+            );
+          },
+        );
+        expect(sameScopeOtherParticipantRows).toHaveLength(0);
+
+        let forgedInsertRows = 0;
+        let forgedInsertDenied = false;
+        try {
+          forgedInsertRows = (
+            await database.db.transaction(async (tx) => {
+              if (rlsRoleCreated) {
+                await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+              }
+              await tx.execute(
+                sql`select set_config('cvg.participant_id', ${otherParticipantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+              );
+              return tx
+                .insert(feedbackTickets)
+                .values({
+                  id: forgedInsertTicketId,
+                  participantId,
+                  scopeId,
+                  type: "BUG_TECNICO",
+                  description: "Tentativa sintética de identidade forjada.",
+                  createdAt: new Date("2026-08-10T12:03:00.000Z"),
+                  version: 0,
+                  status: "NOVO",
+                  priority: "NORMAL",
+                  assigneeId: null,
+                  updatedAt: new Date("2026-08-10T12:03:00.000Z"),
+                })
+                .returning({ id: feedbackTickets.id });
+            })
+          ).length;
+        } catch {
+          forgedInsertDenied = true;
+        }
+        expect(forgedInsertDenied || forgedInsertRows === 0).toBe(true);
+        await expect(
+          admin.db
+            .select({ id: feedbackTickets.id })
+            .from(feedbackTickets)
+            .where(eq(feedbackTickets.id, forgedInsertTicketId)),
+        ).resolves.toEqual([]);
+
+        let participantUpdateRows = 0;
+        let participantUpdateDenied = false;
+        try {
+          participantUpdateRows = (
+            await database.db.transaction(async (tx) => {
+              if (rlsRoleCreated) {
+                await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+              }
+              await tx.execute(
+                sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+              );
+              return tx
+                .update(feedbackTickets)
+                .set({ description: "Tentativa sintética não autorizada." })
+                .where(eq(feedbackTickets.id, ticketId))
+                .returning({ id: feedbackTickets.id });
+            })
+          ).length;
+        } catch {
+          participantUpdateDenied = true;
+        }
+        expect(participantUpdateDenied || participantUpdateRows === 0).toBe(
+          true,
+        );
+
+        let participantDeleteRows = 0;
+        let participantDeleteDenied = false;
+        try {
+          participantDeleteRows = (
+            await database.db.transaction(async (tx) => {
+              if (rlsRoleCreated) {
+                await tx.execute(sql.raw(`set local role "${rlsRole}"`));
+              }
+              await tx.execute(
+                sql`select set_config('cvg.participant_id', ${participantId}, true), set_config('cvg.scope_id', ${scopeId}, true)`,
+              );
+              return tx
+                .delete(feedbackTickets)
+                .where(eq(feedbackTickets.id, ticketId))
+                .returning({ id: feedbackTickets.id });
+            })
+          ).length;
+        } catch {
+          participantDeleteDenied = true;
+        }
+        expect(participantDeleteDenied || participantDeleteRows === 0).toBe(
+          true,
+        );
+        await expect(
+          admin.db
+            .select({
+              description: feedbackTickets.description,
+              status: feedbackTickets.status,
+              version: feedbackTickets.version,
+            })
+            .from(feedbackTickets)
+            .where(eq(feedbackTickets.id, ticketId)),
+        ).resolves.toEqual([
+          {
+            description: initialTicket.description,
+            status: "TRIADO",
+            version: 1,
+          },
+        ]);
+        const historyAfterParticipantDenied = await admin.db
+          .select({ id: feedbackTicketHistory.id })
+          .from(feedbackTicketHistory)
+          .where(
+            and(
+              eq(feedbackTicketHistory.ticketId, ticketId),
+              eq(feedbackTicketHistory.scopeId, scopeId),
+            ),
+          );
+        const auditAfterParticipantDenied = await admin.db
+          .select({ id: auditEntries.id })
+          .from(auditEntries)
+          .where(eq(auditEntries.resourceId, ticketId));
+        expect(historyAfterParticipantDenied).toHaveLength(2);
+        expect(auditAfterParticipantDenied).toHaveLength(2);
+        await expect(
+          repository.saveFeedbackTicketAsStaff(feedbackStaffContext, ticket),
+        ).rejects.toBeInstanceOf(LearningStatePersistenceConflictError);
+
         const noContextRows = await database.db.transaction(async (tx) => {
           if (rlsRoleCreated) {
             await tx.execute(sql.raw(`set local role "${rlsRole}"`));
@@ -503,6 +688,28 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             .delete(feedbackTickets)
             .where(eq(feedbackTickets.id, ticketId));
           await tx
+            .delete(auditEntries)
+            .where(
+              and(
+                eq(auditEntries.resourceId, participantInsertTicketId),
+                eq(auditEntries.scopeId, scopeId),
+              ),
+            );
+          await tx
+            .delete(feedbackTicketHistory)
+            .where(
+              and(
+                eq(feedbackTicketHistory.ticketId, participantInsertTicketId),
+                eq(feedbackTicketHistory.scopeId, scopeId),
+              ),
+            );
+          await tx
+            .delete(feedbackTickets)
+            .where(eq(feedbackTickets.id, participantInsertTicketId));
+          await tx
+            .delete(feedbackTickets)
+            .where(eq(feedbackTickets.id, forgedInsertTicketId));
+          await tx
             .delete(assessmentWorkflows)
             .where(eq(assessmentWorkflows.resultId, resultId));
           await tx
@@ -527,6 +734,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await admin.db
           .delete(accounts)
           .where(eq(accounts.id, otherParticipantId));
+        await admin.db.delete(accounts).where(eq(accounts.id, staffId));
         if (rlsRoleCreated) {
           await admin.db.execute(
             sql.raw(

@@ -28,6 +28,7 @@ import { activityAssignments, auditEntries } from "./schema.js";
 
 const participantId = "11111111-1111-4111-8111-111111111111";
 const reviewerId = "22222222-2222-4222-8222-222222222222";
+const staffId = "99999999-9999-4999-8999-999999999999";
 const scopeId = "33333333-3333-4333-8333-333333333333";
 const now = "2026-08-10T12:00:00.000Z";
 
@@ -48,7 +49,7 @@ type FakeSelectBuilder = {
 };
 
 type FakeTransaction = {
-  execute: () => Promise<readonly []>;
+  execute: (query?: unknown) => Promise<readonly []>;
   insert: (table?: unknown) => FakeBuilder;
   update: (table?: unknown) => FakeBuilder;
   select: () => FakeSelectBuilder;
@@ -57,6 +58,7 @@ type FakeTransaction = {
 type FakeDatabaseOptions = Readonly<{
   readonly onUpdate?: (table: unknown, values: unknown) => void;
   readonly onInsert?: (table: unknown, values: unknown) => void;
+  readonly onExecute?: (query: unknown) => void;
 }>;
 
 function createFakeDatabase(
@@ -93,7 +95,10 @@ function createFakeDatabase(
     return builder;
   };
   const tx: FakeTransaction = {
-    execute: async () => [] as const,
+    execute: async (query) => {
+      options.onExecute?.(query);
+      return [] as const;
+    },
     insert: (table) => createBuilder(table),
     update: (table) => createBuilder(table),
     select: () => createSelectBuilder(),
@@ -446,7 +451,15 @@ describe("learning state persistence mappings", () => {
       repository.saveFeedbackTicket(context, initialTicket),
     ).resolves.toMatchObject({ state: initialTicket });
     await expect(
-      repository.saveFeedbackTicket(context, triagedTicket),
+      repository.saveFeedbackTicketAsStaff(
+        {
+          scopeId,
+          actorId: staffId,
+          requestId: "44444444-4444-4444-8444-444444444444",
+          correlationId: "55555555-5555-4555-8555-555555555555",
+        },
+        triagedTicket,
+      ),
     ).resolves.toMatchObject({ state: triagedTicket });
     await expect(
       repository.saveAppeal(context, initialAppeal),
@@ -468,7 +481,7 @@ describe("learning state persistence mappings", () => {
       }),
       expect.objectContaining({
         actorKind: "AUTHENTICATED",
-        principalId: participantId,
+        principalId: staffId,
         action: "FEEDBACK_TICKET_STATUS_CHANGED",
         resourceType: "feedback_ticket",
         resourceId: ticketId,
@@ -503,6 +516,44 @@ describe("learning state persistence mappings", () => {
     await expect(
       repository.saveLearningAssignment(context, assigned),
     ).rejects.toBeInstanceOf(LearningStatePersistenceConflictError);
+  });
+
+  it("transitions feedback tickets through a scope-only staff context", async () => {
+    const ticketId = "77777777-7777-4777-8777-777777777777";
+    const initial = createFeedbackTicket({
+      ticketId,
+      participantId,
+      type: "CONTESTACAO",
+      description: "Solicitação sintética de revisão.",
+      createdAt: now,
+    });
+    const triaged = transitionFeedbackTicket(initial, { type: "TRIAR" });
+    const operations: string[] = [];
+    const repository = createLearningStateRepository(
+      createFakeDatabase(
+        [[ticketRow(ticketId, "NOVO", 0)], [ticketRow(ticketId, "TRIADO", 1)]],
+        [[{ id: ticketId }]],
+        {
+          onExecute: () => operations.push("execute"),
+          onUpdate: () => operations.push("update"),
+          onInsert: () => operations.push("insert"),
+        },
+      ),
+    );
+
+    await expect(
+      repository.saveFeedbackTicketAsStaff(
+        {
+          scopeId,
+          actorId: staffId,
+          requestId: "44444444-4444-4444-8444-444444444444",
+          correlationId: "55555555-5555-4555-8555-555555555555",
+        },
+        triaged,
+      ),
+    ).resolves.toMatchObject({ state: triaged });
+    expect(operations[0]).toBe("execute");
+    expect(operations.indexOf("update")).toBeGreaterThan(0);
   });
 
   it("synchronizes the status of an explicitly bound published activity", async () => {
