@@ -112,4 +112,19 @@ describe("CI reproducibility contract", () => {
       /DATABASE_URL.*application role/i,
     );
   });
+
+  it("rejects a runtime DATABASE_URL that targets another database", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      envExample: contract.envExample.replace(
+        /DATABASE_URL=postgresql:\/\/[^\r\n]+/u,
+        "DATABASE_URL=postgresql://cvg_app:cvg_app@localhost:5432/other",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /database URLs must target the same database/i,
+    );
+  });
 });
