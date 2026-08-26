@@ -320,6 +320,12 @@ a aprovação clínica, piloto ou release produtivo.
   `32/32`, audit high e diff-check. A documentação corrente e o manifesto
   serão fechados com `verify:traceability:release`; não há novo parecer
   independente após esse commit e o item permanece `COMPLETED_WITH_GAPS`.
+- [x] (2026-08-26T11:00:58-03:00) Fechar o control plane no commit documental
+  `145d06e`: documentação, formatação, traceability estrutural e
+  `git diff --check` passaram; depois, em worktree limpo,
+  `verify:traceability:release` passou com artefatos alcançáveis e paths
+  rastreados. O runtime permanece `WAITING_HUMAN_APPROVAL` e
+  `JOURNEY-056` continua aguardando a escolha A/B.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
   o BUILD bounded quando não houver task autônoma em execução; até lá, não
   iniciar código, migration ou UX de jornada. Production owners/grants,

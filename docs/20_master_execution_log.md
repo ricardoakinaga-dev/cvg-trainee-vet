@@ -42,6 +42,60 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Fechamento dos gates de `OPS-061-READINESS-006`
+
+### TIMESTAMP
+
+2026-08-26T11:00:58-0300
+
+### ENGINE
+
+AUDIT / GAUNTLET / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-READINESS-006` — readiness essencial e dependências degradáveis
+
+### TASK
+
+Fechar o control plane e verificar a rastreabilidade dos artefatos correntes.
+
+### ACTION
+
+O commit documental `145d06e5fd7869c8671af6f736ad714892f98d1a` foi criado após
+os gates de documentação, formatação e diff-check. Em worktree limpo,
+`CVG_TRACEABILITY_RELEASE=true pnpm verify:traceability:release` foi executado.
+
+### RESULT
+
+O release-traceability gate passou: os artefatos correntes resolveram para
+commits alcançáveis e paths rastreados. A última evidência técnica também
+inclui build `12/12`, E2E `32/32`, audit high sem vulnerabilidades e `pnpm
+verify` com `142/730`, `29/38` skipped e cobertura `84,42%/80,33%/86,46%/85,15%`.
+
+### DECISIONS
+
+Manter `OPS-061-READINESS-006` como `COMPLETED_WITH_GAPS` e o runtime global
+como `WAITING_HUMAN_APPROVAL`. Não houve novo parecer independente após
+`d90393f`; não há evidência live de outage, produção, push, deploy, aprovação
+clínica ou competência prática.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar Ricardo escolher A (sessão diagnóstica pública própria, recomendada)
+ou B (atividade especial) para `JOURNEY-056`; não iniciar código, migration ou
+UX da jornada antes da decisão contratual.
+
+---
+
 ## 2026-08-26 — Coordenação final da inicialização de `OPS-061-READINESS-006`
 
 ### TIMESTAMP
