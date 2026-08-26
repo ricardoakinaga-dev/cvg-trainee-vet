@@ -36,9 +36,9 @@
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `29e990b0df33daf6fc3dfc24413f13cb2aaf9610` antes do commit desta fatia; migration 0042, auditoria 0539, manifesto e `STATE_OF_THE_ART_MASTER_PLAN.md` presentes; o preflight live continua sem ambiente
+- head: `54b28f6c75a44408fe91b0d0f54689d86fd4a62f`; commit local de FEEDBACK-055 com migration 0042, auditoria 0539, manifesto e `STATE_OF_THE_ART_MASTER_PLAN.md`; o preflight live continua sem ambiente
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: alterações locais de FEEDBACK-055 aguardando commit reversível; sem push/deploy
+- worktree: alteração documental posterior para alinhar o SHA de traceability; sem push/deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
 - verification_state: `FEEDBACK-055` está GREEN/REFACTOR localmente: RED inicial por migration ausente, 3 arquivos/28 testes focais PASS, policy 0042 explícita, contexto staff sem participantId, guard de status-only/metadata-only, typecheck/lint/format PASS e migrations 43/43. A prova live preparada em `postgres-learning-state.test.ts` permanece skipped sem `CVG_TEST_DATABASE_URL`; a cobertura global desta rodada foi interrompida por contenção externa e não substitui a cobertura baseline registrada. Não há claim live de ACL/RLS/grants/trigger/concurrency, produção, workflow remoto same-SHA, operação externa ou gate clínico
 

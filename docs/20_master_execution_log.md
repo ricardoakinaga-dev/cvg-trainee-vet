@@ -80,7 +80,8 @@ live foi ampliada com tentativas sintéticas de UPDATE/DELETE do participante.
 ### RESULT
 
 RED falhou com `ENOENT` antes da migration existir. GREEN focal passou com 3
-arquivos/28 testes; `pnpm verify:migrations` passou com 43 migrations;
+arquivos/28 testes; o código foi consolidado no commit local
+`54b28f6c75a44408fe91b0d0f54689d86fd4a62f`; `pnpm verify:migrations` passou com 43 migrations;
 format, lint e typecheck passaram. O teste live não conectou sem
 `CVG_TEST_DATABASE_URL`/`CVG_TEST_ADMIN_DATABASE_URL`; a tentativa de cobertura
 global desta rodada foi interrompida com exit 130 por contenção de processos

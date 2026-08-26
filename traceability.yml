@@ -4471,7 +4471,7 @@ artifacts:
         "tests/integration/migration-governance.test.ts",
         "tests/integration/postgres-learning-state.test.ts",
       ]
-    commit: "29e990b0df33daf6fc3dfc24413f13cb2aaf9610"
+    commit: "54b28f6c75a44408fe91b0d0f54689d86fd4a62f"
     artifacts:
       [
         "coverage/",
