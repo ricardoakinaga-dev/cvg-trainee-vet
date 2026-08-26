@@ -4965,6 +4965,68 @@ artifacts:
         "the final independent Gauss review returned CONDITIONAL PASS without P0/P1; local/synthetic evidence only, with integrated boot+reconcile, retry policy and live outage gaps retained",
       ]
     status: "verified-with-gaps"
+  - id: "OPS-061-RETRY-008"
+    requirements:
+      [
+        "SPEC-0112",
+        "SPEC-0113",
+        "SPEC-0118",
+        "OBSERVABILITY-12-01",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/04.AUDIT/0549_readiness_bounded_retry_audit.md",
+        "BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md",
+        "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0112_integracoes.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-08-24-production-mvp-gauntlet.md",
+      ]
+    code:
+      [
+        "packages/integrations/src/retry.ts",
+        "packages/integrations/src/index.ts",
+        "packages/integrations/src/qdrant.ts",
+        "apps/api/src/main.ts",
+        "apps/worker/src/main.ts",
+        "packages/observability/src/observability.ts",
+        "package.json",
+        "pnpm-lock.yaml",
+        "patches/@qdrant__js-client-rest@1.19.0.patch",
+      ]
+    tests:
+      [
+        "packages/integrations/src/retry.test.ts",
+        "packages/integrations/src/qdrant.test.ts",
+        "apps/api/src/main.test.ts",
+        "apps/worker/src/main.test.ts",
+        "packages/observability/src/observability.test.ts",
+      ]
+    commit: "2a95f5ca6288c254b8fe84f86109879c5925b185"
+    artifacts:
+      [
+        "coverage/",
+        "test-results/",
+        "BRIEFING/04.AUDIT/0549_readiness_bounded_retry_audit.md",
+      ]
+    verification:
+      [
+        "OPEN: três críticas independentes confirmaram retry de bootstrap infinito/linear e classificação indiscriminada; nenhuma produção foi executada",
+        "RED: módulo de política ausente, sexta tentativa API/worker e retry de 401 foram reproduzidos; drenamento de índice ainda não aguardava irmão rejeitado",
+        "GREEN final focal: 5 arquivos / 30 testes PASS, incluindo Retry-After HTTP real, precedência fail-closed, classificação, backoff/jitter, API/worker bounded, 4xx, exaustão, novo orçamento explícito, geração concorrente sem timer residual, close e Promise.allSettled de índices",
+        "pnpm verify: 143 arquivos / 743 testes PASS, 29 arquivos / 38 testes skipped; cobertura 84.47% statements, 80.35% branches, 86.62% functions, 85.24% lines",
+        "pnpm build: 12 workspaces PASS; pnpm test:e2e --workers=1: 32/32 PASS; pnpm audit --audit-level=high: no known advisories; git diff --check: PASS",
+        "the SDK patch preserves delta-seconds Retry-After and mixed sibling failures are fail-closed; API and worker stop after five total attempts, and the worker proves a fresh explicit budget after exhaustion",
+        "the independent Euclid review returned CONDITIONAL PASS with zero P0/P1 and one P2 documentation finding; the traceability/backlog/plan reconciliation closes that P2",
+        "local/synthetic evidence only; external Qdrant/PostgreSQL, outage/restart/load/failover/restore, distributed coordination and production release remain unverified",
+      ]
+    status: "verified-with-gaps"
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

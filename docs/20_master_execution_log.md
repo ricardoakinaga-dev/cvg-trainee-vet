@@ -42,6 +42,302 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — Fechamento local de `OPS-061-RETRY-008`
+
+### TIMESTAMP
+
+2026-08-26T13:25:32-0300
+
+### ENGINE
+
+BUILD / AUDIT / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — retry bounded e classificação do índice opcional
+
+### TASK
+
+Fechar os P1 encontrados na crítica independente, comprovar a política bounded
+no runtime e reconciliar a rastreabilidade.
+
+### ACTION
+
+O commit `df91513` introduziu a política compartilhada, o patch rastreável do
+SDK, a classificação fail-closed, o cap/backoff/jitter, a drenagem dos irmãos
+de `ensureCollection()` e os coordenadores API/worker. O commit `2a95f5c`
+corrigiu a corrida entre recuperação explícita e o catch do intento anterior,
+capturando o número do intento e impedindo timer de geração antiga; o cenário
+`503 → recuperação explícita → 401` foi adicionado ao teste do worker.
+
+### RESULT
+
+Focal final: 5 arquivos / 30 testes PASS. `pnpm verify`: 143 arquivos / 743
+testes PASS, 29 arquivos / 38 testes skipped, cobertura
+84,47%/80,35%/86,62%/85,24%; contratos 86/86, worker 37/37, migrations 51/51,
+build 12/12, E2E sintético 32/32, audit high, secrets, documentação,
+traceability, arquitetura, exposição e `git diff --check` PASS. Retry-After
+delta-seconds foi comprovado no caminho HTTP real e a falha terminal prevalece
+no conjunto concorrente de índices.
+
+### DECISIONS
+
+Euclid retornou `CONDITIONAL PASS`, com P0/P1 zerados; o P2 documental foi
+resolvido no manifesto, backlog, plano e auditoria `0549`. O resultado é
+`COMPLETED_WITH_GAPS`: não há evidência de Qdrant/PostgreSQL externo,
+produção, release, operação distribuída ou competência clínica. A política
+fica restrita ao bootstrap opcional e não foi aplicada a health probe, outbox
+ou reconciliação automática.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Ricardo deve escolher A ou B para `JOURNEY-056`; somente após a escolha será
+criado e validado o contrato correspondente. Não iniciar código, migration ou
+UX da jornada antes da decisão.
+
+## 2026-08-26 — Rejeição independente e correção dos P1 de `OPS-061-RETRY-008`
+
+### TIMESTAMP
+
+2026-08-26T12:45:16-0300
+
+### ENGINE
+
+AUDIT / BUILD / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — retry bounded e classificação do índice opcional
+
+### TASK
+
+Responder aos P1 encontrados pela revisão independente após a regressão,
+build, E2E e audit high.
+
+### ACTION
+
+O reviewer independente Bacon confirmou cinco tentativas e ausência de sexto
+timer, mas reprovou a fatia por dois P1 reproduzíveis: o SDK fixado
+`@qdrant/js-client-rest@1.19.0` convertia `Retry-After` usando apenas o primeiro
+caractere do header, e `Promise.allSettled` propagava a primeira rejeição pela
+ordem dos campos, permitindo que uma falha permanente fosse mascarada por uma
+falha retryable. Foi aplicado um patch local rastreável ao SDK; o segundo P1 e
+a prova HTTP ainda serão fechados com RED/GREEN.
+
+### RESULT
+
+O resultado permanece `IN_PROGRESS`; o reviewer não encontrou P0. A correção
+continua limitada ao bootstrap Qdrant, integração e governança de dependência,
+sem migration, produto, `JOURNEY-056`, produção, push ou deploy.
+
+### DECISIONS
+
+`Retry-After` delta-seconds deve chegar integralmente ao classificador e ser
+limitado pelo cap da política. Ao agregar falhas irmãs, qualquer classificação
+permanente ou desconhecida prevalece; só um conjunto integralmente retryable
+pode agendar novo timer.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever RED para o header HTTP real do SDK e para a mistura de falhas irmãs;
+implementar as correções, rerodar toda a evidência e solicitar nova crítica.
+
+---
+
+## 2026-08-26 — GREEN focal de `OPS-061-RETRY-008`
+
+### TIMESTAMP
+
+2026-08-26T12:34:51-0300
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — retry bounded e classificação do índice opcional
+
+### TASK
+
+Implementar a política bounded e impedir operações Qdrant irmãs órfãs durante
+uma tentativa de inicialização.
+
+### ACTION
+
+O RED reproduziu a ausência da política, a sexta chamada após cinco falhas,
+retry automático de uma resposta 401 e a propagação precoce de uma falha de
+índice enquanto outra operação ainda estava aguardando. Foi implementada uma
+política pura compartilhada com classificação fail-closed, cinco tentativas
+totais, backoff exponencial capped, jitter injetável e `Retry-After` bounded;
+API e worker mantiveram executores separados com logs/métricas redigidos. O
+`ensureCollection()` passou a aguardar todas as criações irmãs via
+`Promise.allSettled` antes de propagar a primeira rejeição.
+
+### RESULT
+
+O focal passou `5` arquivos/`27` testes. Typecheck, lint, formatação e
+`git diff --check` passaram. Ainda não há resultado da regressão completa,
+build, E2E, audit high ou revisão independente final.
+
+### DECISIONS
+
+Falhas permanentes e desconhecidas não têm retry automático. Após a quinta
+falha transitória o processo emite evento de exaustão e não agenda novo timer;
+somente a chamada explícita do worker pode iniciar um novo orçamento bounded.
+`/health/ready`, PostgreSQL, `JOURNEY-056`, migrations e gates humanos não
+foram alterados.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar a regressão completa, build, E2E, audit high, gates estáticos e revisão
+independente; corrigir eventuais gaps materiais antes de fechar a task.
+
+---
+
+## 2026-08-26 — Extensão de escopo de `OPS-061-RETRY-008`
+
+### TIMESTAMP
+
+2026-08-26T12:30:45-0300
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — retry bounded e classificação do índice opcional
+
+### TASK
+
+Impedir que uma rejeição precoce de `Promise.all` em `ensureCollection()`
+deixe chamadas irmãs de índice Qdrant em voo enquanto o coordenador agenda o
+próximo retry.
+
+### ACTION
+
+O reconhecimento independente apontou que o coordenador só controla a promessa
+externa: a implementação de `ensureCollection()` usava `Promise.all` para os
+índices de payload e podia rejeitar antes de outras chamadas terminarem. O
+backlog, manifesto e runtime state foram atualizados para incluir o drenamento
+bounded das operações irmãs e um teste RED sintético, sem alterar migrations,
+produto ou `JOURNEY-056`.
+
+### RESULT
+
+O escopo continua local e reversível. A política de retry permanece compartilhada
+somente em funções puras; a execução API/worker permanece separada. Nenhuma
+produção, push ou deploy foi executado.
+
+### DECISIONS
+
+Uma tentativa de `ensureCollection()` só poderá propagar a primeira rejeição
+depois que todas as criações de índice iniciadas tiverem assentado; o retry
+externo continuará responsável por classificar essa rejeição e decidir se há
+novo timer.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever e executar o RED do drenamento de operações irmãs; depois retomar a
+verificação focal do retry bounded.
+
+---
+
+## 2026-08-26 — Abertura de `OPS-061-RETRY-008`
+
+### TIMESTAMP
+
+2026-08-26T12:16:21-0300
+
+### ENGINE
+
+BUILD / AUDIT / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+`OPS-061-RETRY-008` — retry bounded e classificação do índice opcional
+
+### TASK
+
+Eliminar o retry infinito e indiscriminado do bootstrap Qdrant sem alterar a
+autoridade do PostgreSQL ou a decisão de produto de `JOURNEY-056`.
+
+### ACTION
+
+Após o fechamento de `OPS-061-READINESS-007`, três scouts independentes foram
+consultados sobre os caminhos API/worker, os erros do cliente Qdrant, a
+observabilidade e os invariantes de encerramento. A análise confirmou que o
+retry de bootstrap ainda é fixo em cinco segundos, ilimitado e trata qualquer
+rejeição como retryable. Foi aberta uma fatia local bounded com política pura
+compartilhada, coordenadores de ciclo de vida separados, telemetria redigida e
+testes sintéticos.
+
+### RESULT
+
+O backlog, runtime state e plano foram movidos para `IN_PROGRESS`. O contrato
+de qualidade congelado exige cinco tentativas totais incluindo a inicial,
+backoff exponencial com cap e jitter injetável, respeito bounded a
+`Retry-After`, classificação fail-closed, exaustão sem novo timer, deduplicação,
+close seguro, preservação de bind/loop não bloqueante e ausência de impacto em
+`/health/ready`. Nenhuma migration, jornada, produção, push ou deploy foi
+iniciada.
+
+### DECISIONS
+
+`JOURNEY-056` continua aguardando a escolha humana A/B; esta fatia operacional
+é independente e não altera contrato, persistência ou UX. O executor de retry
+permanece específico de cada processo; somente política, classificação e
+cálculo determinístico são compartilhados. Falha desconhecida será fail-closed
+e não terá retry automático.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever e executar o RED para a política/classificação e para os caminhos
+API/worker de exaustão, 4xx, 5xx, retry-after, concorrência e encerramento.
+
+---
+
 ## 2026-08-26 — Validação final do control plane de `OPS-061-READINESS-007`
 
 ### TIMESTAMP

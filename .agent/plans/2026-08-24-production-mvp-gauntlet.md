@@ -349,9 +349,31 @@ a aprovação clínica, piloto ou release produtivo.
   `CONDITIONAL PASS`, sem P0/P1; os gaps integrados, retry policy e live
   permanecem explícitos. O runtime retorna a `WAITING_HUMAN_APPROVAL` para
   `JOURNEY-056`.
-- [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
-  o BUILD bounded quando não houver task autônoma em execução; até lá, não
-  iniciar código, migration ou UX de jornada. Production owners/grants,
+- [x] (2026-08-26T12:16:21-03:00) Abrir `OPS-061-RETRY-008` como fatia
+  operacional autônoma após Locke, Tesla e Schrodinger confirmarem que o
+  bootstrap Qdrant ainda tinha retry infinito/linear e classificação
+  indiscriminada. O escopo cobre somente política/classificação compartilhada,
+  coordenadores API/worker, telemetria redigida e testes sintéticos; não altera
+  `JOURNEY-056`, migrations ou UX.
+- [x] (2026-08-26T12:34:51-03:00) Implementar `OPS-061-RETRY-008` por RED → GREEN:
+  cinco tentativas totais, backoff capped, jitter injetável, classificação
+  fail-closed, exaustão sem timer, close seguro e drenamento de operações irmãs
+  em `ensureCollection()`. O focal inicial passou 5/27; typecheck, lint,
+  formatação e diff-check passaram.
+- [x] (2026-08-26T13:14:44-03:00) Responder ao P1 de corrida identificado por
+  Ohm: capturar `attemptNumber` local, impedir que uma geração antiga agende
+  retry depois de uma recuperação explícita e adicionar o cenário `503 →
+  recuperação explícita → 401`. O commit técnico complementar é `2a95f5c` e o
+  worker focal passou 10/10; o foco completo da task passou 5/30.
+- [x] (2026-08-26T13:24:00-03:00) Reexecutar a evidência final sobre
+  `2a95f5c`: `pnpm verify` passou 143/743 com 38 testes skipped e cobertura
+  84,47%/80,35%/86,62%/85,24%; contratos 86/86, worker 37/37, migrations
+  51/51, build 12/12, E2E 32/32, audit high e diff-check passaram. Euclid
+  retornou `CONDITIONAL PASS`, sem P0/P1; o P2 documental foi reconciliado em
+  `0549`, backlog, runtime state e traceability.
+- [ ] (aguardando Ricardo após a task autônoma) Aprovar a forma contratual de
+  `JOURNEY-056` e abrir o BUILD bounded correspondente; não iniciar código,
+  migration ou UX de jornada antes da decisão. Production owners/grants,
   workflow remoto same-SHA, diagnóstico→assignment, cenário browser
   cross-scope, escala/failover/restore/collector e gates clínicos permanecem
   fora da evidência atual.
