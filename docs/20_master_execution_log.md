@@ -42,6 +42,408 @@ IN_PROGRESS | READY_FOR_NEXT_STEP | BLOCKED | WAITING_HUMAN_APPROVAL | COMPLETED
 
 ---
 
+## 2026-08-26 — OPS-061-GRANTS-002: hardening e prova live do provisionador
+
+### TIMESTAMP
+
+2026-08-26T08:22:24-0300
+
+### ENGINE
+
+BUILD / AUDIT / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-002 — hardening do provisionamento e contrato de privilégios
+
+### TASK
+
+Fechar os achados de segurança do harness sem iniciar a jornada participante
+pendente de decisão humana.
+
+### ACTION
+
+Em TDD, foram adicionadas provas para argv/ambiente do `psql`, pgpass e SQL
+temporários, cleanup assíncrono, ACLs de database/schema/functions/defaults,
+schema qualification, roles/grantability, healthcheck e coerência do contrato
+CI. O provisionador foi implementado no commit técnico
+`36088ffe99f96b63bb50c63f1f2088db2ad48227`. Em banco PostgreSQL `16.15` novo e
+sintético, o fluxo migrations → provisionador → runner oficial live foi
+executado; a consulta administrativa foi feita antes da remoção do banco e
+das três roles.
+
+### RESULT
+
+O focal passou: migration governance `23/23`, CI governance `7/7`; a matriz
+live passou `35/35` arquivos e `82/82` testes. Foram observados app sem
+SUPERUSER/BYPASSRLS/CREATEDB/CREATEROLE/REPLICATION, database/schema sem
+CREATE/TEMPORARY, `PUBLIC` sem ACL, zero grants delegáveis da app, zero
+ownership e healthcheck least privilege PASS. `pnpm verify` passou com
+141/714 PASS, 29 arquivos/38 testes skipped e cobertura
+84,36%/80,30%/86,35%/85,05%; build 12 workspaces, E2E `32/32`, audit high e
+diff-check passaram.
+
+### DECISIONS
+
+Os achados P1 da crítica independente foram tratados: `admin` conserva
+grantability somente para fixtures efêmeras, o cleanup é aguardado de forma
+determinística e o processo filho recebe allowlist de ambiente. O resultado é
+`CONDITIONAL PASS / COMPLETED_WITH_GAPS`; evidência local não é produção,
+release, piloto, competência prática ou aprovação clínica. O artifact está em
+`BRIEFING/04.AUDIT/0543_application_grant_provisioning_hardening_audit.md` e o
+vínculo em `traceability.yml`.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Executar `verify:traceability:release` após o fechamento documental e aguardar
+Ricardo escolher A (sessão diagnóstica pública própria) ou B (atividade
+especial) para `JOURNEY-056`. Owners/grants produtivos, workflow remoto
+same-SHA, carga/failover/restore/collector e gates clínicos exigem autoridade
+separada.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-001: reconciliação final de rastreabilidade e regressão
+
+### TIMESTAMP
+
+2026-08-26T07:24:16-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-001 — matriz explícita de privilégios do papel de aplicação
+
+### TASK
+
+Fechar o vínculo do artefato técnico no manifesto e repetir os gates locais
+sem transformar a ausência de banco live em evidência positiva.
+
+### ACTION
+
+O baseline encontrou uma inconsistência documental: o validador exigia
+`OPS-061-GRANTS-001`, mas `traceability.yml` ainda não continha o artefato.
+Foi adicionado o vínculo requisito → SPEC → código → testes → commit →
+artefatos, com a auditoria `0542` e a limitação live redigida. Em seguida foram
+executados `verify:traceability`, `pnpm verify`, `pnpm build`, `pnpm test:e2e`,
+`pnpm test:integration:live`, `pnpm audit --audit-level=high` e
+`git diff --check` sob Node `22.22.0`/pnpm `10.33.0` efêmeros.
+
+### RESULT
+
+`verify:traceability` passou. O `pnpm verify` passou com 141 arquivos/709
+testes PASS, 29 arquivos/38 testes skipped, cobertura 84,36% statements,
+80,35% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker
+27/27, migrations 51/51 e gates estáticos/documentais passaram. O build passou
+nos 12 workspaces; o E2E padrão passou 32/32; audit high não encontrou
+vulnerabilidades; `git diff --check` passou. O preflight live foi tentado e
+encerrou com exit 2 antes da conexão porque `CVG_TEST_DATABASE_URL` está
+ausente. Não há evidência live nova, produção, push, deploy ou migration
+aplicada nesta ação.
+
+### DECISIONS
+
+O manifesto está estruturalmente consistente e `OPS-061-GRANTS-001` permanece
+`COMPLETED_WITH_GAPS`. A crítica independente Huygens continua
+`CONDITIONAL PASS` sem P0; owners/grants produtivos, workflow remoto same-SHA,
+escala/failover/restore/collector, diagnóstico→assignment e gates clínicos
+continuam fora. O estado global permanece `WAITING_HUMAN_APPROVAL`:
+`JOURNEY-056` ainda exige a escolha de Ricardo entre sessão diagnóstica pública
+própria (A) e atividade especial (B); nenhum código dessa jornada será
+iniciado antes da decisão.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar a decisão contratual de `JOURNEY-056`. Se Ricardo autorizar um banco
+descartável e as variáveis necessárias forem disponibilizadas, executar a
+matriz live de privilégios e registrar o resultado sem extrapolá-lo para
+produção.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-002: reabertura após crítica independente de segurança
+
+### TIMESTAMP
+
+2026-08-26T07:26:53-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-001 — matriz explícita de privilégios do papel de aplicação
+
+### TASK
+
+Responder aos achados independentes de segurança sem avançar o contrato de
+`JOURNEY-056`.
+
+### ACTION
+
+A crítica independente posterior ao build foi revisada contra o provisionador,
+o teste de privilégios, o contrato CI, o workflow e o exemplo de ambiente.
+Foram confirmados os achados sobre URL com senha em `argv`, database/schema/
+function ACL e defaults incompletos, SQL dependente de `search_path`, ausência
+de transação única e variáveis de ambiente não declaradas no contrato. O
+control plane abriu `OPS-061-GRANTS-002`, local e bounded, em status
+`IN_PROGRESS`; nenhuma migration, produto, deploy ou ambiente externo foi
+alterado.
+
+### RESULT
+
+O próximo ciclo será TDD: primeiro testes RED para subprocesso seguro,
+identidade/grantability/ACL/defaults, schema explícito, atomicidade e contrato
+CI; depois a implementação e a regressão completa. A matriz live continua
+sem execução porque `CVG_TEST_DATABASE_URL` e `CVG_TEST_ADMIN_DATABASE_URL`
+estão ausentes.
+
+### DECISIONS
+
+O `CONDITIONAL PASS` de Huygens não encerra o slice: a crítica de segurança
+registrou `BLOCKED` para a prova live e não autoriza `APPROVE`. O trabalho
+independente que pode prosseguir é somente o hardening do harness. A escolha
+A/B de `JOURNEY-056`, a resposta de `FEEDBACK-057`, produção, remote
+same-SHA e gates clínicos continuam aguardando a autoridade correspondente.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever os testes RED e implementar as correções bounded de
+`OPS-061-GRANTS-002`, preservando credenciais fora de argumentos, logs e Git.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-001: fechamento dos gates locais e auditoria
+
+### TIMESTAMP
+
+2026-08-26T05:10:12-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-001 — matriz explícita de privilégios do papel de aplicação
+
+### TASK
+
+Encerrar a correção do DML global do harness com evidência de código, testes,
+build, E2E, gates de segurança e rastreabilidade, mantendo a ausência de
+ambiente live como gap explícito.
+
+### ACTION
+
+Após o GREEN/REFACTOR, foi executado o `pnpm verify` completo, seguido de
+build, E2E sintético, audit de dependências, `git diff --check` e preflight
+live. O commit técnico `464b0b8` foi criado somente com o provisionador e os
+testes da matriz. A auditoria `0542_application_role_privilege_matrix_audit.md`
+foi criada, e o manifesto passou a considerar `OPS-061-GRANTS-001` um artefato
+atual de rastreabilidade.
+
+### RESULT
+
+`pnpm verify` passou com 141 arquivos/709 testes PASS, 29 arquivos/38 testes
+skipped, cobertura 84,36%/80,35%/86,35%/85,05%, contratos 86/86, worker 27/27,
+migrations 51/51 e gates estáticos/documentais PASS. `pnpm build` passou nos
+12 workspaces; `pnpm test:e2e --workers=1` passou 32/32 cenários sintéticos; e
+`pnpm audit --audit-level=high` não encontrou vulnerabilidades conhecidas.
+O preflight `pnpm test:integration:live` foi tentado, mas encerrou com exit 2
+antes da conexão por ausência de `CVG_TEST_DATABASE_URL`; não há evidência
+live nova nem claim de produção.
+
+### DECISIONS
+
+`OPS-061-GRANTS-001` fica `COMPLETED_WITH_GAPS`: a matriz source/SQL está
+explícita, `knowledge_documents` está negada, e a prova live está preparada,
+mas owners/grants produtivos e a execução PostgreSQL descartável ainda exigem
+ambiente/autoridade. A próxima ação global depende de Ricardo decidir
+`JOURNEY-056` entre sessão diagnóstica pública própria e atividade especial;
+nenhum código de jornada será iniciado enquanto essa decisão estiver pendente.
+Remote same-SHA, escala, failover/restore, collector/traces, operação externa,
+aprovação clínica e release permanecem fora da evidência.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+### NEXT
+
+Aguardar a decisão humana de `JOURNEY-056`; se um banco descartável autorizado
+for disponibilizado, executar a matriz live de privilégios e registrar o
+resultado sem promover evidência local a configuração produtiva.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-001: abertura de hardening de privilégios do harness
+
+### TIMESTAMP
+
+2026-08-26T04:33:39-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-001 — matriz explícita de privilégios do papel de aplicação
+
+### TASK
+
+Remover o DML global/default da role `app` no harness PostgreSQL, preservar os
+fluxos atuais por allowlist explícita e provar deny-by-default em tabela não
+autorizada.
+
+### ACTION
+
+Após a recuperação do contexto e duas críticas independentes read-only, foi
+confirmado que `scripts/provision-ci-postgres.mjs:110-119` concede DML global
+às tabelas atuais e futuras, enquanto o teste de governança existente valida
+roles/helpers mas não uma matriz negativa de DML. A task local bounded foi
+aberta no backlog como `OPS-061-GRANTS-001`. Ela não altera produto, contrato
+de `JOURNEY-056`, migration aplicada, deploy ou ambiente produtivo.
+
+### RESULT
+
+Antes de qualquer código, `CVG_TRACEABILITY_RELEASE=true npm exec --yes
+--package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify:traceability` e
+`npm exec --yes --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify`
+passaram no baseline: 141 arquivos/708 testes PASS, 37 testes skipped,
+cobertura 84,36%/80,35%/86,35%/85,05%, contratos 86/86, worker 27/27 e
+migrations 51/51. A implementação ainda não começou.
+
+### DECISIONS
+
+Executar RED → GREEN → REFACTOR apenas em provisionamento/governança do
+harness e teste live sintético, com roles separadas, sem credenciais e sem
+usar a task para resolver `JOURNEY-056`. Owners/grants produtivos, workflow
+remoto, browser cross-scope, escala/failover/restore, operação externa e
+aprovação clínica permanecem gaps explícitos.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Escrever o RED para rejeitar o grant DML global/default, congelar a allowlist
+de tabelas usada pelos fluxos atuais e então implementar o menor incremento.
+
+---
+
+## 2026-08-26 — OPS-061-GRANTS-001: GREEN/REFACTOR da matriz de privilégios
+
+### TIMESTAMP
+
+2026-08-26T04:54:46-0300
+
+### ENGINE
+
+BUILD / GAUNTLET / ORCHESTRATE / RUNTIME CONTROLLER / AUDIT
+
+### PHASE
+
+Phase 7 — hardening de assurance local
+
+### SPRINT
+
+OPS-061-GRANTS-001 — matriz explícita de privilégios do papel de aplicação
+
+### TASK
+
+Substituir concessões globais de DML do harness por allowlist explícita,
+preservar apenas os fluxos atuais e negar acesso a armazenamento interno não
+autorizado.
+
+### ACTION
+
+O RED focal falhou no provisionador anterior por conter `GRANT ... ON ALL
+TABLES` e `ALTER DEFAULT PRIVILEGES ... GRANT ... TO app`. O GREEN/REFACTOR
+exportou a matriz imutável de 29 tabelas públicas em
+`scripts/provision-ci-postgres.mjs`, excluiu `knowledge_documents`, revogou
+privilégios atuais/default de `app` e `PUBLIC`, manteve admin/migration
+separados e tornou o script importável sem executar `psql` em imports. O teste
+live foi ampliado para privilégios efetivos e diretos, ACL `PUBLIC`,
+memberships, ausência de sequences e `permission denied` conhecido.
+
+### RESULT
+
+`tests/integration/migration-governance.test.ts` e
+`tests/integration/postgres-rls-function-privileges.test.ts` passaram no focal
+estático com `20/20`; os dois cenários live foram skipped porque esta sessão
+não possui `CVG_TEST_DATABASE_URL`. O `pnpm verify` executado após a primeira
+implementação passou com 141 arquivos/709 testes PASS, 38 skips, cobertura
+84,36%/80,35%/86,35%/85,05%, contratos 86/86, worker 27/27, migrations 51/51
+e gates estáticos/documentais PASS; o hardening final de `PUBLIC` e as
+asserções de ACL direta exigem nova execução final.
+
+### CRITIQUE
+
+A crítica independente Huygens retornou `CONDITIONAL PASS` sem P0. O achado
+P2 de possível herança/preexistência foi corrigido com inspeção de `relacl`,
+`pg_auth_members`, ACL `PUBLIC` e allowlist; o alerta de sequences foi
+fechado ao verificar que o schema atual não possui sequences. A cobertura
+estática dos quatro helpers novos já existe nas verificações dedicadas de
+`migration-governance.test.ts`; não houve mudança de contrato de jornada.
+
+### DECISIONS
+
+O resultado permanece local e sintético: não autoriza afirmar grants/owners
+produtivos, release, workflow remoto, escala, failover/restore, operação
+externa ou aprovação clínica. A próxima ação é executar os gates finais,
+registrar auditoria/traceability e fechar o item somente com evidência
+reproduzível; ausência de live será registrada como gap, não como PASS.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar `pnpm verify`, build, E2E, audit de dependências, preflight live,
+revisão de diff e os gates de traceability; então criar o artefato de
+auditoria e o commit sem push/deploy.
+
+---
+
 ## 2026-08-26 — LIVE-056: evidência E2E real browser → web → API → PostgreSQL
 
 ### TIMESTAMP

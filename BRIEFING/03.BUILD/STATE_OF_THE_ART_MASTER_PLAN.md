@@ -24,17 +24,34 @@ em evidência de runtime produtivo.
 
 ### Evidência de 2026-08-26
 
-- Código e E2E real verificados no commit `16caccc82ffc519b60a68e1a02850d40909737e1`; worktree limpo antes da
-  atualização documental; branch
-  `main` está à frente de `origin/main`; não houve push ou deploy.
+- Código e E2E real verificados no commit `16caccc82ffc519b60a68e1a02850d40909737e1`; o hardening local de
+  privilégios foi fechado no commit técnico `36088ff`; branch `main` está à
+  frente de `origin/main`; não houve push ou deploy.
 - `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify` passou:
-  141 arquivos, 708 testes PASS, 29 arquivos/37 testes SKIPPED, cobertura de
-  84,36% statements, 80,35% branches, 86,35% functions e 85,05% lines;
+  141 arquivos, 714 testes PASS, 29 arquivos/38 testes SKIPPED, cobertura de
+  84,36% statements, 80,30% branches, 86,35% functions e 85,05% lines;
   contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos PASS.
-- Em banco PostgreSQL 16.15 descartável recriado, com migrations 51/51 e roles
-  separadas, `pnpm test:integration:live` passou 35 arquivos/75 testes. Isso
-  prova o recorte live local de RLS, ACL, trigger/CAS, rollback, isolamento
-  contextual e concorrência adaptativa; não prova produção ou o fluxo
+- `OPS-061-GRANTS-001` agora mantém uma allowlist imutável de 29 tabelas para
+  `app`, exclui `knowledge_documents`, revoga ACL atual/default de `app` e
+  `PUBLIC` e verifica a matriz no source, no SQL gerado e no cenário live
+  disponível quando houver banco autorizado. A evidência está em
+  `BRIEFING/04.AUDIT/0542_application_role_privilege_matrix_audit.md`.
+- A crítica independente pós-build identificou uma nova fatia bounded de
+  assurance (`OPS-061-GRANTS-002`): o provisionamento ainda precisa eliminar
+  URL/senha de `argv`, fechar ACL de database/schema/functions e defaults,
+  qualificar o schema, usar transação, verificar grantability/identidade e
+  declarar todas as variáveis do contrato CI. Esta fatia não altera produto,
+  migrations aplicadas ou ambiente produtivo.
+- `OPS-061-GRANTS-002` foi implementado no commit `36088ff` e auditado em
+  `BRIEFING/04.AUDIT/0543_application_grant_provisioning_hardening_audit.md`:
+  `psql` não recebe URL/senha em `argv`, o ambiente é allowlist, arquivos são
+  temporários `0600`, o SQL é transacional e o contrato CI valida roles/banco.
+- Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
+  separadas e o provisionador atual, `pnpm test:integration:live` passou 35
+  arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,
+  grantability, ownership e healthcheck least privilege. Isso prova o recorte
+  live local de RLS, ACL, trigger/CAS, rollback, isolamento contextual e
+  concorrência adaptativa; não prova produção ou o fluxo
   diagnóstico→assignment.
 - No mesmo SHA `16caccc82ffc519b60a68e1a02850d40909737e1`, o E2E real serial
   passou `34/34` (`32` cenários sintéticos + `2` reais), incluindo build dos
@@ -62,14 +79,14 @@ em evidência de runtime produtivo.
 
 | Prioridade | Gap | Evidência atual | Tratamento |
 | --- | --- | --- | --- |
-| P1 | Least privilege, owners e grants do ambiente produtivo ainda não foram provados; o provisionador live usa DML amplo para o harness | `scripts/provision-ci-postgres.mjs`, auditoria 0540 | `OPS-061`, matriz produtiva e revisão operacional |
+| P1 | Least privilege, owners e grants do ambiente produtivo ainda não foram provados; a matriz e o provisionamento do harness local foram verificados, mas produção continua sem evidência | `scripts/provision-ci-postgres.mjs`, auditorias 0540/0542/0543, crítica independente, live PostgreSQL 16.15 | matriz produtiva e revisão operacional com autoridade própria |
 | P1 | Diagnóstico → assignment → atividade → próxima ação ainda não possui jornada completa de participante diagnosticando no browser | auditoria independente; fixtures reais ainda bypassam diagnóstico | `JOURNEY-056`, depois de segurança e contratos estabilizados |
 | P1 | Feedback pode chegar a `AGUARDA_USUARIO`, mas não existe conversa/reply bounded | PRD RF-103/RF-104, UC-022/023, domínio e web atuais | `FEEDBACK-057`, após `FEEDBACK-055`; sem SLA/notificação nesta fase |
 | P1 | Retenção possui sinal/CTA incompleto e cadência ainda precisa decisão de equivalência | backlog e resolver de jornada | `RETENTION-058`, após decisão de produto/PRD |
 | P1 | Facilitador/preceptor e coordenação ainda não formam experiência completa | superfícies internas parciais | `STAFF-059`, analytics agregados e privacy-by-design |
 | P1 | Autoria após `AJUSTES_SOLICITADOS` carece de edição/resubmissão consumível | state machine existe; UI/contrato incompletos | `AUTHORING-060`, mantendo four-eyes e gate clínico |
 | P1 | Assurance operacional externa, same-SHA CI, carga, failover, restore e collector não têm evidência atual | auditorias 0505/0508 e estado canônico | `OPS-061`, dependente de ambiente/autoridade |
-| P2 | Matriz negativa individual por tabela/contexto e revisão completa do caminho UPDATE ainda não foi exaurida no live | `tests/integration/postgres-security-isolation.test.ts`, auditoria 0540 | ampliar `LIVE-056`/`OPS-061` com ambiente e risco justificados |
+| P2 | A matriz negativa por tabela foi verificada no PostgreSQL descartável; produção, remote same-SHA e operação externa continuam sem prova | `tests/integration/postgres-rls-function-privileges.test.ts`, auditoria 0543, live 35/82 | manter evidência local e abrir apenas a revisão operacional autorizada |
 | P2 | Tutor/RAG/evals, notificações e busca podem evoluir sobre contratos aprovados | adapters existem; experiência completa não existe | `AI-062`, somente depois da fundação educacional |
 
 ## 4. Arquitetura alvo incremental
@@ -178,7 +195,9 @@ humanas apropriadas. IA e Qdrant nunca assumem essas decisões.
 ### Phase 7 — Operação e prontidão de release
 
 - `OPS-061`: logs JSON redigidos, métricas, traces, alerts, SLOs, runbooks,
-  health e graceful shutdown.
+  health e graceful shutdown; `OPS-061-GRANTS-001` fecha a matriz local de
+  privilégios do harness; `OPS-061-GRANTS-002` fecha o provisionamento e o
+  contrato local, sem encerrar a revisão produtiva.
 - `RECOVERY-069`: backup, restore, RPO/RTO, failover e rollback em ambiente
   descartável.
 - `CI-070`: workflow same-SHA, artefatos, SBOM, dependency/security gates e

@@ -22,6 +22,14 @@ Backlog operacional vivo. Itens só podem avançar quando suas dependências e g
 
 **Evidência browser operacional 2026-08-26 (`LIVE-056`):** no commit `16caccc82ffc519b60a68e1a02850d40909737e1`, o comando real com Node `22.22.0`/pnpm `10.33.0` executou o build dos 12 workspaces e passou `34/34` E2E serial (`32` sintéticos + `2` reais). O cenário real observou browser→web/proxy `3100`→API `3101`→PostgreSQL `16.15`, health `READY`/`UP`, convite, atividade publicada, start/save/submit, request IDs, nova sessão com versão 3 e oracle administrativo de persistência. Cleanup verificável deixou zero artefatos mutáveis da fixture, preservou auditoria append-only, removeu o arquivo temporário e não deixou processos. Isso fecha a evidência local do caminho, não o fluxo diagnóstico→assignment nem produção; auditoria `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`.
 
+**Reabertura controlada 2026-08-26 (`OPS-061-GRANTS-002`):** a crítica independente de segurança encontrou lacunas P1/P2 no provisionamento, apesar do `pnpm verify`/build/E2E estáticos verdes: URL com senha em `argv`, ACL de database/schema/functions e defaults incompletos, SQL sem schema explícito, provisionamento sem transação e contrato CI sem todas as variáveis realmente exigidas. Foi aberta uma correção bounded no harness; não altera produto, migrations aplicadas, produção ou `JOURNEY-056`.
+
+**Abertura operacional 2026-08-26 (`OPS-061-GRANTS-001`):** uma crítica independente confirmou que o provisionador do harness ainda concede `SELECT, INSERT, UPDATE, DELETE` globalmente à role da aplicação, reduzindo a capacidade de detectar violações de privilégio por tabela. Foi aberta uma task local bounded para trocar esse grant por uma matriz explícita, adicionar uma negação conhecida de acesso direto e preservar os fluxos autorizados. A task não altera produto, contrato de `JOURNEY-056`, migration aplicada ou ambiente produtivo; grants/owners produtivos continuam dependentes de autoridade operacional.
+
+**Fechamento operacional 2026-08-26 (`OPS-061-GRANTS-001`):** o commit técnico `464b0b8` substituiu o DML global por allowlist imutável de 29 tabelas, excluiu `knowledge_documents`, revogou privilégios atuais/default de `app` e `PUBLIC` e manteve admin/migration separados. O RED falhou 1/20 antes da implementação; após GREEN/REFACTOR, o focal estático passou 20/20. `pnpm verify` passou com 141 arquivos/709 testes PASS, 29 arquivos/38 testes skipped e cobertura 84,36%/80,35%/86,35%/85,05%; build passou em 12 workspaces, E2E sintético em 32/32 e audit high sem vulnerabilidades. O preflight live foi tentado e encerrou com exit 2 por ausência de `CVG_TEST_DATABASE_URL`, portanto não há evidência live nova. Auditoria: `BRIEFING/04.AUDIT/0542_application_role_privilege_matrix_audit.md`. Item `COMPLETED_WITH_GAPS`; produção, remote same-SHA, escala/failover/restore/collector e gates clínicos permanecem fora do resultado.
+
+**Reabertura controlada 2026-08-26 (`OPS-061-GRANTS-002`):** crítica independente pós-build encontrou URL com senha em `argv`, ACL de database/schema/functions e defaults incompletos, SQL de grants dependente de `search_path`, provisionamento sem transação e contrato CI sem todas as variáveis exigidas pelo próprio fluxo. A correção fica limitada ao harness/provisionador e sua governança; a matriz live permanece dependente de banco descartável autorizado e nenhuma evidência produtiva será inferida.
+
 **Atualização operacional 2026-08-24 (ADAPTIVE-044):** a fatia de diagnóstico persistido → atribuição server-side foi implementada e auditada em `BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md`. O `pnpm verify` final passou com 125 arquivos/570 testes, 29 skips, cobertura 84,49%/80,31%/85,98%/85,22%; build 12 workspaces, E2E 23/23, contratos 70/70, worker 25/25, migrações 26/26, audit de dependências, exposição, documentação, product-definition, traceability e diff-check passaram. A integração live do novo slice ficou skipped por ausência de `CVG_TEST_DATABASE_URL`; o item segue `COMPLETED_WITH_GAPS`, sem publicação clínica, aplicação real, release ou claim de competência prática.
 
 **Atualização operacional 2026-08-24 (JOURNEY-045):** a CTA da próxima atividade foi implementada e auditada em `BRIEFING/04.AUDIT/0524_journey_cta_audit.md`. O servidor agora projeta `nextActionTarget` somente para iniciar/retomar uma atividade presente na jornada; a web mantém a sessão, codifica `?activityId` e não escolhe a próxima ação. `pnpm verify` passou com 125 arquivos/572 testes, 29 skips e cobertura 84,51%/80,33%/86,03%/85,23%; build, integração configurada e E2E 24/24 passaram. O item segue `COMPLETED_WITH_GAPS`: assignment→atividade real, live RLS, provenance/atomicidade e feedback/debrief permanecem pendentes.
@@ -541,6 +549,40 @@ backfill inventado.
 - evidência: `BRIEFING/04.AUDIT/0540_feedback_ticket_live_isolation_audit.md`; `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`; commits `b66acc125fac0e022ce5837c4eb14d1eca862401` e `16caccc82ffc519b60a68e1a02850d40909737e1`; migrations 51/51; live 35/75; E2E 34/34; `traceability.yml` / `LIVE-056`
 - resultado: prova live PostgreSQL e browser vertical local concluídas com gaps de produto/produção explicitamente mantidos; o fixture pré-provisiona assignment e não prova diagnóstico→assignment; não é autorização de release/piloto
 - próxima ação: avançar para `JOURNEY-056` ou `FEEDBACK-057` apenas como nova fatia bounded
+
+### OPS-061-GRANTS-001 — Matriz explícita de privilégios do papel de aplicação
+
+- título: retirar o DML global do papel da aplicação no harness PostgreSQL e tornar a allowlist verificável
+- descrição: substituir o `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES` por grants explícitos apenas para as tabelas usadas pela aplicação/worker, negar acesso direto à tabela interna não autorizada, bloquear privilégios default amplos para tabelas futuras e manter o admin sintético separado para fixture/cleanup
+- módulo: operação / PostgreSQL / CI / segurança / governança de privilégios
+- dependência: `LIVE-056`; `RLS-FUNCTION-EXECUTE-051`; `DB-PRIVILEGE-032`; SPEC 0109/0111/0118
+- fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
+- risco: crítico — grant global pode mascarar acesso indevido e tornar o harness não representativo de deny-by-default
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: a role de aplicação não possui DML global nem privilégios default amplos; a allowlist explícita permite os fluxos atuais; uma tabela fora da allowlist falha com `permission denied`; os testes de governança rejeitam a regressão do grant global; `pnpm verify`, build e E2E sintético passam sem alterar `JOURNEY-056`. A execução live permanece requisito pendente quando houver ambiente autorizado.
+- escopo: `scripts/provision-ci-postgres.mjs`, governança de CI/migrations e teste live sintético da matriz de grants
+- fora desta fatia: owners/grants produtivos, deploy, workflow remoto, publicação clínica, contrato/API/UX de jornada, dados reais e alterações de migrations aplicadas
+- controles obrigatórios: roles migration/application/admin distintas; nenhuma credencial em Git/log; SQL de identifiers validado; admin usado somente para provisionamento/cleanup; não remover RLS nem usar `SUPERUSER`/`BYPASSRLS` na aplicação; forward-only e cleanup de banco descartável
+- evidência: crítica independente Ptolemy; crítica pós-build Huygens; `scripts/provision-ci-postgres.mjs`; `tests/integration/migration-governance.test.ts`; `tests/integration/postgres-rls-function-privileges.test.ts`; auditoria `0542`; commit `464b0b8`; Quality Bar `QB-03`/`QB-04`
+- próxima ação: aguardar decisão humana para `JOURNEY-056`; quando houver `CVG_TEST_DATABASE_URL`, executar a matriz live em banco descartável e registrar owners/grants produtivos somente com autoridade operacional
+
+### OPS-061-GRANTS-002 — Hardening do provisionamento e contrato de privilégios
+
+- título: responder aos achados independentes de segredo, ACL, atomicidade e contrato do harness
+- descrição: remover URL/senha de argumentos e ambiente herdado do `psql`, endurecer ACL de database/schema/functions e defaults, verificar grantability e identidade da role, qualificar todos os objetos, transacionar o provisionamento e declarar no contrato CI as variáveis efetivamente requeridas
+- módulo: operação / PostgreSQL / CI / segurança / governança de privilégios
+- dependência: `OPS-061-GRANTS-001`; SPEC 0109/0111/0118
+- fase: BUILD/AUDIT — Phase 7 / hardening de assurance local
+- risco: crítico — credencial observável, ACL residual ou falha parcial podem invalidar o deny-by-default e mascarar a evidência do harness
+- impacto: alto
+- status: COMPLETED_WITH_GAPS
+- critério de pronto: testes RED reproduzem cada achado; o processo não recebe URL/senha em `argv` nem herda URLs sensíveis; database/schema/functions e defaults ficam deny-by-default com grants explícitos sem grant option para `app`; SQL usa schema explícito e transação; roles declaram atributos seguros; contrato CI/.env.example cobrem as variáveis; foco, verify, build, E2E, audit e diff passam; live continua `NOT RUN` se o ambiente faltar
+- escopo: `scripts/provision-ci-postgres.mjs`, `scripts/verify-ci-contract.mjs`, `.env.example`, governança estática/live e documentação de rastreabilidade
+- fora desta fatia: migrations aplicadas, produto, `JOURNEY-056`, produção, deploy, workflow remoto same-SHA, fornecedor, publicação clínica e dados reais
+- controles obrigatórios: pgpass temporário com limpeza; roles migration/application/admin distintas; nenhuma credencial em Git/log/argv; SQL parametrizado/identifiers validados; admin somente para fixture/cleanup; sem `SUPERUSER`/`BYPASSRLS` na aplicação; rollback transacional
+- evidência: crítica independente Galileo; auditoria `0543`; `traceability.yml` / `OPS-061-GRANTS-002`; commit `36088ff`; migration governance `23/23`, CI governance `7/7`, banco sintético PostgreSQL 16.15 com live `35/35` arquivos e `82/82` testes; `pnpm verify`, build, E2E, audit high e diff-check PASS
+- próxima ação: manter a evidência local/sintética como conditional pass, aguardar decisão humana para `JOURNEY-056` e tratar ACL/owners produtivos, workflow remoto same-SHA e operação externa somente com autoridade própria
 
 ### JOURNEY-056 — Sessão diagnóstica participante e atribuição inicial
 

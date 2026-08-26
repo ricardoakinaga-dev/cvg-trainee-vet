@@ -8,22 +8,22 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 3–5 / hardening de segurança e integridade
-- current_sprint: FEEDBACK-055 + LIVE-056 — isolamento contextual e integridade adaptativa
-- current_task: aguardar decisão do contrato de `JOURNEY-056` antes de iniciar novo BUILD
+- current_phase: BUILD — Phase 7 / hardening de assurance local
+- current_sprint: `OPS-061-GRANTS-002` — hardening do provisionamento e da prova de privilégios
+- current_task: encerramento documental de `OPS-061-GRANTS-002`; `JOURNEY-056` continua aguardando decisão humana
 
 ## STATUS
 
-- status: WAITING_HUMAN_APPROVAL
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: consolidar `FEEDBACK-055`/`LIVE-056`, provar o runtime PostgreSQL descartável, fechar no commit `16caccc82ffc519b60a68e1a02850d40909737e1` o E2E real browser→web→API→PostgreSQL com oracle de persistência e cleanup verificável, reexecutar a suíte completa e registrar a evidência `0541` com traceability.
-- next_action: após decisão humana, registrar e abrir somente uma fatia bounded: `JOURNEY-056` como sessão diagnóstica pública própria (recomendado) ou como atividade especial; `FEEDBACK-057` permanece sem contrato executável.
+- last_completed_action: implementar e commitar `OPS-061-GRANTS-002` em `36088ffe99f96b63bb50c63f1f2088db2ad48227`; a crítica independente foi reavaliada e os achados de grantability do admin, cleanup assíncrono, ambiente herdado e URLs colapsadas foram tratados. Migrations 51/51, provisionamento e matriz live em banco sintético passaram 35/35 arquivos e 82/82 testes; gates estáticos, build 12 workspaces, E2E 32/32, audit high e diff-check passaram.
+- next_action: finalizar `0543`, reconciliar `traceability.yml`, executar o release traceability em worktree limpo e então aguardar a decisão humana de `JOURNEY-056`. Não iniciar código de jornada enquanto a decisão contratual estiver pendente.
 
 ## BLOQUEIOS
 
-- blockers: a prova PostgreSQL descartável e o caminho local browser→web→API→PostgreSQL estão concluídos em ambiente sintético, mas não substituem ACL/owners/grants de produção, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. O provisionamento usado na prova é específico de CI/teste: a role app é `NOSUPERUSER/NOBYPASSRLS/NOCREATEROLE`, mas recebe DML amplo para exercitar o harness; least privilege/owners produtivos continuam gap. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
+- blockers: a prova live local de `OPS-061-GRANTS-002` passou em banco descartável, mas não substitui ACL/owners/grants de produção, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. `JOURNEY-056` ainda não tem decisão de contrato sobre sessão diagnóstica pública própria versus atividade especial; `FEEDBACK-057` ainda não tem contrato executável nem schema de resposta. Debrief/reflexão completa e atribuição a terceiro continuam fora desta fatia. `AUD-C0-002`/`CUR-24-01`/`CUR-24-03` — aprovação clínica e aplicação real continuam bloqueando publicação/piloto; não há claim de release, 100% ou competência prática. A task não altera migrations aplicadas nem grants/owners produtivos. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
 
 ## DECISÃO HUMANA
 
@@ -32,15 +32,15 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T04:18:15-0300
+- last_update: 2026-08-26T08:21:12-0300
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: implementação e E2E real verificados no commit `16caccc82ffc519b60a68e1a02850d40909737e1`; o commit documental desta rodada fecha o control plane após esse SHA técnico
+- head: commit técnico `36088ff` (`test(security): harden CI Postgres provisioning`) sobre o checkpoint anterior; o fechamento documental desta rodada atualiza o control plane sem push/deploy
 - origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo após o commit documental; sem push/deploy
+- worktree: commit técnico `36088ff` fechado; auditoria, control plane e manifesto documental atualizados localmente; sem migration aplicada, push ou deploy
 - active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `pnpm verify` no baseline `b66acc1` passou com 141 arquivos/708 testes PASS, 29 arquivos/37 testes skipped; cobertura 84,36% statements, 80,35% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos passaram. No commit `16caccc82ffc519b60a68e1a02850d40909737e1`, `node --check`, Prettier, ESLint, `tsc -b` e o `pnpm verify` completo passaram com os mesmos 141/708 PASS, 29 arquivos/37 testes skipped, cobertura mínima, contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos/documentais. `CVG_RUN_REAL_E2E=true ... pnpm test:e2e --workers=1` passou 34/34 (32 cenários sintéticos + 2 cenários reais), incluindo build dos 12 workspaces. O cenário real observou health `READY`/PostgreSQL `UP`, convite, journey, atividade, start/save/submit, request IDs, nova sessão com tentativa versão 3 e oracle administrativo de tentativa/resposta/idempotência/outbox/auditoria. Cleanup independente confirmou zero dos artefatos mutáveis do fixture, arquivo temporário ausente e nenhum processo residual; auditoria append-only foi preservada. A evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico.
+- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, e `OPS-061-GRANTS-002` no commit `36088ff`: provisionamento sem URL/senha em `argv` ou ambiente arbitrário, pgpass/SQL temporários `0600`, transação, ACL de database/schema/functions/defaults, schema qualification, identidade/grantability e contrato CI coerente. No banco sintético PostgreSQL 16.15 novo, migrations 51/51 e runner oficial live passaram 35/35 arquivos e 82/82 testes; app passou healthcheck least privilege, sem ownership ou grants delegáveis. `pnpm verify` passou com Node `22.22.0`/pnpm `10.33.0`: 141 arquivos/714 testes PASS, 29 arquivos/38 testes skipped; cobertura 84,36% statements, 80,30% branches, 86,35% functions e 85,05% lines; contratos 86/86, worker 27/27, migrations 51/51 e gates estáticos/documentais PASS. Build passou em 12 workspaces, E2E sintético em 32/32, audit high sem vulnerabilidades e `git diff --check` PASS. O banco e as roles sintéticas foram removidos após a prova. `CVG_RUN_REAL_E2E=true ... pnpm test:e2e --workers=1` continua registrado como 34/34 (32 sintéticos + 2 reais) no artefato `0541`, sem recertificação nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas e limites estão registrados nas auditorias `0542` e `0543`.
 
 ## REGRAS DE USO
 

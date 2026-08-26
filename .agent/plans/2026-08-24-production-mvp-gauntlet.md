@@ -228,11 +228,44 @@ a aprovação clínica, piloto ou release produtivo.
   skipped e cobertura 84,36%/80,35%/86,35%/85,05%. O resultado é
   local/sintético e mantém gaps de diagnóstico→assignment, produção e operação
   externa.
+- [x] (2026-08-26T04:33:39-03:00) Abrir `OPS-061-GRANTS-001` como hardening local
+  autônomo após duas críticas independentes confirmarem o DML global em
+  `scripts/provision-ci-postgres.mjs:110-119` e a ausência de matriz negativa no
+  teste de governança. O escopo é somente provisionamento/ACL do harness e
+  teste live sintético; `JOURNEY-056`, produto, migrations aplicadas, produção,
+  remote same-SHA, browser cross-scope, escala/failover/restore/collector e
+  gates clínicos permanecem fora desta task.
+- [x] (2026-08-26T04:54:46-03:00) Executar RED → GREEN → REFACTOR de
+  `OPS-061-GRANTS-001`: a role `app` agora usa allowlist imutável de 29 tabelas,
+  `knowledge_documents` ficou excluída, grants/default ACL de `app` e `PUBLIC`
+  foram revogados, e o focal estático passou 20/20. O teste live foi ampliado
+  para ACL direta/efetiva, memberships, sequences e negação conhecida; a
+  crítica independente Huygens retornou `CONDITIONAL PASS` sem P0.
+- [x] (2026-08-26T05:10:12-03:00) Reexecutar os gates finais de
+  `OPS-061-GRANTS-001`: `pnpm verify` passou com 141/709 PASS e 38 skips,
+  cobertura 84,36%/80,35%/86,35%/85,05%; build passou em 12 workspaces, E2E
+  sintético em 32/32 e audit high sem vulnerabilidades. O preflight live foi
+  tentado e encerrou com exit 2 por ausência de `CVG_TEST_DATABASE_URL`; o
+  diff passou sem erro. Criar a auditoria `0542`, atualizar o manifesto e
+  fechar o control plane sem declarar produção.
+- [x] (2026-08-26T07:24:16-03:00) Atualizar auditoria/traceability, revisar o
+  diff final e fechar documentalmente `OPS-061-GRANTS-001`; `verify:traceability`,
+  `pnpm verify`, build, E2E sintético, audit high e diff-check passaram. A prova
+  live continua pendente sem ambiente autorizado.
+- [x] (2026-08-26T08:22:24-03:00) Responder à crítica independente de segurança
+  em `OPS-061-GRANTS-002` no commit `36088ff`: remover URL/senha de
+  argv/ambiente arbitrário, endurecer database/schema/function ACL e defaults,
+  qualificar schema, transacionar o provisionamento, completar o contrato CI,
+  executar migrations/provisionador/matriz live em banco PostgreSQL 16.15
+  descartável e remover os recursos sintéticos. Focal `30/30`, live `35/35`
+  arquivos e `82/82` testes; `pnpm verify`, build, E2E, audit high e
+  diff-check passaram. Auditoria `0543`; resultado local `CONDITIONAL PASS`.
 - [ ] (aguardando Ricardo) Aprovar a forma contratual de `JOURNEY-056` e abrir
-  o BUILD bounded; até lá, não iniciar código, migration ou UX da próxima
-  fatia. Production least privilege/owners, workflow remoto same-SHA,
-  diagnóstico→assignment, cenário browser cross-scope, escala/failover/restore/
-  collector e gates clínicos permanecem fora da evidência atual.
+  o BUILD bounded quando não houver task autônoma em execução; até lá, não
+  iniciar código, migration ou UX de jornada. Production owners/grants,
+  workflow remoto same-SHA, diagnóstico→assignment, cenário browser
+  cross-scope, escala/failover/restore/collector e gates clínicos permanecem
+  fora da evidência atual.
 
 ## Surprises & Discoveries
 
