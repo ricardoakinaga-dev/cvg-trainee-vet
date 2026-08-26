@@ -76,31 +76,38 @@ function envValue(text, key) {
   return new RegExp(`^${key}=([^\\r\\n]*)$`, "mu").exec(text)?.[1]?.trim();
 }
 
+function databaseConnectionIdentity(key, value) {
+  const connection = new URL(value);
+  if (
+    connection.protocol !== "postgresql:" &&
+    connection.protocol !== "postgres:"
+  ) {
+    throw new Error(`${key} is not PostgreSQL`);
+  }
+  const role = decodeURIComponent(connection.username);
+  const database = decodeURIComponent(connection.pathname.slice(1));
+  if (role.length === 0 || database.length === 0) {
+    throw new Error(`${key} has no role or database`);
+  }
+  return { key, role, database };
+}
+
 function databaseContractFailures(text) {
   const values = requiredDatabaseEnvironmentKeys.map((key) => [
     key,
     envValue(text, key),
   ]);
-  if (values.some(([, value]) => value === undefined || value.length === 0)) {
-    return [];
+  const missingKeys = values
+    .filter(([, value]) => value === undefined || value.length === 0)
+    .map(([key]) => key);
+  if (missingKeys.length > 0) {
+    return [`database URL contract is incomplete: ${missingKeys.join(", ")}`];
   }
 
   try {
-    const connections = values.map(([key, value]) => {
-      const connection = new URL(value);
-      if (
-        connection.protocol !== "postgresql:" &&
-        connection.protocol !== "postgres:"
-      ) {
-        throw new Error(`${key} is not PostgreSQL`);
-      }
-      const role = decodeURIComponent(connection.username);
-      const database = decodeURIComponent(connection.pathname.slice(1));
-      if (role.length === 0 || database.length === 0) {
-        throw new Error(`${key} has no role or database`);
-      }
-      return { key, role, database };
-    });
+    const connections = values.map(([key, value]) =>
+      databaseConnectionIdentity(key, value),
+    );
     const [runtime, migration, application, admin, realE2e] = connections;
     if (
       runtime === undefined ||
@@ -136,6 +143,67 @@ function databaseContractFailures(text) {
   } catch {
     return ["database URLs must use valid PostgreSQL connection URLs"];
   }
+}
+
+function workflowEnvironmentValue(text, key, indentation) {
+  return new RegExp(`^${" ".repeat(indentation)}${key}:\\s*(\\S*)\\s*$`, "mu")
+    .exec(text)?.[1]
+    ?.trim();
+}
+
+function workflowDatabaseContractFailures(text) {
+  const workflowKeys = Object.freeze([
+    ["DATABASE_URL", 6],
+    ["CVG_MIGRATION_DATABASE_URL", 6],
+    ["CVG_TEST_DATABASE_URL", 6],
+    ["CVG_TEST_ADMIN_DATABASE_URL", 6],
+    ["CVG_REAL_E2E_DATABASE_URL", 6],
+  ]);
+  const values = workflowKeys.map(([key, indentation]) => [
+    key,
+    workflowEnvironmentValue(text, key, indentation),
+  ]);
+  const missingKeys = values
+    .filter(([, value]) => value === undefined || value.length === 0)
+    .map(([key]) => key);
+  if (missingKeys.length > 0) {
+    return [
+      `workflow database URL contract is incomplete: ${missingKeys.join(", ")}`,
+    ];
+  }
+
+  const failures = databaseContractFailures(
+    values.map(([key, value]) => `${key}=${value}`).join("\n"),
+  );
+  if (failures.length > 0) {
+    return failures.map((failure) => `workflow ${failure}`);
+  }
+
+  const migrationOverride = workflowEnvironmentValue(text, "DATABASE_URL", 10);
+  if (migrationOverride === undefined || migrationOverride.length === 0) {
+    return ["workflow migration DATABASE_URL override is incomplete"];
+  }
+  try {
+    const migration = databaseConnectionIdentity(
+      "CVG_MIGRATION_DATABASE_URL",
+      values[1][1],
+    );
+    const override = databaseConnectionIdentity(
+      "workflow migration DATABASE_URL",
+      migrationOverride,
+    );
+    if (
+      migration.role !== override.role ||
+      migration.database !== override.database
+    ) {
+      return [
+        "workflow migration DATABASE_URL override must use CVG_MIGRATION_DATABASE_URL identity",
+      ];
+    }
+  } catch {
+    return ["workflow database URLs must use valid PostgreSQL connection URLs"];
+  }
+  return [];
 }
 
 function invalid(message) {
@@ -182,6 +250,7 @@ export function validateCiContract(contract) {
     ...requiredWorkflowChecks
       .filter(([, pattern]) => !pattern.test(contract.workflow))
       .map(([name]) => `workflow is missing ${name}`),
+    ...workflowDatabaseContractFailures(contract.workflow),
     ...requiredRuntimeChecks
       .filter(([, pattern]) => !pattern.test(contract.playwrightConfig))
       .map(([name]) => `Playwright runtime is missing ${name}`),

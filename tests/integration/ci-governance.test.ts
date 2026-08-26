@@ -127,4 +127,64 @@ describe("CI reproducibility contract", () => {
       /database URLs must target the same database/i,
     );
   });
+
+  it("rejects an empty documented database URL", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      envExample: contract.envExample.replace(
+        /CVG_TEST_DATABASE_URL=[^\r\n]*/u,
+        "CVG_TEST_DATABASE_URL=",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /database URL contract is incomplete/i,
+    );
+  });
+
+  it("rejects a workflow runtime DATABASE_URL that uses the migration role", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /^\s{6}DATABASE_URL: postgresql:\/\/cvg_app:[^\r\n]+/mu,
+        "      DATABASE_URL: postgresql://cvg:cvg_test_password@127.0.0.1:5432/cvg",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /workflow.*DATABASE_URL.*application role/i,
+    );
+  });
+
+  it("rejects a workflow with an empty application database URL", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /^\s{6}CVG_TEST_DATABASE_URL: [^\r\n]+/mu,
+        "      CVG_TEST_DATABASE_URL:",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /workflow database URL contract is incomplete/i,
+    );
+  });
+
+  it("rejects a workflow migration override that uses the application role", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /^\s{10}DATABASE_URL: postgresql:\/\/cvg:[^\r\n]+/mu,
+        "          DATABASE_URL: postgresql://cvg_app:cvg_app_test_password@127.0.0.1:5432/cvg",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /workflow migration DATABASE_URL override.*CVG_MIGRATION_DATABASE_URL/i,
+    );
+  });
 });
