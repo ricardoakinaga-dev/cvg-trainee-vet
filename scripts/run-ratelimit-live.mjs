@@ -4,6 +4,8 @@ import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
+/* global setTimeout */
+
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 
