@@ -13740,3 +13740,33 @@ IN_PROGRESS
 
 Publicar `main`, confirmar o SHA remoto, remover as duas branches não-main e
 registrar o estado final da transição.
+
+## 2026-09-09 — CONSOLIDAÇÃO DE BRANCHES: transição concluída
+
+### TIMESTAMP
+
+2026-09-09T17:42:31-0300
+
+### ACTION
+
+Publicado `main` e confirmado o remoto em `54e65a038f53e663b1390289e230c46b5461f8d0`.
+Antes da remoção, os tips `7ef0805` e `2101ab4` foram verificados como
+ancestrais do `main` publicado. Em seguida, removidas do GitHub as branches
+`aaa/round-10-verification` e `agent/publish-production-hardening`, executado
+`fetch --prune` e removida a branch local AAA.
+
+### RESULT
+
+Há somente `main` local e remoto; `origin/HEAD` aponta para `origin/main`,
+todos em `54e65a0`. O histórico das duas linhas permanece alcançável no merge
+`95eade4`; a árvore efetiva continua sendo a AAA verificada. Nenhum deploy,
+workflow remoto, migration produtiva, dado real ou segredo foi usado.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Retomar MOD-002/MOD-003. AAA-001, revisão humana, evidência live/produção,
+publicação clínica, piloto e deploy continuam sob seus gates próprios.

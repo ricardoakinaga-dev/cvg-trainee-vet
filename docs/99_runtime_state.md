@@ -10,16 +10,16 @@
 
 - current_phase: BUILD — MOD-AAA Round-1 (master prompt §§1–100): baseline + Phase 1/2/3 parcial, gates verdes locais
 - current_sprint: `MOD-REGISTRY` + `MOD-SECURITY-BASE` + `MOD-SUPPLYCHAIN-BASE` + `AAA-001` (ainda pendente)
-- current_task: publicar o `main` consolidado, remover as refs não-main após confirmação remota e fechar a transição; depois retomar o wiring do registry/rate-limit
+- current_task: retomar MOD-002/MOD-003 — wiring do registry/rate-limit no runtime — mantendo AAA-001 e os gates humanos/operacionais abertos
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: merge histórico `95eade4` e documentação `661c777` concluídos; instalação congelada, `pnpm typecheck`, `pnpm verify` (155/866, 42 skips, 84,65% statements, 80,48% branches), `pnpm build` (12/12) e `pnpm test:e2e` (45/45) passaram localmente
-- next_action: publicar `main`, confirmar o SHA remoto, remover `aaa/round-10-verification` e `agent/publish-production-hardening` no remoto e local, atualizar este estado para a próxima fatia; manter a limitação Node 24 local versus contrato Node 22.22.0 explícita
+- last_completed_action: `main` consolidado e publicado em `54e65a0`; `aaa/round-10-verification` e `agent/publish-production-hardening` removidas do remoto e a branch local AAA removida após confirmação de ancestralidade; apenas `main` permanece
+- next_action: iniciar MOD-002/MOD-003 conforme backlog, sem avançar AAA-001, publicação clínica, piloto, produção ou deploy; manter a limitação Node 24 local versus contrato Node 22.22.0 explícita
 
 ## BLOQUEIOS
 
@@ -32,13 +32,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-09T17:41:32-0300
-- session_checkpoint: consolidação histórica validada localmente; `main` aponta para `661c777` sobre o merge `95eade4`, com AAA como árvore canônica e hardening legado como segundo pai; push e remoção de refs ainda pendentes
+- last_update: 2026-09-09T17:42:31-0300
+- session_checkpoint: transição concluída; `main`/`origin/main`/`origin/HEAD` apontam para `54e65a0`, somente `main` existe como branch, árvore canônica AAA preservada e histórico legado alcançável pelo segundo pai `95eade4`
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: branch local `main` no merge `95eade4`; árvore efetiva é a ponta `7ef0805` da AAA; não houve deploy
-- origin: `origin/main` ainda em `3490203`; `origin/aaa/round-10-verification` em `7ef0805`; `origin/agent/publish-production-hardening` em `2101ab4`; os testes locais são evidência do checkout, não de workflow remoto; push do merge ainda pendente
+- head: branch local `main` em `54e65a0`; árvore efetiva preserva a ponta `7ef0805` da AAA; não houve deploy
+- origin: somente `origin/main` e `origin/HEAD -> origin/main` existem, ambos em `54e65a0`; os testes são evidência do checkout, não de workflow remoto; nenhuma execução remota foi inferida
 - worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
 - verification_state: `AAA-200/201` focal pós-correção passou `25/25`; o boundary de API/contratos/persistência focal passou `108/108`; a validação fresca desta consolidação passou `pnpm verify` com `155` arquivos/`866` testes, `42` skips, cobertura `84,65%/80,48%`, contratos `95/95`, worker `44/44`, migrations `55/55`, `pnpm build` em `12/12` workspaces e E2E `45/45`; `git diff --check`, secrets, traceability, architecture, documentation, product-definition e exposure passaram. `CVG_TEST_DATABASE_URL` permanece ausente; workflow remoto same-SHA, provider IA real, PostgreSQL/RLS live, Qdrant live, produção real, upstream real do proxy, clínica, zoom nativo e competência continuam sem evidência. A validação local usou Node `24.20.0`, fora do intervalo declarado `>=22.22.0 <23`; o contrato CI exigido é Node `22.22.0`/pnpm `10.33.0`.
