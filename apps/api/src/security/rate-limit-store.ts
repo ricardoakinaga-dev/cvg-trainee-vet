@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 
 import type { RateLimitRiskClass } from "../routing/route-registry.js";
 
+import { normalizeIpAddress } from "./trusted-proxy.js";
+
 export type { RateLimitRiskClass };
 
 export type RateLimitDecision = Readonly<{
@@ -10,15 +12,38 @@ export type RateLimitDecision = Readonly<{
   readonly retryAfterSeconds?: number;
 }>;
 
+export type RateLimitStoreOptions = Readonly<{
+  readonly signal?: AbortSignal;
+  readonly timeoutMs?: number;
+}>;
+
 export type RateLimitStore = Readonly<{
   readonly increment: (
     key: string,
     maxRequests: number,
     windowMs: number,
     nowMs: number,
+    options?: RateLimitStoreOptions,
   ) => Promise<RateLimitDecision>;
   readonly reset: (key: string) => Promise<void>;
 }>;
+
+export class RateLimitStoreError extends Error {
+  public override readonly name = "RateLimitStoreError";
+
+  public constructor(
+    message: string,
+    public readonly code: "timeout" | "aborted" | "backend",
+  ) {
+    super(message);
+  }
+}
+
+export function assertNotAborted(signal: AbortSignal | undefined): void {
+  if (signal?.aborted === true) {
+    throw new RateLimitStoreError("rate-limit operation aborted", "aborted");
+  }
+}
 
 export type RateLimitClassLimits = Readonly<{
   readonly maxRequests: number;
@@ -35,7 +60,7 @@ export type RateLimitKeyInput = Readonly<{
 export type RateLimitGuardOptions = Readonly<{
   readonly store: RateLimitStore;
   readonly riskClass: RateLimitRiskClass;
-  readonly failPolicy: "fail-closed" | "fail-open";
+  readonly failPolicy?: "fail-closed" | "fail-open";
   readonly clock?: () => number;
   readonly onRejection?: (
     entry: Readonly<{
@@ -63,6 +88,18 @@ export const RISK_CLASS_LIMITS: Readonly<
   "ai-assisted": Object.freeze({ maxRequests: 10, windowMs: 60_000 }),
 });
 
+export const FAIL_POLICY_BY_RISK_CLASS: Readonly<
+  Record<RateLimitRiskClass, "fail-closed" | "fail-open">
+> = Object.freeze({
+  "public-low-risk": "fail-open",
+  authentication: "fail-closed",
+  recovery: "fail-closed",
+  mutation: "fail-closed",
+  "expensive-read": "fail-closed",
+  internal: "fail-closed",
+  "ai-assisted": "fail-closed",
+});
+
 const MAX_KEY_PART_LENGTH = 256;
 
 function normalizedPart(value: string, fallback: string): string {
@@ -72,11 +109,7 @@ function normalizedPart(value: string, fallback: string): string {
 
 function normalizedClientIp(value: string | undefined): string {
   if (value === undefined) return "unknown";
-  const normalized = value.trim();
-  if (normalized === "::1") return "127.0.0.1";
-  if (normalized.length === 0 || normalized.length > 64) return "unknown";
-  if (!/^[a-zA-Z0-9.:]+$/.test(normalized)) return "unknown";
-  return normalized;
+  return normalizeIpAddress(value) ?? "unknown";
 }
 
 function principalHash(principalId: string | undefined): string {
@@ -119,7 +152,9 @@ export function createMemoryRateLimitStore(): RateLimitStore {
     maxRequests: number,
     windowMs: number,
     nowMs: number,
+    options: RateLimitStoreOptions = {},
   ): Promise<RateLimitDecision> {
+    assertNotAborted(options.signal);
     if (!Number.isSafeInteger(maxRequests) || maxRequests < 1) {
       throw new RangeError("maxRequests must be a positive integer");
     }
@@ -173,7 +208,14 @@ export function createScriptedRateLimitStore(
   const fallback =
     options.decision ?? Object.freeze({ allowed: true, remaining: 1 });
 
-  async function increment(): Promise<RateLimitDecision> {
+  async function increment(
+    _key: string,
+    _maxRequests: number,
+    _windowMs: number,
+    _nowMs: number,
+    options: RateLimitStoreOptions = {},
+  ): Promise<RateLimitDecision> {
+    assertNotAborted(options.signal);
     if (failuresLeft > 0) {
       failuresLeft -= 1;
       throw new Error("rate-limit store unavailable (scripted)");
@@ -193,6 +235,8 @@ export function createRateLimitGuard(
 ): RateLimitGuard {
   const clock = options.clock ?? (() => Date.now());
   const limits = RISK_CLASS_LIMITS[options.riskClass];
+  const failPolicy =
+    options.failPolicy ?? FAIL_POLICY_BY_RISK_CLASS[options.riskClass];
 
   async function check(input: RateLimitKeyInput): Promise<RateLimitDecision> {
     const key = buildRateLimitKey({ ...input, riskClass: options.riskClass });
@@ -216,7 +260,7 @@ export function createRateLimitGuard(
       }
       return decision;
     } catch {
-      if (options.failPolicy === "fail-open") {
+      if (failPolicy === "fail-open") {
         return Object.freeze({ allowed: true, remaining: 0 });
       }
       return Object.freeze({
@@ -228,4 +272,142 @@ export function createRateLimitGuard(
   }
 
   return Object.freeze({ check });
+}
+
+export type RedisScriptClient = Readonly<{
+  readonly eval: (
+    script: string,
+    keys: readonly string[],
+    args: readonly (string | number)[],
+  ) => Promise<unknown>;
+}>;
+
+export type RedisRateLimitStoreOptions = Readonly<{
+  readonly timeoutMs?: number;
+  readonly keyPrefix?: string;
+}>;
+
+const REDIS_FIXED_WINDOW_SCRIPT = [
+  "local current = redis.call('INCR', KEYS[1])",
+  "if current == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[2]) end",
+  "local ttl = redis.call('PTTL', KEYS[1])",
+  "return {current, ttl}",
+].join("\n");
+
+const DEFAULT_REDIS_TIMEOUT_MS = 500;
+const DEFAULT_REDIS_KEY_PREFIX = "rl:v1";
+
+function withTimeout<T>(
+  task: Promise<T>,
+  timeoutMs: number,
+  signal: AbortSignal | undefined,
+): Promise<T> {
+  assertNotAborted(signal);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new RateLimitStoreError("rate-limit backend timeout", "timeout"));
+    }, timeoutMs);
+    timer.unref?.();
+  });
+  const onAbort = (): void => {
+    if (timer !== undefined) clearTimeout(timer);
+  };
+  signal?.addEventListener("abort", onAbort, { once: true });
+  return Promise.race([task, timeout]).finally(() => {
+    if (timer !== undefined) clearTimeout(timer);
+    signal?.removeEventListener("abort", onAbort);
+  });
+}
+
+function parseRedisDecision(reply: unknown): { count: number; ttlMs: number } {
+  if (
+    !Array.isArray(reply) ||
+    typeof reply[0] !== "number" ||
+    typeof reply[1] !== "number" ||
+    !Number.isSafeInteger(reply[0]) ||
+    !Number.isFinite(reply[1])
+  ) {
+    throw new RateLimitStoreError(
+      "rate-limit backend returned a malformed reply",
+      "backend",
+    );
+  }
+  return { count: reply[0], ttlMs: reply[1] };
+}
+
+export function createRedisRateLimitStore(
+  client: RedisScriptClient,
+  options: RedisRateLimitStoreOptions = {},
+): RateLimitStore {
+  const timeoutMs = options.timeoutMs ?? DEFAULT_REDIS_TIMEOUT_MS;
+  const prefix = (options.keyPrefix ?? DEFAULT_REDIS_KEY_PREFIX).trim();
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1) {
+    throw new RangeError("timeoutMs must be a positive integer");
+  }
+  if (prefix.length === 0) {
+    throw new RangeError("keyPrefix must not be empty");
+  }
+
+  async function increment(
+    key: string,
+    maxRequests: number,
+    windowMs: number,
+    nowMs: number,
+    storeOptions: RateLimitStoreOptions = {},
+  ): Promise<RateLimitDecision> {
+    assertNotAborted(storeOptions.signal);
+    if (!Number.isSafeInteger(maxRequests) || maxRequests < 1) {
+      throw new RangeError("maxRequests must be a positive integer");
+    }
+    if (!Number.isSafeInteger(windowMs) || windowMs < 1) {
+      throw new RangeError("windowMs must be a positive integer");
+    }
+    if (!Number.isFinite(nowMs) || nowMs < 0) {
+      throw new RangeError("nowMs must be a non-negative number");
+    }
+    void nowMs;
+    const effectiveTimeout = storeOptions.timeoutMs ?? timeoutMs;
+    const reply = await withTimeout(
+      client.eval(
+        REDIS_FIXED_WINDOW_SCRIPT,
+        [`${prefix}:${key}`],
+        [maxRequests, windowMs],
+      ),
+      effectiveTimeout,
+      storeOptions.signal,
+    ).catch((error: unknown) => {
+      if (error instanceof RateLimitStoreError) throw error;
+      throw new RateLimitStoreError(
+        "rate-limit backend unavailable",
+        "backend",
+      );
+    });
+    const { count, ttlMs } = parseRedisDecision(reply);
+    if (count > maxRequests) {
+      return Object.freeze({
+        allowed: false,
+        remaining: 0,
+        retryAfterSeconds: Math.max(1, Math.ceil(ttlMs / 1_000)),
+      });
+    }
+    return Object.freeze({
+      allowed: true,
+      remaining: Math.max(0, maxRequests - count),
+    });
+  }
+
+  async function reset(key: string): Promise<void> {
+    await withTimeout(
+      client.eval(
+        "redis.call('DEL', KEYS[1]) return 1",
+        [`${prefix}:${key}`],
+        [],
+      ),
+      timeoutMs,
+      undefined,
+    );
+  }
+
+  return Object.freeze({ increment, reset });
 }

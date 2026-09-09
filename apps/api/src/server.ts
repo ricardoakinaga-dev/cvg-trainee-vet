@@ -23,6 +23,7 @@ import {
   type RequestHeaders,
 } from "./request-security.js";
 import { matchRoute } from "./routing/route-registry.js";
+import { resolveClientIp } from "./security/trusted-proxy.js";
 
 const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
 
@@ -33,6 +34,7 @@ export type ApiServerOptions = Readonly<{
   readonly allowedOrigins?: readonly string[];
   readonly rateLimit?: RateLimitOptions;
   readonly rateLimiter?: RequestRateLimiter;
+  readonly trustedProxies?: readonly string[];
 }>;
 
 export type ApiServer = Readonly<{
@@ -65,8 +67,28 @@ function isHealthPath(path: string): boolean {
   );
 }
 
-function clientKey(request: IncomingMessage, route: string): string {
-  return `${request.socket.remoteAddress ?? "unknown"}|${route}`;
+function clientKey(
+  request: IncomingMessage,
+  route: string,
+  trustedProxies: readonly string[] = [],
+): string {
+  const forwarded = request.headers["x-forwarded-for"];
+  const realIp = request.headers["x-real-ip"];
+  const forwardedHeader = request.headers.forwarded;
+  const clientIp = resolveClientIp(
+    request.socket.remoteAddress ?? "unknown",
+    {
+      ...(typeof forwarded === "string"
+        ? { "x-forwarded-for": forwarded }
+        : {}),
+      ...(typeof realIp === "string" ? { "x-real-ip": realIp } : {}),
+      ...(typeof forwardedHeader === "string"
+        ? { forwarded: forwardedHeader }
+        : {}),
+    },
+    trustedProxies,
+  );
+  return `${clientIp}|${route}`;
 }
 
 async function readJsonBody(
@@ -217,6 +239,7 @@ export function createApiServer(
   ];
   const rateLimiter =
     options.rateLimiter ?? createRateLimiter(options.rateLimit);
+  const trustedProxies = options.trustedProxies ?? [];
   if (!Number.isInteger(port) || port < 0 || port > 65_535) {
     throw new RangeError("port must be an integer between 0 and 65535");
   }
@@ -230,7 +253,9 @@ export function createApiServer(
     const method = request.method ?? "GET";
     const route = routeTemplate(method, path);
     if (!isHealthPath(path)) {
-      const rateLimit = await rateLimiter.check(clientKey(request, route));
+      const rateLimit = await rateLimiter.check(
+        clientKey(request, route, trustedProxies),
+      );
       if (!rateLimit.allowed) {
         const payload: ApiHttpResponse = {
           status: 429,

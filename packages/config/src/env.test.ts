@@ -22,6 +22,7 @@ describe("loadRuntimeConfig", () => {
       diagnosticSessionDraftEnabled: false,
       auditCursorSecret: developmentAuditCursorKey,
       approvedClinicalApproverId: "ricardo-account",
+      trustedProxies: [],
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
     });
@@ -174,5 +175,36 @@ describe("loadRuntimeConfig", () => {
         AI_ENABLED: "false",
       }),
     ).toThrow("development or test");
+  });
+
+  it("defaults to an empty trusted proxy list and parses explicit entries", () => {
+    const defaults = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+    });
+    expect(defaults.trustedProxies).toEqual([]);
+
+    const trusted = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+      TRUSTED_PROXIES: "10.0.0.1, 2001:db8::1",
+    });
+    expect(trusted.trustedProxies).toEqual(["10.0.0.1", "2001:db8::1"]);
+  });
+
+  it("rejects malformed trusted proxy entries fail-closed", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+        TRUSTED_PROXIES: "10.0.0.1, not-an-ip",
+      }),
+    ).toThrow("TRUSTED_PROXIES");
   });
 });

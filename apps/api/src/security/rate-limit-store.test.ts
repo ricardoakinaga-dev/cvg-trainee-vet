@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  FAIL_POLICY_BY_RISK_CLASS,
   RISK_CLASS_LIMITS,
   buildRateLimitKey,
   createMemoryRateLimitStore,
   createRateLimitGuard,
+  createRedisRateLimitStore,
   createScriptedRateLimitStore,
   type RateLimitKeyInput,
 } from "./rate-limit-store.js";
@@ -127,5 +129,84 @@ describe("distributed rate-limit store", () => {
     expect(decision).toMatchObject({ allowed: false, retryAfterSeconds: 7 });
     expect(rejected).toEqual(["authentication:7"]);
     expect(store).toBeDefined();
+  });
+
+  it("declares an explicit fail policy per risk class", () => {
+    expect(FAIL_POLICY_BY_RISK_CLASS).toMatchObject({
+      authentication: "fail-closed",
+      recovery: "fail-closed",
+      mutation: "fail-closed",
+      internal: "fail-closed",
+      "ai-assisted": "fail-closed",
+      "public-low-risk": "fail-open",
+      "expensive-read": "fail-closed",
+    });
+  });
+
+  it("guard defaults to the class fail policy when none is given", async () => {
+    const failing = createScriptedRateLimitStore({ failures: 5 });
+    const authGuard = createRateLimitGuard({
+      store: failing,
+      riskClass: "authentication",
+    });
+    await expect(authGuard.check(KEY_INPUT)).resolves.toMatchObject({
+      allowed: false,
+    });
+    const publicGuard = createRateLimitGuard({
+      store: failing,
+      riskClass: "public-low-risk",
+    });
+    await expect(publicGuard.check(KEY_INPUT)).resolves.toMatchObject({
+      allowed: true,
+    });
+  });
+
+  it("redis store decides with a single atomic eval and honors TTL", async () => {
+    const calls: Array<{ script: string; keys: readonly string[] }> = [];
+    const counts = new Map<string, number>();
+    const store = createRedisRateLimitStore({
+      eval: async (script, keys) => {
+        calls.push({ script, keys });
+        const count = (counts.get(keys[0] as string) ?? 0) + 1;
+        counts.set(keys[0] as string, count);
+        return [count, 1_000];
+      },
+    });
+    const first = await store.increment("rl:test", 2, 60_000, Date.now());
+    const second = await store.increment("rl:test", 2, 60_000, Date.now());
+    const blocked = await store.increment("rl:test", 2, 60_000, Date.now());
+    expect(calls).toHaveLength(3);
+    expect(calls[0]?.script).toContain("INCR");
+    expect(calls[0]?.script).toContain("PEXPIRE");
+    expect(first).toMatchObject({ allowed: true, remaining: 1 });
+    expect(second).toMatchObject({ allowed: true, remaining: 0 });
+    expect(blocked).toMatchObject({ allowed: false, retryAfterSeconds: 1 });
+  });
+
+  it("redis store fails on backend timeout and honors cancellation", async () => {
+    const hanging = createRedisRateLimitStore({
+      eval: () => new Promise<never>(() => {}),
+    });
+    await expect(
+      hanging.increment("rl:timeout", 1, 60_000, Date.now(), { timeoutMs: 5 }),
+    ).rejects.toThrow("timeout");
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      hanging.increment("rl:cancel", 1, 60_000, Date.now(), {
+        signal: controller.signal,
+      }),
+    ).rejects.toThrow("aborted");
+  });
+
+  it("memory store honors cancellation", async () => {
+    const store = createMemoryRateLimitStore();
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      store.increment("rl:cancel", 1, 60_000, Date.now(), {
+        signal: controller.signal,
+      }),
+    ).rejects.toThrow("aborted");
   });
 });

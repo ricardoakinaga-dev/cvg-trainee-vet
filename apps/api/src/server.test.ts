@@ -482,6 +482,47 @@ describe("API node server adapter", () => {
     }
   });
 
+  it("ignores spoofed forwarded headers unless the proxy is trusted", async () => {
+    const untrusted = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      rateLimit: { maxRequests: 1, windowMs: 10_000 },
+    });
+    await untrusted.listen();
+    try {
+      const address = untrusted.address();
+      if (address === null || typeof address === "string") return;
+      const url = `http://127.0.0.1:${address.port}/unknown`;
+      await fetch(url, { headers: { "x-forwarded-for": "198.51.100.9" } });
+      const spoofed = await fetch(url, {
+        headers: { "x-forwarded-for": "192.0.2.5" },
+      });
+      expect(spoofed.status).toBe(429);
+    } finally {
+      await untrusted.close();
+    }
+
+    const trusted = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      rateLimit: { maxRequests: 1, windowMs: 10_000 },
+      trustedProxies: ["127.0.0.1"],
+    });
+    await trusted.listen();
+    try {
+      const address = trusted.address();
+      if (address === null || typeof address === "string") return;
+      const url = `http://127.0.0.1:${address.port}/unknown`;
+      await fetch(url, { headers: { "x-forwarded-for": "198.51.100.9" } });
+      const distinct = await fetch(url, {
+        headers: { "x-forwarded-for": "192.0.2.5" },
+      });
+      expect(distinct.status).toBe(404);
+    } finally {
+      await trusted.close();
+    }
+  });
+
   it("turns malformed JSON into a public validation error", async () => {
     const api = createApiServer(dependencies, { host: "127.0.0.1", port: 0 });
     await api.listen();

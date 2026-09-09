@@ -46,6 +46,7 @@ const rawEnvironmentSchema = z.object({
   AI_PROVIDER: z.literal("openai").default("openai"),
   AI_API_KEY: z.string().min(1).optional(),
   AI_MODEL: z.string().min(1).optional(),
+  TRUSTED_PROXIES: z.string().optional(),
 });
 
 type EnvironmentInput = Record<string, string | undefined>;
@@ -57,6 +58,7 @@ export type RuntimeConfig = {
   diagnosticSessionDraftEnabled: boolean;
   auditCursorSecret: string;
   approvedClinicalApproverId?: string;
+  trustedProxies: readonly string[];
   qdrant:
     | {
         enabled: false;
@@ -91,6 +93,42 @@ export class ConfigError extends Error {
   public constructor(message: string) {
     super(message);
   }
+}
+
+const IPV4_PATTERN =
+  /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/;
+const IPV6_GROUP = /^[0-9a-fA-F]{1,4}$/;
+
+function isValidIpAddress(value: string): boolean {
+  if (IPV4_PATTERN.test(value)) return true;
+  if (value.length === 0 || value.length > 45) return false;
+  const compression = value.split("::");
+  if (compression.length > 2) return false;
+  if (compression.length === 2) {
+    const [head = "", tail = ""] = compression;
+    const groups = [
+      ...(head === "" ? [] : head.split(":")),
+      ...(tail === "" ? [] : tail.split(":")),
+    ];
+    return groups.length < 8 && groups.every((group) => IPV6_GROUP.test(group));
+  }
+  const groups = value.split(":");
+  return groups.length === 8 && groups.every((group) => IPV6_GROUP.test(group));
+}
+
+function parseTrustedProxies(value: string | undefined): readonly string[] {
+  if (value === undefined || value.trim() === "") return Object.freeze([]);
+  const entries = value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+  const invalid = entries.filter((entry) => !isValidIpAddress(entry));
+  if (invalid.length > 0) {
+    throw new ConfigError(
+      `Invalid TRUSTED_PROXIES entries: ${invalid.join(", ")}`,
+    );
+  }
+  return Object.freeze([...new Set(entries)]);
 }
 
 export function loadRuntimeConfig(
@@ -150,6 +188,7 @@ export function loadRuntimeConfig(
     nodeEnv: value.NODE_ENV,
     databaseUrl: value.DATABASE_URL,
     requireDatabaseLeastPrivilege: value.NODE_ENV === "production",
+    trustedProxies: parseTrustedProxies(value.TRUSTED_PROXIES),
     diagnosticSessionDraftEnabled:
       value.NODE_ENV !== "production" && value.DIAGNOSTIC_SESSION_DRAFT_ENABLED,
     auditCursorSecret: auditCursorSecret as string,
