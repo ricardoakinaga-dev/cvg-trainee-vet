@@ -33,6 +33,10 @@ import {
   type RequestHeaders,
 } from "./request-security.js";
 import { matchRoute } from "./routing/route-registry.js";
+import {
+  buildSecurityHeaders,
+  type SecurityHeadersEnvironment,
+} from "./security/security-headers.js";
 import { resolveClientIp } from "./security/trusted-proxy.js";
 
 const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
@@ -53,6 +57,7 @@ export type ApiServerOptions = Readonly<{
   readonly rateLimit?: RateLimitOptions;
   readonly rateLimiter?: RequestRateLimiter;
   readonly trustedProxies?: readonly string[];
+  readonly securityHeaders?: SecurityHeadersEnvironment;
   readonly tracing?: ApiServerTracingOptions;
 }>;
 
@@ -154,11 +159,17 @@ async function readJsonBody(
 function writeResponse(
   response: ServerResponse,
   payload: ApiHttpResponse,
+  securityEnvironment: SecurityHeadersEnvironment,
 ): void {
   response.statusCode = payload.status;
   response.setHeader("content-type", "application/json; charset=utf-8");
   response.setHeader("cache-control", "no-store");
   response.setHeader("x-request-id", payload.body.meta.request_id);
+  for (const [name, value] of Object.entries(
+    buildSecurityHeaders({ environment: securityEnvironment }),
+  )) {
+    response.setHeader(name, value);
+  }
   for (const [name, value] of Object.entries(payload.headers ?? {})) {
     response.setHeader(name, value);
   }
@@ -319,6 +330,9 @@ export function createApiServer(
     options.rateLimiter ?? createRateLimiter(options.rateLimit);
   const trustedProxies = options.trustedProxies ?? [];
   const requestTracer = createRequestTracer(options.tracing);
+  const securityEnvironment: SecurityHeadersEnvironment =
+    options.securityHeaders ??
+    (process.env.NODE_ENV === "production" ? "production" : "test");
   if (!Number.isInteger(port) || port < 0 || port > 65_535) {
     throw new RangeError("port must be an integer between 0 and 65535");
   }
@@ -357,7 +371,7 @@ export function createApiServer(
         startedAt,
         span?.context,
       );
-      writeResponse(response, payload);
+      writeResponse(response, payload, securityEnvironment);
     };
     if (!isHealthPath(path)) {
       const rateLimit = await rateLimiter.check(

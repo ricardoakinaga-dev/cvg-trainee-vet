@@ -3,6 +3,8 @@ import { writeFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
+/* global fetch */
+
 import { evaluateSameSha } from "./same-sha.mjs";
 
 const execFileAsync = promisify(execFile);

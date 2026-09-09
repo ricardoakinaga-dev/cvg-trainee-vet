@@ -444,6 +444,52 @@ describe("API node server adapter", () => {
     }
   });
 
+  it("emits effective security headers without HSTS outside production", async () => {
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+    });
+    await api.listen();
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/health/live`,
+      );
+      expect(response.headers.get("content-security-policy")).toContain(
+        "frame-ancestors 'none'",
+      );
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(response.headers.get("referrer-policy")).toBe("same-origin");
+      expect(response.headers.get("permissions-policy")).toContain("camera=()");
+      expect(response.headers.get("x-frame-options")).toBe("DENY");
+      expect(response.headers.get("strict-transport-security")).toBeNull();
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("emits HSTS when production HTTPS is declared", async () => {
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      securityHeaders: "production",
+    });
+    await api.listen();
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/health/live`,
+      );
+      expect(response.headers.get("strict-transport-security")).toContain(
+        "max-age=",
+      );
+    } finally {
+      await api.close();
+    }
+  });
+
   it("serves dependency health and protects the Prometheus exporter", async () => {
     const observability = createObservability({
       service: "api",
