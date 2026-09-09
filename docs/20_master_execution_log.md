@@ -13708,3 +13708,35 @@ IN_PROGRESS
 Executar instalação congelada e verificações proporcionais; publicar `main`,
 confirmar os refs remotos, remover as branches não-main e atualizar o estado
 com o SHA final e as evidências.
+
+## 2026-09-09 — CONSOLIDAÇÃO DE BRANCHES: validação pré-publicação
+
+### TIMESTAMP
+
+2026-09-09T17:41:32-0300
+
+### ACTION
+
+Validada a árvore canônica após o merge histórico. `pnpm install
+--frozen-lockfile`, `pnpm typecheck`, `pnpm verify`, `pnpm build` e
+`pnpm test:e2e` foram executados no checkout local antes do push.
+
+### RESULT
+
+Todos os gates passaram: `pnpm verify` exit `0` com `155` arquivos/`866`
+testes, `42` skips, cobertura `84,65%` statements e `80,48%` branches;
+contratos `95/95`; worker `44/44`; migrations `55/55`; build `12/12`; E2E
+`45/45`; diff-check, secrets, traceability, architecture, documentation,
+product-definition e public exposure PASS. O contrato CI reportou Node
+`22.22.0`/pnpm `10.33.0`, mas a execução local usou Node `24.20.0`/pnpm
+`10.33.0`, limitação já registrada no runtime state. Nenhum dado real,
+segredo, deploy ou workflow remoto foi inferido.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Publicar `main`, confirmar o SHA remoto, remover as duas branches não-main e
+registrar o estado final da transição.
