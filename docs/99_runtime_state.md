@@ -18,7 +18,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: fix 0054 service identity (`content-indexer`) + source/sink sob a identidade + fixtures lives sob staff ctx; lives descartáveis PG16.15+Qdrant 1.15.5+restore VERDES 41/111; `pnpm verify` PASS 151/840 (84,52/80,35/87,4/85,27, 55 migrations); E2E 45/45. Média ~78/100. Evidência: `docs/44_round10_analysis.md` §5.
+- last_completed_action: publicação de checkpoint operacional concluída no remoto configurado `https://github.com/ricardoakinaga-dev/cvg-trainee-vet`, na branch `aaa/round-10-verification`; nenhuma alteração de produto, deploy ou migration produtiva nesta rodada. O relatório Playwright local foi preservado e excluído do versionamento.
 - next_action: acompanhar run remoto na branch (com lives); se verde, reavaliar 6/8/9/11/12/14/15 + rebaseline oficial; colher aceites de `docs/45`; depois `AAA-107/202` autorizados e clínica.
 
 ## BLOQUEIOS
@@ -32,14 +32,14 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T00:00:00-0300
-- session_checkpoint: Round-10 em envio ao CI remoto; `IN_PROGRESS`; `.gauntlet/` intocado (rebaseline só pelo helper oficial)
+- last_update: 2026-09-09T07:45:42-0300
+- session_checkpoint: Round-10 publicado na branch `aaa/round-10-verification`; `IN_PROGRESS`; `.gauntlet/` intocado (rebaseline só pelo helper oficial)
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: `3490203038b52425a83e05989d47f1391de2949e` (`main`); não houve deploy
-- origin: tracking local `origin/main` no mesmo SHA `3490203038b52425a83e05989d47f1391de2949e`; não inferir execução de workflow remoto
-- worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
+- head: branch `aaa/round-10-verification`; checkpoint operacional publicado; não houve deploy
+- origin: tracking local `origin/aaa/round-10-verification`; push normal concluído; não inferir execução de workflow remoto
+- worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
 - verification_state: `AAA-200/201` focal pós-correção passou `25/25`; o boundary de API/contratos/persistência focal passou `108/108`; E2E sintético histórico passou `43/43` em portas isoladas; Round 11 visual e a crítica fresh `Raman` permanecem registrados como evidência histórica. A revalidação visual corrente passou `11/11` em `59,1 s`; `AAA-701` focal passou `5` arquivos/`18` testes e a verificação ampla passou `149` arquivos/`811` testes, `42` skips e cobertura `84,35%/80,21%/87,34%/85,09%`; `AAA-700` passou integração focal `20/20` e pacote `31/31`; `AAA-603` passou governance `21/21`, contrato CI `PASS` com `24` checks e execução local com `203` artefatos. `CVG_TEST_DATABASE_URL` permanece ausente; workflow remoto same-SHA, provider IA real, PostgreSQL/RLS live, Qdrant live, produção real, upstream real do proxy, clínica, zoom nativo e competência continuam sem evidência.
 

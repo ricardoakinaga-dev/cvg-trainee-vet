@@ -17,5 +17,6 @@ coverage/
 !apps/web/public/assets/
 !apps/web/public/assets/*.png
 playwright-report/
+.agent/playwright-report-postfix/
 test-results/
 .DS_Store

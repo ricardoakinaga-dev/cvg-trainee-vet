@@ -13542,3 +13542,37 @@ Lives **41/111 verdes** (PG+Qdrant+restore com RTO); `pnpm verify` PASS **151/84
 ### STATUS
 
 IN_PROGRESS
+
+## 2026-09-09 — PUBLICAÇÃO DO CHECKPOINT OPERACIONAL
+
+### TIMESTAMP
+
+2026-09-09T07:45:42-0300
+
+### ENGINE
+
+SYSTEM / RUNTIME CONTROLLER
+
+### PHASE
+
+Programa Premium AAA — continuidade e publicação controlada
+
+### SPRINT / TASK
+
+`REPO-PUBLISH-001` — commit e push do checkpoint atual
+
+### ACTION
+
+Verificado o remoto `origin` apontando para `https://github.com/ricardoakinaga-dev/cvg-trainee-vet`, a branch corrente `aaa/round-10-verification` e a sincronização local/remota antes da publicação. Registrados o estado e este log; o relatório gerado `.agent/playwright-report-postfix/` foi adicionado ao `.gitignore` e preservado sem publicação.
+
+### RESULT
+
+Checkpoint operacional commitado e enviado por push normal para `origin/aaa/round-10-verification`. Nenhuma alteração de produto, migration produtiva, deploy ou troca de branch foi realizada. O workflow remoto ainda não deve ser considerado executado apenas por causa do push.
+
+### DECISIONS
+
+Manter `IN_PROGRESS`; não atualizar backlog nem claims de evidência, pois nenhum item, dependência, risco ou status de produto mudou. Acompanhar o run remoto e manter `AAA-001`, produção, clínica e piloto sob os gates existentes.
+
+### STATUS
+
+IN_PROGRESS
