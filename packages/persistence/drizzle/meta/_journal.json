@@ -379,6 +379,13 @@
       "when": 1788712441429,
       "tag": "0053_aaa_content_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1788712441430,
+      "tag": "0054_aaa_content_indexer_service",
+      "breakpoints": true
     }
   ]
 }

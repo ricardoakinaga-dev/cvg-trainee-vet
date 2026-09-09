@@ -21,10 +21,10 @@
 | AAA-101 | P0 | IN_PROGRESS | `0052` + focal verde + live RLS + auditoria independente |
 | AAA-102 | P0 | IN_PROGRESS | preservação de respostas/contagem pós-`FINALIZADA` + live |
 | AAA-103 | P0 | IN_PROGRESS | idempotência atômica + CAS nomeado + 409 + concorrência live |
-| AAA-104 | P0 | IN_PROGRESS | `0053` + FKs + `FORCE RLS` + orphan scan + RLS live negativo |
+| AAA-104 | P0 | IN_PROGRESS | `0053`+`0054` (service `content-indexer`), source/sink sob a identidade, lives RLS verdes 41/111; falta revisão independente + owners prod |
 | AAA-105 | P0 | IN_PROGRESS | sessão/recovery/reidratação + cookie/expiração/cross-scope + E2E real |
 | AAA-106 | P1 | IN_PROGRESS | proxy `__Host` + 11/11 + 12/12 + 43/43 locais OK; falta HTTPS/expiração/cross-scope/upstream prod/browser→PG |
-| AAA-107 | P0 | READY_FOR_NEXT_STEP | harness least-privilege + RLS + owners/grants + rollback em banco descartável |
+| AAA-107 | P0 | IN_PROGRESS | harness least-privilege + RLS + lives verdes em descartável local; falta rodada autorizada + owners/grants prod |
 
 ## 3. Jornada vertical (G2)
 
@@ -89,7 +89,7 @@
 | ID | P | Status | Pronto quando |
 |---|---|---|---|
 | AAA-700 | P1 | IN_PROGRESS | retry transient-only + abort + budget locais OK; falta provider real + custo/latência + collector + evals sobre provider |
-| AAA-701 | P1 | IN_PROGRESS | duas críticas fresh tratadas (filtro/índice de modelo, identidade, XOR fail-closed, drift/wipe/orfão, lock por outcome); focais 50/280 PASS; falta 3ª revisão + live + same-SHA |
+| AAA-701 | P1 | IN_PROGRESS | três críticas fresh (PASS final) + lives PG+Qdrant verdes com lock real (41/111); falta rebaseline oficial + same-SHA remoto + produção |
 | AAA-702 | P0 | IN_PROGRESS | harness `runTextSafetyEvals` sintético PASS; falta provider real + thresholds + revisão humana |
 | AAA-703 | P0 | IN_PROGRESS | ports sem efeito colateral + saída inválida nunca resolve (4/4); falta HITL auditada em operação |
 | AAA-704 | P2 | READY_FOR_NEXT_STEP | custo/latência/valor comparados + decisão continuar/parar |

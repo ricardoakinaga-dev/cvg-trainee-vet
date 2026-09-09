@@ -5810,6 +5810,50 @@ artifacts:
         "Gauntlet files untouched: no official fingerprint helper exists in-repo, so no hash was invented; rebaseline awaits helper plus remote outcome.",
         "AAA-001 decision packet is PROPOSED only; clinical review, pilot and production remain human-gated.",
       ]
+  - id: "ROUND-11-0054-SERVICE-IDENTITY"
+    requirements: ["AAA-104", "AAA-701", "AAA-107", "SPEC-0111", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/44_round10_analysis.md",
+        "docs/40_construction_audit_report_2026-09-09.md",
+        "docs/43_backlog_triple_aaa.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/persistence/drizzle/0054_aaa_content_indexer_service.sql",
+        "packages/persistence/src/security-context.ts",
+        "packages/persistence/src/content-repository.ts",
+        "packages/persistence/src/ai-suggestion-repository.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/security-context.test.ts",
+        "packages/persistence/src/content-repository.test.ts",
+        "packages/persistence/src/ai-suggestion-repository.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/aaa-104-content-integrity.test.ts",
+        "tests/integration/postgres-worker.test.ts",
+        "tests/integration/postgres-activity-content.test.ts",
+        "tests/integration/worker-qdrant-live.test.ts",
+        "tests/integration/postgres-restore.test.ts",
+      ]
+    status: "implemented-local-live-green-awaiting-remote-run"
+    commit: "WORKTREE"
+    artifacts: ["docs/44_round10_analysis.md"]
+    verification:
+      [
+        "Disposable PG16.15 plus Qdrant 1.15.5 plus restore lives GREEN: 41 files/111 tests with RLS enforced and least-privilege roles",
+        "pnpm verify PASS end to end; coverage 151 files/840 tests, 84.52/80.35/87.4/85.27 with 55 migrations; pnpm test:e2e 45/45",
+        "Two genuine RLS regressions from migration 0053 reproduced locally and fixed via service identity with staff-scoped fixtures",
+      ]
+    limitations:
+      [
+        "Disposable services run outside the repository in /tmp and are not part of the deliverable; CI remains the canonical live proof.",
+        "Production owners/grants, load, failover, provider IA real, clinical review, pilot and production remain human-gated.",
+      ]
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

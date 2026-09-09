@@ -622,6 +622,50 @@ describe("migration governance", () => {
     expect(migration).toContain("session_record.status = 'EM_ANDAMENTO'");
   });
 
+  it("keeps the internal content indexer on a named service identity without weakening RLS", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0054_aaa_content_indexer_service.sql",
+        import.meta.url,
+      ),
+    );
+    const repositoryPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/content-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const sinkPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/src/ai-suggestion-repository.ts",
+        import.meta.url,
+      ),
+    );
+    const [migration, repository, sink] = await Promise.all([
+      readFile(migrationPath, "utf8"),
+      readFile(repositoryPath, "utf8"),
+      readFile(sinkPath, "utf8"),
+    ]);
+
+    expect(migration).toContain(
+      'CREATE POLICY "content_versions_indexer_select_policy"',
+    );
+    expect(migration).toContain("cvg.service_role");
+    expect(migration).toContain("content-indexer");
+    expect(migration).toContain("status = 'PUBLICADO'");
+    expect(migration).toContain(
+      'CREATE POLICY "ai_suggestions_indexer_insert_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "ai_suggestions_indexer_update_policy"',
+    );
+    expect(migration).not.toContain("DISABLE ROW LEVEL SECURITY");
+    expect(migration).not.toContain("BYPASSRLS");
+    expect(repository).toContain("setDatabaseServiceContext");
+    expect(repository).toContain("db.transaction(async (transaction)");
+    expect(sink).toContain("setDatabaseServiceContext");
+  });
+
   it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {
     const integrationPath = fileURLToPath(
       new URL("./postgres-learning-state.test.ts", import.meta.url),

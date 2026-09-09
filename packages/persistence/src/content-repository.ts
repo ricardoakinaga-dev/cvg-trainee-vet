@@ -25,7 +25,10 @@ import {
   outboxEvents,
 } from "./schema.js";
 import type * as schema from "./schema.js";
-import { setDatabaseSecurityContext } from "./security-context.js";
+import {
+  setDatabaseSecurityContext,
+  setDatabaseServiceContext,
+} from "./security-context.js";
 
 export class ContentMappingError extends Error {
   public constructor(message: string) {
@@ -564,45 +567,61 @@ export function createContentIndexSourceRepository(
       contentId: string,
       version: number,
     ): Promise<IndexableContentRecord | null> => {
-      const rows = await db
-        .select({
-          contentId: contentVersions.contentId,
-          version: contentVersions.version,
-          scopeId: contentVersions.scopeId,
-          participantText: contentVersions.participantText,
-        })
-        .from(contentVersions)
-        .where(
-          and(
-            eq(contentVersions.contentId, contentId),
-            eq(contentVersions.version, version),
-            eq(contentVersions.status, "PUBLICADO"),
-          ),
-        )
-        .limit(1);
-      const row = rows[0];
-      if (row === undefined) return null;
-      return toIndexableRecord(row);
+      // The indexer carries no participant or staff scope, so it reads under
+      // the named service identity (migration 0054), which exposes at most
+      // published content. Participant and staff flows keep their own
+      // contexts and never inherit this identity.
+      return db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseServiceContext(executor, {
+          serviceRole: "content-indexer",
+        });
+        const rows = await executor
+          .select({
+            contentId: contentVersions.contentId,
+            version: contentVersions.version,
+            scopeId: contentVersions.scopeId,
+            participantText: contentVersions.participantText,
+          })
+          .from(contentVersions)
+          .where(
+            and(
+              eq(contentVersions.contentId, contentId),
+              eq(contentVersions.version, version),
+              eq(contentVersions.status, "PUBLICADO"),
+            ),
+          )
+          .limit(1);
+        const row = rows[0];
+        if (row === undefined) return null;
+        return toIndexableRecord(row);
+      });
     },
     listPublishedIndexable: async (): Promise<
       readonly IndexableContentRecord[]
     > => {
-      const rows = await db
-        .select({
-          contentId: contentVersions.contentId,
-          version: contentVersions.version,
-          scopeId: contentVersions.scopeId,
-          participantText: contentVersions.participantText,
-        })
-        .from(contentVersions)
-        .where(eq(contentVersions.status, "PUBLICADO"))
-        .limit(maxReconciliationRecords + 1);
-      if (rows.length > maxReconciliationRecords) {
-        throw new ContentMappingError(
-          "published content exceeds reconciliation batch limit",
-        );
-      }
-      return Object.freeze(rows.map(toIndexableRecord));
+      return db.transaction(async (transaction) => {
+        const executor = transaction as unknown as DatabaseExecutor;
+        await setDatabaseServiceContext(executor, {
+          serviceRole: "content-indexer",
+        });
+        const rows = await executor
+          .select({
+            contentId: contentVersions.contentId,
+            version: contentVersions.version,
+            scopeId: contentVersions.scopeId,
+            participantText: contentVersions.participantText,
+          })
+          .from(contentVersions)
+          .where(eq(contentVersions.status, "PUBLICADO"))
+          .limit(maxReconciliationRecords + 1);
+        if (rows.length > maxReconciliationRecords) {
+          throw new ContentMappingError(
+            "published content exceeds reconciliation batch limit",
+          );
+        }
+        return Object.freeze(rows.map(toIndexableRecord));
+      });
     },
   };
   return Object.freeze(source);

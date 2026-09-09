@@ -2,6 +2,7 @@ import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { aiSuggestions } from "./schema.js";
 import type * as schema from "./schema.js";
+import { setDatabaseServiceContext } from "./security-context.js";
 
 export type InternalAiSuggestion = Readonly<{
   readonly contentId: string;
@@ -49,27 +50,35 @@ export function createAiSuggestionSink(
       }
 
       const now = new Date();
-      await db
-        .insert(aiSuggestions)
-        .values({
-          id: idFactory(),
-          contentId: suggestion.contentId,
-          version: suggestion.version,
-          status: "DRAFT_AI",
-          draftText: suggestion.draftText,
-          warnings: [...suggestion.warnings],
-          createdAt: now,
-          updatedAt: now,
-        })
-        .onConflictDoUpdate({
-          target: [aiSuggestions.contentId, aiSuggestions.version],
-          set: {
+      // Internal drafts are written under the named service identity
+      // (migration 0054), which permits drafts only for published content.
+      // Human-authored editorial flows keep their staff scope contexts.
+      await db.transaction(async (transaction) => {
+        await setDatabaseServiceContext(transaction, {
+          serviceRole: "content-indexer",
+        });
+        await transaction
+          .insert(aiSuggestions)
+          .values({
+            id: idFactory(),
+            contentId: suggestion.contentId,
+            version: suggestion.version,
             status: "DRAFT_AI",
             draftText: suggestion.draftText,
             warnings: [...suggestion.warnings],
+            createdAt: now,
             updatedAt: now,
-          },
-        });
+          })
+          .onConflictDoUpdate({
+            target: [aiSuggestions.contentId, aiSuggestions.version],
+            set: {
+              status: "DRAFT_AI",
+              draftText: suggestion.draftText,
+              warnings: [...suggestion.warnings],
+              updatedAt: now,
+            },
+          });
+      });
     },
   };
   return Object.freeze(sink);

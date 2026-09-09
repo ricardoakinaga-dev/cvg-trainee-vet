@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   normalizeDatabaseSecurityContext,
+  normalizeDatabaseServiceContext,
   resolveParticipantActivityScope,
   setDatabaseAppealReviewContext,
   setDatabaseAccountProvisioningContext,
   setDatabaseSecurityContext,
+  setDatabaseServiceContext,
   setDatabaseSessionSecurityContext,
   setDatabaseTokenSecurityContext,
 } from "./security-context.js";
@@ -38,6 +40,45 @@ describe("database security context", () => {
     await setDatabaseSecurityContext({ execute }, { participantId, scopeId });
 
     expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the content-indexer service identity without participant or scope", () => {
+    const input = { serviceRole: "content-indexer" } as const;
+    const normalized = normalizeDatabaseServiceContext(input);
+
+    expect(normalized).toEqual(input);
+    expect(normalized).not.toBe(input);
+    expect(Object.isFrozen(normalized)).toBe(true);
+  });
+
+  it("rejects unknown service identities instead of widening access", () => {
+    const hostile = { serviceRole: "super-reader" } as unknown as {
+      serviceRole: "content-indexer";
+    };
+    const blank = { serviceRole: " " } as unknown as {
+      serviceRole: "content-indexer";
+    };
+    expect(() => normalizeDatabaseServiceContext(hostile)).toThrow(
+      "serviceRole",
+    );
+    expect(() => normalizeDatabaseServiceContext(blank)).toThrow("serviceRole");
+  });
+
+  it("sets the service identity through a transaction-local SQL command", async () => {
+    let seen: unknown;
+    const execute = vi.fn(async (query: unknown) => {
+      seen = query;
+      return [];
+    });
+
+    await setDatabaseServiceContext(
+      { execute },
+      { serviceRole: "content-indexer" },
+    );
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(seen ?? "")).toContain("cvg.service_role");
+    expect(JSON.stringify(seen ?? "")).toContain("content-indexer");
   });
 
   it("maps the participant activity scope oracle and fails closed on malformed results", async () => {

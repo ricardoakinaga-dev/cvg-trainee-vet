@@ -7,6 +7,7 @@ import type { AiTextPort } from "../../packages/integrations/src/ai.js";
 import { createIntegrationHandlers } from "../../apps/worker/src/handlers.js";
 import { processOutboxOnce } from "../../apps/worker/src/loop.js";
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
+import { setDatabaseSecurityContext } from "../../packages/persistence/src/security-context.js";
 import {
   aiSuggestions,
   contentVersions,
@@ -37,138 +38,150 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
       const processingNow = new Date(0);
 
       try {
-        await database.db.insert(contentVersions).values({
-          id: versionId,
-          contentId,
-          scopeId,
-          version: 1,
-          status: "PUBLICADO",
-          kind: "LEITURA",
-          title: "Conteúdo sintético para integração",
-          participantText: "Texto interno autoral sintético para teste.",
-          responseMode: "NONE",
-        });
-        await database.db.insert(outboxEvents).values([
-          {
-            ...createOutboxInsert({
-              eventId: publishEventId,
-              eventType: "content.published.v1",
-              aggregateType: "content_version",
-              aggregateId: contentId,
-              occurredAt: new Date().toISOString(),
-              schemaVersion: 1,
-              correlationId,
-              payload: {
-                content_id: contentId,
-                version: "1",
-                status: "PUBLICADO",
-              },
-            }),
-            availableAt: processingNow,
-            createdAt: processingNow,
-          },
-          {
-            ...createOutboxInsert({
-              eventId: suggestionEventId,
-              eventType: "ai.suggestion.requested.v1",
-              aggregateType: "content_version",
-              aggregateId: contentId,
-              occurredAt: new Date().toISOString(),
-              schemaVersion: 1,
-              correlationId,
-              payload: { content_id: contentId, version: "1" },
-            }),
-            availableAt: processingNow,
-            createdAt: processingNow,
-          },
-        ]);
-
-        const ai: AiTextPort = {
-          generateStructured: async (request) =>
-            request.parse({
-              draftText: "Rascunho interno para revisão.",
-              warnings: ["Revisar antes de publicar."],
-            }),
-        };
-        const handlers = createIntegrationHandlers({
-          source: createContentIndexSourceRepository(database.db),
-          embedding: null,
-          vectorStore: null,
-          ai,
-          suggestionSink: createAiSuggestionSink(database.db, randomUUID),
-        });
-        const result = await processOutboxOnce(
-          createOutboxRepository(database.db),
-          handlers,
-          { batchSize: 2, now: processingNow },
-        );
-
-        const storedEvents = await database.db
-          .select({
-            id: outboxEvents.id,
-            eventType: outboxEvents.eventType,
-            status: outboxEvents.status,
-            attempts: outboxEvents.attempts,
-            lastErrorCode: outboxEvents.lastErrorCode,
-          })
-          .from(outboxEvents)
-          .where(inArray(outboxEvents.id, [publishEventId, suggestionEventId]));
-        const drafts = await database.db
-          .select({
-            contentId: aiSuggestions.contentId,
-            version: aiSuggestions.version,
-            status: aiSuggestions.status,
-            draftText: aiSuggestions.draftText,
-            warnings: aiSuggestions.warnings,
-          })
-          .from(aiSuggestions)
-          .where(
-            and(
-              eq(aiSuggestions.contentId, contentId),
-              eq(aiSuggestions.version, 1),
-            ),
-          );
-
-        expect(result).toEqual({ claimed: 2, processed: 2, failed: 0 });
-        expect(storedEvents).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: publishEventId,
-              status: "PROCESSED",
-              attempts: 1,
-            }),
-            expect.objectContaining({
-              id: suggestionEventId,
-              status: "PROCESSED",
-              attempts: 1,
-            }),
-          ]),
-        );
-        expect(drafts).toEqual([
-          expect.objectContaining({
+        // Staff fixture and internal worker reads run under explicit
+        // transaction-local contexts (AAA-104): staff scope for authored
+        // fixtures, service identity inside the source/sink for the run.
+        await database.db.transaction(async (transaction) => {
+          await setDatabaseSecurityContext(transaction, { scopeId });
+          const staffDb = transaction as unknown as typeof database.db;
+          await staffDb.insert(contentVersions).values({
+            id: versionId,
             contentId,
+            scopeId,
             version: 1,
-            status: "DRAFT_AI",
-            draftText: "Rascunho interno para revisão.",
-          }),
-        ]);
-        expect(JSON.stringify(storedEvents)).not.toContain("participantText");
-        expect(JSON.stringify(drafts)).not.toContain("Texto interno autoral");
-      } finally {
-        await database.db
-          .delete(aiSuggestions)
-          .where(eq(aiSuggestions.contentId, contentId));
-        await database.db
-          .delete(outboxEvents)
-          .where(inArray(outboxEvents.id, [publishEventId, suggestionEventId]));
-        await database.db
-          .delete(contentVersions)
-          .where(
-            and(
-              eq(contentVersions.scopeId, scopeId),
-              eq(contentVersions.id, versionId),
-            ),
+            status: "PUBLICADO",
+            kind: "LEITURA",
+            title: "Conteúdo sintético para integração",
+            participantText: "Texto interno autoral sintético para teste.",
+            responseMode: "NONE",
+          });
+          await staffDb.insert(outboxEvents).values([
+            {
+              ...createOutboxInsert({
+                eventId: publishEventId,
+                eventType: "content.published.v1",
+                aggregateType: "content_version",
+                aggregateId: contentId,
+                occurredAt: new Date().toISOString(),
+                schemaVersion: 1,
+                correlationId,
+                payload: {
+                  content_id: contentId,
+                  version: "1",
+                  status: "PUBLICADO",
+                },
+              }),
+              availableAt: processingNow,
+              createdAt: processingNow,
+            },
+            {
+              ...createOutboxInsert({
+                eventId: suggestionEventId,
+                eventType: "ai.suggestion.requested.v1",
+                aggregateType: "content_version",
+                aggregateId: contentId,
+                occurredAt: new Date().toISOString(),
+                schemaVersion: 1,
+                correlationId,
+                payload: { content_id: contentId, version: "1" },
+              }),
+              availableAt: processingNow,
+              createdAt: processingNow,
+            },
+          ]);
+
+          const ai: AiTextPort = {
+            generateStructured: async (request) =>
+              request.parse({
+                draftText: "Rascunho interno para revisão.",
+                warnings: ["Revisar antes de publicar."],
+              }),
+          };
+          const handlers = createIntegrationHandlers({
+            source: createContentIndexSourceRepository(staffDb),
+            embedding: null,
+            vectorStore: null,
+            ai,
+            suggestionSink: createAiSuggestionSink(staffDb, randomUUID),
+          });
+          const result = await processOutboxOnce(
+            createOutboxRepository(staffDb),
+            handlers,
+            { batchSize: 2, now: processingNow },
           );
+
+          const storedEvents = await staffDb
+            .select({
+              id: outboxEvents.id,
+              eventType: outboxEvents.eventType,
+              status: outboxEvents.status,
+              attempts: outboxEvents.attempts,
+              lastErrorCode: outboxEvents.lastErrorCode,
+            })
+            .from(outboxEvents)
+            .where(
+              inArray(outboxEvents.id, [publishEventId, suggestionEventId]),
+            );
+          const drafts = await staffDb
+            .select({
+              contentId: aiSuggestions.contentId,
+              version: aiSuggestions.version,
+              status: aiSuggestions.status,
+              draftText: aiSuggestions.draftText,
+              warnings: aiSuggestions.warnings,
+            })
+            .from(aiSuggestions)
+            .where(
+              and(
+                eq(aiSuggestions.contentId, contentId),
+                eq(aiSuggestions.version, 1),
+              ),
+            );
+
+          expect(result).toEqual({ claimed: 2, processed: 2, failed: 0 });
+          expect(storedEvents).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                id: publishEventId,
+                status: "PROCESSED",
+                attempts: 1,
+              }),
+              expect.objectContaining({
+                id: suggestionEventId,
+                status: "PROCESSED",
+                attempts: 1,
+              }),
+            ]),
+          );
+          expect(drafts).toEqual([
+            expect.objectContaining({
+              contentId,
+              version: 1,
+              status: "DRAFT_AI",
+              draftText: "Rascunho interno para revisão.",
+            }),
+          ]);
+          expect(JSON.stringify(storedEvents)).not.toContain("participantText");
+          expect(JSON.stringify(drafts)).not.toContain("Texto interno autoral");
+
+          await staffDb
+            .delete(aiSuggestions)
+            .where(eq(aiSuggestions.contentId, contentId));
+          await staffDb
+            .delete(outboxEvents)
+            .where(
+              inArray(outboxEvents.id, [publishEventId, suggestionEventId]),
+            );
+          await staffDb
+            .delete(contentVersions)
+            .where(
+              and(
+                eq(contentVersions.scopeId, scopeId),
+                eq(contentVersions.id, versionId),
+              ),
+            );
+        });
+      } finally {
         await database.close();
       }
     });

@@ -20,13 +20,18 @@ const row = {
 
 function fakeDatabase(rows: readonly (typeof row)[]) {
   const query = {
+    select: () => query,
     from: () => query,
     where: () => query,
     orderBy: () => query,
     limit: async () => rows,
+    execute: async () => [],
   };
   return {
     select: () => query,
+    transaction: async (
+      work: (transaction: typeof query) => Promise<unknown>,
+    ) => work(query),
     update: () => ({
       set: () => ({
         where: () => ({

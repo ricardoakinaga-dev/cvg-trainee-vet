@@ -67,3 +67,7 @@ Executado o máximo bounded sem gates humanos:
 - Evidência fresca: `pnpm verify` PASS ponta a ponta; 151 arquivos / 831 testes PASS (30 arq / 42 testes skipped por configuração/live); cobertura 84,49% / 80,3% / 87,37% / 85,24%; `pnpm test:e2e` 45/45; focais do slice 50 arq / 280 testes.
 - Notas revisadas: item 11 → **82/100**, item 14 → **88/100**, item 16 → **75/100**. Nova média simples **~76/100** (ponderada ~74/100); release/piloto/produção/clínica seguem **25/100** por gate.
 - Terceira revisão fresh, `AAA-001`, banco descartável, Qdrant live, provider real, CI remoto, clínica e piloto continuam pendentes e não são substituídos por esta evidência.
+
+## 7. Adendo 2 — lives verdes + 0054 (2026-09-09/10)
+
+Detalhe em `docs/44_round10_analysis.md` §5: PG16.15 + Qdrant 1.15.5 descartáveis em userland, suíte live idêntica à do CI **41/111 verde**; `verify` **151/840**; E2E **45/45**. Notas: 6→88, 8→82, 9→80, 11→90, 12→75, 14→92, 15→75. **Média ~78/100**.

@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Round-10: terceiro PASS + 3 P2 fechados; snapshot vai ao CI remoto em branch dedicada; `AAA-001` segue com pacote de decisão
-- current_sprint: `AAA-701/702/703` + `AAA-603-remoto` (branch `aaa/round-10-verification`) + decisão `AAA-001`
-- current_task: acompanhar o run remoto same-SHA; com ele verde, reavaliar itens 6/11/15 e rodar o rebaseline oficial do Gauntlet; obter os 7 aceites de `docs/45`; sem isso, sem COMPLETED, produção, clínica ou piloto
+- current_phase: BUILD — Round-10/11: lives verdes em descartável local (41/111), 0054 service identity, verify 151/840, E2E 45/45; envio ao CI remoto
+- current_sprint: `AAA-104/701/702/703` + `AAA-603-remoto` (branch `aaa/round-10-verification`) + decisão `AAA-001`
+- current_task: acompanhar o run remoto same-SHA com lives; se verde, reavaliar itens 6/8/9/11/12/14/15, rebaseline oficial do Gauntlet e colher os 7 aceites de `docs/45`
 
 ## STATUS
 
@@ -18,12 +18,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: Round-10 — terceiro crítico PASS + 3 P2 fechados (282/282 nos slices); `pnpm verify` PASS (151 arq/835 testes, 84,49/80,35/87,37/85,24); E2E 45/45 (2×); pacote de decisão `AAA-001` em `docs/45`; lives locais declarados inviáveis (sem docker/postgres/sudo) e redirecionados ao CI remoto. Evidência: `docs/44_round10_analysis.md` + `.agent/artifacts/aaa-701-critic-remediation-2026-09-09.md`.
-- next_action: acompanhar o workflow `quality` na branch `aaa/round-10-verification` (PG16+Qdrant+lives same-SHA); se verde, reavaliar itens 6/11/15, rebaseline oficial do Gauntlet e avançar `AAA-107/202`; colher os 7 aceites de `docs/45`.
+- last_completed_action: fix 0054 service identity (`content-indexer`) + source/sink sob a identidade + fixtures lives sob staff ctx; lives descartáveis PG16.15+Qdrant 1.15.5+restore VERDES 41/111; `pnpm verify` PASS 151/840 (84,52/80,35/87,4/85,27, 55 migrations); E2E 45/45. Média ~78/100. Evidência: `docs/44_round10_analysis.md` §5.
+- next_action: acompanhar run remoto na branch (com lives); se verde, reavaliar 6/8/9/11/12/14/15 + rebaseline oficial; colher aceites de `docs/45`; depois `AAA-107/202` autorizados e clínica.
 
 ## BLOQUEIOS
 
-- blockers: `AAA-001` continua aguardando aprovação humana das metas SLO/RPO/RTO, capacidade, escopo do piloto e autoridade de ambientes; `AAA-603` e `AAA-700` têm implementação local bounded, mas as provas de workflow remoto same-SHA, ACL/retention/assinatura/cache, provider IA real, custo/latência, collector/evals, PostgreSQL/RLS live, concorrência real, cross-scope, expiração/cookie, E2E browser→API→PostgreSQL, owners produtivos, carga, failover/restore, deploy e conteúdo clínico publicado continuam sem evidência. Nenhuma task usa dados reais ou altera migrations produtivas. O shell nativo tem Node `18.19.1`/sem pnpm; verificações locais usam Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado do repositório, enquanto o contrato CI permanece Node `22.22.0`/pnpm `10.33.0`.
+- blockers: `AAA-001` continua aguardando aprovação humana das metas SLO/RPO/RTO, capacidade, escopo do piloto e autoridade de ambientes; lives PG+Qdrant+restore verdes em descartável local (41/111) mas a prova remota same-SHA, ACL/retention/assinatura/cache, provider IA real, custo/latência, collector/evals sobre provider, concorrência real, cross-scope, expiração/cookie, E2E browser→API→PostgreSQL autorizado, owners produtivos, carga, failover, deploy e conteúdo clínico publicado continuam sem evidência. Nenhuma task usa dados reais ou altera migrations produtivas. O shell nativo tem Node `18.19.1`/sem pnpm; verificações locais usam Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado do repositório, enquanto o contrato CI permanece Node `22.22.0`/pnpm `10.33.0`.
 
 ## DECISÃO HUMANA
 

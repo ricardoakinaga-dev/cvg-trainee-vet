@@ -8,8 +8,19 @@ describe("internal AI suggestion persistence", () => {
   it("upserts only a reviewable internal draft and never a participant projection", async () => {
     const onConflictDoUpdate = vi.fn(async () => undefined);
     const values = vi.fn(() => ({ onConflictDoUpdate }));
-    const database = {
+    const executed: unknown[] = [];
+    const transactionDb = {
+      execute: vi.fn(async (query: unknown) => {
+        executed.push(query);
+        return [];
+      }),
       insert: vi.fn(() => ({ values })),
+    };
+    const database = {
+      transaction: vi.fn(
+        async (work: (tx: typeof transactionDb) => Promise<unknown>) =>
+          work(transactionDb),
+      ),
     } as unknown as PostgresJsDatabase<typeof schema>;
     const sink = createAiSuggestionSink(database, () => "suggestion-1");
 
@@ -20,7 +31,10 @@ describe("internal AI suggestion persistence", () => {
       warnings: ["Revisar antes de publicar."],
     });
 
-    expect(database.insert).toHaveBeenCalledWith(schema.aiSuggestions);
+    expect(database.transaction).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(executed)).toContain("cvg.service_role");
+    expect(JSON.stringify(executed)).toContain("content-indexer");
+    expect(transactionDb.insert).toHaveBeenCalledWith(schema.aiSuggestions);
     expect(values).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "suggestion-1",

@@ -13508,3 +13508,37 @@ Push de branch dedicada autorizado pela diretriz de usar os melhores caminhos; `
 ### STATUS
 
 IN_PROGRESS
+
+## 2026-09-10 — ROUND-11 — 0054 service identity + lives verdes 41/111
+
+### TIMESTAMP
+
+2026-09-10T00:30:00-0300
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### PHASE
+
+Programa Premium AAA — Trust core (RLS do worker)
+
+### SPRINT / TASK
+
+`AAA-104/701` — identidade de serviço do indexador + fixtures lives
+
+### ACTION
+
+Lives locais em PG16.15+Qdrant 1.15.5 descartáveis (userland, fora do repo) reproduziram 2 falhas RLS reais da 0053 (worker cego em produção). Fix: migration 0054 (políticas da identidade `content-indexer`), `setDatabaseServiceContext` com limpeza cruzada, source/sink sob a identidade, fixtures sob staff ctx (padrão AAA-104), restore via URL operadora. Teste de restore exigia DDL de app — corrigido para papel operador (documentado).
+
+### RESULT
+
+Lives **41/111 verdes** (PG+Qdrant+restore com RTO); `pnpm verify` PASS **151/840** (84,52/80,35/87,4/85,27, 55 migrations); E2E 45/45. Notas: 6→88, 8→82, 9→80, 11→90, 12→75, 14→92, 15→75. **Média ~78/100**. Detalhe: `docs/44` §5.
+
+### DECISIONS
+
+`IN_PROGRESS`. Snapshot segue ao CI remoto na branch (lives inclusos); se verde, reavaliar e rebaseline oficial. Clínica/piloto/produção seguem humanas. Binários PG16 de terceiros usados somente como executáveis; nenhum dado alheio tocado.
+
+### STATUS
+
+IN_PROGRESS

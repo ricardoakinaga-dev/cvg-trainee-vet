@@ -25,3 +25,13 @@ Verificou as 7 propriedades (busca por modelo nos 4 pontos, validação pré-I/O
 ## 4. Notas revisadas (pós-Round-10 local, pré-CI-remoto)
 
 Item 11 → **85/100** (terceiro PASS; live pendente). Item 14 → **90/100**. Item 16 → **78/100** (três críticas fresh registradas em artefato + traceability; o rebaseline do `.gauntlet/` aguarda o helper oficial de fingerprint + CI remoto — nenhum hash foi inventado). Média simples **~76/100**; release segue **25/100** por gate. Se o CI remoto passar, os itens 6/11/15 serão reavaliados com evidência live/same-SHA real.
+
+## 5. Adendo — lives em descartável local + fix 0054 (mesma data)
+
+Melhor caminho executado até o fim: sem docker/postgres/sudo, subi PG16.15 e Qdrant 1.15.5 em userland (`/tmp`, fora do repo) e rodei a suíte live idêntica à do CI.
+
+- Reproduzidas 2 falhas RLS reais (regressão da 0053): worker e activity-content negados pelo `FORCE RLS` — o worker de produção ficaria cego (retornaria `expected: 0`).
+- Fix: migration `0054_aaa_content_indexer_service` (identidade de serviço `content-indexer`, SELECT em PUBLICADO + INSERT/UPDATE de drafts), `setDatabaseServiceContext` no `security-context.ts` (com limpeza cruzada entre contextos), source e sink do worker sob a identidade; fixtures lives sob contexto staff (padrão AAA-104); restore passa a usar a URL operadora.
+- **Lives verdes: 41 arquivos / 111 testes** (PG + Qdrant + restore com RTO), 1 skip.
+- `pnpm verify` PASS: **151/840**, cobertura **84,52/80,35/87,4/85,27**, migrations 55; E2E **45/45**.
+- Notas finais: item 6 → **88**, 8 → **82**, 9 → **80**, 11 → **90**, 12 → **75**, 14 → **92**, 15 → **75** (2 runs remotos executados; verde total pendente). **Média ~78/100**; release segue 25/100 por gate humano.

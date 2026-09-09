@@ -7,16 +7,14 @@ import {
   createDeterministicEmbeddingProvider,
   createQdrantVectorStore,
 } from "../../packages/integrations/src/index.js";
-import {
-  createIntegrationHandlers,
-  type WorkerIntegrationDependencies,
-} from "../../apps/worker/src/handlers.js";
+import { createIntegrationHandlers } from "../../apps/worker/src/handlers.js";
 import {
   createInternalVectorPoint,
   vectorPointId,
 } from "../../apps/worker/src/indexing.js";
 import { reconcileVectorIndex } from "../../apps/worker/src/reconcile.js";
 import { createPostgresDatabase } from "../../packages/persistence/src/database.js";
+import { setDatabaseSecurityContext } from "../../packages/persistence/src/security-context.js";
 import {
   contentVersions,
   createContentIndexSourceRepository,
@@ -65,30 +63,42 @@ describe.skipIf(
     const contentIds = [firstContentId, secondContentId];
 
     try {
-      await database.db.insert(contentVersions).values([
-        {
-          id: firstVersionId,
-          contentId: firstContentId,
-          scopeId,
-          version: 1,
-          status: "PUBLICADO",
-          kind: "LEITURA",
-          title: "Conteúdo sintético A",
-          participantText: "Texto sintético publicado A.",
-          responseMode: "NONE",
-        },
-        {
-          id: secondVersionId,
-          contentId: secondContentId,
-          scopeId,
-          version: 1,
-          status: "PUBLICADO",
-          kind: "CASO",
-          title: "Conteúdo sintético B",
-          participantText: "Texto sintético publicado B.",
-          responseMode: "TEXT",
-        },
-      ]);
+      // Staff fixtures run under an explicit staff scope transaction
+      // (AAA-104); worker reads resolve through the service identity.
+      const staffWrite = async (
+        work: (staffDb: typeof database.db) => Promise<unknown>,
+      ): Promise<void> => {
+        await database.db.transaction(async (transaction) => {
+          await setDatabaseSecurityContext(transaction, { scopeId });
+          await work(transaction as unknown as typeof database.db);
+        });
+      };
+      await staffWrite((staffDb) =>
+        staffDb.insert(contentVersions).values([
+          {
+            id: firstVersionId,
+            contentId: firstContentId,
+            scopeId,
+            version: 1,
+            status: "PUBLICADO",
+            kind: "LEITURA",
+            title: "Conteúdo sintético A",
+            participantText: "Texto sintético publicado A.",
+            responseMode: "NONE",
+          },
+          {
+            id: secondVersionId,
+            contentId: secondContentId,
+            scopeId,
+            version: 1,
+            status: "PUBLICADO",
+            kind: "CASO",
+            title: "Conteúdo sintético B",
+            participantText: "Texto sintético publicado B.",
+            responseMode: "TEXT",
+          },
+        ]),
+      );
 
       await store.ensureCollection();
       await store.upsert([
@@ -124,7 +134,11 @@ describe.skipIf(
         source,
         embedding,
         vectorStore: store,
-      } satisfies WorkerIntegrationDependencies;
+        // Real PostgreSQL advisory lock: this live path also proves
+        // cross-process-safe serialization of the worker reconciliation.
+        withExclusiveLock: <Result>(work: () => Promise<Result>) =>
+          database.withAdvisoryLock("cvg:qdrant:reconcile-live-test", work),
+      };
 
       await expect(reconcileVectorIndex(dependencies)).resolves.toEqual({
         expected: 2,
@@ -142,10 +156,12 @@ describe.skipIf(
         upserted: 0,
         removed: 0,
       });
-      await database.db
-        .update(contentVersions)
-        .set({ participantText: "Texto sintético publicado B revisado." })
-        .where(eq(contentVersions.id, secondVersionId));
+      await staffWrite((staffDb) =>
+        staffDb
+          .update(contentVersions)
+          .set({ participantText: "Texto sintético publicado B revisado." })
+          .where(eq(contentVersions.id, secondVersionId)),
+      );
       await expect(reconcileVectorIndex(dependencies)).resolves.toEqual({
         expected: 2,
         upserted: 1,
@@ -193,10 +209,12 @@ describe.skipIf(
         expect.objectContaining({ knowledgeId: secondContentId }),
       ]);
 
-      await database.db
-        .update(contentVersions)
-        .set({ status: "RETIRADO" })
-        .where(eq(contentVersions.id, firstVersionId));
+      await staffWrite((staffDb) =>
+        staffDb
+          .update(contentVersions)
+          .set({ status: "RETIRADO" })
+          .where(eq(contentVersions.id, firstVersionId)),
+      );
       await expect(reconcileVectorIndex(dependencies)).resolves.toEqual({
         expected: 1,
         upserted: 0,
@@ -209,9 +227,13 @@ describe.skipIf(
         }),
       ]);
     } finally {
-      await database.db
-        .delete(contentVersions)
-        .where(inArray(contentVersions.contentId, contentIds));
+      await database.db.transaction(async (transaction) => {
+        await setDatabaseSecurityContext(transaction, { scopeId });
+        const staffDb = transaction as unknown as typeof database.db;
+        await staffDb
+          .delete(contentVersions)
+          .where(inArray(contentVersions.contentId, contentIds));
+      });
       const headers = qdrantApiKey ? { "api-key": qdrantApiKey } : undefined;
       await fetch(`${qdrantUrl}/collections/${collection}`, {
         method: "DELETE",

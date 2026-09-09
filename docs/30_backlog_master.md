@@ -2100,6 +2100,12 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - Lives locais inviáveis (sem docker/postgres/sudo); snapshot no CI remoto via branch `aaa/round-10-verification` para prova same-SHA + lives (PG16/Qdrant). `.gauntlet/` intocado (helper oficial ausente).
 - `AAA-603` segue `IN_PROGRESS` até o run remoto; com ele verde, reavaliar itens 6/11/15 e rodar rebaseline oficial.
 
+## 2026-09-10 — Round-11 (0054 + lives 41/111 verdes)
+
+- Migration 0054 + identidade `content-indexer` + source/sink sob a identidade; fixtures lives sob staff ctx; restore via URL operadora.
+- Lives descartáveis PG16.15+Qdrant 1.15.5+restore: **41/111**; `verify` **151/840**; E2E 45/45; média **~78/100**.
+- Snapshot no CI remoto (branch) com lives; se verde, reavaliar 6/8/9/11/12/14/15.
+
 ## REGRAS DE USO
 
 - Atualizar este arquivo sempre que um item mudar de status, prioridade, dependência ou risco.

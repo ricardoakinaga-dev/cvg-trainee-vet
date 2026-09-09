@@ -23,7 +23,12 @@ function runRestoreVerification(): Promise<{
     const child = spawn(process.execPath, [scriptPath], {
       env: {
         ...process.env,
-        CVG_RESTORE_SOURCE_DATABASE_URL: databaseUrl,
+        // Backup/restore is an operator procedure: it needs DDL on the
+        // source plus CREATEDB for the isolated target, capabilities the
+        // least-privilege application role correctly does not have. Prefer
+        // the migration/operator URL when the environment provides one.
+        CVG_RESTORE_SOURCE_DATABASE_URL:
+          process.env.CVG_MIGRATION_DATABASE_URL ?? databaseUrl,
       },
       stdio: ["ignore", "pipe", "pipe"],
     });

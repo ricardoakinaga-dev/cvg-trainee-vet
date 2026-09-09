@@ -38,8 +38,8 @@ describe("AAA-104 content persistence boundaries", () => {
   it("keeps the forward-only migration contiguous and fail-closed for orphans", async () => {
     const manifest = await readMigrationManifest();
     expect(validateMigrationManifest(manifest)).toMatchObject({
-      lastIndex: 53,
-      latestTag: "0053_aaa_content_integrity",
+      lastIndex: 54,
+      latestTag: "0054_aaa_content_indexer_service",
     });
 
     const migration = await readFile(migrationPath, "utf8");
