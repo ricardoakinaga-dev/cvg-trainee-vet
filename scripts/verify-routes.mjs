@@ -5,6 +5,13 @@ import { fileURLToPath } from "node:url";
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 const registryPath = join(root, "apps/api/src/routing/route-registry.ts");
 const httpPath = join(root, "apps/api/src/http.ts");
+// Every file that maps request paths to handlers. Adding a new dispatch
+// site requires listing it here so the bidirectional check keeps covering
+// all runtime routes.
+const dispatchPaths = Object.freeze([
+  httpPath,
+  join(root, "apps/api/src/features/ops/ops.handler.ts"),
+]);
 
 function parseRegistryEntries(source) {
   const entries = [];
@@ -168,11 +175,11 @@ export function verifyRoutes(registrySource, httpSource) {
 }
 
 async function main() {
-  const [registrySource, httpSource] = await Promise.all([
+  const [registrySource, ...dispatchSources] = await Promise.all([
     readFile(registryPath, "utf8"),
-    readFile(httpPath, "utf8"),
+    ...dispatchPaths.map((path) => readFile(path, "utf8")),
   ]);
-  const result = verifyRoutes(registrySource, httpSource);
+  const result = verifyRoutes(registrySource, dispatchSources.join("\n"));
   console.log(
     `routes gate: ${result.registryEntries} registry entries, ${result.dispatchRoutes} dispatch routes`,
   );
