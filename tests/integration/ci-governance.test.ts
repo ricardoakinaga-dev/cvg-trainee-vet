@@ -36,6 +36,17 @@ describe("CI reproducibility contract", () => {
     );
   });
 
+  it("checks out full history so the release gate can resolve reachable commits", async () => {
+    const contract = await readCiContract();
+    const checkoutStep = contract.workflow.match(
+      /\n {6}- name: Checkout\r?\n[\s\S]*?(?=\n {6}- name: |\n?$)/u,
+    );
+
+    expect(checkoutStep?.[0]).toMatch(/uses: actions\/checkout@v4/u);
+    expect(checkoutStep?.[0]).toMatch(/fetch-depth: 0/u);
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
+
   it("requires deterministic SBOM, hash manifest, and redaction governance before upload", async () => {
     const contract = await readCiContract();
     const withoutArtifactGovernance = {

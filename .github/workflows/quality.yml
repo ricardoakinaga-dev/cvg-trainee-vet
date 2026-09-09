@@ -47,6 +47,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history: the release-traceability gate resolves artifact
+          # commits via reachability from HEAD, which a shallow checkout
+          # would break for every historical entry.
+          fetch-depth: 0
 
       - name: Verify checkout SHA
         env:
