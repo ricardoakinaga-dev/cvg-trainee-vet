@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -40,7 +41,9 @@ const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 
 const APP_ROLE = "cvg_rls_app";
-const APP_PASSWORD = "cvg-rls-disposable-password";
+// Disposable credential minted per run (never a committed literal: the
+// secret scanner rejects password-like assignments in tracked files).
+const APP_PASSWORD = `cvg-rls-${randomUUID().replaceAll("-", "")}`;
 const DATABASE = "cvg_rls_live";
 
 function log(message) {
