@@ -5591,7 +5591,7 @@ artifacts:
       ]
     tests: ["tests/integration/ci-governance.test.ts"]
     status: "implemented-local-bounded-with-remote-same-sha-gap"
-    commit: "WORKTREE"
+    commit: "714550d842068eeec4f90abd998429725eec910e"
     artifacts: [".agent/artifacts/aaa-603-ci-artifact-governance-2026-09-06.md"]
     verification:
       [
@@ -5632,7 +5632,7 @@ artifacts:
         "packages/integrations/src/composition.test.ts",
       ]
     status: "implemented-local-bounded-with-provider-and-operations-gaps"
-    commit: "WORKTREE"
+    commit: "714550d842068eeec4f90abd998429725eec910e"
     artifacts: [".agent/artifacts/aaa-700-ai-resilience-2026-09-06.md"]
     verification:
       [
@@ -5679,7 +5679,7 @@ artifacts:
         "apps/worker/src/handlers.test.ts",
       ]
     status: "implemented-local-bounded-awaiting-independent-review-and-live-lock"
-    commit: "WORKTREE"
+    commit: "714550d842068eeec4f90abd998429725eec910e"
     artifacts: [".agent/artifacts/aaa-701-qdrant-reconciliation-2026-09-06.md"]
     verification:
       [
@@ -5709,7 +5709,7 @@ artifacts:
       ]
     tests: ["DOC-LINK-001", "DOC-DIFF-CHECK-001"]
     status: "documented-awaiting-aaa-001-and-fresh-aaa-701-review"
-    commit: "WORKTREE"
+    commit: "714550d842068eeec4f90abd998429725eec910e"
     artifacts:
       [
         "docs/40_construction_audit_report_2026-09-09.md",
@@ -5760,7 +5760,7 @@ artifacts:
         "apps/worker/src/main.test.ts",
       ]
     status: "implemented-local-bounded-awaiting-third-review-and-live"
-    commit: "WORKTREE"
+    commit: "714550d842068eeec4f90abd998429725eec910e"
     artifacts: [".agent/artifacts/aaa-701-critic-remediation-2026-09-09.md"]
     verification:
       [
@@ -5795,7 +5795,7 @@ artifacts:
         "apps/worker/src/reconcile.test.ts",
       ]
     status: "third-critic-pass-p2s-closed-remote-run-pending"
-    commit: "WORKTREE"
+    commit: "714550d842068eeec4f90abd998429725eec910e"
     artifacts:
       ["docs/44_round10_analysis.md", "docs/45_aaa001_decision_packet.md"]
     verification:
