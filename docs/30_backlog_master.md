@@ -2113,3 +2113,83 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - Não tratar B-07 como bloqueio da SPEC; ele bloqueia baseline e piloto completo por D-101.
 - Adicionar imediatamente qualquer nova pendência descoberta durante revisão ou aplicação.
 - Usar este backlog junto com docs/99_runtime_state.md e docs/20_master_execution_log.md.
+
+## 2026-09-09 — Overlay MOD-AAA Round-1 (residual exato, formato ID/Priority/Risk/Scope/Files/Acceptance/Tests/Evidence/Status)
+
+### MOD-002 — Migrar runtime de `routeTemplate()` para o registry
+
+- Priority: P1 · Risk: telemetria/rate-limit cegos em 6 rotas (F-REG-001…006)
+- Scope: `apps/api/src/server.ts` passa a usar `matchRoute()`; remover lista dupla
+- Files: `apps/api/src/server.ts`, `routing/route-registry.ts`
+- Acceptance Criteria: gaps F-REG zerados; paridade preservada; E2E verde
+- Tests: corpus existente + teste de runtime por rota
+- Evidence: pendente · Status: PENDENTE
+
+### MOD-003 — Wirear `RateLimitStore` + guard no servidor (fail-closed default)
+
+- Priority: P1 · Risk: bypass multi-instância
+- Scope: `createApiServer` aceita guard por risk class; métricas de rejeição
+- Files: `apps/api/src/server.ts`, `security/rate-limit-store.ts`
+- Acceptance Criteria: multi-instância com budget único; fail policy explícita
+- Tests: teste de integração com fake store + outage simulada
+- Evidence: pendente · Status: PENDENTE
+
+### MOD-004 — Extrair primeira feature de `http.ts` (diagnostics)
+
+- Priority: P2 · Risk: God Module 4267 linhas
+- Scope: handlers diagnósticos → `features/diagnostics/` (route+handler+schema+policy+presenter+tests), sem regra de negócio no controller
+- Files: `apps/api/src/http.ts`, `apps/api/src/features/diagnostics/*`
+- Acceptance Criteria: `http.ts` reduzido; comportamento idêntico; coverage mantida
+- Tests: mover/ampliar testes existentes · Evidence: pendente · Status: PENDENTE
+
+### MOD-005 — Detector de drift registry↔dispatch
+
+- Priority: P2 · Risk: nova rota sem classificação passa despercebida
+- Scope: teste que extrai matchers do dispatch e exige entrada no registry
+- Files: `apps/api/src/routing/*` · Acceptance: rota nova sem entrada quebra o gate
+- Tests: novo teste de drift · Evidence: pendente · Status: PENDENTE
+
+### MOD-006 — Testes adversariais dedicados (authz bypass, replay, session abuse)
+
+- Priority: P2 · Risk: garantia hoje é documental em parte do perímetro
+- Scope: suite `tests/security/*` contra API real sintética
+- Files: novos · Acceptance: bypass/replay/cross-scope cobertos
+- Tests: novos · Evidence: pendente · Status: PENDENTE
+
+### MOD-007 — OTel tracing real + correlação traceId/spanId
+
+- Priority: P2 · Risk: observabilidade sem traces distribuídos
+- Scope: spans HTTP→use-case→transação, sampling configurável, sem payload sensível
+- Files: `packages/observability/*`, `apps/api/*`, collector ref existente
+- Acceptance: traces fim-a-fim em ambiente descartável · Tests: novos
+- Evidence: pendente · Status: PENDENTE
+
+### MOD-008 — Fault-injection test-only + k6 baseline medido
+
+- Priority: P2/P3 · Risk: resiliência não provada sob stress
+- Scope: camada de falhas só em teste; rodar k6 e registrar p50/p95/p99/erro
+- Files: novos + `tests/load/k6-baseline.js` · Acceptance: baseline registrado
+- Tests: novos · Evidence: pendente · Status: PENDENTE
+
+### MOD-009 — Run remoto de `security.yml` + provenance/assinatura em CI
+
+- Priority: P2 · Risk: supply-chain sem evidência remota
+- Scope: executar CodeQL/review/SBOM no CI; provenance SLSA; Cosign keyless
+- Files: `.github/workflows/*` · Acceptance: artefatos publicados e verificáveis
+- Tests: gates existentes · Evidence: pendente · Status: PENDENTE
+
+### MOD-010 — Residual de vulnerabilidades moderadas (vitest dev-only)
+
+- Priority: P3 · Risk: path traversal via vitest browser/mocker (dev-only)
+- Scope: acompanhar advisories; upgrade quando patch disponível
+- Files: `package.json`, `pnpm-lock.yaml` · Acceptance: `pnpm audit` limpo
+- Tests: gates existentes · Evidence: `pnpm audit` 2026-09-09 (2 moderates)
+- Status: ACEITO-COM-GAP (dev-only, sem path produtivo)
+
+### MOD-011 — Auditoria RLS tabela-a-tabela + testes live completos
+
+- Priority: P2 · Risk: cobertura RLS por fatias, não total
+- Scope: matriz completa + lives negativos (leitura/escrita/cross-scope/ownership)
+- Files: migrations + harness · Acceptance: matriz 100% tabelas sensíveis
+- Tests: live (requer `CVG_TEST_DATABASE_URL`/AAA-001) · Evidence: pendente
+- Status: BLOQUEADO (ambiente live autorizado)

@@ -8,9 +8,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Round-10/11: lives verdes em descartável local (41/111), 0054 service identity, verify 151/840, E2E 45/45; envio ao CI remoto
-- current_sprint: `AAA-104/701/702/703` + `AAA-603-remoto` (branch `aaa/round-10-verification`) + decisão `AAA-001`
-- current_task: acompanhar o run remoto same-SHA com lives; se verde, reavaliar itens 6/8/9/11/12/14/15, rebaseline oficial do Gauntlet e colher os 7 aceites de `docs/45`
+- current_phase: BUILD — MOD-AAA Round-1 (master prompt §§1–100): baseline + Phase 1/2/3 parcial, gates verdes locais
+- current_sprint: `MOD-REGISTRY` + `MOD-SECURITY-BASE` + `MOD-SUPPLYCHAIN-BASE` + `AAA-001` (ainda pendente)
+- current_task: enviar esta rodada para revisão de Ricardo (sem commit: sem pedido explícito); acompanhar run remoto same-SHA pré-existente; próxima fatia: wiring do registry/rate-limit no runtime + migração `http.ts` por features
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: publicação de checkpoint operacional concluída no remoto configurado `https://github.com/ricardoakinaga-dev/cvg-trainee-vet`, na branch `aaa/round-10-verification`; nenhuma alteração de produto, deploy ou migration produtiva nesta rodada. O relatório Playwright local foi preservado e excluído do versionamento.
-- next_action: acompanhar run remoto na branch (com lives); se verde, reavaliar 6/8/9/11/12/14/15 + rebaseline oficial; colher aceites de `docs/45`; depois `AAA-107/202` autorizados e clínica.
+- last_completed_action: rodada MOD-AAA Round-1 concluída localmente sem commit: prompt canônico em docs/46, baseline docs/modernization/0001, registry de rotas + request context + rate-limit store + security headers em TDD (24 testes), threat model + authorization matrix + data classification, SLO/DR/7 runbooks, 6 arch docs + 5 ADRs, scorecard honesto (não-AAA), security.yml pinado + quality.yml pinado + contrato CI exigindo pins, release-evidence + pin-actions scripts, next 16.3.0→16.3.4 e override js-yaml (audit high verde), auditoria interim; `pnpm verify` 155/866 + E2E 45/45 + build + audit high + diff-check verdes
+- next_action: Ricardo revisar esta rodada e autorizar commit/push em branch dedicada (main intocado); depois wiring runtime do registry/rate-limit (P1-03/P1-04) e extração incremental de `http.ts`; manter acompanhamento do run remoto same-SHA e AAA-001
 
 ## BLOQUEIOS
 
@@ -32,8 +32,8 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-09T07:45:42-0300
-- session_checkpoint: Round-10 publicado na branch `aaa/round-10-verification`; `IN_PROGRESS`; `.gauntlet/` intocado (rebaseline só pelo helper oficial)
+- last_update: 2026-09-09T09:11:18-0300
+- session_checkpoint: MOD-AAA Round-1 concluída localmente sem commit (sem pedido explícito de commit); `IN_PROGRESS`; trabalho em worktree sobre `e3501e4`; `.gauntlet/` intocado
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
@@ -631,6 +631,42 @@ Itens 11→85, 14→90, 16→78; média ~76/100; release 25/100. Evidência: `do
 ### NEXT
 
 Acompanhar run remoto; se verde, reavaliar 6/11/15 + rebaseline oficial; colher aceites de `docs/45`.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-09-09 — MOD-AAA Round-1: baseline + fundação da modernização (sem commit)
+
+### TIMESTAMP
+
+2026-09-09T09:11:18-0300
+
+### ACTION
+
+Executada a primeira rodada do CODEX MASTER PROMPT (`docs/46_codex_master_prompt_state_of_art_triple_aaa.md`):
+baseline `docs/modernization/0001_baseline_audit.md` (P0=0, P1=4, P2=12, P3=6);
+route registry com paridade testada + 6 gaps F-REG provados; request context com
+redaction; rate-limit store port + risk classes + fail policy; security headers;
+threat model, authorization matrix, data classification; SLO, DR, 7 runbooks;
+6 docs de arquitetura + 5 ADRs + scorecard honesto; `security.yml` + pin SHA em
+`quality.yml` + contrato CI exigindo pins; scripts `release-evidence` e
+`pin-actions`; `next 16.3.0→16.3.4` + override `js-yaml≥4.3.2`; auditoria interim
+com veredito REPROVADO-para-AAA (honesto). TDD RED→GREEN em todas as adições.
+
+### RESULT
+
+`pnpm verify` PASS (155 arq/866 testes, 42 skips, 84,65% statements);
+`test:contract` 95, `test:worker` 44, architecture 2; `pnpm build` 12/12;
+`test:e2e` 45/45; `audit --audit-level=high` PASS (2 moderates residuais:
+vitest dev-only); SBOM CycloneDX 322 componentes validado localmente;
+`git diff --check` PASS. Nenhum dado real, segredo, deploy ou migration produtiva.
+Sem commit (AGENTS.md: sem pedido explícito).
+
+### NEXT
+
+Revisão de Ricardo + autorização de commit/push em branch dedicada; depois wiring
+runtime do registry/rate-limit (P1-03/P1-04) e extração incremental de `http.ts`.
 
 ### STATUS
 

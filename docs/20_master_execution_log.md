@@ -13576,3 +13576,58 @@ Manter `IN_PROGRESS`; não atualizar backlog nem claims de evidência, pois nenh
 ### STATUS
 
 IN_PROGRESS
+
+## 2026-09-09 — MOD-AAA Round-1: baseline + fundação State of Art (sem commit)
+
+### TIMESTAMP
+
+2026-09-09T09:11:18-0300
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE
+
+Programa State of Art / Triplo AAA — Phase 0 (baseline) + Phase 1/2/3 parcial
+
+### SPRINT / TASK
+
+`MOD-AAA-001` — arquivar master prompt, congelar baseline, fundação aditiva em TDD
+
+### ACTION
+
+Arquivado o prompt integral em `docs/46_codex_master_prompt_state_of_art_triple_aaa.md`
+e produzido `docs/modernization/0001_baseline_audit.md`. Implementação aditiva em
+TDD (RED→GREEN, 24 testes): `routing/route-registry.ts` (paridade com
+`routeTemplate()` + 6 gaps F-REG-001…006 provados), `http/request-context.ts`
+(redaction), `security/rate-limit-store.ts` (port + 7 risk classes + fail policy),
+`security/security-headers.ts` (CSP/HSTS-só-prod). Contrato CI evoluído para
+exigir SHA pins (RED em `ci-governance.test.ts` → GREEN). Docs: threat model,
+authorization matrix, data classification, SLO, DR, 7 runbooks, 6 arch, 5 ADRs,
+scorecard honesto, collector ref, k6 baseline, SECURITY.md, CONTRIBUTING.md.
+Supply-chain: `security.yml` pinado, `quality.yml` pinado, `pin-actions.mjs`,
+`release-evidence.mjs`. Segurança: `next 16.3.0→16.3.4`, override
+`js-yaml≥4.3.2`. Auditoria interim com veredito honesto NÃO-AAA.
+
+### RESULT
+
+`pnpm verify` PASS (155/866, 42 skips, 84,65% stmt); contract 95; worker 44;
+architecture 2; build 12/12; E2E 45/45; audit high PASS (2 moderates vitest
+dev-only); SBOM 322 comps; diff-check PASS. Sem dados reais/segredos/deploy/
+migrations produtivas. Sem commit (sem pedido explícito).
+
+### DECISIONS
+
+Scores honestos: Eng ~82, Sec ~80, Ops ~76 — NÃO é Triplo AAA. Residuais:
+P1-03/P1-04 (wiring runtime), moderates vitest, P2/P3 da baseline, run remoto de
+`security.yml`, detector de drift registry↔dispatch, AAA-001 segue com Ricardo.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Revisão de Ricardo + autorização de commit/push em branch dedicada; wiring
+runtime + extração incremental de `http.ts`.
