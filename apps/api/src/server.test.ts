@@ -1,3 +1,5 @@
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { describe, expect, it, vi } from "vitest";
 
 import { createObservability, type LogRecord } from "@cvg/observability";
@@ -278,6 +280,124 @@ describe("API node server adapter", () => {
         }),
       );
       expect(JSON.stringify(records)).not.toContain("participantId");
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("exports root spans and correlates logs when tracing is enabled", async () => {
+    const exported: unknown[] = [];
+    const collector = createServer((request, response) => {
+      let text = "";
+      request.on("data", (chunk) => {
+        text += chunk;
+      });
+      request.on("end", () => {
+        exported.push(JSON.parse(text));
+        response.statusCode = 200;
+        response.end("{}");
+      });
+    });
+    await new Promise<void>((resolve) =>
+      collector.listen(0, "127.0.0.1", resolve),
+    );
+    const collectorPort = (collector.address() as AddressInfo).port;
+    const records: LogRecord[] = [];
+    const observability = createObservability({
+      service: "api",
+      sink: (record) => records.push(record),
+    });
+    const api = createApiServer(
+      { ...dependencies, observability },
+      {
+        host: "127.0.0.1",
+        port: 0,
+        tracing: {
+          enabled: true,
+          endpoint: `http://127.0.0.1:${collectorPort}/v1/traces`,
+          serviceName: "cvg-api-test",
+          timeoutMs: 2_000,
+        },
+      },
+    );
+    await api.listen();
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/health/live`,
+        {
+          headers: {
+            traceparent:
+              "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01",
+          },
+        },
+      );
+      expect(response.status).toBe(200);
+      await api.close();
+
+      expect(records).toHaveLength(1);
+      expect(records[0]).toMatchObject({
+        traceId: "0af7651916cd43dd8448eb211c80319c",
+      });
+      expect(records[0]?.spanId).toMatch(/^[0-9a-f]{16}$/);
+      expect(exported).toHaveLength(1);
+      const spans = (
+        exported[0] as {
+          resourceSpans: Array<{
+            scopeSpans: Array<{
+              spans: Array<{
+                traceId: string;
+                parentSpanId: string;
+                name: string;
+              }>;
+            }>;
+          }>;
+        }
+      ).resourceSpans[0]?.scopeSpans[0]?.spans;
+      expect(spans).toHaveLength(1);
+      expect(spans?.[0]).toMatchObject({
+        traceId: "0af7651916cd43dd8448eb211c80319c",
+        parentSpanId: "b7ad6b7169203331",
+        name: "HTTP GET /health/live",
+      });
+      expect(observability.metrics.snapshot().counters).toContainEqual(
+        expect.objectContaining({ name: "http_requests_total" }),
+      );
+    } finally {
+      await api.close();
+      await new Promise<void>((resolve) => collector.close(() => resolve()));
+    }
+  });
+
+  it("keeps serving traffic when the trace collector is down", async () => {
+    const records: LogRecord[] = [];
+    const observability = createObservability({
+      service: "api",
+      sink: (record) => records.push(record),
+    });
+    const api = createApiServer(
+      { ...dependencies, observability },
+      {
+        host: "127.0.0.1",
+        port: 0,
+        tracing: {
+          enabled: true,
+          endpoint: "http://127.0.0.1:1/v1/traces",
+          timeoutMs: 50,
+        },
+      },
+    );
+    await api.listen();
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string") return;
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/health/live`,
+      );
+      expect(response.status).toBe(200);
+      expect(records).toHaveLength(1);
+      expect(records[0]?.traceId).toMatch(/^[0-9a-f]{32}$/);
     } finally {
       await api.close();
     }

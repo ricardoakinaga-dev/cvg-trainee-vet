@@ -11,6 +11,8 @@ export type LogRecord = Readonly<{
   readonly event: string;
   readonly requestId?: string;
   readonly correlationId?: string;
+  readonly traceId?: string;
+  readonly spanId?: string;
   readonly durationMs?: number;
   readonly fields?: LogFields;
 }>;
@@ -18,6 +20,8 @@ export type LogRecord = Readonly<{
 export type LogContext = Readonly<{
   readonly requestId?: string;
   readonly correlationId?: string;
+  readonly traceId?: string;
+  readonly spanId?: string;
   readonly durationMs?: number;
   readonly fields?: LogFields;
 }>;
@@ -149,6 +153,18 @@ export function sanitizeCorrelationId(value: unknown): string | undefined {
   return safeIdentifier(value);
 }
 
+function sanitizeTraceId(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  return /^[0-9a-f]{32}$/.test(normalized) ? normalized : undefined;
+}
+
+function sanitizeSpanId(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  return /^[0-9a-f]{16}$/.test(normalized) ? normalized : undefined;
+}
+
 function safeEvent(value: string): string {
   const normalized = boundedString(value, MAX_IDENTIFIER_LENGTH);
   return /^[a-zA-Z0-9_.:-]+$/.test(normalized) ? normalized : "invalid_event";
@@ -203,6 +219,12 @@ function mergeContexts(base: LogContext, next: LogContext): LogContext {
     ...(base.correlationId === undefined && next.correlationId === undefined
       ? {}
       : { correlationId: next.correlationId ?? base.correlationId }),
+    ...(base.traceId === undefined && next.traceId === undefined
+      ? {}
+      : { traceId: next.traceId ?? base.traceId }),
+    ...(base.spanId === undefined && next.spanId === undefined
+      ? {}
+      : { spanId: next.spanId ?? base.spanId }),
     ...(base.durationMs === undefined && next.durationMs === undefined
       ? {}
       : { durationMs: next.durationMs ?? base.durationMs }),
@@ -240,6 +262,8 @@ function createLogger(
     const fields = sanitizeFields(merged.fields);
     const requestId = sanitizeCorrelationId(merged.requestId);
     const correlationId = sanitizeCorrelationId(merged.correlationId);
+    const traceId = sanitizeTraceId(merged.traceId);
+    const spanId = sanitizeSpanId(merged.spanId);
     const durationMs = safeDuration(merged.durationMs);
     const record: LogRecord = Object.freeze({
       timestamp: clock().toISOString(),
@@ -248,6 +272,8 @@ function createLogger(
       event: safeEvent(event),
       ...(requestId === undefined ? {} : { requestId }),
       ...(correlationId === undefined ? {} : { correlationId }),
+      ...(traceId === undefined ? {} : { traceId }),
+      ...(spanId === undefined ? {} : { spanId }),
       ...(durationMs === undefined ? {} : { durationMs }),
       ...(fields === undefined ? {} : { fields }),
     });

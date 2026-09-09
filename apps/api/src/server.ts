@@ -6,7 +6,17 @@ import {
 } from "node:http";
 
 import { apiErrorResponse } from "@cvg/contracts";
-import { sanitizeCorrelationId, type Observability } from "@cvg/observability";
+import {
+  BatchSpanProcessor,
+  OtlpHttpExporter,
+  createTracer,
+  extractTraceParent,
+  sanitizeCorrelationId,
+  type Observability,
+  type Span,
+  type TraceContext,
+  type Tracer,
+} from "@cvg/observability";
 
 import {
   handleApiRequest,
@@ -27,6 +37,14 @@ import { resolveClientIp } from "./security/trusted-proxy.js";
 
 const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
 
+export type ApiServerTracingOptions = Readonly<{
+  readonly enabled?: boolean;
+  readonly endpoint?: string;
+  readonly serviceName?: string;
+  readonly timeoutMs?: number;
+  readonly sampleRatio?: number;
+}>;
+
 export type ApiServerOptions = Readonly<{
   readonly host?: string;
   readonly port?: number;
@@ -35,6 +53,7 @@ export type ApiServerOptions = Readonly<{
   readonly rateLimit?: RateLimitOptions;
   readonly rateLimiter?: RequestRateLimiter;
   readonly trustedProxies?: readonly string[];
+  readonly tracing?: ApiServerTracingOptions;
 }>;
 
 export type ApiServer = Readonly<{
@@ -197,6 +216,7 @@ function observeRequest(
   request: IncomingMessage,
   payload: ApiHttpResponse,
   startedAt: number,
+  trace?: TraceContext,
 ): void {
   if (observability === undefined) return;
 
@@ -213,16 +233,74 @@ function observeRequest(
   observability.logger.info("http.request.completed", {
     requestId,
     correlationId,
+    ...(trace === undefined
+      ? {}
+      : { traceId: trace.traceId, spanId: trace.spanId }),
     durationMs,
     fields,
   });
+  // Legacy names are preserved; http_* aliases follow OTel/semconv style.
   observability.metrics.increment("api.requests.total", {
     route,
     status,
     outcome,
   });
+  observability.metrics.increment("http_requests_total", {
+    route,
+    status,
+    outcome,
+  });
+  if (payload.status >= 500) {
+    observability.metrics.increment("http_server_errors_total", {
+      route,
+      status,
+    });
+  }
+  if (payload.status === 429) {
+    observability.metrics.increment("rate_limit_rejections_total", { route });
+  }
   observability.metrics.observe("api.request.duration_ms", durationMs, {
     route,
+  });
+  observability.metrics.observe(
+    "http_request_duration_seconds",
+    durationMs / 1000,
+    {
+      route,
+    },
+  );
+}
+
+type RequestTracer = Readonly<{
+  readonly tracer: Tracer;
+  readonly processor: BatchSpanProcessor;
+}>;
+
+function createRequestTracer(
+  options: ApiServerTracingOptions | undefined,
+): RequestTracer | null {
+  if (options?.enabled !== true || options.endpoint === undefined) return null;
+  const processor = new BatchSpanProcessor(
+    new OtlpHttpExporter({
+      endpoint: options.endpoint,
+      ...(options.timeoutMs === undefined
+        ? {}
+        : { timeoutMs: options.timeoutMs }),
+      ...(options.serviceName === undefined
+        ? {}
+        : { serviceName: options.serviceName }),
+    }),
+  );
+  return Object.freeze({
+    processor,
+    tracer: createTracer({
+      ...(options.sampleRatio === undefined
+        ? {}
+        : { sampleRatio: options.sampleRatio }),
+      onEnd: (span) => {
+        void processor.onEnd(span);
+      },
+    }),
   });
 }
 
@@ -240,6 +318,7 @@ export function createApiServer(
   const rateLimiter =
     options.rateLimiter ?? createRateLimiter(options.rateLimit);
   const trustedProxies = options.trustedProxies ?? [];
+  const requestTracer = createRequestTracer(options.tracing);
   if (!Number.isInteger(port) || port < 0 || port > 65_535) {
     throw new RangeError("port must be an integer between 0 and 65535");
   }
@@ -252,6 +331,34 @@ export function createApiServer(
     const path = toPath(request);
     const method = request.method ?? "GET";
     const route = routeTemplate(method, path);
+    const parent = extractTraceParent(
+      typeof request.headers.traceparent === "string"
+        ? request.headers.traceparent
+        : undefined,
+    );
+    const span: Span | null =
+      requestTracer === null
+        ? null
+        : requestTracer.tracer.startSpan(`HTTP ${method} ${route}`, {
+            ...(parent === null ? {} : { parent }),
+            attributes: { method, route },
+          });
+    const finish = (payload: ApiHttpResponse): void => {
+      if (span !== null) {
+        span.setAttribute("status", payload.status);
+        span.setAttribute("outcome", requestOutcome(payload.status));
+        if (payload.status >= 500) span.setStatus("error");
+        span.end();
+      }
+      observeRequest(
+        dependencies.observability,
+        request,
+        payload,
+        startedAt,
+        span?.context,
+      );
+      writeResponse(response, payload);
+    };
     if (!isHealthPath(path)) {
       const rateLimit = await rateLimiter.check(
         clientKey(request, route, trustedProxies),
@@ -275,8 +382,7 @@ export function createApiServer(
           { method, path, route, headers: requestHeaders(request) },
           payload,
         );
-        observeRequest(dependencies.observability, request, payload, startedAt);
-        writeResponse(response, payload);
+        finish(payload);
         return;
       }
     }
@@ -293,8 +399,7 @@ export function createApiServer(
         { method, path, route, headers },
         payload,
       );
-      observeRequest(dependencies.observability, request, payload, startedAt);
-      writeResponse(response, payload);
+      finish(payload);
       return;
     }
 
@@ -314,8 +419,7 @@ export function createApiServer(
         { method, path, route, headers },
         payload,
       );
-      observeRequest(dependencies.observability, request, payload, startedAt);
-      writeResponse(response, payload);
+      finish(payload);
       return;
     }
 
@@ -330,8 +434,7 @@ export function createApiServer(
       headers,
     };
     const payload = await handleApiRequest(apiRequest, dependencies);
-    observeRequest(dependencies.observability, request, payload, startedAt);
-    writeResponse(response, payload);
+    finish(payload);
   });
 
   return Object.freeze({
@@ -345,11 +448,21 @@ export function createApiServer(
       }),
     close: () =>
       new Promise<void>((resolve, reject) => {
-        if (!server.listening) {
-          resolve();
-          return;
-        }
-        server.close((error) => (error ? reject(error) : resolve()));
+        const flushTelemetry = (async (): Promise<void> => {
+          if (requestTracer === null) return;
+          await Promise.race([
+            requestTracer.processor.flush(),
+            new Promise((done) => setTimeout(done, 2_000)),
+          ]);
+        })();
+        const closeServer = (): void => {
+          if (!server.listening) {
+            resolve();
+            return;
+          }
+          server.close((error) => (error ? reject(error) : resolve()));
+        };
+        void flushTelemetry.finally(closeServer);
       }),
     address: () => server.address(),
   });
