@@ -1,7 +1,13 @@
 # Authorization Matrix — derivada do route registry
 
-- **Fonte:** `apps/api/src/routing/route-registry.ts` (+ verificação manual contra
-  `apps/api/src/http.ts` e `packages/application/src/*use-cases.ts`).
+- **Fonte canônica (gerada, §60):**
+  `docs/security/authorization-matrix.generated.md`, produzida por
+  `node scripts/generate-auth-matrix.mjs` a partir de
+  `apps/api/src/routing/route-registry.ts` e verificada por
+  `tests/integration/auth-matrix-generated.test.ts`. Esta página narrativa
+  explica a leitura; em caso de divergência, vale o arquivo gerado.
+- **Verificação manual adicional:** `apps/api/src/http.ts` e
+  `packages/application/src/*use-cases.ts`.
 - **Leitura:** `enforcement http` = checado em `http.ts` via `isAllowed`/`canAccess`;
   `application` = checado no caso de uso; `token` = token one-time sem sessão.
 - **Regra executável:** `route-registry.test.ts` falha se rota privada surgir sem
