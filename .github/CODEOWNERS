@@ -1,0 +1,19 @@
+# CODEOWNERS — template (sem identidades inventadas)
+#
+# Nenhum owner individual foi atribuído automaticamente: use apenas usuários
+# reais com acesso ao repositório. Descomente e preencha com @handles reais.
+# Até lá, a revisão é exigida pelo branch protection (ver
+# docs/operations/branch-protection.md), sem dono presumido.
+
+# /apps/api/                  @owner-real
+# /apps/web/                  @owner-real
+# /apps/worker/               @owner-real
+# /packages/domain/           @owner-real
+# /packages/application/      @owner-real
+# /packages/persistence/      @owner-real
+# /packages/contracts/        @owner-real
+# /packages/observability/    @owner-real
+# /packages/integrations/     @owner-real
+# /packages/config/           @owner-real
+# /.github/                   @owner-real
+# /scripts/verify-*.mjs       @owner-real

@@ -38,12 +38,15 @@
     "verify:product-definition": "node scripts/verify-product-definition.mjs",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
     "verify:routes": "node scripts/verify-routes.mjs",
+    "verify:same-sha": "node scripts/verify-same-sha.mjs",
+    "release:evidence": "node scripts/release-evidence.mjs",
+    "verify:release-evidence": "node scripts/release-evidence.mjs --self-test",
     "verify:otel": "vitest run --project unit packages/observability/src/tracing.test.ts",
     "verify:security": "vitest run --project unit apps/api/src/security apps/api/src/routing apps/api/src/http",
     "verify:complexity": "node scripts/verify-complexity.mjs",
     "verify:cycles": "node scripts/verify-cycles.mjs",
     "verify:dead-code": "node scripts/verify-dead-code.mjs",
-    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:complexity && pnpm verify:cycles && pnpm verify:dead-code && pnpm verify:security && pnpm verify:otel && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:complexity && pnpm verify:cycles && pnpm verify:dead-code && pnpm verify:security && pnpm verify:otel && pnpm verify:release-evidence && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
