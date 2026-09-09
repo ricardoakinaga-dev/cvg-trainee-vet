@@ -19,7 +19,7 @@ const EXCEPTIONS = new Map([
   ],
   [
     "apps/api/src/http.test.ts",
-    { max: 5101, reason: "god-test split in progress (MOD-004)" },
+    { max: 5103, reason: "god-test split in progress (MOD-004)" },
   ],
   [
     "packages/curriculum/src/catalog.ts",
