@@ -13,18 +13,18 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — MOD-AAA Round-1 (master prompt §§1–100): baseline + Phase 1/2/3 parcial, gates verdes locais
-- current_sprint: `MOD-REGISTRY` + `MOD-SECURITY-BASE` + `MOD-SUPPLYCHAIN-BASE` + `AAA-001` (ainda pendente)
-- current_task: retomar MOD-002/MOD-003 — wiring do registry/rate-limit no runtime — mantendo AAA-001 e os gates humanos/operacionais abertos
+- current_phase: BUILD — MOD-AAA FINAL CLOSURE (docs/47, §§1–100): 13 commits R2 sobre a fundação R1, gates finais verdes locais
+- current_sprint: `MOD-AAA-R2-CLOSURE` + `AAA-001` (ainda pendente)
+- current_task: publicar os commits R2 em `main` e acompanhar runs remotos same-SHA; próxima engenharia: MOD-004/MOD-007/MOD-011/MOD-009 (residuais P2 do audit v2)
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: `main` consolidado e publicado em `54e65a0`; `aaa/round-10-verification` e `agent/publish-production-hardening` removidas do remoto e a branch local AAA removida após confirmação de ancestralidade; apenas `main` permanece
-- next_action: iniciar MOD-002/MOD-003 conforme backlog, sem avançar AAA-001, publicação clínica, piloto, produção ou deploy; manter a limitação Node 24 local versus contrato Node 22.22.0 explícita
+- last_completed_action: closure R2 implementada e verificada localmente (13 commits desde `54e65a0`): registry governa runtime, rate-limit distribuído, decomposição inicial de `http.ts`, OTel real, resiliência, fault/concurrency/load, same-SHA verifier, release bundle fechado, headers efetivos, matriz gerada, 51 testes negativos, AI/Qdrant hardening, adversarial review (1 achado corrigido), audit final v2 com veredito honesto NON-AAA (Eng 88/Sec 88/Ops 83); `pnpm verify` + build + E2E 45/45 + audit high + diff-check verdes
+- next_action: publicar em `main` (push normal, sem force); acompanhar runs remotos `quality`/`security` no novo SHA e registrar `ci-runs.json`; sem avançar AAA-001, publicação clínica, piloto, produção ou deploy; verificações canônicas em Node v22.23.2 conforme contrato (resolvido §72)
 
 ## BLOQUEIOS
 
@@ -37,8 +37,8 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-09T17:42:31-0300
-- session_checkpoint: transição concluída; `main`/`origin/main`/`origin/HEAD` apontam para `54e65a0`, somente `main` existe como branch, árvore canônica AAA preservada e histórico legado alcançável pelo segundo pai `95eade4`
+- last_update: 2026-09-09T19:05:18-0300
+- session_checkpoint: closure R2 pronta para push (13 commits locais sobre `54e65a0`); `IN_PROGRESS`; remoto ainda em `54e65a0` até o push desta rodada
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
@@ -128,6 +128,44 @@ remoto inferida desta ação.
 ### NEXT
 
 Acompanhar runs remotos (quality + security.yml estreante); revisão de Ricardo.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-09-09 — MOD-AAA FINAL CLOSURE: implementação + verificação final local
+
+### TIMESTAMP
+
+2026-09-09T19:05:18-0300
+
+### ACTION
+
+Executada a closure R2 do prompt `docs/47` (13 commits): registry como runtime
+source of truth (F-REG zerados, `verify:routes`), Redis store + trusted proxy +
+failure matrix (ADR-006), extração error-model/session de `http.ts` + gates
+complexity/cycles/dead-code, OTel real com degradação (`verify:otel`),
+RetryPolicy + timeouts server-enforced + shutdown drain, fault injection +
+concorrência + pool isolation live + k6 baseline medido, same-SHA verifier +
+release bundle fechado + SBOM validado, headers efetivos + runtime-history
+split, matriz de autorização gerada, 51 testes negativos, AI oversized/HTML
+hardening, Qdrant trust proof, skip inventory, adversarial review, audit final
+v2 + scorecard. TDD RED→GREEN; sem dados reais, deploy ou publicação clínica.
+
+### RESULT
+
+`pnpm verify` PASS ponta a ponta (165 arq/982 testes, 45 skips, 85,05/80,57/
+87,17/85,88; contract 95; worker 47; 55 migrations; todos os gates novos);
+`pnpm build` 12/12; `test:e2e` 45/45; `audit --audit-level=high` com 2
+moderates vitest dev-only (MOD-010); `verify-same-sha` fail-closed esperado
+(sem runs remotos do SHA local — registrado, não inferido). Veredito honesto:
+Eng 88 / Sec 88 / Ops 83 — NÃO é Triple AAA. P0 = 0, P1 = 0 (justificado).
+
+### NEXT
+
+Push normal para `origin/main`; acompanhar runs remotos e registrar ci-runs;
+residuais P2: MOD-004 (decomposição total), MOD-007 (cobertura), MOD-011
+(RLS live), MOD-009 (same-SHA remoto), MOD-003R (Redis operado).
 
 ### STATUS
 

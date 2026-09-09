@@ -2193,3 +2193,17 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - Files: migrations + harness · Acceptance: matriz 100% tabelas sensíveis
 - Tests: live (requer `CVG_TEST_DATABASE_URL`/AAA-001) · Evidence: pendente
 - Status: BLOQUEADO (ambiente live autorizado)
+
+## 2026-09-09 — Overlay MOD-AAA R2 (status pós-closure; veredito NON-AAA honesto no audit v2 §30)
+
+- MOD-002 (registry runtime, P1): CONCLUÍDO — `routeTemplate()` virou adapter, F-REG-001…006 zerados, `verify:routes` 57↔57 no `pnpm verify`.
+- MOD-003 (rate-limit distribuído, P1): CONCLUÍDO_COM_GAPS — Redis atômico + guard + trusted proxy + ADR-006 + fail matrix testada; residual MOD-003R (P2): backend Redis operado.
+- MOD-004 (decompor `http.ts`, P2): EM_PROGRESSO — error model + feature session extraídos (4267→4181); God Test/Module restantes como ratchets.
+- MOD-005 (drift registry↔dispatch, P2): CONCLUÍDO — `verify:routes` bidirecional + vocab + witness, mutation-provado.
+- MOD-006 (adversariais, P2): CONCLUÍDO — 51 testes negativos + `adversarial-review-2026-09-09.md` (ADV-2026-09-01 corrigido).
+- MOD-007 (OTel, P2): CONCLUÍDO_COM_GAPS — tracing real + degradação + `verify:otel`; collector prod pendente.
+- MOD-008 (fault/concurrency/load, P2/P3): CONCLUÍDO (recorte local) — faults test-only, concorrência determinística, pool isolation live (skip sem DB), k6 3000/3000 + `test:load`.
+- MOD-009 (same-SHA remoto + assinatura, P2): EM_PROGRESSO — verifier fail-closed + bundle fechado + SBOM validado; runs remotos deste SHA pendentes; signing readiness sem fake.
+- MOD-010 (vitest moderates, P3): ACEITO-COM-GAP (inalterado).
+- MOD-011 (RLS live total, P2): BLOQUEADO (inalterado; 3 testes novos aguardam DB descartável autorizado).
+- Novos gates no `pnpm verify`: routes, complexity, cycles, dead-code, security, otel, release-evidence. P0 = 0, P1 = 0 (justificativa no audit v2 §30).
