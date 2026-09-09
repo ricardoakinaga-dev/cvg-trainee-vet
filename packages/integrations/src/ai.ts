@@ -105,6 +105,8 @@ export class AiIntegrationError extends Error {
   }
 }
 
+const MAX_STRUCTURED_OUTPUT_CHARS = 65_536;
+
 export function createOpenAiTextProvider(
   config: AiIntegrationConfig,
   responses: ResponsesPort = new OpenAI({
@@ -148,6 +150,18 @@ export function createOpenAiTextProvider(
 
     if (!response.output_text) {
       throw new AiIntegrationError("AI returned no structured output");
+    }
+
+    if (response.output_text.length > MAX_STRUCTURED_OUTPUT_CHARS) {
+      throw new AiIntegrationError(
+        "AI structured output is too large to validate safely",
+      );
+    }
+
+    if (/^\s*</u.test(response.output_text)) {
+      throw new AiIntegrationError(
+        "AI did not return structured output (markup received)",
+      );
     }
 
     try {

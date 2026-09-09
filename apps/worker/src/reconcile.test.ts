@@ -313,4 +313,23 @@ describe("Qdrant reconciliation", () => {
     });
     expect(deps.vectorStore.delete).toHaveBeenCalledWith([previousVersionId]);
   });
+
+  it("never consults vector retrieval: poisoned search cannot alter the index", async () => {
+    const base = dependencies();
+    const deps = {
+      ...base,
+      vectorStore: {
+        ...base.vectorStore,
+        search: vi.fn(async () => {
+          throw new Error("retrieval must not influence reconciliation");
+        }),
+      },
+    };
+
+    await expect(reconcileVectorIndex(deps)).resolves.toMatchObject({
+      expected: 1,
+    });
+    expect(deps.vectorStore.search).not.toHaveBeenCalled();
+    expect(deps.vectorStore.upsert).toHaveBeenCalledOnce();
+  });
 });

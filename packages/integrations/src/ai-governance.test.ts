@@ -60,6 +60,73 @@ describe("AI human-in-the-loop governance", () => {
     ).rejects.toThrow("no structured output");
   });
 
+  it("rejects oversized provider output before parsing", async () => {
+    const port = createOpenAiTextProvider(
+      { apiKey: "test-key", model: "synthetic-test-model" },
+      {
+        create: vi
+          .fn()
+          .mockResolvedValue({
+            output_text: `{"data":"${"x".repeat(100_000)}"}`,
+          }),
+      },
+    );
+
+    await expect(
+      port.generateStructured({
+        input: "synthetic input",
+        instructions: "synthetic instructions",
+        schemaName: "SyntheticV1",
+        jsonSchema: { type: "object" },
+        parse: (value: unknown) => value,
+      }),
+    ).rejects.toThrow("too large");
+  });
+
+  it("rejects HTML error pages masquerading as structured output", async () => {
+    const port = createOpenAiTextProvider(
+      { apiKey: "test-key", model: "synthetic-test-model" },
+      {
+        create: vi
+          .fn()
+          .mockResolvedValue({
+            output_text: "<html><body>blocked</body></html>",
+          }),
+      },
+    );
+
+    await expect(
+      port.generateStructured({
+        input: "synthetic input",
+        instructions: "synthetic instructions",
+        schemaName: "SyntheticV1",
+        jsonSchema: { type: "object" },
+        parse: (value: unknown) => value,
+      }),
+    ).rejects.toThrow("markup received");
+  });
+
+  it("wraps provider transport failures without leaking internals", async () => {
+    const port = createOpenAiTextProvider(
+      { apiKey: "test-key", model: "synthetic-test-model" },
+      {
+        create: vi.fn().mockRejectedValue(new Error("socket hang up")),
+      },
+    );
+
+    const failure = await port
+      .generateStructured({
+        input: "synthetic input",
+        instructions: "synthetic instructions",
+        schemaName: "SyntheticV1",
+        jsonSchema: { type: "object" },
+        parse: (value: unknown) => value,
+      })
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(Error);
+    expect(String(failure)).not.toContain("socket hang up");
+  });
+
   it("resolves only schema-validated output for human review", async () => {
     const port = createOpenAiTextProvider(
       { apiKey: "test-key", model: "synthetic-test-model" },

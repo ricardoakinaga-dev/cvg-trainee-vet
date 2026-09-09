@@ -336,7 +336,7 @@ describe("route registry", () => {
     expect(violations).toEqual([]);
   });
 
-  it("authorizes session lifecycle by live session possession, explicitly", () => {
+  it("authorizes session lifecycle by cookie possession, explicitly", () => {
     const lifecycle = ROUTE_REGISTRY.filter((definition) =>
       [
         "POST /api/v1/session/revoke",
@@ -349,7 +349,7 @@ describe("route registry", () => {
       expect(definition.auth).toBe("session");
       expect(definition.enforcement).toBe("http");
       expect(definition.capabilities).toEqual([]);
-      expect(definition.note).toMatch(/live session/);
+      expect(definition.note).toMatch(/cookie-possession/);
     }
   });
 

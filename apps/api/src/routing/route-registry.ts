@@ -132,7 +132,7 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     enforcement: "http",
     riskClass: AUTHN,
     telemetryGap: false,
-    note: "session cookie required; no capability beyond a live session",
+    note: "cookie-possession lifecycle; no principal capability, handler-enforced",
   }),
   exact("GET", "/api/v1/session/current", {
     auth: "session",
@@ -140,7 +140,7 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     enforcement: "http",
     riskClass: AUTHN,
     telemetryGap: false,
-    note: "session cookie required; no capability beyond a live session",
+    note: "cookie-possession lifecycle; no principal capability, handler-enforced",
   }),
   exact("POST", "/api/v1/session/rotate", {
     auth: "session",
@@ -148,7 +148,7 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     enforcement: "http",
     riskClass: AUTHN,
     telemetryGap: false,
-    note: "session cookie required; no capability beyond a live session",
+    note: "cookie-possession lifecycle; no principal capability, handler-enforced",
   }),
   exact("POST", "/api/v1/internal/invitations", {
     auth: "internal",
