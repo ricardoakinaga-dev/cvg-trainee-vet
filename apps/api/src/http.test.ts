@@ -735,7 +735,9 @@ describe("API HTTP boundary", () => {
       }),
     );
 
-    expect(response.status).toBe(500);
+    // Validation-first (ADV-2026-09-01 precedent): the non-UUID scopeId is
+    // rejected as 422 before the unwired-port check — no wiring-state leak.
+    expect(response.status).toBe(422);
     expect(audit.append).toHaveBeenCalledWith(
       expect.objectContaining({
         actorKind: "AUTHENTICATED",

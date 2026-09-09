@@ -94,12 +94,6 @@ import {
   parseParticipantProgress,
   parseParticipantLearningJourney,
   parseDashboardProjection,
-  continuingEducationReportProjectionSchema,
-  continuingEducationReportQuerySchema,
-  reflectionManagementProjectionSchema,
-  reflectionManagementQuerySchema,
-  auditTrailProjectionSchema,
-  auditTrailQuerySchema,
   internalSessionScopesProjectionSchema,
   adaptiveCurriculumAssignmentProjectionSchema,
   assignCurriculumFromDiagnosticRequestSchema,
@@ -149,6 +143,11 @@ import {
   handleAccountStatusChange,
   handleIssueAccountRecovery,
 } from "./features/accounts/accounts.handler.js";
+import { handleAuditTrail } from "./features/audit/audit.handler.js";
+import {
+  handleContinuingEducationReport,
+  handleReflectionManagementReport,
+} from "./features/reports/reports.handler.js";
 import {
   handleAuthoringReview,
   handleContentReviewQueue,
@@ -675,54 +674,6 @@ function publicStaffDashboardProjection(
   });
 }
 
-function publicContinuingEducationReportProjection(
-  state: ContinuingEducationReportState,
-): ApiSuccessEnvelope<unknown>["data"] {
-  return continuingEducationReportProjectionSchema.parse({
-    kind: state.kind,
-    scopeId: state.scopeId,
-    generatedAt: state.generatedAt,
-    filters: { ...state.filters },
-    summary: { ...state.summary },
-    participants: state.participants.map((participant) => ({
-      ...participant,
-    })),
-    modules: state.modules.map((module) => ({ ...module })),
-    pagination: { ...state.pagination },
-    learningEvidence: state.learningEvidence,
-    hoursClaim: state.hoursClaim,
-    practicalCompetenceClaim: state.practicalCompetenceClaim,
-  });
-}
-
-function publicReflectionManagementProjection(
-  state: ReflectionManagementState,
-): ApiSuccessEnvelope<unknown>["data"] {
-  return reflectionManagementProjectionSchema.parse({
-    kind: state.kind,
-    scopeId: state.scopeId,
-    generatedAt: state.generatedAt,
-    modules: state.modules.map((module) => ({
-      moduleId: module.moduleId,
-      totalAssignments: module.totalAssignments,
-      counts: { ...module.counts },
-    })),
-    evidence: state.evidence,
-    practicalCompetenceClaim: state.practicalCompetenceClaim,
-  });
-}
-
-function internalAuditTrailProjection(
-  state: AuditTrailState,
-): ApiSuccessEnvelope<unknown>["data"] {
-  return auditTrailProjectionSchema.parse({
-    kind: state.kind,
-    scopeId: state.scopeId,
-    filters: { ...state.filters },
-    items: state.items.map((item) => ({ ...item })),
-  });
-}
-
 async function handleActivity(
   activityId: string,
   requestId: string,
@@ -889,180 +840,6 @@ async function handleDashboard(
     status: 200,
     body: apiSuccessResponse(
       publicParticipantDashboardProjection(deriveParticipantDashboard(journey)),
-      requestId,
-    ),
-  };
-}
-
-async function handleContinuingEducationReport(
-  request: ApiHttpRequest,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.getContinuingEducationReport === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  const rawQuery = request.query ?? {};
-  const parsed = continuingEducationReportQuerySchema.safeParse({
-    ...rawQuery,
-    ...(rawQuery.page === undefined ? {} : { page: Number(rawQuery.page) }),
-    ...(rawQuery.pageSize === undefined
-      ? {}
-      : { pageSize: Number(rawQuery.pageSize) }),
-  });
-  if (!parsed.success) return validationResponse(requestId);
-  if (
-    !isAllowed(principal, "VIEW_PROGRAM_METRICS", {
-      scopeId: parsed.data.scopeId,
-    })
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const state = await dependencies.getContinuingEducationReport(
-    principal.principalId,
-    parsed.data,
-  );
-  return {
-    status: 200,
-    body: apiSuccessResponse(
-      publicContinuingEducationReportProjection(state),
-      requestId,
-    ),
-  };
-}
-
-async function handleAuditTrail(
-  request: ApiHttpRequest,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.getAuditTrail === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  const rawQuery = request.query ?? {};
-  const allowedKeys = new Set([
-    "scopeId",
-    "action",
-    "resourceType",
-    "resourceId",
-    "principalId",
-    "actorKind",
-    "outcome",
-    "from",
-    "to",
-    "cursor",
-    "limit",
-  ]);
-  if (Object.keys(rawQuery).some((key) => !allowedKeys.has(key))) {
-    return validationResponse(requestId);
-  }
-  const rawLimit = rawQuery.limit;
-  const parsed = auditTrailQuerySchema.safeParse({
-    scopeId: rawQuery.scopeId,
-    ...(rawQuery.action === undefined ? {} : { action: rawQuery.action }),
-    ...(rawQuery.resourceType === undefined
-      ? {}
-      : { resourceType: rawQuery.resourceType }),
-    ...(rawQuery.resourceId === undefined
-      ? {}
-      : { resourceId: rawQuery.resourceId }),
-    ...(rawQuery.principalId === undefined
-      ? {}
-      : { principalId: rawQuery.principalId }),
-    ...(rawQuery.actorKind === undefined
-      ? {}
-      : { actorKind: rawQuery.actorKind }),
-    ...(rawQuery.outcome === undefined ? {} : { outcome: rawQuery.outcome }),
-    ...(rawQuery.from === undefined ? {} : { from: rawQuery.from }),
-    ...(rawQuery.to === undefined ? {} : { to: rawQuery.to }),
-    ...(rawQuery.cursor === undefined ? {} : { cursor: rawQuery.cursor }),
-    ...(rawLimit === undefined ? {} : { limit: Number(rawLimit) }),
-  });
-  if (!parsed.success) return validationResponse(requestId);
-  if (
-    !isAllowed(
-      principal,
-      "VIEW_AUDIT_TRAIL",
-      { scopeId: parsed.data.scopeId },
-      dependencies.approvedClinicalApproverId,
-    )
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const query: GetAuditTrailCommand["query"] = {
-    scopeId: parsed.data.scopeId,
-    ...(parsed.data.action === undefined ? {} : { action: parsed.data.action }),
-    ...(parsed.data.resourceType === undefined
-      ? {}
-      : { resourceType: parsed.data.resourceType }),
-    ...(parsed.data.resourceId === undefined
-      ? {}
-      : { resourceId: parsed.data.resourceId }),
-    ...(parsed.data.principalId === undefined
-      ? {}
-      : { principalId: parsed.data.principalId }),
-    ...(parsed.data.actorKind === undefined
-      ? {}
-      : { actorKind: parsed.data.actorKind }),
-    ...(parsed.data.outcome === undefined
-      ? {}
-      : { outcome: parsed.data.outcome }),
-    ...(parsed.data.from === undefined ? {} : { from: parsed.data.from }),
-    ...(parsed.data.to === undefined ? {} : { to: parsed.data.to }),
-    ...(parsed.data.cursor === undefined ? {} : { cursor: parsed.data.cursor }),
-    limit: parsed.data.limit,
-  };
-  const state = await dependencies.getAuditTrail({
-    principalId: principal.principalId,
-    accountStatus: principal.accountStatus,
-    roles: principal.roles,
-    scopes: principal.scopes,
-    ...(dependencies.approvedClinicalApproverId === undefined
-      ? {}
-      : {
-          approvedClinicalApproverId: dependencies.approvedClinicalApproverId,
-        }),
-    query,
-  });
-  return {
-    status: 200,
-    body: apiSuccessResponse(internalAuditTrailProjection(state), requestId, {
-      has_next: state.hasNext,
-      ...(state.nextCursor === undefined
-        ? {}
-        : { next_cursor: state.nextCursor }),
-    }),
-  };
-}
-
-async function handleReflectionManagementReport(
-  request: ApiHttpRequest,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.getReflectionManagementReport === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  const parsed = reflectionManagementQuerySchema.safeParse(request.query ?? {});
-  if (!parsed.success) return validationResponse(requestId);
-  if (
-    !isAllowed(principal, "VIEW_PROGRAM_METRICS", {
-      scopeId: parsed.data.scopeId,
-    })
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const state = await dependencies.getReflectionManagementReport(
-    principal.principalId,
-    parsed.data,
-  );
-  return {
-    status: 200,
-    body: apiSuccessResponse(
-      publicReflectionManagementProjection(state),
       requestId,
     ),
   };
