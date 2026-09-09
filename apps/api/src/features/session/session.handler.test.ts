@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ApiHttpDependencies, ApiHttpRequest } from "../../http.js";
 import {
   handleCurrentSession,
+  handleInternalSessionScopes,
   handleRevokeSession,
   handleRotateSession,
 } from "./session.handler.js";
@@ -133,5 +134,37 @@ describe("session feature handlers", () => {
       baseDependencies({ rotateSession: async () => null }),
     );
     expect(unknown.status).toBe(401);
+  });
+
+  it("returns only the authenticated internal session scopes", async () => {
+    const scopes = [
+      "11111111-1111-4111-8111-111111111111",
+      "22222222-2222-4222-8222-222222222222",
+    ];
+    const author = {
+      principalId: "participant-1",
+      accountStatus: "ACTIVE",
+      roles: ["AUTHOR"],
+      scopes,
+    } as const;
+    const response = await handleInternalSessionScopes(
+      "request-1",
+      { ...author },
+      baseDependencies(),
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { kind: "internal_session_scopes", scopes },
+    });
+  });
+
+  it("denies internal session scopes to participants (403)", async () => {
+    const response = await handleInternalSessionScopes(
+      "request-1",
+      { ...principal },
+      baseDependencies(),
+    );
+    expect(response.status).toBe(403);
   });
 });

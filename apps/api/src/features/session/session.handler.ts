@@ -1,6 +1,7 @@
 import { clearSessionCookie } from "@cvg/application";
 import {
   apiSuccessResponse,
+  internalSessionScopesProjectionSchema,
   rotateSessionRequestSchema,
   sessionCurrentProjectionSchema,
 } from "@cvg/contracts";
@@ -10,7 +11,12 @@ import {
   validationResponse,
   type ApiHttpResponse,
 } from "../../http/errors.js";
-import type { ApiHttpDependencies, ApiHttpRequest } from "../../http.js";
+import type {
+  ApiHttpDependencies,
+  ApiHttpRequest,
+  ApiPrincipal,
+} from "../../http.js";
+import { isAllowed } from "../../http/authorization.js";
 
 export async function handleRevokeSession(
   request: ApiHttpRequest,
@@ -63,5 +69,30 @@ export async function handleRotateSession(
     status: 200,
     headers: { "set-cookie": rotated.cookie },
     body: apiSuccessResponse({ status: "rotated" }, requestId),
+  };
+}
+
+export async function handleInternalSessionScopes(
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (
+    !isAllowed(
+      principal,
+      "VIEW_INTERNAL_SCOPES",
+      {},
+      dependencies.approvedClinicalApproverId,
+    )
+  ) {
+    return errorResponse("forbidden", requestId);
+  }
+  const data = internalSessionScopesProjectionSchema.parse({
+    kind: "internal_session_scopes",
+    scopes: [...principal.scopes],
+  });
+  return {
+    status: 200,
+    body: apiSuccessResponse(data, requestId),
   };
 }

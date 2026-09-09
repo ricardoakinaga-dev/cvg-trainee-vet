@@ -3,3 +3,9 @@ export function isUuid(value: string): boolean {
     value,
   );
 }
+
+export function isPlainRecord(
+  value: unknown,
+): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}

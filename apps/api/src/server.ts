@@ -20,11 +20,11 @@ import {
 
 import {
   handleApiRequest,
-  recordApiRejectionAudit,
   type ApiHttpDependencies,
   type ApiHttpResponse,
   type ApiHttpRequest,
 } from "./http.js";
+import { recordApiRejectionAudit } from "./http/rejection-audit.js";
 import {
   createRateLimiter,
   isCsrfAllowed,

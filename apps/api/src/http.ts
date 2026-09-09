@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import type {
   AppealState,
   AssessmentWorkflowState,
@@ -9,7 +7,6 @@ import type {
 } from "@cvg/domain";
 import {
   ApplicationError,
-  createAuditEntry,
   type CorrectionResult,
   type CorrectOpenResponseCommand,
   type AcceptInvitationCommand,
@@ -78,14 +75,10 @@ import {
   type SubmitAttemptCommand,
   type TransactionSecurityContext,
   type AuditPort,
-  type AuditOutcome,
   type AuditTrailState,
   type GetAuditTrailCommand,
 } from "@cvg/application";
-import {
-  apiSuccessResponse,
-  internalSessionScopesProjectionSchema,
-} from "@cvg/contracts";
+import { apiSuccessResponse } from "@cvg/contracts";
 import {
   deriveOperationalSnapshot,
   type Observability,
@@ -102,10 +95,7 @@ import {
   handleStart,
   handleSubmit,
 } from "./features/attempts/attempts.handler.js";
-import {
-  isAllowed,
-  type ParticipantActivityItemKind,
-} from "./http/authorization.js";
+import { type ParticipantActivityItemKind } from "./http/authorization.js";
 import {
   handleDiagnosticDraftEvaluation,
   handleFinalizeDiagnosticSession,
@@ -113,7 +103,7 @@ import {
   handleSaveDiagnosticSessionAnswer,
   handleStartDiagnosticSession,
 } from "./features/diagnostics/diagnostics.handler.js";
-import { isUuid } from "./http/validation.js";
+
 import {
   handleAcceptInvitation,
   handleCreateInvitation,
@@ -170,9 +160,11 @@ import {
 } from "./features/feedback/feedback.handler.js";
 import {
   handleCurrentSession,
+  handleInternalSessionScopes,
   handleRevokeSession,
   handleRotateSession,
 } from "./features/session/session.handler.js";
+import { recordApiRejectionAudit } from "./http/rejection-audit.js";
 
 export type { ApiHttpResponse };
 
@@ -416,98 +408,6 @@ function unexpectedOperationalInput(
     return "query";
   }
   return undefined;
-}
-
-type ApiRejectionAuditRequest = Readonly<{
-  readonly method: string;
-  readonly path: string;
-  readonly route?: string;
-  readonly scopeId?: string;
-  readonly body?: unknown;
-  readonly headers?: Readonly<Record<string, string | undefined>>;
-}>;
-
-function rejectionAuditOutcome(status: number): AuditOutcome {
-  return status === 401 || status === 403 || status === 404
-    ? "DENIED"
-    : "FAILURE";
-}
-
-export async function recordApiRejectionAudit(
-  dependencies: ApiHttpDependencies,
-  request: ApiRejectionAuditRequest,
-  response: ApiHttpResponse,
-  principal?: ApiPrincipal,
-): Promise<void> {
-  if (dependencies.audit === undefined || response.status < 400) return;
-
-  const requestId = response.body.meta.request_id;
-  if (!isUuid(requestId)) return;
-  const suppliedCorrelationId = request.headers?.["x-correlation-id"];
-  const correlationId =
-    suppliedCorrelationId !== undefined && isUuid(suppliedCorrelationId)
-      ? suppliedCorrelationId
-      : requestId;
-  const errorCode = response.body.success
-    ? "internal_error"
-    : response.body.error.code;
-
-  try {
-    const requestedScopeId =
-      request.scopeId ??
-      (isPlainRecord(request.body) && typeof request.body.scopeId === "string"
-        ? request.body.scopeId
-        : undefined);
-    const scopeId =
-      principal === undefined
-        ? undefined
-        : principal.scopes.find((candidate) => candidate === requestedScopeId);
-    if (principal !== undefined && scopeId === undefined) return;
-    const auditEntry = createAuditEntry({
-      auditId: randomUUID(),
-      actorKind: principal === undefined ? "ANONYMOUS" : "AUTHENTICATED",
-      ...(principal === undefined
-        ? {}
-        : { principalId: principal.principalId }),
-      ...(scopeId === undefined ? {} : { scopeId }),
-      action: "HTTP_REQUEST_REJECTED",
-      resourceType: "http_route",
-      resourceId: request.route ?? "unmatched",
-      outcome: rejectionAuditOutcome(response.status),
-      reasonCode: `api_${errorCode}`,
-      requestId,
-      correlationId,
-      occurredAt: new Date().toISOString(),
-    });
-    await dependencies.audit.append(auditEntry);
-  } catch {
-    // A rejection audit must never turn a safe public error into an internal error.
-  }
-}
-
-async function handleInternalSessionScopes(
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (
-    !isAllowed(
-      principal,
-      "VIEW_INTERNAL_SCOPES",
-      {},
-      dependencies.approvedClinicalApproverId,
-    )
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const data = internalSessionScopesProjectionSchema.parse({
-    kind: "internal_session_scopes",
-    scopes: [...principal.scopes],
-  });
-  return {
-    status: 200,
-    body: apiSuccessResponse(data, requestId),
-  };
 }
 
 async function handleApiRequestCore(
