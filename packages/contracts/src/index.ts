@@ -102,8 +102,14 @@ export {
   participantProgressProjectionSchema,
 } from "./progress.js";
 export type { ParticipantProgressProjection } from "./progress.js";
-export { rotateSessionRequestSchema } from "./session.js";
-export type { RotateSessionRequest } from "./session.js";
+export {
+  rotateSessionRequestSchema,
+  sessionCurrentProjectionSchema,
+} from "./session.js";
+export type {
+  RotateSessionRequest,
+  SessionCurrentProjection,
+} from "./session.js";
 export {
   appealCreateRequestSchema,
   appealQuerySchema,

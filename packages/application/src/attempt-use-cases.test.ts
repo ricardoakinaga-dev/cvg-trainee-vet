@@ -153,6 +153,37 @@ describe("attempt application commands", () => {
     ).rejects.toMatchObject({ code: "idempotency_conflict", status: 409 });
   });
 
+  it("maps a persistence idempotency race to a public 409 conflict", async () => {
+    const base = createDependencies();
+    const conflictIdempotency = {
+      ...base.idempotency,
+      store: async () => {
+        const conflict = new Error("idempotency key has another fingerprint");
+        conflict.name = "PersistenceConflictError";
+        throw conflict;
+      },
+    };
+    const dependencies: AttemptUseCaseDependencies = {
+      ...base,
+      idempotency: conflictIdempotency,
+      transaction: {
+        run: async (work) =>
+          work({ ...base, idempotency: conflictIdempotency }),
+      },
+    };
+
+    await expect(
+      startAttempt(
+        {
+          ...ids,
+          idempotencyKey: "start-attempt-persistence-race",
+          correlationId: "correlation-start-persistence-race",
+        },
+        dependencies,
+      ),
+    ).rejects.toMatchObject({ code: "idempotency_conflict", status: 409 });
+  });
+
   it("rejects unavailable activities without touching persistence", async () => {
     const dependencies = createDependencies();
 

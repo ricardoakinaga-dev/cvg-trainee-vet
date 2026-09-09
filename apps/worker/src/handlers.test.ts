@@ -76,8 +76,13 @@ function integrations(): {
         },
       ]),
     },
-    embedding: { embed: vi.fn(async () => [[0.1, 0.2]]) },
+    embedding: {
+      model: "embedding-test",
+      embed: vi.fn(async () => [[0.1, 0.2]]),
+    },
     vectorStore: {
+      indexVersion: "v1",
+      embeddingModel: "embedding-test",
       healthcheck: vi.fn(async () => undefined),
       ensureCollection: vi.fn(async () => undefined),
       list: vi.fn(async () => []),

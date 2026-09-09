@@ -847,6 +847,11 @@ test.describe("staff training dashboard", () => {
 
     await page.goto("/operations");
 
+    await expect(page.getByTestId("internal-access-gate")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Saúde do ambiente" }),
+    ).toHaveCount(0);
+    await expect(page.getByTestId("staff-dashboard")).toHaveCount(0);
     await expect(page.getByText("Sessão de gestão necessária")).toBeVisible();
   });
 

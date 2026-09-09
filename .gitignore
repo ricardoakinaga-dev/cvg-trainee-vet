@@ -13,6 +13,9 @@ coverage/
 *.jpeg
 *.webp
 *.tsbuildinfo
+!apps/web/public/
+!apps/web/public/assets/
+!apps/web/public/assets/*.png
 playwright-report/
 test-results/
 .DS_Store

@@ -1,256 +1,248 @@
-# 0302 — Backlog Master do BUILD — CVG
+# 0302 — Backlog Master Executável — Programa Premium AAA
 
-**Rastreabilidade:** `BLD-*` aponta para PRD/SPEC, testes e evidência. Nenhum item de código começa antes do gate documental 04–08.
+**Revisão:** 2026-09-06
+**Plano:** [STATE_OF_THE_ART_MASTER_PLAN.md](STATE_OF_THE_ART_MASTER_PLAN.md)
+**Roadmap:** [0301_roadmap.md](0301_roadmap.md)
+**Status global:** `IN_PROGRESS` — execução técnica local autorizada; G0
+operacional/piloto continua aguardando aprovação humana
+**Fonte funcional:** PRD/SPEC em `BRIEFING/09.PROJETO_CVG_TREINAMENTO`
 
-## Execução atual — F3-S8 verificado
+## 1. Regras do backlog
 
-- B0 está concluído: configuração server-side, PostgreSQL/migração, Qdrant, embeddings, IA estruturada, composição e CI foram materializados e verificados;
-- B1 está concluído: domínio, contratos, autorização, erros, idempotência e casos Start/Submit foram testados;
-- F2-S1 está concluído: PostgreSQL com tentativa/atividade/idempotência/outbox, API HTTP mínima, health e smoke live foram verificados;
-- F2-S2 está concluído: sessão server-side com hash/cookie seguro, SaveAnswer transacional, projeção pública, auditoria append-only com RLS mínima, API de resposta e composição operacional de Qdrant foram verificados;
-- F3-S1 está concluído com gaps explícitos: conteúdo versionado mínimo, itens de atividade, atribuição, leitura autorizada e projeção pública sem `scopeId` foram verificados em unitário, contrato, API e PostgreSQL live;
-- F3-S2 foi fechado com gaps: transição editorial por papel, publicação/retirada com outbox redigido, progresso/retomada mínima, worker com lease/retry/dead-letter lógico, indexação Qdrant por evento e sink de sugestão `DRAFT_AI` foram materializados e verificados em testes unitários e PostgreSQL/Qdrant live;
-- F3-S3 foi fechado com gaps explícitos: convite interno de uso único, ativação transacional, sessão segura, correção humana versionada e feedback exclusivo do participante foram materializados, com cobertura e PostgreSQL live;
-- F3-S4 foi fechado com gaps explícitos: superfície web inicial do participante, projeção restrita e ciclo iniciar–salvar–submeter foram materializados; três cenários Playwright sintéticos passam e o CI executa o navegador após o build;
-- F3-S5 foi materializado com gaps explícitos: logger JSON redigido, correlação, métricas em memória e telemetria de API/worker passaram em testes negativos de exposição;
-- F3-S6 foi materializado com gaps explícitos: CSRF por origem/metadado Fetch, `WEB_ORIGINS`, rate limit bounded por processo, `Retry-After`, health isento e drenagem de corpos rejeitados passaram nos gates;
-- F3-S7 foi materializado com gaps explícitos: reconciliação explícita Qdrant desde o conjunto publicado PostgreSQL, comparação por hash/metadado, remoção de órfãos e operação `runtime.reconcile()` passaram nos gates;
-- F3-S8 foi materializado e verificado: rotação transacional, revogação uniforme, cookie expirado e contratos de sessão passaram nos gates unitário, HTTP e PostgreSQL live;
-- o recorte usa somente dados sintéticos de teste e não transporta fontes, fotos, PDFs, OCR ou conteúdo clínico publicado para eventos, Qdrant, IA ou superfície participante.
+Cada item precisa de requisito/SPEC ou gap de auditoria, dono, dependência,
+arquivos/recursos, teste RED/GREEN/REFACTOR, revisão, evidência, rollback e
+critério de pronto. O status só avança por evidência corrente.
 
-Estado: `IN_PROGRESS`; próximo gate: consolidar a auditoria dos complementos F3-S4/F3-S5/F3-S6/F3-S7/F3-S8 e depois fechar E2E contra API real, collector/alertas e demais jornadas.
+Estados oficiais:
 
-### Progresso B1-S1
+`READY_FOR_NEXT_STEP` · `IN_PROGRESS` · `WAITING_HUMAN_APPROVAL` · `BLOCKED` ·
+`COMPLETED`
 
-- `BLD-002`: `COMPLETED` — transições puras de tentativa e conteúdo, invariantes de identidade/versão e testes unitários RED/GREEN/refactor.
-- `SEC-AUTHZ`: `COMPLETED` — política de autorização com conta ativa, dono, escopo, papel clínico de Ricardo configurável e deny-by-default.
-- `BLD-003`: `COMPLETED` — schemas de avaliação públicos, envelopes, erros, portas e casos Start/Submit idempotentes materializados.
-- evidência: `packages/domain/src/{attempt,content}.ts`, `packages/application/src/{authorization,errors,attempt-use-cases}.ts`, `packages/contracts/src/{assessment,api}.ts`, 62 testes globais verdes.
+Os estados históricos `COMPLETED_WITH_GAPS`, `IMPLEMENTED_WITH_GAPS` e
+`PARTIAL_IMPLEMENTED` não são considerados terminais neste backlog: seus gaps
+foram absorvidos pelos itens AAA correspondentes.
 
-### Progresso F2-S2
+Prioridades:
 
-- `BLD-005` parcial: sessão server-side, cookie `__Host-`, hash SHA-256, expiração, revogação e autenticação por conta ativa materializados; convite/rotação de papéis e E2E de login permanecem para a fatia de identidade;
-- `BLD-006` iniciado: entidade resposta, SaveAnswer, idempotência, atualização otimista da tentativa, rota pública e projeção do participante materializados;
-- `BLD-004` ampliado: tabelas de respostas, sessões, contas e auditoria; trigger append-only e RLS de auditoria migrados e verificados em PostgreSQL live;
-- integração operacional: API readiness consulta PostgreSQL e Qdrant habilitado; inicialização cria/valida coleção Qdrant; IA continua adaptador server-side desligável e sem chamada no caminho crítico;
-- evidência: `pnpm build`, `pnpm typecheck`, `pnpm test:coverage`, `pnpm verify`, testes live PostgreSQL de tentativa/resposta/sessão/auditoria e teste live Qdrant.
+- **P0:** segurança, integridade, clínica ou gate cuja falha bloqueia tudo;
+- **P1:** jornada, operação, UX ou governança necessária ao produto premium;
+- **P2:** diferenciação, otimização ou evolução pós-piloto;
+- **P3:** futuro, somente após evidência de necessidade.
 
-Próximo task: concluir F3-S3 com identidade complementar, correção/feedback e testes de superfície; em seguida executar a auditoria scoped F3-S3.
+## 2. Baseline já construído
 
-## Progresso F3-S1
+Os itens `BLD-001`–`BLD-013` e as sprints F3 existentes representam a base
+técnica observada: monorepo, domínio, contratos, API, PostgreSQL, RLS,
+outbox/worker, Qdrant/IA, web participante, observabilidade local, hardening
+de borda, reconciliação e sessões. Eles permanecem como histórico rastreável;
+os gaps de release, jornada real, operação, acessibilidade e clínica não são
+marcados como concluídos por esse baseline.
 
-- `BLD-006` parcial: atividade publicada, conteúdo versionado mínimo, itens ordenados, atribuição elegível e leitura por participante foram materializados;
-- `F3-S1-PUBLISHED-ACTIVITY`: `COMPLETED_WITH_GAPS` — repositório PostgreSQL filtra atribuição/estado/publicação, contrato público remove `scopeId` e metadados internos, e a rota `GET /api/v1/activities/:id` foi testada;
-- migração `0003_fluffy_psylocke.sql` aplicada no PostgreSQL efêmero; teste live validou dois itens sintéticos em ordem e limpeza;
-- evidência: `traceability.yml`, `packages/persistence/src/activity-repository.ts`, `packages/contracts/src/learning.ts`, `apps/api/src/http.ts`, testes unitários/contratuais/API e `tests/integration/postgres-activity-content.test.ts`;
-- não implementado nesta fatia: autoria/publicação por papel, currículo completo, correção/progresso, worker, RLS contextual, observabilidade, web/E2E e IA externa real.
+| Evidência base | Estado de uso no programa AAA |
+| --- | --- |
+| `pnpm verify`, build e E2E sintético verdes | capability local; não prova produção |
+| 52 migrations e RLS | exige reexecução live da jornada crítica |
+| API/web/worker/Qdrant/IA | exige boundary, observabilidade e evals atuais |
+| conteúdo B-07/M02 | permanece sem publicação clínica autorizada |
+| CI declarada | exige workflow remoto same-SHA e artefatos |
 
-## Progresso F3-S2 — conteúdo, progresso e integrações
+### Execução bounded de experiência visual — `UI-VIS-001`
 
-- `F3-S2-CONTENT-PROGRESS-WORKER-AI`: `IMPLEMENTED_WITH_GAPS` — autorização deny-by-default para transições editoriais, rota interna de transição, projeção de progresso sem identificadores internos, outbox com claim/lease/retry/dead-letter lógico, handlers Qdrant de publicação/retirada e sink de sugestão IA `DRAFT_AI` foram implementados;
-- migração `0004_outstanding_green_goblin.sql` foi gerada e aplicada no PostgreSQL efêmero; teste live percorreu claim de dois eventos sintéticos, marcação `PROCESSED` e persistência do rascunho interno sem conteúdo do participante no evento;
-- Qdrant live confirmou criação/validação, filtro por escopo, upsert e remoção determinística; o worker não grava texto no payload vetorial;
-- IA externa real não é chamada no CI: o adaptador OpenAI é server-side, estruturado, `store=false`, sem retry automático, e o worker usa fake determinístico para o fluxo de sink;
-- F3-S2 não fechou release: ainda faltavam convite, correção e feedback; esses itens foram levados para F3-S3. Permanecem nesta fatia: recuperação/rotação, CSRF/rate limit, currículo completo, RLS contextual, observabilidade, web/SPA/E2E, reconciliação formal e backup/restore.
+Esta fatia visual foi autorizada diretamente para executar um subconjunto de
+`AAA-400`/`AAA-401`: shell, tokens, tipografia, estados, responsividade,
+reduced motion e assets decorativos locais. Ela não altera contratos, API,
+domínio, conteúdo clínico, boundary público ou os status/gates do backlog AAA;
+não fecha `AAA-001`, `AAA-400` ou `AAA-401`.
 
-## Progresso F3-S3 — identidade, correção e feedback
+Evidência corrente da fatia: build web, suíte visual permanente `11/11` com cinco
+rotas em 1440px/768px/390px, fixture autenticado reidratado, E2E sintético
+`43/43` contra build local isolado, loading inicial anunciado, estados
+preenchidos sintéticos de diagnóstico/operação/autoria, axe sem violações, sem
+overflow global, traversal completo por Tab, reduced motion efetivo, captura
+de falhas de stylesheet/pageerror/console, estados loading/empty/success,
+assets locais HTTP 200, stress semântico/responsivo com alvos nativos e
+variante populada de operações, reflow em viewport de 195 CSS px como proxy de
+zoom e renders regeneráveis em `test-results/`. O pacote
+`.agent/artifacts/frontend-quality-packet.json` passou os gates determinísticos
+de accessibility, performance, typography e copy_stress. As críticas
+independentes encontraram e a implementação corrigiu contraste do cartão de
+privacidade, estabilidade do cabeçalho, disabled-state, agrupamento e
+hierarquia do authoring; `select:disabled` passa 5.99:1. O Gauntlet Round 7
+foi revalidado após `pnpm verify`, E2E sintético `43/43` e visual `7/7`; a
+crítica fresh curta do proxy retornou `PASS` sem severidade. O Round 8 corrigiu
+o clipping de ações na viewport de 195px e manteve as provas live ausentes.
+A crítica fresh same-SHA em
+`.agent/artifacts/ui-visual-critic-2026-09-06-final.md` retornou `PASS` para
+UI-VIS-08 sem P0/P1 visual no recorte. A fatia continua bounded e não fecha
+`AAA-001`, live, produção ou clínica; os demais gates do programa permanecem
+inalterados.
 
-- `BLD-005`: `PARTIAL_IMPLEMENTED` — convite interno administrativo, token hash-only, aceite único, ativação de conta e sessão server-side com cookie seguro;
-- `BLD-006`: `PARTIAL_IMPLEMENTED` — correção humana com `AssessmentResult` versionado, transição `SUBMETIDA → AGUARDA_CORRECAO_HUMANA → CORRIGIDA_HUMANAMENTE`, feedback por dono e idempotência;
-- `BLD-004`: migração `0006_unknown_randall_flagg.sql` adicionou `account_invitations` com FK, hash único, expiração e aceite;
-- evidência: contratos, casos de uso, mapeamento/repositório, API, servidor HTTP, teste live PostgreSQL, cobertura global `84,25% / 80,18% / 82,92% / 85,42%` (statements/branches/functions/lines), build/typecheck/lint e scans;
-- não concluído: RLS contextual, autoria/operação web, E2E contra API real, axe/revisão manual, observabilidade externa, crash/replay operacional, execução operacional conjunta da reconciliação, backup/restore e IA externa real.
+Revalidação pós-ajuste em 2026-09-06: o rail sticky mobile, as superfícies de
+painéis aninhados e o nome acessível estável do toggle de autoria passaram foco
+RED/GREEN `3/3`; os segmentos restantes da matriz visual passaram `7/7` e
+`3/3`. A execução única de 44 testes recebeu `SIGTERM` antes do fim e não é
+reivindicada como `44/44`. O registro completo está em
+`.agent/artifacts/ui-visual-postfix-2026-09-06.md`; a fatia segue bounded e
+`AAA-400`/`AAA-401` não são reclassificados.
 
-## Progresso F3-S4 — web participante e E2E
+Revalidação corrente após alterações visuais concorrentes: a matriz completa
+`tests/e2e/visual-gauntlet.spec.ts` passou `11/11` em `59,1 s`; a verificação
+ampla passou `149` arquivos, `808` testes e `42` skips, com cobertura
+`84,45%/80,18%/87,35%/85,20%`. O registro está em
+`.agent/artifacts/ui-visual-current-revalidation-2026-09-06.md`; o
+rebaseline do Gauntlet e a próxima fatia `AAA-701` continuam pendentes.
 
-- `BLD-009`: `PARTIAL_IMPLEMENTED` — página participante responsiva, formulário de convite, atividade atribuída, tentativa, resposta e submissão com envelopes públicos;
-- `F3-S4-WEB-PARTICIPANT-E2E`: `IMPLEMENTED_WITH_GAPS` — Playwright passou em 3 cenários sintéticos; CI instala Chromium e roda a suíte após `pnpm build`;
-- evidência: `apps/web/app/page.tsx`, `apps/web/app/globals.css`, `playwright.config.ts`, `tests/e2e/participant-access.spec.ts`, `pnpm test:e2e`, `pnpm build`, `pnpm verify`;
-- não concluído: navegador contra API/PostgreSQL reais, autoria/operação, axe/revisão manual de acessibilidade, observabilidade externa, execução operacional conjunta da reconciliação, backup/restore e IA externa real.
+## 3. Governança e control plane
 
-## Progresso F3-S5 — observabilidade e redaction
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-000 | P0 | COMPLETED | Consolidar plano executivo, roadmap, backlog, baseline e evidências em `BRIEFING/03.BUILD` | SPEC-0190; auditoria 0550 | links resolvem, diff-check passa e os quatro docs apontam para a mesma revisão |
+| AAA-001 | P0 | WAITING_HUMAN_APPROVAL | Aprovar quality bar, metas de SLO/RPO/RTO, capacidade, escopo do piloto e autoridade dos gates | AAA-000 | decisão de Ricardo registrada; sem decisão, nenhuma prova live, publicação clínica, produção, deploy ou piloto começa; fatias locais bounded exigem registro explícito |
+| AAA-002 | P0 | COMPLETED | Sincronizar `docs/99_runtime_state.md`, `docs/20_master_execution_log.md`, `docs/30_backlog_master.md` e `traceability.yml` com HEAD atual | AAA-000 | `verify-documentation`, `verify-traceability`, `verify-product-definition` e `git diff --check` passaram; alterações externas foram preservadas |
+| AAA-003 | P1 | READY_FOR_NEXT_STEP | Criar registro de evidência same-SHA para cada gate, com comando, artefato, hash, limitação e revisor | AAA-001 | auditor independente reproduz o índice sem depender da conversa |
 
-- `BLD-010`: `PARTIAL_IMPLEMENTED` — módulo `@cvg/observability`, logger JSON allowlisted, IDs de correlação validados, contadores/histogramas em memória e instrumentação de API/worker;
-- `F3-S5-OBSERVABILITY-REDACTION`: `IMPLEMENTED_WITH_GAPS` — testes cobrem níveis, campos proibidos, campos inválidos, repetição, falha/retry e ausência de payload;
-- evidência: `packages/observability/src/observability.ts`, `packages/observability/src/observability.test.ts`, `apps/api/src/server.ts`, `apps/api/src/server.test.ts`, `apps/worker/src/loop.ts`, `apps/worker/src/loop.test.ts`;
-- não concluído: exporter/collector OTel, retenção, acesso ao sink, alertas/SLOs, dashboards, traces distribuídos, execução operacional conjunta da reconciliação, RLS contextual, backup/restore e rate limit compartilhado para escala horizontal.
+## 4. Trust core — segurança, identidade e integridade
 
-## Progresso F3-S6 — hardening de borda
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-100 | P0 | READY_FOR_NEXT_STEP | Mapear matriz ator × escopo × recurso × ação nos contratos, API e RLS | AAA-001 | matriz positiva/negativa cobre cada rota crítica e é ligada à SPEC |
+| AAA-101 | P0 | IN_PROGRESS | Corrigir a policy DELETE de `diagnostic_session_answers` em `0051` para impedir exclusão após finalização | AAA-100 | migration `0052` registrada; unit/governance focal passa; teste live/RLS e auditoria independente ainda pendentes |
+| AAA-102 | P0 | IN_PROGRESS | Garantir que finalização preserve `answeredItemCount` e respostas antes/depois do status `FINALIZADA` | AAA-101 | leitura autorizada antes e depois da transição implementada; regressão focal passa; prova live sob RLS ainda pendente |
+| AAA-103 | P0 | IN_PROGRESS | Eliminar race de idempotência em attempts/answers com constraint/transação e retry seguro | AAA-100 | insert atômico, lock por chave, fingerprint vencedor, CAS nomeado e HTTP 409 cobertos; concorrência PostgreSQL live ainda pendente |
+| AAA-104 | P0 | IN_PROGRESS | Fechar FKs de participante e policies de `content_versions`/`ai_suggestions` | AAA-100 | migration `0053`, FKs, RLS, orphan scan e governance focal passam; negative RLS live ainda pendente |
+| AAA-105 | P0 | IN_PROGRESS | Fechar sessão, recovery, revogação e reidratação web após reload | AAA-100 | contrato/API/E2E sintético de sessão atual e recovery passam; cookie, expiração, cross-scope e E2E real ainda pendentes |
+| AAA-106 | P1 | IN_PROGRESS | Provar login/role/capability de staff e admin na web, proxy e API; gate local impede o shell de operations/authoring antes da autorização server-side | AAA-105 | proxy RED/GREEN 11/11, foco de autorização 12/12, typecheck/build, E2E completo 43/43 e visual 7/7 passam com upstream local que exige cookie; upstream produtivo, cookie HTTPS/expiração, cross-scope e browser→API→PostgreSQL live permanecem pendentes |
+| AAA-107 | P0 | READY_FOR_NEXT_STEP | Reexecutar harness PostgreSQL least-privilege, RLS, owners, grants e rollback | AAA-101..104; ambiente descartável | `test:integration:live` com roles separadas, artefato redigido e auditoria independente |
 
-- `BLD-011`: `IMPLEMENTED_WITH_GAPS` — `WEB_ORIGINS`, guard CSRF para mutações autenticadas, rate limit local bounded, `Retry-After`, exclusão de health e drenagem de corpos rejeitados;
-- `F3-S6-EDGE-HARDENING`: `IMPLEMENTED_WITH_GAPS` — testes unitários/API cobrem origem permitida/malformada, same-site, cross-origin, burst, expiração, limite de chaves e integração antes do caso de uso;
-- evidência: `apps/api/src/request-security.ts`, `apps/api/src/server.ts`, `apps/api/src/main.ts`, `.env.example`, `apps/api/src/request-security.test.ts` e `apps/api/src/server.test.ts`;
-- não concluído: E2E navegador→API real, rate limit compartilhado para múltiplas réplicas, RLS contextual e observabilidade externa.
+## 5. Jornada vertical do participante
 
-## Progresso F3-S7 — reconciliação Qdrant
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-200 | P0 | COMPLETED_WITH_GAPS | Congelar contrato da jornada diagnóstico → assignment → atividade → próxima ação; feedback permanece separado | AAA-101/102; contrato 0560 | contrato `0561` versionado; resumo allowlisted sem IDs/módulos internos; E2E final `43/43`; live, revisão independente pós-correção e G2 continuam pendentes |
+| AAA-201 | P0 | COMPLETED_WITH_GAPS | Produzir assignment a partir do diagnóstico usando transação server-side e regra determinística | AAA-200 | `M01/M02/M11` + recomendações válidas, unicidade, replay, CAS, proveniência divergente fail-closed e atividade publicada cobertos localmente; E2E final `43/43`; PostgreSQL/RLS live e concorrência real pendentes |
+| AAA-202 | P0 | READY_FOR_NEXT_STEP | E2E browser → web/proxy → API → PostgreSQL/RLS para a jornada completa | AAA-201; ambiente autorizado | Playwright real, oracle administrativo separado, cleanup zero e logs redigidos |
+| AAA-203 | P1 | READY_FOR_NEXT_STEP | Implementar reply/resolução de feedback bounded, plain text e owner/scope scoped | AAA-002; FEEDBACK-055 | participante não altera decisão staff; histórico append-only e contrato público passam |
+| AAA-204 | P1 | READY_FOR_NEXT_STEP | Fechar retenção, remediação e CTA com cadência aprovada no PRD | AAA-201; decisão de produto | clock injetável, due review e próxima ação explicável |
+| AAA-205 | P1 | COMPLETED_WITH_GAPS | Tratar loading, timeout, retry, erro, sessão expirada e retomada sem perda | AAA-202 | contrato `0562`; loading/error/empty/retry, recovery one-time, sessão corrente e redaction cobertos localmente; E2E final `43/43`; expiração/cross-scope/browser→PostgreSQL/RLS e revisão manual permanecem pendentes |
 
-- `BLD-012`: `IMPLEMENTED_WITH_GAPS` — fonte PostgreSQL publicada, `VectorStorePort.list` por scroll, comparação determinística, upsert de divergentes, remoção de órfãos e runbook `pnpm reconcile:qdrant`;
-- `F3-S7-INDEX-RECONCILIATION`: `IMPLEMENTED_WITH_GAPS` — worker expõe operação explícita e desabilitada com segurança quando Qdrant/embedding não estão configurados;
-- evidência: `traceability.yml`/`F3-S7-INDEX-RECONCILIATION`, `apps/worker/src/reconcile.ts`, `apps/worker/src/indexing.ts`, `packages/integrations/src/qdrant.ts`, `packages/persistence/src/content-repository.ts`, testes unitários e `tests/integration/qdrant-live.test.ts`;
-- não concluído: execução operacional automatizada com PostgreSQL+Qdrant habilitados no mesmo comando, observabilidade externa e backup/restore.
+## 6. Autoria e governança clínica
 
-## Progresso F3-S8 — rotação e revogação de sessão
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-300 | P0 | READY_FOR_NEXT_STEP | Completar fluxo draft → review → ajustes → resubmit → approval → publish → withdraw | AAA-100; authoring atual | state machine, API, UI, audit trail e four-eyes passam |
+| AAA-301 | P0 | READY_FOR_NEXT_STEP | Versionar conteúdo, validade, checksum, compatibilidade e retirada sem apagar histórico | AAA-300 | migration, contrato, replay de versão e projeção pública passam |
+| AAA-302 | P0 | WAITING_HUMAN_APPROVAL | Produzir B-07 autoral sintético e internamente rastreável conforme blueprint | B07-01; decisão de Ricardo | 120 itens e rubricas passam preflight; nenhuma publicação sem revisão |
+| AAA-303 | P0 | WAITING_HUMAN_APPROVAL | Executar a fatia curricular M02 com cenários fictícios e instrumentos aprovados | CUR-24-01; AAA-302 | protocolo T2, carga, avaliabilidade e decisão humana registrados |
+| AAA-304 | P0 | WAITING_HUMAN_APPROVAL | Revisar clinicamente itens, rubricas, feedback e fontes permitidas | AAA-302/303 | revisão item a item, conflitos resolvidos e gate clínico assinado |
+| AAA-305 | P1 | READY_FOR_NEXT_STEP | Criar preflight automático de publicação, exposição, rastreabilidade e redaction | AAA-300/304 | publicação falha fechada para conteúdo incompleto ou proibido |
 
-- `BLD-013`: `IMPLEMENTED_WITH_GAPS` — rotação atômica do hash atual para novo registro, revogação uniforme, cookie de limpeza e guard de API;
-- `F3-S8-SESSION-ROTATION`: `IMPLEMENTED_WITH_GAPS` — testes unitários, contrato, HTTP e PostgreSQL cobrem o fluxo sem token em superfície pública;
-- evidência: `traceability.yml`/`F3-S8-SESSION-ROTATION`, `packages/application/src/session.ts`, `packages/persistence/src/session-repository.ts`, `packages/contracts/src/session.ts`, `apps/api/src/http.ts` e testes;
-- não concluído: E2E navegador→API real, observabilidade externa, RLS contextual e backup/restore; recuperação interna permanece baseada em convite administrativo controlado.
+## 7. Experiência, acessibilidade e papéis
 
-## P0 — CRÍTICO
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-400 | P1 | READY_FOR_NEXT_STEP | Consolidar tokens, componentes, estados e linguagem visual premium sem reescrever domínio | AAA-200; packages/ui | visual review, responsive matrix e regressão de componentes |
+| AAA-401 | P1 | READY_FOR_NEXT_STEP | Fazer WCAG 2.2 AA dos fluxos críticos: foco, teclado, contraste, labels e erros | AAA-400 | axe + teclado + revisão manual em navegador |
+| AAA-402 | P1 | READY_FOR_NEXT_STEP | Melhorar jornada participante: progresso, resumo, feedback e próxima ação | AAA-202/204 | usability task pass, E2E e exposição pública sem internals |
+| AAA-403 | P1 | READY_FOR_NEXT_STEP | Completar authoring/operations para facilitador e coordenação por capability | AAA-300; AAA-106 | cross-scope, loading/error, paginação bounded e ações role-aware |
+| AAA-404 | P1 | READY_FOR_NEXT_STEP | Dashboard e relatórios agregados com privacy-by-design e exportação autorizada | AAA-403 | query server-side, limites, agregação e negative access passam |
+| AAA-405 | P1 | READY_FOR_NEXT_STEP | Recovery UX, sessão expirada, rede instável e mensagens operacionais | AAA-105/205 | testes de falha e revisão de conteúdo sem segredo |
+| AAA-406 | P1 | READY_FOR_NEXT_STEP | Revalidar public boundary, DTOs, headers, source/gabarito e bibliografia | AAA-300/400 | exposure scan + inspeção manual + testes negativos |
 
-### BLD-001 — Fundação e CI
+## 8. Learning intelligence e eficácia
 
-- **descrição:** workspace pnpm, TypeScript strict, lint, format, typecheck, cobertura, secret scan e pipeline.
-- **módulo:** foundation/CI
-- **dependência:** Phase -1 concluída
-- **phase:** 0
-- **risco:** alto
-- **impacto:** alto
-- **testes:** `SEC-FOUNDATION`, `UNIT-BOOT`, `CI-QUALITY`
-- **pronto:** pipeline verde com falhas deliberadas bloqueadas.
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-500 | P1 | READY_FOR_NEXT_STEP | Definir mastery digital determinístico, explicável e separado de competência prática | AAA-201; PRD/SPEC | invariantes, casos limítrofes e revisão pedagógica |
+| AAA-501 | P1 | READY_FOR_NEXT_STEP | Implementar retrieval, remediação e spaced review com clock injetável | AAA-204/500 | unit/application/contract/integration e replay passam |
+| AAA-502 | P1 | READY_FOR_NEXT_STEP | Implementar `NextBestLearningActionService` com reasonCode, prioridade e pré-requisitos | AAA-500/501 | mesma entrada produz mesma saída; autorização e explicabilidade passam |
+| AAA-503 | P1 | READY_FOR_NEXT_STEP | Criar métricas de processo, participação, retenção e eficácia digital | AAA-500/502 | eventos redigidos, agregação e dashboard sem ranking punitivo |
+| AAA-504 | P2 | READY_FOR_NEXT_STEP | Avaliar outcomes e calibrar regras com dataset sintético e revisão independente | AAA-503; piloto | relatório de calibração sem claim de competência prática |
 
-### BLD-002 — Domínio e estados
+## 9. Plataforma, operação e release
 
-- **descrição:** entidades, invariantes e máquinas de estado de conta, conteúdo, tentativa, resultado, ticket e job.
-- **módulo:** `packages/domain`
-- **dependência:** BLD-001
-- **phase:** 1
-- **risco:** crítico
-- **impacto:** alto
-- **testes:** `UNIT-DOMAIN-*`, `PROPERTY-DOMAIN-*`
-- **pronto:** testes RED/GREEN/refactor, sem dependência de rede/DB.
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-600 | P0 | READY_FOR_NEXT_STEP | Instrumentar logs redigidos, métricas, traces e correlation end-to-end | AAA-202; observability package | collector descartável recebe sinais sem payload proibido |
+| AAA-601 | P0 | READY_FOR_NEXT_STEP | Definir SLOs, alertas, dashboards e ownership operacional | AAA-001/600 | thresholds aprovados, alert testado e runbook ligado |
+| AAA-602 | P0 | READY_FOR_NEXT_STEP | Materializar deploy, env, secrets, roles, migrations e health/recovery | AAA-107; autoridade de ambiente | dry-run, least privilege e checklist sem segredo no Git |
+| AAA-603 | P0 | IN_PROGRESS | Fechar CI same-SHA, cache seguro, artifacts, SBOM e dependency/security gates; fatia local adicionou verificação de checkout, SBOM CycloneDX, manifesto SHA-256 e redaction | AAA-003/602 | contrato e governança local passam; workflow remoto, cache, ACL/retention, assinatura e artefato same-SHA ainda pendentes |
+| AAA-604 | P1 | READY_FOR_NEXT_STEP | Medir carga, concorrência, p95/p99 e limites de banco/worker | AAA-601/603; metas AAA-001 | cenário sintético, budget aprovado e relatório de capacidade |
+| AAA-605 | P0 | READY_FOR_NEXT_STEP | Exercitar backup, restore, failover, rollback e RPO/RTO | AAA-602; metas AAA-001 | runbook executado, evidência e abort criteria registrados |
+| AAA-606 | P1 | READY_FOR_NEXT_STEP | Criar incident response, on-call, triage, comunicação e postmortem | AAA-601/605 | tabletop/drill com owner e tempo de recuperação medido |
+| AAA-607 | P0 | READY_FOR_NEXT_STEP | Definir retenção, minimização, exportação e eliminação conforme governança | AAA-001; PRD/SPEC | matriz de dados, jobs e testes de privacidade passam |
 
-### BLD-003 — Contratos e aplicação
+## 10. IA, Qdrant e evals
 
-- **descrição:** comandos, queries, erros, schemas Zod/OpenAPI, idempotência e política de escopo.
-- **módulo:** `packages/application`, `packages/contracts`
-- **dependência:** BLD-002
-- **phase:** 1
-- **risco:** crítico
-- **impacto:** alto
-- **testes:** `APP-*`, `CONTRACT-*`, `SEC-AUTHZ-*`
-- **pronto:** entradas `unknown` validadas e DTO público sem campos internos.
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-700 | P1 | IN_PROGRESS | Robustecer provider IA: timeout, abort, quota, custo, retry bounded e fallback; fatia local adicionou retry transient-only, abort, budget e composição desligável | AAA-600 | RED/GREEN local passa; provider real, custo/latência, collector, fallback operacional e evals permanecem pendentes |
+| AAA-701 | P1 | IN_PROGRESS | Reconciliar Qdrant a partir do PostgreSQL por versão/hash/escopo; fatia local adicionou metadados de versão/modelo, allowlist de payload, no-op sem embedding e advisory lock | AAA-600; schema atual | focal `18/18` e `pnpm verify` passam; nova crítica fresh independente e lock/Qdrant live ainda pendentes; Euler foi encerrado sem parecer |
+| AAA-702 | P0 | READY_FOR_NEXT_STEP | Executar evals de prompt injection, PII leakage, groundedness e formato | AAA-700/701 | dataset sintético versionado, thresholds aprovados e falha fechada |
+| AAA-703 | P0 | READY_FOR_NEXT_STEP | Garantir human-in-the-loop para sugestão, autoria, publicação e correção | AAA-300/702 | IA nunca muda estado; aprovação e auditoria são server-side |
+| AAA-704 | P2 | READY_FOR_NEXT_STEP | Medir custo, latência e valor incremental antes de liberar novo provider | AAA-700/702; decisão | relatório comparativo e decisão explícita de continuar/parar |
 
-### BLD-004 — PostgreSQL, migrações e RLS
+## 11. Readiness, piloto e auditoria
 
-- **descrição:** schemas, constraints, repositories, migrações expand/contract, auditoria e outbox.
-- **módulo:** `packages/persistence`, PostgreSQL
-- **dependência:** BLD-003
-- **phase:** 2
-- **risco:** crítico
-- **impacto:** alto
-- **testes:** `INT-DB-*`, `MIGRATION-*`, `RLS-*`
-- **pronto:** transações e rollback testados em banco efêmero.
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-800 | P0 | READY_FOR_NEXT_STEP | Montar release-readiness pack com todos os gates, owners e evidências | AAA-300/603/605/607 | checklist completo sem claim não sustentado |
+| AAA-801 | P0 | READY_FOR_NEXT_STEP | Executar auditoria independente de PRD, SPEC, runtime, dados, segurança e UX | AAA-800 | relatório com PASS/FAIL/BLOCKED e remediação ligada ao backlog |
+| AAA-802 | P0 | WAITING_HUMAN_APPROVAL | Aprovar protocolo, população, escopo, duração e critérios de aborto do piloto | AAA-801; decisão de Ricardo | autorização documentada; sem participante real antes disso |
+| AAA-803 | P0 | WAITING_HUMAN_APPROVAL | Executar piloto controlado com dados e autoridades permitidos | AAA-802 | observabilidade, consentimento/autoridade, incident log e cleanup |
+| AAA-804 | P1 | READY_FOR_NEXT_STEP | Analisar resultados, usabilidade, retenção, segurança e gaps do piloto | AAA-803 | relatório sem transformar sinal digital em competência prática |
+| AAA-805 | P0 | READY_FOR_NEXT_STEP | Emitir auditoria final AAA e decisão de expandir, corrigir ou parar | AAA-804 | G6 somente com zero P0/P1 e evidência atual independente |
 
-### BLD-005 — Identidade e autorização
+## 12. Continuidade e manutenção
 
-- **descrição:** convite, sessão, recuperação, papéis, escopo e bootstrap de `CLINICAL_APPROVER`.
-- **módulo:** `apps/api`, identity adapter
-- **dependência:** BLD-004
-- **phase:** 2
-- **risco:** crítico
-- **impacto:** alto
-- **testes:** `INT-AUTH-*`, `E2E-AUTH-*`, `SEC-AUTH-*`
-- **pronto:** deny-by-default e acesso cruzado rejeitado.
+| ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
+| --- | --- | --- | --- | --- | --- |
+| AAA-900 | P1 | READY_FOR_NEXT_STEP | Manter traceability requisito → SPEC → task → código → teste → commit → artefato | todos os epics | checker e revisão bidirecional sem órfãos |
+| AAA-901 | P1 | READY_FOR_NEXT_STEP | Reauditar mensalmente segurança, exposição, dependências, migrations e estado | G1 em diante | relatório de drift e task de remediação criada |
+| AAA-902 | P2 | READY_FOR_NEXT_STEP | Revisar trimestralmente custo, UX, aprendizagem, IA, operação e necessidade de arquitetura | G5; métricas | decisão de manter, simplificar ou evoluir documentada |
 
-### BLD-006 — Aprendizagem e avaliações
+## 13. Mapa de dependências
 
-- **descrição:** currículo, conteúdo versionado, tentativas, respostas, correção, progresso, remediação, retenção, feedback e contestação.
-- **módulo:** learning/assessment/governance
-- **dependência:** BLD-005
-- **phase:** 3
-- **risco:** crítico
-- **impacto:** alto
-- **testes:** `UNIT-LEARNING-*`, `INT-ASSESSMENT-*`, `E2E-LEARNING-*`
-- **pronto:** retomada, submissão única, cálculo e auditoria passam.
+```text
+AAA-001
+  ├─ AAA-002/003
+  ├─ AAA-100..107
+  │    └─ AAA-200..205
+  │         ├─ AAA-400..406
+  │         └─ AAA-500..504
+  ├─ AAA-300..305
+  ├─ AAA-600..607
+  └─ AAA-700..704
+       └─ AAA-800..805
+```
 
-### BLD-007 — Worker e outbox
+## 14. Critério comum de encerramento
 
-- **descrição:** lease, retry, dead-letter lógico, replay, retenção e jobs de projeção.
-- **módulo:** `apps/worker`
-- **dependência:** BLD-004/006
-- **phase:** 3
-- **risco:** alto
-- **impacto:** alto
-- **testes:** `WORKER-RETRY-*`, `WORKER-CRASH-*`, `WORKER-IDEMPOTENCY-*`
-- **pronto:** crash/replay não duplica efeito.
-- **progresso:** claim com lease, retry exponencial, dead-letter lógico, handlers publicados/retirados e integração PostgreSQL live estão implementados; crash real, replay operacional, métricas e reconciliação formal permanecem pendentes.
+Uma task só pode ir para `COMPLETED` quando:
 
-### BLD-008 — Qdrant e IA interna
+1. o requisito e o contrato estão atuais;
+2. RED falhou pela razão correta e GREEN corrigiu sem enfraquecer o teste;
+3. testes proporcionais e revisão independente passaram;
+4. migration, código, docs e traceability estão ligados;
+5. rollback/limitação estão registrados;
+6. state, log e backlog foram atualizados na ordem canônica;
+7. não existe blocker ou aprovação humana pendente na própria task.
 
-- **descrição:** adaptadores, coleção, embeddings, busca filtrada, IA estruturada, redaction e fallback.
-- **módulo:** integration/authoring
-- **dependência:** BLD-004/007
-- **phase:** 4
-- **risco:** alto
-- **impacto:** médio/alto
-- **testes:** `INT-QDRANT-*`, `INT-AI-*`, `SEC-EXPOSURE-*`
-- **pronto:** Qdrant é reconstruível, IA é fake no CI e nenhum dado proibido atravessa a integração.
-- **progresso:** adaptadores, configuração, fakes, outbox/worker, sink `DRAFT_AI`, remoção de versão e testes live materializados; reconciliação, observabilidade e chamada externa controlada permanecem pendentes.
+## 15. Próxima ação do backlog
 
-### BLD-009 — Web/SPA
+As fatias locais bounded `AAA-603` e `AAA-700` estão em `IN_PROGRESS`: os
+contratos e testes locais passam, mas não há promoção para `COMPLETED` sem a
+prova remota/operacional correspondente. `AAA-001` continua aguardando Ricardo
+para aprovar a barra AAA, metas SLO/RPO/RTO, capacidade, piloto e autoridade de
+ambiente. Com ambiente autorizado, o próximo gate crítico é `AAA-202` (E2E
+browser → web → API → PostgreSQL/RLS); sem `CVG_TEST_DATABASE_URL`, ele
+permanece bloqueado e a evidência sintética não é reclassificada.
 
-- **descrição:** telas de acesso, participante, operação e autoria interna com estados e a11y.
-- **módulo:** `apps/web`, `packages/ui`
-- **dependência:** BLD-003/005/006/008
-- **phase:** 5
-- **risco:** alto
-- **impacto:** alto
-- **testes:** `WEB-*`, `A11Y-*`, `E2E-*`
-- **pronto:** fluxos críticos e acesso cruzado passam no Playwright.
+Após o rebaseline controlado da mutação visual corrente, a próxima execução
+local autorizada é `AAA-701`: primeiro RED para pontos Qdrant antigos,
+divergentes e órfãos; depois GREEN/REFACTOR e auditoria independente bounded.
 
-## P1 — ALTA PRIORIDADE
-
-### BLD-010 — Observabilidade e operação
-
-- descrição: logs redigidos, OpenTelemetry, métricas, health, alertas e runbooks.
-- módulo: runtime/ops
-- dependência: BLD-004/007
-- phase: 6
-- risco: alto
-- impacto: alto
-- testes: `OBS-*`, `HEALTH-*`, `SEC-LOG-*`
-- pronto: falha rastreável por request/correlation sem segredo.
-
-### BLD-011 — Hardening e release
-
-- descrição: audit de dependências, SAST, carga pequena, backup/restauração, smoke, rollback e artefato assinado.
-- módulo: CI/release
-- dependência: BLD-001–010
-- phase: 6/7
-- risco: alto
-- impacto: alto
-- testes: `RELEASE-*`, `RECOVERY-*`, `SMOKE-*`
-- pronto: release reprodutível e rollback verificado.
-
-### BLD-012 — Conteúdo/protocolo CVG inicial
-
-- descrição: protocolar internamente conteúdo autoral e protocolos derivados da literatura, com revisão de Ricardo e projeção limpa.
-- módulo: authoring/content
-- dependência: BLD-006/008/009; revisão clínica
-- phase: 4/7
-- risco: alto
-- impacto: alto
-- testes: `CONTENT-REDACTION-*`, `CONTENT-PREFLIGHT-*`
-- pronto: versão aprovada e nenhuma referência protegida na superfície participante.
-
-## P2 — MÉDIO
-
-- BLD-020: melhoria de busca interna e reindexação sem alterar fonte de verdade;
-- BLD-021: otimização de métricas e dashboards;
-- BLD-022: segundo adaptador de IA somente se houver necessidade operacional;
-- BLD-023: carga maior e isolamento adicional somente com evidência.
-
-## P3 — BAIXO/FUTURO
-
-- BLD-030: OCR/RAG de ativos autorizados, após nova decisão autoral e de segurança;
-- BLD-031: app nativo ou microserviço de domínio, somente com dor observada;
-- BLD-032: integrações externas de produto fora do MVP.
-
-## Critério comum de aceite
-
-Todo item exige requisito/SPEC, teste antes do código, revisão, `git diff --check`, CI verde, registro no manifesto de rastreabilidade, atualização do log/backlog e próximo passo definido.
-
-## Fechamento técnico adicional — item 11
-
-O item 11 do relatório 0491 foi fechado em 95/100 no artifact `BRIEFING/04.AUDIT/0504_worker_resilience_audit.md`. A matriz de eventos do worker, reconciliação PostgreSQL→Qdrant não vazia, divergência/órfão/replay/retirada, lease expirado, retry e dead-letter têm testes unitários e live. Provider produtivo, observabilidade externa, restore, carga, restart observável e CI com dependências vivas permanecem backlog operacional.
+`AAA-701` está agora em `IN_PROGRESS`: RED/GREEN/REFACTOR local e verificação
+ampla passaram, mas uma nova crítica fresh independente, PostgreSQL/Qdrant
+live, lock cross-process observado e operação same-SHA permanecem pendentes.
+O crítico `Euler` foi encerrado sem parecer e não representa `PASS`. Não marcar
+`COMPLETED` por inferência sintética.

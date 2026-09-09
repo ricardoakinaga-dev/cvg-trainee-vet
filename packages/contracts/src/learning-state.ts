@@ -111,9 +111,17 @@ export const participantLearningAssignmentProjectionSchema = z
 
 export const adaptiveCurriculumAssignmentProjectionSchema = z
   .object({
-    diagnosticResultId: idSchema,
     assignments: z
-      .array(participantLearningAssignmentProjectionSchema)
+      .array(
+        z
+          .object({
+            availableAt: timestampSchema,
+            status: learningAssignmentStatusSchema,
+            version: versionSchema,
+            blockReason: learningAssignmentBlockReasonSchema.optional(),
+          })
+          .strict(),
+      )
       .min(1)
       .max(24),
   })

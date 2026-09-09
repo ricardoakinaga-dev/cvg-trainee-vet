@@ -156,6 +156,7 @@ import {
   resendAccountInvitationRequestSchema,
   resentAccountInvitationProjectionSchema,
   rotateSessionRequestSchema,
+  sessionCurrentProjectionSchema,
   createInvitationRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
@@ -644,10 +645,14 @@ function publicAdaptiveAssignmentProjection(
   state: MaterializedCurriculumAssignments,
 ): ApiSuccessEnvelope<unknown>["data"] {
   return adaptiveCurriculumAssignmentProjectionSchema.parse({
-    diagnosticResultId: state.diagnosticResultId,
-    assignments: state.assignments.map(({ state: assignment }) =>
-      publicLearningAssignmentProjection(assignment),
-    ),
+    assignments: state.assignments.map(({ state: assignment }) => ({
+      availableAt: assignment.availableAt,
+      status: assignment.status,
+      version: assignment.version,
+      ...(assignment.blockReason === undefined
+        ? {}
+        : { blockReason: assignment.blockReason }),
+    })),
   });
 }
 
@@ -2768,6 +2773,23 @@ async function handleRevokeSession(
   };
 }
 
+async function handleCurrentSession(
+  request: ApiHttpRequest,
+  requestId: string,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  const principal = await dependencies.authenticate(request);
+  if (principal === null) return errorResponse("unauthenticated", requestId);
+
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      sessionCurrentProjectionSchema.parse({ status: "active" }),
+      requestId,
+    ),
+  };
+}
+
 async function handleRotateSession(
   request: ApiHttpRequest,
   requestId: string,
@@ -3488,6 +3510,13 @@ async function handleApiRequestCore(
       request.path === "/api/v1/session/revoke"
     ) {
       return await handleRevokeSession(request, requestId, dependencies);
+    }
+
+    if (
+      request.method === "GET" &&
+      request.path === "/api/v1/session/current"
+    ) {
+      return await handleCurrentSession(request, requestId, dependencies);
     }
 
     if (

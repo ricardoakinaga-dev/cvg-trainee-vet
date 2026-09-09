@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "method": "WCAG 2 relative-luminance calculation from rendered design tokens",
+  "scope": "critical dark-shell and disabled-control foreground/background pairs",
+  "checks": [
+    {
+      "foreground": "#ffffff",
+      "background": "#4b7065",
+      "ratio": 5.52,
+      "minimum": 4.5,
+      "status": "PASS"
+    },
+    {
+      "foreground": "#365a4e",
+      "background": "#d6e7df",
+      "ratio": 5.99,
+      "minimum": 4.5,
+      "status": "PASS"
+    }
+  ],
+  "companion_evidence": [
+    "tests/e2e/visual-gauntlet.spec.ts",
+    "test-results/.last-run.json"
+  ],
+  "limitations": [
+    "This bounded report covers the corrected dark privacy rail and disabled controls; axe-zero renders cover the route matrix but do not replace a full manual contrast inventory."
+  ]
+}

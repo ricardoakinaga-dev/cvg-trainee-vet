@@ -83,12 +83,26 @@ describe("Qdrant integration boundary", () => {
           id: "point-1",
           payload: {
             index_version: "v1",
+            embedding_model: "embedding-test",
             visibility: "INTERNAL",
             status: "APPROVED_FOR_INTERNAL_SEARCH",
             knowledge_id: "knowledge-1",
             section_id: "section-1",
             scope_id: "scope-1",
             content_hash: "hash-1",
+          },
+        },
+        {
+          id: "point-old-index",
+          payload: {
+            index_version: "v0",
+            embedding_model: "embedding-old",
+            visibility: "INTERNAL",
+            status: "APPROVED_FOR_INTERNAL_SEARCH",
+            knowledge_id: "knowledge-old",
+            section_id: "section-old",
+            scope_id: "scope-old",
+            content_hash: "hash-old",
           },
         },
       ],
@@ -101,6 +115,7 @@ describe("Qdrant integration boundary", () => {
           score: 0.92,
           payload: {
             index_version: "v1",
+            embedding_model: "embedding-test",
             visibility: "INTERNAL",
             status: "APPROVED_FOR_INTERNAL_SEARCH",
             knowledge_id: "knowledge-1",
@@ -114,6 +129,7 @@ describe("Qdrant integration boundary", () => {
           score: 0.4,
           payload: {
             index_version: "v2",
+            embedding_model: "embedding-test",
             visibility: "INTERNAL",
             status: "APPROVED_FOR_INTERNAL_SEARCH",
             knowledge_id: "knowledge-2",
@@ -166,6 +182,17 @@ describe("Qdrant integration boundary", () => {
         sectionId: "section-1",
         scopeId: "scope-1",
         contentHash: "hash-1",
+        indexVersion: "v1",
+        embeddingModel: "embedding-test",
+      },
+      {
+        id: "point-old-index",
+        knowledgeId: "knowledge-old",
+        sectionId: "section-old",
+        scopeId: "scope-old",
+        contentHash: "hash-old",
+        indexVersion: "v0",
+        embeddingModel: "embedding-old",
       },
     ]);
     const matches = await store.search({
@@ -181,7 +208,7 @@ describe("Qdrant integration boundary", () => {
         vectors: { size: 2, distance: "Cosine" },
       }),
     );
-    expect(createPayloadIndex).toHaveBeenCalledTimes(4);
+    expect(createPayloadIndex).toHaveBeenCalledTimes(5);
     expect(upsert).toHaveBeenCalledWith(
       "cvg_internal_knowledge_v1",
       expect.objectContaining({
@@ -212,6 +239,7 @@ describe("Qdrant integration boundary", () => {
         filter: {
           must: [
             { key: "index_version", match: { value: "v1" } },
+            { key: "embedding_model", match: { value: "embedding-test" } },
             { key: "visibility", match: { value: "INTERNAL" } },
             {
               key: "status",
@@ -226,7 +254,16 @@ describe("Qdrant integration boundary", () => {
       "cvg_internal_knowledge_v1",
       expect.objectContaining({
         limit: 100,
-        with_payload: true,
+        with_payload: [
+          "index_version",
+          "embedding_model",
+          "visibility",
+          "status",
+          "knowledge_id",
+          "section_id",
+          "scope_id",
+          "content_hash",
+        ],
         with_vector: false,
       }),
     );
@@ -260,6 +297,7 @@ describe("Qdrant integration boundary", () => {
           config: { params: { vectors: { size: 2, distance: "Cosine" } } },
           payload_schema: {
             index_version: {},
+            embedding_model: {},
             visibility: {},
             status: {},
             scope_id: {},
@@ -369,7 +407,7 @@ describe("Qdrant integration boundary", () => {
     releaseSibling?.();
     await expect(initialization).rejects.toThrow("synthetic index failure");
     expect(settled).toBe(true);
-    expect(createPayloadIndex).toHaveBeenCalledTimes(4);
+    expect(createPayloadIndex).toHaveBeenCalledTimes(5);
   });
 
   it("preserves a delta-seconds Retry-After header through the SDK boundary", async () => {
@@ -459,6 +497,217 @@ describe("Qdrant integration boundary", () => {
     );
 
     await expect(store.ensureCollection()).rejects.toThrow("401");
-    expect(createPayloadIndex).toHaveBeenCalledTimes(4);
+    expect(createPayloadIndex).toHaveBeenCalledTimes(5);
+  });
+
+  it("rejects an empty embedding model or index version before any I/O", () => {
+    const fakeClient = {
+      collectionExists: vi.fn(),
+      createCollection: vi.fn(),
+      getCollection: vi.fn(),
+      createPayloadIndex: vi.fn(),
+      scroll: vi.fn(),
+      upsert: vi.fn(),
+      delete: vi.fn(),
+      query: vi.fn(),
+    };
+    expect(() =>
+      createQdrantVectorStore(
+        {
+          url: "http://127.0.0.1:6333",
+          collection: "cvg_test",
+          embeddingDimension: 2,
+          embeddingModel: "  ",
+          indexVersion: "v1",
+        },
+        fakeClient,
+      ),
+    ).toThrow("embeddingModel");
+    expect(() =>
+      createQdrantVectorStore(
+        {
+          url: "http://127.0.0.1:6333",
+          collection: "cvg_test",
+          embeddingDimension: 2,
+          embeddingModel: "embedding-test",
+          indexVersion: "",
+        },
+        fakeClient,
+      ),
+    ).toThrow("indexVersion");
+    expect(fakeClient.collectionExists).not.toHaveBeenCalled();
+  });
+
+  it("rejects padded identity values that would silently never match", () => {
+    const fakeClient = {
+      collectionExists: vi.fn(),
+      createCollection: vi.fn(),
+      getCollection: vi.fn(),
+      createPayloadIndex: vi.fn(),
+      scroll: vi.fn(),
+      upsert: vi.fn(),
+      delete: vi.fn(),
+      query: vi.fn(),
+    };
+    expect(() =>
+      createQdrantVectorStore(
+        {
+          url: "http://127.0.0.1:6333",
+          collection: "cvg_test",
+          embeddingDimension: 2,
+          embeddingModel: " embedding-test ",
+          indexVersion: "v1",
+        },
+        fakeClient,
+      ),
+    ).toThrow("embeddingModel");
+    expect(() =>
+      createQdrantVectorStore(
+        {
+          url: "http://127.0.0.1:6333",
+          collection: "cvg_test",
+          embeddingDimension: 2,
+          embeddingModel: "embedding-test",
+          indexVersion: " v1",
+        },
+        fakeClient,
+      ),
+    ).toThrow("indexVersion");
+    expect(fakeClient.collectionExists).not.toHaveBeenCalled();
+  });
+
+  it("indexes the embedding model and restricts search to the operational model", async () => {
+    const createPayloadIndex = vi.fn().mockResolvedValue({
+      status: "completed",
+    });
+    const query = vi.fn().mockResolvedValue({
+      points: [
+        {
+          id: "point-current-model",
+          score: 0.9,
+          payload: {
+            index_version: "v1",
+            embedding_model: "embedding-test",
+            visibility: "INTERNAL",
+            status: "APPROVED_FOR_INTERNAL_SEARCH",
+            knowledge_id: "knowledge-1",
+            section_id: "section-1",
+            scope_id: "scope-1",
+            content_hash: "hash-1",
+          },
+        },
+        {
+          id: "point-stale-model",
+          score: 0.95,
+          payload: {
+            index_version: "v1",
+            embedding_model: "embedding-old",
+            visibility: "INTERNAL",
+            status: "APPROVED_FOR_INTERNAL_SEARCH",
+            knowledge_id: "knowledge-1",
+            section_id: "section-1",
+            scope_id: "scope-1",
+            content_hash: "hash-1",
+          },
+        },
+      ],
+    });
+    const store = createQdrantVectorStore(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_model_filter",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      },
+      {
+        collectionExists: vi.fn().mockResolvedValue({ exists: true }),
+        createCollection: vi.fn(),
+        getCollection: vi.fn().mockResolvedValue({
+          config: { params: { vectors: { size: 2, distance: "Cosine" } } },
+          payload_schema: {},
+        }),
+        createPayloadIndex,
+        scroll: vi.fn(),
+        upsert: vi.fn(),
+        delete: vi.fn(),
+        query,
+      },
+    );
+
+    await store.ensureCollection();
+    expect(createPayloadIndex).toHaveBeenCalledWith(
+      "cvg_model_filter",
+      expect.objectContaining({ field_name: "embedding_model" }),
+    );
+
+    const matches = await store.search({
+      vector: [0.1, 0.2],
+      scopeId: "scope-1",
+      limit: 5,
+    });
+    expect(query).toHaveBeenCalledWith(
+      "cvg_model_filter",
+      expect.objectContaining({
+        filter: {
+          must: expect.arrayContaining([
+            { key: "embedding_model", match: { value: "embedding-test" } },
+          ]),
+        },
+        with_payload: expect.arrayContaining(["embedding_model"]),
+      }),
+    );
+    expect(matches.map((match) => match.id)).toEqual(["point-current-model"]);
+  });
+
+  it("keeps legacy points without an embedding model observable for reconciliation", async () => {
+    const scroll = vi.fn().mockResolvedValue({
+      points: [
+        {
+          id: "point-legacy",
+          payload: {
+            index_version: "v0",
+            visibility: "INTERNAL",
+            status: "APPROVED_FOR_INTERNAL_SEARCH",
+            knowledge_id: "knowledge-legacy",
+            section_id: "section-legacy",
+            scope_id: "scope-legacy",
+            content_hash: "hash-legacy",
+          },
+        },
+      ],
+      next_page_offset: null,
+    });
+    const store = createQdrantVectorStore(
+      {
+        url: "http://127.0.0.1:6333",
+        collection: "cvg_legacy",
+        embeddingDimension: 2,
+        embeddingModel: "embedding-test",
+        indexVersion: "v1",
+      },
+      {
+        collectionExists: vi.fn(),
+        createCollection: vi.fn(),
+        getCollection: vi.fn(),
+        createPayloadIndex: vi.fn(),
+        scroll,
+        upsert: vi.fn(),
+        delete: vi.fn(),
+        query: vi.fn().mockResolvedValue({ points: [] }),
+      },
+    );
+
+    await expect(store.list()).resolves.toEqual([
+      {
+        id: "point-legacy",
+        knowledgeId: "knowledge-legacy",
+        sectionId: "section-legacy",
+        scopeId: "scope-legacy",
+        contentHash: "hash-legacy",
+        indexVersion: "v0",
+        embeddingModel: "",
+      },
+    ]);
   });
 });

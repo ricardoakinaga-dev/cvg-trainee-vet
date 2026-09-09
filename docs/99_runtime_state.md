@@ -8,43 +8,52 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: BUILD — Phase 2 / jornada do participante
-- current_sprint: `JOURNEY-056` — contrato e sessão diagnóstica própria
-- current_task: `JOURNEY-056` — fechar implementação bounded, auditoria e gates
+- current_phase: BUILD — Round-10: terceiro PASS + 3 P2 fechados; snapshot vai ao CI remoto em branch dedicada; `AAA-001` segue com pacote de decisão
+- current_sprint: `AAA-701/702/703` + `AAA-603-remoto` (branch `aaa/round-10-verification`) + decisão `AAA-001`
+- current_task: acompanhar o run remoto same-SHA; com ele verde, reavaliar itens 6/11/15 e rodar o rebaseline oficial do Gauntlet; obter os 7 aceites de `docs/45`; sem isso, sem COMPLETED, produção, clínica ou piloto
 
 ## STATUS
 
-- status: READY_FOR_NEXT_STEP
+- status: IN_PROGRESS
 
 ## PROGRESSO
 
-- last_completed_action: a implementação bounded da Opção A foi concluída, revisada e revalidada: contratos strict, máquina de estados, snapshot imutável, CAS/idempotência, persistência/migration 0051 com RLS, API, web, atribuição transacional, E2E sintético e auditoria `BRIEFING/04.AUDIT/0550_diagnostic_session_audit.md`. A corrida de START, o opt-in do catálogo draft, o replay atrasado e as defesas de identidade composta/RLS após finalização foram corrigidos. `pnpm verify`, build, E2E 33/33, migration governance, secrets, traceability, documentação, product-definition, public-boundary, audit high e diff-check passaram. Os commits `f247bd578abcd50ce7ecd85109fb567462c3c2f9`, `ca2bb58` e `b77269ec8c45d1565524ff400ad74e11cc5acaa8` foram publicados em `origin/main`; HEAD local e remoto estão sincronizados; o gate clínico continua pendente.
-- next_action: Ricardo revisar o contrato/auditoria 0560/0550; se autorizar, executar a prova PostgreSQL/RLS e o E2E real em banco descartável. Manter produção, publicação clínica, piloto, deploy e claim de competência bloqueados.
+- last_completed_action: Round-10 — terceiro crítico PASS + 3 P2 fechados (282/282 nos slices); `pnpm verify` PASS (151 arq/835 testes, 84,49/80,35/87,37/85,24); E2E 45/45 (2×); pacote de decisão `AAA-001` em `docs/45`; lives locais declarados inviáveis (sem docker/postgres/sudo) e redirecionados ao CI remoto. Evidência: `docs/44_round10_analysis.md` + `.agent/artifacts/aaa-701-critic-remediation-2026-09-09.md`.
+- next_action: acompanhar o workflow `quality` na branch `aaa/round-10-verification` (PG16+Qdrant+lives same-SHA); se verde, reavaliar itens 6/11/15, rebaseline oficial do Gauntlet e avançar `AAA-107/202`; colher os 7 aceites de `docs/45`.
 
 ## BLOQUEIOS
 
-- blockers: as provas live locais de `OPS-061-GRANTS-002` passaram em banco descartável, mas não substituem ACL/owners/grants de produção, configuração/deployment do ambiente produtivo, workflow remoto same-SHA, assignment produzido pelo fluxo diagnóstico, cenário browser cross-scope, carga/concorrência em escala, failover/restore, collector/retention/traces e operação externa. A decisão A removeu o bloqueio de produto de `JOURNEY-056`; seguem como gates separados a disponibilidade de banco live autorizado, a validação independente, a publicação clínica/aplicação real (`AUD-C0-002`/`CUR-24-01`/`CUR-24-03`) e a ausência de claim de release, 100% ou competência prática. `FEEDBACK-057` continua sem contrato executável e fora desta fatia. As tasks não alteram migrations aplicadas nem grants/owners produtivos. O shell nativo tem Node `18.19.1`/sem pnpm; as verificações usam Node `22.22.0`/pnpm `10.33.0` efêmeros.
+- blockers: `AAA-001` continua aguardando aprovação humana das metas SLO/RPO/RTO, capacidade, escopo do piloto e autoridade de ambientes; `AAA-603` e `AAA-700` têm implementação local bounded, mas as provas de workflow remoto same-SHA, ACL/retention/assinatura/cache, provider IA real, custo/latência, collector/evals, PostgreSQL/RLS live, concorrência real, cross-scope, expiração/cookie, E2E browser→API→PostgreSQL, owners produtivos, carga, failover/restore, deploy e conteúdo clínico publicado continuam sem evidência. Nenhuma task usa dados reais ou altera migrations produtivas. O shell nativo tem Node `18.19.1`/sem pnpm; verificações locais usam Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado do repositório, enquanto o contrato CI permanece Node `22.22.0`/pnpm `10.33.0`.
 
 ## DECISÃO HUMANA
 
-- human_decision_required: no
-- decision_description: Ricardo aprovou a Opção A em 2026-08-26 para `JOURNEY-056`: sessão diagnóstica pública própria com checkpoint/retomada e finalização server-side. A decisão libera o BUILD técnico bounded descrito no contrato 0560; não libera publicação clínica, piloto, produção, workflow remoto/push ou claim de competência prática. `FEEDBACK-057` continua separado e sem contrato executável.
+- human_decision_required: yes
+- decision_description: Ricardo deve aprovar `AAA-001`: a definição operacional de Triplo AAA, metas de SLO/RPO/RTO/capacidade, escopo do piloto, autoridade de ambientes e ordem da próxima onda. A solicitação atual autoriza implementação local bounded; a aprovação não libera automaticamente publicação clínica, produção, deploy, live externo ou claim de competência.
 
 ## TIMESTAMP
 
-- last_update: 2026-08-26T18:06:16-0300
+- last_update: 2026-09-10T00:00:00-0300
+- session_checkpoint: Round-10 em envio ao CI remoto; `IN_PROGRESS`; `.gauntlet/` intocado (rebaseline só pelo helper oficial)
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: consultar `git rev-parse HEAD`; o último fechamento documental de `OPS-061-RETRY-008` está versionado localmente e não houve push/deploy
-- origin: `fbbc692979c99a8e5dd359efd54675c35f61a314` (`origin/main`); local `main` permanece à frente; não há push/deploy
-- worktree: limpo; `HEAD` e `origin/main` estão em `b77269ec8c45d1565524ff400ad74e11cc5acaa8`; sem migration aplicada ou deploy
-- active_execplan: `.agent/plans/2026-08-24-production-mvp-gauntlet.md`
-- verification_state: `FEEDBACK-055`/`LIVE-056` estão GREEN/REFACTOR com migrations 0043–0050, contexto participante+escopo resolvido por oracle privado, feedback history owner-scoped, journey/activity/progress/attempt reads recontextualizados e adaptive assignment com advisory lock, status/content integrity e replay. `OPS-061-GRANTS-001` está no commit técnico `464b0b8`, `OPS-061-GRANTS-002` no commit `36088ff`, `OPS-061-GRANTS-003` nos commits `703fe7c`/`0bd71f2`, `OPS-061-GRANTS-004` no commit `489a336` e `OPS-061-GRANTS-005` no commit `400e228`: o contrato exige runtime na role de aplicação, fixture real E2E na role admin, compara as URLs job-level e lê o override somente do step `Apply migrations`. O reconhecimento atual confirmou, contra `0802`/`0113`, que readiness deve ignorar falha do Qdrant e que a saúde detalhada já representa `DEGRADED`; há um achado separado de identidade client-supplied em learning-state ainda não confirmado no contrato/persistência. Focal anterior `16/16`, `pnpm verify` `141/723` com `38` skips e cobertura `84,36/80,30/86,35/85,05`; build `12/12`, E2E sintético `32/32`, audit high e diff-check passaram. A crítica independente pré-fix confirmou os dois P2 de CI sem P0/P1; a tentativa pós-fix não retornou veredito e não é tratada como aceite. A evidência live anterior de PostgreSQL 16.15 continua em 35/35 arquivos e 82/82 testes, com app sem ownership/grants delegáveis; não houve nova prova live nesta task. Esta evidência é local/sintética e não prova produção, assignment diagnóstico→atividade, operação externa ou gate clínico. As críticas estão registradas nas auditorias `0542`/`0543`/`0544`/`0545`/`0546`.
+- head: `3490203038b52425a83e05989d47f1391de2949e` (`main`); não houve deploy
+- origin: tracking local `origin/main` no mesmo SHA `3490203038b52425a83e05989d47f1391de2949e`; não inferir execução de workflow remoto
+- worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
+- active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
+- verification_state: `AAA-200/201` focal pós-correção passou `25/25`; o boundary de API/contratos/persistência focal passou `108/108`; E2E sintético histórico passou `43/43` em portas isoladas; Round 11 visual e a crítica fresh `Raman` permanecem registrados como evidência histórica. A revalidação visual corrente passou `11/11` em `59,1 s`; `AAA-701` focal passou `5` arquivos/`18` testes e a verificação ampla passou `149` arquivos/`811` testes, `42` skips e cobertura `84,35%/80,21%/87,34%/85,09%`; `AAA-700` passou integração focal `20/20` e pacote `31/31`; `AAA-603` passou governance `21/21`, contrato CI `PASS` com `24` checks e execução local com `203` artefatos. `CVG_TEST_DATABASE_URL` permanece ausente; workflow remoto same-SHA, provider IA real, PostgreSQL/RLS live, Qdrant live, produção real, upstream real do proxy, clínica, zoom nativo e competência continuam sem evidência.
 
 - current_readiness_evidence: `OPS-061-READINESS-006`, `OPS-061-READINESS-007` e `OPS-061-RETRY-008` permanecem fechados conforme as auditorias `0547`–`0549`; readiness é PostgreSQL-only, a saúde agregada mantém `DEGRADED`, API/worker não bloqueiam o cold start, retry é bounded/cancelável, `close()` aguarda inicialização em voo e `reconcile:qdrant` aguarda a preparação da coleção. A evidência anterior é local/sintética e não prova produção, release ou competência. A decisão A de `JOURNEY-056` está registrada acima; a evidência específica da jornada está em `journey_056_evidence`.
 
-- journey_056_evidence: `JOURNEY-056` tem implementação GREEN/REFACTOR em worktree, migration `0051_diagnostic_sessions`, contrato 0560 e auditoria 0550. `pnpm verify` passou com 147 arquivos/770 testes PASS, 30 arquivos/39 testes skipped e cobertura 84,31%/80,13%/87,08%/85,07%; build 12/12 e E2E sintético 33/33 passaram. O teste live PostgreSQL/RLS continua condicional e foi skipped por ausência de `CVG_RUN_LIVE_DB_TESTS=true`/`CVG_TEST_DATABASE_URL`; não há prova browser→API→PostgreSQL, grants/owners produtivos, operação externa, publicação clínica, release ou competência prática.
+- journey_056_evidence: `JOURNEY-056` tem implementação GREEN/REFACTOR em worktree, migration `0051_diagnostic_sessions`, contrato `0560`, contrato vertical `0561` e auditoria `0550`. A crítica independente encontrou e o lead corrigiu um P1 de projeção interna e proveniência: `AAA-200/201` permanecem `COMPLETED_WITH_GAPS`, com focal pós-correção `25/25`, resumo allowlisted sem IDs/módulos internos, source diagnostic divergente fail-closed e vínculo de atividade divergente fail-closed. A releitura pós-correção retornou `REVISE` por não inspecionar sob a restrição declarada; isso permanece gap de revisão independente, sem registrar PASS. O teste live PostgreSQL/RLS continua condicional e foi bloqueado por ausência de `CVG_TEST_DATABASE_URL`; não há prova browser→API→PostgreSQL, grants/owners produtivos, operação externa, publicação clínica, release ou competência prática.
+- recovery_205_evidence: `AAA-205` foi reclassificado como `COMPLETED_WITH_GAPS` no contrato `0562` e no manifesto `AAA-RECOVERY-205`: `apps/web/app/page.tsx` e `apps/web/app/recovery/page.tsx` preservam estados de falha e retomada, removem token da URL e usam sessão server-side; `experience-accessibility`, `participant-access` e `recovery-access` cobrem retry, erro público, redaction e link one-time no browser sintético; a revalidação pós-correção passou `43/43` em portas isoladas. Expiração/revogação HTTPS real, rede real, cross-scope, browser→API→PostgreSQL/RLS, revisão assistiva e operação produtiva continuam gaps.
+- visual_gauntlet_evidence: `UI-VIS-001` tem evidência local bounded em `tests/e2e/visual-gauntlet.spec.ts`: a evidência histórica do Round 7 cobre suíte visual `6/6`; o Round 8 adicionou o rail de ações em `/operations`, teste focal `1/1`, axe zero, oito links, overflow ausente nos três viewports e renders hashados em `.agent/artifacts/ui-visual-operations-rail-round8.md`. A Round 9 corrigiu rail mobile, composição de retries e legibilidade secundária em RED/GREEN; a Round 10 revalidou authoring/recovery/operations e a crítica fresh `Chandrasekhar` retornou `PASS` sem achados P0/P1/P2. A revalidação corrente pós-mutação passou a matriz completa `11/11` em `59,1 s`, com operações, authoring, recovery, loading/empty/success, foco, reidratação e stress, conforme `.agent/artifacts/ui-visual-current-revalidation-2026-09-06.md`. O recorte continua web bounded: zoom nativo, tecnologia assistiva, live PostgreSQL/RLS, produção real, clínica e AAA global continuam sem evidência.
+- visual_tools_checkpoint: após queda transitória, Blender MCP reconectado e validado por leitura de objetos em `CVG_Visual_Asset`/`Layout`, câmera `CVG_Visual_Camera`, core/ring/nodes/light e `missing_files: []`; ComfyUI saudável em `127.0.0.1:8188`; OpenDesign segue `Transport closed`. A cena Blender é sintética/efêmera e não altera o repositório.
+- visual_round11_checkpoint: leitura final do Blender MCP retornou `CVG_Visual_Asset`, workspace `Layout`, `BLENDER_EEVEE`, câmera `CVG_V2_Camera` e 17 objetos em `CVG_Orbital_Asset_V2`; o asset v2 está em `apps/web/public/assets/cvg-orbit-render-v2.png` com SHA256 registrado no artefato Round 11. ComfyUI `server_info` permaneceu saudável; OpenDesign `get_active_context` retornou `Transport closed`. Nenhum resultado OpenDesign foi inventado.
+- visual_round11_evidence: seis renders finais hashados, RED/GREEN, testes `11/11` e `5/5`, critics fresh e limitações estão em `.agent/artifacts/ui-visual-round11-final.md`; o item segue `IN_PROGRESS` porque live, produção, clínica, zoom nativo, tecnologia assistiva e AAA-001 não foram fechados.
+- aaa_701_evidence: a fatia local de reconciliação está registrada em `.agent/artifacts/aaa-701-qdrant-reconciliation-2026-09-06.md`; a primeira crítica fresh retornou `REVISE` com P1/P2, os achados foram tratados, e a segunda crítica `Euler` (`01a07903-d239-77e1-8e80-204781c8a175`) foi encerrada sem parecer. Não há `PASS` independente nesta rodada. O Gauntlet está `valid: false` por drift das alterações AAA-701 e só deve ser rebaselineado após nova crítica fresh e atualização documental.
+- aaa_106_evidence: `AAA-106` tem implementação local bounded em `apps/web/app/operations/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/proxy.ts` e `scripts/e2e-proxy-fixture-server.mjs`: o shell interno só aparece após resposta server-side autorizada; a projeção de participante em dashboard é tratada como proibida; a fila de autoria permanece fora da árvore até escopos autorizados; o `authoring` não expõe mais `NEXT_PUBLIC_CVG_API_BASE_URL`; o proxy encaminha somente `__Host-cvg_session`. Testes do proxy `11/11`, foco E2E `12/12`, typecheck/build web, E2E completo final `43/43` e visual `7/7` passaram. O proxy real ainda exige prova sem mocks de cookie HTTPS, expiração, revogação, cross-scope, upstream produtivo, PostgreSQL/RLS e browser→API→PostgreSQL.
+- bounded_visual_authorization: a solicitação direta de Ricardo autoriza esta fatia visual sem liberar o programa AAA-001, produção, publicação clínica, piloto, deploy ou claim de competência. OpenDesign permaneceu indisponível por transporte fechado; nenhum resultado foi inventado ou usado como evidência.
 
 ## REGRAS DE USO
 
@@ -560,3 +569,69 @@ Ricardo deve informar/aprovar o repositório GitHub e a publicação deste check
 ### STATUS
 
 WAITING_HUMAN_APPROVAL
+
+## 2026-09-09 — DOCS-40-43: relatório + plano + roadmap + backlog Triple AAA
+
+### TIMESTAMP
+
+2026-09-09T00:00:00-0300
+
+### ACTION
+
+Publicados `docs/40_construction_audit_report_2026-09-09.md`, `docs/41_executive_plan_triple_aaa.md`, `docs/42_roadmap_triple_aaa.md` e `docs/43_backlog_triple_aaa.md`, derivados da leitura integral de `docs/` e da inspeção do worktree (HEAD `3490203`, 65 modificados + untracked preservados, sem deploy).
+
+### RESULT
+
+Relatório com 17 itens 0–100 (média real ~72–75/100; release 25/100). Gates rápidos passaram: `verify:documentation`, `verify:traceability` estrutural, `git diff --check`, `tsc -b`. Nenhum dado real, segredo, deploy ou migration produtiva.
+
+### NEXT
+
+Nova crítica fresh `AAA-701` + rebaseline Gauntlet; decisão `AAA-001` por Ricardo; depois `AAA-107/202` em banco descartável autorizado.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-09-09 — EXECUÇÃO AAA-701/702/703: críticas, remediação e verify fresco
+
+### TIMESTAMP
+
+2026-09-09T23:30:00-0300
+
+### ACTION
+
+Duas críticas fresh independentes de `AAA-701` (REVISE, 6 P1 + 1 P1 novo, todos procedentes) com correção RED/GREEN/REFACTOR; harness de evals AAA-702 e governança HITL AAA-703; `pnpm verify` PASS ponta a ponta (151 arq/831 testes, cobertura 84,49/80,3/87,37/85,24); E2E 45/45.
+
+### RESULT
+
+Itens 11→82, 14→88, 16→75; média real ~76/100; release segue 25/100 por gate. Evidência: `.agent/artifacts/aaa-701-critic-remediation-2026-09-09.md`. Sem dados reais, segredos, deploy ou migration produtiva.
+
+### NEXT
+
+Terceira revisão fresh + rebaseline; `AAA-001`; banco descartável autorizado.
+
+### STATUS
+
+IN_PROGRESS
+
+## 2026-09-10 — ROUND-10: terceiro PASS, P2s fechados, envio ao CI remoto
+
+### TIMESTAMP
+
+2026-09-10T00:00:00-0300
+
+### ACTION
+
+Terceiro crítico fresh: PASS + 3 P2 de força de teste, todos fechados (282/282). `pnpm verify` PASS (151/835, cobertura 84,49/80,35/87,37/85,24); E2E 45/45 (2×). Lives locais inviáveis (sem docker/postgres/sudo) → melhor caminho: CI remoto via branch dedicada `aaa/round-10-verification` (`main` intocado, reversível). Pacote de decisão `AAA-001` em `docs/45`. `.gauntlet/` intocado (sem helper oficial de fingerprint, nenhum hash inventado).
+
+### RESULT
+
+Itens 11→85, 14→90, 16→78; média ~76/100; release 25/100. Evidência: `docs/44_round10_analysis.md`.
+
+### NEXT
+
+Acompanhar run remoto; se verde, reavaliar 6/11/15 + rebaseline oficial; colher aceites de `docs/45`.
+
+### STATUS
+
+IN_PROGRESS

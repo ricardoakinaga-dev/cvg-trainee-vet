@@ -688,7 +688,7 @@ function CompetencyProfile({
           <p className="eyebrow">Perfil de evolução</p>
           <h2>Competências acompanhadas</h2>
         </div>
-        <span className="status-pill">Digital</span>
+        <span className="status-pill status-pill--info">Digital</span>
       </div>
       <div className="profile-grid">
         {profile.map((item) => (
@@ -737,7 +737,7 @@ function DiagnosticProfile({
           <p className="eyebrow">Baseline formativa</p>
           <h2>Diagnóstico por tema</h2>
         </div>
-        <span className="status-pill">Sem nota global</span>
+        <span className="status-pill status-pill--info">Sem nota global</span>
       </div>
       <div className="diagnostic-profile-grid">
         {profile.map((item) => (
@@ -777,7 +777,7 @@ function ParticipantPath({
           <p className="eyebrow">Evolução da trilha</p>
           <h2>Plano de 24 meses</h2>
         </div>
-        <span className="status-pill">Digital</span>
+        <span className="status-pill status-pill--info">Digital</span>
       </div>
       <ol className="path-list">
         {path.map((item) => (
@@ -899,7 +899,15 @@ function CorrectionFeedbackPanel({
           <p className="eyebrow">Correção digital</p>
           <h2 id="correction-title">{title}</h2>
         </div>
-        <span className="status-pill">
+        <span
+          className={`status-pill ${
+            awaitingResult
+              ? "status-pill--warning"
+              : correction === null
+                ? "status-pill--neutral"
+                : "status-pill--info"
+          }`}
+        >
           {awaitingResult
             ? "Aguardando"
             : correction === null
@@ -1141,6 +1149,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setActivityId(initialActivityId());
+    void restoreAuthenticatedSession();
   }, []);
 
   async function loadActivity(nextActivityId: string): Promise<void> {
@@ -1353,6 +1362,39 @@ export default function HomePage() {
     }
   }
 
+  async function loadAuthenticatedExperience(
+    requestedActivityId = activityId,
+  ): Promise<void> {
+    await loadFeedback();
+    const loadedJourney = await loadJourney();
+    const nextActivityId =
+      requestedActivityId.trim().length > 0
+        ? requestedActivityId
+        : loadedJourney.nextActionTarget?.activityId;
+    if (nextActivityId !== undefined && nextActivityId.length > 0) {
+      setActivityId(nextActivityId);
+      await loadActivity(nextActivityId);
+      await restoreAttemptFromJourney(loadedJourney, nextActivityId);
+    }
+  }
+
+  async function restoreAuthenticatedSession(): Promise<void> {
+    try {
+      const data = await requestJson("/api/v1/session/current", {
+        method: "GET",
+      });
+      if (!isRecord(data) || data.status !== "active") return;
+
+      setAuthenticated(true);
+      setNotice("Sessão restaurada.");
+      await loadAuthenticatedExperience(initialActivityId());
+    } catch (caught) {
+      // A landing page without a valid cookie is the expected anonymous state.
+      // Keep the access form available without exposing session diagnostics.
+      if (caught instanceof PublicApiError) return;
+    }
+  }
+
   async function activateAccess(): Promise<void> {
     setBusy(true);
     setError(null);
@@ -1373,17 +1415,7 @@ export default function HomePage() {
     setAuthenticated(true);
     setNotice("Acesso ativado.");
     try {
-      await loadFeedback();
-      const loadedJourney = await loadJourney();
-      const nextActivityId =
-        activityId.trim().length > 0
-          ? activityId
-          : loadedJourney.nextActionTarget?.activityId;
-      if (nextActivityId !== undefined && nextActivityId.length > 0) {
-        setActivityId(nextActivityId);
-        await loadActivity(nextActivityId);
-        await restoreAttemptFromJourney(loadedJourney, nextActivityId);
-      }
+      await loadAuthenticatedExperience();
     } catch (caught) {
       setError(publicErrorMessage(caught));
     } finally {
@@ -1715,7 +1747,9 @@ export default function HomePage() {
           <p className="eyebrow">CVG · ambiente interno</p>
           <span className="brand">Treinamento veterinário</span>
         </div>
-        <span className="status-pill">Acesso protegido</span>
+        <span className="status-pill status-pill--signal">
+          Acesso protegido
+        </span>
       </header>
 
       {busy ? (
@@ -1727,95 +1761,6 @@ export default function HomePage() {
         >
           Atualizando seu treinamento…
         </div>
-      ) : null}
-
-      {authenticated ? (
-        <section
-          className="item-card feedback-panel"
-          data-testid="feedback-panel"
-          aria-labelledby="feedback-title"
-        >
-          <div className="section-heading compact-heading">
-            <div>
-              <p className="eyebrow">Ajude a melhorar</p>
-              <h2 id="feedback-title">Relatar problema ou melhoria</h2>
-            </div>
-            <span className="status-pill">Canal interno</span>
-          </div>
-          <p>
-            Envie um relato sobre a atividade, a experiência ou o conteúdo. A
-            equipe acompanha o ticket no ambiente interno.
-          </p>
-          <p className="path-disclaimer">
-            Não inclua dados de pacientes, tutores, prontuários, fotos ou
-            qualquer informação clínica real.
-          </p>
-          {feedbackState === "loading" ? (
-            <p className="feedback pending" role="status">
-              Consultando seus relatos…
-            </p>
-          ) : null}
-          {feedbackState === "error" ? (
-            <p className="feedback warning" role="status">
-              Não foi possível consultar seus relatos. Você ainda pode tentar
-              enviar um novo relato.
-            </p>
-          ) : null}
-          <form
-            className="answer-area"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void handleCreateFeedback();
-            }}
-          >
-            <label htmlFor="feedback-type">Tipo de relato</label>
-            <select
-              id="feedback-type"
-              value={feedbackType}
-              onChange={(event) =>
-                setFeedbackType(event.target.value as FeedbackTicketType)
-              }
-            >
-              <option value="MELHORIA">Sugestão de melhoria</option>
-              <option value="BUG_TECNICO">Bug técnico</option>
-              <option value="USABILIDADE">Usabilidade</option>
-              <option value="ERRO_CONTEUDO">Erro de conteúdo</option>
-              <option value="CONTESTACAO">Contestação</option>
-            </select>
-            <label htmlFor="feedback-description">Descrição</label>
-            <textarea
-              id="feedback-description"
-              value={feedbackDescription}
-              onChange={(event) => setFeedbackDescription(event.target.value)}
-              maxLength={10_000}
-              rows={4}
-              required
-            />
-            <button
-              type="submit"
-              disabled={busy || feedbackDescription.trim().length === 0}
-            >
-              Enviar feedback
-            </button>
-          </form>
-          {feedbackTickets.length > 0 ? (
-            <ul className="journey-list" aria-label="Meus relatos">
-              {feedbackTickets.map((ticket) => (
-                <li key={ticket.ticketId}>
-                  {feedbackTypeLabel(ticket.type)}
-                  {" · "}
-                  {feedbackStatusLabel(ticket.status)}
-                  {" · "}
-                  {ticket.createdAt.slice(0, 10)}
-                  <br />
-                  <span>{ticket.description}</span>
-                </li>
-              ))}
-            </ul>
-          ) : feedbackState === "empty" ? (
-            <p role="status">Você ainda não enviou um relato.</p>
-          ) : null}
-        </section>
       ) : null}
 
       {!authenticated ? (
@@ -1851,7 +1796,22 @@ export default function HomePage() {
           </form>
         </section>
       ) : activity === null ? (
-        journeyState === "empty" ? (
+        journeyState === "loading" || journeyState === "idle" ? (
+          <section
+            className="hero-card"
+            data-testid="journey-loading"
+            aria-labelledby="journey-loading-title"
+          >
+            <div className="hero-copy">
+              <p className="eyebrow">Sessão ativa</p>
+              <h1 id="journey-loading-title">Carregando sua jornada</h1>
+              <p role="status" aria-live="polite">
+                Aguarde enquanto buscamos as atividades autorizadas para sua
+                sessão.
+              </p>
+            </div>
+          </section>
+        ) : journeyState === "empty" ? (
           <section
             className="hero-card empty-state"
             data-testid="empty-state"
@@ -1860,6 +1820,9 @@ export default function HomePage() {
             <div className="hero-copy">
               <p className="eyebrow">Sessão ativa</p>
               <h1 id="empty-title">Nenhuma atividade atribuída</h1>
+              <p className="visually-hidden" role="status" aria-live="polite">
+                A jornada está vazia; nenhuma atividade foi atribuída.
+              </p>
               <p>
                 Sua sessão está ativa, mas ainda não há um módulo disponível.
                 Atualize a jornada quando a equipe liberar o próximo conteúdo.
@@ -1878,7 +1841,7 @@ export default function HomePage() {
             <div className="hero-copy">
               <p className="eyebrow">Sessão ativa</p>
               <h1 id="journey-error-title">Jornada indisponível</h1>
-              <p>
+              <p role="alert">
                 Não conseguimos atualizar as atividades agora. Sua sessão
                 permanece protegida; tente novamente em instantes.
               </p>
@@ -1892,6 +1855,10 @@ export default function HomePage() {
             <div className="hero-copy">
               <p className="eyebrow">Sessão ativa</p>
               <h1 id="active-title">Acesso ativado</h1>
+              <p className="visually-hidden" role="status" aria-live="polite">
+                A sessão está ativa e a jornada está pronta para o próximo
+                passo.
+              </p>
               <p>
                 {journey === null
                   ? "Abra uma atividade atribuída para continuar seu treinamento."
@@ -1936,7 +1903,7 @@ export default function HomePage() {
           </section>
         )
       ) : (
-        <section className="learning-layout" aria-labelledby="activity-title">
+        <div className="learning-layout">
           <div className="content-column">
             {activityState === "error" ? (
               <p className="feedback warning" role="status">
@@ -1949,7 +1916,7 @@ export default function HomePage() {
                 <p className="eyebrow">Atividade atribuída</p>
                 <h1 id="activity-title">{activity.title}</h1>
               </div>
-              <span className="status-pill">
+              <span className="status-pill status-pill--signal">
                 {attempt?.status ?? "Disponível"}
               </span>
             </div>
@@ -1976,7 +1943,7 @@ export default function HomePage() {
                     <p className="eyebrow">Reflexão digital</p>
                     <h2>{reflectionStatusLabel(activity.reflection.status)}</h2>
                   </div>
-                  <span className="status-pill">
+                  <span className="status-pill status-pill--info">
                     {nextActionLabel(activity.reflection.nextAction)}
                   </span>
                 </div>
@@ -2123,7 +2090,9 @@ export default function HomePage() {
                     <p className="eyebrow">Contestação</p>
                     <h2 id="appeals-title">Questão ou resultado</h2>
                   </div>
-                  <span className="status-pill">Fluxo auditável</span>
+                  <span className="status-pill status-pill--neutral">
+                    Fluxo auditável
+                  </span>
                 </div>
                 <p>
                   Registre uma justificativa para uma questão desta tentativa. O
@@ -2291,8 +2260,99 @@ export default function HomePage() {
               </div>
             ) : null}
           </aside>
-        </section>
+        </div>
       )}
+
+      {authenticated ? (
+        <section
+          className="item-card feedback-panel"
+          data-testid="feedback-panel"
+          aria-labelledby="feedback-title"
+        >
+          <div className="section-heading compact-heading">
+            <div>
+              <p className="eyebrow">Ajude a melhorar</p>
+              <h2 id="feedback-title">Relatar problema ou melhoria</h2>
+            </div>
+            <span className="status-pill status-pill--neutral">
+              Canal interno
+            </span>
+          </div>
+          <p>
+            Envie um relato sobre a atividade, a experiência ou o conteúdo. A
+            equipe acompanha o ticket no ambiente interno.
+          </p>
+          <p className="path-disclaimer">
+            Não inclua dados de pacientes, tutores, prontuários, fotos ou
+            qualquer informação clínica real.
+          </p>
+          {feedbackState === "loading" ? (
+            <p className="feedback pending" role="status">
+              Consultando seus relatos…
+            </p>
+          ) : null}
+          {feedbackState === "error" ? (
+            <p className="feedback warning" role="status">
+              Não foi possível consultar seus relatos. Você ainda pode tentar
+              enviar um novo relato.
+            </p>
+          ) : null}
+          <form
+            className="answer-area"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleCreateFeedback();
+            }}
+          >
+            <label htmlFor="feedback-type">Tipo de relato</label>
+            <select
+              id="feedback-type"
+              value={feedbackType}
+              onChange={(event) =>
+                setFeedbackType(event.target.value as FeedbackTicketType)
+              }
+            >
+              <option value="MELHORIA">Sugestão de melhoria</option>
+              <option value="BUG_TECNICO">Bug técnico</option>
+              <option value="USABILIDADE">Usabilidade</option>
+              <option value="ERRO_CONTEUDO">Erro de conteúdo</option>
+              <option value="CONTESTACAO">Contestação</option>
+            </select>
+            <label htmlFor="feedback-description">Descrição</label>
+            <textarea
+              id="feedback-description"
+              value={feedbackDescription}
+              onChange={(event) => setFeedbackDescription(event.target.value)}
+              maxLength={10_000}
+              rows={4}
+              required
+            />
+            <button
+              type="submit"
+              disabled={busy || feedbackDescription.trim().length === 0}
+            >
+              Enviar feedback
+            </button>
+          </form>
+          {feedbackTickets.length > 0 ? (
+            <ul className="journey-list" aria-label="Meus relatos">
+              {feedbackTickets.map((ticket) => (
+                <li key={ticket.ticketId}>
+                  {feedbackTypeLabel(ticket.type)}
+                  {" · "}
+                  {feedbackStatusLabel(ticket.status)}
+                  {" · "}
+                  {ticket.createdAt.slice(0, 10)}
+                  <br />
+                  <span>{ticket.description}</span>
+                </li>
+              ))}
+            </ul>
+          ) : feedbackState === "empty" ? (
+            <p role="status">Você ainda não enviou um relato.</p>
+          ) : null}
+        </section>
+      ) : null}
 
       {error !== null ? (
         <div className="feedback-group">

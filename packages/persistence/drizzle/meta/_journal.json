@@ -365,6 +365,20 @@
       "when": 1787766659516,
       "tag": "0051_diagnostic_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1788712441428,
+      "tag": "0052_aaa_diagnostic_session_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1788712441429,
+      "tag": "0053_aaa_content_integrity",
+      "breakpoints": true
     }
   ]
 }

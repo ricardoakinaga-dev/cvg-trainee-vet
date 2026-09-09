@@ -2,9 +2,13 @@ import type { RuntimeConfig } from "@cvg/config";
 import { createPostgresDatabase, type DatabaseHandle } from "@cvg/persistence";
 
 import {
+  DEFAULT_AI_RESILIENCE_POLICY,
+  DEFAULT_EMBEDDING_RESILIENCE_POLICY,
   createDeterministicEmbeddingProvider,
   createOpenAiEmbeddingProvider,
   createOpenAiTextProvider,
+  createResilientAiTextProvider,
+  createResilientEmbeddingProvider,
   type AiTextPort,
   type EmbeddingPort,
 } from "./ai.js";
@@ -115,7 +119,7 @@ export function createServerIntegrations(
           indexVersion: config.qdrant.indexVersion,
         })
       : null;
-    const embedding = config.qdrant.enabled
+    const embeddingProvider = config.qdrant.enabled
       ? config.qdrant.embeddingProvider === "fake"
         ? createDeterministicEmbeddingProvider({
             model: config.qdrant.embeddingModel,
@@ -127,12 +131,24 @@ export function createServerIntegrations(
             dimension: config.qdrant.embeddingDimension,
           })
       : null;
-    const ai = config.ai.enabled
+    const embedding =
+      embeddingProvider === null
+        ? null
+        : createResilientEmbeddingProvider(embeddingProvider, {
+            policy: DEFAULT_EMBEDDING_RESILIENCE_POLICY,
+          });
+    const aiProvider = config.ai.enabled
       ? createOpenAiTextProvider({
           apiKey: config.ai.apiKey,
           model: config.ai.model,
         })
       : null;
+    const ai =
+      aiProvider === null
+        ? null
+        : createResilientAiTextProvider(aiProvider, {
+            policy: DEFAULT_AI_RESILIENCE_POLICY,
+          });
     const healthcheck = createIntegrationHealthcheck(
       database.healthcheck,
       vectorStore,

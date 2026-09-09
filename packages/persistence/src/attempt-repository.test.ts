@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import type { AttemptState } from "@cvg/domain";
 
 import {
+  createAttemptUseCaseDependencies,
   PersistenceMappingError,
   attemptRowToState,
   attemptStateToRow,
@@ -12,6 +14,7 @@ import {
   type OutboxEventInput,
 } from "./attempt-repository.js";
 import { activityAssignments, attempts, outboxEvents } from "./schema.js";
+import type * as schema from "./schema.js";
 
 const state: AttemptState = {
   attemptId: "11111111-1111-4111-8111-111111111111",
@@ -21,6 +24,44 @@ const state: AttemptState = {
   version: 3,
   submittedAt: "2026-08-09T17:00:00.000Z",
 };
+
+type StoredIdempotencyRow = Readonly<{
+  readonly fingerprint: string;
+  readonly response: unknown;
+}>;
+
+function createAttemptIdempotencyDatabase(): {
+  readonly db: PostgresJsDatabase<typeof schema>;
+  readonly onConflictDoNothing: ReturnType<typeof vi.fn>;
+  readonly storedRows: () => readonly StoredIdempotencyRow[];
+} {
+  let pending: StoredIdempotencyRow | undefined;
+  let stored: StoredIdempotencyRow | undefined;
+
+  const onConflictDoNothing = vi.fn(async () => {
+    if (stored === undefined && pending !== undefined) {
+      stored = pending;
+    }
+  });
+  const values = vi.fn((row: Record<string, unknown>) => {
+    if (typeof row.fingerprint !== "string") {
+      throw new Error("synthetic fingerprint is required");
+    }
+    pending = { fingerprint: row.fingerprint, response: row.response };
+    return { onConflictDoNothing };
+  });
+  const insert = vi.fn(() => ({ values }));
+  const limit = vi.fn(async () => (stored === undefined ? [] : [stored]));
+  const where = vi.fn(() => ({ limit }));
+  const from = vi.fn(() => ({ where }));
+  const select = vi.fn(() => ({ from }));
+
+  return {
+    db: { insert, select } as unknown as PostgresJsDatabase<typeof schema>,
+    onConflictDoNothing,
+    storedRows: () => (stored === undefined ? [] : [stored]),
+  };
+}
 
 describe("PostgreSQL attempt mapping", () => {
   it("maps a domain state to a persistence row without mutating it", () => {
@@ -90,6 +131,24 @@ describe("PostgreSQL attempt mapping", () => {
 });
 
 describe("outbox and idempotency protection", () => {
+  it("persists one winner when identical idempotency writes race", async () => {
+    const database = createAttemptIdempotencyDatabase();
+    const dependencies = createAttemptUseCaseDependencies(
+      database.db,
+      () => state.attemptId,
+    );
+    const record = { fingerprint: "fingerprint-1", attempt: state };
+
+    await expect(
+      Promise.all([
+        dependencies.idempotency.store("attempt-race-key", record),
+        dependencies.idempotency.store("attempt-race-key", record),
+      ]),
+    ).resolves.toEqual([undefined, undefined]);
+    expect(database.onConflictDoNothing).toHaveBeenCalledTimes(2);
+    expect(database.storedRows()).toHaveLength(1);
+  });
+
   it("creates a pending internal event with bounded payload metadata", () => {
     const input: OutboxEventInput = {
       eventId: "66666666-6666-4666-8666-666666666666",

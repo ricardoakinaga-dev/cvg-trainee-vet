@@ -1,0 +1,1286 @@
+{
+  "schema_version": 1,
+  "root": "apps/web",
+  "files_scanned": [
+    "app/authoring/page.tsx",
+    "app/diagnostic/loading.tsx",
+    "app/diagnostic/page.tsx",
+    "app/globals.css",
+    "app/layout.tsx",
+    "app/operations/page.tsx",
+    "app/page.tsx",
+    "app/recovery/page.tsx",
+    "next-env.d.ts",
+    "next.config.ts",
+    "package.json",
+    "tsconfig.json"
+  ],
+  "findings": [
+    {
+      "code": "near_duplicate_color",
+      "severity": "medium",
+      "category": "color",
+      "message": "token colors #17221f and #12221f are visually near-duplicates (distance 5.00)",
+      "evidence": [
+        {
+          "value": "#17221f",
+          "rgb": [
+            23,
+            34,
+            31
+          ]
+        },
+        {
+          "value": "#12221f",
+          "rgb": [
+            18,
+            34,
+            31
+          ]
+        }
+      ],
+      "limitation": "Distance is Euclidean RGB, not perceptual color difference."
+    },
+    {
+      "code": "near_duplicate_color",
+      "severity": "medium",
+      "category": "color",
+      "message": "token colors #62706b and #5a6c68 are visually near-duplicates (distance 9.43)",
+      "evidence": [
+        {
+          "value": "#62706b",
+          "rgb": [
+            98,
+            112,
+            107
+          ]
+        },
+        {
+          "value": "#5a6c68",
+          "rgb": [
+            90,
+            108,
+            104
+          ]
+        }
+      ],
+      "limitation": "Distance is Euclidean RGB, not perceptual color difference."
+    },
+    {
+      "code": "near_duplicate_color",
+      "severity": "medium",
+      "category": "color",
+      "message": "token colors #dfe6df and #dcecd8 are visually near-duplicates (distance 9.70)",
+      "evidence": [
+        {
+          "value": "#dfe6df",
+          "rgb": [
+            223,
+            230,
+            223
+          ]
+        },
+        {
+          "value": "#dcecd8",
+          "rgb": [
+            220,
+            236,
+            216
+          ]
+        }
+      ],
+      "limitation": "Distance is Euclidean RGB, not perceptual color difference."
+    },
+    {
+      "code": "near_duplicate_color",
+      "severity": "medium",
+      "category": "color",
+      "message": "token colors #dfe6df and #d6e7df are visually near-duplicates (distance 9.06)",
+      "evidence": [
+        {
+          "value": "#dfe6df",
+          "rgb": [
+            223,
+            230,
+            223
+          ]
+        },
+        {
+          "value": "#d6e7df",
+          "rgb": [
+            214,
+            231,
+            223
+          ]
+        }
+      ],
+      "limitation": "Distance is Euclidean RGB, not perceptual color difference."
+    },
+    {
+      "code": "near_duplicate_color",
+      "severity": "medium",
+      "category": "color",
+      "message": "token colors #d85c47 and #d35c4b are visually near-duplicates (distance 6.40)",
+      "evidence": [
+        {
+          "value": "#d85c47",
+          "rgb": [
+            216,
+            92,
+            71
+          ]
+        },
+        {
+          "value": "#d35c4b",
+          "rgb": [
+            211,
+            92,
+            75
+          ]
+        }
+      ],
+      "limitation": "Distance is Euclidean RGB, not perceptual color difference."
+    },
+    {
+      "code": "token_bypass",
+      "severity": "high",
+      "category": "color",
+      "message": "raw color values bypass declared color tokens",
+      "evidence": [
+        {
+          "file": "app/globals.css",
+          "line": 20,
+          "key": "background",
+          "value": "rgba(198, 231, 215, 0.65)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 76,
+          "key": "outline",
+          "value": "rgba(216, 92, 71, 0.55)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 184,
+          "key": "background",
+          "value": "#fbfcfa"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 258,
+          "key": "background",
+          "value": "#fbfcfa"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 490,
+          "key": "color",
+          "value": "#355047"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 506,
+          "key": "background",
+          "value": "#fbfcfa"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 770,
+          "key": "background",
+          "value": "#fce6e1"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 771,
+          "key": "color",
+          "value": "#8a2f20"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 850,
+          "key": "background",
+          "value": "#fce6e1"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 891,
+          "key": "background",
+          "value": "#edf2ee"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 933,
+          "key": "background",
+          "value": "#fbfcfa"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 946,
+          "key": "border-color",
+          "value": "rgba(22, 107, 80, 0.45)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1044,
+          "key": "color",
+          "value": "#355047"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1183,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.74)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1184,
+          "key": "border",
+          "value": "rgba(14, 76, 59, 0.13)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1248,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.74)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1249,
+          "key": "border",
+          "value": "rgba(14, 76, 59, 0.13)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1304,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.74)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1305,
+          "key": "border",
+          "value": "rgba(14, 76, 59, 0.13)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1334,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.08)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1335,
+          "key": "border-color",
+          "value": "rgba(220, 255, 240, 0.28)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1357,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.08)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1358,
+          "key": "border-color",
+          "value": "rgba(220, 255, 240, 0.28)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1362,
+          "key": "background",
+          "value": "rgba(220, 255, 240, 0.16)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1373,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.08)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1374,
+          "key": "border-color",
+          "value": "rgba(220, 255, 240, 0.28)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1389,
+          "key": "border-color",
+          "value": "rgba(14, 76, 59, 0.28)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1483,
+          "key": "background",
+          "value": "#fce6e1"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1484,
+          "key": "color",
+          "value": "#8a2f20"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1493,
+          "key": "background",
+          "value": "#eef4f0"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1498,
+          "key": "background",
+          "value": "#fff3d6"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1499,
+          "key": "color",
+          "value": "#684900"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1523,
+          "key": "outline",
+          "value": "#0b4d40"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1664,
+          "key": "background",
+          "value": "rgba(238, 242, 235, 0.97)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1664,
+          "key": "background",
+          "value": "rgba(247, 249, 244, 0.88)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1705,
+          "key": "box-shadow",
+          "value": "rgba(8, 47, 42, 0.24)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1729,
+          "key": "background",
+          "value": "rgba(201, 243, 110, 0.18)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1750,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.58)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1751,
+          "key": "border",
+          "value": "rgba(255, 255, 255, 0.82)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1753,
+          "key": "box-shadow",
+          "value": "rgba(8, 47, 42, 0.06)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1761,
+          "key": "background",
+          "value": "rgba(169, 217, 255, 0.75)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1792,
+          "key": "background",
+          "value": "rgba(201, 243, 110, 0.68)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1793,
+          "key": "border",
+          "value": "rgba(8, 47, 42, 0.12)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1794,
+          "key": "box-shadow",
+          "value": "rgba(255, 255, 255, 0.5)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1820,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.92)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1820,
+          "key": "background",
+          "value": "rgba(248, 251, 246, 0.78)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1825,
+          "key": "border",
+          "value": "rgba(255, 255, 255, 0.92)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1905,
+          "key": "background",
+          "value": "rgba(247, 250, 245, 0.68)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1906,
+          "key": "border",
+          "value": "rgba(18, 55, 47, 0.1)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1908,
+          "key": "box-shadow",
+          "value": "rgba(255, 255, 255, 0.8)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1922,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.74)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1923,
+          "key": "border",
+          "value": "rgba(18, 55, 47, 0.16)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1952,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.96)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1953,
+          "key": "border-color",
+          "value": "rgba(21, 113, 90, 0.42)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1959,
+          "key": "background",
+          "value": "#15715a"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1959,
+          "key": "background",
+          "value": "#0a4e41"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1960,
+          "key": "border",
+          "value": "rgba(8, 47, 42, 0.22)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1961,
+          "key": "box-shadow",
+          "value": "rgba(8, 47, 42, 0.14)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1961,
+          "key": "box-shadow",
+          "value": "rgba(255, 255, 255, 0.16)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1975,
+          "key": "background",
+          "value": "#0b4d40"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1975,
+          "key": "background",
+          "value": "#072f2a"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1976,
+          "key": "box-shadow",
+          "value": "rgba(8, 47, 42, 0.2)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1976,
+          "key": "box-shadow",
+          "value": "rgba(255, 255, 255, 0.18)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1992,
+          "key": "box-shadow",
+          "value": "rgba(201, 243, 110, 0.96)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1993,
+          "key": "outline",
+          "value": "#0b4d40"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1998,
+          "key": "box-shadow",
+          "value": "rgba(201, 243, 110, 0.96)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1999,
+          "key": "outline",
+          "value": "#0b4d40"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2010,
+          "key": "background",
+          "value": "rgba(220, 236, 216, 0.82)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2011,
+          "key": "border-color",
+          "value": "rgba(8, 47, 42, 0.12)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2024,
+          "key": "border-color",
+          "value": "#355b50"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2026,
+          "key": "color",
+          "value": "#ffffff"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2035,
+          "key": "border-color",
+          "value": "#9dbdaf"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2042,
+          "key": "border-color",
+          "value": "#7f9f92"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2060,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.82)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2061,
+          "key": "border-color",
+          "value": "rgba(255, 255, 255, 0.92)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2065,
+          "key": "border-color",
+          "value": "rgba(21, 113, 90, 0.28)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2066,
+          "key": "box-shadow",
+          "value": "rgba(8, 47, 42, 0.1)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2076,
+          "key": "background",
+          "value": "rgba(8, 47, 42, 0.98)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2076,
+          "key": "background",
+          "value": "rgba(11, 75, 63, 0.92)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2081,
+          "key": "border-color",
+          "value": "rgba(201, 243, 110, 0.24)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2113,
+          "key": "border-color",
+          "value": "rgba(201, 243, 110, 0.8)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2114,
+          "key": "box-shadow",
+          "value": "rgba(0, 0, 0, 0.18)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2119,
+          "key": "background",
+          "value": "#dcff91"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2129,
+          "key": "background",
+          "value": "rgba(220, 236, 216, 0.94)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2129,
+          "key": "background",
+          "value": "rgba(201, 243, 110, 0.38)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2134,
+          "key": "border",
+          "value": "rgba(21, 113, 90, 0.12)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2135,
+          "key": "box-shadow",
+          "value": "rgba(255, 255, 255, 0.55)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2141,
+          "key": "background",
+          "value": "rgba(255, 232, 225, 0.96)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2141,
+          "key": "background",
+          "value": "rgba(255, 211, 198, 0.78)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2146,
+          "key": "border",
+          "value": "rgba(211, 92, 75, 0.2)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2164,
+          "key": "background",
+          "value": "rgba(226, 239, 235, 0.88)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2165,
+          "key": "border-color",
+          "value": "rgba(21, 113, 90, 0.12)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2169,
+          "key": "background",
+          "value": "rgba(220, 236, 216, 0.92)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2170,
+          "key": "border-color",
+          "value": "rgba(21, 113, 90, 0.15)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2174,
+          "key": "background",
+          "value": "rgba(255, 243, 214, 0.94)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2175,
+          "key": "border-color",
+          "value": "rgba(184, 132, 19, 0.2)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2187,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.66)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2188,
+          "key": "border-color",
+          "value": "rgba(18, 55, 47, 0.12)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2200,
+          "key": "background",
+          "value": "rgba(255, 255, 255, 0.94)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2201,
+          "key": "border-color",
+          "value": "rgba(21, 113, 90, 0.28)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2206,
+          "key": "background",
+          "value": "rgba(201, 243, 110, 0.68)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2206,
+          "key": "background",
+          "value": "rgba(220, 236, 216, 0.9)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2211,
+          "key": "border-color",
+          "value": "rgba(21, 113, 90, 0.42)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2212,
+          "key": "box-shadow",
+          "value": "rgba(21, 113, 90, 0.1)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2237,
+          "key": "border",
+          "value": "rgba(18, 55, 47, 0.1)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2239,
+          "key": "box-shadow",
+          "value": "rgba(255, 255, 255, 0.48)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2257,
+          "key": "background",
+          "value": "rgba(201, 243, 110, 0.12)"
+        }
+      ],
+      "limitation": "Static matching cannot resolve every alias, import, or computed value."
+    },
+    {
+      "code": "token_bypass",
+      "severity": "high",
+      "category": "shadow",
+      "message": "raw shadow values bypass declared shadow tokens",
+      "evidence": [
+        {
+          "file": "app/globals.css",
+          "line": 1705,
+          "key": "box-shadow",
+          "value": "0 12px 32px rgba(8, 47, 42, 0.24)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1753,
+          "key": "box-shadow",
+          "value": "0 10px 30px rgba(8, 47, 42, 0.06)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1794,
+          "key": "box-shadow",
+          "value": "inset 0 1px 0 rgba(255, 255, 255, 0.5)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1908,
+          "key": "box-shadow",
+          "value": "inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1961,
+          "key": "box-shadow",
+          "value": "0 8px 18px rgba(8, 47, 42, 0.14),\n    inset 0 1px 0 rgba(255, 255, 255, 0.16)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1976,
+          "key": "box-shadow",
+          "value": "0 12px 26px rgba(8, 47, 42, 0.2),\n    inset 0 1px 0 rgba(255, 255, 255, 0.18)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1992,
+          "key": "box-shadow",
+          "value": "0 0 0 6px rgba(201, 243, 110, 0.96)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 1998,
+          "key": "box-shadow",
+          "value": "0 0 0 6px rgba(201, 243, 110, 0.96)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2012,
+          "key": "box-shadow",
+          "value": "none"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2025,
+          "key": "box-shadow",
+          "value": "none"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2066,
+          "key": "box-shadow",
+          "value": "0 18px 42px rgba(8, 47, 42, 0.1)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 2114,
+          "key": "box-shadow",
+          "value": "0 10px 22px rgba(0, 0, 0, 0.18)"
+        }
+      ],
+      "limitation": "Static matching cannot resolve every alias, import, or computed value."
+    },
+    {
+      "code": "token_bypass",
+      "severity": "high",
+      "category": "spacing",
+      "message": "raw spacing values bypass declared spacing tokens",
+      "evidence": [
+        {
+          "file": "app/diagnostic/page.tsx",
+          "line": 309,
+          "key": "left",
+          "value": "2_166_136_261"
+        },
+        {
+          "file": "app/diagnostic/page.tsx",
+          "line": 310,
+          "key": "right",
+          "value": "2_247_824_519"
+        },
+        {
+          "file": "app/diagnostic/page.tsx",
+          "line": 313,
+          "key": "left",
+          "value": "Math.imul(left ^ code, 16_777_619)"
+        },
+        {
+          "file": "app/diagnostic/page.tsx",
+          "line": 314,
+          "key": "right",
+          "value": "Math.imul(right ^ code, 2_247_824_519)"
+        },
+        {
+          "file": "app/diagnostic/page.tsx",
+          "line": 353,
+          "key": "left",
+          "value": "readonly string[],\n  right: readonly string[],\n): boolean"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 19,
+          "key": "margin",
+          "value": "0"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 35,
+          "key": "left",
+          "value": "1rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 36,
+          "key": "padding",
+          "value": "0.65rem 0.85rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 38,
+          "key": "top",
+          "value": "1rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 62,
+          "key": "padding",
+          "value": "0.85rem 1.2rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 86,
+          "key": "margin",
+          "value": "0 auto"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 89,
+          "key": "padding",
+          "value": "1.5rem clamp(1rem, 4vw, 4rem) 4rem"
+        }
+      ],
+      "limitation": "Static matching cannot resolve every alias, import, or computed value."
+    },
+    {
+      "code": "token_bypass",
+      "severity": "high",
+      "category": "typography",
+      "message": "raw typography values bypass declared typography tokens",
+      "evidence": [
+        {
+          "file": "app/globals.css",
+          "line": 28,
+          "key": "font-family",
+          "value": "Arial, Helvetica, sans-serif"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 61,
+          "key": "font-weight",
+          "value": "700"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 107,
+          "key": "font-size",
+          "value": "1.1rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 108,
+          "key": "font-weight",
+          "value": "800"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 109,
+          "key": "letter-spacing",
+          "value": "-0.02em"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 114,
+          "key": "font-size",
+          "value": "0.73rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 115,
+          "key": "font-weight",
+          "value": "800"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 116,
+          "key": "letter-spacing",
+          "value": "0.12em"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 125,
+          "key": "font-size",
+          "value": "0.78rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 126,
+          "key": "font-weight",
+          "value": "700"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 149,
+          "key": "font-size",
+          "value": "clamp(2.2rem, 6vw, 4.7rem)"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 150,
+          "key": "letter-spacing",
+          "value": "-0.07em"
+        }
+      ],
+      "limitation": "Static matching cannot resolve every alias, import, or computed value."
+    },
+    {
+      "code": "spacing_drift",
+      "severity": "medium",
+      "category": "spacing",
+      "message": "57 raw spacing values include values off the 4px base rhythm",
+      "evidence": [
+        {
+          "file": "app/globals.css",
+          "line": 36,
+          "key": "padding",
+          "value": "0.65rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 36,
+          "key": "padding",
+          "value": "0.85rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 62,
+          "key": "padding",
+          "value": "0.85rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 62,
+          "key": "padding",
+          "value": "1.2rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 117,
+          "key": "margin",
+          "value": "0.45rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 152,
+          "key": "margin",
+          "value": "1.2rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 166,
+          "key": "gap",
+          "value": "0.65rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 188,
+          "key": "padding",
+          "value": "0.85rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 188,
+          "key": "padding",
+          "value": "0.9rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 268,
+          "key": "gap",
+          "value": "0.4rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 274,
+          "key": "gap",
+          "value": "0.85rem"
+        },
+        {
+          "file": "app/globals.css",
+          "line": 282,
+          "key": "gap",
+          "value": "0.8rem"
+        }
+      ],
+      "limitation": "The base rhythm is a configurable heuristic; product-specific scales may be intentional."
+    },
+    {
+      "code": "radius_drift",
+      "severity": "medium",
+      "category": "radius",
+      "message": "radius values proliferate across 12 raw values",
+      "evidence": [
+        {
+          "value": "0.5rem"
+        },
+        {
+          "value": "0.75rem"
+        },
+        {
+          "value": "0.7rem"
+        },
+        {
+          "value": "0.8rem"
+        },
+        {
+          "value": "1.15rem"
+        },
+        {
+          "value": "1.2rem"
+        },
+        {
+          "value": "1.35rem"
+        },
+        {
+          "value": "1.5rem"
+        },
+        {
+          "value": "1.8rem"
+        },
+        {
+          "value": "1rem"
+        },
+        {
+          "value": "50%"
+        },
+        {
+          "value": "99rem"
+        }
+      ],
+      "limitation": "The scanner cannot infer whether a radius is semantically justified by a component."
+    },
+    {
+      "code": "shadow_proliferation",
+      "severity": "medium",
+      "category": "shadow",
+      "message": "raw shadow declarations contain 14 distinct values",
+      "evidence": [
+        {
+          "value": "0 0 0 4px color-mix(in srgb, currentColor 14%, transparent)"
+        },
+        {
+          "value": "0 0 0 6px rgba(201, 243, 110, 0.96)"
+        },
+        {
+          "value": "0 10px 22px rgba(0, 0, 0, 0.18)"
+        },
+        {
+          "value": "0 10px 30px rgba(8, 47, 42, 0.06)"
+        },
+        {
+          "value": "0 12px 26px rgba(8, 47, 42, 0.2),\n    inset 0 1px 0 rgba(255, 255, 255, 0.18)"
+        },
+        {
+          "value": "0 12px 32px rgba(8, 47, 42, 0.24)"
+        },
+        {
+          "value": "0 18px 42px rgba(8, 47, 42, 0.1)"
+        },
+        {
+          "value": "0 6px 16px rgba(21, 113, 90, 0.1)"
+        },
+        {
+          "value": "0 8px 18px rgba(8, 47, 42, 0.14),\n    inset 0 1px 0 rgba(255, 255, 255, 0.16)"
+        },
+        {
+          "value": "inset 0 0 0 1px rgba(255, 255, 255, 0.48)"
+        },
+        {
+          "value": "inset 0 1px 0 rgba(255, 255, 255, 0.5)"
+        },
+        {
+          "value": "inset 0 1px 0 rgba(255, 255, 255, 0.55)"
+        },
+        {
+          "value": "inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+        },
+        {
+          "value": "none"
+        }
+      ],
+      "limitation": "This does not judge whether an individual shadow is visually purposeful."
+    },
+    {
+      "code": "typography_scale_drift",
+      "severity": "medium",
+      "category": "typography",
+      "message": "typography declarations contain 65 raw role/value combinations",
+      "evidence": [
+        {
+          "key": "font-family",
+          "value": "Arial, Helvetica, sans-serif"
+        },
+        {
+          "key": "font-family",
+          "value": "ui-monospace, SFMono-Regular, Menlo, monospace"
+        },
+        {
+          "key": "font-size",
+          "value": "0.68rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.72rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.73rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.74rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.75rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.76rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.77rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.78rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.82rem"
+        },
+        {
+          "key": "font-size",
+          "value": "0.85rem"
+        }
+      ],
+      "limitation": "The scanner cannot compute rendered measure or fallback metrics."
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 4,
+    "medium": 9,
+    "low": 0,
+    "info": 0
+  },
+  "limitations": [
+    "Static source scan only; no browser cascade, computed style, or runtime import graph is evaluated.",
+    "CSS/SCSS/JS/TS syntax is matched conservatively with regular expressions, not a full parser.",
+    "Near-duplicate colors use Euclidean RGB distance, not perceptual Delta E.",
+    "A finding is a review signal, not proof that a deliberate exception is wrong."
+  ]
+}

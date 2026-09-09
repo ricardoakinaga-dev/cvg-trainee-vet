@@ -311,7 +311,12 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .where(eq(auditEntries.resourceId, sessionId));
 
         expect(finalized.aggregate.session.status).toBe("FINALIZADA");
+        expect(finalized.aggregate.answers).toHaveLength(1);
+        expect(finalized.aggregate.answers[0]?.canonicalItemId).toBe(
+          catalog.snapshot.items[0]?.canonicalItemId,
+        );
         expect(replayedFinalization.aggregate.result?.resultId).toBe(resultId);
+        expect(replayedFinalization.aggregate.answers).toHaveLength(1);
         expect(replayedSaveAfterFinalization.session.status).toBe("FINALIZADA");
         expect(replayedSaveAfterFinalization.session.version).toBe(
           finalized.aggregate.session.version,
@@ -331,6 +336,9 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           expect.arrayContaining(["M01", "M02", "M11"]),
         );
         expect(persistedEvents).toHaveLength(3);
+        expect(persistedEvents.at(-1)?.payload).toMatchObject({
+          answeredItemCount: 1,
+        });
         expect(persistedAudit).toHaveLength(3);
         await expect(
           repository.findById(sessionId, otherParticipantId, scopeId),

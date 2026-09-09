@@ -1,0 +1,237 @@
+{
+  "producer": "quality_gates.py",
+  "schema_version": 1,
+  "status": "PASS",
+  "pass": true,
+  "thresholds": {
+    "lcp_good_ms": 2500.0,
+    "cls_good": 0.1
+  },
+  "gates": [
+    {
+      "gate": "accessibility",
+      "status": "PASS",
+      "checks": {
+        "keyboard": {
+          "status": "PASS",
+          "evidence": [
+            "tests/e2e/visual-gauntlet.spec.ts"
+          ]
+        },
+        "focus": {
+          "status": "PASS",
+          "evidence": [
+            "tests/e2e/visual-gauntlet.spec.ts"
+          ]
+        },
+        "semantics": {
+          "status": "PASS",
+          "evidence": [
+            "tests/e2e/visual-gauntlet.spec.ts",
+            "test-results/.last-run.json"
+          ]
+        },
+        "names": {
+          "status": "PASS",
+          "evidence": [
+            "tests/e2e/visual-gauntlet.spec.ts"
+          ]
+        },
+        "errors": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-recovery-loading.png",
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-recovery-success.png"
+          ]
+        },
+        "non_color": {
+          "status": "PASS",
+          "evidence": [
+            "tests/e2e/visual-gauntlet.spec.ts",
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-home-loading.png",
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-home-empty.png"
+          ]
+        },
+        "reduced_motion": {
+          "status": "PASS",
+          "evidence": [
+            "tests/e2e/visual-gauntlet.spec.ts",
+            "apps/web/app/globals.css"
+          ]
+        },
+        "touch_targets": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json",
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-operations-populated.png"
+          ]
+        },
+        "zoom_reflow": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json",
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/stress-zoom-authoring.png"
+          ]
+        },
+        "contrast": {
+          "status": "PASS",
+          "evidence": [
+            ".agent/artifacts/frontend-contrast-evidence.json",
+            "tests/e2e/visual-gauntlet.spec.ts"
+          ]
+        }
+      },
+      "missing": [],
+      "evidence_missing": [],
+      "failures": [],
+      "warnings": [],
+      "critical_blockers": []
+    },
+    {
+      "gate": "performance",
+      "status": "PASS",
+      "checks": {
+        "lcp": {
+          "status": "PASS",
+          "value_ms": 236,
+          "evidence": [
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json"
+          ],
+          "value": 236.0
+        },
+        "cls": {
+          "status": "PASS",
+          "value": 0.0093,
+          "evidence": [
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json"
+          ]
+        },
+        "responsive_images": {
+          "status": "PASS",
+          "evidence": [
+            "apps/web/app/globals.css",
+            ".agent/artifacts/frontend-assets.json"
+          ]
+        },
+        "font_loading": {
+          "status": "PASS",
+          "evidence": [
+            "apps/web/app/globals.css",
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json"
+          ]
+        },
+        "oversized_media": {
+          "status": "PASS",
+          "evidence": [
+            ".agent/artifacts/frontend-assets.json"
+          ]
+        }
+      },
+      "missing": [],
+      "evidence_missing": [],
+      "failures": [],
+      "warnings": [],
+      "critical_blockers": []
+    },
+    {
+      "gate": "typography",
+      "status": "PASS",
+      "checks": {
+        "heading_hierarchy": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json",
+            "apps/web/app/authoring/page.tsx"
+          ]
+        },
+        "measure": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-premium-vi-73004-ute-matrix-usable-at-1440px/home-1440.png",
+            "test-results/visual-gauntlet-premium-vi-f4ce7-oute-matrix-usable-at-390px/home-390.png"
+          ]
+        },
+        "line_height": {
+          "status": "PASS",
+          "evidence": [
+            "apps/web/app/globals.css"
+          ]
+        },
+        "fallback": {
+          "status": "PASS",
+          "evidence": [
+            "apps/web/app/globals.css"
+          ]
+        },
+        "numeric_alignment": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-operations-populated.png"
+          ]
+        },
+        "mobile_scale": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-premium-vi-f4ce7-oute-matrix-usable-at-390px/home-390.png",
+            "apps/web/app/globals.css"
+          ]
+        }
+      },
+      "missing": [],
+      "evidence_missing": [],
+      "failures": [],
+      "warnings": [],
+      "critical_blockers": []
+    },
+    {
+      "gate": "copy_stress",
+      "status": "PASS",
+      "checks": {
+        "short_content": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-premium-vi-73004-ute-matrix-usable-at-1440px/home-1440.png"
+          ]
+        },
+        "long_content": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/stress-long-copy-home.png",
+            "test-results/visual-gauntlet-keeps-inte-8eae6-althy-under-frontend-stress/frontend-stress-evidence.json"
+          ]
+        },
+        "empty_content": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-home-empty.png"
+          ]
+        },
+        "large_numbers": {
+          "status": "PASS",
+          "evidence": [
+            "test-results/visual-gauntlet-renders-lo-f056d--without-visual-regressions/state-operations-populated.png"
+          ]
+        },
+        "localized_content": {
+          "status": "NOT_APPLICABLE",
+          "reason": "The bounded product surface has Portuguese as its only declared locale; a secondary-locale copy pass is outside this visual lane.",
+          "evidence": [
+            "apps/web/app/page.tsx",
+            "apps/web/app/authoring/page.tsx"
+          ]
+        }
+      },
+      "missing": [],
+      "evidence_missing": [],
+      "failures": [],
+      "warnings": [],
+      "critical_blockers": []
+    }
+  ],
+  "critical_blockers": [],
+  "limitations": [
+    "This evaluator consumes evidence; it does not launch a browser, inspect a screen reader, or measure Core Web Vitals itself.",
+    "A PASS is only as trustworthy as the referenced screenshots, interactions, source reports, and test environment.",
+    "Performance thresholds are defaults and should be overridden by a product's documented budget when applicable."
+  ]
+}

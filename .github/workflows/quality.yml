@@ -48,6 +48,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify checkout SHA
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test -n "$EXPECTED_SHA"
+          test "$EXPECTED_SHA" = "$(git rev-parse HEAD)"
+
       - name: Enable pnpm
         run: corepack enable && corepack prepare pnpm@10.33.0 --activate
 
@@ -113,6 +120,16 @@ jobs:
       - name: Audit dependencies
         run: pnpm audit --audit-level=high
 
+      - name: Generate and verify release artifacts
+        if: always()
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: >
+          node scripts/ci-artifact-governance.mjs
+          --sha "$EXPECTED_SHA"
+          --out-dir ci-artifacts
+          --paths coverage playwright-report test-results
+
       - name: Publish quality artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -124,3 +141,4 @@ jobs:
             coverage/
             playwright-report/
             test-results/
+            ci-artifacts/

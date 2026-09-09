@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  createCycloneDxSbom,
+  createSha256Manifest,
+  findRedactionFindings,
+} from "../../scripts/ci-artifact-governance.mjs";
+import {
   readCiContract,
   validateCiContract,
 } from "../../scripts/verify-ci-contract.mjs";
@@ -14,6 +19,36 @@ describe("CI reproducibility contract", () => {
       pnpmVersion: "10.33.0",
       requiredWorkflowChecks: expect.any(Number),
     });
+  });
+
+  it("requires checkout provenance to match the workflow SHA before install", async () => {
+    const contract = await readCiContract();
+    const withoutShaVerification = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /\n\x20{6}- name: Verify checkout SHA\r?\n[\s\S]*?(?=\n\x20{6}- name: |\n?$)/u,
+        "\n",
+      ),
+    };
+
+    expect(() => validateCiContract(withoutShaVerification)).toThrow(
+      /same-SHA checkout verification/i,
+    );
+  });
+
+  it("requires deterministic SBOM, hash manifest, and redaction governance before upload", async () => {
+    const contract = await readCiContract();
+    const withoutArtifactGovernance = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /\n\x20{6}- name: Generate and verify release artifacts\r?\n[\s\S]*?(?=\n\x20{6}- name: |\n?$)/u,
+        "\n",
+      ),
+    };
+
+    expect(() => validateCiContract(withoutArtifactGovernance)).toThrow(
+      /artifact governance/i,
+    );
   });
 
   it("rejects a workflow that drops the live Qdrant service", async () => {
@@ -230,6 +265,70 @@ describe("CI reproducibility contract", () => {
 
     expect(() => validateCiContract(inconsistent)).toThrow(
       /workflow migration DATABASE_URL override.*incomplete/i,
+    );
+  });
+});
+
+describe("CI artifact governance", () => {
+  it("creates a deterministic CycloneDX SBOM without workspace links", () => {
+    const dependencyTree = [
+      {
+        dependencies: {
+          zod: {
+            version: "4.4.3",
+            dependencies: { tslib: { version: "2.8.1" } },
+          },
+          "@cvg/domain": { version: "link:../../packages/domain" },
+        },
+      },
+    ];
+    const input = {
+      dependencyTree,
+      packageName: "cvg-trainee-vet",
+      packageVersion: "0.1.0",
+      commitSha: "0123456789abcdef0123456789abcdef01234567",
+    };
+
+    const first = createCycloneDxSbom(input);
+    const second = createCycloneDxSbom(input);
+
+    expect(first).toEqual(second);
+    expect(first).toMatchObject({
+      bomFormat: "CycloneDX",
+      specVersion: "1.5",
+      components: [
+        expect.objectContaining({ name: "tslib", version: "2.8.1" }),
+        expect.objectContaining({ name: "zod", version: "4.4.3" }),
+      ],
+    });
+    expect(first.components).toHaveLength(2);
+  });
+
+  it("reports redaction classes without exposing the matched value", () => {
+    const findings = findRedactionFindings(
+      "playwright-report/result.json",
+      "authorization: Bearer abcdefghijklmnopqrstuvwxyz1234",
+    );
+
+    expect(findings).toEqual([
+      { path: "playwright-report/result.json", rule: "bearer-token" },
+    ]);
+    expect(JSON.stringify(findings)).not.toContain(
+      "abcdefghijklmnopqrstuvwxyz1234",
+    );
+  });
+
+  it("creates a stable, sorted SHA-256 manifest", () => {
+    const manifest = createSha256Manifest([
+      { path: "z-report.txt", content: Buffer.from("z") },
+      { path: "a-report.txt", content: Buffer.from("a") },
+    ]);
+
+    expect(manifest).toMatch(
+      /^ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb\x20{2}a-report\.txt\n/u,
+    );
+    expect(manifest).toMatch(
+      /\n594e519ae499312b29433b7dd8a97ff068defcba9755b6d5d00e84c524d67b06\x20{2}z-report\.txt\n$/u,
     );
   });
 });

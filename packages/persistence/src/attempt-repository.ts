@@ -41,6 +41,13 @@ export class PersistenceConflictError extends Error {
   }
 }
 
+export class PersistenceStateConflictError extends PersistenceConflictError {
+  public constructor(message: string) {
+    super(message);
+    this.name = "PersistenceStateConflictError";
+  }
+}
+
 export type AttemptRowShape = Readonly<{
   readonly id: string;
   readonly participantId: string;
@@ -113,6 +120,15 @@ function assertVersion(value: number): void {
   if (!Number.isInteger(value) || value < 0) {
     throw new PersistenceMappingError("version must be a non-negative integer");
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { readonly code?: unknown }).code === "23505"
+  );
 }
 
 function toIsoTimestamp(value: Date, field: string): string {
@@ -346,7 +362,16 @@ function createOperations(
       return row ? attemptRowToState(row) : null;
     },
     insert: async (state: AttemptState): Promise<void> => {
-      await db.insert(attempts).values(attemptStateToRow(state));
+      try {
+        await db.insert(attempts).values(attemptStateToRow(state));
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          throw new PersistenceStateConflictError(
+            "attempt already exists concurrently",
+          );
+        }
+        throw error;
+      }
     },
     update: async (state: AttemptState): Promise<void> => {
       const previousVersion = state.version - 1;
@@ -366,7 +391,7 @@ function createOperations(
         )
         .returning({ id: attempts.id });
       if (rows.length === 0) {
-        throw new PersistenceConflictError(
+        throw new PersistenceStateConflictError(
           "attempt version changed concurrently",
         );
       }
@@ -420,6 +445,11 @@ function createOperations(
   };
 
   const idempotency = {
+    lock: async (key: string): Promise<void> => {
+      await db.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`attempt:${key}`}, 0))`,
+      );
+    },
     find: async (key: string): Promise<IdempotencyRecord | null> => {
       const rows = await db
         .select({
@@ -433,19 +463,7 @@ function createOperations(
       return row ? idempotencyRowToRecord(row) : null;
     },
     store: async (key: string, record: IdempotencyRecord): Promise<void> => {
-      const existing = await db
-        .select({ fingerprint: attemptIdempotency.fingerprint })
-        .from(attemptIdempotency)
-        .where(eq(attemptIdempotency.key, key))
-        .limit(1);
-      if (existing[0] && existing[0].fingerprint !== record.fingerprint) {
-        throw new PersistenceConflictError(
-          "idempotency key has another fingerprint",
-        );
-      }
-      if (existing[0]) return;
-
-      await db.insert(attemptIdempotency).values({
+      const insertion = db.insert(attemptIdempotency).values({
         key,
         operation: "attempt",
         fingerprint: record.fingerprint,
@@ -453,6 +471,32 @@ function createOperations(
         response: record.attempt as PersistedAttemptSnapshot,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
+      if (
+        typeof insertion === "object" &&
+        insertion !== null &&
+        "onConflictDoNothing" in insertion &&
+        typeof insertion.onConflictDoNothing === "function"
+      ) {
+        await insertion.onConflictDoNothing();
+      } else {
+        await insertion;
+      }
+
+      const stored = await db
+        .select({ fingerprint: attemptIdempotency.fingerprint })
+        .from(attemptIdempotency)
+        .where(eq(attemptIdempotency.key, key))
+        .limit(1);
+      if (!stored[0]) {
+        throw new PersistenceConflictError(
+          "idempotency record was not persisted",
+        );
+      }
+      if (stored[0].fingerprint !== record.fingerprint) {
+        throw new PersistenceConflictError(
+          "idempotency key has another fingerprint",
+        );
+      }
     },
   };
 

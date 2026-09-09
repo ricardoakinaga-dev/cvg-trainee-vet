@@ -1,320 +1,208 @@
-# CVG Trainee Vet — State of the Art Master Plan
+# CVG Trainee Vet — Plano Executivo Premium / State of the Art / Triplo AAA
 
-**Data da revisão:** 2026-08-26
-**Estado:** plano vivo de evolução incremental
+**Revisão:** 2026-09-06
+**Versão:** AAA-PLAN v1.0
+**Status:** `IN_PROGRESS` — execução técnica local bounded autorizada; metas
+operacionais, produção, publicação clínica e piloto continuam sob G0 humano
+**Produto:** Sistema CVG de Treinamento Veterinário
 **Fonte de verdade do produto:** `BRIEFING/09.PROJETO_CVG_TREINAMENTO`
-**Control plane:** `docs/99_runtime_state.md`, `docs/20_master_execution_log.md`, `docs/30_backlog_master.md` e `traceability.yml`
+**Roadmap operacional:** [0301_roadmap.md](0301_roadmap.md)
+**Backlog executável:** [0302_backlog_master.md](0302_backlog_master.md)
 
-## 1. Objetivo e limites
+## 1. Decisão executiva
 
-Evoluir o CVG Trainee Vet existente para uma plataforma de desenvolvimento
-clínico digital contínuo, confiável, segura, auditável, acessível e preparada
-para aprendizagem adaptativa e IA assistiva.
+O CVG deve evoluir para uma plataforma premium de desenvolvimento clínico
+digital contínuo, com confiança clínica, rigor de engenharia, experiência
+superior e operação observável. “State of the Art” e “Triplo AAA” são a barra
+interna de qualidade deste programa; não são uma certificação externa nem
+autorizam, por si só, uso clínico, piloto ou declaração de competência prática.
 
-Este plano preserva o monorepo, o modular monolith com worker, TypeScript
-strict, PostgreSQL, Drizzle, Qdrant derivado, outbox, RLS, contratos strict,
-TDD e os gates clínicos humanos. Não autoriza rewrite, microserviços,
-publicação clínica, piloto, produção, fornecedor, credencial externa ou
-declaração de competência prática.
+O caminho aprovado por este plano é incremental:
 
-O plano organiza a evolução; não transforma documentação ou testes sintéticos
-em evidência de runtime produtivo.
+1. eliminar defeitos de integridade, autorização e rastreabilidade;
+2. provar uma jornada vertical real do navegador ao PostgreSQL;
+3. fechar autoria, revisão clínica e conteúdo aprovado;
+4. elevar experiência, aprendizagem adaptativa e governança;
+5. demonstrar operação, recuperação, segurança e release reproduzível;
+6. executar piloto controlado somente após os gates humanos e operacionais.
 
-## 2. Estado atual observado
+Não está autorizado neste plano: rewrite, microserviços sem dor observada,
+dados clínicos reais no repositório, uso de IA para decidir estado/nota/
+publicação/competência, deploy produtivo, contratação de fornecedor ou claim
+de competência prática.
 
-### Evidência de 2026-08-26
+## 2. O que significa Triplo AAA
 
-- Código e E2E real verificados no commit `16caccc82ffc519b60a68e1a02850d40909737e1`; o hardening local de
-  privilégios foi fechado no commit técnico `36088ff`; branch `main` está à
-  frente de `origin/main`; não houve push ou deploy.
-- `npm exec --package=node@22.22.0 --package=pnpm@10.33.0 -- pnpm verify` passou
-  no estado final dos hardenings: 142 arquivos, 730 testes PASS, 29
-  arquivos/38 testes SKIPPED, cobertura de 84,42% statements, 80,33% branches,
-  86,46% functions e 85,15% lines; contratos 86/86, worker 31/31, migrations
-  51/51 e gates estáticos PASS.
-- `OPS-061-GRANTS-001` agora mantém uma allowlist imutável de 29 tabelas para
-  `app`, exclui `knowledge_documents`, revoga ACL atual/default de `app` e
-  `PUBLIC` e verifica a matriz no source, no SQL gerado e no cenário live
-  disponível quando houver banco autorizado. A evidência está em
-  `BRIEFING/04.AUDIT/0542_application_role_privilege_matrix_audit.md`.
-- A crítica independente pós-build identificou uma nova fatia bounded de
-  assurance (`OPS-061-GRANTS-002`): o provisionamento ainda precisa eliminar
-  URL/senha de `argv`, fechar ACL de database/schema/functions e defaults,
-  qualificar o schema, usar transação, verificar grantability/identidade e
-  declarar todas as variáveis do contrato CI. Esta fatia não altera produto,
-  migrations aplicadas ou ambiente produtivo.
-- `OPS-061-GRANTS-002` foi implementado no commit `36088ff` e auditado em
-  `BRIEFING/04.AUDIT/0543_application_grant_provisioning_hardening_audit.md`:
-  `psql` não recebe URL/senha em `argv`, o ambiente é allowlist, arquivos são
-  temporários `0600`, o SQL é transacional e o contrato CI valida roles/banco.
-- A revisão independente parcial posterior encontrou uma divergência bounded:
-  `DATABASE_URL` não era validada pelo contrato CI e `.env.example` apontava o
-  runtime para a role de migração. `OPS-061-GRANTS-003` corrige essa coerência
-  e o ponteiro `head` do runtime state, sem alterar produto ou `JOURNEY-056`.
-- `OPS-061-GRANTS-003` foi fechado nos commits `703fe7c`/`0bd71f2` e auditado em
-  `BRIEFING/04.AUDIT/0544_runtime_database_url_contract_audit.md`: o contrato
-  inclui as cinco URLs, exige a role de aplicação e o mesmo banco; o focal
-  passou `9/9` e os gates locais passaram. A revisão independente não retornou
-  parecer final e não há claim de produção.
-- A crítica independente seguinte encontrou uma lacuna no workflow efetivo e
-  na rejeição de URLs vazias; `OPS-061-GRANTS-004` foi aberto para validar as
-  cinco URLs do job/override e falhar fechado sem valor, sem alterar produto ou
-  `JOURNEY-056`.
-- `OPS-061-GRANTS-004` foi fechado no commit `489a336` e auditado em
-  `BRIEFING/04.AUDIT/0545_workflow_database_url_contract_audit.md`: workflow
-  job-level, override de migration e valores vazios são verificados; o focal e
-  os gates locais passaram. Não há claim de produção.
-- A crítica independente pós-`OPS-061-GRANTS-004` encontrou dois gaps P2
-  residuais: a fixture real E2E não estava vinculada à role administrativa e o
-  override de migration era capturado por indentação global. `OPS-061-GRANTS-005`
-  fechou ambos no commit `400e228`; o focal passou `16/16`, a regressão passou
-  `141/723` com `38` skips, build `12/12` e E2E sintético `32/32`. O parecer
-  independente pós-fix não retornou veredito dentro da janela; o resultado é
-  condicional; `verify:traceability:release` passou após o fechamento
-  documental e não há claim de produção.
-- A crítica independente pós-`OPS-061-READINESS-006` confirmou o P1 de cold
-  start: Qdrant indisponível ainda bloqueava o bind da API. O item agora
-  separa `readiness` PostgreSQL-only de `healthcheck` agregado, binda a API
-  antes da inicialização assistiva e agenda retry cancelável para API e worker;
-  o teste novo também foi corrigido para exercitar `DEGRADED` real. A crítica
-  final encontrou e o item corrigiu a corrida do `reconcile:qdrant` com um modo
-  explícito que aguarda `ensureCollection()` e compartilha a inicialização em
-  voo entre o boot e o comando. A evidência está em
-  `BRIEFING/04.AUDIT/0547_readiness_degraded_startup_audit.md` e nos commits
-  `2b8bcae35bf15531df00cfc803f7867cd4a6ebaf`/`4e46daff955836c62bf99b90128c5d38d28ec222`/`c79cb7a353126af3494bb5dc28fb6b608c18d364`/`d90393f468c02a30a55927aa6a7f34823efec19a`.
-- Em banco PostgreSQL 16.15 novo e descartável, com migrations 51/51, roles
-  separadas e o provisionador atual, `pnpm test:integration:live` passou 35
-  arquivos/82 testes; a consulta administrativa confirmou ACL efetiva,
-  grantability, ownership e healthcheck least privilege. Isso prova o recorte
-  live local de RLS, ACL, trigger/CAS, rollback, isolamento contextual e
-  concorrência adaptativa; não prova produção ou o fluxo
-  diagnóstico→assignment.
-- `pnpm verify:traceability:release` passou após o fechamento documental:
-  todos os artefatos correntes apontam para commits alcançáveis e paths
-  rastreados em worktree limpo.
-- No mesmo SHA `16caccc82ffc519b60a68e1a02850d40909737e1`, o E2E real serial
-  passou `34/34` (`32` cenários sintéticos + `2` reais), incluindo build dos
-  12 workspaces. O slice real observou browser→web/proxy→API→PostgreSQL,
-  health `READY`/PostgreSQL `UP`, request IDs, nova sessão com tentativa v3,
-  oracle administrativo de persistência e cleanup com zero artefatos mutáveis;
-  a evidência está em `BRIEFING/04.AUDIT/0541_real_browser_api_postgres_e2e.md`.
-- Conteúdo clínico e B-07/M02 continuam sujeitos a revisão e aprovação humana;
-  nenhum código, seed, teste ou interface usa dado clínico real, prontuário,
-  tutor, foto, PDF de terceiro ou segredo.
+### A — Assurance clínico-pedagógico
 
-### Arquitetura real
+O programa ensina e mede progressão digital com conteúdo autoral, revisão
+humana, avaliação determinística e métricas de aprendizagem. O sistema nunca
+converte atividade digital em competência prática automaticamente.
 
-| Camada | Estado observado | Regra preservada |
+### A — Assurance de engenharia e segurança
+
+O sistema preserva estado transacional no PostgreSQL, aplica autorização
+server-side deny-by-default, usa RLS como defesa adicional, mantém contratos
+strict, testa invariantes críticas e possui recuperação verificável.
+
+### A — Assurance de experiência e operação
+
+O participante encontra fluxos claros, acessíveis e responsivos; a equipe
+encontra autoria e operação auditáveis; incidentes são detectáveis,
+diagnosticáveis, recuperáveis e mensuráveis.
+
+## 3. Baseline factual
+
+O baseline não é uma promessa de release:
+
+- HEAD auditado: `3490203038b52425a83e05989d47f1391de2949e`;
+- `main` alinhado ao tracking local de `origin/main`; durante esta rodada
+  apareceram alterações externas ao escopo em `.gitignore`,
+  `apps/web/app/globals.css` e `apps/web/public/`, preservadas sem integração
+  ao plano;
+- monorepo com API, web, worker e pacotes de domínio, aplicação, contratos,
+  persistência, integrações, observabilidade e UI;
+- 54 migrations no worktree atual, com `0051_diagnostic_sessions` como base da
+  jornada e as correções forward-only `0052`/`0053` sob validação;
+- `pnpm verify` local passou com 800 testes PASS, 42 SKIPPED e cobertura global
+  de 84,45% statements, 80,18% branches, 87,30% functions e 85,19% lines;
+- build dos 12 workspaces passou;
+- E2E sintético final passou 43/43 após a revalidação visual; o baseline anterior
+  havia passado 39/39 no build visual isolado; após o gate local de
+  `AAA-106`, o E2E focado de operations/authoring em `next start` passou 11/11;
+  o Round 6 repetiu a regressão completa em `39/39` e a suíte visual em `6/6`;
+  o proxy server-side foi implementado com teste focal `11/11`, foco de
+  autorização `12/12` e a revalidação pós-proxy repetiu `41/41` com upstream
+  local que exige cookie, incluindo o rail visual e o stress de 195px;
+- contratos passaram 95/95, worker 37/37 e migrations 54/54;
+- `pnpm test:integration:live` foi tentado e encerrou exit 2 por ausência de
+  `CVG_TEST_DATABASE_URL`;
+- não há evidência atual suficiente de banco live autorizado, E2E real da
+  jornada diagnóstica completa, workflow remoto same-SHA, operação produtiva,
+  failover, carga, collector/retention ou gate clínico.
+
+Delta da execução atual: `AAA-101`–`AAA-106` receberam implementação local
+bounded com testes focais; `0052` agora preserva a leitura de respostas de
+sessões finalizadas, attempts/answers usam lock por chave e conflitos CAS
+nomeados, os limites de rotação foram restaurados nos contratos, a cascata de
+contraste do cartão de privacidade foi corrigida, o shell interno de operations
+e authoring passou a aguardar autorização server-side e o proxy passou a
+proteger as rotas antes do render. A evidência live PostgreSQL/RLS, E2E real,
+workflow remoto same-SHA e auditoria independente continuam necessários. A
+crítica fresh curta do Round 7 retornou `PASS` sem severidade e a regressão
+visual do Round 8 foi corrigida; a próxima ação é formalizar as rodadas e,
+enquanto `AAA-001` e o banco autorizado não chegam, executar a fatia local
+`AAA-200/201` foram então congelados no contrato
+`0561_aaa_vertical_journey_contract.md`; uma crítica independente encontrou um
+P1 de projeção/proveniência, corrigido em RED/GREEN, com focal pós-correção
+`25/25` e foco ampliado `108/108`. A releitura posterior retornou `REVISE` e
+não foi registrada como PASS. A regra determinística, replay, CAS, proveniência
+e projeção sem internals estão fechados localmente com gaps. `AAA-205` também foi consolidado no contrato
+`0562_aaa_recovery_resilience_contract.md`, cobrindo os estados e retries já
+existentes sem duplicar a autoridade da API. A próxima prova de jornada é
+`AAA-202`, que só pode usar PostgreSQL/RLS live em ambiente autorizado; sem
+isso, `AAA-203` ou `AAA-204` são as próximas fatias locais possíveis.
+
+Nota de referência do estado atual: **61/100 no programa geral** e
+**78/100 na construção técnica local**. Conteúdo clínico, piloto e competência
+prática permanecem em **0/100 de prontidão comprovada**.
+
+## 4. Alvos mensuráveis da barra AAA
+
+Os alvos abaixo são propostos para aprovação de Ricardo antes da execução.
+Enquanto não aprovados, são `PROPOSED`, não evidência nem requisito publicado.
+
+| Código | Alvo de qualidade | Evidência mínima de aceite |
 | --- | --- | --- |
-| Web | Next.js 16, participante, autoria, operações e recuperação; projeções separadas | web não autoriza nem acessa banco |
-| API | HTTP `/api/v1`, casos de uso e políticas server-side | entrada strict, deny-by-default e erros públicos |
-| Worker | outbox, lease/fencing, retry, dead letter lógico e reconciliação | efeitos derivados idempotentes; PostgreSQL continua autoridade |
-| Domínio | estados de conta, currículo, assignments, assessment, feedback e appeals | sem ORM, SDK ou infraestrutura |
-| Persistência | PostgreSQL/Drizzle, migrations, constraints, auditoria e RLS | RLS é defesa adicional; conexão produtiva não é prova live nesta sessão |
-| Integrações | Qdrant e IA por adapters/fake | Qdrant é reconstruível; IA é assistiva, server-side e desligável |
-| Qualidade | typecheck, lint, cobertura, contratos, worker, migrations, exposição, arquitetura e CI contract | gates obrigatórios não são substituídos por score |
+| AAA-Q01 | Zero P0/P1 de segurança, integridade ou clínica abertos | auditoria independente e reexecução atual |
+| AAA-Q02 | Cobertura global ≥80% e cobertura de decisão completa nas invariantes críticas | coverage + matriz de decisões |
+| AAA-Q03 | Cada jornada crítica comprovada no boundary correto | browser/API/PostgreSQL/RLS quando aplicável |
+| AAA-Q04 | Nenhum dado, fonte, gabarito ou campo interno atravessa a fronteira pública | exposure scan + testes negativos + revisão manual |
+| AAA-Q05 | WCAG 2.2 AA nos fluxos críticos | axe, teclado, foco, contraste e revisão manual |
+| AAA-Q06 | Build reproduzível no mesmo SHA | CI remoto, artefatos, SBOM e traceability |
+| AAA-Q07 | SLOs, alertas, logs redigidos, métricas e traces operacionais | ambiente descartável/controle operacional autorizado |
+| AAA-Q08 | Backup, restore, rollback e recuperação exercitados | runbook executado com RPO/RTO registrados |
+| AAA-Q09 | 100% do conteúdo publicado aprovado pelo fluxo clínico definido | revisão item a item e decisão humana registrada |
+| AAA-Q10 | IA/Qdrant derivados, limitados, desligáveis e nunca decisórios | evals de exposição, injection, groundedness e fallback |
+| AAA-Q11 | Piloto mede aprendizagem digital sem declarar competência prática | protocolo, autoridade, métricas e auditoria |
 
-## 3. Gaps priorizados
+Metas de disponibilidade, latência, RPO/RTO, volume de participantes e
+cadência de revisão devem ser calibradas em `AAA-001`; não serão inventadas no
+código nem assumidas a partir de defaults.
 
-| Prioridade | Gap | Evidência atual | Tratamento |
-| --- | --- | --- | --- |
-| P1 | Least privilege, owners e grants do ambiente produtivo ainda não foram provados; a matriz e o provisionamento do harness local foram verificados, mas produção continua sem evidência | `scripts/provision-ci-postgres.mjs`, auditorias 0540/0542/0543, crítica independente, live PostgreSQL 16.15 | matriz produtiva e revisão operacional com autoridade própria |
-| P1 | Diagnóstico → assignment → atividade → próxima ação ainda não possui jornada completa de participante diagnosticando no browser | auditoria independente; fixtures reais ainda bypassam diagnóstico | `JOURNEY-056`, depois de segurança e contratos estabilizados |
-| P1 | Feedback pode chegar a `AGUARDA_USUARIO`, mas não existe conversa/reply bounded | PRD RF-103/RF-104, UC-022/023, domínio e web atuais | `FEEDBACK-057`, após `FEEDBACK-055`; sem SLA/notificação nesta fase |
-| P1 | Retenção possui sinal/CTA incompleto e cadência ainda precisa decisão de equivalência | backlog e resolver de jornada | `RETENTION-058`, após decisão de produto/PRD |
-| P1 | Facilitador/preceptor e coordenação ainda não formam experiência completa | superfícies internas parciais | `STAFF-059`, analytics agregados e privacy-by-design |
-| P1 | Autoria após `AJUSTES_SOLICITADOS` carece de edição/resubmissão consumível | state machine existe; UI/contrato incompletos | `AUTHORING-060`, mantendo four-eyes e gate clínico |
-| P1 | Assurance operacional externa, same-SHA CI, carga, failover, restore e collector não têm evidência atual | auditorias 0505/0508 e estado canônico | `OPS-061`, dependente de ambiente/autoridade |
-| P2 | A matriz negativa por tabela foi verificada no PostgreSQL descartável; produção, remote same-SHA e operação externa continuam sem prova | `tests/integration/postgres-rls-function-privileges.test.ts`, auditoria 0543, live 35/82 | manter evidência local e abrir apenas a revisão operacional autorizada |
-| P2 | Tutor/RAG/evals, notificações e busca podem evoluir sobre contratos aprovados | adapters existem; experiência completa não existe | `AI-062`, somente depois da fundação educacional |
+## 5. Frentes executivas
 
-## 4. Arquitetura alvo incremental
+| Frente | Resultado de negócio | Resultado técnico |
+| --- | --- | --- |
+| F0 — Governança | decisões e evidências confiáveis | control plane sincronizado e quality bar aprovado |
+| F1 — Trust core | ninguém altera estado fora da política | RLS, constraints, idempotência, sessões e auditoria provados |
+| F2 — Jornada | participante sabe o próximo passo | diagnóstico → assignment → atividade → feedback real |
+| F3 — Conteúdo | conteúdo autoral confiável | autoria, revisão, versionamento, publicação e retirada |
+| F4 — Pessoas | facilitador/coordenação enxergam o necessário | UX por papel, privacidade e analytics agregados |
+| F5 — Aprendizagem | prática adaptativa explicável | mastery digital, retrieval, remediação e retenção |
+| F6 — Plataforma | operar sem improviso | observabilidade, CI, performance, DR, rollback e runbooks |
+| F7 — IA segura | acelerar autoria sem perder controle | adapters, evals, Qdrant reconstruível e human-in-the-loop |
+| F8 — Piloto | aprender com risco controlado | readiness, baseline, piloto, auditoria e decisão de expansão |
+
+## 6. Gates executivos
+
+| Gate | Libera | Não libera |
+| --- | --- | --- |
+| G0 — Plano aprovado | execução de `AAA-100` em diante | deploy ou publicação clínica |
+| G1 — Trust core | jornada técnica real | conteúdo clínico publicado |
+| G2 — Jornada vertical | validação de produto em ambiente autorizado | claim de competência |
+| G3 — Conteúdo clínico | publicação interna do conteúdo aprovado | uso autônomo de IA |
+| G4 — Release readiness | piloto controlado | produção aberta |
+| G5 — Pilot exit | decisão de manter, corrigir ou expandir | certificação clínica automática |
+| G6 — AAA audit | declaração interna de barra atingida | qualquer claim não sustentado por evidência |
+
+Um gate falha quando existe gap P0/P1, evidência ausente, dado não governado,
+defeito de autorização, conteúdo sem revisão ou divergência no control plane.
+
+## 7. Critical path
 
 ```text
-Participante
-  -> diagnóstico formativo
-  -> assignment determinístico e escopado
-  -> atividade publicada/versionada
-  -> tentativa e feedback
-  -> remediação / retrieval / retenção
-  -> próxima ação server-side explicável
-
-Autor
-  -> rascunho
-  -> revisão clínica independente
-  -> aprovação humana
-  -> publicação versionada
-  -> monitoramento / validade / retirada
-
-Facilitador/Coordenação
-  -> acompanhamento individual autorizado
-  -> analytics agregados
-  -> feedback e remediação sem ranking punitivo
-
-Operação
-  -> health / readiness / outbox / worker / Qdrant / IA redigidos
-  -> logs, métricas, traces, alertas, backup/restore e rollback
+AAA-000/001
+  → AAA-100..107 (integridade, segurança e estado)
+  → AAA-200..205 (jornada vertical real)
+  → AAA-300..305 (autoria e conteúdo clínico)
+  → AAA-600..607 (operação e release)
+  → AAA-800..805 (piloto e auditoria AAA)
 ```
 
-As decisões de estado, nota, gabarito, publicação, papel, competência prática
-e autonomia clínica permanecem no domínio, aplicação, PostgreSQL e autoridades
-humanas apropriadas. IA e Qdrant nunca assumem essas decisões.
+As frentes UX, aprendizagem e IA podem avançar em paralelo somente quando
+seus contratos dependentes estiverem congelados e não houver colisão com
+migrations, contratos públicos ou control plane.
 
-## 5. Fases, epics e tasks
+## 8. Limites humanos e de segurança
 
-### Phase 0 — Baseline e continuidade
+- Ricardo aprova a barra de qualidade, as metas operacionais e o escopo do
+  piloto.
+- Ricardo revisa protocolos e conteúdo clínico antes da publicação.
+- Ambiente produtivo, secrets, grants/owners, provider/MFA, workflow remoto e
+  participantes reais exigem autoridade específica e não são presumidos.
+- Fixtures, seeds, testes, logs e UI usam apenas dados sintéticos e conteúdo
+  interno permitido.
+- Uma decisão humana não transforma um teste sintético em evidência produtiva.
 
-- `BASELINE-000`: congelar Quality Bar QB-01…QB-11, ambiente, worktree,
-  comandos e gaps; manter estado/log/backlog/manifesto recuperáveis.
-- `PLAN-001`: manter este plano alinhado ao código e ao control plane.
-- Aceite: `verify`, `git diff --check`, rastreabilidade e status atualizados;
-  checks indisponíveis aparecem como BLOCKED/NOT RUN, nunca PASS.
+## 9. Definition of Done do programa
 
-### Phase 1 — Segurança e integridade do núcleo
+O programa só pode ser declarado AAA quando:
 
-- `FEEDBACK-055` + `LIVE-056`: separar leitura/criação do participante de
-  escritas staff, provar isolamento contextual em PostgreSQL descartável e
-  preservar transação, CAS, histórico, auditoria e bindings adaptativos.
-- `IDENTITY-057`: continuar hardening de sessões, capability e escopo apenas
-  com regressão da matriz de autorização.
-- Aceite: nenhum write de participante contorna governança; staff autorizado
-  mantém o fluxo; testes negativos e positivos cobrem as duas fronteiras.
+1. todos os P0/P1 críticos estão `COMPLETED` com evidência corrente;
+2. G0–G6 possuem decisão e artefato verificáveis;
+3. as jornadas críticas passaram no boundary real correspondente;
+4. conteúdo clínico foi revisado e publicado pelo fluxo autorizado;
+5. segurança, privacidade, acessibilidade, observabilidade e recuperação
+   possuem provas atuais;
+6. state, log, backlog, roadmap, traceability e auditorias apontam para o
+   mesmo estado;
+7. um auditor independente consegue reproduzir o veredito sem depender desta
+   conversa.
 
-### Phase 2 — Jornada do participante
-
-- `JOURNEY-056`: fechar diagnóstico formativo sintético → assignment
-  server-side → atividade publicada → tentativa → feedback → próxima ação.
-- `FEEDBACK-057`: resposta/reply bounded, plain text, owner/scope scoped,
-  sem anexos, SLA, notificação ou conteúdo clínico novo.
-- `RETENTION-058`: tornar revisão consumível somente após resolver a cadência
-  e os critérios de equivalência no PRD/SPEC.
-- Aceite: browser, API e PostgreSQL real atravessam a jornada quando o ambiente
-  estiver autorizado; histórico não é reescrito e digital não vira competência.
-
-### Phase 3 — Autoria e governança clínica
-
-- `AUTHORING-060`: biblioteca, edição, preview, comentários, ajustes,
-  resubmissão, versionamento, validade e retirada sem apagar histórico.
-- `CLINICAL-061`: B-07/M02 somente após conteúdo autoral, pré-voo, revisão e
-  decisão registrada de Ricardo; não criar guideline ou protocolo clínico por
-  inferência.
-- Aceite: autor não aprova o próprio conteúdo quando a policy exigir; publicação
-  é humana, auditável e não abre claims de autonomia prática.
-
-### Phase 4 — Facilitador e coordenação
-
-- `STAFF-059`: acompanhamento por escopo, filas de atenção, feedback e
-  remediação; perfis individuais somente com autorização.
-- `ANALYTICS-063`: métricas agregadas de participação, retenção, mastery e
-  efetividade, sem leaderboard público ou tracker invasivo.
-- Aceite: papéis, escopo, privacy e agregação são testados no servidor e na UI.
-
-### Phase 5 — Learning intelligence
-
-- `MASTERY-064`: mastery cognitivo determinístico, explicável e separado de
-  competência clínica prática.
-- `RETRIEVAL-065`: prática de recuperação, confiança não oficial e
-  remediação por erro/instabilidade.
-- `ADAPTIVE-066`: `NextBestLearningActionService` determinístico com
-  reasonCode, prioridade, pré-requisitos e due reviews.
-- Aceite: regras puras, fixtures sintéticas, clock injetável e cobertura de
-  decisões críticas; IA não é a lógica única.
-
-### Phase 6 — IA, RAG e busca interna
-
-- `AI-062`: provider abstraction, timeout, retry, abort, quota, fake CI,
-  structured output e desligamento seguro.
-- `RAG-067`: somente conteúdo publicado/válido indexado; metadata filtrada
-  server-side; citações correspondem ao contexto recuperado.
-- `EVALS-068`: groundedness, citation, injection, PII leakage, safety e
-  formato em dataset sintético determinístico.
-- Aceite: conteúdo recuperado é dado, não instrução; IA nunca publica nem
-  altera estado, nota, papel ou decisão clínica.
-
-### Phase 7 — Operação e prontidão de release
-
-- `OPS-061`: logs JSON redigidos, métricas, traces, alerts, SLOs, runbooks,
-  health e graceful shutdown; `OPS-061-GRANTS-001` fecha a matriz local de
-  privilégios do harness; `OPS-061-GRANTS-002` fecha o provisionamento e o
-  contrato local, e `OPS-061-GRANTS-003` fecha a coerência da role de runtime,
-  e `OPS-061-GRANTS-005` fecha a identidade da fixture e o escopo do override,
-  sem encerrar a revisão produtiva.
-- `RECOVERY-069`: backup, restore, RPO/RTO, failover e rollback em ambiente
-  descartável.
-- `CI-070`: workflow same-SHA, artefatos, SBOM, dependency/security gates e
-  browser/API/DB E2E.
-- Aceite: evidência externa reproduzível; nenhuma operação produtiva sem
-  autorização explícita.
-
-## 6. Barra de qualidade e evidência
-
-| ID | Target required | Evidência |
-| --- | --- | --- |
-| QB-01 | jornadas verticais funcionam no boundary público | E2E e request/response/persistência real |
-| QB-02 | assignment/adaptive é determinístico, idempotente e escopado | unit/application/contract/integration/live |
-| QB-03 | deny-by-default e isolamento por ator/recurso/ação | matriz negativa + RLS com role sem bypass |
-| QB-04 | transações, constraints, CAS, outbox e recovery preservam invariantes | migration, rollback, concorrência e restore |
-| QB-05 | digital não declara competência prática; publicação é humana | contratos, preflight e decisão humana |
-| QB-06 | projeções strict, redigidas e acessíveis | exposure scan, browser, axe, keyboard e revisão visual |
-| QB-07 | falhas são observáveis e operáveis | health, logs, metrics, traces, alerts e runbooks |
-| QB-08 | build e release são reproduzíveis no mesmo SHA | CI remoto, artefatos, audit, coverage e traceability |
-| QB-09 | conteúdo clínico passa gate humano item a item | revisão, pré-voo, protocolo e decisão registrada |
-| QB-10 | continuidade canônica é recuperável | state/log/backlog/plan/manifesto coerentes |
-| QB-11 | IA/Qdrant são derivados, assistivos e desligáveis | adapters, worker, evals e exposure tests |
-
-Falha em segurança, corretude, integridade, clínica ou dados bloqueia o
-resultado independentemente da cobertura ou de qualquer score médio.
-
-## 7. Dependências, riscos e boundaries humanos
-
-- `FEEDBACK-055` é predecessor de novas escritas de feedback e deve preservar
-  o contrato público participante.
-- `LIVE-056`, `OPS-061`, `RECOVERY-069` e `CI-070` exigem ambiente descartável,
-  credenciais/URLs ou autoridade externa; preparar código/runbook é permitido,
-  executar produção ou remoto não é inferido.
-- `CLINICAL-061` e qualquer B-07/M02 publication/piloto exigem revisão e
-  decisão humana de Ricardo.
-- A cadência de retenção e qualquer regra de atribuição que altere produto
-  exigem decisão explícita se não estiverem já fechadas em PRD/SPEC.
-- Dados, secrets, PDFs, fotos, prontuários e fontes de terceiros não entram no
-  repositório, fixtures, logs, prompts, UI ou seeds.
-
-## 8. Ordem de execução e rollback
-
-1. Reconciliar control plane e baseline.
-2. Corrigir a fronteira de escrita `FEEDBACK-055` com RED → GREEN → REFACTOR.
-3. Rodar regressão estática/local e registrar o gap live sem mascará-lo.
-4. Obter crítica independente e corrigir o maior gap restante.
-5. `LIVE-056` foi executado em banco local descartável; repetir somente para
-   ambiente produtivo/remote quando houver autoridade e critérios explícitos.
-6. A extensão browser→web→API→PostgreSQL de `LIVE-056` foi executada no mesmo
-   SHA, com oracle de persistência e cleanup verificável; ainda não cobre
-   diagnóstico→assignment nem cenário browser cross-scope.
-7. Fechar jornada de participante, depois feedback/retenção, autoria, staff,
-   learning intelligence, IA/RAG e hardening operacional.
-
-Cada migration é nova, revisável e forward-only; rollback de código prefere
-reversão da fatia bounded autorizada ou correção forward. Dados de produção
-nunca são resetados. Uma task só vira DONE com evidência atual, auditoria,
-traceability, backlog, log, runtime state e diff coerentes.
-
-## 9. Primeiro incremento autorizado — encerrado com gaps
-
-`FEEDBACK-055` foi implementado e ampliado com `LIVE-056` porque a crítica
-independente encontrou uma possibilidade de escrita direta do participante em
-`feedback_tickets`, além de lacunas de contexto nas projeções participant-only
-e de integridade em bindings adaptativos. As migrations 0048–0050 e o runner
-live fecharam o recorte técnico local. O incremento não adicionou resposta,
-SLA, notificação, anexos, publicação clínica, provider, MFA, produção ou
-atribuição arbitrária a terceiro. A próxima fatia autorizada é `JOURNEY-056` ou
-`FEEDBACK-057`, com os gates humanos e operacionais mantidos. Antes do BUILD,
-`JOURNEY-056` exige decisão entre sessão diagnóstica pública própria
-(recomendada) e atividade especial; `FEEDBACK-057` ainda exige contrato próprio
-para resposta/resolução. Nenhuma dessas fatias foi iniciada nesta rodada.
-
-Como extensão de `LIVE-056`, o commit `16caccc82ffc519b60a68e1a02850d40909737e1`
-agora tem evidência local do participante atravessando browser, web/proxy, API
-e PostgreSQL real, com request IDs, nova sessão, oracle de persistência e
-cleanup verificável. A fixture pré-provisiona o assignment; por isso o gap
-diagnóstico→assignment e os gates de produção/operacional/clínico permanecem
-abertos.
+A rodada técnica corrente foi registrada como `REVISE`; a evidência visual
+permanece bounded e ainda exige crítica independente same-SHA. O próximo passo
+de controle é Ricardo revisar `AAA-001`: barra AAA, metas operacionais e
+autoridade de ambientes, além de disponibilizar `CVG_TEST_DATABASE_URL` em
+ambiente descartável autorizado. Sem isso continuam proibidos live autorizado,
+deploy, produção, publicação clínica, participantes reais e piloto.

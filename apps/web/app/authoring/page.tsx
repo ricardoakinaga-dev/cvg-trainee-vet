@@ -112,7 +112,6 @@ const authoringSourceOptions = [
 ] as const;
 
 type ApiRecord = Readonly<Record<string, unknown>>;
-const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
 const draftRecoveryStorageKey = "cvg-authoring-draft-recovery-v1";
 
 type DraftRecovery = Readonly<{
@@ -373,7 +372,7 @@ async function requestJson(
   const timeout = setTimeout(() => controller.abort(), 15_000);
   let response: Response;
   try {
-    response = await fetch(`${apiBase}${path}`, {
+    response = await fetch(path, {
       method: init.method,
       credentials: "include",
       headers: { "content-type": "application/json" },
@@ -428,6 +427,10 @@ function queryInput(): Readonly<{
   };
 }
 
+function scopeOptionLabel(scopeId: string, index: number): string {
+  return `Escopo ${index + 1} · ${scopeId.slice(0, 8)}…`;
+}
+
 export default function AuthoringPage() {
   const [record, setRecord] = useState<InternalAuthoringRecord | null>(null);
   const [queue, setQueue] = useState<ContentReviewQueue | null>(null);
@@ -435,6 +438,7 @@ export default function AuthoringPage() {
   const [contentId, setContentId] = useState("");
   const [version, setVersion] = useState("1");
   const [scopeId, setScopeId] = useState("");
+  const [authoringToolsOpen, setAuthoringToolsOpen] = useState(false);
   const [scopeLoading, setScopeLoading] = useState(true);
   const [scopeLoadError, setScopeLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -558,7 +562,6 @@ export default function AuthoringPage() {
       setQueue(null);
       const message = "Não foi possível carregar os escopos da sessão interna.";
       setScopeLoadError(message);
-      setError(message);
       return [];
     } finally {
       setScopeLoading(false);
@@ -744,6 +747,42 @@ export default function AuthoringPage() {
     }
   }
 
+  if (scopeLoading || scopeLoadError !== null || sessionScopes.length === 0) {
+    return (
+      <main className="shell" id="main-content" tabIndex={-1}>
+        <section
+          className="experience-panel dashboard-message internal-access-gate"
+          data-testid="internal-access-gate"
+          role={scopeLoading ? "status" : "alert"}
+          aria-live="polite"
+        >
+          <h1 className="access-gate-title">
+            {scopeLoading
+              ? "Validando acesso restrito"
+              : scopeLoadError !== null
+                ? "Sessão interna necessária"
+                : "Nenhum escopo autorizado"}
+          </h1>
+          <span>
+            {scopeLoading
+              ? "Consultando a autorização server-side da sessão…"
+              : (scopeLoadError ??
+                "Esta conta não possui escopo para a superfície de autoria.")}
+          </span>
+          {scopeLoadError !== null ? (
+            <button
+              type="button"
+              onClick={() => void retrySessionScopes()}
+              disabled={scopeLoading}
+            >
+              Tentar carregar novamente
+            </button>
+          ) : null}
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="shell" id="main-content" tabIndex={-1} aria-busy={busy}>
       <header
@@ -754,7 +793,9 @@ export default function AuthoringPage() {
           <p className="eyebrow">CVG · superfície interna</p>
           <span className="brand">Autoria e revisão clínica</span>
         </div>
-        <span className="status-pill">Acesso restrito</span>
+        <span className="status-pill status-pill--neutral">
+          Acesso restrito
+        </span>
       </header>
 
       <section className="queue-panel" aria-labelledby="queue-title">
@@ -763,7 +804,9 @@ export default function AuthoringPage() {
             <p className="eyebrow">Fila operacional</p>
             <h1 id="queue-title">Revisão clínica pendente</h1>
           </div>
-          <span className="status-pill">Somente leitura</span>
+          <span className="status-pill status-pill--neutral">
+            Somente leitura
+          </span>
         </div>
         <p className="intro">
           Consulte somente metadados do escopo autorizado. O item completo abre
@@ -803,9 +846,9 @@ export default function AuthoringPage() {
             disabled={busy || sessionScopes.length === 0}
           >
             <option value="">Selecione um escopo</option>
-            {sessionScopes.map((sessionScopeId) => (
+            {sessionScopes.map((sessionScopeId, index) => (
               <option key={sessionScopeId} value={sessionScopeId}>
-                {sessionScopeId}
+                {scopeOptionLabel(sessionScopeId, index)}
               </option>
             ))}
           </select>
@@ -867,296 +910,355 @@ export default function AuthoringPage() {
       </section>
 
       {record === null ? (
-        <section className="draft-panel" aria-labelledby="draft-title">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Autoria assistida</p>
-              <h1 id="draft-title">Criar rascunho sintético</h1>
-            </div>
-            <span className="status-pill">RASCUNHO · sem publicação</span>
-          </div>
-          <p className="intro">
-            Preencha um item de trabalho com caso fictício. O servidor deriva a
-            identidade, cria a projeção pública e mantém o conteúdo bloqueado
-            até revisão clínica humana.
-          </p>
-          <form
-            className="draft-form"
-            onSubmit={(event) => void createDraft(event)}
+        <>
+          <section
+            className="authoring-commandbar"
+            aria-labelledby="authoring-actions-title"
           >
-            <div className="draft-grid">
-              <label htmlFor="draft-scope-id">
-                Escopo autorizado
-                <select
-                  id="draft-scope-id"
-                  value={scopeId}
-                  onChange={(event) => setScopeId(event.target.value)}
-                  required
-                  disabled={busy || sessionScopes.length === 0}
-                >
-                  <option value="">Selecione um escopo</option>
-                  {sessionScopes.map((sessionScopeId) => (
-                    <option key={sessionScopeId} value={sessionScopeId}>
-                      {sessionScopeId}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="draft-module-id">
-                Módulo
-                <select
-                  id="draft-module-id"
-                  value={draftModuleId}
-                  onChange={(event) => {
-                    const nextModuleId = event.target.value;
-                    setDraftModuleId(nextModuleId);
-                    if (/^M\d{2}-OBJ-\d{2}$/u.test(draftObjectiveId)) {
-                      setDraftObjectiveId(`${nextModuleId}-OBJ-01`);
-                    }
-                  }}
-                  required
-                  disabled={busy}
-                >
-                  {authoringModuleOptions.map((moduleId) => (
-                    <option key={moduleId} value={moduleId}>
-                      {moduleId}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="draft-session-id">
-                Sessão
-                <select
-                  id="draft-session-id"
-                  value={draftSessionSuffix}
-                  onChange={(event) =>
-                    setDraftSessionSuffix(event.target.value)
-                  }
-                  required
-                  disabled={busy}
-                >
-                  {authoringSessionOptions.map((sessionSuffix) => (
-                    <option key={sessionSuffix} value={sessionSuffix}>
-                      {draftModuleId}-{sessionSuffix}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="draft-objective-id">
-                Objetivo curricular
-                <input
-                  id="draft-objective-id"
-                  value={draftObjectiveId}
-                  onChange={(event) => setDraftObjectiveId(event.target.value)}
-                  required
-                  maxLength={128}
-                  disabled={busy}
-                />
-              </label>
-            </div>
-            <label htmlFor="draft-item-title">
-              Título do item
-              <input
-                id="draft-item-title"
-                value={draftTitle}
-                onChange={(event) => setDraftTitle(event.target.value)}
-                required
-                maxLength={1000}
-                disabled={busy}
-              />
-            </label>
-            <label htmlFor="draft-item-prompt">
-              Enunciado
-              <textarea
-                id="draft-item-prompt"
-                value={draftPrompt}
-                onChange={(event) => setDraftPrompt(event.target.value)}
-                required
-                maxLength={10000}
-                rows={4}
-                disabled={busy}
-              />
-            </label>
-            <fieldset className="draft-fieldset">
-              <legend>Alternativas sintéticas</legend>
-              <div className="draft-choice-grid">
-                <label htmlFor="draft-choice-a">
-                  A
-                  <input
-                    id="draft-choice-a"
-                    value={draftChoiceA}
-                    onChange={(event) => setDraftChoiceA(event.target.value)}
-                    required
-                    maxLength={2000}
-                    disabled={busy}
-                  />
-                </label>
-                <label htmlFor="draft-choice-b">
-                  B
-                  <input
-                    id="draft-choice-b"
-                    value={draftChoiceB}
-                    onChange={(event) => setDraftChoiceB(event.target.value)}
-                    required
-                    maxLength={2000}
-                    disabled={busy}
-                  />
-                </label>
-              </div>
-              <div className="draft-radio-row" aria-label="Alternativa correta">
-                <span className="field-label">Chave técnica</span>
-                <label className="draft-radio-label" htmlFor="draft-correct-a">
-                  <input
-                    id="draft-correct-a"
-                    type="radio"
-                    name="draft-correct-choice"
-                    value="a"
-                    checked={draftCorrectChoiceId === "a"}
-                    onChange={(event) =>
-                      setDraftCorrectChoiceId(event.target.value)
-                    }
-                    disabled={busy}
-                  />
-                  A
-                </label>
-                <label className="draft-radio-label" htmlFor="draft-correct-b">
-                  <input
-                    id="draft-correct-b"
-                    type="radio"
-                    name="draft-correct-choice"
-                    value="b"
-                    checked={draftCorrectChoiceId === "b"}
-                    onChange={(event) =>
-                      setDraftCorrectChoiceId(event.target.value)
-                    }
-                    disabled={busy}
-                  />
-                  B
-                </label>
-              </div>
-            </fieldset>
-            <label htmlFor="draft-feedback">
-              Feedback formativo interno
-              <textarea
-                id="draft-feedback"
-                value={draftFeedback}
-                onChange={(event) => setDraftFeedback(event.target.value)}
-                required
-                maxLength={10000}
-                rows={3}
-                disabled={busy}
-              />
-            </label>
-            <div className="draft-grid">
-              <label htmlFor="draft-source-code">
-                Código de fonte interna
-                <select
-                  id="draft-source-code"
-                  value={draftSourceCode}
-                  onChange={(event) => setDraftSourceCode(event.target.value)}
-                  required
-                  disabled={busy}
-                >
-                  {authoringSourceOptions.map((sourceCode) => (
-                    <option key={sourceCode} value={sourceCode}>
-                      {sourceCode}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="draft-source-locator">
-                Localizador interno
-                <input
-                  id="draft-source-locator"
-                  value={draftSourceLocator}
-                  onChange={(event) =>
-                    setDraftSourceLocator(event.target.value)
-                  }
-                  required
-                  maxLength={512}
-                  disabled={busy}
-                />
-              </label>
-            </div>
-            <label className="draft-checkbox-label" htmlFor="draft-critical">
-              <input
-                id="draft-critical"
-                type="checkbox"
-                checked={draftCritical}
-                onChange={(event) => setDraftCritical(event.target.checked)}
-                disabled={busy}
-              />
-              Marcar como objetivo crítico para revisão humana
-            </label>
-            <div className="draft-form-footer">
-              <p className="field-help">
-                A chave de idempotência fica no cliente apenas para repetir com
-                segurança uma tentativa interrompida. Em caso de timeout ou
-                recarga, os dados da tentativa permanecem nesta aba para o
-                reenvio seguro da mesma operação.
+            <div>
+              <p className="eyebrow">Orquestração do fluxo</p>
+              <h2 id="authoring-actions-title">
+                Revisar primeiro, criar depois
+              </h2>
+              <p>
+                A fila é o caminho principal. Abra ferramentas de autoria apenas
+                quando precisar criar ou consultar um item específico.
               </p>
-              {draftConflict ? (
-                <button
-                  type="button"
-                  className="button-link"
-                  onClick={() => {
-                    clearDraftRecovery();
-                    setDraftIdempotencyKey("");
-                    setDraftConflict(false);
-                    setError(null);
-                  }}
-                >
-                  Iniciar nova tentativa
-                </button>
-              ) : null}
-              <button type="submit" disabled={busy || scopeId.length === 0}>
-                {busy ? "Salvando rascunho…" : "Salvar rascunho"}
+            </div>
+            <div className="authoring-command-actions">
+              <button
+                type="button"
+                className="secondary-button authoring-command-primary"
+                aria-label="Criar ou abrir um item"
+                aria-controls="authoring-tools"
+                aria-expanded={authoringToolsOpen}
+                onClick={() => setAuthoringToolsOpen((open) => !open)}
+              >
+                {authoringToolsOpen
+                  ? "Fechar ferramentas"
+                  : "Criar ou abrir um item"}
               </button>
             </div>
-          </form>
-        </section>
-      ) : null}
+          </section>
 
-      {record === null ? (
-        <section className="hero-card" aria-labelledby="authoring-title">
-          <p className="eyebrow">Registro editorial</p>
-          <h1 id="authoring-title">Abrir item autoral</h1>
-          <p>
-            Esta superfície exige sessão autorizada de autoria ou revisão
-            clínica. Gabaritos, fontes e rubricas nunca são projetados para o
-            participante.
-          </p>
-          <div className="access-form">
-            <label htmlFor="content-id">Content ID</label>
-            <p id="content-id-help" className="field-help">
-              Informe o identificador interno recebido da equipe editorial.
-            </p>
-            <input
-              id="content-id"
-              name="contentId"
-              aria-describedby="content-id-help"
-              value={contentId}
-              onChange={(event) => setContentId(event.target.value)}
-            />
-            <label htmlFor="content-version">Versão</label>
-            <input
-              id="content-version"
-              name="version"
-              type="number"
-              min="1"
-              inputMode="numeric"
-              value={version}
-              onChange={(event) => setVersion(event.target.value)}
-            />
-            <button
-              type="button"
-              onClick={() => void loadRecord(contentId, version, scopeId)}
-              disabled={busy || scopeId.length === 0}
-            >
-              {busy ? "Carregando…" : "Carregar autoria"}
-            </button>
+          <div
+            className="authoring-tools"
+            id="authoring-tools"
+            hidden={!authoringToolsOpen}
+          >
+            <section className="draft-panel" aria-labelledby="draft-title">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Autoria assistida</p>
+                  <h2 id="draft-title">Criar rascunho sintético</h2>
+                </div>
+                <span className="status-pill status-pill--warning">
+                  RASCUNHO · sem publicação
+                </span>
+              </div>
+              <p className="intro">
+                Preencha um item de trabalho com caso fictício. O servidor
+                deriva a identidade, cria a projeção pública e mantém o conteúdo
+                bloqueado até revisão clínica humana.
+              </p>
+              <form
+                className="draft-form"
+                onSubmit={(event) => void createDraft(event)}
+              >
+                <div className="draft-grid">
+                  <label htmlFor="draft-scope-id">
+                    Escopo autorizado
+                    <select
+                      id="draft-scope-id"
+                      value={scopeId}
+                      onChange={(event) => setScopeId(event.target.value)}
+                      required
+                      disabled={busy || sessionScopes.length === 0}
+                    >
+                      <option value="">Selecione um escopo</option>
+                      {sessionScopes.map((sessionScopeId, index) => (
+                        <option key={sessionScopeId} value={sessionScopeId}>
+                          {scopeOptionLabel(sessionScopeId, index)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor="draft-module-id">
+                    Módulo
+                    <select
+                      id="draft-module-id"
+                      value={draftModuleId}
+                      onChange={(event) => {
+                        const nextModuleId = event.target.value;
+                        setDraftModuleId(nextModuleId);
+                        if (/^M\d{2}-OBJ-\d{2}$/u.test(draftObjectiveId)) {
+                          setDraftObjectiveId(`${nextModuleId}-OBJ-01`);
+                        }
+                      }}
+                      required
+                      disabled={busy}
+                    >
+                      {authoringModuleOptions.map((moduleId) => (
+                        <option key={moduleId} value={moduleId}>
+                          {moduleId}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor="draft-session-id">
+                    Sessão
+                    <select
+                      id="draft-session-id"
+                      value={draftSessionSuffix}
+                      onChange={(event) =>
+                        setDraftSessionSuffix(event.target.value)
+                      }
+                      required
+                      disabled={busy}
+                    >
+                      {authoringSessionOptions.map((sessionSuffix) => (
+                        <option key={sessionSuffix} value={sessionSuffix}>
+                          {draftModuleId}-{sessionSuffix}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor="draft-objective-id">
+                    Objetivo curricular
+                    <input
+                      id="draft-objective-id"
+                      value={draftObjectiveId}
+                      onChange={(event) =>
+                        setDraftObjectiveId(event.target.value)
+                      }
+                      required
+                      maxLength={128}
+                      disabled={busy}
+                    />
+                  </label>
+                </div>
+                <label htmlFor="draft-item-title">
+                  Título do item
+                  <input
+                    id="draft-item-title"
+                    value={draftTitle}
+                    onChange={(event) => setDraftTitle(event.target.value)}
+                    required
+                    maxLength={1000}
+                    disabled={busy}
+                  />
+                </label>
+                <label htmlFor="draft-item-prompt">
+                  Enunciado
+                  <textarea
+                    id="draft-item-prompt"
+                    value={draftPrompt}
+                    onChange={(event) => setDraftPrompt(event.target.value)}
+                    required
+                    maxLength={10000}
+                    rows={4}
+                    disabled={busy}
+                  />
+                </label>
+                <fieldset className="draft-fieldset">
+                  <legend>Alternativas sintéticas</legend>
+                  <div className="draft-choice-grid">
+                    <label htmlFor="draft-choice-a">
+                      A
+                      <input
+                        id="draft-choice-a"
+                        value={draftChoiceA}
+                        onChange={(event) =>
+                          setDraftChoiceA(event.target.value)
+                        }
+                        required
+                        maxLength={2000}
+                        disabled={busy}
+                      />
+                    </label>
+                    <label htmlFor="draft-choice-b">
+                      B
+                      <input
+                        id="draft-choice-b"
+                        value={draftChoiceB}
+                        onChange={(event) =>
+                          setDraftChoiceB(event.target.value)
+                        }
+                        required
+                        maxLength={2000}
+                        disabled={busy}
+                      />
+                    </label>
+                  </div>
+                  <div
+                    className="draft-radio-row"
+                    aria-label="Alternativa correta"
+                  >
+                    <span className="field-label">Chave técnica</span>
+                    <label
+                      className="draft-radio-label"
+                      htmlFor="draft-correct-a"
+                    >
+                      <input
+                        id="draft-correct-a"
+                        type="radio"
+                        name="draft-correct-choice"
+                        value="a"
+                        checked={draftCorrectChoiceId === "a"}
+                        onChange={(event) =>
+                          setDraftCorrectChoiceId(event.target.value)
+                        }
+                        disabled={busy}
+                      />
+                      A
+                    </label>
+                    <label
+                      className="draft-radio-label"
+                      htmlFor="draft-correct-b"
+                    >
+                      <input
+                        id="draft-correct-b"
+                        type="radio"
+                        name="draft-correct-choice"
+                        value="b"
+                        checked={draftCorrectChoiceId === "b"}
+                        onChange={(event) =>
+                          setDraftCorrectChoiceId(event.target.value)
+                        }
+                        disabled={busy}
+                      />
+                      B
+                    </label>
+                  </div>
+                </fieldset>
+                <label htmlFor="draft-feedback">
+                  Feedback formativo interno
+                  <textarea
+                    id="draft-feedback"
+                    value={draftFeedback}
+                    onChange={(event) => setDraftFeedback(event.target.value)}
+                    required
+                    maxLength={10000}
+                    rows={3}
+                    disabled={busy}
+                  />
+                </label>
+                <div className="draft-grid">
+                  <label htmlFor="draft-source-code">
+                    Código de fonte interna
+                    <select
+                      id="draft-source-code"
+                      value={draftSourceCode}
+                      onChange={(event) =>
+                        setDraftSourceCode(event.target.value)
+                      }
+                      required
+                      disabled={busy}
+                    >
+                      {authoringSourceOptions.map((sourceCode) => (
+                        <option key={sourceCode} value={sourceCode}>
+                          {sourceCode}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor="draft-source-locator">
+                    Localizador interno
+                    <input
+                      id="draft-source-locator"
+                      value={draftSourceLocator}
+                      onChange={(event) =>
+                        setDraftSourceLocator(event.target.value)
+                      }
+                      required
+                      maxLength={512}
+                      disabled={busy}
+                    />
+                  </label>
+                </div>
+                <label
+                  className="draft-checkbox-label"
+                  htmlFor="draft-critical"
+                >
+                  <input
+                    id="draft-critical"
+                    type="checkbox"
+                    checked={draftCritical}
+                    onChange={(event) => setDraftCritical(event.target.checked)}
+                    disabled={busy}
+                  />
+                  Marcar como objetivo crítico para revisão humana
+                </label>
+                <div className="draft-form-footer">
+                  <p className="field-help">
+                    A chave de idempotência fica no cliente apenas para repetir
+                    com segurança uma tentativa interrompida. Em caso de timeout
+                    ou recarga, os dados da tentativa permanecem nesta aba para
+                    o reenvio seguro da mesma operação.
+                  </p>
+                  {draftConflict ? (
+                    <button
+                      type="button"
+                      className="button-link"
+                      onClick={() => {
+                        clearDraftRecovery();
+                        setDraftIdempotencyKey("");
+                        setDraftConflict(false);
+                        setError(null);
+                      }}
+                    >
+                      Iniciar nova tentativa
+                    </button>
+                  ) : null}
+                  <button type="submit" disabled={busy || scopeId.length === 0}>
+                    {busy ? "Salvando rascunho…" : "Salvar rascunho"}
+                  </button>
+                </div>
+              </form>
+            </section>
+            <section className="hero-card" aria-labelledby="authoring-title">
+              <div className="hero-copy">
+                <p className="eyebrow">Registro editorial</p>
+                <h2 id="authoring-title">Abrir item autoral</h2>
+                <p>
+                  Esta superfície exige sessão autorizada de autoria ou revisão
+                  clínica. Gabaritos, fontes e rubricas nunca são projetados
+                  para o participante.
+                </p>
+              </div>
+              <div className="access-form">
+                <label htmlFor="content-id">Content ID</label>
+                <p id="content-id-help" className="field-help">
+                  Informe o identificador interno recebido da equipe editorial.
+                </p>
+                <input
+                  id="content-id"
+                  name="contentId"
+                  aria-describedby="content-id-help"
+                  value={contentId}
+                  onChange={(event) => setContentId(event.target.value)}
+                />
+                <label htmlFor="content-version">Versão</label>
+                <input
+                  id="content-version"
+                  name="version"
+                  type="number"
+                  min="1"
+                  inputMode="numeric"
+                  value={version}
+                  onChange={(event) => setVersion(event.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => void loadRecord(contentId, version, scopeId)}
+                  disabled={busy || scopeId.length === 0}
+                >
+                  {busy ? "Carregando…" : "Carregar autoria"}
+                </button>
+              </div>
+            </section>
           </div>
-        </section>
+        </>
       ) : (
         <section className="review-layout" aria-labelledby="review-title">
           <div className="review-main">
@@ -1165,9 +1267,11 @@ export default function AuthoringPage() {
                 <p className="eyebrow">
                   {record.moduleId} · {record.sessionId}
                 </p>
-                <h1 id="review-title">{record.item.title}</h1>
+                <h2 id="review-title">{record.item.title}</h2>
               </div>
-              <span className="status-pill">{record.contentStatus}</span>
+              <span className="status-pill status-pill--warning">
+                {record.contentStatus}
+              </span>
             </div>
             <p className="intro">{record.item.prompt}</p>
             {record.item.choices !== undefined ? (

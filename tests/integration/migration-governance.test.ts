@@ -577,6 +577,51 @@ describe("migration governance", () => {
     );
   });
 
+  it("keeps participant answer deletion limited to in-progress sessions", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0052_aaa_diagnostic_session_integrity.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      'DROP POLICY "diagnostic_session_answers_participant_delete_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "diagnostic_session_answers_participant_delete_policy"',
+    );
+    expect(migration).toContain("session_record.status = 'EM_ANDAMENTO'");
+    expect(migration).toContain(
+      'ON "diagnostic_session_answers" FOR DELETE USING',
+    );
+  });
+
+  it("keeps finalized participant answers readable but immutable", async () => {
+    const migrationPath = fileURLToPath(
+      new URL(
+        "../../packages/persistence/drizzle/0052_aaa_diagnostic_session_integrity.sql",
+        import.meta.url,
+      ),
+    );
+    const migration = await readFile(migrationPath, "utf8");
+
+    expect(migration).toContain(
+      'DROP POLICY "diagnostic_session_answers_participant_select_policy"',
+    );
+    expect(migration).toContain(
+      'CREATE POLICY "diagnostic_session_answers_participant_select_policy"',
+    );
+    expect(migration).toContain(
+      "session_record.status IN ('EM_ANDAMENTO', 'FINALIZADA')",
+    );
+    expect(migration).toContain(
+      'ON "diagnostic_session_answers" FOR SELECT USING',
+    );
+    expect(migration).toContain("session_record.status = 'EM_ANDAMENTO'");
+  });
+
   it("keeps the live feedback fixture cleanup scoped and its audit IDs explicit", async () => {
     const integrationPath = fileURLToPath(
       new URL("./postgres-learning-state.test.ts", import.meta.url),

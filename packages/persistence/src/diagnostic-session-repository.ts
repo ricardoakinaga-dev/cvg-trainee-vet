@@ -563,16 +563,20 @@ async function findSessionRow(
 async function loadAggregate(
   executor: SessionExecutor,
   row: SessionRow,
+  preloadedAnswers?: readonly DiagnosticSessionAnswerState[],
 ): Promise<DiagnosticSessionAggregate> {
   const catalog = diagnosticSessionCatalogFromSnapshot(row.catalogSnapshot);
-  const answerRows = await executor
-    .select()
-    .from(diagnosticSessionAnswers)
-    .where(eq(diagnosticSessionAnswers.sessionId, row.id))
-    .orderBy(asc(diagnosticSessionAnswers.canonicalItemId));
-  const answers = Object.freeze(
-    answerRows.map((answer) => answerFromRow(answer, catalog)),
-  );
+  const answers =
+    preloadedAnswers ??
+    Object.freeze(
+      (
+        await executor
+          .select()
+          .from(diagnosticSessionAnswers)
+          .where(eq(diagnosticSessionAnswers.sessionId, row.id))
+          .orderBy(asc(diagnosticSessionAnswers.canonicalItemId))
+      ).map((answer) => answerFromRow(answer, catalog)),
+    );
   if (
     new Set(answers.map((answer) => answer.canonicalItemId)).size !==
     answers.length
@@ -1229,14 +1233,18 @@ export function createDiagnosticSessionRepository(
             "diagnostic session finalization lost the compare-and-set",
           );
         }
-        const finalAggregate = await loadAggregate(executor, {
-          ...row,
-          status: "FINALIZADA",
-          version: session.version + 1,
-          finalizedAt: completedAt,
-          diagnosticResultId: resultId,
-          updatedAt: completedAt,
-        });
+        const finalAggregate = await loadAggregate(
+          executor,
+          {
+            ...row,
+            status: "FINALIZADA",
+            version: session.version + 1,
+            finalizedAt: completedAt,
+            diagnosticResultId: resultId,
+            updatedAt: completedAt,
+          },
+          answers,
+        );
         const finalization = Object.freeze({
           aggregate: finalAggregate,
           assignments,

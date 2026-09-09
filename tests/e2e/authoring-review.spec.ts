@@ -285,6 +285,7 @@ test("author can create a synthetic RASCUNHO without client-owned identity", asy
   });
 
   await page.goto(`/authoring?scopeId=${scopeId}`);
+  await page.getByRole("button", { name: "Criar ou abrir um item" }).click();
   await page.getByLabel("Título do item").fill("Novo rascunho sintético");
   await page.getByRole("button", { name: "Salvar rascunho" }).click();
   await expect(page.locator("#review-title")).toHaveText(
@@ -345,10 +346,15 @@ test("author can retry when internal scopes fail to load", async ({ page }) => {
   );
 
   await page.goto("/authoring");
+  await expect(page.getByTestId("internal-access-gate")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Revisão clínica pendente" }),
+  ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Tentar carregar novamente" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Tentar carregar novamente" }).click();
+  await page.getByRole("button", { name: "Criar ou abrir um item" }).click();
   await expect(page.locator("#draft-scope-id")).toBeEnabled();
   await expect(page.locator("#draft-scope-id")).toHaveValue(scopeId);
   expect(scopeRequests).toBe(2);
@@ -427,6 +433,7 @@ test("author can start a new attempt after an idempotency conflict", async ({
   });
 
   await page.goto("/authoring");
+  await page.getByRole("button", { name: "Criar ou abrir um item" }).click();
   await page.getByLabel("Título do item").fill("Nova tentativa sintética");
   await page.getByRole("button", { name: "Salvar rascunho" }).click();
   await expect(

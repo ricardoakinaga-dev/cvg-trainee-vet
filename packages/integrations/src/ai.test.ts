@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   AiIntegrationError,
+  createResilientAiTextProvider,
+  createResilientEmbeddingProvider,
   createDeterministicEmbeddingProvider,
   createOpenAiEmbeddingProvider,
   createOpenAiTextProvider,
@@ -151,6 +153,7 @@ describe("AI integration boundary", () => {
       { create },
     );
 
+    expect(provider.model).toBe("embedding-test");
     await expect(provider.embed(["first", "second"])).resolves.toEqual([
       [0.1, 0.2],
       [0.2, 0.3],
@@ -250,5 +253,132 @@ describe("AI integration boundary", () => {
     await expect(provider.embed(["x".repeat(50_001)])).rejects.toThrow(
       "exceeds",
     );
+  });
+
+  it("retries transient AI failures with bounded backoff and Retry-After", async () => {
+    const generateStructured = vi
+      .fn()
+      .mockRejectedValueOnce({ name: "APIConnectionTimeoutError" })
+      .mockRejectedValueOnce({
+        status: 429,
+        headers: {
+          get: (name: string) => (name === "retry-after" ? "1" : null),
+        },
+      })
+      .mockResolvedValueOnce({ status: "ok" });
+    const sleep = vi.fn(async (_milliseconds: number) => undefined);
+    const provider = createResilientAiTextProvider(
+      { generateStructured },
+      {
+        policy: {
+          maxAttempts: 3,
+          baseDelayMilliseconds: 100,
+          maxDelayMilliseconds: 500,
+          jitterRatio: 0,
+          maxOperations: 2,
+          maxInputCharacters: 100,
+        },
+        random: () => 0.5,
+        sleep,
+      },
+    );
+
+    await expect(
+      provider.generateStructured({
+        input: "context",
+        instructions: "instructions",
+        schemaName: "Output",
+        jsonSchema: { type: "object" },
+        parse: (value) => value as { status: string },
+      }),
+    ).resolves.toEqual({ status: "ok" });
+    expect(generateStructured).toHaveBeenCalledTimes(3);
+    expect(sleep).toHaveBeenNthCalledWith(1, 100);
+    expect(sleep).toHaveBeenNthCalledWith(2, 500);
+  });
+
+  it("does not retry permanent failures and fails closed on quota or input budget", async () => {
+    const generateStructured = vi
+      .fn()
+      .mockRejectedValue({ status: 401, message: "secret provider detail" });
+    const sleep = vi.fn(async (_milliseconds: number) => undefined);
+    const provider = createResilientAiTextProvider(
+      { generateStructured },
+      {
+        policy: {
+          maxAttempts: 3,
+          baseDelayMilliseconds: 1,
+          maxDelayMilliseconds: 2,
+          jitterRatio: 0,
+          maxOperations: 1,
+          maxInputCharacters: 10,
+        },
+        sleep,
+      },
+    );
+    const request = {
+      input: "ok",
+      instructions: "ok",
+      schemaName: "Output",
+      jsonSchema: { type: "object" },
+      parse: (value: unknown) => value,
+    };
+
+    let permanentError: unknown;
+    try {
+      await provider.generateStructured(request);
+    } catch (error) {
+      permanentError = error;
+    }
+    expect(permanentError).toMatchObject({ message: "AI request failed" });
+    expect(JSON.stringify(permanentError)).not.toContain(
+      "secret provider detail",
+    );
+    expect(generateStructured).toHaveBeenCalledOnce();
+    expect(sleep).not.toHaveBeenCalled();
+
+    const leakingAdapter = createResilientAiTextProvider({
+      generateStructured: vi
+        .fn()
+        .mockRejectedValue(new AiIntegrationError("raw provider detail")),
+    });
+    await expect(
+      leakingAdapter.generateStructured(request),
+    ).rejects.toMatchObject({ message: "AI request failed" });
+
+    await expect(provider.generateStructured(request)).rejects.toThrow("quota");
+    await expect(
+      provider.generateStructured({ ...request, input: "01234567890" }),
+    ).rejects.toThrow("exceeds");
+    expect(JSON.stringify(generateStructured.mock.calls)).not.toContain(
+      "secret provider detail",
+    );
+  });
+
+  it("forwards cancellation to embeddings and never retries an aborted operation", async () => {
+    const embed = vi.fn().mockRejectedValue({ name: "AbortError" });
+    const sleep = vi.fn(async (_milliseconds: number) => undefined);
+    const controller = new AbortController();
+    controller.abort();
+    const provider = createResilientEmbeddingProvider(
+      { model: "embedding-test", embed },
+      {
+        policy: {
+          maxAttempts: 3,
+          baseDelayMilliseconds: 1,
+          maxDelayMilliseconds: 2,
+          jitterRatio: 0,
+          maxOperations: 2,
+          maxInputCharacters: 100,
+        },
+        sleep,
+      },
+    );
+
+    await expect(
+      provider.embed(["context"], { signal: controller.signal }),
+    ).rejects.toThrow("aborted");
+    expect(embed).not.toHaveBeenCalled();
+    expect(sleep).not.toHaveBeenCalled();
   });
 });

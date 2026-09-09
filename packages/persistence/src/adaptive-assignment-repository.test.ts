@@ -520,6 +520,59 @@ describe("adaptive assignment persistence", () => {
     ]);
   });
 
+  it("rejects an assignment replay with a different diagnostic provenance", async () => {
+    const fake = createFakeDatabase({
+      assignmentRows: [
+        {
+          ...assignmentRow("M01", "ATRIBUIDO", 1),
+          sourceDiagnosticResultId: "99999999-9999-4999-8999-999999999999",
+        },
+      ],
+    });
+    const repository = createAdaptiveAssignmentRepository(fake.db);
+
+    await expect(
+      repository.materializeCurriculumAssignments({
+        diagnosticResultId,
+        scopeId,
+        moduleIds: ["M01"],
+      }),
+    ).rejects.toBeInstanceOf(AdaptiveAssignmentConflictError);
+  });
+
+  it("rejects an activity replay linked to a different assignment", async () => {
+    const fake = createFakeDatabase({
+      activityRows: [
+        {
+          id: "activity-m01",
+          moduleId: "M01",
+          status: "PUBLISHED",
+          hasPublishedContent: true,
+        },
+      ],
+      activityAssignmentRows: [
+        {
+          participantId,
+          activityId: "activity-m01",
+          status: "ATRIBUIDO",
+          learningAssignmentId: "99999999-9999-4999-8999-999999999999",
+        },
+      ],
+    });
+    const repository = createAdaptiveAssignmentRepository(
+      fake.db,
+      () => "88888888-8888-4888-8888-888888888888",
+    );
+
+    await expect(
+      repository.materializeCurriculumAssignments({
+        diagnosticResultId,
+        scopeId,
+        moduleIds: ["M01"],
+      }),
+    ).rejects.toBeInstanceOf(AdaptiveAssignmentConflictError);
+  });
+
   it("fails closed for missing results, invalid modules, and concurrent promotion", async () => {
     const missing = createFakeDatabase({ diagnosticRows: [] });
     const missingRepository = createAdaptiveAssignmentRepository(missing.db);

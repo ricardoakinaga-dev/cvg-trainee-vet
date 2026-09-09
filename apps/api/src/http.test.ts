@@ -1380,11 +1380,21 @@ describe("API HTTP boundary", () => {
     expect(staffResponse.body).toMatchObject({
       success: true,
       data: {
-        diagnosticResultId,
-        assignments: [{ assignmentId: assignment.assignmentId }],
+        assignments: [
+          {
+            availableAt: assignment.availableAt,
+            status: assignment.status,
+            version: assignment.version,
+          },
+        ],
       },
     });
     expect(JSON.stringify(staffResponse.body)).not.toContain("participantId");
+    expect(JSON.stringify(staffResponse.body)).not.toContain(
+      "diagnosticResultId",
+    );
+    expect(JSON.stringify(staffResponse.body)).not.toContain("assignmentId");
+    expect(JSON.stringify(staffResponse.body)).not.toContain("moduleId");
     expect(assignCurriculumFromDiagnostic).toHaveBeenCalledWith({
       diagnosticResultId,
       scopeId,
@@ -1881,6 +1891,51 @@ describe("API HTTP boundary", () => {
     });
   });
 
+  it("returns a minimal active-session projection for browser rehydration", async () => {
+    const authenticate = vi.fn(async () => ({
+      principalId: attempt.participantId,
+      accountStatus: "ACTIVE" as const,
+      roles: ["PARTICIPANT"] as const,
+      scopes: ["scope-1"] as const,
+    }));
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/session/current",
+        body: undefined,
+        headers: { cookie: "__Host-cvg_session=" + "c".repeat(32) },
+      },
+      dependencies({ authenticate }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(authenticate).toHaveBeenCalledOnce();
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: "active" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain(attempt.participantId);
+    expect(JSON.stringify(response.body)).not.toContain("PARTICIPANT");
+  });
+
+  it("does not disclose session state when the cookie is unauthenticated", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/session/current",
+        body: undefined,
+        headers: { cookie: "__Host-cvg_session=" + "x".repeat(32) },
+      },
+      dependencies({ authenticate: async () => null }),
+    );
+
+    expect(response.status).toBe(401);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "unauthenticated" },
+    });
+  });
+
   it("rotates a session through a bounded contract and returns only a new cookie", async () => {
     const rotateSession = vi.fn(async () => ({
       sessionId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
@@ -1946,6 +2001,33 @@ describe("API HTTP boundary", () => {
       },
     });
     expect(JSON.stringify(response.body)).not.toContain("participantId");
+  });
+
+  it("maps an idempotency conflict to HTTP 409 at the public attempt boundary", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "POST",
+        path: "/api/v1/attempts",
+        body: {
+          activityId: attempt.activityId,
+          idempotencyKey: "start-attempt-http-conflict",
+        },
+      },
+      dependencies({
+        startAttempt: vi.fn(async () => {
+          throw new ApplicationError(
+            "idempotency_conflict",
+            "Idempotency key was already used with another command",
+          );
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "idempotency_conflict" },
+    });
   });
 
   it("rejects invalid input and an activity outside the principal scope", async () => {

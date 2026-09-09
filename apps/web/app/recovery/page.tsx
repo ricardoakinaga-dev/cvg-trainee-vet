@@ -46,17 +46,24 @@ export default function RecoveryPage() {
   }, []);
 
   return (
-    <main className="shell" id="main-content" tabIndex={-1}>
+    <main className="shell recovery-shell" id="main-content" tabIndex={-1}>
       <header className="topbar" aria-label="Recuperação de acesso">
         <div>
           <p className="eyebrow">CVG · acesso controlado</p>
           <span className="brand">Recuperar acesso</span>
         </div>
-        <span className="status-pill" role="status" aria-live="polite">
+        <span
+          className="status-pill status-pill--info"
+          role="status"
+          aria-live="polite"
+        >
           Segurança
         </span>
       </header>
-      <section className="hero-card" aria-labelledby="recovery-title">
+      <section
+        className="hero-card recovery-card"
+        aria-labelledby="recovery-title"
+      >
         <div className="hero-copy">
           <p className="eyebrow">Link de uso único</p>
           <h1 id="recovery-title">
@@ -69,7 +76,7 @@ export default function RecoveryPage() {
           {state === "loading" ? (
             <p role="status">Aguarde enquanto validamos o link seguro.</p>
           ) : state === "ready" ? (
-            <p>
+            <p role="status" aria-live="polite">
               Uma nova sessão foi criada. O link foi consumido e não pode ser
               reutilizado. Você já pode voltar à plataforma.
             </p>
@@ -82,6 +89,10 @@ export default function RecoveryPage() {
           {state === "ready" ? (
             <a className="button-link" href="/">
               Ir para a trilha
+            </a>
+          ) : state === "error" ? (
+            <a className="button-link" href="/">
+              Voltar ao acesso
             </a>
           ) : null}
         </div>

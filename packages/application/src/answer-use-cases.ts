@@ -8,7 +8,12 @@ import {
 } from "@cvg/domain";
 
 import { createAuditEntry, type AuditPort } from "./audit.js";
-import { ApplicationError, toApplicationError } from "./errors.js";
+import {
+  ApplicationError,
+  isPersistenceConflict,
+  isPersistenceStateConflict,
+  toApplicationError,
+} from "./errors.js";
 import type { TransactionSecurityContext } from "./transaction-context.js";
 
 export type SaveAnswerCommand = Readonly<{
@@ -42,6 +47,7 @@ export interface AnswerRepositoryPort {
 }
 
 export interface AnswerIdempotencyPort {
+  readonly lock?: (key: string) => Promise<void>;
   readonly find: (key: string) => Promise<AnswerIdempotencyRecord | null>;
   readonly store: (
     key: string,
@@ -138,6 +144,15 @@ function normalizeAnswerError(error: unknown): ApplicationError {
   if (error instanceof AnswerDomainError) {
     return new ApplicationError("validation_error", "Answer is invalid");
   }
+  if (isPersistenceStateConflict(error)) {
+    return new ApplicationError("state_conflict", "Attempt state conflict");
+  }
+  if (isPersistenceConflict(error)) {
+    return new ApplicationError(
+      "idempotency_conflict",
+      "Idempotency key was already used with another command",
+    );
+  }
   return toApplicationError(error);
 }
 
@@ -161,6 +176,7 @@ export async function saveAnswer(
   try {
     return await dependencies.transaction.run(
       async (operations) => {
+        await operations.idempotency.lock?.(command.idempotencyKey);
         const replay = replayOrThrow(
           await operations.idempotency.find(command.idempotencyKey),
           expectedFingerprint,

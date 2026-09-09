@@ -21,6 +21,22 @@ export type NormalizedDatabaseOptions = Readonly<{
 export type DatabaseHandle = Readonly<{
   db: PostgresJsDatabase<typeof schema>;
   healthcheck: () => Promise<void>;
+  /**
+   * Runs work while holding a PostgreSQL session-level advisory lock.
+   *
+   * Blocking semantics: pg_advisory_lock waits indefinitely until the lock is
+   * acquired, so concurrent callers queue instead of overlapping. This is
+   * intended for rare serial operations (for example the Qdrant
+   * reconciliation); it must not wrap request-latency paths. The lock key is
+   * hashed server-side and passed as a bound parameter, never interpolated.
+   * The lock is always released and the connection always returned to the
+   * pool; when both work and the release fail, the work error is preserved
+   * as the rejection reason with the release error attached as its cause.
+   */
+  withAdvisoryLock: <Result>(
+    key: string,
+    work: () => Promise<Result>,
+  ) => Promise<Result>;
   close: () => Promise<void>;
 }>;
 
@@ -123,9 +139,69 @@ export function createPostgresDatabase(
     }
   };
 
+  const withAdvisoryLock = async <Result>(
+    key: string,
+    work: () => Promise<Result>,
+  ): Promise<Result> => {
+    if (key.trim().length === 0) {
+      throw new TypeError("advisory lock key must not be empty");
+    }
+
+    const connection = await client.reserve();
+    let acquired = false;
+    let outcome:
+      | { readonly ok: true; readonly value: unknown }
+      | { readonly ok: false; readonly error: unknown }
+      | undefined;
+    let releaseError: unknown;
+    try {
+      await connection`select pg_advisory_lock(hashtextextended(${key}, 0))`;
+      acquired = true;
+      try {
+        outcome = { ok: true, value: await work() };
+      } catch (error) {
+        outcome = { ok: false, error };
+      }
+    } finally {
+      if (acquired) {
+        try {
+          await connection`select pg_advisory_unlock(hashtextextended(${key}, 0))`;
+        } catch (error) {
+          releaseError = error;
+        }
+      }
+      try {
+        connection.release();
+      } catch (error) {
+        releaseError ??= error;
+      }
+    }
+    // When lock acquisition itself throws, that error is already propagating
+    // through the finally above and this point is unreachable.
+    if (outcome === undefined) {
+      if (releaseError !== undefined) throw releaseError;
+      throw new Error("advisory lock reached an unreachable state");
+    }
+    if (!outcome.ok) {
+      if (
+        releaseError !== undefined &&
+        outcome.error instanceof Error &&
+        outcome.error.cause === undefined
+      ) {
+        outcome.error.cause = releaseError;
+      }
+      throw outcome.error;
+    }
+    if (releaseError !== undefined) {
+      throw releaseError;
+    }
+    return outcome.value as Result;
+  };
+
   return Object.freeze({
     db,
     healthcheck,
+    withAdvisoryLock,
     close: async () =>
       client.end({ timeout: normalized.connectTimeoutSeconds }),
   });

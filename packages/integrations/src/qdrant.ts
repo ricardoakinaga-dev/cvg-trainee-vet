@@ -43,9 +43,13 @@ export type VectorPointMetadata = Readonly<{
   sectionId: string;
   scopeId: string;
   contentHash: string;
+  indexVersion: string;
+  embeddingModel: string;
 }>;
 
 export type VectorStorePort = Readonly<{
+  readonly indexVersion: string;
+  readonly embeddingModel: string;
   healthcheck: () => Promise<void>;
   ensureCollection: () => Promise<void>;
   list: () => Promise<readonly VectorPointMetadata[]>;
@@ -70,6 +74,17 @@ type QdrantScrollOffset = Exclude<
   NonNullable<Parameters<QdrantClient["scroll"]>[1]>["offset"],
   null | undefined
 >;
+
+const internalPayloadFields = Object.freeze([
+  "index_version",
+  "embedding_model",
+  "visibility",
+  "status",
+  "knowledge_id",
+  "section_id",
+  "scope_id",
+  "content_hash",
+] as const);
 
 export function validateVectorDimension(
   vector: readonly number[],
@@ -99,6 +114,23 @@ export function createQdrantVectorStore(
     throw new TypeError("Qdrant collection is required");
   }
 
+  if (!config.embeddingModel.trim()) {
+    throw new TypeError("Qdrant embeddingModel is required");
+  }
+
+  if (!config.indexVersion.trim()) {
+    throw new TypeError("Qdrant indexVersion is required");
+  }
+
+  if (
+    config.embeddingModel !== config.embeddingModel.trim() ||
+    config.indexVersion !== config.indexVersion.trim()
+  ) {
+    throw new TypeError(
+      "Qdrant embeddingModel and indexVersion must not contain leading or trailing whitespace",
+    );
+  }
+
   if (
     !Number.isInteger(config.embeddingDimension) ||
     config.embeddingDimension < 1
@@ -123,7 +155,13 @@ export function createQdrantVectorStore(
     const collection = await client.getCollection(config.collection);
     validateCollectionVectorConfig(collection, config.embeddingDimension);
     const indexedFields = new Set(Object.keys(collection.payload_schema));
-    const fields = ["index_version", "visibility", "status", "scope_id"];
+    const fields = [
+      "index_version",
+      "embedding_model",
+      "visibility",
+      "status",
+      "scope_id",
+    ];
     const indexResults = await Promise.allSettled(
       fields
         .filter((field) => !indexedFields.has(field))
@@ -198,6 +236,10 @@ export function createQdrantVectorStore(
             match: { value: config.indexVersion },
           },
           {
+            key: "embedding_model",
+            match: { value: config.embeddingModel },
+          },
+          {
             key: "visibility",
             match: { value: "INTERNAL" },
           },
@@ -221,6 +263,7 @@ export function createQdrantVectorStore(
         "scope_id",
         "content_hash",
         "index_version",
+        "embedding_model",
         "visibility",
         "status",
       ],
@@ -232,6 +275,7 @@ export function createQdrantVectorStore(
       if (
         !isInternalPayload(payload) ||
         payload.index_version !== config.indexVersion ||
+        payload.embedding_model !== config.embeddingModel ||
         payload.scope_id !== input.scopeId
       ) {
         return [];
@@ -267,16 +311,20 @@ export function createQdrantVectorStore(
             },
           ],
         },
-        with_payload: true,
+        with_payload: [...internalPayloadFields],
         with_vector: false,
       });
 
       for (const point of result.points) {
         const payload = point.payload;
-        if (
-          !isInternalPayload(payload) ||
-          payload.index_version !== config.indexVersion
-        ) {
+        // Scroll stays tolerant on purpose: legacy points written before
+        // embedding_model existed must remain observable so reconciliation can
+        // reindex or remove them. Search above stays strict instead, so stale
+        // models are never served. Points whose visibility/status drifted out
+        // of INTERNAL/APPROVED are invisible here by design; they can only be
+        // reaped by a full administrative scan, which is documented in the
+        // AAA-701 evidence and never runs automatically.
+        if (!isObservablePayload(payload)) {
           continue;
         }
         points.push({
@@ -285,6 +333,11 @@ export function createQdrantVectorStore(
           sectionId: payload.section_id,
           scopeId: payload.scope_id,
           contentHash: payload.content_hash,
+          indexVersion: payload.index_version,
+          embeddingModel:
+            typeof payload.embedding_model === "string"
+              ? payload.embedding_model
+              : "",
         });
       }
 
@@ -308,6 +361,8 @@ export function createQdrantVectorStore(
   };
 
   return Object.freeze({
+    indexVersion: config.indexVersion,
+    embeddingModel: config.embeddingModel,
     healthcheck,
     ensureCollection,
     list,
@@ -348,7 +403,7 @@ function validateCollectionVectorConfig(
   }
 }
 
-function isInternalPayload(
+function isObservablePayload(
   payload: Schemas["Payload"] | Record<string, unknown> | null | undefined,
 ): payload is Record<string, unknown> & {
   knowledge_id: string;
@@ -366,6 +421,31 @@ function isInternalPayload(
     typeof payload.scope_id === "string" &&
     typeof payload.content_hash === "string" &&
     typeof payload.index_version === "string" &&
+    payload.visibility === "INTERNAL" &&
+    payload.status === "APPROVED_FOR_INTERNAL_SEARCH"
+  );
+}
+
+function isInternalPayload(
+  payload: Schemas["Payload"] | Record<string, unknown> | null | undefined,
+): payload is Record<string, unknown> & {
+  knowledge_id: string;
+  section_id: string;
+  scope_id: string;
+  content_hash: string;
+  index_version: string;
+  embedding_model: string;
+  visibility: "INTERNAL";
+  status: "APPROVED_FOR_INTERNAL_SEARCH";
+} {
+  if (!payload || typeof payload !== "object") return false;
+  return (
+    typeof payload.knowledge_id === "string" &&
+    typeof payload.section_id === "string" &&
+    typeof payload.scope_id === "string" &&
+    typeof payload.content_hash === "string" &&
+    typeof payload.index_version === "string" &&
+    typeof payload.embedding_model === "string" &&
     payload.visibility === "INTERNAL" &&
     payload.status === "APPROVED_FOR_INTERNAL_SEARCH"
   );

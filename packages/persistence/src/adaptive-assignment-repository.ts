@@ -117,6 +117,18 @@ function assertMaterializationContext(
   assertNonEmpty(input.scopeId, "scopeId");
 }
 
+function assertAssignmentProvenance(
+  row: typeof learningAssignments.$inferSelect,
+  sourceDiagnosticResultId: string,
+): void {
+  if (
+    row.sourceDiagnosticResultId !== null &&
+    row.sourceDiagnosticResultId !== sourceDiagnosticResultId
+  ) {
+    throw new AdaptiveAssignmentConflictError();
+  }
+}
+
 async function findAssignmentRows(
   executor: DatabaseExecutor | DatabaseTransaction,
   participantId: string,
@@ -263,6 +275,12 @@ async function materializeMappedActivities(
       );
     const existingActivity = existingActivityRows[0];
     if (existingActivity !== undefined) {
+      if (
+        existingActivity.learningAssignmentId !== null &&
+        existingActivity.learningAssignmentId !== assignment.id
+      ) {
+        throw new AdaptiveAssignmentConflictError();
+      }
       if (existingActivity.learningAssignmentId === null) {
         await executor
           .update(activityAssignments)
@@ -394,6 +412,7 @@ export async function materializeCurriculumAssignmentsInTransaction(
   for (const moduleId of moduleIds) {
     const existing = existingByModule.get(moduleId);
     if (existing !== undefined) {
+      assertAssignmentProvenance(existing, input.diagnosticResultId);
       await promoteUnassigned(executor, existing, input.diagnosticResultId);
       continue;
     }

@@ -586,7 +586,7 @@ export default function DiagnosticPage() {
             <p className="eyebrow">Sessão própria · versão 0.1.0</p>
             <h1 id="diagnostic-title">Mapeamento formativo inicial</h1>
           </div>
-          <span className="status-pill">
+          <span className="status-pill status-pill--info">
             {session === null
               ? "Acesso protegido"
               : diagnosticStatusLabel(session.status)}
@@ -674,7 +674,9 @@ export default function DiagnosticPage() {
                       Seu resultado formativo
                     </h2>
                   </div>
-                  <span className="status-pill">Sem nota global</span>
+                  <span className="status-pill status-pill--info">
+                    Sem nota global
+                  </span>
                 </div>
                 <p>
                   A sessão foi encerrada em {session.finalizedAt?.slice(0, 10)}.

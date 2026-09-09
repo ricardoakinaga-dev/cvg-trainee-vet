@@ -337,6 +337,21 @@ export const contentEditorialRecords = pgTable(
       "content_editorial_records_version_check",
       sql`${table.version} >= 1`,
     ),
+    foreignKey({
+      columns: [
+        table.contentVersionId,
+        table.contentId,
+        table.version,
+        table.scopeId,
+      ],
+      foreignColumns: [
+        contentVersions.id,
+        contentVersions.contentId,
+        contentVersions.version,
+        contentVersions.scopeId,
+      ],
+      name: "content_editorial_records_version_identity_fk",
+    }),
   ],
 );
 
@@ -379,6 +394,36 @@ export const contentReviewDecisions = pgTable(
       sql`${table.decision} in ('APROVAR_CLINICAMENTE', 'SOLICITAR_AJUSTES')`,
     ),
     check("content_review_decisions_version_check", sql`${table.version} >= 1`),
+    foreignKey({
+      columns: [
+        table.contentVersionId,
+        table.contentId,
+        table.version,
+        table.scopeId,
+      ],
+      foreignColumns: [
+        contentVersions.id,
+        contentVersions.contentId,
+        contentVersions.version,
+        contentVersions.scopeId,
+      ],
+      name: "content_review_decisions_version_identity_fk",
+    }),
+    foreignKey({
+      columns: [
+        table.contentEditorialRecordId,
+        table.contentId,
+        table.version,
+        table.scopeId,
+      ],
+      foreignColumns: [
+        contentEditorialRecords.id,
+        contentEditorialRecords.contentId,
+        contentEditorialRecords.version,
+        contentEditorialRecords.scopeId,
+      ],
+      name: "content_review_decisions_editorial_identity_fk",
+    }),
   ],
 );
 
@@ -550,6 +595,11 @@ export const aiSuggestions = pgTable(
       table.contentId,
       table.version,
     ),
+    foreignKey({
+      columns: [table.contentId, table.version],
+      foreignColumns: [contentVersions.contentId, contentVersions.version],
+      name: "ai_suggestions_content_version_fk",
+    }),
     check("ai_suggestions_status_check", sql`${table.status} = 'DRAFT_AI'`),
     check("ai_suggestions_version_check", sql`${table.version} >= 1`),
   ],

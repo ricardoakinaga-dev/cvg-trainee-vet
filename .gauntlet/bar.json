@@ -1,0 +1,248 @@
+{
+  "criteria": [
+    {
+      "baseline": {
+        "actual": "Static P1 findings exist in diagnostic session answer DELETE policy and post-finalization answer projection; clinical gates remain open.",
+        "status": "FAIL"
+      },
+      "conditions": "A missing live boundary is not a pass; production and clinical claims require their own authority and evidence.",
+      "dimension": "security-integrity",
+      "evidence_method": "Independent critique plus current focused, integration, security, migration, and regression evidence against the exact integrated artifact.",
+      "id": "AAA-Q01",
+      "license_notes": "No external implementation copied.",
+      "priority": "critical",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "Current user request",
+      "source_type": "USER",
+      "target": "No unresolved P0/P1 security, authorization, data-integrity, or clinical-publication defect remains in the release scope.",
+      "validity_notes": "A green unit suite cannot close an untested RLS or clinical boundary.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Prior current baseline reported 84.31% statements and 80.13% branches; decision completeness for new gaps is not yet proven.",
+        "status": "PASS"
+      },
+      "conditions": "Coverage must exercise the relevant boundary and cannot replace live or human gates.",
+      "dimension": "quality",
+      "evidence_method": "Current coverage report, invariant decision matrix, mutation/negative tests where justified, and regression suite.",
+      "id": "AAA-Q02",
+      "license_notes": "Repository requirement.",
+      "priority": "high",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "AGENTS.md quality requirements and AAA plan",
+      "source_type": "REPO",
+      "target": "Global coverage remains at least 80 percent and critical invariants have complete decision coverage.",
+      "validity_notes": "A percentage without critical-case coverage is insufficient.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Current diagnostic-to-assignment journey is not proven through the real boundary.",
+        "status": "NOT_RUN"
+      },
+      "conditions": "Synthetic HTTP interception or pre-provisioned assignment does not satisfy the diagnostic-to-assignment criterion.",
+      "dimension": "public-path",
+      "evidence_method": "Fresh E2E with real persistence, separate administrative oracle, cleanup proof, request/response and state inspection.",
+      "id": "AAA-Q03",
+      "license_notes": "No external implementation copied.",
+      "priority": "critical",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "Current user request and AAA plan",
+      "source_type": "USER",
+      "target": "Critical participant journeys work through the correct browser/web/API/PostgreSQL/RLS boundary where applicable.",
+      "validity_notes": "The boundary must include authorization and persistence, not only route rendering.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Existing public-boundary and exposure checks passed locally; new visual assets are decorative only.",
+        "status": "PASS"
+      },
+      "conditions": "The claim is limited to checked artifacts and must be re-run after each boundary change.",
+      "dimension": "privacy-boundary",
+      "evidence_method": "Exposure scanner, DTO/schema inspection, negative tests, browser/network inspection, and redacted log inspection.",
+      "id": "AAA-Q04",
+      "license_notes": "Repository requirement.",
+      "priority": "critical",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "AGENTS.md public-boundary and privacy rules",
+      "source_type": "REPO",
+      "target": "No source, answer key, internal field, participant data, secret, or clinical trace crosses the public participant boundary.",
+      "validity_notes": "Static allowlists do not prove every runtime path.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "A visual lane is active; its final critic and matrix are not yet integrated.",
+        "status": "NOT_RUN"
+      },
+      "conditions": "Source/CSS review alone cannot close visual acceptance.",
+      "dimension": "accessibility-ux",
+      "evidence_method": "Fresh rendered route matrix at 1440, 768, and 390 pixels; axe, keyboard, focus, reduced-motion, console/network and visual inspection.",
+      "id": "AAA-Q05",
+      "license_notes": "Reference used for accessibility acceptance only.",
+      "priority": "high",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "WCAG 2.2 AA as selected by the repository quality bar",
+      "source_type": "STANDARD",
+      "target": "Critical routes remain usable with keyboard, visible focus, semantic names, reduced motion, responsive layout, and no critical axe violations.",
+      "validity_notes": "Claims are bounded to the checked routes and states.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Local gates passed previously; current remote same-SHA evidence is not available.",
+        "status": "NOT_RUN"
+      },
+      "conditions": "Local green checks cannot be upgraded to remote or production evidence.",
+      "dimension": "reproducibility",
+      "evidence_method": "Pinned Node/pnpm install, current verify/build/E2E, remote same-SHA workflow, artifact hashes, dependency audit and traceability.",
+      "id": "AAA-Q06",
+      "license_notes": "Repository requirement.",
+      "priority": "high",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "AGENTS.md CI and traceability requirements",
+      "source_type": "REPO",
+      "target": "The integrated artifact builds and verifies on the same SHA with traceable artifacts and no secret or dependency gate failure.",
+      "validity_notes": "External workflow and deployment authority remain separate gates.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Local allowlisted logs and in-memory metrics exist; external collector/retention/traces are not proven.",
+        "status": "NOT_RUN"
+      },
+      "conditions": "No production endpoint or credential may be invented or contacted.",
+      "dimension": "operations",
+      "evidence_method": "Collector/metrics/traces/alerts in an authorized isolated environment, failure injection, runbook execution, and redaction inspection.",
+      "id": "AAA-Q07",
+      "license_notes": "Repository-owned contract.",
+      "priority": "high",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "SPEC observability/runtime contracts and AAA plan",
+      "source_type": "REPO",
+      "target": "Failures are observable, attributable, alertable, and recoverable without exposing sensitive payloads.",
+      "validity_notes": "In-memory instrumentation alone does not prove operations.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Historical local recovery evidence exists for narrower slices; full AAA recovery bar is not current.",
+        "status": "NOT_RUN"
+      },
+      "conditions": "No destructive operation against production; unknown production volume remains unknown.",
+      "dimension": "reliability-recovery",
+      "evidence_method": "Runbooks, disposable database/Qdrant, representative synthetic fixtures, checksums/counts, timing, and recovery report.",
+      "id": "AAA-Q08",
+      "license_notes": "Repository-owned contract.",
+      "priority": "critical",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "AAA plan and data migration/recovery rules",
+      "source_type": "REPO",
+      "target": "Backup, restore, rollback, retry, concurrency, and failure recovery are exercised in an isolated representative environment.",
+      "validity_notes": "A backup file or policy statement is not restore evidence.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "B-07/M02 publication and clinical review remain pending.",
+        "status": "BLOCKED"
+      },
+      "conditions": "This gate cannot be completed by code or an AI suggestion; it requires human authority.",
+      "dimension": "clinical-governance",
+      "evidence_method": "Content ledger, item review, preflight, publication/withdrawal audit, human decision record, and public-boundary scan.",
+      "id": "AAA-Q09",
+      "license_notes": "No clinical content copied into this manifest.",
+      "priority": "critical",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "AGENTS.md clinical governance and B-07 backlog",
+      "source_type": "REPO",
+      "target": "Every clinically published item and protocol is internally authored, reviewed by the authorized human, preflighted, versioned, and auditable.",
+      "validity_notes": "Digital learning evidence is not practical competency evidence.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "Adapters/fakes and derived-index controls exist; full eval suite is not current.",
+        "status": "NOT_RUN"
+      },
+      "conditions": "No external provider is contacted without explicit authority and configured safe environment.",
+      "dimension": "ai-governance",
+      "evidence_method": "Adapter tests, failure injection, Qdrant reconciliation, prompt-injection/PII/groundedness evals, exposure tests, and human approval path.",
+      "id": "AAA-Q10",
+      "license_notes": "Repository-owned contract.",
+      "priority": "high",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "SPEC integrations and AAA plan",
+      "source_type": "REPO",
+      "target": "AI and Qdrant remain server-side, derived, scoped, structured, timeout-bounded, reconstructible, human-reviewed, and non-decisional.",
+      "validity_notes": "A successful fake provider test does not prove provider safety.",
+      "version": "AAA-v1"
+    },
+    {
+      "baseline": {
+        "actual": "No pilot authorization or clinical release gate is current.",
+        "status": "BLOCKED"
+      },
+      "conditions": "Do not enroll real participants or expose clinical content without explicit human and operational authority.",
+      "dimension": "pilot-governance",
+      "evidence_method": "Approved protocol, readiness pack, pilot event log, outcome analysis, incident review, and final audit.",
+      "id": "AAA-Q11",
+      "license_notes": "Repository-owned contract.",
+      "priority": "critical",
+      "required": true,
+      "snapshot_sha256": null,
+      "source": "AAA plan pilot gates and PRD metrics",
+      "source_type": "REPO",
+      "target": "A controlled pilot has approved scope, authority, observability, abort criteria, outcome measures, and an independent exit decision without claiming practical competency.",
+      "validity_notes": "This criterion cannot be satisfied by local implementation alone.",
+      "version": "AAA-v1"
+    }
+  ],
+  "frozen_at": "2026-09-06T13:15:00-03:00",
+  "goal": "Implement and verify the CVG Premium State of the Art Triplo AAA program without weakening clinical, security, data, or evidence gates.",
+  "revision_log": [],
+  "schema_version": 1,
+  "sources": [
+    {
+      "license_notes": "Acceptance criteria only; no copied implementation.",
+      "location": "Current user request and attached planning document",
+      "snapshot_sha256": null,
+      "type": "USER",
+      "version": "user-current-2026-09-06"
+    },
+    {
+      "license_notes": "Repository-owned plan.",
+      "location": "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+      "snapshot_sha256": null,
+      "type": "REPO",
+      "version": "AAA-PLAN-v1.0"
+    },
+    {
+      "license_notes": "Repository rules and approved product/SPEC sources.",
+      "location": "AGENTS.md and BRIEFING/09.PROJETO_CVG_TREINAMENTO",
+      "snapshot_sha256": null,
+      "type": "REPO",
+      "version": "current-worktree"
+    },
+    {
+      "license_notes": "Used only as an accessibility acceptance reference.",
+      "location": "WCAG 2.2 AA as selected by the repository quality bar",
+      "snapshot_sha256": null,
+      "type": "STANDARD",
+      "version": "2.2"
+    }
+  ],
+  "version": "AAA-v1"
+}

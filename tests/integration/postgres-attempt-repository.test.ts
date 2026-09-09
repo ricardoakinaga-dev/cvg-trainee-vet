@@ -7,7 +7,10 @@ import {
   startAttempt,
   submitAttempt,
 } from "../../packages/application/src/attempt-use-cases.js";
-import { createAttemptUseCaseDependencies } from "../../packages/persistence/src/attempt-repository.js";
+import {
+  createAttemptUseCaseDependencies,
+  PersistenceConflictError,
+} from "../../packages/persistence/src/attempt-repository.js";
 import {
   accountInvitations,
   accounts,
@@ -166,6 +169,96 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           .delete(accountInvitations)
           .where(eq(accountInvitations.id, invitationId));
         await admin.db.delete(accounts).where(eq(accounts.id, participantId));
+        await closeLivePostgresHarness(harness);
+      }
+    });
+
+    it("converges concurrent identical idempotency stores without a primary-key race", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
+      const activityId = randomUUID();
+      const participantId = randomUUID();
+      const scopeId = randomUUID();
+      const attemptId = randomUUID();
+      const idempotencyKey = `attempt-race-${attemptId}`;
+      const record = {
+        fingerprint: "attempt-fingerprint-race",
+        attempt: {
+          attemptId,
+          participantId,
+          activityId,
+          status: "SUBMETIDA" as const,
+          version: 1,
+        },
+      };
+
+      try {
+        await admin.db.insert(learningActivities).values({
+          id: activityId,
+          scopeId,
+          slug: `synthetic-race-${activityId}`,
+          status: "PUBLISHED",
+        });
+        await admin.db.insert(attempts).values({
+          id: attemptId,
+          participantId,
+          activityId,
+          status: record.attempt.status,
+          version: record.attempt.version,
+        });
+
+        const dependencies = createAttemptUseCaseDependencies(
+          database.db,
+          randomUUID,
+        );
+        const store = () =>
+          dependencies.transaction.run(
+            (operations) =>
+              operations.idempotency.store(idempotencyKey, record),
+            { participantId, scopeId },
+          );
+
+        await expect(Promise.all([store(), store()])).resolves.toEqual([
+          undefined,
+          undefined,
+        ]);
+        await expect(
+          admin.db
+            .select({
+              key: attemptIdempotency.key,
+              fingerprint: attemptIdempotency.fingerprint,
+            })
+            .from(attemptIdempotency)
+            .where(eq(attemptIdempotency.key, idempotencyKey)),
+        ).resolves.toEqual([
+          { key: idempotencyKey, fingerprint: record.fingerprint },
+        ]);
+
+        await expect(
+          dependencies.transaction.run(
+            (operations) =>
+              operations.idempotency.store(idempotencyKey, {
+                ...record,
+                fingerprint: "attempt-fingerprint-conflict",
+              }),
+            { participantId, scopeId },
+          ),
+        ).rejects.toBeInstanceOf(PersistenceConflictError);
+      } finally {
+        await admin.db
+          .delete(attemptIdempotency)
+          .where(eq(attemptIdempotency.key, idempotencyKey));
+        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, activityId));
         await closeLivePostgresHarness(harness);
       }
     });

@@ -284,5 +284,115 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         await closeLivePostgresHarness(harness);
       }
     });
+
+    it("converges concurrent identical answer idempotency stores without a primary-key race", async ({
+      skip,
+    }) => {
+      const harness = await openLivePostgresHarness();
+      if (!hasAdministrativeCleanupCapability(harness.adminRole)) {
+        await closeLivePostgresHarness(harness);
+        skip(liveAdminCapabilityMessage);
+        return;
+      }
+      const { application: database, admin } = harness;
+      const activityId = randomUUID();
+      const participantId = randomUUID();
+      const scopeId = randomUUID();
+      const attemptId = randomUUID();
+      const answerId = randomUUID();
+      const itemId = randomUUID();
+      const idempotencyKey = `answer-race-${answerId}`;
+      const savedAt = new Date("2026-08-09T17:00:00.000Z");
+      const record = {
+        fingerprint: "answer-fingerprint-race",
+        result: {
+          attempt: {
+            attemptId,
+            participantId,
+            activityId,
+            status: "SALVA" as const,
+            version: 1,
+          },
+          answer: {
+            answerId,
+            attemptId,
+            itemId,
+            response: "resposta interna de concorrência",
+            savedAt: savedAt.toISOString(),
+          },
+        },
+      };
+
+      try {
+        await admin.db.insert(learningActivities).values({
+          id: activityId,
+          scopeId,
+          slug: `synthetic-answer-race-${activityId}`,
+          status: "PUBLISHED",
+        });
+        await admin.db.insert(attempts).values({
+          id: attemptId,
+          participantId,
+          activityId,
+          status: record.result.attempt.status,
+          version: record.result.attempt.version,
+        });
+        await admin.db.insert(answers).values({
+          id: answerId,
+          attemptId,
+          itemId,
+          response: record.result.answer.response,
+          savedAt,
+        });
+
+        const dependencies = createAnswerUseCaseDependencies(
+          database.db,
+          randomUUID,
+        );
+        const store = () =>
+          dependencies.transaction.run(
+            (operations) =>
+              operations.idempotency.store(idempotencyKey, record),
+            { participantId, scopeId },
+          );
+
+        await expect(Promise.all([store(), store()])).resolves.toEqual([
+          undefined,
+          undefined,
+        ]);
+        await expect(
+          admin.db
+            .select({
+              key: answerIdempotency.key,
+              fingerprint: answerIdempotency.fingerprint,
+            })
+            .from(answerIdempotency)
+            .where(eq(answerIdempotency.key, idempotencyKey)),
+        ).resolves.toEqual([
+          { key: idempotencyKey, fingerprint: record.fingerprint },
+        ]);
+
+        await expect(
+          dependencies.transaction.run(
+            (operations) =>
+              operations.idempotency.store(idempotencyKey, {
+                ...record,
+                fingerprint: "answer-fingerprint-conflict",
+              }),
+            { participantId, scopeId },
+          ),
+        ).rejects.toThrow("answer idempotency key has another fingerprint");
+      } finally {
+        await admin.db
+          .delete(answerIdempotency)
+          .where(eq(answerIdempotency.key, idempotencyKey));
+        await admin.db.delete(answers).where(eq(answers.id, answerId));
+        await admin.db.delete(attempts).where(eq(attempts.id, attemptId));
+        await admin.db
+          .delete(learningActivities)
+          .where(eq(learningActivities.id, activityId));
+        await closeLivePostgresHarness(harness);
+      }
+    });
   },
 );

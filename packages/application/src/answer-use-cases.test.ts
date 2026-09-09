@@ -273,6 +273,82 @@ describe("SaveAnswer application command", () => {
     ).rejects.toMatchObject({ code: "validation_error", status: 422 });
   });
 
+  it("maps a persistence idempotency race to a public 409 conflict", async () => {
+    const base = dependencies();
+    const conflictIdempotency = {
+      ...base.idempotency,
+      store: async () => {
+        const conflict = new Error(
+          "answer idempotency key has another fingerprint",
+        );
+        conflict.name = "PersistenceConflictError";
+        throw conflict;
+      },
+    };
+    const conflictDependencies: AnswerUseCaseDependencies = {
+      ...base,
+      idempotency: conflictIdempotency,
+      transaction: {
+        run: async (work) =>
+          work({ ...base, idempotency: conflictIdempotency }),
+      },
+    };
+
+    await expect(
+      saveAnswer(
+        {
+          attemptId: "attempt-1",
+          participantId: "participant-1",
+          activityId: "activity-1",
+          scopeId: "scope-1",
+          itemId: "item-1",
+          response: "resposta",
+          idempotencyKey: "answer-key-persistence-race",
+          correlationId: "correlation-persistence-race",
+          savedAt: "2026-08-09T17:00:00.000Z",
+        },
+        conflictDependencies,
+      ),
+    ).rejects.toMatchObject({ code: "idempotency_conflict", status: 409 });
+  });
+
+  it("maps a persistence compare-and-set race to a state 409", async () => {
+    const base = dependencies();
+    const conflictedAttemptsPort = {
+      ...base.attemptsPort,
+      update: async () => {
+        const conflict = new Error("attempt version changed concurrently");
+        conflict.name = "PersistenceStateConflictError";
+        throw conflict;
+      },
+    };
+    const conflictDependencies: AnswerUseCaseDependencies = {
+      ...base,
+      attemptsPort: conflictedAttemptsPort,
+      transaction: {
+        run: async (work) =>
+          work({ ...base, attemptsPort: conflictedAttemptsPort }),
+      },
+    };
+
+    await expect(
+      saveAnswer(
+        {
+          attemptId: "attempt-1",
+          participantId: "participant-1",
+          activityId: "activity-1",
+          scopeId: "scope-1",
+          itemId: "item-1",
+          response: "resposta",
+          idempotencyKey: "answer-key-state-race",
+          correlationId: "correlation-state-race",
+          savedAt: "2026-08-09T17:00:00.000Z",
+        },
+        conflictDependencies,
+      ),
+    ).rejects.toMatchObject({ code: "state_conflict", status: 409 });
+  });
+
   it("updates an existing answer and hides persistence failures", async () => {
     const deps = dependencies();
     await saveAnswer(

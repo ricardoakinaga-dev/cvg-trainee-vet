@@ -71,6 +71,9 @@ describe("API node server adapter", () => {
     expect(routeTemplate("POST", "/api/v1/session/rotate")).toBe(
       "/api/v1/session/rotate",
     );
+    expect(routeTemplate("GET", "/api/v1/session/current")).toBe(
+      "/api/v1/session/current",
+    );
     expect(routeTemplate("POST", "/api/v1/internal/invitations")).toBe(
       "/api/v1/internal/invitations",
     );

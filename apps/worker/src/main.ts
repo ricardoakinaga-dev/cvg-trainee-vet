@@ -19,6 +19,7 @@ import {
 import { createIntegrationHandlers } from "./handlers.js";
 import { processOutboxOnce, type WorkerLoopOptions } from "./loop.js";
 import {
+  QDRANT_RECONCILIATION_LOCK_KEY,
   reconcileVectorIndex,
   type VectorReconciliationResult,
 } from "./reconcile.js";
@@ -53,6 +54,11 @@ export function createWorkerRuntime(
     source,
     embedding: integrations.embedding,
     vectorStore: integrations.vectorStore,
+    withExclusiveLock: (work: () => Promise<VectorReconciliationResult>) =>
+      integrations.database.withAdvisoryLock(
+        QDRANT_RECONCILIATION_LOCK_KEY,
+        work,
+      ),
   } as const;
   const handlers = createIntegrationHandlers({
     ...workerDependencies,

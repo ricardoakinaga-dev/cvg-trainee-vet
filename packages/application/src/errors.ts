@@ -42,6 +42,16 @@ export class ApplicationError extends Error {
   }
 }
 
+export function isPersistenceConflict(error: unknown): error is Error {
+  return error instanceof Error && error.name === "PersistenceConflictError";
+}
+
+export function isPersistenceStateConflict(error: unknown): error is Error {
+  return (
+    error instanceof Error && error.name === "PersistenceStateConflictError"
+  );
+}
+
 export function toApplicationError(error: unknown): ApplicationError {
   if (error instanceof ApplicationError) return error;
 

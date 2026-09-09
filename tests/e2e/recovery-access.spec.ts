@@ -24,6 +24,35 @@ test.describe("controlled account recovery", () => {
         body: JSON.stringify(successEnvelope({ status: "active" })),
       });
     });
+    await page.route("**/api/v1/session/current", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ status: "active" })),
+      });
+    });
+    await page.route("**/api/v1/feedback", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(successEnvelope({ tickets: [] })),
+      });
+    });
+    await page.route("**/api/v1/learning-path", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            assignments: [],
+            activities: [],
+            results: [],
+            runtimes: [],
+            nextAction: "CONSULTAR_PROXIMO_PASSO",
+          }),
+        ),
+      });
+    });
 
     await page.goto(`/recovery?token=${"r".repeat(32)}`);
 
@@ -34,5 +63,10 @@ test.describe("controlled account recovery", () => {
       page.getByText("O link foi consumido e não pode ser reutilizado."),
     ).toBeVisible();
     await expect(page).toHaveURL(/\/recovery$/u);
+
+    await page.getByRole("link", { name: "Ir para a trilha" }).click();
+    await expect(page).toHaveURL(/\/$/u);
+    await expect(page.getByTestId("empty-state")).toBeVisible();
+    await expect(page.getByText("Sessão restaurada.")).toBeVisible();
   });
 });

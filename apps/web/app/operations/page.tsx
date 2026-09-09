@@ -1267,6 +1267,13 @@ function dashboardErrorState(status: number): DashboardLoadState {
   return "error";
 }
 
+function hasStaffDashboardAccess(
+  state: DashboardLoadState,
+  dashboard: StaffDashboard | null,
+): boolean {
+  return state === "ready" && dashboard !== null;
+}
+
 function percentageLabel(value: number | null): string {
   return value === null ? "—" : `${value}%`;
 }
@@ -1637,8 +1644,9 @@ export default function OperationsPage() {
   }, []);
 
   useEffect(() => {
+    if (dashboardState !== "ready") return;
     void loadDependencies();
-  }, [loadDependencies]);
+  }, [dashboardState, loadDependencies]);
 
   const loadDashboard = useCallback(async () => {
     setDashboardState("loading");
@@ -1654,7 +1662,11 @@ export default function OperationsPage() {
       }
       const payload: unknown = await response.json().catch(() => null);
       if (!isRecord(payload) || payload.success !== true) throw new Error();
-      if (!isStaffDashboard(payload.data)) throw new Error();
+      if (!isStaffDashboard(payload.data)) {
+        setDashboard(null);
+        setDashboardState("forbidden");
+        return;
+      }
       setDashboard(payload.data);
       setDashboardState("ready");
     } catch {
@@ -2442,6 +2454,48 @@ export default function OperationsPage() {
     }
   }
 
+  if (!hasStaffDashboardAccess(dashboardState, dashboard)) {
+    const message =
+      dashboardState === "loading"
+        ? "Validando a autorização da sessão interna…"
+        : dashboardState === "unauthenticated"
+          ? "Entre com uma conta interna para consultar esta superfície."
+          : dashboardState === "forbidden"
+            ? "Esta conta não possui autorização para consultar esta superfície."
+            : "Não foi possível validar a autorização da sessão interna.";
+    return (
+      <main
+        className="shell"
+        id="main-content"
+        tabIndex={-1}
+        aria-busy={dashboardState === "loading"}
+      >
+        <section
+          className="experience-panel dashboard-message internal-access-gate"
+          data-testid="internal-access-gate"
+          role={dashboardState === "loading" ? "status" : "alert"}
+          aria-live="polite"
+        >
+          <h1 className="access-gate-title">
+            {dashboardState === "loading"
+              ? "Acesso restrito"
+              : dashboardState === "unauthenticated"
+                ? "Sessão de gestão necessária"
+                : dashboardState === "forbidden"
+                  ? "Visão restrita"
+                  : "Acesso indisponível"}
+          </h1>
+          <span>{message}</span>
+          {dashboardState === "error" ? (
+            <button type="button" onClick={() => void loadDashboard()}>
+              Tentar novamente
+            </button>
+          ) : null}
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main
       className="shell"
@@ -2454,7 +2508,11 @@ export default function OperationsPage() {
           <p className="eyebrow">CVG · superfície interna</p>
           <span className="brand">Estado operacional</span>
         </div>
-        <span className="status-pill" role="status" aria-live="polite">
+        <span
+          className="status-pill status-pill--info"
+          role="status"
+          aria-live="polite"
+        >
           Operação
         </span>
       </header>
@@ -2488,7 +2546,12 @@ export default function OperationsPage() {
             </button>
           </div>
         ) : dependencies !== null ? (
-          <div className="experience-panel" data-testid="operations-ready">
+          <div
+            className="experience-panel"
+            data-testid="operations-ready"
+            role="status"
+            aria-live="polite"
+          >
             <p className="operations-status">
               Estado geral: <strong>{dependencies.status}</strong>
             </p>
@@ -2575,1535 +2638,1655 @@ export default function OperationsPage() {
         ) : (
           <>
             <div
-              className="dashboard-metrics"
-              aria-label="Indicadores do treinamento"
+              className="operations-lane operations-lane--summary"
+              aria-labelledby="summary-lane-title"
             >
-              <article className="metric-card">
-                <span>Profissionais ativos</span>
-                <strong>{dashboard.metrics.activeParticipants}</strong>
-                <small>{dashboard.metrics.inactiveParticipants} inativos</small>
-              </article>
-              <article className="metric-card">
-                <span>Conclusão da trilha</span>
-                <strong>
-                  {percentageLabel(dashboard.metrics.completionRatePercent)}
-                </strong>
-                <small>
-                  {dashboard.metrics.completedModules} de{" "}
-                  {dashboard.metrics.assignedModules} módulos
-                </small>
-              </article>
-              <article className="metric-card">
-                <span>Correções pendentes</span>
-                <strong>{dashboard.metrics.pendingCorrections}</strong>
-                <small>
-                  {dashboard.metrics.openFeedback} feedbacks abertos
-                </small>
-              </article>
-              <article className="metric-card">
-                <span>Reforço e retenção</span>
-                <strong>{dashboard.metrics.remediationParticipants}</strong>
-                <small>
-                  {dashboard.metrics.retentionReviewsPending} revisões pendentes
-                </small>
-              </article>
-            </div>
-
-            <div className="dashboard-summary" aria-label="Estado editorial">
-              <span>{dashboard.metrics.invitedParticipants} convites</span>
-              <span>
-                {dashboard.metrics.content.inReview} conteúdos em revisão
-              </span>
-              <span>
-                {dashboard.metrics.content.published} conteúdos publicados
-              </span>
-              <span>
-                Mediana de progresso:{" "}
-                {percentageLabel(dashboard.metrics.medianProgressPercent)}
-              </span>
-            </div>
-
-            <section
-              className="dashboard-panel continuing-education-panel"
-              aria-labelledby="continuing-education-title"
-              data-testid="continuing-education-report"
-            >
-              <div className="section-heading">
+              <div className="operations-lane-heading">
                 <div>
-                  <p className="eyebrow">Educação continuada</p>
-                  <h3 id="continuing-education-title">
-                    Participação digital da trilha
-                  </h3>
-                  <p>
-                    Minutos concluídos conforme o catálogo da trilha. O total é
-                    evidência educacional interna, não hora CPD credenciada,
-                    certificado ou prova de competência prática.
-                  </p>
+                  <p className="eyebrow">01 · Resumo</p>
+                  <h3 id="summary-lane-title">Visão do programa</h3>
+                  <p>Leitura agregada para orientar o próximo passo.</p>
                 </div>
-                {reportState === "ready" && report !== null ? (
-                  <span className="status-pill">
-                    Atualizado {lastSeenLabel(report.generatedAt)}
-                  </span>
-                ) : null}
+                <span className="status-pill status-pill--signal">
+                  Leitura agregada
+                </span>
               </div>
-              {reportState === "loading" ? (
-                <div className="experience-panel" role="status">
-                  Consolidando participação digital…
-                </div>
-              ) : reportState === "forbidden" ||
-                reportState === "unauthenticated" ? (
-                <div className="experience-panel dashboard-message">
-                  <strong>Relatório restrito</strong>
-                  <span>
-                    Esta conta não possui autorização para consultar métricas do
-                    programa.
-                  </span>
-                </div>
-              ) : reportState === "error" || report === null ? (
-                <div className="experience-panel error-panel" role="alert">
-                  <p>Não foi possível carregar o relatório educacional.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const scopeId = managementScopeId;
-                      if (scopeId !== undefined) {
-                        void loadContinuingEducationReport(
-                          scopeId,
-                          reportModuleFilter,
-                          reportStatusFilter,
-                          reportPage,
-                        );
-                      }
-                    }}
-                  >
-                    Tentar novamente
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div
-                    className="report-filter-row"
-                    aria-label="Filtros do relatório"
-                  >
-                    <label>
-                      Módulo
-                      <select
-                        value={reportModuleFilter}
-                        onChange={(event) => {
-                          setReportPage(1);
-                          setReportModuleFilter(event.target.value);
-                        }}
-                      >
-                        <option value="">Todos os módulos</option>
-                        {report.modules.map((module) => (
-                          <option key={module.moduleId} value={module.moduleId}>
-                            {module.moduleId} · mês {module.month}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      Conta
-                      <select
-                        value={reportStatusFilter}
-                        onChange={(event) => {
-                          setReportPage(1);
-                          setReportStatusFilter(
-                            event.target.value as ReportStatusFilter,
-                          );
-                        }}
-                      >
-                        <option value="">Todos os status</option>
-                        <option value="ACTIVE">Ativas</option>
-                        <option value="INVITED">Convidadas</option>
-                        <option value="SUSPENDED">Suspensas</option>
-                        <option value="DEACTIVATED">Desativadas</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div
-                    className="dashboard-metrics"
-                    aria-label="Resumo de participação digital"
-                  >
-                    <article className="metric-card">
-                      <span>Horas digitais concluídas</span>
-                      <strong>{report.summary.completedDigitalHours}</strong>
-                      <small>
-                        {report.summary.completedDigitalMinutes} minutos
-                      </small>
-                    </article>
-                    <article className="metric-card">
-                      <span>Conclusão filtrada</span>
-                      <strong>
-                        {percentageLabel(report.summary.completionRatePercent)}
-                      </strong>
-                      <small>
-                        {report.summary.completedModules} de{" "}
-                        {report.summary.assignedModules} módulos
-                      </small>
-                    </article>
-                    <article className="metric-card">
-                      <span>Participantes no recorte</span>
-                      <strong>{report.summary.participantCount}</strong>
-                      <small>
-                        {report.summary.activeParticipants} ativas ·{" "}
-                        {report.summary.invitedParticipants} convidadas
-                      </small>
-                    </article>
-                  </div>
-                  <div
-                    className="dashboard-table-wrap"
-                    tabIndex={0}
-                    role="region"
-                    aria-label="Tabela de módulos do relatório de participação digital"
-                  >
-                    <table className="dashboard-table">
-                      <caption className="visually-hidden">
-                        Participação digital por módulo
-                      </caption>
-                      <thead>
-                        <tr>
-                          <th scope="col">Módulo</th>
-                          <th scope="col">Carga do catálogo</th>
-                          <th scope="col">Participantes atribuídos</th>
-                          <th scope="col">Participantes concluídos</th>
-                          <th scope="col">Conclusão</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {report.modules.length === 0 ? (
-                          <tr>
-                            <td colSpan={5}>Nenhuma atribuição no recorte.</td>
-                          </tr>
-                        ) : (
-                          report.modules.map((module) => (
-                            <tr key={module.moduleId}>
-                              <th scope="row">{module.moduleId}</th>
-                              <td>{module.scheduledMinutes} min</td>
-                              <td>{module.assignedParticipants}</td>
-                              <td>{module.completedParticipants}</td>
-                              <td>
-                                {percentageLabel(module.completionRatePercent)}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div
-                    className="report-filter-row"
-                    aria-label="Participantes paginados do relatório"
-                  >
-                    <button
-                      type="button"
-                      disabled={report.pagination.page <= 1}
-                      onClick={() =>
-                        setReportPage((page) => Math.max(1, page - 1))
-                      }
-                    >
-                      Página anterior
-                    </button>
-                    <span role="status">
-                      Página {report.pagination.page} de{" "}
-                      {Math.max(report.pagination.totalPages, 1)} ·{" "}
-                      {report.pagination.totalParticipants} participantes
-                    </span>
-                    <button
-                      type="button"
-                      disabled={!report.pagination.hasNextPage}
-                      onClick={() => setReportPage((page) => page + 1)}
-                    >
-                      Próxima página
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => downloadContinuingEducationCsv(report)}
-                    >
-                      Exportar página CSV
-                    </button>
-                  </div>
-                  <div
-                    className="dashboard-table-wrap"
-                    tabIndex={0}
-                    role="region"
-                    aria-label="Participantes do relatório de participação digital"
-                  >
-                    <table className="dashboard-table">
-                      <caption className="visually-hidden">
-                        Participantes na página atual do relatório de
-                        participação digital
-                      </caption>
-                      <thead>
-                        <tr>
-                          <th scope="col">Profissional</th>
-                          <th scope="col">Conta</th>
-                          <th scope="col">Módulos</th>
-                          <th scope="col">Progresso</th>
-                          <th scope="col">Minutos digitais</th>
-                          <th scope="col">Horas digitais</th>
-                          <th scope="col">Último acesso</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {report.participants.length === 0 ? (
-                          <tr>
-                            <td colSpan={7}>
-                              Nenhum participante no recorte atual.
-                            </td>
-                          </tr>
-                        ) : (
-                          report.participants.map((participant) => (
-                            <tr key={participant.participantId}>
-                              <th scope="row">
-                                <span className="participant-email">
-                                  {participant.professionalEmail}
-                                </span>
-                              </th>
-                              <td>
-                                {accountStatusLabel(participant.accountStatus)}
-                              </td>
-                              <td>
-                                {participant.completedModules} de{" "}
-                                {participant.assignedModules} concluídos
-                              </td>
-                              <td>
-                                {percentageLabel(participant.progressPercent)}
-                              </td>
-                              <td>{participant.completedDigitalMinutes}</td>
-                              <td>{participant.completedDigitalHours}</td>
-                              <td>{lastSeenLabel(participant.lastSeenAt)}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </section>
 
-            <section
-              className="dashboard-panel"
-              aria-labelledby="feedback-triage-queue-title"
-              data-testid="feedback-triage-queue"
-            >
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">Suporte interno</p>
-                  <h3 id="feedback-triage-queue-title">
-                    Fila de relatos do produto
-                  </h3>
-                  <p>
-                    Consulta escopada de relatos sem anexos ou dados clínicos.
-                    Esta tela aplica transições previstas e permite ajustar
-                    prioridade ou assumir/liberar a responsabilidade. Resposta
-                    ao participante e SLA continuam fora deste recorte.
-                  </p>
-                </div>
-                {feedbackQueueState === "ready" && feedbackQueue !== null ? (
-                  <span className="status-pill">
-                    Atualizado {lastSeenLabel(feedbackQueue.generatedAt)}
-                  </span>
-                ) : null}
+              <div
+                className="dashboard-metrics"
+                aria-label="Indicadores do treinamento"
+              >
+                <article className="metric-card">
+                  <span>Profissionais ativos</span>
+                  <strong>{dashboard.metrics.activeParticipants}</strong>
+                  <small>
+                    {dashboard.metrics.inactiveParticipants} inativos
+                  </small>
+                </article>
+                <article className="metric-card">
+                  <span>Conclusão da trilha</span>
+                  <strong>
+                    {percentageLabel(dashboard.metrics.completionRatePercent)}
+                  </strong>
+                  <small>
+                    {dashboard.metrics.completedModules} de{" "}
+                    {dashboard.metrics.assignedModules} módulos
+                  </small>
+                </article>
+                <article className="metric-card">
+                  <span>Correções pendentes</span>
+                  <strong>{dashboard.metrics.pendingCorrections}</strong>
+                  <small>
+                    {dashboard.metrics.openFeedback} feedbacks abertos
+                  </small>
+                </article>
+                <article className="metric-card">
+                  <span>Reforço e retenção</span>
+                  <strong>{dashboard.metrics.remediationParticipants}</strong>
+                  <small>
+                    {dashboard.metrics.retentionReviewsPending} revisões
+                    pendentes
+                  </small>
+                </article>
               </div>
-              {feedbackQueueState === "loading" ? (
-                <div className="experience-panel" role="status">
-                  Consultando relatos…
-                </div>
-              ) : feedbackQueueState === "forbidden" ||
-                feedbackQueueState === "unauthenticated" ? (
-                <div className="experience-panel dashboard-message">
-                  <strong>Fila restrita</strong>
-                  <span>
-                    Esta conta não possui autorização para triagem de relatos.
-                  </span>
-                </div>
-              ) : feedbackQueueState === "error" || feedbackQueue === null ? (
-                <div className="experience-panel error-panel" role="alert">
-                  <p>Não foi possível carregar a fila de relatos.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const scopeId = managementScopeId;
-                      if (scopeId !== undefined) {
-                        void loadFeedbackTriageQueue(
-                          scopeId,
-                          feedbackQueueStatusFilter,
-                          feedbackQueueCursor,
-                          feedbackQueueCursorStack,
-                        );
-                      }
-                    }}
+
+              <div className="dashboard-summary" aria-label="Estado editorial">
+                <span>{dashboard.metrics.invitedParticipants} convites</span>
+                <span>
+                  {dashboard.metrics.content.inReview} conteúdos em revisão
+                </span>
+                <span>
+                  {dashboard.metrics.content.published} conteúdos publicados
+                </span>
+                <span>
+                  Mediana de progresso:{" "}
+                  {percentageLabel(dashboard.metrics.medianProgressPercent)}
+                </span>
+              </div>
+
+              <nav className="operations-rail" aria-label="Atalhos da operação">
+                <span className="operations-rail-label">Ações de gestão</span>
+                <div className="operations-rail-links">
+                  <a
+                    className="operations-rail-primary"
+                    href="#management-title"
                   >
-                    Tentar novamente
-                  </button>
+                    Visão geral
+                  </a>
+                  <a href="#invite-title">Adicionar veterinário</a>
+                  <a href="#participants-title">Profissionais</a>
+                  <a href="#continuing-education-title">Educação</a>
+                  <a href="#feedback-triage-queue-title">Relatos</a>
+                  <a href="#reflection-management-title">Reflexão</a>
+                  <a href="#appeal-review-queue-title">Contestação</a>
+                  <a href="#audit-trail-title">Auditoria</a>
                 </div>
-              ) : (
-                <>
-                  <div
-                    className="report-filter-row"
-                    aria-label="Filtros da fila de relatos"
-                  >
-                    <label>
-                      Status
-                      <select
-                        value={feedbackQueueStatusFilter}
-                        onChange={(event) =>
-                          setFeedbackQueueStatusFilter(
-                            event.target
-                              .value as FeedbackTriageQueueStatusFilter,
-                          )
-                        }
-                      >
-                        <option value="">Todos os estados</option>
-                        <option value="NOVO">Novos</option>
-                        <option value="TRIADO">Triados</option>
-                        <option value="EM_TRATAMENTO">Em tratamento</option>
-                        <option value="AGUARDA_USUARIO">
-                          Aguardando usuário
-                        </option>
-                        <option value="RESOLVIDO">Resolvidos</option>
-                        <option value="DUPLICADO">Duplicados</option>
-                        <option value="NAO_REPRODUZIDO">
-                          Não reproduzidos
-                        </option>
-                        <option value="NAO_PLANEJADO">Não planejados</option>
-                      </select>
-                    </label>
-                  </div>
-                  {feedbackQueue.items.length === 0 ? (
-                    <p className="dashboard-empty">
-                      Nenhum relato no recorte autorizado.
+              </nav>
+
+              <section
+                className="dashboard-panel continuing-education-panel"
+                aria-labelledby="continuing-education-title"
+                data-testid="continuing-education-report"
+              >
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">Educação continuada</p>
+                    <h3 id="continuing-education-title">
+                      Participação digital da trilha
+                    </h3>
+                    <p>
+                      Minutos concluídos conforme o catálogo da trilha. O total
+                      é evidência educacional interna, não hora CPD credenciada,
+                      certificado ou prova de competência prática.
                     </p>
-                  ) : (
+                  </div>
+                  {reportState === "ready" && report !== null ? (
+                    <span className="status-pill status-pill--neutral dashboard-panel-freshness">
+                      Atualizado {lastSeenLabel(report.generatedAt)}
+                    </span>
+                  ) : null}
+                </div>
+                {reportState === "loading" ? (
+                  <div className="experience-panel" role="status">
+                    Consolidando participação digital…
+                  </div>
+                ) : reportState === "forbidden" ||
+                  reportState === "unauthenticated" ? (
+                  <div className="experience-panel dashboard-message">
+                    <strong>Relatório restrito</strong>
+                    <span>
+                      Esta conta não possui autorização para consultar métricas
+                      do programa.
+                    </span>
+                  </div>
+                ) : reportState === "error" || report === null ? (
+                  <div className="experience-panel error-panel" role="alert">
+                    <p>Não foi possível carregar o relatório educacional.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const scopeId = managementScopeId;
+                        if (scopeId !== undefined) {
+                          void loadContinuingEducationReport(
+                            scopeId,
+                            reportModuleFilter,
+                            reportStatusFilter,
+                            reportPage,
+                          );
+                        }
+                      }}
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className="report-filter-row"
+                      aria-label="Filtros do relatório"
+                    >
+                      <label>
+                        Módulo
+                        <select
+                          value={reportModuleFilter}
+                          onChange={(event) => {
+                            setReportPage(1);
+                            setReportModuleFilter(event.target.value);
+                          }}
+                        >
+                          <option value="">Todos os módulos</option>
+                          {report.modules.map((module) => (
+                            <option
+                              key={module.moduleId}
+                              value={module.moduleId}
+                            >
+                              {module.moduleId} · mês {module.month}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Conta
+                        <select
+                          value={reportStatusFilter}
+                          onChange={(event) => {
+                            setReportPage(1);
+                            setReportStatusFilter(
+                              event.target.value as ReportStatusFilter,
+                            );
+                          }}
+                        >
+                          <option value="">Todos os status</option>
+                          <option value="ACTIVE">Ativas</option>
+                          <option value="INVITED">Convidadas</option>
+                          <option value="SUSPENDED">Suspensas</option>
+                          <option value="DEACTIVATED">Desativadas</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div
+                      className="dashboard-metrics"
+                      aria-label="Resumo de participação digital"
+                    >
+                      <article className="metric-card">
+                        <span>Horas digitais concluídas</span>
+                        <strong>{report.summary.completedDigitalHours}</strong>
+                        <small>
+                          {report.summary.completedDigitalMinutes} minutos
+                        </small>
+                      </article>
+                      <article className="metric-card">
+                        <span>Conclusão filtrada</span>
+                        <strong>
+                          {percentageLabel(
+                            report.summary.completionRatePercent,
+                          )}
+                        </strong>
+                        <small>
+                          {report.summary.completedModules} de{" "}
+                          {report.summary.assignedModules} módulos
+                        </small>
+                      </article>
+                      <article className="metric-card">
+                        <span>Participantes no recorte</span>
+                        <strong>{report.summary.participantCount}</strong>
+                        <small>
+                          {report.summary.activeParticipants} ativas ·{" "}
+                          {report.summary.invitedParticipants} convidadas
+                        </small>
+                      </article>
+                    </div>
                     <div
                       className="dashboard-table-wrap"
                       tabIndex={0}
                       role="region"
-                      aria-label="Tabela de relatos para triagem"
+                      aria-label="Tabela de módulos do relatório de participação digital"
                     >
                       <table className="dashboard-table">
                         <caption className="visually-hidden">
-                          Relatos para triagem interna
+                          Participação digital por módulo
                         </caption>
                         <thead>
                           <tr>
-                            <th scope="col">Tipo</th>
-                            <th scope="col">Relato</th>
-                            <th scope="col">Criado</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Prioridade</th>
-                            <th scope="col">Responsável</th>
-                            <th scope="col">Ações</th>
+                            <th scope="col">Módulo</th>
+                            <th scope="col">Carga do catálogo</th>
+                            <th scope="col">Participantes atribuídos</th>
+                            <th scope="col">Participantes concluídos</th>
+                            <th scope="col">Conclusão</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {feedbackQueue.items.map((item) => {
-                            const events = feedbackTriageEvents(item.status);
-                            return (
-                              <tr key={item.ticketId}>
-                                <th scope="row">
-                                  {feedbackTriageTypeLabel(item.type)}
-                                </th>
-                                <td>{item.description}</td>
-                                <td>{lastSeenLabel(item.createdAt)}</td>
+                          {report.modules.length === 0 ? (
+                            <tr>
+                              <td colSpan={5}>
+                                Nenhuma atribuição no recorte.
+                              </td>
+                            </tr>
+                          ) : (
+                            report.modules.map((module) => (
+                              <tr key={module.moduleId}>
+                                <th scope="row">{module.moduleId}</th>
+                                <td>{module.scheduledMinutes} min</td>
+                                <td>{module.assignedParticipants}</td>
+                                <td>{module.completedParticipants}</td>
                                 <td>
-                                  {feedbackTriageStatusLabel(item.status)}
-                                </td>
-                                <td>
-                                  <label
-                                    className="visually-hidden"
-                                    htmlFor={`feedback-priority-${item.ticketId}`}
-                                  >
-                                    Prioridade do relato {item.ticketId}
-                                  </label>
-                                  <select
-                                    id={`feedback-priority-${item.ticketId}`}
-                                    value={item.priority}
-                                    disabled={feedbackActionKey !== null}
-                                    onChange={(event) =>
-                                      void updateFeedbackTriageMetadata(
-                                        item,
-                                        event.target
-                                          .value as FeedbackTriageQueuePriority,
-                                        "MANTER",
-                                      )
-                                    }
-                                  >
-                                    <option value="BAIXA">Baixa</option>
-                                    <option value="NORMAL">Normal</option>
-                                    <option value="ALTA">Alta</option>
-                                    <option value="URGENTE">Urgente</option>
-                                  </select>
-                                </td>
-                                <td>
-                                  <span>
-                                    {item.assigneeId === undefined
-                                      ? "Sem responsável"
-                                      : "Responsável definido"}
-                                  </span>
-                                </td>
-                                <td>
-                                  <div className="account-actions">
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        void loadFeedbackTicketHistory(
-                                          item.ticketId,
-                                        )
-                                      }
-                                    >
-                                      Ver histórico do relato
-                                    </button>
-                                    {events.length === 0 ? (
-                                      <span>Estado final</span>
-                                    ) : (
-                                      <div className="account-actions">
-                                        {events.map((event) => {
-                                          const actionKey = `${item.ticketId}:${event}`;
-                                          return (
-                                            <button
-                                              key={event}
-                                              type="button"
-                                              disabled={
-                                                feedbackActionKey !== null
-                                              }
-                                              onClick={() =>
-                                                void transitionFeedbackTicket(
-                                                  item,
-                                                  event,
-                                                )
-                                              }
-                                            >
-                                              {feedbackActionKey === actionKey
-                                                ? "Atualizando…"
-                                                : feedbackTriageEventLabel(
-                                                    event,
-                                                  )}
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                    <button
-                                      type="button"
-                                      disabled={feedbackActionKey !== null}
-                                      onClick={() =>
-                                        void updateFeedbackTriageMetadata(
-                                          item,
-                                          item.priority,
-                                          item.assigneeId === undefined
-                                            ? "ASSUMIR"
-                                            : "LIBERAR",
-                                        )
-                                      }
-                                    >
-                                      {feedbackActionKey?.startsWith(
-                                        `${item.ticketId}:metadata:`,
-                                      )
-                                        ? "Atualizando…"
-                                        : item.assigneeId === undefined
-                                          ? "Assumir para mim"
-                                          : "Liberar responsável"}
-                                    </button>
-                                  </div>
+                                  {percentageLabel(
+                                    module.completionRatePercent,
+                                  )}
                                 </td>
                               </tr>
-                            );
-                          })}
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
-                  )}
-                  <div className="report-filter-row">
-                    <span role="status">
-                      Página atual · {feedbackQueue.items.length} relatos
-                    </span>
-                    <div className="account-actions">
+                    <div
+                      className="report-filter-row"
+                      aria-label="Participantes paginados do relatório"
+                    >
                       <button
                         type="button"
-                        disabled={feedbackQueueCursorStack.length === 0}
-                        onClick={() => {
-                          const scopeId = managementScopeId;
-                          if (
-                            scopeId === undefined ||
-                            feedbackQueueCursorStack.length === 0
-                          ) {
-                            return;
-                          }
-                          const previousCursor =
-                            feedbackQueueCursorStack[
-                              feedbackQueueCursorStack.length - 1
-                            ];
-                          void loadFeedbackTriageQueue(
-                            scopeId,
-                            feedbackQueueStatusFilter,
-                            previousCursor,
-                            feedbackQueueCursorStack.slice(0, -1),
-                          );
-                        }}
+                        disabled={report.pagination.page <= 1}
+                        onClick={() =>
+                          setReportPage((page) => Math.max(1, page - 1))
+                        }
                       >
                         Página anterior
                       </button>
+                      <span role="status">
+                        Página {report.pagination.page} de{" "}
+                        {Math.max(report.pagination.totalPages, 1)} ·{" "}
+                        {report.pagination.totalParticipants} participantes
+                      </span>
                       <button
                         type="button"
-                        disabled={
-                          !feedbackQueue.hasNext ||
-                          feedbackQueue.nextCursor === undefined
-                        }
-                        onClick={() => {
-                          const scopeId = managementScopeId;
-                          if (
-                            scopeId === undefined ||
-                            feedbackQueue.nextCursor === undefined
-                          ) {
-                            return;
-                          }
+                        disabled={!report.pagination.hasNextPage}
+                        onClick={() => setReportPage((page) => page + 1)}
+                      >
+                        Próxima página
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadContinuingEducationCsv(report)}
+                      >
+                        Exportar página CSV
+                      </button>
+                    </div>
+                    <div
+                      className="dashboard-table-wrap"
+                      tabIndex={0}
+                      role="region"
+                      aria-label="Participantes do relatório de participação digital"
+                    >
+                      <table className="dashboard-table">
+                        <caption className="visually-hidden">
+                          Participantes na página atual do relatório de
+                          participação digital
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Profissional</th>
+                            <th scope="col">Conta</th>
+                            <th scope="col">Módulos</th>
+                            <th scope="col">Progresso</th>
+                            <th scope="col">Minutos digitais</th>
+                            <th scope="col">Horas digitais</th>
+                            <th scope="col">Último acesso</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.participants.length === 0 ? (
+                            <tr>
+                              <td colSpan={7}>
+                                Nenhum participante no recorte atual.
+                              </td>
+                            </tr>
+                          ) : (
+                            report.participants.map((participant) => (
+                              <tr key={participant.participantId}>
+                                <th scope="row">
+                                  <span className="participant-email">
+                                    {participant.professionalEmail}
+                                  </span>
+                                </th>
+                                <td>
+                                  {accountStatusLabel(
+                                    participant.accountStatus,
+                                  )}
+                                </td>
+                                <td>
+                                  {participant.completedModules} de{" "}
+                                  {participant.assignedModules} concluídos
+                                </td>
+                                <td>
+                                  {percentageLabel(participant.progressPercent)}
+                                </td>
+                                <td>{participant.completedDigitalMinutes}</td>
+                                <td>{participant.completedDigitalHours}</td>
+                                <td>{lastSeenLabel(participant.lastSeenAt)}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </section>
+            </div>
+
+            <div
+              className="operations-lane operations-lane--attention"
+              aria-labelledby="attention-lane-title"
+            >
+              <div className="operations-lane-heading">
+                <div>
+                  <p className="eyebrow">02 · Pendências</p>
+                  <h3 id="attention-lane-title">Ações que pedem atenção</h3>
+                  <p>
+                    Triagem, retenção e revisão ficam visíveis em um só lugar.
+                  </p>
+                </div>
+                <span className="status-pill status-pill--warning">
+                  Acompanhamento
+                </span>
+              </div>
+
+              <section
+                className="dashboard-panel"
+                aria-labelledby="feedback-triage-queue-title"
+                data-testid="feedback-triage-queue"
+              >
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">Suporte interno</p>
+                    <h3 id="feedback-triage-queue-title">
+                      Fila de relatos do produto
+                    </h3>
+                    <p>
+                      Consulta escopada de relatos sem anexos ou dados clínicos.
+                      Esta tela aplica transições previstas e permite ajustar
+                      prioridade ou assumir/liberar a responsabilidade. Resposta
+                      ao participante e SLA continuam fora deste recorte.
+                    </p>
+                  </div>
+                  {feedbackQueueState === "ready" && feedbackQueue !== null ? (
+                    <span className="status-pill status-pill--neutral dashboard-panel-freshness">
+                      Atualizado {lastSeenLabel(feedbackQueue.generatedAt)}
+                    </span>
+                  ) : null}
+                </div>
+                {feedbackQueueState === "loading" ? (
+                  <div className="experience-panel" role="status">
+                    Consultando relatos…
+                  </div>
+                ) : feedbackQueueState === "forbidden" ||
+                  feedbackQueueState === "unauthenticated" ? (
+                  <div className="experience-panel dashboard-message">
+                    <strong>Fila restrita</strong>
+                    <span>
+                      Esta conta não possui autorização para triagem de relatos.
+                    </span>
+                  </div>
+                ) : feedbackQueueState === "error" || feedbackQueue === null ? (
+                  <div className="experience-panel error-panel" role="alert">
+                    <p>Não foi possível carregar a fila de relatos.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const scopeId = managementScopeId;
+                        if (scopeId !== undefined) {
                           void loadFeedbackTriageQueue(
                             scopeId,
                             feedbackQueueStatusFilter,
-                            feedbackQueue.nextCursor,
-                            [...feedbackQueueCursorStack, feedbackQueueCursor],
+                            feedbackQueueCursor,
+                            feedbackQueueCursorStack,
                           );
+                        }
+                      }}
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className="report-filter-row"
+                      aria-label="Filtros da fila de relatos"
+                    >
+                      <label>
+                        Status
+                        <select
+                          value={feedbackQueueStatusFilter}
+                          onChange={(event) =>
+                            setFeedbackQueueStatusFilter(
+                              event.target
+                                .value as FeedbackTriageQueueStatusFilter,
+                            )
+                          }
+                        >
+                          <option value="">Todos os estados</option>
+                          <option value="NOVO">Novos</option>
+                          <option value="TRIADO">Triados</option>
+                          <option value="EM_TRATAMENTO">Em tratamento</option>
+                          <option value="AGUARDA_USUARIO">
+                            Aguardando usuário
+                          </option>
+                          <option value="RESOLVIDO">Resolvidos</option>
+                          <option value="DUPLICADO">Duplicados</option>
+                          <option value="NAO_REPRODUZIDO">
+                            Não reproduzidos
+                          </option>
+                          <option value="NAO_PLANEJADO">Não planejados</option>
+                        </select>
+                      </label>
+                    </div>
+                    {feedbackQueue.items.length === 0 ? (
+                      <p className="dashboard-empty">
+                        Nenhum relato no recorte autorizado.
+                      </p>
+                    ) : (
+                      <div
+                        className="dashboard-table-wrap"
+                        tabIndex={0}
+                        role="region"
+                        aria-label="Tabela de relatos para triagem"
+                      >
+                        <table className="dashboard-table">
+                          <caption className="visually-hidden">
+                            Relatos para triagem interna
+                          </caption>
+                          <thead>
+                            <tr>
+                              <th scope="col">Tipo</th>
+                              <th scope="col">Relato</th>
+                              <th scope="col">Criado</th>
+                              <th scope="col">Status</th>
+                              <th scope="col">Prioridade</th>
+                              <th scope="col">Responsável</th>
+                              <th scope="col">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {feedbackQueue.items.map((item) => {
+                              const events = feedbackTriageEvents(item.status);
+                              return (
+                                <tr key={item.ticketId}>
+                                  <th scope="row">
+                                    {feedbackTriageTypeLabel(item.type)}
+                                  </th>
+                                  <td>{item.description}</td>
+                                  <td>{lastSeenLabel(item.createdAt)}</td>
+                                  <td>
+                                    {feedbackTriageStatusLabel(item.status)}
+                                  </td>
+                                  <td>
+                                    <label
+                                      className="visually-hidden"
+                                      htmlFor={`feedback-priority-${item.ticketId}`}
+                                    >
+                                      Prioridade do relato {item.ticketId}
+                                    </label>
+                                    <select
+                                      id={`feedback-priority-${item.ticketId}`}
+                                      value={item.priority}
+                                      disabled={feedbackActionKey !== null}
+                                      onChange={(event) =>
+                                        void updateFeedbackTriageMetadata(
+                                          item,
+                                          event.target
+                                            .value as FeedbackTriageQueuePriority,
+                                          "MANTER",
+                                        )
+                                      }
+                                    >
+                                      <option value="BAIXA">Baixa</option>
+                                      <option value="NORMAL">Normal</option>
+                                      <option value="ALTA">Alta</option>
+                                      <option value="URGENTE">Urgente</option>
+                                    </select>
+                                  </td>
+                                  <td>
+                                    <span>
+                                      {item.assigneeId === undefined
+                                        ? "Sem responsável"
+                                        : "Responsável definido"}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div className="account-actions">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          void loadFeedbackTicketHistory(
+                                            item.ticketId,
+                                          )
+                                        }
+                                      >
+                                        Ver histórico do relato
+                                      </button>
+                                      {events.length === 0 ? (
+                                        <span>Estado final</span>
+                                      ) : (
+                                        <div className="account-actions">
+                                          {events.map((event) => {
+                                            const actionKey = `${item.ticketId}:${event}`;
+                                            return (
+                                              <button
+                                                key={event}
+                                                type="button"
+                                                disabled={
+                                                  feedbackActionKey !== null
+                                                }
+                                                onClick={() =>
+                                                  void transitionFeedbackTicket(
+                                                    item,
+                                                    event,
+                                                  )
+                                                }
+                                              >
+                                                {feedbackActionKey === actionKey
+                                                  ? "Atualizando…"
+                                                  : feedbackTriageEventLabel(
+                                                      event,
+                                                    )}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                      <button
+                                        type="button"
+                                        disabled={feedbackActionKey !== null}
+                                        onClick={() =>
+                                          void updateFeedbackTriageMetadata(
+                                            item,
+                                            item.priority,
+                                            item.assigneeId === undefined
+                                              ? "ASSUMIR"
+                                              : "LIBERAR",
+                                          )
+                                        }
+                                      >
+                                        {feedbackActionKey?.startsWith(
+                                          `${item.ticketId}:metadata:`,
+                                        )
+                                          ? "Atualizando…"
+                                          : item.assigneeId === undefined
+                                            ? "Assumir para mim"
+                                            : "Liberar responsável"}
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    <div className="report-filter-row">
+                      <span role="status">
+                        Página atual · {feedbackQueue.items.length} relatos
+                      </span>
+                      <div className="account-actions">
+                        <button
+                          type="button"
+                          disabled={feedbackQueueCursorStack.length === 0}
+                          onClick={() => {
+                            const scopeId = managementScopeId;
+                            if (
+                              scopeId === undefined ||
+                              feedbackQueueCursorStack.length === 0
+                            ) {
+                              return;
+                            }
+                            const previousCursor =
+                              feedbackQueueCursorStack[
+                                feedbackQueueCursorStack.length - 1
+                              ];
+                            void loadFeedbackTriageQueue(
+                              scopeId,
+                              feedbackQueueStatusFilter,
+                              previousCursor,
+                              feedbackQueueCursorStack.slice(0, -1),
+                            );
+                          }}
+                        >
+                          Página anterior
+                        </button>
+                        <button
+                          type="button"
+                          disabled={
+                            !feedbackQueue.hasNext ||
+                            feedbackQueue.nextCursor === undefined
+                          }
+                          onClick={() => {
+                            const scopeId = managementScopeId;
+                            if (
+                              scopeId === undefined ||
+                              feedbackQueue.nextCursor === undefined
+                            ) {
+                              return;
+                            }
+                            void loadFeedbackTriageQueue(
+                              scopeId,
+                              feedbackQueueStatusFilter,
+                              feedbackQueue.nextCursor,
+                              [
+                                ...feedbackQueueCursorStack,
+                                feedbackQueueCursor,
+                              ],
+                            );
+                          }}
+                        >
+                          Próxima página
+                        </button>
+                      </div>
+                    </div>
+                    {feedbackActionError !== null ? (
+                      <p className="feedback error" role="alert">
+                        {feedbackActionError}
+                      </p>
+                    ) : null}
+                    {feedbackHistoryTicketId !== null ? (
+                      <section
+                        className="experience-panel"
+                        aria-labelledby="feedback-history-title"
+                        data-testid="feedback-history"
+                      >
+                        <div className="section-heading compact-heading">
+                          <div>
+                            <p className="eyebrow">Trilha interna</p>
+                            <h4 id="feedback-history-title">
+                              Linha do tempo do relato
+                            </h4>
+                          </div>
+                          <span className="status-pill status-pill--neutral">
+                            Somente leitura
+                          </span>
+                        </div>
+                        {feedbackHistoryState === "loading" ? (
+                          <p role="status">Consultando o histórico…</p>
+                        ) : feedbackHistoryState === "forbidden" ||
+                          feedbackHistoryState === "unauthenticated" ? (
+                          <p>
+                            Esta conta não possui autorização para consultar
+                            este histórico.
+                          </p>
+                        ) : feedbackHistoryState === "error" ||
+                          feedbackHistory === null ? (
+                          <div role="alert">
+                            <p>Não foi possível carregar o histórico.</p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void loadFeedbackTicketHistory(
+                                  feedbackHistoryTicketId,
+                                )
+                              }
+                            >
+                              Tentar novamente
+                            </button>
+                          </div>
+                        ) : feedbackHistory.events.length === 0 ? (
+                          <p>Nenhum evento histórico registrado.</p>
+                        ) : (
+                          <ol className="journey-list">
+                            {feedbackHistory.events.map((event) => (
+                              <li key={event.historyId}>
+                                <strong>
+                                  v{event.ticketVersion} ·{" "}
+                                  {event.eventType === "CRIADO"
+                                    ? "Relato criado"
+                                    : event.eventType === "METADATA_ALTERADO"
+                                      ? "Metadata de triagem alterada"
+                                      : "Status alterado"}
+                                </strong>
+                                <br />
+                                {event.eventType === "METADATA_ALTERADO" ? (
+                                  <>
+                                    Prioridade{" "}
+                                    {feedbackTriagePriorityLabel(
+                                      event.fromPriority as FeedbackTriageQueuePriority,
+                                    )}{" "}
+                                    →{" "}
+                                    {feedbackTriagePriorityLabel(
+                                      event.toPriority as FeedbackTriageQueuePriority,
+                                    )}
+                                    <br />
+                                    Responsabilidade{" "}
+                                    {feedbackTriageAssigneeLabel(
+                                      event.fromAssigneeId,
+                                    )}{" "}
+                                    →{" "}
+                                    {feedbackTriageAssigneeLabel(
+                                      event.toAssigneeId,
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {event.fromStatus === undefined
+                                      ? "Sem status anterior"
+                                      : feedbackTriageStatusLabel(
+                                          event.fromStatus,
+                                        )}{" "}
+                                    →{" "}
+                                    {feedbackTriageStatusLabel(event.toStatus)}
+                                  </>
+                                )}
+                                <br />
+                                Registrado {lastSeenLabel(event.createdAt)}
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                      </section>
+                    ) : null}
+                  </>
+                )}
+              </section>
+
+              <section
+                className="dashboard-panel"
+                aria-labelledby="reflection-management-title"
+                data-testid="reflection-management-report"
+              >
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">Reflexão digital</p>
+                    <h3 id="reflection-management-title">
+                      Estado agregado por módulo
+                    </h3>
+                    <p>
+                      Conta atribuições digitais não iniciadas, em andamento e
+                      concluídas. Não exibe respostas, identidade de
+                      participantes, nota ou competência prática.
+                    </p>
+                  </div>
+                  {reflectionReportState === "ready" &&
+                  reflectionReport !== null ? (
+                    <span className="status-pill status-pill--neutral dashboard-panel-freshness">
+                      Atualizado {lastSeenLabel(reflectionReport.generatedAt)}
+                    </span>
+                  ) : null}
+                </div>
+                {reflectionReportState === "loading" ? (
+                  <div className="experience-panel" role="status">
+                    Consolidando estados de reflexão…
+                  </div>
+                ) : reflectionReportState === "forbidden" ||
+                  reflectionReportState === "unauthenticated" ? (
+                  <div className="experience-panel dashboard-message">
+                    <strong>Visão restrita</strong>
+                    <span>
+                      Esta conta não possui autorização para consultar este
+                      agregado.
+                    </span>
+                  </div>
+                ) : reflectionReportState === "error" ||
+                  reflectionReport === null ? (
+                  <div className="experience-panel error-panel" role="alert">
+                    <p>Não foi possível carregar o agregado de reflexão.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const scopeId = managementScopeId;
+                        if (scopeId !== undefined) {
+                          void loadReflectionManagementReport(scopeId);
+                        }
+                      }}
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                ) : reflectionReport.modules.length === 0 ? (
+                  <p className="dashboard-empty">
+                    Nenhuma atribuição de reflexão digital publicada neste
+                    escopo.
+                  </p>
+                ) : (
+                  <div
+                    className="dashboard-table-wrap"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="Tabela de estados de reflexão digital por módulo"
+                  >
+                    <table className="dashboard-table">
+                      <caption className="visually-hidden">
+                        Estados agregados de reflexão digital por módulo
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Módulo</th>
+                          <th scope="col">Não iniciada</th>
+                          <th scope="col">Em andamento</th>
+                          <th scope="col">Concluída</th>
+                          <th scope="col">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reflectionReport.modules.map((module) => (
+                          <tr key={module.moduleId}>
+                            <th scope="row">{module.moduleId}</th>
+                            <td>{module.counts.NAO_INICIADA}</td>
+                            <td>{module.counts.EM_ANDAMENTO}</td>
+                            <td>{module.counts.CONCLUIDA}</td>
+                            <td>{module.totalAssignments}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+
+              <section
+                className="dashboard-panel"
+                aria-labelledby="appeal-review-queue-title"
+                data-testid="appeal-review-queue"
+              >
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">Revisão interna</p>
+                    <h3 id="appeal-review-queue-title">Fila de contestação</h3>
+                    <p>
+                      Fila somente leitura para triagem por escopo. Exibe a
+                      justificativa e o estado do fluxo, sem dados de resposta,
+                      pontuação, chave de correção, fonte ou alegação de
+                      competência prática.
+                    </p>
+                  </div>
+                  {appealQueueState === "ready" && appealQueue !== null ? (
+                    <span className="status-pill status-pill--neutral dashboard-panel-freshness">
+                      Atualizado {lastSeenLabel(appealQueue.generatedAt)}
+                    </span>
+                  ) : null}
+                </div>
+                {appealQueueState === "loading" ? (
+                  <div className="experience-panel" role="status">
+                    Consultando a fila de contestação…
+                  </div>
+                ) : appealQueueState === "forbidden" ||
+                  appealQueueState === "unauthenticated" ? (
+                  <div className="experience-panel dashboard-message">
+                    <strong>Fila restrita</strong>
+                    <span>
+                      Esta conta não possui autorização para revisar
+                      contestações.
+                    </span>
+                  </div>
+                ) : appealQueueState === "error" || appealQueue === null ? (
+                  <div className="experience-panel error-panel" role="alert">
+                    <p>Não foi possível carregar a fila de contestação.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const scopeId = managementScopeId;
+                        if (scopeId !== undefined) {
+                          void loadAppealReviewQueue(
+                            scopeId,
+                            appealQueueStatusFilter,
+                          );
+                        }
+                      }}
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className="report-filter-row"
+                      aria-label="Filtros da fila de contestação"
+                    >
+                      <label>
+                        Status
+                        <select
+                          value={appealQueueStatusFilter}
+                          onChange={(event) =>
+                            setAppealQueueStatusFilter(
+                              event.target
+                                .value as AppealReviewQueueStatusFilter,
+                            )
+                          }
+                        >
+                          <option value="">Ativas e encerradas</option>
+                          <option value="ABERTA">Abertas</option>
+                          <option value="EM_REVISAO">Em revisão</option>
+                          <option value="DECIDIDA">Decididas</option>
+                          <option value="RECALCULO_PENDENTE">
+                            Recálculo pendente
+                          </option>
+                          <option value="ENCERRADA">Encerradas</option>
+                        </select>
+                      </label>
+                    </div>
+                    {appealQueue.items.length === 0 ? (
+                      <p className="dashboard-empty">
+                        Nenhuma contestação no recorte autorizado.
+                      </p>
+                    ) : (
+                      <div
+                        className="dashboard-table-wrap"
+                        tabIndex={0}
+                        role="region"
+                        aria-label="Tabela de contestações para revisão"
+                      >
+                        <table className="dashboard-table">
+                          <caption className="visually-hidden">
+                            Contestações para revisão interna
+                          </caption>
+                          <thead>
+                            <tr>
+                              <th scope="col">Justificativa</th>
+                              <th scope="col">Prazo</th>
+                              <th scope="col">Status</th>
+                              <th scope="col">Revisor</th>
+                              <th scope="col">Decisão</th>
+                              <th scope="col">Histórico</th>
+                              <th scope="col">Prévia</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {appealQueue.items.map((item) => (
+                              <tr key={item.appealId}>
+                                <td>{item.justification}</td>
+                                <td>{lastSeenLabel(item.dueAt)}</td>
+                                <td>{appealReviewStatusLabel(item.status)}</td>
+                                <td>
+                                  {item.reviewerId === undefined
+                                    ? "Não atribuído"
+                                    : "Revisor atribuído"}
+                                </td>
+                                <td>
+                                  {appealReviewDecisionLabel(item.decision)}
+                                </td>
+                                <td>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void loadAppealReviewHistory(
+                                        item.appealId,
+                                      )
+                                    }
+                                  >
+                                    Ver histórico
+                                  </button>
+                                </td>
+                                <td>
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      item.status !== "ABERTA" &&
+                                      item.status !== "EM_REVISAO"
+                                    }
+                                    onClick={() =>
+                                      void loadAppealDecisionImpact(
+                                        item.appealId,
+                                      )
+                                    }
+                                  >
+                                    {item.status === "ABERTA" ||
+                                    item.status === "EM_REVISAO"
+                                      ? "Prévia de anulação"
+                                      : "Prévia indisponível neste estado"}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    {appealHistoryAppealId !== null ? (
+                      <section
+                        className="experience-panel"
+                        aria-labelledby="appeal-history-title"
+                        data-testid="appeal-history"
+                      >
+                        <div className="section-heading compact-heading">
+                          <div>
+                            <p className="eyebrow">Trilha interna</p>
+                            <h4 id="appeal-history-title">
+                              Linha do tempo da contestação
+                            </h4>
+                          </div>
+                          <span className="status-pill status-pill--neutral">
+                            Somente leitura
+                          </span>
+                        </div>
+                        {appealHistoryState === "loading" ? (
+                          <p role="status">Consultando o histórico…</p>
+                        ) : appealHistoryState === "forbidden" ||
+                          appealHistoryState === "unauthenticated" ? (
+                          <p>
+                            Esta conta não possui autorização para consultar
+                            este histórico.
+                          </p>
+                        ) : appealHistoryState === "error" ||
+                          appealHistory === null ? (
+                          <div role="alert">
+                            <p>Não foi possível carregar o histórico.</p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void loadAppealReviewHistory(
+                                  appealHistoryAppealId,
+                                )
+                              }
+                            >
+                              Tentar novamente
+                            </button>
+                          </div>
+                        ) : appealHistory.events.length === 0 ? (
+                          <p>Nenhum evento histórico registrado.</p>
+                        ) : (
+                          <ol className="journey-list">
+                            {appealHistory.events.map((event) => (
+                              <li key={event.historyId}>
+                                <strong>
+                                  v{event.appealVersion} ·{" "}
+                                  {appealReviewHistoryEventLabel(
+                                    event.eventType,
+                                  )}
+                                </strong>
+                                <br />
+                                {appealReviewHistoryStatusLabel(
+                                  event.fromStatus,
+                                )}{" "}
+                                →{" "}
+                                {appealReviewHistoryStatusLabel(event.toStatus)}
+                                {event.reviewerId === undefined
+                                  ? " · Sem revisor identificado"
+                                  : " · Revisor identificado"}
+                                {event.decision === undefined ? null : (
+                                  <>
+                                    <br />
+                                    Decisão:{" "}
+                                    {appealReviewDecisionLabel(event.decision)}
+                                  </>
+                                )}
+                                {event.decisionRationale ===
+                                undefined ? null : (
+                                  <>
+                                    <br />
+                                    Rationale: {event.decisionRationale}
+                                  </>
+                                )}
+                                <br />
+                                Registrado {lastSeenLabel(event.createdAt)}
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                      </section>
+                    ) : null}
+                    {appealImpactAppealId !== null ? (
+                      <section
+                        className="experience-panel"
+                        aria-labelledby="appeal-impact-title"
+                        data-testid="appeal-impact-preview"
+                      >
+                        <div className="section-heading compact-heading">
+                          <div>
+                            <p className="eyebrow">Prévia operacional</p>
+                            <h4 id="appeal-impact-title">
+                              Impacto técnico de `ANULAR_ITEM`
+                            </h4>
+                          </div>
+                          <span className="status-pill status-pill--neutral">
+                            Somente leitura
+                          </span>
+                        </div>
+                        {appealImpactState === "loading" ? (
+                          <p role="status">Consultando o impacto persistido…</p>
+                        ) : appealImpactState === "forbidden" ||
+                          appealImpactState === "unauthenticated" ? (
+                          <p>
+                            Esta conta não possui autorização para consultar
+                            esta prévia.
+                          </p>
+                        ) : appealImpactState === "error" ||
+                          appealImpact === null ? (
+                          <div role="alert">
+                            <p>Não foi possível carregar a prévia.</p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void loadAppealDecisionImpact(
+                                  appealImpactAppealId,
+                                )
+                              }
+                            >
+                              Tentar novamente
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <p>
+                              Cenário candidato; nenhuma decisão foi registrada
+                              e nenhuma mutação foi executada.
+                            </p>
+                            <dl className="summary-list">
+                              <div>
+                                <dt>Contestação</dt>
+                                <dd>
+                                  {appealReviewStatusLabel(
+                                    appealImpact.appeal.status,
+                                  )}
+                                  {" · "}versão {appealImpact.appeal.version}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt>Tentativa alvo</dt>
+                                <dd>
+                                  {appealImpact.target.attemptId}
+                                  {" · "}
+                                  {appealImpact.target.attemptStatus}
+                                  {" · "}versão{" "}
+                                  {appealImpact.target.attemptVersion}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt>Item alvo</dt>
+                                <dd>{appealImpact.target.itemId}</dd>
+                              </div>
+                              <div>
+                                <dt>Resultado atual</dt>
+                                <dd>
+                                  {appealImpact.latestResult.availability ===
+                                  "AVAILABLE"
+                                    ? `Disponível · versão ${appealImpact.latestResult.version}`
+                                    : "Não disponível"}
+                                </dd>
+                              </div>
+                            </dl>
+                            <p>
+                              Score: não calculado · recálculo: indisponível
+                              nesta fatia · publicação: não executada.
+                            </p>
+                          </>
+                        )}
+                      </section>
+                    ) : null}
+                  </>
+                )}
+              </section>
+            </div>
+
+            <div
+              className="operations-lane operations-lane--governance"
+              aria-labelledby="governance-lane-title"
+            >
+              <div className="operations-lane-heading">
+                <div>
+                  <p className="eyebrow">03 · Governança</p>
+                  <h3 id="governance-lane-title">Controles e entrada</h3>
+                  <p>
+                    Convites, auditoria e acompanhamento com escopo explícito.
+                  </p>
+                </div>
+                <span className="status-pill status-pill--neutral">
+                  Escopo autorizado
+                </span>
+              </div>
+
+              <section
+                className="dashboard-panel"
+                aria-labelledby="audit-trail-title"
+                data-testid="audit-trail"
+              >
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">Governança</p>
+                    <h3 id="audit-trail-title">Trilha de auditoria</h3>
+                    <p>
+                      Consulta somente leitura dos eventos do escopo
+                      selecionado. A superfície mostra apenas metadados
+                      operacionais redigidos; não permite editar, exportar ou
+                      alterar decisões.
+                    </p>
+                  </div>
+                  {auditTrailState === "ready" && auditTrail !== null ? (
+                    <span className="status-pill status-pill--neutral">
+                      {auditTrail.items.length} eventos
+                    </span>
+                  ) : null}
+                </div>
+                {auditTrailState === "loading" ? (
+                  <div className="experience-panel" role="status">
+                    Consultando a trilha de auditoria…
+                  </div>
+                ) : auditTrailState === "forbidden" ||
+                  auditTrailState === "unauthenticated" ? (
+                  <div className="experience-panel dashboard-message">
+                    <strong>Trilha restrita</strong>
+                    <span>
+                      Esta conta não possui autorização para consultar os
+                      eventos deste escopo.
+                    </span>
+                  </div>
+                ) : auditTrailState === "error" || auditTrail === null ? (
+                  <div className="experience-panel error-panel" role="alert">
+                    <p>Não foi possível carregar a trilha de auditoria.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (managementScopeId !== undefined) {
+                          void loadAuditTrail(managementScopeId);
+                        }
+                      }}
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                ) : auditTrail.items.length === 0 ? (
+                  <p className="dashboard-empty">
+                    Nenhum evento no recorte autorizado.
+                  </p>
+                ) : (
+                  <>
+                    <div
+                      className="dashboard-table-wrap"
+                      tabIndex={0}
+                      role="region"
+                      aria-label="Tabela da trilha de auditoria"
+                    >
+                      <table className="dashboard-table">
+                        <caption className="visually-hidden">
+                          Eventos da trilha de auditoria no escopo selecionado
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Quando</th>
+                            <th scope="col">Ação</th>
+                            <th scope="col">Recurso</th>
+                            <th scope="col">Resultado</th>
+                            <th scope="col">Motivo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {auditTrail.items.map((item) => (
+                            <tr key={item.auditId}>
+                              <th scope="row">
+                                {lastSeenLabel(item.occurredAt)}
+                              </th>
+                              <td>{item.action}</td>
+                              <td>
+                                {item.resourceType}
+                                {item.resourceId === undefined
+                                  ? ""
+                                  : ` · ${item.resourceId}`}
+                              </td>
+                              <td>{item.outcome}</td>
+                              <td>{item.reasonCode ?? "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="report-filter-row">
+                      <span role="status">
+                        Página atual · {auditTrail.items.length} eventos
+                      </span>
+                      <button
+                        type="button"
+                        disabled={
+                          !auditTrail.hasNext ||
+                          auditTrail.nextCursor === undefined
+                        }
+                        onClick={() => {
+                          if (
+                            managementScopeId !== undefined &&
+                            auditTrail.nextCursor !== undefined
+                          ) {
+                            void loadAuditTrail(
+                              managementScopeId,
+                              auditTrail.nextCursor,
+                            );
+                          }
                         }}
                       >
                         Próxima página
                       </button>
                     </div>
-                  </div>
-                  {feedbackActionError !== null ? (
-                    <p className="feedback error" role="alert">
-                      {feedbackActionError}
-                    </p>
-                  ) : null}
-                  {feedbackHistoryTicketId !== null ? (
-                    <section
-                      className="experience-panel"
-                      aria-labelledby="feedback-history-title"
-                      data-testid="feedback-history"
-                    >
-                      <div className="section-heading compact-heading">
-                        <div>
-                          <p className="eyebrow">Trilha interna</p>
-                          <h4 id="feedback-history-title">
-                            Linha do tempo do relato
-                          </h4>
-                        </div>
-                        <span className="status-pill">Somente leitura</span>
-                      </div>
-                      {feedbackHistoryState === "loading" ? (
-                        <p role="status">Consultando o histórico…</p>
-                      ) : feedbackHistoryState === "forbidden" ||
-                        feedbackHistoryState === "unauthenticated" ? (
-                        <p>
-                          Esta conta não possui autorização para consultar este
-                          histórico.
-                        </p>
-                      ) : feedbackHistoryState === "error" ||
-                        feedbackHistory === null ? (
-                        <div role="alert">
-                          <p>Não foi possível carregar o histórico.</p>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void loadFeedbackTicketHistory(
-                                feedbackHistoryTicketId,
-                              )
-                            }
-                          >
-                            Tentar novamente
-                          </button>
-                        </div>
-                      ) : feedbackHistory.events.length === 0 ? (
-                        <p>Nenhum evento histórico registrado.</p>
-                      ) : (
-                        <ol className="journey-list">
-                          {feedbackHistory.events.map((event) => (
-                            <li key={event.historyId}>
-                              <strong>
-                                v{event.ticketVersion} ·{" "}
-                                {event.eventType === "CRIADO"
-                                  ? "Relato criado"
-                                  : event.eventType === "METADATA_ALTERADO"
-                                    ? "Metadata de triagem alterada"
-                                    : "Status alterado"}
-                              </strong>
-                              <br />
-                              {event.eventType === "METADATA_ALTERADO" ? (
-                                <>
-                                  Prioridade{" "}
-                                  {feedbackTriagePriorityLabel(
-                                    event.fromPriority as FeedbackTriageQueuePriority,
-                                  )}{" "}
-                                  →{" "}
-                                  {feedbackTriagePriorityLabel(
-                                    event.toPriority as FeedbackTriageQueuePriority,
-                                  )}
-                                  <br />
-                                  Responsabilidade{" "}
-                                  {feedbackTriageAssigneeLabel(
-                                    event.fromAssigneeId,
-                                  )}{" "}
-                                  →{" "}
-                                  {feedbackTriageAssigneeLabel(
-                                    event.toAssigneeId,
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  {event.fromStatus === undefined
-                                    ? "Sem status anterior"
-                                    : feedbackTriageStatusLabel(
-                                        event.fromStatus,
-                                      )}{" "}
-                                  → {feedbackTriageStatusLabel(event.toStatus)}
-                                </>
-                              )}
-                              <br />
-                              Registrado {lastSeenLabel(event.createdAt)}
-                            </li>
-                          ))}
-                        </ol>
-                      )}
-                    </section>
-                  ) : null}
-                </>
-              )}
-            </section>
+                  </>
+                )}
+              </section>
 
-            <section
-              className="dashboard-panel"
-              aria-labelledby="reflection-management-title"
-              data-testid="reflection-management-report"
-            >
-              <div className="section-heading">
+              <section className="invite-panel" aria-labelledby="invite-title">
                 <div>
-                  <p className="eyebrow">Reflexão digital</p>
-                  <h3 id="reflection-management-title">
-                    Estado agregado por módulo
-                  </h3>
+                  <p className="eyebrow">Entrada controlada</p>
+                  <h3 id="invite-title">Adicionar veterinário</h3>
                   <p>
-                    Conta atribuições digitais não iniciadas, em andamento e
-                    concluídas. Não exibe respostas, identidade de
-                    participantes, nota ou competência prática.
+                    Crie um convite de participante no primeiro escopo
+                    autorizado. Entregue o token somente pelo canal interno
+                    aprovado; ele não é salvo nesta tela nem enviado para logs.
                   </p>
                 </div>
-                {reflectionReportState === "ready" &&
-                reflectionReport !== null ? (
-                  <span className="status-pill">
-                    Atualizado {lastSeenLabel(reflectionReport.generatedAt)}
-                  </span>
-                ) : null}
-              </div>
-              {reflectionReportState === "loading" ? (
-                <div className="experience-panel" role="status">
-                  Consolidando estados de reflexão…
-                </div>
-              ) : reflectionReportState === "forbidden" ||
-                reflectionReportState === "unauthenticated" ? (
-                <div className="experience-panel dashboard-message">
-                  <strong>Visão restrita</strong>
-                  <span>
-                    Esta conta não possui autorização para consultar este
-                    agregado.
-                  </span>
-                </div>
-              ) : reflectionReportState === "error" ||
-                reflectionReport === null ? (
-                <div className="experience-panel error-panel" role="alert">
-                  <p>Não foi possível carregar o agregado de reflexão.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const scopeId = managementScopeId;
-                      if (scopeId !== undefined) {
-                        void loadReflectionManagementReport(scopeId);
-                      }
-                    }}
-                  >
-                    Tentar novamente
-                  </button>
-                </div>
-              ) : reflectionReport.modules.length === 0 ? (
-                <p className="dashboard-empty">
-                  Nenhuma atribuição de reflexão digital publicada neste escopo.
-                </p>
-              ) : (
-                <div
-                  className="dashboard-table-wrap"
-                  tabIndex={0}
-                  role="region"
-                  aria-label="Tabela de estados de reflexão digital por módulo"
+                <form
+                  className="invite-form"
+                  onSubmit={(event) => void createParticipantInvitation(event)}
                 >
-                  <table className="dashboard-table">
-                    <caption className="visually-hidden">
-                      Estados agregados de reflexão digital por módulo
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">Módulo</th>
-                        <th scope="col">Não iniciada</th>
-                        <th scope="col">Em andamento</th>
-                        <th scope="col">Concluída</th>
-                        <th scope="col">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reflectionReport.modules.map((module) => (
-                        <tr key={module.moduleId}>
-                          <th scope="row">{module.moduleId}</th>
-                          <td>{module.counts.NAO_INICIADA}</td>
-                          <td>{module.counts.EM_ANDAMENTO}</td>
-                          <td>{module.counts.CONCLUIDA}</td>
-                          <td>{module.totalAssignments}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-
-            <section
-              className="dashboard-panel"
-              aria-labelledby="appeal-review-queue-title"
-              data-testid="appeal-review-queue"
-            >
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">Revisão interna</p>
-                  <h3 id="appeal-review-queue-title">Fila de contestação</h3>
-                  <p>
-                    Fila somente leitura para triagem por escopo. Exibe a
-                    justificativa e o estado do fluxo, sem dados de resposta,
-                    pontuação, chave de correção, fonte ou alegação de
-                    competência prática.
-                  </p>
-                </div>
-                {appealQueueState === "ready" && appealQueue !== null ? (
-                  <span className="status-pill">
-                    Atualizado {lastSeenLabel(appealQueue.generatedAt)}
-                  </span>
-                ) : null}
-              </div>
-              {appealQueueState === "loading" ? (
-                <div className="experience-panel" role="status">
-                  Consultando a fila de contestação…
-                </div>
-              ) : appealQueueState === "forbidden" ||
-                appealQueueState === "unauthenticated" ? (
-                <div className="experience-panel dashboard-message">
-                  <strong>Fila restrita</strong>
-                  <span>
-                    Esta conta não possui autorização para revisar contestações.
-                  </span>
-                </div>
-              ) : appealQueueState === "error" || appealQueue === null ? (
-                <div className="experience-panel error-panel" role="alert">
-                  <p>Não foi possível carregar a fila de contestação.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const scopeId = managementScopeId;
-                      if (scopeId !== undefined) {
-                        void loadAppealReviewQueue(
-                          scopeId,
-                          appealQueueStatusFilter,
-                        );
+                  <label htmlFor="professional-email">
+                    E-mail profissional
+                  </label>
+                  <div className="invite-form-row">
+                    <input
+                      id="professional-email"
+                      name="professionalEmail"
+                      type="email"
+                      autoComplete="email"
+                      value={invitationEmail}
+                      onChange={(event) =>
+                        setInvitationEmail(event.target.value)
                       }
-                    }}
-                  >
-                    Tentar novamente
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div
-                    className="report-filter-row"
-                    aria-label="Filtros da fila de contestação"
-                  >
-                    <label>
-                      Status
-                      <select
-                        value={appealQueueStatusFilter}
-                        onChange={(event) =>
-                          setAppealQueueStatusFilter(
-                            event.target.value as AppealReviewQueueStatusFilter,
-                          )
-                        }
-                      >
-                        <option value="">Ativas e encerradas</option>
-                        <option value="ABERTA">Abertas</option>
-                        <option value="EM_REVISAO">Em revisão</option>
-                        <option value="DECIDIDA">Decididas</option>
-                        <option value="RECALCULO_PENDENTE">
-                          Recálculo pendente
-                        </option>
-                        <option value="ENCERRADA">Encerradas</option>
-                      </select>
-                    </label>
+                      placeholder="veterinario@exemplo.invalid"
+                      required
+                      maxLength={320}
+                    />
+                    <button
+                      type="submit"
+                      disabled={invitationState === "submitting"}
+                    >
+                      {invitationState === "submitting"
+                        ? "Criando…"
+                        : "Criar convite"}
+                    </button>
                   </div>
-                  {appealQueue.items.length === 0 ? (
-                    <p className="dashboard-empty">
-                      Nenhuma contestação no recorte autorizado.
-                    </p>
-                  ) : (
-                    <div
-                      className="dashboard-table-wrap"
-                      tabIndex={0}
-                      role="region"
-                      aria-label="Tabela de contestações para revisão"
-                    >
-                      <table className="dashboard-table">
-                        <caption className="visually-hidden">
-                          Contestações para revisão interna
-                        </caption>
-                        <thead>
-                          <tr>
-                            <th scope="col">Justificativa</th>
-                            <th scope="col">Prazo</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Revisor</th>
-                            <th scope="col">Decisão</th>
-                            <th scope="col">Histórico</th>
-                            <th scope="col">Prévia</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {appealQueue.items.map((item) => (
-                            <tr key={item.appealId}>
-                              <td>{item.justification}</td>
-                              <td>{lastSeenLabel(item.dueAt)}</td>
-                              <td>{appealReviewStatusLabel(item.status)}</td>
-                              <td>
-                                {item.reviewerId === undefined
-                                  ? "Não atribuído"
-                                  : "Revisor atribuído"}
-                              </td>
-                              <td>
-                                {appealReviewDecisionLabel(item.decision)}
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    void loadAppealReviewHistory(item.appealId)
-                                  }
-                                >
-                                  Ver histórico
-                                </button>
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  disabled={
-                                    item.status !== "ABERTA" &&
-                                    item.status !== "EM_REVISAO"
-                                  }
-                                  onClick={() =>
-                                    void loadAppealDecisionImpact(item.appealId)
-                                  }
-                                >
-                                  {item.status === "ABERTA" ||
-                                  item.status === "EM_REVISAO"
-                                    ? "Prévia de anulação"
-                                    : "Prévia indisponível neste estado"}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  {appealHistoryAppealId !== null ? (
-                    <section
-                      className="experience-panel"
-                      aria-labelledby="appeal-history-title"
-                      data-testid="appeal-history"
-                    >
-                      <div className="section-heading compact-heading">
-                        <div>
-                          <p className="eyebrow">Trilha interna</p>
-                          <h4 id="appeal-history-title">
-                            Linha do tempo da contestação
-                          </h4>
-                        </div>
-                        <span className="status-pill">Somente leitura</span>
-                      </div>
-                      {appealHistoryState === "loading" ? (
-                        <p role="status">Consultando o histórico…</p>
-                      ) : appealHistoryState === "forbidden" ||
-                        appealHistoryState === "unauthenticated" ? (
-                        <p>
-                          Esta conta não possui autorização para consultar este
-                          histórico.
-                        </p>
-                      ) : appealHistoryState === "error" ||
-                        appealHistory === null ? (
-                        <div role="alert">
-                          <p>Não foi possível carregar o histórico.</p>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void loadAppealReviewHistory(
-                                appealHistoryAppealId,
-                              )
-                            }
-                          >
-                            Tentar novamente
-                          </button>
-                        </div>
-                      ) : appealHistory.events.length === 0 ? (
-                        <p>Nenhum evento histórico registrado.</p>
-                      ) : (
-                        <ol className="journey-list">
-                          {appealHistory.events.map((event) => (
-                            <li key={event.historyId}>
-                              <strong>
-                                v{event.appealVersion} ·{" "}
-                                {appealReviewHistoryEventLabel(event.eventType)}
-                              </strong>
-                              <br />
-                              {appealReviewHistoryStatusLabel(
-                                event.fromStatus,
-                              )}{" "}
-                              → {appealReviewHistoryStatusLabel(event.toStatus)}
-                              {event.reviewerId === undefined
-                                ? " · Sem revisor identificado"
-                                : " · Revisor identificado"}
-                              {event.decision === undefined ? null : (
-                                <>
-                                  <br />
-                                  Decisão:{" "}
-                                  {appealReviewDecisionLabel(event.decision)}
-                                </>
-                              )}
-                              {event.decisionRationale === undefined ? null : (
-                                <>
-                                  <br />
-                                  Rationale: {event.decisionRationale}
-                                </>
-                              )}
-                              <br />
-                              Registrado {lastSeenLabel(event.createdAt)}
-                            </li>
-                          ))}
-                        </ol>
-                      )}
-                    </section>
-                  ) : null}
-                  {appealImpactAppealId !== null ? (
-                    <section
-                      className="experience-panel"
-                      aria-labelledby="appeal-impact-title"
-                      data-testid="appeal-impact-preview"
-                    >
-                      <div className="section-heading compact-heading">
-                        <div>
-                          <p className="eyebrow">Prévia operacional</p>
-                          <h4 id="appeal-impact-title">
-                            Impacto técnico de `ANULAR_ITEM`
-                          </h4>
-                        </div>
-                        <span className="status-pill">Somente leitura</span>
-                      </div>
-                      {appealImpactState === "loading" ? (
-                        <p role="status">Consultando o impacto persistido…</p>
-                      ) : appealImpactState === "forbidden" ||
-                        appealImpactState === "unauthenticated" ? (
-                        <p>
-                          Esta conta não possui autorização para consultar esta
-                          prévia.
-                        </p>
-                      ) : appealImpactState === "error" ||
-                        appealImpact === null ? (
-                        <div role="alert">
-                          <p>Não foi possível carregar a prévia.</p>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void loadAppealDecisionImpact(
-                                appealImpactAppealId,
-                              )
-                            }
-                          >
-                            Tentar novamente
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <p>
-                            Cenário candidato; nenhuma decisão foi registrada e
-                            nenhuma mutação foi executada.
-                          </p>
-                          <dl className="summary-list">
-                            <div>
-                              <dt>Contestação</dt>
-                              <dd>
-                                {appealReviewStatusLabel(
-                                  appealImpact.appeal.status,
-                                )}
-                                {" · "}versão {appealImpact.appeal.version}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt>Tentativa alvo</dt>
-                              <dd>
-                                {appealImpact.target.attemptId}
-                                {" · "}
-                                {appealImpact.target.attemptStatus}
-                                {" · "}versão{" "}
-                                {appealImpact.target.attemptVersion}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt>Item alvo</dt>
-                              <dd>{appealImpact.target.itemId}</dd>
-                            </div>
-                            <div>
-                              <dt>Resultado atual</dt>
-                              <dd>
-                                {appealImpact.latestResult.availability ===
-                                "AVAILABLE"
-                                  ? `Disponível · versão ${appealImpact.latestResult.version}`
-                                  : "Não disponível"}
-                              </dd>
-                            </div>
-                          </dl>
-                          <p>
-                            Score: não calculado · recálculo: indisponível nesta
-                            fatia · publicação: não executada.
-                          </p>
-                        </>
-                      )}
-                    </section>
-                  ) : null}
-                </>
-              )}
-            </section>
-
-            <section
-              className="dashboard-panel"
-              aria-labelledby="audit-trail-title"
-              data-testid="audit-trail"
-            >
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">Governança</p>
-                  <h3 id="audit-trail-title">Trilha de auditoria</h3>
-                  <p>
-                    Consulta somente leitura dos eventos do escopo selecionado.
-                    A superfície mostra apenas metadados operacionais redigidos;
-                    não permite editar, exportar ou alterar decisões.
+                </form>
+                {invitationState === "error" && invitationError !== null ? (
+                  <p className="feedback error" role="alert">
+                    {invitationError}
                   </p>
-                </div>
-                {auditTrailState === "ready" && auditTrail !== null ? (
-                  <span className="status-pill">
-                    {auditTrail.items.length} eventos
-                  </span>
                 ) : null}
-              </div>
-              {auditTrailState === "loading" ? (
-                <div className="experience-panel" role="status">
-                  Consultando a trilha de auditoria…
-                </div>
-              ) : auditTrailState === "forbidden" ||
-                auditTrailState === "unauthenticated" ? (
-                <div className="experience-panel dashboard-message">
-                  <strong>Trilha restrita</strong>
-                  <span>
-                    Esta conta não possui autorização para consultar os eventos
-                    deste escopo.
+                {invitationState === "success" && invitationResult !== null ? (
+                  <div className="invite-success" role="status">
+                    <strong>
+                      Convite{" "}
+                      {invitationContext === "resent" ? "reenviado" : "criado"}{" "}
+                      para {invitationResult.professionalEmail}
+                    </strong>
+                    <label htmlFor="created-invitation-token">
+                      Token de convite criado
+                    </label>
+                    <input
+                      id="created-invitation-token"
+                      aria-label="Token de convite criado"
+                      type="text"
+                      value={invitationResult.token}
+                      readOnly
+                    />
+                    <small>
+                      Expira em {lastSeenLabel(invitationResult.expiresAt)}. O
+                      token é exibido uma única vez nesta superfície autorizada.
+                    </small>
+                  </div>
+                ) : null}
+                {accountActionState === "success" &&
+                accountActionMessage !== null ? (
+                  <p className="feedback success" role="status">
+                    {accountActionMessage}
+                  </p>
+                ) : null}
+                {accountActionState === "error" &&
+                accountActionError !== null ? (
+                  <p className="feedback error" role="alert">
+                    {accountActionError}
+                  </p>
+                ) : null}
+                {recoveryResult !== null ? (
+                  <div className="invite-success" role="status">
+                    <strong>
+                      Link de recuperação para{" "}
+                      {recoveryResult.professionalEmail}
+                    </strong>
+                    <label htmlFor="account-recovery-token">
+                      Token de recuperação criado
+                    </label>
+                    <input
+                      id="account-recovery-token"
+                      aria-label="Token de recuperação criado"
+                      type="text"
+                      value={recoveryResult.token}
+                      readOnly
+                    />
+                    <small>
+                      Expira em {lastSeenLabel(recoveryResult.expiresAt)}.
+                      Entregue somente pelo canal aprovado; este link é de uso
+                      único e não reativa contas suspensas ou desativadas.
+                    </small>
+                  </div>
+                ) : null}
+              </section>
+
+              <section
+                className="dashboard-panel"
+                aria-labelledby="participants-title"
+              >
+                <div className="section-heading">
+                  <div>
+                    <p className="eyebrow">Acompanhamento individual</p>
+                    <h3 id="participants-title">Profissionais da sua alçada</h3>
+                  </div>
+                  <span className="status-pill status-pill--signal">
+                    {dashboard.participants.length} registros
                   </span>
                 </div>
-              ) : auditTrailState === "error" || auditTrail === null ? (
-                <div className="experience-panel error-panel" role="alert">
-                  <p>Não foi possível carregar a trilha de auditoria.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (managementScopeId !== undefined) {
-                        void loadAuditTrail(managementScopeId);
-                      }
-                    }}
-                  >
-                    Tentar novamente
-                  </button>
-                </div>
-              ) : auditTrail.items.length === 0 ? (
-                <p className="dashboard-empty">
-                  Nenhum evento no recorte autorizado.
-                </p>
-              ) : (
-                <>
+                {dashboard.participants.length === 0 ? (
+                  <p className="dashboard-empty">
+                    Nenhum profissional atribuído a este escopo.
+                  </p>
+                ) : (
                   <div
                     className="dashboard-table-wrap"
                     tabIndex={0}
                     role="region"
-                    aria-label="Tabela da trilha de auditoria"
+                    aria-label="Tabela de evolução dos profissionais"
                   >
                     <table className="dashboard-table">
                       <caption className="visually-hidden">
-                        Eventos da trilha de auditoria no escopo selecionado
+                        Evolução dos profissionais no escopo atual
                       </caption>
                       <thead>
                         <tr>
-                          <th scope="col">Quando</th>
-                          <th scope="col">Ação</th>
-                          <th scope="col">Recurso</th>
-                          <th scope="col">Resultado</th>
-                          <th scope="col">Motivo</th>
+                          <th scope="col">Profissional</th>
+                          <th scope="col">Progresso</th>
+                          <th scope="col">Baseline diagnóstica</th>
+                          <th scope="col">Próximo passo</th>
+                          <th scope="col">Sinais de atenção</th>
+                          <th scope="col">Conta</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {auditTrail.items.map((item) => (
-                          <tr key={item.auditId}>
+                        {dashboard.participants.map((participant) => (
+                          <tr key={participant.professionalEmail}>
                             <th scope="row">
-                              {lastSeenLabel(item.occurredAt)}
+                              <span className="participant-email">
+                                {participant.professionalEmail}
+                              </span>
+                              <small>
+                                {accountStatusLabel(participant.accountStatus)}{" "}
+                                · último acesso:{" "}
+                                {lastSeenLabel(participant.lastSeenAt)}
+                              </small>
                             </th>
-                            <td>{item.action}</td>
                             <td>
-                              {item.resourceType}
-                              {item.resourceId === undefined
-                                ? ""
-                                : ` · ${item.resourceId}`}
+                              <strong>
+                                {percentageLabel(
+                                  participant.progress.progressPercent,
+                                )}
+                              </strong>
+                              <small>
+                                {participant.progress.completedModules} de{" "}
+                                {participant.progress.assignedModules} módulos
+                              </small>
                             </td>
-                            <td>{item.outcome}</td>
-                            <td>{item.reasonCode ?? "—"}</td>
+                            <td>
+                              {participant.diagnosticProfile === undefined ? (
+                                <small>Sem diagnóstico registrado</small>
+                              ) : (
+                                <div
+                                  className="staff-diagnostic-profile"
+                                  aria-label="Diagnóstico formativo por tema"
+                                >
+                                  <strong>
+                                    Diagnóstico formativo por tema
+                                  </strong>
+                                  <small className="staff-diagnostic-disclaimer">
+                                    Sem nota global; não representa competência
+                                    prática ou autorização clínica.
+                                  </small>
+                                  {participant.diagnosticProfile.map((item) => (
+                                    <span key={item.themeId}>
+                                      <b>{item.themeLabel}</b>
+                                      <small>
+                                        {diagnosticStatusLabel(item.status)} ·{" "}
+                                        {percentageLabel(item.scorePercent)}
+                                      </small>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                            <td>{nextActionLabel(participant.nextAction)}</td>
+                            <td>
+                              <small>
+                                {participant.pendingCorrections} correções ·{" "}
+                                {participant.progress.remediationModules}{" "}
+                                reforços · {participant.openFeedback} feedbacks
+                              </small>
+                            </td>
+                            <td>
+                              <div className="account-actions">
+                                {participant.accountStatus === "INVITED" ? (
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      accountActionState === "submitting"
+                                    }
+                                    onClick={() =>
+                                      void resendParticipantInvitation(
+                                        participant.participantId,
+                                      )
+                                    }
+                                  >
+                                    {accountActionKey ===
+                                    `${participant.participantId}:resend`
+                                      ? "Reenviando…"
+                                      : "Reenviar convite"}
+                                  </button>
+                                ) : null}
+                                {participant.accountStatus === "ACTIVE" ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="secondary-button"
+                                      disabled={
+                                        accountActionState === "submitting"
+                                      }
+                                      onClick={() =>
+                                        void issueParticipantRecovery(
+                                          participant.participantId,
+                                        )
+                                      }
+                                    >
+                                      {accountActionKey ===
+                                      `${participant.participantId}:recovery`
+                                        ? "Gerando…"
+                                        : "Gerar recuperação"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={
+                                        accountActionState === "submitting"
+                                      }
+                                      onClick={() =>
+                                        void changeParticipantStatus(
+                                          participant.participantId,
+                                          "ACTIVE",
+                                          "SUSPENDED",
+                                        )
+                                      }
+                                    >
+                                      {accountActionKey ===
+                                      `${participant.participantId}:SUSPENDED`
+                                        ? "Suspendo…"
+                                        : "Suspender"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="secondary-button"
+                                      disabled={
+                                        accountActionState === "submitting"
+                                      }
+                                      onClick={() =>
+                                        void changeParticipantStatus(
+                                          participant.participantId,
+                                          "ACTIVE",
+                                          "DEACTIVATED",
+                                        )
+                                      }
+                                    >
+                                      Desativar
+                                    </button>
+                                  </>
+                                ) : null}
+                                {participant.accountStatus === "SUSPENDED" ||
+                                participant.accountStatus === "DEACTIVATED" ? (
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      accountActionState === "submitting"
+                                    }
+                                    onClick={() =>
+                                      void changeParticipantStatus(
+                                        participant.participantId,
+                                        participant.accountStatus ===
+                                          "SUSPENDED"
+                                          ? "SUSPENDED"
+                                          : "DEACTIVATED",
+                                        "ACTIVE",
+                                      )
+                                    }
+                                  >
+                                    {accountActionKey ===
+                                    `${participant.participantId}:ACTIVE`
+                                      ? "Reativando…"
+                                      : "Reativar"}
+                                  </button>
+                                ) : null}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <div className="report-filter-row">
-                    <span role="status">
-                      Página atual · {auditTrail.items.length} eventos
-                    </span>
-                    <button
-                      type="button"
-                      disabled={
-                        !auditTrail.hasNext ||
-                        auditTrail.nextCursor === undefined
-                      }
-                      onClick={() => {
-                        if (
-                          managementScopeId !== undefined &&
-                          auditTrail.nextCursor !== undefined
-                        ) {
-                          void loadAuditTrail(
-                            managementScopeId,
-                            auditTrail.nextCursor,
-                          );
-                        }
-                      }}
-                    >
-                      Próxima página
-                    </button>
-                  </div>
-                </>
-              )}
-            </section>
-
-            <section className="invite-panel" aria-labelledby="invite-title">
-              <div>
-                <p className="eyebrow">Entrada controlada</p>
-                <h3 id="invite-title">Adicionar veterinário</h3>
-                <p>
-                  Crie um convite de participante no primeiro escopo autorizado.
-                  Entregue o token somente pelo canal interno aprovado; ele não
-                  é salvo nesta tela nem enviado para logs.
-                </p>
-              </div>
-              <form
-                className="invite-form"
-                onSubmit={(event) => void createParticipantInvitation(event)}
-              >
-                <label htmlFor="professional-email">E-mail profissional</label>
-                <div className="invite-form-row">
-                  <input
-                    id="professional-email"
-                    name="professionalEmail"
-                    type="email"
-                    autoComplete="email"
-                    value={invitationEmail}
-                    onChange={(event) => setInvitationEmail(event.target.value)}
-                    placeholder="veterinario@exemplo.invalid"
-                    required
-                    maxLength={320}
-                  />
-                  <button
-                    type="submit"
-                    disabled={invitationState === "submitting"}
-                  >
-                    {invitationState === "submitting"
-                      ? "Criando…"
-                      : "Criar convite"}
-                  </button>
-                </div>
-              </form>
-              {invitationState === "error" && invitationError !== null ? (
-                <p className="feedback error" role="alert">
-                  {invitationError}
-                </p>
-              ) : null}
-              {invitationState === "success" && invitationResult !== null ? (
-                <div className="invite-success" role="status">
-                  <strong>
-                    Convite{" "}
-                    {invitationContext === "resent" ? "reenviado" : "criado"}{" "}
-                    para {invitationResult.professionalEmail}
-                  </strong>
-                  <label htmlFor="created-invitation-token">
-                    Token de convite criado
-                  </label>
-                  <input
-                    id="created-invitation-token"
-                    aria-label="Token de convite criado"
-                    type="text"
-                    value={invitationResult.token}
-                    readOnly
-                  />
-                  <small>
-                    Expira em {lastSeenLabel(invitationResult.expiresAt)}. O
-                    token é exibido uma única vez nesta superfície autorizada.
-                  </small>
-                </div>
-              ) : null}
-              {accountActionState === "success" &&
-              accountActionMessage !== null ? (
-                <p className="feedback success" role="status">
-                  {accountActionMessage}
-                </p>
-              ) : null}
-              {accountActionState === "error" && accountActionError !== null ? (
-                <p className="feedback error" role="alert">
-                  {accountActionError}
-                </p>
-              ) : null}
-              {recoveryResult !== null ? (
-                <div className="invite-success" role="status">
-                  <strong>
-                    Link de recuperação para {recoveryResult.professionalEmail}
-                  </strong>
-                  <label htmlFor="account-recovery-token">
-                    Token de recuperação criado
-                  </label>
-                  <input
-                    id="account-recovery-token"
-                    aria-label="Token de recuperação criado"
-                    type="text"
-                    value={recoveryResult.token}
-                    readOnly
-                  />
-                  <small>
-                    Expira em {lastSeenLabel(recoveryResult.expiresAt)}.
-                    Entregue somente pelo canal aprovado; este link é de uso
-                    único e não reativa contas suspensas ou desativadas.
-                  </small>
-                </div>
-              ) : null}
-            </section>
-
-            <section
-              className="dashboard-panel"
-              aria-labelledby="participants-title"
-            >
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">Acompanhamento individual</p>
-                  <h3 id="participants-title">Profissionais da sua alçada</h3>
-                </div>
-                <span className="status-pill">
-                  {dashboard.participants.length} registros
-                </span>
-              </div>
-              {dashboard.participants.length === 0 ? (
-                <p className="dashboard-empty">
-                  Nenhum profissional atribuído a este escopo.
-                </p>
-              ) : (
-                <div
-                  className="dashboard-table-wrap"
-                  tabIndex={0}
-                  role="region"
-                  aria-label="Tabela de evolução dos profissionais"
-                >
-                  <table className="dashboard-table">
-                    <caption className="visually-hidden">
-                      Evolução dos profissionais no escopo atual
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">Profissional</th>
-                        <th scope="col">Progresso</th>
-                        <th scope="col">Baseline diagnóstica</th>
-                        <th scope="col">Próximo passo</th>
-                        <th scope="col">Sinais de atenção</th>
-                        <th scope="col">Conta</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard.participants.map((participant) => (
-                        <tr key={participant.professionalEmail}>
-                          <th scope="row">
-                            <span className="participant-email">
-                              {participant.professionalEmail}
-                            </span>
-                            <small>
-                              {accountStatusLabel(participant.accountStatus)} ·
-                              último acesso:{" "}
-                              {lastSeenLabel(participant.lastSeenAt)}
-                            </small>
-                          </th>
-                          <td>
-                            <strong>
-                              {percentageLabel(
-                                participant.progress.progressPercent,
-                              )}
-                            </strong>
-                            <small>
-                              {participant.progress.completedModules} de{" "}
-                              {participant.progress.assignedModules} módulos
-                            </small>
-                          </td>
-                          <td>
-                            {participant.diagnosticProfile === undefined ? (
-                              <small>Sem diagnóstico registrado</small>
-                            ) : (
-                              <div
-                                className="staff-diagnostic-profile"
-                                aria-label="Diagnóstico formativo por tema"
-                              >
-                                <strong>Diagnóstico formativo por tema</strong>
-                                <small className="staff-diagnostic-disclaimer">
-                                  Sem nota global; não representa competência
-                                  prática ou autorização clínica.
-                                </small>
-                                {participant.diagnosticProfile.map((item) => (
-                                  <span key={item.themeId}>
-                                    <b>{item.themeLabel}</b>
-                                    <small>
-                                      {diagnosticStatusLabel(item.status)} ·{" "}
-                                      {percentageLabel(item.scorePercent)}
-                                    </small>
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </td>
-                          <td>{nextActionLabel(participant.nextAction)}</td>
-                          <td>
-                            <small>
-                              {participant.pendingCorrections} correções ·{" "}
-                              {participant.progress.remediationModules} reforços
-                              · {participant.openFeedback} feedbacks
-                            </small>
-                          </td>
-                          <td>
-                            <div className="account-actions">
-                              {participant.accountStatus === "INVITED" ? (
-                                <button
-                                  type="button"
-                                  disabled={accountActionState === "submitting"}
-                                  onClick={() =>
-                                    void resendParticipantInvitation(
-                                      participant.participantId,
-                                    )
-                                  }
-                                >
-                                  {accountActionKey ===
-                                  `${participant.participantId}:resend`
-                                    ? "Reenviando…"
-                                    : "Reenviar convite"}
-                                </button>
-                              ) : null}
-                              {participant.accountStatus === "ACTIVE" ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="secondary-button"
-                                    disabled={
-                                      accountActionState === "submitting"
-                                    }
-                                    onClick={() =>
-                                      void issueParticipantRecovery(
-                                        participant.participantId,
-                                      )
-                                    }
-                                  >
-                                    {accountActionKey ===
-                                    `${participant.participantId}:recovery`
-                                      ? "Gerando…"
-                                      : "Gerar recuperação"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    disabled={
-                                      accountActionState === "submitting"
-                                    }
-                                    onClick={() =>
-                                      void changeParticipantStatus(
-                                        participant.participantId,
-                                        "ACTIVE",
-                                        "SUSPENDED",
-                                      )
-                                    }
-                                  >
-                                    {accountActionKey ===
-                                    `${participant.participantId}:SUSPENDED`
-                                      ? "Suspendo…"
-                                      : "Suspender"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="secondary-button"
-                                    disabled={
-                                      accountActionState === "submitting"
-                                    }
-                                    onClick={() =>
-                                      void changeParticipantStatus(
-                                        participant.participantId,
-                                        "ACTIVE",
-                                        "DEACTIVATED",
-                                      )
-                                    }
-                                  >
-                                    Desativar
-                                  </button>
-                                </>
-                              ) : null}
-                              {participant.accountStatus === "SUSPENDED" ||
-                              participant.accountStatus === "DEACTIVATED" ? (
-                                <button
-                                  type="button"
-                                  disabled={accountActionState === "submitting"}
-                                  onClick={() =>
-                                    void changeParticipantStatus(
-                                      participant.participantId,
-                                      participant.accountStatus === "SUSPENDED"
-                                        ? "SUSPENDED"
-                                        : "DEACTIVATED",
-                                      "ACTIVE",
-                                    )
-                                  }
-                                >
-                                  {accountActionKey ===
-                                  `${participant.participantId}:ACTIVE`
-                                    ? "Reativando…"
-                                    : "Reativar"}
-                                </button>
-                              ) : null}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
+                )}
+              </section>
+            </div>
           </>
         )}
       </section>

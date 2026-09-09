@@ -6,7 +6,12 @@ import {
 } from "@cvg/domain";
 
 import { createAuditEntry, type AuditPort } from "./audit.js";
-import { ApplicationError, toApplicationError } from "./errors.js";
+import {
+  ApplicationError,
+  isPersistenceConflict,
+  isPersistenceStateConflict,
+  toApplicationError,
+} from "./errors.js";
 import type { TransactionSecurityContext } from "./transaction-context.js";
 
 export type StartAttemptCommand = Readonly<{
@@ -49,6 +54,7 @@ export interface AttemptRepositoryPort {
 }
 
 export interface AttemptIdempotencyPort {
+  readonly lock?: (key: string) => Promise<void>;
   readonly find: (key: string) => Promise<IdempotencyRecord | null>;
   readonly store: (key: string, record: IdempotencyRecord) => Promise<void>;
 }
@@ -117,6 +123,19 @@ function normalizeAttemptError(error: unknown): ApplicationError {
   if (error instanceof AttemptDomainError) {
     return new ApplicationError("state_conflict", "Attempt state conflict");
   }
+  if (isPersistenceStateConflict(error)) {
+    return new ApplicationError("state_conflict", "Attempt state conflict");
+  }
+  if (isPersistenceConflict(error)) {
+    return new ApplicationError(
+      /idempotency/iu.test(error.message)
+        ? "idempotency_conflict"
+        : "state_conflict",
+      /idempotency/iu.test(error.message)
+        ? "Idempotency key was already used with another command"
+        : "Attempt state conflict",
+    );
+  }
   return toApplicationError(error);
 }
 
@@ -133,6 +152,7 @@ export async function startAttempt(
   try {
     return await dependencies.transaction.run(
       async (operations) => {
+        await operations.idempotency.lock?.(command.idempotencyKey);
         const replay = replayOrThrow(
           await operations.idempotency.find(command.idempotencyKey),
           expectedFingerprint,
@@ -213,6 +233,7 @@ export async function submitAttempt(
   try {
     return await dependencies.transaction.run(
       async (operations) => {
+        await operations.idempotency.lock?.(command.idempotencyKey);
         const replay = replayOrThrow(
           await operations.idempotency.find(command.idempotencyKey),
           expectedFingerprint,

@@ -127,7 +127,7 @@ describe("worker runtime", () => {
         requests.filter((request) =>
           request.startsWith(`PUT /collections/${collection}/index`),
         ),
-      ).toHaveLength(4);
+      ).toHaveLength(5);
       await runtime.close();
     } finally {
       await new Promise<void>((resolve) => qdrant.close(() => resolve()));

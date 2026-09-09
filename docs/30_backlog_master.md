@@ -2,6 +2,242 @@
 
 Backlog operacional vivo. Itens só podem avançar quando suas dependências e gates estiverem satisfeitos.
 
+## 2026-09-06 — Programa Premium / State of the Art / Triplo AAA
+
+O backlog executável de evolução premium foi consolidado em:
+
+- `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md` — plano executivo e
+  barra de qualidade AAA;
+- `BRIEFING/03.BUILD/0301_roadmap.md` — ondas, fases, gates, dependências e
+  caminho crítico;
+- `BRIEFING/03.BUILD/0302_backlog_master.md` — tasks `AAA-000`–`AAA-902`,
+  critérios de aceite, validação e rollback.
+
+### Estado de controle
+
+- `AAA-000` — `COMPLETED`: plano, roadmap e backlog materializados e ligados
+  ao baseline atual;
+- `AAA-002` — `COMPLETED`: state, log, backlog operacional e manifesto de
+  rastreabilidade sincronizados e verificados;
+- `AAA-001` — `WAITING_HUMAN_APPROVAL`: aprovação da barra AAA, metas de
+  SLO/RPO/RTO, capacidade, escopo do piloto e autoridade dos gates;
+- `AAA-603` — `IN_PROGRESS`: contrato local de CI same-SHA, SBOM CycloneDX,
+  manifesto SHA-256 e redaction implementados e testados; execução remota,
+  retenção/ACL, assinatura, cache e inspeção do artefato continuam pendentes;
+- `AAA-700` — `IN_PROGRESS`: retry bounded, abort, quotas/budget e fallback
+  seguro local implementados para IA/embeddings; provider real, custo/latência,
+  collector, evals e operação continuam pendentes;
+- `AAA-701` — `IN_PROGRESS`: pontos antigos agora são observáveis, drift de
+  versão/modelo/hash/escopo é reindexado, órfãos são removidos, no-op não chama
+  embedding, payload do scroll é allowlisted e a reconciliação usa advisory lock;
+  nova crítica fresh independente (Euler foi encerrado sem parecer) e prova
+  PostgreSQL/Qdrant live ainda pendentes;
+- execução técnica local corrente: `AAA-101`–`AAA-106`, incluindo migrations
+  forward-only `0052`/`0053`, idempotência atômica, projeção de sessão corrente
+  e reidratação web; status `IN_PROGRESS` por ausência de prova live;
+- `AAA-106` permanece `IN_PROGRESS` com recorte local bounded validado: `/operations` e `/authoring` só renderizam
+  a superfície interna após resposta autorizada server-side; a API permanece a
+  autoridade e o cliente não recebe capability. Typecheck, build de produção
+  e E2E focado `11/11` passam; o proxy server-side agora está implementado com
+  teste focal `11/11`, foco de autorização `12/12` e E2E completo final `43/43` com
+  upstream local que exige cookie; a crítica fresh curta do Round 7 retornou
+  `PASS` sem severidade. Cookie HTTPS/expiração, cross-scope, upstream
+  produtivo e browser→API→PostgreSQL permanecem gates live; o E2E completo
+  atual também revalidou o rail visual e stress de 195px; as fatias locais
+  `AAA-200/201` e `AAA-205` foram posteriormente consolidadas com gaps;
+- `UI-VIS-001` permanece `IN_PROGRESS` no Gauntlet Round 8 após a matriz visual
+  histórica `6/6` e E2E `39/39` contra o build anterior; o novo recorte focal
+  de `/operations` adicionou um rail de oito âncoras com `Adicionar
+  veterinário` e `Profissionais` em primeiro plano, compactou os estados de
+  erro no desktop e os empilhou no mobile, e foi re-renderizado em 1440/768/390
+  sem overflow; o stress bounded confirmou cinco rotas em
+  390px, um `h1`, alvos >=40px incluindo radio/checkbox nativos associados e
+  `.account-actions` populado, reflow em viewport de 195 CSS px como proxy de
+  zoom, copy longa e CLS <=0.1. O pacote `.agent/artifacts/frontend-quality-packet.json`
+  passou os quatro gates determinísticos. Loading prematuro, contraste P1,
+  cabeçalho instável, disabled-state, agrupamento e hierarquia do authoring
+  foram corrigidos e rerenderizados; `select:disabled` passa 5.99:1. A crítica
+  crítica fresh same-SHA em `.agent/artifacts/ui-visual-critic-2026-09-06-final.md`
+  retornou `PASS` para UI-VIS-08 sem P0/P1 visual no recorte; a crítica cega do
+  Round 8 confirmou como gap principal a hierarquia de ações e não alterou
+  arquivos; a primeira execução pós-mutação revelou clipping na viewport de
+  195px, que foi corrigido com fallback responsivo de ações; build de produção
+  e E2E completo final `43/43` passaram. Permanecem gaps proxy, live e produção e não
+  há claim global de AAA;
+- não há autorização implícita para código clínico publicado, deploy,
+  produção, participantes reais ou claim de competência.
+
+- `AAA-205` foi fechado localmente com gaps no contrato
+  `BRIEFING/03.BUILD/0562_aaa_recovery_resilience_contract.md`: loading/error/empty,
+  retry seguro, recuperação one-time, remoção do token da URL e sessão corrente
+  estão ligados a testes web/API/E2E. Expiração e revogação em cookie HTTPS real,
+  cross-scope, rede real, browser→API→PostgreSQL/RLS e revisão assistiva ainda
+  dependem dos gates live e humanos.
+
+- Gauntlet Round 7 foi registrado com evidência local `PASS`, live `BLOCKED` e
+  crítica independente `REVISE`; após a reconciliação documental, o fingerprint
+  foi rebaselineado e a validação de drift passou, mas a evidência permanece
+  `STALE` porque o rebaseline invalida frescura até os gates requeridos serem
+  reexecutados.
+- Após `AAA-603`/`AAA-700`, um novo rebaseline controlado aceitou o fingerprint
+  `aae0dd40f803cde16fcfad76840dbfce70975fd9d7ddc3a85cc897e0bfe61e9f`; a
+  validação estrutural passou sem drift, e a evidência anterior continua
+  `STALE` até reexecução dos gates remotos/live.
+- Após a revalidação visual pós-ajuste e os gates documentais finais, o
+  rebaseline do Gauntlet foi executado novamente; o fingerprint corrente foi
+  aceito e `validate --check-drift` retornou `valid: true` sem erros. A frescura
+  permanece `STALE` por desenho, até gates remotos/live repetidos.
+- Depois desse rebaseline, alterações visuais concorrentes em operações,
+  recovery e stylesheet produziram drift detectável; a matriz corrente foi
+  reexecutada e passou `11/11` em `59,1 s`, com verificação ampla `149` arquivos/
+  `808` testes/`42` skips. A evidência está em
+  `.agent/artifacts/ui-visual-current-revalidation-2026-09-06.md`; o
+  rebaseline controlado desta versão ainda é a próxima ação de governança.
+
+### Quality bar AAA
+
+O programa só avança com evidência corrente de segurança, integridade,
+acessibilidade, jornada real, conteúdo clínico revisado, operação, recuperação,
+traceability e auditoria independente. Cobertura ou build verdes não compensam
+um P0/P1, um gap clínico ou ausência de prova no boundary correto.
+
+Este overlay não reclassifica silenciosamente os itens históricos abaixo; os
+gaps legados foram mapeados para as tasks `AAA-*` do backlog BUILD canônico.
+
+### Trust core em execução local — `AAA-101`–`AAA-105`
+
+- `AAA-101`/`AAA-102`: migration `0052` impede exclusão pós-finalização e
+  permite leitura do participante em sessão `FINALIZADA`; a regressão de
+  leitura fresca preservando resposta/contagem passa localmente; PostgreSQL/RLS
+  live ainda não executado.
+- `AAA-103`: attempts/answers usam insert atômico, lock transacional por chave,
+  fingerprint vencedor, conflito CAS nomeado e resposta pública `409`;
+  unit/application/API passam; concorrência PostgreSQL live ainda não executada.
+- `AAA-104`: migration `0053` registra FKs compostas, orphan scan fail-closed,
+  `FORCE RLS` e policies de `content_versions`/`ai_suggestions`; governance
+  focal passa `3/3`, com um cenário live skipped.
+- `AAA-105`: contrato strict da sessão corrente, limites/default de rotação,
+  rota `GET /api/v1/session/current`, reidratação da sessão e E2E sintético de
+  recovery passam; cookie, expiração, cross-scope e browser→API→PostgreSQL real
+  permanecem gaps.
+
+O grupo permanece `IN_PROGRESS`: evidência local não promove nenhuma task a
+`COMPLETED` nem substitui a revisão independente e a prova live autorizada.
+
+### AAA-205 — Resiliência de acesso e recuperação
+
+- status: `COMPLETED_WITH_GAPS`;
+- contrato: `BRIEFING/03.BUILD/0562_aaa_recovery_resilience_contract.md`;
+- evidência: `.agent/artifacts/aaa-205-recovery-resilience-local-2026-09-06.md`;
+- escopo fechado: estados loading/ready/empty/error, retries explícitos,
+  recuperação com token removido da URL, sessão server-side e projeções públicas
+  redigidas;
+- validação: E2E sintético final `43/43` (artefato
+  `.agent/artifacts/aaa-200-201-e2e-final-2026-09-06.md`), visual corrente
+  `7/7`,
+  `corepack pnpm verify` `149/800` e gates documentais/traceability PASS;
+- gaps: expiração/revogação live, cross-scope, rede real, browser→API→PostgreSQL/RLS,
+  operação externa e revisão assistiva com usuários.
+
+### Execução bounded de experiência visual — `UI-VIS-001`
+
+- status atual: `IN_PROGRESS`, Gauntlet Round 10 e revalidação corrente
+  reexecutados bounded; a matriz corrente passou `11/11` em `59,1 s`; o recorte
+  UI-VIS-08 histórico tem `PASS` independente bounded e o novo rail de
+  `/operations` tem teste focal `1/1` com axe zero;
+- escopo: shell, tokens, tipografia, estados, responsividade, motion e assets
+  decorativos locais em `apps/web`, sem mudança de contrato, API, domínio,
+  conteúdo clínico ou boundary público;
+- evidência corrente: `next build`/typecheck web em workspace isolado e
+  `tests/e2e/visual-gauntlet.spec.ts` `7/7` contra `next start` local isolado;
+  o E2E sintético completo final `43/43` permanece registrado, axe zero nas cinco rotas em
+  1440px/768px/390px e no fixture autenticado, loading inicial anunciado,
+  estados preenchidos sintéticos de diagnóstico/operação/autoria, sem overflow
+  global, traversal completo por Tab, reduced motion efetivo, stress 390px com
+  um `h1`, alvos >=40px incluindo labels nativos e variante populada de
+  operações, reflow em viewport de 195 CSS px como proxy de zoom, copy longa e
+  CLS <=0.1, estados loading/empty/success, captura de falhas
+  CSS/pageerror/console, assets HTTP 200 e o pacote de quality gates em `PASS`;
+  Round 8: oito âncoras sem overflow em 1440/768/390 e renders hashados em
+  `.agent/artifacts/ui-visual-operations-rail-round8.md`; a matriz pós-mutação
+  corrente foi confirmada em produção-shaped local depois que o fixture
+  sintético foi restaurado;
+  a crítica fresh same-SHA confirmou ausência de P0/P1 visual; o relatório está
+  em `.agent/artifacts/ui-visual-critic-2026-09-06-final.md`. O item continua
+  `IN_PROGRESS` por não fechar AAA-001, live, produção ou clínica;
+- Round 9: a crítica fresh encontrou gaps mobile de rail, composição de erro e
+  legibilidade secundária; a implementação corrigiu esses pontos com RED/GREEN,
+  foco `1/1`, axe zero, rail 2×4 em 390px, retry empilhado abaixo de 480px e
+  piso de texto secundário de 14px/line-height 1,4. O build isolado e a suíte
+  visual corrente passaram `7/7`; o critic fresh `Beauvoir` retornou `PASS`,
+  confiança `0,92`, sem achados materiais. Hashes e limitações estão no mesmo
+  artefato Round 8/9;
+- Round 10: a revalidação inicial passou `9/9`, mas a crítica fresh `Boole`
+  encontrou P1 de escaneamento comprimido em `/operations` mobile e P2s de
+  densidade contínua em `/authoring`, selos de atualização repetidos e texto
+  secundário fraco. RED/GREEN adicionou cartões de seção no mobile, headings e
+  cabeçalhos de tabela mais legíveis, filtros full-width, empty states com
+  superfície, agrupamento visual de autoria, contraste reforçado e ocultação
+  dos selos derivados repetidos no mobile. O foco passou `2/2` com axe zero;
+  `next build` e a matriz visual em `next start` passaram `10/10`; `Chandrasekhar`
+  retornou `PASS`, confiança `0,95`, sem achados P0/P1/P2. Hashes, Blender,
+  ComfyUI e a indisponibilidade de OpenDesign estão no artefato Round 10;
+- Pós-ajuste de 2026-09-06: RED/GREEN corrigiu sticky rail em mobile, superfícies
+  de painéis aninhados e nome acessível estável do toggle de autoria. O foco
+  passou `3/3`; a matriz segmentada passou `7/7` antes do limite do runner e os
+  três cenários finais passaram `3/3`, incluindo reidratação, variantes e stress;
+  o artefato é `.agent/artifacts/ui-visual-postfix-2026-09-06.md`. A execução
+  única de 44 testes recebeu `SIGTERM` antes do fim, portanto não há claim de
+  `44/44`; o item permanece `IN_PROGRESS`.
+- Revalidação corrente de 2026-09-06: a matriz completa
+  `tests/e2e/visual-gauntlet.spec.ts` passou `11/11` em `59,1 s` após as
+  alterações concorrentes; `corepack pnpm verify` passou `149` arquivos,
+  `808` testes e `42` skips. Registro:
+  `.agent/artifacts/ui-visual-current-revalidation-2026-09-06.md`.
+- Round 11 final de 2026-09-06: os P2s da crítica fresh foram reduzidos com
+  superfície consistente para vazios de autoria e uma única ação primária no
+  command bar. A build/typecheck web passaram, `authoring-review` passou
+  `5/5`, a matriz visual completa passou `11/11`, e o critic fresh `Raman`
+  retornou `PASS` sem P0/P1, sem clipping/overflow visível. Capturas, hashes,
+  Blender MCP, ComfyUI e o transporte fechado do OpenDesign estão registrados
+  em `.agent/artifacts/ui-visual-round11-final.md`; o item permanece
+  `IN_PROGRESS` por manter live, produção, clínica e AAA-001 fora do recorte.
+- checkpoint de continuidade para reset: `.agent/checkpoint-2026-09-06-frontend-visual.md`;
+  o runtime atual também mantém `AAA-701` ativo e requer nova crítica fresh
+  independente, pois `Euler` foi encerrado sem parecer, antes do rebaseline
+  controlado do Gauntlet;
+- próxima ação: ler o checkpoint e o estado canônico, abrir nova crítica fresh
+  de `AAA-701`, atualizar a evidência e rebaselinear o Gauntlet somente após o
+  estado final. Ao retomar o frontend, considerar bounded o gap de
+  hierarquia mobile em `/operations` e a ausência de renders canônicos de `/` e
+  `/diagnostic`, mantendo `AAA-001`/`CVG_TEST_DATABASE_URL` como dependências
+  dos gates live; não iniciar `AAA-203`/`AAA-204` sem contrato ou decisão de
+  produto;
+- limite: não fecha `AAA-001`, `AAA-400` ou `AAA-401`, nem autoriza produção,
+  deploy, publicação clínica ou claim de AAA/perfeição.
+
+### AAA-200/201 — jornada vertical diagnóstico → assignment
+
+- status: `COMPLETED_WITH_GAPS` para a implementação local bounded;
+- contrato congelado em `BRIEFING/03.BUILD/0561_aaa_vertical_journey_contract.md`,
+  complementando o contrato de sessão `0560`;
+- implementação existente finaliza a sessão, persiste o resultado e
+  materializa `M01`/`M02`/`M11` mais recomendações válidas no mesmo caminho
+  transacional; replay, unicidade `(participant, scope, module)`, promoção CAS,
+  proveniência divergente fail-closed, vínculo de atividade publicada e
+  projeção redigida sem internals estão cobertos;
+- evidência focal pós-correção: `5` arquivos/`25` testes PASS; E2E final
+  `43/43` em portas isoladas; `pnpm verify`
+  corrente: `149` arquivos/`800` testes PASS, `42` skipped e cobertura
+  `84,45%/80,18%/87,30%/85,19%`;
+- correção Gauntlet: resposta do endpoint não contém `diagnosticResultId`,
+  `assignmentId`, `moduleId`, `participantId` ou `scopeId`; replay com source
+  diagnostic ou vínculo de atividade divergente falha fechado;
+- gaps: `CVG_TEST_DATABASE_URL` ausente, portanto RLS/concorrência/rollback
+  live e browser → web → API → PostgreSQL não foram comprovados; `AAA-202`,
+  feedback/debrief, retenção, conteúdo clínico, produção, piloto e release
+  permanecem separados e não são promovidos por esta evidência.
+
 **Item concluído mais recente da meta 95/100:** `CI-15-01` — Execução remota e reprodutibilidade, reavaliado em 95/100. Itens 1–12 foram reavaliados em 95/100 e os itens 13–14 em 96/100 nos escopos registrados; o item 16 está liberado para abertura.
 
 **Atualização operacional 2026-08-23:** `HARNESS-DB-2026-08-23` foi concluído com gaps controlados; o harness live PostgreSQL/RLS agora separa conexão da aplicação e conexão administrativa de teste, e não mascara ausência de capacidade administrativa. `TRAINING-MANAGEMENT-2026-08-23` foi ampliado com a trilha digital de 24 meses, acompanhamento de evolução no participante, perfil digital por competência/módulo e convite administrativo escopado. `DIAGNOSTIC-PROFILE-2026-08-23` adicionou persistência/RLS do agregado B-07, perfil por tema e rota interna de avaliação técnica sem publicação clínica. `STAFF-DIAGNOSTIC-PROFILE-024` levou o mesmo agregado formativo ao acompanhamento gerencial, com membership participante–escopo, matriz RLS e disclaimer explícito. `ADMIN-LIFECYCLE-025` fechou o ciclo de convite/reenvio/status/sessões com CAS, filtro de conta ativa e live PostgreSQL; o hardening posterior limitou reenvios ao escopo pedido, serializou concorrência por conta e corrigiu ações da UI em múltiplos escopos. `CPD-REPORTING-026` materializou o relatório interno de participação digital com filtros server-side e limites explícitos de não credenciamento. `REPORT-040` adicionou paginação bounded, tabela de participantes e exportação CSV da página autorizada; a validação completa local passou em 2026-08-24. `EDITORIAL-QUEUE-027` materializou a leitura backend da fila editorial por escopo, com contrato redigido, capability separada, limite explícito sem promessa de cursor, RLS editorial, ações role-aware e live PostgreSQL. `ACCOUNT-RECOVERY-028` fechou recuperação controlada por link único para contas ativas, com hash-only, revogação de sessões, consumo atômico, sessão nova, UI `/recovery`, live PostgreSQL e E2E 19/19; `IDENTITY-RLS-029`/`030` fecharam RLS direto de convites, recuperação, contas e sessões; `AUDIT-NEGATIVE-031` fechou a representação e a emissão centralizada de rejeições HTTP sem segredo; `DB-PRIVILEGE-032` ampliou o healthcheck para negar ownership e grants administrativos à role de aplicação. O pipeline pós-mudança passou com cobertura global acima de 80%, build dos 12 workspaces e E2E; workflow remoto, provedor/MFA/entrega externa, grant matrix do ambiente produtivo e gates clínicos/operacionais permanecem explícitos. A pesquisa atual está registrada em `BRIEFING/04.AUDIT/0509_pesquisa_atual_plataformas_e_praticas.md`.
@@ -1845,6 +2081,24 @@ mas não há claim live/produtivo.
 - risco: médio
 - impacto: baixo
 - status: BACKLOG FUTURO
+
+## 2026-09-09 — Overlay Triple AAA (docs 40–43)
+
+Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média real ~72–75/100; release 25/100). Caminho operacional em `docs/41_executive_plan_triple_aaa.md`, `docs/42_roadmap_triple_aaa.md` e `docs/43_backlog_triple_aaa.md`; o backlog canônico `BRIEFING/03.BUILD/0302_backlog_master.md` permanece vigente.
+
+- Ordem imediata: (1) crítica fresh `AAA-701` + rebaseline Gauntlet; (2) decisão `AAA-001` por Ricardo; (3) `AAA-107` + `AAA-202` em banco descartável autorizado; (4) `AAA-603` remoto same-SHA em paralelo; (5) `AAA-300–305` com Ricardo.
+- `AAA-202` segue `BLOCKED` sem `AAA-001` + `CVG_TEST_DATABASE_URL`; `AAA-302–304` e `AAA-802/803` seguem `WAITING_HUMAN_APPROVAL`; nada sintético promove a `COMPLETED`, produção, publicação clínica ou piloto.
+
+## 2026-09-09 — Execução AAA-701/702/703 (evidência fresca)
+
+- Duas críticas fresh REVISE tratadas; `evals.ts` + HITL implementados; `pnpm verify` PASS (151 arq/831 testes, cobertura 84,49/80,3/87,37/85,24); E2E 45/45.
+- `AAA-701/702/703` seguem `IN_PROGRESS` (falta 3ª revisão fresh + lives + provider real); `AAA-202` segue `BLOCKED`; clínica/piloto/produção seguem sob autoridade humana.
+
+## 2026-09-10 — Round-10 (terceiro PASS + CI remoto + decisão AAA-001)
+
+- Terceiro crítico PASS; 3 P2 fechados; `pnpm verify` PASS (151/835, 84,49/80,35/87,37/85,24); E2E 45/45 (2×); `docs/44` + `docs/45` (7 itens PROPOSED).
+- Lives locais inviáveis (sem docker/postgres/sudo); snapshot no CI remoto via branch `aaa/round-10-verification` para prova same-SHA + lives (PG16/Qdrant). `.gauntlet/` intocado (helper oficial ausente).
+- `AAA-603` segue `IN_PROGRESS` até o run remoto; com ele verde, reavaliar itens 6/11/15 e rodar rebaseline oficial.
 
 ## REGRAS DE USO
 

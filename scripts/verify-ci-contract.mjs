@@ -33,6 +33,10 @@ const requiredDatabaseEnvironmentKeys = Object.freeze([
 const requiredWorkflowChecks = Object.freeze([
   ["PostgreSQL service", /image:\s*postgres:16/u],
   ["Qdrant service", /image:\s*qdrant\/qdrant:v1\.15\.5/u],
+  [
+    "same-SHA checkout verification",
+    /name: Verify checkout SHA[\s\S]*EXPECTED_SHA:\s*\$\{\{\s*github\.sha\s*\}\}[\s\S]*git rev-parse HEAD/u,
+  ],
   ["pinned Node setup", /node-version:\s*22\.22\.0/u],
   ["pinned pnpm setup", /corepack prepare pnpm@10\.33\.0/u],
   ["frozen lockfile install", /pnpm install --frozen-lockfile/u],
@@ -54,6 +58,11 @@ const requiredWorkflowChecks = Object.freeze([
   ["coverage artifact path", /coverage\//u],
   ["browser report path", /playwright-report\//u],
   ["JUnit/test result path", /test-results\//u],
+  [
+    "artifact governance invocation",
+    /node scripts\/ci-artifact-governance\.mjs[\s\S]*--sha "\$EXPECTED_SHA"[\s\S]*--out-dir ci-artifacts[\s\S]*--paths coverage playwright-report test-results/u,
+  ],
+  ["governed artifact publication path", /ci-artifacts\//u],
   ["Qdrant readiness check", /127\.0\.0\.1:6333\/readyz/u],
 ]);
 const requiredRuntimeChecks = Object.freeze([
@@ -61,6 +70,14 @@ const requiredRuntimeChecks = Object.freeze([
     "real E2E API bootstrap outside test mode",
     /NODE_ENV=development API_HOST=127\.0\.0\.1 API_PORT=3101/u,
   ],
+]);
+const requiredArtifactGovernanceChecks = Object.freeze([
+  ["CycloneDX SBOM generation", /bomFormat: "CycloneDX"/u],
+  ["pinned CycloneDX schema", /specVersion: "1\.5"/u],
+  ["SHA-256 hashing", /createHash\("sha256"\)/u],
+  ["SBOM artifact output", /sbom\.cdx\.json/u],
+  ["SHA-256 manifest output", /artifact-manifest\.sha256/u],
+  ["artifact redaction scan", /findRedactionFindings/u],
 ]);
 
 function envKeys(text) {
@@ -231,10 +248,22 @@ function invalid(message) {
 }
 
 export function validateCiContract(contract) {
+  const checkoutShaStep = contract.workflow.indexOf(
+    "      - name: Verify checkout SHA",
+  );
   const setupNodeStep = contract.workflow.indexOf(
     "      - name: Setup Node.js",
   );
   const enablePnpmStep = contract.workflow.indexOf("      - name: Enable pnpm");
+  const installDependenciesStep = contract.workflow.indexOf(
+    "      - name: Install dependencies",
+  );
+  const artifactGovernanceStep = contract.workflow.indexOf(
+    "      - name: Generate and verify release artifacts",
+  );
+  const artifactPublicationStep = contract.workflow.indexOf(
+    "      - name: Publish quality artifacts",
+  );
   const failures = [
     ...(contract.packageJson.packageManager !== `pnpm@${expectedPnpmVersion}`
       ? [`packageManager must be pnpm@${expectedPnpmVersion}`]
@@ -270,6 +299,11 @@ export function validateCiContract(contract) {
     ...requiredWorkflowChecks
       .filter(([, pattern]) => !pattern.test(contract.workflow))
       .map(([name]) => `workflow is missing ${name}`),
+    ...requiredArtifactGovernanceChecks
+      .filter(
+        ([, pattern]) => !pattern.test(contract.artifactGovernanceScript ?? ""),
+      )
+      .map(([name]) => `artifact governance script is missing ${name}`),
     ...workflowDatabaseContractFailures(contract.workflow),
     ...requiredRuntimeChecks
       .filter(([, pattern]) => !pattern.test(contract.playwrightConfig))
@@ -278,6 +312,16 @@ export function validateCiContract(contract) {
       ? ["workflow must define Setup Node.js and Enable pnpm steps"]
       : enablePnpmStep > setupNodeStep
         ? ["workflow must enable pnpm before Setup Node.js cache resolution"]
+        : []),
+    ...(checkoutShaStep < 0 || installDependenciesStep < 0
+      ? ["workflow must define checkout SHA and dependency installation steps"]
+      : checkoutShaStep > installDependenciesStep
+        ? ["workflow must verify checkout SHA before dependency installation"]
+        : []),
+    ...(artifactGovernanceStep < 0 || artifactPublicationStep < 0
+      ? ["workflow must define artifact governance and publication steps"]
+      : artifactGovernanceStep > artifactPublicationStep
+        ? ["workflow must run artifact governance before artifact publication"]
         : []),
   ];
 
@@ -301,6 +345,7 @@ export async function readCiContract(rootDirectory = projectRoot) {
     playwrightConfig,
     nodeVersion,
     lockfile,
+    artifactGovernanceScript,
   ] = await Promise.all([
     readFile(join(rootDirectory, "package.json"), "utf8"),
     readFile(join(rootDirectory, ".env.example"), "utf8"),
@@ -308,6 +353,7 @@ export async function readCiContract(rootDirectory = projectRoot) {
     readFile(join(rootDirectory, "playwright.config.ts"), "utf8"),
     readFile(join(rootDirectory, ".nvmrc"), "utf8"),
     readFile(join(rootDirectory, "pnpm-lock.yaml"), "utf8"),
+    readFile(join(rootDirectory, "scripts/ci-artifact-governance.mjs"), "utf8"),
   ]);
 
   return Object.freeze({
@@ -317,6 +363,7 @@ export async function readCiContract(rootDirectory = projectRoot) {
     playwrightConfig,
     nodeVersion: nodeVersion.trim(),
     lockfile,
+    artifactGovernanceScript,
   });
 }
 

@@ -84,6 +84,7 @@ export {
   validateOutboxPayload,
   PersistenceConflictError,
   PersistenceMappingError,
+  PersistenceStateConflictError,
 } from "./attempt-repository.js";
 export type {
   AttemptInsertRow,

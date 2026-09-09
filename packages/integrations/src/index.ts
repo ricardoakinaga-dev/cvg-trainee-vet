@@ -1,13 +1,24 @@
 export {
   AiIntegrationError,
+  calculateAiRetryDelay,
+  classifyAiError,
+  createResilientAiTextProvider,
+  createResilientEmbeddingProvider,
   createDeterministicEmbeddingProvider,
   createOpenAiEmbeddingProvider,
   createOpenAiTextProvider,
+  DEFAULT_AI_RESILIENCE_POLICY,
+  DEFAULT_EMBEDDING_RESILIENCE_POLICY,
 } from "./ai.js";
 export type {
+  AiFailure,
+  AiFailureClassification,
   AiIntegrationConfig,
+  AiResilienceOptions,
+  AiResiliencePolicy,
   AiTextPort,
   DeterministicEmbeddingProviderConfig,
+  EmbeddingRequestOptions,
   EmbeddingPort,
   EmbeddingProviderConfig,
   StructuredAiRequest,
@@ -42,3 +53,10 @@ export type {
   QdrantInitializationFailureClassification,
   QdrantInitializationRetryPolicy,
 } from "./retry.js";
+
+export { runTextSafetyEvals } from "./evals.js";
+export type {
+  TextSafetyEvalCase,
+  TextSafetyEvalDimension,
+  TextSafetyEvalResult,
+} from "./evals.js";

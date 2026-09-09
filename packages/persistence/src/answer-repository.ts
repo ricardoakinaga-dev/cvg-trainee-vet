@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   AnswerIdempotencyRecord,
@@ -16,6 +16,7 @@ import {
 import {
   createOutboxInsert,
   PersistenceMappingError,
+  PersistenceStateConflictError,
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
 import type {
@@ -36,7 +37,10 @@ import {
 import type * as schema from "./schema.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
 
-export { PersistenceMappingError } from "./attempt-repository.js";
+export {
+  PersistenceMappingError,
+  PersistenceStateConflictError,
+} from "./attempt-repository.js";
 
 export type AnswerRowShape = Readonly<{
   readonly id: string;
@@ -347,12 +351,19 @@ function createAnswerOperations(
         )
         .returning({ id: attempts.id });
       if (rows.length === 0) {
-        throw new Error("attempt version changed concurrently");
+        throw new PersistenceStateConflictError(
+          "attempt version changed concurrently",
+        );
       }
     },
   };
 
   const idempotency = {
+    lock: async (key: string): Promise<void> => {
+      await db.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`answer:${key}`}, 0))`,
+      );
+    },
     find: async (key: string): Promise<AnswerIdempotencyRecord | null> => {
       const rows = await db
         .select({
@@ -369,21 +380,11 @@ function createAnswerOperations(
       key: string,
       record: AnswerIdempotencyRecord,
     ): Promise<void> => {
-      const existing = await db
-        .select({ fingerprint: answerIdempotency.fingerprint })
-        .from(answerIdempotency)
-        .where(eq(answerIdempotency.key, key))
-        .limit(1);
-      if (existing[0] && existing[0].fingerprint !== record.fingerprint) {
-        throw new Error("answer idempotency key has another fingerprint");
-      }
-      if (existing[0]) return;
-
       const response: PersistedAnswerSnapshot = {
         attempt: record.result.attempt as PersistedAttemptSnapshot,
         answer: record.result.answer,
       };
-      await db.insert(answerIdempotency).values({
+      const insertion = db.insert(answerIdempotency).values({
         key,
         operation: "answer",
         fingerprint: record.fingerprint,
@@ -392,6 +393,36 @@ function createAnswerOperations(
         response,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
+      if (
+        typeof insertion === "object" &&
+        insertion !== null &&
+        "onConflictDoNothing" in insertion &&
+        typeof insertion.onConflictDoNothing === "function"
+      ) {
+        await insertion.onConflictDoNothing();
+      } else {
+        await insertion;
+      }
+
+      const stored = await db
+        .select({ fingerprint: answerIdempotency.fingerprint })
+        .from(answerIdempotency)
+        .where(eq(answerIdempotency.key, key))
+        .limit(1);
+      if (!stored[0]) {
+        const conflict = new Error(
+          "answer idempotency record was not persisted",
+        );
+        conflict.name = "PersistenceConflictError";
+        throw conflict;
+      }
+      if (stored[0].fingerprint !== record.fingerprint) {
+        const conflict = new Error(
+          "answer idempotency key has another fingerprint",
+        );
+        conflict.name = "PersistenceConflictError";
+        throw conflict;
+      }
     },
   };
 

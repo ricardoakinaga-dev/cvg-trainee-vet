@@ -1,0 +1,54 @@
+[
+  {
+    "path": "cvg-orbit-render.png",
+    "format": "png",
+    "detected_format": "png",
+    "bytes": 613124,
+    "dimensions": [
+      1000,
+      1000
+    ],
+    "aspect_ratio": 1.0,
+    "alpha": true,
+    "alpha_note": "PNG color type/tRNS inspected locally",
+    "dimension_note": "decoded locally",
+    "inspection": "png-pixel-stream",
+    "sha256": "75c09ff6898414c5d656218f88279820c8b2fb46b4e391d60e5449e163f229a1",
+    "role": null,
+    "provenance": null,
+    "source": null,
+    "issues": [],
+    "issue_details": [],
+    "max_bytes": 10485760,
+    "minimum_dimensions": [
+      0,
+      0
+    ]
+  },
+  {
+    "path": "eac4bfca_000.png",
+    "format": "png",
+    "detected_format": "png",
+    "bytes": 1349905,
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "aspect_ratio": 1.0,
+    "alpha": false,
+    "alpha_note": "PNG color type/tRNS inspected locally",
+    "dimension_note": "decoded locally",
+    "inspection": "png-pixel-stream",
+    "sha256": "19ad61bd0989598c2db190ce1e719f13d67f1a785e9c365cf152aaf24f9a6bbc",
+    "role": null,
+    "provenance": null,
+    "source": null,
+    "issues": [],
+    "issue_details": [],
+    "max_bytes": 10485760,
+    "minimum_dimensions": [
+      0,
+      0
+    ]
+  }
+]

@@ -96,18 +96,15 @@ describe("learning state contracts", () => {
     ).toMatchObject({ assignmentId: ids.assignmentId });
     expect(
       adaptiveCurriculumAssignmentProjectionSchema.parse({
-        diagnosticResultId: ids.resultId,
         assignments: [
           {
-            assignmentId: ids.assignmentId,
-            moduleId: "M03",
             availableAt: "2026-08-10T17:00:00.000Z",
             status: "ATRIBUIDO",
             version: 1,
           },
         ],
       }),
-    ).toMatchObject({ diagnosticResultId: ids.resultId });
+    ).toMatchObject({ assignments: [{ status: "ATRIBUIDO" }] });
     expect(
       participantAssessmentWorkflowProjectionSchema.parse({
         resultId: ids.resultId,

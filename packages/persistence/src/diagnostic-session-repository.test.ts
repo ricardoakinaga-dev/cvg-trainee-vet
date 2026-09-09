@@ -178,6 +178,7 @@ function createFakeDatabase(
   options: {
     readonly afterSelect?: (source: object) => void;
     readonly beforeAdvisoryLock?: () => void;
+    readonly hideFinalizedAnswers?: boolean;
   } = {},
 ): {
   readonly db: DatabaseExecutor;
@@ -304,7 +305,18 @@ function createFakeDatabase(
 
     const executeSelect = (): readonly Row[] => {
       const rows = source === undefined ? [] : rowsFor(source);
-      const selected = rows.filter((row) => matches(row, condition));
+      const visibleRows =
+        source === diagnosticSessionAnswers && options.hideFinalizedAnswers
+          ? rows.filter(
+              (row) =>
+                !sessionRows.some(
+                  (session) =>
+                    session.id === row.sessionId &&
+                    session.status === "FINALIZADA",
+                ),
+            )
+          : rows;
+      const selected = visibleRows.filter((row) => matches(row, condition));
       if (source !== undefined) options.afterSelect?.(source);
       return selected.map(rowCopy);
     };
@@ -608,12 +620,28 @@ describe("diagnostic session persistence", () => {
     expect(cleared.answers).toHaveLength(0);
     expect(fake.answers()).toHaveLength(0);
 
+    const savedAfterClear = await saveDiagnosticSessionAnswer(
+      {
+        participantId,
+        scopeId,
+        sessionId: started.session.sessionId,
+        version: cleared.session.version,
+        itemId: item.publicItemId,
+        selectedChoiceIds: [choice.id],
+        idempotencyKey: "save-b07-answer-0002",
+        correlationId: "correlation-answer-0003",
+        occurredAt: new Date(Date.now() + 2_500).toISOString(),
+      },
+      repository,
+    );
+    expect(savedAfterClear.answers).toHaveLength(1);
+
     const completedAt = new Date(Date.now() + 3_000).toISOString();
     const finalized = await repository.finalize({
       participantId,
       scopeId,
       sessionId: started.session.sessionId,
-      expectedVersion: cleared.session.version,
+      expectedVersion: savedAfterClear.session.version,
       idempotencyKey: "finalize-b07-session-001",
       correlationId: "correlation-finalize-0001",
       completedAt,
@@ -641,7 +669,7 @@ describe("diagnostic session persistence", () => {
       participantId,
       scopeId,
       sessionId: started.session.sessionId,
-      expectedVersion: cleared.session.version,
+      expectedVersion: savedAfterClear.session.version,
       idempotencyKey: "finalize-b07-session-001",
       correlationId: "correlation-finalize-0001",
       completedAt,
@@ -667,6 +695,10 @@ describe("diagnostic session persistence", () => {
     });
 
     expect(finalized.aggregate.session.status).toBe("FINALIZADA");
+    expect(finalized.aggregate.answers).toHaveLength(1);
+    expect(finalized.aggregate.answers[0]?.canonicalItemId).toBe(
+      catalog.snapshot.items[0]?.canonicalItemId,
+    );
     expect(finalized.aggregate.result?.resultId).toBe(
       finalized.assignments.diagnosticResultId,
     );
@@ -682,6 +714,7 @@ describe("diagnostic session persistence", () => {
     expect(replayedFinalization.aggregate.session.sessionId).toBe(
       finalized.aggregate.session.sessionId,
     );
+    expect(replayedFinalization.aggregate.answers).toHaveLength(1);
     expect(replayedFinalization.assignments.assignments).toHaveLength(
       finalized.assignments.assignments.length,
     );
@@ -689,15 +722,19 @@ describe("diagnostic session persistence", () => {
     expect(fake.assignments()).toHaveLength(
       finalized.assignments.assignments.length,
     );
-    expect(fake.idempotency()).toHaveLength(4);
-    expect(fake.audit()).toHaveLength(4);
-    expect(fake.outbox()).toHaveLength(4);
+    expect(fake.idempotency()).toHaveLength(5);
+    expect(fake.audit()).toHaveLength(5);
+    expect(fake.outbox()).toHaveLength(5);
     expect(fake.outbox().map((row) => row.eventType)).toEqual([
       "DIAGNOSTIC_SESSION_STARTED",
       "DIAGNOSTIC_SESSION_CHECKPOINTED",
       "DIAGNOSTIC_SESSION_CHECKPOINTED",
+      "DIAGNOSTIC_SESSION_CHECKPOINTED",
       "DIAGNOSTIC_SESSION_FINALIZED",
     ]);
+    expect(fake.outbox().at(-1)?.payload).toMatchObject({
+      answeredItemCount: 1,
+    });
 
     const current = await repository.findCurrent(participantId, scopeId);
     const isolated = await repository.findById(
@@ -706,6 +743,10 @@ describe("diagnostic session persistence", () => {
       scopeId,
     );
     expect(current?.session.status).toBe("FINALIZADA");
+    expect(current?.answers).toHaveLength(1);
+    expect(current?.answers[0]?.canonicalItemId).toBe(
+      catalog.snapshot.items[0]?.canonicalItemId,
+    );
     expect(isolated).toBeNull();
   });
 

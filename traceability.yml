@@ -5095,6 +5095,721 @@ artifacts:
         "local/synthetic evidence only; live PostgreSQL/RLS, real browser-to-API-to-PostgreSQL diagnostic assignment, production ACL/owners, scale/failover/restore/collector, clinical review/publication and release remain unverified",
       ]
     status: "verified-with-gaps"
+  - id: "AAA-PLAN-000"
+    requirements:
+      [
+        "SPEC-GATE-0190",
+        "BUILD-DOC-GATE-0391",
+        "SPEC-0115",
+        "SPEC-0117",
+        "SPEC-0118",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+      ]
+    tests: ["DOC-AAA-CONSISTENCY-001", "DOC-DIFF-CHECK-001"]
+    status: "planned-with-human-gate"
+    limitations:
+      [
+        "The plan defines proposed targets; it does not prove implementation, production readiness, clinical publication, or pilot authorization.",
+        "AAA-001 remains WAITING_HUMAN_APPROVAL for live, production, clinical-publication and pilot authority; local bounded slices are explicitly recorded elsewhere.",
+      ]
+  - id: "AAA-TRUST-101-105"
+    requirements:
+      [
+        "AAA-101",
+        "AAA-102",
+        "AAA-103",
+        "AAA-104",
+        "AAA-105",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0110",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/persistence/drizzle/0052_aaa_diagnostic_session_integrity.sql",
+        "packages/persistence/drizzle/0053_aaa_content_integrity.sql",
+        "packages/persistence/drizzle/meta/_journal.json",
+        "packages/persistence/src/diagnostic-session-repository.ts",
+        "packages/persistence/src/attempt-repository.ts",
+        "packages/persistence/src/answer-repository.ts",
+        "packages/persistence/src/schema.ts",
+        "packages/application/src/attempt-use-cases.ts",
+        "packages/application/src/answer-use-cases.ts",
+        "packages/contracts/src/session.ts",
+        "apps/api/src/http.ts",
+        "apps/api/src/server.ts",
+        "apps/web/app/page.tsx",
+      ]
+    tests:
+      [
+        "packages/persistence/src/diagnostic-session-repository.test.ts",
+        "packages/persistence/src/attempt-repository.test.ts",
+        "packages/persistence/src/answer-repository.test.ts",
+        "packages/application/src/attempt-use-cases.test.ts",
+        "packages/application/src/answer-use-cases.test.ts",
+        "packages/contracts/src/session.test.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "tests/integration/aaa-104-content-integrity.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/e2e/recovery-access.spec.ts",
+      ]
+    status: "implemented-with-live-evidence-gap"
+    verification:
+      [
+        "RED/GREEN: idempotency conflict mapping was reproduced as an application/API gap and now returns public 409 without exposing persistence internals",
+        "pnpm verify PASS: 148 files/787 tests PASS, 30 files/42 tests skipped, coverage 84.44% statements/80.16% branches/87.29% functions/85.18% lines; verify:migrations PASS 0000–0053; AAA-104 focused governance PASS 3/3 with one live test skipped",
+        "session projection contract/API/server tests and recovery E2E synthetic path pass; unit/application/API focal suite passes 100/100",
+        "migration 0052 limits participant answer DELETE to EM_ANDAMENTO and allows participant SELECT for EM_ANDAMENTO/FINALIZADA; migration 0053 adds identity FKs, orphan scans, FORCE RLS and scoped content/AI policies",
+      ]
+    limitations:
+      [
+        "CVG_TEST_DATABASE_URL is absent; PostgreSQL/RLS live negative paths, concurrent winner behavior, cookie/expiry and cross-scope runtime are not proven.",
+        "No production migration, remote same-SHA workflow, deploy, clinical publication or pilot is claimed.",
+      ]
+
+  - id: "UI-VISUAL-001"
+    requirements: ["AAA-400", "AAA-401", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        ".agent/artifacts/ui-visual-quality-bar-2026-09-06.md",
+        ".agent/artifacts/aaa-gauntlet-round-2-revalidation.md",
+        ".agent/artifacts/frontend-quality-packet.json",
+        ".agent/artifacts/frontend-quality-gates.json",
+        ".agent/artifacts/frontend-assets.json",
+        ".agent/artifacts/frontend-token-audit.json",
+        ".agent/artifacts/frontend-contrast-evidence.json",
+        ".agent/artifacts/ui-visual-critic-2026-09-06-final.md",
+        ".agent/artifacts/ui-visual-operations-rail-round8.md",
+        ".agent/artifacts/ui-visual-postfix-2026-09-06.md",
+        ".agent/artifacts/ui-visual-current-revalidation-2026-09-06.md",
+        ".agent/artifacts/ui-visual-round11-final.md",
+        ".agent/checkpoint-2026-09-06-frontend-visual.md",
+        ".agent/plans/2026-09-06-frontend-visual-gauntlet.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        ".gitignore",
+        "apps/web/app/globals.css",
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/page.tsx",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/recovery/page.tsx",
+        "apps/web/public/assets/eac4bfca_000.png",
+        "apps/web/public/assets/cvg-orbit-render.png",
+        "apps/web/public/assets/cvg-orbit-render-v2.png",
+        "tests/e2e/visual-gauntlet.spec.ts",
+      ]
+    tests:
+      [
+        "apps/web/package.json",
+        "tests/e2e/experience-accessibility.spec.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/e2e/diagnostic-session.spec.ts",
+        "tests/e2e/participant-access.spec.ts",
+        "tests/e2e/recovery-access.spec.ts",
+        "tests/e2e/visual-gauntlet.spec.ts",
+      ]
+    status: "verified-with-gaps"
+    verification:
+      [
+        "apps/web build and typecheck PASS; post-fix synthetic E2E suite PASS 41/41; current visual-gauntlet suite PASS 11/11 in 59.1s",
+        "axe PASS with zero violations on /, /diagnostic, /operations, /authoring and /recovery at 1440px, 768px and 390px, plus the rehydrated participant fixture",
+        "1440px, 768px and 390px browser measurements show no global horizontal overflow; visual assets return HTTP 200",
+        "keyboard traversal covers all reachable stops until body and checks visible focus treatment; reduced-motion emulation limits effective animation/transition durations and checks active transform motion",
+        "loading, empty and populated success state variants for diagnostic, operations and authoring are rendered with synthetic envelopes; the initial authenticated journey announces loading before readiness; stylesheet, document/script request failures, page errors and console errors are captured",
+        "the mobile two-column cascade and nested complementary landmark found during revalidation were corrected; the authenticated fixture now proves mobile stacking and axe zero",
+        "the stress pass proves one h1 per route, no global overflow at 390px, interaction targets at least 40px including native radio/checkbox labels, populated operations actions, reflow in a 195 CSS-pixel viewport as a zoom proxy, long-copy reflow and CLS at or below 0.1",
+        "frontend-quality-packet.json passes deterministic accessibility, performance, typography and copy-stress gates; select:disabled passes a 5.99:1 contrast check; the final fresh same-SHA critic is recorded in ui-visual-critic-2026-09-06-final.md and returns PASS for UI-VIS-08 with no concrete P0/P1 finding",
+        "Round 8 focal evidence passes the operations action rail test 1/1 with axe zero, eight stable anchor links, no global horizontal overflow at 1440px/768px/390px, and the post-fix 195px stress; current render hashes and limitations are recorded in ui-visual-operations-rail-round8.md",
+        "Round 9 mobile correction passes RED/GREEN assertions for the dedicated primary CTA, balanced 2x4 mobile rail, stacked retry actions and 14px readable secondary text; isolated next build and next start visual suite pass 7/7, and fresh native-size critic Beauvoir returns PASS with confidence 0.92 and no material finding",
+        "Round 10 passes RED/GREEN grouping/readability assertions for authoring and operations mobile; next build and next start visual suite pass 10/10 across 1440px/768px/390px, focused correction passes 2/2 with axe zero, and fresh native-size critic Chandrasekhar returns PASS with confidence 0.95 and no P0/P1/P2 finding",
+        "Post-fix local evidence records the three new visual contracts as GREEN (3/3), visual segments as 7 completed before runner SIGTERM plus 3/3 remaining scenarios, and the variants scenario as 1/1 with a 60-second timeout; no single-run 44/44 claim is made",
+        "Current revalidation after the concurrent visual mutation passes the complete visual-gauntlet suite 11/11 in 59.1s and records the broad verification as 149 files/808 tests/42 skips with coverage 84.45/80.18/87.35/85.20 in ui-visual-current-revalidation-2026-09-06.md",
+        "Round 11 final visual evidence: web build/typecheck PASS, authoring-review PASS 5/5, visual-gauntlet PASS 11/11, final retained renders are SHA-bound, and fresh critic Raman returns PASS with no P0/P1; Blender MCP is connected, ComfyUI server_info is healthy, and OpenDesign active-context remains Transport closed",
+        "Blender MCP rendered an isolated RGBA decorative asset and ComfyUI generated an abstract synthetic texture; OpenDesign transport was closed",
+      ]
+    limitations:
+      [
+        "The current pnpm verify command passed 149 files/808 tests with 42 skipped and coverage 84.45%/80.18%/87.35%/85.20%; live PostgreSQL/RLS integration still requires CVG_TEST_DATABASE_URL.",
+        "Standalone screenshots produce expected API 404s without the backend; this does not prove live runtime integration.",
+        "OpenDesign remained unavailable because its transport was closed.",
+        "An earlier dev-harness route-matrix attempt exposed a NEXTJS-PORTAL focus host on /; the later production-build run passed the complete E2E suite 41/41, including all three route-matrix viewports. Native zoom and assistive technology remain unverified.",
+        "The post-fix E2E runner received SIGTERM before a single 44-test run completed; the current evidence is segmented local Chromium evidence, recorded in ui-visual-postfix-2026-09-06.md, and does not claim a complete single-run E2E pass.",
+        "The inherited-context short critic returned REVISE and is advisory I0; earlier sealed attempts timed out, while the final fresh same-SHA report is bounded UI-VIS-08 PASS and explicitly retains native-zoom/assistive-technology and live/production limitations.",
+        "The artifact is uncommitted and therefore is not a release-mode traceability claim.",
+      ]
+  - id: "AAA-AUTH-106"
+    requirements: ["AAA-105", "AAA-106", "SPEC-0107", "SPEC-0111", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/artifacts/aaa-106-auth-boundary-2026-09-06.md",
+      ]
+    code:
+      [
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/proxy.ts",
+      ]
+    tests:
+      [
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "apps/web/src/proxy.test.ts",
+        "tests/e2e/proxy-auth-boundary.spec.ts",
+      ]
+    status: "implemented-with-local-upstream-and-live-evidence-gap"
+    verification:
+      [
+        "RED/GREEN: boundary assertions require the internal shell to stay absent until server-authorized session/capability data is available",
+        "RED/GREEN: proxy unit tests cover exact protected surfaces, cookie-only forwarding, bounded timeout/fail-closed behavior, typed projections, missing configuration and empty scopes; authoring uses same-origin relative requests",
+        "web typecheck and production build PASS",
+        "production-build focused Playwright E2E with local cookie-validating upstream PASS 12/12; full Playwright E2E with the same proxy/upstream fixture PASS 40/40; operations and authoring authorized flows remain green and no-cookie protected routes redirect before the shell",
+      ]
+    limitations:
+      [
+        "The proxy's live upstream authorization, cookie expiry/revocation, cross-scope, PostgreSQL/RLS live and browser-to-API-to-PostgreSQL evidence remain pending CVG_TEST_DATABASE_URL and an authorized disposable environment.",
+        "The E2E upstream is a local cookie-validating fixture; no production, clinical publication, pilot or competence claim is made.",
+      ]
+  - id: "AAA-ROUND-6"
+    requirements:
+      [
+        "AAA-Q01",
+        "AAA-Q02",
+        "AAA-Q03",
+        "AAA-Q04",
+        "AAA-Q05",
+        "AAA-Q06",
+        "AAA-Q07",
+        "AAA-Q08",
+        "AAA-Q09",
+        "AAA-Q10",
+        "AAA-Q11",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/artifacts/aaa-round-6-local-revalidation-2026-09-06.md",
+        ".gauntlet/history.jsonl",
+      ]
+    code:
+      [
+        "apps/web/app/operations/page.tsx",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/e2e/visual-gauntlet.spec.ts",
+      ]
+    status: "verified-local-with-live-and-proxy-gaps"
+    verification:
+      [
+        "pnpm verify PASS: 148 files/787 tests PASS, 30 files/42 tests skipped, coverage 84.44/80.16/87.29/85.18",
+        "production synthetic Playwright E2E PASS 39/39; visual-gauntlet PASS 6/6 with axe zero and responsive stress passing at 195 CSS px",
+        "Gauntlet Round 6 recorded with current fingerprint and explicit I0 REVISE critic; live preflight rerun exits 2 when CVG_TEST_DATABASE_URL is absent",
+      ]
+    limitations:
+      [
+        "No server-side route guard/proxy proof yet; authoring still has a potential NEXT_PUBLIC_CVG_API_BASE_URL bypass until the next bounded task.",
+        "Cookie expiry/revocation, cross-scope, browser-to-API-to-PostgreSQL/RLS, same-SHA independent acceptance, production and clinical gates remain pending.",
+      ]
+  - id: "AAA-PROXY-106"
+    requirements: ["AAA-106", "SPEC-0107", "SPEC-0111", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/artifacts/aaa-106-server-proxy-2026-09-06.md",
+        ".agent/artifacts/aaa-round-7-proxy-revalidation-2026-09-06.md",
+      ]
+    code:
+      [
+        "apps/web/proxy.ts",
+        "apps/web/app/authoring/page.tsx",
+        "playwright.config.ts",
+        "scripts/e2e-proxy-fixture-server.mjs",
+      ]
+    tests:
+      [
+        "apps/web/src/proxy.test.ts",
+        "tests/e2e/proxy-auth-boundary.spec.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+      ]
+    status: "verified-local-after-p1-remediation-with-fresh-critic-pass-and-live-gap"
+    verification:
+      [
+        "proxy unit suite PASS 11/11: protected-route matching, cookie-only forwarding, typed authorized projections, timeout/network/status failure, absent configuration and empty scope",
+        "web typecheck/build PASS; focused proxy/authoring/operations E2E PASS 12/12 with a local cookie-validating upstream; full E2E PASS 40/40, including visual 6/6",
+        "pnpm verify PASS: 149 files/798 tests PASS, 30 files/42 tests skipped, coverage 84.44/80.16/87.29/85.18",
+      ]
+    limitations:
+      [
+        "The upstream is a local test fixture; live upstream authorization, secure cookie transport, expiry/revocation, cross-scope and browser-to-API-to-PostgreSQL/RLS remain unproven.",
+        "The fresh short critic returned PASS with no severity after inspecting the four proxy/fixture/test files; it did not execute runtime. No production, clinical publication, pilot or competence claim is made.",
+      ]
+  - id: "AAA-ROUND-7"
+    requirements:
+      [
+        "AAA-Q01",
+        "AAA-Q02",
+        "AAA-Q03",
+        "AAA-Q04",
+        "AAA-Q05",
+        "AAA-Q06",
+        "AAA-Q07",
+        "AAA-Q08",
+        "AAA-Q09",
+        "AAA-Q10",
+        "AAA-Q11",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/artifacts/aaa-106-server-proxy-2026-09-06.md",
+        ".agent/artifacts/aaa-round-7-proxy-revalidation-2026-09-06.md",
+        ".gauntlet/history.jsonl",
+      ]
+    code:
+      [
+        "apps/web/proxy.ts",
+        "apps/web/src/proxy.test.ts",
+        "scripts/e2e-proxy-fixture-server.mjs",
+        "tests/e2e/proxy-auth-boundary.spec.ts",
+        "playwright.config.ts",
+      ]
+    tests:
+      [
+        "apps/web/src/proxy.test.ts",
+        "tests/e2e/proxy-auth-boundary.spec.ts",
+        "tests/e2e/operations-dashboard.spec.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/e2e/visual-gauntlet.spec.ts",
+      ]
+    status: "verified-local-bounded-pass-with-live-gaps"
+    verification:
+      [
+        "pnpm verify PASS: 149 files/798 tests PASS, 30 files/42 tests skipped, coverage 84.44/80.16/87.29/85.18",
+        "proxy unit PASS 11/11; focused E2E PASS 12/12; complete E2E PASS 40/40; visual 6/6",
+        "fresh short critic PASS with no severity; live integration preflight BLOCKED exit 2 because CVG_TEST_DATABASE_URL is absent",
+      ]
+    limitations:
+      [
+        "Fixture/upstream is local and disposable; no live PostgreSQL/RLS, production upstream, secure cookie lifecycle, cross-scope or browser-to-API-to-PostgreSQL evidence.",
+        "Round 7 is a bounded local PASS for AAA-106 proxy hardening, not a global AAA/release/clinical/competence approval.",
+      ]
+  - id: "AAA-JOURNEY-200-201"
+    requirements:
+      [
+        "AAA-200",
+        "AAA-201",
+        "PRD-RF-072",
+        "PRD-RF-073",
+        "SPEC-0106",
+        "SPEC-0107",
+        "SPEC-0109",
+        "SPEC-0111",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/0560_jornada_sessao_diagnostica_contract.md",
+        "BRIEFING/03.BUILD/0561_aaa_vertical_journey_contract.md",
+        "BRIEFING/04.AUDIT/0523_adaptive_assignment_audit.md",
+        "BRIEFING/04.AUDIT/0550_diagnostic_session_audit.md",
+        ".agent/artifacts/aaa-200-201-local-2026-09-06.md",
+        ".agent/artifacts/aaa-200-201-critic-2026-09-06.md",
+        ".agent/artifacts/aaa-200-201-e2e-postfix-2026-09-06.md",
+        ".agent/artifacts/aaa-200-201-e2e-final-2026-09-06.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/application/src/adaptive-assignment-use-cases.ts",
+        "packages/contracts/src/learning-state.ts",
+        "packages/persistence/src/adaptive-assignment-repository.ts",
+        "packages/persistence/src/diagnostic-session-repository.ts",
+        "apps/api/src/http.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/adaptive-assignment-use-cases.test.ts",
+        "packages/persistence/src/adaptive-assignment-repository.test.ts",
+        "packages/persistence/src/diagnostic-session-repository.test.ts",
+        "packages/contracts/src/diagnostic-session.test.ts",
+        "packages/contracts/src/learning-state.test.ts",
+        "tests/integration/postgres-adaptive-assignment.test.ts",
+        "tests/integration/postgres-diagnostic-session.test.ts",
+        "tests/e2e/diagnostic-session.spec.ts",
+      ]
+    status: "implemented-with-live-evidence-gap"
+    verification:
+      [
+        "Focal contracts/application/persistence/journey suite PASS after correction: 5 files / 25 tests",
+        "Deterministic rule includes M01/M02/M11 plus valid recommendations; invalid modules fail closed",
+        "Replay preserves assignment identity; divergent source diagnostic or activity linkage fails closed",
+        "Assignment endpoint response is allowlisted and omits diagnosticResultId, assignmentId, moduleId, participantId and scopeId",
+        "corepack pnpm verify PASS: 149 files/800 tests, 30 files/42 tests skipped, coverage 84.45/80.18/87.30/85.19",
+        "Final synthetic browser E2E PASS: 43/43 on isolated ports, covering participant, diagnostic, recovery, authoring, operations, proxy, accessibility and visual flows",
+        "0560 finalization and 0561 vertical contract keep result and assignment server-side and public projections allowlisted",
+      ]
+    limitations:
+      [
+        "CVG_TEST_DATABASE_URL is absent; PostgreSQL/RLS live, real concurrency, rollback and browser-to-API-to-PostgreSQL evidence are not proven.",
+        "Post-correction independent re-read returned REVISE because it could not inspect current files under its no-command constraint; live, G2, feedback/debrief, retention, clinical publication, production, pilot and release remain separate gates.",
+      ]
+  - id: "AAA-RECOVERY-205"
+    requirements:
+      [
+        "AAA-205",
+        "AAA-105",
+        "PRD-RF-008",
+        "PRD-RF-009",
+        "SPEC-0107",
+        "SPEC-0111",
+        "SPEC-0114",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/0562_aaa_recovery_resilience_contract.md",
+        ".agent/artifacts/aaa-205-recovery-resilience-local-2026-09-06.md",
+        ".agent/artifacts/aaa-200-201-e2e-postfix-2026-09-06.md",
+        ".agent/artifacts/aaa-200-201-e2e-final-2026-09-06.md",
+        "docs/30_backlog_master.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+      ]
+    code:
+      [
+        "apps/web/app/page.tsx",
+        "apps/web/app/recovery/page.tsx",
+        "apps/api/src/http.ts",
+        "apps/api/src/server.ts",
+        "packages/contracts/src/session.ts",
+        "packages/application/src/session.ts",
+      ]
+    tests:
+      [
+        "tests/e2e/experience-accessibility.spec.ts",
+        "tests/e2e/participant-access.spec.ts",
+        "tests/e2e/recovery-access.spec.ts",
+        "apps/api/src/http.test.ts",
+        "apps/api/src/server.test.ts",
+        "packages/contracts/src/session.test.ts",
+        "packages/application/src/session.test.ts",
+        "packages/persistence/src/session-repository.test.ts",
+      ]
+    status: "implemented-with-live-evidence-gap"
+    verification:
+      [
+        "Loading/error/empty/retry and public redaction are exercised by the web E2E suite",
+        "Recovery removes the token from the URL and consumes a one-time link into a fresh server session",
+        "corepack pnpm verify PASS: 149 files/800 tests, 30 files/42 tests skipped, coverage 84.45/80.18/87.30/85.19",
+        "Full synthetic E2E final PASS: 43/43 on isolated ports; current visual matrix PASS: 7/7",
+        "0562 and the backlog preserve server authority and do not claim live readiness",
+      ]
+    limitations:
+      [
+        "Fixtures are synthetic; cookie HTTPS expiry/revocation, network timeout/abort, cross-scope and browser-to-API-to-PostgreSQL/RLS are not proven live.",
+        "Production observability, assistive user review, clinical publication, pilot, release and practical competence remain outside this slice.",
+      ]
+  - id: "AAA-603-CI-ARTIFACT-GOVERNANCE"
+    requirements: ["AAA-603", "AAA-003", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        ".agent/plans/2026-09-06-aaa-603-ci-artifact-governance.md",
+        ".agent/artifacts/aaa-603-ci-artifact-governance-2026-09-06.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        ".github/workflows/quality.yml",
+        "scripts/ci-artifact-governance.mjs",
+        "scripts/verify-ci-contract.mjs",
+        "scripts/verify-traceability.mjs",
+      ]
+    tests: ["tests/integration/ci-governance.test.ts"]
+    status: "implemented-local-bounded-with-remote-same-sha-gap"
+    commit: "WORKTREE"
+    artifacts: [".agent/artifacts/aaa-603-ci-artifact-governance-2026-09-06.md"]
+    verification:
+      [
+        "RED: ci-governance contract test failed in 2 new assertions before implementation",
+        "GREEN: CI governance integration suite PASS 21/21",
+        "Static CI contract PASS with same-SHA ordering, artifact invocation and 24 workflow checks",
+        "Local governance execution PASS with deterministic CycloneDX 1.5 SBOM, SHA-256 manifest and zero redaction findings",
+      ]
+    limitations:
+      [
+        "The workflow was not executed in GitHub Actions at the current worktree SHA; retention, ACL, signature, cache hit and remote artifact inspection remain unproven.",
+        "The local artifact run used the HEAD value against a dirty worktree and therefore is not release evidence.",
+      ]
+  - id: "AAA-700-AI-RESILIENCE"
+    requirements:
+      ["AAA-700", "SPEC-0112", "SPEC-0113", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        ".agent/plans/2026-09-06-aaa-700-ai-resilience.md",
+        ".agent/artifacts/aaa-700-ai-resilience-2026-09-06.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/integrations/src/ai.ts",
+        "packages/integrations/src/composition.ts",
+        "packages/integrations/src/index.ts",
+      ]
+    tests:
+      [
+        "packages/integrations/src/ai.test.ts",
+        "packages/integrations/src/composition.test.ts",
+      ]
+    status: "implemented-local-bounded-with-provider-and-operations-gaps"
+    commit: "WORKTREE"
+    artifacts: [".agent/artifacts/aaa-700-ai-resilience-2026-09-06.md"]
+    verification:
+      [
+        "RED: focused AI test suite failed 3 new assertions before resilience wrappers existed; a follow-up RED covered raw detail from an already-wrapped adapter",
+        "GREEN: integrations focal suite PASS 20/20 and package suite PASS 31/31",
+        "Integration package typecheck/build, monorepo typecheck/build, lint, format and diff-check passed locally",
+        "Retry policy is bounded, signal-aware, transient-only and sanitizes provider detail even when an adapter already returns AiIntegrationError",
+      ]
+    limitations:
+      [
+        "No real provider key, quota, collector, production cost/latency or failover evidence was used; the AI remains disabled in CI and non-decisional.",
+        "Node 22 CI execution and remote release traceability remain pending.",
+      ]
+  - id: "AAA-701-QDRANT-RECONCILIATION"
+    requirements:
+      ["AAA-701", "SPEC-0112", "SPEC-0113", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md",
+        ".agent/plans/2026-09-06-aaa-701-qdrant-reconciliation.md",
+        ".agent/artifacts/aaa-701-qdrant-reconciliation-2026-09-06.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/integrations/src/ai.ts",
+        "packages/integrations/src/qdrant.ts",
+        "packages/persistence/src/database.ts",
+        "apps/worker/src/indexing.ts",
+        "apps/worker/src/reconcile.ts",
+        "apps/worker/src/main.ts",
+      ]
+    tests:
+      [
+        "packages/integrations/src/ai.test.ts",
+        "packages/integrations/src/qdrant.test.ts",
+        "packages/persistence/src/database.test.ts",
+        "apps/worker/src/reconcile.test.ts",
+        "apps/worker/src/handlers.test.ts",
+      ]
+    status: "implemented-local-bounded-awaiting-independent-review-and-live-lock"
+    commit: "WORKTREE"
+    artifacts: [".agent/artifacts/aaa-701-qdrant-reconciliation-2026-09-06.md"]
+    verification:
+      [
+        "RED reproduced invisible old-index points; GREEN focal passed 5 files/18 tests",
+        "Embedding model is explicit and mismatch fails closed; no-op reconciliation skips embedding",
+        "Qdrant scroll uses an explicit internal payload allowlist and old index metadata remains observable",
+        "PostgreSQL advisory lock is wired around the worker reconciliation with finally-based release",
+        "corepack pnpm verify PASS: 149 files/811 tests, 42 skipped, coverage 84.35/80.21/87.34/85.09",
+      ]
+    limitations:
+      [
+        "The advisory lock was not exercised against PostgreSQL live because CVG_TEST_DATABASE_URL is absent; cross-process behavior remains unproven in this worktree.",
+        "Qdrant live, provider external, load, restore, workflow remote same-SHA, production and clinical/pilot gates remain outside this local slice.",
+        "The second fresh critic was shut down before returning a verdict; no independent PASS exists for this round, and a new fresh review is required before AAA-701 can be promoted.",
+      ]
+  - id: "DOCS-40-43-TRIPLE-AAA-2026-09-09"
+    requirements: ["AAA-000", "AAA-001", "AAA-002", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/40_construction_audit_report_2026-09-09.md",
+        "docs/41_executive_plan_triple_aaa.md",
+        "docs/42_roadmap_triple_aaa.md",
+        "docs/43_backlog_triple_aaa.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    tests: ["DOC-LINK-001", "DOC-DIFF-CHECK-001"]
+    status: "documented-awaiting-aaa-001-and-fresh-aaa-701-review"
+    commit: "WORKTREE"
+    artifacts:
+      [
+        "docs/40_construction_audit_report_2026-09-09.md",
+        "docs/41_executive_plan_triple_aaa.md",
+        "docs/42_roadmap_triple_aaa.md",
+        "docs/43_backlog_triple_aaa.md",
+      ]
+    verification:
+      [
+        "node scripts/verify-documentation.mjs PASS",
+        "node scripts/verify-traceability.mjs structurally PASS",
+        "git diff --check PASS",
+        "npx tsc -b PASS",
+      ]
+    limitations:
+      [
+        "Full pnpm verify was not re-run in this round; broad counts reuse the 2026-09-06 historical evidence of 149 files/811 tests with 42 skips.",
+        "Live PostgreSQL/RLS, remote same-SHA workflow, production, clinical publication and pilot remain gated behind AAA-001 and authorized environment.",
+      ]
+  - id: "AAA-701-REMEDIATION-2026-09-09"
+    requirements:
+      ["AAA-701", "AAA-702", "AAA-703", "SPEC-0112", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        ".agent/artifacts/aaa-701-critic-remediation-2026-09-09.md",
+        "docs/40_construction_audit_report_2026-09-09.md",
+        "docs/43_backlog_triple_aaa.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "packages/integrations/src/qdrant.ts",
+        "packages/integrations/src/evals.ts",
+        "packages/integrations/src/index.ts",
+        "packages/persistence/src/database.ts",
+        "apps/worker/src/reconcile.ts",
+      ]
+    tests:
+      [
+        "packages/integrations/src/qdrant.test.ts",
+        "packages/integrations/src/evals.test.ts",
+        "packages/integrations/src/ai-governance.test.ts",
+        "packages/persistence/src/database.test.ts",
+        "apps/worker/src/reconcile.test.ts",
+        "apps/worker/src/handlers.test.ts",
+        "apps/worker/src/main.test.ts",
+      ]
+    status: "implemented-local-bounded-awaiting-third-review-and-live"
+    commit: "WORKTREE"
+    artifacts: [".agent/artifacts/aaa-701-critic-remediation-2026-09-09.md"]
+    verification:
+      [
+        "Two fresh independent critiques returned REVISE with meritorious P0/P1/P2; all findings remediated via RED/GREEN/REFACTOR",
+        "pnpm verify PASS end to end including contract, worker, migrations, secrets, traceability, architecture, documentation, product-definition and exposure gates",
+        "pnpm test:coverage PASS: 151 files/831 tests, 30 files/42 tests skipped, 84.49/80.3/87.37/85.24",
+        "pnpm test:e2e PASS: 45/45; slice focal 50 files/280 tests PASS; tsc, eslint and prettier clean",
+      ]
+    limitations:
+      [
+        "A third fresh independent review of the round-2 fixes is still required before AAA-701 can be promoted.",
+        "Advisory-lock cross-process contention, PostgreSQL/RLS live, Qdrant live, real AI provider evals, remote same-SHA workflow, clinical review/publication, pilot and production remain gated behind AAA-001 and authorized environment.",
+      ]
+  - id: "ROUND-10-2026-09-10"
+    requirements: ["AAA-701", "AAA-702", "AAA-703", "AAA-603", "AAA-001"]
+    documents:
+      [
+        "docs/44_round10_analysis.md",
+        "docs/45_aaa001_decision_packet.md",
+        "docs/40_construction_audit_report_2026-09-09.md",
+        "docs/43_backlog_triple_aaa.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    tests:
+      [
+        "packages/integrations/src/qdrant.test.ts",
+        "packages/integrations/src/evals.test.ts",
+        "packages/integrations/src/ai-governance.test.ts",
+        "packages/persistence/src/database.test.ts",
+        "apps/worker/src/reconcile.test.ts",
+      ]
+    status: "third-critic-pass-p2s-closed-remote-run-pending"
+    commit: "WORKTREE"
+    artifacts:
+      ["docs/44_round10_analysis.md", "docs/45_aaa001_decision_packet.md"]
+    verification:
+      [
+        "Third fresh independent critic returned PASS with 3 P2 test-strength notes; all closed via TDD (282/282 slice, 835 total)",
+        "pnpm verify PASS end to end; coverage 151 files/835 tests, 84.49/80.35/87.37/85.25; pnpm test:e2e 45/45 twice",
+        "Local disposable lives declared infeasible (no docker daemon, postgres or sudo); remote CI branch is the adopted path",
+      ]
+    limitations:
+      [
+        "Remote same-SHA workflow outcome pending on branch aaa/round-10-verification.",
+        "Gauntlet files untouched: no official fingerprint helper exists in-repo, so no hash was invented; rebaseline awaits helper plus remote outcome.",
+        "AAA-001 decision packet is PROPOSED only; clinical review, pilot and production remain human-gated.",
+      ]
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."

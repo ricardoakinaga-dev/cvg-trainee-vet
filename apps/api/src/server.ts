@@ -178,6 +178,9 @@ export function routeTemplate(method: string, path: string): string {
   if (method === "POST" && path === "/api/v1/session/revoke") {
     return "/api/v1/session/revoke";
   }
+  if (method === "GET" && path === "/api/v1/session/current") {
+    return "/api/v1/session/current";
+  }
   if (method === "POST" && path === "/api/v1/session/rotate") {
     return "/api/v1/session/rotate";
   }
