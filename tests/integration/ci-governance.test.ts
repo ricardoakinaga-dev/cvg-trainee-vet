@@ -42,7 +42,9 @@ describe("CI reproducibility contract", () => {
       /\n {6}- name: Checkout\r?\n[\s\S]*?(?=\n {6}- name: |\n?$)/u,
     );
 
-    expect(checkoutStep?.[0]).toMatch(/uses: actions\/checkout@v4/u);
+    expect(checkoutStep?.[0]).toMatch(
+      /uses: actions\/checkout@(?:v4|[0-9a-f]{40})/u,
+    );
     expect(checkoutStep?.[0]).toMatch(/fetch-depth: 0/u);
     expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
   });
@@ -276,6 +278,30 @@ describe("CI reproducibility contract", () => {
 
     expect(() => validateCiContract(inconsistent)).toThrow(
       /workflow migration DATABASE_URL override.*incomplete/i,
+    );
+  });
+
+  it("accepts SHA-pinned GitHub Actions with a human-readable version comment", async () => {
+    const contract = await readCiContract();
+
+    expect(contract.workflow).toMatch(
+      /uses: actions\/checkout@[0-9a-f]{40} # v4/u,
+    );
+    expect(validateCiContract(contract)).toMatchObject({ status: "PASS" });
+  });
+
+  it("rejects mutable action tags without an immutable commit pin", async () => {
+    const contract = await readCiContract();
+    const inconsistent = {
+      ...contract,
+      workflow: contract.workflow.replace(
+        /uses: actions\/checkout@[0-9a-f]{40} # v4/u,
+        "uses: actions/checkout@v4",
+      ),
+    };
+
+    expect(() => validateCiContract(inconsistent)).toThrow(
+      /immutable action pin/i,
     );
   });
 });

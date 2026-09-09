@@ -53,7 +53,7 @@ const requiredWorkflowChecks = Object.freeze([
   ["mocked browser E2E", /run:\s*pnpm test:e2e\b/u],
   ["real browser E2E", /CVG_RUN_REAL_E2E=true pnpm test:e2e/u],
   ["high-severity dependency audit", /pnpm audit --audit-level=high/u],
-  ["artifact publication", /actions\/upload-artifact@v4/u],
+  ["artifact publication", /actions\/upload-artifact@(?:v4|[0-9a-f]{40})/u],
   ["artifact retention condition", /if:\s*always\(\)/u],
   ["coverage artifact path", /coverage\//u],
   ["browser report path", /playwright-report\//u],
@@ -243,6 +243,17 @@ function workflowDatabaseContractFailures(text) {
   return [];
 }
 
+function mutableActionPins(text) {
+  const pins = [];
+  const pattern =
+    /^[ \t]*-?[ \t]*uses:[ \t]*([A-Za-z0-9_./-]+\/[\w.-]+)@([A-Za-z0-9_./-]+)(?:[ \t]+#.*)?$/gmu;
+  for (const match of text.matchAll(pattern)) {
+    const [, action, ref] = match;
+    if (!/^[0-9a-f]{40}$/u.test(ref)) pins.push(`${action}@${ref}`);
+  }
+  return pins;
+}
+
 function invalid(message) {
   return new Error(`CI contract is invalid: ${message}`);
 }
@@ -308,6 +319,11 @@ export function validateCiContract(contract) {
     ...requiredRuntimeChecks
       .filter(([, pattern]) => !pattern.test(contract.playwrightConfig))
       .map(([name]) => `Playwright runtime is missing ${name}`),
+    ...(mutableActionPins(contract.workflow).length > 0
+      ? [
+          `workflow must use immutable action pins: ${mutableActionPins(contract.workflow).join(", ")}`,
+        ]
+      : []),
     ...(enablePnpmStep < 0 || setupNodeStep < 0
       ? ["workflow must define Setup Node.js and Enable pnpm steps"]
       : enablePnpmStep > setupNodeStep
