@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { CAPABILITIES } from "@cvg/application";
+
 import { routeTemplate } from "../server.js";
-import {
-  KNOWN_TELEMETRY_GAPS,
-  ROUTE_REGISTRY,
-  matchRoute,
-  type RouteDefinition,
-} from "./route-registry.js";
+import { ROUTE_REGISTRY, matchRoute } from "./route-registry.js";
 
 type CorpusRow = Readonly<{
   readonly method: string;
@@ -300,17 +297,6 @@ const CORPUS: readonly CorpusRow[] = [
   },
 ];
 
-function definitionsByTemplate(
-  definitions: readonly RouteDefinition[],
-): ReadonlyMap<string, readonly RouteDefinition[]> {
-  const grouped = new Map<string, RouteDefinition[]>();
-  for (const definition of definitions) {
-    const existing = grouped.get(definition.template) ?? [];
-    grouped.set(definition.template, [...existing, definition]);
-  }
-  return grouped;
-}
-
 describe("route registry", () => {
   it("declares a complete classification for every route", () => {
     expect(ROUTE_REGISTRY.length).toBeGreaterThan(50);
@@ -397,37 +383,43 @@ describe("route registry", () => {
     }
   });
 
-  it("stays in parity with routeTemplate except for documented gaps", () => {
-    const gapKeys = new Set(
-      KNOWN_TELEMETRY_GAPS.map((gap) => `${gap.method} ${gap.template}`),
-    );
+  it("stays in parity with routeTemplate: the registry governs the runtime", () => {
     for (const row of CORPUS) {
       const legacy = routeTemplate(row.method, row.path);
       const next = matchRoute(row.method, row.path)?.template ?? "unmatched";
-      if (gapKeys.has(`${row.method} ${row.template}`)) {
-        expect(legacy).toBe("unmatched");
-        expect(next).toBe(row.template);
-      } else {
-        expect(next).toBe(legacy);
-      }
+      expect(next).toBe(legacy);
     }
   });
 
-  it("documents exactly the known telemetry gaps and nothing else", () => {
-    expect(KNOWN_TELEMETRY_GAPS.map((gap) => gap.id).sort()).toEqual(
-      [
-        "F-REG-001",
-        "F-REG-002",
-        "F-REG-003",
-        "F-REG-004",
-        "F-REG-005",
-        "F-REG-006",
-      ].sort(),
-    );
-    const grouped = definitionsByTemplate(ROUTE_REGISTRY);
-    for (const gap of KNOWN_TELEMETRY_GAPS) {
-      expect(grouped.has(gap.template)).toBe(true);
-      expect(gap.template).not.toBe("unmatched");
+  it("leaves zero known telemetry gaps: every dispatch route classifies", () => {
+    for (const row of CORPUS.filter(
+      (entry) => entry.template !== "unmatched",
+    )) {
+      expect(routeTemplate(row.method, row.path)).toBe(row.template);
+    }
+  });
+
+  it("gives every entry a first-match witness: no shadowed matchers", () => {
+    const matched = new Set<string>();
+    for (const row of CORPUS.filter(
+      (entry) => entry.template !== "unmatched",
+    )) {
+      const hit = matchRoute(row.method, row.path);
+      if (hit !== null) {
+        matched.add(`${hit.method} ${hit.template}`);
+      }
+    }
+    const missing = ROUTE_REGISTRY.map(
+      (definition) => `${definition.method} ${definition.template}`,
+    ).filter((key) => !matched.has(key));
+    expect(missing).toEqual([]);
+  });
+
+  it("uses only capabilities defined by the authorization layer", () => {
+    for (const definition of ROUTE_REGISTRY) {
+      for (const capability of definition.capabilities) {
+        expect(CAPABILITIES.has(capability)).toBe(true);
+      }
     }
   });
 });

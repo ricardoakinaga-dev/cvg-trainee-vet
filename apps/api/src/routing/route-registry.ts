@@ -32,13 +32,6 @@ export type RouteDefinition = Readonly<{
   readonly note?: string;
 }>;
 
-export type TelemetryGap = Readonly<{
-  readonly id: string;
-  readonly method: RouteMethod;
-  readonly template: string;
-  readonly detail: string;
-}>;
-
 function exact(
   method: RouteMethod,
   template: string,
@@ -80,51 +73,6 @@ const RECOVERY: RateLimitRiskClass = "recovery";
 const MUTATION: RateLimitRiskClass = "mutation";
 const READ: RateLimitRiskClass = "expensive-read";
 const INTERNAL: RateLimitRiskClass = "internal";
-
-export const KNOWN_TELEMETRY_GAPS: readonly TelemetryGap[] = Object.freeze([
-  Object.freeze({
-    id: "F-REG-001",
-    method: "PATCH",
-    template: "/api/v1/internal/accounts/:accountId/status",
-    detail:
-      "dispatch handles PATCH account status but routeTemplate() reports unmatched: no per-route metrics, shared unmatched rate-limit bucket",
-  }),
-  Object.freeze({
-    id: "F-REG-002",
-    method: "POST",
-    template: "/api/v1/internal/accounts/:accountId/invitation",
-    detail:
-      "dispatch handles POST account invitation resend but routeTemplate() reports unmatched",
-  }),
-  Object.freeze({
-    id: "F-REG-003",
-    method: "GET",
-    template: "/api/v1/internal/appeals/:appealId/history",
-    detail:
-      "dispatch handles GET appeal review history but routeTemplate() reports unmatched",
-  }),
-  Object.freeze({
-    id: "F-REG-004",
-    method: "GET",
-    template: "/api/v1/feedback",
-    detail:
-      "dispatch handles GET participant feedback read but routeTemplate() only classifies POST",
-  }),
-  Object.freeze({
-    id: "F-REG-005",
-    method: "GET",
-    template: "/api/v1/internal/feedback",
-    detail:
-      "dispatch handles GET feedback triage queue but routeTemplate() only classifies ticket-scoped patterns",
-  }),
-  Object.freeze({
-    id: "F-REG-006",
-    method: "GET",
-    template: "/api/v1/internal/reports/reflections",
-    detail:
-      "dispatch handles GET reflection management report but routeTemplate() has no entry",
-  }),
-]);
 
 export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
   exact("GET", "/health/live", {
@@ -235,8 +183,8 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     capabilities: Object.freeze(["VIEW_OWN_FEEDBACK"]),
     enforcement: "http",
     riskClass: READ,
-    telemetryGap: true,
-    note: "F-REG-004: dispatch handles GET but routeTemplate() only classifies POST",
+    telemetryGap: false,
+    note: "F-REG-004 closed in R2-001: registry governs the runtime",
   }),
   exact("GET", "/api/v1/appeals", {
     auth: "session",
@@ -293,8 +241,8 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     capabilities: Object.freeze(["VIEW_PROGRAM_METRICS"]),
     enforcement: "http",
     riskClass: READ,
-    telemetryGap: true,
-    note: "F-REG-006: dispatch handles this report but routeTemplate() has no entry",
+    telemetryGap: false,
+    note: "F-REG-006 closed in R2-001: registry governs the runtime",
   }),
   exact("GET", "/api/v1/internal/content/review-queue", {
     auth: "internal",
@@ -322,8 +270,8 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     capabilities: Object.freeze(["VIEW_FEEDBACK_QUEUE"]),
     enforcement: "http",
     riskClass: READ,
-    telemetryGap: true,
-    note: "F-REG-005: dispatch handles the triage queue but routeTemplate() only classifies ticket-scoped patterns",
+    telemetryGap: false,
+    note: "F-REG-005 closed in R2-001: registry governs the runtime",
   }),
   exact("GET", "/api/v1/internal/session/scopes", {
     auth: "internal",
@@ -622,8 +570,8 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
       capabilities: Object.freeze(["REVIEW_APPEAL"]),
       enforcement: "http",
       riskClass: READ,
-      telemetryGap: true,
-      note: "F-REG-003: dispatch handles appeal history but routeTemplate() has no entry",
+      telemetryGap: false,
+      note: "F-REG-003 closed in R2-001: registry governs the runtime",
     },
   ),
   pattern(
@@ -674,8 +622,8 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
       capabilities: Object.freeze(["MANAGE_ACCOUNT_LIFECYCLE"]),
       enforcement: "http",
       riskClass: MUTATION,
-      telemetryGap: true,
-      note: "F-REG-001: dispatch handles account status change but routeTemplate() has no entry",
+      telemetryGap: false,
+      note: "F-REG-001 closed in R2-001: registry governs the runtime",
     },
   ),
   pattern(
@@ -687,8 +635,8 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
       capabilities: Object.freeze(["MANAGE_ACCOUNT_LIFECYCLE"]),
       enforcement: "http",
       riskClass: MUTATION,
-      telemetryGap: true,
-      note: "F-REG-002: dispatch handles invitation resend but routeTemplate() has no entry",
+      telemetryGap: false,
+      note: "F-REG-002 closed in R2-001: registry governs the runtime",
     },
   ),
 ]);

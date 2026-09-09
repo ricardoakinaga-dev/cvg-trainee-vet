@@ -1,4 +1,4 @@
-export { canAccess } from "./authorization.js";
+export { CAPABILITIES, canAccess } from "./authorization.js";
 export type {
   AccountStatus,
   AuthorizationRequest,
