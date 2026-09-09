@@ -5841,7 +5841,7 @@ artifacts:
         "tests/integration/postgres-restore.test.ts",
       ]
     status: "implemented-local-live-green-awaiting-remote-run"
-    commit: "WORKTREE"
+    commit: "49a3196564085ae41fc46d06359dd69d8ff0ff8f"
     artifacts: ["docs/44_round10_analysis.md"]
     verification:
       [
