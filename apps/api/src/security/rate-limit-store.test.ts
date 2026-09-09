@@ -209,4 +209,50 @@ describe("distributed rate-limit store", () => {
       }),
     ).rejects.toThrow("aborted");
   });
+
+  it("keeps exact counts under concurrent increments", async () => {
+    const store = createMemoryRateLimitStore();
+    const nowMs = 10_000;
+    const decisions = await Promise.all(
+      Array.from({ length: 50 }, () =>
+        store.increment("rl:race", 10, 60_000, nowMs),
+      ),
+    );
+    expect(decisions.filter((decision) => decision.allowed)).toHaveLength(10);
+    expect(decisions.filter((decision) => !decision.allowed)).toHaveLength(40);
+    const blocked = await store.increment("rl:race", 10, 60_000, nowMs + 1);
+    expect(blocked).toMatchObject({ allowed: false, retryAfterSeconds: 60 });
+  });
+
+  it("builds deterministic, bounded keys for arbitrary inputs (property loop)", () => {
+    let seed = 0x9e3779b9;
+    const next = (): number => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 0x1_0000_0000;
+    };
+    const alphabet = "abcXYZ019:/.-_ \t::ffff:";
+    const randomText = (max: number): string => {
+      const length = Math.floor(next() * max);
+      return Array.from(
+        { length },
+        () => alphabet[Math.floor(next() * alphabet.length)] as string,
+      ).join("");
+    };
+    const classes = Object.keys(RISK_CLASS_LIMITS);
+    for (let index = 0; index < 300; index += 1) {
+      const input = {
+        principalId: randomText(40),
+        clientIp: randomText(48),
+        route: `/api/v1/${randomText(12).replaceAll(/[^a-zA-Z0-9]+/gu, "x") || "x"}`,
+        riskClass: classes[
+          index % classes.length
+        ] as keyof typeof RISK_CLASS_LIMITS,
+      };
+      const first = buildRateLimitKey(input);
+      expect(buildRateLimitKey(input)).toBe(first);
+      expect(first.length).toBeLessThanOrEqual(640);
+      expect(first).not.toContain("\t");
+      expect(first).not.toContain(" ");
+    }
+  });
 });

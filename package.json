@@ -26,6 +26,7 @@
     "test:integration:restore": "CVG_INCLUDE_LIVE_RESTORE=true CVG_ONLY_LIVE_RESTORE=true node scripts/run-live-integration.mjs",
     "test:e2e": "node scripts/build-e2e.mjs && playwright test",
     "test:coverage": "vitest run --coverage",
+    "test:load": "k6 run tests/load/k6-baseline.js",
     "reconcile:qdrant": "pnpm --filter @cvg/worker build && pnpm --dir apps/worker reconcile:qdrant",
     "verify:ci-contract": "node scripts/verify-ci-contract.mjs",
     "verify:secrets": "node scripts/verify-secrets.mjs",

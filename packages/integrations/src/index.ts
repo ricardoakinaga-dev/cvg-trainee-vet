@@ -60,3 +60,12 @@ export type {
   TextSafetyEvalDimension,
   TextSafetyEvalResult,
 } from "./evals.js";
+
+export {
+  failingVectorStore,
+  malformedAiTextProvider,
+  providerErrorAiTextProvider,
+  slowVectorStore,
+  timeoutEmbeddingProvider,
+} from "./faults.js";
+export type { LatencyFaultOptions } from "./faults.js";
