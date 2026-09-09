@@ -64,11 +64,9 @@ describe("AI human-in-the-loop governance", () => {
     const port = createOpenAiTextProvider(
       { apiKey: "test-key", model: "synthetic-test-model" },
       {
-        create: vi
-          .fn()
-          .mockResolvedValue({
-            output_text: `{"data":"${"x".repeat(100_000)}"}`,
-          }),
+        create: vi.fn().mockResolvedValue({
+          output_text: `{"data":"${"x".repeat(100_000)}"}`,
+        }),
       },
     );
 
@@ -87,11 +85,9 @@ describe("AI human-in-the-loop governance", () => {
     const port = createOpenAiTextProvider(
       { apiKey: "test-key", model: "synthetic-test-model" },
       {
-        create: vi
-          .fn()
-          .mockResolvedValue({
-            output_text: "<html><body>blocked</body></html>",
-          }),
+        create: vi.fn().mockResolvedValue({
+          output_text: "<html><body>blocked</body></html>",
+        }),
       },
     );
 
