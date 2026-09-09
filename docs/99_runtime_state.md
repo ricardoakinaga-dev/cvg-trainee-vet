@@ -671,3 +671,29 @@ runtime do registry/rate-limit (P1-03/P1-04) e extração incremental de `http.t
 ### STATUS
 
 IN_PROGRESS
+
+## 2026-09-09 — MOD-AAA Round-1: publicação dos 6 commits
+
+### TIMESTAMP
+
+2026-09-09T09:15:00-0300
+
+### ACTION
+
+Push normal de `e3501e4..fe36b3d` para `origin/aaa/round-10-verification`
+(6 commits: feat api, ci security, feat release, fix deps, docs modernization,
+docs runtime). `main` intocado. Release-traceability PASS em worktree com
+commits alcançáveis. Nenhum deploy, migration produtiva ou dado real.
+
+### RESULT
+
+Remoto sincronizado na branch de verificação; nenhuma execução de workflow
+remoto inferida desta ação.
+
+### NEXT
+
+Acompanhar runs remotos (quality + security.yml estreante); revisão de Ricardo.
+
+### STATUS
+
+IN_PROGRESS
