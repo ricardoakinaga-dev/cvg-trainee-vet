@@ -307,3 +307,168 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 });
+
+describe("authorization policy — uncovered decision arms (AAA-FINAL-002)", () => {
+  it("branch=VIEW_STAFF_DASHBOARD/risk=privilege-escalation: staff role plus scope required", () => {
+    const moderator = {
+      principalId: "moderator-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["MODERATOR"] as const,
+      capability: "VIEW_STAFF_DASHBOARD" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(moderator)).toBe(true);
+    expect(canAccess({ ...moderator, roles: ["PARTICIPANT"] as const })).toBe(
+      false,
+    );
+    expect(canAccess({ ...moderator, scopes: ["other-scope"] })).toBe(false);
+  });
+
+  it("branch=MODERATE_CONTENT/admin/risk=role-confusion: ADMIN moderates in scope", () => {
+    const admin = {
+      principalId: "admin-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["ADMIN"] as const,
+      capability: "MODERATE_CONTENT" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(admin)).toBe(true);
+    expect(canAccess({ ...admin, scopes: ["other-scope"] })).toBe(false);
+  });
+
+  it("branch=VIEW_AUDIT_TRAIL/risk=audit-tampering: auditor or admin in scope only", () => {
+    const auditor = {
+      principalId: "auditor-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["AUDITOR"] as const,
+      capability: "VIEW_AUDIT_TRAIL" as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess(auditor)).toBe(true);
+    expect(canAccess({ ...auditor, roles: ["PARTICIPANT"] as const })).toBe(
+      false,
+    );
+    expect(canAccess({ ...auditor, scopes: ["other-scope"] })).toBe(false);
+  });
+
+  it("branch=MANAGE_ROLES/risk=privilege-escalation: ADMIN only, no scope needed", () => {
+    const admin = {
+      principalId: "admin-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["ADMIN"] as const,
+      capability: "MANAGE_ROLES" as const,
+      scopes: [] as const,
+    };
+    expect(canAccess(admin)).toBe(true);
+    expect(canAccess({ ...admin, roles: ["MODERATOR"] as const })).toBe(false);
+  });
+
+  it("branch=GRANT_CLINICAL_APPROVER/risk=deny-by-default: never granted via policy", () => {
+    expect(
+      canAccess({
+        principalId: "admin-1",
+        accountStatus: "ACTIVE",
+        roles: ["ADMIN"],
+        capability: "GRANT_CLINICAL_APPROVER",
+        scopes: ["curriculum-1"],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("authorization policy — mutation killers (AAA-FINAL-002 §16)", () => {
+  const scoped = (overrides = {}) => ({
+    principalId: "principal-1",
+    accountStatus: "ACTIVE" as const,
+    roles: ["PARTICIPANT"] as const,
+    capability: "VIEW_OWN_ACTIVITY" as const,
+    resource: { ownerId: "principal-1", scopeId: "curriculum-1" },
+    scopes: ["curriculum-1"] as const,
+    ...overrides,
+  });
+
+  it("kills operator-swap mutants on the ownership conjunction", () => {
+    // Mutant: hasRole && ownsResource || hasScope (precedence/operator swap).
+    expect(
+      canAccess(
+        scoped({
+          roles: ["MODERATOR"] as const,
+          capability: "VIEW_OWN_ACTIVITY" as const,
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      canAccess(
+        scoped({
+          resource: { ownerId: "other", scopeId: "curriculum-1" },
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("kills case-fallthrough mutants between staff-gated arms", () => {
+    const clinical = {
+      principalId: "clinico-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["CLINICAL_APPROVER"] as const,
+      approvedClinicalApproverId: "clinico-1",
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    // TRANSITION allows scoped staff; METADATA does not allow bare clinical.
+    expect(
+      canAccess({ ...clinical, capability: "TRANSITION_FEEDBACK_TICKET" }),
+    ).toBe(true);
+    expect(
+      canAccess({ ...clinical, capability: "MANAGE_FEEDBACK_METADATA" }),
+    ).toBe(false);
+  });
+
+  it("kills case-fallthrough mutants on author-gated arms", () => {
+    const author = {
+      principalId: "author-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["AUTHOR"] as const,
+      resource: { scopeId: "curriculum-1" },
+      scopes: ["curriculum-1"] as const,
+    };
+    expect(canAccess({ ...author, capability: "AUTHOR_CONTENT" })).toBe(true);
+    expect(canAccess({ ...author, capability: "VIEW_INTERNAL_SOURCE" })).toBe(
+      true,
+    );
+    // Mutant && between AUTHOR and clinical identity must not hold:
+    // AUTHOR alone (no clinical identity) still reads internal source.
+    expect(canAccess({ ...author, capability: "VIEW_PROGRAM_METRICS" })).toBe(
+      false,
+    );
+  });
+
+  it("kills optional-chaining removal on resource guards (no throw, deny closed)", () => {
+    expect(
+      canAccess(
+        scoped({ resource: undefined, capability: "VIEW_OWN_ACTIVITY" }),
+      ),
+    ).toBe(false);
+    expect(
+      canAccess(
+        scoped({
+          resource: undefined,
+          capability: "MANAGE_LEARNING_ASSIGNMENTS",
+          roles: ["MODERATOR"] as const,
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("kills guard-forcing mutants on the entry condition", () => {
+    expect(
+      canAccess(
+        scoped({ accountStatus: "SUSPENDED" as const, resource: undefined }),
+      ),
+    ).toBe(false);
+    expect(canAccess(scoped())).toBe(true);
+  });
+});

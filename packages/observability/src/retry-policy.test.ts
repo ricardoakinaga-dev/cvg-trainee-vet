@@ -91,3 +91,30 @@ describe("retry policy", () => {
     }
   });
 });
+
+describe("retry policy — uncovered guards (AAA-FINAL-002)", () => {
+  it("branch=inverted-budget/risk=busy-loop: rejects maxDelayMs below baseDelayMs", () => {
+    expect(() =>
+      retryDelayMs({ ...POLICY, maxDelayMs: 50 }, 1, () => 0),
+    ).toThrow("maxDelayMs");
+  });
+
+  it("branch=invalid-attempt/risk=panic: rejects non-positive attempt numbers", () => {
+    expect(() => retryDelayMs(POLICY, 0, () => 0)).toThrow("attempt");
+  });
+
+  it("branch=non-object-error/risk=opaque-failure: retries opaque thrown values", async () => {
+    let calls = 0;
+    const result = await executeWithRetry(
+      async () => {
+        calls += 1;
+        if (calls === 1) throw "opaque string failure";
+        return "recovered";
+      },
+      { ...POLICY, maxAttempts: 2 },
+      { sleepMs: async () => undefined, random: () => 0 },
+    );
+    expect(result).toMatchObject({ ok: true, value: "recovered", attempts: 2 });
+    expect(calls).toBe(2);
+  });
+});

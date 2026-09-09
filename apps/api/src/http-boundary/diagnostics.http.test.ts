@@ -420,4 +420,49 @@ describe("API HTTP boundary — diagnostics boundary", () => {
     });
     expect(start).not.toHaveBeenCalled();
   });
+
+  it("branch=unauthenticated/risk=anonymous-probe: denies current-session read without principal (401)", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/diagnostics/b07/sessions/current",
+        body: undefined,
+      },
+      dependencies({ authenticate: async () => null }),
+    );
+    expect(response.status).toBe(401);
+  });
+
+  it("branch=unauthenticated/risk=anonymous-probe: denies session read without principal (401)", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/diagnostics/b07/sessions/11111111-1111-4111-8111-111111111111",
+        body: undefined,
+      },
+      dependencies({ authenticate: async () => null }),
+    );
+    expect(response.status).toBe(401);
+  });
+
+  it("branch=dependency-failure/risk=unhandled-throw: maps a generic dependency throw to 500 without leaking internals", async () => {
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/diagnostics/b07/sessions/11111111-1111-4111-8111-111111111111",
+        body: undefined,
+      },
+      diagnosticDependencies({
+        isParticipantInScope: async () => {
+          throw new Error("postgres down");
+        },
+      }),
+    );
+    expect(response.status).toBe(500);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "internal_error" },
+    });
+    expect(JSON.stringify(response.body)).not.toContain("postgres down");
+  });
 });

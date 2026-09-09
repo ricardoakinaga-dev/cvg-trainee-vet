@@ -256,3 +256,23 @@ describe("distributed rate-limit store", () => {
     }
   });
 });
+
+describe("distributed rate-limit store — uncovered guards (AAA-FINAL-002)", () => {
+  it("branch=malformed-reply/risk=backend-confusion: rejects non-array Redis replies fail-closed", async () => {
+    const store = createRedisRateLimitStore({
+      eval: async () => "garbage",
+    });
+    await expect(
+      store.increment("rl:evil", 2, 60_000, Date.now()),
+    ).rejects.toThrow("malformed reply");
+  });
+
+  it("branch=malformed-reply/risk=backend-confusion: rejects short Redis replies fail-closed", async () => {
+    const store = createRedisRateLimitStore({
+      eval: async () => [3],
+    });
+    await expect(
+      store.increment("rl:short", 2, 60_000, Date.now()),
+    ).rejects.toThrow("malformed reply");
+  });
+});

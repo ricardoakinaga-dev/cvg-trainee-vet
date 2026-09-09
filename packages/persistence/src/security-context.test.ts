@@ -172,3 +172,16 @@ describe("database security context", () => {
     ).rejects.toThrow("tokenHash");
   });
 });
+
+describe("security context — uncovered guards (AAA-FINAL-002)", () => {
+  it("branch=invalid-kind/risk=context-confusion: rejects unsupported token context kinds", async () => {
+    const execute = vi.fn(async () => []);
+    await expect(
+      setDatabaseTokenSecurityContext({ execute }, {
+        kind: "session",
+        tokenHash: "a".repeat(64),
+      } as never),
+    ).rejects.toThrow("token context kind");
+    expect(execute).not.toHaveBeenCalled();
+  });
+});
