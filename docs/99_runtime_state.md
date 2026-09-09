@@ -10,7 +10,7 @@
 
 - current_phase: BUILD — MOD-AAA Round-1 (master prompt §§1–100): baseline + Phase 1/2/3 parcial, gates verdes locais
 - current_sprint: `MOD-REGISTRY` + `MOD-SECURITY-BASE` + `MOD-SUPPLYCHAIN-BASE` + `AAA-001` (ainda pendente)
-- current_task: enviar esta rodada para revisão de Ricardo (sem commit: sem pedido explícito); acompanhar run remoto same-SHA pré-existente; próxima fatia: wiring do registry/rate-limit no runtime + migração `http.ts` por features
+- current_task: consolidar as branches remotas em `main`, validar a árvore canônica AAA e publicar somente a ponta consolidada; depois remover as refs não-main e retomar o wiring do registry/rate-limit
 
 ## STATUS
 
@@ -18,8 +18,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: rodada MOD-AAA Round-1 concluída localmente sem commit: prompt canônico em docs/46, baseline docs/modernization/0001, registry de rotas + request context + rate-limit store + security headers em TDD (24 testes), threat model + authorization matrix + data classification, SLO/DR/7 runbooks, 6 arch docs + 5 ADRs, scorecard honesto (não-AAA), security.yml pinado + quality.yml pinado + contrato CI exigindo pins, release-evidence + pin-actions scripts, next 16.3.0→16.3.4 e override js-yaml (audit high verde), auditoria interim; `pnpm verify` 155/866 + E2E 45/45 + build + audit high + diff-check verdes
-- next_action: Ricardo revisar esta rodada e autorizar commit/push em branch dedicada (main intocado); depois wiring runtime do registry/rate-limit (P1-03/P1-04) e extração incremental de `http.ts`; manter acompanhamento do run remoto same-SHA e AAA-001
+- last_completed_action: DAG remoto inspecionado e branch `aaa/round-10-verification` promovida localmente a `main` por fast-forward; a branch antiga `agent/publish-production-hardening` foi avaliada como linha estruturalmente incompatível com a AAA atual e incorporada como segundo pai histórico no merge `95eade4`, preservando a árvore AAA canônica
+- next_action: executar instalação congelada e verificações proporcionais na árvore consolidada; publicar `main`, confirmar os refs remotos e remover `aaa/round-10-verification` e `agent/publish-production-hardening`; registrar o resultado final e retomar MOD-002/MOD-003
 
 ## BLOQUEIOS
 
@@ -32,13 +32,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-09T09:11:18-0300
-- session_checkpoint: MOD-AAA Round-1 concluída localmente sem commit (sem pedido explícito de commit); `IN_PROGRESS`; trabalho em worktree sobre `e3501e4`; `.gauntlet/` intocado
+- last_update: 2026-09-09T17:37:23-0300
+- session_checkpoint: consolidação histórica em andamento; `main` local aponta para o merge `95eade4`, com AAA como árvore canônica e hardening legado como segundo pai; ainda sem push do novo `main` e sem remoção de refs remotos
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: branch `aaa/round-10-verification`; checkpoint operacional publicado; não houve deploy
-- origin: tracking local `origin/aaa/round-10-verification`; push normal concluído; não inferir execução de workflow remoto
+- head: branch local `main` no merge `95eade4`; árvore efetiva é a ponta `7ef0805` da AAA; não houve deploy
+- origin: `origin/main` ainda em `3490203`; `origin/aaa/round-10-verification` em `7ef0805`; `origin/agent/publish-production-hardening` em `2101ab4`; push do merge ainda pendente; não inferir execução de workflow remoto
 - worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
 - verification_state: `AAA-200/201` focal pós-correção passou `25/25`; o boundary de API/contratos/persistência focal passou `108/108`; E2E sintético histórico passou `43/43` em portas isoladas; Round 11 visual e a crítica fresh `Raman` permanecem registrados como evidência histórica. A revalidação visual corrente passou `11/11` em `59,1 s`; `AAA-701` focal passou `5` arquivos/`18` testes e a verificação ampla passou `149` arquivos/`811` testes, `42` skips e cobertura `84,35%/80,21%/87,34%/85,09%`; `AAA-700` passou integração focal `20/20` e pacote `31/31`; `AAA-603` passou governance `21/21`, contrato CI `PASS` com `24` checks e execução local com `203` artefatos. `CVG_TEST_DATABASE_URL` permanece ausente; workflow remoto same-SHA, provider IA real, PostgreSQL/RLS live, Qdrant live, produção real, upstream real do proxy, clínica, zoom nativo e competência continuam sem evidência.

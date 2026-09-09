@@ -13668,3 +13668,43 @@ IN_PROGRESS
 ### NEXT
 
 Acompanhar runs remotos; revisão de Ricardo; wiring runtime (MOD-002/003).
+
+## 2026-09-09 — CONSOLIDAÇÃO DE BRANCHES: main canônico
+
+### TIMESTAMP
+
+2026-09-09T17:37:23-0300
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER
+
+### ACTION
+
+Atualizadas as refs remotas e comparado o DAG de `main`,
+`aaa/round-10-verification` e `agent/publish-production-hardening`. A AAA era
+descendente de `main` por 13 commits. A branch de hardening tinha 287 commits
+divergentes desde `fbbc692` e conflitava estruturalmente em API, domínio,
+contratos, persistência, worker, web e governança; a tentativa de composição
+por hunks gerou incompatibilidades de tipos e foi abortada antes de qualquer
+publicação. A árvore AAA mais nova foi mantida como canônica e a branch antiga
+foi incorporada ao histórico com merge `ours` explícito.
+
+### RESULT
+
+Criado o merge commit `95eade4` em `main`, com `7ef0805` como primeiro pai e
+`2101ab4` como segundo pai. O worktree está limpo, o merge não substitui a
+árvore AAA e nenhum dado real, segredo, deploy ou migration produtiva foi
+usado. O remoto ainda aguarda publicação e as branches não-main ainda não
+foram removidas. O backlog de produto não foi alterado porque nenhuma
+dependência, risco ou status de item mudou.
+
+### STATUS
+
+IN_PROGRESS
+
+### NEXT
+
+Executar instalação congelada e verificações proporcionais; publicar `main`,
+confirmar os refs remotos, remover as branches não-main e atualizar o estado
+com o SHA final e as evidências.
