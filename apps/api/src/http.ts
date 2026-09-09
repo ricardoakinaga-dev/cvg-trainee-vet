@@ -395,9 +395,6 @@ export interface ApiHttpDependencies {
   readonly dependencyStatus?: () => Promise<DependencyStatus>;
 }
 
-
-
-
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -444,7 +441,6 @@ function isUuid(value: string): boolean {
     value,
   );
 }
-
 
 type ApiRejectionAuditRequest = Readonly<{
   readonly method: string;
@@ -2710,11 +2706,11 @@ async function handleAcceptAccountRecovery(
   requestId: string,
   dependencies: ApiHttpDependencies,
 ): Promise<ApiHttpResponse> {
+  const parsed = accountRecoveryAcceptRequestSchema.safeParse(request.body);
+  if (!parsed.success) return errorResponse("not_found", requestId);
   if (dependencies.acceptAccountRecovery === undefined) {
     return errorResponse("internal_error", requestId);
   }
-  const parsed = accountRecoveryAcceptRequestSchema.safeParse(request.body);
-  if (!parsed.success) return errorResponse("not_found", requestId);
   const accepted = await dependencies.acceptAccountRecovery({
     token: parsed.data.token,
     sessionExpiresInSeconds: parsed.data.sessionExpiresInSeconds,
@@ -2729,9 +2725,6 @@ async function handleAcceptAccountRecovery(
     ),
   };
 }
-
-
-
 
 async function handleFeedback(
   attemptId: string,
