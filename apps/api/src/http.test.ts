@@ -762,7 +762,9 @@ describe("API HTTP boundary", () => {
       }),
     );
 
-    expect(response.status).toBe(500);
+    // Validation-first (ADV-2026-09-01 precedent): malformed input returns
+    // 422 even when the optional draft port is unwired — no wiring-state leak.
+    expect(response.status).toBe(422);
     expect(audit.append).not.toHaveBeenCalled();
   });
 
