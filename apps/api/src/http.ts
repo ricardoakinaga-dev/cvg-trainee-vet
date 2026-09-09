@@ -101,18 +101,8 @@ import {
   auditTrailProjectionSchema,
   auditTrailQuerySchema,
   internalSessionScopesProjectionSchema,
-  acceptInvitationRequestSchema,
-  accountStatusChangeProjectionSchema,
-  accountStatusChangeRequestSchema,
-  accountRecoveryAcceptProjectionSchema,
-  accountRecoveryAcceptRequestSchema,
-  accountRecoveryIssueProjectionSchema,
-  accountRecoveryIssueRequestSchema,
   adaptiveCurriculumAssignmentProjectionSchema,
   assignCurriculumFromDiagnosticRequestSchema,
-  resendAccountInvitationRequestSchema,
-  resentAccountInvitationProjectionSchema,
-  createInvitationRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
   learningAssignmentCreateRequestSchema,
@@ -149,6 +139,16 @@ import {
   handleStartDiagnosticSession,
 } from "./features/diagnostics/diagnostics.handler.js";
 import { isUuid } from "./http/validation.js";
+import {
+  handleAcceptInvitation,
+  handleCreateInvitation,
+  handleResendAccountInvitation,
+} from "./features/invitations/invitations.handler.js";
+import {
+  handleAcceptAccountRecovery,
+  handleAccountStatusChange,
+  handleIssueAccountRecovery,
+} from "./features/accounts/accounts.handler.js";
 import {
   handleAuthoringReview,
   handleContentReviewQueue,
@@ -1181,217 +1181,6 @@ async function handleAssignCurriculumFromDiagnostic(
     status: 200,
     body: apiSuccessResponse(
       publicAdaptiveAssignmentProjection(state),
-      requestId,
-    ),
-  };
-}
-
-async function handleCreateInvitation(
-  request: ApiHttpRequest,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  const parsed = createInvitationRequestSchema.safeParse(request.body);
-  if (!parsed.success) return validationResponse(requestId);
-
-  const created = await dependencies.createInvitation({
-    principalId: principal.principalId,
-    accountStatus: principal.accountStatus,
-    roles: principal.roles,
-    scopes: principal.scopes,
-    professionalEmail: parsed.data.professionalEmail,
-    invitedRoles: parsed.data.invitedRoles,
-    invitedScopes: parsed.data.invitedScopes,
-    expiresInSeconds: parsed.data.expiresInSeconds,
-    correlationId: requestId,
-  });
-
-  return {
-    status: 201,
-    body: apiSuccessResponse(
-      {
-        invitationId: created.invitationId,
-        professionalEmail: created.professionalEmail,
-        token: created.token,
-        expiresAt: created.expiresAt.toISOString(),
-      },
-      requestId,
-    ),
-  };
-}
-
-async function handleAccountStatusChange(
-  request: ApiHttpRequest,
-  targetAccountId: string,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.changeAccountStatus === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  if (!isUuid(targetAccountId)) return validationResponse(requestId);
-  const parsed = accountStatusChangeRequestSchema.safeParse(request.body);
-  if (!parsed.success) return validationResponse(requestId);
-  if (
-    !isAllowed(principal, "MANAGE_ACCOUNT_LIFECYCLE", {
-      scopeId: parsed.data.scopeId,
-    })
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const result = await dependencies.changeAccountStatus({
-    principalId: principal.principalId,
-    accountStatus: principal.accountStatus,
-    roles: principal.roles,
-    scopes: principal.scopes,
-    targetAccountId,
-    scopeId: parsed.data.scopeId,
-    expectedStatus: parsed.data.expectedStatus,
-    status: parsed.data.status,
-    correlationId: requestId,
-  });
-  return {
-    status: 200,
-    body: apiSuccessResponse(
-      accountStatusChangeProjectionSchema.parse({
-        status: result.status,
-        revokedSessions: result.revokedSessions,
-      }),
-      requestId,
-    ),
-  };
-}
-
-async function handleResendAccountInvitation(
-  request: ApiHttpRequest,
-  targetAccountId: string,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.resendAccountInvitation === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  if (!isUuid(targetAccountId)) return validationResponse(requestId);
-  const parsed = resendAccountInvitationRequestSchema.safeParse(request.body);
-  if (!parsed.success) return validationResponse(requestId);
-  if (
-    !isAllowed(principal, "MANAGE_ACCOUNT_LIFECYCLE", {
-      scopeId: parsed.data.scopeId,
-    })
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const result = await dependencies.resendAccountInvitation({
-    principalId: principal.principalId,
-    accountStatus: principal.accountStatus,
-    roles: principal.roles,
-    scopes: principal.scopes,
-    targetAccountId,
-    scopeId: parsed.data.scopeId,
-    expiresInSeconds: parsed.data.expiresInSeconds,
-    correlationId: requestId,
-  });
-  return {
-    status: 200,
-    body: apiSuccessResponse(
-      resentAccountInvitationProjectionSchema.parse({
-        professionalEmail: result.professionalEmail,
-        token: result.token,
-        expiresAt: result.expiresAt.toISOString(),
-      }),
-      requestId,
-    ),
-  };
-}
-
-async function handleIssueAccountRecovery(
-  request: ApiHttpRequest,
-  targetAccountId: string,
-  requestId: string,
-  principal: ApiPrincipal,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.issueAccountRecovery === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  if (!isUuid(targetAccountId)) return validationResponse(requestId);
-  const parsed = accountRecoveryIssueRequestSchema.safeParse(request.body);
-  if (!parsed.success) return validationResponse(requestId);
-  if (
-    !isAllowed(principal, "MANAGE_ACCOUNT_LIFECYCLE", {
-      scopeId: parsed.data.scopeId,
-    })
-  ) {
-    return errorResponse("forbidden", requestId);
-  }
-  const result = await dependencies.issueAccountRecovery({
-    principalId: principal.principalId,
-    accountStatus: principal.accountStatus,
-    roles: principal.roles,
-    scopes: principal.scopes,
-    targetAccountId,
-    scopeId: parsed.data.scopeId,
-    expiresInSeconds: parsed.data.expiresInSeconds,
-    correlationId: requestId,
-  });
-  return {
-    status: 200,
-    body: apiSuccessResponse(
-      accountRecoveryIssueProjectionSchema.parse({
-        professionalEmail: result.professionalEmail,
-        token: result.token,
-        expiresAt: result.expiresAt.toISOString(),
-        revokedSessions: result.revokedSessions,
-      }),
-      requestId,
-    ),
-  };
-}
-
-async function handleAcceptInvitation(
-  request: ApiHttpRequest,
-  requestId: string,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  const parsed = acceptInvitationRequestSchema.safeParse(request.body);
-  if (!parsed.success) return errorResponse("not_found", requestId);
-
-  const accepted = await dependencies.acceptInvitation({
-    token: parsed.data.token,
-    sessionExpiresInSeconds: parsed.data.sessionExpiresInSeconds,
-    correlationId: requestId,
-  });
-
-  return {
-    status: 200,
-    headers: { "set-cookie": accepted.session.cookie },
-    body: apiSuccessResponse({ status: "active" }, requestId),
-  };
-}
-
-async function handleAcceptAccountRecovery(
-  request: ApiHttpRequest,
-  requestId: string,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  const parsed = accountRecoveryAcceptRequestSchema.safeParse(request.body);
-  if (!parsed.success) return errorResponse("not_found", requestId);
-  if (dependencies.acceptAccountRecovery === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  const accepted = await dependencies.acceptAccountRecovery({
-    token: parsed.data.token,
-    sessionExpiresInSeconds: parsed.data.sessionExpiresInSeconds,
-    correlationId: requestId,
-  });
-  return {
-    status: 200,
-    headers: { "set-cookie": accepted.session.cookie },
-    body: apiSuccessResponse(
-      accountRecoveryAcceptProjectionSchema.parse({ status: "active" }),
       requestId,
     ),
   };
