@@ -403,6 +403,47 @@ describe("API node server adapter", () => {
     }
   });
 
+  it("drains in-flight requests on close instead of severing them", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    let releaseHealthcheck!: () => void;
+    const healthcheckGate = new Promise<void>((resolve) => {
+      releaseHealthcheck = resolve;
+    });
+    let enteredHealthcheck!: () => void;
+    const enteredGate = new Promise<void>((resolve) => {
+      enteredHealthcheck = resolve;
+    });
+    const api = createApiServer(
+      {
+        ...dependencies,
+        observability,
+        healthcheck: async () => {
+          enteredHealthcheck();
+          await healthcheckGate;
+        },
+      },
+      { host: "127.0.0.1", port: 0 },
+    );
+    await api.listen();
+    const address = api.address();
+    if (address === null || typeof address === "string") return;
+    try {
+      const pending = fetch(`http://127.0.0.1:${address.port}/health/ready`);
+      await enteredGate;
+      const closing = api.close();
+      releaseHealthcheck();
+      const response = await pending;
+      await closing;
+      expect(response.status).toBe(200);
+    } finally {
+      releaseHealthcheck();
+      await api.close();
+    }
+  });
+
   it("serves dependency health and protects the Prometheus exporter", async () => {
     const observability = createObservability({
       service: "api",

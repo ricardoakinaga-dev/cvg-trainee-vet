@@ -237,4 +237,70 @@ describe("outbox worker loop", () => {
       }),
     );
   });
+
+  it("redelivers an event that crashed before its ACK without double-acking", async () => {
+    const pending = new Map([[event.id, { ...event }]]);
+    const processed: string[] = [];
+    let deliveries = 0;
+    const repository: OutboxRepositoryPort = {
+      claim: vi.fn(async () =>
+        [...pending.values()].map((entry) => ({ ...entry })),
+      ),
+      markProcessed: vi.fn(async (eventId: string) => {
+        if (!pending.has(eventId)) return false;
+        pending.delete(eventId);
+        processed.push(eventId);
+        return true;
+      }),
+      markFailed: vi.fn(async () => true),
+    };
+    const handler = vi.fn<WorkerEventHandler>(async () => {
+      deliveries += 1;
+      if (deliveries === 1) throw new Error("crash before ack");
+    });
+
+    await expect(
+      processOutboxOnce(repository, { "content.published.v1": handler }),
+    ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
+    await expect(
+      processOutboxOnce(repository, { "content.published.v1": handler }),
+    ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
+    expect(deliveries).toBe(2);
+    expect(processed).toEqual([event.id]);
+  });
+
+  it("prevents a competing worker from double-claiming a leased event", async () => {
+    const leased = new Set<string>();
+    const done = new Set<string>();
+    const repository: OutboxRepositoryPort = {
+      claim: vi.fn(async () => {
+        if (done.has(event.id) || leased.has(event.id)) return [];
+        leased.add(event.id);
+        return [{ ...event }];
+      }),
+      markProcessed: vi.fn(async (eventId: string) => {
+        leased.delete(eventId);
+        done.add(eventId);
+        return true;
+      }),
+      markFailed: vi.fn(async (eventId: string) => {
+        leased.delete(eventId);
+        return true;
+      }),
+    };
+    const handlers = {
+      "content.published.v1": (async () => undefined) as WorkerEventHandler,
+    };
+    await expect(processOutboxOnce(repository, handlers)).resolves.toEqual({
+      claimed: 1,
+      processed: 1,
+      failed: 0,
+    });
+    await expect(processOutboxOnce(repository, handlers)).resolves.toEqual({
+      claimed: 0,
+      processed: 0,
+      failed: 0,
+    });
+    expect(repository.claim).toHaveBeenCalledTimes(2);
+  });
 });

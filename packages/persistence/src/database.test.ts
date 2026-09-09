@@ -65,6 +65,9 @@ describe("database integration boundary", () => {
     expect(normalizeDatabaseOptions()).toEqual({
       maxConnections: 10,
       connectTimeoutSeconds: 10,
+      idleTimeoutSeconds: 60,
+      maxLifetimeSeconds: 1800,
+      statementTimeoutMs: 30_000,
       prepareStatements: true,
       requireLeastPrivilege: false,
     });
@@ -77,12 +80,24 @@ describe("database integration boundary", () => {
     expect(() =>
       normalizeDatabaseOptions({ connectTimeoutSeconds: 0 }),
     ).toThrow("connectTimeoutSeconds");
+    expect(() => normalizeDatabaseOptions({ idleTimeoutSeconds: 0 })).toThrow(
+      "idleTimeoutSeconds",
+    );
+    expect(() => normalizeDatabaseOptions({ maxLifetimeSeconds: 0 })).toThrow(
+      "maxLifetimeSeconds",
+    );
+    expect(() => normalizeDatabaseOptions({ statementTimeoutMs: 0 })).toThrow(
+      "statementTimeoutMs",
+    );
   });
 
   it("normalizes the production least-privilege guard", () => {
     expect(normalizeDatabaseOptions({ requireLeastPrivilege: true })).toEqual({
       maxConnections: 10,
       connectTimeoutSeconds: 10,
+      idleTimeoutSeconds: 60,
+      maxLifetimeSeconds: 1800,
+      statementTimeoutMs: 30_000,
       prepareStatements: true,
       requireLeastPrivilege: true,
     });

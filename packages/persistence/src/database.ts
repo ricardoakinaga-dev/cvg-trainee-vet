@@ -7,6 +7,9 @@ import * as schema from "./schema.js";
 export type DatabaseOptions = Readonly<{
   maxConnections?: number;
   connectTimeoutSeconds?: number;
+  idleTimeoutSeconds?: number;
+  maxLifetimeSeconds?: number;
+  statementTimeoutMs?: number;
   prepareStatements?: boolean;
   requireLeastPrivilege?: boolean;
 }>;
@@ -14,6 +17,9 @@ export type DatabaseOptions = Readonly<{
 export type NormalizedDatabaseOptions = Readonly<{
   maxConnections: number;
   connectTimeoutSeconds: number;
+  idleTimeoutSeconds: number;
+  maxLifetimeSeconds: number;
+  statementTimeoutMs: number;
   prepareStatements: boolean;
   requireLeastPrivilege: boolean;
 }>;
@@ -45,6 +51,9 @@ export function normalizeDatabaseOptions(
 ): NormalizedDatabaseOptions {
   const maxConnections = options.maxConnections ?? 10;
   const connectTimeoutSeconds = options.connectTimeoutSeconds ?? 10;
+  const idleTimeoutSeconds = options.idleTimeoutSeconds ?? 60;
+  const maxLifetimeSeconds = options.maxLifetimeSeconds ?? 1800;
+  const statementTimeoutMs = options.statementTimeoutMs ?? 30_000;
   const prepareStatements = options.prepareStatements ?? true;
   const requireLeastPrivilege = options.requireLeastPrivilege ?? false;
 
@@ -56,9 +65,24 @@ export function normalizeDatabaseOptions(
     throw new RangeError("connectTimeoutSeconds must be a positive integer");
   }
 
+  if (!Number.isInteger(idleTimeoutSeconds) || idleTimeoutSeconds < 1) {
+    throw new RangeError("idleTimeoutSeconds must be a positive integer");
+  }
+
+  if (!Number.isInteger(maxLifetimeSeconds) || maxLifetimeSeconds < 1) {
+    throw new RangeError("maxLifetimeSeconds must be a positive integer");
+  }
+
+  if (!Number.isSafeInteger(statementTimeoutMs) || statementTimeoutMs < 1) {
+    throw new RangeError("statementTimeoutMs must be a positive integer");
+  }
+
   return Object.freeze({
     maxConnections,
     connectTimeoutSeconds,
+    idleTimeoutSeconds,
+    maxLifetimeSeconds,
+    statementTimeoutMs,
     prepareStatements,
     requireLeastPrivilege,
   });
@@ -79,7 +103,13 @@ export function createPostgresDatabase(
   const client: Sql = postgres(databaseUrl, {
     max: normalized.maxConnections,
     connect_timeout: normalized.connectTimeoutSeconds,
+    idle_timeout: normalized.idleTimeoutSeconds,
+    max_lifetime: normalized.maxLifetimeSeconds,
     prepare: normalized.prepareStatements,
+    // Server-side statement_timeout is enforced per role by provisioning
+    // (ALTER ROLE ... SET statement_timeout), because the driver exposes no
+    // startup parameter for it. normalizeDatabaseOptions keeps the expected
+    // budget so code, provisioning, and docs share one source of truth.
   });
   const db = drizzle({ client, schema });
   const healthcheck = async (): Promise<void> => {

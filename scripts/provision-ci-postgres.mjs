@@ -289,6 +289,14 @@ $cvg_provision$;`;
     ),
     `REVOKE ALL PRIVILEGES ON DATABASE ${databaseIdentifier} FROM PUBLIC;`,
     `REVOKE ALL PRIVILEGES ON DATABASE ${databaseIdentifier} FROM ${appIdentifier}, ${adminIdentifier};`,
+    // Server-enforced timeouts for the application role: no query may run
+    // longer than statement_timeout and no transaction may sit idle holding
+    // locks beyond idle_in_transaction_session_timeout. Mirrors
+    // normalizeDatabaseOptions statementTimeoutMs (30s) with a tighter
+    // idle-transaction budget.
+    `ALTER ROLE ${appIdentifier} SET statement_timeout = '30s';`,
+    `ALTER ROLE ${appIdentifier} SET idle_in_transaction_session_timeout = '10s';`,
+    `ALTER ROLE ${appIdentifier} SET lock_timeout = '10s';`,
     `GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${migrationIdentifier}, ${appIdentifier};`,
     `GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${adminIdentifier} WITH GRANT OPTION;`,
     `REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;`,

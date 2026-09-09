@@ -33,6 +33,18 @@ describe("migration governance", () => {
     ).toThrow("contiguous");
   });
 
+  it("binds server-enforced timeouts to the application role at provisioning", async () => {
+    const provisioningPath = fileURLToPath(
+      new URL("../../scripts/provision-ci-postgres.mjs", import.meta.url),
+    );
+    const provisioning = await readFile(provisioningPath, "utf8");
+    expect(provisioning).toContain("SET statement_timeout = '30s'");
+    expect(provisioning).toContain(
+      "SET idle_in_transaction_session_timeout = '10s'",
+    );
+    expect(provisioning).toContain("SET lock_timeout = '10s'");
+  });
+
   it("keeps the curriculum membership oracle private to the application role", async () => {
     const migrationPath = fileURLToPath(
       new URL(
