@@ -37,7 +37,10 @@
     "verify:product-definition": "node scripts/verify-product-definition.mjs",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
     "verify:routes": "node scripts/verify-routes.mjs",
-    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+    "verify:complexity": "node scripts/verify-complexity.mjs",
+    "verify:cycles": "node scripts/verify-cycles.mjs",
+    "verify:dead-code": "node scripts/verify-dead-code.mjs",
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:complexity && pnpm verify:cycles && pnpm verify:dead-code && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",

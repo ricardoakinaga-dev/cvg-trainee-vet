@@ -10,7 +10,6 @@ import type {
 } from "@cvg/domain";
 import {
   ApplicationError,
-  clearSessionCookie,
   createAuditEntry,
   type CorrectionResult,
   type CorrectOpenResponseCommand,
@@ -155,8 +154,6 @@ import {
   assignCurriculumFromDiagnosticRequestSchema,
   resendAccountInvitationRequestSchema,
   resentAccountInvitationProjectionSchema,
-  rotateSessionRequestSchema,
-  sessionCurrentProjectionSchema,
   createInvitationRequestSchema,
   assessmentWorkflowCreateRequestSchema,
   assessmentWorkflowScopedTransitionRequestSchema,
@@ -175,8 +172,6 @@ import {
   participantLearningAssignmentProjectionSchema,
   saveAnswerRequestSchema,
   submitAttemptRequestSchema,
-  type ApiErrorCode,
-  type ApiErrorEnvelope,
   type ApiSuccessEnvelope,
 } from "@cvg/contracts";
 import {
@@ -184,6 +179,18 @@ import {
   type Observability,
 } from "@cvg/observability";
 import type { DependencyStatus } from "@cvg/integrations";
+import {
+  errorResponse,
+  validationResponse,
+  type ApiHttpResponse,
+} from "./http/errors.js";
+import {
+  handleCurrentSession,
+  handleRevokeSession,
+  handleRotateSession,
+} from "./features/session/session.handler.js";
+
+export type { ApiHttpResponse };
 
 export type ApiHttpRequest = Readonly<{
   readonly method: string;
@@ -388,36 +395,8 @@ export interface ApiHttpDependencies {
   readonly dependencyStatus?: () => Promise<DependencyStatus>;
 }
 
-export type ApiHttpResponse = Readonly<{
-  readonly status: number;
-  readonly body: ApiSuccessEnvelope<unknown> | ApiErrorEnvelope;
-  readonly headers?: Readonly<Record<string, string>>;
-}>;
 
-const statusByErrorCode: Readonly<Record<ApiErrorCode, number>> = {
-  unauthenticated: 401,
-  forbidden: 403,
-  not_found: 404,
-  validation_error: 422,
-  state_conflict: 409,
-  idempotency_conflict: 409,
-  rate_limited: 429,
-  internal_error: 500,
-};
 
-function validationResponse(
-  requestId: string,
-  field?: string,
-): ApiHttpResponse {
-  return {
-    status: 422,
-    body: apiErrorResponse(
-      "validation_error",
-      requestId,
-      field ? [{ code: "invalid_input", field }] : [],
-    ),
-  };
-}
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -466,13 +445,6 @@ function isUuid(value: string): boolean {
   );
 }
 
-function errorResponse(
-  code: ApiErrorCode,
-  requestId: string,
-  status = statusByErrorCode[code],
-): ApiHttpResponse {
-  return { status, body: apiErrorResponse(code, requestId) };
-}
 
 type ApiRejectionAuditRequest = Readonly<{
   readonly method: string;
@@ -2758,59 +2730,8 @@ async function handleAcceptAccountRecovery(
   };
 }
 
-async function handleRevokeSession(
-  request: ApiHttpRequest,
-  requestId: string,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  if (dependencies.revokeSession !== undefined) {
-    await dependencies.revokeSession(request.headers?.cookie);
-  }
-  return {
-    status: 200,
-    headers: { "set-cookie": clearSessionCookie() },
-    body: apiSuccessResponse({ status: "revoked" }, requestId),
-  };
-}
 
-async function handleCurrentSession(
-  request: ApiHttpRequest,
-  requestId: string,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  const principal = await dependencies.authenticate(request);
-  if (principal === null) return errorResponse("unauthenticated", requestId);
 
-  return {
-    status: 200,
-    body: apiSuccessResponse(
-      sessionCurrentProjectionSchema.parse({ status: "active" }),
-      requestId,
-    ),
-  };
-}
-
-async function handleRotateSession(
-  request: ApiHttpRequest,
-  requestId: string,
-  dependencies: ApiHttpDependencies,
-): Promise<ApiHttpResponse> {
-  const parsed = rotateSessionRequestSchema.safeParse(request.body ?? {});
-  if (!parsed.success) return validationResponse(requestId);
-  if (dependencies.rotateSession === undefined) {
-    return errorResponse("internal_error", requestId);
-  }
-  const rotated = await dependencies.rotateSession(
-    request.headers?.cookie,
-    parsed.data.sessionExpiresInSeconds,
-  );
-  if (rotated === null) return errorResponse("unauthenticated", requestId);
-  return {
-    status: 200,
-    headers: { "set-cookie": rotated.cookie },
-    body: apiSuccessResponse({ status: "rotated" }, requestId),
-  };
-}
 
 async function handleFeedback(
   attemptId: string,
