@@ -4,10 +4,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
-import {
-  ephemeralPort,
-  startEmbeddedPostgres,
-} from "./live-embedded-pg.mjs";
+import { ephemeralPort, startEmbeddedPostgres } from "./live-embedded-pg.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -118,6 +115,20 @@ async function main() {
     process.stderr.write(error.stderr ?? "");
     await stop();
     process.exit(typeof error.code === "number" ? error.code : 1);
+  }
+  try {
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const evidenceDir = join(root, "staging-evidence");
+    await mkdir(evidenceDir, { recursive: true });
+    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+    }).catch(() => ({ stdout: "unknown" }));
+    await writeFile(
+      join(evidenceDir, "rls-live-summary.json"),
+      `${JSON.stringify({ status: "PASS", sha: stdout.trim(), suite: testFile }, null, 2)}\n`,
+    );
+  } catch {
+    // evidence is best effort; the vitest result above is authoritative
   }
   await stop();
   log("disposable database stopped and removed");
