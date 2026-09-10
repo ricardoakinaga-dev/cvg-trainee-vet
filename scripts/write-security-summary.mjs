@@ -16,22 +16,46 @@ const root = join(fileURLToPath(import.meta.url), "..", "..");
  * records their workflow reference, not their verdict.
  */
 async function main() {
-  const audit = await execFileAsync(
-    "pnpm",
-    ["audit", "--audit-level=high", "--json"],
-    { cwd: root, timeout: 300000, maxBuffer: 64 * 1024 * 1024 },
-  )
-    .then(({ stdout }) => JSON.parse(stdout || "{}"))
-    .catch(() => null);
+  // pnpm audit exits non-zero when advisories exist: parse stdout from
+  // the rejection instead of discarding it.
+  const parseAudit = (promise) =>
+    promise
+      .then(({ stdout }) => JSON.parse(stdout || "{}"))
+      .catch((error) => {
+        try {
+          return JSON.parse(error.stdout || "{}");
+        } catch {
+          return null;
+        }
+      });
+  // Full audit for residual counts (moderate/low are real advisories even
+  // when they do not fail the high gate); the gate itself uses high+.
+  const fullAudit = await parseAudit(
+    execFileAsync("pnpm", ["audit", "--json"], {
+      cwd: root,
+      timeout: 300000,
+      maxBuffer: 64 * 1024 * 1024,
+    }),
+  );
+  const fullAdvisories = fullAudit
+    ? Object.values(fullAudit.advisories ?? fullAudit.vulnerabilities ?? {})
+    : [];
+  const audit = await parseAudit(
+    execFileAsync("pnpm", ["audit", "--audit-level=high", "--json"], {
+      cwd: root,
+      timeout: 300000,
+      maxBuffer: 64 * 1024 * 1024,
+    }),
+  );
   const advisories = audit
     ? Object.values(audit.advisories ?? audit.vulnerabilities ?? {})
     : [];
-  const count = (severity) =>
-    advisories.filter((entry) => entry.severity === severity).length;
-  const high = count("high");
-  const critical = count("critical");
-  const moderate = count("moderate");
-  const low = count("low");
+  const count = (list, severity) =>
+    list.filter((entry) => entry.severity === severity).length;
+  const high = count(advisories, "high");
+  const critical = count(advisories, "critical");
+  const moderate = count(fullAdvisories, "moderate");
+  const low = count(fullAdvisories, "low");
 
   let secretsClean = true;
   try {

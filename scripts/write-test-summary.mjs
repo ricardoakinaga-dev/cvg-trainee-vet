@@ -33,6 +33,9 @@ async function main() {
     { cwd: root, timeout: 1800000, maxBuffer: 64 * 1024 * 1024 },
   );
   const report = JSON.parse(await readFile(outFile, "utf8"));
+  const fileCount = Array.isArray(report.testResults)
+    ? report.testResults.length
+    : (report.numTotalTestSuites ?? null);
   const { stdout: sha } = await execFileAsync("git", ["rev-parse", "HEAD"], {
     cwd: root,
   });
@@ -41,7 +44,7 @@ async function main() {
     sha: sha.trim(),
     generatedAt: new Date().toISOString(),
     tests: {
-      files: report.numTotalTestSuites ?? null,
+      files: fileCount,
       passed: report.numPassedTests ?? null,
       skipped: (report.numPendingTests ?? 0) + (report.numTodoTests ?? 0),
       failed: report.numFailedTests ?? null,
