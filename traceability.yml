@@ -189,7 +189,7 @@ artifacts:
         "packages/application/src/answer-use-cases.test.ts",
         "packages/application/src/session.test.ts",
         "packages/application/src/audit.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-answer-session.test.ts",
       ]
     status: "implemented-verified"
@@ -219,7 +219,7 @@ artifacts:
         "packages/application/src/activity-use-cases.test.ts",
         "packages/contracts/src/learning.test.ts",
         "packages/persistence/src/activity-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-activity-content.test.ts",
       ]
     status: "implemented-verified"
@@ -278,7 +278,7 @@ artifacts:
         "packages/persistence/src/progress-repository.test.ts",
         "packages/persistence/src/outbox-repository.test.ts",
         "packages/persistence/src/ai-suggestion-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/worker/src/handlers.test.ts",
         "apps/worker/src/loop.test.ts",
         "tests/integration/postgres-content-workflow.test.ts",
@@ -331,7 +331,7 @@ artifacts:
         "packages/contracts/src/correction.test.ts",
         "packages/persistence/src/invitation-repository.test.ts",
         "packages/persistence/src/correction-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-invitation.test.ts",
         "tests/integration/postgres-correction.test.ts",
@@ -469,7 +469,7 @@ artifacts:
       [
         "packages/application/src/session.test.ts",
         "packages/contracts/src/session.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-answer-session.test.ts",
       ]
@@ -562,7 +562,7 @@ artifacts:
         "packages/application/src/curriculum-runtime-use-cases.test.ts",
         "packages/persistence/src/curriculum-runtime-repository.test.ts",
         "packages/contracts/src/learning.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/e2e/participant-access.spec.ts",
         "tests/integration/postgres-activity-content.test.ts",
@@ -668,7 +668,7 @@ artifacts:
         "packages/application/src/curriculum-runtime-use-cases.test.ts",
         "packages/persistence/src/curriculum-runtime-repository.test.ts",
         "packages/contracts/src/learning.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/curriculum-runtime.test.ts",
         "tests/e2e/participant-access.spec.ts",
@@ -910,7 +910,7 @@ artifacts:
         "packages/application/src/learning-state-use-cases.test.ts",
         "packages/application/src/authorization.test.ts",
         "packages/contracts/src/learning-state.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
       ]
     verification:
@@ -1034,7 +1034,7 @@ artifacts:
         "packages/application/src/journey-use-cases.test.ts",
         "packages/contracts/src/journey.test.ts",
         "packages/persistence/src/journey-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-security-isolation.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
@@ -1109,7 +1109,7 @@ artifacts:
         "packages/application/src/content-use-cases.test.ts",
         "packages/contracts/src/authoring.test.ts",
         "packages/persistence/src/authoring-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/worker/src/handlers.test.ts",
         "apps/worker/src/loop.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
@@ -1237,7 +1237,7 @@ artifacts:
       ]
     tests:
       [
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "packages/integrations/src/composition.test.ts",
         "packages/observability/src/observability.test.ts",
@@ -1284,7 +1284,7 @@ artifacts:
       ]
     tests:
       [
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "packages/observability/src/operations.test.ts",
       ]
@@ -1296,7 +1296,7 @@ artifacts:
         "pnpm verify",
         "pnpm build",
         "pnpm test:e2e",
-        "pnpm exec vitest run apps/api/src/http.test.ts apps/api/src/server.test.ts packages/observability/src --project unit",
+        "pnpm exec vitest run apps/api/src/http-boundary apps/api/src/server.test.ts packages/observability/src --project unit",
         "pnpm audit --audit-level=high",
         "pnpm verify:documentation",
         "pnpm verify:traceability",
@@ -1335,7 +1335,7 @@ artifacts:
         "packages/contracts/src/reflection.test.ts",
         "packages/contracts/src/learning.test.ts",
         "packages/persistence/src/activity-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/participant-access.spec.ts",
       ]
     commit: "affd64067dd785260020648f9127cfd152c444d1"
@@ -1391,7 +1391,7 @@ artifacts:
         "packages/application/src/reflection-management-use-cases.test.ts",
         "packages/contracts/src/reflection-management.test.ts",
         "packages/persistence/src/reflection-management-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-reflection-management.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
@@ -1464,7 +1464,7 @@ artifacts:
         "packages/contracts/src/learning-state.test.ts",
         "packages/persistence/src/activity-repository.test.ts",
         "packages/persistence/src/learning-state-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-learning-state.test.ts",
         "tests/e2e/participant-access.spec.ts",
       ]
@@ -1473,7 +1473,7 @@ artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
       [
-        "pnpm exec vitest run packages/application/src/authorization.test.ts packages/application/src/appeal-use-cases.test.ts packages/contracts/src/learning-state.test.ts packages/persistence/src/learning-state-repository.test.ts apps/api/src/http.test.ts",
+        "pnpm exec vitest run packages/application/src/authorization.test.ts packages/application/src/appeal-use-cases.test.ts packages/contracts/src/learning-state.test.ts packages/persistence/src/learning-state-repository.test.ts apps/api/src/http-boundary",
         "pnpm exec vitest run tests/integration/postgres-learning-state.test.ts --project integration",
         "pnpm build",
         "pnpm test:e2e",
@@ -1534,7 +1534,7 @@ artifacts:
         "packages/application/src/appeal-review-queue-use-cases.test.ts",
         "packages/persistence/src/appeal-review-queue-repository.test.ts",
         "packages/persistence/src/security-context.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-appeal-review-queue.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -1544,7 +1544,7 @@ artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
       [
-        "pnpm exec vitest run packages/contracts/src/appeal-review-queue.test.ts packages/application/src/appeal-review-queue-use-cases.test.ts packages/persistence/src/appeal-review-queue-repository.test.ts packages/persistence/src/security-context.test.ts apps/api/src/http.test.ts apps/api/src/server.test.ts --project unit",
+        "pnpm exec vitest run packages/contracts/src/appeal-review-queue.test.ts packages/application/src/appeal-review-queue-use-cases.test.ts packages/persistence/src/appeal-review-queue-repository.test.ts packages/persistence/src/security-context.test.ts apps/api/src/http-boundary apps/api/src/server.test.ts --project unit",
         "pnpm exec vitest run tests/integration/postgres-appeal-review-queue.test.ts --project integration",
         "pnpm test:coverage",
         "pnpm build",
@@ -1604,7 +1604,7 @@ artifacts:
         "packages/persistence/drizzle/0023_appeal_review_transition_rls.sql",
         "packages/persistence/drizzle/meta/_journal.json",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "scripts/verify-traceability.mjs",
       ]
@@ -1616,7 +1616,7 @@ artifacts:
         "packages/application/src/appeal-review-transition-use-cases.test.ts",
         "packages/application/src/learning-state-use-cases.test.ts",
         "packages/persistence/src/appeal-review-transition-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-appeal-review-transition.test.ts",
       ]
     commit: "91bd3e07c587315efeeddb69bb97393d3dbe5d42"
@@ -1624,7 +1624,7 @@ artifacts:
       ["coverage/", "playwright-report/", "test-results/playwright.xml"]
     verification:
       [
-        "pnpm exec vitest run packages/contracts/src/appeal-review-transition.test.ts packages/application/src/appeal-review-transition-use-cases.test.ts packages/persistence/src/appeal-review-transition-repository.test.ts apps/api/src/http.test.ts --project unit",
+        "pnpm exec vitest run packages/contracts/src/appeal-review-transition.test.ts packages/application/src/appeal-review-transition-use-cases.test.ts packages/persistence/src/appeal-review-transition-repository.test.ts apps/api/src/http-boundary --project unit",
         "pnpm exec vitest run tests/integration/postgres-appeal-review-transition.test.ts --project integration",
         "pnpm verify:migrations",
         "pnpm test:coverage",
@@ -1689,7 +1689,7 @@ artifacts:
         "packages/persistence/drizzle/0024_appeal_decision_metadata.sql",
         "packages/persistence/drizzle/meta/_journal.json",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-appeal-review-transition.test.ts",
         "tests/integration/postgres-appeal-review-queue.test.ts",
         "scripts/verify-traceability.mjs",
@@ -1708,7 +1708,7 @@ artifacts:
         "packages/persistence/src/learning-state-repository.test.ts",
         "packages/persistence/src/appeal-review-transition-repository.test.ts",
         "packages/persistence/src/appeal-review-queue-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-appeal-review-transition.test.ts",
         "tests/integration/postgres-appeal-review-queue.test.ts",
       ]
@@ -1961,7 +1961,7 @@ artifacts:
         "packages/application/src/dashboard-use-cases.test.ts",
         "packages/contracts/src/dashboard.test.ts",
         "packages/curriculum/src/learning-runtime.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-dashboard.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -2030,7 +2030,7 @@ artifacts:
         "packages/contracts/src/diagnostic.test.ts",
         "packages/persistence/src/diagnostic-result-repository.test.ts",
         "packages/persistence/src/journey-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-diagnostic-results.test.ts",
         "tests/e2e/participant-access.spec.ts",
@@ -2103,7 +2103,7 @@ artifacts:
         "packages/contracts/src/diagnostic.test.ts",
         "packages/persistence/src/diagnostic-result-repository.test.ts",
         "packages/persistence/src/journey-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-diagnostic-results.test.ts",
         "tests/e2e/participant-access.spec.ts",
@@ -2171,7 +2171,7 @@ artifacts:
         "packages/persistence/src/account-management-repository.test.ts",
         "packages/persistence/src/dashboard-repository.test.ts",
         "packages/persistence/src/session-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-account-lifecycle.test.ts",
         "tests/integration/postgres-security-isolation.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -2233,7 +2233,7 @@ artifacts:
         "packages/contracts/src/dashboard.test.ts",
         "packages/persistence/src/dashboard-repository.test.ts",
         "packages/persistence/src/attempt-repository.db.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/postgres-dashboard.test.ts",
         "tests/integration/postgres-security-isolation.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -2284,7 +2284,7 @@ artifacts:
       ]
     tests:
       [
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/operations-dashboard.spec.ts",
         "tests/integration/postgres-invitation.test.ts",
       ]
@@ -2352,7 +2352,7 @@ artifacts:
         "packages/persistence/src/dashboard-repository.test.ts",
         "packages/contracts/src/dashboard.test.ts",
         "packages/application/src/dashboard-use-cases.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-continuing-education-report.test.ts",
         "tests/integration/postgres-account-lifecycle.test.ts",
@@ -2410,7 +2410,7 @@ artifacts:
         "packages/contracts/src/continuing-education-report.test.ts",
         "packages/application/src/continuing-education-report-use-cases.test.ts",
         "packages/persistence/src/continuing-education-report-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
     commit: "6fa662b8d80a8cba06ff4dfab3b6708b34674e71"
@@ -2548,7 +2548,7 @@ artifacts:
         "packages/persistence/src/feedback-ticket-read-repository.test.ts",
         "packages/persistence/src/index.ts",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/web/app/page.tsx",
         "tests/e2e/participant-access.spec.ts",
@@ -2559,7 +2559,7 @@ artifacts:
         "packages/contracts/src/learning-state.test.ts",
         "packages/application/src/feedback-ticket-read-use-cases.test.ts",
         "packages/persistence/src/feedback-ticket-read-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/participant-access.spec.ts",
       ]
     commit: "568c9efd12ff27d56e4b5edf1ee4c4922fe0d55f"
@@ -2628,7 +2628,7 @@ artifacts:
         "packages/persistence/src/appeal-review-history-repository.test.ts",
         "packages/persistence/src/index.ts",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/web/app/operations/page.tsx",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -2639,7 +2639,7 @@ artifacts:
         "packages/contracts/src/appeal-review-history.test.ts",
         "packages/application/src/appeal-review-history-use-cases.test.ts",
         "packages/persistence/src/appeal-review-history-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
     commit: "e45b4677d651322e49fa1b2416dc0130c8778ee5"
@@ -2722,7 +2722,7 @@ artifacts:
         "packages/persistence/drizzle/meta/_journal.json",
         "packages/persistence/src/index.ts",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/web/app/operations/page.tsx",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -2735,7 +2735,7 @@ artifacts:
         "packages/application/src/feedback-triage-queue-use-cases.test.ts",
         "packages/application/src/authorization.test.ts",
         "packages/persistence/src/feedback-triage-queue-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
     commit: "ea9ee122676be620652f08019919ca59ed05fa02"
@@ -2810,7 +2810,7 @@ artifacts:
         "packages/persistence/src/appeal-decision-impact-repository.test.ts",
         "packages/persistence/src/index.ts",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/api/src/server.ts",
         "apps/api/src/server.test.ts",
@@ -2822,7 +2822,7 @@ artifacts:
         "packages/contracts/src/appeal-decision-impact.test.ts",
         "packages/application/src/appeal-decision-impact-use-cases.test.ts",
         "packages/persistence/src/appeal-decision-impact-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
       ]
@@ -2912,7 +2912,7 @@ artifacts:
         "packages/application/src/authorization.test.ts",
         "packages/contracts/src/authoring.test.ts",
         "packages/persistence/src/content-review-queue-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-content-review-queue.test.ts",
         "tests/integration/postgres-authoring-workflow.test.ts",
@@ -2979,7 +2979,7 @@ artifacts:
         "packages/contracts/src/account-recovery.test.ts",
         "packages/application/src/account-recovery-use-cases.test.ts",
         "packages/persistence/src/account-recovery-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-account-recovery.test.ts",
         "tests/e2e/recovery-access.spec.ts",
@@ -3146,7 +3146,7 @@ artifacts:
         "packages/persistence/drizzle/0021_audit_anonymous_rejections.sql",
         "packages/persistence/drizzle/meta/_journal.json",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.ts",
         "apps/api/src/server.test.ts",
         "apps/api/src/main.ts",
@@ -3156,7 +3156,7 @@ artifacts:
       [
         "packages/application/src/audit.test.ts",
         "packages/persistence/src/audit-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-account-recovery.test.ts",
       ]
@@ -3326,7 +3326,7 @@ artifacts:
         "packages/persistence/src/diagnostic-result-repository.ts",
         "packages/persistence/src/index.ts",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/api/src/server.ts",
         "apps/api/src/server.test.ts",
@@ -3338,7 +3338,7 @@ artifacts:
         "packages/persistence/src/adaptive-assignment-repository.test.ts",
         "packages/persistence/src/diagnostic-result-repository.test.ts",
         "packages/contracts/src/learning-state.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-adaptive-assignment.test.ts",
         "tests/e2e/participant-access.spec.ts",
@@ -3403,7 +3403,7 @@ artifacts:
       [
         "packages/application/src/journey-use-cases.test.ts",
         "packages/contracts/src/journey.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/participant-access.spec.ts",
       ]
     commit: "d60e48597fea4a3cc6d92cecd6881415091e1884"
@@ -3463,7 +3463,7 @@ artifacts:
     tests:
       [
         "tests/e2e/participant-access.spec.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "packages/contracts/src/correction.test.ts",
       ]
     commit: "2565e50f32a01348aa46684ef6d194bf2b6b0d23"
@@ -3913,7 +3913,7 @@ artifacts:
         "packages/persistence/src/audit-trail-repository.test.ts",
         "packages/persistence/src/audit-repository.test.ts",
         "apps/api/src/audit-trail-http.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/audit-trail-governance.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
         "packages/config/src/env.test.ts",
@@ -3985,7 +3985,7 @@ artifacts:
         "packages/persistence/src/answer-repository.test.ts",
         "packages/persistence/src/attempt-repository.db.test.ts",
         "packages/contracts/src/journey.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/e2e/participant-access.spec.ts",
       ]
     commit: "de8d8bccbce13e3e4d10597f4b88245ae42601f"
@@ -4042,7 +4042,7 @@ artifacts:
       ]
     tests:
       [
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/curriculum-runtime.test.ts",
         "tests/integration/migration-governance.test.ts",
       ]
@@ -4155,7 +4155,7 @@ artifacts:
         "packages/persistence/drizzle/meta/_journal.json",
         "scripts/provision-ci-postgres.mjs",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/api/src/server.ts",
         "apps/api/src/server.test.ts",
@@ -4169,7 +4169,7 @@ artifacts:
       [
         "packages/contracts/src/authoring.test.ts",
         "packages/application/src/authoring-use-cases.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/migration-governance.test.ts",
         "tests/integration/postgres-authoring-draft.test.ts",
@@ -4249,7 +4249,7 @@ artifacts:
         "scripts/provision-ci-postgres.mjs",
         "scripts/verify-traceability.mjs",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/api/src/server.ts",
         "apps/api/src/server.test.ts",
@@ -4264,7 +4264,7 @@ artifacts:
         "packages/application/src/feedback-ticket-history-use-cases.test.ts",
         "packages/persistence/src/feedback-ticket-history-repository.test.ts",
         "packages/persistence/src/learning-state-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/migration-governance.test.ts",
         "tests/integration/postgres-learning-state.test.ts",
@@ -4368,7 +4368,7 @@ artifacts:
         "packages/persistence/drizzle/0041_feedback_triage_metadata.sql",
         "packages/persistence/drizzle/meta/_journal.json",
         "apps/api/src/http.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/main.ts",
         "apps/api/src/server.ts",
         "apps/api/src/server.test.ts",
@@ -4390,7 +4390,7 @@ artifacts:
         "packages/application/src/feedback-triage-queue-use-cases.test.ts",
         "packages/persistence/src/feedback-triage-metadata-repository.test.ts",
         "packages/persistence/src/feedback-ticket-history-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/migration-governance.test.ts",
         "tests/e2e/operations-dashboard.spec.ts",
@@ -4891,7 +4891,7 @@ artifacts:
         "apps/worker/src/main.test.ts",
         "apps/worker/src/reconcile.test.ts",
         "apps/worker/src/reconcile-command-runner.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "tests/integration/api-health.test.ts",
       ]
     commit: "d90393f468c02a30a55927aa6a7f34823efec19a"
@@ -5072,7 +5072,7 @@ artifacts:
         "packages/domain/src/diagnostic-session.test.ts",
         "packages/application/src/diagnostic-session-use-cases.test.ts",
         "packages/persistence/src/diagnostic-session-repository.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/postgres-diagnostic-session.test.ts",
         "tests/integration/migration-governance.test.ts",
@@ -5166,7 +5166,7 @@ artifacts:
         "packages/application/src/attempt-use-cases.test.ts",
         "packages/application/src/answer-use-cases.test.ts",
         "packages/contracts/src/session.test.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "tests/integration/aaa-104-content-integrity.test.ts",
         "tests/integration/migration-governance.test.ts",
@@ -5548,7 +5548,7 @@ artifacts:
         "tests/e2e/experience-accessibility.spec.ts",
         "tests/e2e/participant-access.spec.ts",
         "tests/e2e/recovery-access.spec.ts",
-        "apps/api/src/http.test.ts",
+        "apps/api/src/http-boundary",
         "apps/api/src/server.test.ts",
         "packages/contracts/src/session.test.ts",
         "packages/application/src/session.test.ts",
