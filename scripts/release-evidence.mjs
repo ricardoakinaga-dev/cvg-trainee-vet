@@ -113,12 +113,15 @@ async function workspaceManifestDigests() {
   return digests;
 }
 
-function flagValue(name) {
-  return (
-    process.argv
-      .find((arg) => arg.startsWith(`${name}=`))
-      ?.slice(name.length + 1) ?? null
-  );
+export function flagValue(name) {
+  const equals = process.argv.find((arg) => arg.startsWith(`${name}=`));
+  if (equals !== undefined) return equals.slice(name.length + 1);
+  const index = process.argv.indexOf(name);
+  if (index === -1) return null;
+  const next = process.argv[index + 1];
+  // A bare flag at the end (or followed by another flag) has no value.
+  if (next === undefined || next.startsWith("--")) return null;
+  return next;
 }
 
 function readJsonFile(path) {
@@ -193,9 +196,11 @@ export async function validateBundle(directory, options = {}) {
       }
     }
   }
-  const sbomStatus = manifest.artifacts.find(
+  const sbomEntry = manifest.artifacts.find(
     (entry) => entry.path === "sbom.cyclonedx.json",
-  )?.status;
+  );
+  const sbomStatus =
+    sbomEntry?.status ?? (sbomEntry?.sha256 ? "present" : undefined);
   if (sbomStatus === "present") {
     const sbom = await readJsonFile(
       join(directory, "sbom.cyclonedx.json"),

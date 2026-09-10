@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  flagValue,
   validateBundle,
   validateSbom,
 } from "../../scripts/release-evidence.mjs";
@@ -84,6 +85,20 @@ async function writeBundle(mutate) {
 }
 
 describe("release evidence bundle", () => {
+  it("parses CLI flags in --flag value and --flag=value forms", () => {
+    const argv = process.argv;
+    try {
+      process.argv = ["node", "release-evidence.mjs", "--check", "some-dir"];
+      expect(flagValue("--check")).toBe("some-dir");
+      process.argv = ["node", "release-evidence.mjs", "--check=other-dir"];
+      expect(flagValue("--check")).toBe("other-dir");
+      process.argv = ["node", "release-evidence.mjs", "--self-test"];
+      expect(flagValue("--check")).toBeNull();
+    } finally {
+      process.argv = argv;
+    }
+  });
+
   it("validates a complete bundle with a real SBOM", async () => {
     expect(validateSbom(SBOM)).toEqual([]);
     await expect(validateBundle(await writeBundle())).resolves.toEqual([]);
