@@ -589,6 +589,72 @@ async function main() {
     return;
   }
 
+  // Optional load baseline (§38-51): runs only when a k6 binary is provided,
+  // never as a push gate. Exports raw summary and a distilled evidence file.
+  const k6Bin = process.env.CVG_K6_BIN?.trim() || null;
+  if (k6Bin !== null) {
+    log("running k6 baseline against api-a");
+    const summaryPath = join(evidenceDir, "k6-summary.json");
+    try {
+      await execFileAsync(
+        k6Bin,
+        ["run", "--summary-export", summaryPath, "tests/load/k6-baseline.js"],
+        {
+          cwd: root,
+          env: { ...process.env, API_BASE_URL: "http://127.0.0.1:3101" },
+          timeout: 600000,
+          maxBuffer: 64 * 1024 * 1024,
+        },
+      );
+    } catch (error) {
+      await fail(
+        new Error(
+          `k6 baseline failed: ${String(error.stderr ?? error.message).slice(0, 400)}`,
+        ),
+      );
+      return;
+    }
+    const summary = JSON.parse(await readFile(summaryPath, "utf8"));
+    // k6 --summary-export flattens each metric at metrics.<name> (counts and
+    // percentiles side by side), not under a .values envelope.
+    const metric = (name) => summary.metrics?.[name] ?? null;
+    const loadSummary = {
+      status: "PASS",
+      profile: "read-heavy + auth-rejected (tests/load/k6-baseline.js)",
+      httpRequests: metric("http_reqs")?.count ?? null,
+      throughputPerSecond: metric("http_reqs")?.rate ?? null,
+      httpP50Ms:
+        metric("http_req_duration")?.["p(50)"] ??
+        metric("http_req_duration")?.med ??
+        null,
+      httpP95Ms: metric("http_req_duration")?.["p(95)"] ?? null,
+      httpP99Ms: metric("http_req_duration")?.["p(99)"] ?? null,
+      readP95Ms: metric("read_latency_ms")?.["p(95)"] ?? null,
+      authRejectedP95Ms: metric("auth_rejected_latency_ms")?.["p(95)"] ?? null,
+      checksFails: metric("checks")?.fails ?? null,
+      errorsRate: metric("errors")?.rate ?? null,
+    };
+    if (
+      (loadSummary.httpRequests ?? 0) === 0 ||
+      (loadSummary.checksFails ?? 1) > 0
+    ) {
+      await fail(new Error("k6 baseline produced failing or empty evidence"));
+      return;
+    }
+    await writeFile(
+      join(evidenceDir, "load-summary.json"),
+      `${JSON.stringify(loadSummary, null, 2)}\n`,
+    );
+    log(
+      `k6 baseline PASS (p95=${loadSummary.httpP95Ms}ms, errors=${loadSummary.errorsRate})`,
+    );
+  } else {
+    await writeFile(
+      join(evidenceDir, "load-summary.json"),
+      `${JSON.stringify({ status: "SKIP", reason: "set CVG_K6_BIN to run the load baseline" }, null, 2)}\n`,
+    );
+  }
+
   const stagingEnv = {
     CVG_STAGING_API_A_URL: "http://127.0.0.1:3101",
     CVG_STAGING_API_B_URL: "http://127.0.0.1:3112",

@@ -75,8 +75,12 @@ export function authRejected() {
     ],
   ]);
   for (const response of responses) {
+    // 401 = denied without a session; 429 = denied by the shared rate budget.
+    // Both are explicit fail-closed denials; the property under test is that
+    // an unauthenticated/over-budget caller never gets 2xx or 5xx.
     const ok = check(response, {
-      "denied explicitly without 5xx": (r) => r.status === 401,
+      "denied explicitly without 5xx": (r) =>
+        r.status === 401 || r.status === 429,
     });
     errorRate.add(!ok);
     authLatency.add(response.timings.duration);

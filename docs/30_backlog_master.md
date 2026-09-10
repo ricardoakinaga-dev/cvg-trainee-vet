@@ -2207,3 +2207,28 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - MOD-010 (vitest moderates, P3): ACEITO-COM-GAP (inalterado).
 - MOD-011 (RLS live total, P2): BLOQUEADO (inalterado; 3 testes novos aguardam DB descartável autorizado).
 - Novos gates no `pnpm verify`: routes, complexity, cycles, dead-code, security, otel, release-evidence. P0 = 0, P1 = 0 (justificativa no audit v2 §30).
+
+## 2026-09-10 — Overlay FINAL CLOSURE R2 (docs/48) — status pós-veredito
+
+- AAA-FINAL-001 (God Module): CONCLUÍDO — `http.ts` 4267→1166; 13 features;
+  God Test 5099→11 suites (83 testes); budget de arquivo e função com ratchets.
+- AAA-FINAL-002 (Coverage/Assurance): CONCLUÍDO_COM_GAP — branch closure,
+  6 property tests, mutation 64,84→70,78%; cobertura 85,48/81,39/86,61/86,14
+  ABAIXO da meta 90/85/90/90 (RF-01).
+- AAA-FINAL-003 (RLS live): CONCLUÍDO — `pnpm test:rls:live` 7/7 em PostgreSQL
+  descartável real; pool isolation 10×; owner/grants/FORCE auditados.
+- AAA-FINAL-004 (Remote same-SHA): EM_PROGRESSO — push + correções; verde do
+  HEAD `19d5ca8` pendente de verificação autenticada (rate limit GitHub API,
+  sem `gh`/token) (RF-02).
+- AAA-FINAL-005 (Redis multi-instance): CONCLUÍDO — 5/5 em Redis 7.4.1 real
+  (5+5/11º, 50 paralelos exatos, fail policy, timeout, trusted/spoofed proxy).
+- AAA-FINAL-006 (Staging-like): CONCLUÍDO — stack reproduzível; 5 drills PASS
+  (incl. backup/restore RTO 1.375 ms, failover, otel-outage); integration 6/6;
+  browser journey 1/1; k6 3000 reqs p95 25,6 ms; 3.018 traces no coletor.
+- AAA-FINAL-007 (Adversarial + audit v3): CONCLUÍDO — veredito REVISE.
+
+## Residuais (pós-closure)
+
+- RF-01 P2 cobertura < 90/85/90/90 · RF-02 P2 same-SHA HEAD pendente (externo)
+- RF-03 P2 mutation 70,78% < 90% · RF-04 P2 arquivos >1000 linhas
+- RF-05 P3 4 advisories dev-only · RF-06 P2 Redis operado em runtime

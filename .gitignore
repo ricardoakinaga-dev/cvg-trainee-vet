@@ -23,3 +23,5 @@ staging-evidence/
 reports/mutation/
 .stryker-tmp/
 .DS_Store
+release-evidence/
+sbom.cyclonedx.json
