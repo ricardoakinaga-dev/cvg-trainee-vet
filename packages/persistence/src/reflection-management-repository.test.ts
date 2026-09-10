@@ -121,9 +121,7 @@ describe("reflection management rows validation", () => {
 
   it("rejects inconsistent answer and attempt metadata", () => {
     expect(() =>
-      reflectionManagementRowsToInstances([
-        row({ answeredItemId: itemTwo }),
-      ]),
+      reflectionManagementRowsToInstances([row({ answeredItemId: itemTwo })]),
     ).toThrow("does not match");
     expect(() =>
       reflectionManagementRowsToInstances([
@@ -208,7 +206,9 @@ describe("reflection management read repository", () => {
 
   function repository(db: ReturnType<typeof createFakeDatabase>) {
     return createReflectionManagementReadRepository(
-      db as unknown as Parameters<typeof createReflectionManagementReadRepository>[0],
+      db as unknown as Parameters<
+        typeof createReflectionManagementReadRepository
+      >[0],
       { now: () => new Date("2026-08-10T02:00:00.000Z") },
     );
   }
@@ -221,7 +221,9 @@ describe("reflection management read repository", () => {
       }),
     ).rejects.toThrow("required");
     const badClock = createReflectionManagementReadRepository(
-      db as unknown as Parameters<typeof createReflectionManagementReadRepository>[0],
+      db as unknown as Parameters<
+        typeof createReflectionManagementReadRepository
+      >[0],
       { now: () => new Date("invalid") },
     );
     await expect(

@@ -82,21 +82,21 @@ describe("curriculum runtime mapping validation", () => {
   };
 
   it("rejects rows with empty fields, invalid module ids or versions", () => {
-    expect(() =>
-      curriculumRuntimeRowToState({ ...row, id: "" }),
-    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() => curriculumRuntimeRowToState({ ...row, id: "" })).toThrow(
+      CurriculumRuntimeMappingError,
+    );
     expect(() =>
       curriculumRuntimeRowToState({ ...row, participantId: " " }),
     ).toThrow(CurriculumRuntimeMappingError);
-    expect(() =>
-      curriculumRuntimeRowToState({ ...row, scopeId: " " }),
-    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() => curriculumRuntimeRowToState({ ...row, scopeId: " " })).toThrow(
+      CurriculumRuntimeMappingError,
+    );
     expect(() =>
       curriculumRuntimeRowToState({ ...row, moduleId: "M99" }),
     ).toThrow(CurriculumRuntimeMappingError);
-    expect(() =>
-      curriculumRuntimeRowToState({ ...row, version: 0 }),
-    ).toThrow(CurriculumRuntimeMappingError);
+    expect(() => curriculumRuntimeRowToState({ ...row, version: 0 })).toThrow(
+      CurriculumRuntimeMappingError,
+    );
     expect(() =>
       curriculumRuntimeRowToState({
         ...row,
@@ -112,32 +112,20 @@ describe("curriculum runtime mapping validation", () => {
   });
 
   it("rejects write inputs with invalid fields or timestamps", () => {
+    expect(() => curriculumRuntimeStateToRow(state, "")).toThrow(
+      CurriculumRuntimeMappingError,
+    );
     expect(() =>
-      curriculumRuntimeStateToRow(state, ""),
+      curriculumRuntimeStateToRow({ ...state, participantId: "" }, "id"),
     ).toThrow(CurriculumRuntimeMappingError);
     expect(() =>
-      curriculumRuntimeStateToRow(
-        { ...state, participantId: "" },
-        "id",
-      ),
+      curriculumRuntimeStateToRow({ ...state, scopeId: "" }, "id"),
     ).toThrow(CurriculumRuntimeMappingError);
     expect(() =>
-      curriculumRuntimeStateToRow(
-        { ...state, scopeId: "" },
-        "id",
-      ),
+      curriculumRuntimeStateToRow({ ...state, version: 0 }, "id"),
     ).toThrow(CurriculumRuntimeMappingError);
     expect(() =>
-      curriculumRuntimeStateToRow(
-        { ...state, version: 0 },
-        "id",
-      ),
-    ).toThrow(CurriculumRuntimeMappingError);
-    expect(() =>
-      curriculumRuntimeStateToRow(
-        { ...state, updatedAt: "bad" },
-        "id",
-      ),
+      curriculumRuntimeStateToRow({ ...state, updatedAt: "bad" }, "id"),
     ).toThrow(CurriculumRuntimeMappingError);
     expect(() =>
       curriculumRuntimeStateToRow(
@@ -178,10 +166,7 @@ describe("curriculum runtime repository", () => {
     expect(found).toMatchObject({ version: 1 });
     const empty = createFakeDatabase({ rows: [[], []] });
     expect(
-      await repository(empty).findCurriculumRuntime(
-        state.participantId,
-        "M03",
-      ),
+      await repository(empty).findCurriculumRuntime(state.participantId, "M03"),
     ).toBeNull();
   });
 

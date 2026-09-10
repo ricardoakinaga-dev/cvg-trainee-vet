@@ -175,9 +175,7 @@ describe("feedback triage queue cursor validation", () => {
   });
 
   it("rejects malformed encode inputs", () => {
-    expect(() =>
-      encodeFeedbackTriageQueueCursor(cursor, "short"),
-    ).toThrow();
+    expect(() => encodeFeedbackTriageQueueCursor(cursor, "short")).toThrow();
     expect(() =>
       encodeFeedbackTriageQueueCursor(
         { ...cursor, ticketId: "nope" },
@@ -228,9 +226,7 @@ describe("feedback triage queue cursor validation", () => {
       JSON.stringify({ ...raw, extra: true }),
       "utf8",
     ).toString("base64url");
-    expect(() =>
-      decodeFeedbackTriageQueueCursor(extra, cursorKey),
-    ).toThrow();
+    expect(() => decodeFeedbackTriageQueueCursor(extra, cursorKey)).toThrow();
     const wrongType = Buffer.from(
       JSON.stringify({ ...raw, version: "1" }),
       "utf8",
@@ -242,16 +238,12 @@ describe("feedback triage queue cursor validation", () => {
       JSON.stringify({ ...raw, createdAt: "not-a-date" }),
       "utf8",
     ).toString("base64url");
-    expect(() =>
-      decodeFeedbackTriageQueueCursor(badDate, cursorKey),
-    ).toThrow();
+    expect(() => decodeFeedbackTriageQueueCursor(badDate, cursorKey)).toThrow();
     const badHash = Buffer.from(
       JSON.stringify({ ...raw, queryHash: "zz" }),
       "utf8",
     ).toString("base64url");
-    expect(() =>
-      decodeFeedbackTriageQueueCursor(badHash, cursorKey),
-    ).toThrow();
+    expect(() => decodeFeedbackTriageQueueCursor(badHash, cursorKey)).toThrow();
     const wrongSignature = Buffer.from(
       JSON.stringify({ ...raw, signature: "z".repeat(64) }),
       "utf8",
@@ -259,7 +251,9 @@ describe("feedback triage queue cursor validation", () => {
     expect(() =>
       decodeFeedbackTriageQueueCursor(wrongSignature, cursorKey),
     ).toThrow();
-    expect(() => decodeFeedbackTriageQueueCursor(encoded, "other-key")).toThrow();
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(encoded, "other-key"),
+    ).toThrow();
   });
 
   it("computes stable fingerprints including the optional status", () => {

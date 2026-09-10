@@ -15,7 +15,7 @@
 
 - current_phase: FINAL TRIPLE AAA CLOSURE (docs/48 §§1–100) — gaps fechados; veredito TRIPLE AAA — REVISE (audit v3)
 - current_sprint: `AAA-FINAL-001..007` + resíduo RF-01..RF-06
-- current_task: remote same-SHA verde do HEAD (RF-02) via acesso autenticado; depois cobertura 90/85/90/90 (RF-01)
+- current_task: publicação Git autorizada de AAA-PROMOTE-001 e correção de formatação; depois prova remota same-SHA (RF-02)
 
 ## STATUS
 
@@ -23,8 +23,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: commit documental `0a41ad6` criado e publicado com sucesso em `origin/main`; confirmação pós-push mostrou `main` local e `origin/main` sincronizados e worktree limpo. Nenhum commit vazio foi criado.
-- next_action: obter acesso GitHub autenticado e confirmar runs same-SHA do HEAD (RF-02); atacar cobertura até 90/85/90/90 (RF-01); operar Redis runtime (RF-06); sem produção/piloto/clínica/AAA-001
+- last_completed_action: revisado o commit pendente `7ba0114eb44f49b2b936c17159c5790f4c4580e3`, corrigida somente a formatação de 13 arquivos e concluído `pnpm verify` com 1201 testes passando e 63 skips; cobertura 90,91/85,00/96,03/91,68. Publicação em origin/main autorizada pelo usuário e preparada neste checkpoint.
+- next_action: criar o commit de formatação e continuidade, publicar por push normal em origin/main e confirmar igualdade do SHA remoto; depois confirmar CI same-SHA (RF-02) e operar Redis runtime (RF-06). RF-01 tem piso local aprovado com as exclusões documentadas; não há novo veredito AAA.
 
 ## BLOQUEIOS
 
@@ -37,8 +37,8 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T01:40:11-0300
-- session_checkpoint: verificação Git concluída; commit documental `0a41ad6` publicado em `origin/main`; `main` local e remoto sincronizados, worktree limpo; residuais RF-01..RF-06
+- last_update: 2026-09-10T16:10:00-0300
+- session_checkpoint: gates locais PASS em Node 22.23.2/pnpm 10.33.0; audit sem high/critical, com 1 low e 3 moderate; push preparado, confirmação remota será feita após o commit; CI remoto não inferido
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 

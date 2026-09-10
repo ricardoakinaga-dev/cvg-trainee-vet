@@ -165,18 +165,18 @@ describe("answer idempotency mapping", () => {
 
 describe("answer mapping validation", () => {
   it("rejects rows with empty fields or invalid timestamps", () => {
-    expect(() =>
-      answerStateToRow({ ...answer, answerId: " " }),
-    ).toThrow(PersistenceMappingError);
-    expect(() =>
-      answerStateToRow({ ...answer, attemptId: "" }),
-    ).toThrow(PersistenceMappingError);
-    expect(() =>
-      answerStateToRow({ ...answer, itemId: "" }),
-    ).toThrow(PersistenceMappingError);
-    expect(() =>
-      answerStateToRow({ ...answer, response: " " }),
-    ).toThrow(PersistenceMappingError);
+    expect(() => answerStateToRow({ ...answer, answerId: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => answerStateToRow({ ...answer, attemptId: "" })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => answerStateToRow({ ...answer, itemId: "" })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => answerStateToRow({ ...answer, response: " " })).toThrow(
+      PersistenceMappingError,
+    );
     expect(() =>
       answerStateToRow({ ...answer, savedAt: "not-a-date" }),
     ).toThrow(PersistenceMappingError);
@@ -311,7 +311,9 @@ describe("answer use case dependencies", () => {
   });
 
   it("checks activity item availability", async () => {
-    const available = createFakeDatabase({ rows: [[{ itemId: answer.itemId }]] });
+    const available = createFakeDatabase({
+      rows: [[{ itemId: answer.itemId }]],
+    });
     expect(
       await deps(available).hasActivityItem(
         attempt.participantId,
@@ -350,7 +352,9 @@ describe("answer use case dependencies", () => {
 
   it("updates attempts and conflicts on stale versions", async () => {
     const ok = createFakeDatabase({ rows: [[{ id: attempt.attemptId }]] });
-    await expect(deps(ok).attemptsPort.update(attempt)).resolves.toBeUndefined();
+    await expect(
+      deps(ok).attemptsPort.update(attempt),
+    ).resolves.toBeUndefined();
     const stale = createFakeDatabase({ rows: [[]] });
     await expect(deps(stale).attemptsPort.update(attempt)).rejects.toThrow(
       "version changed",

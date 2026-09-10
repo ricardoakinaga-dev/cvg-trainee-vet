@@ -137,9 +137,7 @@ describe("authoring persistence mapping", () => {
       "objectiveId",
       "authorId",
     ] as const) {
-      expect(() =>
-        authoringRowToRecord({ ...row, [field]: "   " }),
-      ).toThrow();
+      expect(() => authoringRowToRecord({ ...row, [field]: "   " })).toThrow();
     }
   });
 
@@ -149,12 +147,8 @@ describe("authoring persistence mapping", () => {
   });
 
   it("rejects malformed items", () => {
-    expect(() =>
-      authoringRowToRecord({ ...row, item: null }),
-    ).toThrow();
-    expect(() =>
-      authoringRowToRecord({ ...row, item: [] }),
-    ).toThrow();
+    expect(() => authoringRowToRecord({ ...row, item: null })).toThrow();
+    expect(() => authoringRowToRecord({ ...row, item: [] })).toThrow();
     expect(() =>
       authoringRowToRecord({
         ...row,
@@ -326,14 +320,18 @@ describe("authoring persistence mapping", () => {
   });
 
   it("rejects malformed preflight data", () => {
+    expect(() => authoringRowToRecord({ ...row, preflight: null })).toThrow();
     expect(() =>
-      authoringRowToRecord({ ...row, preflight: null }),
+      authoringRowToRecord({
+        ...row,
+        preflight: { ...row.preflight, ruleVersion: "unknown" },
+      }),
     ).toThrow();
     expect(() =>
-      authoringRowToRecord({ ...row, preflight: { ...row.preflight, ruleVersion: "unknown" } }),
-    ).toThrow();
-    expect(() =>
-      authoringRowToRecord({ ...row, preflight: { ...row.preflight, checks: null } }),
+      authoringRowToRecord({
+        ...row,
+        preflight: { ...row.preflight, checks: null },
+      }),
     ).toThrow();
     expect(() =>
       authoringRowToRecord({
@@ -521,13 +519,7 @@ describe("authoring repository operations", () => {
       scopeId: row.scopeId,
     };
     const db = createFakeDatabase({
-      rows: [
-        [],
-        [],
-        [idempotencyRow],
-        [row],
-        [],
-      ],
+      rows: [[], [], [idempotencyRow], [row], []],
     });
     const repository = createAuthoringRepository(
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
@@ -547,10 +539,7 @@ describe("authoring repository operations", () => {
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
     );
     await expect(
-      repository.createDraft(
-        { ...draftRecord },
-        { ...draftOptions },
-      ),
+      repository.createDraft({ ...draftRecord }, { ...draftOptions }),
     ).rejects.toThrow("fingerprint");
   });
 
@@ -570,10 +559,7 @@ describe("authoring repository operations", () => {
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
     );
     await expect(
-      repository.createDraft(
-        { ...draftRecord },
-        { ...draftOptions },
-      ),
+      repository.createDraft({ ...draftRecord }, { ...draftOptions }),
     ).rejects.toThrow("no content");
   });
 
@@ -593,10 +579,7 @@ describe("authoring repository operations", () => {
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
     );
     await expect(
-      repository.createDraft(
-        { ...draftRecord },
-        { ...draftOptions },
-      ),
+      repository.createDraft({ ...draftRecord }, { ...draftOptions }),
     ).rejects.toThrow("identity mismatch");
   });
 
@@ -610,10 +593,7 @@ describe("authoring repository operations", () => {
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
     );
     await expect(
-      repository.createDraft(
-        { ...draftRecord },
-        { ...draftOptions },
-      ),
+      repository.createDraft({ ...draftRecord }, { ...draftOptions }),
     ).rejects.toThrow("already in use");
   });
 

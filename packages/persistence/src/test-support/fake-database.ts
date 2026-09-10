@@ -21,7 +21,8 @@ export type FakeBuilder = {
   limit: (count?: unknown) => Promise<readonly unknown[]>;
   execute: (query?: unknown) => Promise<readonly unknown[]>;
   then: <TResult1 = readonly unknown[], TResult2 = never>(
-    onfulfilled?: ((value: readonly unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
+    onfulfilled?:
+      ((value: readonly unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ) => Promise<TResult1 | TResult2>;
 };

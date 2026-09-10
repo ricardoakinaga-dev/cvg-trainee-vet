@@ -103,15 +103,15 @@ describe("diagnostic result mapping validation", () => {
   };
 
   it("rejects rows with empty identities or invalid timestamps", () => {
-    expect(() =>
-      diagnosticResultRowToState({ ...base, id: "  " }),
-    ).toThrow(DiagnosticResultMappingError);
+    expect(() => diagnosticResultRowToState({ ...base, id: "  " })).toThrow(
+      DiagnosticResultMappingError,
+    );
     expect(() =>
       diagnosticResultRowToState({ ...base, participantId: "" }),
     ).toThrow(DiagnosticResultMappingError);
-    expect(() =>
-      diagnosticResultRowToState({ ...base, scopeId: "" }),
-    ).toThrow(DiagnosticResultMappingError);
+    expect(() => diagnosticResultRowToState({ ...base, scopeId: "" })).toThrow(
+      DiagnosticResultMappingError,
+    );
     expect(() =>
       diagnosticResultRowToState({
         ...base,
@@ -119,25 +119,16 @@ describe("diagnostic result mapping validation", () => {
       }),
     ).toThrow(DiagnosticResultMappingError);
     expect(() =>
-      diagnosticResultStateToRow(
-        { ...input, completedAt: "not-a-date" },
-        "id",
-      ),
+      diagnosticResultStateToRow({ ...input, completedAt: "not-a-date" }, "id"),
+    ).toThrow(DiagnosticResultMappingError);
+    expect(() => diagnosticResultStateToRow(input, "")).toThrow(
+      DiagnosticResultMappingError,
+    );
+    expect(() =>
+      diagnosticResultStateToRow({ ...input, participantId: " " }, "id"),
     ).toThrow(DiagnosticResultMappingError);
     expect(() =>
-      diagnosticResultStateToRow(input, ""),
-    ).toThrow(DiagnosticResultMappingError);
-    expect(() =>
-      diagnosticResultStateToRow(
-        { ...input, participantId: " " },
-        "id",
-      ),
-    ).toThrow(DiagnosticResultMappingError);
-    expect(() =>
-      diagnosticResultStateToRow(
-        { ...input, scopeId: " " },
-        "id",
-      ),
+      diagnosticResultStateToRow({ ...input, scopeId: " " }, "id"),
     ).toThrow(DiagnosticResultMappingError);
   });
 
@@ -270,8 +261,8 @@ describe("diagnostic result repository", () => {
 
   it("fails when the saved diagnostic result cannot be read back", async () => {
     const db = createFakeDatabase({ rows: [[], []] });
-    await expect(
-      repository(db).saveDiagnosticResult(input),
-    ).rejects.toThrow("not found");
+    await expect(repository(db).saveDiagnosticResult(input)).rejects.toThrow(
+      "not found",
+    );
   });
 });

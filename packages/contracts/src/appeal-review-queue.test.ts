@@ -158,9 +158,7 @@ describe("appeal review queue decision consistency", () => {
         },
       ],
     };
-    expect(() =>
-      parseAppealReviewQueueProjection(projection),
-    ).toThrow();
+    expect(() => parseAppealReviewQueueProjection(projection)).toThrow();
   });
 
   it("applies the default limit and rejects invalid queries", () => {

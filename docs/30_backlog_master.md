@@ -2232,3 +2232,9 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - RF-01 P2 cobertura < 90/85/90/90 · RF-02 P2 same-SHA HEAD pendente (externo)
 - RF-03 P2 mutation 70,78% < 90% · RF-04 P2 arquivos >1000 linhas
 - RF-05 P3 4 advisories dev-only · RF-06 P2 Redis operado em runtime
+
+## 2026-09-10 — Publicação AAA-PROMOTE-001
+
+- RF-01: piso local 90/85/90/90 aprovado nesta revalidação de `7ba0114` com correções de formatação: 90,91/85,00/96,03/91,68; exclusões explícitas em `scripts/coverage-exclusions.mjs`. A evidência não fecha CI remoto nem promove o veredito AAA global.
+- RF-02: permanece pendente de prova CI same-SHA; commit/push autorizados nesta rodada.
+- RF-05: audit corrente registra 1 low e 3 moderate, sem high/critical; nenhuma dependência alterada.

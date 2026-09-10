@@ -273,10 +273,9 @@ describe("learning assignment domain validation", () => {
 
   it("unblocks to the requested state", () => {
     const available = transitionLearningAssignment(
-      transitionLearningAssignment(
-        createLearningAssignment(assignmentInput),
-        { type: "ATRIBUIR" },
-      ),
+      transitionLearningAssignment(createLearningAssignment(assignmentInput), {
+        type: "ATRIBUIR",
+      }),
       { type: "DISPONIBILIZAR", now: "2026-08-10T17:00:00.000Z" },
     );
     const blocked = transitionLearningAssignment(available, {

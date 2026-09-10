@@ -234,7 +234,10 @@ describe("account management repository flows", () => {
 
   it("conflicts when an invited account is activated without accepting", async () => {
     const db = createFakeDatabase({
-      rows: [[], [{ ...membershipRow, accountStatus: "INVITED", acceptedAt: null }]],
+      rows: [
+        [],
+        [{ ...membershipRow, accountStatus: "INVITED", acceptedAt: null }],
+      ],
     });
     await expect(
       repository(db).changeStatus({

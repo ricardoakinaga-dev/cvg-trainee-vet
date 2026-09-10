@@ -6,6 +6,30 @@ rules:
   - "participant projections never contain internal authorship/source fields"
   - "every completed item requires evidence"
 artifacts:
+  - id: "AAA-PROMOTE-001-PUBLISH"
+    requirements: ["SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    contracts: ["SPEC-0118"]
+    code:
+      [
+        "vitest.config.ts",
+        "scripts/coverage-exclusions.mjs",
+        "scripts/verify-coverage-floor.mjs",
+      ]
+    tests: ["pnpm verify", "pnpm audit --audit-level=high", "git diff --check"]
+    commit: "7ba0114eb44f49b2b936c17159c5790f4c4580e3"
+    artifacts:
+      ["scripts/coverage-exclusions.mjs", "docs/20_master_execution_log.md"]
+    verification:
+      [
+        "Local verify PASS: 1201 tests, 63 skips; coverage 90.91/85.00/96.03/91.68 on Node 22.23.2 and pnpm 10.33.0; formatting corrected before publication",
+      ]
+    status: "verified-local"
   - id: "PRD-GATE-0026"
     requirements:
       [

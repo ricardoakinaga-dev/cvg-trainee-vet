@@ -213,7 +213,9 @@ describe("correction dependencies operations", () => {
 
   function deps(db: ReturnType<typeof createFakeDatabase>) {
     return createCorrectionUseCaseDependencies(
-      db as unknown as Parameters<typeof createCorrectionUseCaseDependencies>[0],
+      db as unknown as Parameters<
+        typeof createCorrectionUseCaseDependencies
+      >[0],
       () => "id-factory",
     );
   }
@@ -272,7 +274,9 @@ describe("correction dependencies operations", () => {
     const found = createFakeDatabase({
       rows: [[{ fingerprint: "f", response: { attempt, result } }]],
     });
-    expect(await deps(found).idempotency.find("key")).toEqual(idempotencyRecord);
+    expect(await deps(found).idempotency.find("key")).toEqual(
+      idempotencyRecord,
+    );
     const missing = createFakeDatabase({ rows: [[]] });
     expect(await deps(missing).idempotency.find("key")).toBeNull();
     const store = createFakeDatabase({ rows: [[]] });
@@ -283,7 +287,9 @@ describe("correction dependencies operations", () => {
     await expect(
       deps(same).idempotency.store("key", idempotencyRecord),
     ).resolves.toBeUndefined();
-    const different = createFakeDatabase({ rows: [[{ fingerprint: "other" }]] });
+    const different = createFakeDatabase({
+      rows: [[{ fingerprint: "other" }]],
+    });
     await expect(
       deps(different).idempotency.store("key", idempotencyRecord),
     ).rejects.toThrow("fingerprint");
@@ -315,8 +321,8 @@ describe("correction dependencies operations", () => {
       { participantId: attempt.participantId },
     );
     expect(found).toMatchObject({ attemptId: attempt.attemptId });
-    const foundPlain = await instance.transaction.run(
-      async (operations) => operations.attempts.findById(attempt.attemptId),
+    const foundPlain = await instance.transaction.run(async (operations) =>
+      operations.attempts.findById(attempt.attemptId),
     );
     expect(foundPlain).toMatchObject({ attemptId: attempt.attemptId });
   });
@@ -368,7 +374,9 @@ describe("correction read repository", () => {
         attempt.attemptId,
       ),
     ).toBeNull();
-    const uncorrected = createFakeDatabase({ rows: [[], [{ ...readRow, resultId: null }]] });
+    const uncorrected = createFakeDatabase({
+      rows: [[], [{ ...readRow, resultId: null }]],
+    });
     expect(
       await readRepository(uncorrected).findByParticipantAndAttempt(
         attempt.participantId,
@@ -378,7 +386,9 @@ describe("correction read repository", () => {
   });
 
   it("propagates mapping errors for malformed rows", async () => {
-    const db = createFakeDatabase({ rows: [[], [{ ...readRow, resultKind: "MAQUINA" }]] });
+    const db = createFakeDatabase({
+      rows: [[], [{ ...readRow, resultKind: "MAQUINA" }]],
+    });
     await expect(
       readRepository(db).findByParticipantAndAttempt(
         attempt.participantId,

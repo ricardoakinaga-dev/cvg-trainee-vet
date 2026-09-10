@@ -81,15 +81,15 @@ describe("PostgreSQL session mapping", () => {
 
 describe("session mapping validation", () => {
   it("rejects rows with invalid identity, token hash, roles, scopes or dates", () => {
-    expect(() =>
-      sessionRecordToRow({ ...record, sessionId: "" }),
-    ).toThrow(PersistenceMappingError);
-    expect(() =>
-      sessionRecordToRow({ ...record, accountId: " " }),
-    ).toThrow(PersistenceMappingError);
-    expect(() =>
-      sessionRecordToRow({ ...record, tokenHash: "short" }),
-    ).toThrow(PersistenceMappingError);
+    expect(() => sessionRecordToRow({ ...record, sessionId: "" })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => sessionRecordToRow({ ...record, accountId: " " })).toThrow(
+      PersistenceMappingError,
+    );
+    expect(() => sessionRecordToRow({ ...record, tokenHash: "short" })).toThrow(
+      PersistenceMappingError,
+    );
     expect(() =>
       sessionRecordToRow({ ...record, accountStatus: "BLOCKED" as never }),
     ).toThrow(PersistenceMappingError);
@@ -187,31 +187,26 @@ describe("session repository operations", () => {
 
   it("finds an active session and refreshes lastSeenAt", async () => {
     const db = createFakeDatabase({ rows: [[], [principalRow]] });
-    const principal = await repository(db).findActive(
-      record.tokenHash,
-      now,
-    );
+    const principal = await repository(db).findActive(record.tokenHash, now);
     expect(principal).toMatchObject({ accountId: record.accountId });
   });
 
   it("returns null when no active session matches", async () => {
     const db = createFakeDatabase({ rows: [[], []] });
-    expect(
-      await repository(db).findActive(record.tokenHash, now),
-    ).toBeNull();
+    expect(await repository(db).findActive(record.tokenHash, now)).toBeNull();
   });
 
   it("rejects invalid token hashes or timestamps", async () => {
     const db = createFakeDatabase();
-    await expect(
-      repository(db).findActive("nope", now),
-    ).rejects.toThrow(PersistenceMappingError);
+    await expect(repository(db).findActive("nope", now)).rejects.toThrow(
+      PersistenceMappingError,
+    );
     await expect(
       repository(db).findActive(record.tokenHash, new Date("invalid")),
     ).rejects.toThrow(PersistenceMappingError);
-    await expect(
-      repository(db).revoke("nope", now),
-    ).rejects.toThrow(PersistenceMappingError);
+    await expect(repository(db).revoke("nope", now)).rejects.toThrow(
+      PersistenceMappingError,
+    );
     await expect(
       repository(db).revoke(record.tokenHash, new Date("invalid")),
     ).rejects.toThrow(PersistenceMappingError);
@@ -229,11 +224,7 @@ describe("session repository operations", () => {
       rows: [[], [{ id: record.sessionId }]],
     });
     await expect(
-      repository(rotated).rotate!(
-        record.tokenHash,
-        record,
-        now,
-      ),
+      repository(rotated).rotate!(record.tokenHash, record, now),
     ).resolves.toBeUndefined();
     const gone = createFakeDatabase({ rows: [[]] });
     await expect(

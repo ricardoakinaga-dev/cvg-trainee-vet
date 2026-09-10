@@ -310,7 +310,10 @@ describe("internal authoring draft validation branches", () => {
           },
           checkedAt: "2026-08-10T05:00:00.000Z",
         },
-        availableActions: { requestAdjustments: false, approveClinically: true },
+        availableActions: {
+          requestAdjustments: false,
+          approveClinically: true,
+        },
       }),
     ).toThrow();
   });
