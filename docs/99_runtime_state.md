@@ -23,16 +23,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: certificação executada no freeze `b58c11a`: mutation adjusted 100% (raw 89.95, 0 real survivors), coverage 90.92/85.03/96.04/91.69 PASS, RLS 7/7, Redis 5/5+restart 2/2, staging --browser PASS, E2E 45/45, bundle 18 artefatos strict (só remote-ci FAIL). `verify:aaa-candidate` 21/24 (3 FAIL mesma causa RF-02). Três bugs reais corrigidos (restore args, flagValue, security counts).
-- next_action: publicar commit docs(audit) v4; abrir tag `candidate-*` ou dispatch com GITHUB_TOKEN para fechar RF-02 e re-emitir veredito.
+- last_completed_action: certificação encerrada em `14c95e4` (docs sobre freeze `b58c11a`): `verify:aaa-candidate` 21/24 — únicos FAIL são RF-02 (same-SHA remoto). Eng 93/Sec 95/Ops 89, P0=P1=0, audit v4 REVISE, STAGING VERIFIED. Ferramental descartável desligado; PG :5432/Redis :6379 preexistentes intocados. Sem push (decisão humana pendente).
+- next_action: Ricardo decidir sobre (a) push dos commits locais, (b) tag `candidate-*`/dispatch com GITHUB_TOKEN para fechar RF-02, (c) AAA-001.
 
 ## BLOQUEIOS
 
 - blockers: `AAA-001` continua aguardando aprovação humana (SLO/RPO/RTO, piloto, ambientes); RF-02 (runs remotos quality/security/candidate no SHA final) bloqueia a promoção — sem token GitHub neste ambiente e sem inferência de CI. Nenhuma task usa dados reais, publica clínica ou altera migrations produtivas. Verificações locais em Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado; contrato CI Node `22.22.0`/pnpm `10.33.0`.
-
-## BLOQUEIOS
-
-- blockers: `AAA-001` continua aguardando aprovação humana das metas SLO/RPO/RTO, capacidade, escopo do piloto e autoridade de ambientes; lives PG+Qdrant+restore verdes em descartável local (41/111) mas a prova remota same-SHA, ACL/retention/assinatura/cache, provider IA real, custo/latência, collector/evals sobre provider, concorrência real, cross-scope, expiração/cookie, E2E browser→API→PostgreSQL autorizado, owners produtivos, carga, failover, deploy e conteúdo clínico publicado continuam sem evidência. Nenhuma task usa dados reais ou altera migrations produtivas. O shell nativo tem Node `18.19.1`/sem pnpm; verificações locais usam Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado do repositório, enquanto o contrato CI permanece Node `22.22.0`/pnpm `10.33.0`.
 
 ## DECISÃO HUMANA
 
@@ -41,8 +37,8 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T21:05:00-0300
-- session_checkpoint: certificação AAA-CERT executada; freeze b58c11a; audit v4 REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gates locais PASS salvo same-SHA remoto; sem push (aguardando decisão de publicação)
+- last_update: 2026-09-10T21:55:00-0300
+- session_checkpoint: certificação AAA-CERT encerrada; HEAD 14c95e4 (6 commits código + 4 docs, sem push); audit v4 REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gate 21/24, só RF-02 aberto
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
