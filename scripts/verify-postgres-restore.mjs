@@ -61,6 +61,13 @@ function commandFor(program, args, input = false) {
   });
 }
 
+function serverArgs(connection) {
+  if (dockerContainer !== undefined) {
+    return ["-U", connection.user];
+  }
+  return ["-h", connection.host, "-p", connection.port, "-U", connection.user];
+}
+
 function connectionArgs(connection, database = connection.database) {
   if (dockerContainer !== undefined) {
     return ["-U", connection.user, "-d", database];
@@ -169,12 +176,7 @@ async function main() {
     if (dump.code !== 0) throw new Error("backup command failed");
 
     const createTarget = await runCommand(
-      commandFor("createdb", [
-        ...connectionArgs(connection, "postgres").filter(
-          (argument) => argument !== "-d" && argument !== "postgres",
-        ),
-        targetDatabase,
-      ]),
+      commandFor("createdb", [...serverArgs(connection), targetDatabase]),
       { env: commandEnvironment(connection) },
     );
     if (createTarget.code !== 0)
@@ -222,9 +224,7 @@ async function main() {
     if (targetCreated) {
       await runCommand(
         commandFor("dropdb", [
-          ...connectionArgs(connection, "postgres").filter(
-            (argument) => argument !== "-d" && argument !== "postgres",
-          ),
+          ...serverArgs(connection),
           "--if-exists",
           targetDatabase,
         ]),
