@@ -19,6 +19,7 @@ coverage/
 playwright-report/
 .agent/playwright-report-postfix/
 test-results/
+staging-evidence/
 reports/mutation/
 .stryker-tmp/
 .DS_Store

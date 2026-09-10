@@ -1,41 +1,13 @@
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdtemp, readdir, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
-async function findEmbeddedPostgresLib() {
-  // pnpm isolates the native binaries, breaking their $ORIGIN rpath, so the
-  // loader needs an explicit search path for libpq/libicu bundled alongside.
-  const scope = join(root, "node_modules", ".pnpm");
-  let entries = [];
-  try {
-    entries = await readdir(scope);
-  } catch {
-    return null;
-  }
-  for (const entry of entries) {
-    if (!entry.startsWith("@embedded-postgres+linux-x64@")) continue;
-    const candidate = join(
-      scope,
-      entry,
-      "node_modules",
-      "@embedded-postgres",
-      "linux-x64",
-      "native",
-      "lib",
-    );
-    try {
-      const libs = await readdir(candidate);
-      if (libs.includes("libpq.so.5")) return candidate;
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
+import {
+  ephemeralPort,
+  startEmbeddedPostgres,
+} from "./live-embedded-pg.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -64,76 +36,6 @@ async function sqlExec(url, statement) {
   }
 }
 
-async function repairNativeSymlinks() {
-  // pnpm drops versioned .so symlinks inside the embedded-postgres native
-  // tree (real files like libpq.so.5.18 survive). Recreate the soname links
-  // the loader requests (libpq.so.5, libicuuc.so.60, ...) idempotently.
-  const { readdir, symlink, lstat } = await import("node:fs/promises");
-  const scope = join(root, "node_modules", ".pnpm");
-  let entries = [];
-  try {
-    entries = await readdir(scope);
-  } catch {
-    return null;
-  }
-  for (const entry of entries) {
-    if (!entry.startsWith("@embedded-postgres+linux-x64@")) continue;
-    const lib = join(
-      scope,
-      entry,
-      "node_modules",
-      "@embedded-postgres",
-      "linux-x64",
-      "native",
-      "lib",
-    );
-    let files = [];
-    try {
-      files = await readdir(lib);
-    } catch {
-      continue;
-    }
-    for (const file of files) {
-      const match = /^(lib.*\.so)\.(\d+)\.[\d.]+$/u.exec(file);
-      if (match === null) continue;
-      const link = join(lib, `${match[1]}.${match[2]}`);
-      try {
-        await lstat(link);
-      } catch {
-        await symlink(join(lib, file), link);
-      }
-    }
-    return lib;
-  }
-  return null;
-}
-
-async function startEmbeddedPostgres() {
-  const { default: EmbeddedPostgres } = await import("embedded-postgres");
-  const directory = await mkdtemp(join(tmpdir(), "cvg-rls-live-"));
-  const port = 55440 + Math.floor(Math.random() * 500);
-  const instance = new EmbeddedPostgres({
-    databaseDir: join(directory, "data"),
-    user: "postgres",
-    password: "postgres",
-    port,
-    persistent: false,
-  });
-  await instance.initialise();
-  await instance.start();
-  return {
-    instance,
-    directory,
-    maintenanceUrl: `postgresql://postgres:postgres@127.0.0.1:${port}/postgres`,
-    dbUrl: (role, password) =>
-      `postgresql://${role}:${password}@127.0.0.1:${port}/${DATABASE}`,
-    async stop() {
-      await instance.stop().catch(() => undefined);
-      await rm(directory, { recursive: true, force: true });
-    },
-  };
-}
-
 async function migrate(databaseUrl) {
   await execFileAsync("pnpm", ["db:migrate"], {
     cwd: root,
@@ -152,17 +54,7 @@ async function main() {
 
   if (appUrl === undefined || appUrl.length === 0) {
     log("no CVG_TEST_DATABASE_URL; booting disposable embedded PostgreSQL");
-    const nativeLib =
-      (await repairNativeSymlinks()) ?? (await findEmbeddedPostgresLib());
-    if (nativeLib !== null) {
-      process.env.LD_LIBRARY_PATH =
-        nativeLib +
-        (process.env.LD_LIBRARY_PATH === undefined ||
-        process.env.LD_LIBRARY_PATH === ""
-          ? ""
-          : `:${process.env.LD_LIBRARY_PATH}`);
-    }
-    const embedded = await startEmbeddedPostgres();
+    const embedded = await startEmbeddedPostgres(ephemeralPort());
     stop = embedded.stop;
     try {
       await sqlExec(
@@ -170,7 +62,7 @@ async function main() {
         `CREATE ROLE "${APP_ROLE}" WITH LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '${APP_PASSWORD}'`,
       );
       await sqlExec(embedded.maintenanceUrl, `CREATE DATABASE "${DATABASE}"`);
-      const superDbUrl = embedded.dbUrl("postgres", "postgres");
+      const superDbUrl = embedded.dbUrl("postgres", "postgres", DATABASE);
       await migrate(superDbUrl);
       for (const statement of [
         `GRANT CONNECT ON DATABASE "${DATABASE}" TO "${APP_ROLE}"`,
@@ -185,7 +77,7 @@ async function main() {
       ]) {
         await sqlExec(superDbUrl, statement);
       }
-      appUrl = embedded.dbUrl(APP_ROLE, APP_PASSWORD);
+      appUrl = embedded.dbUrl(APP_ROLE, APP_PASSWORD, DATABASE);
       adminUrl = superDbUrl;
       log(`disposable database ready (${DATABASE})`);
     } catch (error) {
