@@ -108,6 +108,39 @@ async function main() {
     check("coverage present (run pnpm test:coverage first)", false);
   }
 
+  // 1b. Mutation gate (§§10–12, §37): machine-readable only, never Markdown.
+  try {
+    const summary = JSON.parse(
+      await readFile(join(root, "reports/mutation-summary.json"), "utf8"),
+    );
+    check(
+      "mutation summary fresh (cvg-mutation-summary/v1)",
+      summary.format === "cvg-mutation-summary/v1",
+      summary.format ?? "unknown",
+    );
+    check(
+      "mutation adjusted >= 90",
+      typeof summary.adjusted_score === "number" &&
+        summary.adjusted_score >= 0.9,
+      String(summary.adjusted_score ?? "missing"),
+    );
+    check(
+      "mutation critical real survivors = 0",
+      summary.critical_real_survivors === 0,
+      String(summary.critical_real_survivors ?? "missing"),
+    );
+    check(
+      "mutation gate PASS",
+      summary.status === "PASS",
+      summary.status ?? "unknown",
+    );
+  } catch {
+    check(
+      "mutation summary present (run node scripts/verify-mutation-closure.mjs --write-summary)",
+      false,
+    );
+  }
+
   // 2. Route drift (§64): registry is the single source of truth.
   try {
     const { verifyRoutes } = await import("./verify-routes.mjs");
@@ -144,47 +177,146 @@ async function main() {
     check("RLS live matrix PASS", false, "run pnpm test:rls:live first");
   }
 
-  // 4. Same-SHA (§64, §88): HEAD must equal quality/security/artifact SHAs.
+  // 4. Same-SHA (AAA-CERT-002 §§15–18, §37): live re-verification goes to
+  // staging scratch; the PROMOTION authority is the bundled
+  // release-evidence/remote-ci-summary.json (produced by the candidate
+  // workflow step before the bundle, so bundle digests stay stable).
   try {
-    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+    const { stdout: headStdout } = await execFileAsync(
+      "git",
+      ["rev-parse", "HEAD"],
+      { cwd: root },
+    );
+    const head = headStdout.trim();
+    const args = [
+      "scripts/verify-same-sha.mjs",
+      "--out",
+      join(root, "staging-evidence", "ci-runs.json"),
+      "--summary-out",
+      join(root, "staging-evidence", "remote-ci-summary.json"),
+      "--require-auth",
+      "--require-candidate",
+    ];
+    const selfRunId =
+      process.env.CVG_SELF_CANDIDATE_RUN_ID?.trim() ||
+      process.env.GITHUB_RUN_ID?.trim() ||
+      "";
+    if (selfRunId !== "") {
+      args.push("--self-candidate-run-id", selfRunId);
+    }
+    const sameSha = await execFileAsync("node", args, {
       cwd: root,
-    });
-    const head = stdout.trim();
-    const sameSha = await execFileAsync(
-      "node",
-      [
-        "scripts/verify-same-sha.mjs",
-        "--out",
-        join(root, "staging-evidence", "ci-runs.json"),
-      ],
-      {
-        cwd: root,
-        timeout: 120000,
-      },
-    ).then(
+      timeout: 300000,
+    }).then(
       () => ({ ok: true }),
       (error) => ({ ok: false, error: error.message }),
     );
-    void head;
     check(
-      "same-SHA quality/security/artifact",
+      "same-SHA quality/security/candidate (authenticated, live)",
       sameSha.ok,
       sameSha.ok ? "" : String(sameSha.error).slice(0, 200),
     );
+    const bundled = JSON.parse(
+      await readFile(
+        join(root, "release-evidence", "remote-ci-summary.json"),
+        "utf8",
+      ),
+    );
+    check(
+      "bundled remote-ci summary fresh for HEAD",
+      bundled.format === "cvg-remote-ci-summary/v1" &&
+        bundled.sha === head &&
+        bundled.status === "PASS",
+      `${bundled.sha ?? "missing"}/${bundled.status ?? "missing"}`,
+    );
   } catch (error) {
-    check("same-SHA quality/security/artifact", false, error.message);
+    check(
+      "same-SHA quality/security/candidate (authenticated)",
+      false,
+      error.message,
+    );
   }
 
-  // 5. Release evidence (§64): bundle validates, SBOM validates.
+  // 4b. Redis candidate (AAA-CERT-003 §§25–30, §37): durable backend proof.
   try {
-    const bundleFailures = await validateBundle(join(root, "release-evidence"));
+    const evidence = JSON.parse(
+      await readFile(
+        join(root, "release-evidence", "redis-candidate-summary.json"),
+        "utf8",
+      ),
+    );
+    const { stdout: head } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+    });
     check(
-      "release evidence bundle valid",
+      "redis candidate backend is durable (no silent memory fallback)",
+      evidence.backend === "redis" || evidence.backend === "valkey",
+      String(evidence.backend ?? "missing"),
+    );
+    check(
+      "redis candidate evidence fresh for HEAD",
+      evidence.sha === head.trim(),
+      String(evidence.sha ?? "missing"),
+    );
+    check(
+      "redis candidate PASS",
+      evidence.status === "PASS",
+      evidence.status ?? "unknown",
+    );
+  } catch {
+    check(
+      "redis candidate PASS (run node scripts/write-redis-candidate-summary.mjs)",
+      false,
+    );
+  }
+
+  // 4c. Staging (AAA-CERT-005 §§39–53, §37): fresh staging verification.
+  try {
+    const evidence = JSON.parse(
+      await readFile(
+        join(root, "release-evidence", "staging-summary.json"),
+        "utf8",
+      ),
+    );
+    const { stdout: head } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+    });
+    check(
+      "staging evidence fresh for HEAD",
+      evidence.sha === head.trim(),
+      String(evidence.sha ?? "missing"),
+    );
+    check(
+      "staging PASS",
+      evidence.status === "PASS",
+      evidence.status ?? "unknown",
+    );
+  } catch {
+    check("staging PASS (run pnpm staging:verify)", false);
+  }
+
+  // 5. Release evidence (AAA-CERT-004 §35): strict bundle validation
+  // against HEAD — required files, JSON, SHA, digests, PASS, freshness.
+  try {
+    const { stdout: headStdout } = await execFileAsync(
+      "git",
+      ["rev-parse", "HEAD"],
+      { cwd: root },
+    );
+    const bundleFailures = await validateBundle(
+      join(root, "release-evidence"),
+      {
+        strict: true,
+        head: headStdout.trim(),
+      },
+    );
+    check(
+      "release evidence bundle valid (strict, fresh for HEAD)",
       bundleFailures.length === 0,
       bundleFailures.join("; ").slice(0, 300),
     );
   } catch (error) {
-    check("release evidence bundle valid", false, error.message);
+    check("release evidence bundle valid (strict)", false, error.message);
   }
   try {
     const sbom = JSON.parse(
@@ -231,20 +363,76 @@ async function main() {
     );
   }
 
-  // 7. P0/P1 (§64, §86): the final audit must declare zero open P0/P1.
-  // Machine-readable by convention: audit v3 states literal "P0 = 0" and
-  // "P1 = 0" with justification; anything else fails the gate.
+  // 7. P0/P1 (§37–38): machine-readable audit JSON is the authority.
+  // Markdown explains; JSON decides. No Markdown parsing for this gate.
+  // Freshness for the TRACKED audit file: its `sha` must be an ancestor of
+  // HEAD with no runtime diff since (docs-only commits after the code freeze
+  // do not invalidate runtime evidence; a tracked file can never contain
+  // its own future commit SHA).
+  const RUNTIME_TOP_LEVELS = Object.freeze([
+    "apps",
+    "packages",
+    "tests",
+    "scripts",
+    ".github",
+  ]);
+  const RUNTIME_ROOT_FILES = Object.freeze([
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "vitest.config.ts",
+    "tsconfig.json",
+    "tsconfig.base.json",
+    "eslint.config.mjs",
+    "drizzle.config.ts",
+    "playwright.config.ts",
+    "architecture-boundaries.json",
+    "traceability.yml",
+  ]);
   try {
-    const audit = await readFile(
-      join(root, "docs/audits/state-of-art-final-audit-v3.md"),
-      "utf8",
+    const audit = JSON.parse(
+      await readFile(
+        join(root, "docs/audits/state-of-art-final-audit-v4.json"),
+        "utf8",
+      ),
     );
-    const p0 = /^P0 = 0$/mu.test(audit);
-    const p1 = /^P1 = 0$/mu.test(audit);
-    check("no open P0/P1 (audit v3 declares P0 = 0, P1 = 0)", p0 && p1);
+    const { stdout: head } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+    });
+    check("no open P0 (audit v4 JSON)", audit.p0 === 0, `p0=${audit.p0}`);
+    check("no open P1 (audit v4 JSON)", audit.p1 === 0, `p1=${audit.p1}`);
+    let fresh = false;
+    let freshDetail = String(audit.sha ?? "missing");
+    try {
+      await execFileAsync(
+        "git",
+        ["merge-base", "--is-ancestor", audit.sha, head.trim()],
+        { cwd: root },
+      );
+      const { stdout: diffNames } = await execFileAsync(
+        "git",
+        ["diff", "--name-only", `${audit.sha}`, head.trim(), "--"],
+        { cwd: root },
+      );
+      const runtimeChanged = diffNames
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .some(
+          (line) =>
+            RUNTIME_TOP_LEVELS.some(
+              (top) => line === top || line.startsWith(`${top}/`),
+            ) || RUNTIME_ROOT_FILES.includes(line),
+        );
+      fresh = !runtimeChanged;
+      if (runtimeChanged) freshDetail = "runtime tree changed since audit.sha";
+    } catch {
+      freshDetail = "audit.sha is not an ancestor of HEAD";
+    }
+    check("audit v4 fresh (ancestor + no runtime diff)", fresh, freshDetail);
   } catch (error) {
     check(
-      "no open P0/P1 (audit v3 declares P0 = 0, P1 = 0)",
+      "no open P0/P1 (docs/audits/state-of-art-final-audit-v4.json)",
       false,
       error.message,
     );

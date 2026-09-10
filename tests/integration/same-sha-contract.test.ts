@@ -42,4 +42,56 @@ describe("same-sha contract", () => {
     ).toBe(false);
     expect(evaluateSameSha("short", []).ok).toBe(false);
   });
+
+  it("requires the candidate run for promotion but not for fast gates", () => {
+    expect(
+      evaluateSameSha(HEAD, [run("quality"), run("security")], {
+        requireCandidate: true,
+      }).ok,
+    ).toBe(false);
+    expect(
+      evaluateSameSha(
+        HEAD,
+        [run("quality"), run("security"), run("candidate")],
+        { requireCandidate: true },
+      ).ok,
+    ).toBe(true);
+  });
+
+  it("accepts the executing candidate self-run, rejects failed ones", () => {
+    const self = () =>
+      run("candidate", {
+        status: "in_progress",
+        conclusion: null,
+        selfRun: true,
+      });
+    expect(
+      evaluateSameSha(HEAD, [run("quality"), run("security"), self()], {
+        requireCandidate: true,
+        selfCandidateRunId: 123,
+      }).ok,
+    ).toBe(true);
+    expect(
+      evaluateSameSha(
+        HEAD,
+        [
+          run("quality"),
+          run("security"),
+          { ...self(), status: "completed", conclusion: "failure" },
+        ],
+        { requireCandidate: true, selfCandidateRunId: 123 },
+      ).ok,
+    ).toBe(false);
+    expect(
+      evaluateSameSha(
+        HEAD,
+        [
+          run("quality"),
+          run("security"),
+          { ...self(), headSha: "b".repeat(40) },
+        ],
+        { requireCandidate: true, selfCandidateRunId: 123 },
+      ).ok,
+    ).toBe(false);
+  });
 });

@@ -21,6 +21,7 @@ playwright-report/
 test-results/
 staging-evidence/
 reports/mutation/
+reports/mutation-summary.json
 .stryker-tmp/
 .DS_Store
 release-evidence/

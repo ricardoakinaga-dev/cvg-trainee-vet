@@ -34,6 +34,11 @@ const SUMMARY_FILES = Object.freeze([
   "multi-instance-summary.json",
   "load-summary.json",
   "otel-summary.json",
+  "mutation-summary.json",
+  "redis-candidate-summary.json",
+  "staging-summary.json",
+  "restore-summary.json",
+  "remote-ci-summary.json",
 ]);
 
 async function git(args) {
@@ -142,7 +147,9 @@ export function validateSbom(sbom) {
   return failures;
 }
 
-export async function validateBundle(directory) {
+export async function validateBundle(directory, options = {}) {
+  const strict = options.strict === true;
+  const expectedHead = options.head ?? null;
   const failures = [];
   const manifest = await readJsonFile(join(directory, "manifest.json")).catch(
     () => null,
@@ -200,6 +207,64 @@ export async function validateBundle(directory) {
     }
   } else if (sbomStatus !== "missing-blocked") {
     failures.push("sbom status must be present or missing-blocked");
+  }
+  if (strict) {
+    // AAA-CERT-004 §35: final promotion admits no stale or placeholder
+    // evidence. Every summary must be present, parse, PASS (where the
+    // format defines a status) and belong to the expected HEAD (where the
+    // format carries a sha).
+    if (expectedHead === null || !/^[0-9a-f]{40}$/u.test(expectedHead)) {
+      failures.push("strict validation requires a full HEAD sha");
+    } else {
+      if (sha !== expectedHead) {
+        failures.push("git-sha.txt does not match the validated HEAD");
+      }
+      for (const file of SUMMARY_FILES) {
+        const parsed = await readJsonFile(join(directory, file)).catch(
+          () => null,
+        );
+        if (parsed === null || typeof parsed !== "object") {
+          failures.push(`${file} is missing or unparsable`);
+          continue;
+        }
+        if (parsed.status === "missing-blocked") {
+          failures.push(`${file} is missing-blocked`);
+          continue;
+        }
+        if ("status" in parsed && parsed.status !== "PASS") {
+          failures.push(`${file} status is ${String(parsed.status)}`);
+        }
+        if ("sha" in parsed && parsed.sha !== expectedHead) {
+          failures.push(
+            `${file} belongs to ${String(parsed.sha)}, expected ${expectedHead}`,
+          );
+        }
+      }
+      const mutation = await readJsonFile(
+        join(directory, "mutation-summary.json"),
+      ).catch(() => null);
+      if (mutation !== null) {
+        if (
+          typeof mutation.adjusted_score !== "number" ||
+          mutation.adjusted_score < 0.9
+        ) {
+          failures.push("mutation adjusted score < 0.9");
+        }
+        if (mutation.critical_real_survivors !== 0) {
+          failures.push("mutation critical real survivors > 0");
+        }
+      }
+      const redis = await readJsonFile(
+        join(directory, "redis-candidate-summary.json"),
+      ).catch(() => null);
+      if (
+        redis !== null &&
+        redis.backend !== "redis" &&
+        redis.backend !== "valkey"
+      ) {
+        failures.push("redis candidate backend is not durable");
+      }
+    }
   }
   return failures;
 }
@@ -333,6 +398,11 @@ async function main() {
           "multi-instance-summary.json": null,
           "load-summary.json": null,
           "otel-summary.json": null,
+          "mutation-summary.json": null,
+          "redis-candidate-summary.json": null,
+          "staging-summary.json": null,
+          "restore-summary.json": null,
+          "remote-ci-summary.json": null,
         },
       });
       const failures = await validateBundle(directory);
@@ -349,7 +419,11 @@ async function main() {
   }
   const checkDir = flagValue("--check");
   if (checkDir !== null) {
-    const failures = await validateBundle(checkDir);
+    const strictHead = flagValue("--strict");
+    const failures =
+      strictHead === null
+        ? await validateBundle(checkDir)
+        : await validateBundle(checkDir, { strict: true, head: strictHead });
     if (failures.length > 0) {
       for (const failure of failures) console.error(`- ${failure}`);
       process.exitCode = 1;
@@ -370,6 +444,11 @@ async function main() {
       "multi-instance-summary.json": flagValue("--multi-instance-summary"),
       "load-summary.json": flagValue("--load-summary"),
       "otel-summary.json": flagValue("--otel-summary"),
+      "mutation-summary.json": flagValue("--mutation-summary"),
+      "redis-candidate-summary.json": flagValue("--redis-candidate-summary"),
+      "staging-summary.json": flagValue("--staging-summary"),
+      "restore-summary.json": flagValue("--restore-summary"),
+      "remote-ci-summary.json": flagValue("--remote-ci-summary"),
     },
   });
 }

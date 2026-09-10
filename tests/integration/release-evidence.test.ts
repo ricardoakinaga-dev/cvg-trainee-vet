@@ -37,6 +37,13 @@ async function writeBundle(mutate) {
     }),
     "load-summary.json": JSON.stringify({ status: "missing-blocked" }),
     "otel-summary.json": JSON.stringify({ status: "missing-blocked" }),
+    "mutation-summary.json": JSON.stringify({ status: "missing-blocked" }),
+    "redis-candidate-summary.json": JSON.stringify({
+      status: "missing-blocked",
+    }),
+    "staging-summary.json": JSON.stringify({ status: "missing-blocked" }),
+    "restore-summary.json": JSON.stringify({ status: "missing-blocked" }),
+    "remote-ci-summary.json": JSON.stringify({ status: "missing-blocked" }),
     "ci-runs.json": JSON.stringify({ status: "missing-blocked" }),
     "sbom.cyclonedx.json": JSON.stringify(SBOM),
   };
