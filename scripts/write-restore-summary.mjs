@@ -1,5 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -25,7 +26,17 @@ const PG_LIB_CANDIDATES = [
   "/home/ricardo/.local/share/cvg-his-v4-runtime/root/usr/lib/x86_64-linux-gnu",
   "/home/ricardo/.local/share/cvg-his-v4-runtime/root/usr/lib/postgresql/16/lib",
 ];
-const PG_BIN = PG_BIN_CANDIDATES[0];
+function resolvePgBin() {
+  const found = PG_BIN_CANDIDATES.find((entry) =>
+    existsSync(join(entry, "initdb")),
+  );
+  if (found === undefined) {
+    throw new Error(
+      "no PostgreSQL 16 toolkit found (set CVG_PG_BIN); restore proof refused",
+    );
+  }
+  return found;
+}
 
 async function sqlExec(url, statement) {
   const { createRequire } = await import("node:module");
@@ -41,11 +52,11 @@ async function sqlExec(url, statement) {
   }
 }
 
-async function pgIsReady(port, env) {
+async function pgIsReady(pgBin, port, env) {
   for (let index = 0; index < 100; index += 1) {
     try {
       await execFileAsync(
-        join(PG_BIN, "pg_isready"),
+        join(pgBin, "pg_isready"),
         ["-h", "127.0.0.1", "-p", String(port)],
         { env },
       );
@@ -71,6 +82,8 @@ async function pgIsReady(port, env) {
  * `release-evidence/restore-summary.json` anchored at HEAD. All synthetic.
  */
 async function main() {
+  const externalSource = process.env.CVG_RESTORE_SOURCE_DATABASE_URL?.trim();
+  const PG_BIN = externalSource ? "" : resolvePgBin();
   const toolEnv = {
     ...process.env,
     PATH: `${PG_BIN}:${process.env.PATH ?? ""}`,
@@ -78,7 +91,6 @@ async function main() {
       .filter((entry) => entry !== undefined && entry !== "")
       .join(":"),
   };
-  const externalSource = process.env.CVG_RESTORE_SOURCE_DATABASE_URL?.trim();
   const directory = await mkdtemp(join(tmpdir(), "cvg-restore-pg-"));
   const dataDir = join(directory, "data");
   const port = ephemeralPort(55740);
@@ -125,7 +137,7 @@ async function main() {
         if (server.exitCode === null) server.kill("SIGKILL");
       };
       try {
-        await pgIsReady(port, toolEnv);
+        await pgIsReady(PG_BIN, port, toolEnv);
         const maintenanceUrl = `postgresql://postgres@127.0.0.1:${port}/postgres`;
         const operator = "cvg_restore_op";
         // Disposable credential minted per run (never a committed literal: the
