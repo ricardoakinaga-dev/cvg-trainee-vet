@@ -13996,3 +13996,36 @@ deste log foram normalizadas por substituição mecânica; o freeze válido é
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-09-10 — GIT PUBLISH: certificação AAA em origin/main
+
+### TIMESTAMP
+
+2026-09-10T18:15:14-0300
+
+### ENGINE
+
+RUNTIME CONTROLLER / RELEASE TRACEABILITY
+
+### ACTION
+
+Após `git fetch origin --prune`, a `main` local estava 13 commits à frente de
+`origin/main`, sem divergência e com worktree limpo. A solicitação de Ricardo
+("git, commit e push" para `ricardoakinaga-dev/cvg-trainee-vet`) autorizou a
+publicação desses commits pendentes.
+
+### RESULT
+
+`git push origin main` PASS (`dec78f7..d6d8c00`); `git ls-remote origin
+refs/heads/main` retornou `d6d8c00fde661738bef0c4d518b979c23f93ca6c`, igual ao
+HEAD local. Não havia alterações soltas para um novo commit de produto. O
+worktree está limpo. CI remoto same-SHA não foi inferido.
+
+### STATUS
+
+COMPLETED (publicação Git); projeto READY_FOR_NEXT_STEP.
+
+### NEXT
+
+Acompanhar runs remotos do SHA publicado para RF-02; nenhuma publicação clínica,
+produção, deploy ou aprovação AAA-001 foi realizada.

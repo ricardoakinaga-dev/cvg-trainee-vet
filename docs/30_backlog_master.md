@@ -2249,3 +2249,8 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - Bugs reais corrigidos: restore createdb args (superuser), flagValue espaço, security counts.
 - Residuais: RF-02 (remoto, bloqueia promoção), RF-03R (mutação 1 arquivo), RF-04 (arquivos grandes), RF-05 (dev-only), RF-07 (branches +0.03), RF-08 (CodeQL/OSV no SHA). RF-01 FECHADO (coverage PASS).
 - AAA-001: segue WAITING_HUMAN_APPROVAL.
+
+## 2026-09-10 — Publicação dos commits de certificação
+
+- RF-02: os 13 commits locais pendentes foram publicados em `origin/main`; HEAD remoto confirmado em `d6d8c00fde661738bef0c4d518b979c23f93ca6c`. A prova same-SHA de CI ainda depende de runs autenticados e permanece aberta.
+- AAA-CERT: código e documentação de certificação agora estão disponíveis no remoto; o veredito continua `TRIPLE AAA — REVISE` até RF-02 e aprovação de `AAA-001`.

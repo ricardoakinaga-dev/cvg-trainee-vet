@@ -15,7 +15,7 @@
 
 - current_phase: FINAL AAA CERTIFICATION (docs/49 §§1–100) — 4/5 gaps fechados com prova fresh; veredito TRIPLE AAA — REVISE (audit v4)
 - current_sprint: `AAA-CERT-001..005` + resíduo RF-02/RF-03R/RF-04/RF-05/RF-07/RF-08
-- current_task: publicar docs de certificação (audit v4 + scorecard); depois prova remota same-SHA (RF-02, exige token/tag candidate)
+- current_task: acompanhar prova remota same-SHA do HEAD publicado (RF-02, exige token/tag candidate)
 
 ## STATUS
 
@@ -23,12 +23,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: certificação encerrada em `14c95e4` (docs sobre freeze `b58c11a`): `verify:aaa-candidate` 21/24 — únicos FAIL são RF-02 (same-SHA remoto). Eng 93/Sec 95/Ops 89, P0=P1=0, audit v4 REVISE, STAGING VERIFIED. Ferramental descartável desligado; PG :5432/Redis :6379 preexistentes intocados. Sem push (decisão humana pendente).
-- next_action: Ricardo decidir sobre (a) push dos commits locais, (b) tag `candidate-*`/dispatch com GITHUB_TOKEN para fechar RF-02, (c) AAA-001.
+- last_completed_action: publicados em `origin/main` os 13 commits locais pendentes (`d35b36a` até `d6d8c00`); `git ls-remote` confirmou o SHA `d6d8c00fde661738bef0c4d518b979c23f93ca6c` igual ao HEAD local e o worktree permanece limpo. A publicação foi solicitada por Ricardo.
+- next_action: acompanhar runs remotos no SHA publicado para RF-02; depois avaliar tag/dispatch com token e AAA-001 sob aprovação humana.
 
 ## BLOQUEIOS
 
-- blockers: `AAA-001` continua aguardando aprovação humana (SLO/RPO/RTO, piloto, ambientes); RF-02 (runs remotos quality/security/candidate no SHA final) bloqueia a promoção — sem token GitHub neste ambiente e sem inferência de CI. Nenhuma task usa dados reais, publica clínica ou altera migrations produtivas. Verificações locais em Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado; contrato CI Node `22.22.0`/pnpm `10.33.0`.
+- blockers: `AAA-001` continua aguardando aprovação humana (SLO/RPO/RTO, piloto, ambientes); RF-02 (runs remotos quality/security/candidate no SHA final) bloqueia a promoção — o push foi concluído, mas nenhum resultado de CI é inferido sem consulta autenticada. Nenhuma task usa dados reais, publica clínica ou altera migrations produtivas. Verificações locais em Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado; contrato CI Node `22.22.0`/pnpm `10.33.0`.
 
 ## DECISÃO HUMANA
 
@@ -37,12 +37,12 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T21:55:00-0300
-- session_checkpoint: certificação AAA-CERT encerrada; HEAD 14c95e4 (6 commits código + 4 docs, sem push); audit v4 REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gate 21/24, só RF-02 aberto
+- last_update: 2026-09-10T18:15:14-0300
+- session_checkpoint: push de 13 commits concluído e SHA remoto confirmado em `d6d8c00fde661738bef0c4d518b979c23f93ca6c`; audit v4 permanece REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gate 21/24, RF-02 aberto
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: branch local `main` sincronizada com `origin/main` após o commit documental de continuidade; árvore efetiva preserva a ponta da AAA; não houve deploy
+- head: branch local `main` sincronizada com `origin/main` em `d6d8c00fde661738bef0c4d518b979c23f93ca6c`; árvore efetiva preserva a ponta da AAA; não houve deploy
 - origin: somente `origin/main` e `origin/HEAD -> origin/main` existem e estão sincronizados com `main`; os testes são evidência do checkout, não de workflow remoto; nenhuma execução remota foi inferida
 - worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
