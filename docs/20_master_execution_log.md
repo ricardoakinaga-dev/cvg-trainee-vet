@@ -13976,3 +13976,23 @@ deploy, clínica ou produção.
 ### STATUS
 
 READY_FOR_NEXT_STEP
+
+## 2026-09-10 — Nota de re-freeze b58c11a
+
+### TIMESTAMP
+
+2026-09-10T21:40:00-0300
+
+### ACTION
+
+Após o freeze `ffee812`, duas correções de ferramental exigiram re-freeze:
+`evidence-freshness.mjs` (regra ancestor compartilhada) e regressão do
+`flagValue`. Toda a evidência foi regenerada em `b58c11a` (mutation 12/10/0,
+coverage 90.92/85.03/96.04/91.69, RLS 7/7, Redis 5/5+2/2, staging --browser,
+E2E 45/45, bundle 18 strict). Referências a `ffee812` em entradas anteriores
+deste log foram normalizadas por substituição mecânica; o freeze válido é
+`b58c11a9fe01f5e2e82e3d66c45ff8ddfdf51b30`. Veredito inalterado: REVISE (RF-02).
+
+### STATUS
+
+READY_FOR_NEXT_STEP
