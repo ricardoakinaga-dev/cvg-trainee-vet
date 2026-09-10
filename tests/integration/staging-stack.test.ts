@@ -27,21 +27,20 @@ describe.skipIf(!stagingEnabled)("staging-like stack verification", () => {
   it("correlates an HTTP request to a collector span via traceparent", async () => {
     if (spansFile === undefined || spansFile.length === 0) return;
     const traceId = "0af7651916cd43dd8448eb211c80319c";
-    const response = await fetch(`${apiA}/health/live`, {
-      headers: { traceparent: `00-${traceId}-b7ad6b7169203331-01` },
-    });
-    expect(response.status).toBe(200);
     let found = false;
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    // Several spaced requests: the app flushes every 5s and the collector
+    // batches before writing, so allow the full window for export.
+    for (let attempt = 0; attempt < 10 && !found; attempt += 1) {
+      const response = await fetch(`${apiA}/health/live`, {
+        headers: { traceparent: `00-${traceId}-b7ad6b7169203331-01` },
+      });
+      expect(response.status).toBe(200);
+      await new Promise((resolve) => setTimeout(resolve, 4000));
       const content = await readFile(spansFile, "utf8").catch(() => "");
-      if (content.includes(traceId)) {
-        found = true;
-        break;
-      }
+      found = content.includes(traceId);
     }
     expect(found).toBe(true);
-  }, 60000);
+  }, 120000);
 
   it("emits Secure session-cookie attributes over real TLS", async () => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
