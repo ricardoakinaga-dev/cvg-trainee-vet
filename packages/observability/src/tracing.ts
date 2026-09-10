@@ -312,6 +312,7 @@ export class OtlpHttpExporter {
 
 export type BatchSpanProcessorOptions = Readonly<{
   readonly maxQueue?: number;
+  readonly flushIntervalMs?: number;
 }>;
 
 const DEFAULT_MAX_QUEUE = 2048;
@@ -319,9 +320,11 @@ const DEFAULT_MAX_QUEUE = 2048;
 export class BatchSpanProcessor {
   private readonly exporter: SpanExporter;
   private readonly maxQueue: number;
+  private readonly flushIntervalMs: number;
   private queue: FinishedSpan[] = [];
   private droppedSpans = 0;
   private closed = false;
+  private flushTimer: ReturnType<typeof setTimeout> | undefined;
 
   public constructor(
     exporter: SpanExporter,
@@ -333,8 +336,16 @@ export class BatchSpanProcessor {
     ) {
       throw new RangeError("maxQueue must be a positive integer");
     }
+    if (
+      options.flushIntervalMs !== undefined &&
+      (!Number.isSafeInteger(options.flushIntervalMs) ||
+        options.flushIntervalMs < 1)
+    ) {
+      throw new RangeError("flushIntervalMs must be a positive integer");
+    }
     this.exporter = exporter;
     this.maxQueue = options.maxQueue ?? DEFAULT_MAX_QUEUE;
+    this.flushIntervalMs = options.flushIntervalMs ?? 5000;
   }
 
   public async onEnd(span: FinishedSpan): Promise<void> {
@@ -347,6 +358,16 @@ export class BatchSpanProcessor {
       this.droppedSpans += 1;
     }
     this.queue.push(span);
+    this.scheduleFlush();
+  }
+
+  private scheduleFlush(): void {
+    if (this.closed || this.flushTimer !== undefined) return;
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = undefined;
+      void this.flush();
+    }, this.flushIntervalMs);
+    (this.flushTimer as unknown as { unref?: () => void }).unref?.();
   }
 
   public dropped(): number {
@@ -373,6 +394,10 @@ export class BatchSpanProcessor {
 
   public async close(): Promise<void> {
     this.closed = true;
+    if (this.flushTimer !== undefined) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = undefined;
+    }
     await this.flush();
   }
 }

@@ -227,3 +227,38 @@ describe("OTLP exporter and degradation", () => {
     await processor.close();
   });
 });
+
+describe("batch span processor scheduled flush (AAA-FINAL-006)", () => {
+  it("exports queued spans on a timer without waiting for close", async () => {
+    const exported: FinishedSpan[][] = [];
+    const processor = new BatchSpanProcessor(
+      {
+        export: async (spans) => {
+          exported.push([...spans]);
+        },
+      },
+      { flushIntervalMs: 10 },
+    );
+    const tracer = createTracer({
+      onEnd: (span) => {
+        void processor.onEnd(span);
+      },
+      sampleRatio: 1,
+    });
+    tracer.startSpan("timed-span").end();
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(exported.length).toBeGreaterThanOrEqual(1);
+    expect(exported.flat().map((span) => span.name)).toContain("timed-span");
+    await processor.close();
+  });
+
+  it("rejects non-positive flush intervals fail-closed", () => {
+    expect(
+      () =>
+        new BatchSpanProcessor(
+          { export: async () => undefined },
+          { flushIntervalMs: 0 },
+        ),
+    ).toThrow("flushIntervalMs");
+  });
+});
