@@ -1,4 +1,4 @@
-# Quality Scorecard — FINAL CERTIFICATION v4 (2026-09-10, HEAD `ffee812`)
+# Quality Scorecard — FINAL CERTIFICATION v4 (2026-09-10, HEAD `b58c11a`)
 
 Evidência: local + PG/Redis/Qdrant descartáveis reais + staging reproduzível
 com browser + k6 (Node v24.20.0 local; contrato CI Node 22.22.0).

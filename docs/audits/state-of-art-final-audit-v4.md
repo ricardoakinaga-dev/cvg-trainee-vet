@@ -1,6 +1,6 @@
 # State-of-Art Final Audit v4 — FINAL AAA CERTIFICATION (2026-09-10)
 
-- **Branch:** `main` · **HEAD auditado:** `ffee812` (worktree limpo salvo este doc + scorecard + runtime/log/backlog)
+- **Branch:** `main` · **HEAD auditado:** `b58c11a` (worktree limpo salvo este doc + scorecard + runtime/log/backlog)
 - **Runtime:** Node v24.20.0/pnpm 10.33.0 local (contrato CI: Node 22.22.0/pnpm 10.33.0)
 - **Prompt:** `docs/49_codex_master_prompt_final_aaa_certification.md`
 - **Baseline:** `docs/modernization/0004_final_aaa_certification_baseline.md`
@@ -21,7 +21,7 @@ Achados adversariais próprios corrigidos: `verify-postgres-restore.mjs` corromp
 
 ## 2. Final Candidate SHA
 
-`FINAL_CANDIDATE_SHA=ffee81296b293852f76ef46c8b8fdc81769a633e`. Toda evidência customizada carrega este SHA; o bundle manifesta commit + digests. Auditoria JSON usa regra ancestor + sem diff de runtime (arquivo tracked não pode conter o próprio SHA futuro).
+`FINAL_CANDIDATE_SHA=b58c11a9fe01f5e2e82e3d66c45ff8ddfdf51b30`. Toda evidência customizada carrega este SHA; o bundle manifesta commit + digests. Auditoria JSON usa regra ancestor + sem diff de runtime (arquivo tracked não pode conter o próprio SHA futuro).
 
 ## 3. Evidence Scope
 
@@ -178,7 +178,7 @@ Ops = (94+94+93+90+88+94+96+60)/8 = 89.
 ## 38. Triple AAA Verdict
 
 ```text
-FINAL_CANDIDATE_SHA = ffee81296b293852f76ef46c8b8fdc81769a633e
+FINAL_CANDIDATE_SHA = b58c11a9fe01f5e2e82e3d66c45ff8ddfdf51b30
 AAA Engineering = 93 (< 97)
 AAA Security    = 95 (>= 95) PASS
 AAA Operations  = 89 (< 95)

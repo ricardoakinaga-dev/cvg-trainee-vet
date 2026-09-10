@@ -13959,7 +13959,7 @@ HTTP A/B), adapter sem fallback silencioso. AAA-CERT-004: bundle 18 artefatos +
 strict validator + scorecard + audit v4 JSON (P0/P1 via JSON). AAA-CERT-005:
 staging --browser fresh + k6 p95 9.8ms + OTel 3017 traces + restore RTO 1,1s.
 Três bugs reais corrigidos (restore createdb args, flagValue espaço, security
-counts). Freeze `ffee812`; `verify:aaa-candidate` 21/24.
+counts). Freeze `b58c11a`; `verify:aaa-candidate` 21/24.
 
 ### RESULT
 

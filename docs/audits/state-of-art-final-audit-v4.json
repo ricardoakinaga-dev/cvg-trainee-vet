@@ -1,12 +1,19 @@
 {
   "format": "cvg-final-audit/v1",
-  "sha": "ffee81296b293852f76ef46c8b8fdc81769a633e",
+  "sha": "b58c11a9fe01f5e2e82e3d66c45ff8ddfdf51b30",
   "generatedAt": "2026-09-10T21:00:00-03:00",
   "prompt": "docs/49_codex_master_prompt_final_aaa_certification.md",
   "baseline": "docs/modernization/0004_final_aaa_certification_baseline.md",
   "p0": 0,
   "p1": 0,
-  "p2": ["RF-02", "RF-03R", "RF-04", "RF-05", "RF-07", "RF-08"],
+  "p2": [
+    "RF-02",
+    "RF-03R",
+    "RF-04",
+    "RF-05",
+    "RF-07",
+    "RF-08"
+  ],
   "aaa_engineering": 93,
   "aaa_security": 95,
   "aaa_operations": 89,

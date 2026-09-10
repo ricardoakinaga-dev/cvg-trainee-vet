@@ -2239,7 +2239,7 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - RF-02: permanece pendente de prova CI same-SHA; commit/push autorizados nesta rodada.
 - RF-05: audit corrente registra 1 low e 3 moderate, sem high/critical; nenhuma dependência alterada.
 
-## 2026-09-10 — FINAL AAA CERTIFICATION (docs/49, freeze `ffee812`)
+## 2026-09-10 — FINAL AAA CERTIFICATION (docs/49, freeze `b58c11a`)
 
 - AAA-CERT-001 (Mutation): CONCLUÍDO — raw 89.95%, adjusted 100% verificado, 0 real survivors (`reports/mutation-summary.json`, `docs/quality/mutation-classification-v4.md`).
 - AAA-CERT-002 (Same-SHA): MECANISMO CONCLUÍDO, PROVA PENDENTE — verifier autenticado + candidate leg + remote-ci-summary; RF-02 aberto (sem runs/token).

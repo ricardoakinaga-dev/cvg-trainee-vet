@@ -23,7 +23,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: certificação executada no freeze `ffee812`: mutation adjusted 100% (raw 89.95, 0 real survivors), coverage 90.92/85.03/96.04/91.69 PASS, RLS 7/7, Redis 5/5+restart 2/2, staging --browser PASS, E2E 45/45, bundle 18 artefatos strict (só remote-ci FAIL). `verify:aaa-candidate` 21/24 (3 FAIL mesma causa RF-02). Três bugs reais corrigidos (restore args, flagValue, security counts).
+- last_completed_action: certificação executada no freeze `b58c11a`: mutation adjusted 100% (raw 89.95, 0 real survivors), coverage 90.92/85.03/96.04/91.69 PASS, RLS 7/7, Redis 5/5+restart 2/2, staging --browser PASS, E2E 45/45, bundle 18 artefatos strict (só remote-ci FAIL). `verify:aaa-candidate` 21/24 (3 FAIL mesma causa RF-02). Três bugs reais corrigidos (restore args, flagValue, security counts).
 - next_action: publicar commit docs(audit) v4; abrir tag `candidate-*` ou dispatch com GITHUB_TOKEN para fechar RF-02 e re-emitir veredito.
 
 ## BLOQUEIOS
@@ -42,7 +42,7 @@
 ## TIMESTAMP
 
 - last_update: 2026-09-10T21:05:00-0300
-- session_checkpoint: certificação AAA-CERT executada; freeze ffee812; audit v4 REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gates locais PASS salvo same-SHA remoto; sem push (aguardando decisão de publicação)
+- session_checkpoint: certificação AAA-CERT executada; freeze b58c11a; audit v4 REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gates locais PASS salvo same-SHA remoto; sem push (aguardando decisão de publicação)
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
