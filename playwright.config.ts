@@ -8,7 +8,10 @@ const mockedProxyCookie = "__Host-cvg_session=synthetic-e2e-session";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testIgnore: runRealE2E ? [] : ["**/real-runtime.spec.ts"],
+  testIgnore:
+    process.env.CVG_STAGING_BROWSER === "1"
+      ? ["**/real-runtime.spec.ts"]
+      : ["**/real-runtime.spec.ts", "**/staging-journey.spec.ts"],
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

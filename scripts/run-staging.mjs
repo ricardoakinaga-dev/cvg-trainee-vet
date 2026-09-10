@@ -1,6 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdir, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -270,7 +270,29 @@ async function main() {
   const redisUrl = `redis://127.0.0.1:${redisPort}`;
   log(`disposable Redis ready (${redisUrl})`);
 
-  // 3. OTel collector (managed when a binary is provided).
+  // 3. OTel collector (managed when a binary is provided). Reap stale
+  // collectors from killed runs first: they all share the staging config
+  // path and the default :8888 telemetry port.
+  try {
+    const { stdout } = await execFileAsync("sh", [
+      "-c",
+      "pgrep -af 'otelcol-contrib --config' || true",
+    ]);
+    for (const line of stdout.split("\n")) {
+      if (line.includes("otelcol-staging.yaml")) {
+        const pid = Number(line.split(/\s+/)[0]);
+        if (Number.isSafeInteger(pid)) {
+          try {
+            process.kill(pid, "SIGKILL");
+          } catch {
+            // already gone
+          }
+        }
+      }
+    }
+  } catch {
+    // best effort reaping
+  }
   let collectorEndpoint = otelEndpoint;
   let stopCollector = async () => undefined;
   let startCollector = async () => undefined;
@@ -331,6 +353,37 @@ async function main() {
     OTEL_SERVICE_NAME: "cvg-staging",
   };
   const workerEnv = { ...baseEnv };
+
+  // Web build precondition: Next bakes /api rewrites at BUILD time from
+  // CVG_API_INTERNAL_URL. A stale build serves 404 for every proxied call.
+  try {
+    const manifest = JSON.parse(
+      await readFile(join(root, "apps/web/.next/routes-manifest.json"), "utf8"),
+    );
+    const rewrites = [
+      ...(manifest?.rewrites?.beforeFiles ?? []),
+      ...(manifest?.rewrites?.afterFiles ?? []),
+    ];
+    const proxiesApi = rewrites.some(
+      (rule) =>
+        typeof rule.source === "string" &&
+        rule.source.startsWith("/api/v1/") &&
+        typeof rule.destination === "string" &&
+        rule.destination.startsWith("http://127.0.0.1:3101/api/v1/"),
+    );
+    if (!proxiesApi) {
+      throw new Error(
+        "web build has no /api rewrite to 127.0.0.1:3101; rebuild with CVG_API_INTERNAL_URL=http://127.0.0.1:3101",
+      );
+    }
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new Error(
+        "web production build missing; run pnpm --dir apps/web build first",
+      );
+    }
+    throw error;
+  }
 
   // 4. Writers: API x2 + worker + fixture + web + TLS.
   const writers = [];
@@ -574,17 +627,50 @@ async function main() {
     return;
   }
 
+  if (otelBin !== null) {
+    const spans = await readFile(
+      join(evidenceDir, "otel-spans.json"),
+      "utf8",
+    ).catch(() => "");
+    const traceIds = new Set(
+      [...spans.matchAll(/"traceId":\s*"([0-9a-f]{32})"/gu)].map((m) => m[1]),
+    );
+    await writeFile(
+      join(evidenceDir, "otel-summary.json"),
+      `${JSON.stringify({ status: spans.length > 0 && traceIds.size > 0 ? "PASS" : "FAIL", bytes: spans.length, distinctTraces: traceIds.size }, null, 2)}\n`,
+    );
+    if (spans.length === 0 || traceIds.size === 0) {
+      await fail(new Error("otel summary: no spans reached the collector"));
+      return;
+    }
+  }
+
   if (withBrowser) {
-    log("running browser real-runtime spec against staging");
+    log("running browser staging-journey spec against staging");
+    // Precondition guard: the spec needs a live fixture server AND its file.
+    // Fail fast here instead of producing cryptic ENOENT/ECONNREFUSED later.
+    try {
+      const { readFile: readFixtureFile } = await import("node:fs/promises");
+      const ready = await fetch("http://127.0.0.1:3102/ready");
+      if (!ready.ok) throw new Error("fixture /ready is not ok");
+      const fixtureRaw = await readFixtureFile(fixtureFile, "utf8");
+      const fixtureParsed = JSON.parse(fixtureRaw);
+      if (fixtureParsed.source !== "authoring-publication-v1") {
+        throw new Error("fixture file has unexpected source");
+      }
+    } catch (error) {
+      await fail(new Error(`browser precondition failed: ${error.message}`));
+      return;
+    }
     try {
       const child = await execFileAsync(
         "pnpm",
-        ["exec", "playwright", "test", "real-runtime"],
+        ["exec", "playwright", "test", "staging-journey"],
         {
           cwd: root,
           env: {
             ...process.env,
-            CVG_RUN_REAL_E2E: "true",
+            CVG_STAGING_BROWSER: "1",
             CVG_STAGING_EXTERNAL: "1",
             BASE_URL: "http://127.0.0.1:3100",
             CVG_REAL_E2E_FIXTURE_FILE: fixtureFile,

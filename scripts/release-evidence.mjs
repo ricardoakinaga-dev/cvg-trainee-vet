@@ -30,6 +30,10 @@ const SUMMARY_FILES = Object.freeze([
   "coverage-summary.json",
   "test-summary.json",
   "security-summary.json",
+  "rls-live-summary.json",
+  "multi-instance-summary.json",
+  "load-summary.json",
+  "otel-summary.json",
 ]);
 
 async function git(args) {
@@ -358,6 +362,10 @@ async function main() {
       "coverage-summary.json": flagValue("--coverage-summary"),
       "test-summary.json": flagValue("--test-summary"),
       "security-summary.json": flagValue("--security-summary"),
+      "rls-live-summary.json": flagValue("--rls-live-summary"),
+      "multi-instance-summary.json": flagValue("--multi-instance-summary"),
+      "load-summary.json": flagValue("--load-summary"),
+      "otel-summary.json": flagValue("--otel-summary"),
     },
   });
 }

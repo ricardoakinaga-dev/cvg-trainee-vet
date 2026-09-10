@@ -115,6 +115,20 @@ async function main() {
     await stop();
     process.exit(typeof error.code === "number" ? error.code : 1);
   }
+  try {
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const evidenceDir = join(root, "staging-evidence");
+    await mkdir(evidenceDir, { recursive: true });
+    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+    }).catch(() => ({ stdout: "unknown" }));
+    await writeFile(
+      join(evidenceDir, "multi-instance-summary.json"),
+      `${JSON.stringify({ status: "PASS", sha: stdout.trim(), suite: testFile }, null, 2)}\n`,
+    );
+  } catch {
+    // evidence is best effort; the vitest result above is authoritative
+  }
   await stop();
   log("disposable redis stopped");
 }

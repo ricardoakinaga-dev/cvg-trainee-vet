@@ -21,6 +21,17 @@ describe.skipIf(!stagingEnabled)("staging-like stack verification", () => {
       expect(live.status).toBe(200);
       const ready = await fetch(`${base}/health/ready`);
       expect(ready.status).toBe(200);
+      const dependencies = await fetch(`${base}/health/dependencies`);
+      expect(dependencies.status).toBe(200);
+      const payload = (await dependencies.json()) as {
+        data?: { dependencies?: Record<string, string> };
+      };
+      // Staging truth: real PostgreSQL UP, real Qdrant UP, AI disabled.
+      expect(payload.data?.dependencies).toEqual({
+        postgres: "UP",
+        qdrant: "UP",
+        ai: "DISABLED",
+      });
     }
   });
 
