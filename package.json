@@ -46,6 +46,7 @@
     "verify:same-sha": "node scripts/verify-same-sha.mjs",
     "release:evidence": "node scripts/release-evidence.mjs",
     "verify:release-evidence": "node scripts/release-evidence.mjs --self-test",
+    "verify:aaa-candidate": "node scripts/verify-aaa-candidate.mjs",
     "verify:otel": "vitest run --project unit packages/observability/src/tracing.test.ts",
     "verify:security": "vitest run --project unit apps/api/src/security apps/api/src/routing apps/api/src/http",
     "verify:complexity": "node scripts/verify-complexity.mjs",
