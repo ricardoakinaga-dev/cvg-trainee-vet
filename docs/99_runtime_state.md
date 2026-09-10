@@ -19,12 +19,12 @@
 
 ## STATUS
 
-- status: IN_PROGRESS
+- status: READY_FOR_NEXT_STEP
 
 ## PROGRESSO
 
-- last_completed_action: verificado o repositório antes da publicação: worktree limpo, sem staged/untracked relevantes, `main` local e `origin/main` sincronizados em `789f308`; não havia alteração de produto para criar commit. Registro operacional preparado conforme AGENTS.md.
-- next_action: commitar este registro de continuidade e executar `git push origin main`; depois obter acesso GitHub autenticado e confirmar runs same-SHA do HEAD (RF-02), atacar cobertura até 90/85/90/90 (RF-01) e operar Redis runtime (RF-06), sem produção/piloto/clínica/AAA-001
+- last_completed_action: commit documental `0a41ad6` criado e publicado com sucesso em `origin/main`; confirmação pós-push mostrou `main` local e `origin/main` sincronizados e worktree limpo. Nenhum commit vazio foi criado.
+- next_action: obter acesso GitHub autenticado e confirmar runs same-SHA do HEAD (RF-02); atacar cobertura até 90/85/90/90 (RF-01); operar Redis runtime (RF-06); sem produção/piloto/clínica/AAA-001
 
 ## BLOQUEIOS
 
@@ -37,13 +37,13 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T01:36:50-0300
-- session_checkpoint: verificação Git concluída em `789f308`; worktree e `origin/main` sincronizados; não foi criado commit vazio. Registro de continuidade pendente de commit/push; residuais RF-01..RF-06
+- last_update: 2026-09-10T01:40:11-0300
+- session_checkpoint: verificação Git concluída; commit documental `0a41ad6` publicado em `origin/main`; `main` local e remoto sincronizados, worktree limpo; residuais RF-01..RF-06
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: branch local `main` em `789f308` antes do registro operacional; árvore efetiva preserva a ponta da AAA; não houve deploy
-- origin: somente `origin/main` e `origin/HEAD -> origin/main` existem, ambos em `789f308`; os testes são evidência do checkout, não de workflow remoto; nenhuma execução remota foi inferida
+- head: branch local `main` sincronizada com `origin/main` após o commit documental de continuidade; árvore efetiva preserva a ponta da AAA; não houve deploy
+- origin: somente `origin/main` e `origin/HEAD -> origin/main` existem e estão sincronizados com `main`; os testes são evidência do checkout, não de workflow remoto; nenhuma execução remota foi inferida
 - worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
 - verification_state: `AAA-200/201` focal pós-correção passou `25/25`; o boundary de API/contratos/persistência focal passou `108/108`; a validação fresca desta consolidação passou `pnpm verify` com `155` arquivos/`866` testes, `42` skips, cobertura `84,65%/80,48%`, contratos `95/95`, worker `44/44`, migrations `55/55`, `pnpm build` em `12/12` workspaces e E2E `45/45`; `git diff --check`, secrets, traceability, architecture, documentation, product-definition e exposure passaram. `CVG_TEST_DATABASE_URL` permanece ausente; workflow remoto same-SHA, provider IA real, PostgreSQL/RLS live, Qdrant live, produção real, upstream real do proxy, clínica, zoom nativo e competência continuam sem evidência. A validação local usou Node `24.20.0`, fora do intervalo declarado `>=22.22.0 <23`; o contrato CI exigido é Node `22.22.0`/pnpm `10.33.0`.

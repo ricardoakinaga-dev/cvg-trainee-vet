@@ -208,6 +208,36 @@ as limitações remanescentes.
 
 IN_PROGRESS
 
+## 2026-09-10 — GIT SYNC: commit e push de main concluídos
+
+### TIMESTAMP
+
+2026-09-10T01:40:11-0300
+
+### ENGINE
+
+RUNTIME CONTROLLER / RELEASE TRACEABILITY
+
+### ACTION
+
+Criado o commit documental `0a41ad681fa66cd0341952346b9842eaac384f4f`
+(`docs: record main synchronization`) e executado `git push origin main`.
+
+### RESULT
+
+Push concluído com sucesso (`789f308..0a41ad6 main -> main`). A confirmação
+pós-push mostrou `HEAD` local e `origin/main` no mesmo SHA e worktree limpo.
+Nenhuma execução de CI remoto foi inferida.
+
+### NEXT
+
+Obter acesso GitHub autenticado para confirmar runs same-SHA (RF-02); depois
+retomar RF-01 e RF-06 conforme o estado corrente.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
 ## 2026-09-06 — ATUALIZAÇÃO DO CHECKPOINT — AAA-701
 
 ### TIMESTAMP
