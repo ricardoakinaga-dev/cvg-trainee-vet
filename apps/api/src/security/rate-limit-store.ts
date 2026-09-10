@@ -282,6 +282,67 @@ export type RedisScriptClient = Readonly<{
   ) => Promise<unknown>;
 }>;
 
+export type BackendRequestLimiterOptions = Readonly<{
+  readonly maxRequests: number;
+  readonly windowMs: number;
+}>;
+
+export type BackendRequestLimiter = Readonly<{
+  readonly check: (key: string, nowMs?: number) => Promise<RateLimitDecision>;
+}>;
+
+/**
+ * AAA-CERT-003 §25: adaptador explícito de um `RateLimitStore` durável
+ * (Redis/Valkey) para o formato `RequestRateLimiter` do servidor HTTP.
+ * Não há fallback silencioso: o chamador injeta o store; sem store não há
+ * limiter. O servidor usa o limitador em processo por padrão (documentado
+ * em `createApiServer`); Redis exige injeção explícita deste adaptador.
+ */
+export function createBackendRequestLimiter(
+  store: RateLimitStore,
+  options: BackendRequestLimiterOptions,
+): BackendRequestLimiter {
+  if (!Number.isSafeInteger(options.maxRequests) || options.maxRequests < 1) {
+    throw new RangeError("maxRequests must be a positive integer");
+  }
+  if (!Number.isSafeInteger(options.windowMs) || options.windowMs < 1) {
+    throw new RangeError("windowMs must be a positive integer");
+  }
+  return Object.freeze({
+    check: (key: string, nowMs = Date.now()) =>
+      store.increment(key, options.maxRequests, options.windowMs, nowMs),
+  });
+}
+
+export type RateLimitBackendDescriptor = Readonly<{
+  readonly backend: "memory" | "redis" | "postgres-shared";
+  readonly sharedBudget: boolean;
+  readonly silentFallback: false;
+}>;
+
+/**
+ * AAA-CERT-003 §25: declaração explícita do backend efetivo para evidência
+ * de runtime. O valor nunca é inferido: cada caminho de wiring declara o
+ * seu — fallback silencioso é proibido por construção (não existe ramo
+ * `?? memory` aqui).
+ */
+export function describeRateLimitBackend(
+  backend: RateLimitBackendDescriptor["backend"],
+): RateLimitBackendDescriptor {
+  if (
+    backend !== "memory" &&
+    backend !== "redis" &&
+    backend !== "postgres-shared"
+  ) {
+    throw new RangeError(`unknown rate-limit backend: ${String(backend)}`);
+  }
+  return Object.freeze({
+    backend,
+    sharedBudget: backend !== "memory",
+    silentFallback: false as const,
+  });
+}
+
 export type RedisRateLimitStoreOptions = Readonly<{
   readonly timeoutMs?: number;
   readonly keyPrefix?: string;

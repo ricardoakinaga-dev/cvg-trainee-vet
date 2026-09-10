@@ -756,6 +756,46 @@ async function main() {
   }
 
   await stopAll();
+  const { stdout: stagingSha } = await execFileAsync(
+    "git",
+    ["rev-parse", "HEAD"],
+    {
+      cwd: root,
+    },
+  ).catch(() => ({ stdout: "unknown" }));
+  await writeFile(
+    join(evidenceDir, "staging-summary.json"),
+    `${JSON.stringify(
+      {
+        format: "cvg-staging-summary/v1",
+        sha: stagingSha.trim(),
+        generatedAt: new Date().toISOString(),
+        status: "PASS",
+        stack: [
+          "postgres",
+          "redis",
+          "api-a",
+          "api-b",
+          "worker",
+          "web",
+          "tls",
+          "otel-collector",
+          "qdrant",
+        ],
+        drills: [
+          "reconcile",
+          "qdrant-loss",
+          "backup-restore",
+          "failover",
+          "otel-outage",
+        ],
+        browser: withBrowser,
+        otelCollector: otelBin !== null || otelEndpoint !== null,
+      },
+      null,
+      2,
+    )}\n`,
+  );
   log("staging verify PASS; stack torn down");
 }
 

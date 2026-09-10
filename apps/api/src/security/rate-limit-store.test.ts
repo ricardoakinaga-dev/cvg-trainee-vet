@@ -4,10 +4,12 @@ import {
   FAIL_POLICY_BY_RISK_CLASS,
   RISK_CLASS_LIMITS,
   buildRateLimitKey,
+  createBackendRequestLimiter,
   createMemoryRateLimitStore,
   createRateLimitGuard,
   createRedisRateLimitStore,
   createScriptedRateLimitStore,
+  describeRateLimitBackend,
   type RateLimitKeyInput,
 } from "./rate-limit-store.js";
 
@@ -274,5 +276,56 @@ describe("distributed rate-limit store — uncovered guards (AAA-FINAL-002)", ()
     await expect(
       store.increment("rl:short", 2, 60_000, Date.now()),
     ).rejects.toThrow("malformed reply");
+  });
+});
+
+describe("durable backend wiring (AAA-CERT-003 §25)", () => {
+  it("adapts an explicit store to the server limiter interface without fallback", async () => {
+    const scripted = createScriptedRateLimitStore({
+      script: [
+        { allowed: true, remaining: 0 },
+        { allowed: false, remaining: 0, retryAfterSeconds: 1 },
+      ],
+    });
+    const limiter = createBackendRequestLimiter(scripted, {
+      maxRequests: 10,
+      windowMs: 60_000,
+    });
+    await expect(limiter.check("candidate:a")).resolves.toMatchObject({
+      allowed: true,
+      remaining: 0,
+    });
+    await expect(limiter.check("candidate:a")).resolves.toMatchObject({
+      allowed: false,
+    });
+  });
+
+  it("rejects invalid adapter budgets instead of silently degrading", () => {
+    const scripted = createScriptedRateLimitStore({});
+    expect(() =>
+      createBackendRequestLimiter(scripted, { maxRequests: 0, windowMs: 1000 }),
+    ).toThrow(RangeError);
+    expect(() =>
+      createBackendRequestLimiter(scripted, { maxRequests: 10, windowMs: 0 }),
+    ).toThrow(RangeError);
+  });
+
+  it("declares the effective backend explicitly and never infers memory", () => {
+    expect(describeRateLimitBackend("redis")).toMatchObject({
+      backend: "redis",
+      sharedBudget: true,
+      silentFallback: false,
+    });
+    expect(describeRateLimitBackend("postgres-shared")).toMatchObject({
+      backend: "postgres-shared",
+      sharedBudget: true,
+      silentFallback: false,
+    });
+    expect(describeRateLimitBackend("memory")).toMatchObject({
+      backend: "memory",
+      sharedBudget: false,
+      silentFallback: false,
+    });
+    expect(() => describeRateLimitBackend("auto" as never)).toThrow(RangeError);
   });
 });
