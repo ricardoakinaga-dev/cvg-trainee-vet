@@ -10,6 +10,7 @@ import {
   answerRowToState,
   answerStateToRow,
 } from "./answer-repository.js";
+import { createFakeDatabase } from "./test-support/fake-database.js";
 import { answerIdempotency, answers } from "./schema.js";
 import type * as schema from "./schema.js";
 
@@ -159,5 +160,270 @@ describe("answer idempotency mapping", () => {
     expect(() =>
       answerIdempotencyRowToRecord({ fingerprint: "", response: {} }),
     ).toThrow(PersistenceMappingError);
+  });
+});
+
+describe("answer mapping validation", () => {
+  it("rejects rows with empty fields or invalid timestamps", () => {
+    expect(() =>
+      answerStateToRow({ ...answer, answerId: " " }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerStateToRow({ ...answer, attemptId: "" }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerStateToRow({ ...answer, itemId: "" }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerStateToRow({ ...answer, response: " " }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerStateToRow({ ...answer, savedAt: "not-a-date" }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerRowToState({
+        id: "",
+        attemptId: answer.attemptId,
+        itemId: answer.itemId,
+        response: "x",
+        savedAt: new Date(),
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerRowToState({
+        id: answer.answerId,
+        attemptId: answer.attemptId,
+        itemId: answer.itemId,
+        response: "x",
+        savedAt: new Date("invalid"),
+      }),
+    ).toThrow(PersistenceMappingError);
+  });
+
+  it("rejects malformed idempotency snapshots", () => {
+    expect(() =>
+      answerIdempotencyRowToRecord({ fingerprint: "", response: {} }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({ fingerprint: "f", response: null }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({
+        fingerprint: "f",
+        response: { attempt: "x", answer: {} },
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({
+        fingerprint: "f",
+        response: {
+          attempt: {
+            attemptId: "a",
+            participantId: "p",
+            activityId: "x",
+            status: "DESCONHECIDO",
+            version: 1,
+          },
+          answer: {},
+        },
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({
+        fingerprint: "f",
+        response: {
+          attempt: {
+            attemptId: "a",
+            participantId: "p",
+            activityId: "x",
+            status: "SALVA",
+            version: 1.5,
+          },
+          answer: {},
+        },
+      }),
+    ).toThrow(PersistenceMappingError);
+    expect(() =>
+      answerIdempotencyRowToRecord({
+        fingerprint: "f",
+        response: {
+          attempt: {
+            attemptId: "a",
+            participantId: "p",
+            activityId: "x",
+            status: "SALVA",
+            version: 1,
+          },
+          answer: {
+            answerId: "a",
+            attemptId: "b",
+            itemId: "c",
+            response: "x",
+            savedAt: 42,
+          },
+        },
+      }),
+    ).toThrow(PersistenceMappingError);
+  });
+});
+
+describe("answer use case dependencies", () => {
+  const attemptRow = {
+    id: attempt.attemptId,
+    participantId: attempt.participantId,
+    activityId: attempt.activityId,
+    status: attempt.status,
+    version: attempt.version,
+    submittedAt: null,
+  };
+
+  function deps(db: ReturnType<typeof createFakeDatabase>) {
+    return createAnswerUseCaseDependencies(
+      db as unknown as Parameters<typeof createAnswerUseCaseDependencies>[0],
+      () => "id-factory",
+    );
+  }
+
+  it("finds and saves answers", async () => {
+    const answerRow = {
+      id: answer.answerId,
+      attemptId: answer.attemptId,
+      itemId: answer.itemId,
+      response: answer.response,
+      savedAt: new Date(answer.savedAt),
+    };
+    const found = createFakeDatabase({ rows: [[answerRow]] });
+    expect(
+      await deps(found).answersPort.findByAttemptAndItem(
+        answer.attemptId,
+        answer.itemId,
+      ),
+    ).toMatchObject({ answerId: answer.answerId });
+    const missing = createFakeDatabase({ rows: [[]] });
+    expect(
+      await deps(missing).answersPort.findByAttemptAndItem(
+        answer.attemptId,
+        answer.itemId,
+      ),
+    ).toBeNull();
+    const saved = createFakeDatabase();
+    await expect(deps(saved).answersPort.save(answer)).resolves.toBeUndefined();
+  });
+
+  it("checks activity item availability", async () => {
+    const available = createFakeDatabase({ rows: [[{ itemId: answer.itemId }]] });
+    expect(
+      await deps(available).hasActivityItem(
+        attempt.participantId,
+        attempt.activityId,
+        "scope-1",
+        answer.itemId,
+      ),
+    ).toBe(true);
+    const unavailable = createFakeDatabase({ rows: [[]] });
+    expect(
+      await deps(unavailable).hasActivityItem(
+        attempt.participantId,
+        attempt.activityId,
+        "scope-1",
+        answer.itemId,
+      ),
+    ).toBe(false);
+  });
+
+  it("finds attempts and rejects unsupported statuses", async () => {
+    const found = createFakeDatabase({ rows: [[attemptRow]] });
+    expect(
+      await deps(found).attemptsPort.findById(attempt.attemptId),
+    ).toMatchObject({ attemptId: attempt.attemptId });
+    const missing = createFakeDatabase({ rows: [[]] });
+    expect(
+      await deps(missing).attemptsPort.findById(attempt.attemptId),
+    ).toBeNull();
+    const invalid = createFakeDatabase({
+      rows: [[{ ...attemptRow, status: "QUEBRADA" }]],
+    });
+    await expect(
+      deps(invalid).attemptsPort.findById(attempt.attemptId),
+    ).rejects.toThrow(PersistenceMappingError);
+  });
+
+  it("updates attempts and conflicts on stale versions", async () => {
+    const ok = createFakeDatabase({ rows: [[{ id: attempt.attemptId }]] });
+    await expect(deps(ok).attemptsPort.update(attempt)).resolves.toBeUndefined();
+    const stale = createFakeDatabase({ rows: [[]] });
+    await expect(deps(stale).attemptsPort.update(attempt)).rejects.toThrow(
+      "version changed",
+    );
+  });
+
+  it("locks and finds idempotency records", async () => {
+    const db = createFakeDatabase();
+    await expect(deps(db).idempotency.lock?.("key-1")).resolves.toBeUndefined();
+    const record = {
+      fingerprint: "f",
+      result: {
+        attempt,
+        answer,
+      },
+    };
+    const found = createFakeDatabase({
+      rows: [[{ fingerprint: "f", response: record.result }]],
+    });
+    expect(await deps(found).idempotency.find("key-1")).toMatchObject({
+      fingerprint: "f",
+    });
+    const missing = createFakeDatabase({ rows: [[]] });
+    expect(await deps(missing).idempotency.find("key-1")).toBeNull();
+  });
+
+  it("stores idempotency records and reports conflicts", async () => {
+    const record = {
+      fingerprint: "f",
+      result: {
+        attempt,
+        answer,
+      },
+    };
+    const stored = createFakeDatabase({ rows: [[], [{ fingerprint: "f" }]] });
+    await expect(
+      deps(stored).idempotency.store("key-1", record),
+    ).resolves.toBeUndefined();
+    const missing = createFakeDatabase({ rows: [[], []] });
+    await expect(
+      deps(missing).idempotency.store("key-1", record),
+    ).rejects.toThrow("was not persisted");
+    const different = createFakeDatabase({
+      rows: [[], [{ fingerprint: "other" }]],
+    });
+    await expect(
+      deps(different).idempotency.store("key-1", record),
+    ).rejects.toThrow("fingerprint");
+  });
+
+  it("publishes outbox events and runs transactions", async () => {
+    const db = createFakeDatabase({ rows: [[], [], [attemptRow]] });
+    const instance = deps(db);
+    await expect(
+      instance.eventPublisher.publish({
+        eventId: "outbox-1",
+        eventType: "answer.saved.v1",
+        aggregateType: "attempt",
+        aggregateId: attempt.attemptId,
+        occurredAt: "2026-08-09T17:00:00.000Z",
+        schemaVersion: 1,
+        correlationId: "corr-1",
+        payload: {
+          attempt_id: attempt.attemptId,
+          item_id: answer.itemId,
+          status: "SALVA",
+        },
+      }),
+    ).resolves.toBeUndefined();
+    const found = await instance.transaction.run(
+      async (operations) => operations.attemptsPort.findById(attempt.attemptId),
+      { participantId: attempt.participantId },
+    );
+    expect(found).toMatchObject({ attemptId: attempt.attemptId });
   });
 });

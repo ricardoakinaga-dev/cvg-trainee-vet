@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AssessmentPolicyError,
   evaluateSummativeAssessment,
   evaluateSummativeAttemptEligibility,
   type AssessmentComponent,
@@ -121,5 +122,320 @@ describe("summative attempt eligibility policy", () => {
         },
       }),
     ).toMatchObject({ eligible: true, reason: "ELIGIBLE" });
+  });
+});
+
+describe("summative assessment policy branches", () => {
+  const caseComponent = {
+    kind: "CASO",
+    status: "RESPONDIDO",
+    scorePercent: 90,
+  } as const;
+  const examComponent = {
+    kind: "PROVA",
+    status: "RESPONDIDO",
+    scorePercent: 80,
+  } as const;
+
+  it("rejects malformed components and invalid kinds", () => {
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent: null as never,
+        examComponent,
+        objectives: [],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent: { ...caseComponent, status: "INVALIDO" } as never,
+        examComponent,
+        objectives: [],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent: {
+          ...caseComponent,
+          scorePercent: 101,
+        },
+        examComponent,
+        objectives: [],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent: { ...caseComponent, kind: "PROVA" },
+        examComponent,
+        objectives: [],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent: { ...examComponent, kind: "CASO" },
+        objectives: [],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent,
+        quizPercent: -1,
+        objectives: [],
+      }),
+    ).toThrow(AssessmentPolicyError);
+  });
+
+  it("rejects duplicate or malformed objectives", () => {
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent,
+        objectives: [
+          { objectiveId: "A", critical: false },
+          { objectiveId: "A", critical: false },
+        ],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent,
+        objectives: [{ objectiveId: "", critical: false }],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent,
+        objectives: [
+          { objectiveId: "A", status: "INVALIDO", critical: false } as never,
+        ],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent,
+        objectives: [
+          {
+            objectiveId: "A",
+            status: "RESPONDIDO",
+            percent: 70.5,
+            critical: false,
+          },
+        ],
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAssessment({
+        caseComponent,
+        examComponent,
+        objectives: [
+          {
+            objectiveId: "A",
+            status: "DADO_INCOMPLETO",
+            percent: 10,
+            critical: false,
+          },
+        ],
+      }),
+    ).toThrow(AssessmentPolicyError);
+  });
+
+  it("returns pending when data is incomplete", () => {
+    const pending = evaluateSummativeAssessment({
+      caseComponent: { kind: "CASO", status: "DADO_INCOMPLETO" },
+      examComponent,
+      objectives: [
+        { objectiveId: "A", status: "DADO_INCOMPLETO", critical: false },
+      ],
+    });
+    expect(pending.status).toBe("PENDENTE_DADOS");
+    const allIncomplete = evaluateSummativeAssessment({
+      caseComponent: { kind: "CASO", status: "NAO_APLICAVEL" },
+      examComponent: { kind: "PROVA", status: "DADO_INCOMPLETO" },
+      objectives: [],
+    });
+    expect(allIncomplete.status).toBe("PENDENTE_DADOS");
+  });
+
+  it("returns approved or reforco based on the weighted score", () => {
+    const approved = evaluateSummativeAssessment({
+      caseComponent,
+      examComponent,
+      objectives: [
+        {
+          objectiveId: "A",
+          status: "RESPONDIDO",
+          percent: 80,
+          critical: false,
+        },
+      ],
+    });
+    expect(approved.status).toBe("APROVADO");
+    expect(approved.scorePercent).toBe(83);
+    const reforco = evaluateSummativeAssessment({
+      caseComponent: { ...caseComponent, scorePercent: 50 },
+      examComponent: { ...examComponent, scorePercent: 40 },
+      objectives: [
+        {
+          objectiveId: "A",
+          status: "RESPONDIDO",
+          percent: 60,
+          critical: false,
+        },
+      ],
+    });
+    expect(reforco.status).toBe("REFORCO");
+    const critical = evaluateSummativeAssessment({
+      caseComponent,
+      examComponent,
+      objectives: [
+        { objectiveId: "A", status: "RESPONDIDO", percent: 50, critical: true },
+      ],
+    });
+    expect(critical.status).toBe("REFORCO");
+    expect(critical.criticalObjectiveIdsBelowThreshold).toEqual(["A"]);
+  });
+
+  it("tracks pending objectives and quiz percent", () => {
+    const result = evaluateSummativeAssessment({
+      caseComponent,
+      examComponent,
+      quizPercent: 10,
+      objectives: [
+        { objectiveId: "A", status: "DADO_INCOMPLETO", critical: false },
+        { objectiveId: "B", status: "NAO_APLICAVEL", critical: false },
+      ],
+    });
+    expect(result.pendingObjectiveIds).toEqual(["A"]);
+    expect(result.quizWeightPercent).toBe(0);
+  });
+});
+
+describe("summative attempt eligibility branches", () => {
+  const now = "2026-08-17T12:00:00.000Z";
+
+  it("rejects invalid timestamps, item sets and histories", () => {
+    expect(() =>
+      evaluateSummativeAttemptEligibility({
+        now: "bad",
+        itemIds: ["I1"],
+        history: {
+          attemptCount: 0,
+          remediationCompleted: false,
+          previousItemIds: [],
+        },
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAttemptEligibility({
+        now,
+        itemIds: [],
+        history: {
+          attemptCount: 0,
+          remediationCompleted: false,
+          previousItemIds: [],
+        },
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAttemptEligibility({
+        now,
+        itemIds: ["I1", "I1"],
+        history: {
+          attemptCount: 0,
+          remediationCompleted: false,
+          previousItemIds: [],
+        },
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAttemptEligibility({
+        now,
+        itemIds: ["I1"],
+        history: {
+          attemptCount: -1,
+          remediationCompleted: false,
+          previousItemIds: [],
+        },
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAttemptEligibility({
+        now,
+        itemIds: ["I1"],
+        history: {
+          attemptCount: 1,
+          remediationCompleted: "yes" as never,
+          previousItemIds: [],
+        },
+      }),
+    ).toThrow(AssessmentPolicyError);
+    expect(() =>
+      evaluateSummativeAttemptEligibility({
+        now,
+        itemIds: ["I1"],
+        history: {
+          attemptCount: 1,
+          remediationCompleted: true,
+          previousItemIds: [],
+        } as never,
+      }),
+    ).toThrow(AssessmentPolicyError);
+  });
+
+  it("rejects repeated items, mandatory remediation and minimum intervals", () => {
+    const base = {
+      now,
+      itemIds: ["I1", "I2"],
+      history: {
+        attemptCount: 2,
+        lastSubmittedAt: "2026-08-01T12:00:00.000Z",
+        remediationCompleted: false,
+        previousItemIds: [["I9", "I1"]],
+      },
+    } as const;
+    expect(evaluateSummativeAttemptEligibility(base).reason).toBe(
+      "ITENS_REPETIDOS",
+    );
+    expect(
+      evaluateSummativeAttemptEligibility({
+        ...base,
+        history: {
+          ...base.history,
+          previousItemIds: [["I9"]],
+        },
+      }).reason,
+    ).toBe("REMEDIACAO_OBRIGATORIA");
+    const interval = evaluateSummativeAttemptEligibility({
+      now: "2026-08-07T12:00:00.000Z",
+      itemIds: ["I1", "I2"],
+      history: {
+        attemptCount: 2,
+        lastSubmittedAt: "2026-08-01T12:00:00.000Z",
+        remediationCompleted: true,
+        previousItemIds: [],
+      },
+    });
+    expect(interval.reason).toBe("INTERVALO_MINIMO");
+    if (interval.eligible === false) {
+      expect(interval.nextAllowedAt).toBe("2026-08-08T12:00:00.000Z");
+    }
+  });
+
+  it("allows an eligible attempt", () => {
+    const result = evaluateSummativeAttemptEligibility({
+      now: "2026-08-17T12:00:00.000Z",
+      itemIds: ["I1", "I2"],
+      history: {
+        attemptCount: 1,
+        lastSubmittedAt: "2026-08-01T12:00:00.000Z",
+        remediationCompleted: true,
+        previousItemIds: [],
+      },
+    });
+    expect(result).toEqual({ eligible: true, reason: "ELIGIBLE" });
   });
 });

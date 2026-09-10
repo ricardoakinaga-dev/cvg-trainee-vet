@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
+import { createFakeDatabase } from "./test-support/fake-database.js";
 import { createAiSuggestionSink } from "./ai-suggestion-repository.js";
 import * as schema from "./schema.js";
 
@@ -50,5 +51,72 @@ describe("internal AI suggestion persistence", () => {
         target: [schema.aiSuggestions.contentId, schema.aiSuggestions.version],
       }),
     );
+  });
+});
+
+describe("ai suggestion sink", () => {
+  const suggestion = {
+    contentId: "33333333-3333-4333-8333-333333333333",
+    version: 1,
+    draftText: "Sugestão sintética sem marcação.",
+    warnings: ["sem fontes"],
+  };
+
+  it("saves a draft suggestion under the service identity", async () => {
+    const db = createFakeDatabase();
+    const sink = createAiSuggestionSink(
+      db as unknown as Parameters<typeof createAiSuggestionSink>[0],
+      () => "fixed-id",
+    );
+    await expect(
+      sink.saveDraftSuggestion({ ...suggestion }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("rejects invalid suggestions", async () => {
+    const db = createFakeDatabase();
+    const sink = createAiSuggestionSink(
+      db as unknown as Parameters<typeof createAiSuggestionSink>[0],
+      () => "fixed-id",
+    );
+    await expect(
+      sink.saveDraftSuggestion({ ...suggestion, contentId: " " }),
+    ).rejects.toThrow();
+    await expect(
+      sink.saveDraftSuggestion({ ...suggestion, version: 0 }),
+    ).rejects.toThrow(RangeError);
+    await expect(
+      sink.saveDraftSuggestion({ ...suggestion, draftText: " " }),
+    ).rejects.toThrow();
+    await expect(
+      sink.saveDraftSuggestion({
+        ...suggestion,
+        draftText: "x".repeat(20_001),
+      }),
+    ).rejects.toThrow(RangeError);
+    await expect(
+      sink.saveDraftSuggestion({
+        ...suggestion,
+        draftText: "<b>marcação</b>",
+      }),
+    ).rejects.toThrow(TypeError);
+    await expect(
+      sink.saveDraftSuggestion({
+        ...suggestion,
+        warnings: ["a", ...Array.from({ length: 20 }, () => "b")],
+      }),
+    ).rejects.toThrow(TypeError);
+    await expect(
+      sink.saveDraftSuggestion({
+        ...suggestion,
+        warnings: [" "],
+      }),
+    ).rejects.toThrow(TypeError);
+    await expect(
+      sink.saveDraftSuggestion({
+        ...suggestion,
+        warnings: ["x".repeat(501)],
+      }),
+    ).rejects.toThrow(TypeError);
   });
 });

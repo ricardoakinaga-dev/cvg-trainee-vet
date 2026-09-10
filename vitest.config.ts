@@ -1,5 +1,7 @@
 import { defineConfig } from "vitest/config";
 
+import { COVERAGE_EXCLUSIONS } from "./scripts/coverage-exclusions.mjs";
+
 export default defineConfig({
   test: {
     projects: [
@@ -30,12 +32,12 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "json-summary", "html"],
       include: ["packages/**/src/**/*.ts", "apps/**/src/**/*.ts"],
-      exclude: ["**/*.test.ts", "**/index.ts"],
+      exclude: ["**/*.test.ts", "**/index.ts", ...COVERAGE_EXCLUSIONS],
       thresholds: {
-        lines: 80,
-        functions: 80,
-        branches: 80,
-        statements: 80,
+        lines: 90,
+        functions: 90,
+        branches: 85,
+        statements: 90,
       },
     },
   },

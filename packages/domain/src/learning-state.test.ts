@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  LearningAssignmentDomainError,
   createAssessmentWorkflowResult,
   createFeedbackTicket,
   createLearningAssignment,
@@ -158,5 +159,191 @@ describe("feedback ticket state machine", () => {
         createdAt: "2026-08-10T17:00:00.000Z",
       }),
     ).toThrow();
+  });
+});
+
+describe("learning assignment domain validation", () => {
+  const assignmentInput = {
+    assignmentId: "11111111-1111-4111-8111-111111111111",
+    participantId: "22222222-2222-4222-8222-222222222222",
+    moduleId: "M02",
+    availableAt: "2026-08-10T17:00:00.000Z",
+  };
+
+  it("rejects malformed creation inputs", () => {
+    expect(() =>
+      createLearningAssignment({ ...assignmentInput, assignmentId: "" }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      createLearningAssignment({ ...assignmentInput, participantId: " " }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      createLearningAssignment({ ...assignmentInput, moduleId: "M99" }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      createLearningAssignment({
+        ...assignmentInput,
+        availableAt: "not-a-date",
+      }),
+    ).toThrow(LearningAssignmentDomainError);
+  });
+
+  it("rejects invalid states and transitions", () => {
+    const attributed = transitionLearningAssignment(
+      createLearningAssignment(assignmentInput),
+      { type: "ATRIBUIR" },
+    );
+    expect(() =>
+      transitionLearningAssignment(attributed, { type: "INICIAR" }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, status: "INEXISTENTE" } as never,
+        { type: "ATRIBUIR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, version: -1 },
+        { type: "ATRIBUIR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, availableAt: "bad" },
+        { type: "ATRIBUIR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, moduleId: "M99" },
+        { type: "ATRIBUIR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+  });
+
+  it("rejects invalid availability and pause invariants", () => {
+    const attributed = transitionLearningAssignment(
+      createLearningAssignment(assignmentInput),
+      { type: "ATRIBUIR" },
+    );
+    expect(() =>
+      transitionLearningAssignment(attributed, {
+        type: "DISPONIBILIZAR",
+        now: "2026-08-09T17:00:00.000Z",
+      }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(attributed, {
+        type: "DISPONIBILIZAR",
+        now: "bad",
+      }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, status: "PAUSADO" },
+        { type: "RETOMAR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(
+      transitionLearningAssignment(
+        { ...attributed, status: "PAUSADO", pausedFrom: "EM_ANDAMENTO" },
+        { type: "RETOMAR" },
+      ).status,
+    ).toBe("EM_ANDAMENTO");
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, pausedFrom: "EM_ANDAMENTO" },
+        { type: "ATRIBUIR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, status: "BLOQUEADO" },
+        { type: "DESBLOQUEAR", to: "DISPONIVEL" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionLearningAssignment(
+        { ...attributed, blockReason: "PRE_REQUISITO" },
+        { type: "ATRIBUIR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+  });
+
+  it("unblocks to the requested state", () => {
+    const available = transitionLearningAssignment(
+      transitionLearningAssignment(
+        createLearningAssignment(assignmentInput),
+        { type: "ATRIBUIR" },
+      ),
+      { type: "DISPONIBILIZAR", now: "2026-08-10T17:00:00.000Z" },
+    );
+    const blocked = transitionLearningAssignment(available, {
+      type: "BLOQUEAR",
+      reason: "OBJETIVO_EM_REMEDIACAO",
+    });
+    const unblocked = transitionLearningAssignment(blocked, {
+      type: "DESBLOQUEAR",
+      to: "DISPONIVEL",
+    });
+    expect(unblocked.status).toBe("DISPONIVEL");
+  });
+});
+
+describe("assessment workflow domain validation", () => {
+  const workflowInput = {
+    resultId: "11111111-1111-4111-8111-111111111111",
+    attemptId: "22222222-2222-4222-8222-222222222222",
+    ruleVersion: "summative-v1",
+  };
+
+  it("rejects malformed creation and invalid transitions", () => {
+    expect(() =>
+      createAssessmentWorkflowResult({ ...workflowInput, resultId: "" }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      createAssessmentWorkflowResult({ ...workflowInput, attemptId: " " }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      createAssessmentWorkflowResult({ ...workflowInput, ruleVersion: " " }),
+    ).toThrow(LearningAssignmentDomainError);
+    const created = createAssessmentWorkflowResult(workflowInput);
+    expect(() =>
+      transitionAssessmentWorkflowResult(created, { type: "CORRIGIR" }),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionAssessmentWorkflowResult(
+        { ...created, status: "INVALIDO" } as never,
+        { type: "DISPONIBILIZAR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+    expect(() =>
+      transitionAssessmentWorkflowResult(
+        { ...created, version: -1 },
+        { type: "DISPONIBILIZAR" },
+      ),
+    ).toThrow(LearningAssignmentDomainError);
+  });
+
+  it("walks the supported review cycle", () => {
+    const created = createAssessmentWorkflowResult(workflowInput);
+    const available = transitionAssessmentWorkflowResult(created, {
+      type: "DISPONIBILIZAR",
+    });
+    const reviewing = transitionAssessmentWorkflowResult(available, {
+      type: "INICIAR_REVISAO",
+    });
+    const corrected = transitionAssessmentWorkflowResult(reviewing, {
+      type: "CORRIGIR",
+    });
+    const reReviewed = transitionAssessmentWorkflowResult(corrected, {
+      type: "INICIAR_REVISAO",
+    });
+    expect(reReviewed.status).toBe("RESULTADO_EM_REVISAO");
+    const anulled = transitionAssessmentWorkflowResult(available, {
+      type: "ANULAR",
+    });
+    expect(anulled.status).toBe("RESULTADO_ANULADO");
   });
 });

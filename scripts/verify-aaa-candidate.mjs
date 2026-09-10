@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
+import { COVERAGE_EXCLUSIONS } from "./coverage-exclusions.mjs";
 import { validateBundle, validateSbom } from "./release-evidence.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -27,6 +28,8 @@ function pctOf(covered, total) {
 
 async function coverageTotals() {
   // Derived from `pnpm test:coverage` output (coverage-final.json).
+  // Applies the same documented exclusions as vitest.config.ts so the gate
+  // matches the report that `pnpm test:coverage` enforces.
   const raw = await readFile(
     join(root, "coverage", "coverage-final.json"),
     "utf8",
@@ -38,7 +41,18 @@ async function coverageTotals() {
     functions: [0, 0],
     lines: [0, 0],
   };
-  for (const file of Object.values(files)) {
+  for (const [path, file] of Object.entries(files)) {
+    if (
+      COVERAGE_EXCLUSIONS.some((exclusion) => {
+        const normalized = path.replaceAll("\\", "/");
+        if (exclusion.endsWith("/**")) {
+          return normalized.includes(exclusion.slice(0, -3));
+        }
+        return normalized.endsWith(exclusion);
+      })
+    ) {
+      continue;
+    }
     for (const counts of Object.values(file.s ?? {})) {
       totals.statements[1] += 1;
       if (counts > 0) totals.statements[0] += 1;

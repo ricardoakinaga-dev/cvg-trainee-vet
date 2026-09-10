@@ -149,3 +149,130 @@ describe("feedback triage queue persistence", () => {
     ]);
   });
 });
+
+import {
+  encodeFeedbackTriageQueueCursor,
+  feedbackTriageQueueQueryFingerprint,
+} from "./feedback-triage-queue-repository.js";
+
+describe("feedback triage queue cursor validation", () => {
+  const cursor = {
+    version: 1,
+    ticketId,
+    createdAt: new Date("2026-08-24T11:00:00.000Z"),
+    scopeId,
+    queryHash: "a".repeat(64),
+  } as const;
+
+  it("encodes and decodes a cursor with a valid signature", () => {
+    const encoded = encodeFeedbackTriageQueueCursor(cursor, cursorKey);
+    const decoded = decodeFeedbackTriageQueueCursor(encoded, cursorKey);
+    expect(decoded).toMatchObject({
+      ticketId,
+      scopeId,
+      queryHash: cursor.queryHash,
+    });
+  });
+
+  it("rejects malformed encode inputs", () => {
+    expect(() =>
+      encodeFeedbackTriageQueueCursor(cursor, "short"),
+    ).toThrow();
+    expect(() =>
+      encodeFeedbackTriageQueueCursor(
+        { ...cursor, ticketId: "nope" },
+        cursorKey,
+      ),
+    ).toThrow();
+    expect(() =>
+      encodeFeedbackTriageQueueCursor(
+        { ...cursor, scopeId: "nope" },
+        cursorKey,
+      ),
+    ).toThrow();
+    expect(() =>
+      encodeFeedbackTriageQueueCursor(
+        { ...cursor, version: 2 as never },
+        cursorKey,
+      ),
+    ).toThrow();
+    expect(() =>
+      encodeFeedbackTriageQueueCursor(
+        { ...cursor, queryHash: "xyz" },
+        cursorKey,
+      ),
+    ).toThrow();
+    expect(() =>
+      encodeFeedbackTriageQueueCursor(
+        { ...cursor, createdAt: new Date("invalid") },
+        cursorKey,
+      ),
+    ).toThrow();
+  });
+
+  it("rejects tampered or malformed cursors", () => {
+    expect(() => decodeFeedbackTriageQueueCursor("!!!", cursorKey)).toThrow();
+    expect(() => decodeFeedbackTriageQueueCursor("", cursorKey)).toThrow();
+    const encoded = encodeFeedbackTriageQueueCursor(cursor, cursorKey);
+    const raw = JSON.parse(
+      Buffer.from(encoded, "base64url").toString("utf8"),
+    ) as Record<string, unknown>;
+    const tampered = Buffer.from(
+      JSON.stringify({ ...raw, ticketId: secondTicketId }),
+      "utf8",
+    ).toString("base64url");
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(tampered, cursorKey),
+    ).toThrow();
+    const extra = Buffer.from(
+      JSON.stringify({ ...raw, extra: true }),
+      "utf8",
+    ).toString("base64url");
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(extra, cursorKey),
+    ).toThrow();
+    const wrongType = Buffer.from(
+      JSON.stringify({ ...raw, version: "1" }),
+      "utf8",
+    ).toString("base64url");
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(wrongType, cursorKey),
+    ).toThrow();
+    const badDate = Buffer.from(
+      JSON.stringify({ ...raw, createdAt: "not-a-date" }),
+      "utf8",
+    ).toString("base64url");
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(badDate, cursorKey),
+    ).toThrow();
+    const badHash = Buffer.from(
+      JSON.stringify({ ...raw, queryHash: "zz" }),
+      "utf8",
+    ).toString("base64url");
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(badHash, cursorKey),
+    ).toThrow();
+    const wrongSignature = Buffer.from(
+      JSON.stringify({ ...raw, signature: "z".repeat(64) }),
+      "utf8",
+    ).toString("base64url");
+    expect(() =>
+      decodeFeedbackTriageQueueCursor(wrongSignature, cursorKey),
+    ).toThrow();
+    expect(() => decodeFeedbackTriageQueueCursor(encoded, "other-key")).toThrow();
+  });
+
+  it("computes stable fingerprints including the optional status", () => {
+    const fingerprint = feedbackTriageQueueQueryFingerprint({
+      scopeId,
+      limit: 10,
+    });
+    const withStatus = feedbackTriageQueueQueryFingerprint({
+      scopeId,
+      status: "NOVO",
+      limit: 10,
+    });
+    expect(fingerprint).toMatch(/^[a-f0-9]{64}$/u);
+    expect(withStatus).not.toBe(fingerprint);
+  });
+});

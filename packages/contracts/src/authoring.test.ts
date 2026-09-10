@@ -188,3 +188,130 @@ describe("internal authoring contracts", () => {
     ).toThrow();
   });
 });
+
+describe("internal authoring draft validation branches", () => {
+  const base = {
+    idempotencyKey: "authoring-draft-2026-08-24-02",
+    scopeId: "11111111-1111-4111-8111-111111111111",
+    moduleId: "M02",
+    sessionId: "M02-S1",
+    objectiveId: "M02-OBJ-01",
+    ordinal: 1,
+    title: "Item sintético",
+    prompt: "Escolha a próxima ação segura.",
+    responseMode: "CHOICE" as const,
+    choices: [
+      { id: "a", label: "A", text: "Priorizar." },
+      { id: "b", label: "B", text: "Aguardar." },
+    ],
+    correctChoiceIds: ["a"],
+    feedback: "Reavalie.",
+    critical: true,
+    remediationTargetObjectiveId: "M02-OBJ-01",
+    sourceRefs: [
+      { code: "F-02", locator: "localizador", updateRequired: true },
+    ],
+  };
+
+  it("rejects duplicate or unknown choice ids", () => {
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        choices: [
+          { id: "a", label: "A", text: "1." },
+          { id: "a", label: "B", text: "2." },
+        ],
+      }),
+    ).toThrow();
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        correctChoiceIds: ["z"],
+      }),
+    ).toThrow();
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        correctChoiceIds: ["a", "a"],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects choice drafts with rubrics and text drafts with choices", () => {
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        rubric: [{ id: "r1", label: "R", text: "Critério." }],
+      }),
+    ).toThrow();
+    expect(
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        responseMode: "TEXT",
+        choices: undefined,
+        correctChoiceIds: undefined,
+      }).responseMode,
+    ).toBe("TEXT");
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        responseMode: "TEXT",
+        choices: undefined,
+        correctChoiceIds: ["a"],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects unknown keys and malformed fields", () => {
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        unexpected: true,
+      }),
+    ).toThrow();
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        ordinal: 0,
+      }),
+    ).toThrow();
+    expect(() =>
+      authoringDraftCreateRequestSchema.parse({
+        ...base,
+        responseMode: "ESSAY",
+      }),
+    ).toThrow();
+  });
+
+  it("rejects malformed projections", () => {
+    expect(() =>
+      parseInternalAuthoringRecordProjection({ contentStatus: "INVALIDO" }),
+    ).toThrow();
+    expect(() =>
+      parseInternalAuthoringRecordProjection({
+        contentId: "11111111-1111-4111-8111-111111111111",
+        version: 1,
+        scopeId: "11111111-1111-4111-8111-111111111111",
+        moduleId: "M02",
+        sessionId: "S1",
+        objectiveId: "O1",
+        authorId: "11111111-1111-4111-8111-111111111111",
+        contentStatus: "PUBLICADO",
+        item: { notAnItem: true },
+        preflight: {
+          ruleVersion: "authoring-preflight-v1",
+          technicalChecksPassed: true,
+          checks: {
+            requiredFields: true,
+            correctionMetadata: true,
+            publicBoundary: true,
+            sourceTraceability: true,
+            publicationBlocked: true,
+          },
+          checkedAt: "2026-08-10T05:00:00.000Z",
+        },
+        availableActions: { requestAdjustments: false, approveClinically: true },
+      }),
+    ).toThrow();
+  });
+});
