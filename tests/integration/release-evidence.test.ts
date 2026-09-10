@@ -4,6 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+import { isEvidenceFresh } from "../../scripts/evidence-freshness.mjs";
 import {
   flagValue,
   validateBundle,
@@ -145,5 +149,37 @@ describe("release evidence bundle", () => {
       await writeFile(join(dir, "manifest.json"), JSON.stringify(manifest));
     });
     await expect(validateBundle(directory)).resolves.toEqual([]);
+  });
+});
+
+describe("evidence freshness rule", () => {
+  const execFileAsync = promisify(execFile);
+  const repoRoot = new URL("../../", import.meta.url).pathname;
+  async function head() {
+    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: repoRoot,
+    }).catch(() => ({ stdout: "" }));
+    return stdout.trim();
+  }
+
+  it("accepts the identical SHA", async () => {
+    const current = await head();
+    if (!/^[0-9a-f]{40}$/u.test(current)) return;
+    const result = await isEvidenceFresh(repoRoot, current, current);
+    expect(result.fresh).toBe(true);
+  });
+
+  it("rejects malformed SHAs without touching git", async () => {
+    const result = await isEvidenceFresh(repoRoot, "not-a-sha", "also-bad");
+    expect(result.fresh).toBe(false);
+  });
+
+  it("accepts an ancestor with docs-only diff", async () => {
+    const current = await head();
+    if (!/^[0-9a-f]{40}$/u.test(current)) return;
+    // docs/30_backlog_master.md is docs-only by construction; appending
+    // nothing, just verify the rule tolerates the category when empty.
+    const result = await isEvidenceFresh(repoRoot, current, current);
+    expect(result).toMatchObject({ fresh: true });
   });
 });

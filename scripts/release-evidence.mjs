@@ -14,6 +14,8 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
+import { isEvidenceFresh } from "./evidence-freshness.mjs";
+
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 
@@ -214,15 +216,25 @@ export async function validateBundle(directory, options = {}) {
     failures.push("sbom status must be present or missing-blocked");
   }
   if (strict) {
-    // AAA-CERT-004 §35: final promotion admits no stale or placeholder
-    // evidence. Every summary must be present, parse, PASS (where the
-    // format defines a status) and belong to the expected HEAD (where the
-    // format carries a sha).
+    // AAA-CERT-004 §35 + shared freshness rule: final promotion admits no
+    // stale or placeholder evidence. Every summary must be present, parse,
+    // PASS (where the format defines a status) and satisfy isEvidenceFresh
+    // against the validated HEAD (exact match, or ancestor with docs-only
+    // diff — docs-only commits never invalidate runtime evidence).
     if (expectedHead === null || !/^[0-9a-f]{40}$/u.test(expectedHead)) {
       failures.push("strict validation requires a full HEAD sha");
     } else {
+      const topLevel = await git(["rev-parse", "--show-toplevel"]);
+      const bundleRoot = topLevel === "unknown" ? root : topLevel;
       if (sha !== expectedHead) {
-        failures.push("git-sha.txt does not match the validated HEAD");
+        const headFresh = await isEvidenceFresh(
+          bundleRoot,
+          sha,
+          expectedHead,
+        ).catch(() => ({ fresh: false, detail: "freshness check failed" }));
+        if (!headFresh.fresh) {
+          failures.push(`git-sha.txt not fresh: ${headFresh.detail}`);
+        }
       }
       for (const file of SUMMARY_FILES) {
         const parsed = await readJsonFile(join(directory, file)).catch(
@@ -239,10 +251,15 @@ export async function validateBundle(directory, options = {}) {
         if ("status" in parsed && parsed.status !== "PASS") {
           failures.push(`${file} status is ${String(parsed.status)}`);
         }
-        if ("sha" in parsed && parsed.sha !== expectedHead) {
-          failures.push(
-            `${file} belongs to ${String(parsed.sha)}, expected ${expectedHead}`,
-          );
+        if ("sha" in parsed) {
+          const fresh = await isEvidenceFresh(
+            bundleRoot,
+            parsed.sha,
+            expectedHead,
+          ).catch(() => ({ fresh: false, detail: "freshness check failed" }));
+          if (!fresh.fresh) {
+            failures.push(`${file} not fresh: ${fresh.detail}`);
+          }
         }
       }
       const mutation = await readJsonFile(

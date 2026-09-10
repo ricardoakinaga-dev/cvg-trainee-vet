@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
 import { COVERAGE_EXCLUSIONS } from "./coverage-exclusions.mjs";
+import { isEvidenceFresh } from "./evidence-freshness.mjs";
 import { validateBundle, validateSbom } from "./release-evidence.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -222,12 +223,13 @@ async function main() {
         "utf8",
       ),
     );
+    const bundledFresh = await isEvidenceFresh(root, bundled.sha, head);
     check(
-      "bundled remote-ci summary fresh for HEAD",
+      "bundled remote-ci summary fresh",
       bundled.format === "cvg-remote-ci-summary/v1" &&
-        bundled.sha === head &&
+        bundledFresh.fresh &&
         bundled.status === "PASS",
-      `${bundled.sha ?? "missing"}/${bundled.status ?? "missing"}`,
+      `${bundled.sha ?? "missing"}/${bundled.status ?? "missing"} (${bundledFresh.detail})`,
     );
   } catch (error) {
     check(
@@ -253,11 +255,8 @@ async function main() {
       evidence.backend === "redis" || evidence.backend === "valkey",
       String(evidence.backend ?? "missing"),
     );
-    check(
-      "redis candidate evidence fresh for HEAD",
-      evidence.sha === head.trim(),
-      String(evidence.sha ?? "missing"),
-    );
+    const fresh = await isEvidenceFresh(root, evidence.sha, head.trim());
+    check("redis candidate evidence fresh", fresh.fresh, fresh.detail);
     check(
       "redis candidate PASS",
       evidence.status === "PASS",
@@ -281,11 +280,10 @@ async function main() {
     const { stdout: head } = await execFileAsync("git", ["rev-parse", "HEAD"], {
       cwd: root,
     });
-    check(
-      "staging evidence fresh for HEAD",
-      evidence.sha === head.trim(),
-      String(evidence.sha ?? "missing"),
-    );
+    const fresh = await isEvidenceFresh(root, evidence.sha, head.trim());
+    // Staging exercises the serving runtime: a runtime diff always
+    // re-opens it, while docs-only commits keep it fresh.
+    check("staging evidence fresh", fresh.fresh, fresh.detail);
     check(
       "staging PASS",
       evidence.status === "PASS",
@@ -365,30 +363,8 @@ async function main() {
 
   // 7. P0/P1 (§37–38): machine-readable audit JSON is the authority.
   // Markdown explains; JSON decides. No Markdown parsing for this gate.
-  // Freshness for the TRACKED audit file: its `sha` must be an ancestor of
-  // HEAD with no runtime diff since (docs-only commits after the code freeze
-  // do not invalidate runtime evidence; a tracked file can never contain
-  // its own future commit SHA).
-  const RUNTIME_TOP_LEVELS = Object.freeze([
-    "apps",
-    "packages",
-    "tests",
-    "scripts",
-    ".github",
-  ]);
-  const RUNTIME_ROOT_FILES = Object.freeze([
-    "package.json",
-    "pnpm-lock.yaml",
-    "pnpm-workspace.yaml",
-    "vitest.config.ts",
-    "tsconfig.json",
-    "tsconfig.base.json",
-    "eslint.config.mjs",
-    "drizzle.config.ts",
-    "playwright.config.ts",
-    "architecture-boundaries.json",
-    "traceability.yml",
-  ]);
+  // Freshness follows the shared evidence rule (ancestor + no runtime
+  // diff): a tracked file can never contain its own future commit SHA.
   try {
     const audit = JSON.parse(
       await readFile(
@@ -401,35 +377,12 @@ async function main() {
     });
     check("no open P0 (audit v4 JSON)", audit.p0 === 0, `p0=${audit.p0}`);
     check("no open P1 (audit v4 JSON)", audit.p1 === 0, `p1=${audit.p1}`);
-    let fresh = false;
-    let freshDetail = String(audit.sha ?? "missing");
-    try {
-      await execFileAsync(
-        "git",
-        ["merge-base", "--is-ancestor", audit.sha, head.trim()],
-        { cwd: root },
-      );
-      const { stdout: diffNames } = await execFileAsync(
-        "git",
-        ["diff", "--name-only", `${audit.sha}`, head.trim(), "--"],
-        { cwd: root },
-      );
-      const runtimeChanged = diffNames
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0)
-        .some(
-          (line) =>
-            RUNTIME_TOP_LEVELS.some(
-              (top) => line === top || line.startsWith(`${top}/`),
-            ) || RUNTIME_ROOT_FILES.includes(line),
-        );
-      fresh = !runtimeChanged;
-      if (runtimeChanged) freshDetail = "runtime tree changed since audit.sha";
-    } catch {
-      freshDetail = "audit.sha is not an ancestor of HEAD";
-    }
-    check("audit v4 fresh (ancestor + no runtime diff)", fresh, freshDetail);
+    const fresh = await isEvidenceFresh(root, audit.sha, head.trim());
+    check(
+      "audit v4 fresh (ancestor + no runtime diff)",
+      fresh.fresh,
+      fresh.detail,
+    );
   } catch (error) {
     check(
       "no open P0/P1 (docs/audits/state-of-art-final-audit-v4.json)",
