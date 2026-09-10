@@ -420,6 +420,15 @@ export function createApiRuntime(
     port: environment.API_PORT ? Number(environment.API_PORT) : 3000,
     ...(webOrigins === undefined ? {} : { allowedOrigins: webOrigins }),
     rateLimiter,
+    ...(config.tracing.enabled
+      ? {
+          tracing: {
+            enabled: true as const,
+            endpoint: config.tracing.endpoint,
+            serviceName: config.tracing.serviceName,
+          },
+        }
+      : {}),
   });
   let closed = false;
   let initializationRetryTimer: ReturnType<typeof setTimeout> | undefined;

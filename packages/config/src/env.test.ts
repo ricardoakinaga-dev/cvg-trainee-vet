@@ -23,9 +23,48 @@ describe("loadRuntimeConfig", () => {
       auditCursorSecret: developmentAuditCursorKey,
       approvedClinicalApproverId: "ricardo-account",
       trustedProxies: [],
+      tracing: { enabled: false },
       qdrant: { enabled: false },
       ai: { enabled: false, provider: "openai" },
     });
+  });
+
+  it("wires OTLP tracing only with an explicit HTTPS(S) endpoint", () => {
+    const enabled = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+      OTEL_TRACES_ENABLED: "true",
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://127.0.0.1:4318/v1/traces",
+      OTEL_SERVICE_NAME: "cvg-staging",
+    });
+    expect(enabled.tracing).toEqual({
+      enabled: true,
+      endpoint: "http://127.0.0.1:4318/v1/traces",
+      serviceName: "cvg-staging",
+    });
+
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+        OTEL_TRACES_ENABLED: "true",
+      }),
+    ).toThrow("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT");
+
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        QDRANT_ENABLED: "false",
+        AI_ENABLED: "false",
+        OTEL_TRACES_ENABLED: "true",
+        OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "ftp://collector/traces",
+      }),
+    ).toThrow("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT");
   });
 
   it("keeps the diagnostic draft disabled without an explicit non-production opt-in", () => {

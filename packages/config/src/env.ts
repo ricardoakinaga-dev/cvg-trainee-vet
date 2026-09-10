@@ -47,6 +47,19 @@ const rawEnvironmentSchema = z.object({
   AI_API_KEY: z.string().min(1).optional(),
   AI_MODEL: z.string().min(1).optional(),
   TRUSTED_PROXIES: z.string().optional(),
+  OTEL_TRACES_ENABLED: booleanString.default(false),
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: z
+    .string()
+    .url()
+    .refine(
+      (value) => value.startsWith("http://") || value.startsWith("https://"),
+      "OTLP traces endpoint must use HTTP(S)",
+    )
+    .optional(),
+  OTEL_SERVICE_NAME: z
+    .string()
+    .regex(/^[A-Za-z0-9._-]+$/)
+    .default("cvg-api"),
 });
 
 type EnvironmentInput = Record<string, string | undefined>;
@@ -59,6 +72,15 @@ export type RuntimeConfig = {
   auditCursorSecret: string;
   approvedClinicalApproverId?: string;
   trustedProxies: readonly string[];
+  tracing:
+    | {
+        enabled: false;
+      }
+    | {
+        enabled: true;
+        endpoint: string;
+        serviceName: string;
+      };
   qdrant:
     | {
         enabled: false;
@@ -178,6 +200,10 @@ export function loadRuntimeConfig(
     if (!value.AI_MODEL) missing.push("AI_MODEL");
   }
 
+  if (value.OTEL_TRACES_ENABLED && !value.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT) {
+    missing.push("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT");
+  }
+
   if (missing.length > 0) {
     throw new ConfigError(
       `Missing runtime configuration: ${missing.join(", ")}`,
@@ -189,6 +215,13 @@ export function loadRuntimeConfig(
     databaseUrl: value.DATABASE_URL,
     requireDatabaseLeastPrivilege: value.NODE_ENV === "production",
     trustedProxies: parseTrustedProxies(value.TRUSTED_PROXIES),
+    tracing: value.OTEL_TRACES_ENABLED
+      ? {
+          enabled: true,
+          endpoint: value.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT as string,
+          serviceName: value.OTEL_SERVICE_NAME,
+        }
+      : { enabled: false },
     diagnosticSessionDraftEnabled:
       value.NODE_ENV !== "production" && value.DIAGNOSTIC_SESSION_DRAFT_ENABLED,
     auditCursorSecret: auditCursorSecret as string,
