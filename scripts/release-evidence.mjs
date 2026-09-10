@@ -329,6 +329,10 @@ async function main() {
           "coverage-summary.json": null,
           "test-summary.json": null,
           "security-summary.json": null,
+          "rls-live-summary.json": null,
+          "multi-instance-summary.json": null,
+          "load-summary.json": null,
+          "otel-summary.json": null,
         },
       });
       const failures = await validateBundle(directory);

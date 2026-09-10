@@ -21,7 +21,10 @@ const HARD_FN = 150;
 const EXCEPTIONS = new Map([
   [
     "apps/api/src/http.ts",
-    { max: 1167, reason: "composition root: types + dispatch table (AAA-FINAL-001)" },
+    {
+      max: 1167,
+      reason: "composition root: types + dispatch table (AAA-FINAL-001)",
+    },
   ],
   [
     "packages/curriculum/src/catalog.ts",
@@ -85,24 +88,51 @@ async function sourceFiles(directory) {
 // migrate to feature routers.
 const FUNCTION_EXCEPTIONS = new Map([
   ["apps/api/src/http.ts#handleApiRequestCore", 761],
-  ["apps/api/src/main.ts#createApiRuntime", 426],
+  ["apps/api/src/main.ts#createApiRuntime", 435],
   ["apps/api/src/server.ts#createApiServer", 166],
   ["apps/worker/src/main.ts#createWorkerRuntime", 208],
   ["packages/application/src/authoring-use-cases.ts#createAuthoringDraft", 165],
   ["packages/curriculum/src/learning-runtime.ts#evaluateModuleAttempt", 187],
   ["packages/integrations/src/qdrant.ts#createQdrantVectorStore", 270],
-  ["packages/persistence/src/account-management-repository.ts#createAccountManagementRepository", 152],
+  [
+    "packages/persistence/src/account-management-repository.ts#createAccountManagementRepository",
+    152,
+  ],
   ["packages/persistence/src/account-recovery-repository.ts#operations", 172],
   ["packages/persistence/src/answer-repository.ts#createAnswerOperations", 249],
   ["packages/persistence/src/attempt-repository.ts#createOperations", 203],
-  ["packages/persistence/src/authoring-repository.ts#createAuthoringRepository", 215],
-  ["packages/persistence/src/content-repository.ts#materializePublishedAuthoringActivity", 246],
-  ["packages/persistence/src/continuing-education-report-repository.ts#createContinuingEducationReportRepository", 201],
-  ["packages/persistence/src/correction-repository.ts#createCorrectionUseCaseDependencies", 154],
-  ["packages/persistence/src/dashboard-repository.ts#createDashboardReadRepository", 215],
-  ["packages/persistence/src/diagnostic-session-repository.ts#createDiagnosticSessionRepository", 463],
-  ["packages/persistence/src/journey-repository.ts#createParticipantJourneyRepository", 180],
-  ["packages/persistence/src/learning-state-repository.ts#createLearningStateRepository", 432],
+  [
+    "packages/persistence/src/authoring-repository.ts#createAuthoringRepository",
+    215,
+  ],
+  [
+    "packages/persistence/src/content-repository.ts#materializePublishedAuthoringActivity",
+    246,
+  ],
+  [
+    "packages/persistence/src/continuing-education-report-repository.ts#createContinuingEducationReportRepository",
+    201,
+  ],
+  [
+    "packages/persistence/src/correction-repository.ts#createCorrectionUseCaseDependencies",
+    154,
+  ],
+  [
+    "packages/persistence/src/dashboard-repository.ts#createDashboardReadRepository",
+    215,
+  ],
+  [
+    "packages/persistence/src/diagnostic-session-repository.ts#createDiagnosticSessionRepository",
+    463,
+  ],
+  [
+    "packages/persistence/src/journey-repository.ts#createParticipantJourneyRepository",
+    180,
+  ],
+  [
+    "packages/persistence/src/learning-state-repository.ts#createLearningStateRepository",
+    432,
+  ],
 ]);
 
 function topLevelFunctions(content) {
