@@ -13932,3 +13932,47 @@ IN_PROGRESS
 - resultado: publicação solicitada concluída; registro final persistido em commit documental subsequente.
 - status: COMPLETED (publicação Git); projeto READY_FOR_NEXT_STEP.
 - next_action: verificar CI same-SHA em rodada própria; nenhum resultado de workflow remoto inferido.
+
+## 2026-09-10 — FINAL AAA CERTIFICATION (docs/49 §§1–100)
+
+### TIMESTAMP
+
+2026-09-10T21:05:00-0300
+
+### ENGINE
+
+BUILD / AUDIT / RELEASE / RUNTIME CONTROLLER
+
+### PHASE / SPRINT / TASK
+
+FINAL AAA CERTIFICATION — `AAA-CERT-001..005`
+
+### ACTION
+
+Prompt arquivado em `docs/49`; baseline `docs/modernization/0004`. AAA-CERT-001:
+21 killer tests + harness autoritativo (Stryker 70.78%→89.95% raw; 12 REAL
+mortos, 10 EQUIVALENT provados; adjusted 100%). AAA-CERT-002: same-sha
+autenticado + leg candidate + bounded polling + remote-ci-summary; candidate.yml
+com Redis matrix+restart, mutation closure, summaries, staging browser, SBOM,
+evidence, gate. AAA-CERT-003: Redis 8.10.1 real (5/5 + restart SIGKILL 2/2 +
+HTTP A/B), adapter sem fallback silencioso. AAA-CERT-004: bundle 18 artefatos +
+strict validator + scorecard + audit v4 JSON (P0/P1 via JSON). AAA-CERT-005:
+staging --browser fresh + k6 p95 9.8ms + OTel 3017 traces + restore RTO 1,1s.
+Três bugs reais corrigidos (restore createdb args, flagValue espaço, security
+counts). Freeze `ffee812`; `verify:aaa-candidate` 21/24.
+
+### RESULT
+
+Eng 93 / Sec 95 / Ops 89; P0 = 0, P1 = 0; Coverage/Mutation/RLS/Redis/Staging/
+Security/Evidence PASS; Same-SHA FAIL (RF-02: sem runs remotos do SHA, sem
+token). Veredito: TRIPLE AAA — REVISE; readiness STAGING VERIFIED.
+
+### DECISIONS
+
+Barra preservada (§3/§100): REVISE em vez de PASS. AAA-001 segue aguardando
+Ricardo. Sem push executado (publicação é decisão humana). Sem dados reais,
+deploy, clínica ou produção.
+
+### STATUS
+
+READY_FOR_NEXT_STEP

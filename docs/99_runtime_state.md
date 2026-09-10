@@ -13,9 +13,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: FINAL TRIPLE AAA CLOSURE (docs/48 §§1–100) — gaps fechados; veredito TRIPLE AAA — REVISE (audit v3)
-- current_sprint: `AAA-FINAL-001..007` + resíduo RF-01..RF-06
-- current_task: publicação Git autorizada de AAA-PROMOTE-001 e correção de formatação; depois prova remota same-SHA (RF-02)
+- current_phase: FINAL AAA CERTIFICATION (docs/49 §§1–100) — 4/5 gaps fechados com prova fresh; veredito TRIPLE AAA — REVISE (audit v4)
+- current_sprint: `AAA-CERT-001..005` + resíduo RF-02/RF-03R/RF-04/RF-05/RF-07/RF-08
+- current_task: publicar docs de certificação (audit v4 + scorecard); depois prova remota same-SHA (RF-02, exige token/tag candidate)
 
 ## STATUS
 
@@ -23,8 +23,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: publicados `7ba0114` e `101bb5d` em origin/main; git ls-remote confirmou SHA `101bb5df741caebdca0c37bf8e499eb79fac717f` idêntico ao HEAD local e worktree limpo. `pnpm verify` PASS: 1201 testes, 63 skips; cobertura 90,91/85,00/96,03/91,68. Este registro documental preserva a confirmação pós-push.
-- next_action: confirmar CI same-SHA do HEAD (RF-02) e operar Redis runtime (RF-06). RF-01 tem piso local aprovado com as exclusões documentadas; não há novo veredito AAA.
+- last_completed_action: certificação executada no freeze `ffee812`: mutation adjusted 100% (raw 89.95, 0 real survivors), coverage 90.92/85.03/96.04/91.69 PASS, RLS 7/7, Redis 5/5+restart 2/2, staging --browser PASS, E2E 45/45, bundle 18 artefatos strict (só remote-ci FAIL). `verify:aaa-candidate` 21/24 (3 FAIL mesma causa RF-02). Três bugs reais corrigidos (restore args, flagValue, security counts).
+- next_action: publicar commit docs(audit) v4; abrir tag `candidate-*` ou dispatch com GITHUB_TOKEN para fechar RF-02 e re-emitir veredito.
+
+## BLOQUEIOS
+
+- blockers: `AAA-001` continua aguardando aprovação humana (SLO/RPO/RTO, piloto, ambientes); RF-02 (runs remotos quality/security/candidate no SHA final) bloqueia a promoção — sem token GitHub neste ambiente e sem inferência de CI. Nenhuma task usa dados reais, publica clínica ou altera migrations produtivas. Verificações locais em Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado; contrato CI Node `22.22.0`/pnpm `10.33.0`.
 
 ## BLOQUEIOS
 
@@ -37,8 +41,8 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T16:10:28-0300
-- session_checkpoint: publicação Git confirmada por SHA remoto; gates locais PASS em Node 22.23.2/pnpm 10.33.0; audit sem high/critical, com 1 low e 3 moderate; CI remoto não inferido
+- last_update: 2026-09-10T21:05:00-0300
+- session_checkpoint: certificação AAA-CERT executada; freeze ffee812; audit v4 REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gates locais PASS salvo same-SHA remoto; sem push (aguardando decisão de publicação)
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 

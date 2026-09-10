@@ -2238,3 +2238,14 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - RF-01: piso local 90/85/90/90 aprovado nesta revalidação de `7ba0114` com correções de formatação: 90,91/85,00/96,03/91,68; exclusões explícitas em `scripts/coverage-exclusions.mjs`. A evidência não fecha CI remoto nem promove o veredito AAA global.
 - RF-02: permanece pendente de prova CI same-SHA; commit/push autorizados nesta rodada.
 - RF-05: audit corrente registra 1 low e 3 moderate, sem high/critical; nenhuma dependência alterada.
+
+## 2026-09-10 — FINAL AAA CERTIFICATION (docs/49, freeze `ffee812`)
+
+- AAA-CERT-001 (Mutation): CONCLUÍDO — raw 89.95%, adjusted 100% verificado, 0 real survivors (`reports/mutation-summary.json`, `docs/quality/mutation-classification-v4.md`).
+- AAA-CERT-002 (Same-SHA): MECANISMO CONCLUÍDO, PROVA PENDENTE — verifier autenticado + candidate leg + remote-ci-summary; RF-02 aberto (sem runs/token).
+- AAA-CERT-003 (Redis): CONCLUÍDO — Redis 8.10.1 real, 5/5 + restart 2/2 + HTTP A/B, sem fallback silencioso. RF-06 FECHADO.
+- AAA-CERT-004 (Freshness): CONCLUÍDO — bundle 18 artefatos + strict validator + scorecard v4 + audit v4 JSON.
+- AAA-CERT-005 (Staging+audit v4): CONCLUÍDO — staging --browser fresh, k6 p95 9.8ms, OTel 3017 traces, restore RTO 1,1s, E2E 45/45, audit v4 REVISE (Eng 93/Sec 95/Ops 89).
+- Bugs reais corrigidos: restore createdb args (superuser), flagValue espaço, security counts.
+- Residuais: RF-02 (remoto, bloqueia promoção), RF-03R (mutação 1 arquivo), RF-04 (arquivos grandes), RF-05 (dev-only), RF-07 (branches +0.03), RF-08 (CodeQL/OSV no SHA). RF-01 FECHADO (coverage PASS).
+- AAA-001: segue WAITING_HUMAN_APPROVAL.

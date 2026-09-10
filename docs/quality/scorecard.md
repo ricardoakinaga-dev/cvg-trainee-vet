@@ -1,46 +1,56 @@
-# Quality Scorecard — FINAL CLOSURE R2 (2026-09-10, HEAD `19d5ca8`)
+# Quality Scorecard — FINAL CERTIFICATION v4 (2026-09-10, HEAD `ffee812`)
 
-Evidência: local + live descartável + staging reproduzível (Node v22.23.2).
+Evidência: local + PG/Redis/Qdrant descartáveis reais + staging reproduzível
+com browser + k6 (Node v24.20.0 local; contrato CI Node 22.22.0).
 Escala 0–100; sem 100 sem evidência extraordinária. Metas: Engineering ≥ 97,
 Security ≥ 95, Operations ≥ 95, P0 = P1 = 0.
-Fonte: `docs/audits/state-of-art-final-audit-v3.md`.
+Fonte: `docs/audits/state-of-art-final-audit-v4.md` + `docs/audits/state-of-art-final-audit-v4.json`.
 
 | Domain | Score | Target | Evidence |
 |---|---:|---:|---|
-| Architecture | 95 | 97 | registry canônico, 13 features, ciclos zero, budgets de arquivo/função |
-| Modularity | 95 | 97 | `http.ts` 1166 (−73%), features com testes focais, composition root |
-| Domain | 92 | — | inalterado, puro, property tests nas invariantes |
-| Application | 90 | — | casos de uso testados; coverage de caminho crítico parcial |
-| API | 90 | — | dispatch 761 linhas ratcheted; validação-first; erro model padronizado |
-| Contracts | 92 | — | strict schemas, 95 testes, matriz gerada |
-| Persistence | 90 | — | migrations append-only + governance + live RLS |
-| RLS | 93 | 95 | matriz live 7/7 + pool isolation 10× + owner/grants auditados |
-| Authentication | 92 | — | cookie TLS real, rotação/revogação, 51 negativos |
-| Authorization | 93 | — | CAPABILITIES, propriedades, mutation killers |
-| Security | 95 | 95 | threat model, RLS live, Redis real, audit high limpo, headers |
-| Supply Chain | 92 | — | CodeQL verde remoto, OSV workflow, SBOM validado, SHA pins |
-| Testing | 93 | 97 | 1091 testes, staging browser real; cobertura abaixo da meta |
-| Coverage | 85 | 90 | 85,48/81,39/86,61/86,14 — FAIL declarado |
-| CI | 90 | — | quality+security+candidate; remote HEAD pendente |
-| Observability | 93 | — | OTel real com correlação e flush periódico + drills |
-| Resilience | 92 | — | retry/timeout/shutdown/backup-restore RTO 1,4s/failover |
-| Worker | 90 | — | lease/fencing/dead-letter + crash/dupe/competing testados |
-| Performance | 85 | — | k6 baseline medido na stack; sem budget de bundle |
+| Architecture | 96 | 97 | registry canônico, 13 features, ciclos zero, budgets arquivo/função |
+| Modularity | 96 | 97 | `http.ts` 1166 composition root (§58), features com testes focais |
+| Domain | 93 | — | puro, property tests nas invariantes |
+| Application | 93 | — | casos de uso testados + 21 killer tests de mutação |
+| API | 93 | — | dispatch ratcheted, validação-first, error model padronizado |
+| Contracts | 94 | — | strict schemas, 95 testes, matriz gerada |
+| Persistence | 92 | — | 55 migrations append-only + governance + restore RTO 1,1s |
+| RLS | 95 | 95 | matriz live 7/7 fresh + pool isolation + owner/grants auditados |
+| Authentication | 94 | — | cookie TLS real, rotação/revogação, 51 negativos |
+| Authorization | 96 | — | mutation-closed (adjusted 100%, 0 real survivors), properties |
+| Security | 96 | 95 | threat model, headers, audit high limpo, secrets limpo |
+| Supply Chain | 94 | — | Actions pinadas, SBOM 492 válido, OSV, lockfile, audit limpo |
+| Testing | 96 | 97 | 1228 testes (65 skips ambientais), E2E 45/45, staging browser |
+| Coverage | 91 | 90 | 90.92/85.03/96.04/91.69 — PASS (branches +0.03, margem fina) |
+| Mutation Assurance | 94 | 90 | raw 89.95% + adjusted 100% verificado; escopo: authorization.ts |
+| CI | 92 | — | quality+security+candidate wired; verde remoto do SHA pendente |
+| Same-SHA Assurance | 60 | — | verifier autenticado + candidate leg; sem runs remotos do SHA |
+| Observability | 94 | — | OTel real, 3017 traces, correlação, redaction, drill de outage |
+| Resilience | 94 | — | retry/timeout/shutdown + Redis restart drill com recovery |
+| Worker | 93 | — | lease/fencing/dead-letter + crash/dupe/competing + restart drill |
+| Performance | 90 | — | k6 fresh p95 9.8ms < baseline 25.6ms; sem budget de bundle |
 | Accessibility | 88 | — | E2E/axe/visual preservados; sem auditoria AT real |
-| Documentation | 90 | 97 | ADRs/runbooks/DR/scorecard; state enxuto |
-| Maintainability | 88 | 95 | budgets e gates; arquivos >1000 linhas remanescentes |
-| Release Engineering | 88 | 95 | bundle 12 artefatos + digests + SBOM + candidate gate |
-| Production Readiness | 45 | — | staging verificado; sem produção/deploy/clínica |
+| Maintainability | 90 | 95 | budgets e gates; `http.ts` 1166 preservado por decisão §58 |
+| Release Engineering | 94 | 95 | bundle 18 artefatos + strict validator + digests + SBOM |
+| Staging Readiness | 96 | — | stack fresh completa + browser + 5 drills + k6 + OTel |
+| Production Readiness | 45 | — | sem produção/deploy/clínica (inalterado, por desenho) |
+| Documentation | 93 | 97 | ADRs/runbooks/DR/classification v4/audit v4; state enxuto |
 
-## AAA agregados
+## AAA agregados (média dos domínios mapeados, fórmula na auditoria v4 §37)
 
-- **AAA Engineering = 93** (arch/modularity/domain/app/contracts/testing/
-  coverage/maintainability/CI/traceability) — abaixo de 97 (cobertura).
-- **AAA Security = 95** — atinge a meta no recorte local/live; P0/P1 = 0.
-- **AAA Operations = 94** — abaixo de 95 (remote same-SHA pendente).
+- **AAA Engineering = 93** (arch/modularity/domain/app/api/contracts/testing/
+  coverage/mutation/CI/maintainability/documentation: 1121/12) — abaixo de 97
+  (margem de branches, escopo de mutação em 1 arquivo, `http.ts` 1166).
+- **AAA Security = 95** (persistence/RLS/authn/authz/security/supply-chain:
+  567/6) — atinge a meta no recorte local/live; P0/P1 = 0.
+- **AAA Operations = 89** (observability/resilience/worker/performance/
+  accessibility/release/staging/same-sha: 709/8) — abaixo de 95, puxado por
+  Same-SHA Assurance 60 (sem runs remotos do SHA) + sem auditoria AT real.
 
 ## Veredito
 
-**TRIPLE AAA — REVISE.** `P0 = 0`, `P1 = 0`. Residuais RF-01…RF-06 em
-`docs/audits/state-of-art-final-audit-v3.md §36`. Prontidão:
-`STAGING VERIFIED` (stack reproduzível local); sem claim de produção.
+**TRIPLE AAA — REVISE.** `P0 = 0`, `P1 = 0`. Todos os gates §76 passam
+localmente exceto `Same-SHA PASS` (RF-02: sem runs remotos do SHA final,
+sem token neste ambiente). Prontidão: `STAGING VERIFIED`; sem claim de
+produção. Residuais e plano de fechamento em
+`docs/audits/state-of-art-final-audit-v4.md` §36.
