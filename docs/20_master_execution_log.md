@@ -13925,3 +13925,10 @@ IN_PROGRESS
 - evidência: commit base acima, `traceability.yml`/`AAA-PROMOTE-001-PUBLISH`, saída local `/tmp/cvg-git-publish-verify.log`; relatório temporário não versionado.
 - status: READY_FOR_NEXT_STEP
 - next_action: commitar formatação e continuidade, executar push normal para origin/main e verificar SHA remoto; CI same-SHA permanece pendente e não é inferido do push.
+
+### Confirmação pós-push — 2026-09-10T16:10:28-0300
+
+- last_completed_action: `git push origin main` PASS, avanço `c6cd12d..101bb5d`; `git ls-remote origin refs/heads/main` retornou `101bb5df741caebdca0c37bf8e499eb79fac717f`, igual ao HEAD local; worktree limpo.
+- resultado: publicação solicitada concluída; registro final persistido em commit documental subsequente.
+- status: COMPLETED (publicação Git); projeto READY_FOR_NEXT_STEP.
+- next_action: verificar CI same-SHA em rodada própria; nenhum resultado de workflow remoto inferido.

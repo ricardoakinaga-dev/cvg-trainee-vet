@@ -23,8 +23,8 @@
 
 ## PROGRESSO
 
-- last_completed_action: revisado o commit pendente `7ba0114eb44f49b2b936c17159c5790f4c4580e3`, corrigida somente a formatação de 13 arquivos e concluído `pnpm verify` com 1201 testes passando e 63 skips; cobertura 90,91/85,00/96,03/91,68. Publicação em origin/main autorizada pelo usuário e preparada neste checkpoint.
-- next_action: criar o commit de formatação e continuidade, publicar por push normal em origin/main e confirmar igualdade do SHA remoto; depois confirmar CI same-SHA (RF-02) e operar Redis runtime (RF-06). RF-01 tem piso local aprovado com as exclusões documentadas; não há novo veredito AAA.
+- last_completed_action: publicados `7ba0114` e `101bb5d` em origin/main; git ls-remote confirmou SHA `101bb5df741caebdca0c37bf8e499eb79fac717f` idêntico ao HEAD local e worktree limpo. `pnpm verify` PASS: 1201 testes, 63 skips; cobertura 90,91/85,00/96,03/91,68. Este registro documental preserva a confirmação pós-push.
+- next_action: confirmar CI same-SHA do HEAD (RF-02) e operar Redis runtime (RF-06). RF-01 tem piso local aprovado com as exclusões documentadas; não há novo veredito AAA.
 
 ## BLOQUEIOS
 
@@ -37,8 +37,8 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T16:10:00-0300
-- session_checkpoint: gates locais PASS em Node 22.23.2/pnpm 10.33.0; audit sem high/critical, com 1 low e 3 moderate; push preparado, confirmação remota será feita após o commit; CI remoto não inferido
+- last_update: 2026-09-10T16:10:28-0300
+- session_checkpoint: publicação Git confirmada por SHA remoto; gates locais PASS em Node 22.23.2/pnpm 10.33.0; audit sem high/critical, com 1 low e 3 moderate; CI remoto não inferido
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
