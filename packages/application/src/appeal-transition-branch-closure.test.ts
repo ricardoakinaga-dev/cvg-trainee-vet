@@ -102,7 +102,7 @@ describe("appeal transition branch closure", () => {
             event: {
               type: "DECIDIR",
               decision: "MANTER_RESULTADO",
-              decisionRationale,
+              decisionRationale: decisionRationale as string,
             },
           },
           port,

@@ -104,7 +104,7 @@ function parseUrl(url: string): {
     throw new RangeError("rate-limit redis URL must use the redis: scheme");
   }
   return Object.freeze({
-    host: parsed.hostname === "" ? "127.0.0.1" : parsed.hostname,
+    host: parsed.hostname,
     port: parsed.port === "" ? 6379 : Number(parsed.port),
   });
 }

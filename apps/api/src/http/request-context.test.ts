@@ -121,10 +121,7 @@ describe("request context branch closure (AAA-FINAL-003)", () => {
     );
     expect(blank.correlationId).toBe("request-1");
     expect(blank.clientIp).toBeNull();
-    const loopback = createRequestContext(
-      { ...base, clientIp: "::1" },
-      deps,
-    );
+    const loopback = createRequestContext({ ...base, clientIp: "::1" }, deps);
     expect(loopback.clientIp).toBe("127.0.0.1");
     const none = createRequestContext(base, deps);
     expect(none.clientIp).toBeNull();

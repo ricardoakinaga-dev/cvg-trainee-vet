@@ -26,7 +26,7 @@ function port(overrides = {}) {
       scopeId,
       items: [],
       hasNext: false,
-      nextCursor: undefined,
+      nextCursor: undefined as unknown as string,
     })),
     ...overrides,
   } satisfies AuditTrailReadPort;

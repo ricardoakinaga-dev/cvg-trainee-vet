@@ -27,6 +27,7 @@
     "test:e2e": "node scripts/build-e2e.mjs && playwright test",
     "test:coverage": "vitest run --coverage",
     "verify:coverage-floor": "node scripts/verify-coverage-floor.mjs",
+    "verify:evidence-consistency": "node scripts/verify-evidence-consistency.mjs",
     "test:load": "k6 run tests/load/k6-baseline.js",
     "test:rls:live": "node scripts/run-rls-live.mjs",
     "test:ratelimit:live": "node scripts/run-ratelimit-live.mjs",
@@ -61,7 +62,7 @@
     "verify:complexity": "node scripts/verify-complexity.mjs",
     "verify:cycles": "node scripts/verify-cycles.mjs",
     "verify:dead-code": "node scripts/verify-dead-code.mjs",
-    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:coverage-floor && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:complexity && pnpm verify:cycles && pnpm verify:dead-code && pnpm verify:security && pnpm verify:otel && pnpm verify:release-evidence && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
+    "verify": "pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:coverage-floor && pnpm verify:evidence-consistency && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:complexity && pnpm verify:cycles && pnpm verify:dead-code && pnpm verify:security && pnpm verify:otel && pnpm verify:release-evidence && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",

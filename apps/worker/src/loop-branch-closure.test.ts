@@ -15,22 +15,22 @@ import { processOutboxOnce } from "./loop.js";
 
 function baseEvent(): OutboxEventRecord {
   return {
-  id: "11111111-1111-4111-8111-111111111111",
-  eventType: "content.published.v1",
-  aggregateType: "content_version",
-  aggregateId: "22222222-2222-4222-8222-222222222222",
-  occurredAt: new Date("2026-08-09T17:00:00.000Z"),
-  schemaVersion: 1,
-  correlationId: "33333333-3333-4333-8333-333333333333",
-  payload: { content_id: "22222222-2222-4222-8222-222222222222" },
-  status: "PROCESSING",
-  attempts: 1,
-  availableAt: new Date("2026-08-09T17:00:00.000Z"),
-  lockedUntil: new Date("2026-08-09T17:01:00.000Z"),
-  leaseToken: "lease-11111111-1111-4111-8111-111111111111",
-  lastErrorCode: null,
-  processedAt: null,
-  createdAt: new Date("2026-08-09T17:00:00.000Z"),
+    id: "11111111-1111-4111-8111-111111111111",
+    eventType: "content.published.v1",
+    aggregateType: "content_version",
+    aggregateId: "22222222-2222-4222-8222-222222222222",
+    occurredAt: new Date("2026-08-09T17:00:00.000Z"),
+    schemaVersion: 1,
+    correlationId: "33333333-3333-4333-8333-333333333333",
+    payload: { content_id: "22222222-2222-4222-8222-222222222222" },
+    status: "PROCESSING",
+    attempts: 1,
+    availableAt: new Date("2026-08-09T17:00:00.000Z"),
+    lockedUntil: new Date("2026-08-09T17:01:00.000Z"),
+    leaseToken: "lease-11111111-1111-4111-8111-111111111111",
+    lastErrorCode: null,
+    processedAt: null,
+    createdAt: new Date("2026-08-09T17:00:00.000Z"),
   };
 }
 
@@ -88,7 +88,7 @@ describe("worker branch closure — lease edges", () => {
 
 describe("worker branch closure — terminal telemetry", () => {
   it("reports dead_letter with retryable false at the attempt limit", async () => {
-    const observability = createObservability({ serviceName: "test" });
+    const observability = createObservability({ service: "test" });
     const metrics: Array<{ name: string; fields: unknown }> = [];
     const events = [{ ...base, attempts: 5 }];
     const repo = repository(events);
@@ -105,17 +105,16 @@ describe("worker branch closure — terminal telemetry", () => {
           ...observability,
           metrics: {
             ...observability.metrics,
-            increment: ((
-              name: string,
-              fields?: unknown,
-            ) => {
+            increment: ((name: string, fields?: unknown) => {
               metrics.push({ name, fields });
             }) as typeof observability.metrics.increment,
           },
         },
       },
     );
-    const failed = metrics.find((metric) => metric.name === "worker.events.failed");
+    const failed = metrics.find(
+      (metric) => metric.name === "worker.events.failed",
+    );
     expect(failed?.fields).toMatchObject({
       outcome: "dead_letter",
       event_type: "content.published.v1",

@@ -28,9 +28,9 @@ describe("proxy branch closure — normalization", () => {
 
   it("accepts full IPv6 and lowercases it", () => {
     expect(normalizeIpAddress("2001:DB8::1")).toBe("2001:db8::1");
-    expect(
-      normalizeIpAddress("2001:0db8:0000:0000:0000:ff00:0042:8329"),
-    ).toBe("2001:0db8:0000:0000:0000:ff00:0042:8329");
+    expect(normalizeIpAddress("2001:0db8:0000:0000:0000:ff00:0042:8329")).toBe(
+      "2001:0db8:0000:0000:0000:ff00:0042:8329",
+    );
     expect(normalizeIpAddress("::1")).toBe("127.0.0.1");
     expect(normalizeIpAddress("::ffff:10.0.0.8")).toBe("10.0.0.8");
   });
@@ -46,11 +46,7 @@ describe("proxy branch closure — client resolution", () => {
       ),
     ).toBe("203.0.113.7");
     expect(
-      resolveClientIp(
-        "127.0.0.1",
-        { forwarded: "for=unknown" },
-        ["127.0.0.1"],
-      ),
+      resolveClientIp("127.0.0.1", { forwarded: "for=unknown" }, ["127.0.0.1"]),
     ).toBe("127.0.0.1");
     expect(
       resolveClientIp("127.0.0.1", { forwarded: "for=" }, ["127.0.0.1"]),
@@ -61,11 +57,9 @@ describe("proxy branch closure — client resolution", () => {
     // Leftmost-only: an empty first entry falls back to the socket instead
     // of scanning the list (no list-smuggling).
     expect(
-      resolveClientIp(
+      resolveClientIp("127.0.0.1", { "x-forwarded-for": " , 203.0.113.9" }, [
         "127.0.0.1",
-        { "x-forwarded-for": " , 203.0.113.9" },
-        ["127.0.0.1"],
-      ),
+      ]),
     ).toBe("127.0.0.1");
     expect(
       resolveClientIp("198.51.100.9", { "x-forwarded-for": "203.0.113.9" }, []),

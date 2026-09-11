@@ -35,7 +35,9 @@ describe("retry branch closure — failure classification", () => {
       retryable: true,
       statusCode: 503,
     });
-    expect(classifyQdrantInitializationError({ statusCode: 429 })).toMatchObject({
+    expect(
+      classifyQdrantInitializationError({ statusCode: 429 }),
+    ).toMatchObject({
       classification: "rate_limited",
       retryable: true,
     });
@@ -65,9 +67,10 @@ describe("retry branch closure — failure classification", () => {
     expect(
       classifyQdrantInitializationError({ message: "nothing useful here" }),
     ).toEqual({ classification: "unknown", retryable: false });
-    expect(
-      classifyQdrantInitializationError({ message: 42 }),
-    ).toEqual({ classification: "unknown", retryable: false });
+    expect(classifyQdrantInitializationError({ message: 42 })).toEqual({
+      classification: "unknown",
+      retryable: false,
+    });
   });
 
   it("classifies unknown HTTP ranges without retrying", () => {
@@ -105,9 +108,10 @@ describe("retry branch closure — failure classification", () => {
       classification: "unknown",
       retryable: false,
     });
-    expect(
-      classifyQdrantInitializationError({ cause: 42 }),
-    ).toEqual({ classification: "unknown", retryable: false });
+    expect(classifyQdrantInitializationError({ cause: 42 })).toEqual({
+      classification: "unknown",
+      retryable: false,
+    });
   });
 });
 
@@ -116,10 +120,7 @@ describe("retry branch closure — delay computation guards", () => {
 
   it("rejects invalid policies and attempts fail-fast", () => {
     expect(() =>
-      calculateQdrantInitializationRetryDelay(
-        { ...policy, maxAttempts: 0 },
-        1,
-      ),
+      calculateQdrantInitializationRetryDelay({ ...policy, maxAttempts: 0 }, 1),
     ).toThrow(RangeError);
     expect(() =>
       calculateQdrantInitializationRetryDelay(
@@ -136,13 +137,17 @@ describe("retry branch closure — delay computation guards", () => {
     expect(() =>
       calculateQdrantInitializationRetryDelay({ ...policy, jitterRatio: 2 }, 1),
     ).toThrow(RangeError);
-    expect(() =>
-      calculateQdrantInitializationRetryDelay(policy, 0),
-    ).toThrow(RangeError);
+    expect(() => calculateQdrantInitializationRetryDelay(policy, 0)).toThrow(
+      RangeError,
+    );
   });
 
   it("clamps hostile random sources to the neutral midpoint", () => {
-    const expected = calculateQdrantInitializationRetryDelay(policy, 1, () => 0.5);
+    const expected = calculateQdrantInitializationRetryDelay(
+      policy,
+      1,
+      () => 0.5,
+    );
     for (const random of [() => 2, () => Number.NaN, () => -1]) {
       expect(calculateQdrantInitializationRetryDelay(policy, 1, random)).toBe(
         expected,
@@ -151,7 +156,11 @@ describe("retry branch closure — delay computation guards", () => {
   });
 
   it("ignores invalid retry-after hints", () => {
-    const expected = calculateQdrantInitializationRetryDelay(policy, 1, () => 0.5);
+    const expected = calculateQdrantInitializationRetryDelay(
+      policy,
+      1,
+      () => 0.5,
+    );
     for (const hint of [Number.NaN, -5, Number.POSITIVE_INFINITY]) {
       expect(
         calculateQdrantInitializationRetryDelay(policy, 1, () => 0.5, hint),
