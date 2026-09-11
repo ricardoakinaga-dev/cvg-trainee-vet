@@ -6,6 +6,23 @@ rules:
   - "participant projections never contain internal authorship/source fields"
   - "every completed item requires evidence"
 artifacts:
+  - id: "GIT-PUBLISH-20260911"
+    requirements: ["SPEC-0118", "D-110"]
+    documents:
+      [
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    tests:
+      ["git fetch origin --prune", "git diff --check", "git push origin main"]
+    commit: "3ad480375bbc5f4d79099b1b9c703e6c351096d4"
+    artifacts: ["origin/main:3ad480375bbc5f4d79099b1b9c703e6c351096d4"]
+    verification:
+      [
+        "git ls-remote origin refs/heads/main matched local HEAD; 13 pending commits published; worktree clean; remote CI outcome not inferred",
+      ]
+    status: "published"
   - id: "GIT-PUBLISH-20260910"
     requirements: ["SPEC-0118", "D-110"]
     documents:

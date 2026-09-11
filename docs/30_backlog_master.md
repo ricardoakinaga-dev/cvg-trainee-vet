@@ -2266,3 +2266,8 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 - AAA-FINAL-007 (evidence): CONCLUÍDO — 18 artefatos strict, self-audit verifier.
 - AAA-FINAL-008 (audit v5): CONCLUÍDO — REVISE (Eng 94/Sec 95/Ops 91).
 - RF-05 FECHADO (zero advisories). RF-02/RF-03R/RF-04/RF-07/RF-08 abertos. AAA-001 pendente.
+
+## 2026-09-11 — Publicação dos commits de certificação v5
+
+- RF-02: os 13 commits locais pendentes foram publicados em `origin/main`; HEAD remoto confirmado em `3ad480375bbc5f4d79099b1b9c703e6c351096d4`. A prova same-SHA de CI ainda depende de runs autenticados e permanece aberta.
+- AAA-FINAL-001..009: código e documentação de certificação v5 agora estão disponíveis no remoto; o veredito continua `TRIPLE AAA — REVISE` até RF-02 e aprovação de `AAA-001`.

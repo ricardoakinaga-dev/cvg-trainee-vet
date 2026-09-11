@@ -23,7 +23,7 @@
 
 ## PROGRESSO
 
-- last_completed_action: publicados em `origin/main` os 13 commits locais pendentes (`d35b36a` até `d6d8c00`); `git ls-remote` confirmou o SHA `d6d8c00fde661738bef0c4d518b979c23f93ca6c` igual ao HEAD local e o worktree permanece limpo. A publicação foi solicitada por Ricardo.
+- last_completed_action: publicados em `origin/main` os 13 commits locais pendentes (`bcbe173` até `3ad4803`); `git ls-remote` confirmou o SHA `3ad480375bbc5f4d79099b1b9c703e6c351096d4` igual ao HEAD local e o worktree permanece limpo. A publicação foi solicitada por Ricardo.
 - next_action: acompanhar runs remotos no SHA publicado para RF-02; depois avaliar tag/dispatch com token e AAA-001 sob aprovação humana.
 
 ## BLOQUEIOS
@@ -37,12 +37,12 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-10T18:15:14-0300
-- session_checkpoint: push de 13 commits concluído e SHA remoto confirmado em `d6d8c00fde661738bef0c4d518b979c23f93ca6c`; audit v4 permanece REVISE (Eng 93/Sec 95/Ops 89, P0=P1=0); gate 21/24, RF-02 aberto
+- last_update: 2026-09-11T08:56:36-0300
+- session_checkpoint: push de 13 commits concluído e SHA remoto confirmado em `3ad480375bbc5f4d79099b1b9c703e6c351096d4`; audit v5 permanece REVISE (Eng 94/Sec 95/Ops 91, P0=P1=0); gate 21+/24, RF-02 aberto
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: branch local `main` sincronizada com `origin/main` em `d6d8c00fde661738bef0c4d518b979c23f93ca6c`; árvore efetiva preserva a ponta da AAA; não houve deploy
+- head: branch local `main` sincronizada com `origin/main` em `3ad480375bbc5f4d79099b1b9c703e6c351096d4`; árvore efetiva preserva a ponta da AAA; não houve deploy
 - origin: somente `origin/main` e `origin/HEAD -> origin/main` existem e estão sincronizados com `main`; os testes são evidência do checkout, não de workflow remoto; nenhuma execução remota foi inferida
 - worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
