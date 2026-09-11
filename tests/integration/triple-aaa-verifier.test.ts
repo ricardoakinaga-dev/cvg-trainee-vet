@@ -27,14 +27,17 @@ function baseFiles(sha = FAKE_SHA) {
   const pass = "PASS";
   return {
     "coverage-summary.json": {
-      total: {
-        statements: { pct: 91.5 },
-        branches: { pct: 86.1 },
-        functions: { pct: 95.9 },
-        lines: { pct: 92.2 },
-      },
+      format: "cvg-coverage-summary/v1",
       status: pass,
       sha,
+      report: {
+        total: {
+          statements: { pct: 91.5 },
+          branches: { pct: 86.1 },
+          functions: { pct: 95.9 },
+          lines: { pct: 92.2 },
+        },
+      },
     },
     "mutation-summary.json": {
       format: "cvg-mutation-summary/v1",
@@ -153,12 +156,16 @@ function auditDoc() {
     "authz",
     "rls",
     "session",
+    "recovery",
+    "csrf",
     "rate_limit",
-    "negative_tests",
+    "redis_failure_policy",
+    "input_validation",
     "security_testing",
     "supply_chain",
     "secrets",
     "audit",
+    "ai_qdrant_trust",
   ]) {
     domains[name] = 95;
   }
@@ -166,16 +173,21 @@ function auditDoc() {
     "observability",
     "otel",
     "metrics",
+    "health_readiness",
     "timeouts",
     "retries",
+    "shutdown",
     "worker",
     "multi_instance",
     "redis",
+    "postgres",
+    "qdrant_recovery",
     "backup",
     "restore",
     "dr",
     "fault_drills",
     "load",
+    "remote_ci",
     "same_sha",
     "release_evidence",
   ]) {
@@ -356,8 +368,71 @@ describe("triple-aaa verifier self-tests", () => {
     expect(child.code ?? 0).not.toBe(0);
   }, 120000);
 
+  it("anti-forgery: SBOM inventory substrings do not trip real mode", async () => {
+    // Regression: the real SBOM embeds component paths such as
+    // scripts/real-e2e-fixture-server.mjs — inventory content must never
+    // trip the forgery screen (§125.27 covers claims, not inventories).
+    const dir = join(
+      tmpdir(),
+      `cvg-3a-inv-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e6)}`,
+    );
+    const files = baseFiles();
+    files["sbom.cyclonedx.json"] = {
+      bomFormat: "CycloneDX",
+      specVersion: "1.6",
+      metadata: {},
+      components: [
+        {
+          name: "scripts",
+          version: "1",
+          description: "example inventory with fixture server reference",
+        },
+        {
+          name: "app",
+          version: "1",
+          evidence: { location: "scripts/real-e2e-fixture-server.mjs" },
+        },
+      ],
+    };
+    await writeBundle(dir, files);
+    const auditPath = join(dir, "audit-v6.json");
+    const registerPath = join(dir, "risk-register.json");
+    const reviewPath = join(dir, "review.json");
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(auditPath, `${JSON.stringify(auditDoc(), null, 2)}\n`);
+    await writeFile(
+      registerPath,
+      `${JSON.stringify(registerDoc(), null, 2)}\n`,
+    );
+    await writeFile(reviewPath, `${JSON.stringify(reviewDoc(), null, 2)}\n`);
+    // Real mode: no --fixture-mode flag.
+    const child = await execFileAsync(
+      "node",
+      [
+        VERIFIER,
+        "--evidence-dir",
+        dir,
+        "--sha",
+        FAKE_SHA,
+        "--out",
+        join(dir, "triple-aaa-verdict.json"),
+        "--audit",
+        auditPath,
+        "--register",
+        registerPath,
+        "--review",
+        reviewPath,
+      ],
+      { cwd: root, timeout: 120000 },
+    ).catch((error) => error);
+    const output = `${child.stdout ?? ""}${child.stderr ?? ""}`;
+    expect(output).not.toMatch(/forgery/);
+    expect(child.code ?? 0).toBe(0);
+  }, 120000);
+
   it.each([
     ["coverage branches 84.99", { files: null, docs: null }],
+    ["coverage legacy flat below floor", { files: null, docs: null }],
     ["mutation adjusted 89.99", { files: null, docs: null }],
     ["critical survivors 1", { files: null, docs: null }],
     ["P1 equals 1", { files: null, docs: null }],
@@ -382,7 +457,18 @@ describe("triple-aaa verifier self-tests", () => {
       let docs = {};
       switch (_label) {
         case "coverage branches 84.99":
-          files["coverage-summary.json"].total.branches.pct = 84.99;
+          files["coverage-summary.json"].report.total.branches.pct = 84.99;
+          break;
+        case "coverage legacy flat below floor":
+          // Pre-envelope raw shape: still read, never assumed PASS.
+          files["coverage-summary.json"] = {
+            total: {
+              statements: { pct: 91.5 },
+              branches: { pct: 84.99 },
+              functions: { pct: 95.9 },
+              lines: { pct: 92.2 },
+            },
+          };
           break;
         case "mutation adjusted 89.99":
           files["mutation-summary.json"].adjusted_score = 0.8999;
@@ -453,16 +539,21 @@ describe("triple-aaa verifier self-tests", () => {
                 "observability",
                 "otel",
                 "metrics",
+                "health_readiness",
                 "timeouts",
                 "retries",
+                "shutdown",
                 "worker",
                 "multi_instance",
                 "redis",
+                "postgres",
+                "qdrant_recovery",
                 "backup",
                 "restore",
                 "dr",
                 "fault_drills",
                 "load",
+                "remote_ci",
                 "same_sha",
                 "release_evidence",
               ].includes(name)

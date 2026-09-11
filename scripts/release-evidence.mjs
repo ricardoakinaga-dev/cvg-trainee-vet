@@ -56,6 +56,41 @@ function sha256Hex(content) {
   return createHash("sha256").update(content).digest("hex");
 }
 
+// §125.4/§125.6 — coverage envelope. The raw vitest report has no sha or
+// status; the bundle binds its digest-pinned totals to the generating
+// commit plus the floor verdict (floors re-checked by the verifier).
+async function envelopCoverage(source, commit) {
+  const raw = await readFile(source, "utf8").catch(() => {
+    throw new Error(`summary source unreadable: ${source}`);
+  });
+  let report;
+  try {
+    report = JSON.parse(raw);
+  } catch {
+    throw new Error(`coverage source unparsable: ${source}`);
+  }
+  const total = report.total ?? {};
+  const pct = (key) => total[key]?.pct ?? null;
+  const floors = { statements: 90, branches: 85, functions: 90, lines: 90 };
+  const meets = Object.entries(floors).every(
+    ([key, floor]) => typeof pct(key) === "number" && pct(key) >= floor,
+  );
+  const envelope = {
+    format: "cvg-coverage-summary/v1",
+    sha: commit,
+    generatedAt: new Date().toISOString(),
+    status: meets ? "PASS" : "FAIL",
+    total: {
+      statements: { pct: pct("statements") },
+      branches: { pct: pct("branches") },
+      functions: { pct: pct("functions") },
+      lines: { pct: pct("lines") },
+    },
+    report,
+  };
+  return `${JSON.stringify(envelope, null, 2)}\n`;
+}
+
 async function migrationHead() {
   const journal = JSON.parse(
     await readFile(
@@ -343,6 +378,12 @@ async function generate(outDir, options) {
         summary,
         `${JSON.stringify({ status: "missing-blocked", commit }, null, 2)}\n`,
       );
+    } else if (summary === "coverage-summary.json") {
+      // §125.4/§125.6: the raw vitest report carries no sha/status, so the
+      // bundle envelopes it (totals + run SHA + floor verdict). Thresholds
+      // are re-checked independently by the promotion verifier; the envelope
+      // only binds the digest-pinned numbers to the generating commit.
+      await writeArtifact(summary, await envelopCoverage(source, commit));
     } else {
       await writeArtifact(
         summary,

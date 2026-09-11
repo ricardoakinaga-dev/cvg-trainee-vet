@@ -1,7 +1,7 @@
 {
   "format": "cvg-risk-register/v1",
-  "candidate_sha": null,
-  "generatedAt": null,
+  "candidate_sha": "14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39",
+  "generatedAt": "2026-09-11T14:30:00-03:00",
   "entries": [
     {
       "id": "RF-02",

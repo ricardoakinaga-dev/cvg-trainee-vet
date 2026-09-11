@@ -143,27 +143,36 @@ const SECURITY_DOMAINS = Object.freeze([
   "authz",
   "rls",
   "session",
+  "recovery",
+  "csrf",
   "rate_limit",
-  "negative_tests",
+  "redis_failure_policy",
+  "input_validation",
   "security_testing",
   "supply_chain",
   "secrets",
   "audit",
+  "ai_qdrant_trust",
 ]);
 const OPERATIONS_DOMAINS = Object.freeze([
   "observability",
   "otel",
   "metrics",
+  "health_readiness",
   "timeouts",
   "retries",
+  "shutdown",
   "worker",
   "multi_instance",
   "redis",
+  "postgres",
+  "qdrant_recovery",
   "backup",
   "restore",
   "dr",
   "fault_drills",
   "load",
+  "remote_ci",
   "same_sha",
   "release_evidence",
 ]);
@@ -245,8 +254,20 @@ async function main() {
   }
 
   // ---- anti-forgery (§125.27) ----
+  // Claim artifacts only: inventories (SBOM, digests, manifest) legitimately
+  // contain substrings like "fixture"/"example" as component names, file
+  // paths and descriptions — they are inputs, never certification claims.
+  // Regression: real SBOM embeds scripts/real-e2e-fixture-server.mjs.
   if (!fixtureMode) {
-    const haystack = JSON.stringify(evidence);
+    const claimFiles = Object.entries(evidence)
+      .filter(
+        ([name]) =>
+          name !== "sbom.cyclonedx.json" &&
+          name !== "artifact-digests.json" &&
+          name !== "manifest.json",
+      )
+      .map(([, content]) => content);
+    const haystack = JSON.stringify(claimFiles);
     const hit = FORBIDDEN_MARKERS.find((marker) =>
       haystack.toLowerCase().includes(marker),
     );
@@ -322,8 +343,11 @@ async function main() {
   }
 
   // ---- coverage invariant (§125.6) ----
+  // Bundle shape is the §125.4 envelope {sha,status,report:{total}};
+  // the legacy flat {total} shape is still read (never assumed PASS).
   const coverage = evidence["coverage-summary.json"];
-  const covTotals = coverage?.total ?? coverage;
+  const covTotals =
+    coverage?.report?.total ?? coverage?.total ?? coverage ?? null;
   const cov = {
     statements: covTotals?.statements?.pct ?? null,
     branches: covTotals?.branches?.pct ?? null,

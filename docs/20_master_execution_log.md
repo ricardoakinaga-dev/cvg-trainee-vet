@@ -14098,3 +14098,46 @@ COMPLETED (publicação Git); projeto READY_FOR_NEXT_STEP.
 
 Acompanhar runs remotos do SHA publicado para RF-02; nenhuma publicação clínica,
 produção, deploy ou aprovação AAA-001 foi realizada.
+
+## 2026-09-11 — AAA-V6: verificador machine + conformidade de evidência (sem push)
+
+### TIMESTAMP
+
+2026-09-11T15:20:00-0300
+
+### ENGINE
+
+BUILD / AUDIT / RUNTIME CONTROLLER
+
+### PHASE / TASK
+
+AAA-FINAL-001..009 + §125 (veredicto machine)
+
+### ACTION
+
+Audit v6 (Eng 94.0/Sec 95.0/Ops 90.8 — Ops corrigido de 86.2 após erro
+aritmético próprio) + `verify:triple-aaa` com domínios normativos §79–81
+(11/14/20) e 18/18 self-tests. Corrigidos 2 bugs do ferramental: falso
+fatal do anti-forgery em conteúdo SBOM (telas agora só em claims) e
+envelope de coverage `cvg-coverage-summary/v1` com sha+status (§125.4/§125.6;
+thresholds rechecados pelo verificador). Bundle regenerado no HEAD
+`14b97a8`; `verify:evidence-consistency` e `verify:audit-consistency`
+PASS; scorecard v6 + baseline 0006 emitidos. Coverage flipou para PASS no
+verificador real (91.56/86.10/95.94/92.17, run 14:43 no tree do HEAD).
+
+### RESULT
+
+`verify:triple-aaa` real: REVISE sem fatal (exit 1), 8 causas todas
+irredutíveis localmente — remoto/same-SHA sem runs (sem token), security
+stale v1 (writer v2 fail-closed), review REVISE, scores < metas, P2
+RF-02/RF-09 materiais. P0 = 0, P1 = 0. Prontidão STAGING VERIFIED. Sem
+push/tag (pendem aprovação humana + token), sem dados reais, sem clínica.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Push dos 8 commits + tag/dispatch candidate com token (humano); acompanhar
+runs remotos same-SHA (RF-02); re-review independente pós-push.

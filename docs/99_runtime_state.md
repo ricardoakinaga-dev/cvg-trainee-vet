@@ -13,9 +13,9 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: FINAL STATE OF ART CLOSURE (docs/50 §§1–100) — 8/9 fases executadas; veredito TRIPLE AAA — REVISE (audit v5)
-- current_sprint: `AAA-FINAL-001..009` + resíduo RF-02/RF-03R/RF-04/RF-07/RF-08 (RF-05 fechado: 0 advisories)
-- current_task: acompanhar prova remota same-SHA do HEAD publicado (RF-02, exige token/tag candidate)
+- current_phase: FINAL STATE OF ART CLOSURE (docs/50 §§1–100 + docs/51 §125) — veredito TRIPLE AAA — REVISE (audit v6: Eng 94.0/Sec 95.0/Ops 90.8)
+- current_sprint: `AAA-FINAL-001..009` + resíduo RF-02/RF-09 (materiais abertos), RF-03R/RF-04/RF-07 (aceitos), RF-AT (P3)
+- current_task: aguardar push/tag com token (humano) para prova remota same-SHA do HEAD `14b97a8` (RF-02)
 
 ## STATUS
 
@@ -23,12 +23,12 @@
 
 ## PROGRESSO
 
-- last_completed_action: publicados em `origin/main` os 13 commits locais pendentes (`bcbe173` até `3ad4803`); `git ls-remote` confirmou o SHA `3ad480375bbc5f4d79099b1b9c703e6c351096d4` igual ao HEAD local e o worktree permanece limpo. A publicação foi solicitada por Ricardo.
-- next_action: acompanhar runs remotos no SHA publicado para RF-02; depois avaliar tag/dispatch com token e AAA-001 sob aprovação humana.
+- last_completed_action: rodada AAA-V6 sem push — audit v6 + baseline 0006 + scorecard v6 emitidos; `verify:triple-aaa` com 18/18 self-tests e REVISE sem fatal no HEAD (8 causas remotas/estruturais); bundle regenerado com envelope de coverage §125.4; `verify:evidence-consistency` e `verify:audit-consistency` PASS. HEAD local `14b97a8` 8 commits à frente de `origin/main` (`2dd6760`).
+- next_action: push dos 8 commits + tag/dispatch candidate com token (aprovação humana); depois acompanhar runs remotos same-SHA (RF-02) e re-review independente.
 
 ## BLOQUEIOS
 
-- blockers: `AAA-001` continua aguardando aprovação humana (SLO/RPO/RTO, piloto, ambientes); RF-02 (runs remotos quality/security/candidate no SHA final) bloqueia a promoção — o push foi concluído, mas nenhum resultado de CI é inferido sem consulta autenticada. Nenhuma task usa dados reais, publica clínica ou altera migrations produtivas. Verificações locais em Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado; contrato CI Node `22.22.0`/pnpm `10.33.0`.
+- blockers: `AAA-001` continua aguardando aprovação humana (SLO/RPO/RTO, piloto, ambientes); RF-02 (runs remotos quality/security/candidate no SHA final) bloqueia a promoção — 8 commits locais (`92ff1fb..14b97a8`) aguardam push com token; nenhum resultado de CI é inferido sem consulta autenticada. Pernas locais do verificador verdes (coverage/mutation/RLS/Redis/staging); restam as pernas remotas + scores Eng/Ops + RF-02/09. Nenhuma task usa dados reais, publica clínica ou altera migrations produtivas. Verificações locais em Node `24.20.0`/pnpm `10.33.0`, fora do intervalo declarado; contrato CI Node `22.22.0`/pnpm `10.33.0`.
 
 ## DECISÃO HUMANA
 
@@ -37,12 +37,12 @@
 
 ## TIMESTAMP
 
-- last_update: 2026-09-11T08:56:36-0300
-- session_checkpoint: push de 13 commits concluído e SHA remoto confirmado em `3ad480375bbc5f4d79099b1b9c703e6c351096d4`; audit v5 permanece REVISE (Eng 94/Sec 95/Ops 91, P0=P1=0); gate 21+/24, RF-02 aberto
+- last_update: 2026-09-11T15:20:00-0300
+- session_checkpoint: rodada AAA-V6 concluída sem push; audit v6 REVISE (Eng 94.0/Sec 95.0/Ops 90.8, P0=P1=0); verificador 18/18 self-tests, 5 pernas locais PASS; strict só falha em security-stale + remote-ci (RF-02); gate evidence/audit-consistency PASS
 
 ## OBSERVAÇÃO REPOSITÓRIO E EVIDÊNCIA ATUAL
 
-- head: branch local `main` sincronizada com `origin/main` em `3ad480375bbc5f4d79099b1b9c703e6c351096d4`; árvore efetiva preserva a ponta da AAA; não houve deploy
+- head: branch local `main` em `14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39`, 8 commits à frente de `origin/main` (`2dd6760`); push/tag pendem de aprovação humana + token; árvore efetiva preserva a ponta da AAA; não houve deploy
 - origin: somente `origin/main` e `origin/HEAD -> origin/main` existem e estão sincronizados com `main`; os testes são evidência do checkout, não de workflow remoto; nenhuma execução remota foi inferida
 - worktree: contém a implementação visual bounded em `.gitignore`, `apps/web/app/globals.css`, `apps/web/app/page.tsx`, `apps/web/app/authoring/page.tsx`, `apps/web/app/operations/page.tsx`, `apps/web/proxy.ts`, `apps/web/src/proxy.test.ts`, `scripts/e2e-proxy-fixture-server.mjs`, `tests/e2e/proxy-auth-boundary.spec.ts`, `tests/e2e/visual-gauntlet.spec.ts`, `tests/e2e/authoring-review.spec.ts`, `tests/e2e/operations-dashboard.spec.ts`, `packages/integrations/src/ai.ts`, `packages/integrations/src/ai.test.ts`, `packages/integrations/src/composition.ts`, `packages/integrations/src/index.ts`, `.github/workflows/quality.yml`, `scripts/ci-artifact-governance.mjs`, `scripts/verify-ci-contract.mjs`, `tests/integration/ci-governance.test.ts`, `.agent/artifacts/`, `.agent/plans/` e `apps/web/public/assets/`; alterações concorrentes externas em `apps/api`, `packages/application`, `packages/persistence`, demais `tests`, `BRIEFING/03.BUILD`, `docs/`, `traceability.yml`, `.gauntlet/` e as migrations AAA foram preservadas; o relatório gerado `.agent/playwright-report-postfix/` foi preservado localmente e não será publicado; nenhuma migration produtiva aplicada e nenhum deploy executado nesta rodada
 - active_execplan: `BRIEFING/03.BUILD/STATE_OF_THE_ART_MASTER_PLAN.md`
