@@ -6,6 +6,37 @@ rules:
   - "participant projections never contain internal authorship/source fields"
   - "every completed item requires evidence"
 artifacts:
+  - id: "GIT-PUBLISH-AAA-V6-20260911"
+    requirements: ["SPEC-0118", "D-110", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "docs/audits/state-of-art-final-audit-v6.md",
+        "docs/modernization/0006_final_aaa_v6_baseline.md",
+      ]
+    code:
+      [
+        "scripts/release-evidence.mjs",
+        "scripts/verify-triple-aaa.mjs",
+        "tests/integration/triple-aaa-verifier.test.ts",
+      ]
+    tests:
+      [
+        "pnpm exec vitest run tests/integration/triple-aaa-verifier.test.ts",
+        "node scripts/verify-evidence-consistency.mjs",
+        "node scripts/verify-audit-consistency.mjs",
+        "node scripts/verify-secrets.mjs",
+        "git diff --check",
+      ]
+    commit: "b3e67bdc731f7d4ff62c2658090b3cc981786e3e"
+    artifacts: ["origin/main:b3e67bdc731f7d4ff62c2658090b3cc981786e3e"]
+    verification:
+      [
+        "AAA-V6 validation PASS: verifier 18/18, evidence/audit consistency PASS, secrets clean, formatting and diff check PASS; remote SHA matched local HEAD",
+      ]
+    status: "published"
   - id: "GIT-PUBLISH-20260911"
     requirements: ["SPEC-0118", "D-110"]
     documents:

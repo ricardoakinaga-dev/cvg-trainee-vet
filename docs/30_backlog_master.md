@@ -2271,3 +2271,8 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 
 - RF-02: os 13 commits locais pendentes foram publicados em `origin/main`; HEAD remoto confirmado em `3ad480375bbc5f4d79099b1b9c703e6c351096d4`. A prova same-SHA de CI ainda depende de runs autenticados e permanece aberta.
 - AAA-FINAL-001..009: código e documentação de certificação v5 agora estão disponíveis no remoto; o veredito continua `TRIPLE AAA — REVISE` até RF-02 e aprovação de `AAA-001`.
+
+## 2026-09-11 — Publicação AAA-V6
+
+- RF-02: os 8 commits pendentes e o commit AAA-V6 foram publicados em `origin/main`; HEAD remoto confirmado em `b3e67bdc731f7d4ff62c2658090b3cc981786e3e`. A prova same-SHA de CI ainda depende de runs autenticados e permanece aberta.
+- AAA-V6: audit, baseline, scorecard, verificador e testes estão disponíveis no remoto; o veredito continua `TRIPLE AAA — REVISE` até RF-02/09 e aprovação de `AAA-001`.
