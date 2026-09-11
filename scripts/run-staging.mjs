@@ -635,13 +635,15 @@ async function main() {
       authRejectedP95Ms: metric("auth_rejected_latency_ms")?.["p(95)"] ?? null,
       checksFails: metric("checks")?.fails ?? null,
       failed_checks: metric("checks")?.fails ?? null,
-      http_5xx: metric("http_5xx_total")?.count ?? null,
+      // k6 omits counters never incremented: a missing http_5xx_total
+      // means zero 5xx responses (the checks above already forbid them).
+      http_5xx: metric("http_5xx_total")?.count ?? 0,
       errorsRate: metric("errors")?.rate ?? null,
     };
     if (
       (loadSummary.httpRequests ?? 0) === 0 ||
       (loadSummary.checksFails ?? 1) > 0 ||
-      (loadSummary.http_5xx ?? 1) > 0
+      (loadSummary.http_5xx ?? 0) > 0
     ) {
       await fail(new Error("k6 baseline produced failing or empty evidence"));
       return;
