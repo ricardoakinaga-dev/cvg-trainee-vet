@@ -408,7 +408,8 @@ describe("rate-limit mutation closure — redis store contract", () => {
 
 describe("rate-limit mutation closure — adapter fail policy", () => {
   it("fails closed on backend outage by default", async () => {
-    const { createScriptedRateLimitStore } = await import("./rate-limit-store.js");
+    const { createScriptedRateLimitStore } =
+      await import("./rate-limit-store.js");
     const limiter = createBackendRequestLimiter(
       createScriptedRateLimitStore({ failures: 99 }),
       { maxRequests: 10, windowMs: 60_000 },
@@ -420,7 +421,8 @@ describe("rate-limit mutation closure — adapter fail policy", () => {
   });
 
   it("fails open only with explicit opt-in", async () => {
-    const { createScriptedRateLimitStore } = await import("./rate-limit-store.js");
+    const { createScriptedRateLimitStore } =
+      await import("./rate-limit-store.js");
     const limiter = createBackendRequestLimiter(
       createScriptedRateLimitStore({ failures: 99 }),
       { maxRequests: 10, windowMs: 60_000, failPolicy: "fail-open" },

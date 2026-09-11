@@ -24,19 +24,19 @@ describe("isAllowed clinical identity forwarding", () => {
       "CORRECT_ATTEMPT",
     ] as const) {
       expect(
-        isAllowed(
-          clinical,
-          capability,
-          { scopeId: "scope-1" },
-          "clinico-1",
-        ),
+        isAllowed(clinical, capability, { scopeId: "scope-1" }, "clinico-1"),
       ).toBe(true);
     }
   });
 
   it("denies mismatched identities and out-of-scope access", () => {
     expect(
-      isAllowed(clinical, "VIEW_STAFF_DASHBOARD", { scopeId: "scope-1" }, "other"),
+      isAllowed(
+        clinical,
+        "VIEW_STAFF_DASHBOARD",
+        { scopeId: "scope-1" },
+        "other",
+      ),
     ).toBe(false);
     expect(
       isAllowed(clinical, "VIEW_STAFF_DASHBOARD", { scopeId: "scope-1" }),
