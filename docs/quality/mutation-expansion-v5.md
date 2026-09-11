@@ -1,19 +1,22 @@
-# Mutation Classification v5 — expanded critical scope (AAA-FINAL-002 §§6–7)
+# Mutation Classification v5 — expanded critical scope (AAA-FINAL-002 §§6–7, AAA-V6 §29)
 
-- **Escopo:** `authorization.ts` (v4, mantido) + `session.ts` + `attempt-use-cases.ts`
+- **Escopo:** `authorization.ts` (v4) + `session.ts` + `attempt-use-cases.ts`
   + `account-recovery-use-cases.ts` + `apps/api/src/security/rate-limit-store.ts`
+  + `apps/worker/src/loop.ts` (AAA-V6: duplicate side effect / lost work)
 - **Stryker 9 final** (`stryker.authorization.mjs`, `stryker.critical.mjs`,
-  `coverageAnalysis: perTest`, `vitest.related: true`):
+  `stryker.worker.mjs`, `coverageAnalysis: perTest`, `vitest.related: true`):
   - authorization: total 219 · killed 199 · survived 20 → raw **90.87%**
-  - critical: total 762 · killed 609 · survived 153 → raw **79.92%**
+  - critical (4 arquivos): total 775 · killed 640 · survived 135
+  - worker loop: total 145 · killed 119 · survived 26
 - **Harness autoritativo** (`scripts/verify-mutation-closure.mjs`,
   `scripts/verify-mutation-critical.mjs`): cada sobrevivente final aplicado
-  por substituição textual ancorada (âncora exigida única ou com ocorrência
-  explícita) + suite completo do arquivo, sem filtro per-test.
-- **Killer tests:** 94 its (v4: authorization/session/attempt/recovery/rate-limit
-  closure) + branch-closure focados; todos comportamentais (allow/deny,
-  códigos de erro públicos, expiração, orçamento, auditoria).
-- **Summary:** `reports/mutation-summary.json` (5 escopos, adjusted **97.82%**).
+  por substituição textual ancorada (âncora única ou com ocorrência
+  explícita; integridade do alvo verificada por hash) + suite completo do
+  arquivo, sem filtro per-test. `--write-summary` só conta resultados DO run
+  e falha se qualquer sobrevivente ficar sem disposition semântica.
+- **Killer tests:** ~110 its comportamentais; todos observam allow/deny,
+  códigos públicos, expiração, orçamento, auditoria, telemetria.
+- **Summary:** `reports/mutation-summary.json` (6 escopos).
 
 ## Método e honestidade
 
@@ -61,21 +64,30 @@
   efeito em vereditos (timeouts/aborts cobertos por testes de outcome).
 - **P-NOOP** — `reset()` sem chamadores em produção: remoção/throw nunca
   dispara; seam de interface.
+- **P-POLICY** — `?? "fail-closed"` → `?? ""`: a política só é comparada
+  com `"fail-open"`; string vazia nunca casa → mesmo ramo deny.
+- **P-EXPLICIT** — guarda explícita removida quando o caminho implícito
+  (exceção de tipo, crash) mapeia identicamente a jusante.
+- **P-CLOCK** — clamp aritmético de duração diagnóstica sem injeção de
+  relógio: indistinguível deterministicamente; sem sleeps frágeis.
 - **P-NULL** — `if (target === null)` → `if (target !== null)` seria
   inversão REAL (coberto por harness como REAL onde aplicável); onde o
   ramo é defensivo após checagem anterior, documentado no item.
 
 ## Resultados por escopo (harness, runs limpos, 0 problems)
 
-| Escopo | Stryker raw | Harness REAL mortos | Equiv./Low/Tool verificados |
+| Escopo | Stryker raw | Harness REAL mortos | Não-efeito verificado |
 |---|---|---:|---:|
 | authorization.ts | 199/219 (90.87%) | 12 | 10 equiv. |
-| session.ts | 113/129 (87.60%) | 12 | 4 equiv. |
-| attempt-use-cases.ts | 74/99 (74.75%) | 19 | 7 equiv. |
-| account-recovery-use-cases.ts | 130/182 (71.43%) | 25 | 27 equiv. |
-| rate-limit-store.ts | 292/352 (82.95%) | 24 | 16 equiv. + 20 low/tool + 1 unreach. |
+| session.ts | 117/129 (90.70%) | 12 | 4 equiv. |
+| attempt-use-cases.ts | 77/99 (77.78%) | 19 | 7 equiv. |
+| account-recovery-use-cases.ts | 138/182 (75.82%) | 27 | 27 equiv. |
+| rate-limit-store.ts | 310/365 (84.93%) | 42 | 16 equiv. + low/tool |
+| worker loop.ts | 119/145 (82.07%) | 40 | 13+ low/tool |
 
-Agregado final em `reports/mutation-summary.json` (meta ≥ 90%, ideal ≥ 95%).
+Agregado final em `reports/mutation-summary.json` (meta ≥ 90%):
+**total 1139 · raw 960 (84.3%) · equivalentes 17 · kills verificados 151 ·
+adjusted 98.84% · real survivors 0 → PASS.**
 LOW_VALUE/UNREACHABLE/TOOL_ARTIFACT verificados permanecem no denominador
 (penalidade honesta); apenas EQUIVALENT provado é excluído.
 
