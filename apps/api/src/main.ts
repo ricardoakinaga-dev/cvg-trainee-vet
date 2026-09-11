@@ -100,6 +100,56 @@ import {
 import type { ApiHttpDependencies, ApiPrincipal } from "./http.js";
 import type { ApiServer } from "./server.js";
 import { createApiServer as createNodeApiServer } from "./server.js";
+import type { RequestRateLimiter } from "./request-security.js";
+import {
+  createBackendRequestLimiter,
+  createRedisRateLimitStore,
+  describeRateLimitBackend,
+} from "./security/rate-limit-store.js";
+import { createRespScriptClient } from "./security/redis-client.js";
+
+/**
+ * AAA-FINAL-005 §17 — explicit edge rate-limit backend selection.
+ *
+ * - unset/blank → `postgres-shared` (current behavior, shared budget).
+ * - `redis` → Redis/Valkey via the production RESP client; requires
+ *   CVG_RATE_LIMIT_REDIS_URL, fail-closed otherwise.
+ * - anything else → startup throw. Silent memory fallback is prohibited:
+ *   single-node memory limiters exist only as explicit test defaults
+ *   inside server.ts, never as an implicit production path.
+ */
+export function createHttpRateLimiter(
+  environment: Record<string, string | undefined>,
+  database: Parameters<typeof createPostgresRateLimiter>[0],
+  log: (message: string) => void,
+): RequestRateLimiter {
+  const backend = (
+    environment.CVG_RATE_LIMIT_BACKEND ?? "postgres-shared"
+  ).trim();
+  if (backend === "redis") {
+    const url = environment.CVG_RATE_LIMIT_REDIS_URL?.trim();
+    if (url === undefined || url.length === 0) {
+      throw new RangeError(
+        "CVG_RATE_LIMIT_REDIS_URL is required with CVG_RATE_LIMIT_BACKEND=redis",
+      );
+    }
+    const store = createRedisRateLimitStore(createRespScriptClient(url), {
+      keyPrefix: "rl:v1",
+    });
+    log(`rate-limit backend: ${describeRateLimitBackend("redis").backend}`);
+    return createBackendRequestLimiter(store, {
+      maxRequests: 120,
+      windowMs: 60_000,
+    });
+  }
+  if (backend === "postgres-shared") {
+    log(
+      `rate-limit backend: ${describeRateLimitBackend("postgres-shared").backend}`,
+    );
+    return createPostgresRateLimiter(database);
+  }
+  throw new RangeError(`unknown CVG_RATE_LIMIT_BACKEND: ${backend}`);
+}
 
 function configuredOrigins(
   environment: Record<string, string | undefined>,
@@ -229,7 +279,11 @@ export function createApiRuntime(
   );
   const appealReviewTransitionRepository =
     createAppealReviewTransitionRepository(integrations.database.db);
-  const rateLimiter = createPostgresRateLimiter(integrations.database.db);
+  const rateLimiter = createHttpRateLimiter(
+    environment,
+    integrations.database.db,
+    (message) => console.log(`[api] ${message}`),
+  );
   const audit = createAuditRepository(integrations.database.db);
   const auditTrailRepository = createAuditTrailRepository(
     integrations.database.db,

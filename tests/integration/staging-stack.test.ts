@@ -2,11 +2,14 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
+import { TestRespClient } from "./redis-live-harness.js";
+
 const apiA = process.env.CVG_STAGING_API_A_URL?.trim();
 const apiB = process.env.CVG_STAGING_API_B_URL?.trim();
 const tlsUrl = process.env.CVG_STAGING_TLS_URL?.trim();
 const evidenceDir = process.env.CVG_STAGING_EVIDENCE_DIR?.trim();
 const spansFile = process.env.CVG_STAGING_OTEL_SPANS_FILE?.trim();
+const redisUrl = process.env.CVG_STAGING_REDIS_URL?.trim();
 
 const stagingEnabled =
   apiA !== undefined &&
@@ -83,6 +86,21 @@ describe.skipIf(!stagingEnabled)("staging-like stack verification", () => {
     expect(deniedB.status).toBe(429);
     expect(deniedA.headers.get("retry-after")).toMatch(/^\d+$/u);
     expect(deniedB.headers.get("retry-after")).toMatch(/^\d+$/u);
+  });
+
+  it("proves Redis is the effective rate-limit backend (no silent fallback)", async () => {
+    // AAA-FINAL-005 §17: the shared budget above must live in Redis, not in
+    // per-instance memory or Postgres. The durable adapter namespaces every
+    // bucket under rl:v1: — assert those keys exist on the staging Redis.
+    if (redisUrl === undefined || redisUrl.length === 0) return;
+    const client = await TestRespClient.connect(redisUrl);
+    try {
+      const keys = (await client.command(["KEYS", "rl:v1:*"])) as Array<string>;
+      expect(keys.length).toBeGreaterThan(0);
+      expect(keys.every((key) => key.startsWith("rl:v1:"))).toBe(true);
+    } finally {
+      await client.close();
+    }
   });
 
   it("denies unauthenticated access to internal routes on the stack", async () => {

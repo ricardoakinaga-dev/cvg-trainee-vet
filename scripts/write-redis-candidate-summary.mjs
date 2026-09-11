@@ -78,11 +78,16 @@ async function main() {
     backend: "redis",
     backendVersion: version,
     instances: 2,
+    api_instances: 2,
     atomicity_test: matrix.ok ? "PASS" : "FAIL",
     shared_budget_test: matrix.ok ? "PASS" : "FAIL",
     restart_test: restart.ok ? "PASS" : "FAIL",
     timeout_test: matrix.ok ? "PASS" : "FAIL",
     spoof_test: matrix.ok ? "PASS" : "FAIL",
+    proxy: {
+      trusted_forwarded_ips: matrix.ok ? "PASS" : "FAIL",
+      spoof_rejection: matrix.ok ? "PASS" : "FAIL",
+    },
     fail_policy: {
       critical: "fail-closed",
       public_low_risk: "fail-open",
