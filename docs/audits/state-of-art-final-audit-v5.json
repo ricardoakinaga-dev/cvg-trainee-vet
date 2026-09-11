@@ -1,0 +1,15 @@
+{
+  "sha": "15ed926e46011f8c172bbb3d625172e2cc8875b3",
+  "p0": 0,
+  "p1": 0,
+  "engineering": 94,
+  "security": 95,
+  "operations": 91,
+  "coverage": "PASS",
+  "mutation": "PASS",
+  "same_sha": "FAIL",
+  "redis": "PASS",
+  "rls": "PASS",
+  "staging": "PASS",
+  "verdict": "TRIPLE AAA \u2014 REVISE"
+}

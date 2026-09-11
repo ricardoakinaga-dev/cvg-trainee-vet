@@ -13,8 +13,8 @@
 
 ## POSIÇÃO ATUAL
 
-- current_phase: FINAL AAA CERTIFICATION (docs/49 §§1–100) — 4/5 gaps fechados com prova fresh; veredito TRIPLE AAA — REVISE (audit v4)
-- current_sprint: `AAA-CERT-001..005` + resíduo RF-02/RF-03R/RF-04/RF-05/RF-07/RF-08
+- current_phase: FINAL STATE OF ART CLOSURE (docs/50 §§1–100) — 8/9 fases executadas; veredito TRIPLE AAA — REVISE (audit v5)
+- current_sprint: `AAA-FINAL-001..009` + resíduo RF-02/RF-03R/RF-04/RF-07/RF-08 (RF-05 fechado: 0 advisories)
 - current_task: acompanhar prova remota same-SHA do HEAD publicado (RF-02, exige token/tag candidate)
 
 ## STATUS

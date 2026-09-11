@@ -2254,3 +2254,15 @@ Relatório `docs/40_construction_audit_report_2026-09-09.md` (17 itens, média r
 
 - RF-02: os 13 commits locais pendentes foram publicados em `origin/main`; HEAD remoto confirmado em `d6d8c00fde661738bef0c4d518b979c23f93ca6c`. A prova same-SHA de CI ainda depende de runs autenticados e permanece aberta.
 - AAA-CERT: código e documentação de certificação agora estão disponíveis no remoto; o veredito continua `TRIPLE AAA — REVISE` até RF-02 e aprovação de `AAA-001`.
+
+## 2026-09-11 — FINAL STATE OF ART CLOSURE (docs/50, freeze `15ed926`)
+
+- AAA-FINAL-001 (baseline 0005): CONCLUÍDO.
+- AAA-FINAL-002 (mutation expandida): CONCLUÍDO — 5 escopos, adjusted 97.82%, 0 real survivors.
+- AAA-FINAL-003 (coverage): CONCLUÍDO — 91.56/86.10/95.94/92.16 com margem.
+- AAA-FINAL-004 (complexidade): CONCLUÍDO — 0 fail, preservar com rationale, 1 ratchet justificado.
+- AAA-FINAL-005 (Redis runtime): CONCLUÍDO — RESP client + backend explícito + staging sobre Redis.
+- AAA-FINAL-006 (same-SHA): BLOQUEADO — sem push/autorização; runs anteriores vermelhos (E2E indeterminado, OSV corrigido).
+- AAA-FINAL-007 (evidence): CONCLUÍDO — 18 artefatos strict, self-audit verifier.
+- AAA-FINAL-008 (audit v5): CONCLUÍDO — REVISE (Eng 94/Sec 95/Ops 91).
+- RF-05 FECHADO (zero advisories). RF-02/RF-03R/RF-04/RF-07/RF-08 abertos. AAA-001 pendente.
