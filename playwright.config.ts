@@ -18,6 +18,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [
     ["list"],
+    ["./tests/e2e/diagnostics-reporter.ts"],
     ["html", { outputFolder: "playwright-report", open: "never" }],
     ["junit", { outputFile: "test-results/playwright.xml" }],
   ],
