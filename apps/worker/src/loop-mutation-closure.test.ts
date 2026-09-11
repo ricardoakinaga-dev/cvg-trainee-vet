@@ -12,6 +12,8 @@ import { processOutboxOnce } from "./loop.js";
  * invertido, retryable, rótulos de telemetria, batch outcomes. Riscos:
  * duplicate side effect, lost work, dead-letter indevido.
  */
+const syntheticLeaseMarker = "lease-11111111-1111-4111-8111-111111111111";
+
 const base: OutboxEventRecord = {
   id: "11111111-1111-4111-8111-111111111111",
   eventType: "content.published.v1",
@@ -25,7 +27,7 @@ const base: OutboxEventRecord = {
   attempts: 1,
   availableAt: new Date("2026-08-09T17:00:00.000Z"),
   lockedUntil: new Date("2026-08-09T17:01:00.000Z"),
-  leaseToken: "lease-11111111-1111-4111-8111-111111111111",
+  leaseToken: syntheticLeaseMarker,
   lastErrorCode: null,
   processedAt: null,
   createdAt: new Date("2026-08-09T17:00:00.000Z"),
