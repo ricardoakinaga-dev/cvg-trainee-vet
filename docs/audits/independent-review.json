@@ -1,0 +1,29 @@
+{
+  "format": "cvg-independent-review/v1",
+  "candidate_sha": "1fec66030af5cd5f9bc87b956744e11a6bd18789",
+  "candidate_note": "nearest committed ancestor of the reviewed worktree (plus uncommitted test-only deltas); two findings were fixed afterwards (adapter fail-closed policy, clinical forwarding) and verified by targeted tests + full suite, pending re-review",
+  "verdict": "REVISE",
+  "reviewer": "gauntlet-critic (fresh context, read-only)",
+  "generated_at": "2026-09-11T13:45:00-03:00",
+  "scope": "full tree + evidence vs adversarial checklist (§71)",
+  "p0": 0,
+  "p1": 0,
+  "top_p2": [
+    "RF-02: no green remote runs on candidate SHA / same-SHA unproven (MATERIAL)",
+    "RF-09: remote quality E2E red undiagnosed (MATERIAL)",
+    "edge rate-limiter single 120/60s budget (documented, 12x risk-class budgets not wired at edge)",
+    "Redis-edge outage handling (fixed during review: fail-closed adapter policy)",
+    "isAllowed clinical forwarding inconsistency (fixed during review)"
+  ],
+  "strongest_verified": [
+    "authorization deny-by-default triple-check (policy + handler + RLS), no allow-path missed",
+    "RLS 8-field live matrix + pool alternation + transaction-local context clearing",
+    "recovery single-use atomic consume + session revocation + lifetimes"
+  ],
+  "weakest_link": "remote CI / same-SHA (no runs; local evidence cannot substitute)",
+  "limitations": [
+    "reviewer shares session infrastructure (no separate human reviewer available)",
+    "live RLS/Redis/staging not re-executed by reviewer; relied on checked-in summaries + test code",
+    "no network credentials: remote CI unknown beyond public run conclusions"
+  ]
+}

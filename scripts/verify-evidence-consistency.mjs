@@ -87,10 +87,16 @@ async function main() {
     for (const name of [
       "mutation/mutation.json",
       "mutation-critical/mutation.json",
+      "mutation-worker/mutation.json",
     ]) {
-      const report = JSON.parse(
-        await readFile(join(root, "reports", name), "utf8"),
-      );
+      let report = null;
+      try {
+        report = JSON.parse(
+          await readFile(join(root, "reports", name), "utf8"),
+        );
+      } catch {
+        continue;
+      }
       for (const file of Object.values(report.files)) {
         total += file.mutants.length;
         rawKilled += file.mutants.filter((m) => m.status === "Killed").length;
