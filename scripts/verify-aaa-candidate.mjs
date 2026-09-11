@@ -361,31 +361,34 @@ async function main() {
     );
   }
 
-  // 7. P0/P1 (§37–38): machine-readable audit JSON is the authority.
-  // Markdown explains; JSON decides. No Markdown parsing for this gate.
+  // 7. P0/P1 (§30, §37–38): the LATEST machine-readable audit JSON is the
+  // authority. Markdown explains; JSON decides. No Markdown parsing.
   // Freshness follows the shared evidence rule (ancestor + no runtime
   // diff): a tracked file can never contain its own future commit SHA.
   try {
+    const { readdir } = await import("node:fs/promises");
+    const audits = (await readdir(join(root, "docs/audits"))).filter((file) =>
+      /^state-of-art-final-audit-v\d+\.json$/u.test(file),
+    );
+    if (audits.length === 0) throw new Error("no final audit JSON found");
+    const latest = audits.sort().at(-1);
     const audit = JSON.parse(
-      await readFile(
-        join(root, "docs/audits/state-of-art-final-audit-v4.json"),
-        "utf8",
-      ),
+      await readFile(join(root, "docs/audits", latest), "utf8"),
     );
     const { stdout: head } = await execFileAsync("git", ["rev-parse", "HEAD"], {
       cwd: root,
     });
-    check("no open P0 (audit v4 JSON)", audit.p0 === 0, `p0=${audit.p0}`);
-    check("no open P1 (audit v4 JSON)", audit.p1 === 0, `p1=${audit.p1}`);
+    check(`no open P0 (${latest})`, audit.p0 === 0, `p0=${audit.p0}`);
+    check(`no open P1 (${latest})`, audit.p1 === 0, `p1=${audit.p1}`);
     const fresh = await isEvidenceFresh(root, audit.sha, head.trim());
     check(
-      "audit v4 fresh (ancestor + no runtime diff)",
+      "latest audit fresh (ancestor + no runtime diff)",
       fresh.fresh,
       fresh.detail,
     );
   } catch (error) {
     check(
-      "no open P0/P1 (docs/audits/state-of-art-final-audit-v4.json)",
+      "no open P0/P1 (latest state-of-art-final-audit-vN.json)",
       false,
       error.message,
     );
