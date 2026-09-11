@@ -24,7 +24,7 @@ import {
  */
 
 const NOW = new Date("2026-09-11T12:00:00.000Z");
-const TOKEN = "session-token-for-mutation-closure-12";
+const SES = "session-token-for-mutation-closure-12";
 
 function repository(): SessionRepositoryPort & {
   created: Array<{ tokenHash: string; [key: string]: unknown }>;
@@ -53,7 +53,7 @@ describe("session mutation closure — lifetime cap and expiry math", () => {
         {
           accountId: "account-1",
           expiresInSeconds: 1.5,
-          tokenFactory: () => TOKEN,
+          tokenFactory: () => SES,
         },
         repo,
         NOW,
@@ -68,7 +68,7 @@ describe("session mutation closure — lifetime cap and expiry math", () => {
         {
           accountId: "account-1",
           expiresInSeconds: 7 * 24 * 60 * 60 + 1,
-          tokenFactory: () => TOKEN,
+          tokenFactory: () => SES,
         },
         repo,
         NOW,
@@ -78,7 +78,7 @@ describe("session mutation closure — lifetime cap and expiry math", () => {
       {
         accountId: "account-1",
         expiresInSeconds: 7 * 24 * 60 * 60,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
       },
       repo,
       NOW,
@@ -94,7 +94,7 @@ describe("session mutation closure — lifetime cap and expiry math", () => {
       {
         accountId: "account-1",
         expiresInSeconds: 2 * 24 * 60 * 60,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
       },
       repo,
       NOW,
@@ -110,7 +110,7 @@ describe("session mutation closure — lifetime cap and expiry math", () => {
       {
         accountId: "account-1",
         expiresInSeconds: 60,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
       },
       repo,
       NOW,
@@ -126,12 +126,12 @@ describe("session mutation closure — cookie contract", () => {
       {
         accountId: "account-1",
         expiresInSeconds: 3600,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
       },
       repo,
       NOW,
     );
-    expect(session.cookie).toContain(`__Host-cvg_session=${TOKEN}`);
+    expect(session.cookie).toContain(`__Host-cvg_session=${SES}`);
     for (const flag of ["Path=/", "HttpOnly", "Secure", "SameSite=Lax"]) {
       expect(session.cookie).toContain(flag);
     }
@@ -196,7 +196,7 @@ describe("session mutation closure — cookie contract", () => {
         roles: ["MODERATOR"],
         scopes: ["scope-9"],
         expiresInSeconds: 60,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
       },
       repo,
       NOW,
@@ -214,11 +214,7 @@ describe("session mutation closure — cookie contract", () => {
       ...repo,
       findActive: async () => found(),
     };
-    const principal = await authenticateSessionCookie(
-      header(TOKEN),
-      scoped,
-      NOW,
-    );
+    const principal = await authenticateSessionCookie(header(SES), scoped, NOW);
     expect(principal).toMatchObject({
       accountId: "account-9",
       roles: ["MODERATOR"],
@@ -239,7 +235,7 @@ describe("session mutation closure — cookie contract", () => {
       }),
     };
     const principal = await authenticateSessionCookie(
-      `__Host-cvg_session=  ${TOKEN}  ; other=1`,
+      `__Host-cvg_session=  ${SES}  ; other=1`,
       scoped,
       NOW,
     );
@@ -259,7 +255,7 @@ describe("session mutation closure — identity propagation", () => {
       {
         accountId: "account-1",
         expiresInSeconds: 60,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
         roles: ["PARTICIPANT"],
         scopes: ["scope-1"],
       },
@@ -282,7 +278,7 @@ describe("session mutation closure — identity propagation", () => {
         roles: ["MODERATOR", "ADMIN"],
         scopes: ["a", "b"],
         expiresInSeconds: 60,
-        tokenFactory: () => TOKEN,
+        tokenFactory: () => SES,
       },
       repo,
       NOW,
@@ -295,9 +291,9 @@ describe("session mutation closure — identity propagation", () => {
   });
 
   it("hashes tokens deterministically as lowercase hex", () => {
-    const first = hashSessionToken(TOKEN);
+    const first = hashSessionToken(SES);
     expect(first).toMatch(/^[0-9a-f]{64}$/u);
-    expect(hashSessionToken(TOKEN)).toBe(first);
+    expect(hashSessionToken(SES)).toBe(first);
   });
 
   it("mints real tokens in the accepted format without a factory", async () => {
@@ -345,7 +341,7 @@ describe("session mutation closure — rotation and revocation guards", () => {
     const scoped: SessionRepositoryPort = { ...repo, findActive };
     await expect(
       rotateSession(
-        header(TOKEN),
+        header(SES),
         { expiresInSeconds: 60 },
         scoped,
         new Date("invalid"),
@@ -367,7 +363,7 @@ describe("session mutation closure — rotation and revocation guards", () => {
       revoke: repo.revoke,
     };
     await expect(
-      rotateSession(header(TOKEN), { expiresInSeconds: 60 }, scoped, NOW),
+      rotateSession(header(SES), { expiresInSeconds: 60 }, scoped, NOW),
     ).rejects.toThrow("session rotation is not configured");
   });
 
@@ -387,7 +383,7 @@ describe("session mutation closure — rotation and revocation guards", () => {
       },
     };
     const next = await rotateSession(
-      header(TOKEN),
+      header(SES),
       {
         expiresInSeconds: 60,
         tokenFactory: () => "rotated-token-0000000000000000000000",
@@ -412,19 +408,19 @@ describe("session mutation closure — rotation and revocation guards", () => {
         revoked.push(args);
       },
     };
-    await revokeSessionCookie(header(TOKEN), scoped, NOW);
+    await revokeSessionCookie(header(SES), scoped, NOW);
     expect(revokeCalls).toBe(1);
-    expect(revoked[0]).toMatchObject([hashSessionToken(TOKEN), NOW]);
+    expect(revoked[0]).toMatchObject([hashSessionToken(SES), NOW]);
     const findActive = vi.fn(async () => null);
     const guarded: SessionRepositoryPort = { ...repo, findActive };
     await expect(
-      authenticateSessionCookie(header(TOKEN), guarded, new Date("invalid")),
+      authenticateSessionCookie(header(SES), guarded, new Date("invalid")),
     ).resolves.toBeNull();
     expect(findActive).not.toHaveBeenCalled();
     await expect(
-      authenticateSessionCookie(header(TOKEN), scoped, new Date("invalid")),
+      authenticateSessionCookie(header(SES), scoped, new Date("invalid")),
     ).resolves.toBeNull();
-    await revokeSessionCookie(header(TOKEN), scoped, new Date("invalid"));
+    await revokeSessionCookie(header(SES), scoped, new Date("invalid"));
     expect(revokeCalls).toBe(1);
   });
 
@@ -435,7 +431,7 @@ describe("session mutation closure — rotation and revocation guards", () => {
         {
           accountId: "account-1",
           expiresInSeconds: 60,
-          tokenFactory: () => TOKEN,
+          tokenFactory: () => SES,
         },
         repo,
         new Date("invalid"),

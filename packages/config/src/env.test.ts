@@ -282,11 +282,11 @@ describe("loadRuntimeConfig branch closure (AAA-FINAL-003)", () => {
       EMBEDDING_MODEL: "m",
       EMBEDDING_DIMENSION: "64",
       AI_ENABLED: "false",
-      AI_API_KEY: "synthetic-key",
+      AI_API_KEY: "fake",
     });
     expect(config.qdrant).toMatchObject({
       enabled: true,
-      embeddingApiKey: "synthetic-key",
+      embeddingApiKey: "fake",
     });
   });
 });

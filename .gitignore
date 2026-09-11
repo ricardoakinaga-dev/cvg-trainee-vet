@@ -26,3 +26,4 @@ reports/mutation-summary.json
 .DS_Store
 release-evidence/
 sbom.cyclonedx.json
+reports/mutation-critical/

@@ -85,10 +85,11 @@ async function sourceFiles(directory) {
 // Ratcheted long functions: key is "path#function", value is the cap.
 // Growth fails; shrink is welcome. Repository factories group cohesive
 // per-operation closures by design; the dispatch table shrinks as routes
-// migrate to feature routers.
+// migrate to feature routers. createApiRuntime 435 → 439 (AAA-FINAL-005):
+// explicit edge rate-limit backend selection, reviewed + tested.
 const FUNCTION_EXCEPTIONS = new Map([
   ["apps/api/src/http.ts#handleApiRequestCore", 761],
-  ["apps/api/src/main.ts#createApiRuntime", 435],
+  ["apps/api/src/main.ts#createApiRuntime", 439],
   ["apps/api/src/server.ts#createApiServer", 166],
   ["apps/worker/src/main.ts#createWorkerRuntime", 208],
   ["packages/application/src/authoring-use-cases.ts#createAuthoringDraft", 165],
