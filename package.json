@@ -39,6 +39,8 @@
     "staging:verify": "node scripts/run-staging.mjs verify",
     "staging:up": "node scripts/run-staging.mjs up",
     "mutation:authorization": "stryker run stryker.authorization.mjs",
+    "mutation:critical": "stryker run stryker.critical.mjs",
+    "mutation:critical:closure": "node scripts/verify-mutation-critical.mjs",
     "reconcile:qdrant": "pnpm --filter @cvg/worker build && pnpm --dir apps/worker reconcile:qdrant",
     "verify:ci-contract": "node scripts/verify-ci-contract.mjs",
     "verify:secrets": "node scripts/verify-secrets.mjs",
