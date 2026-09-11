@@ -190,6 +190,9 @@ async function main() {
       status: result.status === "PASS" ? "PASS" : "FAIL",
       markerVerified: result.markerVerified === true,
       targetIsolated: result.targetIsolated === true,
+      // §125.13: integrity = marker round-trip verified on an isolated
+      // target (row/invariant check); RTO recorded numerically.
+      integrity_verified: result.markerVerified === true,
       rtoMs: result.rtoMs ?? null,
     };
     if (summary.status !== "PASS") {

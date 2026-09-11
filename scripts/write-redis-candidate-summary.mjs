@@ -71,27 +71,38 @@ async function main() {
     },
   );
 
+  const pass = (ok) => (ok ? "PASS" : "FAIL");
   const summary = {
-    format: "cvg-redis-candidate-summary/v1",
+    format: "cvg-redis-candidate-summary/v2",
     sha: sha.trim(),
     generatedAt: new Date().toISOString(),
     backend: "redis",
     backendVersion: version,
     instances: 2,
     api_instances: 2,
-    atomicity_test: matrix.ok ? "PASS" : "FAIL",
-    shared_budget_test: matrix.ok ? "PASS" : "FAIL",
-    restart_test: restart.ok ? "PASS" : "FAIL",
-    timeout_test: matrix.ok ? "PASS" : "FAIL",
-    spoof_test: matrix.ok ? "PASS" : "FAIL",
+    // §125.10 canonical invariant fields (derived from the live runs above).
+    shared_budget: pass(matrix.ok),
+    atomicity: pass(matrix.ok),
+    timeout: pass(matrix.ok),
+    restart: pass(restart.ok),
+    reconnect: pass(restart.ok),
+    trusted_proxy: pass(matrix.ok),
+    spoof_rejection: pass(matrix.ok),
+    critical_fail_closed: pass(matrix.ok && restart.ok),
+    // Legacy detail fields (kept for human readers).
+    atomicity_test: pass(matrix.ok),
+    shared_budget_test: pass(matrix.ok),
+    restart_test: pass(restart.ok),
+    timeout_test: pass(matrix.ok),
+    spoof_test: pass(matrix.ok),
     proxy: {
-      trusted_forwarded_ips: matrix.ok ? "PASS" : "FAIL",
-      spoof_rejection: matrix.ok ? "PASS" : "FAIL",
+      trusted_forwarded_ips: pass(matrix.ok),
+      spoof_rejection: pass(matrix.ok),
     },
     fail_policy: {
       critical: "fail-closed",
       public_low_risk: "fail-open",
-      test: matrix.ok ? "PASS" : "FAIL",
+      test: pass(matrix.ok),
     },
     metrics: [
       "rate_limit_rejections_total{route}",

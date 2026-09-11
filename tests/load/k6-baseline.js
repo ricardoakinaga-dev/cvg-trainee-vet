@@ -17,13 +17,16 @@
 
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { Trend, Rate } from "k6/metrics";
+import { Counter, Trend, Rate } from "k6/metrics";
 
 const BASE_URL = __ENV.API_BASE_URL ?? "http://127.0.0.1:3000";
 
 export const readLatency = new Trend("read_latency_ms");
 export const authLatency = new Trend("auth_rejected_latency_ms");
 export const errorRate = new Rate("errors");
+// §125.12: explicit 5xx counter (checks already forbid 5xx; this makes the
+// invariant independently countable from the exported summary).
+export const http5xx = new Counter("http_5xx_total");
 
 export const options = {
   scenarios: {
@@ -57,6 +60,7 @@ export function readHeavy() {
     const ok = check(response, {
       "status is 2xx/503-explicit": (r) => r.status < 600,
     });
+    if (response.status >= 500) http5xx.add(1);
     errorRate.add(!ok);
     readLatency.add(response.timings.duration);
   }
@@ -82,6 +86,7 @@ export function authRejected() {
       "denied explicitly without 5xx": (r) =>
         r.status === 401 || r.status === 429,
     });
+    if (response.status >= 500) http5xx.add(1);
     errorRate.add(!ok);
     authLatency.add(response.timings.duration);
   }

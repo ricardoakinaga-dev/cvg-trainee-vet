@@ -90,8 +90,18 @@ class FailureDiagnosticsReporter implements Reporter {
           `[diagnostics] retry=${result.retry} duration=${result.duration}ms\n` +
           health.map((entry) => `[diagnostics] ${entry}`).join("\n") +
           `\n[diagnostics] ${ports}\n` +
-          `[diagnostics] stdout_tail=${redact((result.stdout.map((chunk) => chunk.toString()).join("")).slice(-500))}\n` +
-          `[diagnostics] stderr_tail=${redact((result.stderr.map((chunk) => chunk.toString()).join("")).slice(-500))}\n`,
+          `[diagnostics] stdout_tail=${redact(
+            result.stdout
+              .map((chunk) => chunk.toString())
+              .join("")
+              .slice(-500),
+          )}\n` +
+          `[diagnostics] stderr_tail=${redact(
+            result.stderr
+              .map((chunk) => chunk.toString())
+              .join("")
+              .slice(-500),
+          )}\n`,
       );
     })();
   }

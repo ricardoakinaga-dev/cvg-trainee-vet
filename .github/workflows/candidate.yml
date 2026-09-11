@@ -208,6 +208,12 @@ jobs:
           CVG_SELF_CANDIDATE_RUN_ID: ${{ github.run_id }}
         run: pnpm verify:aaa-candidate
 
+      - name: Verify Triple AAA promotion gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CVG_SELF_CANDIDATE_RUN_ID: ${{ github.run_id }}
+        run: pnpm verify:triple-aaa
+
       - name: Publish candidate artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

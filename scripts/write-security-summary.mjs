@@ -4,8 +4,68 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
+/* global AbortSignal, fetch */
+
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
+
+const REPOSITORY = "ricardoakinaga-dev/cvg-trainee-vet";
+
+/**
+ * Queries the security workflow runs for a SHA. Returns PASS/FAIL per
+ * scanner only from completed conclusions; anything else (including
+ * "no token, no query") stays unknown. Dependency review only runs on
+ * PRs, so a push SHA records not-applicable rather than a fake PASS.
+ */
+async function querySecurityWorkflow(sha) {
+  const unknown = {
+    codeql: "unknown",
+    osv: "unknown",
+    dependencyReview: "not-applicable",
+  };
+  const token =
+    process.env.GH_TOKEN?.trim() || process.env.GITHUB_TOKEN?.trim() || "";
+  if (token === "") return unknown;
+  try {
+    const headers = {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "cvg-security-summary",
+    };
+    const response = await fetch(
+      `https://api.github.com/repos/${REPOSITORY}/actions/workflows/security.yml/runs?head_sha=${sha}&per_page=3`,
+      { headers, signal: AbortSignal.timeout(20000) },
+    );
+    if (!response.ok) return unknown;
+    const runs = (await response.json()).workflow_runs ?? [];
+    const run = runs[0];
+    if (run === undefined || run.head_sha !== sha) return unknown;
+    const jobsResponse = await fetch(
+      `https://api.github.com/repos/${REPOSITORY}/actions/runs/${run.id}/jobs?per_page=20`,
+      { headers, signal: AbortSignal.timeout(20000) },
+    );
+    if (!jobsResponse.ok) return unknown;
+    const jobs = (await jobsResponse.json()).jobs ?? [];
+    const conclusionOf = (fragment) =>
+      jobs.find((job) => job.name.includes(fragment))?.conclusion ?? null;
+    const toStatus = (conclusion) =>
+      conclusion === "success"
+        ? "PASS"
+        : conclusion === null
+          ? "unknown"
+          : "FAIL";
+    return {
+      codeql: toStatus(conclusionOf("CodeQL")),
+      osv: toStatus(conclusionOf("OSV")),
+      dependencyReview:
+        conclusionOf("Dependency") === null
+          ? "not-applicable"
+          : toStatus(conclusionOf("Dependency")),
+    };
+  } catch {
+    return unknown;
+  }
+}
 
 /**
  * AAA-CERT-004 — security summary from real scans (never hand-written).
@@ -82,8 +142,12 @@ async function main() {
   const { stdout: sha } = await execFileAsync("git", ["rev-parse", "HEAD"], {
     cwd: root,
   });
+  // §125.8: remote scanners are PROVEN via the security workflow runs for
+  // this SHA (queried here when a token exists); without results they
+  // stay unknown — never inferred as zero findings.
+  const remote = await querySecurityWorkflow(sha.trim());
   const summary = {
-    format: "cvg-security-summary/v1",
+    format: "cvg-security-summary/v2",
     sha: sha.trim(),
     generatedAt: new Date().toISOString(),
     audit:
@@ -92,10 +156,18 @@ async function main() {
         : "pnpm audit FAIL",
     residual: { low, moderate, high, critical },
     secrets: secretsClean ? "verify:secrets clean" : "verify:secrets FAIL",
+    secret_scan: secretsClean ? "PASS" : "FAIL",
     sbomComponents,
-    codeql: "security workflow (CodeQL javascript-typescript)",
-    osv: "security workflow (OSV reusable workflow)",
-    status: high + critical === 0 && secretsClean ? "PASS" : "FAIL",
+    codeql: remote.codeql,
+    osv: remote.osv,
+    dependency_review: remote.dependencyReview,
+    status:
+      high + critical === 0 &&
+      secretsClean &&
+      remote.codeql === "PASS" &&
+      remote.osv === "PASS"
+        ? "PASS"
+        : "FAIL",
   };
   if (summary.status !== "PASS") throw new Error("security summary FAIL");
   await mkdir(join(root, "staging-evidence"), { recursive: true });

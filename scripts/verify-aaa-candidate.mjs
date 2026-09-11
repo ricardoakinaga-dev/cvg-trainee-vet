@@ -226,7 +226,8 @@ async function main() {
     const bundledFresh = await isEvidenceFresh(root, bundled.sha, head);
     check(
       "bundled remote-ci summary fresh",
-      bundled.format === "cvg-remote-ci-summary/v1" &&
+      (bundled.format === "cvg-remote-ci-summary/v2" ||
+        bundled.format === "cvg-remote-ci-summary/v1") &&
         bundledFresh.fresh &&
         bundled.status === "PASS",
       `${bundled.sha ?? "missing"}/${bundled.status ?? "missing"} (${bundledFresh.detail})`,

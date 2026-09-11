@@ -93,10 +93,23 @@ async function main() {
   const testFile =
     process.argv[2] ?? "tests/integration/rls-full-matrix.test.ts";
   log(`running ${testFile}`);
+  const { mkdtemp } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const reportDir = await mkdtemp(join(tmpdir(), "cvg-rls-"));
+  const reportFile = join(reportDir, "results.json");
   try {
     const child = await execFileAsync(
       "pnpm",
-      ["exec", "vitest", "run", "--project", "integration", testFile],
+      [
+        "exec",
+        "vitest",
+        "run",
+        "--project",
+        "integration",
+        "--reporter=json",
+        `--outputFile=${reportFile}`,
+        testFile,
+      ],
       {
         cwd: root,
         env: {
@@ -117,15 +130,73 @@ async function main() {
     process.exit(typeof error.code === "number" ? error.code : 1);
   }
   try {
-    const { mkdir, writeFile } = await import("node:fs/promises");
+    const { mkdir, readFile, writeFile } = await import("node:fs/promises");
     const evidenceDir = join(root, "staging-evidence");
     await mkdir(evidenceDir, { recursive: true });
     const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
       cwd: root,
     }).catch(() => ({ stdout: "unknown" }));
+    // §125.9: derive every invariant from named test outcomes in the JSON
+    // report — never hand-typed. A missing/failed test yields false.
+    let failed = 1;
+    let results = [];
+    try {
+      const report = JSON.parse(await readFile(reportFile, "utf8"));
+      failed = report.numFailedTests ?? 1;
+      for (const suite of report.testResults ?? []) {
+        for (const assertion of suite.assertionResults ?? []) {
+          results.push({
+            text: JSON.stringify(assertion),
+            passed: assertion.status === "passed",
+          });
+        }
+      }
+    } catch {
+      failed = 1;
+      results = [];
+    }
+    const has = (fragment) =>
+      results.some((entry) => entry.passed && entry.text.includes(fragment));
+    const invariant = {
+      cross_scope_read_denied: has(
+        "denies participant A any read of participant B rows",
+      ),
+      cross_scope_write_denied: has(
+        "denies participant writes outside their own identity",
+      ),
+      anonymous_denied: has("denies anonymous access to protected rows"),
+      service_identity_constrained: has(
+        "confines the content-indexer service identity to its contract",
+      ),
+      pool_context_isolated: has(
+        "never leaks pooled RLS context across ten alternating checkouts",
+      ),
+      force_rls_verified: has(
+        "audits owner, grants, RLS enforcement and least privilege live",
+      ),
+      bypassrls_absent: has(
+        "audits owner, grants, RLS enforcement and least privilege live",
+      ),
+      superuser_absent: has(
+        "audits owner, grants, RLS enforcement and least privilege live",
+      ),
+    };
+    const allTrue = Object.values(invariant).every(Boolean) && failed === 0;
     await writeFile(
       join(evidenceDir, "rls-live-summary.json"),
-      `${JSON.stringify({ status: "PASS", sha: stdout.trim(), suite: testFile }, null, 2)}\n`,
+      `${JSON.stringify(
+        {
+          format: "cvg-rls-live-summary/v1",
+          status: allTrue ? "PASS" : "FAIL",
+          sha: stdout.trim(),
+          suite: testFile,
+          failed,
+          generatedAt: new Date().toISOString(),
+          ...invariant,
+        },
+        null,
+        2,
+      )}\n`,
     );
   } catch {
     // evidence is best effort; the vitest result above is authoritative

@@ -197,14 +197,39 @@ async function main() {
   }
   if (summaryPath !== null) {
     const byName = new Map(runs.map((run) => [run.workflow, run]));
+    // §125.27/§125.5 normalized schema: per-workflow status/sha/run_id plus
+    // the all_same_sha invariant. Only conclusion "success" maps to PASS;
+    // missing/pending/cancelled/failure never do.
+    const normalize = (name) => {
+      const run = byName.get(name) ?? null;
+      if (run === null) {
+        return { status: "missing", sha: null, run_id: 0 };
+      }
+      return {
+        status:
+          run.conclusion === "success"
+            ? "PASS"
+            : String(run.conclusion ?? "pending"),
+        sha: run.headSha ?? null,
+        run_id: run.id ?? 0,
+      };
+    };
+    const quality = normalize("quality");
+    const security = normalize("security");
+    const candidate = byName.has("candidate") ? normalize("candidate") : null;
+    const shas = [quality, security, candidate]
+      .filter((entry) => entry !== null)
+      .map((entry) => entry.sha);
+    const allSameSha = shas.length > 0 && shas.every((value) => value === sha);
     const summary = {
-      format: "cvg-remote-ci-summary/v1",
+      format: "cvg-remote-ci-summary/v2",
       sha,
       generatedAt: new Date().toISOString(),
       authenticated,
-      quality_run: byName.get("quality") ?? null,
-      security_run: byName.get("security") ?? null,
-      candidate_run: byName.get("candidate") ?? null,
+      quality,
+      security,
+      candidate,
+      all_same_sha: allSameSha,
       status: evaluation.ok ? "PASS" : "FAIL",
       reason: evaluation.reason ?? null,
     };

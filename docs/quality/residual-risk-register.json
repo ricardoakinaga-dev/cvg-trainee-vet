@@ -1,0 +1,73 @@
+{
+  "format": "cvg-risk-register/v1",
+  "candidate_sha": null,
+  "generatedAt": null,
+  "entries": [
+    {
+      "id": "RF-02",
+      "severity": "P2",
+      "finding": "No green remote quality/security/candidate runs on the candidate SHA; same-SHA unproven.",
+      "impact": "Promotion blocked; remote assurance missing for the exact tree.",
+      "owner": "maintainer (human)",
+      "mitigation": "Push + tag/dispatch with token; candidate pipeline runs all gates remotely.",
+      "validation": "pnpm verify:same-sha --require-auth --require-candidate",
+      "accepted_risk": false,
+      "material": true
+    },
+    {
+      "id": "RF-09",
+      "severity": "P2",
+      "finding": "Remote quality E2E step fails in CI without accessible logs; local reproductions (Node 22/24, CI mode) pass 45/45.",
+      "impact": "Quality workflow red; root cause undiagnosed (environmental suspected).",
+      "owner": "maintainer (human)",
+      "mitigation": "E2E diagnostics hardened (§13); rerun on next push; escalate with CI log access.",
+      "validation": "quality workflow run conclusion success",
+      "accepted_risk": false,
+      "material": true
+    },
+    {
+      "id": "RF-03R",
+      "severity": "P2",
+      "finding": "Mutation assurance covers 5 critical files; worker/outbox, diagnostic machine and remaining use-cases unmutated.",
+      "impact": "Undetected logic gaps possible outside the measured scope.",
+      "owner": "maintainer (human)",
+      "mitigation": "Adjusted 97.82% on covered scope; expand by criticality next.",
+      "validation": "reports/mutation-summary.json",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-04",
+      "severity": "P2",
+      "finding": "Files over 1000 lines remain (registries, repositories, web pages).",
+      "impact": "Larger blast radius on change; mitigated by budgets and ratchets.",
+      "owner": "maintainer (human)",
+      "mitigation": "Complexity budgets enforced; split only with proven gain.",
+      "validation": "pnpm verify:complexity",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-07",
+      "severity": "P2",
+      "finding": "Branch coverage margin thin above the 86% hardening target.",
+      "impact": "Future test changes could dip below target before the floor.",
+      "owner": "maintainer (human)",
+      "mitigation": "Floor gate at 85% plus hardening tests; monitor per run.",
+      "validation": "pnpm verify:coverage-floor",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-AT",
+      "severity": "P3",
+      "finding": "No assistive-technology audit; axe/E2E/visual preserved.",
+      "impact": "Low: undetected AT-specific barriers possible.",
+      "owner": "maintainer (human)",
+      "mitigation": "Axe clean; AT audit when users onboard.",
+      "validation": "tests/e2e accessibility specs",
+      "accepted_risk": true,
+      "material": false
+    }
+  ]
+}

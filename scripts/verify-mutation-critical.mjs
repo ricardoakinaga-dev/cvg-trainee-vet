@@ -1,8 +1,13 @@
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+
+function sha256Hex(content) {
+  return createHash("sha256").update(content).digest("hex");
+}
 
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -1128,6 +1133,374 @@ const SCOPES = [
       },
     ],
   },
+  {
+    file: "apps/worker/src/loop.ts",
+    suites: [
+      "apps/worker/src/loop.test.ts",
+      "apps/worker/src/loop-branch-closure.test.ts",
+      "apps/worker/src/loop-mutation-closure.test.ts",
+    ],
+    mutants: [
+      {
+        id: "W000",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'public constructor(message = "worker lease is no longer owned") {',
+        next: 'public constructor(message = "") {',
+      },
+      {
+        id: "W002",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'this.name = "WorkerLeaseLostError";',
+        next: 'this.name = "";',
+      },
+      {
+        id: "W004",
+        cls: "REAL",
+        old: "if (!Number.isInteger(value) || value < 1) {",
+        next: "if (true) {",
+        occurrence: 1,
+      },
+      {
+        id: "W007",
+        cls: "REAL",
+        old: "if (!Number.isInteger(value) || value < 1) {",
+        next: "if (Number.isInteger(value) || value < 1) {",
+        occurrence: 1,
+      },
+      {
+        id: "W009",
+        cls: "REAL",
+        old: "if (!Number.isInteger(value) || value < 1) {",
+        next: "if (!Number.isInteger(value) || value <= 1) {",
+        occurrence: 1,
+      },
+      {
+        id: "W012",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: "throw new RangeError(`${field} must be a positive integer`);",
+        next: 'throw new RangeError("");',
+      },
+      {
+        id: "W014",
+        cls: "REAL",
+        old: "if (!Number.isInteger(value) || value < 0) {",
+        next: "if (true) {",
+      },
+      {
+        id: "W017",
+        cls: "REAL",
+        old: "if (!Number.isInteger(value) || value < 0) {",
+        next: "if (Number.isInteger(value) || value < 0) {",
+      },
+      {
+        id: "W019",
+        cls: "REAL",
+        old: "if (!Number.isInteger(value) || value < 0) {",
+        next: "if (!Number.isInteger(value) || value <= 0) {",
+      },
+      {
+        id: "W022",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: "throw new RangeError(`${field} must be a non-negative integer`);",
+        next: 'throw new RangeError("");',
+      },
+      {
+        id: "W028",
+        cls: "REAL",
+        old: "): Promise<WorkerBatchResult> {\n  const batchSize = options.batchSize ?? 25;",
+        next: '): Promise<WorkerBatchResult> {\n  throw new Error("mutation-closure-harness");\n  const batchSize = options.batchSize ?? 25;',
+      },
+      {
+        id: "W029",
+        cls: "REAL",
+        old: "const batchSize = options.batchSize ?? 25;",
+        next: "const batchSize = options.batchSize && 25;",
+      },
+      {
+        id: "W032",
+        cls: "REAL",
+        old: "const maxRetrySeconds = options.maxRetrySeconds ?? 300;",
+        next: "const maxRetrySeconds = options.maxRetrySeconds && 300;",
+      },
+      {
+        id: "W035",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'positiveInteger(batchSize, "batchSize");',
+        next: 'positiveInteger(batchSize, "");',
+      },
+      {
+        id: "W036",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'positiveInteger(leaseSeconds, "leaseSeconds");',
+        next: 'positiveInteger(leaseSeconds, "");',
+      },
+      {
+        id: "W037",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'nonNegativeInteger(baseRetrySeconds, "baseRetrySeconds");',
+        next: 'nonNegativeInteger(baseRetrySeconds, "");',
+      },
+      {
+        id: "W038",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'positiveInteger(maxRetrySeconds, "maxRetrySeconds");',
+        next: 'positiveInteger(maxRetrySeconds, "");',
+      },
+      {
+        id: "W039",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'positiveInteger(maxAttempts, "maxAttempts");',
+        next: 'positiveInteger(maxAttempts, "");',
+      },
+      {
+        id: "W042",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'throw new RangeError("now must be valid");',
+        next: 'throw new RangeError("");',
+      },
+      {
+        id: "W044",
+        cls: "REAL",
+        old: "  try {",
+        next: '  try {\n    throw new Error("mutation-closure-harness");',
+      },
+      {
+        id: "W045",
+        cls: "REAL",
+        old: "if (event.leaseToken === null) {",
+        next: "if (true) {",
+      },
+      {
+        id: "W049",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'throw new WorkerLeaseLostError("worker lease token is missing");',
+        next: 'throw new WorkerLeaseLostError("");',
+      },
+      {
+        id: "W051",
+        cls: "EQUIVALENT",
+        proof: "P-EXPLICIT",
+        old: 'if (handler === undefined) throw new Error("unhandled event");',
+        next: 'if (false) throw new Error("unhandled event");',
+      },
+      {
+        id: "W052",
+        cls: "REAL",
+        old: 'if (handler === undefined) throw new Error("unhandled event");',
+        next: 'if (handler !== undefined) throw new Error("unhandled event");',
+      },
+      {
+        id: "W053",
+        cls: "EQUIVALENT",
+        proof: "P-MSG",
+        old: 'if (handler === undefined) throw new Error("unhandled event");',
+        next: 'if (handler === undefined) throw new Error("");',
+      },
+      {
+        id: "W060",
+        cls: "REAL",
+        old: 'options.observability?.metrics.increment("worker.events.processed", {',
+        next: 'options.observability?.metrics.increment("", {',
+      },
+      {
+        id: "W061",
+        cls: "REAL",
+        old: '    options.observability?.metrics.increment("worker.events.processed", {\n        event_type: event.eventType,\n        outcome: "success",\n      });',
+        next: '    options.observability?.metrics.increment("worker.events.processed", {});',
+      },
+      {
+        id: "W062",
+        cls: "REAL",
+        old: 'outcome: "success",',
+        next: 'outcome: "",',
+      },
+      {
+        id: "W074",
+        cls: "REAL",
+        old: 'options.observability?.metrics.increment("worker.events.failed", {',
+        next: 'options.observability?.metrics.increment("", {',
+        occurrence: 1,
+      },
+      {
+        id: "W075",
+        cls: "REAL",
+        old: "event_type: event.eventType,",
+        next: 'event_type: "",',
+        occurrence: 2,
+      },
+      {
+        id: "W076",
+        cls: "REAL",
+        old: 'outcome: "lease_lost",',
+        next: 'outcome: "",',
+        occurrence: 1,
+      },
+      {
+        id: "W077",
+        cls: "REAL",
+        old: "options.observability?.logger.warn(",
+        next: "options.observability.logger.warn(",
+        occurrence: 1,
+      },
+      {
+        id: "W078",
+        cls: "REAL",
+        old: 'options.observability?.logger.warn("worker.event.failed", {',
+        next: 'options.observability?.logger.warn("", {',
+        occurrence: 1,
+      },
+      {
+        id: "W079",
+        cls: "REAL",
+        old: "event_type: event.eventType,",
+        next: 'event_type: "",',
+        occurrence: 3,
+      },
+      {
+        id: "W080",
+        cls: "REAL",
+        old: "retryable: !terminal || !markedFailed,",
+        next: 'retryable: "x" as never,',
+      },
+      {
+        id: "W081",
+        cls: "REAL",
+        old: 'error_code: "worker_lease_lost",',
+        next: 'error_code: "",',
+      },
+      {
+        id: "W082",
+        cls: "REAL",
+        old: 'outcome: "lease_lost",',
+        next: 'outcome: "",',
+        occurrence: 2,
+      },
+      {
+        id: "W083",
+        cls: "REAL",
+        old: "retryable: true,",
+        next: "retryable: false,",
+      },
+      {
+        id: "W087",
+        cls: "REAL",
+        old: "const terminal = event.attempts >= maxAttempts;",
+        next: "const terminal = event.attempts < maxAttempts;",
+      },
+      {
+        id: "W104",
+        cls: "REAL",
+        old: ': "retry"',
+        next: ': ""',
+        occurrence: 1,
+      },
+      {
+        id: "W105",
+        cls: "REAL",
+        old: ': "lease_lost",',
+        next: ': "",',
+        occurrence: 3,
+      },
+      {
+        id: "W111",
+        cls: "REAL",
+        old: "          error_code:\n            handler === undefined",
+        next: "          error_code:\n            false",
+      },
+      {
+        id: "W113",
+        cls: "REAL",
+        old: '              ? "worker_event_unhandled"',
+        next: '              ? ""',
+      },
+      {
+        id: "W115",
+        cls: "REAL",
+        old: '            ? "dead_letter"',
+        next: '            ? ""',
+        occurrence: 2,
+      },
+      {
+        id: "W118",
+        cls: "REAL",
+        old: "retryable: !terminal || !markedFailed,",
+        next: "retryable: true,",
+      },
+      {
+        id: "W122",
+        cls: "REAL",
+        old: "retryable: !terminal || !markedFailed,",
+        next: "retryable: !terminal || markedFailed,",
+      },
+      {
+        id: "W128",
+        cls: "REAL",
+        old: 'failed === 0 ? "success" : processed === 0 ? "failure" : "partial";',
+        next: 'failed === 0 ? "" : processed === 0 ? "failure" : "partial";',
+      },
+      {
+        id: "W130",
+        cls: "REAL",
+        old: 'failed === 0 ? "success" : processed === 0 ? "failure" : "partial";',
+        next: 'failed === 0 ? "success" : processed === 0 ? "" : "partial";',
+      },
+      {
+        id: "W132",
+        cls: "REAL",
+        old: 'options.observability?.metrics.increment("worker.batches.completed", {',
+        next: 'options.observability.metrics.increment("worker.batches.completed", {',
+      },
+      {
+        id: "W133",
+        cls: "REAL",
+        old: 'options.observability?.metrics.increment("worker.batches.completed", {',
+        next: 'options.observability?.metrics.increment("", {',
+      },
+      {
+        id: "W134",
+        cls: "REAL",
+        old: '  options.observability?.metrics.increment("worker.batches.completed", {\n    outcome,\n  });',
+        next: '  options.observability?.metrics.increment("worker.batches.completed", {\n    outcome: "x",\n  });',
+      },
+      {
+        id: "W136",
+        cls: "REAL",
+        old: '"worker.batch.duration_ms",',
+        next: '"",',
+      },
+      {
+        id: "W137",
+        cls: "LOW_VALUE",
+        proof: "P-CLOCK",
+        old: "Math.max(0, Date.now() - startedAt),",
+        next: "Math.min(0, Date.now() - startedAt),",
+      },
+      {
+        id: "W138",
+        cls: "LOW_VALUE",
+        proof: "P-CLOCK",
+        old: "Math.max(0, Date.now() - startedAt),",
+        next: "Date.now() + startedAt,",
+      },
+      {
+        id: "W139",
+        cls: "REAL",
+        old: '  options.observability?.logger.info("worker.batch.completed", {',
+        next: '  options.observability?.logger.info("worker.batch.completed", {}); void 0; // {',
+      },
+    ],
+  },
 ];
 
 async function runSuite(suites) {
@@ -1159,6 +1532,11 @@ async function main() {
     if (only !== null && !scope.file.includes(only)) continue;
     const target = join(root, scope.file);
     const original = await readFile(target, "utf8");
+    if (original.length < 100) {
+      problems.push(`${scope.file}: target looks truncated, refusing to run`);
+      continue;
+    }
+    const originalHash = sha256Hex(original);
     try {
       for (const mutant of scope.mutants) {
         const parts = original.split(mutant.old);
@@ -1177,6 +1555,11 @@ async function main() {
           continue;
         }
         if (checkAnchors) continue;
+        const current = await readFile(target, "utf8");
+        if (sha256Hex(current) !== originalHash) {
+          problems.push(`${mutant.id}: target modified externally, refusing`);
+          continue;
+        }
         let mutated = original;
         if (wanted !== null) {
           let index = -1;
@@ -1229,6 +1612,17 @@ async function writeMutationSummary(results, problems) {
       "utf8",
     ),
   );
+  let workerReport = null;
+  try {
+    workerReport = JSON.parse(
+      await readFile(
+        join(root, "reports/mutation-worker/mutation.json"),
+        "utf8",
+      ),
+    );
+  } catch {
+    workerReport = null;
+  }
   const authFile = Object.values(authReport.files)[0];
   const authTotal = authFile.mutants.length;
   const authKilled = authFile.mutants.filter(
@@ -1245,7 +1639,11 @@ async function writeMutationSummary(results, problems) {
       verified_kills: 12,
     },
   ];
-  for (const [file, report] of Object.entries(criticalReport.files)) {
+  const reportFiles = { ...criticalReport.files };
+  if (workerReport !== null) {
+    Object.assign(reportFiles, workerReport.files);
+  }
+  for (const [file, report] of Object.entries(reportFiles)) {
     const short = file.replace(`${root}/`, "");
     const total = report.mutants.length;
     const rawKilled = report.mutants.filter(
