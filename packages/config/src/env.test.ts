@@ -247,3 +247,46 @@ describe("loadRuntimeConfig", () => {
     ).toThrow("TRUSTED_PROXIES");
   });
 });
+
+describe("loadRuntimeConfig branch closure (AAA-FINAL-003)", () => {
+  const core = {
+    NODE_ENV: "test",
+    DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+    QDRANT_ENABLED: "false",
+    AI_ENABLED: "false",
+  } as const;
+
+  it("rejects doubly-compressed IPv6 proxies", () => {
+    expect(() =>
+      loadRuntimeConfig({ ...core, TRUSTED_PROXIES: "1::2::3" }),
+    ).toThrow("TRUSTED_PROXIES");
+  });
+
+  it("accepts full eight-group IPv6 proxies", () => {
+    const config = loadRuntimeConfig({
+      ...core,
+      TRUSTED_PROXIES: "2001:0db8:0000:0000:0000:ff00:0042:8329, ::",
+    });
+    expect(config.trustedProxies).toEqual([
+      "2001:0db8:0000:0000:0000:ff00:0042:8329",
+      "::",
+    ]);
+  });
+
+  it("falls back to AI_API_KEY for the embedding key", () => {
+    const config = loadRuntimeConfig({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "true",
+      QDRANT_URL: "http://127.0.0.1:6333",
+      EMBEDDING_MODEL: "m",
+      EMBEDDING_DIMENSION: "64",
+      AI_ENABLED: "false",
+      AI_API_KEY: "synthetic-key",
+    });
+    expect(config.qdrant).toMatchObject({
+      enabled: true,
+      embeddingApiKey: "synthetic-key",
+    });
+  });
+});

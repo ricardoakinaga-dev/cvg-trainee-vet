@@ -101,3 +101,50 @@ describe("request context", () => {
     ).toThrow("timeoutMs");
   });
 });
+
+describe("request context branch closure (AAA-FINAL-003)", () => {
+  const deps = { idFactory: () => "request-1", clock: () => 0 };
+  const base = { method: "GET", route: "/health/live" };
+
+  it("caps deadlines at the request budget", () => {
+    expect(() =>
+      createRequestContext({ ...base, timeoutMs: 120_001 }, deps),
+    ).toThrow("deadline budget");
+    const context = createRequestContext({ ...base, timeoutMs: 120_000 }, deps);
+    expect(context.deadlineMs).toBe(120_000);
+  });
+
+  it("sanitizes correlation ids and client ips to safe fallbacks", () => {
+    const blank = createRequestContext(
+      { ...base, correlationId: "   ", clientIp: "   " },
+      deps,
+    );
+    expect(blank.correlationId).toBe("request-1");
+    expect(blank.clientIp).toBeNull();
+    const loopback = createRequestContext(
+      { ...base, clientIp: "::1" },
+      deps,
+    );
+    expect(loopback.clientIp).toBe("127.0.0.1");
+    const none = createRequestContext(base, deps);
+    expect(none.clientIp).toBeNull();
+  });
+
+  it("rejects broken clocks and id factories fail-closed", () => {
+    expect(() =>
+      createRequestContext(base, {
+        idFactory: () => "request-1",
+        clock: () => Number.NaN,
+      }),
+    ).toThrow("clock");
+    expect(() =>
+      createRequestContext(base, {
+        idFactory: () => "request-1",
+        clock: () => -5,
+      }),
+    ).toThrow("clock");
+    expect(() =>
+      createRequestContext(base, { idFactory: () => "   ", clock: () => 0 }),
+    ).toThrow("request id");
+  });
+});
