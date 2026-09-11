@@ -125,9 +125,9 @@ describe("resp client over loopback TCP", () => {
       timeoutMs: 50,
     });
     await expect(client.eval("return 1", [], [])).rejects.toThrow();
-    expect(() => createRespScriptClient("redis://127.0.0.1:9", { timeoutMs: 0 })).toThrow(
-      RangeError,
-    );
+    expect(() =>
+      createRespScriptClient("redis://127.0.0.1:9", { timeoutMs: 0 }),
+    ).toThrow(RangeError);
     expect(() => createRespScriptClient(`redis://:9`)).toThrow(TypeError);
   });
 });
