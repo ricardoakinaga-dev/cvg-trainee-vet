@@ -285,6 +285,11 @@ export type RedisScriptClient = Readonly<{
 export type BackendRequestLimiterOptions = Readonly<{
   readonly maxRequests: number;
   readonly windowMs: number;
+  /**
+   * Backend-outage policy. Defaults to fail-closed: without an explicit
+   * decision, an outage must deny rather than silently allow-all.
+   */
+  readonly failPolicy?: "fail-closed" | "fail-open";
 }>;
 
 export type BackendRequestLimiter = Readonly<{
@@ -308,9 +313,33 @@ export function createBackendRequestLimiter(
   if (!Number.isSafeInteger(options.windowMs) || options.windowMs < 1) {
     throw new RangeError("windowMs must be a positive integer");
   }
+  const failPolicy = options.failPolicy ?? "fail-closed";
   return Object.freeze({
-    check: (key: string, nowMs = Date.now()) =>
-      store.increment(key, options.maxRequests, options.windowMs, nowMs),
+    check: async (
+      key: string,
+      nowMs = Date.now(),
+    ): Promise<RateLimitDecision> => {
+      try {
+        return await store.increment(
+          key,
+          options.maxRequests,
+          options.windowMs,
+          nowMs,
+        );
+      } catch {
+        // Independent review finding (v6): backend errors must follow an
+        // explicit policy instead of propagating as 500s/hangs. Fail-closed
+        // denies with a retry hint; fail-open is opt-in per wiring.
+        if (failPolicy === "fail-open") {
+          return Object.freeze({ allowed: true, remaining: 0 });
+        }
+        return Object.freeze({
+          allowed: false,
+          remaining: 0,
+          retryAfterSeconds: 1,
+        });
+      }
+    },
   });
 }
 

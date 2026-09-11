@@ -53,8 +53,11 @@ describe("http rate limiter backend selection", () => {
       db as never,
       log,
     );
-    // Unreachable backend surfaces as a backend error, never as a
-    // silent memory allow-all: fail-closed for the default wiring path.
-    await expect(limiter.check("k")).rejects.toThrow();
+    // Unreachable backend surfaces as fail-closed deny, never as a
+    // silent memory allow-all nor an unhandled throw (no 500s/hangs).
+    await expect(limiter.check("k")).resolves.toMatchObject({
+      allowed: false,
+      retryAfterSeconds: 1,
+    });
   });
 });
