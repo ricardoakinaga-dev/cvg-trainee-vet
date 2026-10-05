@@ -3496,3 +3496,12 @@ permanece histórica; as 51 notas consultivas não são rebaseline AAA.
 - last_completed_action: P3 comprovado + P2 ligado fail-closed com TDD e `pnpm verify` exit 0; next_action: commit desta rodada + gates pós-commit; depois P1, consumer histórico, integração live, mutação do candidato e fresh critic.
 - evidence: .agent/artifacts/remediation-20261003/r63-p2p3-summative/verify-full.log; r63-p2p3-summative/verify-r1-load-flake.log; r63-p2p3-summative/verify-r2-load-flake.log; r63-p2p3-summative/probe-triple-aaa-verbose.log.
 - Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.
+
+## 2026-10-05T13:40:00Z — R63: commit 85efec0 e gates pós-commit verdes
+
+- status: IN_PROGRESS; todas44tasks; critérios/pisos/ratchets congelados.
+- **Commit da rodada — `DONE`.** `85efec0f425218b5692e18fa0a4c46c91aeaecd6` (`main`, 10 arquivos, +344/−3): P3 composta + P2 fail-closed (`module-obligation-summative-approval.ts`), ligação `apps/api` (`createApiCorrectionCompletionOptions`), 14 testes novos e documentos de rastreabilidade. Escopo revisado no stage; árvore de evidência R63 e estados de sessão não rastreados por decisão já registrada.
+- **Gates pós-commit — `DONE`.** `verify:release-evidence` PASS no SHA real (`generate + validate PASS`); `verify:traceability`, `verify:documentation` e `verify:secrets` PASS.
+- last_completed_action: commit `85efec0` + gates pós-commit verdes; next_action: P1 produtor nativo (exige PRD/SPEC), consumer histórico, integração live, mutação do candidato e fresh critic.
+- evidence: .agent/artifacts/remediation-20261003/r63-p2p3-summative/post-commit-gates.log; r63-p2p3-summative/verify-full.log.
+- Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.
