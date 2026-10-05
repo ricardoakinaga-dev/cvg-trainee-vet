@@ -3485,3 +3485,14 @@ permanece histórica; as 51 notas consultivas não são rebaseline AAA.
 - last_completed_action: commit `69b27c3` + release-evidence/traceability/documentation/secrets pós-commit verdes; next_action: P1/P2/P3, depois consumer histórico, integração live e fresh critic.
 - evidence: .agent/artifacts/remediation-20261003/r62-post-commit/gates.log; r62-post-commit/commit.txt; r62-post-commit/verify-full.log.
 - Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.
+
+## 2026-10-05T13:36:00Z — R63: P2 ligado fail-closed e P3 composta; `pnpm verify` verde
+
+- status: IN_PROGRESS; todas44tasks; critérios/pisos/ratchets congelados; nenhuma fonte selada alterada.
+- **P3 — `DONE` nesta rodada.** `composeApprovedSummativeGradePolicy` (`packages/persistence/src/module-obligation-summative-approval.ts`, exportada pelo index) compõe a política aprovada no caminho produtivo: RN-022 (CASO 30/EXAME 70) e RN-023/D-103 (70/80) fixos, proveniência do `manifest.approval` autenticado com cross-check contra a linha de audit `CURRICULUM_MODULE_OBLIGATIONS_APPROVED`; inconsistência → `state_conflict`.
+- **P2 — TRANSFORMADO, não encerrado.** `apps/api/src/main.ts` chama `createCorrectionUseCaseDependencies` com `summativeApproval` via `createApiCorrectionCompletionOptions` (ratchet `createApiRuntime` 438/439 preservado por extração em função de topo). O provedor `createProductionSummativeApproval` compõe a política e retorna `null`: débito preciso agora é "nenhum produtor nativo de `criticalPercent`/`criticalItemCount` autenticado no contrato de correção" — receipts somativos continuam sem gravar até essa evidência existir; a feature correspondente exige PRD/SPEC.
+- **P1 — inalterado.** Produtor nativo de inventário/audit de aprovação de módulo segue pendente e exige PRD/SPEC (Step A fail-closed).
+- **Verificação.** RED 3 arquivos (módulo inexistente) → GREEN 14 testes (6 composição/provedor, 1 wiring de correção, 2 API); gates individuais (format/lint/typecheck/typecheck:test/complexity/dead-code) verdes; `pnpm verify` EXIT 0 (23 gates; 3916 pass/212 skip; cobertura 91,05/86,95/95,07/92,38). Rodadas 1–2 do verify falharam apenas em timeouts de spawn do `triple-aaa-verifier` sob carga externa 15–27 (evidência preservada; nenhum teste/gate alterado).
+- last_completed_action: P3 comprovado + P2 ligado fail-closed com TDD e `pnpm verify` exit 0; next_action: commit desta rodada + gates pós-commit; depois P1, consumer histórico, integração live, mutação do candidato e fresh critic.
+- evidence: .agent/artifacts/remediation-20261003/r63-p2p3-summative/verify-full.log; r63-p2p3-summative/verify-r1-load-flake.log; r63-p2p3-summative/verify-r2-load-flake.log; r63-p2p3-summative/probe-triple-aaa-verbose.log.
+- Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.

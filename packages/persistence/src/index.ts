@@ -302,6 +302,10 @@ export type { CorrectionCompletionOptions } from "./correction-repository.js";
 export { auditEntryToRow, createAuditRepository } from "./audit-repository.js";
 export type { AuditInsertRow } from "./audit-repository.js";
 export {
+  composeApprovedSummativeGradePolicy,
+  createProductionSummativeApproval,
+} from "./module-obligation-summative-approval.js";
+export {
   auditTrailQueryFingerprint,
   createAuditTrailRepository,
   decodeAuditTrailCursor,

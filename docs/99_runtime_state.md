@@ -11,7 +11,23 @@
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
-## CHECKPOINT PREVALENTE — R62 commit completo 69b27c3 e gates pós-commit verdes em 2026-10-05T05:22:00Z
+## CHECKPOINT PREVALENTE — R63 P2/P3 somativo ligados fail-closed e `pnpm verify` verde em 2026-10-05T13:36:00Z
+
+- current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
+- current_phase: FIX_RETEST; R63 concluído (P3 `SummativeGradePolicy` composta no caminho produtivo, P2 `summativeApproval` ligado fail-closed em `apps/api/src/main.ts`, TDD RED→GREEN, `pnpm verify` exit 0).
+- current_task: EXEC-AUDIT-20261003 / todas 44 tasks T01–T34/G01–G10.
+- status: IN_PROGRESS
+- last_completed_action: decisão do usuário "Ligar fail-closed + compor P3" implementada com TDD. P3: módulo novo `packages/persistence/src/module-obligation-summative-approval.ts` com `composeApprovedSummativeGradePolicy` (composição RN-022 CASO 30%/EXAME 70%, limiares RN-023/D-103 70%/80%, proveniência exclusivamente do `manifest.approval` autenticado com cross-check contra a linha de audit `CURRICULUM_MODULE_OBLIGATIONS_APPROVED`; captura divergente lança `ApplicationError` `state_conflict`). P2: `createProductionSummativeApproval` compõe a política e retorna `null` — nenhum produtor nativo de `criticalPercent`/`criticalItemCount` autenticado existe no contrato de correção (débito reformulado, não encerrado); o provedor nunca lança na transação de correção. Ligação: `apps/api/src/composition/correction-completion-options.ts` (`createApiCorrectionCompletionOptions`) usado por `createApiCorrectionDependencies` em `main.ts` (extração preservou o ratchet `createApiRuntime` 438 ≤ 439). RED confirmado em 3 arquivos (módulo inexistente) → GREEN 14 testes novos (6 composição/provedor, 1 wiring de correção, 2 API). `pnpm verify` EXIT 0 (23 gates; suíte principal 3916 pass/212 skip = baseline 3907 + 9; cobertura 91,05/86,95/95,07/92,38 contra 90/85/90/90). Duas rodadas anteriores do verify falharam APENAS em timeouts de spawn (5000ms) de `triple-aaa-verifier.test.ts` sob carga externa 15–27 (outros projetos na mesma máquina); diagnosis registrado, evidência salva.
+- next_action: commit desta rodada + `verify:release-evidence`/`traceability`/`documentation`/`secrets` pós-commit; depois P1 produtor nativo de inventário/audit (exige PRD/SPEC), consumer histórico de receipts, integração live Redis/RLS, RPO/RTO, AT manual, mutação do candidato e fresh critic.
+- blockers: nenhum bloqueio geral. P3 RESOLVIDO nesta rodada; P2 TRANSFORMADO em débito preciso (provedor compõe e falha fechada — receipts somativos continuam sem gravar até existir evidência crítica autenticada no contrato); P1 permanece (exige PRD/SPEC). Mutação do candidato, Redis/RLS de integração live, RPO/RTO e AT manual seguem NOT_PROVEN.
+- human_decision_required: yes — decisões REM-06/H-CONTENT/same-UID/remote/AAA-001 e aprovações clínicas; autoridade condicional, re-selo do M1 e commit completo já concedidos; nenhum escopo de produto novo inventado nesta rodada.
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md
+- active_action_id: EXEC-AUDIT-20261003 / R63 / P2-P3 somativo.
+- last_update: 2026-10-05T13:36:00Z
+- evidence: .agent/artifacts/remediation-20261003/r63-p2p3-summative/verify-full.log; r63-p2p3-summative/verify-r1-load-flake.log; r63-p2p3-summative/verify-r2-load-flake.log; r63-p2p3-summative/probe-triple-aaa-verbose.log.
+- head: `69b27c32a8970debfebf4ed0fbb8c4f00e5406eb` (`main`); commit desta rodada pendente; sem push/deploy/publicação/globalaccept.
+
+## CHECKPOINT ANTERIOR — R62 commit completo 69b27c3 e gates pós-commit verdes em 2026-10-05T05:22:00Z
 
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - current_phase: FIX_RETEST; R61/R62 concluídos (cadeia F02, autoridade condicional, e2e 45/45, re-selo M1, prova nativa da 0058 86/86); commit completo do worktree executado e gates pós-commit verdes.

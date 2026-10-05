@@ -108,6 +108,7 @@ import { sessionPrincipalToApiPrincipal } from "./composition/session-principal.
 import type { ApiServer } from "./server.js";
 import { createApiServer as createNodeApiServer } from "./server.js";
 import { createHttpRateLimiter } from "./composition/http-rate-limiter.js";
+import { createApiCorrectionCompletionOptions } from "./composition/correction-completion-options.js";
 
 export { createHttpRateLimiter } from "./composition/http-rate-limiter.js";
 
@@ -121,6 +122,16 @@ function configuredOrigins(
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
   return origins.length === 0 ? undefined : Object.freeze(origins);
+}
+
+function createApiCorrectionDependencies(
+  db: Parameters<typeof createCorrectionUseCaseDependencies>[0],
+) {
+  return createCorrectionUseCaseDependencies(
+    db,
+    randomUUID,
+    createApiCorrectionCompletionOptions(),
+  );
 }
 
 export type ApiRuntimeOptions = Readonly<{
@@ -154,9 +165,8 @@ export function createApiRuntime(
     integrations.database.db,
     randomUUID,
   );
-  const correctionDependencies = createCorrectionUseCaseDependencies(
+  const correctionDependencies = createApiCorrectionDependencies(
     integrations.database.db,
-    randomUUID,
   );
   const correctionReadRepository = createCorrectionReadRepository(
     integrations.database.db,

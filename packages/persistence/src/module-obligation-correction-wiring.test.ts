@@ -2,6 +2,7 @@ import { correctOpenResponse } from "@cvg/application";
 import { describe, expect, it } from "vitest";
 import { createCorrectionUseCaseDependencies } from "./correction-repository.js";
 import type { SummativeApprovalSource } from "./module-obligation-completion-trigger.js";
+import { createProductionSummativeApproval } from "./module-obligation-summative-approval.js";
 import { approvedModuleFixture } from "./test-support/module-obligation-fixture.js";
 import {
   createTableRoutedFakeDatabase,
@@ -535,6 +536,34 @@ describe("module obligation wiring: automatic completion receipt on correction",
 
     expect(result.attempt.status).toBe("CORRIGIDA_HUMANAMENTE");
     expect(fake.inserts("curriculum_module_completion_receipts")).toEqual([]);
+    expect(
+      fake
+        .inserts("audit_entries")
+        .filter(
+          (op) =>
+            (op.values as { action?: string }).action === "ATTEMPT_CORRECTED",
+        ),
+    ).toHaveLength(1);
+  });
+
+  it("keeps the production approval provider fail-closed without a receipt", async () => {
+    const { fake, dependencies } = createFake({
+      summativeApproval: createProductionSummativeApproval(),
+    });
+
+    const result = await correctOpenResponse(command(), dependencies);
+
+    expect(result.attempt.status).toBe("CORRIGIDA_HUMANAMENTE");
+    expect(fake.inserts("curriculum_module_completion_receipts")).toEqual([]);
+    expect(
+      fake
+        .inserts("audit_entries")
+        .filter(
+          (op) =>
+            (op.values as { action?: string }).action ===
+            "MODULE_COMPLETION_RECORDED",
+        ),
+    ).toEqual([]);
     expect(
       fake
         .inserts("audit_entries")
