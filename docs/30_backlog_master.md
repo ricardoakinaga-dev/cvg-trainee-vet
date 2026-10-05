@@ -3475,3 +3475,13 @@ permanece histórica; as 51 notas consultivas não são rebaseline AAA.
 - last_completed_action: re-selo M1 + prova nativa RED58→GREEN59 (86/86); next_action: commit autorizado e `verify:release-evidence` pós-commit, depois P1–P3 (produtor de inventário/audit, `summativeApproval` em main.ts, política somativa composta), consumer histórico, integração live, mutação, fresh critic.
 - evidence: .agent/artifacts/remediation-20261003/lead-r62-reseal-validation.json; r62-conditional-authority/report.md §6; r59-module-storage-native/runs/R59-RED58-20261005-001-488b1525-*/summary.json; r59-module-storage-native/runs/R59-GREEN59-20261005-001-d6a3f271-*/summary.json.
 - Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.
+
+## 2026-10-05T05:22:00Z — R62: commit 69b27c3 executado; release-evidence destravado no SHA real
+
+- status: IN_PROGRESS; todas44tasks; critérios/pisos/ratchets congelados.
+- **Commit completo do worktree — `DONE`.** Executado como `69b27c32a8970debfebf4ed0fbb8c4f00e5406eb` (`main`, 539 arquivos, 288272 inserções, 75030 remoções): migrations 0055–0058 + journal, cadeia F02, autoridade condicional, e2e 45/45, browser 290/290, docs/BRIEFING/audits, planos e artefatos curados. Excluiu deliberadamente `.agent/artifacts/remediation-20261003/` (3,5 GB, 13 repositórios embutidos, nunca rastreado) e `.opencode`/`.orchestrate` (estado de sessão); decisão registrada no corpo do commit.
+- **`verify:release-evidence` — `DONE` no SHA real.** `generate + validate PASS` a partir de `69b27c32…`; `verify:traceability`, `verify:documentation` e `verify:secrets` pós-commit PASS. A dependência "gate repousa no índice git" foi encerrada.
+- **Próximos do backlog:** (1) P1 produtor nativo de linhas de blueprint/form e do audit `CURRICULUM_MODULE_OBLIGATIONS_APPROVED` (Step A fail-closed; exige PRD/SPEC antes da feature de autoria); (2) P2 `summativeApproval` em `apps/api/src/main.ts:157` (nenhum receipt somativo gravado no caminho produtivo); (3) P3 `SummativeGradePolicy` aprovada composta; (4) consumer histórico de receipts e integração completa do writer; (5) integração live Redis/RLS, RPO/RTO, AT manual, mutação do candidato e fresh critic.
+- last_completed_action: commit `69b27c3` + release-evidence/traceability/documentation/secrets pós-commit verdes; next_action: P1/P2/P3, depois consumer histórico, integração live e fresh critic.
+- evidence: .agent/artifacts/remediation-20261003/r62-post-commit/gates.log; r62-post-commit/commit.txt; r62-post-commit/verify-full.log.
+- Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.

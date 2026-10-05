@@ -11,7 +11,23 @@
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
-## CHECKPOINT PREVALENTE — R61/R62 autoridade F02 encadeada, autoridade condicional e e2e 45/45 em 2026-10-05T03:43:26Z
+## CHECKPOINT PREVALENTE — R62 commit completo 69b27c3 e gates pós-commit verdes em 2026-10-05T05:22:00Z
+
+- current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
+- current_phase: FIX_RETEST; R61/R62 concluídos (cadeia F02, autoridade condicional, e2e 45/45, re-selo M1, prova nativa da 0058 86/86); commit completo do worktree executado e gates pós-commit verdes.
+- current_task: EXEC-AUDIT-20261003 / todas 44 tasks T01–T34/G01–G10.
+- status: IN_PROGRESS
+- last_completed_action: commit completo do worktree autorizado executado como `69b27c32a8970debfebf4ed0fbb8c4f00e5406eb` (`main`, 539 arquivos, 288272 inserções, 75030 remoções), incluindo migrations 0055–0058 + journal, cadeia F02, autoridade condicional, e2e/browser reparados, BRIEFING/docs/audits, planos `.agent/plans` e artefatos curados `.agent/artifacts/remediation/` (21 arquivos). Árvores de evidência em massa `.agent/artifacts/remediation-20261003/` (3,5 GB, 13 repositórios embutidos) e estado de sessão `.opencode`/`.orchestrate` permanecem não rastreados por decisão técnica registrada no corpo do commit. `pnpm verify:release-evidence` PASS no SHA real (`generate + validate PASS`); pós-commit `verify:traceability`, `verify:documentation` e `verify:secrets` PASS; `pnpm verify` completo exit 0 imediatamente antes do commit (23 gates, 3907 pass/212 skip, cobertura 91,03/86,92/95,05/92,36).
+- next_action: P1 produtor nativo de inventário/audit `CURRICULUM_MODULE_OBLIGATIONS_APPROVED` (exige PRD/SPEC), P2 `summativeApproval` em `apps/api/src/main.ts:157`, P3 `SummativeGradePolicy` composta no caminho produtivo; depois consumer histórico, integração live, mutação do candidato e fresh critic.
+- blockers: nenhum bloqueio geral; a dependência de commit do `verify:release-evidence` foi RESOLVIDA. Débitos condicionais explícitos P1–P3 permanecem registrados (autoridade condicional aprovada). Mutação do candidato, Redis/RLS de integração live, RPO/RTO e AT manual seguem NOT_PROVEN.
+- human_decision_required: yes — decisões REM-06/H-CONTENT/same-UID/remote/AAA-001 e aprovações clínicas; autoridade condicional, re-selo do M1 e commit completo já concedidos nesta rodada; nenhuma publicação clínica autorizada por prova técnica.
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md
+- active_action_id: EXEC-AUDIT-20261003 / R62 / commit pós-verificação.
+- last_update: 2026-10-05T05:22:00Z
+- evidence: .agent/artifacts/remediation-20261003/r62-post-commit/gates.log; r62-post-commit/commit.txt; r62-post-commit/verify-full.log; r61-f02-wiring/report.md; r62-conditional-authority/report.md; lead-r62-reseal-validation.json; r59-module-storage-native/runs/R59-RED58-20261005-001-488b1525-*/summary.json; r59-module-storage-native/runs/R59-GREEN59-20261005-001-d6a3f271-*/summary.json.
+- head: `69b27c32a8970debfebf4ed0fbb8c4f00e5406eb` (`main`); sem push/deploy/publicação/globalaccept.
+
+## CHECKPOINT ANTERIOR — R61/R62 autoridade F02 encadeada, autoridade condicional e e2e 45/45 em 2026-10-05T03:43:26Z
 
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - current_phase: FIX_RETEST; R61 encadeou a cadeia F02 ponta a ponta; R62 implementou a autoridade condicional, reparou o e2e até 45/45, re-selou o M1 sob aprovação humana e executou a prova nativa da 0058 (EXPECTED_RED → MEASURED_GREEN 86/86); `pnpm verify` completo exit 0 nesta janela.
